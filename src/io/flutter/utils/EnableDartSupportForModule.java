@@ -4,13 +4,15 @@ package io.flutter.utils;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.util.ui.EdtInvocationManager;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import com.jetbrains.lang.dart.sdk.DartSdkUtil;
+import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 
-// Copied from private class com.jetbrains.lang.dart.ide.actions.DartEditorNotificationsProvider.EnableDartSupportForModule.
+// Adapted from private class com.jetbrains.lang.dart.ide.actions.DartEditorNotificationsProvider.EnableDartSupportForModule.
 class EnableDartSupportForModule implements Runnable {
   private final Module myModule;
 
@@ -22,21 +24,26 @@ class EnableDartSupportForModule implements Runnable {
   public void run() {
     final Project project = myModule.getProject();
 
-    ApplicationManager.getApplication().runWriteAction(() -> {
-      if (DartSdk.getDartSdk(project) == null) {
-        final String sdkPath = DartSdkUtil.getFirstKnownDartSdkPath();
-        if (DartSdkUtil.isDartSdkHome(sdkPath)) {
-          DartSdkLibUtil.ensureDartSdkConfigured(project, sdkPath);
-        }
-        else {
-          return; // shouldn't happen, sdk path is already checked
-        }
-      }
-
-      DartSdkLibUtil.enableDartSdk(myModule);
+    EdtInvocationManager.getInstance().invokeLater(() -> {
+      ApplicationManager.getApplication().invokeLater(() -> {
+        ApplicationManager.getApplication().runWriteAction(() -> {
+          if (DartSdk.getDartSdk(project) == null || !DartSdkLibUtil.isDartSdkEnabled(myModule)) {
+            final String sdkPath = DartSdkUtil.getFirstKnownDartSdkPath();
+            if (DartSdkUtil.isDartSdkHome(sdkPath)) {
+              DartSdkLibUtil.ensureDartSdkConfigured(project, sdkPath);
+              DartSdkLibUtil.enableDartSdk(myModule);
+            }
+            else {
+              FlutterModuleUtils.enableDartSDK(myModule);
+            }
+          }
+        });
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+          ApplicationManager.getApplication().runReadAction(() -> {
+            DartAnalysisServerService.getInstance(project).serverReadyForRequest();
+          });
+        });
+      });
     });
-
-    DartAnalysisServerService.getInstance(project).serverReadyForRequest();
-    // At this point the original provides a notification of success or failure, which we don't need.
   }
 }

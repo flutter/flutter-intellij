@@ -13,7 +13,7 @@
 
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
-  <idea-version since-build="183.5429" until-build="192.*"/>
+  <idea-version since-build="183.5429" until-build="193.*"/>
 
   <depends>Dart</depends>
 
@@ -920,6 +920,7 @@
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
+    <externalSystemTaskNotificationListener implementation="io.flutter.utils.FlutterExternalSystemTaskNotificationListener"/>
     <postStartupActivity implementation="io.flutter.ProjectOpenActivity"/>
     <postStartupActivity implementation="io.flutter.FlutterInitializer"/>
     <projectService serviceInterface="io.flutter.run.daemon.DeviceService"

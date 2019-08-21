@@ -67,17 +67,10 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
 
   @Override
   public void runActivity(@NotNull Project project) {
-    boolean hasFlutterModule = FlutterModuleUtils.declaresFlutter(project);
     if (AndroidUtils.isAndroidProject(project)) {
-      if (hasFlutterModule) {
-        AndroidUtils.addGradleListeners(project);
-      } else {
-        if (FlutterUtils.findFlutterGradleModule(project) != null) {
-          AndroidUtils.addGradleListeners(project);
-        }
-      }
+      AndroidUtils.addGradleListeners(project);
     }
-    if (!hasFlutterModule) {
+    if (!FlutterModuleUtils.declaresFlutter(project)) {
       return;
     }
 

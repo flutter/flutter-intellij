@@ -29,7 +29,6 @@ import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.model.task.TaskData;
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectType;
 import com.intellij.openapi.project.ProjectTypeService;
@@ -41,6 +40,9 @@ import com.intellij.pom.java.LanguageLevel;
 import com.intellij.psi.JavaTokenType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.java.IKeywordElementType;
+import com.intellij.util.ReflectionUtil;
+import com.intellij.util.WaitFor;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.containers.MultiMap;
 import com.intellij.util.containers.WeakList;
@@ -54,17 +56,19 @@ import org.jetbrains.plugins.gradle.settings.GradleSettings;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_GRADLEDEPENDENCY_ADDED;
+import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED;
 import static com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil.getChildren;
 import static com.intellij.openapi.util.text.StringUtil.isNotEmpty;
+import static java.util.Objects.requireNonNull;
 
 // based on: org.jetbrains.android.util.AndroidUtils
 public class AndroidUtils {
@@ -72,9 +76,11 @@ public class AndroidUtils {
   private static final Lexer JAVA_LEXER = JavaParserDefinition.createLexer(LanguageLevel.JDK_1_5);
 
   // Flutter internal implementation dependencies.
-  private static String FLUTTER_MODULE_NAME = ":flutter:";
-  private static String FLUTTER_TASK_PREFIX = "compileFlutterBuild";
-  private static final WeakList<Project> IGNORED_PROJECTS = new WeakList<>();
+  public static final String FLUTTER_MODULE_NAME = "flutter";
+  private static final String FLUTTER_PROJECT_NAME = ":" + FLUTTER_MODULE_NAME + ":";
+  private static final String FLUTTER_TASK_PREFIX = "compileFlutterBuild";
+  private static final WeakList<Project> COEDIT_TRANSFORMED_PROJECTS = new WeakList<>();
+  private static final int GRADLE_SYNC_TIMEOUT = 5 * 60 * 1000; // 5 minutes in millis.
 
   /**
    * Validates a potential package name and returns null if the package name is valid, and otherwise
@@ -140,7 +146,7 @@ public class AndroidUtils {
   // This method is a copy of android.content.pm.PackageParser#validateName with the
   // error messages tweaked
   @Nullable
-  private static String validateName(String name, @SuppressWarnings("SameParameterValue") boolean requiresSeparator) {
+  private static String validateName(String name, boolean requiresSeparator) {
     final int N = name.length();
     boolean hasSep = false;
     boolean front = true;
@@ -198,109 +204,123 @@ public class AndroidUtils {
   }
 
   public static void addGradleListeners(@NotNull Project project) {
-    if (isProjectIgnored(project)) {
-      return;
-    }
-    if (FlutterUtils.isAndroidStudio()) {
-      MessageBusConnection connection = project.getMessageBus().connect(project);
-      connection.subscribe(GradleSyncState.GRADLE_SYNC_TOPIC, new GradleSyncListener() {
-        @Override
-        public void syncFailed(@NotNull Project project, @NotNull String errorMessage) {
-          finish();
-        }
-
-        @Override
-        public void syncSkipped(@NotNull Project project) {
-          finish();
-        }
-
-        @Override
-        public void sourceGenerationFinished(@NotNull Project project) {
-          finish();
-        }
-
-        private void finish() {
-          connection.disconnect();
-        }
-      });
-    } else {
+    if (!FlutterUtils.isAndroidStudio()) {
       GradleSyncState.subscribe(project, new GradleSyncListener() {
         @Override
         public void syncSucceeded(@NotNull Project project) {
           checkDartSupport(project);
-          if (isProjectIgnored(project)) {
+          if (isCoeditTransformedProject(project)) {
             return;
           }
-          // After a Gradle sync has finished we check the tasks that were run to see if any belong to Flutter.
-          Map<ProjectData, MultiMap<String, String>> tasks = getTasksMap(project);
-          @NotNull String projectName = project.getName();
-          for (ProjectData projectData : tasks.keySet()) {
-            String dataName = projectData.getExternalName();
-            if (projectName.equals(dataName)) {
-              MultiMap<String, String> map = tasks.get(projectData);
-              if (map.containsKey(FLUTTER_MODULE_NAME)) {
-                if (map.get(FLUTTER_MODULE_NAME).parallelStream().anyMatch((x) -> x.startsWith(FLUTTER_TASK_PREFIX))) {
-                  ApplicationManager.getApplication().invokeLater(() -> enableCoEditing(project));
-                }
-              }
-            }
+          enableCoeditIfAddToAppDetected(project);
+        }
+      });
+      GradleBuildState.subscribe(project, new GradleBuildListener.Adapter() {
+        @Override
+        public void buildFinished(@NotNull BuildStatus status, @Nullable BuildContext context) {
+          checkDartSupport(project);
+          if (isCoeditTransformedProject(project)) {
+            return;
+          }
+          if (status == BuildStatus.SUCCESS && context != null && context.getGradleTasks().contains(":flutter:generateDebugSources")) {
+            enableCoeditIfAddToAppDetected(project);
           }
         }
       });
     }
-    GradleBuildState.subscribe(project, new GradleBuildListener.Adapter() {
-      @Override
-      public void buildFinished(@NotNull BuildStatus status, @Nullable BuildContext context) {
-        if (isProjectIgnored(project)) {
-          return;
-        }
-        // When an Androd project is re-opened it only does a sync if needed. We have to check
-        // for signs that a Flutter module has been added and trigger a sync if so.
-        String ideaName = FLUTTER_MODULE_NAME.substring(1, FLUTTER_MODULE_NAME.length() - 1);
-        if (status == BuildStatus.SUCCESS) {
-          if (context != null && context.getGradleTasks().contains(":flutter:generateDebugSources")) {
-            Module module = FlutterUtils.findModuleNamed(project, "flutter");
-            if (module != null && isVanillaAddToApp(project, module.getModuleFile(), module.getName())) {
-              scheduleGradleSync(project);
-              return;
-            }
-          }
-        }
-        boolean mayNeedSync = FlutterUtils.findModuleNamed(project, ideaName) != null;
-        if (!mayNeedSync) return;
-        for (Module module : ModuleManager.getInstance(project).getModules()) {
-          if (FlutterModuleUtils.declaresFlutter(module)) {
-            // untested -- might occur if the module is added manually (or by AS module tool)
-            if (isVanillaAddToApp(project, module.getModuleFile(), module.getName())) {
-              scheduleGradleSync(project);
-              return;
-            }
-          }
-        }
-        Module module = FlutterUtils.findFlutterGradleModule(project);
-        if (module != null) {
-          // This is what we expect from following the add-to-app docs.
-          if (isVanillaAddToApp(project, module.getModuleFile(), module.getName())) {
-            scheduleGradleSync(project);
-          }
-        }
-      }
-    });
   }
 
   public static void scheduleGradleSync(@NotNull Project project) {
+    //GradleSyncInvoker.getInstance().requestProjectSyncAndSourceGeneration(project, TRIGGER_USER_REQUEST_WHILE_BUILDING);
     GradleSyncInvoker.getInstance().requestProjectSync(
       project,
-      new GradleSyncInvoker.Request(TRIGGER_GRADLEDEPENDENCY_ADDED));
+      new GradleSyncInvoker.Request(TRIGGER_PROJECT_MODIFIED));
   }
 
-  private static void checkDartSupport(@NotNull Project project) {
-    Stream<Module> modules =
-      Arrays.stream(FlutterModuleUtils.getModules(project)).filter(FlutterModuleUtils::declaresFlutter);
-    modules.forEach((module) -> {
-      if (!DartSdkLibUtil.isDartSdkEnabled(module)) {
-        new EnableDartSupportForModule(module).run();
+  public static void enableCoeditIfAddToAppDetected(@NotNull Project project) {
+    if (isCoeditTransformedProject(project)) {
+      return;
+    }
+    // After a Gradle sync has finished we check the tasks that were run to see if any belong to Flutter.
+    Map<ProjectData, MultiMap<String, String>> tasks = getTasksMap(project);
+    @NotNull String projectName = project.getName();
+    for (ProjectData projectData : tasks.keySet()) {
+      String dataName = projectData.getExternalName();
+      if (projectName.equals(dataName)) {
+        MultiMap<String, String> map = tasks.get(projectData);
+        Collection<String> col = map.get(FLUTTER_PROJECT_NAME);
+        if (col.isEmpty()) {
+          col = map.get(""); // Android Studio uses this.
+        }
+        if (!col.isEmpty()) {
+          if (col.parallelStream().anyMatch((x) -> x.startsWith(FLUTTER_TASK_PREFIX))) {
+            ApplicationManager.getApplication().invokeLater(() -> enableCoEditing(project));
+          }
+        }
       }
+    }
+  }
+
+  //public static void triggerSyncIfFlutterModuleFoundAfterBuild(@NotNull Project project,
+  //                                                             @Nullable BuildStatus status,
+  //                                                             @Nullable BuildContext context) {
+  //  if (isCoeditTransformedProject(project)) {
+  //    return;
+  //  }
+  //  // When an Android project is re-opened it only does a sync if needed. We have to check
+  //  // for signs that a Flutter module has been added and trigger a sync if so.
+  //  String ideaName = FLUTTER_PROJECT_NAME.substring(1, FLUTTER_PROJECT_NAME.length() - 1);
+  //  if (status == BuildStatus.SUCCESS) {
+  //    if (context != null && context.getGradleTasks().contains(":flutter:generateDebugSources")) {
+  //      Module module = FlutterUtils.findModuleNamed(project, "flutter");
+  //      if (module != null && isVanillaAddToApp(project, module.getModuleFile(), module.getName())) {
+  //        scheduleGradleSync(project);
+  //        return;
+  //      }
+  //    }
+  //  }
+  //  boolean mayNeedSync = FlutterUtils.findModuleNamed(project, ideaName) != null;
+  //  if (!mayNeedSync) return;
+  //  for (Module module : ModuleManager.getInstance(project).getModules()) {
+  //    if (FlutterModuleUtils.declaresFlutter(module)) {
+  //      // untested -- might occur if the module is added manually (or by AS module tool)
+  //      if (isVanillaAddToApp(project, module.getModuleFile(), module.getName())) {
+  //        scheduleGradleSync(project);
+  //        return;
+  //      }
+  //    }
+  //  }
+  //  Module module = FlutterUtils.findFlutterGradleModule(project);
+  //  if (module != null) {
+  //    // This is what we expect from following the add-to-app docs.
+  //    if (isVanillaAddToApp(project, module.getModuleFile(), module.getName())) {
+  //      scheduleGradleSync(project);
+  //    }
+  //  }
+  //}
+
+  private static void runAfterSyncFinishes(@NotNull Project project, @NotNull Consumer<Project> runnable) {
+    new WaitFor(GRADLE_SYNC_TIMEOUT, () -> runnable.accept(project)) {
+      @Override
+      public boolean condition() {
+        return !GradleSyncState.getInstance(project).isSyncInProgress();
+      }
+    };
+  }
+
+  public static void checkDartSupport(@NotNull Project project) {
+    runAfterSyncFinishes(project, (p) -> {
+      // Gradle sync-finished events are triggered before new modules have been committed. Once the condition
+      // is met we still have to wait for a short while.
+      AppExecutorUtil.getAppScheduledExecutorService().schedule(() -> {
+        Stream<Module> modules =
+          Arrays.stream(FlutterModuleUtils.getModules(p)).filter(FlutterModuleUtils::declaresFlutter);
+        modules.forEach((module) -> {
+          if (!DartSdkLibUtil.isDartSdkEnabled(module)) {
+            new EnableDartSupportForModule(module).run();
+          }
+        });
+      }, 1, TimeUnit.SECONDS);
     });
   }
 
@@ -318,32 +338,43 @@ public class AndroidUtils {
     if (dir.findChild(".ios") == null && dir.findChild("ios") == null) {
       return false;
     }
-    // Using VFS to check existence of build.gradle is returning false positives.
     if (doesBuildFileExist(dir)) {
       return true;
     }
-    VirtualFile projectDir = FlutterUtils.getProjectRoot(project);
-    VirtualFile settings = GradleUtil.getGradleSettingsFile(new File(projectDir.getPath()));
-    if (settings == null) {
-      return false;
-    }
+    GradleSettingsFile parsedSettings = parseSettings(project);
     // Check settings for "include :name".
-    GradleSettingsFile parsedSettings =
-      BuildModelContext.create(project).getSettingsFile(project);
-    if (parsedSettings == null) {
-      return false;
-    }
-    return findInclude(parsedSettings, name) == null;
+    return findInclude(requireNonNull(parsedSettings), name) == null;
   }
 
   private static boolean doesBuildFileExist(VirtualFile dir) {
-    // Using VFS to check existence of build.gradle is returning false positives.
     return new File(dir.getPath(), SdkConstants.FN_BUILD_GRADLE).exists();
+  }
+
+  private static GradleSettingsFile parseSettings(Project project) {
+    // Get the PSI for settings.gradle. In IntelliJ it is just this, but Android Studio uses a VirtualFile.
+    //GradleSettingsFile parsedSettings =
+    //  BuildModelContext.create(project).getOrCreateSettingsFile(project);
+    boolean isAndroidStudio = FlutterUtils.isAndroidStudio();
+    VirtualFile projectDir = requireNonNull(FlutterUtils.getProjectRoot(project));
+    Object param = isAndroidStudio ? projectDir.findChild(SdkConstants.FN_SETTINGS_GRADLE) : project;
+    if (param == null) {
+      return null;
+    }
+    Method method =
+      ReflectionUtil.getMethod(BuildModelContext.class, "getOrCreateSettingsFile", isAndroidStudio ? VirtualFile.class : Project.class);
+    if (method == null) {
+      return null;
+    }
+    try {
+      return (GradleSettingsFile)method.invoke(BuildModelContext.create(project), param);
+    }
+    catch (InvocationTargetException | IllegalAccessException e) {
+      return null;
+    }
   }
 
   // The project is an Android project that contains a Flutter module.
   private static void enableCoEditing(@NotNull Project project) {
-    IGNORED_PROJECTS.add(project); // This may not be a good idea.
     Module module = FlutterUtils.findFlutterGradleModule(project);
     if (module == null) return;
     VirtualFile moduleFile = module.getModuleFile();
@@ -355,17 +386,17 @@ public class AndroidUtils {
     new CoEditHelper(project, flutterModuleDir).enable();
   }
 
-  private static void disableGradleListeners(@NotNull Project project) {
+  private static void addCoeditTransformedProject(@NotNull Project project) {
     if (!project.isDisposed()) {
-      IGNORED_PROJECTS.add(project);
+      COEDIT_TRANSFORMED_PROJECTS.add(project);
     }
   }
 
-  private static boolean isProjectIgnored(@NotNull Project project) {
+  private static boolean isCoeditTransformedProject(@NotNull Project project) {
     if (project.isDisposed()) {
       return true;
     }
-    Iterator<Project> iter = IGNORED_PROJECTS.iterator();
+    Iterator<Project> iter = COEDIT_TRANSFORMED_PROJECTS.iterator();
     //noinspection WhileLoopReplaceableByForEach
     while (iter.hasNext()) { // See WeakList.iterator().
       Project p = iter.next();
@@ -380,7 +411,7 @@ public class AndroidUtils {
   @NotNull
   @SuppressWarnings("DuplicatedCode")
   private static Map<ProjectData, MultiMap<String, String>> getTasksMap(Project project) {
-    Map<ProjectData, MultiMap<String, String>> tasks = ContainerUtil.newLinkedHashMap();
+    Map<ProjectData, MultiMap<String, String>> tasks = new LinkedHashMap<>();
     for (GradleProjectSettings setting : GradleSettings.getInstance(project).getLinkedProjectsSettings()) {
       final ExternalProjectInfo projectData =
         ProjectDataManager.getInstance().getExternalProjectData(project, GradleConstants.SYSTEM_ID, setting.getExternalProjectPath());
@@ -445,6 +476,7 @@ public class AndroidUtils {
     private boolean inSameDir;
     private VirtualFile buildFile;
     private VirtualFile settingsFile;
+    private VirtualFile projectRoot;
     private String pathToModule;
     private AtomicBoolean errorDuringOperation = new AtomicBoolean(false);
 
@@ -462,12 +494,24 @@ public class AndroidUtils {
         if (errorDuringOperation.get()) return;
         addIncludeStatement();
         if (errorDuringOperation.get()) return;
-        scheduleGradleSync(project);
+        addCoeditTransformedProject(project);
+        projectRoot.refresh(true, true);
+        AppExecutorUtil.getAppExecutorService().execute(() -> scheduleGradleSyncAfterSyncFinishes(project));
       }
     }
 
+    private static void scheduleGradleSyncAfterSyncFinishes(@NotNull Project project) {
+      runAfterSyncFinishes(project, (p) -> scheduleGradleSync((project)));
+    }
+
     private boolean verifyEligibility() {
-      GradleSettingsFile parsedSettings = BuildModelContext.create(project).getSettingsFile(project);
+      projectRoot = FlutterUtils.getProjectRoot(project);
+      requireNonNull(projectRoot);
+      settingsFile = projectRoot.findChild(SdkConstants.FN_SETTINGS_GRADLE);
+      if (settingsFile == null) {
+        return false;
+      }
+      GradleSettingsFile parsedSettings = parseSettings(project);
       if (parsedSettings == null) {
         return false;
       }
@@ -488,12 +532,14 @@ public class AndroidUtils {
     }
 
     private void createBuildFile() {
-      try {
-        buildFile = flutterModuleDir.findOrCreateChildData(this, SdkConstants.FN_BUILD_GRADLE);
-      }
-      catch (IOException e) {
-        cleanupAfterError();
-      }
+      ApplicationManager.getApplication().runWriteAction(() -> {
+        try {
+          buildFile = flutterModuleDir.findOrCreateChildData(this, SdkConstants.FN_BUILD_GRADLE);
+        }
+        catch (IOException e) {
+          cleanupAfterError();
+        }
+      });
     }
 
     private void writeBuildFile() {
@@ -519,14 +565,12 @@ public class AndroidUtils {
     }
 
     private String readSettingsFile() {
-      VirtualFile projectRoot = FlutterUtils.getProjectRoot(project);
       inSameDir = flutterModuleDir.getParent().equals(projectRoot);
       pathToModule = FileUtilRt.getRelativePath(new File(projectRoot.getPath()), flutterModuleRoot);
       try {
-        Objects.requireNonNull(pathToModule);
-        settingsFile = projectRoot.findOrCreateChildData(this, SdkConstants.FN_SETTINGS_GRADLE);
-        Objects.requireNonNull(settingsFile);
-        @SuppressWarnings("IOResourceOpenedButNotSafelyClosed")
+        requireNonNull(pathToModule);
+        requireNonNull(settingsFile);
+        @SuppressWarnings({"IOResourceOpenedButNotSafelyClosed", "resource"})
         BufferedInputStream str = new BufferedInputStream(settingsFile.getInputStream());
         return FileUtil.loadTextAndClose(new InputStreamReader(str, CharsetToolkit.UTF8_CHARSET));
       }
@@ -572,7 +616,7 @@ public class AndroidUtils {
 
     private void cleanupAfterError() {
       errorDuringOperation.set(true);
-      disableGradleListeners(project);
+      addCoeditTransformedProject(project);
       try {
         if (buildFile != null) {
           buildFile.delete(this);

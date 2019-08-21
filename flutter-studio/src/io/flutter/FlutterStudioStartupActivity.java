@@ -5,21 +5,47 @@
  */
 package io.flutter;
 
+import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
+import com.android.tools.idea.gradle.project.sync.GradleSyncState;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
-import io.flutter.actions.FlutterShowStructureSettingsAction;
+import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.actions.OpenAndroidModule;
 import io.flutter.android.AndroidModuleLibraryManager;
 import io.flutter.project.FlutterProjectCreator;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterStudioStartupActivity implements StartupActivity {
   @Override
   public void runActivity(@NotNull Project project) {
+
+    MessageBusConnection connection = project.getMessageBus().connect(project);
+    connection.subscribe(GradleSyncState.GRADLE_SYNC_TOPIC, new GradleSyncListener() {
+      @Override
+      public void syncSucceeded(@NotNull Project project) {
+        AndroidUtils.checkDartSupport(project);
+      }
+
+      @Override
+      public void syncFailed(@NotNull Project project, @NotNull String errorMessage) {
+        AndroidUtils.checkDartSupport(project);
+      }
+
+      @Override
+      public void syncSkipped(@NotNull Project project) {
+        AndroidUtils.checkDartSupport(project);
+      }
+
+      @Override
+      public void sourceGenerationFinished(@NotNull Project project) {
+      }
+    });
+
     if (!FlutterModuleUtils.hasFlutterModule(project)) {
       return;
     }
