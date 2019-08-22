@@ -55,7 +55,13 @@ class TogglePlatformAction extends ToolbarComboBoxAction {
       }
 
       final int platformIndex = extensionDescription.getValues().indexOf(selectedPlatform.name());
-      selectorText = (String)extensionDescription.getTooltips().get(platformIndex);
+      if (platformIndex == -1) {
+        selectorText = "Platform: Unknown";
+        System.out.println("Unknown platform: " + selectedPlatform.name());
+      }
+      else {
+        selectorText = (String)extensionDescription.getTooltips().get(platformIndex);
+      }
     }
 
     e.getPresentation().setText(selectorText);
