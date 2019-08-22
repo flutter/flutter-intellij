@@ -236,7 +236,8 @@ class DeviceDaemon {
             }
             else {
               // IntelliJ will show a generic failure message the first time we log this error.
-              LOG.error(failureMessage);
+              LOG.warn(failureMessage);
+
               // The second time we log this error, we'll show a customized message to alert the user to the specific problem.
               if (attempts == DeviceDaemon.RESTART_ATTEMPTS_BEFORE_WARNING + 1) {
                 // Show a message in the UI when we reach the warning threshold.
