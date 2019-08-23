@@ -6,6 +6,7 @@
 package io.flutter.view;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.messages.Topic;
 import io.flutter.run.daemon.FlutterApp;
@@ -39,9 +40,12 @@ public class FlutterViewMessages {
                                      @NotNull VmService vmService) {
     final MessageBus bus = project.getMessageBus();
     final FlutterDebugNotifier publisher = bus.syncPublisher(FLUTTER_DEBUG_TOPIC);
-    assert(app.getFlutterDebugProcess() != null);
-    app.setVmServices(vmService, new VMServiceManager(app, vmService));
 
+    assert (app.getFlutterDebugProcess() != null);
+
+    final VMServiceManager vmServiceManager = new VMServiceManager(app, vmService);
+    Disposer.register(app.getFlutterDebugProcess().getVmServiceWrapper(), vmServiceManager);
+    app.setVmServices(vmService, vmServiceManager);
     publisher.debugActive(new FlutterDebugEvent(app, vmService));
 
     // TODO(pq): consider pushing into perf service.

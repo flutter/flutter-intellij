@@ -14,27 +14,17 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.vmService.HeapMonitor;
 import io.flutter.vmService.HeapMonitor.HeapListener;
 import io.flutter.vmService.HeapMonitor.HeapSample;
-import io.flutter.vmService.HeapMonitor.HeapSpace;
-import io.flutter.vmService.HeapMonitor.IsolateObject;
-import org.dartlang.vm.service.element.IsolateRef;
-import org.dartlang.vm.service.element.VM;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Path2D;
 import java.util.LinkedList;
-import java.util.List;
 
 public class HeapDisplay extends JPanel {
   public static JPanel createJPanelView(Disposable parentDisposable, FlutterApp app) {
     final JPanel panel = new JPanel(new BorderLayout());
 
-    final JBLabel rssLabel = new JBLabel();
-    rssLabel.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-    rssLabel.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
-    rssLabel.setForeground(UIUtil.getLabelDisabledForeground());
-    rssLabel.setBorder(JBUI.Borders.empty(4));
     final JBLabel heapLabel = new JBLabel("", SwingConstants.RIGHT);
     heapLabel.setAlignmentY(Component.BOTTOM_ALIGNMENT);
     heapLabel.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
@@ -43,39 +33,21 @@ public class HeapDisplay extends JPanel {
 
     final HeapState heapState = new HeapState(60 * 1000);
     final HeapDisplay graph = new HeapDisplay(state -> {
-      rssLabel.setText(heapState.getRSSSummary());
       heapLabel.setText(heapState.getHeapSummary());
-
-      SwingUtilities.invokeLater(rssLabel::repaint);
       SwingUtilities.invokeLater(heapLabel::repaint);
     });
 
     graph.setLayout(new BoxLayout(graph, BoxLayout.X_AXIS));
-    graph.add(rssLabel);
     graph.add(Box.createHorizontalGlue());
     graph.add(heapLabel);
 
     panel.add(graph, BorderLayout.CENTER);
 
-    final HeapListener listener = new HeapListener() {
-      @Override
-      public void handleIsolatesInfo(VM vm, List<IsolateObject> isolates) {
-        SwingUtilities.invokeLater(() -> {
-          heapState.handleIsolatesInfo(vm, isolates);
-          graph.updateFrom(heapState);
-          panel.repaint();
-        });
-      }
-
-      @Override
-      public void handleGCEvent(IsolateRef iIsolateRef, HeapSpace newHeapSpace, HeapSpace oldHeapSpace) {
-        SwingUtilities.invokeLater(() -> {
-          heapState.handleGCEvent(iIsolateRef, newHeapSpace, oldHeapSpace);
-          graph.updateFrom(heapState);
-          panel.repaint();
-        });
-      }
-    };
+    final HeapListener listener = memoryUsages -> SwingUtilities.invokeLater(() -> {
+      heapState.handleMemoryUsage(memoryUsages);
+      graph.updateFrom(heapState);
+      panel.repaint();
+    });
 
     assert app.getVMServiceManager() != null;
     app.getVMServiceManager().addHeapListener(listener);

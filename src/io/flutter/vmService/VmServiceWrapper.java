@@ -34,12 +34,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class VmServiceWrapper implements Disposable {
+  private static final Logger LOG = Logger.getInstance(VmServiceWrapper.class.getName());
 
-  public static final Logger LOG = Logger.getInstance(VmServiceWrapper.class.getName());
   private static final long RESPONSE_WAIT_TIMEOUT = 3000; // millis
 
   private final DartVmServiceDebugProcess myDebugProcess;
-  private final VmService myVmService;
+  @NotNull private final VmService myVmService;
   private final DartVmServiceListener myVmServiceListener;
   private final IsolatesInfo myIsolatesInfo;
   private final DartVmServiceBreakpointHandler myBreakpointHandler;
@@ -62,6 +62,11 @@ public class VmServiceWrapper implements Disposable {
     myRequestsScheduler = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, this);
   }
 
+  @NotNull
+  public VmService getVmService() {
+    return myVmService;
+  }
+
   @Override
   public void dispose() {
   }
@@ -70,6 +75,14 @@ public class VmServiceWrapper implements Disposable {
     if (!myRequestsScheduler.isDisposed()) {
       myRequestsScheduler.addRequest(runnable, 0);
     }
+  }
+
+  public List<IsolateRef> getExistingIsolates() {
+    final List<IsolateRef> isolateRefs = new ArrayList<>();
+    for (IsolatesInfo.IsolateInfo isolateInfo : myIsolatesInfo.getIsolateInfos()) {
+      isolateRefs.add(isolateInfo.getIsolateRef());
+    }
+    return isolateRefs;
   }
 
   @Nullable
@@ -213,7 +226,7 @@ public class VmServiceWrapper implements Disposable {
   }
 
   public void attachIsolate(@NotNull IsolateRef isolateRef, @NotNull Isolate isolate) {
-    boolean newIsolate = myIsolatesInfo.addIsolate(isolateRef);
+    final boolean newIsolate = myIsolatesInfo.addIsolate(isolateRef);
     // Just to make sure that the main isolate is not handled twice, both from handleDebuggerConnected() and DartVmServiceListener.received(PauseStart)
     if (newIsolate) {
       XDebugSessionImpl session = (XDebugSessionImpl)myDebugProcess.getSession();
