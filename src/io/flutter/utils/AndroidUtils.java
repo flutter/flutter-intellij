@@ -43,12 +43,11 @@ import com.intellij.psi.tree.java.IKeywordElementType;
 import com.intellij.util.ReflectionUtil;
 import com.intellij.util.WaitFor;
 import com.intellij.util.concurrency.AppExecutorUtil;
-import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.containers.MultiMap;
 import com.intellij.util.containers.WeakList;
-import com.intellij.util.messages.MessageBusConnection;
 import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import io.flutter.FlutterUtils;
+import io.flutter.android.GradleSyncProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.gradle.settings.GradleProjectSettings;
@@ -65,7 +64,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED;
+//import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED;
 import static com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil.getChildren;
 import static com.intellij.openapi.util.text.StringUtil.isNotEmpty;
 import static java.util.Objects.requireNonNull;
@@ -231,10 +230,11 @@ public class AndroidUtils {
   }
 
   public static void scheduleGradleSync(@NotNull Project project) {
-    //GradleSyncInvoker.getInstance().requestProjectSyncAndSourceGeneration(project, TRIGGER_USER_REQUEST_WHILE_BUILDING);
-    GradleSyncInvoker.getInstance().requestProjectSync(
-      project,
-      new GradleSyncInvoker.Request(TRIGGER_PROJECT_MODIFIED));
+    GradleSyncProvider provider = GradleSyncProvider.EP_NAME.getExtensionList().get(0);
+    provider.scheduleSync(project);
+    //GradleSyncInvoker.getInstance().requestProjectSync(
+    //  project,
+    //  new GradleSyncInvoker.Request(TRIGGER_PROJECT_MODIFIED));
   }
 
   public static void enableCoeditIfAddToAppDetected(@NotNull Project project) {
