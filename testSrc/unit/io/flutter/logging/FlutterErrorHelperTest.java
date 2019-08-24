@@ -38,7 +38,7 @@ public class FlutterErrorHelperTest {
         "'package:flutter/src/widgets/framework.dart':\nfailed assertion: line 123 pos 123: 'owner._debugcurrentbuildtarget == this': is not true"));
     assertEquals(
       "unable-to-load-asset",
-      FlutterErrorHelper.getAnalyticsId("unable to load asset: images/photo_eraser.png"));
+      FlutterErrorHelper.getAnalyticsId("unable to load asset: images/foobar.png"));
     assertEquals(
       "all-children-of-this-widget-must-have-a-key",
       FlutterErrorHelper.getAnalyticsId(
