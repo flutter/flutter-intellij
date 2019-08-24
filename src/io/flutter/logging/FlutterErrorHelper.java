@@ -6,6 +6,7 @@
 package io.flutter.logging;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.inspector.DiagnosticLevel;
 import io.flutter.inspector.DiagnosticsNode;
 
@@ -35,12 +36,21 @@ public class FlutterErrorHelper {
     // normalize to lower case
     String normalized = errorSummary.toLowerCase().trim();
 
-    // remove some prefixes
-    if (normalized.startsWith("a ")) {
-      normalized = normalized.substring("a ".length());
+    // If it's an assertion, remove the leading assertion path.
+    final String[] lines = normalized.split("\n");
+    if (lines.length >= 2 && lines[0].endsWith(".dart':") && lines[1].startsWith("failed assertion:")) {
+      normalized = StringUtil.join(lines, 1, lines.length, "\n");
     }
-    else if (normalized.startsWith("the ")) {
-      normalized = normalized.substring("the ".length());
+
+    if (normalized.contains(". ")) {
+      normalized = normalized.substring(0, normalized.indexOf(". "));
+    }
+    normalized = normalized.trim();
+    if (normalized.contains("\n")) {
+      normalized = normalized.substring(0, normalized.indexOf("\n"));
+    }
+    if (normalized.contains(":")) {
+      normalized = normalized.substring(0, normalized.indexOf(":"));
     }
 
     // remove some suffixes
@@ -48,11 +58,16 @@ public class FlutterErrorHelper {
       normalized = normalized.substring(0, normalized.length() - ".".length());
     }
 
-    // remove '()' from method names
-    normalized = normalized.replaceAll("\\(\\)", "");
+    // remove content in parens
+    normalized = normalized.replaceAll("\\(.*\\)", "");
 
     // replace numbers with a string constant
     normalized = numberPattern.matcher(normalized).replaceAll("xxx");
+
+    // collapse multiple spaces
+    normalized = normalized.replaceAll("\\s+", " ");
+
+    normalized = normalized.trim();
 
     // convert spaces to dashes
     normalized = normalized.trim().replaceAll(" ", "-");
