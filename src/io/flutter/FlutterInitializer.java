@@ -10,7 +10,11 @@ import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.notification.*;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationDisplayType;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
+import com.intellij.notification.NotificationsConfiguration;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationInfo;
@@ -46,10 +50,9 @@ import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.view.FlutterPerfViewFactory;
 import io.flutter.view.FlutterViewFactory;
-import org.jetbrains.annotations.NotNull;
-
-import javax.swing.event.HyperlinkEvent;
 import java.util.UUID;
+import javax.swing.event.HyperlinkEvent;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Runs actions after the project has started up and the index is up to date.
@@ -67,7 +70,8 @@ public class FlutterInitializer implements StartupActivity {
 
   @Override
   public void runActivity(@NotNull Project project) {
-    if (!FlutterModuleUtils.hasFlutterModule(project)) {
+    // TODO(messick): Remove 'FlutterUtils.isAndroidStudio()' after Android Q sources are published.
+    if (FlutterUtils.isAndroidStudio() && !FlutterModuleUtils.hasFlutterModule(project)) {
       MessageBusConnection connection = project.getMessageBus().connect(project);
       connection.subscribe(ProjectTopics.MODULES, new ModuleListener() {
         @Override

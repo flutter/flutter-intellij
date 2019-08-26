@@ -5,15 +5,18 @@
  */
 package io.flutter.android;
 
+import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED;
+
 import com.android.tools.idea.gradle.project.sync.GradleSyncInvoker;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
-public class IntellijGradleSyncProvider implements GradleSyncProvider {
+public class AndroidStudioGradleSyncProvider implements GradleSyncProvider {
 
   @Override
   public void scheduleSync(@NotNull Project project) {
-    // TODO(messick): Restore the next line after Android Q sources are published; it cannot be compiled until then.
-    //GradleSyncInvoker.getInstance().requestProjectSync(project, GradleSyncInvoker.Request.userRequest());
+    GradleSyncInvoker.getInstance().requestProjectSync(
+      project,
+      new GradleSyncInvoker.Request(TRIGGER_PROJECT_MODIFIED));
   }
 }

@@ -5,14 +5,8 @@
  */
 package io.flutter;
 
-import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
-import com.android.tools.idea.gradle.project.sync.GradleSyncState;
 import com.intellij.openapi.application.ApplicationInfo;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.util.messages.MessageBusConnection;
-import io.flutter.utils.AndroidUtils;
-import org.jetbrains.annotations.NotNull;
 
 public class FlutterStudioInitializer implements Runnable {
   private static void reportVersionIncompatibility(ApplicationInfo info) {

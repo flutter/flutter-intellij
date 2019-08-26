@@ -7,10 +7,14 @@ package io.flutter;
 
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.android.tools.idea.gradle.project.sync.GradleSyncState;
+import com.intellij.ProjectTopics;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.actions.OpenAndroidModule;
 import io.flutter.android.AndroidModuleLibraryManager;
@@ -21,9 +25,9 @@ import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterStudioStartupActivity implements StartupActivity {
+
   @Override
   public void runActivity(@NotNull Project project) {
-
     MessageBusConnection connection = project.getMessageBus().connect(project);
     connection.subscribe(GradleSyncState.GRADLE_SYNC_TOPIC, new GradleSyncListener() {
       @Override
@@ -47,8 +51,21 @@ public class FlutterStudioStartupActivity implements StartupActivity {
     });
 
     if (!FlutterModuleUtils.hasFlutterModule(project)) {
+      // TODO(messick): Remove this subscription after Android Q sources are published. Will be done by FlutterInitializer.
+      connection.subscribe(ProjectTopics.MODULES, new ModuleListener() {
+        @Override
+        public void moduleAdded(@NotNull Project proj, @NotNull Module mod) {
+          if (AndroidUtils.FLUTTER_MODULE_NAME.equals(mod.getName())) {
+            connection.disconnect();
+            AppExecutorUtil.getAppExecutorService().execute(() -> {
+              AndroidUtils.enableCoeditIfAddToAppDetected(project);
+            });
+          }
+        }
+      });
       return;
     }
+
     // The IntelliJ version of this action spawns a new process for Android Studio.
     // Since we're already running Android Studio we want to simply open the project in the current process.
     replaceAction("flutter.androidstudio.open", new OpenAndroidModule());

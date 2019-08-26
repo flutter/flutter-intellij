@@ -34,6 +34,12 @@ import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.pub.PubRoot;
 import io.flutter.utils.FlutterModuleUtils;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.regex.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.SystemIndependent;
@@ -43,13 +49,6 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.resolver.Resolver;
-
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.regex.Pattern;
 
 public class FlutterUtils {
   public static class FlutterPubspecInfo {
@@ -214,6 +213,7 @@ public class FlutterUtils {
     VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
     return Objects.requireNonNull(file);
   }
+
   /**
    * Returns the Dart file for the given PsiElement, or null if not a match.
    */

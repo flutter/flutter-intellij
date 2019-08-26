@@ -45,7 +45,8 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
 
   @Override
   public void runActivity(@NotNull Project project) {
-    if (AndroidUtils.isAndroidProject(project)) {
+    // TODO(messick): Remove 'FlutterUtils.isAndroidStudio()' after Android Q sources are published.
+    if (FlutterUtils.isAndroidStudio() && AndroidUtils.isAndroidProject(project)) {
       AndroidUtils.addGradleListeners(project);
     }
     if (!FlutterModuleUtils.declaresFlutter(project)) {

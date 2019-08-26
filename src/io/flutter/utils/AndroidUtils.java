@@ -5,6 +5,10 @@
  */
 package io.flutter.utils;
 
+import static com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil.getChildren;
+import static com.intellij.openapi.util.text.StringUtil.isNotEmpty;
+import static java.util.Objects.requireNonNull;
+
 import com.android.SdkConstants;
 import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;
 import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslElement;
@@ -14,7 +18,6 @@ import com.android.tools.idea.gradle.project.build.BuildContext;
 import com.android.tools.idea.gradle.project.build.BuildStatus;
 import com.android.tools.idea.gradle.project.build.GradleBuildListener;
 import com.android.tools.idea.gradle.project.build.GradleBuildState;
-import com.android.tools.idea.gradle.project.sync.GradleSyncInvoker;
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.android.tools.idea.gradle.project.sync.GradleSyncState;
 import com.android.tools.idea.gradle.util.GradleUtil;
@@ -48,26 +51,31 @@ import com.intellij.util.containers.WeakList;
 import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import io.flutter.FlutterUtils;
 import io.flutter.android.GradleSyncProvider;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.gradle.settings.GradleProjectSettings;
 import org.jetbrains.plugins.gradle.settings.GradleSettings;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
 
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
 //import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED;
-import static com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil.getChildren;
-import static com.intellij.openapi.util.text.StringUtil.isNotEmpty;
-import static java.util.Objects.requireNonNull;
 
 // based on: org.jetbrains.android.util.AndroidUtils
 public class AndroidUtils {
@@ -232,9 +240,6 @@ public class AndroidUtils {
   public static void scheduleGradleSync(@NotNull Project project) {
     GradleSyncProvider provider = GradleSyncProvider.EP_NAME.getExtensionList().get(0);
     provider.scheduleSync(project);
-    //GradleSyncInvoker.getInstance().requestProjectSync(
-    //  project,
-    //  new GradleSyncInvoker.Request(TRIGGER_PROJECT_MODIFIED));
   }
 
   public static void enableCoeditIfAddToAppDetected(@NotNull Project project) {
