@@ -85,7 +85,7 @@ public class FlutterApp {
   private @Nullable ConsoleView myConsole;
   private FlutterConsoleLogManager myFlutterConsoleLogManager;
 
-  private boolean isFlutterWeb = false;
+  private boolean isPackageFlutterWeb = false;
 
   /**
    * The command with which the app was launched.
@@ -309,17 +309,26 @@ public class FlutterApp {
     return myConnector;
   }
 
-  public void setIsFlutterWeb(boolean value) {
-    isFlutterWeb = value;
+  public void setIsPackageFlutterWeb(boolean value) {
+    isPackageFlutterWeb = value;
   }
 
-  public boolean getIsFlutterWeb() {
-    return isFlutterWeb;
+  public boolean getIsPackageFlutterWeb() {
+    return isPackageFlutterWeb;
   }
 
   @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public boolean appSupportsHotReload() {
-    return !isFlutterWeb;
+    if (isPackageFlutterWeb) {
+      return false;
+    }
+
+    // Introspect based on registered services.
+    if (myVMServiceManager != null && myVMServiceManager.hasAnyRegisteredServices()) {
+      return myVMServiceManager.hasRegisteredService("reloadSources");
+    }
+
+    return true;
   }
 
   public State getState() {
@@ -449,11 +458,10 @@ public class FlutterApp {
 
     final Map<String, Object> params = new HashMap<>();
     params.put("value", platform);
-    return callServiceExtension(ServiceExtensions.togglePlatformMode.getExtension(), params)
-      .thenApply(obj -> {
-        //noinspection CodeBlock2Expr
-        return obj != null ? obj.get("value").getAsString() : null;
-      });
+    return callServiceExtension(ServiceExtensions.togglePlatformMode.getExtension(), params).thenApply(obj -> {
+      //noinspection CodeBlock2Expr
+      return obj != null ? obj.get("value").getAsString() : null;
+    });
   }
 
   public CompletableFuture<JsonObject> callServiceExtension(String methodName) {
@@ -465,12 +473,14 @@ public class FlutterApp {
       FlutterUtils.warn(LOG, "cannot invoke " + methodName + " on Flutter app because app id is not set");
       return CompletableFuture.completedFuture(null);
     }
+
     if (isFlutterIsolateSuspended()) {
-      return whenFlutterIsolateResumed().thenComposeAsync((ignored) ->
-                                                            myDaemonApi.callAppServiceExtension(myAppId, methodName, params)
+      return whenFlutterIsolateResumed().thenComposeAsync(
+        (ignored) -> myDaemonApi.callAppServiceExtension(myAppId, methodName, params)
       );
     }
     else {
+      // TODO(devoncarew): Convert this to using the service protocol (instead of the daemon protocol).
       return myDaemonApi.callAppServiceExtension(myAppId, methodName, params);
     }
   }
@@ -486,12 +496,10 @@ public class FlutterApp {
   }
 
   /**
-   * Call a boolean service extension only if it is already present, skipping
-   * otherwise.
+   * Call a boolean service extension only if it is already present, skipping otherwise.
    * <p>
-   * Only use this method if you are confident there will not be a race
-   * condition where the service extension is registered shortly after
-   * this method is called.
+   * Only use this method if you are confident there will not be a race condition where
+   * the service extension is registered shortly after this method is called.
    */
   @SuppressWarnings("UnusedReturnValue")
   public CompletableFuture<Boolean> maybeCallBooleanExtension(String methodName, boolean enabled) {
