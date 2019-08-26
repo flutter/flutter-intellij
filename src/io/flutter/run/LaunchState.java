@@ -123,9 +123,9 @@ public class LaunchState extends CommandLineState {
 
     final Project project = getEnvironment().getProject();
     @Nullable FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
-    final boolean isFlutterWeb = isFlutterWeb(project);
+    final boolean isPackageFlutterWeb = isPackageFlutterWeb(project);
     // Flutter web does not yet support devices.
-    if (isFlutterWeb) {
+    if (isPackageFlutterWeb) {
       device = null;
     }
     else if (device == null) {
@@ -134,8 +134,8 @@ public class LaunchState extends CommandLineState {
     }
 
     final FlutterApp app = myCreateAppCallback.createApp(device);
-    if (isFlutterWeb) {
-      app.setIsFlutterWeb(true);
+    if (isPackageFlutterWeb) {
+      app.setIsPackageFlutterWeb(true);
     }
 
     // Cache for use in console configuration.
@@ -184,8 +184,8 @@ public class LaunchState extends CommandLineState {
     }
   }
 
-  private boolean isFlutterWeb(Project project) {
-    boolean isFlutterWeb = false;
+  private boolean isPackageFlutterWeb(Project project) {
+    boolean isPackageFlutterWeb = false;
 
     // Checks if this is a pub-based project.
     // TODO(djshuckerow): Refactor out pub-specific logic and provide bazel support.
@@ -196,11 +196,11 @@ public class LaunchState extends CommandLineState {
         final MainFile main = MainFile.verify(filePath, project).get();
         final PubRoot root = PubRoot.forDirectory(main.getAppDir());
         if (root != null) {
-          isFlutterWeb = FlutterUtils.declaresFlutterWeb(root.getPubspec());
+          isPackageFlutterWeb = FlutterUtils.declaresFlutterWeb(root.getPubspec());
         }
       }
     }
-    return isFlutterWeb;
+    return isPackageFlutterWeb;
   }
 
   private static Class classForName(String className) {
@@ -411,7 +411,7 @@ public class LaunchState extends CommandLineState {
         final String selectedDeviceId = getSelectedDeviceId(env.getProject());
 
         if (app != null) {
-          final boolean sameDevice = app.getIsFlutterWeb() || StringUtil.equals(app.deviceId(), selectedDeviceId);
+          final boolean sameDevice = app.getIsPackageFlutterWeb() || StringUtil.equals(app.deviceId(), selectedDeviceId);
 
           if (sameDevice) {
             if (executorId.equals(app.getMode().mode())) {
