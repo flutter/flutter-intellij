@@ -54,6 +54,8 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
    */
   private final List<String> pendingServiceExtensions = new ArrayList<>();
 
+  private final Set<String> registeredServices = new HashSet<>();
+
   public VMServiceManager(@NotNull FlutterApp app, @NotNull VmService vmService) {
     this.app = app;
     this.vmService = vmService;
@@ -71,6 +73,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     vmService.streamListen(LOGGING_STREAM_ID_OLD, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
     vmService.streamListen(VmService.LOGGING_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
 
+    vmService.streamListen(VmService.SERVICE_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
     vmService.streamListen(VmService.GC_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
 
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
@@ -280,6 +283,12 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     }
     else if (StringUtil.equals(streamId, VmService.LOGGING_STREAM_ID) || StringUtil.equals(streamId, LOGGING_STREAM_ID_OLD)) {
       app.getFlutterConsoleLogManager().handleLoggingEvent(event);
+    }
+    else if (event.getKind() == EventKind.ServiceRegistered) {
+      registerService(event.getService());
+    }
+    else if (event.getKind() == EventKind.ServiceUnregistered) {
+      unregisterService(event.getService());
     }
 
     // Check to see if there's a new Flutter isolate.
@@ -529,6 +538,26 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
 
   public void hasServiceExtension(String name, Consumer<Boolean> onData, Disposable parentDisposable) {
     Disposer.register(parentDisposable, hasServiceExtension(name, onData));
+  }
+
+  public boolean hasRegisteredService(String name) {
+    return registeredServices.contains(name);
+  }
+
+  public boolean hasAnyRegisteredServices() {
+    return !registeredServices.isEmpty();
+  }
+
+  private void registerService(String serviceName) {
+    if (serviceName != null) {
+      registeredServices.add(serviceName);
+    }
+  }
+
+  private void unregisterService(String serviceName) {
+    if (serviceName != null) {
+      registeredServices.remove(serviceName);
+    }
   }
 
   public void addPollingClient() {
