@@ -19,7 +19,7 @@ file.
 * In the Project Structure dialog (`File | Project Structure`), select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure an IntelliJ Platform Plugin SDK
   - point it to the directory of your downloaded IntelliJ Community Edition installation (e.g, `IntelliJ IDEA CE.app/Contents` or `~/idea-IC-183.4886.37`)
   - change the name to `IntelliJ IDEA Community Edition`
-  - extend it with additional plugin libraries
+  - extend it with additional plugin libraries (only until Android Q is released)
     - plugins/android/lib/android.jar
     - plugins/gradle/lib/gradle-common.jar
 * In the Project Structure dialog (`File | Project Structure`), select "Libraries" 
