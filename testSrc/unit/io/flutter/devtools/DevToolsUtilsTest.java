@@ -8,15 +8,15 @@ package io.flutter.devtools;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+//import org.powermock.api.mockito.PowerMockito;
+//import org.powermock.core.classloader.annotations.PrepareForTest;
+//import org.powermock.modules.junit4.PowerMockRunner;
 
 import static io.flutter.devtools.DevToolsUtils.generateDevToolsUrl;
 import static org.junit.Assert.assertEquals;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(FlutterSdkUtil.class)
+//@RunWith(PowerMockRunner.class)
+//@PrepareForTest(FlutterSdkUtil.class)
 public class DevToolsUtilsTest {
   @Test
   public void validDevToolsUrl() {
@@ -25,8 +25,8 @@ public class DevToolsUtilsTest {
     final String serviceProtocolUri = "http://127.0.0.1:50224/WTFTYus3IPU=/";
     final String page = "timeline";
 
-    PowerMockito.mockStatic(FlutterSdkUtil.class);
-    PowerMockito.when(FlutterSdkUtil.getFlutterHostEnvValue()).thenReturn("IntelliJ-IDEA");
+    //PowerMockito.mockStatic(FlutterSdkUtil.class);
+    //PowerMockito.when(FlutterSdkUtil.getFlutterHostEnvValue()).thenReturn("IntelliJ-IDEA");
 
     assertEquals(
       "http://127.0.0.1:9100/?ide=IntelliJ-IDEA&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F#timeline",
@@ -38,7 +38,7 @@ public class DevToolsUtilsTest {
       generateDevToolsUrl(devtoolsHost, devtoolsPort, null, null)
     );
 
-    PowerMockito.when(FlutterSdkUtil.getFlutterHostEnvValue()).thenReturn("Android-Studio");
+    //PowerMockito.when(FlutterSdkUtil.getFlutterHostEnvValue()).thenReturn("Android-Studio");
 
     assertEquals(
       generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page),
