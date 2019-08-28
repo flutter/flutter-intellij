@@ -28,14 +28,17 @@ import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.components.labels.LinkLabel;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
-import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.SystemUtils;
+import java.io.File;
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.JTextPane;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import java.io.File;
-
+@SuppressWarnings("ComponentNotRegistered")
 public class InstallSdkAction extends DumbAwareAction {
 
   private static final String GIT_EXECUTABLE = "git";
@@ -55,8 +58,10 @@ public class InstallSdkAction extends DumbAwareAction {
   }
 
   private static boolean hasGit() {
-    // TODO(#3731): Synchronous execution on EDT.
-    return FlutterUtils.runsCleanly(gitCommandBase().withParameters("version"));
+    // We could use this if we dropped the module definition in flutter-intellij.iml.
+    //return new File(git4idea.config.GitExecutableManager.getInstance().getPathToGit()).exists();
+    // This is not as robust.
+    return SystemUtils.which("git") != null;
   }
 
   @Override
@@ -198,7 +203,7 @@ public class InstallSdkAction extends DumbAwareAction {
       final FileChooserDescriptor descriptor =
         new FileChooserDescriptor(FileChooserDescriptorFactory.createSingleFolderDescriptor()) {
           @Override
-          public void validateSelectedFiles(VirtualFile[] files) {
+          public void validateSelectedFiles(@NotNull VirtualFile[] files) {
             for (VirtualFile file : files) {
               // Eliminate some false positives, which occurs when an existing directory is deleted.
               VfsUtil.markDirtyAndRefresh(false, true, true, file);
@@ -269,6 +274,7 @@ public class InstallSdkAction extends DumbAwareAction {
 
     private abstract class InstallCommand {
       InstallCommand() {
+        //noinspection AbstractMethodCallInConstructor
         setProgressText(getTitle());
       }
 
