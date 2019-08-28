@@ -17,7 +17,6 @@ import io.flutter.FlutterUtils;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Note that a single instance of this class is shared among all the steps in the wizard.
@@ -41,8 +40,8 @@ public class FlutterProjectModel extends WizardModel {
   @NotNull final private StringProperty myProjectLocation = new StringValueProperty();
   @NotNull final private StringProperty myCompanyDomain = new StringValueProperty(getInitialDomain());
   @NotNull final private StringProperty myDescription = new StringValueProperty();
-  @NotNull final private BoolValueProperty myKotlin = new BoolValueProperty();
-  @NotNull final private BoolValueProperty mySwift = new BoolValueProperty();
+  @NotNull final private BoolValueProperty myKotlin = new BoolValueProperty(getInitialKotlinSupport());
+  @NotNull final private BoolValueProperty mySwift = new BoolValueProperty(getInitialSwiftSupport());
   @NotNull final private OptionalProperty<Project> myProject = new OptionalValueProperty<>();
   @NotNull final private BoolValueProperty myIsOfflineSelected = new BoolValueProperty();
   @NotNull final private BoolValueProperty myAndroidX = new BoolValueProperty();
@@ -118,7 +117,8 @@ public class FlutterProjectModel extends WizardModel {
   public boolean isGeneratingAndroidX() {
     if (project().getValueOrNull() == null) {
       return useAndroidX().get() && FlutterSdk.forPath(flutterSdk().get()).getVersion().isAndroidxSupported();
-    } else {
+    }
+    else {
       return FlutterUtils.isAndroidxProject(project().getValue());
     }
   }
@@ -170,27 +170,26 @@ public class FlutterProjectModel extends WizardModel {
   }
 
   private static boolean getInitialKotlinSupport() {
-    return PropertiesComponent.getInstance().isTrueValue(PROPERTIES_KOTLIN_SUPPORT_KEY);
+    return PropertiesComponent.getInstance().getBoolean(PROPERTIES_KOTLIN_SUPPORT_KEY, true);
   }
 
   private static void setInitialKotlinSupport(boolean isSupported) {
-    PropertiesComponent.getInstance().setValue(PROPERTIES_KOTLIN_SUPPORT_KEY, isSupported);
+    PropertiesComponent.getInstance().setValue(PROPERTIES_KOTLIN_SUPPORT_KEY, isSupported, true);
   }
 
   private static boolean getInitialSwiftSupport() {
-    return PropertiesComponent.getInstance().isTrueValue(PROPERTIES_SWIFT_SUPPORT_KEY);
+    return PropertiesComponent.getInstance().getBoolean(PROPERTIES_SWIFT_SUPPORT_KEY, true);
   }
 
   private static void setInitialSwiftSupport(boolean isSupported) {
-    PropertiesComponent.getInstance().setValue(PROPERTIES_SWIFT_SUPPORT_KEY, isSupported);
+    PropertiesComponent.getInstance().setValue(PROPERTIES_SWIFT_SUPPORT_KEY, isSupported, true);
   }
 
   private static boolean getInitialAndroidxSupport() {
-    return !PropertiesComponent.getInstance().isValueSet(PROPERTIES_ANDROIDX_SUPPORT_KEY) ||
-           Boolean.parseBoolean(PropertiesComponent.getInstance().getValue(PROPERTIES_ANDROIDX_SUPPORT_KEY));
+    return PropertiesComponent.getInstance().getBoolean(PROPERTIES_ANDROIDX_SUPPORT_KEY, true);
   }
 
   private static void setInitialAndroidxSupport(boolean isSupported) {
-    PropertiesComponent.getInstance().setValue(PROPERTIES_ANDROIDX_SUPPORT_KEY, isSupported);
+    PropertiesComponent.getInstance().setValue(PROPERTIES_ANDROIDX_SUPPORT_KEY, isSupported, true);
   }
 }
