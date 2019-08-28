@@ -114,12 +114,16 @@ public class PerfWidgetRebuildsTab extends JPanel implements InspectorTabPanel {
     }
 
     trackRebuildsCheckbox.addChangeListener((l) -> {
+      if (app.getProject().isDisposed()) return;
+
       setTrackRebuildWidgets(trackRebuildsCheckbox.isSelected());
       updateShowPerfSummaryView();
     });
 
     if (ENABLE_TRACK_REPAINTS) {
       trackRepaintsCheckbox.addChangeListener((l) -> {
+        if (app.getProject().isDisposed()) return;
+
         setTrackRepaintWidgets(trackRepaintsCheckbox.isSelected());
         updateShowPerfSummaryView();
       });
