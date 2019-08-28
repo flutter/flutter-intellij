@@ -1,4 +1,6 @@
 ## 39.0
+- Changed project creation to default to AndriodX deselected until it works for Flutter modules
+- Enabled structured errors by default
 - Fix #3731: Synchronous execution on EDT (#3823)
 - Make the new languages be default (#3819)
 - Don't call reload for the unforked flutter web impl (#3816)
