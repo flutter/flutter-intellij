@@ -76,5 +76,6 @@
     <orderEntry type="library" name="com.android.tools:common:25.3.0" level="project" />
     <orderEntry type="library" name="com.android.tools.analytics-library:protos:25.3.0" level="project" />
     <orderEntry type="library" name="com.google.protobuf:protobuf-java:3.5.1" level="project" />
+    <orderEntry type="module" module-name="plugin" />
   </component>
 </module>
