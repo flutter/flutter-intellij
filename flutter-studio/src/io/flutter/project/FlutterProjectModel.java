@@ -186,7 +186,8 @@ public class FlutterProjectModel extends WizardModel {
   }
 
   private static boolean getInitialAndroidxSupport() {
-    return PropertiesComponent.getInstance().getBoolean(PROPERTIES_ANDROIDX_SUPPORT_KEY, true);
+    // TODO(https://github.com/flutter/flutter/issues/23586) Change default to true after AndroidX is supported by Flutter.
+    return PropertiesComponent.getInstance().getBoolean(PROPERTIES_ANDROIDX_SUPPORT_KEY, false);
   }
 
   private static void setInitialAndroidxSupport(boolean isSupported) {
