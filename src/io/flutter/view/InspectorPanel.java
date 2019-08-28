@@ -939,8 +939,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
                   // TODO(jacobr): we are likely calling the wrong node structure changed APIs.
                   // For example, we should be getting these change notifications for free if we
                   // switched to call methods on the model object directly to manipulate the tree.
-                  model.nodeChanged(child);
                   model.nodeStructureChanged(child);
+                  model.nodeChanged(child);
                 }
                 model.reload(treeNode);
               }
