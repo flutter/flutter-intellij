@@ -6,6 +6,7 @@
 package io.flutter.module;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.util.newProjectWizard.AbstractProjectWizard;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.ide.wizard.AbstractWizard;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -20,6 +21,7 @@ import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.util.ReflectionUtil;
+import com.intellij.util.ui.EdtInvocationManager;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
@@ -222,18 +224,9 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
 
   @Override
   public void requestNextStep() {
-    final AbstractWizard wizard = myContext.getWizard();
+    final AbstractProjectWizard wizard = (AbstractProjectWizard)myContext.getWizard();
     if (wizard != null) {
-      // AbstractProjectWizard makes `doNextAction` public but we can't reference it directly since it does not exist in WebStorm.
-      final Method nextAction = ReflectionUtil.getMethod(wizard.getClass(), "doNextAction");
-      if (nextAction != null) {
-        try {
-          nextAction.invoke(wizard);
-        }
-        catch (IllegalAccessException | InvocationTargetException e) {
-          // Ignore.
-        }
-      }
+      UIUtil.invokeAndWaitIfNeeded((Runnable)() -> wizard.doNextAction());
     }
   }
 }
