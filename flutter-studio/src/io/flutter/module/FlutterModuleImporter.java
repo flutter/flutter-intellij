@@ -12,6 +12,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,7 +53,7 @@ public class FlutterModuleImporter {
     assert (myModel.project().get().isPresent());
     Project androidProject = myModel.project().get().get();
     VirtualFile projectRoot = androidProject.getBaseDir();
-    myRelativePath = io.flutter.utils.SystemUtils.findRelativePath(projectRoot.getParent(), moduleRoot, File.separatorChar);
+    myRelativePath = VfsUtilCore.findRelativePath(projectRoot.getParent(), moduleRoot, File.separatorChar);
     if (myRelativePath == null) {
       showHowToEditDialog();
       return;
