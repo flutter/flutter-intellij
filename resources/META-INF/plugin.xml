@@ -13,7 +13,7 @@
 
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
-  <idea-version since-build="183.5429" until-build="192.*"/>
+  <idea-version since-build="183.5429" until-build="193.*"/>
 
   <depends>Dart</depends>
 
@@ -29,6 +29,32 @@
 
   <change-notes>
     <![CDATA[
+<h2>39.0</h2>
+<ul>
+  <li>Changed project creation to default to AndriodX deselected until it works for Flutter modules</li>
+  <li>Enabled structured errors by default</li>
+  <li>Fix #3731: Synchronous execution on EDT (#3823)</li>
+  <li>Make the new languages be default (#3819)</li>
+  <li>Don't call reload for the unforked flutter web impl (#3816)</li>
+  <li>Perform additional normalization on flutter error codes (#3813)</li>
+  <li>Fix an issue related to the error reporter (#3811)</li>
+  <li>Improve computeDefaultPresentation (#3803)</li>
+  <li>Convert an error to a warning (#3810)</li>
+  <li>Fix ArrayIndexOutOfBounds for target platform selector (#3809)</li>
+  <li>Flutter web inspector (#3792)</li>
+  <li>Rev to the latest vm service library (#3801)</li>
+  <li>Adapt to API changes in ASc6 (#3802)</li>
+  <li>Switch to using the VM Service directly instead of the Daemon protocol when invoking service extensions (#3790)</li>
+  <li>Update no-response.yml (#3789)</li>
+  <li>Upgrade the version of the dart plugin that we compile against (#3784)</li>
+  <li>Address a setPreferredFocusableComponent() warning in the IntelliJ log (#3783)</li>
+  <li>Fix a regression in the Flutter Outline view (#3782)</li>
+  <li>Cache the results of parsing the pubspec file (#3773)</li>
+  <li>Only parse analysis server events we're interested in (#3772)</li>
+  <li>Optimize FlutterUtils.isInTestDir (#3774)</li>
+  <li>Add platforms to testing matrix (#3768)</li>
+  <li>Make part of the dart code use implicit-casts false (#3762)</li>
+</ul>
 <h2>38.2</h2>
 <ul>
   <li>Fix bug on Windows that prevented outlines from displaying</li>
