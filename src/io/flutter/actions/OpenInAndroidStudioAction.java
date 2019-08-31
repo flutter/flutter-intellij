@@ -151,6 +151,9 @@ public class OpenInAndroidStudioAction extends AnAction {
       }
       else {
         // TODO Open editor on sourceFile for Linux, Windows
+        if (SystemInfo.isWindows) {
+          androidStudioPath += "\\bin\\studio.bat";
+        }
         cmd = new GeneralCommandLine().withExePath(androidStudioPath).withParameters(projectFile.getPath());
       }
       final OSProcessHandler handler = new OSProcessHandler(cmd);
