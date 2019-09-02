@@ -104,6 +104,7 @@ public class FlutterReloadManager {
     this.myProject = project;
     this.mySettings = FlutterSettings.getInstance();
 
+    // TODO(devoncarew): Prefer using AnActionListener.TOPIC.
     ActionManagerEx.getInstanceEx().addAnActionListener(new AnActionListener.Adapter() {
       private @Nullable Project eventProject;
       private @Nullable Editor eventEditor;
@@ -128,7 +129,7 @@ public class FlutterReloadManager {
       }
 
       @Override
-      public void afterActionPerformed(AnAction action, @NotNull DataContext dataContext, AnActionEvent event) {
+      public void afterActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, AnActionEvent event) {
         if (!(action instanceof SaveAllAction)) {
           return;
         }
@@ -149,6 +150,11 @@ public class FlutterReloadManager {
   }
 
   private final AtomicBoolean handlingSave = new AtomicBoolean(false);
+
+  // Add an arbitrary 125ms delay to allow analysis to catch up. This delay gives the analysis server a
+  // small pause to return error results in the (relatively infrequent) case where the user makes a bad
+  // edit and immediately hits save.
+  private static final int reloadDelayMs = 125;
 
   private void handleSaveAllNotification(@Nullable Editor editor) {
     if (!mySettings.isReloadOnSave() || editor == null) {
@@ -172,11 +178,6 @@ public class FlutterReloadManager {
     if (!app.getLaunchMode().supportsReload() || !app.appSupportsHotReload()) {
       return;
     }
-
-    // Add an arbitrary 125ms delay to allow analysis to catch up. This delay gives the analysis server a
-    // small pause to return error results in the (relatively infrequent) case where the user makes a bad
-    // edit and immediately hits save.
-    final int reloadDelayMs = 125;
 
     handlingSave.set(true);
 
@@ -240,15 +241,30 @@ public class FlutterReloadManager {
 
   public void saveAllAndReload(@NotNull FlutterApp app, @NotNull String reason) {
     FileDocumentManager.getInstance().saveAllDocuments();
-    reloadApp(app, reason);
+
+    if (app.isReloading()) {
+      return;
+    }
+
+    JobScheduler.getScheduler().schedule(() -> {
+      // Make sure we don't reload concurrently.
+      if (!app.isReloading()) {
+        reloadApp(app, reason);
+      }
+    }, reloadDelayMs, TimeUnit.MILLISECONDS);
   }
 
   public void saveAllAndReloadAll(@NotNull List<FlutterApp> appsToReload, @NotNull String reason) {
     FileDocumentManager.getInstance().saveAllDocuments();
 
-    for (FlutterApp app : appsToReload) {
-      reloadApp(app, reason);
-    }
+    JobScheduler.getScheduler().schedule(() -> {
+      for (FlutterApp app : appsToReload) {
+        // Make sure we don't reload concurrently.
+        if (!app.isReloading()) {
+          reloadApp(app, reason);
+        }
+      }
+    }, reloadDelayMs, TimeUnit.MILLISECONDS);
   }
 
   private void restartApp(@NotNull FlutterApp app, @NotNull String reason) {
@@ -271,15 +287,30 @@ public class FlutterReloadManager {
 
   public void saveAllAndRestart(@NotNull FlutterApp app, @NotNull String reason) {
     FileDocumentManager.getInstance().saveAllDocuments();
-    restartApp(app, reason);
+
+    if (app.isReloading()) {
+      return;
+    }
+
+    JobScheduler.getScheduler().schedule(() -> {
+      // Make sure we don't restart concurrently.
+      if (!app.isReloading()) {
+        restartApp(app, reason);
+      }
+    }, reloadDelayMs, TimeUnit.MILLISECONDS);
   }
 
   public void saveAllAndRestartAll(@NotNull List<FlutterApp> appsToRestart, @NotNull String reason) {
     FileDocumentManager.getInstance().saveAllDocuments();
 
-    for (FlutterApp app : appsToRestart) {
-      restartApp(app, reason);
-    }
+    JobScheduler.getScheduler().schedule(() -> {
+      for (FlutterApp app : appsToRestart) {
+        // Make sure we don't restart concurrently.
+        if (!app.isReloading()) {
+          restartApp(app, reason);
+        }
+      }
+    }, reloadDelayMs, TimeUnit.MILLISECONDS);
   }
 
   @Nullable
