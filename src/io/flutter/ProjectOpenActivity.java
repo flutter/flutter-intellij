@@ -10,6 +10,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -54,6 +55,8 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       // We can't do anything without a Flutter SDK.
       return;
     }
+
+    ApplicationManager.getApplication().invokeLater(() -> sdk.queryFlutterConfig("android-studio-dir", false));
 
     // If this project is intended as a bazel project, don't run the pub alerts.
     if (settings != null && settings.shouldUseBazel()) {
