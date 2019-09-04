@@ -5,6 +5,8 @@
  */
 package io.flutter;
 
+import static com.intellij.util.ReflectionUtil.findAssignableField;
+
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.android.tools.idea.gradle.project.sync.GradleSyncState;
 import com.intellij.ProjectTopics;
@@ -16,39 +18,29 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.messages.MessageBusConnection;
+import com.intellij.util.messages.Topic;
 import io.flutter.actions.OpenAndroidModule;
 import io.flutter.android.AndroidModuleLibraryManager;
 import io.flutter.project.FlutterProjectCreator;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FlutterStudioStartupActivity implements StartupActivity {
 
   @Override
   public void runActivity(@NotNull Project project) {
     MessageBusConnection connection = project.getMessageBus().connect(project);
-    connection.subscribe(GradleSyncState.GRADLE_SYNC_TOPIC, new GradleSyncListener() {
-      @Override
-      public void syncSucceeded(@NotNull Project project) {
-        AndroidUtils.checkDartSupport(project);
-      }
-
-      @Override
-      public void syncFailed(@NotNull Project project, @NotNull String errorMessage) {
-        AndroidUtils.checkDartSupport(project);
-      }
-
-      @Override
-      public void syncSkipped(@NotNull Project project) {
-        AndroidUtils.checkDartSupport(project);
-      }
-
-      @Override
-      public void sourceGenerationFinished(@NotNull Project project) {
-      }
-    });
+    // GRADLE_SYNC_TOPIC is not public in Android Studio 3.5. It is in 3.6. It isn't defined in 3.4.
+    Topic topic = getStaticFieldValue(GradleSyncState.class, Topic.class, "GRADLE_SYNC_TOPIC");
+    assert topic != null;
+    //noinspection unchecked
+    connection.subscribe((Topic<GradleSyncListener>)topic, makeSyncListener(project));
 
     if (!FlutterModuleUtils.hasFlutterModule(project)) {
       // TODO(messick): Remove this subscription after Android Q sources are published. Will be done by FlutterInitializer.
@@ -78,6 +70,48 @@ public class FlutterStudioStartupActivity implements StartupActivity {
       // TODO(messick): Remove the flag once this sync mechanism is stable.
       AndroidModuleLibraryManager.startWatching(project);
     }
+  }
+
+  // Derived from the method in ReflectionUtil, with the addition of setAccessible().
+  public static <T> T getStaticFieldValue(@NotNull Class objectClass,
+                                          @Nullable("null means any type") Class<T> fieldType,
+                                          @NotNull @NonNls String fieldName) {
+    try {
+      final Field field = findAssignableField(objectClass, fieldType, fieldName);
+      if (!Modifier.isStatic(field.getModifiers())) {
+        throw new IllegalArgumentException("Field " + objectClass + "." + fieldName + " is not static");
+      }
+      field.setAccessible(true);
+      //noinspection unchecked
+      return (T)field.get(null);
+    }
+    catch (NoSuchFieldException | IllegalAccessException e) {
+      return null;
+    }
+  }
+
+  @NotNull
+  private static GradleSyncListener makeSyncListener(@NotNull Project project) {
+    return new GradleSyncListener() {
+      @Override
+      public void syncSucceeded(@NotNull Project project) {
+        AndroidUtils.checkDartSupport(project);
+      }
+
+      @Override
+      public void syncFailed(@NotNull Project project, @NotNull String errorMessage) {
+        AndroidUtils.checkDartSupport(project);
+      }
+
+      @Override
+      public void syncSkipped(@NotNull Project project) {
+        AndroidUtils.checkDartSupport(project);
+      }
+
+      @Override
+      public void sourceGenerationFinished(@NotNull Project project) {
+      }
+    };
   }
 
   public static void replaceAction(@NotNull String actionId, @NotNull AnAction newAction) {
