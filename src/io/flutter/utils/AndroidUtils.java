@@ -192,7 +192,7 @@ public class AndroidUtils {
       or by using the forthcoming tool in Android Studio that generates a module and does the editing.
     - The Flutter module may be in a directory nested under the Android app or it may be in a different
       location entirely. IntelliJ supports both, and is moving toward the latter.
-    - Enabling co-editing means converting the Flutter module to an Gradle module and adding it to the
+    - Enabling co-editing means converting the Flutter module to a Gradle module and adding it to the
       Android app as a sub-project.
         o If the parent of the Flutter module root directory is the Android app
           root directory, add "include ':flutterModule'" to the parent settings.gradle;
@@ -266,6 +266,7 @@ public class AndroidUtils {
     }
   }
 
+  // TODO(messick): Remove if not useful by M41.
   //public static void triggerSyncIfFlutterModuleFoundAfterBuild(@NotNull Project project,
   //                                                             @Nullable BuildStatus status,
   //                                                             @Nullable BuildContext context) {
