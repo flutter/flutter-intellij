@@ -59,6 +59,7 @@ elif [ "$CHECK_BOT" = true ] ; then
 
 elif [ "$UNIT_TEST_BOT" = true ] ; then
 
+  ./bin/plugin build --only-version=$IDEA_VERSION
   # Run unit tests.
   ./gradlew -s test
 

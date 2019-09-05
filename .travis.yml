@@ -31,9 +31,9 @@ script: ./tool/travis.sh
 
 # Testing product matrix; the values are generated from product-matrix.json.
 env:
-  - DART_BOT=true
+  - DART_BOT=false
   - CHECK_BOT=true
-  - UNIT_TEST_BOT=true
+  - UNIT_TEST_BOT=true IDEA_VERSION=2019.2
   - IDEA_VERSION=3.4.1
   - IDEA_VERSION=2019.1.2
   - IDEA_VERSION=3.5
