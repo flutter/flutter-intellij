@@ -10,6 +10,7 @@ buildscript {
     gradlePluginPortal()
     maven { url "https://maven-central.storage-download.googleapis.com/repos/central/data/" }
     maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+    maven { url "https://jetbrains.bintray.com/intellij-third-party-dependencies" }
   }
 
   dependencies {
@@ -32,6 +33,7 @@ repositories {
   mavenLocal()
   maven { url "https://maven-central.storage-download.googleapis.com/repos/central/data/" }
   maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+  maven { url "https://jetbrains.bintray.com/intellij-third-party-dependencies" }
 }
 
 apply plugin: 'java'
