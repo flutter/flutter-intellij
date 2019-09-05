@@ -50,6 +50,7 @@ intellij {
 
   instrumentCode = false
   version ideaVersion
+  type "IU"
   downloadSources Boolean.valueOf(downloadIdeaSources)
   updateSinceUntilBuild = false
 
