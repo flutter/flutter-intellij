@@ -7,19 +7,22 @@
 buildscript {
   repositories {
     mavenLocal()
+    mavenCentral()
     gradlePluginPortal()
     maven { url "https://maven-central.storage-download.googleapis.com/repos/central/data/" }
     maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
     maven { url "https://jetbrains.bintray.com/intellij-third-party-dependencies" }
   }
 
   dependencies {
+    classpath "org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.5.0-SNAPSHOT"
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
   }
 }
 
 plugins {
-  id "org.jetbrains.intellij" version "0.4.8"
+  id "org.jetbrains.intellij" version "0.4.10"
   id "com.adarshr.test-logger" version "1.6.0"
   id "de.undercouch.download" version "3.4.2"
   id "jacoco"
@@ -52,7 +55,7 @@ intellij {
 
   sandboxDirectory project.rootDir.canonicalPath + "/.sandbox"
   plugins "org.jetbrains.kotlin:$kotlinVersion-$kotlinRelease", "Dart:$dartVersion", "properties", "junit",
-          "gradle", "android", "intelliLang", "groovy", "smali"
+          "gradle", "android", "Groovy", "smali", "intelliLang"
 }
 
 publishPlugin {
