@@ -33,7 +33,6 @@ import com.intellij.openapi.externalSystem.model.task.TaskData;
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectType;
 import com.intellij.openapi.project.ProjectTypeService;
 import com.intellij.openapi.util.io.FileUtil;
@@ -193,7 +192,7 @@ public class AndroidUtils {
       or by using the forthcoming tool in Android Studio that generates a module and does the editing.
     - The Flutter module may be in a directory nested under the Android app or it may be in a different
       location entirely. IntelliJ supports both, and is moving toward the latter.
-    - Enabling co-editing means converting the Flutter module to an Gradle module and adding it to the
+    - Enabling co-editing means converting the Flutter module to a Gradle module and adding it to the
       Android app as a sub-project.
         o If the parent of the Flutter module root directory is the Android app
           root directory, add "include ':flutterModule'" to the parent settings.gradle;
@@ -267,100 +266,7 @@ public class AndroidUtils {
     }
   }
 
-  //public static void triggerSyncIfFlutterModuleFoundAfterBuild(@NotNull Project project,
-  //                                                             @Nullable BuildStatus status,
-  //                                                             @Nullable BuildContext context) {
-  //  if (isCoeditTransformedProject(project)) {
-  //    return;
-  //  }
-  //  // When an Android project is re-opened it only does a sync if needed. We have to check
-  //  // for signs that a Flutter module has been added and trigger a sync if so.
-  //  String ideaName = FLUTTER_PROJECT_NAME.substring(1, FLUTTER_PROJECT_NAME.length() - 1);
-  //  if (status == BuildStatus.SUCCESS) {
-  //    if (context != null && context.getGradleTasks().contains(":flutter:generateDebugSources")) {
-  //      Module module = FlutterUtils.findModuleNamed(project, "flutter");
-  //      if (module != null && isVanillaAddToApp(project, module.getModuleFile(), module.getName())) {
-  //        scheduleGradleSync(project);
-  //        return;
-  //      }
-  //    }
-  //  }
-  //  boolean mayNeedSync = FlutterUtils.findModuleNamed(project, ideaName) != null;
-  //  if (!mayNeedSync) return;
-  //  for (Module module : ModuleManager.getInstance(project).getModules()) {
-  //    if (FlutterModuleUtils.declaresFlutter(module)) {
-  //      // untested -- might occur if the module is added manually (or by AS module tool)
-  //      if (isVanillaAddToApp(project, module.getModuleFile(), module.getName())) {
-  //        scheduleGradleSync(project);
-  //        return;
-  //      }
-  //    }
-  //  }
-  //  Module module = FlutterUtils.findFlutterGradleModule(project);
-  //  if (module != null) {
-  //    // This is what we expect from following the add-to-app docs.
-  //    if (isVanillaAddToApp(project, module.getModuleFile(), module.getName())) {
-  //      scheduleGradleSync(project);
-  //    }
-  //  }
-  //}
-
-  private static void runAfterSyncFinishes(@NotNull Project project, @NotNull Consumer<Project> runnable) {
-    new WaitFor(GRADLE_SYNC_TIMEOUT, () -> runnable.accept(project)) {
-      @Override
-      public boolean condition() {
-        return !GradleSyncState.getInstance(project).isSyncInProgress();
-      }
-    };
-  }
-
-  public static void checkDartSupport(@NotNull Project project) {
-    runAfterSyncFinishes(project, (p) -> {
-      // Gradle sync-finished events are triggered before new modules have been committed. Once the condition
-      // is met we still have to wait for a short while.
-      AppExecutorUtil.getAppScheduledExecutorService().schedule(() -> {
-        Stream<Module> modules =
-          Arrays.stream(FlutterModuleUtils.getModules(p)).filter(FlutterModuleUtils::declaresFlutter);
-        modules.forEach((module) -> {
-          if (!DartSdkLibUtil.isDartSdkEnabled(module)) {
-            new EnableDartSupportForModule(module).run();
-          }
-        });
-      }, 1, TimeUnit.SECONDS);
-    });
-  }
-
-  public static void scheduleGradleSync(@NotNull Project project) {
-    //GradleSyncInvoker.getInstance().requestProjectSyncAndSourceGeneration(project, TRIGGER_USER_REQUEST_WHILE_BUILDING);
-    GradleSyncInvoker.getInstance().requestProjectSync(
-      project,
-      new GradleSyncInvoker.Request(TRIGGER_PROJECT_MODIFIED));
-  }
-
-  public static void enableCoeditIfAddToAppDetected(@NotNull Project project) {
-    if (isCoeditTransformedProject(project)) {
-      return;
-    }
-    // After a Gradle sync has finished we check the tasks that were run to see if any belong to Flutter.
-    Map<ProjectData, MultiMap<String, String>> tasks = getTasksMap(project);
-    @NotNull String projectName = project.getName();
-    for (ProjectData projectData : tasks.keySet()) {
-      String dataName = projectData.getExternalName();
-      if (projectName.equals(dataName)) {
-        MultiMap<String, String> map = tasks.get(projectData);
-        Collection<String> col = map.get(FLUTTER_PROJECT_NAME);
-        if (col.isEmpty()) {
-          col = map.get(""); // Android Studio uses this.
-        }
-        if (!col.isEmpty()) {
-          if (col.parallelStream().anyMatch((x) -> x.startsWith(FLUTTER_TASK_PREFIX))) {
-            ApplicationManager.getApplication().invokeLater(() -> enableCoEditing(project));
-          }
-        }
-      }
-    }
-  }
-
+  // TODO(messick): Remove if not useful by M41.
   //public static void triggerSyncIfFlutterModuleFoundAfterBuild(@NotNull Project project,
   //                                                             @Nullable BuildStatus status,
   //                                                             @Nullable BuildContext context) {
@@ -490,7 +396,6 @@ public class AndroidUtils {
     if (!project.isDisposed()) {
       COEDIT_TRANSFORMED_PROJECTS.add(project);
     }
-    return false;
   }
 
   private static boolean isCoeditTransformedProject(@NotNull Project project) {
