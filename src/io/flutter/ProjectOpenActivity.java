@@ -10,12 +10,10 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectType;
-import com.intellij.openapi.project.ProjectTypeService;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.ui.Messages;
 import icons.FlutterIcons;
@@ -23,6 +21,7 @@ import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,6 +45,10 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
 
   @Override
   public void runActivity(@NotNull Project project) {
+    // TODO(messick): Remove 'FlutterUtils.isAndroidStudio()' after Android Q sources are published.
+    if (FlutterUtils.isAndroidStudio() && AndroidUtils.isAndroidProject(project)) {
+      AndroidUtils.addGradleListeners(project);
+    }
     if (!FlutterModuleUtils.declaresFlutter(project)) {
       return;
     }
@@ -67,9 +70,6 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       if (!pubRoot.hasUpToDatePackages()) {
         Notifications.Bus.notify(new PackagesOutOfDateNotification(project, pubRoot));
       }
-    }
-    if (!FLUTTER_PROJECT_TYPE.equals(ProjectTypeService.getProjectType(project))) {
-      ProjectTypeService.setProjectType(project, FLUTTER_PROJECT_TYPE);
     }
   }
 

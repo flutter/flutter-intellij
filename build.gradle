@@ -49,7 +49,8 @@ intellij {
   updateSinceUntilBuild = false
 
   sandboxDirectory project.rootDir.canonicalPath + "/.sandbox"
-  plugins "org.jetbrains.kotlin:$kotlinVersion-$kotlinRelease", "Dart:$dartVersion", "properties", "junit"
+  plugins "org.jetbrains.kotlin:$kotlinVersion-$kotlinRelease", "Dart:$dartVersion", "properties", "junit",
+          "gradle", "android", "intelliLang", "groovy", "smali"
 }
 
 publishPlugin {
@@ -69,6 +70,10 @@ dependencies {
   testCompile("io.kotlintest:kotlintest:2.0.7")
   testCompile "org.powermock:powermock-api-mockito2:2.0.0"
   testCompile "org.powermock:powermock-module-junit4:2.0.0"
+  compile "com.android.tools.analytics-library:protos"
+  compile "com.android.tools:common:25.3.0"
+  compile "com.android.tools.analytics-library:protos:25.3.0"
+  compile "com.google.protobuf:protobuf-java:3.5.1"
 }
 
 /* Need to swizzle source and resource paths to match standard or buildPlugin does nothing. */
@@ -105,7 +110,7 @@ test {
 }
 
 /* This fails in a way that suggests internal version skew at JetBrains. */
-task buildSearchableOptions(overwrite:true) {}
+task buildSearchableOptions(overwrite: true) {}
 
 sourceCompatibility = javaVersion
 targetCompatibility = javaVersion
@@ -144,7 +149,8 @@ task listPlugins(type: Exec) {
 task verifyPluginCompatibility(type: Exec, dependsOn: ["downloadIntellijPluginVerifier"]) {
   workingDir = buildDir
   executable = "sh"
-  args = ["-c", "java -jar verifier-cli-$pluginVerifierVersion-all.jar check-plugin distributions/flutter-intellij-$version\\.zip ~/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/LATEST-EAP-SNAPSHOT/80852e6b02067b26385f5f0ef8e2174f0cd4576/ideaIC-LATEST-EAP-SNAPSHOT"]
+  args =
+    ["-c", "java -jar verifier-cli-$pluginVerifierVersion-all.jar check-plugin distributions/flutter-intellij-$version\\.zip ~/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/LATEST-EAP-SNAPSHOT/80852e6b02067b26385f5f0ef8e2174f0cd4576/ideaIC-LATEST-EAP-SNAPSHOT"]
 /*  args = ["-c", "java -jar verifier-cli-$pluginVerifierVersion-all.jar check-plugin @release.list ~/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/LATEST-EAP-SNAPSHOT/80852e6b02067b26385f5f0ef8e2174f0cd4576/ideaIC-LATEST-EAP-SNAPSHOT"]*/
 }
 
