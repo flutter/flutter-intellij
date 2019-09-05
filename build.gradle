@@ -56,7 +56,7 @@ intellij {
 
   sandboxDirectory project.rootDir.canonicalPath + "/.sandbox"
   plugins "org.jetbrains.kotlin:$kotlinVersion-$kotlinRelease", "Dart:$dartVersion", "properties", "junit",
-          "java", "gradle", "android", "Groovy", "smali", "intelliLang"
+          "java", "gradle", "android", "Groovy", "smali", "IntelliLang"
 }
 
 publishPlugin {
