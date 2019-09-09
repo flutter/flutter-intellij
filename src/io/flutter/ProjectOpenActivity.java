@@ -56,7 +56,9 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       return;
     }
 
-    ApplicationManager.getApplication().invokeLater(() -> sdk.queryFlutterConfig("android-studio-dir", false));
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      sdk.queryFlutterConfig("android-studio-dir", false);
+    });
 
     // If this project is intended as a bazel project, don't run the pub alerts.
     if (settings != null && settings.shouldUseBazel()) {
