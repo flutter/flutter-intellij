@@ -87,7 +87,14 @@ public class FlutterSdk {
 
     // Cache based on the project and path ('e41cfa3d:/Users/devoncarew/projects/flutter/flutter').
     final String cacheKey = project.getLocationHash() + ":" + sdkPath;
-    return projectSdkCache.computeIfAbsent(cacheKey, s -> forPath(sdkPath));
+
+    synchronized (projectSdkCache) {
+      if (!projectSdkCache.containsKey(cacheKey)) {
+        projectSdkCache.put(cacheKey, FlutterSdk.forPath(sdkPath));
+      }
+
+      return projectSdkCache.get(cacheKey);
+    }
   }
 
   /**
