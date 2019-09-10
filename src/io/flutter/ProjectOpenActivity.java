@@ -59,6 +59,9 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       sdk.queryFlutterConfig("android-studio-dir", false);
     });
+    if (FlutterUtils.isAndroidStudio() && !FLUTTER_PROJECT_TYPE.equals(ProjectTypeService.getProjectType(project))) {
+      ProjectTypeService.setProjectType(project, FLUTTER_PROJECT_TYPE);
+    }
 
     // If this project is intended as a bazel project, don't run the pub alerts.
     if (settings != null && settings.shouldUseBazel()) {
@@ -69,9 +72,6 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       if (!pubRoot.hasUpToDatePackages()) {
         Notifications.Bus.notify(new PackagesOutOfDateNotification(project, pubRoot));
       }
-    }
-    if (!FLUTTER_PROJECT_TYPE.equals(ProjectTypeService.getProjectType(project))) {
-      ProjectTypeService.setProjectType(project, FLUTTER_PROJECT_TYPE);
     }
   }
 
