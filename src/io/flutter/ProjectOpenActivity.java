@@ -73,9 +73,6 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
         Notifications.Bus.notify(new PackagesOutOfDateNotification(project, pubRoot));
       }
     }
-    if (!FLUTTER_PROJECT_TYPE.equals(ProjectTypeService.getProjectType(project))) {
-      ProjectTypeService.setProjectType(project, FLUTTER_PROJECT_TYPE);
-    }
   }
 
   private static class PackagesOutOfDateNotification extends Notification {
