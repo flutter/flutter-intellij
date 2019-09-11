@@ -5,11 +5,19 @@
  */
 package io.flutter.utils;
 
+import static io.flutter.sdk.FlutterSdk.DART_SDK_SUFFIX;
+
 import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.facet.Facet;
+import com.intellij.facet.FacetManager;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.module.*;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleType;
+import com.intellij.openapi.module.ModuleTypeManager;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -29,12 +37,9 @@ import io.flutter.run.SdkFields;
 import io.flutter.run.SdkRunConfig;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
-
-import static io.flutter.sdk.FlutterSdk.DART_SDK_SUFFIX;
 
 public class FlutterModuleUtils {
   public static final String DEPRECATED_FLUTTER_MODULE_TYPE_ID = "WEB_MODULE";
@@ -174,7 +179,7 @@ public class FlutterModuleUtils {
   @NotNull
   public static Module[] getModules(@NotNull Project project) {
     // A disposed project has no modules.
-    if (project.isDisposed()) return new Module[]{ };
+    if (project.isDisposed()) return new Module[]{};
 
     return ModuleManager.getInstance(project).getModules();
   }
@@ -322,6 +327,22 @@ public class FlutterModuleUtils {
 
     // Validate that the pubspec references flutter.
     return FlutterModuleUtils.declaresFlutter(module);
+  }
+
+  public static boolean isInFlutterAndroidModule(@NotNull Project project, @NotNull VirtualFile file) {
+    Module[] modules = ModuleManager.getInstance(project).getModules();
+    for (Module module : modules) {
+      // contains() should be fast since it uses the index.
+      boolean isModuleFile = module.getModuleContentScope().contains(file);
+      if (isModuleFile) {
+        for (Facet facet : FacetManager.getInstance(module).getAllFacets()) {
+          if ("Android".equals(facet.getName())) {
+            return declaresFlutter(project);
+          }
+        }
+      }
+    }
+    return false;
   }
 
   /**

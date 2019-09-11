@@ -5,13 +5,20 @@
  */
 package io.flutter.actions;
 
+import com.intellij.facet.Facet;
+import com.intellij.facet.FacetManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterUtils;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,9 +32,9 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
     final Project project = e.getProject();
     assert (project != null);
     return
+      isInFlutterAndroidModule(project, file) ||
       isProjectDirectory(file, project) ||
       isWithinIOsDirectory(file, project) ||
-      isWithinAndroidDirectory(file, project) ||
       FlutterUtils.isXcodeProjectFileName(file.getName()) || OpenInAndroidStudioAction.isProjectFileName(file.getName());
   }
 
@@ -76,6 +83,22 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
 
     final VirtualFile baseDir = project.getBaseDir();
     return baseDir != null && baseDir.getPath().equals(file.getPath());
+  }
+
+  private static boolean isInFlutterAndroidModule(@NotNull Project project, @NotNull VirtualFile file) {
+    Module[] modules = ModuleManager.getInstance(project).getModules();
+    for (Module module : modules) {
+      // contains() should be fast since it uses the index.
+      boolean isModuleFile = module.getModuleContentScope().contains(file);
+      if (isModuleFile) {
+        for (Facet facet : FacetManager.getInstance(module).getAllFacets()) {
+          if ("Android".equals(facet.getName())) {
+            return FlutterModuleUtils.declaresFlutter(project);
+          }
+        }
+      }
+    }
+    return false;
   }
 
   @Override
