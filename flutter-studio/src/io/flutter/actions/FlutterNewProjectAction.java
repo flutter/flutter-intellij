@@ -53,7 +53,6 @@ public class FlutterNewProjectAction extends AnAction implements DumbAware {
       .addStep(new ChoseProjectTypeStep(model))
       .build();
     StudioWizardDialogBuilder builder = new StudioWizardDialogBuilder(wizard, "Create New Flutter Project");
-    builder.setUxStyle(StudioWizardDialogBuilder.UxStyle.DYNAMIC_APP);
     ModelWizardDialog dialog = builder.build();
     try {
       dialog.show();
