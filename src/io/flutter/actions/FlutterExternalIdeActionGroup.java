@@ -5,13 +5,20 @@
  */
 package io.flutter.actions;
 
+import com.intellij.facet.Facet;
+import com.intellij.facet.FacetManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterUtils;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,9 +32,9 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
     final Project project = e.getProject();
     assert (project != null);
     return
+      FlutterModuleUtils.isInFlutterAndroidModule(project, file) ||
       isProjectDirectory(file, project) ||
       isWithinIOsDirectory(file, project) ||
-      isWithinAndroidDirectory(file, project) ||
       FlutterUtils.isXcodeProjectFileName(file.getName()) || OpenInAndroidStudioAction.isProjectFileName(file.getName());
   }
 

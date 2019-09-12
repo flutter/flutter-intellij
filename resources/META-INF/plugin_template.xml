@@ -122,6 +122,22 @@
       <separator/>
       <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="AddToFavorites" anchor="before"/>
     </group>
+    <group id="FlutterBuildActionGroup" class="io.flutter.actions.FlutterBuildActionGroup">
+      <separator/>
+      <group text="Flutter" popup="true">
+        <action id="flutter.build.aar" text="Build AAR" description="Building a Flutter module for Android add-to-app"
+                class="io.flutter.actions.FlutterBuildActionGroup$AAR"/>
+        <action id="flutter.build.apk" text="Build APK" description="Building a Flutter app for general distribution"
+                class="io.flutter.actions.FlutterBuildActionGroup$APK"/>
+        <!--suppress PluginXmlCapitalization -->
+        <action id="flutter.build.aab" text="Build App Bundle" description="Building a Flutter app for Google Play Store distribution"
+                class="io.flutter.actions.FlutterBuildActionGroup$AppBundle"/>
+        <!--suppress PluginXmlCapitalization -->
+        <action id="flutter.build.ios" text="Build iOS" description="Building a Flutter app for Apple App Store distribution"
+                class="io.flutter.actions.FlutterBuildActionGroup$Ios"/>
+      </group>
+      <add-to-group group-id="BuildMenu" anchor="first"/>
+    </group>
 
     <!-- main toolbar run actions -->
     <action id="AttachDebuggerAction"
