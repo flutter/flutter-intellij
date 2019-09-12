@@ -32,7 +32,7 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
     final Project project = e.getProject();
     assert (project != null);
     return
-      isInFlutterAndroidModule(project, file) ||
+      FlutterModuleUtils.isInFlutterAndroidModule(project, file) ||
       isProjectDirectory(file, project) ||
       isWithinIOsDirectory(file, project) ||
       FlutterUtils.isXcodeProjectFileName(file.getName()) || OpenInAndroidStudioAction.isProjectFileName(file.getName());
@@ -83,22 +83,6 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
 
     final VirtualFile baseDir = project.getBaseDir();
     return baseDir != null && baseDir.getPath().equals(file.getPath());
-  }
-
-  private static boolean isInFlutterAndroidModule(@NotNull Project project, @NotNull VirtualFile file) {
-    Module[] modules = ModuleManager.getInstance(project).getModules();
-    for (Module module : modules) {
-      // contains() should be fast since it uses the index.
-      boolean isModuleFile = module.getModuleContentScope().contains(file);
-      if (isModuleFile) {
-        for (Facet facet : FacetManager.getInstance(module).getAllFacets()) {
-          if ("Android".equals(facet.getName())) {
-            return FlutterModuleUtils.declaresFlutter(project);
-          }
-        }
-      }
-    }
-    return false;
   }
 
   @Override
