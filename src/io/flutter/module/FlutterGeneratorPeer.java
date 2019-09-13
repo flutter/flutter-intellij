@@ -6,6 +6,7 @@
 package io.flutter.module;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.util.newProjectWizard.AbstractProjectWizard;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.ide.wizard.AbstractWizard;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -20,23 +21,30 @@ import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.util.ReflectionUtil;
+import com.intellij.util.ui.EdtInvocationManager;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.actions.InstallSdkAction;
 import io.flutter.sdk.FlutterSdkUtil;
-import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.text.JTextComponent;
-import java.awt.*;
+import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import javax.swing.ComboBoxEditor;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.text.JTextComponent;
+import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FlutterGeneratorPeer implements InstallSdkAction.Model {
   private final WizardContext myContext;
@@ -74,7 +82,6 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
 
   private void init() {
     mySdkPathComboWithBrowse.getComboBox().setEditable(true);
-    // TODO(#3731): Synchronous execution on EDT.
     FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkPathComboWithBrowse.getComboBox());
 
     mySdkPathComboWithBrowse.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
@@ -217,18 +224,9 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
 
   @Override
   public void requestNextStep() {
-    final AbstractWizard wizard = myContext.getWizard();
+    final AbstractProjectWizard wizard = (AbstractProjectWizard)myContext.getWizard();
     if (wizard != null) {
-      // AbstractProjectWizard makes `doNextAction` public but we can't reference it directly since it does not exist in WebStorm.
-      final Method nextAction = ReflectionUtil.getMethod(wizard.getClass(), "doNextAction");
-      if (nextAction != null) {
-        try {
-          nextAction.invoke(wizard);
-        }
-        catch (IllegalAccessException | InvocationTargetException e) {
-          // Ignore.
-        }
-      }
+      UIUtil.invokeAndWaitIfNeeded((Runnable)() -> wizard.doNextAction());
     }
   }
 }

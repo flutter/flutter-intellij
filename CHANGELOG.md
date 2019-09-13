@@ -1,3 +1,28 @@
+## 39.0
+- Changed project creation to default to AndriodX deselected until it works for Flutter modules
+- Enabled structured errors by default
+- Fix #3731: Synchronous execution on EDT (#3823)
+- Make the new languages be default (#3819)
+- Don't call reload for the unforked flutter web impl (#3816)
+- Perform additional normalization on flutter error codes (#3813)
+- Fix an issue related to the error reporter (#3811)
+- Improve computeDefaultPresentation (#3803)
+- Convert an error to a warning (#3810)
+- Fix ArrayIndexOutOfBounds for target platform selector (#3809)
+- Flutter web inspector (#3792)
+- Rev to the latest vm service library (#3801)
+- Adapt to API changes in ASc6 (#3802)
+- Switch to using the VM Service directly instead of the Daemon protocol when invoking service extensions (#3790)
+- Update no-response.yml (#3789)
+- Upgrade the version of the dart plugin that we compile against (#3784)
+- Address a setPreferredFocusableComponent() warning in the IntelliJ log (#3783)
+- Fix a regression in the Flutter Outline view (#3782)
+- Cache the results of parsing the pubspec file (#3773)
+- Only parse analysis server events we're interested in (#3772)
+- Optimize FlutterUtils.isInTestDir (#3774)
+- Add platforms to testing matrix (#3768)
+- Make part of the dart code use implicit-casts false (#3762)
+
 ## 38.2
 - Fix bug on Windows that prevented outlines from displaying
 - Restore the ability to run individual tests 

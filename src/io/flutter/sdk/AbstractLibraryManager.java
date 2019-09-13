@@ -12,8 +12,6 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.*;
 import com.intellij.openapi.roots.impl.libraries.LibraryEx;
-import com.intellij.openapi.roots.impl.libraries.LibraryTableBase;
-import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.*;
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.utils.FlutterModuleUtils;
@@ -43,12 +41,11 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
   protected void updateLibraryContent(@NotNull Set<String> contentUrls) {
     if (!FlutterModuleUtils.declaresFlutter(project)) {
       // If we have a Flutter library, remove it.
-      final LibraryTable projectLibraryTable = ProjectLibraryTable.getInstance(project);
-      final Library existingLibrary = projectLibraryTable.getLibraryByName(getLibraryName());
+      final LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
+      final Library existingLibrary = getLibraryByName(getLibraryName());
       if (existingLibrary != null) {
         WriteAction.compute(() -> {
-          final LibraryTableBase.ModifiableModel libraryTableModel =
-            ProjectLibraryTable.getInstance(project).getModifiableModel();
+          final LibraryTable.ModifiableModel libraryTableModel = libraryTable.getModifiableModel();
           libraryTableModel.removeLibrary(existingLibrary);
           libraryTableModel.commit();
           return null;
@@ -63,14 +60,13 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
                                       @NotNull Set<String> contentUrls,
                                       @SuppressWarnings("unused") @Nullable Set<String> sourceUrls) {
     // TODO(messick) Add support for source URLs.
-    final LibraryTable projectLibraryTable = ProjectLibraryTable.getInstance(project);
-    final Library existingLibrary = projectLibraryTable.getLibraryByName(name);
+    final LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
+    final Library existingLibrary = getLibraryByName(name);
 
     final Library library = existingLibrary != null
                             ? existingLibrary
                             : WriteAction.compute(() -> {
-                              final LibraryTableBase.ModifiableModel libraryTableModel =
-                                ProjectLibraryTable.getInstance(project).getModifiableModel();
+                              final LibraryTable.ModifiableModel libraryTableModel = libraryTable.getModifiableModel();
                               final Library lib = libraryTableModel.createLibrary(
                                 name,
                                 getLibraryKind());
@@ -174,5 +170,10 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
         modifiableModel.dispose();
       }
     }
+  }
+
+  @Nullable
+  private Library getLibraryByName(String name) {
+    return LibraryTablesRegistrar.getInstance().getLibraryTable(project).getLibraryByName(name);
   }
 }

@@ -5,10 +5,12 @@
  */
 package io.flutter.module.settings;
 
-import org.jetbrains.annotations.NotNull;
-
-import javax.swing.*;
 import java.awt.event.ItemListener;
+import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A panel with two radios in a group.
@@ -21,9 +23,9 @@ public class RadiosForm {
 
   public RadiosForm(String label1, String label2) {
     radio1.setText(label1);
-    radio1.setSelected(true);
 
     radio2.setText(label2);
+    radio2.setSelected(true);
 
     radioGroup = new ButtonGroup();
     radioGroup.add(radio1);

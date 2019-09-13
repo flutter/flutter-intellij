@@ -9,7 +9,6 @@ import com.intellij.ide.DataManager;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.scratch.ScratchRootType;
-import com.intellij.lang.Language;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.diagnostic.ErrorReportSubmitter;
@@ -18,6 +17,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.diagnostic.SubmittedReportInfo;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.fileTypes.PlainTextLanguage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
@@ -187,7 +187,7 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
 
     // Create scratch file.
     final ScratchRootType scratchRoot = ScratchRootType.getInstance();
-    final VirtualFile file = scratchRoot.createScratchFile(project, "bug-report.md", Language.ANY, text);
+    final VirtualFile file = scratchRoot.createScratchFile(project, "bug-report.md", PlainTextLanguage.INSTANCE, text);
 
     if (file == null) {
       fail(consumer);

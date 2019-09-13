@@ -16,6 +16,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import icons.FlutterIcons;
+import io.flutter.FlutterBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,6 +26,7 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
   private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.native.editor.notification");
 
   private final Project myProject;
+  private boolean showNotification = true;
 
   public NativeEditorNotificationProvider(@NotNull Project project) {
     myProject = project;
@@ -39,7 +41,7 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
   @Nullable
   @Override
   public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file, @NotNull FileEditor fileEditor) {
-    if (!file.isInLocalFileSystem()) {
+    if (!file.isInLocalFileSystem() || !showNotification) {
       return null;
     }
     return createPanelForFile(file, findRootDir(file, myProject.getBaseDir()));
@@ -117,6 +119,10 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
       isVisible = myAction.getTemplatePresentation().isVisible();
       createActionLabel(myAction.getTemplatePresentation().getText(), this::performAction)
         .setToolTipText(myAction.getTemplatePresentation().getDescription());
+      createActionLabel(FlutterBundle.message("flutter.androidstudio.open.hide.notification.text"), () -> {
+        showNotification = false;
+        EditorNotifications.getInstance(myProject).updateAllNotifications();
+      }).setToolTipText(FlutterBundle.message("flutter.androidstudio.open.hide.notification.description"));
     }
 
     private boolean isValidForFile() {

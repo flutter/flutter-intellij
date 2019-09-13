@@ -210,11 +210,11 @@ public class FlutterSettings {
   }
 
   public boolean isShowStructuredErrors() {
-    return getPropertiesComponent().getBoolean(showStructuredErrors, false);
+    return getPropertiesComponent().getBoolean(showStructuredErrors, true);
   }
 
   public void setShowStructuredErrors(boolean value) {
-    getPropertiesComponent().setValue(showStructuredErrors, value, false);
+    getPropertiesComponent().setValue(showStructuredErrors, value, true);
 
     fireEvent();
   }

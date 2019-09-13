@@ -8,7 +8,6 @@ package io.flutter.vmService;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.diagnostic.Logger;
-import io.flutter.run.FlutterDebugProcess;
 import org.dartlang.vm.service.consumer.GetMemoryUsageConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
@@ -57,7 +56,6 @@ public class HeapMonitor {
   public static class HeapSample {
     final int bytes;
     final int external;
-    final boolean isGC;
 
     public long getSampleTime() {
       return sampleTime;
@@ -65,10 +63,9 @@ public class HeapMonitor {
 
     public final long sampleTime;
 
-    public HeapSample(int bytes, int external, boolean isGC) {
+    public HeapSample(int bytes, int external) {
       this.bytes = bytes;
       this.external = external;
-      this.isGC = isGC;
 
       this.sampleTime = System.currentTimeMillis();
     }
@@ -83,7 +80,7 @@ public class HeapMonitor {
 
     @Override
     public String toString() {
-      return "bytes: " + bytes + (isGC ? " (GC)" : "");
+      return "bytes: " + bytes;
     }
   }
 

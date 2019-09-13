@@ -10,6 +10,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -55,6 +56,13 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       return;
     }
 
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      sdk.queryFlutterConfig("android-studio-dir", false);
+    });
+    if (FlutterUtils.isAndroidStudio() && !FLUTTER_PROJECT_TYPE.equals(ProjectTypeService.getProjectType(project))) {
+      ProjectTypeService.setProjectType(project, FLUTTER_PROJECT_TYPE);
+    }
+
     // If this project is intended as a bazel project, don't run the pub alerts.
     if (settings != null && settings.shouldUseBazel()) {
       return;
@@ -64,9 +72,6 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       if (!pubRoot.hasUpToDatePackages()) {
         Notifications.Bus.notify(new PackagesOutOfDateNotification(project, pubRoot));
       }
-    }
-    if (!FLUTTER_PROJECT_TYPE.equals(ProjectTypeService.getProjectType(project))) {
-      ProjectTypeService.setProjectType(project, FLUTTER_PROJECT_TYPE);
     }
   }
 

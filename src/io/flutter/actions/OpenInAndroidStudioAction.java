@@ -151,6 +151,9 @@ public class OpenInAndroidStudioAction extends AnAction {
       }
       else {
         // TODO Open editor on sourceFile for Linux, Windows
+        if (SystemInfo.isWindows) {
+          androidStudioPath += "\\bin\\studio.bat";
+        }
         cmd = new GeneralCommandLine().withExePath(androidStudioPath).withParameters(projectFile.getPath());
       }
       final OSProcessHandler handler = new OSProcessHandler(cmd);
@@ -198,7 +201,10 @@ public class OpenInAndroidStudioAction extends AnAction {
 
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk != null) {
-      String androidSdkLocation = flutterSdk.queryFlutterConfig("android-studio-dir", false);
+      String androidSdkLocation = flutterSdk.queryFlutterConfig("android-studio-dir", true);
+      if (androidSdkLocation!= null && !new File(androidSdkLocation).exists()) {
+        androidSdkLocation = flutterSdk.queryFlutterConfig("android-studio-dir", false);
+      }
       if (androidSdkLocation != null) {
         if (androidSdkLocation.contains("/Android Studio 2")) {
           Messages.showErrorDialog(FlutterBundle.message("old.android.studio.message", File.separator),

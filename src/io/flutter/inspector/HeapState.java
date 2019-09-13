@@ -92,6 +92,6 @@ public class HeapState implements HeapMonitor.HeapListener {
 
     heapMaxInBytes = total;
 
-    addSample(new HeapMonitor.HeapSample(current, external, false));
+    addSample(new HeapMonitor.HeapSample(current, external));
   }
 }
