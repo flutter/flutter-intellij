@@ -14,8 +14,9 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderRootType;
-import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
+import com.intellij.openapi.roots.libraries.LibraryTable;
+import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.*;
@@ -155,8 +156,8 @@ public class FlutterSdk {
 
   @Nullable
   private static Library getDartSdkLibrary(@NotNull Project project) {
-    final Library[] libraries = ProjectLibraryTable.getInstance(project).getLibraries();
-    for (Library lib : libraries) {
+    final LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
+    for (Library lib : libraryTable.getLibraries()) {
       if ("Dart SDK".equals(lib.getName())) {
         return lib;
       }
@@ -443,7 +444,6 @@ public class FlutterSdk {
     return PubRoot.forDirectory(baseDir);
   }
 
-
   public List<FlutterSample> getSamples() {
     if (sampleManager == null) {
       sampleManager = new FlutterSampleManager(this);
@@ -628,7 +628,7 @@ public class FlutterSdk {
     @Nullable
     @Override
     public String getDartSdkPath() {
-      DartSdk sdk = DartSdk.getDartSdk(project);
+      final DartSdk sdk = DartSdk.getDartSdk(project);
       if (sdk == null) {
         return null;
       }
@@ -660,8 +660,8 @@ public class FlutterSdk {
     @NotNull
     @Override
     public GeneralCommandLine createGeneralCommandLine(@Nullable Project project) {
-      GeneralCommandLine original = super.createGeneralCommandLine(project);
-      GeneralCommandLine line = new GeneralCommandLine();
+      final GeneralCommandLine original = super.createGeneralCommandLine(project);
+      final GeneralCommandLine line = new GeneralCommandLine();
 
       // Strip the subcommand from the parameters, because we will talk directly to pub.
       final List<String> parameters = new ArrayList<>(original.getParametersList().getList());
