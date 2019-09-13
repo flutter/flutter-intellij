@@ -21,8 +21,8 @@ import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.bazel.Workspace;
 import io.flutter.run.common.ConsoleProps;
-import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.DaemonConsoleView;
+import io.flutter.run.daemon.RunMode;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -85,7 +85,7 @@ public class BazelTestLaunchState extends CommandLineState {
   @Override
   protected ConsoleView createConsole(@NotNull Executor executor) throws ExecutionException {
     // If the --machine output flag is not turned on, then don't activate the new window.
-    if (fields.getAdditionalArgs() == null || !fields.getAdditionalArgs().contains(BazelTestFields.Flags.machine)) {
+    if (fields.getAdditionalArgs() != null && fields.getAdditionalArgs().contains(BazelTestFields.Flags.noMachine)) {
       return super.createConsole(executor);
     }
 
