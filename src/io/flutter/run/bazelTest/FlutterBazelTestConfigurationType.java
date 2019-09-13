@@ -33,7 +33,6 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
     // Otherwise, only one configuration may show up.
     addFactory(factory);
     addFactory(watchFactory);
-
   }
 
   public static FlutterBazelTestConfigurationType getInstance() {
@@ -62,7 +61,8 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
     }
 
     @Override
-    public @NotNull String getId() {
+    @NotNull
+    public String getId() {
       return FlutterBundle.message("runner.flutter.bazel.test.configuration.name");
     }
   }
@@ -94,12 +94,14 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
     }
 
     @Override
-    public @NotNull String getName() {
+    @NotNull
+    public String getName() {
       return "Watch " + super.getName();
     }
 
     @Override
-    public @NotNull String getId() {
+    @NotNull
+    public String getId() {
       return FlutterBundle.message("runner.flutter.bazel.watch.test.configuration.name");
     }
   }
