@@ -42,7 +42,7 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
     if (!FlutterModuleUtils.declaresFlutter(project)) {
       // If we have a Flutter library, remove it.
       final LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
-      final Library existingLibrary = libraryTable.getLibraryByName(getLibraryName());
+      final Library existingLibrary = getLibraryByName(getLibraryName());
       if (existingLibrary != null) {
         WriteAction.compute(() -> {
           final LibraryTable.ModifiableModel libraryTableModel = libraryTable.getModifiableModel();
@@ -61,7 +61,7 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
                                       @SuppressWarnings("unused") @Nullable Set<String> sourceUrls) {
     // TODO(messick) Add support for source URLs.
     final LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
-    final Library existingLibrary = libraryTable.getLibraryByName(name);
+    final Library existingLibrary = getLibraryByName(name);
 
     final Library library = existingLibrary != null
                             ? existingLibrary
@@ -170,5 +170,10 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
         modifiableModel.dispose();
       }
     }
+  }
+
+  @Nullable
+  private Library getLibraryByName(String name) {
+    return LibraryTablesRegistrar.getInstance().getLibraryTable(project).getLibraryByName(name);
   }
 }
