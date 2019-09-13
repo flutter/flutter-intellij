@@ -35,7 +35,7 @@ public class ProjectWatch implements Closeable {
 
     final ProjectManagerListener listener = new ProjectManagerListener() {
       @Override
-      public void projectClosed(Project project) {
+      public void projectClosed(@NotNull Project project) {
         fireEvent();
       }
     };
@@ -46,7 +46,7 @@ public class ProjectWatch implements Closeable {
     final MessageBusConnection bus = project.getMessageBus().connect();
     bus.subscribe(ProjectTopics.PROJECT_ROOTS, new ModuleRootListener() {
       @Override
-      public void rootsChanged(ModuleRootEvent event) {
+      public void rootsChanged(@NotNull ModuleRootEvent event) {
         fireEvent();
       }
     });
@@ -60,7 +60,8 @@ public class ProjectWatch implements Closeable {
   /**
    * Subscribes to project changes. This includes module root changes and closing the project.
    */
-  public static @NotNull ProjectWatch subscribe(@NotNull Project project, @NotNull Runnable callback) {
+  public static @NotNull
+  ProjectWatch subscribe(@NotNull Project project, @NotNull Runnable callback) {
     return new ProjectWatch(project, callback);
   }
 
@@ -80,7 +81,8 @@ public class ProjectWatch implements Closeable {
 
     try {
       callback.run();
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       FlutterUtils.warn(LOG, "Uncaught exception in ProjectWatch callback", e);
       close(); // avoid further errors
     }
