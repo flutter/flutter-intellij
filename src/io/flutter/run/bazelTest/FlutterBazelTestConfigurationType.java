@@ -63,7 +63,7 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
 
     @Override
     public @NotNull String getId() {
-      return "No Watch";
+      return FlutterBundle.message("runner.flutter.bazel.test.configuration.name");
     }
   }
 
@@ -100,7 +100,7 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
 
     @Override
     public @NotNull String getId() {
-      return "Watch";
+      return FlutterBundle.message("runner.flutter.bazel.watch.test.configuration.name");
     }
   }
 }
