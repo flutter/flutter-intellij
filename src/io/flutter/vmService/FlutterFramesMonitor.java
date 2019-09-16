@@ -19,9 +19,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class FlutterFramesMonitor {
-  public static final long microsPerFrame = 1000000 / 60;
-
   static final int maxFrames = 200;
+
+  private final VMServiceManager vmServiceManager;
 
   private final EventDispatcher<Listener> eventDispatcher = EventDispatcher.create(Listener.class);
 
@@ -31,7 +31,7 @@ public class FlutterFramesMonitor {
     void handleFrameEvent(FlutterFrameEvent event);
   }
 
-  public static class FlutterFrameEvent {
+  public class FlutterFrameEvent {
     public final int frameId;
     public final long startTimeMicros;
     public final long elapsedMicros;
@@ -42,7 +42,7 @@ public class FlutterFramesMonitor {
       frameId = json.get("number").getAsInt();
       startTimeMicros = json.get("startTime").getAsLong();
       elapsedMicros = json.get("elapsed").getAsLong();
-      frameSetStart = (startTimeMicros - lastEventFinished) > (FlutterFramesMonitor.microsPerFrame * 2);
+      frameSetStart = (startTimeMicros - lastEventFinished) > (vmServiceManager.getTargetMicrosPerFrame() * 2);
     }
 
     public long getFrameFinishedMicros() {
@@ -50,7 +50,7 @@ public class FlutterFramesMonitor {
     }
 
     public boolean isSlowFrame() {
-      return elapsedMicros > FlutterFramesMonitor.microsPerFrame;
+      return elapsedMicros > vmServiceManager.getTargetMicrosPerFrame();
     }
 
     public int hashCode() {
@@ -68,7 +68,8 @@ public class FlutterFramesMonitor {
 
   public List<FlutterFrameEvent> frames = new LinkedList<>();
 
-  public FlutterFramesMonitor(@NotNull VmService vmService) {
+  public FlutterFramesMonitor(@NotNull VMServiceManager vmServiceManager, @NotNull VmService vmService) {
+    this.vmServiceManager = vmServiceManager;
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
       public void received(String streamId, Event event) {
@@ -104,8 +105,8 @@ public class FlutterFramesMonitor {
       for (FlutterFrameEvent frame : frames) {
         frameCount++;
 
-        long thisCost = frame.elapsedMicros / microsPerFrame;
-        if (frame.elapsedMicros > (thisCost * microsPerFrame)) {
+        long thisCost = frame.elapsedMicros / vmServiceManager.getTargetMicrosPerFrame();
+        if (frame.elapsedMicros > (thisCost * vmServiceManager.getTargetMicrosPerFrame())) {
           thisCost++;
         }
 
