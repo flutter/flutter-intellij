@@ -961,7 +961,16 @@
     </action>
   </actions>
 
+  <extensionPoints>
+    <extensionPoint name="gradleSyncProvider" interface="io.flutter.android.GradleSyncProvider" />
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="io.flutter">
+    <gradleSyncProvider implementation="io.flutter.android.IntellijGradleSyncProvider" order="last"/>
+  </extensions>
+
   <extensions defaultExtensionNs="com.intellij">
+    <externalSystemTaskNotificationListener implementation="io.flutter.utils.FlutterExternalSystemTaskNotificationListener"/>
     <postStartupActivity implementation="io.flutter.ProjectOpenActivity"/>
     <postStartupActivity implementation="io.flutter.FlutterInitializer"/>
     <projectService serviceInterface="io.flutter.run.daemon.DeviceService"

@@ -581,11 +581,12 @@ class BuildCommand extends ProductCommand {
         }
       }
 
-      // TODO: Remove this when we no longer support AS 3.3 (IJ 2018.2.5) or AS 3.4
+      log('spec.version: ${spec.version}');
       var files = <File, String>{};
       var processedFile, source;
+
+      // TODO: Remove this when we no longer support AS 3.3 (IJ 2018.2.5) or AS 3.4
       if (spec.version.startsWith('3.4')) {
-        log('spec.version: ${spec.version}');
         processedFile = File(
             'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
         source = processedFile.readAsStringSync();
@@ -616,10 +617,25 @@ class BuildCommand extends ProductCommand {
         source = source.replaceAll('importProjectCore', 'importProject');
         processedFile.writeAsStringSync(source);
       }
+
+      // This is for versions prior to AS 3.5
+      if (spec.version.startsWith('3.4') ||
+          spec.version.startsWith('2019.1.2')) {
+        processedFile = File(
+            'flutter-studio/src/io/flutter/FlutterStudioStartupActivity.java');
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll(
+            'Topic topic = GradleSyncState.GRADLE_SYNC_TOPIC;', '');
+        source = source.replaceAll(
+            'connection.subscribe((Topic<GradleSyncListener>)topic, makeSyncListener(project));',
+            '');
+        processedFile.writeAsStringSync(source);
+      }
+
       if (!spec.version.startsWith('3.5') &&
           !spec.version.startsWith('2019.2') &&
           !(spec.version == '2019.1.2')) {
-        log('spec.version: ${spec.version}');
         processedFile = File(
             'flutter-studio/src/io/flutter/project/FlutterProjectModel.java');
         source = processedFile.readAsStringSync();
@@ -641,6 +657,7 @@ class BuildCommand extends ProductCommand {
             'JavaNewProjectOrModuleGroup', 'NewProjectOrModuleGroup');
         processedFile.writeAsStringSync(source);
       }
+
       if (!spec.version.startsWith('2019.2')) {
         processedFile = File(
             'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
