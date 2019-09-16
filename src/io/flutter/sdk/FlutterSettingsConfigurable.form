@@ -108,7 +108,7 @@
         <children>
           <component id="356a" class="javax.swing.JCheckBox" binding="myOpenInspectorOnAppLaunchCheckBox">
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.open.inspector.on.launch"/>
@@ -125,7 +125,7 @@
           </component>
           <component id="6d6f0" class="javax.swing.JCheckBox" binding="myDisableTrackWidgetCreationCheckBox">
             <constraints>
-              <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="4" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.disable.tracking.widget.creation"/>
@@ -143,7 +143,7 @@
           </component>
           <component id="b1533" class="javax.swing.JCheckBox" binding="myShowStructuredErrors">
             <constraints>
-              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="Show structured errors for Flutter framework issues"/>
