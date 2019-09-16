@@ -7,18 +7,22 @@
 buildscript {
   repositories {
     mavenLocal()
+    mavenCentral()
     gradlePluginPortal()
     maven { url "https://maven-central.storage-download.googleapis.com/repos/central/data/" }
     maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+    maven { url "https://jetbrains.bintray.com/intellij-third-party-dependencies" }
   }
 
   dependencies {
+    classpath "gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.4.9"
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
   }
 }
 
 plugins {
-  id "org.jetbrains.intellij" version "0.4.8"
+  id "org.jetbrains.intellij" version "0.4.10"
   id "com.adarshr.test-logger" version "1.6.0"
   id "de.undercouch.download" version "3.4.2"
   id "jacoco"
@@ -32,6 +36,7 @@ repositories {
   mavenLocal()
   maven { url "https://maven-central.storage-download.googleapis.com/repos/central/data/" }
   maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+  maven { url "https://jetbrains.bintray.com/intellij-third-party-dependencies" }
 }
 
 apply plugin: 'java'
@@ -45,11 +50,13 @@ intellij {
 
   instrumentCode = false
   version ideaVersion
+  type "IU"
   downloadSources Boolean.valueOf(downloadIdeaSources)
   updateSinceUntilBuild = false
 
   sandboxDirectory project.rootDir.canonicalPath + "/.sandbox"
-  plugins "org.jetbrains.kotlin:$kotlinVersion-$kotlinRelease", "Dart:$dartVersion", "properties", "junit"
+  plugins "org.jetbrains.kotlin:$kotlinVersion-$kotlinRelease", "Dart:$dartVersion", "properties", "junit",
+          "java", "gradle", "android", "Groovy", "smali", "IntelliLang"
 }
 
 publishPlugin {
@@ -69,6 +76,10 @@ dependencies {
   testCompile("io.kotlintest:kotlintest:2.0.7")
   testCompile "org.powermock:powermock-api-mockito2:2.0.0"
   testCompile "org.powermock:powermock-module-junit4:2.0.0"
+  compile "com.android.tools.analytics-library:protos"
+  compile "com.android.tools:common:25.3.0"
+  compile "com.android.tools.analytics-library:protos:25.3.0"
+  compile "com.google.protobuf:protobuf-java:3.5.1"
 }
 
 /* Need to swizzle source and resource paths to match standard or buildPlugin does nothing. */
@@ -105,7 +116,7 @@ test {
 }
 
 /* This fails in a way that suggests internal version skew at JetBrains. */
-task buildSearchableOptions(overwrite:true) {}
+task buildSearchableOptions(overwrite: true) {}
 
 sourceCompatibility = javaVersion
 targetCompatibility = javaVersion
@@ -144,7 +155,8 @@ task listPlugins(type: Exec) {
 task verifyPluginCompatibility(type: Exec, dependsOn: ["downloadIntellijPluginVerifier"]) {
   workingDir = buildDir
   executable = "sh"
-  args = ["-c", "java -jar verifier-cli-$pluginVerifierVersion-all.jar check-plugin distributions/flutter-intellij-$version\\.zip ~/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/LATEST-EAP-SNAPSHOT/80852e6b02067b26385f5f0ef8e2174f0cd4576/ideaIC-LATEST-EAP-SNAPSHOT"]
+  args =
+    ["-c", "java -jar verifier-cli-$pluginVerifierVersion-all.jar check-plugin distributions/flutter-intellij-$version\\.zip ~/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/LATEST-EAP-SNAPSHOT/80852e6b02067b26385f5f0ef8e2174f0cd4576/ideaIC-LATEST-EAP-SNAPSHOT"]
 /*  args = ["-c", "java -jar verifier-cli-$pluginVerifierVersion-all.jar check-plugin @release.list ~/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/LATEST-EAP-SNAPSHOT/80852e6b02067b26385f5f0ef8e2174f0cd4576/ideaIC-LATEST-EAP-SNAPSHOT"]*/
 }
 

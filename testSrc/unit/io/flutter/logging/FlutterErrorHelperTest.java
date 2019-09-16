@@ -16,6 +16,9 @@ public class FlutterErrorHelperTest {
       "a-renderflex-overflowed-by-xxx-pixels-on-the-right",
       FlutterErrorHelper.getAnalyticsId("A RenderFlex overflowed by 1183 pixels on the right."));
     assertEquals(
+      "a-renderflex-overflowed-by-xxx-pixels-on-the-right",
+      FlutterErrorHelper.getAnalyticsId("A RenderFlex overflowed by 22.3 pixels on the right."));
+    assertEquals(
       "no-material-widget-found",
       FlutterErrorHelper.getAnalyticsId("No Material widget found."));
     assertEquals(

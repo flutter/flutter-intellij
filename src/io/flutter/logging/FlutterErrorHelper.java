@@ -13,7 +13,7 @@ import io.flutter.inspector.DiagnosticsNode;
 import java.util.regex.Pattern;
 
 public class FlutterErrorHelper {
-  private static final Pattern numberPattern = Pattern.compile("[0-9]+");
+  private static final Pattern numberPattern = Pattern.compile("[0-9]+(\\.[0-9]+)?");
 
   public static String getAnalyticsId(DiagnosticsNode node) {
     for (DiagnosticsNode property : node.getInlineProperties()) {

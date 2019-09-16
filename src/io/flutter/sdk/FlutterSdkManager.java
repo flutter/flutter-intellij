@@ -10,9 +10,9 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
-import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
+import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.util.EventDispatcher;
 import org.jetbrains.annotations.NotNull;
@@ -38,19 +38,19 @@ public class FlutterSdkManager {
     myProject = project;
 
     final LibraryTableListener libraryTableListener = new LibraryTableListener();
-    ProjectLibraryTable.getInstance(project).addListener(libraryTableListener);
+    final LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
+    libraryTable.addListener(libraryTableListener);
 
-    // TODO(devoncarew): We should replace this polling solution with listeners to project
-    // structure changes.
+    // TODO(devoncarew): We should replace this polling solution with listeners to project structure changes.
     final ScheduledFuture timer = JobScheduler.getScheduler().scheduleWithFixedDelay(
       this::checkForFlutterSdkChange, 1, 1, TimeUnit.SECONDS);
 
     Disposer.register(project, () -> {
-      ProjectLibraryTable.getInstance(project).removeListener(libraryTableListener);
+      LibraryTablesRegistrar.getInstance().getLibraryTable(project).removeListener(libraryTableListener);
       timer.cancel(false);
     });
 
-    ProjectManager.getInstance().addProjectManagerListener(new ProjectManagerListener() {
+    ProjectManager.getInstance().addProjectManagerListener(myProject, new ProjectManagerListener() {
       @Override
       public void projectOpened(@NotNull Project project) {
         checkForFlutterSdkChange();
