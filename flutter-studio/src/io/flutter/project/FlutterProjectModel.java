@@ -5,6 +5,9 @@
  */
 package io.flutter.project;
 
+import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;
+import com.android.tools.idea.gradle.dsl.parser.files.GradleBuildFile;
+import com.android.tools.idea.gradle.util.GradleUtil;
 import com.android.tools.idea.observable.core.BoolValueProperty;
 import com.android.tools.idea.observable.core.OptionalProperty;
 import com.android.tools.idea.observable.core.OptionalValueProperty;
@@ -13,9 +16,16 @@ import com.android.tools.idea.observable.core.StringValueProperty;
 import com.android.tools.idea.wizard.model.WizardModel;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.InvalidDataException;
+import com.intellij.openapi.util.io.FileUtilRt;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterUtils;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.utils.AndroidUtils;
+import java.io.File;
+import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -191,5 +201,72 @@ public class FlutterProjectModel extends WizardModel {
 
   private static void setInitialAndroidxSupport(boolean isSupported) {
     PropertiesComponent.getInstance().setValue(PROPERTIES_ANDROIDX_SUPPORT_KEY, isSupported, true);
+  }
+
+  public static class AddToApp extends FlutterProjectModel {
+    public AddToApp(@NotNull FlutterProjectType type) {
+      super(type);
+    }
+
+    @Override
+    protected void handleFinished() {
+      useAndroidX().set(true);
+      // The host project is an Android app. This module should be created in its root directory.
+      // Android Studio supports a colon-separated convention to specify sub-directories, which is not yet supported here.
+      Project hostProject = project().getValue();
+      String hostPath = hostProject.getBasePath();
+      if (hostPath == null) {
+        throw new InvalidDataException(); // Can't happen
+      }
+      projectLocation().set(hostPath);
+      super.handleFinished();
+      // TODO flutter build aar --debug
+      // If the module is not a direct subdir of the project root then this File() instance needs to be changed.
+      VirtualFile flutterModuleDir = VfsUtil.findFileByIoFile(new File(hostPath, projectName().get()), true);
+      if (flutterModuleDir == null) {
+        return; // Module creation failed; it was reported elsewhere.
+      }
+      new ModuleCoEditHelper(hostProject, flutterModuleDir).enable();
+      // Ensure Gradle sync runs to link in the new add-to-app module.
+      AndroidUtils.scheduleGradleSync(hostProject);
+      // TODO(messick) Generate run configs for release and debug. (If needed.)
+    }
+  }
+
+  // Edit settings.gradle according to add-to-app docs.
+  private static class ModuleCoEditHelper {
+    @NotNull
+    private final Project project;
+    @NotNull
+    private final VirtualFile flutterModuleDir;
+    @NotNull
+    private final File flutterModuleRoot;
+    @NotNull
+    private final VirtualFile projectRoot;
+    @NotNull
+    private final String pathToModule;
+
+    private VirtualFile buildFile;
+
+    private ModuleCoEditHelper(@NotNull Project project, @NotNull VirtualFile flutterModuleDir) {
+      this.project = project;
+      this.flutterModuleDir = flutterModuleDir;
+      this.flutterModuleRoot = new File(flutterModuleDir.getPath());
+      this.projectRoot = FlutterUtils.getProjectRoot(project);
+      this.pathToModule = Objects.requireNonNull(FileUtilRt.getRelativePath(new File(projectRoot.getPath()), flutterModuleRoot));
+    }
+
+    private void enable() {
+      buildFile = GradleUtil.getGradleBuildFile(new File(projectRoot.getPath(), "app"));
+      if (buildFile == null) {
+        return;
+      }
+      GradleBuildFile gradleBuildFile = parseBuildFile();
+    }
+
+    private GradleBuildFile parseBuildFile() {
+      // See AndroidUtils.parseSettings() if API skew causes a need for reflection.
+      return BuildModelContext.create(project).getOrCreateBuildFile(projectRoot, true);
+    }
   }
 }
