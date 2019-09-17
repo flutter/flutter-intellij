@@ -17,14 +17,12 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.wm.impl.welcomeScreen.NewWelcomeScreen;
 import com.intellij.ui.LayeredIcon;
 import com.intellij.ui.OffsetIcon;
-import com.intellij.ui.SizedIcon;
 import icons.FlutterIcons;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.project.ChoseProjectTypeStep;
 import io.flutter.project.FlutterProjectModel;
 import java.util.NoSuchElementException;
 import javax.swing.Icon;
-import javax.swing.SwingConstants;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterNewProjectAction extends AnAction implements DumbAware {
@@ -53,7 +51,6 @@ public class FlutterNewProjectAction extends AnAction implements DumbAware {
       .addStep(new ChoseProjectTypeStep(model))
       .build();
     StudioWizardDialogBuilder builder = new StudioWizardDialogBuilder(wizard, "Create New Flutter Project");
-    builder.setUxStyle(StudioWizardDialogBuilder.UxStyle.DYNAMIC_APP);
     ModelWizardDialog dialog = builder.build();
     try {
       dialog.show();
