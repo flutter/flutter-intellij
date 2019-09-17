@@ -125,7 +125,7 @@ abstract class VmServiceBase implements VmServiceConst {
       @Override
       public void onError(RPCError error) {
         String msg = "Failed to determine protocol version: " + error.getCode() + "\n  message: "
-            + error.getMessage() + "\n  details: " + error.getDetails();
+                     + error.getMessage() + "\n  details: " + error.getDetails();
         Logging.getLogger().logInformation(msg);
         errMsg[0] = msg;
       }
@@ -137,11 +137,11 @@ abstract class VmServiceBase implements VmServiceConst {
         if (major != VmService.versionMajor || minor != VmService.versionMinor) {
           if (major == 2 || major == 3) {
             Logging.getLogger().logInformation(
-                "Difference in protocol version: client=" + VmService.versionMajor + "."
-                    + VmService.versionMinor + " vm=" + major + "." + minor);
+              "Difference in protocol version: client=" + VmService.versionMajor + "."
+              + VmService.versionMinor + " vm=" + major + "." + minor);
           } else {
             String msg = "Incompatible protocol version: client=" + VmService.versionMajor + "."
-                + VmService.versionMinor + " vm=" + major + "." + minor;
+                         + VmService.versionMinor + " vm=" + major + "." + minor;
             Logging.getLogger().logError(msg);
             errMsg[0] = msg;
           }
@@ -531,15 +531,15 @@ abstract class VmServiceBase implements VmServiceConst {
   }
 
   private static final RemoteServiceCompleter ignoreCallback =
-      new RemoteServiceCompleter() {
-        public void result(JsonObject result) {
-          // ignore
-        }
+    new RemoteServiceCompleter() {
+      public void result(JsonObject result) {
+        // ignore
+      }
 
-        public void error(int code, String message, JsonObject data) {
-          // ignore
-        }
-      };
+      public void error(int code, String message, JsonObject data) {
+        // ignore
+      }
+    };
 
   void processNotification(JsonObject json) {
     String method;
@@ -618,11 +618,13 @@ abstract class VmServiceBase implements VmServiceConst {
         Logging.getLogger().logError("Response has invalid " + RESULT, e);
         return;
       }
-      String responseType;
-      try {
+      String responseType = "";
+      if (result.has(TYPE)) {
         responseType = result.get(TYPE).getAsString();
-      } catch (Exception e) {
-        Logging.getLogger().logError("Response missing " + TYPE, e);
+      }
+      // ServiceExtensionConsumers do not care about the response type.
+      else if (!(consumer instanceof ServiceExtensionConsumer)) {
+        Logging.getLogger().logError("Response missing " + TYPE + ": " + result.toString());
         return;
       }
       forwardResponse(consumer, responseType, result);
