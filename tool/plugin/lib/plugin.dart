@@ -634,6 +634,7 @@ class BuildCommand extends ProductCommand {
       }
 
       if (!spec.version.startsWith('3.5') &&
+          !spec.version.startsWith('3.6') &&
           !spec.version.startsWith('2019.2') &&
           !(spec.version == '2019.1.2')) {
         processedFile = File(
@@ -658,7 +659,7 @@ class BuildCommand extends ProductCommand {
         processedFile.writeAsStringSync(source);
       }
 
-      if (!spec.version.startsWith('2019.2')) {
+      if (!spec.version.startsWith('2019.2') && ! spec.version.startsWith('3.6')) {
         processedFile = File(
             'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
         source = processedFile.readAsStringSync();

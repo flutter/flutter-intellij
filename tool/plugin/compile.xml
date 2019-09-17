@@ -52,6 +52,7 @@ Include -D arguments to define these properties: idea.product, idea.version.
       </fileset>
       <fileset dir="${idea.home}/plugins">
         <include name="**/lib/*.jar"/>
+        <exclude name="**/kotlin-compiler.jar"/>
       </fileset>
     </path>
 
