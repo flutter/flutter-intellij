@@ -12,7 +12,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.fileEditor.FileDocumentManagerAdapter;
+import com.intellij.openapi.fileEditor.FileDocumentManagerListener;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
@@ -62,7 +62,7 @@ public class FlutterSaveActionsManager {
 
     final MessageBus bus = project.getMessageBus();
     final MessageBusConnection connection = bus.connect();
-    connection.subscribe(AppTopics.FILE_DOCUMENT_SYNC, new FileDocumentManagerAdapter() {
+    connection.subscribe(AppTopics.FILE_DOCUMENT_SYNC, new FileDocumentManagerListener() {
       @Override
       public void beforeDocumentSaving(@NotNull Document document) {
         handleBeforeDocumentSaving(document);
@@ -108,13 +108,13 @@ public class FlutterSaveActionsManager {
       return;
     }
 
-    DartAnalysisServerService.getInstance(myProject).serverReadyForRequest(myProject);
-
-    if (settings.isOrganizeImportsOnSaveKey()) {
-      performOrganizeThenFormat(document, file);
-    }
-    else {
-      performFormat(document, file, false);
+    if (DartAnalysisServerService.getInstance(myProject).serverReadyForRequest(myProject)) {
+      if (settings.isOrganizeImportsOnSave()) {
+        performOrganizeThenFormat(document, file);
+      }
+      else {
+        performFormat(document, file, false);
+      }
     }
   }
 

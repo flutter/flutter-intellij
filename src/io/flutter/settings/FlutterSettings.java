@@ -85,7 +85,7 @@ public class FlutterSettings {
     if (isFormatCodeOnSave()) {
       analytics.sendEvent("settings", afterLastPeriod(formatCodeOnSaveKey));
 
-      if (isOrganizeImportsOnSaveKey()) {
+      if (isOrganizeImportsOnSave()) {
         analytics.sendEvent("settings", afterLastPeriod(organizeImportsOnSaveKey));
       }
     }
@@ -179,11 +179,11 @@ public class FlutterSettings {
     fireEvent();
   }
 
-  public boolean isOrganizeImportsOnSaveKey() {
+  public boolean isOrganizeImportsOnSave() {
     return getPropertiesComponent().getBoolean(organizeImportsOnSaveKey, false);
   }
 
-  public void setOrganizeImportsOnSaveKey(boolean value) {
+  public void setOrganizeImportsOnSave(boolean value) {
     getPropertiesComponent().setValue(organizeImportsOnSaveKey, value, false);
 
     fireEvent();
