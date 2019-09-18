@@ -583,7 +583,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     if (fps == null) {
       fps = defaultRefreshRate;
     }
-    return Math.round(((float) Math.floor(1000000.0f / fps)));
+    return (int) Math.round((Math.floor(1000000.0f / fps)));
   }
 
   /**
