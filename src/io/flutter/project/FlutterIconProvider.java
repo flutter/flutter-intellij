@@ -62,7 +62,7 @@ public class FlutterIconProvider extends IconProvider {
     if (element instanceof DartFile) {
       final DartFile dartFile = (DartFile)element;
       final VirtualFile file = dartFile.getVirtualFile();
-      if (!file.isInLocalFileSystem()) return null;
+      if (file == null || !file.isInLocalFileSystem()) return null;
 
       // Use a simple naming convention heuristic to identify test files.
       // TODO(pq): consider pushing up to the Dart Plugin.
