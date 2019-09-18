@@ -16,8 +16,8 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.vmService.FlutterFramesMonitor;
 import io.flutter.vmService.VMServiceManager;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Path2D;
