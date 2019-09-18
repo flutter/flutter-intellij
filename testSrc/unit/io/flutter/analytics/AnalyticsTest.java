@@ -6,6 +6,7 @@
 package io.flutter.analytics;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -28,24 +29,28 @@ public class AnalyticsTest {
   }
 
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void testSendScreenView() {
     analytics.sendScreenView("testAnalyticsPage");
     assertEquals(1, transport.sentValues.size());
   }
 
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void testSendEvent() {
     analytics.sendEvent("flutter", "doctor");
     assertEquals(1, transport.sentValues.size());
   }
 
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void testSendTiming() {
     analytics.sendTiming("perf", "reloadTime", 100);
     assertEquals(1, transport.sentValues.size());
   }
 
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void testSendException() {
     analytics.sendException(new UnsupportedOperationException("test operation"), true);
     assertEquals(1, transport.sentValues.size());

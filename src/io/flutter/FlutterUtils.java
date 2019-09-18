@@ -18,6 +18,7 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
@@ -33,6 +34,12 @@ import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.pub.PubRoot;
 import io.flutter.utils.FlutterModuleUtils;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.regex.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.SystemIndependent;
@@ -42,13 +49,6 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.resolver.Resolver;
-
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.regex.Pattern;
 
 public class FlutterUtils {
   public static class FlutterPubspecInfo {
@@ -203,6 +203,15 @@ public class FlutterUtils {
   @Nullable
   public static VirtualFile getRealVirtualFile(@Nullable PsiFile psiFile) {
     return psiFile != null ? psiFile.getOriginalFile().getVirtualFile() : null;
+  }
+
+  @NotNull
+  public static VirtualFile getProjectRoot(@NotNull Project project) {
+    assert !project.isDefault();
+    @SystemIndependent String path = project.getBasePath();
+    assert path != null;
+    VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
+    return Objects.requireNonNull(file);
   }
 
   /**
@@ -475,6 +484,41 @@ public class FlutterUtils {
     android = dir.findFileByRelativePath("example/android");
     if (android != null) {
       return android;
+    }
+    return null;
+  }
+
+  @Nullable
+  public static Module findModuleNamed(@NotNull Project project, @NotNull String name) {
+    Module[] modules = ModuleManager.getInstance(project).getModules();
+    for (Module module : modules) {
+      if (module.getName().equals(name)) {
+        return module;
+      }
+    }
+    return null;
+  }
+
+  @Nullable
+  public static Module findFlutterGradleModule(@NotNull Project project) {
+    Module module = findModuleNamed(project, "flutter");
+    if (module == null) {
+      return null;
+    }
+    if (module.getModuleFilePath().endsWith(".android/Flutter/flutter.iml")) {
+      VirtualFile file = module.getModuleFile();
+      if (file == null) {
+        return null;
+      }
+      file = file.getParent().getParent().getParent();
+      VirtualFile meta = file.findChild(".metadata");
+      if (meta == null) {
+        return null;
+      }
+      VirtualFile android = getFlutterManagedAndroidDir(meta.getParent());
+      if (android != null && android.getName().equals(".android")) {
+        return module; // Only true for Flutter modules.
+      }
     }
     return null;
   }

@@ -12,6 +12,10 @@
     <projectsystem implementation="io.flutter.project.FlutterProjectSystemProvider"/>
   </extensions>
 
+  <extensions defaultExtensionNs="io.flutter">
+    <gradleSyncProvider implementation="io.flutter.android.AndroidStudioGradleSyncProvider" order="first"/>
+  </extensions>
+
   <extensions defaultExtensionNs="com.intellij">
     <androidStudioInitializer implementation="io.flutter.FlutterStudioInitializer"/>
     <postStartupActivity implementation="io.flutter.FlutterStudioStartupActivity"/>
