@@ -5,9 +5,9 @@
  */
 package io.flutter.run.bazelTest;
 
-import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.ConfigurationTypeBase;
-import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.ExecutionBundle;
+import com.intellij.execution.configurations.*;
+import com.intellij.openapi.components.BaseState;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import icons.FlutterIcons;
@@ -15,6 +15,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.run.bazel.FlutterBazelRunConfigurationType;
 import io.flutter.run.test.FlutterTestConfigType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The Bazel version of the {@link FlutterTestConfigType} configuration.
@@ -32,7 +33,6 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
     // Otherwise, only one configuration may show up.
     addFactory(factory);
     addFactory(watchFactory);
-
   }
 
   public static FlutterBazelTestConfigurationType getInstance() {
@@ -81,9 +81,10 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
       // This is always called first when loading a run config, even when it's a non-template config.
       // See RunManagerImpl.doCreateConfiguration
-      BazelTestConfig config = new BazelTestConfig(
-        project, this, FlutterBundle.message("runner.flutter.bazel.watch.test.configuration.name"));
-      config.setFields(new BazelTestFields(null, null, null, "--watch"));
+      BazelTestConfig config = new BazelTestConfig(project, this, FlutterBundle.message("runner.flutter.bazel.test.configuration.name"));
+      // TODO(djshuckerow): To make test watching work well with the detailed test output, we need to reset the test window every re-run.
+      // Until then, we'll default watch configurations to running with --no-machine.
+      config.setFields(new BazelTestFields(null, null, null, BazelTestFields.Flags.watch + " " + BazelTestFields.Flags.noMachine));
       return config;
     }
 
@@ -93,12 +94,14 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
     }
 
     @Override
-    public @NotNull String getName() {
+    @NotNull
+    public String getName() {
       return "Watch " + super.getName();
     }
 
     @Override
-    public @NotNull String getId() {
+    @NotNull
+    public String getId() {
       return FlutterBundle.message("runner.flutter.bazel.watch.test.configuration.name");
     }
   }

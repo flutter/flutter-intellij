@@ -85,7 +85,7 @@ public class BazelTestLaunchState extends CommandLineState {
   @Override
   protected ConsoleView createConsole(@NotNull Executor executor) throws ExecutionException {
     // If the --machine output flag is not turned on, then don't activate the new window.
-    if (fields.getAdditionalArgs() == null || !fields.getAdditionalArgs().contains(BazelTestFields.Flags.machine)) {
+    if (fields.getAdditionalArgs() != null && fields.getAdditionalArgs().contains(BazelTestFields.Flags.noMachine)) {
       return super.createConsole(executor);
     }
 

@@ -40,6 +40,23 @@ public class LaunchCommandsTest {
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
     expectedCommandLine.add("--no-color");
+    expectedCommandLine.add("--machine");
+    expectedCommandLine.add("//foo:test");
+    assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
+  }
+
+
+  @Test
+  public void producesCorrectCommandLineForBazelTargetWithNoMachineFlag() throws ExecutionException {
+    final BazelTestFields fields = new FakeBazelTestFields(
+      BazelTestFields.forTarget("//foo:test", "--no-machine")
+    );
+    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
+
+    final List<String> expectedCommandLine = new ArrayList<>();
+    expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add("--no-machine");
+    expectedCommandLine.add("--no-color");
     expectedCommandLine.add("//foo:test");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
@@ -52,6 +69,7 @@ public class LaunchCommandsTest {
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
     expectedCommandLine.add("--no-color");
+    expectedCommandLine.add("--machine");
     expectedCommandLine.add("//foo:test");
     expectedCommandLine.add("--");
     expectedCommandLine.add("--enable-debugging");
@@ -67,9 +85,26 @@ public class LaunchCommandsTest {
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
     expectedCommandLine.add("--no-color");
+    expectedCommandLine.add("--machine");
     expectedCommandLine.add("foo/test/foo_test.dart");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
+
+  @Test
+  public void producesCorrectCommandLineForFileWithNoMachineFlag() throws ExecutionException {
+    final BazelTestFields fields = new FakeBazelTestFields(
+      BazelTestFields.forFile("/workspace/foo/test/foo_test.dart", "--no-machine")
+    );
+    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
+
+    final List<String> expectedCommandLine = new ArrayList<>();
+    expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add("--no-machine");
+    expectedCommandLine.add("--no-color");
+    expectedCommandLine.add("foo/test/foo_test.dart");
+    assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
+  }
+
 
   @Test
   public void producesCorrectCommandLineForFileInDebugMode() throws ExecutionException {
@@ -79,6 +114,7 @@ public class LaunchCommandsTest {
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
     expectedCommandLine.add("--no-color");
+    expectedCommandLine.add("--machine");
     expectedCommandLine.add("foo/test/foo_test.dart");
     expectedCommandLine.add("--");
     expectedCommandLine.add("--enable-debugging");
@@ -93,11 +129,30 @@ public class LaunchCommandsTest {
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
     expectedCommandLine.add("--no-color");
+    expectedCommandLine.add("--machine");
     expectedCommandLine.add("--name");
     expectedCommandLine.add("first test");
     expectedCommandLine.add("foo/test/foo_test.dart");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
+
+  @Test
+  public void producesCorrectCommandLineForTestNameWithNoMachineFlag() throws ExecutionException {
+    final BazelTestFields fields = new FakeBazelTestFields(
+      BazelTestFields.forTestName("first test", "/workspace/foo/test/foo_test.dart", "--no-machine")
+    );
+    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
+
+    final List<String> expectedCommandLine = new ArrayList<>();
+    expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add("--no-machine");
+    expectedCommandLine.add("--no-color");
+    expectedCommandLine.add("--name");
+    expectedCommandLine.add("first test");
+    expectedCommandLine.add("foo/test/foo_test.dart");
+    assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
+  }
+
 
   @Test
   public void producesCorrectCommandLineForTestNameInDebugMode() throws ExecutionException {
@@ -107,6 +162,7 @@ public class LaunchCommandsTest {
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
     expectedCommandLine.add("--no-color");
+    expectedCommandLine.add("--machine");
     expectedCommandLine.add("--name");
     expectedCommandLine.add("first test");
     expectedCommandLine.add("foo/test/foo_test.dart");
@@ -132,6 +188,7 @@ public class LaunchCommandsTest {
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/launch.sh");
     expectedCommandLine.add("--no-color");
+    expectedCommandLine.add("--machine");
     expectedCommandLine.add("//foo:test");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
@@ -152,6 +209,7 @@ public class LaunchCommandsTest {
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/launch.sh");
     expectedCommandLine.add("--no-color");
+    expectedCommandLine.add("--machine");
     expectedCommandLine.add("//foo:test");
     expectedCommandLine.add("--");
     expectedCommandLine.add("--enable-debugging");
@@ -235,6 +293,7 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("--arg2");
     expectedCommandLine.add("3");
     expectedCommandLine.add("--no-color");
+    expectedCommandLine.add("--machine");
     expectedCommandLine.add("foo/test/foo_test.dart");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
