@@ -120,6 +120,8 @@ public class ServiceExtensions {
   public static final String enableLogs = "ext.flutter.logs.enable";
   public static final String loggingChannels = "ext.flutter.logs.loggingChannels";
   public static final String designerRender = "ext.flutter.designer.render";
+  public static final String flutterListViews = "_flutter.listViews";
+  public static final String displayRefreshRate = "_flutter.getDisplayRefreshRate";
 
   static final List<ServiceExtensionDescription> toggleableExtensionDescriptions = Arrays.asList(
     debugAllowBanner,

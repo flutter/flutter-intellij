@@ -5,12 +5,17 @@
  */
 package io.flutter.vmService;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import gnu.trove.THashMap;
 import io.flutter.inspector.EvalOnDartLibrary;
+import io.flutter.run.daemon.DaemonApi;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.StreamSubscription;
@@ -18,6 +23,7 @@ import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.vmService.HeapMonitor.HeapListener;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetIsolateConsumer;
+import org.dartlang.vm.service.consumer.ServiceExtensionConsumer;
 import org.dartlang.vm.service.consumer.VMConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
@@ -29,6 +35,10 @@ import java.util.function.Consumer;
 public class VMServiceManager implements FlutterApp.FlutterAppListener {
   // TODO(devoncarew): Remove on or after approx. Oct 1 2019.
   public static final String LOGGING_STREAM_ID_OLD = "_Logging";
+
+  public final double defaultRefreshRate = 60.0;
+
+  private static final Logger LOG = Logger.getInstance(DaemonApi.class);
 
   @NotNull private final FlutterApp app;
   @NotNull private final HeapMonitor heapMonitor;
@@ -42,6 +52,8 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
   @NotNull private final Map<String, EventStream<ServiceExtensionState>> serviceExtensionState = new THashMap<>();
 
   private final EventStream<IsolateRef> flutterIsolateRefStream;
+
+  private final EventStream<Double> displayRefreshRateStream;
 
   private boolean isRunning;
   private int polledCount;
@@ -62,9 +74,10 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     app.addStateListener(this);
 
     this.heapMonitor = new HeapMonitor(vmService, app.getFlutterDebugProcess());
-    this.flutterFramesMonitor = new FlutterFramesMonitor(vmService);
+    this.flutterFramesMonitor = new FlutterFramesMonitor(this, vmService);
     this.polledCount = 0;
     flutterIsolateRefStream = new EventStream<>();
+    displayRefreshRateStream = new EventStream<>();
 
     // The VM Service depends on events from the Extension event stream to determine when Flutter.Frame
     // events are fired. Without the call to listen, events from the stream will not be sent.
@@ -187,7 +200,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
    * Return the current Flutter IsolateRef, if any.
    * <p>
    * Note that this may not be immediately populated at app startup for Flutter apps; clients that wish to
-   * be notified when the Flutter isolate is discovered should prefer the StreamSubscription varient of this
+   * be notified when the Flutter isolate is discovered should prefer the StreamSubscription variant of this
    * method (getCurrentFlutterIsolate()).
    */
   public IsolateRef getCurrentFlutterIsolateRaw() {
@@ -236,7 +249,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     }
   }
 
-  @SuppressWarnings("EmptyMethod")
   private void onVmServiceReceived(String streamId, Event event) {
     // Check for the current Flutter isolate exiting.
     final IsolateRef flutterIsolateRef = flutterIsolateRefStream.getValue();
@@ -355,6 +367,12 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
         addServiceExtension(extensionName);
       }
       pendingServiceExtensions.clear();
+
+      // Query for display refresh rate and add the value to the stream.
+      // This needs to happen on the UI thread.
+      ApplicationManager.getApplication().invokeLater(() -> {
+        getDisplayRefreshRate().thenAcceptAsync(displayRefreshRateStream::setValue);
+      });
     }
   }
 
@@ -558,6 +576,120 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     if (serviceName != null) {
       registeredServices.remove(serviceName);
     }
+  }
+
+  public int getTargetMicrosPerFrame() {
+    Double fps = getCurrentDisplayRefreshRateRaw();
+    if (fps == null) {
+      fps = defaultRefreshRate;
+    }
+    return (int) Math.round((Math.floor(1000000.0f / fps)));
+  }
+
+  /**
+   * Returns a StreamSubscription providing the queried display refresh rate.
+   * <p>
+   * The current value of the subscription can be null occasionally during initial application startup and for a brief time when doing a
+   * hot restart.
+   */
+  public StreamSubscription<Double> getCurrentDisplayRefreshRate(Consumer<Double> onValue, boolean onUIThread) {
+    return displayRefreshRateStream.listen(onValue, onUIThread);
+  }
+
+  /**
+   * Return the current display refresh rate, if any.
+   * <p>
+   * Note that this may not be immediately populated at app startup for Flutter apps. In that case, this will return
+   * the default value (defaultRefreshRate). Clients that wish to be notified when the refresh rate is discovered
+   * should prefer the StreamSubscription variant of this method (getCurrentDisplayRefreshRate()).
+   */
+  public Double getCurrentDisplayRefreshRateRaw() {
+    synchronized (displayRefreshRateStream) {
+      Double fps = displayRefreshRateStream.getValue();
+      if (fps == null) {
+        fps = defaultRefreshRate;
+      }
+      return fps;
+    }
+  }
+
+  public CompletableFuture<Double> getDisplayRefreshRate() {
+    final double unknownRefreshRate = 0.0;
+
+    final String flutterViewId = getFlutterViewId().exceptionally(exception -> {
+      LOG.warn(exception.getMessage());
+      return null;
+    }).join();
+
+    if (flutterViewId == null) {
+      // Fail gracefully by returning the default.
+      return CompletableFuture.completedFuture(defaultRefreshRate);
+    }
+
+    return invokeGetDisplayRefreshRate(flutterViewId);
+  }
+
+  private CompletableFuture<Double> invokeGetDisplayRefreshRate(String flutterViewId) {
+    final CompletableFuture<Double> ret = new CompletableFuture<>();
+    final JsonObject params = new JsonObject();
+    params.addProperty("viewId", flutterViewId);
+    vmService.callServiceExtension(
+      getCurrentFlutterIsolateRaw().getId(), ServiceExtensions.displayRefreshRate, params,
+      new ServiceExtensionConsumer() {
+        @Override
+        public void onError(RPCError error) {
+          ret.completeExceptionally(new RuntimeException(error.getMessage()));
+        }
+
+        @Override
+        public void received(JsonObject object) {
+          if (object == null) {
+            ret.complete(null);
+          }
+          else {
+            ret.complete(object.get("fps").getAsDouble());
+          }
+        }
+      }
+    );
+    return ret;
+  }
+
+  private CompletableFuture<String> getFlutterViewId() {
+    return getFlutterViewsList().thenApplyAsync((JsonElement element) -> {
+      final JsonArray viewsList = element.getAsJsonObject().get("views").getAsJsonArray();
+      for (JsonElement jsonElement : viewsList) {
+        final JsonObject view = jsonElement.getAsJsonObject();
+        if (view.get("type").getAsString().equals("FlutterView")) {
+          return view.get("id").getAsString();
+        }
+      }
+      throw new RuntimeException("No Flutter views to query: " + viewsList.toString());
+    });
+  }
+
+  private CompletableFuture<JsonElement> getFlutterViewsList() {
+    final CompletableFuture<JsonElement> ret = new CompletableFuture<>();
+    vmService.callServiceExtension(
+      getCurrentFlutterIsolateRaw().getId(), ServiceExtensions.flutterListViews,
+      new ServiceExtensionConsumer() {
+        @Override
+        public void onError(RPCError error) {
+          ret.completeExceptionally(new RuntimeException(error.getMessage()));
+        }
+
+        @Override
+        public void received(JsonObject object) {
+          if (object == null) {
+            ret.complete(null);
+          }
+          else {
+            ret.complete(object);
+          }
+        }
+      }
+    );
+    return ret;
   }
 
   public void addPollingClient() {
