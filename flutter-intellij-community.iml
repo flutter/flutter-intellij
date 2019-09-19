@@ -11,6 +11,7 @@
       <sourceFolder url="file://$MODULE_DIR$/gen" isTestSource="false" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/third_party/intellij-plugins-dart/testSrc" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/third_party/vmServiceDrivers" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/testData" type="java-test-resource" />
       <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/artifacts" />
@@ -19,6 +20,7 @@
       <excludeFolder url="file://$MODULE_DIR$/out/test/flutter-intellij/sample_tests/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/out/test/flutter-intellij/sample_tests/build" />
       <excludeFolder url="file://$MODULE_DIR$/src/main" />
+      <excludeFolder url="file://$MODULE_DIR$/testData" />
       <excludeFolder url="file://$MODULE_DIR$/testData/sample_tests/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/testData/sample_tests/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/testData/sample_tests/build" />
@@ -59,7 +61,16 @@
     <orderEntry type="library" exported="" name="Dart Packages" level="project" />
     <orderEntry type="library" name="miglayout-swing" level="project" />
     <orderEntry type="library" name="commons-io" level="project" />
-    <orderEntry type="library" name="org.powermock:powermock-module-junit4:2.0.2" level="project" />
+    <orderEntry type="module" module-name="intellij.android.core" />
+    <orderEntry type="module" module-name="intellij.platform.externalSystem" />
+    <orderEntry type="module" module-name="intellij.gradle.common" />
+    <orderEntry type="library" name="com.android.tools:common" level="project" />
+    <orderEntry type="library" name="studio-analytics-proto" level="project" />
+    <orderEntry type="library" name="protobuf" level="project" />
+    <orderEntry type="module" module-name="intellij.java.compiler.impl" />
     <orderEntry type="library" name="org.powermock:powermock-api-mockito2:2.0.2" level="project" />
+    <orderEntry type="library" name="org.powermock:powermock-module-junit4:2.0.2" level="project" />
+    <orderEntry type="module" module-name="intellij.platform.serviceContainer" />
+    <orderEntry type="library" name="com.android.tools.analytics-library:protos" level="project" />
   </component>
 </module>

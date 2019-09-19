@@ -5,11 +5,16 @@
  */
 package io.flutter;
 
+import com.intellij.ProjectTopics;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.notification.*;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationDisplayType;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
+import com.intellij.notification.NotificationsConfiguration;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationInfo;
@@ -17,9 +22,12 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupActivity;
+import com.intellij.util.concurrency.AppExecutorUtil;
+import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.android.IntelliJAndroidSdk;
@@ -38,13 +46,13 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkManager;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.survey.FlutterSurveyNotifications;
+import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.view.FlutterPerfViewFactory;
 import io.flutter.view.FlutterViewFactory;
-import org.jetbrains.annotations.NotNull;
-
-import javax.swing.event.HyperlinkEvent;
 import java.util.UUID;
+import javax.swing.event.HyperlinkEvent;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Runs actions after the project has started up and the index is up to date.
@@ -62,6 +70,22 @@ public class FlutterInitializer implements StartupActivity {
 
   @Override
   public void runActivity(@NotNull Project project) {
+    // TODO(messick): Remove 'FlutterUtils.isAndroidStudio()' after Android Q sources are published.
+    if (FlutterUtils.isAndroidStudio() && !FlutterModuleUtils.hasFlutterModule(project)) {
+      MessageBusConnection connection = project.getMessageBus().connect(project);
+      connection.subscribe(ProjectTopics.MODULES, new ModuleListener() {
+        @Override
+        public void moduleAdded(@NotNull Project proj, @NotNull Module mod) {
+          if (AndroidUtils.FLUTTER_MODULE_NAME.equals(mod.getName())) {
+            connection.disconnect();
+            AppExecutorUtil.getAppExecutorService().execute(() -> {
+              AndroidUtils.enableCoeditIfAddToAppDetected(project);
+            });
+          }
+        }
+      });
+    }
+
     // Convert all modules of deprecated type FlutterModuleType.
     if (FlutterModuleUtils.convertFromDeprecatedModuleType(project)) {
       // If any modules were converted over, create a notification

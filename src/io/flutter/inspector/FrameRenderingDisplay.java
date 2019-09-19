@@ -14,6 +14,9 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.vmService.FlutterFramesMonitor;
+import io.flutter.vmService.VMServiceManager;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,8 +32,6 @@ public class FrameRenderingDisplay {
     df.setMaximumFractionDigits(1);
   }
 
-  private static final String TARGET_FRAME_RENDERING_TIME = "16ms";
-
   public static JPanel createJPanelView(Disposable parentDisposable, FlutterApp app) {
     final JPanel panel = new JPanel(new StackLayout());
     panel.setDoubleBuffered(true);
@@ -38,7 +39,7 @@ public class FrameRenderingDisplay {
     assert app.getVMServiceManager() != null;
     final FlutterFramesMonitor flutterFramesMonitor = app.getVMServiceManager().getFlutterFramesMonitor();
 
-    final FrameRenderingPanel frameRenderingPanel = new FrameRenderingPanel(flutterFramesMonitor);
+    final FrameRenderingPanel frameRenderingPanel = new FrameRenderingPanel(flutterFramesMonitor, app.getVMServiceManager());
 
     final JBLabel latestFrameTimeLabel = new JBLabel();
     latestFrameTimeLabel.setAlignmentX(Component.RIGHT_ALIGNMENT);
@@ -52,12 +53,20 @@ public class FrameRenderingDisplay {
     latestFrameTimePanel.setOpaque(false);
     latestFrameTimePanel.add(latestFrameTimeLabel);
 
-    final JBLabel targetFrameTimeLabel = new JBLabel(TARGET_FRAME_RENDERING_TIME);
+    final JBLabel targetFrameTimeLabel = new JBLabel();
     targetFrameTimeLabel.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
     targetFrameTimeLabel.setForeground(UIUtil.getLabelDisabledForeground());
     targetFrameTimeLabel.setBorder(JBUI.Borders.empty(2));
     targetFrameTimeLabel.setOpaque(false);
-    targetFrameTimeLabel.setToolTipText("Targeting 16ms per frame will\nresult in 60 frames per second.");
+
+    final double defaultRefreshRate = app.getVMServiceManager().defaultRefreshRate;
+    updateTargetLabelForRefreshRate(app.getVMServiceManager().getCurrentDisplayRefreshRateRaw(), defaultRefreshRate, targetFrameTimeLabel);
+
+    // Listen for updates to the display refresh rate.
+    app.getVMServiceManager().getCurrentDisplayRefreshRate((fps) -> {
+      updateTargetLabelForRefreshRate(fps, defaultRefreshRate, targetFrameTimeLabel);
+    }, false);
+
     final JBPanel targetFrameTimePanel = new JBPanel();
     targetFrameTimePanel.setLayout(new BoxLayout(targetFrameTimePanel, BoxLayout.Y_AXIS));
     targetFrameTimePanel.setOpaque(false);
@@ -77,7 +86,6 @@ public class FrameRenderingDisplay {
       SwingUtilities.invokeLater(latestFrameTimeLabel::repaint);
 
       // Repaint this after each frame so that the label does not get painted over by the frame rendering panel.
-      targetFrameTimeLabel.setText(TARGET_FRAME_RENDERING_TIME);
       SwingUtilities.invokeLater(targetFrameTimeLabel::repaint);
     };
 
@@ -86,17 +94,33 @@ public class FrameRenderingDisplay {
 
     return panel;
   }
+
+  private static void updateTargetLabelForRefreshRate(@Nullable Double fps, @NotNull Double defaultRefreshRate, JBLabel targetLabel) {
+    if (fps == null) {
+      fps = defaultRefreshRate;
+    }
+    final double targetFrameTime = Math.floor(1000.0f / fps);
+    final String targetFrameTimeText = Math.round(targetFrameTime) + "ms";
+    targetLabel.setText(targetFrameTimeText);
+    targetLabel
+      .setToolTipText("Targeting " + targetFrameTimeText + " per frame will\nresult in "
+                      + Math.round(fps) + " frames per second. ");
+    SwingUtilities.invokeLater(targetLabel::repaint);
+  }
 }
 
 class FrameRenderingPanel extends JPanel {
   private final FlutterFramesMonitor framesMonitor;
 
+  private final VMServiceManager vmServiceManager;
+
   private final Map<FlutterFramesMonitor.FlutterFrameEvent, JComponent> frameWidgets = new HashMap<>();
 
   private Rectangle lastSavedBounds;
 
-  FrameRenderingPanel(FlutterFramesMonitor framesMonitor) {
+  FrameRenderingPanel(@NotNull FlutterFramesMonitor framesMonitor, @NotNull VMServiceManager vmServiceManager) {
     this.framesMonitor = framesMonitor;
+    this.vmServiceManager = vmServiceManager;
 
     setLayout(null);
     final Color color = UIUtil.getLabelDisabledForeground();
@@ -134,7 +158,7 @@ class FrameRenderingPanel extends JPanel {
     final Graphics2D g2 = (Graphics2D)g;
 
     final float msPerPixel = (2.0f * 1000000.0f / 60.0f) / height;
-    final float y = FlutterFramesMonitor.microsPerFrame / msPerPixel;
+    final float y = vmServiceManager.getTargetMicrosPerFrame() / msPerPixel;
     final Stroke oldStroke = g2.getStroke();
     try {
       g2.setStroke(STROKE);
@@ -182,7 +206,8 @@ class FrameRenderingPanel extends JPanel {
           widget.setToolTipText(frame.isSlowFrame()
                                 ? "This frame took " +
                                   FrameRenderingDisplay.df.format(frame.elapsedMicros / 1000.0d) +
-                                  "ms to render, which\ncan cause frame rate to drop below 60 FPS."
+                                  "ms to render, which\ncan cause frame rate to drop below " +
+                                  Math.round(vmServiceManager.getCurrentDisplayRefreshRateRaw()) + " FPS."
                                 : "This frame took " + FrameRenderingDisplay.df.format(frame.elapsedMicros / 1000.0d) + "ms to render.");
           frameWidgets.put(frame, widget);
           add(widget);
