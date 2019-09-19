@@ -9,6 +9,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
@@ -20,11 +22,15 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.CharsetToolkit;
+import io.flutter.bazel.Workspace;
 import io.flutter.console.FlutterConsoles;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -54,7 +60,11 @@ public class DevToolsManager {
   }
 
   public CompletableFuture<Boolean> installDevTools() {
-    final FlutterSdk sdk = FlutterSdk.forPubOrBazel(project);
+    if (isBazel(project)) {
+      // Bazel projects do not need to load DevTools.
+      return createCompletedFuture(true);
+    }
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     if (sdk == null) {
       return createCompletedFuture(false);
     }
@@ -122,19 +132,63 @@ public class DevToolsManager {
     openBrowserImpl(uri, page);
   }
 
+  /**
+   * Gets the process handler that will start DevTools from pub.
+   */
+  private OSProcessHandler getProcessHandlerForPub() {
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+    if (sdk == null) {
+      return null;
+    }
+    // TODO(https://github.com/flutter/flutter/issues/33324): We shouldn't need a pubroot to call pub global.
+    @Nullable final PubRoot pubRoot = PubRoots.forProject(project).stream().findFirst().orElse(null);
+    final FlutterCommand command = sdk.flutterPackagesPub(pubRoot, "global", "run", "devtools", "--machine", "--port=0");
+
+    // TODO(devoncarew): Refactor this so that we don't use the console to display output - this steals
+    // focus away from the Run (or Debug) view.
+    return command.startInConsole(project);
+  }
+
+  /**
+   * Gets the process handler that wills tart DevTools in bazel.
+   */
+  private OSProcessHandler getProcessHandlerForBazel() {
+    final Workspace workspace = Workspace.load(project);
+    if (workspace == null || workspace.getDevtoolsScript() == null) {
+      return null;
+    }
+    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workspace.getRoot().getPath());
+    commandLine.setExePath(FileUtil.toSystemDependentName(workspace.getRoot().getPath() + "/" + workspace.getLaunchScript()));
+    commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
+    commandLine.addParameters(workspace.getDevtoolsScript(), "--", "--machine", "--port=0");
+    OSProcessHandler handler;
+    try {
+      handler = new OSProcessHandler(commandLine);
+    }
+    catch (ExecutionException e) {
+      e.printStackTrace();
+      handler = null;
+    }
+    if (handler != null) {
+      FlutterConsoles.displayProcessLater(handler, project, null, handler::startNotify);
+    }
+    return handler;
+  }
+
+  private boolean isBazel(Project project) {
+    return FlutterSettings.getInstance().shouldUseBazel() && Workspace.load(project) != null;
+  }
+
   private void openBrowserImpl(String uri, String page) {
     if (devToolsInstance != null) {
       devToolsInstance.openBrowserAndConnect(uri, page);
       return;
     }
 
-    final FlutterSdk sdk = FlutterSdk.forPubOrBazel(project);
-    if (sdk == null) {
-      return;
-    }
+    final OSProcessHandler handler = isBazel(project) ? getProcessHandlerForBazel() : getProcessHandlerForPub();
 
     // start the server
-    DevToolsInstance.startServer(project, sdk, instance -> {
+    DevToolsInstance.startServer(handler, instance -> {
       devToolsInstance = instance;
 
       devToolsInstance.openBrowserAndConnect(uri, page);
@@ -153,19 +207,10 @@ public class DevToolsManager {
 
 class DevToolsInstance {
   public static void startServer(
-    Project project,
-    FlutterSdk sdk,
+    OSProcessHandler processHandler,
     Callback<DevToolsInstance> onSuccess,
     Callback<DevToolsInstance> onClose
   ) {
-    // TODO(https://github.com/flutter/flutter/issues/33324): We shouldn't need a pubroot to call pub global.
-    @Nullable final PubRoot pubRoot = PubRoots.forProject(project).stream().findFirst().orElse(null);
-    final FlutterCommand command = sdk.flutterPackagesPub(pubRoot, "global", "run", "devtools", "--machine", "--port=0");
-
-    // TODO(devoncarew): Refactor this so that we don't use the console to display output - this steals
-    // focus away from the Run (or Debug) view.
-    final OSProcessHandler processHandler = command.startInConsole(project);
-
     if (processHandler == null) {
       return;
     }
