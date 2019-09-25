@@ -5,28 +5,68 @@
  */
 package io.flutter.project;
 
-import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;
-import com.android.tools.idea.gradle.dsl.parser.files.GradleBuildFile;
-import com.android.tools.idea.gradle.util.GradleUtil;
+import static com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil.executeProjectChangeAction;
+
+import com.android.tools.idea.gradle.parser.BuildFileKey;
+import com.android.tools.idea.gradle.parser.Dependency;
+import com.android.tools.idea.gradle.parser.GradleBuildFile;
+import com.android.tools.idea.gradle.parser.GradleSettingsFile;
+import com.android.tools.idea.gradle.parser.Repository;
+import com.android.tools.idea.gradle.project.facet.gradle.GradleFacet;
+import com.android.tools.idea.gradle.project.facet.gradle.GradleFacetType;
 import com.android.tools.idea.observable.core.BoolValueProperty;
 import com.android.tools.idea.observable.core.OptionalProperty;
 import com.android.tools.idea.observable.core.OptionalValueProperty;
 import com.android.tools.idea.observable.core.StringProperty;
 import com.android.tools.idea.observable.core.StringValueProperty;
 import com.android.tools.idea.wizard.model.WizardModel;
+import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.facet.Facet;
+import com.intellij.facet.ModifiableFacetModel;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProvider;
+import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl;
+import com.intellij.openapi.externalSystem.service.project.manage.ExternalProjectsManager;
+import com.intellij.openapi.externalSystem.util.DisposeAwareProjectChange;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModifiableRootModel;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.impl.ModifiableModelCommitter;
 import com.intellij.openapi.util.InvalidDataException;
+import com.intellij.openapi.util.ThrowableComputable;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.SmartList;
 import io.flutter.FlutterUtils;
+import io.flutter.actions.FlutterBuildActionGroup;
+import io.flutter.module.FlutterModuleImporter;
 import io.flutter.module.FlutterProjectType;
+import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.AndroidUtils;
 import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
+import org.jetbrains.android.facet.AndroidFacet;
+import org.jetbrains.android.facet.AndroidFacetType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jps.android.model.impl.JpsAndroidModuleProperties;
 
 /**
  * Note that a single instance of this class is shared among all the steps in the wizard.
@@ -126,7 +166,13 @@ public class FlutterProjectModel extends WizardModel {
 
   public boolean isGeneratingAndroidX() {
     if (project().getValueOrNull() == null) {
-      return useAndroidX().get() && FlutterSdk.forPath(flutterSdk().get()).getVersion().isAndroidxSupported();
+      FlutterSdk sdk = FlutterSdk.forPath(flutterSdk().get());
+      if (sdk == null) {
+        return false;
+      }
+      else {
+        return useAndroidX().get() && sdk.getVersion().isAndroidxSupported();
+      }
     }
     else {
       return FlutterUtils.isAndroidxProject(project().getValue());
@@ -173,6 +219,10 @@ public class FlutterProjectModel extends WizardModel {
     return myIsOfflineSelected;
   }
 
+  public boolean shouldOpenNewWindow() {
+    return true;
+  }
+
   @NotNull
   private static String getInitialDomain() {
     String domain = PropertiesComponent.getInstance().getValue(PROPERTIES_DOMAIN_KEY);
@@ -209,6 +259,11 @@ public class FlutterProjectModel extends WizardModel {
     }
 
     @Override
+    public boolean shouldOpenNewWindow() {
+      return false;
+    }
+
+    @Override
     protected void handleFinished() {
       useAndroidX().set(true);
       // The host project is an Android app. This module should be created in its root directory.
@@ -219,17 +274,90 @@ public class FlutterProjectModel extends WizardModel {
         throw new InvalidDataException(); // Can't happen
       }
       projectLocation().set(hostPath);
-      super.handleFinished();
-      // TODO flutter build aar --debug
-      // If the module is not a direct subdir of the project root then this File() instance needs to be changed.
-      VirtualFile flutterModuleDir = VfsUtil.findFileByIoFile(new File(hostPath, projectName().get()), true);
-      if (flutterModuleDir == null) {
-        return; // Module creation failed; it was reported elsewhere.
+      // Create the Flutter module as if it were a normal project that just happens to be located in an Android project directory.
+      new FlutterProjectCreator(this).createModule();
+      // Import the Flutter module into the Android project as if it had been created without any Android dependencies.
+      new FlutterModuleImporter(this).importModule();
+      // Link the new module into the Gradle project, which also enables co-editing.
+      new FlutterGradleLinker(this).linkNewModule();
+    }
+
+    private static class FlutterGradleLinker {
+      @NotNull
+      private final FlutterProjectModel model;
+
+      private FlutterGradleLinker(@NotNull FlutterProjectModel model) {
+        this.model = model;
       }
-      new ModuleCoEditHelper(hostProject, flutterModuleDir).enable();
-      // Ensure Gradle sync runs to link in the new add-to-app module.
-      AndroidUtils.scheduleGradleSync(hostProject);
-      // TODO(messick) Generate run configs for release and debug. (If needed.)
+
+      private void linkNewModule() {
+        Project hostProject = model.project().getValue();
+        String hostPath = model.projectLocation().get();
+        // If the module is not a direct child of the project root then this File() instance needs to be changed.
+        // TODO(messick) Extend the new module wizard to allow nested directories, as Android Studio does using Gradle syntax.
+        File flutterProject = new File(hostPath, model.projectName().get());
+        VirtualFile flutterModuleDir = VfsUtil.findFileByIoFile(flutterProject, true);
+        if (flutterModuleDir == null) {
+          return; // Module creation failed; it was reported elsewhere.
+        }
+        addGradleToModule(flutterModuleDir);
+
+        // Build the AAR repository, needed by Gradle linkage.
+        PubRoot pubRoot = PubRoot.forDirectory(VfsUtil.findFileByIoFile(flutterProject, true));
+        FlutterSdk sdk = FlutterSdk.forPath(model.flutterSdk().get());
+        if (sdk == null) {
+          return; // The error would have been shown in super.handleFinished().
+        }
+        OSProcessHandler handler =
+          FlutterBuildActionGroup.build(hostProject, pubRoot, sdk, FlutterBuildActionGroup.BuildType.AAR, "Building AAR");
+        handler.addProcessListener(new ProcessAdapter() {
+          @Override
+          public void processTerminated(@NotNull ProcessEvent event) {
+
+            new ModuleCoEditHelper(hostProject, model.packageName().get(), flutterModuleDir).enable();
+            //addFacetsToModules(hostProject, projectName().get());
+
+            // Ensure Gradle sync runs to link in the new add-to-app module.
+            AndroidUtils.scheduleGradleSync(hostProject);
+            // TODO(messick) Generate run configs for release and debug. (If needed.)
+            // TODO(messick) Load modules from .iml files (?)
+          }
+        });
+      }
+    }
+
+    private static void addGradleToModule(VirtualFile moduleDir) {
+      // Add settings.gradle to the Flutter module and change .android/build.gradle to do nothing.
+      ApplicationManager.getApplication().runWriteAction(() -> {
+        try (StringWriter settingsWriter = new StringWriter(); StringWriter buildWriter = new StringWriter()) {
+          VirtualFile settingsFile = moduleDir.findOrCreateChildData(moduleDir, "settings.gradle");
+          VirtualFile androidDir = Objects.requireNonNull(moduleDir.findChild(".android"));
+          VirtualFile buildFile = androidDir.findOrCreateChildData(moduleDir, "build.gradle");
+          if (settingsFile.exists()) {
+            // The default module template does not have a settings.gradle file so this should not happen.
+            settingsWriter.append(new String(settingsFile.contentsToByteArray(false), Charset.defaultCharset()));
+            settingsWriter.append(System.lineSeparator());
+          }
+          if (buildFile.exists()) {
+            // The default module template is built for top-level projects.
+            buildFile.setBinaryContent("".getBytes(Charset.defaultCharset()));
+            buildFile.refresh(false, false);
+          }
+          settingsWriter.append("// Generated file. Do not edit.");
+          settingsWriter.append(System.lineSeparator());
+          settingsWriter.append("include ':.android'");
+          settingsWriter.append(System.lineSeparator());
+          buildWriter.append("// Generated file. Do not edit.");
+          buildWriter.append(System.lineSeparator());
+          buildWriter.append("buildscript {}");
+          buildWriter.append(System.lineSeparator());
+          settingsFile.setBinaryContent(settingsWriter.toString().getBytes(Charset.defaultCharset()));
+          buildFile.setBinaryContent(buildWriter.toString().getBytes(Charset.defaultCharset()));
+        }
+        catch (IOException e) {
+          // Should not happen
+        }
+      });
     }
   }
 
@@ -238,35 +366,62 @@ public class FlutterProjectModel extends WizardModel {
     @NotNull
     private final Project project;
     @NotNull
-    private final VirtualFile flutterModuleDir;
+    private final String packageName;
     @NotNull
-    private final File flutterModuleRoot;
-    @NotNull
-    private final VirtualFile projectRoot;
+    private final String projectName;
     @NotNull
     private final String pathToModule;
 
-    private VirtualFile buildFile;
-
-    private ModuleCoEditHelper(@NotNull Project project, @NotNull VirtualFile flutterModuleDir) {
+    private ModuleCoEditHelper(@NotNull Project project, @NotNull String packageName, @NotNull VirtualFile flutterModuleDir) {
       this.project = project;
-      this.flutterModuleDir = flutterModuleDir;
-      this.flutterModuleRoot = new File(flutterModuleDir.getPath());
-      this.projectRoot = FlutterUtils.getProjectRoot(project);
-      this.pathToModule = Objects.requireNonNull(FileUtilRt.getRelativePath(new File(projectRoot.getPath()), flutterModuleRoot));
+      this.packageName = packageName;
+      this.projectName = flutterModuleDir.getName();
+      File flutterModuleRoot = new File(flutterModuleDir.getPath());
+      VirtualFile projectRoot = FlutterUtils.getProjectRoot(project);
+      this.pathToModule = Objects.requireNonNull(FileUtilRt.getRelativePath(new File(projectRoot.getPath(), "app"), flutterModuleRoot));
     }
 
     private void enable() {
-      buildFile = GradleUtil.getGradleBuildFile(new File(projectRoot.getPath(), "app"));
-      if (buildFile == null) {
+      GradleSettingsFile settingsFile = GradleSettingsFile.get(project);
+      if (settingsFile == null) {
         return;
       }
-      GradleBuildFile gradleBuildFile = parseBuildFile();
+      GradleBuildFile gradleBuildFile = settingsFile.getModuleBuildFile(":app");
+      if (gradleBuildFile == null) {
+        return;
+      }
+
+      AtomicReference<List<Repository>> repositories = new AtomicReference<>();
+      ApplicationManager.getApplication().runReadAction(() -> {
+        //noinspection unchecked
+        List<Repository> repBlock = (List<Repository>)gradleBuildFile.getValue(BuildFileKey.LIBRARY_REPOSITORY);
+        repositories.set(repBlock != null ? repBlock : new ArrayList<>());
+      });
+      repositories.get().add(new Repository(Repository.Type.URL, pathToModule + "/build/host/outputs/repo"));
+
+      AtomicReference<List<Dependency>> dependencies = new AtomicReference<>();
+      ApplicationManager.getApplication().runReadAction(() -> {
+        //noinspection unchecked
+        List<Dependency> depBlock = (List<Dependency>)gradleBuildFile.getValue(BuildFileKey.DEPENDENCIES);
+        dependencies.set(depBlock != null ? depBlock : new ArrayList<>());
+      });
+      Dependency.Scope scope = Dependency.Scope.getDefaultScope(project);
+      String fqn = packagePrefix(packageName) + "." + projectName;
+      dependencies.get().add(new Dependency(scope, Dependency.Type.EXTERNAL, fqn + ":flutter_release:1.0@aar"));
+
+      WriteCommandAction.writeCommandAction(project).run(() -> {
+        gradleBuildFile.removeValue(null, BuildFileKey.DEPENDENCIES);
+        gradleBuildFile.setValue(BuildFileKey.LIBRARY_REPOSITORY, repositories.get());
+        gradleBuildFile.setValue(BuildFileKey.DEPENDENCIES, dependencies.get());
+      });
     }
 
-    private GradleBuildFile parseBuildFile() {
-      // See AndroidUtils.parseSettings() if API skew causes a need for reflection.
-      return BuildModelContext.create(project).getOrCreateBuildFile(projectRoot, true);
+    private static String packagePrefix(@NotNull String packageName) {
+      int idx = packageName.lastIndexOf('.');
+      if (idx <= 0) {
+        return packageName;
+      }
+      return packageName.substring(0, idx);
     }
   }
 }
