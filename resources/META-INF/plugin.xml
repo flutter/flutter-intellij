@@ -388,25 +388,25 @@
 </ul>
 <h2>24.0</h2>
 <ul>
-  <li><p>inspector: significant UI refactoring to show the tree in a master / details format</p></li>
-  <li><p>inspector: add a 'Performance' tab to the Inspector, to show application FPS and memory usage</p></li>
-  <li><p>inspector: fix issues turning --track-widget-creation on and off</p></li>
-  <li><p>inspector: handle apps with multiple isolates in the inspector</p></li>
-  <li><p>live preview: suggest 'Add forDesignTime() constructor' for widgets</p></li>
-  <li><p>live preview: make the preview area smaller if the widget is not renderable</p></li>
-  <li><p>live preview: fixes to make outline preview working on Windows</p></li>
-  <li><p>live preview: sort children outlines by their RenderObject.depth during preview</p></li>
-  <li><p>simplify how we recognize Flutter projects when using Bazel</p></li>
-  <li><p>fix the "Open in Android Studio" action to not show for the ios dir</p></li>
-  <li><p>add an option to create projects in “offline” mode</p></li>
-  <li><p>better support for using multiple Flutter modules per IntelliJ project</p></li>
-  <li><p>improvments to the "Open in XCode…" menu item</p></li>
-  <li><p>better support for importing Flutter projects</p></li>
-  <li><p>several fixes for issues with using resources that had been disposed</p></li>
-  <li><p>add local history labels on reloads and restarts</p></li>
-  <li><p>have the 'reloading...'' notification timeout after the reload completes</p></li>
-  <li><p>improved support of running in --profile mode</p></li>
-  <li><p>expose the new 'Extract Widget' refactoring</p></li>
+  <li>inspector: significant UI refactoring to show the tree in a master / details format</li>
+  <li>inspector: add a 'Performance' tab to the Inspector, to show application FPS and memory usage</li>
+  <li>inspector: fix issues turning --track-widget-creation on and off</li>
+  <li>inspector: handle apps with multiple isolates in the inspector</li>
+  <li>live preview: suggest 'Add forDesignTime() constructor' for widgets</li>
+  <li>live preview: make the preview area smaller if the widget is not renderable</li>
+  <li>live preview: fixes to make outline preview working on Windows</li>
+  <li>live preview: sort children outlines by their RenderObject.depth during preview</li>
+  <li>simplify how we recognize Flutter projects when using Bazel</li>
+  <li>fix the "Open in Android Studio" action to not show for the ios dir</li>
+  <li>add an option to create projects in “offline” mode</li>
+  <li>better support for using multiple Flutter modules per IntelliJ project</li>
+  <li>improvments to the "Open in XCode…" menu item</li>
+  <li>better support for importing Flutter projects</li>
+  <li>several fixes for issues with using resources that had been disposed</li>
+  <li>add local history labels on reloads and restarts</li>
+  <li>have the 'reloading...'' notification timeout after the reload completes</li>
+  <li>improved support of running in --profile mode</li>
+  <li>expose the new 'Extract Widget' refactoring</li>
 </ul>
 <h2>23.2</h2>
 <ul>
@@ -441,8 +441,7 @@
   <li>when installing the Flutter SDK, use the 'dev' channel instead of 'alpha'</li>
   <li>fix an issue with the Flutter Outline view on Windows</li>
 </ul>
-<h2>22.0</h2>
-<p>inspector view:</p><ul>
+<h2>22.0</h2>inspector view:<ul>
   <li>support for multiple running applications</li>
   <li>basic speed search for the Inspector Tree</li>
   <li>restore flutter framework toggles after a restart</li>
@@ -452,8 +451,7 @@
   <li>HD inspector Widgets (#1682)</li>
   <li>restore inspector splitter position (#1676)</li>
   <li>open the inspector view at app launch (#1670)</li>
-</ul>
-<p>outline view:</p><ul>
+</ul>outline view:<ul>
   <li>rename 'Add widget padding' assist to 'Add padding' (#1771)</li>
   <li>bind actions to move widget down/up. (#1768)</li>
   <li>rename 'Replace with children' to 'Remove widget'. (#1764)</li>
@@ -465,12 +463,10 @@
   <li>navigate from source to Preview view. (#1710)</li>
   <li>add speed search to the Preview view. (#1696)</li>
   <li>add basic Flutter Preview view. (#1678)</li>
-</ul>
-<p>platforms:</p><ul>
+</ul>platforms:<ul>
   <li>support 2018.1 EAP</li>
   <li>no longer build for 2017.2</li>
-</ul>
-<p>miscellaneous:</p><ul>
+</ul>miscellaneous:<ul>
   <li>fix for displaying the flutter icon for flutter modules</li>
   <li>fix for issue 1772, Switch Bazel flag for launching apps (#1775)</li>
   <li>add support for displaying flutter color shades in the editor ruler (#1770)</li>
@@ -658,11 +654,13 @@
 <ul>
   <li>support for IDEA <code>2017.1</code></li>
   <li>new Flutter <code>stless</code>, <code>stful</code>, and <code>stanim</code> live templates</li>
-  <li>new assists for editing the widget hierarchy:<ul>
+  <li>new assists for editing the widget hierarchy:
+<ul>
   <li>move widget up or down</li>
   <li>re-parent widget or list of widgets</li>
   <li>convert <code>child:</code> keyword to <code>children:</code></li>
-</ul></li>
+</ul>
+</li>
   <li>support for specifying "Additional Args" to Flutter application launches</li>
   <li>default run configuration creation on project open (when possible)</li>
   <li>device menu improvements</li>
@@ -717,7 +715,7 @@
   <li>improved interaction between Flutter and Dart plugins during project creation (no more unnecessary nags to run pub)</li>
   <li>improvements to version checking</li>
   <li>settings UI refinements</li>
-  <li>new "Help > Flutter Plugin" top-level menu</li>
+  <li>new "Help &gt; Flutter Plugin" top-level menu</li>
   <li>added reload/restart actions in the main toolbar</li>
   <li>improved console folding for iOS messages</li>
   <li>fixed NPE in project creation</li>
@@ -726,7 +724,7 @@
 <ul>
   <li>improved console output folding when running iOS apps</li>
   <li>actions for Flutter package get and package update</li>
-  <li>a new top level Flutter menu (Tools>Flutter) with common Flutter actions</li>
+  <li>a new top level Flutter menu (Tools&gt;Flutter) with common Flutter actions</li>
   <li>updated hot reload and restart icons</li>
   <li>editor annotations showing Flutter colors and icons in the editor ruler</li>
   <li>better console filtering (less noise)</li>

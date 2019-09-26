@@ -659,7 +659,8 @@ class BuildCommand extends ProductCommand {
         processedFile.writeAsStringSync(source);
       }
 
-      if (!spec.version.startsWith('2019.2') && ! spec.version.startsWith('3.6')) {
+      if (!spec.version.startsWith('2019.2') &&
+          !spec.version.startsWith('3.6')) {
         processedFile = File(
             'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
         source = processedFile.readAsStringSync();
@@ -883,12 +884,18 @@ class BuildSpec {
   String _parseChangelog() {
     var text = new File('CHANGELOG.md').readAsStringSync();
     var html = markdownToHtml(text);
+
+    // Translate our markdown based changelog into html; remove unwanted
+    // paragraph tags.
     return html
         .replaceAll('</h2><ul>', '</h2>\n<ul>')
-        .replaceAll('<ul><li>', '<ul>\n  <li>')
-        .replaceAll('</li><li>', '</li>\n  <li>')
+        .replaceAll('<ul>\n<li>', '<ul>\n  <li>')
+        .replaceAll('</li>\n<li>', '</li>\n  <li>')
         .replaceAll('</li></ul>', '</li>\n</ul>')
-        .replaceAll('<li>\n<p>', '<li><p>');
+        .replaceAll('\n<p>', '')
+        .replaceAll('<p>', '')
+        .replaceAll('</p>\n', '')
+        .replaceAll('</p>', '');
   }
 
   String toString() {
