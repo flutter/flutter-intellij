@@ -29,7 +29,6 @@ import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.DaemonApi;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.StdoutJsonParser;
-import io.flutter.vmService.HeapMonitor;
 import io.flutter.vmService.VMServiceManager;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
@@ -158,32 +157,6 @@ public class FlutterLogEntryParser {
     return Collections.singletonList(entry);
   }
 
-  @NotNull
-  private List<FlutterLogEntry> parseGCEvent(@NotNull Event event) {
-    final IsolateRef isolateRef = event.getIsolate();
-    final HeapMonitor.HeapSpace newHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("new"));
-    final HeapMonitor.HeapSpace oldHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("old"));
-
-    final double time = newHeapSpace.getTime() + oldHeapSpace.getTime();
-    final int used = newHeapSpace.getUsed() + newHeapSpace.getExternal()
-                     + oldHeapSpace.getUsed() + oldHeapSpace.getExternal();
-    final int maxHeap = newHeapSpace.getCapacity() + oldHeapSpace.getCapacity();
-
-    final long timeMs = Math.round(time * 1000);
-    final double usedMB = used / (1024.0 * 1024.0);
-    final double maxMB = maxHeap / (1024.0 * 1024.0);
-    final String message = "collection time " +
-                           nf.format(timeMs) +
-                           "ms • " +
-                           df1.format(usedMB) +
-                           "MB used of " +
-                           df1.format(maxMB) +
-                           "MB • " +
-                           isolateRef.getId();
-
-    return Collections.singletonList(lineHandler.parseEntry(message, GC_CATEGORY, UNDEFINED_LEVEL.value));
-  }
-
   private static Kind parseKind(@NotNull String message, @NotNull String category) {
     if (category.equals(TOOLS_CATEGORY)) {
       message = message.trim();
@@ -212,10 +185,6 @@ public class FlutterLogEntryParser {
         case VmService.LOGGING_STREAM_ID:
         case VMServiceManager.LOGGING_STREAM_ID_OLD:
           return parseLoggingEvent(event);
-
-        case VmService.GC_STREAM_ID:
-          return parseGCEvent(event);
-
         case VmService.EXTENSION_STREAM_ID:
           return parseExtensionEvent(event);
       }

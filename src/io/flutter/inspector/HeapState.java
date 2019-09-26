@@ -15,13 +15,11 @@
  */
 package io.flutter.inspector;
 
-import com.google.gson.JsonElement;
 import io.flutter.vmService.HeapMonitor;
-import org.dartlang.vm.service.element.IsolateRef;
-import org.dartlang.vm.service.element.VM;
+import org.dartlang.vm.service.element.MemoryUsage;
 
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.List;
 
 public class HeapState implements HeapMonitor.HeapListener {
   private static final DecimalFormat df = new DecimalFormat();
@@ -32,15 +30,10 @@ public class HeapState implements HeapMonitor.HeapListener {
     df1.setMaximumFractionDigits(1);
   }
 
-  private int rssBytes;
-
   // Running count of the max heap (in bytes).
   private int heapMaxInBytes;
 
   private final HeapSamples samples;
-
-  // Contains new and old heaps
-  private final Map<String, List<HeapMonitor.HeapSpace>> isolateHeaps = new HashMap<>();
 
   public HeapState(int maxSampleSizeMs) {
     samples = new HeapSamples(maxSampleSizeMs);
@@ -73,14 +66,6 @@ public class HeapState implements HeapMonitor.HeapListener {
     return df1.format(bytes / (1024 * 1024.0)) + "MB";
   }
 
-  public String getRSSSummary() {
-    return printMb(rssBytes) + " RSS";
-  }
-
-  public int getRssBytes() {
-    return rssBytes;
-  }
-
   public String getHeapSummary() {
     return printMb1(samples.samples.getLast().getBytes()) + " of " + printMb1(heapMaxInBytes);
   }
@@ -94,44 +79,19 @@ public class HeapState implements HeapMonitor.HeapListener {
   }
 
   @Override
-  public void handleIsolatesInfo(VM vm, List<HeapMonitor.IsolateObject> isolates) {
+  public void handleMemoryUsage(List<MemoryUsage> memoryUsages) {
     int current = 0;
     int total = 0;
     int external = 0;
 
-    isolateHeaps.clear();
-
-    for (HeapMonitor.IsolateObject isolate : isolates) {
-      isolateHeaps.put(isolate.getId(), isolate.getHeaps());
-
-      for (HeapMonitor.HeapSpace heap : isolate.getHeaps()) {
-        current += heap.getUsed();
-        total += heap.getCapacity();
-        external += heap.getExternal();
-      }
+    for (MemoryUsage usage : memoryUsages) {
+      current += usage.getHeapUsage();
+      total += usage.getHeapCapacity();
+      external += usage.getExternalUsage();
     }
 
-    final JsonElement rss = vm.getJson().get("_currentRSS");
-    rssBytes = rss != null ? rss.getAsInt() : 0;
     heapMaxInBytes = total;
 
-    addSample(new HeapMonitor.HeapSample(current, external, false));
-  }
-
-  @Override
-  public void handleGCEvent(IsolateRef isolateRef, HeapMonitor.HeapSpace newHeapSpace, HeapMonitor.HeapSpace oldHeapSpace) {
-    int current = 0;
-    int external = 0;
-
-    isolateHeaps.put(isolateRef.getId(), new ArrayList<>(Arrays.asList(newHeapSpace, oldHeapSpace)));
-
-    for (List<HeapMonitor.HeapSpace> heaps : isolateHeaps.values()) {
-      for (HeapMonitor.HeapSpace heap : heaps) {
-        current += heap.getUsed();
-        external += heap.getExternal();
-      }
-    }
-
-    addSample(new HeapMonitor.HeapSample(current, external, true));
+    addSample(new HeapMonitor.HeapSample(current, external));
   }
 }

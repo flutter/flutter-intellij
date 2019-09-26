@@ -22,6 +22,7 @@ import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.vmService.HeapMonitor.HeapListener;
 import org.dartlang.vm.service.VmService;
+import org.dartlang.vm.service.VmServiceListener;
 import org.dartlang.vm.service.consumer.GetIsolateConsumer;
 import org.dartlang.vm.service.consumer.ServiceExtensionConsumer;
 import org.dartlang.vm.service.consumer.VMConsumer;
@@ -32,7 +33,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public class VMServiceManager implements FlutterApp.FlutterAppListener {
+public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposable {
   // TODO(devoncarew): Remove on or after approx. Oct 1 2019.
   public static final String LOGGING_STREAM_ID_OLD = "_Logging";
 
@@ -60,12 +61,14 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
 
   private volatile boolean firstFrameEventReceived = false;
   private final VmService vmService;
+
   /**
    * Temporarily stores service extensions that we need to add. We should not add extensions until the first frame event
    * has been received [firstFrameEventReceived].
    */
   private final List<String> pendingServiceExtensions = new ArrayList<>();
 
+  private final VmServiceListener myVmServiceListener;
   private final Set<String> registeredServices = new HashSet<>();
 
   public VMServiceManager(@NotNull FlutterApp app, @NotNull VmService vmService) {
@@ -73,7 +76,9 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     this.vmService = vmService;
     app.addStateListener(this);
 
-    this.heapMonitor = new HeapMonitor(vmService, app.getFlutterDebugProcess());
+    assert (app.getFlutterDebugProcess() != null);
+
+    this.heapMonitor = new HeapMonitor(app.getFlutterDebugProcess().getVmServiceWrapper());
     this.flutterFramesMonitor = new FlutterFramesMonitor(this, vmService);
     this.polledCount = 0;
     flutterIsolateRefStream = new EventStream<>();
@@ -87,9 +92,8 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     vmService.streamListen(VmService.LOGGING_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
 
     vmService.streamListen(VmService.SERVICE_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
-    vmService.streamListen(VmService.GC_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
 
-    vmService.addVmServiceListener(new VmServiceListenerAdapter() {
+    myVmServiceListener = new VmServiceListenerAdapter() {
       @Override
       public void received(String streamId, Event event) {
         onVmServiceReceived(streamId, event);
@@ -99,7 +103,8 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
       public void connectionClosed() {
         onVmConnectionClosed();
       }
-    });
+    };
+    vmService.addVmServiceListener(myVmServiceListener);
 
     // Populate the service extensions info and look for any Flutter views.
     // TODO(devoncarew): This currently returns the first Flutter view found as the
@@ -214,9 +219,14 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
    */
   public void stop() {
     if (isRunning) {
-      // The vmService does not have a way to remove listeners, so we can only stop paying attention.
       heapMonitor.stop();
+      vmService.removeVmServiceListener(myVmServiceListener);
     }
+  }
+
+  @Override
+  public void dispose() {
+    onVmConnectionClosed();
   }
 
   private void onVmConnectionClosed() {
@@ -313,18 +323,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
           setFlutterIsolate(event.getIsolate());
         }
       }
-    }
-
-    if (!isRunning) {
-      return;
-    }
-
-    if (StringUtil.equals(streamId, VmService.GC_STREAM_ID)) {
-      final IsolateRef isolateRef = event.getIsolate();
-      final HeapMonitor.HeapSpace newHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("new"));
-      final HeapMonitor.HeapSpace oldHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("old"));
-
-      heapMonitor.handleGCEvent(isolateRef, newHeapSpace, oldHeapSpace);
     }
   }
 
@@ -496,39 +494,29 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     }
   }
 
-  public @NotNull
-  StreamSubscription<Boolean> hasServiceExtension(String name, Consumer<Boolean> onData) {
-    final EventStream<Boolean> stream = getStream(name, serviceExtensions);
+  @NotNull
+  public StreamSubscription<Boolean> hasServiceExtension(String name, Consumer<Boolean> onData) {
+    EventStream<Boolean> stream;
+
+    synchronized (serviceExtensions) {
+      stream = serviceExtensions.get(name);
+      if (stream == null) {
+        stream = new EventStream<>(false);
+        serviceExtensions.put(name, stream);
+      }
+    }
+
     return stream.listen(onData, true);
   }
 
   @NotNull
-  private EventStream<Boolean> getStream(String name, Map<String, EventStream<Boolean>> streamMap) {
-    EventStream<Boolean> stream;
-    synchronized (streamMap) {
-      stream = streamMap.get(name);
-      if (stream == null) {
-        stream = new EventStream<>(false);
-        streamMap.put(name, stream);
-      }
-    }
-    return stream;
-  }
-
-  public @NotNull
-  EventStream<ServiceExtensionState> getServiceExtensionState(String name) {
-    return getStateStream(name, serviceExtensionState);
-  }
-
-  @NotNull
-  private EventStream<ServiceExtensionState> getStateStream(
-    String name, Map<String, EventStream<ServiceExtensionState>> streamMap) {
+  public EventStream<ServiceExtensionState> getServiceExtensionState(String name) {
     EventStream<ServiceExtensionState> stream;
-    synchronized (streamMap) {
-      stream = streamMap.get(name);
+    synchronized (serviceExtensionState) {
+      stream = serviceExtensionState.get(name);
       if (stream == null) {
         stream = new EventStream<>(new ServiceExtensionState(false, null));
-        streamMap.put(name, stream);
+        serviceExtensionState.put(name, stream);
       }
     }
     return stream;

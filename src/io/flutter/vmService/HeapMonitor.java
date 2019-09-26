@@ -8,10 +8,7 @@ package io.flutter.vmService;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.diagnostic.Logger;
-import io.flutter.run.FlutterDebugProcess;
-import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.consumer.GetIsolateConsumer;
-import org.dartlang.vm.service.consumer.VMConsumer;
+import org.dartlang.vm.service.consumer.GetMemoryUsageConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,7 +18,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-// TODO(pq): improve error handling
 public class HeapMonitor {
   private static final Logger LOG = Logger.getInstance(HeapMonitor.class);
 
@@ -30,9 +26,7 @@ public class HeapMonitor {
   private static final int POLL_PERIOD_IN_MS = 1000;
 
   public interface HeapListener {
-    void handleIsolatesInfo(VM vm, List<IsolateObject> isolates);
-
-    void handleGCEvent(IsolateRef iIsolateRef, HeapSpace newHeapSpace, HeapSpace oldHeapSpace);
+    void handleMemoryUsage(List<MemoryUsage> memoryUsages);
   }
 
   static class HeapObject extends Obj {
@@ -59,46 +53,9 @@ public class HeapMonitor {
     }
   }
 
-  public static class HeapSpace extends HeapObject {
-    public HeapSpace(@NotNull JsonObject json) {
-      super(json);
-    }
-
-    public int getUsed() {
-      return getAsInt("used");
-    }
-
-    public int getCapacity() {
-      return getAsInt("capacity");
-    }
-
-    public int getExternal() {
-      return getAsInt("external");
-    }
-
-    public double getTime() {
-      return json.get("time").getAsDouble();
-    }
-  }
-
-  public static class IsolateObject extends HeapObject {
-    IsolateObject(@NotNull JsonObject json) {
-      super(json);
-    }
-
-    public List<HeapSpace> getHeaps() {
-      final List<HeapSpace> heaps = new ArrayList<>();
-      for (Map.Entry<String, JsonElement> entry : getEntries("_heaps")) {
-        heaps.add(new HeapSpace(entry.getValue().getAsJsonObject()));
-      }
-      return heaps;
-    }
-  }
-
   public static class HeapSample {
     final int bytes;
     final int external;
-    final boolean isGC;
 
     public long getSampleTime() {
       return sampleTime;
@@ -106,10 +63,9 @@ public class HeapMonitor {
 
     public final long sampleTime;
 
-    public HeapSample(int bytes, int external, boolean isGC) {
+    public HeapSample(int bytes, int external) {
       this.bytes = bytes;
       this.external = external;
-      this.isGC = isGC;
 
       this.sampleTime = System.currentTimeMillis();
     }
@@ -124,20 +80,19 @@ public class HeapMonitor {
 
     @Override
     public String toString() {
-      return "bytes: " + bytes + (isGC ? " (GC)" : "");
+      return "bytes: " + bytes;
     }
   }
 
   private final List<HeapMonitor.HeapListener> heapListeners = new ArrayList<>();
   private ScheduledFuture pollingScheduler;
 
-  @NotNull
-  private final VmService vmService;
+  @NotNull private final VmServiceWrapper vmServiceWrapper;
 
   private boolean isPolling;
 
-  public HeapMonitor(@NotNull VmService vmService, @NotNull FlutterDebugProcess debugProcess) {
-    this.vmService = vmService;
+  public HeapMonitor(@NotNull VmServiceWrapper vmServiceWrapper) {
+    this.vmServiceWrapper = vmServiceWrapper;
   }
 
   public void addListener(@NotNull HeapMonitor.HeapListener listener) {
@@ -170,57 +125,49 @@ public class HeapMonitor {
       return;
     }
 
-    vmService.getVM(new VMConsumer() {
-      @Override
-      public void received(VM vm) {
-        collectIsolateInfo(vm);
-      }
-
-      @Override
-      public void onError(RPCError error) {
-      }
-    });
+    collectMemoryUsage();
   }
 
-  private void collectIsolateInfo(VM vm) {
-    final ElementList<IsolateRef> isolateRefs = vm.getIsolates();
+  private void collectMemoryUsage() {
+    final List<IsolateRef> isolateRefs = vmServiceWrapper.getExistingIsolates();
+    if (isolateRefs.isEmpty()) {
+      return;
+    }
 
     // Stash count so we can know when we've processed them all.
     final int isolateCount = isolateRefs.size();
 
-    final List<IsolateObject> isolates = new ArrayList<>();
+    final List<MemoryUsage> memoryUsage = new ArrayList<>();
 
     for (IsolateRef isolateRef : isolateRefs) {
-      vmService.getIsolate(isolateRef.getId(), new GetIsolateConsumer() {
+      vmServiceWrapper.getVmService().getMemoryUsage(isolateRef.getId(), new GetMemoryUsageConsumer() {
+        private int errorCount = 0;
+
         @Override
-        public void received(Isolate isolateResponse) {
-          isolates.add(new IsolateObject(isolateResponse.getJson()));
+        public void received(MemoryUsage usage) {
+          memoryUsage.add(usage);
 
           // Only update when we're done collecting from all isolates.
-          if (isolates.size() == isolateCount) {
-            notifyListeners(vm, isolates);
+          if ((memoryUsage.size() + errorCount) == isolateCount) {
+            notifyListeners(memoryUsage);
           }
         }
 
         @Override
         public void received(Sentinel sentinel) {
-          // Ignored.
+          errorCount++;
         }
 
         @Override
         public void onError(RPCError error) {
-          // TODO(pq): handle?
+          errorCount++;
         }
       });
     }
   }
 
-  public void handleGCEvent(IsolateRef isolateRef, HeapSpace newHeapSpace, HeapSpace oldHeapSpace) {
-    heapListeners.forEach(listener -> listener.handleGCEvent(isolateRef, newHeapSpace, oldHeapSpace));
-  }
-
-  private void notifyListeners(VM vm, List<IsolateObject> isolates) {
-    heapListeners.forEach(listener -> listener.handleIsolatesInfo(vm, isolates));
+  private void notifyListeners(List<MemoryUsage> memoryUsage) {
+    heapListeners.forEach(listener -> listener.handleMemoryUsage(memoryUsage));
   }
 
   public void stop() {

@@ -14,15 +14,13 @@ import java.util.function.Supplier;
 public class IsolatesInfo {
 
   public static class IsolateInfo {
-    private final String myIsolateId;
-    private final String myIsolateName;
+    private final IsolateRef myIsolateRef;
     private boolean breakpointsSet = false;
     private boolean shouldInitialResume = false;
     private CompletableFuture<Isolate> myCachedIsolate;
 
-    private IsolateInfo(@NotNull final String isolateId, @NotNull final String isolateName) {
-      myIsolateId = isolateId;
-      myIsolateName = isolateName;
+    private IsolateInfo(@NotNull IsolateRef isolateRef) {
+      this.myIsolateRef = isolateRef;
     }
 
     void invalidateCache() {
@@ -37,16 +35,20 @@ public class IsolatesInfo {
       myCachedIsolate = cachedIsolate;
     }
 
+    public IsolateRef getIsolateRef() {
+      return myIsolateRef;
+    }
+
     public String getIsolateId() {
-      return myIsolateId;
+      return myIsolateRef.getId();
     }
 
     public String getIsolateName() {
-      return myIsolateName;
+      return myIsolateRef.getName();
     }
 
     public String toString() {
-      return myIsolateId + ": breakpointsSet=" + breakpointsSet + ", shouldInitialResume=" + shouldInitialResume;
+      return getIsolateId() + ": breakpointsSet=" + breakpointsSet + ", shouldInitialResume=" + shouldInitialResume;
     }
   }
 
@@ -57,27 +59,27 @@ public class IsolatesInfo {
       return false;
     }
 
-    myIsolateIdToInfoMap.put(isolateRef.getId(), new IsolateInfo(isolateRef.getId(), isolateRef.getName()));
+    myIsolateIdToInfoMap.put(isolateRef.getId(), new IsolateInfo(isolateRef));
 
     return true;
   }
 
   public synchronized void setBreakpointsSet(@NotNull final IsolateRef isolateRef) {
-    IsolateInfo info = myIsolateIdToInfoMap.get(isolateRef.getId());
+    final IsolateInfo info = myIsolateIdToInfoMap.get(isolateRef.getId());
     if (info != null) {
       info.breakpointsSet = true;
     }
   }
 
   public synchronized void setShouldInitialResume(@NotNull final IsolateRef isolateRef) {
-    IsolateInfo info = myIsolateIdToInfoMap.get(isolateRef.getId());
+    final IsolateInfo info = myIsolateIdToInfoMap.get(isolateRef.getId());
     if (info != null) {
       info.shouldInitialResume = true;
     }
   }
 
   public synchronized boolean getShouldInitialResume(@NotNull final IsolateRef isolateRef) {
-    IsolateInfo info = myIsolateIdToInfoMap.get(isolateRef.getId());
+    final IsolateInfo info = myIsolateIdToInfoMap.get(isolateRef.getId());
     if (info != null) {
       return info.breakpointsSet && info.shouldInitialResume;
     }
@@ -91,14 +93,14 @@ public class IsolatesInfo {
   }
 
   public synchronized void invalidateCache(String isolateId) {
-    IsolateInfo info = myIsolateIdToInfoMap.get(isolateId);
+    final IsolateInfo info = myIsolateIdToInfoMap.get(isolateId);
     if (info != null) {
       info.invalidateCache();
     }
   }
 
   public synchronized CompletableFuture<Isolate> getCachedIsolate(String isolateId, Supplier<CompletableFuture<Isolate>> isolateSupplier) {
-    IsolateInfo info = myIsolateIdToInfoMap.get(isolateId);
+    final IsolateInfo info = myIsolateIdToInfoMap.get(isolateId);
     if (info == null) {
       return CompletableFuture.completedFuture(null);
     }
