@@ -892,7 +892,6 @@ class BuildSpec {
         .replaceAll('<ul>\n<li>', '<ul>\n  <li>')
         .replaceAll('</li>\n<li>', '</li>\n  <li>')
         .replaceAll('</li></ul>', '</li>\n</ul>')
-        //.replaceAll('<li>\n<p>', '<li><p>')
         .replaceAll('\n<p>', '')
         .replaceAll('<p>', '')
         .replaceAll('</p>\n', '')
