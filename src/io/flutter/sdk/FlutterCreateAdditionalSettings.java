@@ -105,19 +105,19 @@ public class FlutterCreateAdditionalSettings {
       args.add(org);
     }
 
-    if (Boolean.TRUE.equals(swift)) {
+    if (swift == null || Boolean.FALSE.equals(swift)) {
       args.add("--ios-language");
-      args.add("swift");
+      args.add("objc");
     }
 
-    if (Boolean.TRUE.equals(kotlin)) {
+    if (kotlin == null || Boolean.FALSE.equals(kotlin)) {
       args.add("--android-language");
-      args.add("kotlin");
+      args.add("java");
     }
 
-    if (isAndroidX) {
+    if (!isAndroidX) {
       // TODO(messick): Remove the AndroidX UI components when AS 3.6 becomes the stable version. By then AndroidX should always be used.
-      args.add("--androidx");
+      args.add("--no-androidx");
     }
 
     if (sampleContent != null) {
