@@ -29,6 +29,29 @@
 
   <change-notes>
     <![CDATA[
+<h2>40.0</h2>
+<ul>
+  <li>Change args to work with new defaults of flutter create (#3902)</li>
+  <li>Fix the changelog markdown translation (#3904)</li>
+  <li>Use the new getMemoryUsage() API (#3877)</li>
+  <li>Turn on the detailed test output by default for Bazel (#3876)</li>
+  <li>Query display refresh rate and use in Performance window (#3890)</li>
+  <li>Fix an NPE in FlutterIconProvider.java (#3893)</li>
+  <li>Femove use of some deprecated calls (#3886)</li>
+  <li>Build for 2019.3 EAP and 3.6 canary 11 (#3872)</li>
+  <li>Update to latest version of VmService (#3889)</li>
+  <li>Fix merge error (#3888)</li>
+  <li>Support co-editing Flutter and Android in a single project (#3850)</li>
+  <li>Replace some deprecated API calls (#3875)</li>
+  <li>Add build actions (#3868)</li>
+  <li>Add auto-edits of iml (#3870)</li>
+  <li>More normalization of flutter error codes (#3866)</li>
+  <li>Fix a couple AS issues (#3864)</li>
+  <li>Fix a ConcurrentModificationException in FlutterSdk.getFlutterSdk(() (#3863)</li>
+  <li>Address instances of process execution on the EDT (#3858)</li>
+  <li>Fix open widget sample opening only counter sample app (#3854)</li>
+  <li>Add Hide Notification hyperlink to Notification Panel (#3761)</li>
+</ul>
 <h2>39.0</h2>
 <ul>
   <li>Changed project creation to default to AndriodX deselected until it works for Flutter modules</li>

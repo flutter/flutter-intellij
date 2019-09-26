@@ -1,3 +1,25 @@
+## 40.0
+- Change args to work with new defaults of flutter create (#3902)
+- Fix the changelog markdown translation (#3904)
+- Use the new getMemoryUsage() API (#3877)
+- Turn on the detailed test output by default for Bazel (#3876)
+- Query display refresh rate and use in Performance window (#3890)
+- Fix an NPE in FlutterIconProvider.java (#3893)
+- Femove use of some deprecated calls (#3886)
+- Build for 2019.3 EAP and 3.6 canary 11 (#3872)
+- Update to latest version of VmService (#3889)
+- Fix merge error (#3888)
+- Support co-editing Flutter and Android in a single project (#3850)
+- Replace some deprecated API calls (#3875)
+- Add build actions (#3868)
+- Add auto-edits of iml (#3870)
+- More normalization of flutter error codes (#3866)
+- Fix a couple AS issues (#3864)
+- Fix a ConcurrentModificationException in FlutterSdk.getFlutterSdk(() (#3863)
+- Address instances of process execution on the EDT (#3858)
+- Fix open widget sample opening only counter sample app (#3854)
+- Add Hide Notification hyperlink to Notification Panel (#3761)
+
 ## 39.0
 - Changed project creation to default to AndriodX deselected until it works for Flutter modules
 - Enabled structured errors by default
