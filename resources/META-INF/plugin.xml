@@ -37,7 +37,7 @@
   <li>Turn on the detailed test output by default for Bazel (#3876)</li>
   <li>Query display refresh rate and use in Performance window (#3890)</li>
   <li>Fix an NPE in FlutterIconProvider.java (#3893)</li>
-  <li>Femove use of some deprecated calls (#3886)</li>
+  <li>Remove use of some deprecated calls (#3886)</li>
   <li>Build for 2019.3 EAP and 3.6 canary 11 (#3872)</li>
   <li>Update to latest version of VmService (#3889)</li>
   <li>Fix merge error (#3888)</li>
@@ -47,7 +47,7 @@
   <li>Add auto-edits of iml (#3870)</li>
   <li>More normalization of flutter error codes (#3866)</li>
   <li>Fix a couple AS issues (#3864)</li>
-  <li>Fix a ConcurrentModificationException in FlutterSdk.getFlutterSdk(() (#3863)</li>
+  <li>Fix a ConcurrentModificationException in FlutterSdk.getFlutterSdk() (#3863)</li>
   <li>Address instances of process execution on the EDT (#3858)</li>
   <li>Fix open widget sample opening only counter sample app (#3854)</li>
   <li>Add Hide Notification hyperlink to Notification Panel (#3761)</li>
