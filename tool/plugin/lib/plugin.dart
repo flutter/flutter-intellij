@@ -889,7 +889,7 @@ class BuildSpec {
     // paragraph tags.
     return html
         .replaceAll('</h2><ul>', '</h2>\n<ul>')
-        .replaceAll('<ul><li>', '<ul>\n  <li>')
+        .replaceAll('<ul>\n<li>', '<ul>\n  <li>')
         .replaceAll('</li>\n<li>', '</li>\n  <li>')
         .replaceAll('</li></ul>', '</li>\n</ul>')
         //.replaceAll('<li>\n<p>', '<li><p>')
