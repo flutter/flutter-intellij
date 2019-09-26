@@ -11,6 +11,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class FlutterCreateAdditionalSettingsTest {
   @Test
@@ -26,11 +27,8 @@ public class FlutterCreateAdditionalSettingsTest {
     final List<String> args2 = additionalSettings2.getArgs();
     final List<String> args3 = additionalSettings3.getArgs();
 
-    assertEquals(1, args1.size());
     assertEquals("--with-driver-test", args1.get(0));
-
-    assertEquals(0, args2.size());
-    assertEquals(0, args3.size());
+    assertEquals(args2.size(), args3.size());
   }
 
   @Test
@@ -49,16 +47,15 @@ public class FlutterCreateAdditionalSettingsTest {
     final List<String> args3 = additionalSettings3.getArgs();
     final List<String> args4 = additionalSettings4.getArgs();
 
-    assertEquals(2, args1.size());
+    int base = args4.size();
+    assertEquals(base + 2, args1.size());
     assertEquals("app", args1.get(1));
 
-    assertEquals(2, args2.size());
+    assertEquals(base + 2, args2.size());
     assertEquals("plugin", args2.get(1));
 
-    assertEquals(2, args3.size());
+    assertEquals(base + 2, args3.size());
     assertEquals("package", args3.get(1));
-
-    assertEquals(0, args4.size());
   }
 
   @Test
@@ -72,12 +69,11 @@ public class FlutterCreateAdditionalSettingsTest {
     final List<String> args2 = additionalSettings2.getArgs();
     final List<String> args3 = additionalSettings3.getArgs();
 
-    assertEquals(2, args1.size());
+    assertEquals(args2.size() + 2, args1.size());
     assertEquals("--description", args1.get(0));
     assertEquals(d, args1.get(1));
 
-    assertEquals(0, args2.size());
-    assertEquals(0, args3.size());
+    assertEquals(args2.size(), args3.size());
   }
 
   @Test
@@ -91,12 +87,11 @@ public class FlutterCreateAdditionalSettingsTest {
     final List<String> args2 = additionalSettings2.getArgs();
     final List<String> args3 = additionalSettings3.getArgs();
 
-    assertEquals(2, args1.size());
+    assertEquals(args2.size() + 2, args1.size());
     assertEquals("--org", args1.get(0));
     assertEquals(d, args1.get(1));
 
-    assertEquals(0, args2.size());
-    assertEquals(0, args3.size());
+    assertEquals(args2.size(), args3.size());
   }
 
   @Test
@@ -109,11 +104,10 @@ public class FlutterCreateAdditionalSettingsTest {
     final List<String> args2 = additionalSettings2.getArgs();
     final List<String> args3 = additionalSettings3.getArgs();
 
-    assertEquals(2, args1.size());
-    assertEquals("--ios-language", args1.get(0));
+    assertEquals(3, args1.size());
+    assertNotEquals("--ios-language", args1.get(0));
 
-    assertEquals(0, args2.size());
-    assertEquals(0, args3.size());
+    assertEquals(args2.size(), args3.size());
   }
 
   @Test
@@ -126,11 +120,10 @@ public class FlutterCreateAdditionalSettingsTest {
     final List<String> args2 = additionalSettings2.getArgs();
     final List<String> args3 = additionalSettings3.getArgs();
 
-    assertEquals(2, args1.size());
-    assertEquals("--android-language", args1.get(0));
+    assertEquals(args2.size() - 2, args1.size());
+    assertNotEquals("--android-language", args1.get(0));
 
-    assertEquals(0, args2.size());
-    assertEquals(0, args3.size());
+    assertEquals(args2.size(), args3.size());
   }
 
   @Test
@@ -147,7 +140,7 @@ public class FlutterCreateAdditionalSettingsTest {
 
     final String line = String.join(" ", args);
 
-    assertEquals(10, args.size());
-    assertEquals("--template plugin --description a b c --org tld.domain --ios-language swift --android-language kotlin", line);
+    assertEquals(7, args.size());
+    assertEquals("--template plugin --description a b c --org tld.domain --no-androidx", line);
   }
 }
