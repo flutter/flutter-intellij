@@ -48,7 +48,7 @@ public class DevToolsManager {
     return ServiceManager.getService(project, DevToolsManager.class);
   }
 
-  private static final Logger LOG = Logger.getInstance(FlutterLog.class);
+  private static final Logger LOG = Logger.getInstance(DevToolsManager.class);
 
   private final Project project;
 
@@ -174,7 +174,6 @@ public class DevToolsManager {
     }
     catch (ExecutionException e) {
       FlutterUtils.warn(LOG, e);
-      e.printStackTrace();
       handler = null;
     }
     if (handler != null) {
