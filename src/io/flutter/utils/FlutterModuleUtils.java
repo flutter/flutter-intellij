@@ -27,6 +27,7 @@ import com.intellij.ui.EditorNotifications;
 import com.intellij.util.PlatformUtils;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterUtils;
+import io.flutter.actions.FlutterBuildActionGroup;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
@@ -326,19 +327,15 @@ public class FlutterModuleUtils {
     }
 
     // Validate that the pubspec references flutter.
-    return FlutterModuleUtils.declaresFlutter(module);
+    return declaresFlutter(module);
   }
 
   public static boolean isInFlutterAndroidModule(@NotNull Project project, @NotNull VirtualFile file) {
-    Module[] modules = ModuleManager.getInstance(project).getModules();
-    for (Module module : modules) {
-      // contains() should be fast since it uses the index.
-      boolean isModuleFile = module.getModuleContentScope().contains(file);
-      if (isModuleFile) {
-        for (Facet facet : FacetManager.getInstance(module).getAllFacets()) {
-          if ("Android".equals(facet.getName())) {
-            return declaresFlutter(project);
-          }
+    Module module = FlutterBuildActionGroup.findFlutterModule(project, file);
+    if (module != null) {
+      for (Facet facet : FacetManager.getInstance(module).getAllFacets()) {
+        if ("Android".equals(facet.getName())) {
+          return declaresFlutter(project);
         }
       }
     }

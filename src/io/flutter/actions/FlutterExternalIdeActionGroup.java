@@ -24,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
   private static boolean isExternalIdeFile(AnActionEvent e) {
-    final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
+    VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
     if (file == null || !file.exists()) {
       return false;
     }
@@ -32,7 +32,7 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
     final Project project = e.getProject();
     assert (project != null);
     return
-      FlutterModuleUtils.isInFlutterAndroidModule(project, file) ||
+      isWithinAndroidDirectory(file, project) ||
       isProjectDirectory(file, project) ||
       isWithinIOsDirectory(file, project) ||
       FlutterUtils.isXcodeProjectFileName(file.getName()) || OpenInAndroidStudioAction.isProjectFileName(file.getName());
