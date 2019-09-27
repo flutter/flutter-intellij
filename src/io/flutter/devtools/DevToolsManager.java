@@ -17,6 +17,7 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -24,8 +25,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
+import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.console.FlutterConsoles;
+import io.flutter.logging.FlutterLog;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterCommand;
@@ -44,6 +47,8 @@ public class DevToolsManager {
   public static DevToolsManager getInstance(@NotNull Project project) {
     return ServiceManager.getService(project, DevToolsManager.class);
   }
+
+  private static final Logger LOG = Logger.getInstance(FlutterLog.class);
 
   private final Project project;
 
@@ -135,6 +140,7 @@ public class DevToolsManager {
   /**
    * Gets the process handler that will start DevTools from pub.
    */
+  @Nullable
   private OSProcessHandler getProcessHandlerForPub() {
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     if (sdk == null) {
@@ -150,8 +156,9 @@ public class DevToolsManager {
   }
 
   /**
-   * Gets the process handler that wills tart DevTools in bazel.
+   * Gets the process handler that will start DevTools in bazel.
    */
+  @Nullable
   private OSProcessHandler getProcessHandlerForBazel() {
     final Workspace workspace = Workspace.load(project);
     if (workspace == null || workspace.getDevtoolsScript() == null) {
@@ -166,6 +173,7 @@ public class DevToolsManager {
       handler = new OSProcessHandler(commandLine);
     }
     catch (ExecutionException e) {
+      FlutterUtils.warn(LOG, e);
       e.printStackTrace();
       handler = null;
     }
@@ -185,6 +193,7 @@ public class DevToolsManager {
       return;
     }
 
+    @Nullable
     final OSProcessHandler handler = isBazel(project) ? getProcessHandlerForBazel() : getProcessHandlerForPub();
 
     // start the server
@@ -207,9 +216,9 @@ public class DevToolsManager {
 
 class DevToolsInstance {
   public static void startServer(
-    OSProcessHandler processHandler,
-    Callback<DevToolsInstance> onSuccess,
-    Callback<DevToolsInstance> onClose
+    @Nullable OSProcessHandler processHandler,
+    @NotNull Callback<DevToolsInstance> onSuccess,
+    @NotNull Callback<DevToolsInstance> onClose
   ) {
     if (processHandler == null) {
       return;
