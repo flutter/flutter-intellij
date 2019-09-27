@@ -58,9 +58,6 @@ public class FlutterStudioStartupActivity implements StartupActivity {
       return;
     }
 
-    // The IntelliJ version of this action spawns a new process for Android Studio.
-    // Since we're already running Android Studio we want to simply open the project in the current process.
-    replaceAction("flutter.androidstudio.open", new OpenAndroidModule());
     // Unset this flag for all projects, mainly to ease the upgrade from 3.0.1 to 3.1.
     // TODO(messick) Delete once 3.0.x has 0 7DA's.
     FlutterProjectCreator.disableUserConfig(project);
@@ -112,17 +109,5 @@ public class FlutterStudioStartupActivity implements StartupActivity {
       public void sourceGenerationFinished(@NotNull Project project) {
       }
     };
-  }
-
-  public static void replaceAction(@NotNull String actionId, @NotNull AnAction newAction) {
-    ActionManager actionManager = ActionManager.getInstance();
-    AnAction oldAction = actionManager.getAction(actionId);
-    if (oldAction != null) {
-      newAction.getTemplatePresentation().setIcon(oldAction.getTemplatePresentation().getIcon());
-      newAction.getTemplatePresentation().setText(oldAction.getTemplatePresentation().getTextWithMnemonic(), true);
-      newAction.getTemplatePresentation().setDescription(oldAction.getTemplatePresentation().getDescription());
-      actionManager.unregisterAction(actionId);
-    }
-    actionManager.registerAction(actionId, newAction);
   }
 }

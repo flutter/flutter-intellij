@@ -20,6 +20,7 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
+import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
@@ -41,6 +42,16 @@ public class OpenInAndroidStudioAction extends AnAction {
 
   @Override
   public void actionPerformed(AnActionEvent event) {
+    if (FlutterUtils.isAndroidStudio()) {
+      try {
+        //noinspection unchecked
+        Class<OpenInAndroidStudioAction> opener = (Class<OpenInAndroidStudioAction>)Class.forName("io.flutter.actions.OpenAndroidModule");
+        opener.newInstance().actionPerformed(event);
+        return;
+      }
+      catch (ClassNotFoundException | IllegalAccessException | InstantiationException ignored) {
+      }
+    }
     final String androidStudioPath = findAndroidStudio(event.getProject());
     if (androidStudioPath == null) {
       FlutterMessages.showError("Unable to locate Android Studio",

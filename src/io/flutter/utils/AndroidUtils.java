@@ -14,11 +14,6 @@ import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;
 import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslElement;
 import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslLiteral;
 import com.android.tools.idea.gradle.dsl.parser.files.GradleSettingsFile;
-import com.android.tools.idea.gradle.project.build.BuildContext;
-import com.android.tools.idea.gradle.project.build.BuildStatus;
-import com.android.tools.idea.gradle.project.build.GradleBuildListener;
-import com.android.tools.idea.gradle.project.build.GradleBuildState;
-import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.android.tools.idea.gradle.project.sync.GradleSyncState;
 import com.android.tools.idea.gradle.util.GradleUtil;
 import com.intellij.lang.java.JavaParserDefinition;
@@ -212,28 +207,30 @@ public class AndroidUtils {
 
   public static void addGradleListeners(@NotNull Project project) {
     if (!FlutterUtils.isAndroidStudio()) {
-      GradleSyncState.subscribe(project, new GradleSyncListener() {
-        @Override
-        public void syncSucceeded(@NotNull Project project) {
-          checkDartSupport(project);
-          if (isCoeditTransformedProject(project)) {
-            return;
-          }
-          enableCoeditIfAddToAppDetected(project);
-        }
-      });
-      GradleBuildState.subscribe(project, new GradleBuildListener.Adapter() {
-        @Override
-        public void buildFinished(@NotNull BuildStatus status, @Nullable BuildContext context) {
-          checkDartSupport(project);
-          if (isCoeditTransformedProject(project)) {
-            return;
-          }
-          if (status == BuildStatus.SUCCESS && context != null && context.getGradleTasks().contains(":flutter:generateDebugSources")) {
-            enableCoeditIfAddToAppDetected(project);
-          }
-        }
-      });
+      // We're not supporting Gradle integration with IntelliJ currently, so these are disabled for now.
+      // TODO(messick): Support Gradle in IntelliJ for add-to-app.
+      //GradleSyncState.subscribe(project, new GradleSyncListener() {
+      //  @Override
+      //  public void syncSucceeded(@NotNull Project project) {
+      //    checkDartSupport(project);
+      //    if (isCoeditTransformedProject(project)) {
+      //      return;
+      //    }
+      //    enableCoeditIfAddToAppDetected(project);
+      //  }
+      //});
+      //GradleBuildState.subscribe(project, new GradleBuildListener.Adapter() {
+      //  @Override
+      //  public void buildFinished(@NotNull BuildStatus status, @Nullable BuildContext context) {
+      //    checkDartSupport(project);
+      //    if (isCoeditTransformedProject(project)) {
+      //      return;
+      //    }
+      //    if (status == BuildStatus.SUCCESS && context != null && context.getGradleTasks().contains(":flutter:generateDebugSources")) {
+      //      enableCoeditIfAddToAppDetected(project);
+      //    }
+      //  }
+      //});
     }
   }
 
