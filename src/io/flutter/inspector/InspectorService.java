@@ -341,10 +341,10 @@ public class InspectorService implements Disposable {
     return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
   }
 
-  private void notifySelectionChanged() {
+  private void notifySelectionChanged(boolean uiAlreadyUpdated, boolean textEditorUpdated) {
     ApplicationManager.getApplication().invokeLater(() -> {
       for (InspectorServiceClient client : clients) {
-        client.onInspectorSelectionChanged();
+        client.onInspectorSelectionChanged(uiAlreadyUpdated, textEditorUpdated);
       }
     });
   }
@@ -366,9 +366,9 @@ public class InspectorService implements Disposable {
 
           // We create a dummy object group as this particular operation
           // doesn't actually require an object group.
-          createObjectGroup("dummy").setSelection(event.getInspectee(), true);
+          createObjectGroup("dummy").setSelection(event.getInspectee(), true, true);
           // Update the UI in IntelliJ.
-          notifySelectionChanged();
+          notifySelectionChanged(false, false);
         }
         break;
       }
@@ -1339,7 +1339,7 @@ public class InspectorService implements Disposable {
       });
     }
 
-    public void setSelection(InspectorInstanceRef selection, boolean uiAlreadyUpdated) {
+    public void setSelection(InspectorInstanceRef selection, boolean uiAlreadyUpdated, boolean textEditorUpdated) {
       if (disposed) {
         return;
       }
@@ -1347,42 +1347,63 @@ public class InspectorService implements Disposable {
         return;
       }
       if (useServiceExtensionApi()) {
-        handleSetSelectionDaemon(invokeVmServiceExtension("setSelectionById", selection), uiAlreadyUpdated);
+        handleSetSelectionDaemon(invokeVmServiceExtension("setSelectionById", selection), uiAlreadyUpdated, textEditorUpdated);
       }
       else {
-        handleSetSelectionVmService(invokeEval("setSelectionById", selection), uiAlreadyUpdated);
+        handleSetSelectionVmService(invokeEval("setSelectionById", selection), uiAlreadyUpdated, textEditorUpdated);
       }
+    }
+
+    public void setSelection(Location location, boolean uiAlreadyUpdated, boolean textEditorUpdated) {
+      if (disposed) {
+        return;
+      }
+      if (location == null) {
+        return;
+      }
+      if (useServiceExtensionApi()) {
+        JsonObject params = new JsonObject();
+        addLocationToParams(location, params);
+        ;
+        handleSetSelectionDaemon(invokeVmServiceExtension("setSelectionByLocation", params), uiAlreadyUpdated, textEditorUpdated);
+      }
+      // skip if the vm service is expected to be used directly.
     }
 
     /**
      * Helper when we need to set selection given an VM Service InstanceRef
      * instead of an InspectorInstanceRef.
      */
-    public void setSelection(InstanceRef selection, boolean uiAlreadyUpdated) {
+    public void setSelection(InstanceRef selection, boolean uiAlreadyUpdated, boolean textEditorUpdated) {
       // There is no excuse for calling setSelection using a disposed ObjectGroup.
       assert (!disposed);
       // This call requires the VM Service protocol as an VM Service InstanceRef is specified.
-      handleSetSelectionVmService(invokeServiceMethodOnRefEval("setSelection", selection), uiAlreadyUpdated);
+      handleSetSelectionVmService(invokeServiceMethodOnRefEval("setSelection", selection), uiAlreadyUpdated, textEditorUpdated);
     }
 
-    private void handleSetSelectionVmService(CompletableFuture<InstanceRef> setSelectionResult, boolean uiAlreadyUpdated) {
+    private void handleSetSelectionVmService(CompletableFuture<InstanceRef> setSelectionResult,
+                                             boolean uiAlreadyUpdated,
+                                             boolean textEditorUpdated) {
       // TODO(jacobr): we need to cancel if another inspect request comes in while we are trying this one.
       skipIfDisposed(() -> setSelectionResult.thenAcceptAsync((InstanceRef instanceRef) -> skipIfDisposed(() -> {
-        handleSetSelectionHelper("true".equals(instanceRef.getValueAsString()), uiAlreadyUpdated);
+        handleSetSelectionHelper("true".equals(instanceRef.getValueAsString()), uiAlreadyUpdated, textEditorUpdated);
       })));
     }
 
-    private void handleSetSelectionHelper(boolean selectionChanged, boolean uiAlreadyUpdated) {
-      if (selectionChanged && !uiAlreadyUpdated) {
-        notifySelectionChanged();
+    private void handleSetSelectionHelper(boolean selectionChanged, boolean uiAlreadyUpdated, boolean textEditorUpdated) {
+      if (selectionChanged) {
+        notifySelectionChanged(uiAlreadyUpdated, textEditorUpdated);
       }
     }
 
-    private void handleSetSelectionDaemon(CompletableFuture<JsonElement> setSelectionResult, boolean uiAlreadyUpdated) {
+    private void handleSetSelectionDaemon(CompletableFuture<JsonElement> setSelectionResult,
+                                          boolean uiAlreadyUpdated,
+                                          boolean textEditorUpdated) {
       skipIfDisposed(() ->
                        // TODO(jacobr): we need to cancel if another inspect request comes in while we are trying this one.
                        setSelectionResult.thenAcceptAsync(
-                         (JsonElement json) -> skipIfDisposed(() -> handleSetSelectionHelper(json.getAsBoolean(), uiAlreadyUpdated)))
+                         (JsonElement json) -> skipIfDisposed(
+                           () -> handleSetSelectionHelper(json.getAsBoolean(), uiAlreadyUpdated, textEditorUpdated)))
       );
     }
 
@@ -1486,7 +1507,7 @@ public class InspectorService implements Disposable {
   }
 
   public interface InspectorServiceClient {
-    void onInspectorSelectionChanged();
+    void onInspectorSelectionChanged(boolean uiAlreadyUpdated, boolean textEditorUpdated);
 
     void onFlutterFrame();
 

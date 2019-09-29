@@ -12,22 +12,50 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Class that tracks the location of a FlutterOutline node in a document.
- * <p>
- * Once the track method has been called, edits to the document are reflected
- * by by all locations returned by the outline location.
- */
-public class OutlineLocation implements Comparable<OutlineLocation> {
-  private final int line;
-  private final int column;
-  private final int indent;
-  private final int offset;
-  private final int endOffset;
-  @Nullable
+class TextRangeTracker {
+  private final TextRange rawRange;
   private RangeMarker marker;
-  @Nullable
-  private String nodeStartingWord;
+  private String endingWord;
+
+  TextRangeTracker(int offset, int endOffset) {
+    rawRange = new TextRange(offset, endOffset);
+  }
+
+  void track(Document document) {
+    if (marker != null) {
+      assert(document == marker.getDocument());
+      return;
+    }
+    // Create a range marker that goes from the start of the indent for the line
+    // to the column of the actual entity.
+    final int docLength = document.getTextLength();
+    final int startOffset = Math.min(rawRange.getStartOffset(), docLength);
+    final int endOffset = Math.min(rawRange.getEndOffset(), docLength);
+
+    endingWord = getCurrentWord(document, endOffset - 1);
+    marker = document.createRangeMarker(startOffset, endOffset);
+  }
+
+  @Nullable TextRange getRange() {
+    if (marker == null) {
+      return rawRange;
+    }
+    if (!marker.isValid()) {
+      return null;
+    }
+    return new TextRange(marker.getStartOffset(), marker.getEndOffset());
+  }
+
+  void dispose() {
+    if (marker != null) {
+      marker.dispose();;
+    }
+    marker = null;
+  }
+
+  public boolean isTracking() {
+    return marker != null && marker.isValid();
+  }
 
   /**
    * Get the next word in the document starting at offset.
@@ -38,8 +66,9 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
    * where RangeMarkers go off the rails and return strange values after
    * running a code formatter or other tool that generates widespread edits.
    */
-  private static String getCurrentWord(Document document, int offset) {
+  public static String getCurrentWord(Document document, int offset) {
     final int documentLength = document.getTextLength();
+    offset = Math.max(0, offset);
     if (offset < 0 || offset >= documentLength) return "";
     final CharSequence chars = document.getCharsSequence();
     // Clamp the max current word length at 20 to avoid slow behavior if the
@@ -53,6 +82,47 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
     if (offset == end) return "";
     return chars.subSequence(offset, end).toString();
   }
+
+  public boolean isConsistentEndingWord() {
+    if (marker == null) {
+      return true;
+    }
+    if (!marker.isValid()) {
+      return false;
+    }
+    return // Verify that the word starting at the end of the marker matches
+           // its expected value. This is sometimes not the case if the logic
+           // to update marker locations has hit a bad edge case as sometimes
+           // happens when there is a large document edit due to running a
+           // code formatter.
+           endingWord.equals(TextRangeTracker.getCurrentWord(marker.getDocument(), marker.getEndOffset() - 1));
+  }
+}
+
+/**
+ * Class that tracks the location of a FlutterOutline node in a document.
+ * <p>
+ * Once the track method has been called, edits to the document are reflected
+ * by by all locations returned by the outline location.
+ */
+public class OutlineLocation implements Comparable<OutlineLocation> {
+  private final int line;
+  private final int column;
+  private final int indent;
+  private final int offset;
+  /**
+   * Tracker for the range of lines indent guides for the outline should show.
+   */
+  private final TextRangeTracker guideTracker;
+
+  /**
+   * Tracker for the entire range of text describing this outline location.
+   */
+  private final TextRangeTracker fullTracker;
+
+  @Nullable
+  private String nodeStartingWord;
+  private Document document;
 
   public OutlineLocation(
     FlutterOutline node,
@@ -75,15 +145,21 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
     assert (column >= indent);
     assert (line >= 0);
     this.indent = indent;
-    this.offset = pass.getConvertedOffset(node);
-    this.endOffset = pass.getConvertedOffset(node.getOffset() + node.getLength());
+    int nodeOffset = pass.getConvertedOffset(node);
+    int endOffset = pass.getConvertedOffset(node.getOffset() + node.getLength());
+    fullTracker = new TextRangeTracker(nodeOffset, endOffset);
+    final int delta = Math.max(column - indent, 0);
+    this.offset = Math.max(nodeOffset - delta, 0);
+    guideTracker = new TextRangeTracker(offset, nodeOffset + 1);
   }
 
   public void dispose() {
-    if (marker != null) {
-      marker.dispose();
+    if (guideTracker != null) {
+      guideTracker.dispose();
     }
-    marker = null;
+    if (fullTracker != null) {
+      fullTracker.dispose();;
+    }
   }
 
   /**
@@ -94,26 +170,13 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
    * also be called to ensure the range marker is disposed.
    */
   public void track(Document document) {
-    if (marker != null) {
-      // TODO(jacobr): it does indicate a bit of a logic bug if we are calling this method twice.
-      assert (marker.getDocument() == document);
-      return;
-    }
+    this.document = document;
 
     assert (indent <= column);
 
-    final int delta = Math.max(column - indent, 0);
-    final int markerEnd = offset;
-
-    // Create a range marker that goes from the start of the indent for the line
-    // to the column of the actual entity.
-    final int docLength = document.getTextLength();
-    int startOffset = Math.max(markerEnd - delta, 0);
-    startOffset = Math.min(startOffset, docLength);
-    final int endOffset = Math.min(markerEnd + 1, docLength);
-
-    marker = document.createRangeMarker(startOffset, endOffset);
-    nodeStartingWord = getCurrentWord(document, markerEnd);
+    // Marker with the
+    fullTracker.track(document);
+    guideTracker.track(document);
   }
 
   @Override
@@ -134,41 +197,36 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
            column == other.column &&
            indent == other.indent &&
            offset == other.offset &&
-           getOffset() == other.getOffset();
+           getGuideOffset() == other.getGuideOffset();
   }
 
   /**
    * Offset in the document accurate even if the document has been edited.
    */
-  public int getOffset() {
-    return marker == null ? offset : marker.getStartOffset();
+  public int getGuideOffset() {
+    if (guideTracker.isTracking()) {
+      return guideTracker.getRange().getStartOffset();
+    }
+    return offset;
   }
 
   // Sometimes markers stop being valid in which case we need to stop
   // displaying the rendering until they are valid again.
   public boolean isValid() {
-    if (marker == null) return true;
+    if (!guideTracker.isTracking()) return true;
 
-    return marker.isValid() &&
-           nodeStartingWord != null &&
-           // Verify that the word starting at the end of the marker matches
-           // its expected value. This is sometimes not the case if the logic
-           // to update marker locations has hit a bad edge case as sometimes
-           // happens when there is a large document edit due to running a
-           // code formatter.
-           nodeStartingWord.equals(getCurrentWord(marker.getDocument(), marker.getEndOffset() - 1));
+    return guideTracker.isConsistentEndingWord();
   }
 
   /**
    * Line in the document this outline node is at.
    */
   public int getLine() {
-    return marker == null ? line : marker.getDocument().getLineNumber(marker.getStartOffset());
+    return guideTracker.isTracking() ? document.getLineNumber(guideTracker.getRange().getStartOffset()) : line;
   }
 
-  private int getColumnForOffset(int offset) {
-    assert (marker != null);
-    final Document document = marker.getDocument();
+  public int getColumnForOffset(int offset) {
+    assert (document != null);
     final int currentLine = document.getLineNumber(offset);
     return offset - document.getLineStartOffset(currentLine);
   }
@@ -181,7 +239,12 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
    * The indent will be 2 while the column is 9.
    */
   public int getIndent() {
-    return marker == null ? indent : getColumnForOffset(marker.getStartOffset());
+    if (!guideTracker.isTracking()) {
+      return indent;
+    }
+    final TextRange range = guideTracker.getRange();
+    assert (range != null);
+    return getColumnForOffset(range.getStartOffset());
   }
 
   /**
@@ -190,11 +253,20 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
    * This is the column offset of the start of the widget constructor call.
    */
   public int getColumn() {
-    return marker == null ? column : getColumnForOffset(Math.max(marker.getStartOffset(), marker.getEndOffset() - 1));
+    if (!guideTracker.isTracking()) {
+      return column;
+    }
+    final TextRange range = guideTracker.getRange();
+    assert (range != null);
+    return getColumnForOffset(Math.max(range.getStartOffset(), range.getEndOffset() - 1));
   }
 
-  public TextRange getTextRange() {
-    return marker == null ? new TextRange(offset, endOffset) : new TextRange(marker.getStartOffset(), marker.getEndOffset());
+  public TextRange getGuideTextRange() {
+    return guideTracker.getRange();
+  }
+
+  public TextRange getFullRange() {
+    return fullTracker.getRange();
   }
 
   @Override
@@ -207,5 +279,9 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
     delta = Integer.compare(column, o.column);
     if (delta != 0) return delta;
     return Integer.compare(indent, o.indent);
+  }
+
+  public Document getDocument() {
+    return document;
   }
 }

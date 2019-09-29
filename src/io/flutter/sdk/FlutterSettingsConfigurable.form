@@ -224,7 +224,7 @@
           </component>
         </children>
       </grid>
-      <grid id="23e52" binding="experimentsPanel" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="23e52" binding="experimentsPanel" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -247,6 +247,15 @@
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.enable.android.gradle.sync"/>
               <toolTipText value="Provides advanced editing capabilities for Java and Kotlin code. Uses Gradle to find Android libraries then links them into the Flutter project."/>
+            </properties>
+          </component>
+          <component id="33088" class="javax.swing.JCheckBox" binding="myEnableHotUi">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.enable.android.gradle.sync"/>
+              <toolTipText value="Experimental features to graphically edit Flutter build methods."/>
             </properties>
           </component>
         </children>

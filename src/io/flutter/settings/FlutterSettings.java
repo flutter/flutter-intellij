@@ -280,4 +280,8 @@ public class FlutterSettings {
     final int index = str.lastIndexOf('.');
     return index == -1 ? str : str.substring(index + 1);
   }
+
+  public boolean isShowPreviewArea() {
+    return true; // XXX implement.
+  }
 }
