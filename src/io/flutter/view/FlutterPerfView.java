@@ -208,7 +208,7 @@ public class FlutterPerfView implements Disposable {
     final boolean debugConnectionAvailable = app.getLaunchMode().supportsDebugConnection();
     final boolean isInProfileMode = app.getMode().isProfiling() || app.getLaunchMode().isProfiling();
 
-    // If the inspector is available (non-release mode), then show it.
+    // If we're in non-release mode, show the performance panels.
     if (debugConnectionAvailable) {
       state.disposable = Disposer.newDisposable();
 

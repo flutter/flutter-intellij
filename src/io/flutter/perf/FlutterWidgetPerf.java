@@ -101,8 +101,10 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
   }
 
   private void onFrame(ActionEvent event) {
-    for (EditorPerfModel decorations : editorDecorations.values()) {
-      decorations.onFrame();
+    synchronized (editorDecorations) {
+      for (EditorPerfModel decorations : editorDecorations.values()) {
+        decorations.onFrame();
+      }
     }
 
     for (PerfModel model : perfListeners) {
@@ -223,7 +225,8 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     final Application application = ApplicationManager.getApplication();
     if (application != null) {
       application.runReadAction(action);
-    } else {
+    }
+    else {
       // Unittest case.
       action.run();
     }
@@ -390,12 +393,16 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     }
     if (System.currentTimeMillis() >= lastRequestTime + IDLE_DELAY_MILISECONDS) {
       AsyncUtils.invokeLater(() -> {
-        for (EditorPerfModel decoration : editorDecorations.values()) {
-          decoration.markAppIdle();
+        synchronized (editorDecorations) {
+          for (EditorPerfModel decoration : editorDecorations.values()) {
+            decoration.markAppIdle();
+          }
         }
+
         for (PerfModel listener : perfListeners) {
           listener.markAppIdle();
         }
+
         uiAnimationTimer.stop();
       });
     }
@@ -409,30 +416,36 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     harvestInvalidEditors(editors);
 
     for (TextEditor fileEditor : currentEditors) {
-      // Create a new EditorPerfModel if necessary.
-      if (!editorDecorations.containsKey(fileEditor)) {
-        editorDecorations.put(fileEditor, perfModelFactory.create(fileEditor));
+      synchronized (editorDecorations) {
+        // Create a new EditorPerfModel if necessary.
+        if (!editorDecorations.containsKey(fileEditor)) {
+          editorDecorations.put(fileEditor, perfModelFactory.create(fileEditor));
+        }
       }
     }
     requestRepaint(When.now);
   }
 
   private void harvestInvalidEditors(Set<TextEditor> newEditors) {
-    final Iterator<TextEditor> editors = editorDecorations.keySet().iterator();
+    synchronized (editorDecorations) {
+      final Iterator<TextEditor> editors = editorDecorations.keySet().iterator();
 
-    while (editors.hasNext()) {
-      final TextEditor editor = editors.next();
-      if (!editor.isValid() || (newEditors != null && !newEditors.contains(editor))) {
-        final EditorPerfModel editorPerfDecorations = editorDecorations.get(editor);
-        editors.remove();
-        editorPerfDecorations.dispose();
+      while (editors.hasNext()) {
+        final TextEditor editor = editors.next();
+        if (!editor.isValid() || (newEditors != null && !newEditors.contains(editor))) {
+          final EditorPerfModel editorPerfDecorations = editorDecorations.get(editor);
+          editors.remove();
+          editorPerfDecorations.dispose();
+        }
       }
     }
   }
 
   public void setAlwaysShowLineMarkersOverride(boolean show) {
-    for (EditorPerfModel model : editorDecorations.values()) {
-      model.setAlwaysShowLineMarkersOverride(show);
+    synchronized (editorDecorations) {
+      for (EditorPerfModel model : editorDecorations.values()) {
+        model.setAlwaysShowLineMarkersOverride(show);
+      }
     }
   }
 
@@ -450,18 +463,25 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     perfProvider.dispose();
 
     clearModels();
-    for (EditorPerfModel decorations : editorDecorations.values()) {
-      decorations.dispose();
+
+    synchronized (editorDecorations) {
+      for (EditorPerfModel decorations : editorDecorations.values()) {
+        decorations.dispose();
+      }
+      editorDecorations.clear();
     }
-    editorDecorations.clear();
+
     perfListeners.clear();
   }
 
   void clearModels() {
-    for (EditorPerfModel decorations : editorDecorations.values()) {
-      decorations.clear();
+    synchronized (editorDecorations) {
+      for (EditorPerfModel decorations : editorDecorations.values()) {
+        decorations.clear();
+      }
     }
-    for (PerfModel listener: perfListeners) {
+
+    for (PerfModel listener : perfListeners) {
       listener.clear();
     }
   }
