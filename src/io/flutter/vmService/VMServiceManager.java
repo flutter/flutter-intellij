@@ -33,6 +33,8 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
+import static io.flutter.vmService.ServiceExtensions.enableOnDeviceInspector;
+
 public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposable {
   public final double defaultRefreshRate = 60.0;
 
@@ -138,6 +140,8 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
       public void onError(RPCError error) {
       }
     });
+
+    setServiceExtensionState(enableOnDeviceInspector.getExtension(), true, true);
   }
 
   @NotNull
@@ -428,7 +432,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
   private void restoreServiceExtensionState(String name) {
     if (app.isSessionActive()) {
-      if (StringUtil.equals(name, ServiceExtensions.toggleSelectWidgetMode.getExtension())) {
+      if (StringUtil.equals(name, ServiceExtensions.toggleOnDeviceWidgetInspector.getExtension())) {
         // Do not call the service extension for this extension. We do not want to persist showing the
         // inspector on app restart.
         return;

@@ -39,11 +39,11 @@ public class ActiveEditorsOutlineServiceTest {
   // The outline service doesn't care too much what the outline's contents are, only that the outlines update.
   // However, the request method uses the outline's length to determine if the outline is up-to-date.
   private static final FlutterOutline firstFlutterOutline =
-    new FlutterOutline("First", 0, 0, 0, 0, "", null, null, null, null, null, null, 1, false, null, null, null, null);
+    new FlutterOutline("First", 0, 0, 0, 0, "", null, null, null, null, null, null);
   private static final FlutterOutline secondFlutterOutline =
-    new FlutterOutline("Second", 0, 0, 0, 0, "", null, null, null, null, null, null, 2, false, null, null, null, null);
+    new FlutterOutline("Second", 0, 0, 0, 0, "", null, null, null, null, null, null);
   private static final FlutterOutline outlineWithCorrectLength =
-    new FlutterOutline("Third", 0, fileContents.length(), 0, 0, "", null, null, null, null, null, null, 3, false, null, null, null, null);
+    new FlutterOutline("Third", 0, fileContents.length(), 0, 0, "", null, null, null, null, null, null);
 
   @Rule
   public final CodeInsightProjectFixture projectFixture = Testing.makeCodeInsightModule();

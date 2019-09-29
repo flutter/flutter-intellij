@@ -85,4 +85,8 @@ public class InspectorSourceLocation {
     }
     return null;
   }
+
+  public InspectorService.Location getLocation() {
+    return new InspectorService.Location(getFile(), getLine(), getColumn());
+  }
 }

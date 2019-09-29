@@ -15,6 +15,7 @@ public class FlutterSearchableOptionContributor extends SearchableOptionContribu
   @Override
   public void processOptions(@NotNull SearchableOptionProcessor processor) {
     add(processor, FlutterBundle.message("settings.try.out.features.still.under.development"));
+    add(processor, FlutterBundle.message("settings.show.preview.area"));
     add(processor, FlutterBundle.message("settings.experimental.flutter.logging.view"));
     add(processor, FlutterBundle.message("settings.enable.android.gradle.sync"));
     // For some reason the word "report" is ignored by the search feature, but the other words work.

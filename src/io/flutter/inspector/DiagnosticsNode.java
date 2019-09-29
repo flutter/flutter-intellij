@@ -13,6 +13,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.ui.JBRectangle;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.run.daemon.FlutterApp;
@@ -26,7 +27,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 
@@ -166,6 +169,21 @@ public class DiagnosticsNode {
    */
   public String getDescription() {
     return getStringMember("description");
+  }
+
+  /**
+   * Returns a description with a short summary of the node itself not
+   * including children or properties.
+   * <p>
+   * `parentConfiguration` specifies how the parent is rendered as text art.
+   * For example, if the parent does not line break between properties, the
+   * description of a property should also be a single line if possible.
+   */
+  public TransformedRect getTransformToRoot() {
+    if (!json.has("transformToRoot")) {
+      return null;
+    }
+    return  new TransformedRect(json.getAsJsonObject("transformToRoot"));
   }
 
   /**
@@ -839,7 +857,7 @@ public class DiagnosticsNode {
       if (key.equals("objectId") || key.equals("valueId")) {
         continue;
       }
-      if (entry.getValue().equals(node.json.get(key))) {
+      if (!entry.getValue().equals(node.json.get(key))) {
         return false;
       }
     }
@@ -874,7 +892,7 @@ public class DiagnosticsNode {
       if (service == null) {
         return;
       }
-      service.setSelection(ref, uiAlreadyUpdated);
+      service.setSelection(ref, uiAlreadyUpdated, false);
     });
   }
 }

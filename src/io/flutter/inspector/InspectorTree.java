@@ -110,6 +110,8 @@ public class InspectorTree extends Tree implements DataProvider, Disposable {
 
   void registerShortcuts() {
     DebuggerUIUtil.registerActionOnComponent(InspectorActions.JUMP_TO_TYPE_SOURCE, this, this);
+    DebuggerUIUtil.registerActionOnComponent(InspectorActions.JUMP_TO_SOURCE, this, this);
+    DebuggerUIUtil.registerActionOnComponent(InspectorActions.INSPECT_WITH_DEBUGGER, this, this);
   }
 
   @Override

@@ -48,7 +48,7 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
 
   // Whether each of the performance metrics tracked should be tracked by
   // default when starting a new application.
-  public static boolean trackRebuildWidgetsDefault = false;
+  public static boolean trackRebuildWidgetsDefault = true; // XXX hack
   public static boolean trackRepaintWidgetsDefault = false;
 
   public FlutterWidgetPerf getCurrentStats() {

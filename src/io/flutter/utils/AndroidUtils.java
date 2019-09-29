@@ -9,12 +9,6 @@ import static com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil.get
 import static com.intellij.openapi.util.text.StringUtil.isNotEmpty;
 import static java.util.Objects.requireNonNull;
 
-import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;
-import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslElement;
-import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslLiteral;
-import com.android.tools.idea.gradle.dsl.parser.files.GradleSettingsFile;
-import com.android.tools.idea.gradle.project.sync.GradleSyncState;
-import com.android.tools.idea.gradle.util.GradleUtil;
 import com.intellij.lang.java.JavaParserDefinition;
 import com.intellij.lexer.Lexer;
 import com.intellij.openapi.application.ApplicationManager;
@@ -65,10 +59,11 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.plugins.gradle.settings.GradleProjectSettings;
+
+/*XXXimport org.jetbrains.plugins.gradle.settings.GradleProjectSettings;
 import org.jetbrains.plugins.gradle.settings.GradleSettings;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
-
+*/
 //import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED;
 
 // based on: org.jetbrains.android.util.AndroidUtils
@@ -256,7 +251,7 @@ public class AndroidUtils {
         }
         if (!col.isEmpty()) {
           if (col.parallelStream().anyMatch((x) -> x.startsWith(FLUTTER_TASK_PREFIX))) {
-            ApplicationManager.getApplication().invokeLater(() -> enableCoEditing(project));
+// XXX            ApplicationManager.getApplication().invokeLater(() -> enableCoEditing(project));
           }
         }
       }
@@ -306,7 +301,8 @@ public class AndroidUtils {
     new WaitFor(GRADLE_SYNC_TIMEOUT, () -> runnable.accept(project)) {
       @Override
       public boolean condition() {
-        return !GradleSyncState.getInstance(project).isSyncInProgress();
+        return false;
+// XXX        return !GradleSyncState.getInstance(project).isSyncInProgress();
       }
     };
   }
@@ -331,6 +327,8 @@ public class AndroidUtils {
     if (file == null) {
       return false;
     }
+    return false;
+    /*
     VirtualFile dir = file.getParent();
     if (dir.findChild(".ios") == null) {
       dir = dir.getParent();
@@ -347,12 +345,15 @@ public class AndroidUtils {
     GradleSettingsFile parsedSettings = parseSettings(project);
     // Check settings for "include :name".
     return findInclude(requireNonNull(parsedSettings), name) == null;
+
+     */
   }
 
   private static boolean doesBuildFileExist(VirtualFile dir) {
-    return new File(dir.getPath(), SdkConstants.FN_BUILD_GRADLE).exists();
+    return false;
+//    return new File(dir.getPath(), SdkConstants.FN_BUILD_GRADLE).exists();
   }
-
+/*
   private static GradleSettingsFile parseSettings(Project project) {
     // Get the PSI for settings.gradle. In IntelliJ it is just this, but Android Studio uses a VirtualFile.
     //GradleSettingsFile parsedSettings =
@@ -389,7 +390,7 @@ public class AndroidUtils {
     String flutterModuleName = flutterModuleDir.getName();
     if (!isVanillaAddToApp(project, androidDir, flutterModuleName)) return;
     new CoEditHelper(project, flutterModuleDir).enable();
-  }
+  }*/
 
   private static void addCoeditTransformedProject(@NotNull Project project) {
     if (!project.isDisposed()) {
@@ -416,7 +417,7 @@ public class AndroidUtils {
   @NotNull
   @SuppressWarnings("DuplicatedCode")
   private static Map<ProjectData, MultiMap<String, String>> getTasksMap(Project project) {
-    Map<ProjectData, MultiMap<String, String>> tasks = new LinkedHashMap<>();
+   /* Map<ProjectData, MultiMap<String, String>> tasks = new LinkedHashMap<>();
     for (GradleProjectSettings setting : GradleSettings.getInstance(project).getLinkedProjectsSettings()) {
       final ExternalProjectInfo projectData =
         ProjectDataManager.getInstance().getExternalProjectData(project, GradleConstants.SYSTEM_ID, setting.getExternalProjectPath());
@@ -445,9 +446,12 @@ public class AndroidUtils {
       tasks.put(projectData.getExternalProjectStructure().getData(), projectTasks);
     }
     return tasks;
+
+    */
+   return null;
   }
 
-  private static PsiElement findInclude(GradleSettingsFile parsedSettings, String name) {
+/*  private static PsiElement findInclude(GradleSettingsFile parsedSettings, String name) {
     Map<String, GradleDslElement> elements = parsedSettings.getPropertyElements();
     GradleDslElement includes = elements.get("include");
     if (includes == null) {
@@ -465,7 +469,7 @@ public class AndroidUtils {
     }
     return null;
   }
-
+*/
   private static class CoEditHelper {
     @NotNull
     private final Project project;
@@ -493,6 +497,7 @@ public class AndroidUtils {
     }
 
     private void enable() {
+/*
       // Look for "include ':flutterModuleName'". If not found, add it and create build.gradle in the Flutter module. Then sync.
       if (verifyEligibility()) {
         makeBuildFile();
@@ -503,12 +508,14 @@ public class AndroidUtils {
         projectRoot.refresh(true, true);
         AppExecutorUtil.getAppExecutorService().execute(() -> scheduleGradleSyncAfterSyncFinishes(project));
       }
+      */
+
     }
 
     private static void scheduleGradleSyncAfterSyncFinishes(@NotNull Project project) {
       runAfterSyncFinishes(project, (p) -> scheduleGradleSync((project)));
     }
-
+/*
     private boolean verifyEligibility() {
       projectRoot = FlutterUtils.getProjectRoot(project);
       requireNonNull(projectRoot);
@@ -525,7 +532,7 @@ public class AndroidUtils {
       buildFile = GradleUtil.getGradleBuildFile(flutterModuleRoot);
       buildFileIsValid = buildFile != null && doesBuildFileExist(flutterModuleDir) && buildFile.getLength() > 0;
       return !(hasIncludeFlutterModuleStatement && buildFileIsValid);
-    }
+    }*/
 
     private void makeBuildFile() {
       if (buildFileIsValid) {
@@ -537,14 +544,14 @@ public class AndroidUtils {
     }
 
     private void createBuildFile() {
-      ApplicationManager.getApplication().runWriteAction(() -> {
+/*      ApplicationManager.getApplication().runWriteAction(() -> {
         try {
           buildFile = flutterModuleDir.findOrCreateChildData(this, SdkConstants.FN_BUILD_GRADLE);
         }
         catch (IOException e) {
           cleanupAfterError();
         }
-      });
+      });*/
     }
 
     private void writeBuildFile() {

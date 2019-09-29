@@ -341,11 +341,13 @@ public class TreeScrollAnimator implements Disposable {
    * The required interval must be inside the ideal interval.
    */
   static Interval clampInterval(Interval required, Interval ideal, int clampLength) {
+    if (clampLength < 0) {
+      clampLength = 0;
+    }
     if (required.start < ideal.start ||
         required.start + required.length > ideal.start + ideal.length ||
         required.length < 0 ||
-        ideal.length < 0 ||
-        clampLength < 0) {
+        ideal.length < 0) {
       // The required bounds must not be outside the ideal bounds.
       throw new IllegalArgumentException();
     }

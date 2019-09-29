@@ -294,6 +294,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     myFragmentTags = null;
     myMainTextLastIndex = -1;
     myFragmentPadding.clear();
+    myFragmentAlignment.clear();
   }
 
   /**
@@ -490,7 +491,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
       result += computeStringWidth(i, font);
 
-      final int fixedWidth = myFragmentPadding.get(i);
+      final int fixedWidth = getFragmentPadding(i);
       if (fixedWidth > 0 && result < fixedWidth) {
         result = fixedWidth;
       }
@@ -632,13 +633,17 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
         return i;
       }
       curX += curWidth;
-      final int fragmentPadding = myFragmentPadding.get(i);
+      final int fragmentPadding = getFragmentPadding(i);
       if (fragmentPadding > 0 && curX < fragmentPadding) {
         curX = fragmentPadding;
       }
       i++;
     }
     return -1;
+  }
+
+  private int getFragmentPadding(int i) {
+    return myFragmentAlignment.get(i);
   }
 
   @Nullable
@@ -834,7 +839,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
       final float fragmentWidth = computeStringWidth(i, font);
 
-      final int fragmentPadding = myFragmentPadding.get(i);
+      final int fragmentPadding = getFragmentPadding(i);
 
       final Color bgColor = attributes.isSearchMatch() ? null : attributes.getBgColor();
       if ((attributes.isOpaque() || isOpaque()) && bgColor != null) {

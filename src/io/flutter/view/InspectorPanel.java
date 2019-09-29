@@ -7,22 +7,30 @@ package io.flutter.view;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
+import com.intellij.ide.ui.UISettings;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Splitter;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.*;
+import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.*;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.dualView.TreeTableView;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.intellij.xdebugger.XSourcePosition;
+import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.editor.FlutterMaterialIcons;
@@ -32,10 +40,12 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.*;
 import org.dartlang.vm.service.element.InstanceRef;
 import org.dartlang.vm.service.element.IsolateRef;
+import org.intellij.images.ui.ImageComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -46,12 +56,13 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
+import java.lang.System;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class InspectorPanel extends JPanel implements Disposable, InspectorService.InspectorServiceClient, InspectorTabPanel {
@@ -64,7 +75,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
    * simulator or high powered native device. The frame rate is set low
    * for now mainly to minimize the risk of unintended consequences.
    */
-  public static final double REFRESH_FRAMES_PER_SECOND = 5.0;
+  public static final double REFRESH_FRAMES_PER_SECOND = 2.0;
   // We have to define this because SimpleTextAttributes does not define a
   // value for warnings.
   private static final SimpleTextAttributes WARNING_ATTRIBUTES = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, JBColor.ORANGE);
@@ -78,8 +89,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   protected final InspectorPanel subtreePanel;
   final CustomIconMaker iconMaker = new CustomIconMaker();
   final Splitter treeSplitter;
+  final Splitter treeSplitterDevice;
   final Icon defaultIcon;
   final JBScrollPane treeScrollPane;
+  JPanel tutorialPanel;
   private final InspectorTree myRootsTree;
   @Nullable private final PropertiesPanel myPropertiesPanel;
   private final Computable<Boolean> isApplicable;
@@ -111,6 +124,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
    * TODO(jacobr): is there a way we can unify the selection and tree groups?
    */
   private final InspectorObjectGroupManager selectionGroups;
+  private final Splitter treeSplitterSubdevice;
 
   /**
    * Node being highlighted due to the current hover.
@@ -133,6 +147,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
    */
   private boolean visibleToUser = false;
   private boolean highlightNodesShownInBothTrees = false;
+  private CompletableFuture<DiagnosticsNode> nextHover;
+  private DiagnosticsNode currentHover;
 
   public InspectorPanel(FlutterView flutterView,
                         @NotNull FlutterApp flutterApp,
@@ -194,6 +210,36 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     myRootsTree.setHorizontalAutoScrollingEnabled(false);
     myRootsTree.setAutoscrolls(false);
     myRootsTree.setToggleClickCount(0);
+
+    MouseListener showInspectorListener = new MouseListener() {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+
+      }
+
+      @Override
+      public void mousePressed(MouseEvent e) {
+
+      }
+
+      @Override
+      public void mouseReleased(MouseEvent e) {
+
+      }
+
+      @Override
+      public void mouseEntered(MouseEvent e) {
+        DiagnosticsNode selection = getSelectedDiagnostic();
+        getFlutterApp().callBooleanExtension("ext.flutter.inspector.showSelection", true);
+      }
+
+      @Override
+      public void mouseExited(MouseEvent e) {
+        getFlutterApp().callBooleanExtension("ext.flutter.inspector.showSelection", false);
+      }
+    };
+    myRootsTree.addMouseListener(showInspectorListener);
+
 
     myRootsTree.addTreeExpansionListener(new MyTreeExpansionListener());
     final InspectorTreeMouseListener mouseListener = new InspectorTreeMouseListener(this, myRootsTree);
@@ -259,12 +305,31 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       Disposer.register(this, treeSplitter::dispose);
       Disposer.register(this, scrollAnimator::dispose);
       treeSplitter.setFirstComponent(treeScrollPane);
+      treeSplitterDevice = new Splitter(false);
+      treeSplitterDevice.setProportion(0.3f);
+      treeSplitterSubdevice = new Splitter(true);
+      treeSplitterSubdevice.setProportion((0.1f));
+
+      if (treeType.equals(InspectorService.FlutterTreeType.widget)) {
+
+        UIUtil.invokeLaterIfNeeded(() -> {
+          final Project project = flutterApp.getProject();
+          if (project.isDisposed()) {
+            return;
+          }
+        });
+      }
+
       add(treeSplitter);
     }
     else {
+      treeSplitterDevice = null;
       treeSplitter = null;
+      treeSplitterSubdevice = null;
       myPropertiesPanel = null;
-      add(treeScrollPane);
+      if (parentTree == null) {
+        add(treeScrollPane);
+      }
     }
 
     this.addComponentListener(new ComponentListener() {
@@ -306,6 +371,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   public boolean isSummaryTree() {
     return isSummaryTree;
   }
+
+  Point lastGlobalMouseLocation;
 
   public boolean isHighlightNodesShownInBothTrees() {
     return highlightNodesShownInBothTrees;
@@ -464,19 +531,28 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       return CompletableFuture.completedFuture(null);
     }
 
+    final long startTime = System.currentTimeMillis();
+
+    ArrayList<CompletableFuture<?>> futures = new ArrayList<>();
     // TODO(jacobr): refresh the tree as well as just the properties.
     if (myPropertiesPanel != null) {
       myPropertiesPanel.refresh();
     }
+    futures.add(getPendingUpdateDone());
     if (myPropertiesPanel != null) {
-      return CompletableFuture.allOf(getPendingUpdateDone(), myPropertiesPanel.getPendingUpdateDone());
+      futures.add(myPropertiesPanel.getPendingUpdateDone());
     }
     else if (subtreePanel != null) {
-      return CompletableFuture.allOf(getPendingUpdateDone(), subtreePanel.getPendingUpdateDone());
+      futures.add(subtreePanel.getPendingUpdateDone());
     }
-    else {
-      return getPendingUpdateDone();
-    }
+    final CompletableFuture[] futuresArray = new CompletableFuture[futures.size()];
+    futures.toArray(futuresArray);
+
+    CompletableFuture<Void> allComplete = CompletableFuture.allOf(futuresArray);
+    allComplete.whenComplete((a,b) -> {
+      long timeDelta = System.currentTimeMillis() - startTime;
+    });
+    return allComplete;
   }
 
   public void shutdownTree(boolean isolateStopped) {
@@ -492,6 +568,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     lastExpanded = null;
 
     subtreeRoot = null;
+    nextHover = null;
 
     getTreeModel().setRoot(new DefaultMutableTreeNode());
     if (subtreePanel != null) {
@@ -517,7 +594,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     }
     if (!legacyMode) {
       // We can't efficiently refresh the full tree in legacy mode.
-      recomputeTreeRoot(null, null, false);
+      recomputeTreeRoot(null, null, false, true);
     }
     if (myPropertiesPanel != null) {
       myPropertiesPanel.refresh();
@@ -561,7 +638,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       // current state of the UI.
       AsyncUtils.whenCompleteUiThread(inspectorService.inferPubRootDirectoryIfNeeded(), (String directory, Throwable throwable) -> {
         // Ignore exceptions, we still want to show the Inspector View.
-        updateSelectionFromService();
+        updateSelectionFromService(false);
       });
     }
     else {
@@ -583,7 +660,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
   private void recomputeTreeRoot(DiagnosticsNode newSelection,
                                  DiagnosticsNode detailsSelection,
-                                 boolean setSubtreeRoot) {
+                                 boolean setSubtreeRoot,
+                                 boolean textEditorUpdated) {
     treeGroups.cancelNext();
     treeGroups.getNext().safeWhenComplete(detailsSubtree
                                           ? treeGroups.getNext().getDetailsSubtree(subtreeRoot)
@@ -613,7 +691,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       else {
         getTreeModel().setRoot(null);
       }
-      refreshSelection(newSelection, detailsSelection, setSubtreeRoot);
+      refreshSelection(newSelection, detailsSelection, setSubtreeRoot, textEditorUpdated);
     });
   }
 
@@ -652,7 +730,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     }
     if (node != null && node.equals(subtreeRoot)) {
       //  Select the new node in the existing subtree.
-      applyNewSelection(selection, null, false);
+      applyNewSelection(selection, null, false, true);
       return;
     }
     subtreeRoot = node;
@@ -662,9 +740,15 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       return;
     }
 
+    if (tutorialPanel != null) {
+      remove(tutorialPanel);
+      add(treeScrollPane);
+      tutorialPanel = null;
+    }
+
     // Clear now to eliminate frame of highlighted nodes flicker.
     clearValueToTreeNodeMapping();
-    recomputeTreeRoot(selection, null, false);
+    recomputeTreeRoot(selection, null, false, true);
   }
 
   DefaultMutableTreeNode getSubtreeRootNode() {
@@ -674,12 +758,12 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     return valueToTreeNode.get(subtreeRoot.getValueRef());
   }
 
-  private void refreshSelection(DiagnosticsNode newSelection, DiagnosticsNode detailsSelection, boolean setSubtreeRoot) {
+  private void refreshSelection(DiagnosticsNode newSelection, DiagnosticsNode detailsSelection, boolean setSubtreeRoot, boolean textEditorUpdated) {
     if (newSelection == null) {
       newSelection = getSelectedDiagnostic();
     }
     setSelectedNode(findMatchingTreeNode(newSelection));
-    syncSelectionHelper(setSubtreeRoot, detailsSelection);
+    syncSelectionHelper(setSubtreeRoot, detailsSelection, textEditorUpdated);
 
     if (subtreePanel != null) {
       if ((subtreeRoot != null && getSubtreeRootNode() == null)) {
@@ -843,7 +927,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     return a.getDartDiagnosticRef().equals(b.getDartDiagnosticRef());
   }
 
-  public void onInspectorSelectionChanged() {
+  public void onInspectorSelectionChanged(boolean uiAlreadyUpdated, boolean textEditorUpdated) {
+    if (uiAlreadyUpdated) return;
     if (!visibleToUser) {
       // Don't do anything. We will update the view once it is visible again.
       return;
@@ -852,10 +937,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       // Wait for the master to update.
       return;
     }
-    updateSelectionFromService();
+    updateSelectionFromService(textEditorUpdated);
   }
 
-  public void updateSelectionFromService() {
+  public void updateSelectionFromService(boolean textEditorUpdated) {
     treeLoadStarted = true;
     selectionGroups.cancelNext();
 
@@ -886,14 +971,14 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         }
         subtreeRoot = newSelection;
 
-        applyNewSelection(newSelection, detailsSelection, true);
+        applyNewSelection(newSelection, detailsSelection, true, textEditorUpdated);
       }
       else {
         // Legacy case. TODO(jacobr): deprecate and remove this code.
         // This case only exists for the RenderObject tree which we haven't updated yet to use the new UI style.
         // TODO(jacobr): delete it.
         if (newSelection == null) {
-          recomputeTreeRoot(null, null, false);
+          recomputeTreeRoot(null, null, false, true);
           return;
         }
         // TODO(jacobr): switch to using current and next groups in this case
@@ -961,16 +1046,17 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
   protected void applyNewSelection(DiagnosticsNode newSelection,
                                    DiagnosticsNode detailsSelection,
-                                   boolean setSubtreeRoot) {
+                                   boolean setSubtreeRoot,
+                                   boolean textEditorUpdated) {
     final DefaultMutableTreeNode nodeInTree = findMatchingTreeNode(newSelection);
 
     if (nodeInTree == null) {
       // The tree has probably changed since we last updated. Do a full refresh
       // so that the tree includes the new node we care about.
-      recomputeTreeRoot(newSelection, detailsSelection, setSubtreeRoot);
+      recomputeTreeRoot(newSelection, detailsSelection, setSubtreeRoot, textEditorUpdated);
     }
 
-    refreshSelection(newSelection, detailsSelection, setSubtreeRoot);
+    refreshSelection(newSelection, detailsSelection, setSubtreeRoot, textEditorUpdated);
   }
 
   private DiagnosticsNode getSelectedDiagnostic() {
@@ -1049,6 +1135,42 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         getTreeModel().nodeChanged(selectedNode.getParent());
       }
     }
+    final DiagnosticsNode diagnostic = TreeUtils.maybeGetDiagnostic(newSelection);
+    if (diagnostic != null) {
+      if (!diagnostic.isProperty() && treeType == InspectorService.FlutterTreeType.widget) {
+        /* XXX unrelated.
+        diagnostic.safeWhenComplete(diagnostic.getInspectorService().toDartVmServiceValue(
+          diagnostic.getValueRef()), (value, throwable) -> {
+          if (throwable != null) {
+            // Log but not fatal. XXX
+            return;
+          }
+          getInspectorService().getDebugProcess().getDebuggerScope().addElement(value);
+        });
+
+         */
+      }
+
+      if (!diagnostic.isProperty()) {
+        /* XXX
+        diagnostic.safeWhenComplete(diagnostic.getInspectorService().toDartVmServiceValueForSourceLocation(
+          diagnostic.getValueRef()), (value, throwable) -> {
+          if (throwable != null) {
+            // Log but not fatal. XXX
+            return;
+          }
+
+          if (treeType == InspectorService.FlutterTreeType.widget) {
+            getInspectorService().getDebugProcess().getDebuggerScope().addWidget(value);
+          } else {
+            getInspectorService().getDebugProcess().getDebuggerScope().addRenderObject(value);
+          }
+        });
+
+         */
+      }
+    }
+
     selectedNode = newSelection;
     animateTo(selectedNode);
 
@@ -1082,7 +1204,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       // Don't reroot if the selected value is already visible in the details tree.
       final boolean maybeReroot = isSummaryTree && subtreePanel != null && selectedDiagnostic != null &&
                                   !subtreePanel.hasDiagnosticsValue(selectedDiagnostic.getValueRef());
-      syncSelectionHelper(maybeReroot, null);
+      syncSelectionHelper(maybeReroot, null, false);
       if (!maybeReroot) {
         if (isSummaryTree && subtreePanel != null) {
           subtreePanel.selectAndShowNode(selectedDiagnostic);
@@ -1108,12 +1230,12 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     return null;
   }
 
-  private void syncSelectionHelper(boolean maybeRerootSubtree, DiagnosticsNode detailsSelection) {
+  private void syncSelectionHelper(boolean maybeRerootSubtree, DiagnosticsNode detailsSelection, boolean textEditorUpdated) {
     if (!detailsSubtree && selectedNode != null) {
       getTreeModel().nodeChanged(selectedNode.getParent());
     }
     final DiagnosticsNode diagnostic = getSelectedDiagnostic();
-    if (diagnostic != null) {
+    if (diagnostic != null && !textEditorUpdated) {
       if (isCreatedByLocalProject(diagnostic)) {
         final XSourcePosition position = diagnostic.getCreationLocation().getXSourcePosition();
         if (position != null) {
@@ -1176,8 +1298,13 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private ActionGroup createTreePopupActions() {
     final DefaultActionGroup group = new DefaultActionGroup();
     final ActionManager actionManager = ActionManager.getInstance();
+    // TODO(jacobr): hide this option when it is unavailable.
     group.add(actionManager.getAction(InspectorActions.JUMP_TO_SOURCE));
     group.add(actionManager.getAction(InspectorActions.JUMP_TO_TYPE_SOURCE));
+    group.add(actionManager.getAction(InspectorActions.INSPECT_WITH_DEBUGGER));
+    if (treeType == InspectorService.FlutterTreeType.widget) {
+      group.add(actionManager.getAction(InspectorActions.INSPECT_ELEMENT_WITH_DEBUGGER));
+    }
     return group;
   }
 
