@@ -9,7 +9,6 @@ import static com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil.get
 import static com.intellij.openapi.util.text.StringUtil.isNotEmpty;
 import static java.util.Objects.requireNonNull;
 
-import com.android.SdkConstants;
 import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;
 import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslElement;
 import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslLiteral;
@@ -73,6 +72,7 @@ import org.jetbrains.plugins.gradle.util.GradleConstants;
 //import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED;
 
 // based on: org.jetbrains.android.util.AndroidUtils
+@SuppressWarnings("LocalCanBeFinal")
 public class AndroidUtils {
 
   private static final Lexer JAVA_LEXER = JavaParserDefinition.createLexer(LanguageLevel.JDK_1_5);
@@ -629,4 +629,12 @@ public class AndroidUtils {
       }
     }
   }
+}
+
+class SdkConstants {
+  /** An SDK Project's build.gradle file */
+  public static final String FN_BUILD_GRADLE = "build.gradle";
+
+  /** An SDK Project's settings.gradle file */
+  public static final String FN_SETTINGS_GRADLE = "settings.gradle";
 }
