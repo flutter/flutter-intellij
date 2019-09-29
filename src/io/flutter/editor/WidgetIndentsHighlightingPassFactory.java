@@ -26,12 +26,15 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.FlutterUtils;
+import io.flutter.dart.FlutterDartAnalysisServer;
+import io.flutter.inspector.InspectorService;
+import io.flutter.inspector.InspectorGroupManagerService;
 import io.flutter.settings.FlutterSettings;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Factory that drives all rendering of widget indents.
@@ -44,17 +47,26 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   private static final boolean SIMULATE_SLOW_ANALYSIS_UPDATES = false;
 
   private final Project project;
+  private final FlutterDartAnalysisServer flutterDartAnalysisService;
+  private final InspectorGroupManagerService inspectorGroupManagerService;
+  private final EditorMouseEventService editorEventService;
+  private final EditorPositionService editorPositionService;
   private final ActiveEditorsOutlineService editorOutlineService;
-  private final Listener settingsListener;
+  private final SettingsListener settingsListener;
   private final ActiveEditorsOutlineService.Listener outlineListener;
+  protected InspectorService inspectorService;
 
   // Current configuration settings used to display Widget Indent Guides cached from the FlutterSettings class.
   private boolean isShowBuildMethodGuides;
 
   public WidgetIndentsHighlightingPassFactory(@NotNull Project project) {
     this.project = project;
+    flutterDartAnalysisService = FlutterDartAnalysisServer.getInstance(project);
     this.editorOutlineService = ActiveEditorsOutlineService.getInstance(project);
-    this.settingsListener = new Listener();
+    this.inspectorGroupManagerService = InspectorGroupManagerService.getInstance(project);
+    this.editorEventService = EditorMouseEventService.getInstance(project);
+    this.editorPositionService = EditorPositionService.getInstance(project);
+    this.settingsListener = new SettingsListener();
     this.outlineListener = this::updateEditor;
 
     TextEditorHighlightingPassRegistrar.getInstance(project)
@@ -75,7 +87,6 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
         WidgetIndentsHighlightingPass.onCaretPositionChanged(editorEx, event.getCaret());
       }
     }, this);
-
     editorOutlineService.addListener(outlineListener);
   }
 
@@ -211,7 +222,17 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     // We only need to convert offsets when the document and outline disagree
     // on the document length.
     final boolean convertOffsets = documentLength != outlineLength;
-    WidgetIndentsHighlightingPass.run(project, editor, outline, convertOffsets);
+
+    WidgetIndentsHighlightingPass.run(
+      project,
+      editor,
+      outline,
+      flutterDartAnalysisService,
+      inspectorGroupManagerService,
+      editorEventService,
+      editorPositionService,
+      convertOffsets
+    );
   }
 
   @Override
@@ -221,7 +242,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   }
 
   // Listener that asks for another pass when the Flutter settings for indent highlighting change.
-  private class Listener implements FlutterSettings.Listener {
+  private class SettingsListener implements FlutterSettings.Listener {
     @Override
     public void settingsChanged() {
       if (project.isDisposed()) {
