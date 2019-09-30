@@ -9,7 +9,10 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.*;
+import com.intellij.ide.CommonActionsManager;
+import com.intellij.ide.DataManager;
+import com.intellij.ide.DefaultTreeExpander;
+import com.intellij.ide.TreeExpander;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
@@ -71,8 +74,6 @@ import java.util.concurrent.TimeUnit;
 )
 public class PreviewView implements PersistentStateComponent<PreviewViewState>, Disposable {
   public static final String TOOL_WINDOW_ID = "Flutter Outline";
-
-  public static final String FEEDBACK_URL = "https://goo.gl/forms/MbPU0kcPqBO6tunH3";
 
   @NotNull
   private final PreviewViewState state = new PreviewViewState();
@@ -174,7 +175,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     actionContainer = new QuickAssistAction("dart.assist.flutter.wrap.container", FlutterIcons.Container, "Wrap with Container");
     actionMoveUp = new QuickAssistAction("dart.assist.flutter.move.up", FlutterIcons.Up, "Move widget up");
     actionMoveDown = new QuickAssistAction("dart.assist.flutter.move.down", FlutterIcons.Down, "Move widget down");
-    actionRemove = new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Replace widget with its children");
+    actionRemove = new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Remove this widget");
     actionExtractMethod = new ExtractMethodAction();
     actionExtractWidget = new ExtractWidgetAction();
   }
@@ -211,7 +212,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     toolbarGroup.add(actionMoveDown);
     toolbarGroup.addSeparator();
     toolbarGroup.add(actionRemove);
-    toolbarGroup.add(new ShowOnlyWidgetsAction(AllIcons.General.Filter, "Show only widgets"));
 
     final Content content = contentFactory.createContent(null, null, false);
     content.setCloseable(false);
@@ -230,23 +230,12 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     initTreePopup();
 
-    // Add collapse all, expand all, and feedback buttons.
+    // Add collapse all, expand all, and show only widgets buttons.
     if (toolWindow instanceof ToolWindowEx) {
-      final AnAction sendFeedbackAction = new AnAction("Send Feedback", "Send Feedback", FlutterIcons.Feedback) {
-        @Override
-        public void actionPerformed(@NotNull AnActionEvent event) {
-          BrowserUtil.browse(FEEDBACK_URL);
-        }
-      };
+      final ToolWindowEx toolWindowEx = (ToolWindowEx)toolWindow;
 
-      final AnAction separator = new AnAction(AllIcons.General.Divider) {
-        @Override
-        public void actionPerformed(@NotNull AnActionEvent event) {
-        }
-      };
-
-      final TreeExpander expander = new DefaultTreeExpander(tree);
       final CommonActionsManager actions = CommonActionsManager.getInstance();
+      final TreeExpander expander = new DefaultTreeExpander(tree);
 
       final AnAction expandAllAction = actions.createExpandAllAction(expander, tree);
       expandAllAction.getTemplatePresentation().setIcon(AllIcons.General.ExpandAll);
@@ -254,7 +243,9 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       final AnAction collapseAllAction = actions.createCollapseAllAction(expander, tree);
       collapseAllAction.getTemplatePresentation().setIcon(AllIcons.General.CollapseAll);
 
-      ((ToolWindowEx)toolWindow).setTitleActions(sendFeedbackAction, separator, expandAllAction, collapseAllAction);
+      final ShowOnlyWidgetsAction showOnlyWidgetsAction = new ShowOnlyWidgetsAction();
+
+      toolWindowEx.setTitleActions(expandAllAction, collapseAllAction, showOnlyWidgetsAction);
     }
 
     new TreeSpeedSearch(tree) {
@@ -874,8 +865,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   }
 
   private class ShowOnlyWidgetsAction extends AnAction implements Toggleable, RightAlignedToolbarAction {
-    ShowOnlyWidgetsAction(@NotNull Icon icon, @NotNull String text) {
-      super(text, null, icon);
+    ShowOnlyWidgetsAction() {
+      super("Show Only Widgets", "Show only widgets", AllIcons.General.Filter);
     }
 
     @Override
