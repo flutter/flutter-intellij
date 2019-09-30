@@ -71,9 +71,7 @@
     <orderEntry type="library" name="studio-analytics-proto" level="project" />
     <orderEntry type="library" name="protobuf" level="project" />
     <orderEntry type="module" module-name="intellij.java.compiler.impl" />
-    <orderEntry type="library" name="org.powermock:powermock-api-mockito2:2.0.2" level="project" />
     <orderEntry type="module" module-name="plugin" />
-    <orderEntry type="library" name="org.powermock:powermock-module-junit4:2.0.2" level="project" />
     <orderEntry type="module" module-name="intellij.platform.serviceContainer" />
     <orderEntry type="library" name="com.android.tools.analytics-library:protos" level="project" />
     <orderEntry type="library" name="com.android.tools:common:26.5.0" level="project" />
@@ -81,5 +79,8 @@
     <orderEntry type="library" name="android" level="project" />
     <orderEntry type="library" name="com.android.tools.build:gradle:3.6.0-alpha09" level="project" />
     <orderEntry type="library" name="gradle-common" level="project" />
+    <orderEntry type="library" name="org.powermock:powermock-module-junit4:2.0.2" level="project" />
+    <orderEntry type="library" name="org.powermock:powermock-api-mockito2:2.0.2" level="project" />
+    <orderEntry type="library" name="com.google.protobuf:protobuf-java:3.5.1" level="project" />
   </component>
 </module>
