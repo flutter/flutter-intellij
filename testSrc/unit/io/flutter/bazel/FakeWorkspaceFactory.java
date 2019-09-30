@@ -21,7 +21,8 @@ public class FakeWorkspaceFactory {
     @Nullable String launchScript,
     @Nullable String testScript,
     @Nullable String sdkHome,
-    @Nullable String versionFile
+    @Nullable String versionFile,
+    @Nullable String devtoolsScript
   ) {
     MockVirtualFileSystem fs = new MockVirtualFileSystem();
     fs.file("/workspace/WORKSPACE", "");
@@ -53,7 +54,8 @@ public class FakeWorkspaceFactory {
           launchScript,
           testScript,
           sdkHome,
-          versionFile
+          versionFile,
+          devtoolsScript
         )
       )
     );
@@ -72,7 +74,8 @@ public class FakeWorkspaceFactory {
       "scripts/bazel-run.sh",
       "scripts/flutter-test.sh",
       "scripts/",
-      "flutter-version"
+      "flutter-version",
+      "scripts/devtools:server"
     );
   }
 }

@@ -9,6 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
+import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
@@ -16,6 +17,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,6 +41,7 @@ public class Workspace {
   @Nullable private final String testScript;
   @Nullable private final String sdkHome;
   @Nullable private final String versionFile;
+  @Nullable private final String devtoolsScript;
 
   private Workspace(@NotNull VirtualFile root,
                     @Nullable PluginConfig config,
@@ -46,7 +49,8 @@ public class Workspace {
                     @Nullable String doctorScript,
                     @Nullable String testScript,
                     @Nullable String sdkHome,
-                    @Nullable String versionFile) {
+                    @Nullable String versionFile,
+                    @Nullable String devtoolsScript) {
     this.root = root;
     this.config = config;
     this.daemonScript = daemonScript;
@@ -54,6 +58,7 @@ public class Workspace {
     this.testScript = testScript;
     this.sdkHome = sdkHome;
     this.versionFile = versionFile;
+    this.devtoolsScript = devtoolsScript;
   }
 
   /**
@@ -153,6 +158,15 @@ public class Workspace {
     return versionFile;
   }
 
+
+  /**
+   * Returns the bazel target to be run with {@link Workspace#getLaunchScript} to launch DevTools.
+   */
+  @Nullable
+  public String getDevtoolsScript() {
+    return devtoolsScript;
+  }
+
   /**
    * Returns true if the plugin config was loaded.
    */
@@ -215,7 +229,9 @@ public class Workspace {
 
     final String versionFile = config == null ? null : getScriptFromPath(root, readonlyPath, config.getVersionFile());
 
-    return new Workspace(root, config, daemonScript, doctorScript, testScript, sdkHome, versionFile);
+    final String devtoolsScript = config == null ? null : config.getDevtoolsScript();
+
+    return new Workspace(root, config, daemonScript, doctorScript, testScript, sdkHome, versionFile, devtoolsScript);
   }
 
   @VisibleForTesting
@@ -227,14 +243,15 @@ public class Workspace {
       pluginConfig.getDoctorScript(),
       pluginConfig.getTestScript(),
       pluginConfig.getSdkHome(),
-      pluginConfig.getVersionFile()
-    );
+      pluginConfig.getVersionFile(),
+      pluginConfig.getDevtoolsScript());
   }
 
   /**
    * Attempts to find a script inside of the workspace.
-   * @param root the workspace root.
-   * @param readonlyPath the relative path to the readonly contents of the workspace.
+   *
+   * @param root               the workspace root.
+   * @param readonlyPath       the relative path to the readonly contents of the workspace.
    * @param relativeScriptPath the relative path to the desired script inside of the workspace.
    * @return the script's path relative to the workspace, or null if it was not found.
    */

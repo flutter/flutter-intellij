@@ -327,7 +327,7 @@ public class LaunchCommandsTest {
                         @Nullable String versionFile) {
       super(template);
       final Pair.NonNull<MockVirtualFileSystem, Workspace> pair = FakeWorkspaceFactory
-        .createWorkspaceAndFilesystem(daemonScript, doctorScript, launchScript, testScript, sdkHome, versionFile);
+        .createWorkspaceAndFilesystem(daemonScript, doctorScript, launchScript, testScript, sdkHome, versionFile, null);
       fs = pair.first;
       fakeWorkspace = pair.second;
     }
