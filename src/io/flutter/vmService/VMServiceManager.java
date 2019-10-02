@@ -571,7 +571,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
     if (fps == null) {
       fps = defaultRefreshRate;
     }
-    return (int) Math.round((Math.floor(1000000.0f / fps)));
+    return (int)Math.round((Math.floor(1000000.0f / fps)));
   }
 
   /**
@@ -644,7 +644,9 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
   }
 
   private CompletableFuture<String> getFlutterViewId() {
-    return getFlutterViewsList().thenApplyAsync((JsonElement element) -> {
+    return getFlutterViewsList().exceptionally(exception -> {
+      throw new RuntimeException(exception.getMessage());
+    }).thenApplyAsync((JsonElement element) -> {
       final JsonArray viewsList = element.getAsJsonObject().get("views").getAsJsonArray();
       for (JsonElement jsonElement : viewsList) {
         final JsonObject view = jsonElement.getAsJsonObject();
@@ -658,6 +660,11 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
   private CompletableFuture<JsonElement> getFlutterViewsList() {
     final CompletableFuture<JsonElement> ret = new CompletableFuture<>();
+    final IsolateRef currentFlutterIsolate = getCurrentFlutterIsolateRaw();
+    if (currentFlutterIsolate == null) {
+      ret.completeExceptionally(new RuntimeException("No isolate to query for Flutter views."));
+      return ret;
+    }
     vmService.callServiceExtension(
       getCurrentFlutterIsolateRaw().getId(), ServiceExtensions.flutterListViews,
       new ServiceExtensionConsumer() {
