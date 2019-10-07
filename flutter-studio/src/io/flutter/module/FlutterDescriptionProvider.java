@@ -29,12 +29,7 @@ import java.util.List;
 
 public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
-  @SuppressWarnings("override") // Used in 3.0-3.2
-  public Collection<? extends ModuleGalleryEntry> getDescriptions() {
-    return getGalleryList(false);
-  }
-
-  @SuppressWarnings("override") // For 3.3
+  @Override
   public Collection<? extends ModuleGalleryEntry> getDescriptions(Project project) {
     return getGalleryList(false);
   }
@@ -67,7 +62,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     }
     else {
       // isNewProject == false
-      res.add(new ImportFlutterModuleGalleryEntry(sharedModel)); // TODO(messick) Delete if not needed.
+      res.add(new ImportFlutterModuleGalleryEntry(sharedModel));
       res.add(new AddToAppModuleGalleryEntry(sharedModel));
     }
     return res;
@@ -301,7 +296,20 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     }
   }
 
-  private static class ImportFlutterModuleGalleryEntry extends FlutterGalleryEntry {
+  // Entries in the New Module Wizard page need to use a different model class.
+  private static abstract class FlutterAndroidModuleGalleryEntry extends FlutterGalleryEntry {
+
+    private FlutterAndroidModuleGalleryEntry(OptionalValueProperty<FlutterProjectModel> model) {
+      super(model);
+    }
+
+    @Override
+    protected FlutterProjectModel createModel(FlutterProjectType type) {
+      return new FlutterModuleModel(type);
+    }
+  }
+
+  private static class ImportFlutterModuleGalleryEntry extends FlutterAndroidModuleGalleryEntry {
 
     private ImportFlutterModuleGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
       super(sharedModel);
@@ -349,7 +357,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     }
   }
 
-  private static class AddToAppModuleGalleryEntry extends FlutterGalleryEntry {
+  private static class AddToAppModuleGalleryEntry extends FlutterAndroidModuleGalleryEntry {
 
     private AddToAppModuleGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
       super(sharedModel);
@@ -394,11 +402,6 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
       return new FlutterProjectStep(
         model, FlutterBundle.message("module.wizard.module_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.MODULE);
-    }
-
-    @Override
-    protected FlutterProjectModel createModel(FlutterProjectType type) {
-      return new FlutterModuleModel.AddToApp(type);
     }
   }
 }
