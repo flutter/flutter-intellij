@@ -47,7 +47,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
 
   public static final long IDLE_DELAY_MILISECONDS = 400;
 
-  class StatsForReportKind {
+  static class StatsForReportKind {
     final TIntObjectHashMap<SlidingWindowStats> data = new TIntObjectHashMap<>();
     private int lastStartTime = -1;
     private int lastNonEmptyReportTime = -1;
@@ -90,7 +90,9 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     this.perfLinter = new WidgetPerfLinter(this, perfProvider);
 
     perfProvider.setTarget(this);
-    uiAnimationTimer = new Timer(1000 / UI_FPS, this::onFrame);
+    uiAnimationTimer = new Timer(1000 / UI_FPS, event -> {
+      AsyncUtils.invokeLater(() -> onFrame(event));
+    });
   }
 
   // The logic for when requests are in progress is fragile. This helper
@@ -173,7 +175,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
           final JsonObject newLocations = json.getAsJsonObject("newLocations");
           for (Map.Entry<String, JsonElement> entry : newLocations.entrySet()) {
             final String path = entry.getKey();
-            FileLocationMapper locationMapper = fileLocationMapperFactory.create(path);
+            final FileLocationMapper locationMapper = fileLocationMapperFactory.create(path);
             final JsonArray entries = entry.getValue().getAsJsonArray();
             assert (entries.size() % 3 == 0);
             for (int i = 0; i < entries.size(); i += 3) {
@@ -223,7 +225,8 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     final Application application = ApplicationManager.getApplication();
     if (application != null) {
       application.runReadAction(action);
-    } else {
+    }
+    else {
       // Unittest case.
       action.run();
     }
@@ -461,7 +464,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     for (EditorPerfModel decorations : editorDecorations.values()) {
       decorations.clear();
     }
-    for (PerfModel listener: perfListeners) {
+    for (PerfModel listener : perfListeners) {
       listener.clear();
     }
   }
