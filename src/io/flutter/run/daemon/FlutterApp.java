@@ -590,7 +590,7 @@ public class FlutterApp {
           // continue
         }
         catch (Exception e) {
-          FlutterUtils.warn(LOG, e);
+          // Ignore errors from app.stop.
           break;
         }
       }
