@@ -21,9 +21,11 @@ import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.psi.DartId;
 import com.jetbrains.lang.dart.psi.DartReferenceExpression;
 import io.flutter.inspector.InspectorService;
+import org.jetbrains.annotations.Nullable;
 
 public class DocumentFileLocationMapper implements FileLocationMapper {
-  final Document document;
+  @Nullable private final Document document;
+
   private final PsiFile psiFile;
   private final VirtualFile virtualFile;
   private final XDebuggerUtil debuggerUtil;
@@ -32,6 +34,7 @@ public class DocumentFileLocationMapper implements FileLocationMapper {
     this(lookupDocument(path), project);
   }
 
+  @Nullable
   public static Document lookupDocument(String path) {
     final String fileName = InspectorService.fromSourceLocationUri(path);
 
@@ -40,11 +43,13 @@ public class DocumentFileLocationMapper implements FileLocationMapper {
         !(virtualFile instanceof LightVirtualFile) && !(virtualFile instanceof HttpVirtualFile)) {
       return FileDocumentManager.getInstance().getDocument(virtualFile);
     }
+
     return null;
   }
 
-  DocumentFileLocationMapper(Document document, Project project) {
+  DocumentFileLocationMapper(@Nullable Document document, Project project) {
     this.document = document;
+
     if (document != null) {
       psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document);
       virtualFile = psiFile != null ? psiFile.getVirtualFile() : null;
@@ -57,6 +62,7 @@ public class DocumentFileLocationMapper implements FileLocationMapper {
     }
   }
 
+  @Nullable
   @Override
   public TextRange getIdentifierRange(int line, int column) {
     if (psiFile == null) {
@@ -67,11 +73,11 @@ public class DocumentFileLocationMapper implements FileLocationMapper {
     line = line - 1;
     column = column - 1;
 
-    if (line >= document.getLineCount() || document.isLineModified(line)) {
+    if (document == null || line >= document.getLineCount() || document.isLineModified(line)) {
       return null;
     }
-    final XSourcePosition pos = debuggerUtil.createPosition(virtualFile, line, column);
 
+    final XSourcePosition pos = debuggerUtil.createPosition(virtualFile, line, column);
     if (pos == null) {
       return null;
     }
@@ -81,8 +87,7 @@ public class DocumentFileLocationMapper implements FileLocationMapper {
       return null;
     }
 
-    // Handle named constructors gracefully.
-    // For example, for the constructor
+    // Handle named constructors gracefully. For example, for the constructor
     // Image.asset(...) we want to return "Image.asset" instead of "asset".
     if (element.getParent() instanceof DartId) {
       element = element.getParent();
@@ -93,8 +98,12 @@ public class DocumentFileLocationMapper implements FileLocationMapper {
     return element.getTextRange();
   }
 
+  @Nullable
   @Override
-  public String getText(TextRange textRange) {
+  public String getText(@Nullable TextRange textRange) {
+    if (document == null || textRange == null) {
+      return null;
+    }
     return document.getText(textRange);
   }
 }

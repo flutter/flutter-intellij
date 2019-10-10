@@ -183,8 +183,10 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
               final int line = entries.get(i + 1).getAsInt();
               final int column = entries.get(i + 2).getAsInt();
               final TextRange textRange = locationMapper.getIdentifierRange(line, column);
-              final String name = locationMapper.getText(textRange);
-              assert (name != null);
+              String name = locationMapper.getText(textRange);
+              if (name == null) {
+                name = "";
+              }
               final Location location = new Location(path, line, column, id, textRange, name);
 
               final Location existingLocation = knownLocationIds.get(id);
