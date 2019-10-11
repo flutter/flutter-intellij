@@ -208,15 +208,24 @@ public class ActiveEditorsOutlineService implements Disposable {
   @Override
   public void dispose() {
     synchronized (outlineListeners) {
-      for (Map.Entry<String, FlutterOutlineListener> entry : outlineListeners.entrySet()) {
+      final Iterator<Map.Entry<String, FlutterOutlineListener>> iterator = outlineListeners.entrySet().iterator();
+
+      while (iterator.hasNext()) {
+        final Map.Entry<String, FlutterOutlineListener> entry = iterator.next();
+
         final String path = entry.getKey();
-        final FlutterOutlineListener listener = outlineListeners.remove(path);
+        final FlutterOutlineListener listener = entry.getValue();
+
+        iterator.remove();
+
         if (listener != null) {
           analysisServer.removeOutlineListener(path, listener);
         }
       }
+
       outlineListeners.clear();
     }
+
     synchronized (pathToOutline) {
       pathToOutline.clear();
     }
