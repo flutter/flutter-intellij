@@ -37,7 +37,6 @@ import com.intellij.psi.util.PsiUtilBase;
 import com.intellij.psi.util.PsiUtilCore;
 import com.intellij.ui.paint.LinePainter2D;
 import com.intellij.util.DocumentUtil;
-import com.intellij.util.containers.ContainerUtilRt;
 import com.intellij.util.containers.IntStack;
 import com.intellij.util.text.CharArrayUtil;
 import org.jetbrains.annotations.NotNull;
@@ -49,12 +48,12 @@ import java.util.*;
 import static java.lang.Math.min;
 
 /**
- * This is an FliteredIndentsHighlightingPass class forked from com.intellij.codeInsight.daemon.impl.FliteredIndentsHighlightingPass
+ * This is an FilteredIndentsHighlightingPass class forked from com.intellij.codeInsight.daemon.impl.FilteredIndentsHighlightingPass
  * that supports filtering out indent guides that conflict with widget indent
  * guides as determined by calling WidgetIndentsHighlightingPass.isIndentGuideHidden.
  */
 @SuppressWarnings("ALL")
-public class FliteredIndentsHighlightingPass extends TextEditorHighlightingPass implements DumbAware {
+public class FilteredIndentsHighlightingPass extends TextEditorHighlightingPass implements DumbAware {
   private static final Key<List<RangeHighlighter>> INDENT_HIGHLIGHTERS_IN_EDITOR_KEY = Key.create("INDENT_HIGHLIGHTERS_IN_EDITOR_KEY");
   private static final Key<Long> LAST_TIME_INDENTS_BUILT = Key.create("LAST_TIME_INDENTS_BUILT");
 
@@ -243,7 +242,7 @@ public class FliteredIndentsHighlightingPass extends TextEditorHighlightingPass 
     return new io.flutter.editor.LineRange(startLine, endPosition.line);
   }
 
-  FliteredIndentsHighlightingPass(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
+  FilteredIndentsHighlightingPass(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
     super(project, editor.getDocument(), false);
     myEditor = (EditorEx)editor;
     myFile = file;
@@ -454,7 +453,7 @@ public class FliteredIndentsHighlightingPass extends TextEditorHighlightingPass 
   }
 
   private class IndentsCalculator {
-    @NotNull final Map<Language, TokenSet> myComments = ContainerUtilRt.newHashMap();
+    @NotNull final Map<Language, TokenSet> myComments = new HashMap<>();
     @NotNull final int[] lineIndents; // negative value means the line is empty (or contains a comment) and indent
     // (denoted by absolute value) was deduced from enclosing non-empty lines
     @NotNull final CharSequence myChars;
