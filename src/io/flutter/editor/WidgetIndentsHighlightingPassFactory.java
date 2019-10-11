@@ -149,7 +149,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       }
 
       // Return a placeholder editor highlighting pass. The user will get the
-      // regular IntelliJ platform provided FliteredIndentsHighlightingPass in this case.
+      // regular IntelliJ platform provided FilteredIndentsHighlightingPass in this case.
       // This is the special case where the user disabled the
       // WidgetIndentsGuides after previously having them setup.
       return new PlaceholderHighlightingPass(
@@ -158,13 +158,13 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
         false
       );
     }
-    final FliteredIndentsHighlightingPass fliteredIndentsHighlightingPass = new FliteredIndentsHighlightingPass(project, e, file);
-    if (!(e instanceof EditorEx)) return fliteredIndentsHighlightingPass;
+    final FilteredIndentsHighlightingPass filteredIndentsHighlightingPass = new FilteredIndentsHighlightingPass(project, e, file);
+    if (!(e instanceof EditorEx)) return filteredIndentsHighlightingPass;
     final EditorEx editor = (EditorEx)e;
 
     final VirtualFile virtualFile = editor.getVirtualFile();
     if (!FlutterUtils.couldContainWidgets(virtualFile)) {
-      return fliteredIndentsHighlightingPass;
+      return filteredIndentsHighlightingPass;
     }
     final FlutterOutline outline = editorOutlineService.get(virtualFile.getCanonicalPath());
 
@@ -174,7 +174,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     }
     // Return the indent pass rendering regular indent guides with guides that
     // intersect with the widget guides filtered out.
-    return fliteredIndentsHighlightingPass;
+    return filteredIndentsHighlightingPass;
   }
 
   void runWidgetIndentsPass(EditorEx editor, FlutterOutline outline) {

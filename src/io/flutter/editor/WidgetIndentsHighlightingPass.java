@@ -277,7 +277,7 @@ public class WidgetIndentsHighlightingPass {
       g2d.setColor(lineColor);
       final Color pastBlockColor = selected ? scheme.getColor(EditorColors.SELECTED_INDENT_GUIDE_COLOR) : OUTLINE_LINE_COLOR_PAST_BLOCK;
 
-      // TODO(jacobr): this logic for softwraps is duplicated for the FliteredIndentsHighlightingPass
+      // TODO(jacobr): this logic for softwraps is duplicated for the FilteredIndentsHighlightingPass
       // and may be more conservative than sensible for WidgetIndents.
 
       // There is a possible case that indent line intersects soft wrap-introduced text. Example:
@@ -565,7 +565,7 @@ public class WidgetIndentsHighlightingPass {
     if (Objects.equals(data.hitTester, hitTester)) {
       return;
     }
-    FliteredIndentsHighlightingPass.onWidgetIndentsChanged(myEditor, data.hitTester, hitTester);
+    FilteredIndentsHighlightingPass.onWidgetIndentsChanged(myEditor, data.hitTester, hitTester);
     data.hitTester = hitTester;
   }
 
@@ -620,7 +620,7 @@ public class WidgetIndentsHighlightingPass {
     if (oldHighlighters != null) {
       // after document change some range highlighters could have become
       // invalid, or the order could have been broken.
-      // This is similar to logic in FliteredIndentsHighlightingPass.java that also attempts to
+      // This is similar to logic in FilteredIndentsHighlightingPass.java that also attempts to
       // only update highlighters that have actually changed.
       oldHighlighters.sort(Comparator.comparing((RangeHighlighter h) -> !h.isValid())
                              .thenComparing(Segment.BY_START_OFFSET_THEN_END_OFFSET));

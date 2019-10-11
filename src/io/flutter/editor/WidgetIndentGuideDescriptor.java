@@ -10,7 +10,7 @@ import com.intellij.openapi.editor.Document;
 import java.util.ArrayList;
 
 /**
- * Analog to the IndentGuideDescriptor class from the regular FliteredIndentsHighlightingPass.
+ * Analog to the IndentGuideDescriptor class from the regular FilteredIndentsHighlightingPass.
  * <p>
  * The core difference relative to IndentGuideDescriptor is this descriptor
  * tracks a list of child nodes to visualize the tree structure of a build
