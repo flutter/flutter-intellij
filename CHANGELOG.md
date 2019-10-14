@@ -1,3 +1,13 @@
+## 40.2
+- Increase version range for AS 3.6 beta 1 (#3973)
+- Fix NPE in when querying display refresh rate (#3927)
+- Fix a ConcurrentModificationException from ActiveEditorsOutlineService (#3954)
+- Ignore errors from `app.stop` (#3957)
+
+## 40.1
+- Unhook Gradle listeners from IntelliJ (#3941)
+- Fix a ConcurrentModificationException (#3939)
+
 ## 40.0
 - Change args to work with new defaults of flutter create (#3902)
 - Fix the changelog markdown translation (#3904)

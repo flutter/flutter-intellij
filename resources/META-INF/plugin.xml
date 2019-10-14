@@ -29,6 +29,18 @@
 
   <change-notes>
     <![CDATA[
+<h2>40.2</h2>
+<ul>
+  <li>Increase version range for AS 3.6 beta 1 (#3973)</li>
+  <li>Fix NPE in when querying display refresh rate (#3927)</li>
+  <li>Fix a ConcurrentModificationException from ActiveEditorsOutlineService (#3954)</li>
+  <li>Ignore errors from <code>app.stop</code> (#3957)</li>
+</ul>
+<h2>40.1</h2>
+<ul>
+  <li>Unhook Gradle listeners from IntelliJ (#3941)</li>
+  <li>Fix a ConcurrentModificationException (#3939)</li>
+</ul>
 <h2>40.0</h2>
 <ul>
   <li>Change args to work with new defaults of flutter create (#3902)</li>
