@@ -125,7 +125,7 @@ public class FlutterConsoleFilter implements Filter {
         pathPart = parts[1];
         file = fileAtPath(pathPart);
         if (file != null) {
-          lineStart = line.indexOf(pathPart);
+          lineStart = entireLength - line.length() + line.indexOf(pathPart);
           highlightLength = pathPart.length();
         }
       }
