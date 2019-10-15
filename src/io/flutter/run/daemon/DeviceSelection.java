@@ -48,7 +48,7 @@ class DeviceSelection {
     // If there's no selected device, default the first ephemoral one in the list.
     final FlutterDevice firstEphemoral =
       newDevices.stream().filter(FlutterDevice::ephemeral).findFirst().orElse(null);
-    return new DeviceSelection(ImmutableList.copyOf(newDevices), firstEphemoral);
+    return new DeviceSelection(ImmutableList.copyOf(newDevices), selectedDevice.orElse(firstEphemoral));
   }
 
   /**
