@@ -30,14 +30,13 @@ import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.SystemUtils;
-import java.io.File;
-import javax.swing.Icon;
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.JTextPane;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
+import java.io.File;
+
+@SuppressWarnings({"ComponentNotRegistered", "RedundantSuppression"})
 public class InstallSdkAction extends DumbAwareAction {
   private static final String GIT_EXECUTABLE = "git";
   private final InstallAction myInstallAction;
