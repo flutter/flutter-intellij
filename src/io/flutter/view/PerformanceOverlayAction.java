@@ -5,7 +5,6 @@
  */
 package io.flutter.view;
 
-
 import com.intellij.icons.AllIcons;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.vmService.ServiceExtensions;
@@ -13,6 +12,6 @@ import org.jetbrains.annotations.NotNull;
 
 class PerformanceOverlayAction extends FlutterViewToggleableAction {
   PerformanceOverlayAction(@NotNull FlutterApp app) {
-    super(app, AllIcons.Modules.Library, ServiceExtensions.performanceOverlay);
+    super(app, AllIcons.Nodes.PpLib, ServiceExtensions.performanceOverlay);
   }
 }

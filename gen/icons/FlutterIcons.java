@@ -1,6 +1,5 @@
 package icons;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.util.IconLoader;
 
 import javax.swing.*;
@@ -108,5 +107,14 @@ public class FlutterIcons {
     public static final Icon YellowProgr_6 = load("/icons/perf/YellowProgr_6.png"); // 16x16
     public static final Icon YellowProgr_7 = load("/icons/perf/YellowProgr_7.png"); // 16x16
     public static final Icon YellowProgr_8 = load("/icons/perf/YellowProgr_8.png"); // 16x16
+
+    public static final Icon GreyProgr_1 = load("/icons/perf/GreyProgr_1.png"); // 16x16
+    public static final Icon GreyProgr_2 = load("/icons/perf/GreyProgr_2.png"); // 16x16
+    public static final Icon GreyProgr_3 = load("/icons/perf/GreyProgr_3.png"); // 16x16
+    public static final Icon GreyProgr_4 = load("/icons/perf/GreyProgr_4.png"); // 16x16
+    public static final Icon GreyProgr_5 = load("/icons/perf/GreyProgr_5.png"); // 16x16
+    public static final Icon GreyProgr_6 = load("/icons/perf/GreyProgr_6.png"); // 16x16
+    public static final Icon GreyProgr_7 = load("/icons/perf/GreyProgr_7.png"); // 16x16
+    public static final Icon GreyProgr_8 = load("/icons/perf/GreyProgr_8.png"); // 16x16
   }
 }

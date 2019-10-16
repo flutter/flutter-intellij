@@ -48,7 +48,7 @@ public abstract class ToolbarComboBoxAction extends AnAction implements CustomCo
 
   public static Icon getArrowIcon(boolean enabled) {
     // We want to use a darker icon when the combo box is enabled.
-    return enabled ? AllIcons.General.Combo2 : ComboBoxAction.getArrowIcon(enabled);
+    return enabled ? AllIcons.General.ArrowDown : ComboBoxAction.getArrowIcon(enabled);
   }
 
   private boolean mySmallVariant = true;

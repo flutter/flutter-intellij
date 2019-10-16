@@ -238,10 +238,10 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       final TreeExpander expander = new DefaultTreeExpander(tree);
 
       final AnAction expandAllAction = actions.createExpandAllAction(expander, tree);
-      expandAllAction.getTemplatePresentation().setIcon(AllIcons.General.ExpandAll);
+      expandAllAction.getTemplatePresentation().setIcon(AllIcons.Actions.Expandall);
 
       final AnAction collapseAllAction = actions.createCollapseAllAction(expander, tree);
-      collapseAllAction.getTemplatePresentation().setIcon(AllIcons.General.CollapseAll);
+      collapseAllAction.getTemplatePresentation().setIcon(AllIcons.Actions.Collapseall);
 
       final ShowOnlyWidgetsAction showOnlyWidgetsAction = new ShowOnlyWidgetsAction();
 

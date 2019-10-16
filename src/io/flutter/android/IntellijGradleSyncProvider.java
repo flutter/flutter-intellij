@@ -5,7 +5,6 @@
  */
 package io.flutter.android;
 
-import com.android.tools.idea.gradle.project.sync.GradleSyncInvoker;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
