@@ -6,6 +6,7 @@
 package io.flutter.utils;
 
 import com.intellij.icons.AllIcons;
+import icons.FlutterIcons;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -53,14 +54,14 @@ public class AnimatedIcon implements Icon {
   public static final class Grey extends AnimatedIcon {
     public Grey() {
       super(150,
-            AllIcons.Process.State.GreyProgr_1,
-            AllIcons.Process.State.GreyProgr_2,
-            AllIcons.Process.State.GreyProgr_3,
-            AllIcons.Process.State.GreyProgr_4,
-            AllIcons.Process.State.GreyProgr_5,
-            AllIcons.Process.State.GreyProgr_6,
-            AllIcons.Process.State.GreyProgr_7,
-            AllIcons.Process.State.GreyProgr_8);
+            FlutterIcons.State.GreyProgr_1,
+            FlutterIcons.State.GreyProgr_2,
+            FlutterIcons.State.GreyProgr_3,
+            FlutterIcons.State.GreyProgr_4,
+            FlutterIcons.State.GreyProgr_5,
+            FlutterIcons.State.GreyProgr_6,
+            FlutterIcons.State.GreyProgr_7,
+            FlutterIcons.State.GreyProgr_8);
     }
   }
 

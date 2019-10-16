@@ -28,7 +28,6 @@ import com.intellij.openapi.vfs.CharsetToolkit;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.console.FlutterConsoles;
-import io.flutter.logging.FlutterLog;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterCommand;

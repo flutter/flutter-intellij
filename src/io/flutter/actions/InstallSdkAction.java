@@ -38,9 +38,7 @@ import javax.swing.JTextPane;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@SuppressWarnings("ComponentNotRegistered")
 public class InstallSdkAction extends DumbAwareAction {
-
   private static final String GIT_EXECUTABLE = "git";
   private final InstallAction myInstallAction;
 
