@@ -29,7 +29,6 @@ import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.DaemonApi;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.StdoutJsonParser;
-import io.flutter.vmService.VMServiceManager;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
 import org.dartlang.vm.service.element.*;
@@ -183,7 +182,6 @@ public class FlutterLogEntryParser {
     if (streamId != null && event != null) {
       switch (streamId) {
         case VmService.LOGGING_STREAM_ID:
-        case VMServiceManager.LOGGING_STREAM_ID_OLD:
           return parseLoggingEvent(event);
         case VmService.EXTENSION_STREAM_ID:
           return parseExtensionEvent(event);
