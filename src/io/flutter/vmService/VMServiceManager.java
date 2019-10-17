@@ -34,9 +34,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposable {
-  // TODO(devoncarew): Remove on or after approx. Oct 1 2019.
-  public static final String LOGGING_STREAM_ID_OLD = "_Logging";
-
   public final double defaultRefreshRate = 60.0;
 
   private static final Logger LOG = Logger.getInstance(DaemonApi.class);
@@ -88,7 +85,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
     // events are fired. Without the call to listen, events from the stream will not be sent.
     vmService.streamListen(VmService.EXTENSION_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
 
-    vmService.streamListen(LOGGING_STREAM_ID_OLD, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
     vmService.streamListen(VmService.LOGGING_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
 
     vmService.streamListen(VmService.SERVICE_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
@@ -303,7 +299,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
     else if (event.getKind() == EventKind.ServiceExtensionAdded) {
       maybeAddServiceExtension(event.getExtensionRPC());
     }
-    else if (StringUtil.equals(streamId, VmService.LOGGING_STREAM_ID) || StringUtil.equals(streamId, LOGGING_STREAM_ID_OLD)) {
+    else if (StringUtil.equals(streamId, VmService.LOGGING_STREAM_ID)) {
       app.getFlutterConsoleLogManager().handleLoggingEvent(event);
     }
     else if (event.getKind() == EventKind.ServiceRegistered) {
