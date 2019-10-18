@@ -168,8 +168,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       }
     });
 
-    actionCenter = new QuickAssistAction("dart.assist.flutter.wrap.center", FlutterIcons.Center, "Center widget");
-    actionPadding = new QuickAssistAction("dart.assist.flutter.wrap.padding", FlutterIcons.Padding, "Add padding");
+    actionCenter = new QuickAssistAction("dart.assist.flutter.wrap.center", FlutterIcons.Center, "Wrap with Center");
+    actionPadding = new QuickAssistAction("dart.assist.flutter.wrap.padding", FlutterIcons.Padding, "Wrap with Padding");
     actionColumn = new QuickAssistAction("dart.assist.flutter.wrap.column", FlutterIcons.Column, "Wrap with Column");
     actionRow = new QuickAssistAction("dart.assist.flutter.wrap.row", FlutterIcons.Row, "Wrap with Row");
     actionContainer = new QuickAssistAction("dart.assist.flutter.wrap.container", FlutterIcons.Container, "Wrap with Container");
@@ -772,7 +772,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     private final String id = "dart.assist.flutter.extractMethod";
 
     ExtractMethodAction() {
-      super("Extract method...", null, FlutterIcons.ExtractMethod);
+      super("Extract Method...", null, FlutterIcons.ExtractMethod);
     }
 
     @Override
@@ -825,7 +825,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     private final String id = "dart.assist.flutter.extractwidget";
 
     ExtractWidgetAction() {
-      super("Extract widget...");
+      super("Extract Widget...");
     }
 
     @Override
