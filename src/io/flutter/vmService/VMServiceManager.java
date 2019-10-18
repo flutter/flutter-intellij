@@ -28,6 +28,7 @@ import org.dartlang.vm.service.consumer.ServiceExtensionConsumer;
 import org.dartlang.vm.service.consumer.VMConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -441,7 +442,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
         return;
       }
 
-      final Object value = getServiceExtensionState(name).getValue().getValue();
+      @Nullable final Object value = getServiceExtensionState(name).getValue().getValue();
 
       if (value instanceof Boolean) {
         app.callBooleanExtension(name, (Boolean)value);
