@@ -8,12 +8,9 @@ package io.flutter.view;
 import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.execution.ui.layout.impl.JBRunnerTabs;
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.browsers.BrowserLauncher;
-import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
@@ -28,7 +25,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.SideBorder;
@@ -40,7 +36,6 @@ import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerAdapter;
 import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.tabs.TabInfo;
-import com.intellij.util.PlatformUtils;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
@@ -51,8 +46,6 @@ import io.flutter.devtools.DevToolsManager;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.EventStream;
@@ -140,36 +133,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   void initToolWindow(ToolWindow window) {
     if (window.isDisposed()) return;
-
-    // Add a feedback button.
-    if (window instanceof ToolWindowEx) {
-      final AnAction sendFeedbackAction = new AnAction("Send Feedback", "Send Feedback", FlutterIcons.Feedback) {
-        @Override
-        public void actionPerformed(@NotNull AnActionEvent event) {
-          FlutterSdkVersion flutterSdkVersion = FlutterSdk.getFlutterSdk(myProject).getVersion();
-          String pluginVersion = PluginManager.getPlugin(FlutterUtils.getPluginId()).getVersion();
-          String ideVersion = ApplicationInfo.getInstance().getStrictVersion();
-          String platformPrefix = PlatformUtils.getPlatformPrefix();
-
-          String flutterSdkVersionEntryId = "entry.1740350095";
-          String pluginVersionEntryId = "entry.1082356620";
-          String ideVersionEntryId = "entry.1842668120";
-
-          BrowserUtil.browse(
-            String.format(
-              "https://docs.google.com/forms/d/e/1FAIpQLSe5Fu-AFb2Wmxtr7UWgxZt6Z76B4z9fE0vf-eu4pdKxqJ8DQg/viewform?%s=%s&%s=%s&%s=%s+%s",
-              flutterSdkVersionEntryId,
-              flutterSdkVersion,
-              pluginVersionEntryId,
-              pluginVersion,
-              ideVersionEntryId,
-              platformPrefix,
-              ideVersion));
-        }
-      };
-
-      ((ToolWindowEx)window).setTitleActions(sendFeedbackAction);
-    }
 
     updateForEmptyContent(window);
   }
