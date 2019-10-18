@@ -11,10 +11,11 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Toggleable;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.StreamSubscription;
+import io.flutter.vmService.ServiceExtensionDescription;
 import io.flutter.vmService.ServiceExtensionState;
 import io.flutter.vmService.ServiceExtensions;
-import io.flutter.vmService.ServiceExtensionDescription;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
@@ -134,7 +135,9 @@ class PlatformTargetAction extends FlutterViewAction implements Toggleable, Disp
   }
 
   public void setSelected(@NotNull AnActionEvent event, ServiceExtensionState state) {
-    final boolean selected = state.getValue().equals(platformTarget.name());
+    @Nullable final Object value = state.getValue();
+
+    final boolean selected = value != null && value.equals(platformTarget.name());
     this.selected = selected;
     event.getPresentation().putClientProperty(SELECTED_PROPERTY, selected);
   }
@@ -154,7 +157,11 @@ enum PlatformTarget {
   },
   unknown;
 
-  public static PlatformTarget parseValue(String value) {
+  public static PlatformTarget parseValue(@Nullable String value) {
+    if (value == null) {
+      return unknown;
+    }
+
     try {
       return valueOf(value);
     }
