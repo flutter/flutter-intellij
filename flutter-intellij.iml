@@ -54,10 +54,10 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library" scope="PROVIDED">
+    <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/dart-plugin/deps/weberknecht-0.1.5.jar!/" />
+          <root url="jar://$MODULE_DIR$/third_party/TooTallNate/Java-WebSocket-1.4.0-with-dependencies.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
