@@ -9,7 +9,6 @@ import com.intellij.openapi.editor.colors.EditorColors;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectLocator;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotificationPanel;
@@ -28,13 +27,8 @@ import javax.swing.*;
 public class FlutterPubspecNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
   private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.pubspec");
 
-  @NotNull private final Project project;
+  public FlutterPubspecNotificationProvider(@NotNull Project project) {
 
-  @NotNull private final FlutterSettings settings;
-
-  public FlutterPubspecNotificationProvider(@NotNull Project project, @NotNull FlutterSettings settings) {
-    this.project = project;
-    this.settings = settings;
   }
 
   @NotNull
@@ -45,14 +39,16 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
 
   @Nullable
   @Override
-  public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file, @NotNull FileEditor editor) {
+  public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file,
+                                                         @NotNull FileEditor fileEditor,
+                                                         @NotNull Project project) {
     if (!file.isInLocalFileSystem()) {
       return null;
     }
 
     // If the user has opted out of using pub in a project with both bazel rules and pub rules,
     // then we will default to bazel instead of pub.
-    if (settings.shouldUseBazel()) {
+    if (FlutterSettings.getInstance().shouldUseBazel()) {
       return null;
     }
 
@@ -70,15 +66,17 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
       return null;
     }
 
-    return new FlutterPubspecActionsPanel(file);
+    return new FlutterPubspecActionsPanel(project, file);
   }
 
   static class FlutterPubspecActionsPanel extends EditorNotificationPanel {
+    @NotNull final Project project;
     @NotNull final VirtualFile myFile;
 
-    FlutterPubspecActionsPanel(@NotNull VirtualFile file) {
+    FlutterPubspecActionsPanel(@NotNull Project project, @NotNull VirtualFile file) {
       super(EditorColors.GUTTER_BACKGROUND);
 
+      this.project = project;
       myFile = file;
 
       icon(FlutterIcons.Flutter);
@@ -102,11 +100,10 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
     }
 
     private void runPackagesGet(boolean upgrade) {
-      // We can assert below since we know we're on a pubspec.yaml file in a project, with a valid Flutter SDK.
-      final Project project = ProjectLocator.getInstance().guessProjectForFile(myFile);
-      assert (project != null);
       final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-      assert (sdk != null);
+      if (sdk == null) {
+        return;
+      }
 
       final PubRoot root = PubRoot.forDirectory(myFile.getParent());
       if (root != null) {
