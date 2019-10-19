@@ -138,12 +138,14 @@ public class EvalOnDartLibrary implements Disposable {
         new EvaluateConsumer() {
           @Override
           public void onError(RPCError error) {
-            future.completeExceptionally(new RuntimeException(error.getMessage()));
+            future.completeExceptionally(
+              new EvalException(expression, Integer.toString(error.getCode()), error.getMessage()));
           }
 
           @Override
           public void received(ErrorRef response) {
-            future.completeExceptionally(new RuntimeException(response.toString()));
+            future.completeExceptionally(
+              new EvalException(expression, response.getKind().name(), response.getMessage()));
           }
 
           @Override
@@ -153,7 +155,8 @@ public class EvalOnDartLibrary implements Disposable {
 
           @Override
           public void received(Sentinel response) {
-            future.completeExceptionally(new RuntimeException(response.toString()));
+            future.completeExceptionally(
+              new EvalException(expression, "Sentinel", response.getValueAsString()));
           }
         }
       ));
