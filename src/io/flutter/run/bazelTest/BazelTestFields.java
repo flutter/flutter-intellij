@@ -9,7 +9,6 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.CommandLineTokenizer;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
-import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
@@ -29,6 +28,7 @@ import io.flutter.run.bazelTest.FlutterBazelTestConfigurationType.WatchFactory;
 import io.flutter.run.common.RunMode;
 import io.flutter.sdk.FlutterSettingsConfigurable;
 import io.flutter.utils.ElementIO;
+import io.flutter.utils.MostlySilentOsProcessHandler;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -172,7 +172,7 @@ public class BazelTestFields {
    */
   @NotNull
   ProcessHandler run(@NotNull final Project project, @NotNull final RunMode mode) throws ExecutionException {
-    return new OSProcessHandler(getLaunchCommand(project, mode));
+    return new MostlySilentOsProcessHandler(getLaunchCommand(project, mode));
   }
 
   /**
@@ -225,7 +225,6 @@ public class BazelTestFields {
         commandLine.addParameter(bazelTarget);
         break;
     }
-
 
     if (mode == RunMode.DEBUG) {
       commandLine.addParameters(Flags.separator, Flags.enableDebugging);

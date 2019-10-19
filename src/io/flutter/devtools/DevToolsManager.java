@@ -34,6 +34,7 @@ import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
+import io.flutter.utils.MostlySilentOsProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -145,6 +146,7 @@ public class DevToolsManager {
     if (sdk == null) {
       return null;
     }
+
     // TODO(https://github.com/flutter/flutter/issues/33324): We shouldn't need a pubroot to call pub global.
     @Nullable final PubRoot pubRoot = PubRoots.forProject(project).stream().findFirst().orElse(null);
     final FlutterCommand command = sdk.flutterPackagesPub(pubRoot, "global", "run", "devtools", "--machine", "--port=0");
@@ -163,21 +165,25 @@ public class DevToolsManager {
     if (workspace == null || workspace.getDevtoolsScript() == null) {
       return null;
     }
+
     final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workspace.getRoot().getPath());
     commandLine.setExePath(FileUtil.toSystemDependentName(workspace.getRoot().getPath() + "/" + workspace.getLaunchScript()));
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.addParameters(workspace.getDevtoolsScript(), "--", "--machine", "--port=0");
     OSProcessHandler handler;
+
     try {
-      handler = new OSProcessHandler(commandLine);
+      handler = new MostlySilentOsProcessHandler(commandLine);
     }
     catch (ExecutionException e) {
       FlutterUtils.warn(LOG, e);
       handler = null;
     }
+
     if (handler != null) {
       FlutterConsoles.displayProcessLater(handler, project, null, handler::startNotify);
     }
+
     return handler;
   }
 
