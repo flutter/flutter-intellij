@@ -115,7 +115,10 @@ abstract class VmServiceBase implements VmServiceConst {
 
     // Establish WebSocket Connection
     try {
-      webSocket.connectBlocking();
+      final boolean connected = webSocket.connectBlocking();
+      if (!connected) {
+        throw new IOException("Failed to connect: " + webSocket.getReadyState().toString());
+      }
     }
     catch (InterruptedException e) {
       throw new IOException("Failed to connect: " + url, e);

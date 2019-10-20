@@ -61,12 +61,13 @@ List<BuildSpec> createBuildSpecs(ProductCommand command) {
   return specs;
 }
 
-void createDir(String name) {
+Directory createDir(String name) {
   final dir = new Directory(name);
   if (!dir.existsSync()) {
     log('creating $name/');
     dir.createSync(recursive: true);
   }
+  return dir;
 }
 
 Future<int> curl(String url, {String to}) async {
@@ -700,18 +701,25 @@ class BuildCommand extends ProductCommand {
       }
 
       // create the jars
-      createDir('build/flutter-intellij/lib');
+      var libDir = createDir('build/flutter-intellij/lib');
+
       result = await jar(
           'build/classes', 'build/flutter-intellij/lib/flutter-intellij.jar');
       if (result != 0) {
         log('jar failed: ${result.toString()}');
         return new Future(() => result);
       }
+
+      var webSocketJar = File(
+          'third_party/TooTallNate/Java-WebSocket-1.4.0-with-dependencies.jar');
+      _copyFile(webSocketJar, libDir, filename: p.basename(webSocketJar.path));
+
       if (spec.isTestTarget && !isReleaseMode) {
         _copyFile(File('build/flutter-intellij/lib/flutter-intellij.jar'),
             Directory(testTargetPath(spec)),
             filename: 'io.flutter.jar');
       }
+
       if (spec.isAndroidStudio) {
         result = await jar(
             'build/studio', 'build/flutter-intellij/lib/flutter-studio.jar');

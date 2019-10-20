@@ -62,6 +62,10 @@ Include -D arguments to define these properties: idea.product, idea.version.
       </fileset>
     </path>
 
+    <path id="third_party.jars">
+      <pathelement location="${basedir}/third_party/TooTallNate/Java-WebSocket-1.4.0-with-dependencies.jar"/>
+    </path>
+
     <path id="junit.jars">
       <pathelement location="${idea.home}/lib/junit-*.jar"/>
     </path>
@@ -91,6 +95,7 @@ Include -D arguments to define these properties: idea.product, idea.version.
       <classpath>
         <path refid="idea.jars"/>
         <path refid="dartplugin.jars"/>
+        <path refid="third_party.jars"/>
         <path location="build/classes"/>
       </classpath>
       <src refid="studioSrc.sourcepath"/>
@@ -114,6 +119,7 @@ Include -D arguments to define these properties: idea.product, idea.version.
       <classpath>
         <path refid="idea.jars"/>
         <path refid="dartplugin.jars"/>
+        <path refid="third_party.jars"/>
       </classpath>
       <src refid="src.sourcepath"/>
       <patternset refid="ignored.files"/>
