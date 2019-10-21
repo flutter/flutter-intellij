@@ -89,9 +89,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   protected final EventStream<Boolean> highlightNodesShownInBothTrees =
     new EventStream<>(FlutterViewState.HIGHLIGHT_NODES_SHOWN_IN_BOTH_TREES_DEFAULT);
 
-
-  private boolean previouslyVisible = false;
-
   @NotNull
   private final FlutterViewState state = new FlutterViewState();
 
@@ -425,12 +422,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           if (perAppViewState.isEmpty()) {
             // No more applications are running.
             updateForEmptyContent(toolWindow);
-            if (toolWindow.isAvailable()) {
-              // Store whether the tool window was visible before we decided to close it
-              // because it had no content.
-              previouslyVisible = toolWindow.isVisible();
-              toolWindow.setAvailable(false, null);
-            }
           }
         });
       }
@@ -557,7 +548,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       return;
     }
 
-    if (FlutterSettings.getInstance().isOpenInspectorOnAppLaunch() || previouslyVisible) {
+    if (FlutterSettings.getInstance().isOpenInspectorOnAppLaunch()) {
       flutterToolWindow.show(null);
     }
   }
