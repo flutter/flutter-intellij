@@ -15,6 +15,8 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterMessages;
+import io.flutter.utils.MostlySilentOsProcessHandler;
+import org.jetbrains.annotations.NotNull;
 
 public class AndroidEmulator {
   private static final Logger LOG = Logger.getInstance(AndroidEmulator.class);
@@ -51,16 +53,16 @@ public class AndroidEmulator {
 
     try {
       final StringBuilder stdout = new StringBuilder();
-      final OSProcessHandler process = new OSProcessHandler(cmd);
+      final OSProcessHandler process = new MostlySilentOsProcessHandler(cmd);
       process.addProcessListener(new ProcessAdapter() {
         @Override
-        public void onTextAvailable(ProcessEvent event, Key outputType) {
+        public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
           if (outputType == ProcessOutputTypes.STDERR || outputType == ProcessOutputTypes.STDOUT) {
             stdout.append(event.getText());
           }
         }
 
-        public void processTerminated(ProcessEvent event) {
+        public void processTerminated(@NotNull ProcessEvent event) {
           final int exitCode = event.getExitCode();
           if (exitCode != 0) {
             final String message = stdout.length() == 0
