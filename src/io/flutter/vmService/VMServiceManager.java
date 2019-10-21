@@ -168,6 +168,8 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
         if (didSendFirstFrameEvent) {
           onFrameEventReceived();
         }
+        // TODO(devoncarew): This can cause a issue with early disposable of the library.
+        //Disposer.dispose(flutterLibrary);
       });
     }
     if (isolate.getExtensionRPCs() != null) {

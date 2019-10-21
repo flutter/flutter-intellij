@@ -6,6 +6,7 @@
 package io.flutter.view;
 
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.components.JBCheckBox;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.StreamSubscription;
@@ -33,8 +34,8 @@ public class BoolServiceExtensionCheckbox implements Disposable {
     checkbox = new JBCheckBox(extensionDescription.getDisabledText());
     checkbox.setHorizontalAlignment(JLabel.LEFT);
     checkbox.setToolTipText(tooltip);
-    assert(app.getVMServiceManager() != null);
-    app.hasServiceExtension(extensionDescription.getExtension(), checkbox::setEnabled, this);
+    assert (app.getVMServiceManager() != null);
+    app.hasServiceExtension(extensionDescription.getExtension(), checkbox::setEnabled, app);
 
     checkbox.addActionListener((l) -> {
       final boolean newValue = checkbox.isSelected();
@@ -62,7 +63,7 @@ public class BoolServiceExtensionCheckbox implements Disposable {
   @Override
   public void dispose() {
     if (currentValueSubscription != null) {
-      currentValueSubscription.dispose();
+      Disposer.dispose(currentValueSubscription);
       currentValueSubscription = null;
     }
   }

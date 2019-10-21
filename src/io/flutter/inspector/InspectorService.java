@@ -9,6 +9,7 @@ import com.google.common.base.Joiner;
 import com.google.gson.*;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.xdebugger.XSourcePosition;
 import io.flutter.pub.PubRoot;
@@ -170,7 +171,7 @@ public class InspectorService implements Disposable {
   }
 
   public ObjectGroup createObjectGroup(String debugName) {
-    return new ObjectGroup(debugName);
+    return new ObjectGroup(this, debugName);
   }
 
   @NotNull
@@ -180,8 +181,8 @@ public class InspectorService implements Disposable {
 
   @Override
   public void dispose() {
-    inspectorLibrary.dispose();
-    setPubRootDirectoriesSubscription.dispose();
+    Disposer.dispose(inspectorLibrary);
+    Disposer.dispose(setPubRootDirectoriesSubscription);
   }
 
   public CompletableFuture<?> forceRefresh() {
@@ -414,6 +415,7 @@ public class InspectorService implements Disposable {
    * objects.
    */
   public class ObjectGroup implements Disposable {
+    final InspectorService service;
     /**
      * Object group all objects in this arena are allocated with.
      */
@@ -422,9 +424,14 @@ public class InspectorService implements Disposable {
     volatile boolean disposed;
     final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
-    private ObjectGroup(String debugName) {
+    private ObjectGroup(InspectorService service, String debugName) {
+      this.service = service;
       this.groupName = debugName + "_" + nextGroupId;
       nextGroupId++;
+    }
+
+    public InspectorService getInspectorService() {
+      return service;
     }
 
     /**

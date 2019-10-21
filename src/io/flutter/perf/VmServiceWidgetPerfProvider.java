@@ -7,6 +7,7 @@ package io.flutter.perf;
 
 import com.google.gson.JsonObject;
 import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.InspectorService;
@@ -141,6 +142,9 @@ public class VmServiceWidgetPerfProvider implements WidgetPerfProvider {
     });
 
     inspectorService = InspectorService.create(app, app.getFlutterDebugProcess(), app.getVmService());
+    inspectorService.whenCompleteAsync((service, throwable) -> {
+      Disposer.register(this, service);
+    });
 
     requestRepaint(When.soon);
   }

@@ -17,6 +17,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.TextEditor;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.EdtInvocationManager;
@@ -430,7 +431,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
       if (!editor.isValid() || (newEditors != null && !newEditors.contains(editor))) {
         final EditorPerfModel editorPerfDecorations = editorDecorations.get(editor);
         editors.remove();
-        editorPerfDecorations.dispose();
+        Disposer.dispose(editorPerfDecorations);
       }
     }
   }
@@ -452,11 +453,11 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     if (uiAnimationTimer.isRunning()) {
       uiAnimationTimer.stop();
     }
-    perfProvider.dispose();
+    Disposer.dispose(perfProvider);
 
     clearModels();
     for (EditorPerfModel decorations : editorDecorations.values()) {
-      decorations.dispose();
+      Disposer.dispose(decorations);
     }
     editorDecorations.clear();
     perfListeners.clear();

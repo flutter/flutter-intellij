@@ -14,6 +14,7 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.ex.EditorSettingsExternalizable;
 import com.intellij.openapi.editor.impl.softwrap.SoftWrapAppliancePlaces;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.concurrency.QueueProcessor;
@@ -83,6 +84,11 @@ public class FlutterConsoleLogManager {
 
     assert (app.getFlutterDebugProcess() != null);
     objectGroup = InspectorService.createGroup(app, app.getFlutterDebugProcess(), app.getVmService(), "console-group");
+    objectGroup.whenCompleteAsync((group, error) -> {
+      if (group != null) {
+        Disposer.register(app, group.getInspectorService());
+      }
+    });
 
     if (queue == null) {
       queue = QueueProcessor.createRunnableQueueProcessor();

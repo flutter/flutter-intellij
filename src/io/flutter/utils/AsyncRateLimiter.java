@@ -71,7 +71,7 @@ public class AsyncRateLimiter implements Disposable {
       requestScheduler.addRequest(() -> {
         rateLimiter.acquire();
 
-        Runnable doRun = () -> {
+        final Runnable doRun = () -> {
           requestScheduledButNotStarted = false;
           performRequest();
         };
