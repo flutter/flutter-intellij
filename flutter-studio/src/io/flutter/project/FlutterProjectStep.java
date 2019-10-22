@@ -50,7 +50,6 @@ import io.flutter.module.settings.FlutterCreateParams;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
@@ -65,7 +64,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JRootPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.event.DocumentEvent;
@@ -158,7 +156,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
       sdkBackgroundColor = sdkEditor.getBackground();
       sdkEditor.getDocument().addDocumentListener(new DocumentAdapter() {
         @Override
-        protected void textChanged(final DocumentEvent e) {
+        protected void textChanged(@NotNull DocumentEvent e) {
           updateSdkField(sdkEditor);
         }
       });
@@ -427,11 +425,6 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     else {
       return Validator.Result.fromNullableMessage("Flutter SDK path not given.");
     }
-  }
-
-  @NotNull
-  private static String findProjectLocation(@NotNull String appName) {
-    return WizardUtils.getProjectLocationParent().getPath();
   }
 
   private static Validator.Result errorResult(String message) {

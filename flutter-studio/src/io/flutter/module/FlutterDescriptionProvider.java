@@ -18,14 +18,14 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.project.FlutterProjectModel;
 import io.flutter.project.FlutterProjectStep;
+import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
-import javax.swing.Icon;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.Icon;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
@@ -34,11 +34,12 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     return getGalleryList(false);
   }
 
-  public static List<FlutterGalleryEntry> getGalleryList(boolean isNewProject) {
-    boolean projectHasFlutter = isNewProject;
+  public static List<FlutterGalleryEntry> getGalleryList(boolean isCreatingProject) {
+    boolean projectHasFlutter = isCreatingProject; // True for projects, false for modules.
+    boolean isAndroidProject = false; // True if the host project is an Android app.
     OptionalValueProperty<FlutterProjectModel> sharedModel = new OptionalValueProperty<>();
     ArrayList<FlutterGalleryEntry> res = new ArrayList<>();
-    if (!isNewProject) {
+    if (!isCreatingProject) {
       IdeFrame frame = IdeFocusManager.getGlobalInstance().getLastFocusedFrame();
       Project project = frame == null ? null : frame.getProject();
       if (project == null) return res;
@@ -48,22 +49,27 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
           break;
         }
       }
+      isAndroidProject = AndroidUtils.isAndroidProject(project);
     }
     if (projectHasFlutter) {
-      // Makes no sense to add most Flutter templates to Android projects...
-      if (isNewProject) {
+      // Makes no sense to add some Flutter templates to Android projects.
+      if (isCreatingProject) {
         res.add(new FlutterApplicationGalleryEntry(sharedModel));
       }
       res.add(new FlutterPluginGalleryEntry(sharedModel));
       res.add(new FlutterPackageGalleryEntry(sharedModel));
-      if (isNewProject) {
+      if (isCreatingProject) {
         res.add(new FlutterModuleGalleryEntry(sharedModel));
+      }
+      else if (isAndroidProject) {
+        res.add(new AddToAppModuleGalleryEntry(sharedModel));
+        res.add(new ImportFlutterModuleGalleryEntry(sharedModel));
       }
     }
     else {
-      // isNewProject == false
-      res.add(new ImportFlutterModuleGalleryEntry(sharedModel));
+      // isCreatingProject == false
       res.add(new AddToAppModuleGalleryEntry(sharedModel));
+      res.add(new ImportFlutterModuleGalleryEntry(sharedModel));
     }
     return res;
   }
@@ -366,7 +372,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     @Nullable
     @Override
     public Icon getIcon() {
-      return FlutterIcons.AndroidStudioNewModule;
+      return FlutterIcons.AndroidStudioNewModule; // TODO(messick) New icon here, or perhaps even better to change import.
     }
 
     @NotNull

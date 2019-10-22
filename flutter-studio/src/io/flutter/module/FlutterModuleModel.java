@@ -118,43 +118,33 @@ public class FlutterModuleModel extends FlutterProjectModel {
         public void processTerminated(@NotNull ProcessEvent event) {
 
           new ModuleCoEditHelper(hostProject, model.packageName().get(), flutterModuleDir).enable();
-          //addFacetsToModules(hostProject, projectName().get());
 
           // Ensure Gradle sync runs to link in the new add-to-app module.
           AndroidUtils.scheduleGradleSync(hostProject);
           // TODO(messick) Generate run configs for release and debug. (If needed.)
-          // TODO(messick) Load modules from .iml files (?)
         }
       });
     }
 
     private static void addGradleToModule(VirtualFile moduleDir) {
-      // Add settings.gradle to the Flutter module and change .android/build.gradle to do nothing.
+      // Add settings.gradle to the Flutter module.
       ApplicationManager.getApplication().runWriteAction(() -> {
-        try (StringWriter settingsWriter = new StringWriter(); StringWriter buildWriter = new StringWriter()) {
+        try (StringWriter settingsWriter = new StringWriter()) {
           VirtualFile settingsFile = moduleDir.findOrCreateChildData(moduleDir, "settings.gradle");
-          VirtualFile androidDir = Objects.requireNonNull(moduleDir.findChild(".android"));
-          VirtualFile buildFile = androidDir.findOrCreateChildData(moduleDir, "build.gradle");
+          VirtualFile moduleFile = moduleDir.findChild(moduleDir.getName() + "_android.iml");
+          if (moduleFile != null && moduleFile.exists()) {
+            moduleFile.delete(moduleDir);
+          }
           if (settingsFile.exists()) {
             // The default module template does not have a settings.gradle file so this should not happen.
             settingsWriter.append(new String(settingsFile.contentsToByteArray(false), Charset.defaultCharset()));
             settingsWriter.append(System.lineSeparator());
           }
-          if (buildFile.exists()) {
-            // The default module template is built for top-level projects.
-            buildFile.setBinaryContent("".getBytes(Charset.defaultCharset()));
-            buildFile.refresh(false, false);
-          }
           settingsWriter.append("// Generated file. Do not edit.");
           settingsWriter.append(System.lineSeparator());
           settingsWriter.append("include ':.android'");
           settingsWriter.append(System.lineSeparator());
-          buildWriter.append("// Generated file. Do not edit.");
-          buildWriter.append(System.lineSeparator());
-          buildWriter.append("buildscript {}");
-          buildWriter.append(System.lineSeparator());
           settingsFile.setBinaryContent(settingsWriter.toString().getBytes(Charset.defaultCharset()));
-          buildFile.setBinaryContent(buildWriter.toString().getBytes(Charset.defaultCharset()));
         }
         catch (IOException e) {
           // Should not happen
