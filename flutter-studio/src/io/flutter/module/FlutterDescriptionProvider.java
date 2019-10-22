@@ -95,6 +95,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     }
 
     protected FlutterProjectModel createModel(FlutterProjectType type) {
+      // Note: This object is shared with all templates and all their steps.
       return new FlutterModuleModel(type);
     }
 
@@ -302,20 +303,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     }
   }
 
-  // Entries in the New Module Wizard page need to use a different model class.
-  private static abstract class FlutterAndroidModuleGalleryEntry extends FlutterGalleryEntry {
-
-    private FlutterAndroidModuleGalleryEntry(OptionalValueProperty<FlutterProjectModel> model) {
-      super(model);
-    }
-
-    @Override
-    protected FlutterProjectModel createModel(FlutterProjectType type) {
-      return new FlutterModuleModel(type);
-    }
-  }
-
-  private static class ImportFlutterModuleGalleryEntry extends FlutterAndroidModuleGalleryEntry {
+  private static class ImportFlutterModuleGalleryEntry extends FlutterGalleryEntry {
 
     private ImportFlutterModuleGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
       super(sharedModel);
@@ -363,7 +351,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     }
   }
 
-  private static class AddToAppModuleGalleryEntry extends FlutterAndroidModuleGalleryEntry {
+  private static class AddToAppModuleGalleryEntry extends FlutterGalleryEntry {
 
     private AddToAppModuleGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
       super(sharedModel);
@@ -396,7 +384,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     @NotNull
     @Override
     public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
-      return new FlutterAddToAppModuleStep(
+      return new FlutterModuleStep(
         model(model, FlutterProjectType.MODULE),
         FlutterBundle.message("module.wizard.module_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.MODULE);

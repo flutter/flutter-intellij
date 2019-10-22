@@ -143,7 +143,7 @@ public class FlutterModuleImporter {
   private boolean writeSettingsModToBuffer() {
     writeLineToBuffer("setBinding(new Binding([gradle: this]))");
     writeLineToBuffer("evaluate(new File(");
-    writeLineToBuffer("  settingsDir,"); //.parentFile
+    writeLineToBuffer("  settingsDir,");
     writeLineToBuffer("  '" + myRelativePath + "'");
     writeLineToBuffer("))");
     return true;

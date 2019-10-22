@@ -137,7 +137,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     FlutterModuleUtils.autoShowMain(project, root);
 
     if (!(AndroidUtils.isAndroidProject(getProject()) &&
-          (mySettingsFields.getAdditionalSettings().getType() == FlutterProjectType.MODULE))) {
+          (getAdditionalSettings().getType() == FlutterProjectType.MODULE))) {
       addAndroidModule(project, model, basePath, flutter.getName());
     }
     return flutter;
