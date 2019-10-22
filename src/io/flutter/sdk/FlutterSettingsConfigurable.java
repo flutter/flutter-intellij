@@ -61,7 +61,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myEnableVerboseLoggingCheckBox;
   private JCheckBox myOpenInspectorOnAppLaunchCheckBox;
   private JCheckBox myFormatCodeOnSaveCheckBox;
-  private JCheckBox myOrganizeImportsOnSaveCheckBox;
   private JCheckBox myDisableTrackWidgetCreationCheckBox;
   private JCheckBox myShowStructuredErrors;
   private JCheckBox myUseLogViewCheckBox;
@@ -131,8 +130,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myHotReloadOnSaveCheckBox.addChangeListener(
       (e) -> myHotReloadIgnoreErrorCheckBox.setEnabled(myHotReloadOnSaveCheckBox.isSelected()));
-    myFormatCodeOnSaveCheckBox.addChangeListener(
-      (e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
 
     // These options are only enabled if build method guides are enabled as the
     // same class handles all these cases.
@@ -191,10 +188,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
 
     if (settings.isFormatCodeOnSave() != myFormatCodeOnSaveCheckBox.isSelected()) {
-      return true;
-    }
-
-    if (settings.isOrganizeImportsOnSave() != myOrganizeImportsOnSaveCheckBox.isSelected()) {
       return true;
     }
 
@@ -268,7 +261,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
     settings.setReloadWithError(myHotReloadIgnoreErrorCheckBox.isSelected());
     settings.setFormatCodeOnSave(myFormatCodeOnSaveCheckBox.isSelected());
-    settings.setOrganizeImportsOnSave(myOrganizeImportsOnSaveCheckBox.isSelected());
 
     settings.setShowBuildMethodGuides(myShowBuildMethodGuides.isSelected());
     settings.setShowMultipleChildrenGuides(myShowMultipleChildrenGuides.isSelected());
@@ -310,7 +302,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
     myHotReloadIgnoreErrorCheckBox.setSelected(settings.isReloadWithError());
     myFormatCodeOnSaveCheckBox.setSelected(settings.isFormatCodeOnSave());
-    myOrganizeImportsOnSaveCheckBox.setSelected(settings.isOrganizeImportsOnSave());
 
     myShowBuildMethodGuides.setSelected(settings.isShowBuildMethodGuides());
     myShowMultipleChildrenGuides.setSelected(settings.isShowMultipleChildrenGuides());
@@ -326,8 +317,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
 
     myHotReloadIgnoreErrorCheckBox.setEnabled(myHotReloadOnSaveCheckBox.isSelected());
-
-    myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
 
     // These options are only enabled if build method guides are enabled as the
     // same class handles all these cases.

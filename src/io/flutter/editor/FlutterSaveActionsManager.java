@@ -26,15 +26,12 @@ import com.intellij.util.messages.MessageBus;
 import com.intellij.util.messages.MessageBusConnection;
 import com.jetbrains.lang.dart.DartLanguage;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
-import com.jetbrains.lang.dart.assists.AssistUtils;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.settings.FlutterSettings;
 import org.dartlang.analysis.server.protocol.SourceEdit;
-import org.dartlang.analysis.server.protocol.SourceFileEdit;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -109,54 +106,18 @@ public class FlutterSaveActionsManager {
     }
 
     if (DartAnalysisServerService.getInstance(myProject).serverReadyForRequest(myProject)) {
-      if (settings.isOrganizeImportsOnSave()) {
-        performOrganizeThenFormat(document, file);
-      }
-      else {
-        performFormat(document, file, false);
-      }
+      performFormat(document, file);
     }
   }
 
-  private void performOrganizeThenFormat(@NotNull Document document, @NotNull VirtualFile file) {
-    final String filePath = file.getPath();
-    final SourceFileEdit fileEdit = DartAnalysisServerService.getInstance(myProject).edit_organizeDirectives(filePath);
-
-    if (fileEdit != null) {
-      ApplicationManager.getApplication().invokeLater(() -> new WriteCommandAction.Simple(myProject) {
-        @Override
-        protected void run() {
-          if (myProject.isDisposed()) {
-            return;
-          }
-
-          AssistUtils.applySourceEdits(myProject, file, document, fileEdit.getEdits(), Collections.emptySet());
-
-          // Committing a document here is required in order to guarantee that DartPostFormatProcessor.processText() is called afterwards.
-          PsiDocumentManager.getInstance(myProject).commitDocument(document);
-
-          // Run this in an invoke later so that we don't exeucte the initial part of performFormat in a write action.
-          //noinspection CodeBlock2Expr
-          ApplicationManager.getApplication().invokeLater(() -> {
-            performFormat(document, file, true);
-          });
-        }
-      }.execute());
-    }
-  }
-
-  private void performFormat(@NotNull Document document, @NotNull VirtualFile file, boolean reSave) {
+  private void performFormat(@NotNull Document document, @NotNull VirtualFile file) {
     final int lineLength = getRightMargin(myProject);
     final DartAnalysisServerService das = DartAnalysisServerService.getInstance(myProject);
 
     das.updateFilesContent();
 
     final DartAnalysisServerService.FormatResult formatResult = das.edit_format(file, 0, 0, lineLength);
-
     if (formatResult == null) {
-      if (reSave) {
-        FileDocumentManager.getInstance().saveDocument(document);
-      }
       return;
     }
 
@@ -179,7 +140,7 @@ public class FlutterSaveActionsManager {
         }
 
         // Don't perform the save in a write action - it could invoke EDT work.
-        if (reSave || didFormat) {
+        if (didFormat) {
           //noinspection CodeBlock2Expr
           ApplicationManager.getApplication().invokeLater(() -> {
             FileDocumentManager.getInstance().saveDocument(document);

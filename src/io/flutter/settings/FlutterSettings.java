@@ -22,7 +22,6 @@ public class FlutterSettings {
   private static final String openInspectorOnAppLaunchKey = "io.flutter.openInspectorOnAppLaunch";
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
   private static final String formatCodeOnSaveKey = "io.flutter.formatCodeOnSave";
-  private static final String organizeImportsOnSaveKey = "io.flutter.organizeImportsOnSave";
   private static final String showOnlyWidgetsKey = "io.flutter.showOnlyWidgets";
   private static final String syncAndroidLibrariesKey = "io.flutter.syncAndroidLibraries";
   private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
@@ -84,10 +83,6 @@ public class FlutterSettings {
     }
     if (isFormatCodeOnSave()) {
       analytics.sendEvent("settings", afterLastPeriod(formatCodeOnSaveKey));
-
-      if (isOrganizeImportsOnSave()) {
-        analytics.sendEvent("settings", afterLastPeriod(organizeImportsOnSaveKey));
-      }
     }
     if (isShowOnlyWidgets()) {
       analytics.sendEvent("settings", afterLastPeriod(showOnlyWidgetsKey));
@@ -175,16 +170,6 @@ public class FlutterSettings {
 
   public void setFormatCodeOnSave(boolean value) {
     getPropertiesComponent().setValue(formatCodeOnSaveKey, value, false);
-
-    fireEvent();
-  }
-
-  public boolean isOrganizeImportsOnSave() {
-    return getPropertiesComponent().getBoolean(organizeImportsOnSaveKey, false);
-  }
-
-  public void setOrganizeImportsOnSave(boolean value) {
-    getPropertiesComponent().setValue(organizeImportsOnSaveKey, value, false);
 
     fireEvent();
   }
