@@ -26,7 +26,6 @@ public class FlutterSettings {
   private static final String showOnlyWidgetsKey = "io.flutter.showOnlyWidgets";
   private static final String syncAndroidLibrariesKey = "io.flutter.syncAndroidLibraries";
   private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
-  private static final String useFlutterLogView = "io.flutter.useLogView";
   private static final String showStructuredErrors = "io.flutter.showStructuredErrors";
 
   /**
@@ -112,9 +111,6 @@ public class FlutterSettings {
 
     if (isShowStructuredErrors()) {
       analytics.sendEvent("settings", afterLastPeriod(showStructuredErrors));
-    }
-    if (useFlutterLogView()) {
-      analytics.sendEvent("settings", afterLastPeriod(useFlutterLogView));
     }
     if (shouldUseBazel()) {
       analytics.sendEvent("settings", afterLastPeriod(dartProjectsWithoutPubspecRegistryKey));
@@ -215,16 +211,6 @@ public class FlutterSettings {
 
   public void setShowStructuredErrors(boolean value) {
     getPropertiesComponent().setValue(showStructuredErrors, value, true);
-
-    fireEvent();
-  }
-
-  public boolean useFlutterLogView() {
-    return getPropertiesComponent().getBoolean(useFlutterLogView, false);
-  }
-
-  public void setUseFlutterLogView(boolean value) {
-    getPropertiesComponent().setValue(useFlutterLogView, value, false);
 
     fireEvent();
   }

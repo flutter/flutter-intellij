@@ -64,7 +64,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myOrganizeImportsOnSaveCheckBox;
   private JCheckBox myDisableTrackWidgetCreationCheckBox;
   private JCheckBox myShowStructuredErrors;
-  private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
 
   // Settings for Bazel users.
@@ -78,6 +77,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myShowBuildMethodsOnScrollbar;
   private JCheckBox myShowClosingLabels;
   private FixedSizeButton myCopyButton;
+  private JPanel experimentsPanel;
 
   private final @NotNull Project myProject;
 
@@ -141,7 +141,15 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
     });
 
-    mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
+    // Only show the experiments panel if there are visible items in it.
+    if (FlutterUtils.isAndroidStudio()) {
+      mySyncAndroidLibrariesCheckBox.setVisible(true);
+      experimentsPanel.setVisible(true);
+    }
+    else {
+      mySyncAndroidLibrariesCheckBox.setVisible(false);
+      experimentsPanel.setVisible(false);
+    }
   }
 
   private void createUIComponents() {
@@ -215,9 +223,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     if (settings.isShowStructuredErrors() != myShowStructuredErrors.isSelected()) {
       return true;
     }
-    if (settings.useFlutterLogView() != myUseLogViewCheckBox.isSelected()) {
-      return true;
-    }
 
     if (settings.isOpenInspectorOnAppLaunch() != myOpenInspectorOnAppLaunchCheckBox.isSelected()) {
       return true;
@@ -274,7 +279,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setShowMultipleChildrenGuides(myShowMultipleChildrenGuides.isSelected());
     settings.setShowBuildMethodsOnScrollbar(myShowBuildMethodsOnScrollbar.isSelected());
     settings.setShowClosingLabels(myShowClosingLabels.isSelected());
-    settings.setUseFlutterLogView(myUseLogViewCheckBox.isSelected());
     settings.setShowStructuredErrors(myShowStructuredErrors.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setDisableTrackWidgetCreation(myDisableTrackWidgetCreationCheckBox.isSelected());
@@ -318,7 +322,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myShowClosingLabels.setSelected(settings.isShowClosingLabels());
 
-    myUseLogViewCheckBox.setSelected(settings.useFlutterLogView());
     myShowStructuredErrors.setSelected(settings.isShowStructuredErrors());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
     myDisableTrackWidgetCreationCheckBox.setSelected(settings.isDisableTrackWidgetCreation());

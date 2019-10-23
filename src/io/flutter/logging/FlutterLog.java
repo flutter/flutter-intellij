@@ -20,7 +20,6 @@ import com.intellij.util.EventDispatcher;
 import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.vmService.ServiceExtensions;
 import org.dartlang.vm.service.VmService;
@@ -86,7 +85,8 @@ public class FlutterLog implements FlutterLogEntry.ContentListener {
   private FlutterApp app;
 
   public static boolean useFlutterLogView() {
-    return FlutterSettings.getInstance().useFlutterLogView();
+    // TODO(devoncarew): Hard-coded to off.
+    return false;
   }
 
   public FlutterLog(@NotNull Project project, @Nullable Module module) {
