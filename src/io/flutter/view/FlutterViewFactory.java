@@ -23,7 +23,7 @@ public class FlutterViewFactory implements ToolWindowFactory, DumbAware {
 
   @Override
   public void init(ToolWindow window) {
-    window.setAvailable(false, null);
+    window.setAvailable(true, null);
   }
 
   private static void initFlutterView(@NotNull Project project, FlutterViewMessages.FlutterDebugEvent event) {
