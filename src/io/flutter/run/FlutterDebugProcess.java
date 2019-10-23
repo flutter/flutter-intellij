@@ -9,7 +9,6 @@ import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunnerLayoutUi;
 import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Computable;
@@ -25,13 +24,11 @@ import io.flutter.actions.RestartFlutterApp;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.view.FlutterViewMessages;
-import io.flutter.view.ToolbarComboBoxAction;
 import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
@@ -117,8 +114,6 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
     topToolbar.addAction(new RestartFlutterApp(app, canReload));
     topToolbar.addSeparator();
     topToolbar.addAction(new OpenDevToolsAction(app.getConnector(), debugUrlAvailable));
-    topToolbar.addSeparator();
-    topToolbar.addAction(new OverflowAction(app, debugUrlAvailable));
 
     settings.addAction(new ReloadAllFlutterApps(app, canReload));
     settings.addAction(new RestartAllFlutterApps(app, canReload));
@@ -149,37 +144,6 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
           FlutterUtils.warn(LOG, e);
         }
       }
-    }
-  }
-
-  private static class OverflowAction extends ToolbarComboBoxAction {
-    private final @NotNull FlutterApp myApp;
-    private final DefaultActionGroup myActionGroup;
-
-    public OverflowAction(@NotNull FlutterApp app, Computable<Boolean> observatoryAvailable) {
-      super();
-
-      myApp = app;
-      myActionGroup = createPopupActionGroup(app, observatoryAvailable);
-    }
-
-    @NotNull
-    @Override
-    protected DefaultActionGroup createPopupActionGroup(JComponent button) {
-      return myActionGroup;
-    }
-
-    @Override
-    public final void update(AnActionEvent e) {
-      e.getPresentation().setText("More Actions");
-      e.getPresentation().setEnabled(myApp.isSessionActive());
-    }
-
-    private static DefaultActionGroup createPopupActionGroup(FlutterApp app, Computable<Boolean> observatoryAvailable) {
-      final DefaultActionGroup group = new DefaultActionGroup();
-      group.addAction(new OpenObservatoryAction(app.getConnector(), observatoryAvailable));
-      group.addAction(new OpenTimelineViewAction(app.getConnector(), observatoryAvailable));
-      return group;
     }
   }
 }

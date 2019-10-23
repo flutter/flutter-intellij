@@ -64,10 +64,6 @@ public class DaemonConsoleView extends ConsoleViewImpl {
       return;
     }
 
-    if (text.trim().startsWith("Observatory listening on http")) {
-      return;
-    }
-
     if (contentType != ConsoleViewContentType.NORMAL_OUTPUT) {
       writeAvailableLines();
 

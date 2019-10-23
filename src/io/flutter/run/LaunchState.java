@@ -282,9 +282,6 @@ public class LaunchState extends CommandLineState {
       super.createActions(console, app.getProcessHandler(), getEnvironment().getExecutor())));
     actions.add(new Separator());
     actions.add(new OpenDevToolsAction(app.getConnector(), observatoryAvailable));
-    actions.add(new Separator());
-    actions.add(new OpenObservatoryAction(app.getConnector(), observatoryAvailable));
-    actions.add(new OpenTimelineViewAction(app.getConnector(), observatoryAvailable));
 
     return new DefaultExecutionResult(console, app.getProcessHandler(), actions.toArray(new AnAction[0]));
   }

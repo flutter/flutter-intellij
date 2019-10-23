@@ -22,11 +22,7 @@ public class FlutterIcons {
   public static final Icon Phone = load("/icons/phone.png");
   public static final Icon Feedback = load("/icons/feedback.png");
 
-  public static final Icon OpenObservatory = load("/icons/observatory.png");
-  public static final Icon OpenObservatoryGroup = load("/icons/observatory_overflow.png");
   public static final Icon Dart_16 = load("/icons/dart_16.svg");
-
-  public static final Icon OpenTimeline = load("/icons/timeline.png");
 
   public static final Icon HotReload = load("/icons/hot-reload.png");
   public static final Icon HotRestart = load("/icons/hot-restart.png");
