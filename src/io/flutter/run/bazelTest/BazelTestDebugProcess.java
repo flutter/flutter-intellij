@@ -13,7 +13,6 @@ import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.ObservatoryConnector;
 import io.flutter.run.FlutterPopFrameAction;
 import io.flutter.run.OpenDevToolsAction;
-import io.flutter.run.OpenObservatoryAction;
 import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.jetbrains.annotations.NotNull;
 
@@ -41,7 +40,6 @@ public class BazelTestDebugProcess extends DartVmServiceDebugProcess {
     topToolbar.addSeparator();
     topToolbar.addAction(new FlutterPopFrameAction());
     topToolbar.addAction(new OpenDevToolsAction(connector, this::isActive));
-    topToolbar.addAction(new OpenObservatoryAction(connector, this::isActive));
   }
 
   private boolean isActive() {

@@ -8,12 +8,10 @@ package io.flutter.view;
 import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.execution.ui.layout.impl.JBRunnerTabs;
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -30,16 +28,13 @@ import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.SideBorder;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
-import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerAdapter;
 import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.tabs.TabInfo;
-import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
-import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.devtools.DevToolsManager;
@@ -237,8 +232,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         addDisabledTab(WIDGET_TAB_LABEL, runnerTabs, toolbarGroup);
         addDisabledTab(RENDER_TAB_LABEL, runnerTabs, toolbarGroup);
       }
-
-      addPerformancePlaceholderTab(runnerTabs, app, false);
     }
     else {
       // Add a message about the inspector not being available in release mode.
@@ -313,33 +306,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final TabInfo tabInfo = new TabInfo(panel)
       .append(displayName, SimpleTextAttributes.GRAYED_ATTRIBUTES);
     runnerTabs.addTab(tabInfo);
-  }
-
-  private void addPerformancePlaceholderTab(JBRunnerTabs runnerTabs,
-                                            FlutterApp app,
-                                            boolean selectedTab) {
-    final LinkLabel<String> linkLabel = new LinkLabel<>("See Flutter Performance window", null);
-    linkLabel.setListener((aSource, aLinkData) -> showFlutterPerformanceWindow(app), null);
-    linkLabel.setBorder(JBUI.Borders.empty(3, 10));
-    linkLabel.setHorizontalAlignment(SwingConstants.CENTER);
-    // Remove underline to avoid LinkLabel bug where underline is left aligned
-    // even though text is center aligned.
-    // TODO(kenzieschmoll): remove this if this bug is fixed in IntelliJ.
-    linkLabel.setPaintUnderline(false);
-
-    final TabInfo tabInfo = new TabInfo(linkLabel)
-      .append(PERFORMANCE_TAB_LABEL, SimpleTextAttributes.REGULAR_ATTRIBUTES);
-    runnerTabs.addTab(tabInfo);
-    if (selectedTab) {
-      runnerTabs.select(tabInfo, false);
-    }
-  }
-
-  private void showFlutterPerformanceWindow(FlutterApp app) {
-    final ToolWindowManagerEx toolWindowManager = ToolWindowManagerEx.getInstanceEx(myProject);
-    final ToolWindow flutterPerfToolWindow = toolWindowManager.getToolWindow(FlutterPerfView.TOOL_WINDOW_ID);
-    final FlutterPerfView flutterPerfView = ServiceManager.getService(myProject, FlutterPerfView.class);
-    flutterPerfToolWindow.show(() -> flutterPerfView.showForApp(app));
   }
 
   /**
@@ -589,39 +555,6 @@ class FlutterViewDevToolsAction extends FlutterViewAction {
   }
 }
 
-class OpenObservatoryAction extends FlutterViewAction {
-  OpenObservatoryAction(@NotNull FlutterApp app) {
-    super(app, FlutterBundle.message("open.observatory.action.text"), FlutterBundle.message("open.observatory.action.description"),
-          FlutterIcons.OpenObservatory);
-  }
-
-  @Override
-  public void perform(AnActionEvent event) {
-    if (app.isSessionActive()) {
-      final String url = app.getConnector().getBrowserUrl();
-      if (url != null) {
-        BrowserLauncher.getInstance().browse(url, null);
-      }
-    }
-  }
-}
-
-class OpenTimelineViewAction extends FlutterViewAction {
-  OpenTimelineViewAction(@NotNull FlutterApp app) {
-    super(app, "Open Timeline View", "Open Timeline View", FlutterIcons.OpenTimeline);
-  }
-
-  @Override
-  public void perform(AnActionEvent event) {
-    if (app.isSessionActive()) {
-      final String url = app.getConnector().getBrowserUrl();
-      if (url != null) {
-        BrowserLauncher.getInstance().browse(url + "/#/timeline", null);
-      }
-    }
-  }
-}
-
 class RepaintRainbowAction extends FlutterViewToggleableAction {
   RepaintRainbowAction(@NotNull FlutterApp app) {
     super(app, FlutterIcons.RepaintRainbow, ServiceExtensions.repaintRainbow);
@@ -742,9 +675,6 @@ class OverflowAction extends ToolbarComboBoxAction implements RightAlignedToolba
     group.add(appState.registerAction(new HighlightNodesShownInBothTrees(app, view.highlightNodesShownInBothTrees)));
     group.addSeparator();
     group.add(appState.registerAction(new FlutterViewDevToolsAction(app)));
-    group.addSeparator();
-    group.add(appState.registerAction(new OpenTimelineViewAction(app)));
-    group.add(appState.registerAction(new OpenObservatoryAction(app)));
 
     return group;
   }
