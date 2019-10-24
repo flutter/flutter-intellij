@@ -73,13 +73,16 @@ idea {
 }
 
 dependencies {
-  testCompile("io.kotlintest:kotlintest:2.0.7")
+  testCompile "io.kotlintest:kotlintest:2.0.7"
   testCompile "org.powermock:powermock-api-mockito2:2.0.0"
   testCompile "org.powermock:powermock-module-junit4:2.0.0"
   compile "com.android.tools.analytics-library:protos"
   compile "com.android.tools:common:25.3.0"
   compile "com.android.tools.analytics-library:protos:25.3.0"
   compile "com.google.protobuf:protobuf-java:3.5.1"
+  compile "org.java-websocket:Java-WebSocket:1.4.0" {
+    exclude "org.slf4j:slf4j-simple"
+  }
 }
 
 /* Need to swizzle source and resource paths to match standard or buildPlugin does nothing. */

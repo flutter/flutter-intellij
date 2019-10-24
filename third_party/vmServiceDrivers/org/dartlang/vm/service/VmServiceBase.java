@@ -17,16 +17,13 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import de.roderick.weberknecht.WebSocket;
-import de.roderick.weberknecht.WebSocketEventHandler;
-import de.roderick.weberknecht.WebSocketException;
-import de.roderick.weberknecht.WebSocketMessage;
 import org.dartlang.vm.service.consumer.*;
 import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.internal.RequestSink;
 import org.dartlang.vm.service.internal.VmServiceConst;
-import org.dartlang.vm.service.internal.WebSocketRequestSink;
 import org.dartlang.vm.service.logging.Logging;
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
 
 import java.io.IOException;
 import java.net.URI;
@@ -50,73 +47,82 @@ abstract class VmServiceBase implements VmServiceConst {
    */
   public static VmService connect(final String url) throws IOException {
     // Validate URL
-    URI uri;
+    final URI uri;
     try {
       uri = new URI(url);
-    } catch (URISyntaxException e) {
+    }
+    catch (URISyntaxException e) {
       throw new IOException("Invalid URL: " + url, e);
     }
-    String wsScheme = uri.getScheme();
+    final String wsScheme = uri.getScheme();
     if (!"ws".equals(wsScheme) && !"wss".equals(wsScheme)) {
       throw new IOException("Unsupported URL scheme: " + wsScheme);
     }
 
-    // Create web socket and observatory
-    WebSocket webSocket;
-    try {
-      webSocket = new WebSocket(uri);
-    } catch (WebSocketException e) {
-      throw new IOException("Failed to create websocket: " + url, e);
-    }
     final VmService vmService = new VmService();
 
-    // Setup event handler for forwarding responses
-    webSocket.setEventHandler(new WebSocketEventHandler() {
+    // Create web socket and observatory
+    final WebSocketClient webSocket = new WebSocketClient(uri) {
       @Override
-      public void onClose() {
-        Logging.getLogger().logInformation("VM connection closed: " + url);
+      public void onOpen(ServerHandshake handshake) {
+        vmService.connectionOpened();
 
-        vmService.connectionClosed();
+        Logging.getLogger().logInformation(
+          "VM connection open: " + url + " (" + handshake.getHttpStatus() + ":" + handshake.getHttpStatusMessage() + ")");
       }
 
       @Override
-      public void onMessage(WebSocketMessage message) {
-        Logging.getLogger().logInformation("VM message: " + message.getText());
+      public void onMessage(String message) {
+        Logging.getLogger().logInformation(message);
+
         try {
-          vmService.processMessage(message.getText());
-        } catch (Exception e) {
+          vmService.processMessage(message);
+        }
+        catch (Exception e) {
           Logging.getLogger().logError(e.getMessage(), e);
         }
       }
 
       @Override
-      public void onOpen() {
-        vmService.connectionOpened();
-
-        Logging.getLogger().logInformation("VM connection open: " + url);
+      public void onError(Exception exception) {
+        Logging.getLogger().logError(exception.getMessage(), exception);
       }
 
       @Override
-      public void onPing() {
+      public void onClose(int code, String reason, boolean remote) {
+        Logging.getLogger().logInformation(
+          "VM connection closed: " + url + "( " + code + ":" + reason + ")");
+
+        vmService.connectionClosed();
+      }
+    };
+
+    vmService.requestSink = new RequestSink() {
+      @Override
+      public void add(JsonObject json) {
+        final String request = json.toString();
+
+        Logging.getLogger().logInformation(request);
+
+        webSocket.send(request);
       }
 
       @Override
-      public void onPong() {
+      public void close() {
+        webSocket.close();
       }
-    });
+    };
 
     // Establish WebSocket Connection
-    //noinspection TryWithIdenticalCatches
     try {
-      webSocket.connect();
-    } catch (WebSocketException e) {
-      throw new IOException("Failed to connect: " + url, e);
-    } catch (ArrayIndexOutOfBoundsException e) {
-      // The weberknecht can occasionally throw an array index exception if a connect terminates on initial connect
-      // (de.roderick.weberknecht.WebSocket.connect, WebSocket.java:126).
+      final boolean connected = webSocket.connectBlocking();
+      if (!connected) {
+        throw new IOException("Failed to connect: " + webSocket.getReadyState().toString());
+      }
+    }
+    catch (InterruptedException e) {
       throw new IOException("Failed to connect: " + url, e);
     }
-    vmService.requestSink = new WebSocketRequestSink(webSocket);
 
     // Check protocol version
     final CountDownLatch latch = new CountDownLatch(1);
@@ -124,24 +130,25 @@ abstract class VmServiceBase implements VmServiceConst {
     vmService.getVersion(new VersionConsumer() {
       @Override
       public void onError(RPCError error) {
-        String msg = "Failed to determine protocol version: " + error.getCode() + "\n  message: "
-                     + error.getMessage() + "\n  details: " + error.getDetails();
+        final String msg = "Failed to determine protocol version: " + error.getCode() + "\n  message: "
+                           + error.getMessage() + "\n  details: " + error.getDetails();
         Logging.getLogger().logInformation(msg);
         errMsg[0] = msg;
       }
 
       @Override
       public void received(Version version) {
-        int major = version.getMajor();
-        int minor = version.getMinor();
+        final int major = version.getMajor();
+        final int minor = version.getMinor();
         if (major != VmService.versionMajor || minor != VmService.versionMinor) {
           if (major == 2 || major == 3) {
             Logging.getLogger().logInformation(
               "Difference in protocol version: client=" + VmService.versionMajor + "."
               + VmService.versionMinor + " vm=" + major + "." + minor);
-          } else {
-            String msg = "Incompatible protocol version: client=" + VmService.versionMajor + "."
-                         + VmService.versionMinor + " vm=" + major + "." + minor;
+          }
+          else {
+            final String msg = "Incompatible protocol version: client=" + VmService.versionMajor + "."
+                               + VmService.versionMinor + " vm=" + major + "." + minor;
             Logging.getLogger().logError(msg);
             errMsg[0] = msg;
           }
@@ -160,7 +167,8 @@ abstract class VmServiceBase implements VmServiceConst {
       if (errMsg[0] != null) {
         throw new IOException(errMsg[0]);
       }
-    } catch (InterruptedException e) {
+    }
+    catch (InterruptedException e) {
       throw new RuntimeException("Interrupted while waiting for response", e);
     }
 
@@ -316,7 +324,7 @@ abstract class VmServiceBase implements VmServiceConst {
    * See https://api.dartlang.org/stable/dart-developer/dart-developer-library.html.
    */
   public void callServiceExtension(String isolateId, String method, ServiceExtensionConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request(method, params, consumer);
   }
@@ -337,8 +345,8 @@ abstract class VmServiceBase implements VmServiceConst {
   protected void request(String method, JsonObject params, Consumer consumer) {
 
     // Assemble the request
-    String id = Integer.toString(nextId.incrementAndGet());
-    JsonObject request = new JsonObject();
+    final String id = Integer.toString(nextId.incrementAndGet());
+    final JsonObject request = new JsonObject();
 
     request.addProperty(JSONRPC, JSONRPC_VERSION);
     request.addProperty(ID, id);
@@ -387,8 +395,8 @@ abstract class VmServiceBase implements VmServiceConst {
   abstract void forwardResponse(Consumer consumer, String type, JsonObject json);
 
   void logUnknownResponse(Consumer consumer, JsonObject json) {
-    Class<? extends Consumer> consumerClass = consumer.getClass();
-    StringBuilder msg = new StringBuilder();
+    final Class<? extends Consumer> consumerClass = consumer.getClass();
+    final StringBuilder msg = new StringBuilder();
     msg.append("Expected response for ").append(consumerClass).append("\n");
     for (Class<?> interf : consumerClass.getInterfaces()) {
       msg.append("  implementing ").append(interf).append("\n");
@@ -407,7 +415,7 @@ abstract class VmServiceBase implements VmServiceConst {
     }
 
     // Decode the JSON
-    JsonObject json;
+    final JsonObject json;
     try {
       json = (JsonObject) new JsonParser().parse(jsonText);
     } catch (Exception e) {
@@ -445,7 +453,7 @@ abstract class VmServiceBase implements VmServiceConst {
     response.addProperty(JSONRPC, JSONRPC_VERSION);
 
     // Get the consumer associated with this request
-    String id;
+    final String id;
     try {
       id = json.get(ID).getAsString();
     } catch (Exception e) {
@@ -461,7 +469,7 @@ abstract class VmServiceBase implements VmServiceConst {
 
     response.addProperty(ID, id);
 
-    String method;
+    final String method;
     try {
       method = json.get(METHOD).getAsString();
     } catch (Exception e) {
@@ -475,7 +483,7 @@ abstract class VmServiceBase implements VmServiceConst {
       return;
     }
 
-    JsonObject params;
+    final JsonObject params;
     try {
       params = json.get(PARAMS).getAsJsonObject();
     } catch (Exception e) {
@@ -542,14 +550,14 @@ abstract class VmServiceBase implements VmServiceConst {
     };
 
   void processNotification(JsonObject json) {
-    String method;
+    final String method;
     try {
       method = json.get(METHOD).getAsString();
     } catch (Exception e) {
       Logging.getLogger().logError("Request malformed " + METHOD, e);
       return;
     }
-    JsonObject params;
+    final JsonObject params;
     try {
       params = json.get(PARAMS).getAsJsonObject();
     } catch (Exception e) {
@@ -557,14 +565,14 @@ abstract class VmServiceBase implements VmServiceConst {
       return;
     }
     if ("streamNotify".equals(method)) {
-      String streamId;
+      final String streamId;
       try {
         streamId = params.get(STREAM_ID).getAsString();
       } catch (Exception e) {
         Logging.getLogger().logError("Event missing " + STREAM_ID, e);
         return;
       }
-      Event event;
+      final Event event;
       try {
         event = new Event(params.get(EVENT).getAsJsonObject());
       } catch (Exception e) {
@@ -588,21 +596,21 @@ abstract class VmServiceBase implements VmServiceConst {
   }
 
   void processResponse(JsonObject json) {
-    JsonElement idElem = json.get(ID);
+    final JsonElement idElem = json.get(ID);
     if (idElem == null) {
       Logging.getLogger().logError("Response missing " + ID);
       return;
     }
 
     // Get the consumer associated with this response
-    String id;
+    final String id;
     try {
       id = idElem.getAsString();
     } catch (Exception e) {
       Logging.getLogger().logError("Response missing " + ID, e);
       return;
     }
-    Consumer consumer = consumerMap.remove(id);
+    final Consumer consumer = consumerMap.remove(id);
     if (consumer == null) {
       Logging.getLogger().logError("No consumer associated with " + ID + ": " + id);
       return;
@@ -611,7 +619,7 @@ abstract class VmServiceBase implements VmServiceConst {
     // Forward the response if the request was successfully executed
     JsonElement resultElem = json.get(RESULT);
     if (resultElem != null) {
-      JsonObject result;
+      final JsonObject result;
       try {
         result = resultElem.getAsJsonObject();
       } catch (Exception e) {
@@ -634,7 +642,7 @@ abstract class VmServiceBase implements VmServiceConst {
     // Forward an error if the request failed
     resultElem = json.get(ERROR);
     if (resultElem != null) {
-      JsonObject error;
+      final JsonObject error;
       try {
         error = resultElem.getAsJsonObject();
       } catch (Exception e) {
