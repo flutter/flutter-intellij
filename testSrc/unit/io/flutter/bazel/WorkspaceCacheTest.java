@@ -44,6 +44,7 @@ public class WorkspaceCacheTest {
   }
 
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void shouldDetectConfigFileChanges() throws Exception {
     // This test causes stack traces to be logged at shutdown in local history: "Recursive records found".
     // (Unknown cause.)
