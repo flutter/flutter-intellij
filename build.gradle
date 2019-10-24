@@ -80,8 +80,8 @@ dependencies {
   compile "com.android.tools:common:25.3.0"
   compile "com.android.tools.analytics-library:protos:25.3.0"
   compile "com.google.protobuf:protobuf-java:3.5.1"
-  compile "org.java-websocket:Java-WebSocket:1.4.0" {
-    exclude "org.slf4j:slf4j-simple"
+  compile ("org.java-websocket:Java-WebSocket:1.4.0") {
+    exclude group: "org.slf4j", module: "slf4j-simple"
   }
 }
 
