@@ -13,8 +13,6 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -102,18 +100,6 @@ public class Analytics {
     args.put("utv", variable);
     args.put("utt", Long.toString(timeMillis));
     sendPayload("timing", args);
-  }
-
-  /**
-   * Note: we never send the exception's message here - that can potentially contain PII.
-   */
-  public void sendException(Throwable throwable, boolean isFatal) {
-    final StringWriter stringWriter = new StringWriter();
-    final PrintWriter printWriter = new PrintWriter(stringWriter);
-
-    throwable.printStackTrace(printWriter);
-
-    sendException(stringWriter.toString().trim(), isFatal);
   }
 
   public void sendException(String throwableText, boolean isFatal) {
