@@ -23,7 +23,6 @@ import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.swing.*;
@@ -321,7 +320,6 @@ class MockTextEditor implements TextEditor {
 
 public class FlutterWidgetPerfTest {
   @Test
-  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void testFileStatsCalculation() throws InterruptedException, ExecutionException {
     final MockWidgetPerfProvider widgetPerfProvider = new MockWidgetPerfProvider();
 
@@ -459,7 +457,6 @@ public class FlutterWidgetPerfTest {
   }
 
   @Test
-  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void testOverallStatsCalculation() throws InterruptedException, ExecutionException {
     final MockWidgetPerfProvider widgetPerfProvider = new MockWidgetPerfProvider();
 
