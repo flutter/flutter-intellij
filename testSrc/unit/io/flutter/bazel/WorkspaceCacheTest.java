@@ -12,6 +12,7 @@ import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.TestDir;
 import io.flutter.testing.Testing;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -66,6 +67,7 @@ public class WorkspaceCacheTest {
   }
 
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void shouldDetectModuleRootChange() throws Exception {
     checkWorkspaceExists();
     removeContentRoot();
