@@ -56,6 +56,8 @@ abstract class DaemonEvent {
   static DaemonEvent create(@NotNull String eventName, @NotNull JsonObject params) {
     try {
       switch (eventName) {
+        case "daemon.connected":
+          return GSON.fromJson(params, DaemonConnected.class);
         case "daemon.log":
           return GSON.fromJson(params, DaemonLog.class);
         case "daemon.logMessage":
@@ -110,6 +112,9 @@ abstract class DaemonEvent {
 
     // daemon domain
 
+    default void onDaemonConnected(DaemonConnected event) {
+    }
+
     default void onDaemonLog(DaemonLog event) {
     }
 
@@ -152,6 +157,17 @@ abstract class DaemonEvent {
   }
 
   // daemon domain
+
+  @SuppressWarnings("unused")
+  static class DaemonConnected extends DaemonEvent {
+    // "event":"daemon.log"
+    String version;
+    long pid;
+
+    void accept(Listener listener) {
+      listener.onDaemonConnected(this);
+    }
+  }
 
   @SuppressWarnings("unused")
   static class DaemonLog extends DaemonEvent {
