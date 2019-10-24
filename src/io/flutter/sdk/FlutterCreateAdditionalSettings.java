@@ -8,10 +8,9 @@ package io.flutter.sdk;
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.samples.FlutterSample;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 public class FlutterCreateAdditionalSettings {
   @Nullable
@@ -147,6 +146,11 @@ public class FlutterCreateAdditionalSettings {
     return swift;
   }
 
+  @Nullable
+  public FlutterProjectType getType() {
+    return type;
+  }
+
   public static class Builder {
     @Nullable
     private Boolean includeDriverTest;
@@ -215,7 +219,8 @@ public class FlutterCreateAdditionalSettings {
     }
 
     public FlutterCreateAdditionalSettings build() {
-      return new FlutterCreateAdditionalSettings(includeDriverTest, type, description, org, swift, kotlin, offlineMode, sampleContent, isAndroidX);
+      return new FlutterCreateAdditionalSettings(includeDriverTest, type, description, org, swift, kotlin, offlineMode, sampleContent,
+                                                 isAndroidX);
     }
   }
 }

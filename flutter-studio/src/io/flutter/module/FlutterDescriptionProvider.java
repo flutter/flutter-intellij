@@ -14,38 +14,32 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.IdeFrame;
-import com.intellij.util.IconUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.project.FlutterProjectModel;
 import io.flutter.project.FlutterProjectStep;
+import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import javax.swing.Icon;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
-  @SuppressWarnings("override") // Used in 3.0-3.2
-  public Collection<? extends ModuleGalleryEntry> getDescriptions() {
-    return getGalleryList(false);
-  }
-
-  @SuppressWarnings("override") // For 3.3
+  @Override
   public Collection<? extends ModuleGalleryEntry> getDescriptions(Project project) {
     return getGalleryList(false);
   }
 
-  public static List<FlutterGalleryEntry> getGalleryList(boolean isNewProject) {
-    boolean projectHasFlutter = isNewProject;
+  public static List<FlutterGalleryEntry> getGalleryList(boolean isCreatingProject) {
+    boolean projectHasFlutter = isCreatingProject; // True for projects, false for modules.
+    boolean isAndroidProject = false; // True if the host project is an Android app.
     OptionalValueProperty<FlutterProjectModel> sharedModel = new OptionalValueProperty<>();
     ArrayList<FlutterGalleryEntry> res = new ArrayList<>();
-    if (!isNewProject) {
+    if (!isCreatingProject) {
       IdeFrame frame = IdeFocusManager.getGlobalInstance().getLastFocusedFrame();
       Project project = frame == null ? null : frame.getProject();
       if (project == null) return res;
@@ -55,20 +49,26 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
           break;
         }
       }
+      isAndroidProject = AndroidUtils.isAndroidProject(project);
     }
     if (projectHasFlutter) {
-      // Makes no sense to add Flutter templates to Android projects...
-      if (isNewProject) {
+      // Makes no sense to add some Flutter templates to Android projects.
+      if (isCreatingProject) {
         res.add(new FlutterApplicationGalleryEntry(sharedModel));
       }
       res.add(new FlutterPluginGalleryEntry(sharedModel));
       res.add(new FlutterPackageGalleryEntry(sharedModel));
-      if (isNewProject) {
+      if (isCreatingProject) {
         res.add(new FlutterModuleGalleryEntry(sharedModel));
+      }
+      else if (isAndroidProject) {
+        res.add(new AddToAppModuleGalleryEntry(sharedModel));
+        res.add(new ImportFlutterModuleGalleryEntry(sharedModel));
       }
     }
     else {
-      // isNewProject == false
+      // isCreatingProject == false
+      res.add(new AddToAppModuleGalleryEntry(sharedModel));
       res.add(new ImportFlutterModuleGalleryEntry(sharedModel));
     }
     return res;
@@ -88,10 +88,15 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     protected FlutterProjectModel model(NewModuleModel npwModel, FlutterProjectType type) {
       if (!mySharedModel.isPresent().get()) {
-        mySharedModel.setValue(new FlutterModuleModel(type));
+        mySharedModel.setValue(createModel(type));
         mySharedModel.getValue().project().setValue(npwModel.getProject().getValue());
       }
       return mySharedModel.getValue();
+    }
+
+    protected FlutterProjectModel createModel(FlutterProjectType type) {
+      // Note: This object is shared with all templates and all their steps.
+      return new FlutterModuleModel(type);
     }
 
     @NotNull
@@ -343,6 +348,54 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
       return new FlutterProjectStep(
         model, FlutterBundle.message("module.wizard.import_module_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.IMPORT);
+    }
+  }
+
+  private static class AddToAppModuleGalleryEntry extends FlutterGalleryEntry {
+
+    private AddToAppModuleGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
+      super(sharedModel);
+    }
+
+    @Nullable
+    @Override
+    public Icon getIcon() {
+      return FlutterIcons.AndroidStudioNewModule; // TODO(messick) New icon here, or perhaps even better to change import.
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+      return FlutterBundle.message("module.wizard.module_title");
+    }
+
+    @Nullable
+    @Override // Not used by Flutter.
+    public String getDescription() {
+      return FlutterBundle.message("module.wizard.module_description");
+    }
+
+    @Nullable
+    @Override
+    public String getHelpText() {
+      return FlutterBundle.message("flutter.module.create.settings.help.project_type.description.module");
+    }
+
+    @NotNull
+    @Override
+    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
+      return new FlutterModuleStep(
+        model(model, FlutterProjectType.MODULE),
+        FlutterBundle.message("module.wizard.module_step_title"),
+        FlutterIcons.Flutter_64, FlutterProjectType.MODULE);
+    }
+
+    @NotNull
+    @Override // not used
+    public FlutterProjectStep createFlutterStep(@NotNull FlutterProjectModel model) {
+      return new FlutterProjectStep(
+        model, FlutterBundle.message("module.wizard.module_step_title"),
+        FlutterIcons.Flutter_64, FlutterProjectType.MODULE);
     }
   }
 }

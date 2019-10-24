@@ -357,6 +357,8 @@ public class AndroidUtils {
     // Get the PSI for settings.gradle. In IntelliJ it is just this, but Android Studio uses a VirtualFile.
     //GradleSettingsFile parsedSettings =
     //  BuildModelContext.create(project).getOrCreateSettingsFile(project);
+    // We need to use reflection to create the expression so this code can be compiled (and run) in all the
+    // code bases that are currently supported.
     boolean isAndroidStudio = FlutterUtils.isAndroidStudio();
     VirtualFile projectDir = requireNonNull(FlutterUtils.getProjectRoot(project));
     Object param = isAndroidStudio ? projectDir.findChild(SdkConstants.FN_SETTINGS_GRADLE) : project;

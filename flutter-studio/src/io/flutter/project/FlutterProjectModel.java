@@ -116,7 +116,13 @@ public class FlutterProjectModel extends WizardModel {
 
   public boolean isGeneratingAndroidX() {
     if (project().getValueOrNull() == null) {
-      return useAndroidX().get() && FlutterSdk.forPath(flutterSdk().get()).getVersion().isAndroidxSupported();
+      FlutterSdk sdk = FlutterSdk.forPath(flutterSdk().get());
+      if (sdk == null) {
+        return false;
+      }
+      else {
+        return useAndroidX().get() && sdk.getVersion().isAndroidxSupported();
+      }
     }
     else {
       return FlutterUtils.isAndroidxProject(project().getValue());
@@ -161,6 +167,10 @@ public class FlutterProjectModel extends WizardModel {
 
   public BoolValueProperty isOfflineSelected() {
     return myIsOfflineSelected;
+  }
+
+  public boolean shouldOpenNewWindow() {
+    return true;
   }
 
   @NotNull

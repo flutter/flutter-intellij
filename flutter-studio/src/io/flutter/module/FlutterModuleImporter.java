@@ -14,9 +14,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
+import io.flutter.project.FlutterProjectModel;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -26,34 +24,38 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTextPane;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * In an Android project, edit the settings.gradle and the app/build.gradle files as described in the add2app spec.
+ * In an Android project, edit the settings.gradle and the app/build.gradle files as described in the add-to-app spec.
  */
 public class FlutterModuleImporter {
   @SuppressWarnings("FieldCanBeLocal")
   private static String EDIT_INSTR_LINK =
     "https://github.com/flutter/flutter/wiki/Add-Flutter-to-existing-apps#make-the-host-app-depend-on-the-flutter-module";
 
-  private final FlutterModuleModel myModel;
+  private final FlutterProjectModel myModel;
   private boolean hasFinishedEditing = false;
   private StringWriter writer;
   private String myRelativePath;
   private String myNewline;
 
-  public FlutterModuleImporter(FlutterModuleModel model) {
+  public FlutterModuleImporter(FlutterProjectModel model) {
     myModel = model;
     myNewline = System.lineSeparator();
   }
 
   public void importModule() {
-    String location = myModel.projectLocation().get();
+    String location = myModel.projectLocation().get()+ "/" + myModel.projectName().get();
     VirtualFile moduleRoot = VfsUtil.findFileByIoFile(new File(location), true);
     assert (moduleRoot != null);
     assert (myModel.project().get().isPresent());
     Project androidProject = myModel.project().get().get();
     VirtualFile projectRoot = androidProject.getBaseDir();
-    myRelativePath = VfsUtilCore.findRelativePath(projectRoot.getParent(), moduleRoot, File.separatorChar);
+    myRelativePath = VfsUtilCore.findRelativePath(projectRoot, moduleRoot, File.separatorChar);
     if (myRelativePath == null) {
       showHowToEditDialog();
       return;
@@ -141,7 +143,7 @@ public class FlutterModuleImporter {
   private boolean writeSettingsModToBuffer() {
     writeLineToBuffer("setBinding(new Binding([gradle: this]))");
     writeLineToBuffer("evaluate(new File(");
-    writeLineToBuffer("  settingsDir.parentFile,");
+    writeLineToBuffer("  settingsDir,");
     writeLineToBuffer("  '" + myRelativePath + "'");
     writeLineToBuffer("))");
     return true;

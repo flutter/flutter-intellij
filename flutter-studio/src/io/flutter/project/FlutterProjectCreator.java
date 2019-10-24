@@ -181,22 +181,26 @@ public class FlutterProjectCreator {
       return;
     }
 
-    // Open the project window.
-    EnumSet<PlatformProjectOpenProcessor.Option> options = EnumSet.noneOf(PlatformProjectOpenProcessor.Option.class);
-    Project project = PlatformProjectOpenProcessor.doOpenProject(baseDir, projectToClose, -1, null, options);
+    Project project = null;
+    if (myModel.shouldOpenNewWindow()) {
+      // Open the project window.
+      EnumSet<PlatformProjectOpenProcessor.Option> options = EnumSet.noneOf(PlatformProjectOpenProcessor.Option.class);
+      project = PlatformProjectOpenProcessor.doOpenProject(baseDir, projectToClose, -1, null, options);
+    }
 
     if (project != null) {
       disableGradleProjectMigrationNotification(project);
       disableUserConfig(project);
+      Project proj = project;
       StartupManager.getInstance(project).registerPostStartupActivity(
         () -> ApplicationManager.getApplication().invokeLater(
           () -> {
             // We want to show the Project view, not the Android view since it doesn't make the Dart code visible.
-            DumbService.getInstance(project).runWhenSmart(
+            DumbService.getInstance(proj).runWhenSmart(
               () -> {
-                ProjectView.getInstance(project).changeView(ProjectViewPane.ID);
+                ProjectView.getInstance(proj).changeView(ProjectViewPane.ID);
                 // If the window still does not pop to top, see DartVmServiceDebugProcess.focusProject().
-                ProjectUtil.focusProjectWindow(project, true);
+                ProjectUtil.focusProjectWindow(proj, true);
               });
           }, ModalityState.defaultModalityState()));
     }
