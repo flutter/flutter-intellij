@@ -14,7 +14,7 @@ file.
 
 * Download and install the latest stable version of IntelliJ
   - [IntelliJ Downloads](https://www.jetbrains.com/idea/download/)
-  - either the community edition (free) or Ultimate will work. We are currently using 2018.1.
+  - either the community edition (free) or Ultimate will work.
 * Start IntelliJ
 * In the Project Structure dialog (`File | Project Structure`), select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure an IntelliJ Platform Plugin SDK
   - point it to the directory of your downloaded IntelliJ Community Edition installation (e.g, `IntelliJ IDEA CE.app/Contents` or `~/idea-IC-183.4886.37`)
