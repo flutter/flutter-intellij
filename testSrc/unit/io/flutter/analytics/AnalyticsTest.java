@@ -9,6 +9,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +54,12 @@ public class AnalyticsTest {
   @Test
   @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void testSendException() {
-    analytics.sendException(new UnsupportedOperationException("test operation"), true);
+    final Throwable throwable = new UnsupportedOperationException("test operation");
+    final StringWriter stringWriter = new StringWriter();
+    final PrintWriter printWriter = new PrintWriter(stringWriter);
+    throwable.printStackTrace(printWriter);
+
+    analytics.sendException(stringWriter.toString().trim(), true);
     assertEquals(1, transport.sentValues.size());
   }
 
