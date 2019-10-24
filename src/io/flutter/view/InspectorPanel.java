@@ -175,6 +175,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     this.defaultIcon = iconMaker.fromInfo("Default");
 
     refreshRateLimiter = new AsyncRateLimiter(REFRESH_FRAMES_PER_SECOND, this::refresh);
+    Disposer.register(this, refreshRateLimiter);
 
     final String parentTreeDisplayName = (parentTree != null) ? parentTree.treeType.displayName : null;
 
@@ -186,6 +187,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       treeType != InspectorService.FlutterTreeType.widget || (!isSummaryTree && !legacyMode),
       legacyMode
     );
+    Disposer.register(this, myRootsTree);
+
     // We want to reserve double clicking for navigation within the detail
     // tree and in the future for editing values in the tree.
     myRootsTree.setHorizontalAutoScrollingEnabled(false);
@@ -193,7 +196,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     myRootsTree.setToggleClickCount(0);
 
     myRootsTree.addTreeExpansionListener(new MyTreeExpansionListener());
-    InspectorTreeMouseListener mouseListener = new InspectorTreeMouseListener(this, myRootsTree);
+    final InspectorTreeMouseListener mouseListener = new InspectorTreeMouseListener(this, myRootsTree);
     myRootsTree.addMouseListener(mouseListener);
     myRootsTree.addMouseMotionListener(mouseListener);
 
@@ -324,10 +327,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   private static void expandAll(JTree tree, TreePath parent, boolean expandProperties) {
-    TreeNode node = (TreeNode)parent.getLastPathComponent();
+    final TreeNode node = (TreeNode)parent.getLastPathComponent();
     if (node.getChildCount() >= 0) {
-      for (Enumeration e = node.children(); e.hasMoreElements(); ) {
-        DefaultMutableTreeNode n = (DefaultMutableTreeNode)e.nextElement();
+      for (final Enumeration e = node.children(); e.hasMoreElements(); ) {
+        final DefaultMutableTreeNode n = (DefaultMutableTreeNode)e.nextElement();
         if (n.getUserObject() instanceof DiagnosticsNode) {
           final DiagnosticsNode diagonsticsNode = (DiagnosticsNode)n.getUserObject();
           if (!diagonsticsNode.childrenReady() ||
@@ -488,7 +491,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     selectedNode = null;
     lastExpanded = null;
 
-    selectedNode = null;
     subtreeRoot = null;
 
     getTreeModel().setRoot(new DefaultMutableTreeNode());
@@ -709,7 +711,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   private void selectAndShowNode(InspectorInstanceRef ref) {
-    DefaultMutableTreeNode node = valueToTreeNode.get(ref);
+    final DefaultMutableTreeNode node = valueToTreeNode.get(ref);
     if (node == null) {
       return;
     }
@@ -729,7 +731,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   protected void maybeUpdateValueUI(InspectorInstanceRef valueRef) {
-    DefaultMutableTreeNode node = valueToTreeNode.get(valueRef);
+    final DefaultMutableTreeNode node = valueToTreeNode.get(valueRef);
     if (node == null) {
       // The value isn't shown in the parent tree. Nothing to do.
       return;
@@ -864,7 +866,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     final CompletableFuture<DiagnosticsNode> pendingDetailsFuture =
       isSummaryTree ? selectionGroups.getNext().getSelection(getSelectedDiagnostic(), treeType, false) : null;
 
-    CompletableFuture<?> selectionsReady =
+    final CompletableFuture<?> selectionsReady =
       isSummaryTree ? CompletableFuture.allOf(pendingDetailsFuture, pendingSelectionFuture) : pendingSelectionFuture;
     selectionGroups.getNext().safeWhenComplete(selectionsReady, (ignored, error) -> {
       if (error != null) {
@@ -1097,7 +1099,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       return getDiagnosticNode(node);
     }
     while (node != null) {
-      DiagnosticsNode diagnostic = getDiagnosticNode(node);
+      final DiagnosticsNode diagnostic = getDiagnosticNode(node);
       if (diagnostic != null && parentTree.hasDiagnosticsValue(diagnostic.getValueRef())) {
         return parentTree.findDiagnosticsValue(diagnostic.getValueRef());
       }
@@ -1113,7 +1115,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     final DiagnosticsNode diagnostic = getSelectedDiagnostic();
     if (diagnostic != null) {
       if (isCreatedByLocalProject(diagnostic)) {
-        XSourcePosition position = diagnostic.getCreationLocation().getXSourcePosition();
+        final XSourcePosition position = diagnostic.getCreationLocation().getXSourcePosition();
         if (position != null) {
           position.createNavigatable(getFlutterApp().getProject()).navigate(false);
         }
@@ -1144,7 +1146,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     }
     else if (diagnostic != null) {
       // We can't rely on the details tree to update the selection on the server in this case.
-      DiagnosticsNode selection = detailsSelection != null ? detailsSelection : diagnostic;
+      final DiagnosticsNode selection = detailsSelection != null ? detailsSelection : diagnostic;
       selection.setSelection(selection.getValueRef(), true);
     }
   }
@@ -1182,11 +1184,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   @Override
   public void dispose() {
     flutterIsolateSubscription.dispose();
+
     // TODO(jacobr): actually implement.
     final InspectorService service = getInspectorService();
-    if (service != null) {
-      shutdownTree(false);
-    }
+    shutdownTree(false);
     // TODO(jacobr): verify subpanels are disposed as well.
   }
 

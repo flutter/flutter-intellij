@@ -70,6 +70,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private static class PerAppState extends AppState {
     ArrayList<InspectorPanel> inspectorPanels = new ArrayList<>();
     boolean sendRestartNotificationOnNextFrame = false;
+
+    public void dispose() {
+      for (InspectorPanel panel : inspectorPanels) {
+        Disposer.dispose(panel);
+      }
+    }
   }
 
   private Content emptyContent;
@@ -378,12 +384,19 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       @Override
       public void connectionClosed() {
         ApplicationManager.getApplication().invokeLater(() -> {
+          if (inspectorService != null) {
+            Disposer.dispose(inspectorService);
+          }
+
           if (toolWindow.isDisposed()) return;
           final ContentManager contentManager = toolWindow.getContentManager();
           onAppChanged(app);
           final PerAppState state = perAppViewState.remove(app);
-          if (state != null && state.content != null) {
-            contentManager.removeContent(state.content, true);
+          if (state != null) {
+            if (state.content != null) {
+              contentManager.removeContent(state.content, true);
+            }
+            state.dispose();
           }
           if (perAppViewState.isEmpty()) {
             // No more applications are running.

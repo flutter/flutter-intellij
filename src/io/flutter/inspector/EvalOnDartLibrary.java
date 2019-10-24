@@ -29,6 +29,8 @@ import java.util.function.Supplier;
  * Invoke methods from a specified Dart library using the observatory protocol.
  */
 public class EvalOnDartLibrary implements Disposable {
+  private static final Logger LOG = Logger.getInstance(EvalOnDartLibrary.class);
+
   private final StreamSubscription<IsolateRef> subscription;
   private String isolateId;
   private final VmService vmService;
@@ -36,7 +38,6 @@ public class EvalOnDartLibrary implements Disposable {
   private final Set<String> libraryNames;
   CompletableFuture<LibraryRef> libraryRef;
   private final Alarm myRequestsScheduler;
-  private static final Logger LOG = Logger.getInstance(EvalOnDartLibrary.class);
 
   /**
    * For robustness we ensure at most one pending request is issued at a time.
@@ -124,7 +125,6 @@ public class EvalOnDartLibrary implements Disposable {
   }
 
   public void dispose() {
-    myRequestsScheduler.dispose();
     subscription.dispose();
     // TODO(jacobr): complete all pending futures as cancelled?
   }

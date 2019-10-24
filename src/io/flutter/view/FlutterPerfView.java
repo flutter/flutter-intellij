@@ -126,7 +126,7 @@ public class FlutterPerfView implements Disposable {
               contentManager.removeContent(state.content, true);
             }
             if (state.disposable != null) {
-              state.disposable.dispose();
+              Disposer.dispose(state.disposable);
             }
           }
           if (perAppViewState.isEmpty()) {

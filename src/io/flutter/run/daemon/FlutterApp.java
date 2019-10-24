@@ -64,7 +64,7 @@ import java.util.function.Consumer;
 /**
  * A running Flutter app.
  */
-public class FlutterApp {
+public class FlutterApp implements Disposable {
   private static final Logger LOG = Logger.getInstance(FlutterApp.class);
   private static final Key<FlutterApp> FLUTTER_APP_KEY = new Key<>("FLUTTER_APP_KEY");
 
@@ -283,6 +283,8 @@ public class FlutterApp {
           reloadfraction = (int)Math.round(fraction);
         }
         FlutterInitializer.getAnalytics().sendEventMetric("workflow", "reloadFraction", reloadfraction);
+
+        Disposer.dispose(app);
       }
     });
 
@@ -746,6 +748,10 @@ public class FlutterApp {
   }
 
   public enum State {STARTING, STARTED, RELOADING, RESTARTING, TERMINATING, TERMINATED}
+
+  @Override
+  public void dispose() {
+  }
 }
 
 /**
