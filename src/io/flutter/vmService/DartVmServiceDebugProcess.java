@@ -3,8 +3,6 @@ package io.flutter.vmService;
 import com.google.gson.JsonObject;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.filters.OpenFileHyperlinkInfo;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleViewContentType;
@@ -15,7 +13,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.WindowManager;
@@ -28,10 +25,8 @@ import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
 import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
 import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.frame.XSuspendContext;
-import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import com.jetbrains.lang.dart.ide.runner.actions.DartPopFrameAction;
 import com.jetbrains.lang.dart.ide.runner.base.DartDebuggerEditorsProvider;
-import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashMap;
 import gnu.trove.TIntObjectHashMap;
@@ -77,8 +72,6 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
   @NotNull private final PositionMapper mapper;
   @Nullable protected String myRemoteProjectRootUri;
   private boolean myVmConnected = false;
-  @NotNull private final OpenDartObservatoryUrlAction myOpenObservatoryAction =
-    new OpenDartObservatoryUrlAction(null, () -> myVmConnected && !getSession().isStopped());
   private VmServiceWrapper myVmServiceWrapper;
   private String myLatestCurrentIsolateId;
 
@@ -115,19 +108,6 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
         final XStackFrame stackFrame = getSession().getCurrentStackFrame();
         myLatestCurrentIsolateId =
           stackFrame instanceof DartVmServiceStackFrame ? ((DartVmServiceStackFrame)stackFrame).getIsolateId() : null;
-      }
-    });
-
-    getProcessHandler().addProcessListener(new ProcessAdapter() {
-      @Override
-      public void onTextAvailable(@NotNull final ProcessEvent event, @NotNull final Key outputType) {
-        final String prefix = DartConsoleFilter.OBSERVATORY_LISTENING_ON + "http://";
-        if (event.getText().startsWith(prefix)) {
-          getProcessHandler().removeProcessListener(this);
-
-          final String urlBase = event.getText().substring(prefix.length());
-          myOpenObservatoryAction.setUrl("http://" + urlBase);
-        }
       }
     });
 
@@ -381,7 +361,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
   }
 
   public CompletableFuture<?> whenIsolateResumed(String isolateId) {
-    CompletableFuture<?> future = mySuspendedIsolateIds.get(isolateId);
+    final CompletableFuture<?> future = mySuspendedIsolateIds.get(isolateId);
     if (future == null) {
       // Isolate wasn't actually suspended.
       return CompletableFuture.completedFuture(null);
@@ -437,7 +417,6 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
                                         @NotNull final DefaultActionGroup settings) {
     // For Run tool window this action is added in DartCommandLineRunningState.createActions()
     topToolbar.addSeparator();
-    topToolbar.addAction(myOpenObservatoryAction);
     topToolbar.addAction(new DartPopFrameAction());
   }
 
@@ -466,7 +445,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
 
   @Nullable
   public XDebuggerEvaluator getEvaluator() {
-    XStackFrame frame = getSession().getCurrentStackFrame();
+    final XStackFrame frame = getSession().getCurrentStackFrame();
     if (frame != null) {
       return frame.getEvaluator();
     }
@@ -622,7 +601,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
 
     for (List<Integer> lineAndPairs : tokenPosTable) {
       final Iterator<Integer> iterator = lineAndPairs.iterator();
-      int line = Math.max(0, iterator.next() - 1);
+      final int line = Math.max(0, iterator.next() - 1);
       while (iterator.hasNext()) {
         final int tokenPos = iterator.next();
         final int column = Math.max(0, iterator.next() - 1);
@@ -631,16 +610,6 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
     }
 
     return result;
-  }
-
-  @NotNull
-  private static String threeSlashize(@NotNull final String uri) {
-    if (!uri.startsWith("file:")) return uri;
-    if (uri.startsWith("file:///")) return uri;
-    if (uri.startsWith("file://")) return "file:///" + uri.substring("file://".length());
-    if (uri.startsWith("file:/")) return "file:///" + uri.substring("file:/".length());
-    if (uri.startsWith("file:")) return "file:///" + uri.substring("file:".length());
-    return uri;
   }
 
   private static void focusProject(@NotNull Project project) {
