@@ -54,9 +54,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
   private final EventStream<Double> displayRefreshRateStream;
 
-  private boolean isRunning;
-  private int polledCount;
-
   private volatile boolean firstFrameEventReceived = false;
   private final VmService vmService;
 
@@ -78,7 +75,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
     this.heapMonitor = new HeapMonitor(app.getFlutterDebugProcess().getVmServiceWrapper());
     this.flutterFramesMonitor = new FlutterFramesMonitor(this, vmService);
-    this.polledCount = 0;
     flutterIsolateRefStream = new EventStream<>();
     displayRefreshRateStream = new EventStream<>();
 
@@ -145,6 +141,11 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
     });
   }
 
+  @NotNull
+  public HeapMonitor getHeapMonitor() {
+    return heapMonitor;
+  }
+
   public void addRegisteredExtensionRPCs(Isolate isolate, boolean attach) {
     // If attach was called, there is a risk we may never receive a
     // Flutter.Frame or Flutter.FirstFrame event so we need to query the
@@ -182,12 +183,9 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
   /**
    * Start the Perf service.
    */
-  public void start() {
-    if (!isRunning) {
-      // Start polling.
-      heapMonitor.start();
-      isRunning = true;
-    }
+  private void startHeapMonitor() {
+    // Start polling.
+    heapMonitor.start();
   }
 
   /**
@@ -216,11 +214,8 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
   /**
    * Stop the Perf service.
    */
-  public void stop() {
-    if (isRunning) {
-      heapMonitor.stop();
-      vmService.removeVmServiceListener(myVmServiceListener);
-    }
+  private void stopHeapMonitor() {
+    heapMonitor.stop();
   }
 
   @Override
@@ -229,11 +224,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
   }
 
   private void onVmConnectionClosed() {
-    if (isRunning) {
-      heapMonitor.stop();
-    }
-
-    isRunning = false;
+    heapMonitor.stop();
   }
 
   private void setFlutterIsolate(IsolateRef ref) {
@@ -474,11 +465,9 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
    */
   public void addHeapListener(@NotNull HeapListener listener) {
     final boolean hadListeners = heapMonitor.hasListeners();
-
     heapMonitor.addListener(listener);
-
     if (!hadListeners) {
-      start();
+      startHeapMonitor();
     }
   }
 
@@ -487,9 +476,8 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
    */
   public void removeHeapListener(@NotNull HeapListener listener) {
     heapMonitor.removeListener(listener);
-
     if (!heapMonitor.hasListeners()) {
-      stop();
+      stopHeapMonitor();
     }
   }
 
@@ -684,32 +672,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
       }
     );
     return ret;
-  }
-
-  public void addPollingClient() {
-    polledCount++;
-    resumePolling();
-  }
-
-  public void removePollingClient() {
-    if (polledCount > 0) polledCount--;
-    pausePolling();
-  }
-
-  private boolean anyPollingClients() {
-    return polledCount > 0;
-  }
-
-  private void pausePolling() {
-    if (isRunning && !anyPollingClients()) {
-      heapMonitor.pausePolling();
-    }
-  }
-
-  private void resumePolling() {
-    if (isRunning && anyPollingClients()) {
-      heapMonitor.resumePolling();
-    }
   }
 
   @Override

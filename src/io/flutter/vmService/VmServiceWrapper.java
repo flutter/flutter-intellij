@@ -173,7 +173,7 @@ public class VmServiceWrapper implements Disposable {
 
   public CompletableFuture<Isolate> getCachedIsolate(@NotNull final String isolateId) {
     return myIsolatesInfo.getCachedIsolate(isolateId, () -> {
-      CompletableFuture<Isolate> isolateFuture = new CompletableFuture<>();
+      final CompletableFuture<Isolate> isolateFuture = new CompletableFuture<>();
       getIsolate(isolateId, new GetIsolateConsumer() {
 
         @Override
@@ -229,7 +229,7 @@ public class VmServiceWrapper implements Disposable {
     final boolean newIsolate = myIsolatesInfo.addIsolate(isolateRef);
     // Just to make sure that the main isolate is not handled twice, both from handleDebuggerConnected() and DartVmServiceListener.received(PauseStart)
     if (newIsolate) {
-      XDebugSessionImpl session = (XDebugSessionImpl)myDebugProcess.getSession();
+      final XDebugSessionImpl session = (XDebugSessionImpl)myDebugProcess.getSession();
       ApplicationManager.getApplication().runReadAction(() -> {
         session.reset();
         session.initBreakpoints();
@@ -271,10 +271,10 @@ public class VmServiceWrapper implements Disposable {
     doSetBreakpointsForIsolate(myBreakpointHandler.getXBreakpoints(), isolateRef.getId(), () -> {
       myIsolatesInfo.setBreakpointsSet(isolateRef);
     });
-    FlutterApp app = FlutterApp.fromEnv(myDebugProcess.getExecutionEnvironment());
+    final FlutterApp app = FlutterApp.fromEnv(myDebugProcess.getExecutionEnvironment());
     // TODO(messick) Consider replacing this test with an assert; could interfere with setExceptionPauseMode().
     if (app != null) {
-      VMServiceManager service = app.getVMServiceManager();
+      final VMServiceManager service = app.getVMServiceManager();
       if (service != null) {
         service.addRegisteredExtensionRPCs(isolate, true);
       }

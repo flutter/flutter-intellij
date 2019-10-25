@@ -59,10 +59,10 @@ public class PerfMemoryTab extends JBPanel implements InspectorTabPanel {
     }
 
     if (visible) {
-      app.getVMServiceManager().addPollingClient();
+      app.getVMServiceManager().getHeapMonitor().addPollingClient();
     }
     else {
-      app.getVMServiceManager().removePollingClient();
+      app.getVMServiceManager().getHeapMonitor().removePollingClient();
     }
   }
 }
