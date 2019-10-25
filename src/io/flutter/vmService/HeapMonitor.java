@@ -147,8 +147,12 @@ public class HeapMonitor {
 
         @Override
         public void onError(RPCError error) {
+          // TODO(devoncarew): Remove rpcInternalError once https://github.com/dart-lang/webdev/issues/781
+          // lands and rolls into flutter.
+          final int rpcInternalError = -32603;
+          final int rpcMethodNotFound = -32601;
           // {"jsonrpc":"2.0","error":{"code":-32603,"message":"UnimplementedError..."}}
-          if (error.getCode() == -32603) {
+          if (error.getCode() == rpcInternalError || error.getCode() == rpcMethodNotFound) {
             handleMemoryApiNotSupported();
           }
 
