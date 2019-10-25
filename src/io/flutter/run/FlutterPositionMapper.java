@@ -43,11 +43,12 @@ import java.util.Set;
  * <p>
  * Used when setting breakpoints, stepping through code, and so on while debugging.
  */
-public class PositionMapper implements DartVmServiceDebugProcess.PositionMapper {
+public class FlutterPositionMapper implements DartVmServiceDebugProcess.PositionMapper {
+  private static final Logger LOG = Logger.getInstance(FlutterPositionMapper.class);
+
   @NotNull
   private final Project project;
 
-  // TODO(skybrian) for Bazel this should be a list of source roots.
   /**
    * The directory containing the Flutter application's source code.
    * <p>
@@ -95,10 +96,10 @@ public class PositionMapper implements DartVmServiceDebugProcess.PositionMapper 
    */
   private final Map<String, ObservatoryFile.Cache> fileCache = new THashMap<>();
 
-  public PositionMapper(@NotNull Project project,
-                        @NotNull VirtualFile sourceRoot,
-                        @NotNull DartUrlResolver resolver,
-                        @Nullable Analyzer analyzer) {
+  public FlutterPositionMapper(@NotNull Project project,
+                               @NotNull VirtualFile sourceRoot,
+                               @NotNull DartUrlResolver resolver,
+                               @Nullable Analyzer analyzer) {
 
     this.project = project;
     this.sourceRoot = sourceRoot;
@@ -195,9 +196,6 @@ public class PositionMapper implements DartVmServiceDebugProcess.PositionMapper 
       results.add(uriByIde);
       results.add(threeSlashize(new File(file.getPath()).toURI().toString()));
     }
-
-    // straight path - used by some VM embedders
-    results.add(file.getPath());
 
     // package: (if applicable)
     if (analyzer != null) {
@@ -348,8 +346,6 @@ public class PositionMapper implements DartVmServiceDebugProcess.PositionMapper 
       analyzer.close();
     }
   }
-
-  private static final Logger LOG = Logger.getInstance(PositionMapper.class);
 
   /**
    * Wraps a Dart analysis server and execution id for doing URI resolution for a particular Flutter app.

@@ -36,7 +36,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Verifies that we can map file locations.
  */
-public class PositionMapperTest {
+public class FlutterPositionMapperTest {
   private final FakeScriptProvider scripts = new FakeScriptProvider();
 
   @Rule
@@ -61,7 +61,7 @@ public class PositionMapperTest {
     final VirtualFile main = tmp.writeFile("root/lib/main.dart", "");
     final VirtualFile hello = tmp.writeFile("root/lib/hello.dart", "");
 
-    final PositionMapper mapper = setUpMapper(main, null);
+    final FlutterPositionMapper mapper = setUpMapper(main, null);
     mapper.onLibrariesDownloaded(ImmutableList.of(
       makeLibraryRef("some/stuff/to/ignore/lib/main.dart")
     ));
@@ -82,7 +82,7 @@ public class PositionMapperTest {
     final VirtualFile main = tmp.writeFile("root/lib/main.dart", "");
     final VirtualFile hello = tmp.writeFile("root/lib/hello.dart", "");
 
-    final PositionMapper mapper = setUpMapper(main, "remote:root");
+    final FlutterPositionMapper mapper = setUpMapper(main, "remote:root");
 
     scripts.addScript("1", "2", "remote:root/lib/hello.dart", ImmutableList.of(new Line(10, 123, 1)));
 
@@ -93,9 +93,9 @@ public class PositionMapperTest {
   }
 
   @NotNull
-  private PositionMapper setUpMapper(VirtualFile contextFile, String remoteBaseUri) {
+  private FlutterPositionMapper setUpMapper(VirtualFile contextFile, String remoteBaseUri) {
     final DartUrlResolver resolver = new DartUrlResolverImpl(fixture.getProject(), contextFile);
-    final PositionMapper mapper = new PositionMapper(fixture.getProject(), sourceRoot, resolver, null);
+    final FlutterPositionMapper mapper = new FlutterPositionMapper(fixture.getProject(), sourceRoot, resolver, null);
     mapper.onConnect(scripts, remoteBaseUri);
     return mapper;
   }

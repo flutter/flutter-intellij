@@ -301,21 +301,25 @@ public class VmServiceWrapper implements Disposable {
     final AtomicInteger counter = new AtomicInteger(xBreakpoints.size());
 
     for (final XLineBreakpoint<XBreakpointProperties> xBreakpoint : xBreakpoints) {
-      addBreakpoint(isolateId, xBreakpoint.getSourcePosition(), new VmServiceConsumers.BreakpointConsumerWrapper() {
+      addBreakpoint(isolateId, xBreakpoint.getSourcePosition(), new VmServiceConsumers.BreakpointsConsumer() {
         @Override
         void sourcePositionNotApplicable() {
-          checkDone();
-        }
-
-        @Override
-        public void received(Breakpoint vmBreakpoint) {
-          myBreakpointHandler.vmBreakpointAdded(xBreakpoint, isolateId, vmBreakpoint);
-          checkDone();
-        }
-
-        @Override
-        public void onError(RPCError error) {
           myBreakpointHandler.breakpointFailed(xBreakpoint);
+
+          checkDone();
+        }
+
+        @Override
+        void received(List<Breakpoint> breakpointResponses, List<RPCError> errorResponses) {
+          if (breakpointResponses.size() > 0) {
+            for (Breakpoint breakpoint : breakpointResponses) {
+              myBreakpointHandler.vmBreakpointAdded(xBreakpoint, isolateId, breakpoint);
+            }
+          }
+          else if (errorResponses.size() > 0) {
+            myBreakpointHandler.breakpointFailed(xBreakpoint);
+          }
+
           checkDone();
         }
 
@@ -330,7 +334,7 @@ public class VmServiceWrapper implements Disposable {
 
   public void addBreakpoint(@NotNull final String isolateId,
                             @Nullable final XSourcePosition position,
-                            @NotNull final VmServiceConsumers.BreakpointConsumerWrapper consumer) {
+                            @NotNull final VmServiceConsumers.BreakpointsConsumer consumer) {
     if (position == null || position.getFile().getFileType() != DartFileType.INSTANCE) {
       consumer.sourcePositionNotApplicable();
       return;
@@ -338,8 +342,33 @@ public class VmServiceWrapper implements Disposable {
 
     addRequest(() -> {
       final int line = position.getLine() + 1;
-      for (String uri : myDebugProcess.getUrisForFile(position.getFile())) {
-        myVmService.addBreakpointWithScriptUri(isolateId, uri, line, consumer);
+
+      final Collection<String> scriptUris = myDebugProcess.getUrisForFile(position.getFile());
+      final List<Breakpoint> breakpointResponses = new ArrayList<>();
+      final List<RPCError> errorResponses = new ArrayList<>();
+
+      for (String uri : scriptUris) {
+        myVmService.addBreakpointWithScriptUri(isolateId, uri, line, new BreakpointConsumer() {
+          @Override
+          public void received(Breakpoint response) {
+            breakpointResponses.add(response);
+
+            checkDone();
+          }
+
+          @Override
+          public void onError(RPCError error) {
+            errorResponses.add(error);
+
+            checkDone();
+          }
+
+          private void checkDone() {
+            if (scriptUris.size() == breakpointResponses.size() + errorResponses.size()) {
+              consumer.received(breakpointResponses, errorResponses);
+            }
+          }
+        });
       }
     });
   }
@@ -347,18 +376,17 @@ public class VmServiceWrapper implements Disposable {
   public void addBreakpointForIsolates(@NotNull final XLineBreakpoint<XBreakpointProperties> xBreakpoint,
                                        @NotNull final Collection<IsolatesInfo.IsolateInfo> isolateInfos) {
     for (final IsolatesInfo.IsolateInfo isolateInfo : isolateInfos) {
-      addBreakpoint(isolateInfo.getIsolateId(), xBreakpoint.getSourcePosition(), new VmServiceConsumers.BreakpointConsumerWrapper() {
+      addBreakpoint(isolateInfo.getIsolateId(), xBreakpoint.getSourcePosition(), new VmServiceConsumers.BreakpointsConsumer() {
         @Override
         void sourcePositionNotApplicable() {
+          myBreakpointHandler.breakpointFailed(xBreakpoint);
         }
 
         @Override
-        public void received(Breakpoint vmBreakpoint) {
-          myBreakpointHandler.vmBreakpointAdded(xBreakpoint, isolateInfo.getIsolateId(), vmBreakpoint);
-        }
-
-        @Override
-        public void onError(RPCError error) {
+        void received(List<Breakpoint> breakpointResponses, List<RPCError> errorResponses) {
+          for (Breakpoint breakpoint : breakpointResponses) {
+            myBreakpointHandler.vmBreakpointAdded(xBreakpoint, isolateInfo.getIsolateId(), breakpoint);
+          }
         }
       });
     }
@@ -377,20 +405,17 @@ public class VmServiceWrapper implements Disposable {
     doSetBreakpointsForIsolate(myBreakpointHandler.getXBreakpoints(), isolateId, onFinished);
   }
 
-  public void addTemporaryBreakpoint(@NotNull final XSourcePosition position,
-                                     @NotNull final String isolateId) {
-    addBreakpoint(isolateId, position, new VmServiceConsumers.BreakpointConsumerWrapper() {
+  public void addTemporaryBreakpoint(@NotNull final XSourcePosition position, @NotNull final String isolateId) {
+    addBreakpoint(isolateId, position, new VmServiceConsumers.BreakpointsConsumer() {
       @Override
       void sourcePositionNotApplicable() {
       }
 
       @Override
-      public void received(Breakpoint vmBreakpoint) {
-        myBreakpointHandler.temporaryBreakpointAdded(isolateId, vmBreakpoint);
-      }
-
-      @Override
-      public void onError(RPCError error) {
+      void received(List<Breakpoint> breakpointResponses, List<RPCError> errorResponses) {
+        for (Breakpoint breakpoint : breakpointResponses) {
+          myBreakpointHandler.temporaryBreakpointAdded(isolateId, breakpoint);
+        }
       }
     });
   }

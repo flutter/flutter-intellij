@@ -34,7 +34,7 @@ import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
-import io.flutter.run.PositionMapper;
+import io.flutter.run.FlutterPositionMapper;
 import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.run.test.FlutterTestRunner;
 import io.flutter.settings.FlutterSettings;
@@ -81,7 +81,7 @@ public class BazelTestRunner extends GenericProgramRunner {
 
     // Set up source file mapping.
     final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), launcher.getTestFile());
-    final PositionMapper.Analyzer analyzer = PositionMapper.Analyzer.create(env.getProject(), launcher.getTestFile());
+    final FlutterPositionMapper.Analyzer analyzer = FlutterPositionMapper.Analyzer.create(env.getProject(), launcher.getTestFile());
 
     final BazelPositionMapper mapper =
       new BazelPositionMapper(env.getProject(), env.getProject().getBaseDir()/*this is different, incorrect?*/, resolver, analyzer,
@@ -240,7 +240,7 @@ public class BazelTestRunner extends GenericProgramRunner {
     }
   }
 
-  private static final class BazelPositionMapper extends PositionMapper {
+  private static final class BazelPositionMapper extends FlutterPositionMapper {
 
     @NotNull final Connector connector;
 

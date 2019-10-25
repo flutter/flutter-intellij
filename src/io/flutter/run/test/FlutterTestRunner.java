@@ -24,7 +24,7 @@ import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
-import io.flutter.run.PositionMapper;
+import io.flutter.run.FlutterPositionMapper;
 import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
@@ -73,8 +73,8 @@ public class FlutterTestRunner extends GenericProgramRunner {
 
     // Set up source file mapping.
     final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), launcher.getTestFileOrDir());
-    final PositionMapper.Analyzer analyzer = PositionMapper.Analyzer.create(env.getProject(), launcher.getTestFileOrDir());
-    final PositionMapper mapper = new PositionMapper(env.getProject(), launcher.getPubRoot().getRoot(), resolver, analyzer);
+    final FlutterPositionMapper.Analyzer analyzer = FlutterPositionMapper.Analyzer.create(env.getProject(), launcher.getTestFileOrDir());
+    final FlutterPositionMapper mapper = new FlutterPositionMapper(env.getProject(), launcher.getPubRoot().getRoot(), resolver, analyzer);
 
     // Create the debug session.
     final XDebuggerManager manager = XDebuggerManager.getInstance(env.getProject());
