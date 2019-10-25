@@ -13,15 +13,12 @@ import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class HeapMonitor {
   private static final Logger LOG = Logger.getInstance(HeapMonitor.class);
 
-  private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+  private static final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
   private static final int POLL_PERIOD_IN_MS = 1000;
 
@@ -89,8 +86,6 @@ public class HeapMonitor {
 
   @NotNull private final VmServiceWrapper vmServiceWrapper;
 
-  private boolean isPolling;
-
   public HeapMonitor(@NotNull VmServiceWrapper vmServiceWrapper) {
     this.vmServiceWrapper = vmServiceWrapper;
   }
@@ -108,24 +103,23 @@ public class HeapMonitor {
   }
 
   public void start() {
-    isPolling = true;
-    pollingScheduler = executor.scheduleAtFixedRate(this::poll, 0, POLL_PERIOD_IN_MS, TimeUnit.MILLISECONDS);
+    pollingScheduler = executor.scheduleWithFixedDelay(this::poll, 100, POLL_PERIOD_IN_MS, TimeUnit.MILLISECONDS);
   }
 
-  public void pausePolling() {
-    isPolling = false;
+  private int pollingClients = 0;
+
+  public void addPollingClient() {
+    pollingClients++;
   }
 
-  public void resumePolling() {
-    isPolling = true;
+  public void removePollingClient() {
+    pollingClients--;
   }
 
   private void poll() {
-    if (!isPolling) {
-      return;
+    if (pollingClients > 0) {
+      collectMemoryUsage();
     }
-
-    collectMemoryUsage();
   }
 
   private void collectMemoryUsage() {
@@ -134,40 +128,52 @@ public class HeapMonitor {
       return;
     }
 
-    // Stash count so we can know when we've processed them all.
-    final int isolateCount = isolateRefs.size();
-
     final List<MemoryUsage> memoryUsage = new ArrayList<>();
+
+    final CountDownLatch latch = new CountDownLatch(isolateRefs.size());
 
     for (IsolateRef isolateRef : isolateRefs) {
       vmServiceWrapper.getVmService().getMemoryUsage(isolateRef.getId(), new GetMemoryUsageConsumer() {
-        private int errorCount = 0;
-
         @Override
         public void received(MemoryUsage usage) {
           memoryUsage.add(usage);
-
-          // Only update when we're done collecting from all isolates.
-          if ((memoryUsage.size() + errorCount) == isolateCount) {
-            notifyListeners(memoryUsage);
-          }
+          latch.countDown();
         }
 
         @Override
         public void received(Sentinel sentinel) {
-          errorCount++;
+          latch.countDown();
         }
 
         @Override
         public void onError(RPCError error) {
-          errorCount++;
+          // TODO(devoncarew): Remove rpcInternalError once https://github.com/dart-lang/webdev/issues/781
+          // lands and rolls into flutter.
+          final int rpcInternalError = -32603;
+          final int rpcMethodNotFound = -32601;
+          // {"jsonrpc":"2.0","error":{"code":-32603,"message":"UnimplementedError..."}}
+          if (error.getCode() == rpcInternalError || error.getCode() == rpcMethodNotFound) {
+            handleMemoryApiNotSupported();
+          }
+
+          latch.countDown();
         }
       });
     }
+
+    try {
+      latch.await();
+    }
+    catch (InterruptedException ignored) {
+    }
+
+    if (pollingScheduler != null) {
+      heapListeners.forEach(listener -> listener.handleMemoryUsage(memoryUsage));
+    }
   }
 
-  private void notifyListeners(List<MemoryUsage> memoryUsage) {
-    heapListeners.forEach(listener -> listener.handleMemoryUsage(memoryUsage));
+  private void handleMemoryApiNotSupported() {
+    stop();
   }
 
   public void stop() {
