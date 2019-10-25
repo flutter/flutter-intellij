@@ -69,6 +69,10 @@ public class EvalOnDartLibrary implements Disposable {
       return CompletableFuture.completedFuture(null);
     }
 
+    if (myRequestsScheduler.isDisposed()) {
+      return CompletableFuture.completedFuture(null);
+    }
+
     // Future that completes when the request has finished.
     final CompletableFuture<T> response = new CompletableFuture<>();
     // This is an optimization to avoid sending stale requests across the wire.
