@@ -227,7 +227,7 @@ public class LaunchState extends CommandLineState {
     throws ExecutionException {
 
     final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), sourceLocation);
-    final PositionMapper mapper = createPositionMapper(env, app, resolver);
+    final FlutterPositionMapper mapper = createPositionMapper(env, app, resolver);
 
     final XDebuggerManager manager = XDebuggerManager.getInstance(env.getProject());
     final XDebugSession session = manager.startSession(env, new XDebugProcessStarter() {
@@ -246,12 +246,12 @@ public class LaunchState extends CommandLineState {
   }
 
   @NotNull
-  private PositionMapper createPositionMapper(@NotNull ExecutionEnvironment env,
-                                              @NotNull FlutterApp app,
-                                              @NotNull DartUrlResolver resolver) {
-    final PositionMapper.Analyzer analyzer;
+  private FlutterPositionMapper createPositionMapper(@NotNull ExecutionEnvironment env,
+                                                     @NotNull FlutterApp app,
+                                                     @NotNull DartUrlResolver resolver) {
+    final FlutterPositionMapper.Analyzer analyzer;
     if (app.getMode() == RunMode.DEBUG) {
-      analyzer = PositionMapper.Analyzer.create(env.getProject(), sourceLocation);
+      analyzer = FlutterPositionMapper.Analyzer.create(env.getProject(), sourceLocation);
     }
     else {
       analyzer = null; // Don't need analysis server just to run.
@@ -262,7 +262,7 @@ public class LaunchState extends CommandLineState {
     final VirtualFile pubspec = resolver.getPubspecYamlFile();
     final VirtualFile sourceRoot = pubspec != null ? pubspec.getParent() : workDir;
 
-    return new PositionMapper(env.getProject(), sourceRoot, resolver, analyzer);
+    return new FlutterPositionMapper(env.getProject(), sourceRoot, resolver, analyzer);
   }
 
   @NotNull
