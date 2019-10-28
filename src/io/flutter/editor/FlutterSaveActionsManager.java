@@ -122,6 +122,10 @@ public class FlutterSaveActionsManager {
     final String filePath = file.getPath();
     final SourceFileEdit fileEdit = DartAnalysisServerService.getInstance(myProject).edit_organizeDirectives(filePath);
 
+    if (myProject.isDisposed()) {
+      return;
+    }
+
     if (fileEdit != null) {
       ApplicationManager.getApplication().invokeLater(() -> new WriteCommandAction.Simple(myProject) {
         @Override
@@ -157,6 +161,10 @@ public class FlutterSaveActionsManager {
       if (reSave) {
         FileDocumentManager.getInstance().saveDocument(document);
       }
+      return;
+    }
+
+    if (myProject.isDisposed()) {
       return;
     }
 
