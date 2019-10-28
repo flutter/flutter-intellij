@@ -38,6 +38,8 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.IdeFrame;
+import com.intellij.openapi.wm.ToolWindowId;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.platform.PlatformProjectOpenProcessor;
 import io.flutter.FlutterUtils;
 import io.flutter.FlutterMessages;
@@ -198,9 +200,8 @@ public class FlutterProjectCreator {
             // We want to show the Project view, not the Android view since it doesn't make the Dart code visible.
             DumbService.getInstance(proj).runWhenSmart(
               () -> {
+                ToolWindowManager.getInstance(proj).getToolWindow(ToolWindowId.PROJECT_VIEW).activate(null);
                 ProjectView.getInstance(proj).changeView(ProjectViewPane.ID);
-                // If the window still does not pop to top, see DartVmServiceDebugProcess.focusProject().
-                ProjectUtil.focusProjectWindow(proj, true);
               });
           }, ModalityState.defaultModalityState()));
     }
