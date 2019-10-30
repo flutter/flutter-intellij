@@ -29,6 +29,35 @@
 
   <change-notes>
     <![CDATA[
+<h2>41.0</h2>
+<ul>
+  <li>Remove support for file path breakpoints; handle multiple vm breakpoints better (#4019)</li>
+  <li>Force Android Studio to show the Project view (#4031)</li>
+  <li>Build for ADS4 canary 1 (#4017)</li>
+  <li>Check for project disposed during format on save (#4022)</li>
+  <li>Remove an Observatory link handler from DartVmServiceDebugProcess.java (#4018)</li>
+  <li>Detect whether the VM service connection supports the getMemoryUsage API (#4016)</li>
+  <li>Don't invoke eval when shutting down (#4015)</li>
+  <li>Re-enable our disabled tests (#4013)</li>
+  <li>Co-edit module created in Android Studio (#4004)</li>
+  <li>Address several warnings in the IntelliJ log about leaked resources (#3999)</li>
+  <li>Remove an unused method (#4009)</li>
+  <li>Update CONTRIBUTING.md</li>
+  <li>Change the inspector tool window to not only show when an app is running (#4000)</li>
+  <li>Remove the Performance tab from the Inspector; remove Observatory actions (#4008)</li>
+  <li>Hide the custom logging view setting (#4005)</li>
+  <li>Fix a project assert in the Flutter editor notification (#3994)</li>
+  <li>Address a few warnings about 'mostly idle daemon process' (#3995)</li>
+  <li>Add more info to eval() exceptions (#3992)</li>
+  <li>Fix an NPE when switching platforms (#3990)</li>
+  <li>Fix an NPE in the feedback button (#3989)</li>
+  <li>Rename two wrap with Flutter actions (#3988)</li>
+  <li>Remove support for the older <code>_Logging</code> event (#3986)</li>
+  <li>Various bits of code cleanup (#3981)</li>
+  <li>Remove two reload and restart keybindings (#3979)</li>
+  <li>Fix the offset of console hyperlink detection (#3978)</li>
+  <li>Fix an issue where non-ephemeral device selection wouldn't persist (#3977)</li>
+</ul>
 <h2>40.2</h2>
 <ul>
   <li>Increase version range for AS 3.6 beta 1 (#3973)</li>
