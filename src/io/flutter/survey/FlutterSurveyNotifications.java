@@ -31,7 +31,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-// TODO(pq): remove for M39 / post: 2019/08/24 18:00 PST.
 public class FlutterSurveyNotifications {
   private static final int NOTIFICATION_DELAY_IN_SECS = 3;
 
@@ -39,10 +38,13 @@ public class FlutterSurveyNotifications {
   private static final long CHECK_INTERVAL_IN_MS = TimeUnit.HOURS.toMillis(40);
 
   private static final String SURVEY_ACTION_TEXT = "Take survey";
-  private static final String SURVEY_TITLE = "Help improve Flutter! Take our Q3 survey.";
+  private static final String SURVEY_TITLE = "Help improve Flutter! Take our Q4 survey.";
 
-  private static final String SURVEY_TAKEN = "io.flutter.survey.2019.q3.alreadyTaken";
-  private static final String SURVEY_URL = "https://google.qualtrics.com/jfe/form/SV_3kiGXYfYOfXUjB3?Source=IntelliJ";
+  private static final String ANALYTICS_OPT_IN_DETAILS =
+    "By clicking on this link you agree to share feature usage along with the survey responses.";
+
+  private static final String SURVEY_TAKEN = "io.flutter.survey.2019.q4.alreadyTaken";
+  private static final String SURVEY_URL = "https://google.qualtrics.com/jfe/form/SV_5BhR2R8DZIEE6dn?Source=IntelliJ";
 
   private static long SURVEY_START_MS_EPOCH;
   private static long SURVEY_END_MS_EPOCH;
@@ -51,8 +53,8 @@ public class FlutterSurveyNotifications {
     final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
     dateFormat.setTimeZone(TimeZone.getTimeZone("PST"));
     try {
-      SURVEY_START_MS_EPOCH = dateFormat.parse("2019/08/12 9:00").getTime();
-      SURVEY_END_MS_EPOCH = dateFormat.parse("2019/08/24 18:00").getTime();
+      SURVEY_START_MS_EPOCH = dateFormat.parse("2019/11/22 9:00").getTime();
+      SURVEY_END_MS_EPOCH = dateFormat.parse("2019/12/01 18:00").getTime();
     }
     catch (ParseException e) {
       // Shouldn't happen.
@@ -114,7 +116,7 @@ public class FlutterSurveyNotifications {
 
     final boolean reportAnalytics = FlutterInitializer.getCanReportAnalytics();
     final String notificationContents = reportAnalytics ?
-                                        "By clicking on this link you agree to share feature usage along with the survey responses." : null;
+                                        ANALYTICS_OPT_IN_DETAILS : null;
 
     final Notification notification = new Notification(
       FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
