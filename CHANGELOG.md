@@ -20,7 +20,7 @@
 - Fix an NPE when switching platforms (#3990)
 - Fix an NPE in the feedback button (#3989)
 - Rename two wrap with Flutter actions (#3988)
-- Remove support for the older _Logging event (#3986)
+- Remove support for the older \_Logging event (#3986)
 - Various bits of code cleanup (#3981)
 - Remove two reload and restart keybindings (#3979)
 - Fix the offset of console hyperlink detection (#3978)
