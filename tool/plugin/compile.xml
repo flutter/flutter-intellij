@@ -8,7 +8,8 @@ Include -D arguments to define these properties: idea.product, idea.version.
 
 <project
     name="plugin-compile"
-    default="compile">
+    default="compile"
+    xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 
   <property environment="env"/>
   <property name="idea.product" value="ideaIC"/>
@@ -32,6 +33,19 @@ Include -D arguments to define these properties: idea.product, idea.version.
     <exclude name="**/.DS_Store/**"/>
     <exclude name="**/.git/**"/>
   </patternset>
+
+  <target name="mvn-init" unless="mvn-init.called">
+    <path id="maven-ant-tasks.classpath" path="lib/ant/maven-ant-tasks-2.1.3.jar" />
+    <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+             uri="antlib:org.apache.maven.artifact.ant"
+             classpathref="maven-ant-tasks.classpath" />
+
+    <artifact:dependencies pathId="dependency.classpath">
+      <dependency groupId="org.java-websocket" artifactId="Java-WebSocket" version="1.4.0"/>
+    </artifact:dependencies>
+    <property name="mvn-init.called" value="true" />
+
+  </target>
 
   <path id="javac2.classpath">
     <pathelement location="${javac2.home}/javac2.jar"/>
@@ -82,7 +96,7 @@ Include -D arguments to define these properties: idea.product, idea.version.
     </path>
   </target>
 
-  <target name="compile.studio" depends="paths, compile.idea" if="build.studio">
+  <target name="compile.studio" depends="paths" if="build.studio">
     <mkdir dir="build/studio"/>
     <echo message="compile flutter-studio"/>
     <javac2 destdir="build/studio" memorymaximumsize="1000m" fork="true"
@@ -114,12 +128,13 @@ Include -D arguments to define these properties: idea.product, idea.version.
       <classpath>
         <path refid="idea.jars"/>
         <path refid="dartplugin.jars"/>
+        <path refid="dependency.classpath"/>
       </classpath>
       <src refid="src.sourcepath"/>
       <patternset refid="ignored.files"/>
     </javac2>
   </target>
 
-  <target name="compile" depends="compile.idea, compile.studio"/>
+  <target name="compile" depends="mvn-init, compile.idea, compile.studio"/>
 
 </project>
