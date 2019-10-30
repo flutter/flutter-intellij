@@ -52,7 +52,7 @@
   <li>Fix an NPE when switching platforms (#3990)</li>
   <li>Fix an NPE in the feedback button (#3989)</li>
   <li>Rename two wrap with Flutter actions (#3988)</li>
-  <li>Remove support for the older _Logging event (#3986)</li>
+  <li>Remove support for the older <code>_Logging</code> event (#3986)</li>
   <li>Various bits of code cleanup (#3981)</li>
   <li>Remove two reload and restart keybindings (#3979)</li>
   <li>Fix the offset of console hyperlink detection (#3978)</li>
