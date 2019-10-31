@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class FlutterTestLocationProvider extends DartTestLocationProviderZ {
   public static final FlutterTestLocationProvider INSTANCE = new FlutterTestLocationProvider();
+
   private final TestConfigUtils testConfigUtils = TestConfigUtils.getInstance();
 
   @Nullable

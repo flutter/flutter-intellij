@@ -17,6 +17,7 @@ import com.jetbrains.lang.dart.psi.DartFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRootCache;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,13 +41,16 @@ public class FlutterIconProvider extends IconProvider {
       final VirtualFile file = ((PsiDirectory)element).getVirtualFile();
       if (!file.isInLocalFileSystem()) return null;
 
+      final PubRootCache pubRootCache = PubRootCache.getInstance(project);
+
       // Show an icon for flutter modules.
-      final PubRoot pubRoot = PubRoot.forDirectory(file);
+      // todo: this needs to be just when the dir == a flutter project
+      final PubRoot pubRoot = pubRootCache.getRoot(file);
       if (pubRoot != null && pubRoot.declaresFlutter()) {
         return FlutterIcons.Flutter;
       }
 
-      final PubRoot root = PubRoot.forDirectory(file.getParent());
+      final PubRoot root = pubRootCache.getRoot(file.getParent());
       if (root == null) return null;
 
       // TODO(devoncarew): should we just make the folder a source kind?

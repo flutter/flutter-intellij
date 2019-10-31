@@ -33,7 +33,7 @@ public class FlutterTestConfigProducer extends RunConfigurationProducer<TestConf
 
   private static boolean isFlutterContext(@NotNull ConfigurationContext context) {
     final PsiElement location = context.getPsiLocation();
-    return location != null && FlutterUtils.isInFlutterProject(location);
+    return location != null && FlutterUtils.isInFlutterProject(context.getProject(), location);
   }
 
   /**

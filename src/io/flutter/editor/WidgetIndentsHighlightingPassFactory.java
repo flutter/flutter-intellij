@@ -123,7 +123,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       }
       for (EditorEx editor : editorOutlineService.getActiveDartEditors()) {
         if (!editor.isDisposed()) {
-          runWidgetIndentsPass(editor, editorOutlineService.get(editor.getVirtualFile().getCanonicalPath()));
+          runWidgetIndentsPass(editor, editorOutlineService.getOutline(editor.getVirtualFile().getCanonicalPath()));
         }
       }
     });
@@ -166,7 +166,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     if (!FlutterUtils.couldContainWidgets(virtualFile)) {
       return filteredIndentsHighlightingPass;
     }
-    final FlutterOutline outline = editorOutlineService.get(virtualFile.getCanonicalPath());
+    final FlutterOutline outline = editorOutlineService.getOutline(virtualFile.getCanonicalPath());
 
     if (outline != null) {
       updateEditorSettings(editor);

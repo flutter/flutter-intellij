@@ -56,7 +56,10 @@ public class PubRoot {
    */
   @Nullable
   public static PubRoot forFile(@Nullable VirtualFile file) {
-    if (file == null) return null;
+    if (file == null) {
+      return null;
+    }
+
     if (file.isDirectory()) {
       final PubRoot root = forDirectory(file.getParent());
       if (root != null) return root;
@@ -240,6 +243,8 @@ public class PubRoot {
    * Returns true if the pubspec declares a flutter dependency.
    */
   public boolean declaresFlutter() {
+    // todo: have an update cache method
+
     // Check if the cache needs to be updated.
     if (cachedPubspecInfo == null || cachedPubspecInfo.getModificationStamp() != pubspec.getModificationStamp()) {
       cachedPubspecInfo = FlutterUtils.getFlutterPubspecInfo(pubspec);

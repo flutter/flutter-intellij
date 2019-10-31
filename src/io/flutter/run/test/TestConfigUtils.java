@@ -30,7 +30,8 @@ public class TestConfigUtils extends CommonTestConfigUtils {
   @Override
   public TestType asTestCall(@NotNull PsiElement element) {
     final DartFile file = FlutterUtils.getDartFile(element);
-    if (!FlutterUtils.isInTestDir(file) || !FlutterUtils.isInFlutterProject(element)) {
+
+    if (!FlutterUtils.isInTestDir(file)) {
       return null;
     }
 
