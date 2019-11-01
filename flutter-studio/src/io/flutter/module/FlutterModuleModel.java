@@ -189,7 +189,7 @@ public class FlutterModuleModel extends FlutterProjectModel {
         List<Repository> repBlock = (List<Repository>)gradleBuildFile.getValue(BuildFileKey.LIBRARY_REPOSITORY);
         repositories.set(repBlock != null ? repBlock : new ArrayList<>());
       });
-      repositories.get().add(new Repository(Repository.Type.URL, pathToModule + "/build/host/outputs/repo"));
+      repositories.get().add(new Repository(Repository.Type.URL, pathToModule.replace('\\', '/') + "/build/host/outputs/repo"));
 
       AtomicReference<List<Dependency>> dependencies = new AtomicReference<>();
       ApplicationManager.getApplication().runReadAction(() -> {
