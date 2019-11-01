@@ -38,7 +38,7 @@ void main() {
               'android-studio',
               'android-studio',
               'android-studio',
-              'android-studio',
+              'ideaIC',
               'ideaIC',
             ]));
       });
@@ -55,7 +55,7 @@ void main() {
               'android-studio',
               'android-studio',
               'android-studio',
-              'android-studio',
+              'ideaIC',
               'ideaIC',
             ]));
       });
@@ -72,7 +72,7 @@ void main() {
               'android-studio',
               'android-studio',
               'android-studio',
-              'android-studio',
+              'ideaIC',
               'ideaIC',
             ]));
       });
@@ -153,7 +153,7 @@ void main() {
             'releases/release_19/2019.1.2/flutter-intellij.zip',
             'releases/release_19/3.5/flutter-intellij.zip',
             'releases/release_19/3.6/flutter-intellij.zip',
-            'releases/release_19/2019.2.3/flutter-intellij.zip',
+            'releases/release_19/2019.2.4/flutter-intellij.zip',
             'releases/release_19/2019.3/flutter-intellij.zip',
           ]));
     });
