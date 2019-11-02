@@ -20,6 +20,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiInvalidElementAccessException;
 import com.intellij.util.Function;
 import com.intellij.util.Time;
+import com.jetbrains.lang.dart.psi.DartCallExpression;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,12 +44,16 @@ public abstract class TestLineMarkerContributor extends RunLineMarkerContributor
   @Nullable
   @Override
   public Info getInfo(@NotNull PsiElement element) {
-    final TestType testCall = testConfigUtils.asTestCall(element);
-    if (testCall != null) {
-      final Icon icon = getTestStateIcon(element, testCall.getIcon());
-      final Function<PsiElement, String> tooltipProvider =
-        psiElement -> testCall.getTooltip(psiElement, testConfigUtils);
-      return new RunLineMarkerContributor.Info(icon, tooltipProvider, ExecutorAction.getActions());
+    // TODO(devoncarew): We should look for the leaf nodes here, and place the marker on that.
+    // https://github.com/flutter/flutter-intellij/issues/4036
+    if (element instanceof DartCallExpression) { // || element instanceof DartFunctionDeclarationWithBodyOrNative) {
+      final TestType testCall = testConfigUtils.asTestCall(element);
+      if (testCall != null) {
+        final Icon icon = getTestStateIcon(element, testCall.getIcon());
+        final Function<PsiElement, String> tooltipProvider =
+          psiElement -> testCall.getTooltip(psiElement, testConfigUtils);
+        return new RunLineMarkerContributor.Info(icon, tooltipProvider, ExecutorAction.getActions());
+      }
     }
     return null;
   }
@@ -81,8 +86,7 @@ public abstract class TestLineMarkerContributor extends RunLineMarkerContributor
 
       final TestStateStorage storage = TestStateStorage.getInstance(project);
       if (storage != null) {
-        final Map<String, TestStateStorage.Record> tests =
-          storage.getRecentTests(SCANNED_TEST_RESULT_LIMIT, getSinceDate());
+        final Map<String, TestStateStorage.Record> tests = storage.getRecentTests(SCANNED_TEST_RESULT_LIMIT, getSinceDate());
         if (tests != null) {
           // TODO(pq): investigate performance implications.
           for (Map.Entry<String, TestStateStorage.Record> entry : tests.entrySet()) {

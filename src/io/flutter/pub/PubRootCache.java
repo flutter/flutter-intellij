@@ -47,8 +47,6 @@ public class PubRootCache {
     return getRoot(file);
   }
 
-  // todo: fix the issue with all directories looking like flutter folders
-
   @Nullable
   public PubRoot getRoot(VirtualFile file) {
     file = findPubspecDir(file);
@@ -70,8 +68,6 @@ public class PubRootCache {
   public List<PubRoot> getRoots(Module module) {
     final List<PubRoot> result = new ArrayList<>();
 
-    // TODO: what if the content roots change?
-
     for (VirtualFile dir : ModuleRootManager.getInstance(module).getContentRoots()) {
       PubRoot root = cache.get(dir);
 
@@ -84,6 +80,7 @@ public class PubRootCache {
         result.add(root);
       }
     }
+
     return result;
   }
 

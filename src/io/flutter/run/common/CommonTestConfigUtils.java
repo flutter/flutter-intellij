@@ -11,8 +11,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
@@ -211,7 +209,7 @@ public abstract class CommonTestConfigUtils {
     final String path = file.getVirtualFile().getCanonicalPath();
     final ActiveEditorsOutlineService service = getActiveEditorsOutlineService(file.getProject());
     if (!listenerCache.containsKey(path) && service != null) {
-      listenerCache.put(path, new LineMarkerUpdatingListener(file.getProject(), service));
+      listenerCache.put(path, new LineMarkerUpdatingListener(this, file.getProject(), service));
     }
     return listenerCache.get(path);
   }
@@ -223,26 +221,29 @@ public abstract class CommonTestConfigUtils {
    * <p>
    * Used to ensure that we don't get stuck with out-of-date line markers.
    */
-  private class LineMarkerUpdatingListener implements ActiveEditorsOutlineService.Listener {
+  private static class LineMarkerUpdatingListener implements ActiveEditorsOutlineService.Listener {
+    @NotNull final CommonTestConfigUtils commonTestConfigUtils;
     @NotNull final Project project;
     @NotNull final ActiveEditorsOutlineService service;
 
-    private LineMarkerUpdatingListener(@NotNull Project project, @NotNull ActiveEditorsOutlineService service) {
+    private LineMarkerUpdatingListener(@NotNull CommonTestConfigUtils commonTestConfigUtils,
+                                       @NotNull Project project,
+                                       @NotNull ActiveEditorsOutlineService service) {
+      this.commonTestConfigUtils = commonTestConfigUtils;
       this.project = project;
       this.service = service;
     }
 
     @Override
     public void onOutlineChanged(@NotNull String filePath, @Nullable FlutterOutline outline) {
-      CommonTestConfigUtils.this.clearCachedInfo();
-
-      forceFileAnnotation(LocalFileSystem.getInstance().findFileByPath(filePath));
+      commonTestConfigUtils.clearCachedInfo();
+      forceFileAnnotation();
       service.removeListener(this);
     }
 
     // TODO(djshuckerow): this can be merged with the Dart plugin's forceFileAnnotation:
     // https://github.com/JetBrains/intellij-plugins/blob/master/Dart/src/com/jetbrains/lang/dart/analyzer/DartServerData.java#L300
-    private void forceFileAnnotation(final VirtualFile file) {
+    private void forceFileAnnotation() {
       // It's ok to call DaemonCodeAnalyzer.restart() right in this thread, without invokeLater(),
       // but it will cache RemoteAnalysisServerImpl$ServerResponseReaderThread in FileStatusMap.threads and as a result,
       // DartAnalysisServerService.myProject will be leaked in tests

@@ -243,14 +243,17 @@ public class PubRoot {
    * Returns true if the pubspec declares a flutter dependency.
    */
   public boolean declaresFlutter() {
-    // todo: have an update cache method
+    validateUpdateCachedPubspecInfo();
+    return cachedPubspecInfo.declaresFlutter();
+  }
 
-    // Check if the cache needs to be updated.
+  /**
+   * Check if the cache needs to be updated.
+   */
+  private void validateUpdateCachedPubspecInfo() {
     if (cachedPubspecInfo == null || cachedPubspecInfo.getModificationStamp() != pubspec.getModificationStamp()) {
       cachedPubspecInfo = FlutterUtils.getFlutterPubspecInfo(pubspec);
     }
-
-    return cachedPubspecInfo.declaresFlutter();
   }
 
   /**
