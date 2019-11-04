@@ -18,9 +18,11 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiInvalidElementAccessException;
+import com.intellij.psi.impl.source.tree.LeafElement;
 import com.intellij.util.Function;
 import com.intellij.util.Time;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
+import com.jetbrains.lang.dart.psi.DartId;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,17 +46,25 @@ public abstract class TestLineMarkerContributor extends RunLineMarkerContributor
   @Nullable
   @Override
   public Info getInfo(@NotNull PsiElement element) {
-    // TODO(devoncarew): We should look for the leaf nodes here, and place the marker on that.
-    // https://github.com/flutter/flutter-intellij/issues/4036
-    if (element instanceof DartCallExpression) { // || element instanceof DartFunctionDeclarationWithBodyOrNative) {
-      final TestType testCall = testConfigUtils.asTestCall(element);
-      if (testCall != null) {
-        final Icon icon = getTestStateIcon(element, testCall.getIcon());
-        final Function<PsiElement, String> tooltipProvider =
-          psiElement -> testCall.getTooltip(psiElement, testConfigUtils);
-        return new RunLineMarkerContributor.Info(icon, tooltipProvider, ExecutorAction.getActions());
+    // todo: also handle main() methods? or, remove support for that?
+
+    // We look for leaf nodes here and place the marker on that (#4036).
+    // todo: more docs abut why
+    if (element instanceof LeafElement && element.getParent() instanceof DartId) {
+      final DartId dartId = (DartId)element.getParent();
+
+      if (dartId.getParent() != null && dartId.getParent().getParent() instanceof DartCallExpression) {
+        final DartCallExpression dartCallExpression = (DartCallExpression)dartId.getParent().getParent();
+        final TestType testCall = testConfigUtils.asTestCall(dartCallExpression);
+        if (testCall != null) {
+          final Icon icon = getTestStateIcon(element, testCall.getIcon());
+          final Function<PsiElement, String> tooltipProvider =
+            psiElement -> testCall.getTooltip(psiElement, testConfigUtils);
+          return new RunLineMarkerContributor.Info(icon, tooltipProvider, ExecutorAction.getActions());
+        }
       }
     }
+
     return null;
   }
 
