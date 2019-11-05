@@ -14,7 +14,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
-import com.jetbrains.lang.dart.psi.DartFunctionDeclarationWithBodyOrNative;
 import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
 import io.flutter.dart.DartSyntax;
 import io.flutter.editor.ActiveEditorsOutlineService;
@@ -50,7 +49,6 @@ public abstract class CommonTestConfigUtils {
    * <ul>
    * <li>{@link TestType#SINGLE} if the call is a {@link DartCallExpression} marked by the {@link FlutterOutline} as {@link ElementKind#UNIT_TEST_TEST}</li>
    * <li>{@link TestType#GROUP} if the call is a {@link DartCallExpression} marked by the {@link FlutterOutline} as {@link ElementKind#UNIT_TEST_GROUP}</li>
-   * <li>{@link TestType#MAIN} if the call is a {@link DartFunctionDeclarationWithBodyOrNative} named "main" that includes test calls.</li>
    * </ul>
    *
    * @return a {@link TestType} if {@param element} corresponds to a test call site, or null if {@param element} is not a test call site.
@@ -58,13 +56,9 @@ public abstract class CommonTestConfigUtils {
   public TestType asTestCall(@NotNull PsiElement element) {
     // Named tests.
     final TestType namedTestCall = findNamedTestCall(element);
+    //noinspection RedundantIfStatement
     if (namedTestCall != null) {
       return namedTestCall;
-    }
-
-    // Main.
-    if (isMainFunctionDeclarationWithTests(element)) {
-      return TestType.MAIN;
     }
 
     return null;
@@ -102,15 +96,6 @@ public abstract class CommonTestConfigUtils {
 
   private void clearCachedInfo() {
     cachedCallToTestType = null;
-  }
-
-  @VisibleForTesting
-  public boolean isMainFunctionDeclarationWithTests(@NotNull PsiElement element) {
-    if (DartSyntax.isMainFunctionDeclaration(element)) {
-      final Map<DartCallExpression, TestType> callToTestType = getTestsFromOutline(element.getContainingFile());
-      return !callToTestType.isEmpty();
-    }
-    return false;
   }
 
   @Nullable

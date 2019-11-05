@@ -46,10 +46,14 @@ public abstract class TestLineMarkerContributor extends RunLineMarkerContributor
   @Nullable
   @Override
   public Info getInfo(@NotNull PsiElement element) {
-    // todo: also handle main() methods? or, remove support for that?
-
-    // We look for leaf nodes here and place the marker on that (#4036).
-    // todo: more docs abut why
+    // We look for leaf nodes of a PSI tree matching the pattern of a Dart unit test, and place
+    // the line marker at that leaf node; see #4036 for some background.
+    //
+    // The pattern we're matching below is:
+    // DartCallExpression
+    //   DartReferenceExpression
+    //     DartId
+    //       LeafPsiElement
     if (element instanceof LeafElement && element.getParent() instanceof DartId) {
       final DartId dartId = (DartId)element.getParent();
 
