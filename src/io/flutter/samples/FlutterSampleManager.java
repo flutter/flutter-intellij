@@ -106,9 +106,11 @@ public class FlutterSampleManager {
               public void processTerminated(@NotNull ProcessEvent event) {
                 timer.cancel();
                 try {
-                  final byte[] bytes = Files.readAllBytes(tempFile.toPath());
-                  final String content = new String(bytes);
-                  flutterSamples = FlutterSampleManager.readSamples(content);
+                  if (tempFile.exists()) {
+                    final byte[] bytes = Files.readAllBytes(tempFile.toPath());
+                    final String content = new String(bytes);
+                    flutterSamples = FlutterSampleManager.readSamples(content);
+                  }
                 }
                 catch (IOException e) {
                   LOG.warn(e);
