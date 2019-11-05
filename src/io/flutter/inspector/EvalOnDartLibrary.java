@@ -100,7 +100,11 @@ public class EvalOnDartLibrary implements Disposable {
         final CompletableFuture<?> previousDone = allPendingRequestsDone;
         allPendingRequestsDone = response;
         // Actually schedule this request only after the previous request completes.
-        previousDone.whenCompleteAsync((v, error) -> myRequestsScheduler.addRequest(wrappedRequest, 0));
+        previousDone.whenCompleteAsync((v, error) -> {
+          if (!myRequestsScheduler.isDisposed()) {
+            myRequestsScheduler.addRequest(wrappedRequest, 0);
+          }
+        });
       }
     }
     return response;
