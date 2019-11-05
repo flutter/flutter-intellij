@@ -31,10 +31,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -214,7 +211,7 @@ class DeviceDaemon {
         final Listener listener = new Listener(daemonId, api, devices, deviceChanged, processStopped);
         api.listen(process, listener);
 
-        final Future ready = api.enableDeviceEvents();
+        final Future<Void> ready = listener.connected.thenCompose((Void ignored) -> api.enableDeviceEvents());;
 
         // Block until we get a response, or are cancelled.
         int attempts = 0;
@@ -327,6 +324,7 @@ class DeviceDaemon {
     private final Runnable deviceChanged;
     private final Consumer<String> processStopped;
 
+    private transient final CompletableFuture<Void> connected = new CompletableFuture<>();
     private final AtomicBoolean running = new AtomicBoolean(false);
 
     Listener(int daemonId,
@@ -342,6 +340,11 @@ class DeviceDaemon {
     }
 
     // daemon domain
+
+    @Override
+    public void onDaemonConnected(DaemonEvent.DaemonConnected event) {
+      connected.complete(null);
+    }
 
     @Override
     public void onDaemonLogMessage(@NotNull DaemonEvent.DaemonLogMessage message) {

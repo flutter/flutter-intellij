@@ -101,7 +101,7 @@ public class DaemonApi {
     return send("app.callServiceExtension", new AppServiceExtension(appId, methodName, params));
   }
 
-  CompletableFuture enableDeviceEvents() {
+  CompletableFuture<Void> enableDeviceEvents() {
     return send("device.enable", null);
   }
 
