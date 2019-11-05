@@ -17,6 +17,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRootCache;
 import io.flutter.run.common.RunMode;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
@@ -99,7 +100,7 @@ public class SdkFields {
     if (!main.canLaunch()) {
       throw new RuntimeConfigurationError(main.getError());
     }
-    if (PubRoot.forDirectory(main.get().getAppDir()) == null) {
+    if (PubRootCache.getInstance(project).getRoot(main.get().getAppDir()) == null) {
       throw new RuntimeConfigurationError("Entrypoint isn't within a Flutter pub root");
     }
   }

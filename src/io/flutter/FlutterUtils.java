@@ -19,7 +19,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -33,13 +32,8 @@ import com.intellij.util.PlatformUtils;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRootCache;
 import io.flutter.utils.FlutterModuleUtils;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.regex.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.SystemIndependent;
@@ -49,6 +43,13 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.resolver.Resolver;
+
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.regex.Pattern;
 
 public class FlutterUtils {
   public static class FlutterPubspecInfo {
@@ -174,16 +175,16 @@ public class FlutterUtils {
   /**
    * Test if the given element is contained in a module with a pub root that declares a flutter dependency.
    */
-  public static boolean isInFlutterProject(@NotNull PsiElement element) {
-    final Module module = ModuleUtilCore.findModuleForPsiElement(element);
-    return module != null && FlutterModuleUtils.declaresFlutter(module);
+  public static boolean isInFlutterProject(@NotNull Project project, @NotNull PsiElement element) {
+    final PubRoot pubRoot = PubRootCache.getInstance(project).getRoot(element.getContainingFile());
+    return pubRoot.declaresFlutter();
   }
 
   public static boolean isInTestDir(@Nullable DartFile file) {
     if (file == null) return false;
 
     // Check that we're in a pub root.
-    final PubRoot root = PubRoot.forFile(file.getVirtualFile());
+    final PubRoot root = PubRootCache.getInstance(file.getProject()).getRoot(file.getVirtualFile().getParent());
     if (root == null) return false;
 
     // Check that we're in a project path that starts with 'test/'.

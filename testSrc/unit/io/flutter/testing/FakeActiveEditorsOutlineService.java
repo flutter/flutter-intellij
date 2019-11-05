@@ -29,7 +29,7 @@ public class FakeActiveEditorsOutlineService extends ActiveEditorsOutlineService
   }
 
   public void loadOutline(@NotNull String flutterOutlinePath) {
-    String outlineContents = null;
+    String outlineContents;
     try {
       outlineContents = new String(Files.readAllBytes(Paths.get(flutterOutlinePath)));
     }
@@ -46,7 +46,7 @@ public class FakeActiveEditorsOutlineService extends ActiveEditorsOutlineService
 
   @Nullable
   @Override
-  public FlutterOutline get(String path) {
+  public FlutterOutline getOutline(String path) {
     return flutterOutline;
   }
 

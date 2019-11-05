@@ -42,7 +42,6 @@ import java.util.*;
  * </ul>
  */
 public class ActiveEditorsOutlineService implements Disposable {
-
   private final Project project;
   private final FlutterDartAnalysisServer analysisServer;
 
@@ -152,7 +151,7 @@ public class ActiveEditorsOutlineService implements Disposable {
 
   private void notifyOutlineUpdated(String path) {
     for (Listener listener : Lists.newArrayList(listeners)) {
-      listener.onOutlineChanged(path, get(path));
+      listener.onOutlineChanged(path, getOutline(path));
     }
   }
 
@@ -170,7 +169,7 @@ public class ActiveEditorsOutlineService implements Disposable {
    * To get an outline that is guaranteed in-sync with the file it outlines, see {@link #getIfUpdated}.
    */
   @Nullable
-  public FlutterOutline get(String path) {
+  public FlutterOutline getOutline(String path) {
     return pathToOutline.get(path);
   }
 
@@ -182,13 +181,12 @@ public class ActiveEditorsOutlineService implements Disposable {
    */
   @Nullable
   public FlutterOutline getIfUpdated(@NotNull PsiFile file) {
-    final FlutterOutline outline = get(file.getVirtualFile().getCanonicalPath());
+    final FlutterOutline outline = getOutline(file.getVirtualFile().getCanonicalPath());
     if (isOutdated(outline, file)) {
       return null;
     }
     return outline;
   }
-
 
   /**
    * Checks that the {@param outline} matches the current version of {@param file}.
@@ -235,11 +233,10 @@ public class ActiveEditorsOutlineService implements Disposable {
    * Listener for changes to the active editors or open outlines.
    */
   public interface Listener {
-
     /**
-     * Called on a change in the {@link FlutterOutline} of file at {@param path}.
+     * Called on a change in the {@link FlutterOutline} of file at {@param filePath}.
      */
-    void onOutlineChanged(@NotNull String path, @Nullable FlutterOutline outline);
+    void onOutlineChanged(@NotNull String filePath, @Nullable FlutterOutline outline);
   }
 
   /**
@@ -248,13 +245,12 @@ public class ActiveEditorsOutlineService implements Disposable {
    * <p>
    * This class caches the updated outline inside {@link ActiveEditorsOutlineService#pathToOutline} for the file.
    */
-  private class OutlineListener/// You can pretty-print the json using the pretty_printer.dart script.
-    implements FlutterOutlineListener {
+  private class OutlineListener implements FlutterOutlineListener {
+    private final String path;
+
     OutlineListener(String path) {
       this.path = path;
     }
-
-    private final String path;
 
     @Override
     public void outlineUpdated(@NotNull String systemDependentPath,

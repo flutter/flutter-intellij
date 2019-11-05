@@ -34,8 +34,8 @@ public class DartTestLocationProviderZ implements SMTestLocator, DumbAware {
   private static final List<Location> NONE = Collections.emptyList();
   private static final Gson GSON = new Gson();
 
-  public static final DartTestLocationProviderZ
-    INSTANCE = new DartTestLocationProviderZ();
+  public static final DartTestLocationProviderZ INSTANCE = new DartTestLocationProviderZ();
+
   public static final Type STRING_LIST_TYPE = new TypeToken<List<String>>() {
   }.getType();
 

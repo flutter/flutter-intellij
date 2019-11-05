@@ -58,10 +58,15 @@ public abstract class CommonTestConfigUtils {
   public TestType asTestCall(@NotNull PsiElement element) {
     // Named tests.
     final TestType namedTestCall = findNamedTestCall(element);
-    if (namedTestCall != null) return namedTestCall;
+    if (namedTestCall != null) {
+      return namedTestCall;
+    }
 
     // Main.
-    if (isMainFunctionDeclarationWithTests(element)) return TestType.MAIN;
+    if (isMainFunctionDeclarationWithTests(element)) {
+      return TestType.MAIN;
+    }
+
     return null;
   }
 
@@ -71,20 +76,32 @@ public abstract class CommonTestConfigUtils {
   @NotNull
   protected Map<DartCallExpression, TestType> getTestsFromOutline(@NotNull PsiFile file) {
     final Project project = file.getProject();
-    final ActiveEditorsOutlineService service = getActiveEditorsOutlineService(project);
-    if (service == null) {
+    final ActiveEditorsOutlineService outlineService = getActiveEditorsOutlineService(project);
+    if (outlineService == null) {
       return new HashMap<>();
     }
-    final FlutterOutline outline = service.getIfUpdated(file);
+
+    final FlutterOutline outline = outlineService.getIfUpdated(file);
     // If the outline is outdated, then request a new pass to generate line markers.
     if (outline == null) {
-      service.addListener(forFile(file));
+      clearCachedInfo();
+      outlineService.addListener(forFile(file));
       return new HashMap<>();
     }
+
     // Visit the fields on the outline to get which calls are actual named tests.
-    final Map<DartCallExpression, TestType> callToTestType = new HashMap<>();
-    visit(outline, callToTestType, file);
-    return callToTestType;
+    if (cachedCallToTestType == null) {
+      cachedCallToTestType = new HashMap<>();
+      visit(outline, cachedCallToTestType, file);
+    }
+
+    return cachedCallToTestType;
+  }
+
+  Map<DartCallExpression, TestType> cachedCallToTestType;
+
+  private void clearCachedInfo() {
+    cachedCallToTestType = null;
   }
 
   @VisibleForTesting
@@ -188,11 +205,11 @@ public abstract class CommonTestConfigUtils {
    */
   private static final Map<String, LineMarkerUpdatingListener> listenerCache = new HashMap<>();
 
-  LineMarkerUpdatingListener forFile(@NotNull final PsiFile file) {
+  private LineMarkerUpdatingListener forFile(@NotNull final PsiFile file) {
     final String path = file.getVirtualFile().getCanonicalPath();
     final ActiveEditorsOutlineService service = getActiveEditorsOutlineService(file.getProject());
     if (!listenerCache.containsKey(path) && service != null) {
-      listenerCache.put(path, new LineMarkerUpdatingListener(file.getProject(), service));
+      listenerCache.put(path, new LineMarkerUpdatingListener(this, file.getProject(), service));
     }
     return listenerCache.get(path);
   }
@@ -204,19 +221,22 @@ public abstract class CommonTestConfigUtils {
    * <p>
    * Used to ensure that we don't get stuck with out-of-date line markers.
    */
-  private static class LineMarkerUpdatingListener
-    implements ActiveEditorsOutlineService.Listener {
+  private static class LineMarkerUpdatingListener implements ActiveEditorsOutlineService.Listener {
+    @NotNull final CommonTestConfigUtils commonTestConfigUtils;
     @NotNull final Project project;
     @NotNull final ActiveEditorsOutlineService service;
 
-
-    private LineMarkerUpdatingListener(@NotNull Project project, @NotNull ActiveEditorsOutlineService service) {
+    private LineMarkerUpdatingListener(@NotNull CommonTestConfigUtils commonTestConfigUtils,
+                                       @NotNull Project project,
+                                       @NotNull ActiveEditorsOutlineService service) {
+      this.commonTestConfigUtils = commonTestConfigUtils;
       this.project = project;
       this.service = service;
     }
 
     @Override
-    public void onOutlineChanged(@NotNull String path, @Nullable FlutterOutline outline) {
+    public void onOutlineChanged(@NotNull String filePath, @Nullable FlutterOutline outline) {
+      commonTestConfigUtils.clearCachedInfo();
       forceFileAnnotation();
       service.removeListener(this);
     }
@@ -227,14 +247,12 @@ public abstract class CommonTestConfigUtils {
       // It's ok to call DaemonCodeAnalyzer.restart() right in this thread, without invokeLater(),
       // but it will cache RemoteAnalysisServerImpl$ServerResponseReaderThread in FileStatusMap.threads and as a result,
       // DartAnalysisServerService.myProject will be leaked in tests
-      ApplicationManager.getApplication()
-        .invokeLater(
-          () -> {
-            DaemonCodeAnalyzer.getInstance(project).restart();
-          },
-          ModalityState.NON_MODAL,
-          project.getDisposed()
-        );
+
+      ApplicationManager.getApplication().invokeLater(
+        () -> DaemonCodeAnalyzer.getInstance(project).restart(),
+        ModalityState.NON_MODAL,
+        project.getDisposed()
+      );
     }
   }
 }

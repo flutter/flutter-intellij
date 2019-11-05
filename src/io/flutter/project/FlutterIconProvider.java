@@ -17,6 +17,7 @@ import com.jetbrains.lang.dart.psi.DartFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRootCache;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,25 +38,27 @@ public class FlutterIconProvider extends IconProvider {
 
     // Directories.
     if (element instanceof PsiDirectory) {
-      final VirtualFile file = ((PsiDirectory)element).getVirtualFile();
-      if (!file.isInLocalFileSystem()) return null;
+      final VirtualFile dir = ((PsiDirectory)element).getVirtualFile();
+      if (!dir.isInLocalFileSystem()) return null;
+
+      final PubRootCache pubRootCache = PubRootCache.getInstance(project);
 
       // Show an icon for flutter modules.
-      final PubRoot pubRoot = PubRoot.forDirectory(file);
-      if (pubRoot != null && pubRoot.declaresFlutter()) {
+      final PubRoot pubRoot = pubRootCache.getRoot(dir);
+      if (pubRoot != null && dir.equals(pubRoot.getRoot()) && pubRoot.declaresFlutter()) {
         return FlutterIcons.Flutter;
       }
 
-      final PubRoot root = PubRoot.forDirectory(file.getParent());
+      final PubRoot root = pubRootCache.getRoot(dir.getParent());
       if (root == null) return null;
 
       // TODO(devoncarew): should we just make the folder a source kind?
-      if (file.equals(root.getLib())) return AllIcons.Modules.SourceRoot;
+      if (dir.equals(root.getLib())) return AllIcons.Modules.SourceRoot;
 
-      if (Objects.equals(file, root.getAndroidDir())) return AllIcons.Nodes.KeymapTools;
-      if (Objects.equals(file, root.getiOsDir())) return AllIcons.Nodes.KeymapTools;
+      if (Objects.equals(dir, root.getAndroidDir())) return AllIcons.Nodes.KeymapTools;
+      if (Objects.equals(dir, root.getiOsDir())) return AllIcons.Nodes.KeymapTools;
 
-      if (file.isDirectory() && file.getName().equals(".idea")) return AllIcons.Modules.GeneratedFolder;
+      if (dir.isDirectory() && dir.getName().equals(".idea")) return AllIcons.Modules.GeneratedFolder;
     }
 
     // Files.

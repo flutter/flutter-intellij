@@ -20,6 +20,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRootCache;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
@@ -50,7 +51,7 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
     final Module module = ModuleUtilCore.findModuleForFile(file, project);
     if (!FlutterModuleUtils.isFlutterModule(module)) return null;
 
-    final PubRoot root = PubRoot.forPsiFile(psiFile);
+    final PubRoot root = PubRootCache.getInstance(project).getRoot(psiFile);
 
     if (root == null || myIgnoredPubspecPaths.contains(root.getPubspec().getPath())) return null;
 

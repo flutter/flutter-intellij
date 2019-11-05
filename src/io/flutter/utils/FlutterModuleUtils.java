@@ -5,8 +5,6 @@
  */
 package io.flutter.utils;
 
-import static io.flutter.sdk.FlutterSdk.DART_SDK_SUFFIX;
-
 import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.facet.Facet;
@@ -14,10 +12,7 @@ import com.intellij.facet.FacetManager;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.module.ModuleType;
-import com.intellij.openapi.module.ModuleTypeManager;
-import com.intellij.openapi.module.ModuleUtilCore;
+import com.intellij.openapi.module.*;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -32,15 +27,17 @@ import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRootCache;
 import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterRunConfigurationType;
 import io.flutter.run.SdkFields;
 import io.flutter.run.SdkRunConfig;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
-import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public class FlutterModuleUtils {
   public static final String DEPRECATED_FLUTTER_MODULE_TYPE_ID = "WEB_MODULE";
@@ -81,7 +78,7 @@ public class FlutterModuleUtils {
       //   [Dart support enabled && referenced Dart SDK is the one inside a Flutter SDK]
       final DartSdk dartSdk = DartPlugin.getDartSdk(module.getProject());
       final String dartSdkPath = dartSdk != null ? dartSdk.getHomePath() : null;
-      return dartSdkPath != null && dartSdkPath.endsWith(DART_SDK_SUFFIX) && DartPlugin.isDartSdkEnabled(module);
+      return dartSdkPath != null && dartSdkPath.endsWith(FlutterSdk.DART_SDK_SUFFIX) && DartPlugin.isDartSdkEnabled(module);
     }
     else {
       // If not IntelliJ, assume a small IDE (no multi-module project support).
@@ -180,7 +177,7 @@ public class FlutterModuleUtils {
   @NotNull
   public static Module[] getModules(@NotNull Project project) {
     // A disposed project has no modules.
-    if (project.isDisposed()) return new Module[]{};
+    if (project.isDisposed()) return new Module[]{ };
 
     return ModuleManager.getInstance(project).getModules();
   }
@@ -234,8 +231,7 @@ public class FlutterModuleUtils {
       return;
     }
 
-    final RunnerAndConfigurationSettings settings =
-      runManager.createRunConfiguration(project.getName(), configType.getFactory());
+    final RunnerAndConfigurationSettings settings = runManager.createRunConfiguration(project.getName(), configType.getFactory());
     final SdkRunConfig config = (SdkRunConfig)settings.getConfiguration();
 
     // Set config name.
@@ -273,11 +269,14 @@ public class FlutterModuleUtils {
    * True is returned if any of the PubRoots associated with the {@link Module} have a pubspec that declares flutter.
    */
   public static boolean declaresFlutter(@NotNull Module module) {
-    for (PubRoot root : PubRoots.forModule(module)) {
+    final PubRootCache cache = PubRootCache.getInstance(module.getProject());
+
+    for (PubRoot root : cache.getRoots(module)) {
       if (root.declaresFlutter()) {
         return true;
       }
     }
+
     return false;
   }
 
@@ -331,7 +330,7 @@ public class FlutterModuleUtils {
   }
 
   public static boolean isInFlutterAndroidModule(@NotNull Project project, @NotNull VirtualFile file) {
-    Module module = FlutterBuildActionGroup.findFlutterModule(project, file);
+    final Module module = FlutterBuildActionGroup.findFlutterModule(project, file);
     if (module != null) {
       for (Facet facet : FacetManager.getInstance(module).getAllFacets()) {
         if ("Android".equals(facet.getName())) {
