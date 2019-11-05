@@ -135,13 +135,13 @@ public class WidgetIndentsHighlightingPass {
       final Document doc = highlighter.getDocument();
       final int caretOffset = carat.getOffset();
 
-      if (startOffset >= doc.getTextLength()) {
+      if (startOffset < 0 || startOffset >= doc.getTextLength()) {
         return setSelection(false);
       }
 
       final int endOffset = highlighter.getEndOffset();
 
-      int off = startOffset;
+      int off;
       int startLine = doc.getLineNumber(startOffset);
       {
         final CharSequence chars = doc.getCharsSequence();
@@ -674,15 +674,13 @@ public class WidgetIndentsHighlightingPass {
   }
 
   /**
-   * All calls to convert offsets for indent highlighting must go through this
-   * method.
+   * All calls to convert offsets for indent highlighting must go through this method.
    * <p>
    * Sometimes we need to use the raw offsets and sometimes we need
    * to use the converted offsets depending on whether the FlutterOutline
    * matches the current document or the expectations given by the
    *
-   * @param node
-   * @return
+   * @param node the FlutterOutline to retreive the offset for
    */
   int getConvertedOffset(FlutterOutline node) {
     return getConvertedOffset(node.getOffset());
@@ -701,8 +699,8 @@ public class WidgetIndentsHighlightingPass {
     final int lineStartOffset = myDocument.getLineStartOffset(line);
 
     final int column = nodeOffset - lineStartOffset;
-    int indent = 0;
     final CharSequence chars = myDocument.getCharsSequence();
+    int indent;
 
     // TODO(jacobr): we only really want to include the previous token (e.g.
     // "child: " instead of the entire line). That won't matter much but could

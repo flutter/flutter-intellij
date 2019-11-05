@@ -1021,7 +1021,7 @@
   </actions>
 
   <extensionPoints>
-    <extensionPoint name="gradleSyncProvider" interface="io.flutter.android.GradleSyncProvider" />
+    <extensionPoint name="gradleSyncProvider" interface="io.flutter.android.GradleSyncProvider"/>
   </extensionPoints>
 
   <extensions defaultExtensionNs="io.flutter">
