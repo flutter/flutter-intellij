@@ -634,9 +634,10 @@ class BuildCommand extends ProductCommand {
         files[processedFile] = source;
         source = source.replaceAll(
             'androidProject.init(null);', 'androidProject.init();');
-        var last = 'TEMPLATE_PROJECT_NAME = "_android";';
+        var last = 'static final String TEMPLATE_PROJECT_NAME = ';
         var end = source.indexOf(last);
-        source = '${source.substring(0, end + last.length)}\n}}';
+        // Change the initializer to use null, equivalent to original code.
+        source = '${source.substring(0, end + last.length)}null;\n}}';
         processedFile.writeAsStringSync(source);
       }
 

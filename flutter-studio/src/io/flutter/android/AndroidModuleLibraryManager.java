@@ -208,7 +208,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     VirtualFile dir = flutterProject.getBaseDir().findChild("android");
     if (dir == null) dir = flutterProject.getBaseDir().findChild(".android"); // For modules.
     assert (dir != null);
-    EmbeddedAndroidProject androidProject = new EmbeddedAndroidProject(FileUtilRt.toSystemIndependentName(dir.getPath()), "android");
+    EmbeddedAndroidProject androidProject = new EmbeddedAndroidProject(FileUtilRt.toSystemIndependentName(dir.getPath()));
     androidProject.init(null);
     Disposer.register(flutterProject, androidProject);
 
@@ -311,8 +311,8 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   private static class EmbeddedAndroidProject extends ProjectImpl {
     private String path;
 
-    protected EmbeddedAndroidProject(@NotNull String filePath, @Nullable String projectName) {
-      super(filePath, projectName);
+    protected EmbeddedAndroidProject(@NotNull String filePath) {
+      super(filePath, TEMPLATE_PROJECT_NAME);
       path = filePath;
     }
 
