@@ -137,7 +137,7 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
 
       modifiableModel.addLibraryEntry(library);
 
-      ApplicationManager.getApplication().runWriteAction(modifiableModel::commit);
+      ApplicationManager.getApplication().invokeAndWait(() -> WriteAction.run(modifiableModel::commit));
     }
     finally {
       if (!modifiableModel.isDisposed()) {
@@ -162,7 +162,7 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
       }
 
       if (wasFound) {
-        ApplicationManager.getApplication().runWriteAction(modifiableModel::commit);
+        ApplicationManager.getApplication().invokeAndWait(() -> WriteAction.run(modifiableModel::commit));
       }
     }
     finally {

@@ -5,20 +5,24 @@
  */
 package io.flutter.android;
 
+import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED;
 import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_KIND;
 import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_NAME;
-import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED;
 
 import com.android.tools.idea.gradle.project.sync.GradleSyncInvoker;
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.intellij.ProjectTopics;
 import com.intellij.facet.FacetManager;
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.application.TransactionGuard;
+import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.impl.ProjectImpl;
@@ -34,6 +38,7 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.roots.libraries.PersistentLibraryKind;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtilCore;
@@ -203,8 +208,9 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     VirtualFile dir = flutterProject.getBaseDir().findChild("android");
     if (dir == null) dir = flutterProject.getBaseDir().findChild(".android"); // For modules.
     assert (dir != null);
-    EmbeddedAndroidProject androidProject = new EmbeddedAndroidProject(FileUtilRt.toSystemIndependentName(dir.getPath()), null);
+    EmbeddedAndroidProject androidProject = new EmbeddedAndroidProject(FileUtilRt.toSystemIndependentName(dir.getPath()));
     androidProject.init(null);
+    Disposer.register(flutterProject, androidProject);
 
     GradleSyncListener listener = new GradleSyncListener() {
       @SuppressWarnings("override")
@@ -283,7 +289,8 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
       VirtualFile dir = base.findChild("android");
       if (dir == null) dir = base.findChild(".android");
       return dir != null;
-    } else {
+    }
+    else {
       return false;
     }
   }
@@ -302,8 +309,34 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   }
 
   private static class EmbeddedAndroidProject extends ProjectImpl {
-    protected EmbeddedAndroidProject(@NotNull String filePath, @Nullable String projectName) {
-      super(filePath, projectName);
+    private String path;
+
+    protected EmbeddedAndroidProject(@NotNull String filePath) {
+      super(filePath, TEMPLATE_PROJECT_NAME);
+      path = filePath;
+    }
+
+    static final String TEMPLATE_PROJECT_NAME = "_android";
+
+    @Override
+    public void init(@Nullable ProgressIndicator indicator) {
+      boolean finished = false;
+      try {
+        registerComponents(PluginManagerCore.getLoadedPlugins());
+        getStateStore().setPath(path, true, null);
+        super.init(indicator);
+        finished = true;
+      }
+      finally {
+        if (!finished) {
+          TransactionGuard.submitTransaction(this, () -> WriteAction.run(() -> Disposer.dispose(this)));
+        }
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Project" + (isDisposed() ? " (Disposed)" : " ") + TEMPLATE_PROJECT_NAME;
     }
   }
 }

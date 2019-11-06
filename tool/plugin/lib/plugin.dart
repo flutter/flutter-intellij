@@ -585,42 +585,10 @@ class BuildCommand extends ProductCommand {
       var files = <File, String>{};
       var processedFile, source;
 
-      // TODO: Remove this when we no longer support AS 3.3 (IJ 2018.2.5) or AS 3.4
-      if (spec.version.startsWith('3.4')) {
-        processedFile = File(
-            'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
-        source = processedFile.readAsStringSync();
-        files[processedFile] = source;
-        source = source.replaceAll('Icon getIcon()', 'Image getIcon()');
-        source = source.replaceAll(
-          'return FlutterIcons.AndroidStudioNewProject;',
-          'return IconUtil.toImage(FlutterIcons.AndroidStudioNewProject);',
-        );
-        source = source.replaceAll(
-          'return FlutterIcons.AndroidStudioNewPackage;',
-          'return IconUtil.toImage(FlutterIcons.AndroidStudioNewPackage);',
-        );
-        source = source.replaceAll(
-          'return FlutterIcons.AndroidStudioNewPlugin;',
-          'return IconUtil.toImage(FlutterIcons.AndroidStudioNewPlugin);',
-        );
-        source = source.replaceAll(
-          'return FlutterIcons.AndroidStudioNewModule;',
-          'return IconUtil.toImage(FlutterIcons.AndroidStudioNewModule);',
-        );
-        processedFile.writeAsStringSync(source);
-
-        processedFile = File(
-            'flutter-studio/src/io/flutter/actions/OpenAndroidModule.java');
-        source = processedFile.readAsStringSync();
-        files[processedFile] = source;
-        source = source.replaceAll('importProjectCore', 'importProject');
-        processedFile.writeAsStringSync(source);
-      }
+      // TODO: Remove this when we no longer support 191.x
 
       // This is for versions prior to AS 3.5
-      if (spec.version.startsWith('3.4') ||
-          spec.version.startsWith('2019.1.2')) {
+      if (spec.version.startsWith('2019.1')) {
         processedFile = File(
             'flutter-studio/src/io/flutter/FlutterStudioStartupActivity.java');
         source = processedFile.readAsStringSync();
@@ -659,14 +627,17 @@ class BuildCommand extends ProductCommand {
         processedFile.writeAsStringSync(source);
       }
 
-      if (!spec.version.startsWith('2019.2') &&
-          !spec.version.startsWith('3.6')) {
+      if (spec.version.startsWith('2019.1') || spec.version.startsWith('3.5')) {
         processedFile = File(
             'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
         source = processedFile.readAsStringSync();
         files[processedFile] = source;
         source = source.replaceAll(
             'androidProject.init(null);', 'androidProject.init();');
+        var last = 'static final String TEMPLATE_PROJECT_NAME = ';
+        var end = source.indexOf(last);
+        // Change the initializer to use null, equivalent to original code.
+        source = '${source.substring(0, end + last.length)}null;\n}}';
         processedFile.writeAsStringSync(source);
       }
 
