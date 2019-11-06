@@ -40,7 +40,7 @@ public class FlutterStudioStartupActivity implements StartupActivity {
     Topic topic = getStaticFieldValue(GradleSyncState.class, Topic.class, "GRADLE_SYNC_TOPIC");
     assert topic != null;
     //noinspection unchecked
-    
+    connection.subscribe((Topic<GradleSyncListener>)topic, makeSyncListener(project));
 
     if (!FlutterModuleUtils.hasFlutterModule(project)) {
       // TODO(messick): Remove this subscription after Android Q sources are published. Will be done by FlutterInitializer.
