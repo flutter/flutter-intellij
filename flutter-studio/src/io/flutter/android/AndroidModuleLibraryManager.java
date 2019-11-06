@@ -311,12 +311,12 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   private static class EmbeddedAndroidProject extends ProjectImpl {
     private String path;
 
-    static final String TEMPLATE_PROJECT_NAME = "_android";
-
     protected EmbeddedAndroidProject(@NotNull String filePath, @Nullable String projectName) {
       super(filePath, projectName);
       path = filePath;
     }
+
+    static final String TEMPLATE_PROJECT_NAME = "_android";
 
     @Override
     public void init(@Nullable ProgressIndicator indicator) {
