@@ -104,7 +104,7 @@ public class AttachDebuggerAction extends FlutterSdkAction {
       return;
     }
     boolean enabled;
-    RunnerAndConfigurationSettings settings = RunFlutterAction.getRunConfigSettings(e);
+    RunnerAndConfigurationSettings settings = RunManagerEx.getInstanceEx(project).getSelectedConfiguration();
     if (settings == null) {
       enabled = false;
     }
@@ -112,6 +112,7 @@ public class AttachDebuggerAction extends FlutterSdkAction {
       RunConfiguration configuration = settings.getConfiguration();
       enabled = configuration instanceof SdkRunConfig;
     }
+    e.getPresentation().setVisible(true);
     e.getPresentation().setEnabled(enabled);
   }
 
