@@ -358,6 +358,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
       // Query for display refresh rate and add the value to the stream.
       // This needs to happen on the UI thread.
+      //noinspection CodeBlock2Expr
       ApplicationManager.getApplication().invokeLater(() -> {
         getDisplayRefreshRate().thenAcceptAsync(displayRefreshRateStream::setValue);
       });
@@ -530,7 +531,9 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
   }
 
   public void hasServiceExtension(String name, Consumer<Boolean> onData, Disposable parentDisposable) {
-    Disposer.register(parentDisposable, hasServiceExtension(name, onData));
+    if (!Disposer.isDisposed(parentDisposable)) {
+      Disposer.register(parentDisposable, hasServiceExtension(name, onData));
+    }
   }
 
   public boolean hasRegisteredService(String name) {
