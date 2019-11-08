@@ -90,7 +90,18 @@ public abstract class RunFlutterAction extends AnAction {
 
     final ExecutionEnvironmentBuilder builder = ExecutionEnvironmentBuilder.create(executor, sdkRunConfig);
 
-    final ExecutionEnvironment env = builder.activeTarget().dataContext(e.getDataContext()).build();
+    final ExecutionEnvironment env;
+
+    try {
+      env = builder.activeTarget().dataContext(e.getDataContext()).build();
+    }
+    catch (IllegalStateException ex) {
+      // We're seeing IllegalStateExceptions from here (#4067 - "Runner must be specified"), and are not sure of
+      // the reason why. This adds a bit more diagnostics to the exception to help us determine what's going on.
+      throw new IllegalStateException(
+        ex.getMessage() + " (" + myExecutorId + "/" + myLaunchMode + "/" + getClass().getSimpleName() + ")");
+    }
+
     FlutterLaunchMode.addToEnvironment(env, myLaunchMode);
 
     ProgramRunnerUtil.executeConfiguration(env, false, true);
@@ -119,10 +130,7 @@ public abstract class RunFlutterAction extends AnAction {
   protected static String getSelectedRunConfig(@Nullable AnActionEvent e) {
     final RunnerAndConfigurationSettings settings = getRunConfigSettings(e);
     if (settings != null) {
-      final RunConfiguration configuration = settings.getConfiguration();
-      if (configuration != null) {
-        return configuration.getName();
-      }
+      return settings.getConfiguration().getName();
     }
     return null;
   }
