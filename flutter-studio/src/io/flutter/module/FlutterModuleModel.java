@@ -107,6 +107,9 @@ public class FlutterModuleModel extends FlutterProjectModel {
 
       // Build the AAR repository, needed by Gradle linkage.
       PubRoot pubRoot = PubRoot.forDirectory(VfsUtil.findFileByIoFile(flutterProject, true));
+      if (pubRoot == null) {
+        return;
+      }
       FlutterSdk sdk = FlutterSdk.forPath(model.flutterSdk().get());
       if (sdk == null) {
         return; // The error would have been shown in super.handleFinished().

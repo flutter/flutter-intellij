@@ -8,11 +8,7 @@ package io.flutter.actions;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
@@ -27,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class FlutterBuildActionGroup extends DefaultActionGroup {
 
-  public static OSProcessHandler build(Project project, PubRoot pubRoot, FlutterSdk sdk, BuildType buildType, String desc) {
+  public static OSProcessHandler build(Project project, @NotNull PubRoot pubRoot, FlutterSdk sdk, BuildType buildType, String desc) {
     ProgressHelper progressHelper = new ProgressHelper(project);
     progressHelper.start(desc);
     OSProcessHandler processHandler = sdk.flutterBuild(pubRoot, buildType.type).startInConsole(project);
