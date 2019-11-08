@@ -42,15 +42,19 @@ public class AsyncRateLimiter implements Disposable {
 
   public void scheduleRequest() {
     if (requestScheduledButNotStarted) {
-      // No need to schedule a request if one has already been scheduled but
-      // hasn't yet actually started executing.
+      // No need to schedule a request if one has already been scheduled but hasn't yet actually
+      // started executing.
+      return;
+    }
+
+    // Don't schedule the request if this rate limiter has been disposed.
+    if (requestScheduler.isDisposed()) {
       return;
     }
 
     if (pendingRequest != null && !pendingRequest.isDone()) {
-      // Wait for the pending request to be done before scheduling the new
-      // request. The existing request has already started so may return state
-      // that is now out of date.
+      // Wait for the pending request to be done before scheduling the new request. The existing
+      // request has already started so may return state that is now out of date.
       requestScheduledButNotStarted = true;
       whenCompleteUiThread(pendingRequest, (Object ignored, Throwable error) -> {
         pendingRequest = null;
@@ -65,8 +69,8 @@ public class AsyncRateLimiter implements Disposable {
       performRequest();
     }
     else {
-      // Track that we have scheduled a request and then schedule the request
-      // to occur once the rate limiter is available.
+      // Track that we have scheduled a request and then schedule the request to occur once the
+      // rate limiter is available.
       requestScheduledButNotStarted = true;
       requestScheduler.addRequest(() -> {
         rateLimiter.acquire();
