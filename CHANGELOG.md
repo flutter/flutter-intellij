@@ -1,3 +1,7 @@
+## 41.1
+- Adjust build range for AS beta 3 (#4061)
+- Fix error from undefined macro (#4056)
+
 ## 41.0
 - Remove support for file path breakpoints; handle multiple vm breakpoints better (#4019)
 - Force Android Studio to show the Project view (#4031)
