@@ -9,6 +9,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Toggleable;
+import com.intellij.openapi.diagnostic.Logger;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.vmService.ServiceExtensionDescription;
@@ -20,7 +21,10 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 class TogglePlatformAction extends ToolbarComboBoxAction {
+  private static final Logger LOG = Logger.getInstance(TogglePlatformAction.class);
+
   private static final ServiceExtensionDescription extensionDescription = ServiceExtensions.togglePlatformMode;
+
   private final @NotNull FlutterApp app;
   private final @NotNull AppState appState;
   private final DefaultActionGroup myActionGroup;
@@ -58,7 +62,7 @@ class TogglePlatformAction extends ToolbarComboBoxAction {
       final int platformIndex = extensionDescription.getValues().indexOf(selectedPlatform.name());
       if (platformIndex == -1) {
         selectorText = "Platform: Unknown";
-        System.out.println("Unknown platform: " + selectedPlatform.name());
+        LOG.info("Unknown platform: " + selectedPlatform.name());
       }
       else {
         selectorText = (String)extensionDescription.getTooltips().get(platformIndex);
