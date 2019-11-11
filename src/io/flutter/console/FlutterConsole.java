@@ -101,6 +101,8 @@ class FlutterConsole {
 
     // Show the panel.
     final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowId.MESSAGES_WINDOW);
-    toolWindow.activate(null, true);
+    if (toolWindow != null) {
+      toolWindow.activate(null, true);
+    }
   }
 }
