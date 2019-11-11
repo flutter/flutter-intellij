@@ -104,13 +104,15 @@ public class WidgetIndentsHighlightingPass {
   private final static boolean DEBUG_WIDGET_INDENTS = false;
 
   private static class WidgetCustomHighlighterRenderer implements CustomHighlighterRenderer {
-    private final WidgetIndentGuideDescriptor descriptor;
-    private final Document document;
+    @NotNull private final WidgetIndentGuideDescriptor descriptor;
+    @NotNull private final Document document;
+
     private boolean isSelected = false;
 
-    WidgetCustomHighlighterRenderer(WidgetIndentGuideDescriptor descriptor, Document document) {
+    WidgetCustomHighlighterRenderer(@NotNull WidgetIndentGuideDescriptor descriptor, @NotNull Document document) {
       this.descriptor = descriptor;
       this.document = document;
+
       descriptor.trackLocations(document);
     }
 
@@ -212,7 +214,7 @@ public class WidgetIndentsHighlightingPass {
       // case that the first indent guide line is, say, single-line comment where comment symbols ('//') are located at the first
       // visual column. We need to calculate correct indent guide column then.
       int lineShift = 1;
-      if (indentColumn <= 0 && descriptor != null) {
+      if (indentColumn <= 0) {
         indentColumn = descriptor.indentLevel;
         lineShift = 0;
       }
@@ -833,10 +835,10 @@ class WidgetIndentsPassData {
 }
 
 class TextRangeDescriptorPair {
-  final TextRange range;
-  final WidgetIndentGuideDescriptor descriptor;
+  @NotNull final TextRange range;
+  @NotNull final WidgetIndentGuideDescriptor descriptor;
 
-  TextRangeDescriptorPair(TextRange range, WidgetIndentGuideDescriptor descriptor) {
+  TextRangeDescriptorPair(@NotNull TextRange range, @NotNull WidgetIndentGuideDescriptor descriptor) {
     this.range = range;
     this.descriptor = descriptor;
   }
