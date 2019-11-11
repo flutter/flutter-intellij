@@ -315,9 +315,6 @@
     <projectService serviceInterface="io.flutter.devtools.DevToolsManager"
                     serviceImplementation="io.flutter.devtools.DevToolsManager"
                     overrides="false"/>
-    <projectService serviceInterface="io.flutter.devtools.WebDevManager"
-                    serviceImplementation="io.flutter.devtools.WebDevManager"
-                    overrides="false"/>
     <projectService serviceInterface="io.flutter.editor.ActiveEditorsOutlineService"
                     serviceImplementation="io.flutter.editor.ActiveEditorsOutlineService"
                     overrides="false"/>

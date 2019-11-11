@@ -71,9 +71,7 @@ public class FlutterApp implements Disposable {
   private final @NotNull Project myProject;
   private final @Nullable Module myModule;
   private final @NotNull RunMode myMode;
-  // TODO(jwren): myDevice is not-null for all run configurations except flutter web configurations
-  // See https://github.com/flutter/flutter-intellij/issues/3293.
-  private final @Nullable FlutterDevice myDevice;
+  private final @NotNull FlutterDevice myDevice;
   private final @NotNull ProcessHandler myProcessHandler;
   private final @NotNull ExecutionEnvironment myExecutionEnvironment;
   private final @NotNull DaemonApi myDaemonApi;
@@ -84,8 +82,6 @@ public class FlutterApp implements Disposable {
   private @Nullable String myBaseUri;
   private @Nullable ConsoleView myConsole;
   private FlutterConsoleLogManager myFlutterConsoleLogManager;
-
-  private boolean isPackageFlutterWeb = false;
 
   /**
    * The command with which the app was launched.
@@ -130,7 +126,7 @@ public class FlutterApp implements Disposable {
   FlutterApp(@NotNull Project project,
              @Nullable Module module,
              @NotNull RunMode mode,
-             @Nullable FlutterDevice device,
+             @NotNull FlutterDevice device,
              @NotNull ProcessHandler processHandler,
              @NotNull ExecutionEnvironment executionEnvironment,
              @NotNull DaemonApi daemonApi,
@@ -245,7 +241,7 @@ public class FlutterApp implements Disposable {
                                  @NotNull Project project,
                                  @Nullable Module module,
                                  @NotNull RunMode mode,
-                                 @Nullable FlutterDevice device,
+                                 @NotNull FlutterDevice device,
                                  @NotNull GeneralCommandLine command,
                                  @Nullable String analyticsStart,
                                  @Nullable String analyticsStop)
@@ -311,20 +307,8 @@ public class FlutterApp implements Disposable {
     return myConnector;
   }
 
-  public void setIsPackageFlutterWeb(boolean value) {
-    isPackageFlutterWeb = value;
-  }
-
-  public boolean getIsPackageFlutterWeb() {
-    return isPackageFlutterWeb;
-  }
-
   @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public boolean appSupportsHotReload() {
-    if (isPackageFlutterWeb) {
-      return false;
-    }
-
     // Introspect based on registered services.
     if (myVMServiceManager != null && myVMServiceManager.hasAnyRegisteredServices()) {
       return myVMServiceManager.hasRegisteredService("reloadSources");

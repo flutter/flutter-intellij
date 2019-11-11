@@ -281,18 +281,6 @@ public class FlutterModuleUtils {
   }
 
   /**
-   * Introspect into the module's content roots, looking for a pubspec.yaml that references flutter web.
-   */
-  public static boolean declaresFlutterWeb(@NotNull Module module) {
-    for (PubRoot root : PubRoots.forModule(module)) {
-      if (root.declaresFlutterWeb()) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
    * Find flutter modules.
    * <p>
    * Flutter modules are defined as:

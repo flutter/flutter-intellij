@@ -18,6 +18,7 @@
       <excludeFolder url="file://$MODULE_DIR$/artifacts" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/material-design-icons" />
+      <excludeFolder url="file://$MODULE_DIR$/releases" />
       <excludeFolder url="file://$MODULE_DIR$/src/main" />
       <excludeFolder url="file://$MODULE_DIR$/testData" />
       <excludeFolder url="file://$MODULE_DIR$/testData/sample_tests/.dart_tool" />
