@@ -253,7 +253,8 @@ public class FlutterConsoleLogManager {
     console.print(indent, contentType);
 
     if (property.getShowName()) {
-      console.print(property.getName(), contentType);
+      final String name = property.getName();
+      console.print(name == null ? "" : name, contentType);
 
       if (property.getShowSeparator()) {
         console.print(property.getSeparator() + " ", contentType);
