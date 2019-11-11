@@ -140,7 +140,7 @@ class HeapSamples {
     this.maxSampleSizeMs = maxSampleSizeMs;
   }
 
-  void add(HeapMonitor.HeapSample sample) {
+  void addSample(HeapMonitor.HeapSample sample) {
     samples.add(sample);
 
     // Leave a little bit extra in the samples we trim off.
@@ -150,4 +150,3 @@ class HeapSamples {
     }
   }
 }
-

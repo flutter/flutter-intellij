@@ -1,17 +1,7 @@
 /*
- * Copyright (C) 2018 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 package io.flutter.inspector;
 
@@ -21,13 +11,11 @@ import org.dartlang.vm.service.element.MemoryUsage;
 import java.text.DecimalFormat;
 import java.util.List;
 
-public class HeapState implements HeapMonitor.HeapListener {
+public class HeapState {
   private static final DecimalFormat df = new DecimalFormat();
-  private static final DecimalFormat df1 = new DecimalFormat();
 
   static {
-    df.setMaximumFractionDigits(0);
-    df1.setMaximumFractionDigits(1);
+    df.setMaximumFractionDigits(1);
   }
 
   // Running count of the max heap (in bytes).
@@ -62,23 +50,14 @@ public class HeapState implements HeapMonitor.HeapListener {
     return df.format(bytes / (1024 * 1024.0)) + "MB";
   }
 
-  private static String printMb1(int bytes) {
-    return df1.format(bytes / (1024 * 1024.0)) + "MB";
-  }
-
   public String getHeapSummary() {
-    return printMb1(samples.samples.getLast().getBytes()) + " of " + printMb1(heapMaxInBytes);
-  }
-
-  public String getSimpleHeapSummary() {
-    return printMb(samples.samples.getLast().getBytes());
+    return printMb(samples.samples.getLast().getBytes()) + " of " + printMb(heapMaxInBytes);
   }
 
   void addSample(HeapMonitor.HeapSample sample) {
-    samples.add(sample);
+    samples.addSample(sample);
   }
 
-  @Override
   public void handleMemoryUsage(List<MemoryUsage> memoryUsages) {
     int current = 0;
     int total = 0;
