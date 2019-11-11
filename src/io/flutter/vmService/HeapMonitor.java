@@ -5,14 +5,16 @@
  */
 package io.flutter.vmService;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.intellij.openapi.diagnostic.Logger;
 import org.dartlang.vm.service.consumer.GetMemoryUsageConsumer;
-import org.dartlang.vm.service.element.*;
+import org.dartlang.vm.service.element.IsolateRef;
+import org.dartlang.vm.service.element.MemoryUsage;
+import org.dartlang.vm.service.element.RPCError;
+import org.dartlang.vm.service.element.Sentinel;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.*;
 
 public class HeapMonitor {
@@ -24,30 +26,6 @@ public class HeapMonitor {
 
   public interface HeapListener {
     void handleMemoryUsage(List<MemoryUsage> memoryUsages);
-  }
-
-  static class HeapObject extends Obj {
-    HeapObject(@NotNull JsonObject json) {
-      super(json);
-    }
-
-    int getAsInt(String memberName) {
-      return json.get(memberName).getAsInt();
-    }
-
-    String getAsString(String memberName) {
-      return json.get(memberName).getAsString();
-    }
-
-    JsonObject getAsJsonObject(String memberName) {
-      final JsonElement element = json.get(memberName);
-      return element != null ? element.getAsJsonObject() : null;
-    }
-
-    Set<Map.Entry<String, JsonElement>> getEntries(String memberName) {
-      final JsonObject object = getAsJsonObject(memberName);
-      return object != null ? object.entrySet() : Collections.emptySet();
-    }
   }
 
   public static class HeapSample {
