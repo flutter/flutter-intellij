@@ -29,6 +29,11 @@
 
   <change-notes>
     <![CDATA[
+<h2>41.1</h2>
+<ul>
+  <li>Adjust build range for AS beta 3 (#4061)</li>
+  <li>Fix error from undefined macro (#4056)</li>
+</ul>
 <h2>41.0</h2>
 <ul>
   <li>Remove support for file path breakpoints; handle multiple vm breakpoints better (#4019)</li>
