@@ -15,7 +15,6 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import gnu.trove.THashMap;
 import io.flutter.inspector.EvalOnDartLibrary;
-import io.flutter.run.daemon.DaemonApi;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.StreamSubscription;
@@ -37,7 +36,7 @@ import java.util.function.Consumer;
 public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposable {
   public final double defaultRefreshRate = 60.0;
 
-  private static final Logger LOG = Logger.getInstance(DaemonApi.class);
+  private static final Logger LOG = Logger.getInstance(VMServiceManager.class);
 
   @NotNull private final FlutterApp app;
   @NotNull private final HeapMonitor heapMonitor;
@@ -169,8 +168,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
         if (didSendFirstFrameEvent) {
           onFrameEventReceived();
         }
-        // TODO(devoncarew): This can cause a issue with early disposable of the library.
-        //Disposer.dispose(flutterLibrary);
+        Disposer.dispose(flutterLibrary);
       });
     }
     if (isolate.getExtensionRPCs() != null) {
