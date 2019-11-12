@@ -25,7 +25,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
 
-public class InspectorTree extends Tree implements DataProvider, Disposable {
+public class InspectorTree extends Tree implements DataProvider {
   public final boolean detailsSubtree;
 
   private DefaultMutableTreeNode highlightedRoot;
@@ -90,7 +90,8 @@ public class InspectorTree extends Tree implements DataProvider, Disposable {
                        boolean detailsSubtree,
                        String parentTreeName,
                        boolean rootVisible,
-                       boolean legacyMode) {
+                       boolean legacyMode,
+                       Disposable parentDisposable) {
     super(treemodel);
     setUI(new InspectorTreeUI());
     final BasicTreeUI ui = (BasicTreeUI)getUI();
@@ -98,7 +99,7 @@ public class InspectorTree extends Tree implements DataProvider, Disposable {
 
     setRootVisible(rootVisible);
     getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-    registerShortcuts();
+    registerShortcuts(parentDisposable);
     if (detailsSubtree) {
       // TODO(devoncarew): This empty text is not showing up for the details area, even when there are no detail nodes.
       getEmptyText().setText(treeName + " subtree of the selected " + parentTreeName);
@@ -108,13 +109,8 @@ public class InspectorTree extends Tree implements DataProvider, Disposable {
     }
   }
 
-  void registerShortcuts() {
-    DebuggerUIUtil.registerActionOnComponent(InspectorActions.JUMP_TO_TYPE_SOURCE, this, this);
-  }
-
-  @Override
-  public void dispose() {
-    // TODO(jacobr): do we have anything to dispose?
+  void registerShortcuts(Disposable parentDisposable) {
+    DebuggerUIUtil.registerActionOnComponent(InspectorActions.JUMP_TO_TYPE_SOURCE, this, parentDisposable);
   }
 
   @Nullable

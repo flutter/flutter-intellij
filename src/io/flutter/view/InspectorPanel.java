@@ -174,8 +174,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     this.defaultIcon = iconMaker.fromInfo("Default");
 
-    refreshRateLimiter = new AsyncRateLimiter(REFRESH_FRAMES_PER_SECOND, this::refresh);
-    Disposer.register(this, refreshRateLimiter);
+    refreshRateLimiter = new AsyncRateLimiter(REFRESH_FRAMES_PER_SECOND, this::refresh, flutterApp);
 
     final String parentTreeDisplayName = (parentTree != null) ? parentTree.treeType.displayName : null;
 
@@ -185,9 +184,9 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       detailsSubtree,
       parentTreeDisplayName,
       treeType != InspectorService.FlutterTreeType.widget || (!isSummaryTree && !legacyMode),
-      legacyMode
+      legacyMode,
+      flutterApp
     );
-    Disposer.register(this, myRootsTree);
 
     // We want to reserve double clicking for navigation within the detail
     // tree and in the future for editing values in the tree.
