@@ -6,7 +6,6 @@ import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotifica
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskType;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.plugins.gradle.util.GradleConstants;
 
 public class FlutterExternalSystemTaskNotificationListener extends ExternalSystemTaskNotificationListenerAdapter {
 
@@ -14,11 +13,14 @@ public class FlutterExternalSystemTaskNotificationListener extends ExternalSyste
 
   @Override
   public void onSuccess(@NotNull ExternalSystemTaskId id) {
+    /* XXX hack
     if (id.getType() == ExternalSystemTaskType.RESOLVE_PROJECT && id.getProjectSystemId() == GradleConstants.SYSTEM_ID) {
       Project project = id.findProject();
       if (project != null) {
         AndroidUtils.checkDartSupport(project);
       }
     }
+
+     */
   }
 }
