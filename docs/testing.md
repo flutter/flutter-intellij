@@ -213,10 +213,7 @@ Go to the editor for MainActivity.kt. Change the onCreate method:
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-        System.loadLibrary("flutter")
         val engine = FlutterEngine(this.applicationContext)
-        FlutterMain.startInitialization(this.applicationContext)
-        FlutterMain.ensureInitializationComplete(this, null)
         engine.dartExecutor.executeDartEntrypoint(DartExecutor.DartEntrypoint.createDefault())
         fab.setOnClickListener { view ->
             FlutterEngineCache.getInstance().put("1", engine)
