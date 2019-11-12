@@ -27,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class FlutterBuildActionGroup extends DefaultActionGroup {
 
-  public static OSProcessHandler build(Project project, PubRoot pubRoot, FlutterSdk sdk, BuildType buildType, String desc) {
+  public static OSProcessHandler build(Project project, @NotNull PubRoot pubRoot, FlutterSdk sdk, BuildType buildType, String desc) {
     ProgressHelper progressHelper = new ProgressHelper(project);
     progressHelper.start(desc);
     OSProcessHandler processHandler = sdk.flutterBuild(pubRoot, buildType.type).startInConsole(project);
