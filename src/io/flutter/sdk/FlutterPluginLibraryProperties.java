@@ -7,6 +7,7 @@ package io.flutter.sdk;
 
 import com.intellij.openapi.roots.libraries.LibraryProperties;
 import com.intellij.util.xmlb.XmlSerializerUtil;
+import com.intellij.util.xmlb.annotations.Attribute;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,6 +30,10 @@ public class FlutterPluginLibraryProperties extends LibraryProperties<FlutterPlu
   public FlutterPluginLibraryProperties getState() {
     return this;
   }
+
+  // This attribute exists only to silence the "com.intellij.util.xmlb.Binding - no accessors for class" warning.
+  @Attribute(value = "placeholder")
+  public String placeholder;
 
   @Override
   public void loadState(@NotNull FlutterPluginLibraryProperties properties) {

@@ -6,6 +6,7 @@
 package io.flutter.preview;
 
 import com.intellij.util.EventDispatcher;
+import com.intellij.util.xmlb.annotations.Attribute;
 
 import javax.swing.event.ChangeListener;
 
@@ -26,6 +27,11 @@ public class PreviewViewState {
     dispatcher.removeListener(listener);
   }
 
+  // This attribute exists only to silence the "com.intellij.util.xmlb.Binding - no accessors for class" warning.
+  @Attribute(value = "placeholder")
+  public String placeholder;
+
   void copyFrom(PreviewViewState other) {
+    this.placeholder = other.placeholder;
   }
 }
