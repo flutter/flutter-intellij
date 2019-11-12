@@ -24,7 +24,7 @@ import static io.flutter.utils.AsyncUtils.whenCompleteUiThread;
  * <p>
  * Methods from this class must only be invoked from the main UI thread.
  */
-public class AsyncRateLimiter implements Disposable {
+public class AsyncRateLimiter {
   private final RateLimiter rateLimiter;
   private final Alarm requestScheduler;
   private final Computable<CompletableFuture<?>> callback;
@@ -34,10 +34,10 @@ public class AsyncRateLimiter implements Disposable {
    */
   private boolean requestScheduledButNotStarted;
 
-  public AsyncRateLimiter(double framesPerSecond, Computable<CompletableFuture<?>> callback) {
+  public AsyncRateLimiter(double framesPerSecond, Computable<CompletableFuture<?>> callback, Disposable parentDisposable) {
     this.callback = callback;
     rateLimiter = RateLimiter.create(framesPerSecond);
-    requestScheduler = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, this);
+    requestScheduler = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, parentDisposable);
   }
 
   public void scheduleRequest() {
@@ -93,9 +93,5 @@ public class AsyncRateLimiter implements Disposable {
 
   private void performRequest() {
     pendingRequest = callback.compute();
-  }
-
-  @Override
-  public void dispose() {
   }
 }

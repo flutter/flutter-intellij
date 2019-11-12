@@ -6,7 +6,10 @@
 package io.flutter.utils;
 
 import com.google.common.collect.ImmutableList;
+import com.intellij.openapi.CompositeDisposable;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.util.Disposer;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,6 +36,7 @@ public class AsyncRateLimiterTest {
 
   private Computable<CompletableFuture<?>> callback;
   private CompletableFuture<Void> callbacksDone;
+  private CompositeDisposable disposable;
   private int expectedEvents;
   private int numEvents;
 
@@ -42,6 +46,7 @@ public class AsyncRateLimiterTest {
     numEvents = 0;
 
     callbacksDone = new CompletableFuture<>();
+    disposable = new CompositeDisposable();
     rateLimiter = new AsyncRateLimiter(TEST_FRAMES_PER_SECOND, () -> {
       if (!SwingUtilities.isEventDispatchThread()) {
         log("subscriber should be called on Swing thread");
@@ -68,7 +73,12 @@ public class AsyncRateLimiterTest {
         log("unexpected number of events fired");
       }
       return ret;
-    });
+    }, disposable);
+  }
+
+  @After
+  public void tearDown() {
+    Disposer.dispose(disposable);
   }
 
   void scheduleRequest() {
