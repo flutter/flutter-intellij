@@ -45,7 +45,6 @@ import io.flutter.actions.RestartFlutterApp;
 import io.flutter.dart.DartPlugin;
 import io.flutter.logging.FlutterLog;
 import io.flutter.logging.FlutterLogView;
-import io.flutter.pub.PubRoot;
 import io.flutter.run.bazel.BazelRunConfig;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.DaemonConsoleView;
@@ -122,21 +121,13 @@ public class LaunchState extends CommandLineState {
     }
 
     final Project project = getEnvironment().getProject();
-    @Nullable FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
-    final boolean isPackageFlutterWeb = isPackageFlutterWeb(project);
-    // Flutter web does not yet support devices.
-    if (isPackageFlutterWeb) {
-      device = null;
-    }
-    else if (device == null) {
+    @Nullable final FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
+    if (device == null) {
       showNoDeviceConnectedMessage(project);
       return null;
     }
 
     final FlutterApp app = myCreateAppCallback.createApp(device);
-    if (isPackageFlutterWeb) {
-      app.setIsPackageFlutterWeb(true);
-    }
 
     // Cache for use in console configuration.
     FlutterApp.addToEnvironment(env, app);
@@ -157,9 +148,7 @@ public class LaunchState extends CommandLineState {
       }
     }
 
-    if (device != null) {
-      device.bringToFront();
-    }
+    device.bringToFront();
 
     // Check for and display any analysis errors when we launch an app.
     if (env.getRunProfile() instanceof SdkRunConfig) {
@@ -182,25 +171,6 @@ public class LaunchState extends CommandLineState {
     else {
       return new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
     }
-  }
-
-  private boolean isPackageFlutterWeb(Project project) {
-    boolean isPackageFlutterWeb = false;
-
-    // Checks if this is a pub-based project.
-    // TODO(djshuckerow): Refactor out pub-specific logic and provide bazel support.
-    if (SdkRunConfig.class.isAssignableFrom(runConfig.getClass())) {
-      final String filePath = ((SdkRunConfig)runConfig).getFields().getFilePath();
-
-      if (filePath != null) {
-        final MainFile main = MainFile.verify(filePath, project).get();
-        final PubRoot root = PubRoot.forDirectory(main.getAppDir());
-        if (root != null) {
-          isPackageFlutterWeb = FlutterUtils.declaresFlutterWeb(root.getPubspec());
-        }
-      }
-    }
-    return isPackageFlutterWeb;
   }
 
   private static Class classForName(String className) {
@@ -408,7 +378,7 @@ public class LaunchState extends CommandLineState {
         final String selectedDeviceId = getSelectedDeviceId(env.getProject());
 
         if (app != null) {
-          final boolean sameDevice = app.getIsPackageFlutterWeb() || StringUtil.equals(app.deviceId(), selectedDeviceId);
+          final boolean sameDevice = StringUtil.equals(app.deviceId(), selectedDeviceId);
 
           if (sameDevice) {
             if (executorId.equals(app.getMode().mode())) {

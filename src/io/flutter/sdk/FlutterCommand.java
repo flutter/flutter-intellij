@@ -279,7 +279,6 @@ public class FlutterCommand {
     PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),
     PACKAGES_PUB("Flutter packages pub", "packages", "pub"),
     RUN("Flutter run", "run"),
-    FLUTTER_WEB_RUN("Flutter Web run", "flutter_web_run"),
     UPGRADE("Flutter upgrade", "upgrade"),
     VERSION("Flutter version", "--version"),
     TEST("Flutter test", "test");

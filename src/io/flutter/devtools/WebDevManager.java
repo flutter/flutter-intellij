@@ -23,7 +23,10 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Manage installing the webdev cli.
+ *
+ * @deprecated WebDevManager will be removed shortly
  */
+@Deprecated
 public class WebDevManager {
   public static WebDevManager getInstance(@NotNull Project project) {
     return ServiceManager.getService(project, WebDevManager.class);

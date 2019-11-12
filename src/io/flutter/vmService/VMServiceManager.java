@@ -153,7 +153,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
     if (attach && isolate.getExtensionRPCs() != null && !firstFrameEventReceived) {
       final Set<String> bindingLibraryNames = new HashSet<>();
       bindingLibraryNames.add("package:flutter/src/widgets/binding.dart");
-      bindingLibraryNames.add("package:flutter_web/src/widgets/binding.dart");
 
       final EvalOnDartLibrary flutterLibrary = new EvalOnDartLibrary(
         bindingLibraryNames,

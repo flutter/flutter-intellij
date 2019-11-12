@@ -56,7 +56,6 @@ public class FlutterUtils {
     private final long modificationStamp;
 
     private boolean flutter = false;
-    private boolean flutterWeb = false;
     private boolean plugin = false;
 
     FlutterPubspecInfo(long modificationStamp) {
@@ -65,10 +64,6 @@ public class FlutterUtils {
 
     public boolean declaresFlutter() {
       return flutter;
-    }
-
-    public boolean declaresFlutterWeb() {
-      return flutterWeb;
     }
 
     public boolean isFlutterPlugin() {
@@ -324,7 +319,6 @@ public class FlutterUtils {
    */
   public static FlutterPubspecInfo getFlutterPubspecInfo(@NotNull final VirtualFile pubspec) {
     // It uses Flutter if it contains 'dependencies: flutter'.
-    // It uses Flutter if it contains 'dependencies: flutter_web'.
     // It's a plugin if it contains 'flutter: plugin'.
 
     final FlutterPubspecInfo info = new FlutterPubspecInfo(pubspec.getModificationStamp());
@@ -343,7 +337,6 @@ public class FlutterUtils {
         if (dependencies instanceof Map) {
           // We use `|=` for assigning to 'flutter' below as it might have been assigned to true above.
           info.flutter |= ((Map)dependencies).containsKey("flutter");
-          info.flutterWeb = ((Map)dependencies).containsKey("flutter_web");
         }
 
         // Check for a Flutter plugin.
@@ -365,13 +358,6 @@ public class FlutterUtils {
    */
   public static boolean declaresFlutter(@NotNull final VirtualFile pubspec) {
     return getFlutterPubspecInfo(pubspec).declaresFlutter();
-  }
-
-  /**
-   * Returns true if passed pubspec declares a flutter_web dependency.
-   */
-  public static boolean declaresFlutterWeb(@NotNull final VirtualFile pubspec) {
-    return getFlutterPubspecInfo(pubspec).declaresFlutterWeb();
   }
 
   /**

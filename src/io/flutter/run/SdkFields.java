@@ -14,7 +14,6 @@ import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRootCache;
@@ -127,15 +126,10 @@ public class SdkFields {
 
     final FlutterCommand command;
     String[] args = additionalArgs == null ? new String[]{ } : additionalArgs.split(" ");
-    if (FlutterUtils.declaresFlutterWeb(root.getPubspec())) {
-      command = flutterSdk.flutterRunWeb(root, runMode, args);
+    if (buildFlavor != null) {
+      args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
     }
-    else {
-      if (buildFlavor != null) {
-        args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
-      }
-      command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
-    }
+    command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
     return command.createGeneralCommandLine(project);
   }
 
