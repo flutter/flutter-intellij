@@ -65,6 +65,11 @@ public class FlutterSaveActionsManager {
     connection.subscribe(AppTopics.FILE_DOCUMENT_SYNC, new FileDocumentManagerListener() {
       @Override
       public void beforeDocumentSaving(@NotNull Document document) {
+        // Don't try and format read only docs.
+        if (!document.isWritable()) {
+          return;
+        }
+
         handleBeforeDocumentSaving(document);
       }
     });
