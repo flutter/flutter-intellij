@@ -593,6 +593,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
     final double unknownRefreshRate = 0.0;
 
     final String flutterViewId = getFlutterViewId().exceptionally(exception -> {
+      // We often see "java.lang.RuntimeException: Method not found" from here; perhaps a race condition?
       LOG.warn(exception.getMessage());
       return null;
     }).join();
@@ -653,12 +654,21 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
       ret.completeExceptionally(new RuntimeException("No isolate to query for Flutter views."));
       return ret;
     }
+    final String isolateId = getCurrentFlutterIsolateRaw().getId();
     vmService.callServiceExtension(
-      getCurrentFlutterIsolateRaw().getId(), ServiceExtensions.flutterListViews,
+      isolateId,
+      ServiceExtensions.flutterListViews,
       new ServiceExtensionConsumer() {
         @Override
         public void onError(RPCError error) {
-          ret.completeExceptionally(new RuntimeException(error.getMessage()));
+          String message = isolateId;
+          message += ":" + ServiceExtensions.flutterListViews;
+          message += ":" + error.getCode();
+          message += ":" + error.getMessage();
+          if (error.getDetails() != null) {
+            message += ":" + error.getDetails();
+          }
+          ret.completeExceptionally(new RuntimeException(message));
         }
 
         @Override
