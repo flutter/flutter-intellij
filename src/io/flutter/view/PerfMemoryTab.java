@@ -46,10 +46,8 @@ public class PerfMemoryTab extends JBPanel implements InspectorTabPanel {
 
   private void openInDevTools() {
     // open the memory view
-    DevToolsManager.getInstance(app.getProject()).openBrowserAndConnect(
-      app.getConnector().getBrowserUrl(),
-      "memory"
-    );
+    final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
+    devToolsManager.openToScreen(app, "memory");
   }
 
   @Override

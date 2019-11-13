@@ -216,8 +216,8 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PACKAGES_UPGRADE);
   }
 
-  public FlutterCommand flutterPackagesPub(@Nullable PubRoot root, String... args) {
-    return new FlutterCommand(this, root == null ? null : root.getRoot(), FlutterCommand.Type.PACKAGES_PUB, args);
+  public FlutterCommand flutterPub(@Nullable PubRoot root, String... args) {
+    return new FlutterCommand(this, root == null ? null : root.getRoot(), FlutterCommand.Type.PUB, args);
   }
 
   public FlutterCommand flutterMakeHostAppEditable(@NotNull PubRoot root) {
@@ -627,8 +627,8 @@ public class FlutterSdk {
     }
 
     @Override
-    public FlutterCommand flutterPackagesPub(@Nullable PubRoot root, String... args) {
-      return new BazelPubCommand(this, root == null ? null : root.getRoot(), FlutterCommand.Type.PACKAGES_PUB, args);
+    public FlutterCommand flutterPub(@Nullable PubRoot root, String... args) {
+      return new BazelPubCommand(this, root == null ? null : root.getRoot(), FlutterCommand.Type.PUB, args);
     }
   }
 
@@ -656,8 +656,8 @@ public class FlutterSdk {
 
       // Strip the subcommand from the parameters, because we will talk directly to pub.
       final List<String> parameters = new ArrayList<>(original.getParametersList().getList());
-      final int pubSubcommandIndex = Collections.indexOfSubList(parameters, Type.PACKAGES_PUB.subCommand);
-      for (int i = 0; i < Type.PACKAGES_PUB.subCommand.size(); i++) {
+      final int pubSubcommandIndex = Collections.indexOfSubList(parameters, Type.PUB.subCommand);
+      for (int i = 0; i < Type.PUB.subCommand.size(); i++) {
         parameters.remove(pubSubcommandIndex);
       }
 

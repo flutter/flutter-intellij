@@ -21,6 +21,7 @@ import io.flutter.FlutterMessages;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.console.FlutterConsoles;
 import io.flutter.dart.DartPlugin;
+import io.flutter.utils.MostlySilentOsProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -198,7 +199,7 @@ public class FlutterCommand {
     try {
       final GeneralCommandLine commandLine = createGeneralCommandLine(project);
       LOG.info(commandLine.toString());
-      handler = new OSProcessHandler(commandLine);
+      handler = new MostlySilentOsProcessHandler(commandLine);
       handler.addProcessListener(new ProcessAdapter() {
         @Override
         public void processTerminated(@NotNull final ProcessEvent event) {
@@ -277,7 +278,7 @@ public class FlutterCommand {
     MAKE_HOST_APP_EDITABLE("Flutter make-host-app-editable", "make-host-app-editable"),
     PACKAGES_GET("Flutter packages get", "packages", "get"),
     PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),
-    PACKAGES_PUB("Flutter packages pub", "packages", "pub"),
+    PUB("Flutter pub", "pub"),
     RUN("Flutter run", "run"),
     UPGRADE("Flutter upgrade", "upgrade"),
     VERSION("Flutter version", "--version"),

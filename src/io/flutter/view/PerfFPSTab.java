@@ -96,10 +96,8 @@ public class PerfFPSTab extends JBPanel implements InspectorTabPanel {
 
   private void openInDevTools() {
     // open the timeline view
-    DevToolsManager.getInstance(app.getProject()).openBrowserAndConnect(
-      app.getConnector().getBrowserUrl(),
-      "timeline"
-    );
+    final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
+    devToolsManager.openToScreen(app, "timeline");
   }
 
   @Override
