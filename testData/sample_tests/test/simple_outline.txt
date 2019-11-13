@@ -2,11 +2,13 @@
   "kind": "DART_ELEMENT",
   "offset": 0,
   "length": 878,
+  "codeOffset": 0,
+  "codeLength": 878,
   "dartElement": {
     "kind": "COMPILATION_UNIT",
     "name": "<unit>",
     "location": {
-      "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/simple_test.dart",
+      "file": "/usr/local/google/home/jacobr/git/flutter-intellij/1/flutter-intellij/testData/sample_tests/test/simple_test.dart",
       "offset": 0,
       "length": 878,
       "startLine": 1,
@@ -19,11 +21,13 @@
       "kind": "DART_ELEMENT",
       "offset": 206,
       "length": 671,
+      "codeOffset": 837,
+      "codeLength": 40,
       "dartElement": {
         "kind": "FUNCTION",
         "name": "main",
         "location": {
-          "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/simple_test.dart",
+          "file": "/usr/local/google/home/jacobr/git/flutter-intellij/1/flutter-intellij/testData/sample_tests/test/simple_test.dart",
           "offset": 842,
           "length": 4,
           "startLine": 20,
@@ -38,23 +42,22 @@
           "kind": "DART_ELEMENT",
           "offset": 853,
           "length": 21,
+          "codeOffset": 853,
+          "codeLength": 21,
           "dartElement": {
             "kind": "UNIT_TEST_TEST",
             "name": "test(\"test 1\")",
             "location": {
-              "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/simple_test.dart",
+              "file": "/usr/local/google/home/jacobr/git/flutter-intellij/1/flutter-intellij/testData/sample_tests/test/simple_test.dart",
               "offset": 853,
               "length": 4,
               "startLine": 21,
               "startColumn": 3
             },
             "flags": 0
-          },
-          "isWidgetClass": false
+          }
         }
-      ],
-      "isWidgetClass": false
+      ]
     }
-  ],
-  "isWidgetClass": false
+  ]
 }
