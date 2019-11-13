@@ -11,8 +11,11 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.dart.server.AnalysisServerListenerAdapter;
 import com.google.dart.server.ResponseListener;
 import com.google.gson.*;
+import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
@@ -29,7 +32,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class FlutterDartAnalysisServer {
+public class FlutterDartAnalysisServer implements Disposable {
   private static final String FLUTTER_NOTIFICATION_OUTLINE = "flutter.outline";
   private static final String FLUTTER_NOTIFICATION_OUTLINE_KEY = "\"flutter.outline\"";
 
@@ -49,6 +52,7 @@ public class FlutterDartAnalysisServer {
    * Each value is the {@link Consumer} for the response.
    */
   private final Map<String, Consumer<JsonObject>> responseConsumers = new HashMap<>();
+  private boolean isDisposed = false;
 
   @NotNull
   public static FlutterDartAnalysisServer getInstance(@NotNull final Project project) {
@@ -69,17 +73,24 @@ public class FlutterDartAnalysisServer {
         }
       }
     });
+    Disposer.register(project, this);
   }
 
   public void addOutlineListener(@NotNull final String filePath, @NotNull final FlutterOutlineListener listener) {
-    final List<FlutterOutlineListener> listeners = fileOutlineListeners.computeIfAbsent(filePath, k -> new ArrayList<>());
-    listeners.add(listener);
+    synchronized (fileOutlineListeners) {
+      final List<FlutterOutlineListener> listeners = fileOutlineListeners.computeIfAbsent(filePath, k -> new ArrayList<>());
+      listeners.add(listener);
+    }
     addSubscription(FlutterService.OUTLINE, filePath);
   }
 
   public void removeOutlineListener(@NotNull final String filePath, @NotNull final FlutterOutlineListener listener) {
-    final List<FlutterOutlineListener> listeners = fileOutlineListeners.get(filePath);
-    if (listeners != null && listeners.remove(listener)) {
+    final boolean removeSubscription;
+    synchronized (fileOutlineListeners) {
+      final List<FlutterOutlineListener> listeners = fileOutlineListeners.get(filePath);
+      removeSubscription = listeners != null && listeners.remove(listener);
+    }
+    if (removeSubscription) {
       removeSubscription(FlutterService.OUTLINE, filePath);
     }
   }
@@ -115,19 +126,21 @@ public class FlutterDartAnalysisServer {
     final CountDownLatch latch = new CountDownLatch(1);
     final AtomicReference<List<FlutterWidgetProperty>> result = new AtomicReference<>();
     final String id = analysisService.generateUniqueId();
-    responseConsumers.put(id, (resultObject) -> {
-      try {
-        final JsonArray propertiesObject = resultObject.getAsJsonArray("properties");
-        final ArrayList<FlutterWidgetProperty> properties = new ArrayList<>();
-        for (JsonElement propertyObject : propertiesObject) {
-          properties.add(FlutterWidgetProperty.fromJson(propertyObject.getAsJsonObject()));
+    synchronized (responseConsumers) {
+      responseConsumers.put(id, (resultObject) -> {
+        try {
+          final JsonArray propertiesObject = resultObject.getAsJsonArray("properties");
+          final ArrayList<FlutterWidgetProperty> properties = new ArrayList<>();
+          for (JsonElement propertyObject : propertiesObject) {
+            properties.add(FlutterWidgetProperty.fromJson(propertyObject.getAsJsonObject()));
+          }
+          result.set(properties);
         }
-        result.set(properties);
-      }
-      catch (Throwable ignored) {
-      }
-      latch.countDown();
-    });
+        catch (Throwable ignored) {
+        }
+        latch.countDown();
+      });
+    }
 
     final JsonObject request = FlutterRequestUtilities.generateFlutterGetWidgetDescription(id, filePath, offset);
     analysisService.sendRequest(id, request);
@@ -142,15 +155,17 @@ public class FlutterDartAnalysisServer {
     final CountDownLatch latch = new CountDownLatch(1);
     final AtomicReference<SourceChange> result = new AtomicReference<>();
     final String id = analysisService.generateUniqueId();
-    responseConsumers.put(id, (resultObject) -> {
-      try {
-        final JsonObject propertiesObject = resultObject.getAsJsonObject("change");
-        result.set(SourceChange.fromJson(propertiesObject));
-      }
-      catch (Throwable ignored) {
-      }
-      latch.countDown();
-    });
+    synchronized (responseConsumers) {
+      responseConsumers.put(id, (resultObject) -> {
+        try {
+          final JsonObject propertiesObject = resultObject.getAsJsonObject("change");
+          result.set(SourceChange.fromJson(propertiesObject));
+        }
+        catch (Throwable ignored) {
+        }
+        latch.countDown();
+      });
+    }
 
     final JsonObject request = FlutterRequestUtilities.generateFlutterSetWidgetPropertyValue(id, propertyId, value);
     analysisService.sendRequest(id, request);
@@ -160,7 +175,13 @@ public class FlutterDartAnalysisServer {
   }
 
   private void processString(String jsonString) {
-    processResponse(new Gson().fromJson(jsonString, JsonObject.class));
+    if (isDisposed) return;
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      // Short circuit just in case we have been disposed in the time it took
+      // for us to get around to listening for the response.
+      if (isDisposed) return;
+      processResponse(new JsonParser().parse(jsonString).getAsJsonObject());
+    });
   }
 
   /**
@@ -188,7 +209,10 @@ public class FlutterDartAnalysisServer {
     }
     final String idString = idJsonPrimitive.getAsString();
 
-    final Consumer<JsonObject> consumer = responseConsumers.remove(idString);
+    final Consumer<JsonObject> consumer;
+    synchronized (responseConsumers) {
+      consumer = responseConsumers.remove(idString);
+    }
     if (consumer == null) {
       return;
     }
@@ -212,9 +236,13 @@ public class FlutterDartAnalysisServer {
       final JsonObject outlineObject = paramsObject.get("outline").getAsJsonObject();
       final FlutterOutline outline = FlutterOutline.fromJson(outlineObject);
 
-      final List<FlutterOutlineListener> listeners = fileOutlineListeners.get(file);
-      if (listeners != null) {
-        for (FlutterOutlineListener listener : Lists.newArrayList(listeners)) {
+      final List<FlutterOutlineListener> listenersUpdated;
+      synchronized (fileOutlineListeners) {
+        final List<FlutterOutlineListener> listeners = fileOutlineListeners.get(file);
+        listenersUpdated = listeners != null ? Lists.newArrayList(listeners) : null;
+      }
+      if (listenersUpdated != null) {
+        for (FlutterOutlineListener listener : listenersUpdated) {
           listener.outlineUpdated(file, outline, instrumentedCode);
         }
       }
@@ -232,5 +260,10 @@ public class FlutterDartAnalysisServer {
     public void onResponse(String jsonString) {
       processString(jsonString);
     }
+  }
+
+  @Override
+  public void dispose() {
+    isDisposed = true;
   }
 }
