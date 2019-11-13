@@ -29,6 +29,7 @@ import com.intellij.openapi.vfs.CharsetToolkit;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.console.FlutterConsoles;
+import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
@@ -131,8 +132,26 @@ public class DevToolsManager {
     openBrowserAndConnect(uri, null);
   }
 
-  public void openBrowserAndConnect(String uri, String page) {
-    openBrowserImpl(uri, page);
+  public void openBrowserAndConnect(String uri, String screen) {
+    openBrowserImpl(uri, screen);
+  }
+
+  /**
+   * Open a browser connected to DevTools with the given (optional) screen.
+   * <p>
+   * Calling this method may cause DevTools to be installed (in which case, this API will provide
+   * appropriate progress feedback to the user).
+   */
+  public void openToScreen(@NotNull FlutterApp app, @Nullable String screen) {
+    // TODO(devoncarew): Provide feedback through the API about whether the app launch worked.
+
+    if (hasInstalledDevTools()) {
+      openBrowserAndConnect(app.getConnector().getBrowserUrl(), screen);
+    }
+    else {
+      final CompletableFuture<Boolean> result = installDevTools();
+      result.thenAccept(o -> openBrowserAndConnect(app.getConnector().getBrowserUrl(), screen));
+    }
   }
 
   /**
@@ -192,9 +211,9 @@ public class DevToolsManager {
     return FlutterSettings.getInstance().shouldUseBazel() && Workspace.load(project) != null;
   }
 
-  private void openBrowserImpl(String uri, String page) {
+  private void openBrowserImpl(String uri, String screen) {
     if (devToolsInstance != null) {
-      devToolsInstance.openBrowserAndConnect(uri, page);
+      devToolsInstance.openBrowserAndConnect(uri, screen);
     }
     else {
       @Nullable final OSProcessHandler handler =
@@ -207,13 +226,14 @@ public class DevToolsManager {
         DevToolsInstance.startServer(handler, instance -> {
           devToolsInstance = instance;
 
-          devToolsInstance.openBrowserAndConnect(uri, page);
+          devToolsInstance.openBrowserAndConnect(uri, screen);
         }, () -> {
           // Listen for closing; null out the devToolsInstance.
           devToolsInstance = null;
         });
       }
       else {
+        // TODO(devoncarew): We should provide feedback to callers that the open browser call failed.
         devToolsInstance = null;
       }
     }
