@@ -80,8 +80,6 @@ class LintCommand extends Command {
       'com.android.annotations.NonNull',
       'io.netty.',
       'javax.annotation.Nullable',
-      'org.apache.commons.lang3.StringUtils',
-      'org.apache.commons.lang3.builder.HashCodeBuilder',
       // Not technically a bad import, but not all IntelliJ platforms provide
       // this library.
       'org.apache.commons.io.',
