@@ -337,16 +337,21 @@ public class FlutterOutline {
     builder.append(label + ", ");
     builder.append("dartElement=");
     builder.append(dartElement + ", ");
-    builder.append("attributes=");
-    builder.append(StringUtils.join(attributes, ", ") + ", ");
+    if (attributes != null) {
+      builder.append("attributes=");
+      builder.append(StringUtils.join(attributes, ", ") + ", ");
+    }
     builder.append("className=");
     builder.append(className + ", ");
     builder.append("parentAssociationLabel=");
     builder.append(parentAssociationLabel + ", ");
     builder.append("variableName=");
     builder.append(variableName + ", ");
-    builder.append("children=");
-    builder.append(StringUtils.join(children, ", "));
+    if (children != null) {
+      builder.append("children=");
+      builder.append(StringUtils.join(children, ", "));
+    }
+
     builder.append("]");
     return builder.toString();
   }
