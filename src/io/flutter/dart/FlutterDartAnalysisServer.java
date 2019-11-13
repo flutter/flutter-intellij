@@ -30,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class FlutterDartAnalysisServer {
-  private static final String FLUTTER_DESIGN_TIME_CONSTRUCTOR = "flutter.getChangeAddForDesignTimeConstructor";
   private static final String FLUTTER_NOTIFICATION_OUTLINE = "flutter.outline";
   private static final String FLUTTER_NOTIFICATION_OUTLINE_KEY = "\"flutter.outline\"";
 
