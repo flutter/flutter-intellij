@@ -79,7 +79,9 @@ public class StdoutJsonParser {
 
   private void flushLine() {
     if (buffer.length() > 0) {
-      lines.add(buffer.toString());
+      synchronized (lines) {
+        lines.add(buffer.toString());
+      }
       buffer.setLength(0);
     }
     bufferIsJson = false;
@@ -89,8 +91,10 @@ public class StdoutJsonParser {
    * Read any lines available from the processed output.
    */
   public List<String> getAvailableLines() {
-    final List<String> copy = new ArrayList<>(lines);
-    lines.clear();
-    return copy;
+    synchronized (lines) {
+      final List<String> copy = new ArrayList<>(lines);
+      lines.clear();
+      return copy;
+    }
   }
 }
