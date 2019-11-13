@@ -33,8 +33,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-// TODO(devoncarew): This class performs blocking work on the UI thread; we should fix.
-
 /**
  * Provides the list of available devices (mobile phones or emulators) that appears in the dropdown menu.
  */
@@ -229,9 +227,11 @@ public class DeviceService {
     try {
       return nextCommand.start(request::isCancelled, this::refreshDeviceSelection, this::daemonStopped);
     }
-    catch (ExecutionException e) {
-      LOG.error(e);
-      return previous; // Couldn't start a new one so don't shut it down.
+    catch (ExecutionException executionException) {
+      LOG.info("Error starting up the Flutter device daemon", executionException);
+
+      // Couldn't start a new instance; don't shut down down any previous instance.
+      return previous;
     }
   }
 
