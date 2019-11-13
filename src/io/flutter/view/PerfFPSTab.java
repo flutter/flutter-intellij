@@ -25,6 +25,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.concurrent.CompletableFuture;
 
 public class PerfFPSTab extends JBPanel implements InspectorTabPanel {
   private static final NumberFormat fpsFormat = new DecimalFormat();
@@ -95,11 +96,16 @@ public class PerfFPSTab extends JBPanel implements InspectorTabPanel {
   }
 
   private void openInDevTools() {
+    final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
+
     // open the timeline view
-    DevToolsManager.getInstance(app.getProject()).openBrowserAndConnect(
-      app.getConnector().getBrowserUrl(),
-      "timeline"
-    );
+    if (devToolsManager.hasInstalledDevTools()) {
+      devToolsManager.openBrowserAndConnect(app.getConnector().getBrowserUrl(), "timeline");
+    }
+    else {
+      final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
+      result.thenAccept(o -> devToolsManager.openBrowserAndConnect(app.getConnector().getBrowserUrl(), "timeline"));
+    }
   }
 
   @Override

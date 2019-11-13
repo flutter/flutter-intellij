@@ -16,6 +16,7 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.ide.browsers.BrowserLauncher;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -28,8 +29,6 @@ import com.intellij.openapi.vfs.CharsetToolkit;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.console.FlutterConsoles;
-import io.flutter.pub.PubRoot;
-import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
@@ -69,15 +68,14 @@ public class DevToolsManager {
       // Bazel projects do not need to load DevTools.
       return createCompletedFuture(true);
     }
+
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     if (sdk == null) {
       return createCompletedFuture(false);
     }
 
     final CompletableFuture<Boolean> result = new CompletableFuture<>();
-    // TODO(https://github.com/flutter/flutter/issues/33324): We shouldn't need a pubroot to call pub global.
-    @Nullable final PubRoot pubRoot = PubRoots.forProject(project).stream().findFirst().orElse(null);
-    final FlutterCommand command = sdk.flutterPackagesPub(pubRoot, "global", "activate", "devtools");
+    final FlutterCommand command = sdk.flutterPub(null, "global", "activate", "devtools");
 
     final ProgressManager progressManager = ProgressManager.getInstance();
     progressManager.run(new Task.Backgroundable(project, "Installing DevTools...", true) {
@@ -147,13 +145,16 @@ public class DevToolsManager {
       return null;
     }
 
-    // TODO(https://github.com/flutter/flutter/issues/33324): We shouldn't need a pubroot to call pub global.
-    @Nullable final PubRoot pubRoot = PubRoots.forProject(project).stream().findFirst().orElse(null);
-    final FlutterCommand command = sdk.flutterPackagesPub(pubRoot, "global", "run", "devtools", "--machine", "--port=0");
+    final FlutterCommand command = sdk.flutterPub(null, "global", "run", "devtools", "--machine", "--port=0");
+    final OSProcessHandler processHandler = command.startProcessOrShowError(project);
 
-    // TODO(devoncarew): Refactor this so that we don't use the console to display output - this steals
-    // focus away from the Run (or Debug) view.
-    return command.startInConsole(project);
+    if (processHandler != null) {
+      ApplicationManager.getApplication().invokeLater(() -> {
+        //noinspection Convert2MethodRef
+        processHandler.startNotify();
+      });
+    }
+    return processHandler;
   }
 
   /**
@@ -194,21 +195,28 @@ public class DevToolsManager {
   private void openBrowserImpl(String uri, String page) {
     if (devToolsInstance != null) {
       devToolsInstance.openBrowserAndConnect(uri, page);
-      return;
     }
+    else {
+      @Nullable final OSProcessHandler handler =
+        isBazel(project) ? getProcessHandlerForBazel() : getProcessHandlerForPub();
 
-    @Nullable
-    final OSProcessHandler handler = isBazel(project) ? getProcessHandlerForBazel() : getProcessHandlerForPub();
+      if (handler != null) {
+        // TODO(devoncarew) Add a Task.Backgroundable here; "Starting devtools..."
 
-    // start the server
-    DevToolsInstance.startServer(handler, instance -> {
-      devToolsInstance = instance;
+        // start the server
+        DevToolsInstance.startServer(handler, instance -> {
+          devToolsInstance = instance;
 
-      devToolsInstance.openBrowserAndConnect(uri, page);
-    }, instance -> {
-      // Listen for closing, null out the devToolsInstance.
-      devToolsInstance = null;
-    });
+          devToolsInstance.openBrowserAndConnect(uri, page);
+        }, () -> {
+          // Listen for closing; null out the devToolsInstance.
+          devToolsInstance = null;
+        });
+      }
+      else {
+        devToolsInstance = null;
+      }
+    }
   }
 
   private CompletableFuture<Boolean> createCompletedFuture(boolean value) {
@@ -220,14 +228,10 @@ public class DevToolsManager {
 
 class DevToolsInstance {
   public static void startServer(
-    @Nullable OSProcessHandler processHandler,
+    @NotNull OSProcessHandler processHandler,
     @NotNull Callback<DevToolsInstance> onSuccess,
-    @NotNull Callback<DevToolsInstance> onClose
+    @NotNull Runnable onClose
   ) {
-    if (processHandler == null) {
-      return;
-    }
-
     processHandler.addProcessListener(new ProcessAdapter() {
       @Override
       public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
@@ -262,7 +266,7 @@ class DevToolsInstance {
 
       @Override
       public void processTerminated(@NotNull ProcessEvent event) {
-        onClose.call(null);
+        onClose.run();
       }
     });
   }

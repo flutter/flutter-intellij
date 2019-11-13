@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.concurrent.CompletableFuture;
 
 public class PerfMemoryTab extends JBPanel implements InspectorTabPanel {
   private static final Logger LOG = Logger.getInstance(PerfMemoryTab.class);
@@ -45,11 +46,16 @@ public class PerfMemoryTab extends JBPanel implements InspectorTabPanel {
   }
 
   private void openInDevTools() {
+    final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
+
     // open the memory view
-    DevToolsManager.getInstance(app.getProject()).openBrowserAndConnect(
-      app.getConnector().getBrowserUrl(),
-      "memory"
-    );
+    if (devToolsManager.hasInstalledDevTools()) {
+      devToolsManager.openBrowserAndConnect(app.getConnector().getBrowserUrl(), "memory");
+    }
+    else {
+      final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
+      result.thenAccept(o -> devToolsManager.openBrowserAndConnect(app.getConnector().getBrowserUrl(), "memory"));
+    }
   }
 
   @Override
