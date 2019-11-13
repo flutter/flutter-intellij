@@ -54,7 +54,7 @@ class TogglePlatformAction extends ToolbarComboBoxAction {
     }, true);
 
     String selectorText = "Platform:";
-    if (selectedPlatform != null) {
+    if (selectedPlatform != null && selectedPlatform != PlatformTarget.unknown) {
       if (selectedPlatform == PlatformTarget.fuchsia && !appState.flutterViewActions.contains(fuchsiaAction)) {
         myActionGroup.add(appState.registerAction(fuchsiaAction));
       }
