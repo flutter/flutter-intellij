@@ -171,7 +171,14 @@ public class FlutterUtils {
    * Test if the given element is contained in a module with a pub root that declares a flutter dependency.
    */
   public static boolean isInFlutterProject(@NotNull Project project, @NotNull PsiElement element) {
-    final PubRoot pubRoot = PubRootCache.getInstance(project).getRoot(element.getContainingFile());
+    PsiFile file = element.getContainingFile();
+    if (file == null) {
+      return false;
+    }
+    final PubRoot pubRoot = PubRootCache.getInstance(project).getRoot(file);
+    if (pubRoot == null) {
+      return false;
+    }
     return pubRoot.declaresFlutter();
   }
 
@@ -416,7 +423,10 @@ public class FlutterUtils {
     assert projectDir != null;
     VirtualFile androidDir = getFlutterManagedAndroidDir(projectDir);
     if (androidDir == null) {
-      return false;
+      androidDir = getAndroidProjectDir(projectDir);
+      if (androidDir == null) {
+        return false;
+      }
     }
     VirtualFile propFile = androidDir.findChild("gradle.properties");
     if (propFile == null) {
@@ -434,6 +444,10 @@ public class FlutterUtils {
       return Boolean.parseBoolean(value);
     }
     return false;
+  }
+
+  private static VirtualFile getAndroidProjectDir(VirtualFile dir) {
+    return (dir.findChild("app") == null) ? null : dir;
   }
 
   @Nullable

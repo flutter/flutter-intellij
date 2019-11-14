@@ -82,6 +82,11 @@ public class ImportFlutterModuleStep extends SkippableWizardStep<FlutterProjectM
     return myValidatorPanel.hasErrors().not();
   }
 
+  @Override
+  protected void onEntering() {
+    getModel().projectType().setValue(FlutterProjectType.IMPORT);
+  }
+
   @NotNull
   private static Validator.Result validateFlutterModuleLocation(String path) {
     VirtualFile file = VfsUtil.findFileByIoFile(new File(path), true);

@@ -182,3 +182,64 @@ Verify installation and configuration in a fresh IDEA installation.
 * Set the Flutter SDK path to a valid SDK location.
   * Verify that invalid locations are rejected (and cannot be applied).
 * Verify project creation, run/debug.
+
+## Add-to-app module integration test
+Create and debug a Flutter module in an Android app.
+
+###Create an Android app
+
+Start Android Studio and use the File > New > New Project menu to fire 
+up the new project wizard. Choose the template that includes a Basic
+Activity. One the next page, use Kotlin and minimum API level 16.
+Let the system stabilize (Gradle sync).
+
+Close the editor for content_main.xml. Switch the Project view to
+the Project Files mode. Collapse the Gradle window if it is open.
+
+###Create a Flutter module
+
+Use the File > New > New Module menu to start the new module wizard.
+Choose the Flutter Module template. Fill out the wizard pages and
+click Finish, then wait a bit. Android Studio needs to do two
+successive Gradle sync's. The first one generates an error message,
+which is corrected by the second one. Ignore the error. Let the
+system stabilize again.
+
+###Link the Flutter module to the Android app
+
+Go to the editor for MainActivity.kt. Change the onCreate method:
+```kotlin
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        setSupportActionBar(toolbar)
+        val engine = FlutterEngine(this.applicationContext)
+        engine.dartExecutor.executeDartEntrypoint(DartExecutor.DartEntrypoint.createDefault())
+        fab.setOnClickListener { view ->
+            FlutterEngineCache.getInstance().put("1", engine)
+            startActivity(FlutterActivity.withCachedEngine("1").build(this))
+        }
+    }
+```
+You need to add some imports. Click on each red name then type
+`alt-return`. Accept the suggestion. "FlutterActivity" has two choices;
+use the one from io.flutter.embedGradle.
+
+Open an editor on the AndroidManifest.xml. Add this line to the
+<application> tag:
+```xml
+        <activity android:name="io.flutter.embedding.android.FlutterActivity" />
+```
+###Debug the app
+
+The run config should show the Flutter run config, which makes the Flutter Attach
+button active. Click the Flutter Attach button, or use the menu item Run > Flutter
+Attach. (Note: with the kotlin code above you need to start the attach process
+before starting the Android app.)
+
+Change the run config to "app" for the Android app. Click the Debug button.
+Wait for the app to launch.
+
+When the app is visible, click the mail icon at bottom right. The Flutter
+screen should become visible. At this point you can set breakpoints and
+do hot reload as for a stand-alone Flutter app.

@@ -15,11 +15,14 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.project.FlutterProjectModel;
+import io.flutter.pub.PubRoot;
+import io.flutter.utils.FlutterModuleUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.function.Consumer;
@@ -49,7 +52,7 @@ public class FlutterModuleImporter {
   }
 
   public void importModule() {
-    String location = myModel.projectLocation().get()+ "/" + myModel.projectName().get();
+    String location = myModel.projectLocation().get() + "/" + myModel.projectName().get();
     VirtualFile moduleRoot = VfsUtil.findFileByIoFile(new File(location), true);
     assert (moduleRoot != null);
     assert (myModel.project().get().isPresent());
@@ -62,7 +65,7 @@ public class FlutterModuleImporter {
     }
 
     String newPath = Paths.get(myRelativePath, ".android", "include_flutter.groovy").normalize().toString();
-    if (!new File(moduleRoot.getParent().getPath(), newPath).exists()) {
+    if (!new File((newPath.startsWith("..") ? moduleRoot : moduleRoot.getParent()).getPath(), newPath).exists()) {
       showHowToEditDialog();
       return;
     }
@@ -98,18 +101,23 @@ public class FlutterModuleImporter {
     // After both buffers are full, write them both to their original files.
     ApplicationManager.getApplication().runWriteAction(() -> {
       try {
-        settingsFile.setBinaryContent(settingsWriter.toString().getBytes(Charset.defaultCharset()));
-        buildFile.setBinaryContent(buildWriter.toString().getBytes(Charset.defaultCharset()));
+        settingsFile.setBinaryContent(settingsWriter.toString().getBytes(StandardCharsets.UTF_8));
+        buildFile.setBinaryContent(buildWriter.toString().getBytes(StandardCharsets.UTF_8));
       }
       catch (IOException e) {
         // Should not happen
       }
     });
+
+    // Setup a default run configuration for 'main.dart' (if it's not there already and the file exists).
+    PubRoot pubRoot = PubRoot.forDirectory(moduleRoot);
+    assert(pubRoot != null);
+    FlutterModuleUtils.autoCreateRunConfig(androidProject, pubRoot);
   }
 
   private StringWriter editFileContent(VirtualFile file, Consumer<String> editFunction) throws IOException {
     writer = new StringWriter();
-    try (BufferedReader r = Files.newBufferedReader(Paths.get(file.getPath()), Charset.defaultCharset())) {
+    try (BufferedReader r = Files.newBufferedReader(Paths.get(file.getPath()), StandardCharsets.UTF_8)) {
       hasFinishedEditing = false;
       r.lines().forEach(editFunction);
       writer.close();
