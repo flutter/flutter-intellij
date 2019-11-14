@@ -23,14 +23,14 @@
       "untilBuild": "191.*"
     },
     {
-      "comments": "Android Studio 3.6 Beta 2",
+      "comments": "Android Studio 3.6 Beta 4",
       "name": "Android Studio 3.6",
       "version": "3.6",
       "ideaProduct": "android-studio",
       "ideaVersion": "192.5947919",
       "dartPluginVersion": "192.6603.23",
       "sinceBuild": "192.6262",
-      "untilBuild": "192.6817.14.36.5982640"
+      "untilBuild": "192.7141"
     },
     {
       "comments": "IntelliJ 2019.2.4",
