@@ -9,6 +9,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import org.dartlang.analysis.server.protocol.FlutterWidgetPropertyValue;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -20,14 +21,32 @@ import java.util.Map;
 public class FlutterRequestUtilities {
   private static final String FILE = "file";
   private static final String ID = "id";
+  private static final String VALUE = "value";
   private static final String METHOD = "method";
   private static final String PARAMS = "params";
   private static final String OFFSET = "offset";
   private static final String SUBSCRIPTIONS = "subscriptions";
 
+  private static final String METHOD_FLUTTER_GET_CHANGE_ADD_FOR_DESIGN_TIME_CONSTRUCTOR = "flutter.getChangeAddForDesignTimeConstructor";
   private static final String METHOD_FLUTTER_SET_SUBSCRIPTIONS = "flutter.setSubscriptions";
+  private static final String METHOD_FLUTTER_GET_WIDGET_DESCRIPTION = "flutter.getWidgetDescription";
+  private static final String METHOD_FLUTTER_SET_WIDGET_PROPERTY_VALUE = "flutter.setWidgetPropertyValue";
 
   private FlutterRequestUtilities() {
+  }
+
+  public static JsonObject generateFlutterGetWidgetDescription(String id, String file, int offset) {
+    final JsonObject params = new JsonObject();
+    params.addProperty(FILE, file);
+    params.addProperty(OFFSET, offset);
+    return buildJsonObjectRequest(id, METHOD_FLUTTER_GET_WIDGET_DESCRIPTION, params);
+  }
+
+  public static JsonObject generateFlutterSetWidgetPropertyValue(String id, int propertyId, FlutterWidgetPropertyValue value) {
+    final JsonObject params = new JsonObject();
+    params.addProperty(ID, propertyId);
+    params.add(VALUE, value.toJson());
+    return buildJsonObjectRequest(id, METHOD_FLUTTER_SET_WIDGET_PROPERTY_VALUE, params);
   }
 
   /**
