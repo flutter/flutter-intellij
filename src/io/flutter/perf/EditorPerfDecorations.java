@@ -26,7 +26,7 @@ import com.intellij.ui.JBColor;
 import com.intellij.xdebugger.XSourcePosition;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AsyncUtils;
-import io.flutter.view.FlutterPerfView;
+import io.flutter.performance.FlutterPerformanceView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -345,7 +345,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
         if (isActive()) {
 
           final ToolWindowManagerEx toolWindowManager = ToolWindowManagerEx.getInstanceEx(getApp().getProject());
-          final ToolWindow flutterPerfToolWindow = toolWindowManager.getToolWindow(FlutterPerfView.TOOL_WINDOW_ID);
+          final ToolWindow flutterPerfToolWindow = toolWindowManager.getToolWindow(FlutterPerformanceView.TOOL_WINDOW_ID);
           if (flutterPerfToolWindow.isVisible()) {
             showPerfViewMessage();
             return;
@@ -357,7 +357,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
   }
 
   private void showPerfViewMessage() {
-    final FlutterPerfView flutterPerfView = ServiceManager.getService(getApp().getProject(), FlutterPerfView.class);
+    final FlutterPerformanceView flutterPerfView = ServiceManager.getService(getApp().getProject(), FlutterPerformanceView.class);
     flutterPerfView.showForAppRebuildCounts(getApp());
     String message = "<html><body>" +
                      getTooltipHtmlFragment() +

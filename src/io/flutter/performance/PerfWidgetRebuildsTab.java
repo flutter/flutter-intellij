@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.view;
+package io.flutter.performance;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
@@ -74,7 +74,7 @@ public class PerfWidgetRebuildsTab extends JBPanel {
     perfSummaryPlaceholder.add(scrollPane);
 
     final JPanel perfViewSettings = new JPanel(new VerticalLayout(5));
-    trackRebuildsCheckbox = new JCheckBox("Enable rebuild stats");
+    trackRebuildsCheckbox = new JCheckBox("Track widget rebuilds");
     trackRebuildsCheckbox.setHorizontalAlignment(JLabel.RIGHT);
     trackRebuildsCheckbox.setToolTipText(
       "<html><body><p><b>This profiler identifies widgets that are rebuilt when the UI changes.</b></p>" +

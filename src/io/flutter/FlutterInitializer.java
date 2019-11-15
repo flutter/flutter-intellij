@@ -41,7 +41,7 @@ import io.flutter.settings.FlutterSettings;
 import io.flutter.survey.FlutterSurveyNotifications;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
-import io.flutter.view.FlutterPerfViewFactory;
+import io.flutter.performance.FlutterPerformanceViewFactory;
 import io.flutter.view.FlutterViewFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -101,7 +101,7 @@ public class FlutterInitializer implements StartupActivity {
     // Start watching for Flutter debug active events.
     FlutterViewFactory.init(project);
 
-    FlutterPerfViewFactory.init(project);
+    FlutterPerformanceViewFactory.init(project);
 
     // If the project declares a Flutter dependency, do some extra initialization.
     boolean hasFlutterModule = false;

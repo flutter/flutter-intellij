@@ -1,9 +1,9 @@
 /*
- * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Copyright 2019 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.view;
+package io.flutter.performance;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionGroup;
@@ -599,7 +599,6 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
         default:
           return null;
       }
-
     }
   }
 }

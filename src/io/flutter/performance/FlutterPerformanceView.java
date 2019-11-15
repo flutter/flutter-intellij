@@ -1,9 +1,9 @@
 /*
- * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Copyright 2019 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.view;
+package io.flutter.performance;
 
 import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.icons.AllIcons;
@@ -33,6 +33,7 @@ import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.VmServiceListenerAdapter;
+import io.flutter.view.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,10 +45,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FlutterPerfView implements Disposable {
+public class FlutterPerformanceView implements Disposable {
   public static final String TOOL_WINDOW_ID = "Flutter Performance";
 
-  private static final Logger LOG = Logger.getInstance(FlutterPerfView.class);
+  private static final Logger LOG = Logger.getInstance(FlutterPerformanceView.class);
 
   @NotNull
   private final Project myProject;
@@ -56,7 +57,7 @@ public class FlutterPerfView implements Disposable {
 
   private Content emptyContent;
 
-  public FlutterPerfView(@NotNull Project project) {
+  public FlutterPerformanceView(@NotNull Project project) {
     myProject = project;
   }
 

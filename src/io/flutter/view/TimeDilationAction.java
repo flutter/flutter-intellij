@@ -15,8 +15,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-class TimeDilationAction extends FlutterViewToggleableAction {
-  TimeDilationAction(@NotNull FlutterApp app, boolean showIcon) {
+public class TimeDilationAction extends FlutterViewToggleableAction {
+  public TimeDilationAction(@NotNull FlutterApp app, boolean showIcon) {
     super(app, showIcon ? AllIcons.Vcs.History : null, ServiceExtensions.slowAnimations);
   }
 

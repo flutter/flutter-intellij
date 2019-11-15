@@ -279,8 +279,8 @@
     <projectService serviceImplementation="io.flutter.view.FlutterView" overrides="false"/>
 
     <toolWindow id="Flutter Performance" anchor="right" icon="FlutterIcons.Flutter_13"
-                factoryClass="io.flutter.view.FlutterPerfViewFactory"/>
-    <projectService serviceImplementation="io.flutter.view.FlutterPerfView" overrides="false"/>
+                factoryClass="io.flutter.performance.FlutterPerformanceViewFactory"/>
+    <projectService serviceImplementation="io.flutter.performance.FlutterPerformanceView" overrides="false"/>
 
     <projectOpenProcessor id="flutter" implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
 
