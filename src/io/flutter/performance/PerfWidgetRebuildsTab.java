@@ -59,13 +59,12 @@ public class PerfWidgetRebuildsTab extends JBPanel {
     currentSummaryView = null;
     perfSummaryPlaceholder = new JPanel(new BorderLayout());
     final JScrollPane scrollPane = ScrollPaneFactory.createScrollPane(
-      new JBLabel("<html><body style='padding-left:15px; padding-right:15px;'>" +
-                  "Widget rebuild information tells you what widgets have been " +
-                  "recently rebuilt on your current screen and in the source file you're " +
-                  "viewing."
-                  + "<br><br>" +
-                  "It also provides you with relevant performance advices based on the " +
-                  "behavior of your UI.</body></html>"),
+      new JBLabel(
+        "<html><body style='padding-left:15px; padding-right:15px;'>" +
+        "Widget rebuild information tells you what widgets have been " +
+        "recently rebuilt on your application's current screen." +
+        "<br>" +
+        "</body></html>"),
       ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
       ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
     );

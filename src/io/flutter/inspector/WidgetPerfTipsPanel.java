@@ -156,8 +156,6 @@ public class WidgetPerfTipsPanel extends JPanel {
   private void showPerfTips(@NotNull ArrayList<PerfTip> tips) {
     perfTips.removeAll();
 
-    final PerfTip lastMainTip = !currentTips.isEmpty() ? currentTips.get(0) : null;
-
     currentTips.clear();
     currentTips.addAll(tips);
 

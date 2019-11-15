@@ -224,9 +224,15 @@ public class FlutterPerformanceView implements Disposable {
     if (debugConnectionAvailable) {
       state.disposable = Disposer.newDisposable();
 
-      addFPSTab(perfViewsPanel, app, this);
-      addMemoryTab(perfViewsPanel, app, this);
-      addWidgetRebuildsTab(perfViewsPanel, app, this);
+      // Create the three FPS, memory, and widget recount areas.
+      final PerfFPSTab perfTab = new PerfFPSTab(app, this);
+      perfViewsPanel.add(perfTab);
+
+      final PerfMemoryTab memoryTab = new PerfMemoryTab(app, this);
+      perfViewsPanel.add(memoryTab);
+
+      final PerfWidgetRebuildsTab rebuildsTab = new PerfWidgetRebuildsTab(app, this);
+      perfViewsPanel.add(rebuildsTab);
 
       // If in profile mode, auto-open the performance tool window.
       if (isInProfileMode) {
@@ -258,21 +264,6 @@ public class FlutterPerformanceView implements Disposable {
   FlutterViewAction registerAction(FlutterViewAction action) {
     getOrCreateStateForApp(action.app).flutterViewActions.add(action);
     return action;
-  }
-
-  private void addFPSTab(JComponent parentPanel, @NotNull FlutterApp app, @NotNull Disposable parentDisposable) {
-    final PerfFPSTab perfTab = new PerfFPSTab(app, parentDisposable);
-    parentPanel.add(perfTab);
-  }
-
-  private void addMemoryTab(JComponent parentPanel, @NotNull FlutterApp app, @NotNull Disposable parentDisposable) {
-    final PerfMemoryTab memoryTab = new PerfMemoryTab(app, parentDisposable);
-    parentPanel.add(memoryTab);
-  }
-
-  private void addWidgetRebuildsTab(JComponent parentPanel, @NotNull FlutterApp app, @NotNull Disposable parentDisposable) {
-    final PerfWidgetRebuildsTab rebuildsTab = new PerfWidgetRebuildsTab(app, parentDisposable);
-    parentPanel.add(rebuildsTab);
   }
 
   public void showForApp(@NotNull FlutterApp app) {
