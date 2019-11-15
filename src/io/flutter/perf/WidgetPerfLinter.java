@@ -117,13 +117,13 @@ public class WidgetPerfLinter {
         }
       }
     }
+
     if (candidateRules.isEmpty()) {
       return CompletableFuture.completedFuture(new ArrayList<>());
     }
 
     if (candidateLocations.equals(lastCandidateLocations)) {
-      // No need to load the widget tree again if the list of locations matching
-      // rules has not changed.
+      // No need to load the widget tree again if the list of locations matching rules has not changed.
       return CompletableFuture.completedFuture(computeMatches(candidateRules, allFileStats));
     }
 
@@ -167,8 +167,7 @@ public class WidgetPerfLinter {
             assert (stats.getLocation() != null);
             final Collection<DiagnosticsNode> nodes = nodesForLocation.get(stats.getLocation().id);
             if (nodes == null || nodes.isEmpty()) {
-              // This indicates a mismatch between the current inspector tree
-              // and the stats we are using.
+              // This indicates a mismatch between the current inspector tree and the stats we are using.
               continue;
             }
             if (rule.matches(stats, nodes, map)) {

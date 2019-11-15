@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
 public class FlutterPerfViewFactory implements ToolWindowFactory, DumbAware {
   @Override
   public void init(ToolWindow window) {
-    window.setAvailable(false, null);
+    window.setAvailable(true, null);
   }
 
   public static void init(@NotNull Project project) {

@@ -7,18 +7,13 @@ package io.flutter.view;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
-import com.intellij.ui.components.labels.LinkLabel;
-import com.intellij.ui.components.panels.VerticalLayout;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
-import io.flutter.devtools.DevToolsManager;
 import io.flutter.inspector.FrameRenderingDisplay;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.vmService.FlutterFramesMonitor;
-import io.flutter.vmService.ServiceExtensions;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -26,8 +21,10 @@ import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
-public class PerfFPSTab extends JBPanel implements InspectorTabPanel {
+public class PerfFPSTab extends JBPanel {
   private static final NumberFormat fpsFormat = new DecimalFormat();
+
+  private static final String PERFORMANCE_TAB_LABEL = "Frame rendering times";
 
   static {
     fpsFormat.setMinimumFractionDigits(1);
@@ -36,22 +33,19 @@ public class PerfFPSTab extends JBPanel implements InspectorTabPanel {
 
   private final Disposable parentDisposable;
   private final @NotNull FlutterApp app;
-  private final BoolServiceExtensionCheckbox showPerfOverlay;
-  private final BoolServiceExtensionCheckbox showRepaintRainbow;
 
-  PerfFPSTab(Disposable parentDisposable, @NotNull FlutterApp app, ToolWindow toolWindow) {
+  PerfFPSTab(@NotNull FlutterApp app, @NotNull Disposable parentDisposable) {
     this.app = app;
     this.parentDisposable = parentDisposable;
-
-    showPerfOverlay = new BoolServiceExtensionCheckbox(app, ServiceExtensions.performanceOverlay, "");
-    showRepaintRainbow = new BoolServiceExtensionCheckbox(app, ServiceExtensions.repaintRainbow, "");
 
     buildUI();
   }
 
   private void buildUI() {
     setLayout(new BorderLayout(0, 3));
-    setBorder(JBUI.Borders.empty(3));
+    setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), PERFORMANCE_TAB_LABEL));
+    setMinimumSize(new Dimension(0, PerfMemoryTab.HEIGHT));
+    setPreferredSize(new Dimension(Short.MAX_VALUE, PerfMemoryTab.HEIGHT));
 
     // FPS
     assert app.getVMServiceManager() != null;
@@ -71,36 +65,7 @@ public class PerfFPSTab extends JBPanel implements InspectorTabPanel {
     final JPanel frameRenderingDisplay = FrameRenderingDisplay.createJPanelView(parentDisposable, app);
     frameRenderingPanel.add(fpsLabel, BorderLayout.NORTH);
     frameRenderingPanel.add(frameRenderingDisplay, BorderLayout.CENTER);
-    frameRenderingPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Frame rendering time"));
 
-    // Performance settings
-    final JPanel leftPanel = new JPanel(new VerticalLayout(5));
-    leftPanel.add(showPerfOverlay.getComponent());
-    leftPanel.add(showRepaintRainbow.getComponent());
-    final JPanel rightPanel = new JPanel(new VerticalLayout(5));
-    final LinkLabel openDevtools = new LinkLabel("Open in DevTools", null);
-    //noinspection unchecked
-    openDevtools.setListener((linkLabel, data) -> openInDevTools(), null);
-    rightPanel.add(openDevtools);
-    final JPanel perfSettings = new JPanel(new BorderLayout());
-    perfSettings.add(leftPanel, BorderLayout.WEST);
-    perfSettings.add(rightPanel, BorderLayout.EAST);
-    perfSettings.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Framework settings"));
-
-    final JBPanel generalPerfPanel = new JBPanel(new BorderLayout());
-    generalPerfPanel.add(perfSettings, BorderLayout.NORTH);
-    generalPerfPanel.add(frameRenderingPanel, BorderLayout.CENTER);
-
-    add(generalPerfPanel, BorderLayout.CENTER);
-  }
-
-  private void openInDevTools() {
-    // open the timeline view
-    final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
-    devToolsManager.openToScreen(app, "timeline");
-  }
-
-  @Override
-  public void setVisibleToUser(boolean visible) {
+    add(frameRenderingPanel, BorderLayout.CENTER);
   }
 }

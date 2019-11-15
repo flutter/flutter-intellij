@@ -21,21 +21,19 @@ import java.awt.event.ActionEvent;
 
 class WidgetPerfSummaryView extends JPanel implements Disposable {
   private static final int REFRESH_TABLE_DELAY = 100;
-  private final FlutterApp app;
+
   private final FlutterWidgetPerfManager perfManager;
   private final Timer refreshTableTimer;
   private final WidgetPerfTable table;
   private final PerfReportKind reportKind;
 
   private final WidgetPerfTipsPanel myWidgetPerfTipsPanel;
-  private boolean visible = true;
 
-  long lastUpdateTime;
+  private long lastUpdateTime;
 
   WidgetPerfSummaryView(Disposable parentDisposable, FlutterApp app, PerfMetric metric, PerfReportKind reportKind) {
     setLayout(new BorderLayout());
 
-    this.app = app;
     this.reportKind = reportKind;
 
     perfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
@@ -49,7 +47,7 @@ class WidgetPerfSummaryView extends JPanel implements Disposable {
 
     perfManager.addPerfListener(table);
 
-    add(ScrollPaneFactory.createScrollPane(table), BorderLayout.CENTER);
+    add(ScrollPaneFactory.createScrollPane(table, true), BorderLayout.CENTER);
 
     // Perf info and tips
     myWidgetPerfTipsPanel = new WidgetPerfTipsPanel(parentDisposable, app);
@@ -76,20 +74,7 @@ class WidgetPerfSummaryView extends JPanel implements Disposable {
     }
   }
 
-  public void setVisibleToUser(boolean visible) {
-    myWidgetPerfTipsPanel.setVisibleToUser(visible);
-
-    if (visible != this.visible) {
-      this.visible = visible;
-      if (visible) {
-        // Reset last update time to ensure performance tips will be recomputed
-        // the next time onComputePerfTips is called.
-        lastUpdateTime = -1;
-        refreshTableTimer.start();
-      }
-      else {
-        refreshTableTimer.stop();
-      }
-    }
+  public void clearPerformanceTips() {
+    myWidgetPerfTipsPanel.clearTips();
   }
 }
