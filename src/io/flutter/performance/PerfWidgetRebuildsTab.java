@@ -62,7 +62,7 @@ public class PerfWidgetRebuildsTab extends JBPanel {
       new JBLabel(
         "<html><body style='padding-left:15px; padding-right:15px;'>" +
         "Widget rebuild information tells you what widgets have been " +
-        "recently rebuilt on your application's current screen." +
+        "recently rebuilt for your application's current screen." +
         "<br>" +
         "</body></html>"),
       ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
