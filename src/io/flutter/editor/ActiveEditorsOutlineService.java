@@ -93,7 +93,7 @@ public class ActiveEditorsOutlineService implements Disposable {
       if (!(fileEditor instanceof TextEditor)) continue;
       final TextEditor textEditor = (TextEditor)fileEditor;
       final Editor editor = textEditor.getEditor();
-      if (editor instanceof EditorEx) {
+      if (editor instanceof EditorEx && !editor.isDisposed()) {
         dartEditors.add((EditorEx)editor);
       }
     }
@@ -150,17 +150,25 @@ public class ActiveEditorsOutlineService implements Disposable {
   }
 
   private void notifyOutlineUpdated(String path) {
-    for (Listener listener : Lists.newArrayList(listeners)) {
+    ArrayList<Listener> listenerList;
+    synchronized (listeners) {
+      listenerList = Lists.newArrayList(listeners);
+    }
+    for (Listener listener : listenerList) {
       listener.onOutlineChanged(path, getOutline(path));
     }
   }
 
   public void addListener(@NotNull Listener listener) {
-    listeners.add(listener);
+    synchronized (listeners) {
+      listeners.add(listener);
+    }
   }
 
   public void removeListener(@NotNull Listener listener) {
-    listeners.remove(listener);
+    synchronized (listeners) {
+      listeners.remove(listener);
+    }
   }
 
   /**
@@ -226,6 +234,10 @@ public class ActiveEditorsOutlineService implements Disposable {
 
     synchronized (pathToOutline) {
       pathToOutline.clear();
+    }
+
+    synchronized (listeners) {
+      listeners.clear();
     }
   }
 
