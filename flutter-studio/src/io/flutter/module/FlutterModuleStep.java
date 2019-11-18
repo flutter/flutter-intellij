@@ -7,14 +7,16 @@ package io.flutter.module;
 
 import io.flutter.project.FlutterProjectModel;
 import io.flutter.project.FlutterProjectStep;
+import io.flutter.utils.AndroidUtils;
+import javax.swing.Icon;
 import org.jetbrains.annotations.NotNull;
-
-import javax.swing.*;
 
 public class FlutterModuleStep extends FlutterProjectStep {
   public FlutterModuleStep(FlutterProjectModel model, String title, Icon icon, FlutterProjectType type) {
     super(model, title, icon, type);
-    hideLocation();
+    if (!AndroidUtils.isAndroidProject(model.project().getValue())) {
+      hideLocation();
+    }
   }
 
   @NotNull
