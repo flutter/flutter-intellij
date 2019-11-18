@@ -45,7 +45,10 @@ public class FlutterRequestUtilities {
   public static JsonObject generateFlutterSetWidgetPropertyValue(String id, int propertyId, FlutterWidgetPropertyValue value) {
     final JsonObject params = new JsonObject();
     params.addProperty(ID, propertyId);
-    params.add(VALUE, value.toJson());
+    // An omitted value indicates that the property should be removed.
+    if (value != null) {
+      params.add(VALUE, value.toJson());
+    }
     return buildJsonObjectRequest(id, METHOD_FLUTTER_SET_WIDGET_PROPERTY_VALUE, params);
   }
 
