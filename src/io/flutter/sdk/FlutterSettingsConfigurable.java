@@ -72,8 +72,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   // Settings for UI as Code experiments:
   private JCheckBox myShowBuildMethodGuides;
-  private JCheckBox myShowMultipleChildrenGuides;
-  private JCheckBox myShowBuildMethodsOnScrollbar;
   private JCheckBox myShowClosingLabels;
   private FixedSizeButton myCopyButton;
   private JPanel experimentsPanel;
@@ -130,13 +128,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       (e) -> myHotReloadIgnoreErrorCheckBox.setEnabled(myHotReloadOnSaveCheckBox.isSelected()));
     myFormatCodeOnSaveCheckBox.addChangeListener(
       (e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
-
-    // These options are only enabled if build method guides are enabled as the
-    // same class handles all these cases.
-    myShowBuildMethodGuides.addChangeListener((e) -> {
-      myShowMultipleChildrenGuides.setEnabled(myShowBuildMethodGuides.isSelected());
-      myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
-    });
 
     // Only show the experiments panel if there are visible items in it.
     if (FlutterUtils.isAndroidStudio()) {
@@ -206,12 +197,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     if (settings.isShowBuildMethodGuides() != myShowBuildMethodGuides.isSelected()) {
       return true;
     }
-    if (settings.isShowMultipleChildrenGuides() != myShowMultipleChildrenGuides.isSelected()) {
-      return true;
-    }
-    if (settings.isShowBuildMethodsOnScrollbar() != myShowBuildMethodsOnScrollbar.isSelected()) {
-      return true;
-    }
 
     if (settings.isShowClosingLabels() != myShowClosingLabels.isSelected()) {
       return true;
@@ -273,8 +258,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setOrganizeImportsOnSave(myOrganizeImportsOnSaveCheckBox.isSelected());
 
     settings.setShowBuildMethodGuides(myShowBuildMethodGuides.isSelected());
-    settings.setShowMultipleChildrenGuides(myShowMultipleChildrenGuides.isSelected());
-    settings.setShowBuildMethodsOnScrollbar(myShowBuildMethodsOnScrollbar.isSelected());
     settings.setShowClosingLabels(myShowClosingLabels.isSelected());
     settings.setShowStructuredErrors(myShowStructuredErrors.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
@@ -314,8 +297,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myOrganizeImportsOnSaveCheckBox.setSelected(settings.isOrganizeImportsOnSave());
 
     myShowBuildMethodGuides.setSelected(settings.isShowBuildMethodGuides());
-    myShowMultipleChildrenGuides.setSelected(settings.isShowMultipleChildrenGuides());
-    myShowBuildMethodsOnScrollbar.setSelected(settings.isShowBuildMethodsOnScrollbar());
 
     myShowClosingLabels.setSelected(settings.isShowClosingLabels());
 
@@ -328,11 +309,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myHotReloadIgnoreErrorCheckBox.setEnabled(myHotReloadOnSaveCheckBox.isSelected());
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
-
-    // These options are only enabled if build method guides are enabled as the
-    // same class handles all these cases.
-    myShowMultipleChildrenGuides.setEnabled(myShowBuildMethodGuides.isSelected());
-    myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
 
     myUseBazelByDefaultCheckBox.setSelected(settings.shouldUseBazel());
     myShowAllRunConfigurationsInContextCheckBox.setSelected(settings.showAllRunConfigurationsInContext());

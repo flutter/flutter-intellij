@@ -27,6 +27,7 @@ public class FlutterSettings {
   private static final String syncAndroidLibrariesKey = "io.flutter.syncAndroidLibraries";
   private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
   private static final String showStructuredErrors = "io.flutter.showStructuredErrors";
+  private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
 
   /**
    * The Dart plugin uses this registry key to avoid bazel users getting their settings overridden on projects that include a
@@ -43,11 +44,6 @@ public class FlutterSettings {
    * in the left-hand gutter.
    */
   private static final String suggestAllRunConfigurationsFromContextKey = "suggest.all.run.configurations.from.context";
-
-  // Settings for UI as Code experiments.
-  private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
-  private static final String showMultipleChildrenGuidesKey = "io.flutter.editor.showMultipleChildrenGuides";
-  private static final String showBuildMethodsOnScrollbarKey = "io.flutter.editor.showBuildMethodsOnScrollbarKey";
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -101,12 +97,6 @@ public class FlutterSettings {
 
     if (isShowBuildMethodGuides()) {
       analytics.sendEvent("settings", afterLastPeriod(showBuildMethodGuidesKey));
-    }
-    if (isShowMultipleChildrenGuides()) {
-      analytics.sendEvent("settings", afterLastPeriod(showMultipleChildrenGuidesKey));
-    }
-    if (isShowBuildMethodsOnScrollbar()) {
-      analytics.sendEvent("settings", afterLastPeriod(showBuildMethodsOnScrollbarKey));
     }
 
     if (isShowStructuredErrors()) {
@@ -274,32 +264,12 @@ public class FlutterSettings {
     fireEvent();
   }
 
-  public boolean isShowBuildMethodsOnScrollbar() {
-    return getPropertiesComponent().getBoolean(showBuildMethodsOnScrollbarKey, false);
-  }
-
-  public void setShowBuildMethodsOnScrollbar(boolean value) {
-    getPropertiesComponent().setValue(showBuildMethodsOnScrollbarKey, value, false);
-
-    fireEvent();
-  }
-
   public boolean isShowClosingLabels() {
     return DartClosingLabelManager.getInstance().getShowClosingLabels();
   }
 
   public void setShowClosingLabels(boolean value) {
     DartClosingLabelManager.getInstance().setShowClosingLabels(value);
-  }
-
-  public boolean isShowMultipleChildrenGuides() {
-    return getPropertiesComponent().getBoolean(showMultipleChildrenGuidesKey, false);
-  }
-
-  public void setShowMultipleChildrenGuides(boolean value) {
-    getPropertiesComponent().setValue(showMultipleChildrenGuidesKey, value, false);
-
-    fireEvent();
   }
 
   protected void fireEvent() {

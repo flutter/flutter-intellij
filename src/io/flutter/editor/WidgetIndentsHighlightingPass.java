@@ -94,7 +94,6 @@ public class WidgetIndentsHighlightingPass {
   private final static JBColor SHADOW_GRAY = new JBColor(Gray._192, Gray._100);
   private final static JBColor OUTLINE_LINE_COLOR = new JBColor(Gray._128, Gray._128);
   private final static JBColor OUTLINE_LINE_COLOR_PAST_BLOCK = new JBColor(new Color(128, 128, 128, 65), new Color(128, 128, 128, 65));
-  private final static JBColor BUILD_METHOD_STRIPE_COLOR = new JBColor(new Color(0xc0d8f0), new Color(0x8d7043));
 
   private static final Key<WidgetIndentsPassData> INDENTS_PASS_DATA_KEY = Key.create("INDENTS_PASS_DATA_KEY");
 
@@ -178,7 +177,6 @@ public class WidgetIndentsHighlightingPass {
         return;
       }
       final FlutterSettings settings = FlutterSettings.getInstance();
-      final boolean showMultipleChildrenGuides = settings.isShowMultipleChildrenGuides();
 
       final Graphics2D g2d = (Graphics2D)g.create();
       // Required to render colors with an alpha channel. Rendering with an
@@ -388,8 +386,7 @@ public class WidgetIndentsHighlightingPass {
         }
         if (!softWraps.isEmpty() && softWraps.get(0).getIndentInColumns() < indentColumn) {
           if (y < newY || i > startLine + lineShift) { // There is a possible case that soft wrap is located on indent start line.
-            drawVerticalLineHelper(g2d, lineColor, start.x, y, newY + lineHeight, childLines,
-                                   showMultipleChildrenGuides);
+            drawVerticalLineHelper(g2d, lineColor, start.x, y, newY + lineHeight, childLines);
           }
           newY += logicalLineHeight;
           y = newY;
@@ -410,7 +407,7 @@ public class WidgetIndentsHighlightingPass {
       }
       if (y < maxY) {
         if (splitY != -1) {
-          drawVerticalLineHelper(g2d, lineColor, start.x, y, splitY, childLines, showMultipleChildrenGuides);
+          drawVerticalLineHelper(g2d, lineColor, start.x, y, splitY, childLines);
           g2d.setColor(pastBlockColor);
           g2d.drawLine(start.x + 2, (int)splitY + 1, start.x + 2, maxY);
         }
@@ -443,20 +440,10 @@ public class WidgetIndentsHighlightingPass {
     int x,
     double yStart,
     double yEnd,
-    ArrayList<OutlineLocation> childLines,
-    boolean showMultipleChildrenGuides
+    ArrayList<OutlineLocation> childLines
   ) {
-    if (childLines != null && childLines.size() >= 2 && showMultipleChildrenGuides) {
-      // TODO(jacobr): optimize this code a bit. This is a sloppy way to draw these lines.
-      g.setStroke(SOLID_STROKE);
-      g.setColor(lineColor);
-      g.drawLine(x + 1, (int)yStart, x + 1, (int)yEnd + 1);
-      g.drawLine(x + 2, (int)yStart, x + 2, (int)yEnd + 1);
-    }
-    else {
-      g.setColor(lineColor);
-      g.drawLine(x + 2, (int)yStart, x + 2, (int)yEnd + 1);
-    }
+    g.setColor(lineColor);
+    g.drawLine(x + 2, (int)yStart, x + 2, (int)yEnd + 1);
   }
 
   public static int compare(@NotNull TextRangeDescriptorPair r, @NotNull RangeHighlighter h) {
@@ -670,8 +657,7 @@ public class WidgetIndentsHighlightingPass {
     data.highlighters = newHighlighters;
   }
 
-  DartAnalysisServerService getAnalysisService() {
-    // TODO(jacobr): cache this?
+  private DartAnalysisServerService getAnalysisService() {
     return DartAnalysisServerService.getInstance(myProject);
   }
 
@@ -780,19 +766,13 @@ public class WidgetIndentsHighlightingPass {
     if (range.getEndOffset() >= myDocument.getTextLength() && DEBUG_WIDGET_INDENTS) {
       LOG.info("Warning: highlighter extends past the end of document.");
     }
-    final RangeHighlighter highlighter =
-      mm.addRangeHighlighter(
-        Math.max(range.getStartOffset(), 0),
-        Math.min(range.getEndOffset(), myDocument.getTextLength()),
-        HighlighterLayer.FIRST,
-        null,
-        HighlighterTargetArea.EXACT_RANGE
-      );
-    if (entry.descriptor.parent == null && settings.isShowBuildMethodsOnScrollbar()) {
-      highlighter.setErrorStripeMarkColor(BUILD_METHOD_STRIPE_COLOR);
-      highlighter.setErrorStripeTooltip("Flutter build method");
-      highlighter.setThinErrorStripeMark(true);
-    }
+    final RangeHighlighter highlighter = mm.addRangeHighlighter(
+      Math.max(range.getStartOffset(), 0),
+      Math.min(range.getEndOffset(), myDocument.getTextLength()),
+      HighlighterLayer.FIRST,
+      null,
+      HighlighterTargetArea.EXACT_RANGE
+    );
     highlighter.setCustomRenderer(new WidgetCustomHighlighterRenderer(entry.descriptor, myDocument));
     return highlighter;
   }

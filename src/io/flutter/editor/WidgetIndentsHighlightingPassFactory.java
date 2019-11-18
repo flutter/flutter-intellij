@@ -48,9 +48,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   private final Listener settingsListener;
   private final ActiveEditorsOutlineService.Listener outlineListener;
 
-  // Current configuration settings used to display Widget Indent Guides cached
-  // from the FlutterSettings class.
-  private boolean isShowMultipleChildrenGuides;
+  // Current configuration settings used to display Widget Indent Guides cached from the FlutterSettings class.
   private boolean isShowBuildMethodGuides;
 
   public WidgetIndentsHighlightingPassFactory(@NotNull Project project) {
@@ -92,7 +90,6 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       isShowBuildMethodGuides = settings.isShowBuildMethodGuides();
       updateAllEditors();
     }
-    isShowMultipleChildrenGuides = settings.isShowMultipleChildrenGuides() && isShowBuildMethodGuides;
   }
 
   /**
@@ -205,7 +202,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     if (documentLength != outlineLength &&
         documentLength != DartAnalysisServerService.getInstance(project).getConvertedOffset(file, outlineLength)) {
       // Outline is out of date. That is ok. Ignore it for now.
-      // An up to date outline will probably arive shortly. Showing an
+      // An up to date outline will probably arrive shortly. Showing an
       // outline from data inconsistent with the current
       // content will show annoying flicker. It is better to
       // instead
@@ -232,8 +229,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       }
       final FlutterSettings settings = FlutterSettings.getInstance();
       // Skip if none of the settings that impact Widget Idents were changed.
-      if (isShowBuildMethodGuides == settings.isShowBuildMethodGuides() &&
-          isShowMultipleChildrenGuides == settings.isShowMultipleChildrenGuides()) {
+      if (isShowBuildMethodGuides == settings.isShowBuildMethodGuides()) {
         // Change doesn't matter for us.
         return;
       }
