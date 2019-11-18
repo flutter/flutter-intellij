@@ -14,8 +14,8 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-abstract class FlutterViewAction extends DumbAwareAction {
-  @NotNull final FlutterApp app;
+public abstract class FlutterViewAction extends DumbAwareAction {
+  @NotNull public final FlutterApp app;
 
   FlutterViewAction(@NotNull FlutterApp app, @Nullable String text) {
     super(text);

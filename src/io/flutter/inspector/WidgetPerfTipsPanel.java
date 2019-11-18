@@ -35,16 +35,11 @@ import java.util.*;
  */
 public class WidgetPerfTipsPanel extends JPanel {
   static final int PERF_TIP_COMPUTE_DELAY = 1000;
-  private final FlutterApp app;
+
   private final FlutterWidgetPerfManager perfManager;
 
-  // Computing performance tips is somewhat expensive so we don't want to
-  // compute them too frequently. Performance tips are only computed when
-  // new performance stats are available but performance stats are updated
-  // at 60fps so to be conservative we delay computing perf tips.
-  private final Timer perfTipComputeDelayTimer;
-  long lastUpdateTime;
-  final private JPanel perfTips;
+  private long lastUpdateTime;
+  private final JPanel perfTips;
 
   /**
    * Currently active file editor if it is a TextEditor.
@@ -53,13 +48,12 @@ public class WidgetPerfTipsPanel extends JPanel {
   private ArrayList<TextEditor> currentTextEditors;
 
   final LinkListener<PerfTip> linkListener;
-  private boolean visible = true;
-  private List<PerfTip> currentTips;
+  final private List<PerfTip> currentTips = new ArrayList<>();
 
   public WidgetPerfTipsPanel(Disposable parentDisposable, @NotNull FlutterApp app) {
-    this.app = app;
-
     setLayout(new VerticalLayout(5));
+
+    add(new JSeparator());
 
     perfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
     perfTips = new JPanel();
@@ -77,9 +71,12 @@ public class WidgetPerfTipsPanel extends JPanel {
     selectedEditorChanged();
     bus.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, listener);
 
-    perfTipComputeDelayTimer = new Timer(PERF_TIP_COMPUTE_DELAY, this::onComputePerfTips);
+    // Computing performance tips is somewhat expensive so we don't want to
+    // compute them too frequently. Performance tips are only computed when
+    // new performance stats are available but performance stats are updated
+    // at 60fps so to be conservative we delay computing perf tips.
+    final Timer perfTipComputeDelayTimer = new Timer(PERF_TIP_COMPUTE_DELAY, this::onComputePerfTips);
     perfTipComputeDelayTimer.start();
-
     Disposer.register(parentDisposable, perfTipComputeDelayTimer::stop);
   }
 
@@ -101,8 +98,9 @@ public class WidgetPerfTipsPanel extends JPanel {
     }
   }
 
-  void hidePerfTip() {
-    currentTips = null;
+  public void clearTips() {
+    currentTips.clear();
+
     remove(perfTips);
 
     setVisible(hasPerfTips());
@@ -119,14 +117,14 @@ public class WidgetPerfTipsPanel extends JPanel {
     }
     final Set<TextEditor> selectedEditors = new HashSet<>(perfManager.getSelectedEditors());
     if (selectedEditors.isEmpty()) {
-      hidePerfTip();
+      clearTips();
       return;
     }
 
     final WidgetPerfLinter linter = perfManager.getCurrentStats().getPerfLinter();
     AsyncUtils.whenCompleteUiThread(linter.getTipsFor(selectedEditors), (tips, throwable) -> {
-      if (tips == null || throwable != null || tips.isEmpty()) {
-        hidePerfTip();
+      if (tips == null || tips.isEmpty() || throwable != null) {
+        clearTips();
         return;
       }
 
@@ -155,10 +153,12 @@ public class WidgetPerfTipsPanel extends JPanel {
 
   ArrayListMultimap<TextEditor, PerfTip> tipsPerFile;
 
-  private void showPerfTips(ArrayList<PerfTip> tips) {
+  private void showPerfTips(@NotNull ArrayList<PerfTip> tips) {
     perfTips.removeAll();
-    final PerfTip lastMainTip = currentTips != null && currentTips.size() > 0 ? currentTips.get(0) : null;
-    currentTips = tips;
+
+    currentTips.clear();
+    currentTips.addAll(tips);
+
     for (PerfTip tip : tips) {
       final LinkLabel<PerfTip> label = new LinkLabel<>(
         "<html><body><a>" + tip.getMessage() + "</a><body></html>",
@@ -167,31 +167,16 @@ public class WidgetPerfTipsPanel extends JPanel {
         tip
       );
       label.setPaintUnderline(false);
-      label.setBorder(JBUI.Borders.empty(5));
+      label.setBorder(JBUI.Borders.empty(0, 5, 5, 5));
       perfTips.add(label);
     }
 
-    add(perfTips, 0);
+    add(perfTips);
 
     setVisible(hasPerfTips());
   }
 
   private boolean hasPerfTips() {
-    return currentTips != null && !currentTips.isEmpty();
-  }
-
-  public void setVisibleToUser(boolean visible) {
-    if (visible != this.visible) {
-      this.visible = visible;
-      if (visible) {
-        // Reset last update time to ensure performance tips will be recomputed
-        // the next time onComputePerfTips is called.
-        lastUpdateTime = -1;
-        perfTipComputeDelayTimer.start();
-      }
-      else {
-        perfTipComputeDelayTimer.stop();
-      }
-    }
+    return !currentTips.isEmpty();
   }
 }

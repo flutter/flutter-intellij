@@ -3,13 +3,15 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.view;
+package io.flutter.performance;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.panels.VerticalLayout;
+import com.intellij.util.ui.JBUI;
 import io.flutter.perf.FlutterWidgetPerfManager;
 import io.flutter.perf.PerfMetric;
 import io.flutter.perf.PerfReportKind;
@@ -20,8 +22,10 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 
-public class PerfWidgetRebuildsTab extends JPanel implements InspectorTabPanel {
-  private static final Logger LOG = Logger.getInstance(PerfWidgetRebuildsTab.class);
+public class PerfWidgetRebuildsPanel extends JBPanel {
+  private static final Logger LOG = Logger.getInstance(PerfWidgetRebuildsPanel.class);
+
+  private static final String REBUILD_STATS_TAB_LABEL = "Widget rebuild stats";
 
   /**
    * Tracking widget repaints may confuse users so we disable it by default currently.
@@ -30,9 +34,9 @@ public class PerfWidgetRebuildsTab extends JPanel implements InspectorTabPanel {
 
   private @NotNull final FlutterApp app;
 
-  private final WidgetPerfSummaryView perfSummaryView;
+  private final WidgetPerfSummary perfSummary;
 
-  private JCheckBox trackRebuildsCheckbox;
+  private final JCheckBox trackRebuildsCheckbox;
   private JCheckBox trackRepaintsCheckbox;
 
   private final JPanel perfSummaryContainer;
@@ -40,43 +44,37 @@ public class PerfWidgetRebuildsTab extends JPanel implements InspectorTabPanel {
 
   private JComponent currentSummaryView;
 
-  PerfWidgetRebuildsTab(Disposable parentDisposable, @NotNull FlutterApp app) {
+  PerfWidgetRebuildsPanel(@NotNull FlutterApp app, @NotNull Disposable parentDisposable) {
     this.app = app;
 
     setLayout(new BorderLayout());
+    setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), REBUILD_STATS_TAB_LABEL));
+    setPreferredSize(new Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
 
     final JPanel rebuildStatsPanel = new JPanel(new BorderLayout(0, 5));
     add(rebuildStatsPanel, BorderLayout.CENTER);
 
     // rebuild stats
-    perfSummaryContainer = new JPanel(new BorderLayout());
+    perfSummaryContainer = new JPanel(new BorderLayout(0, 5));
     currentSummaryView = null;
     perfSummaryPlaceholder = new JPanel(new BorderLayout());
-    perfSummaryPlaceholder.add(
-      ScrollPaneFactory.createScrollPane(
-        new JBLabel(
-          "<html><body style='padding-left:25px; padding-right:25px;'>" +
-          "<p>" +
-          "Widget rebuild information tells you what widgets have been " +
-          "recently rebuilt on your current screen and in the source file you're " +
-          "viewing." +
-          "</p>" +
-          "<br>" +
-          "<p>" +
-          "It also provides you with relevant performance advices based on the " +
-          "behavior of your UI." +
-          "</p>" +
-          "</body></html>"
-        ),
-        ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
-        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-      )
+    final JScrollPane scrollPane = ScrollPaneFactory.createScrollPane(
+      new JBLabel(
+        "<html><body style='padding-left:15px; padding-right:15px;'>" +
+        "Widget rebuild information tells you what widgets have been " +
+        "recently rebuilt for your application's current screen." +
+        "<br>" +
+        "</body></html>"),
+      ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+      ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
     );
+    scrollPane.setBorder(JBUI.Borders.empty());
+    scrollPane.setViewportBorder(JBUI.Borders.empty());
+    perfSummaryPlaceholder.add(scrollPane);
 
-    perfSummaryContainer.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Rebuild stats"));
     final JPanel perfViewSettings = new JPanel(new VerticalLayout(5));
-    trackRebuildsCheckbox = new JCheckBox("Show widget rebuild information");
-    trackRebuildsCheckbox.setHorizontalAlignment(JLabel.LEFT);
+    trackRebuildsCheckbox = new JCheckBox("Track widget rebuilds");
+    trackRebuildsCheckbox.setHorizontalAlignment(JLabel.RIGHT);
     trackRebuildsCheckbox.setToolTipText(
       "<html><body><p><b>This profiler identifies widgets that are rebuilt when the UI changes.</b></p>" +
       "<br>" +
@@ -88,16 +86,15 @@ public class PerfWidgetRebuildsTab extends JPanel implements InspectorTabPanel {
       perfViewSettings.add(trackRepaintsCheckbox);
     }
     perfViewSettings.add(new JSeparator());
-    perfSummaryView = new WidgetPerfSummaryView(parentDisposable, app, PerfMetric.lastFrame, PerfReportKind.rebuild);
+    perfSummary = new WidgetPerfSummary(parentDisposable, app, PerfMetric.lastFrame, PerfReportKind.rebuild);
     perfSummaryContainer.add(perfViewSettings, BorderLayout.NORTH);
 
     updateShowPerfSummaryView();
     rebuildStatsPanel.add(perfSummaryContainer, BorderLayout.CENTER);
 
     // perf tips
-    final JPanel perfTipsPanel = perfSummaryView.getWidgetPerfTipsPanel();
+    final JPanel perfTipsPanel = perfSummary.getWidgetPerfTipsPanel();
     rebuildStatsPanel.add(perfTipsPanel, BorderLayout.SOUTH);
-    perfTipsPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Performance tips"));
     perfTipsPanel.setVisible(false);
 
     final FlutterWidgetPerfManager widgetPerfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
@@ -133,7 +130,7 @@ public class PerfWidgetRebuildsTab extends JPanel implements InspectorTabPanel {
   void updateShowPerfSummaryView() {
     final boolean show = getShowPerfTable();
     final boolean firstRender = currentSummaryView == null;
-    final JComponent summaryView = show ? perfSummaryView : perfSummaryPlaceholder;
+    final JComponent summaryView = show ? perfSummary : perfSummaryPlaceholder;
 
     if (summaryView != currentSummaryView) {
       if (currentSummaryView != null) {
@@ -143,6 +140,10 @@ public class PerfWidgetRebuildsTab extends JPanel implements InspectorTabPanel {
       perfSummaryContainer.add(summaryView, BorderLayout.CENTER);
       perfSummaryContainer.revalidate();
       perfSummaryContainer.repaint();
+    }
+
+    if (!show) {
+      perfSummary.clearPerformanceTips();
     }
   }
 
@@ -163,13 +164,5 @@ public class PerfWidgetRebuildsTab extends JPanel implements InspectorTabPanel {
     widgetPerfManager.setTrackRepaintWidgets(selected);
     // Update default so next app launched will match the existing setting.
     FlutterWidgetPerfManager.trackRepaintWidgetsDefault = selected;
-  }
-
-  @Override
-  public void finalize() {
-  }
-
-  @Override
-  public void setVisibleToUser(boolean visible) {
   }
 }

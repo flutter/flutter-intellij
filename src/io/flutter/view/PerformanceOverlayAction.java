@@ -10,8 +10,8 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.vmService.ServiceExtensions;
 import org.jetbrains.annotations.NotNull;
 
-class PerformanceOverlayAction extends FlutterViewToggleableAction {
-  PerformanceOverlayAction(@NotNull FlutterApp app) {
+public class PerformanceOverlayAction extends FlutterViewToggleableAction {
+  public PerformanceOverlayAction(@NotNull FlutterApp app) {
     super(app, AllIcons.Nodes.PpLib, ServiceExtensions.performanceOverlay);
   }
 }

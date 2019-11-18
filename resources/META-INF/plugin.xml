@@ -1090,21 +1090,15 @@
 
     <toolWindow id="Flutter Outline" anchor="right" icon="FlutterIcons.Flutter_13"
                 factoryClass="io.flutter.preview.PreviewViewFactory"/>
-    <projectService serviceInterface="io.flutter.preview.PreviewView"
-                    serviceImplementation="io.flutter.preview.PreviewView"
-                    overrides="false"/>
+    <projectService serviceImplementation="io.flutter.preview.PreviewView" overrides="false"/>
 
     <toolWindow id="Flutter Inspector" anchor="right" icon="FlutterIcons.Flutter_13"
                 factoryClass="io.flutter.view.FlutterViewFactory"/>
-    <projectService serviceInterface="io.flutter.view.FlutterView"
-                    serviceImplementation="io.flutter.view.FlutterView"
-                    overrides="false"/>
+    <projectService serviceImplementation="io.flutter.view.FlutterView" overrides="false"/>
 
-    <toolWindow id="Flutter Performance" anchor="bottom" secondary="true" icon="FlutterIcons.Flutter_13"
-                factoryClass="io.flutter.view.FlutterPerfViewFactory"/>
-    <projectService serviceInterface="io.flutter.view.FlutterPerfView"
-                    serviceImplementation="io.flutter.view.FlutterPerfView"
-                    overrides="false"/>
+    <toolWindow id="Flutter Performance" anchor="right" icon="FlutterIcons.Flutter_13"
+                factoryClass="io.flutter.performance.FlutterPerformanceViewFactory"/>
+    <projectService serviceImplementation="io.flutter.performance.FlutterPerformanceView" overrides="false"/>
 
     <projectOpenProcessor id="flutter" implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
 

@@ -64,7 +64,6 @@ import static io.flutter.utils.AsyncUtils.whenCompleteUiThread;
   storages = {@Storage("$WORKSPACE_FILE$")}
 )
 public class FlutterView implements PersistentStateComponent<FlutterViewState>, Disposable {
-
   private static final Logger LOG = Logger.getInstance(FlutterView.class);
 
   private static class PerAppState extends AppState {
@@ -77,8 +76,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
     }
   }
-
-  private Content emptyContent;
 
   public static final String TOOL_WINDOW_ID = "Flutter Inspector";
 
@@ -97,6 +94,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private final Project myProject;
 
   private final Map<FlutterApp, PerAppState> perAppViewState = new HashMap<>();
+
+  private Content emptyContent;
 
   public FlutterView(@NotNull Project project) {
     myProject = project;
@@ -155,7 +154,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     toolbarGroup.addSeparator();
     toolbarGroup.add(state.registerAction(new TimeDilationAction(app, true)));
     toolbarGroup.addSeparator();
-    toolbarGroup.add(new TogglePlatformAction(getOrCreateStateForApp(app), app));
+    toolbarGroup.add(new TogglePlatformAction(app, getOrCreateStateForApp(app)));
 
     return toolbarGroup;
   }

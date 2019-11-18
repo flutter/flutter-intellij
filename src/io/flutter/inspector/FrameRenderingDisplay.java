@@ -25,6 +25,9 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
 
+// TODO(devoncarew): We have a drawing artifacts issue - tall frame columns can be left behind
+// as artifacts when they scroll off the screen.
+
 public class FrameRenderingDisplay {
   static final DecimalFormat df = new DecimalFormat();
 
@@ -40,18 +43,6 @@ public class FrameRenderingDisplay {
     final FlutterFramesMonitor flutterFramesMonitor = app.getVMServiceManager().getFlutterFramesMonitor();
 
     final FrameRenderingPanel frameRenderingPanel = new FrameRenderingPanel(flutterFramesMonitor, app.getVMServiceManager());
-
-    final JBLabel latestFrameTimeLabel = new JBLabel();
-    latestFrameTimeLabel.setAlignmentX(Component.RIGHT_ALIGNMENT);
-    latestFrameTimeLabel.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
-    latestFrameTimeLabel.setForeground(UIUtil.getLabelDisabledForeground());
-    latestFrameTimeLabel.setBorder(JBUI.Borders.empty(0, 4));
-    latestFrameTimeLabel.setOpaque(false);
-    latestFrameTimeLabel.setToolTipText("Rendering time of latest frame.");
-    final JBPanel latestFrameTimePanel = new JBPanel();
-    latestFrameTimePanel.setLayout(new BoxLayout(latestFrameTimePanel, BoxLayout.Y_AXIS));
-    latestFrameTimePanel.setOpaque(false);
-    latestFrameTimePanel.add(latestFrameTimeLabel);
 
     final JBLabel targetFrameTimeLabel = new JBLabel();
     targetFrameTimeLabel.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
@@ -75,15 +66,10 @@ public class FrameRenderingDisplay {
     targetFrameTimePanel.add(Box.createVerticalGlue());
 
     panel.add(frameRenderingPanel);
-    panel.add(latestFrameTimePanel);
     panel.add(targetFrameTimePanel);
 
     final FlutterFramesMonitor.Listener listener = event -> {
       frameRenderingPanel.update();
-
-      final int ms = Math.round(event.elapsedMicros / 1000.0f);
-      latestFrameTimeLabel.setText(ms + "ms");
-      SwingUtilities.invokeLater(latestFrameTimeLabel::repaint);
 
       // Repaint this after each frame so that the label does not get painted over by the frame rendering panel.
       SwingUtilities.invokeLater(targetFrameTimeLabel::repaint);

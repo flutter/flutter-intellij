@@ -32,12 +32,14 @@ class TogglePlatformAction extends ToolbarComboBoxAction {
 
   private PlatformTarget selectedPlatform;
 
-  public TogglePlatformAction(@NotNull AppState appState, @NotNull FlutterApp app) {
+  public TogglePlatformAction(@NotNull FlutterApp app, @NotNull AppState appState) {
     super();
+
     this.app = app;
     this.appState = appState;
+
     setSmallVariant(false);
-    myActionGroup = createPopupActionGroup(appState, app);
+    myActionGroup = createPopupActionGroup(app, appState);
     fuchsiaAction = new PlatformTargetAction(app, PlatformTarget.fuchsia);
   }
 
@@ -74,7 +76,7 @@ class TogglePlatformAction extends ToolbarComboBoxAction {
     e.getPresentation().setEnabled(app.isSessionActive());
   }
 
-  private static DefaultActionGroup createPopupActionGroup(AppState appState, FlutterApp app) {
+  private static DefaultActionGroup createPopupActionGroup(FlutterApp app, AppState appState) {
     final DefaultActionGroup group = new DefaultActionGroup();
     group.add(appState.registerAction(new PlatformTargetAction(app, PlatformTarget.android)));
     group.add(appState.registerAction(new PlatformTargetAction(app, PlatformTarget.iOS)));
