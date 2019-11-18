@@ -27,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 
@@ -166,6 +167,17 @@ public class DiagnosticsNode {
    */
   public String getDescription() {
     return getStringMember("description");
+  }
+
+  /**
+   * Returns a transformed rect that describes the bounding box for an element
+   * <p>
+   */
+  public TransformedRect getTransformToRoot() {
+    if (!json.has("transformToRoot")) {
+      return null;
+    }
+    return new TransformedRect(json.getAsJsonObject("transformToRoot"));
   }
 
   /**
@@ -839,7 +851,7 @@ public class DiagnosticsNode {
       if (key.equals("objectId") || key.equals("valueId")) {
         continue;
       }
-      if (entry.getValue().equals(node.json.get(key))) {
+      if (!entry.getValue().equals(node.json.get(key))) {
         return false;
       }
     }
