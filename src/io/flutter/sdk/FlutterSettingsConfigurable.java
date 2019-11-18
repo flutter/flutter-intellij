@@ -26,6 +26,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.util.PlatformIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
@@ -40,8 +41,6 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -55,7 +54,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private ComboboxWithBrowseButton mySdkCombo;
   private JBLabel myVersionLabel;
   private JCheckBox myReportUsageInformationCheckBox;
-  private JLabel myPrivacyPolicy;
+  private LinkLabel myPrivacyPolicy;
   private JCheckBox myHotReloadOnSaveCheckBox;
   private JCheckBox myHotReloadIgnoreErrorCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
@@ -118,16 +117,14 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
                                        FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                                        TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
 
-    myPrivacyPolicy.addMouseListener(new MouseAdapter() {
-      @Override
-      public void mouseClicked(MouseEvent e) {
-        try {
-          BrowserLauncher.getInstance().browse(new URI(FlutterBundle.message("flutter.analytics.privacyUrl")));
-        }
-        catch (URISyntaxException ignore) {
-        }
+    //noinspection unchecked
+    myPrivacyPolicy.setListener((linkLabel, data) -> {
+      try {
+        BrowserLauncher.getInstance().browse(new URI(FlutterBundle.message("flutter.analytics.privacyUrl")));
       }
-    });
+      catch (URISyntaxException ignore) {
+      }
+    }, null);
 
     myHotReloadOnSaveCheckBox.addChangeListener(
       (e) -> myHotReloadIgnoreErrorCheckBox.setEnabled(myHotReloadOnSaveCheckBox.isSelected()));
