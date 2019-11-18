@@ -16,18 +16,18 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 
-public class PerfMemoryTab extends JBPanel {
-  private static final Logger LOG = Logger.getInstance(PerfMemoryTab.class);
+public class PerfMemoryPanel extends JBPanel {
+  private static final Logger LOG = Logger.getInstance(PerfMemoryPanel.class);
 
   private static final String MEMORY_TAB_LABEL = "Memory usage";
 
   static final int HEIGHT = 140;
 
-  PerfMemoryTab(@NotNull FlutterApp app, @NotNull Disposable parentDisposable) {
+  PerfMemoryPanel(@NotNull FlutterApp app, @NotNull Disposable parentDisposable) {
     setLayout(new BorderLayout());
     setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), MEMORY_TAB_LABEL));
-    setMinimumSize(new Dimension(0, PerfMemoryTab.HEIGHT));
-    setPreferredSize(new Dimension(Short.MAX_VALUE, PerfMemoryTab.HEIGHT));
+    setMinimumSize(new Dimension(0, PerfMemoryPanel.HEIGHT));
+    setPreferredSize(new Dimension(Short.MAX_VALUE, PerfMemoryPanel.HEIGHT));
 
     final JPanel heapDisplay = HeapDisplay.createJPanelView(parentDisposable, app);
     add(heapDisplay, BorderLayout.CENTER);

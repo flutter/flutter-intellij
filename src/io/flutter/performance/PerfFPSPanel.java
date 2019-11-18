@@ -21,7 +21,7 @@ import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
-public class PerfFPSTab extends JBPanel {
+public class PerfFPSPanel extends JBPanel {
   private static final NumberFormat fpsFormat = new DecimalFormat();
 
   private static final String PERFORMANCE_TAB_LABEL = "Frame rendering times";
@@ -34,7 +34,7 @@ public class PerfFPSTab extends JBPanel {
   private final Disposable parentDisposable;
   private final @NotNull FlutterApp app;
 
-  PerfFPSTab(@NotNull FlutterApp app, @NotNull Disposable parentDisposable) {
+  PerfFPSPanel(@NotNull FlutterApp app, @NotNull Disposable parentDisposable) {
     this.app = app;
     this.parentDisposable = parentDisposable;
 
@@ -44,8 +44,8 @@ public class PerfFPSTab extends JBPanel {
   private void buildUI() {
     setLayout(new BorderLayout(0, 3));
     setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), PERFORMANCE_TAB_LABEL));
-    setMinimumSize(new Dimension(0, PerfMemoryTab.HEIGHT));
-    setPreferredSize(new Dimension(Short.MAX_VALUE, PerfMemoryTab.HEIGHT));
+    setMinimumSize(new Dimension(0, PerfMemoryPanel.HEIGHT));
+    setPreferredSize(new Dimension(Short.MAX_VALUE, PerfMemoryPanel.HEIGHT));
 
     // FPS
     assert app.getVMServiceManager() != null;

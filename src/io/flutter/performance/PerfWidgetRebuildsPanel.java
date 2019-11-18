@@ -22,8 +22,8 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 
-public class PerfWidgetRebuildsTab extends JBPanel {
-  private static final Logger LOG = Logger.getInstance(PerfWidgetRebuildsTab.class);
+public class PerfWidgetRebuildsPanel extends JBPanel {
+  private static final Logger LOG = Logger.getInstance(PerfWidgetRebuildsPanel.class);
 
   private static final String REBUILD_STATS_TAB_LABEL = "Widget rebuild stats";
 
@@ -34,7 +34,7 @@ public class PerfWidgetRebuildsTab extends JBPanel {
 
   private @NotNull final FlutterApp app;
 
-  private final WidgetPerfSummaryView perfSummaryView;
+  private final WidgetPerfSummary perfSummary;
 
   private final JCheckBox trackRebuildsCheckbox;
   private JCheckBox trackRepaintsCheckbox;
@@ -44,7 +44,7 @@ public class PerfWidgetRebuildsTab extends JBPanel {
 
   private JComponent currentSummaryView;
 
-  PerfWidgetRebuildsTab(@NotNull FlutterApp app, @NotNull Disposable parentDisposable) {
+  PerfWidgetRebuildsPanel(@NotNull FlutterApp app, @NotNull Disposable parentDisposable) {
     this.app = app;
 
     setLayout(new BorderLayout());
@@ -86,14 +86,14 @@ public class PerfWidgetRebuildsTab extends JBPanel {
       perfViewSettings.add(trackRepaintsCheckbox);
     }
     perfViewSettings.add(new JSeparator());
-    perfSummaryView = new WidgetPerfSummaryView(parentDisposable, app, PerfMetric.lastFrame, PerfReportKind.rebuild);
+    perfSummary = new WidgetPerfSummary(parentDisposable, app, PerfMetric.lastFrame, PerfReportKind.rebuild);
     perfSummaryContainer.add(perfViewSettings, BorderLayout.NORTH);
 
     updateShowPerfSummaryView();
     rebuildStatsPanel.add(perfSummaryContainer, BorderLayout.CENTER);
 
     // perf tips
-    final JPanel perfTipsPanel = perfSummaryView.getWidgetPerfTipsPanel();
+    final JPanel perfTipsPanel = perfSummary.getWidgetPerfTipsPanel();
     rebuildStatsPanel.add(perfTipsPanel, BorderLayout.SOUTH);
     perfTipsPanel.setVisible(false);
 
@@ -130,7 +130,7 @@ public class PerfWidgetRebuildsTab extends JBPanel {
   void updateShowPerfSummaryView() {
     final boolean show = getShowPerfTable();
     final boolean firstRender = currentSummaryView == null;
-    final JComponent summaryView = show ? perfSummaryView : perfSummaryPlaceholder;
+    final JComponent summaryView = show ? perfSummary : perfSummaryPlaceholder;
 
     if (summaryView != currentSummaryView) {
       if (currentSummaryView != null) {
@@ -143,7 +143,7 @@ public class PerfWidgetRebuildsTab extends JBPanel {
     }
 
     if (!show) {
-      perfSummaryView.clearPerformanceTips();
+      perfSummary.clearPerformanceTips();
     }
   }
 

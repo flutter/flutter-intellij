@@ -225,14 +225,14 @@ public class FlutterPerformanceView implements Disposable {
       state.disposable = Disposer.newDisposable();
 
       // Create the three FPS, memory, and widget recount areas.
-      final PerfFPSTab perfTab = new PerfFPSTab(app, this);
-      perfViewsPanel.add(perfTab);
+      final PerfFPSPanel fpsPanel = new PerfFPSPanel(app, this);
+      perfViewsPanel.add(fpsPanel);
 
-      final PerfMemoryTab memoryTab = new PerfMemoryTab(app, this);
-      perfViewsPanel.add(memoryTab);
+      final PerfMemoryPanel memoryPanel = new PerfMemoryPanel(app, this);
+      perfViewsPanel.add(memoryPanel);
 
-      final PerfWidgetRebuildsTab rebuildsTab = new PerfWidgetRebuildsTab(app, this);
-      perfViewsPanel.add(rebuildsTab);
+      final PerfWidgetRebuildsPanel widgetRebuildsPanel = new PerfWidgetRebuildsPanel(app, this);
+      perfViewsPanel.add(widgetRebuildsPanel);
 
       // If in profile mode, auto-open the performance tool window.
       if (isInProfileMode) {

@@ -19,7 +19,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
-class WidgetPerfSummaryView extends JPanel implements Disposable {
+class WidgetPerfSummary extends JPanel implements Disposable {
   private static final int REFRESH_TABLE_DELAY = 100;
 
   private final FlutterWidgetPerfManager perfManager;
@@ -31,7 +31,7 @@ class WidgetPerfSummaryView extends JPanel implements Disposable {
 
   private long lastUpdateTime;
 
-  WidgetPerfSummaryView(Disposable parentDisposable, FlutterApp app, PerfMetric metric, PerfReportKind reportKind) {
+  WidgetPerfSummary(Disposable parentDisposable, FlutterApp app, PerfMetric metric, PerfReportKind reportKind) {
     setLayout(new BorderLayout());
 
     this.reportKind = reportKind;
