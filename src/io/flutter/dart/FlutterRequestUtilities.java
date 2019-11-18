@@ -11,6 +11,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import org.dartlang.analysis.server.protocol.FlutterWidgetPropertyValue;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class FlutterRequestUtilities {
     return buildJsonObjectRequest(id, METHOD_FLUTTER_GET_WIDGET_DESCRIPTION, params);
   }
 
-  public static JsonObject generateFlutterSetWidgetPropertyValue(String id, int propertyId, FlutterWidgetPropertyValue value) {
+  public static JsonObject generateFlutterSetWidgetPropertyValue(String id, int propertyId, @Nullable FlutterWidgetPropertyValue value) {
     final JsonObject params = new JsonObject();
     params.addProperty(ID, propertyId);
     // An omitted value indicates that the property should be removed.
