@@ -500,7 +500,8 @@ public class AndroidUtils {
         addIncludeStatement();
         if (errorDuringOperation.get()) return;
         addCoeditTransformedProject(project);
-        projectRoot.refresh(true, true);
+        // We may have multiple Gradle sync listeners. Write the files to disk synchronously so we won't edit them twice.
+        projectRoot.refresh(false, true);
         AppExecutorUtil.getAppExecutorService().execute(() -> scheduleGradleSyncAfterSyncFinishes(project));
       }
     }
