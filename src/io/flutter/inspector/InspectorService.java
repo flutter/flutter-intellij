@@ -379,12 +379,6 @@ public class InspectorService implements Disposable {
     vmService.callServiceExtension(
       getInspectorLibrary().getIsolateId(), ServiceExtensions.inspectorPrefix + methodName, params,
       new ServiceExtensionConsumer() {
-
-        @Override
-        public void onError(RPCError error) {
-          ret.completeExceptionally(new RuntimeException(error.getMessage()));
-        }
-
         @Override
         public void received(JsonObject object) {
           if (object == null) {
@@ -393,6 +387,11 @@ public class InspectorService implements Disposable {
           else {
             ret.complete(object.get("result"));
           }
+        }
+
+        @Override
+        public void onError(RPCError error) {
+          ret.completeExceptionally(new RuntimeException("RPCError calling " + methodName + ": " + error.getMessage()));
         }
       }
     );
