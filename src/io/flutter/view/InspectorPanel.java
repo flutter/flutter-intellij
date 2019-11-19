@@ -64,7 +64,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
    * simulator or high powered native device. The frame rate is set low
    * for now mainly to minimize the risk of unintended consequences.
    */
-  public static final double REFRESH_FRAMES_PER_SECOND = 5.0;
+  public static final double REFRESH_FRAMES_PER_SECOND = 2.0;
   // We have to define this because SimpleTextAttributes does not define a
   // value for warnings.
   private static final SimpleTextAttributes WARNING_ATTRIBUTES = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, JBColor.ORANGE);
@@ -516,7 +516,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     }
     if (!legacyMode) {
       // We can't efficiently refresh the full tree in legacy mode.
-      recomputeTreeRoot(null, null, false);
+      recomputeTreeRoot(null, null, false, true);
     }
     if (myPropertiesPanel != null) {
       myPropertiesPanel.refresh();
@@ -560,7 +560,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       // current state of the UI.
       AsyncUtils.whenCompleteUiThread(inspectorService.inferPubRootDirectoryIfNeeded(), (String directory, Throwable throwable) -> {
         // Ignore exceptions, we still want to show the Inspector View.
-        updateSelectionFromService();
+        updateSelectionFromService(false);
       });
     }
     else {
@@ -582,7 +582,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
   private void recomputeTreeRoot(DiagnosticsNode newSelection,
                                  DiagnosticsNode detailsSelection,
-                                 boolean setSubtreeRoot) {
+                                 boolean setSubtreeRoot,
+                                 boolean textEditorUpdated) {
     treeGroups.cancelNext();
     treeGroups.getNext().safeWhenComplete(detailsSubtree
                                           ? treeGroups.getNext().getDetailsSubtree(subtreeRoot)
@@ -612,7 +613,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       else {
         getTreeModel().setRoot(null);
       }
-      refreshSelection(newSelection, detailsSelection, setSubtreeRoot);
+      refreshSelection(newSelection, detailsSelection, setSubtreeRoot, textEditorUpdated);
     });
   }
 
@@ -651,7 +652,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     }
     if (node != null && node.equals(subtreeRoot)) {
       //  Select the new node in the existing subtree.
-      applyNewSelection(selection, null, false);
+      applyNewSelection(selection, null, false, true);
       return;
     }
     subtreeRoot = node;
@@ -663,7 +664,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     // Clear now to eliminate frame of highlighted nodes flicker.
     clearValueToTreeNodeMapping();
-    recomputeTreeRoot(selection, null, false);
+    recomputeTreeRoot(selection, null, false, true);
   }
 
   DefaultMutableTreeNode getSubtreeRootNode() {
@@ -673,12 +674,12 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     return valueToTreeNode.get(subtreeRoot.getValueRef());
   }
 
-  private void refreshSelection(DiagnosticsNode newSelection, DiagnosticsNode detailsSelection, boolean setSubtreeRoot) {
+  private void refreshSelection(DiagnosticsNode newSelection, DiagnosticsNode detailsSelection, boolean setSubtreeRoot, boolean textEditorUpdated) {
     if (newSelection == null) {
       newSelection = getSelectedDiagnostic();
     }
     setSelectedNode(findMatchingTreeNode(newSelection));
-    syncSelectionHelper(setSubtreeRoot, detailsSelection);
+    syncSelectionHelper(setSubtreeRoot, detailsSelection, textEditorUpdated);
 
     if (subtreePanel != null) {
       if ((subtreeRoot != null && getSubtreeRootNode() == null)) {
@@ -842,7 +843,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     return a.getDartDiagnosticRef().equals(b.getDartDiagnosticRef());
   }
 
-  public void onInspectorSelectionChanged() {
+  public void onInspectorSelectionChanged(boolean uiAlreadyUpdated, boolean textEditorUpdated) {
+    if (uiAlreadyUpdated) return;
     if (!visibleToUser) {
       // Don't do anything. We will update the view once it is visible again.
       return;
@@ -851,10 +853,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       // Wait for the master to update.
       return;
     }
-    updateSelectionFromService();
+    updateSelectionFromService(textEditorUpdated);
   }
 
-  public void updateSelectionFromService() {
+  public void updateSelectionFromService(boolean textEditorUpdated) {
     treeLoadStarted = true;
     selectionGroups.cancelNext();
 
@@ -885,14 +887,14 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         }
         subtreeRoot = newSelection;
 
-        applyNewSelection(newSelection, detailsSelection, true);
+        applyNewSelection(newSelection, detailsSelection, true, textEditorUpdated);
       }
       else {
         // Legacy case. TODO(jacobr): deprecate and remove this code.
         // This case only exists for the RenderObject tree which we haven't updated yet to use the new UI style.
         // TODO(jacobr): delete it.
         if (newSelection == null) {
-          recomputeTreeRoot(null, null, false);
+          recomputeTreeRoot(null, null, false, true);
           return;
         }
         // TODO(jacobr): switch to using current and next groups in this case
@@ -960,16 +962,17 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
   protected void applyNewSelection(DiagnosticsNode newSelection,
                                    DiagnosticsNode detailsSelection,
-                                   boolean setSubtreeRoot) {
+                                   boolean setSubtreeRoot,
+                                   boolean textEditorUpdated) {
     final DefaultMutableTreeNode nodeInTree = findMatchingTreeNode(newSelection);
 
     if (nodeInTree == null) {
       // The tree has probably changed since we last updated. Do a full refresh
       // so that the tree includes the new node we care about.
-      recomputeTreeRoot(newSelection, detailsSelection, setSubtreeRoot);
+      recomputeTreeRoot(newSelection, detailsSelection, setSubtreeRoot, textEditorUpdated);
     }
 
-    refreshSelection(newSelection, detailsSelection, setSubtreeRoot);
+    refreshSelection(newSelection, detailsSelection, setSubtreeRoot, textEditorUpdated);
   }
 
   private DiagnosticsNode getSelectedDiagnostic() {
@@ -1081,7 +1084,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       // Don't reroot if the selected value is already visible in the details tree.
       final boolean maybeReroot = isSummaryTree && subtreePanel != null && selectedDiagnostic != null &&
                                   !subtreePanel.hasDiagnosticsValue(selectedDiagnostic.getValueRef());
-      syncSelectionHelper(maybeReroot, null);
+      syncSelectionHelper(maybeReroot, null, false);
       if (!maybeReroot) {
         if (isSummaryTree && subtreePanel != null) {
           subtreePanel.selectAndShowNode(selectedDiagnostic);
@@ -1107,12 +1110,12 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     return null;
   }
 
-  private void syncSelectionHelper(boolean maybeRerootSubtree, DiagnosticsNode detailsSelection) {
+  private void syncSelectionHelper(boolean maybeRerootSubtree, DiagnosticsNode detailsSelection, boolean textEditorUpdated) {
     if (!detailsSubtree && selectedNode != null) {
       getTreeModel().nodeChanged(selectedNode.getParent());
     }
     final DiagnosticsNode diagnostic = getSelectedDiagnostic();
-    if (diagnostic != null) {
+    if (diagnostic != null && !textEditorUpdated) {
       if (isCreatedByLocalProject(diagnostic)) {
         final XSourcePosition position = diagnostic.getCreationLocation().getXSourcePosition();
         if (position != null) {
