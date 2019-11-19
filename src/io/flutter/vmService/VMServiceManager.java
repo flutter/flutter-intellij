@@ -62,7 +62,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
    */
   private final List<String> pendingServiceExtensions = new ArrayList<>();
 
-  private final VmServiceListener myVmServiceListener;
   private final Set<String> registeredServices = new HashSet<>();
 
   public VMServiceManager(@NotNull FlutterApp app, @NotNull VmService vmService) {
@@ -85,7 +84,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
     vmService.streamListen(VmService.SERVICE_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
 
-    myVmServiceListener = new VmServiceListenerAdapter() {
+    final VmServiceListener myVmServiceListener = new VmServiceListenerAdapter() {
       @Override
       public void received(String streamId, Event event) {
         onVmServiceReceived(streamId, event);
@@ -607,8 +606,10 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
   private CompletableFuture<Double> invokeGetDisplayRefreshRate(String flutterViewId) {
     final CompletableFuture<Double> ret = new CompletableFuture<>();
+
     final JsonObject params = new JsonObject();
     params.addProperty("viewId", flutterViewId);
+
     vmService.callServiceExtension(
       getCurrentFlutterIsolateRaw().getId(), ServiceExtensions.displayRefreshRate, params,
       new ServiceExtensionConsumer() {
@@ -619,11 +620,13 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
         @Override
         public void received(JsonObject object) {
-          if (object == null) {
+          final String fpsField = "fps";
+
+          if (object == null || !object.has(fpsField)) {
             ret.complete(null);
           }
           else {
-            ret.complete(object.get("fps").getAsDouble());
+            ret.complete(object.get(fpsField).getAsDouble());
           }
         }
       }
