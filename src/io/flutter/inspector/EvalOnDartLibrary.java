@@ -183,7 +183,7 @@ public class EvalOnDartLibrary implements Disposable {
         getIsolateId(), instance.getId(), new GetObjectConsumer() {
           @Override
           public void onError(RPCError error) {
-            future.completeExceptionally(new RuntimeException(error.toString()));
+            future.completeExceptionally(new RuntimeException("RPCError calling getObject: " + error.toString()));
           }
 
           @Override
@@ -193,7 +193,7 @@ public class EvalOnDartLibrary implements Disposable {
 
           @Override
           public void received(Sentinel response) {
-            future.completeExceptionally(new RuntimeException(response.toString()));
+            future.completeExceptionally(new RuntimeException("Sentinel calling getObject: " + response.toString()));
           }
         }
       );
@@ -254,13 +254,13 @@ public class EvalOnDartLibrary implements Disposable {
       }
 
       @Override
-      public void received(Sentinel response) {
-        libraryRef.completeExceptionally(new RuntimeException(response.toString()));
+      public void onError(RPCError error) {
+        libraryRef.completeExceptionally(new RuntimeException("RPCError calling getIsolate:" + error.toString()));
       }
 
       @Override
-      public void onError(RPCError error) {
-        libraryRef.completeExceptionally(new RuntimeException(error.toString()));
+      public void received(Sentinel response) {
+        libraryRef.completeExceptionally(new RuntimeException("Sentinel calling getIsolate:" + response.toString()));
       }
     });
   }
