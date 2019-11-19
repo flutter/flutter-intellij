@@ -500,7 +500,7 @@ public class AndroidUtils {
         addIncludeStatement();
         if (errorDuringOperation.get()) return;
         addCoeditTransformedProject(project);
-        projectRoot.refresh(true, true);
+        projectRoot.refresh(false, true);
         AppExecutorUtil.getAppExecutorService().execute(() -> scheduleGradleSyncAfterSyncFinishes(project));
       }
     }
