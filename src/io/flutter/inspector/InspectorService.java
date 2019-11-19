@@ -344,7 +344,7 @@ public class InspectorService implements Disposable {
   private void notifySelectionChanged() {
     ApplicationManager.getApplication().invokeLater(() -> {
       for (InspectorServiceClient client : clients) {
-        client.onInspectorSelectionChanged();
+        client.onInspectorSelectionChanged(false, false);
       }
     });
   }
@@ -1486,7 +1486,7 @@ public class InspectorService implements Disposable {
   }
 
   public interface InspectorServiceClient {
-    void onInspectorSelectionChanged();
+    void onInspectorSelectionChanged(boolean uiAlreadyUpdated, boolean textEditorUpdated);
 
     void onFlutterFrame();
 
