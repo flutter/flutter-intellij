@@ -37,15 +37,6 @@ public class FlutterModuleModel extends FlutterProjectModel {
       // The FlutterProjectType.MODULE is used in two places. In FlutterProjectModel it is used to create a new top-level
       // Flutter project. Here, it is used to create an Android module for add-to-app. In both cases the Flutter tool creates
       // a new project. In this case, we go on to link that project into an Android project as a new module.
-      useAndroidX().set(true);
-      // The host project is an Android app. This module should be created in its root directory.
-      // Android Studio supports a colon-separated convention to specify sub-directories, which is not yet supported here.
-      Project hostProject = project().getValue();
-      String hostPath = hostProject.getBasePath();
-      if (hostPath == null) {
-        throw new InvalidDataException(); // Can't happen
-      }
-      projectLocation().set(hostPath);
       // Create the Flutter module as if it were a normal project that just happens to be located in an Android project directory.
       new FlutterProjectCreator(this).createModule();
       // Import the Flutter module into the Android project as if it had been created without any Android dependencies.

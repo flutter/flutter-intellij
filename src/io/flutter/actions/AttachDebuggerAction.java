@@ -30,12 +30,13 @@ import io.flutter.run.SdkFields;
 import io.flutter.run.SdkRunConfig;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTextPane;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class AttachDebuggerAction extends FlutterSdkAction {
   @Override
@@ -43,19 +44,21 @@ public class AttachDebuggerAction extends FlutterSdkAction {
     // NOTE: When making changes here, consider making similar changes to RunFlutterAction.
     FlutterInitializer.sendAnalyticsAction(this);
 
-    RunnerAndConfigurationSettings settings = RunManagerEx.getInstanceEx(project).getSelectedConfiguration();
-    if (settings == null) {
-      showSelectConfigDialog();
-      return;
-    }
-
-    RunConfiguration configuration = settings.getConfiguration();
-    if (!(configuration instanceof SdkRunConfig)) {
-      if (project.isDefault() || !FlutterSdkUtil.hasFlutterModules(project)) {
+    RunConfiguration configuration = findRunConfig(project);
+    if (configuration == null) {
+      RunnerAndConfigurationSettings settings = RunManagerEx.getInstanceEx(project).getSelectedConfiguration();
+      if (settings == null) {
+        showSelectConfigDialog();
         return;
       }
-      showSelectConfigDialog();
-      return;
+      configuration = settings.getConfiguration();
+      if (!(configuration instanceof SdkRunConfig)) {
+        if (project.isDefault() || !FlutterSdkUtil.hasFlutterModules(project)) {
+          return;
+        }
+        showSelectConfigDialog();
+        return;
+      }
     }
 
     SdkAttachConfig sdkRunConfig = new SdkAttachConfig((SdkRunConfig)configuration);
@@ -103,17 +106,39 @@ public class AttachDebuggerAction extends FlutterSdkAction {
       e.getPresentation().setVisible(false);
       return;
     }
+    RunConfiguration configuration = findRunConfig(project);
     boolean enabled;
-    RunnerAndConfigurationSettings settings = RunManagerEx.getInstanceEx(project).getSelectedConfiguration();
-    if (settings == null) {
-      enabled = false;
+    if (configuration == null) {
+      RunnerAndConfigurationSettings settings = RunManagerEx.getInstanceEx(project).getSelectedConfiguration();
+      if (settings == null) {
+        enabled = false;
+      }
+      else {
+        configuration = settings.getConfiguration();
+        enabled = configuration instanceof SdkRunConfig;
+      }
     }
     else {
-      RunConfiguration configuration = settings.getConfiguration();
-      enabled = configuration instanceof SdkRunConfig;
+      enabled = true;
     }
     e.getPresentation().setVisible(true);
     e.getPresentation().setEnabled(enabled);
+  }
+
+  @Nullable
+  private static RunConfiguration findRunConfig(Project project) {
+    // Look for a Flutter run config. If exactly one is found then return it otherwise return null.
+    RunManagerEx mgr = RunManagerEx.getInstanceEx(project);
+    List<RunConfiguration> configs = mgr.getAllConfigurationsList();
+    int count = 0;
+    RunConfiguration sdkConfig = null;
+    for (RunConfiguration config : configs) {
+      if (config instanceof SdkRunConfig) {
+        count += 1;
+        sdkConfig = config;
+      }
+    }
+    return count == 1 ? sdkConfig : null;
   }
 
   private static void showSelectConfigDialog() {

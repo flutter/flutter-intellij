@@ -43,7 +43,6 @@ public class FlutterStudioStartupActivity implements StartupActivity {
     connection.subscribe((Topic<GradleSyncListener>)topic, makeSyncListener(project));
 
     if (!FlutterModuleUtils.hasFlutterModule(project)) {
-      // TODO(messick): Remove this subscription after Android Q sources are published. Will be done by FlutterInitializer.
       connection.subscribe(ProjectTopics.MODULES, new ModuleListener() {
         @Override
         public void moduleAdded(@NotNull Project proj, @NotNull Module mod) {
