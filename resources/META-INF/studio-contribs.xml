@@ -14,6 +14,7 @@
 
   <extensions defaultExtensionNs="io.flutter">
     <gradleSyncProvider implementation="io.flutter.android.AndroidStudioGradleSyncProvider" order="first"/>
+    <buildVariantDetector implementation="io.flutter.android.AndroidBuildVariantDetector" order="first"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

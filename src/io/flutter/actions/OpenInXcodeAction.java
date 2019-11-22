@@ -74,7 +74,7 @@ public class OpenInXcodeAction extends AnAction {
 
       // TODO(pq): consider a popup explaining why we're doing a build.
       // Note: we build only for the simulator to bypass device provisioning issues.
-      final OSProcessHandler processHandler = sdk.flutterBuild(pubRoot, "ios", "--simulator").startInConsole(project);
+      final OSProcessHandler processHandler = sdk.flutterBuild(project, pubRoot, "ios", "--simulator").startInConsole(project);
       if (processHandler == null) {
         progressHelper.done();
         FlutterMessages.showError("Error Opening Xcode", "unable to run `flutter build`");

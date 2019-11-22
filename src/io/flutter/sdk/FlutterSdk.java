@@ -5,9 +5,19 @@
  */
 package io.flutter.sdk;
 
-import com.google.gson.*;
+import static java.util.Arrays.asList;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.*;
+import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessListener;
+import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.service.execution.InvalidSdkException;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -19,11 +29,16 @@ import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.vfs.*;
+import com.intellij.openapi.vfs.CharsetToolkit;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.ui.EdtInvocationManager;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkUtil;
 import io.flutter.FlutterUtils;
+import io.flutter.android.BuildVariantDetector;
 import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
@@ -33,13 +48,15 @@ import io.flutter.run.common.RunMode;
 import io.flutter.samples.FlutterSample;
 import io.flutter.samples.FlutterSampleManager;
 import io.flutter.settings.FlutterSettings;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.File;
-import java.util.*;
-
-import static java.util.Arrays.asList;
 
 public class FlutterSdk {
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
@@ -224,8 +241,30 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.MAKE_HOST_APP_EDITABLE);
   }
 
-  public FlutterCommand flutterBuild(@NotNull PubRoot root, String... additionalArgs) {
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.BUILD, additionalArgs);
+  public FlutterCommand flutterBuild(@NotNull Project project, @NotNull PubRoot root, String... additionalArgs) {
+    String variant = getBuildVariant(project);
+    String[] args;
+    if (variant != null) {
+      args = new String[additionalArgs.length + 1];
+      System.arraycopy(additionalArgs, 0, args, 0, additionalArgs.length);
+      String mode;
+      switch (variant) {
+        case "release":
+          mode = "--release";
+          break;
+        case "profile":
+          mode = "--profile";
+          break;
+        default:
+          mode = "--debug";
+          break;
+      }
+      args[args.length - 1] = mode;
+    }
+    else {
+      args = additionalArgs;
+    }
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.BUILD, args);
   }
 
   public FlutterCommand flutterConfig(String... additionalArgs) {
@@ -279,7 +318,7 @@ public class FlutterSdk {
     }
     args.add(FileUtil.toSystemDependentName(mainPath));
 
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{ }));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
   }
 
   public FlutterCommand flutterAttach(@NotNull PubRoot root, @NotNull VirtualFile main, @Nullable FlutterDevice device,
@@ -312,7 +351,7 @@ public class FlutterSdk {
     }
     args.add(FileUtil.toSystemDependentName(mainPath));
 
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.ATTACH, args.toArray(new String[]{ }));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.ATTACH, args.toArray(new String[]{}));
   }
 
   public FlutterCommand flutterRunOnTester(@NotNull PubRoot root, @NotNull String mainPath) {
@@ -320,7 +359,7 @@ public class FlutterSdk {
     args.add("--machine");
     args.add("--device-id=flutter-tester");
     args.add(mainPath);
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{ }));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
   }
 
   public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir, @Nullable String testNameSubstring,
@@ -357,7 +396,7 @@ public class FlutterSdk {
       args.add(FileUtil.toSystemDependentName(mainPath));
     }
 
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.TEST, args.toArray(new String[]{ }));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.TEST, args.toArray(new String[]{}));
   }
 
   /**
@@ -584,6 +623,11 @@ public class FlutterSdk {
     }
 
     return null;
+  }
+
+  private static String getBuildVariant(@NotNull Project project) {
+    BuildVariantDetector extension = BuildVariantDetector.EP_NAME.getExtensionList().get(0);
+    return extension.selectedBuildVariant(project);
   }
 
   /**
