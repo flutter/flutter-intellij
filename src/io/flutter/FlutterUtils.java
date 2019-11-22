@@ -458,6 +458,9 @@ public class FlutterUtils {
         Properties properties = new Properties();
         properties.load(new InputStreamReader(meta.getInputStream(), Charsets.UTF_8));
         String value = properties.getProperty("project_type");
+        if (value == null) {
+          return null;
+        }
         switch (value) {
           case "app":
             return dir.findChild("android");
