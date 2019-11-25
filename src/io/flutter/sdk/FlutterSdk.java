@@ -30,8 +30,6 @@ import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.common.RunMode;
-import io.flutter.samples.FlutterSample;
-import io.flutter.samples.FlutterSampleManager;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,9 +53,6 @@ public class FlutterSdk {
   private final @NotNull VirtualFile myHome;
   private final @NotNull FlutterSdkVersion myVersion;
   private final Map<String, String> cachedConfigValues = new HashMap<>();
-
-  // TODO(pq): make this an instance field as soon as SDKs are being cached and not constantly regenerated.
-  private static FlutterSampleManager sampleManager;
 
   private FlutterSdk(@NotNull final VirtualFile home, @NotNull final FlutterSdkVersion version) {
     myHome = home;
@@ -433,13 +428,6 @@ public class FlutterSdk {
       baseDir.refresh(false, true); // The current thread must NOT be in a read action.
     }
     return PubRoot.forDirectory(baseDir);
-  }
-
-  public List<FlutterSample> getSamples() {
-    if (sampleManager == null) {
-      sampleManager = new FlutterSampleManager(this);
-    }
-    return sampleManager.getSamples();
   }
 
   public Process startMakeHostAppEditable(@NotNull PubRoot root, @NotNull Project project) {
