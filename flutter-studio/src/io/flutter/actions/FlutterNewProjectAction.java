@@ -14,6 +14,8 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.ui.DialogBuilder;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.impl.welcomeScreen.NewWelcomeScreen;
 import com.intellij.ui.LayeredIcon;
 import com.intellij.ui.OffsetIcon;
@@ -47,16 +49,20 @@ public class FlutterNewProjectAction extends AnAction implements DumbAware {
   @Override
   public void actionPerformed(AnActionEvent e) {
     FlutterProjectModel model = new FlutterProjectModel(FlutterProjectType.APP);
-    ModelWizard wizard = new ModelWizard.Builder()
-      .addStep(new ChoseProjectTypeStep(model))
-      .build();
-    StudioWizardDialogBuilder builder = new StudioWizardDialogBuilder(wizard, "Create New Flutter Project");
-    ModelWizardDialog dialog = builder.build();
     try {
-      dialog.show();
-    }
-    catch (NoSuchElementException ex) {
-      // This happens if no Flutter SDK is installed and the user cancels the FlutterProjectStep.
+      ModelWizard wizard = new ModelWizard.Builder()
+        .addStep(new ChoseProjectTypeStep(model))
+        .build();
+      StudioWizardDialogBuilder builder = new StudioWizardDialogBuilder(wizard, "Create New Flutter Project");
+      ModelWizardDialog dialog = builder.build();
+      try {
+        dialog.show();
+      }
+      catch (NoSuchElementException ex) {
+        // This happens if no Flutter SDK is installed and the user cancels the FlutterProjectStep.
+      }
+    } catch (NoSuchMethodError x) {
+      Messages.showMessageDialog("Android Studio canary is not supported", "Unsupported IDE", Messages.getErrorIcon());
     }
   }
 
