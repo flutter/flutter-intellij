@@ -140,8 +140,12 @@ public class Analytics {
     args.put("cid", clientId);
     args.put("t", hitType);
 
-    final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    args.put("sr", screenSize.width + "x" + screenSize.height);
+    try {
+      final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+      args.put("sr", screenSize.width + "x" + screenSize.height);
+    } catch (HeadlessException he) {
+      // ignore this - allow the tests to run when the IDE is headless
+    }
 
     final String language = System.getProperty("user.language");
     if (language != null) {

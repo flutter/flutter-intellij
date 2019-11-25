@@ -7,9 +7,7 @@ package io.flutter.utils;
 
 import com.google.common.collect.ImmutableSet;
 import com.intellij.openapi.vfs.VirtualFile;
-import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.TestDir;
-import io.flutter.testing.Testing;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -23,9 +21,6 @@ import static org.junit.Assert.assertNotEquals;
  */
 public class FileWatchTest {
   @Rule
-  public final ProjectFixture fixture = Testing.makeEmptyProject();
-
-  @Rule
   public final TestDir tmp = new TestDir();
 
   @Test
@@ -38,7 +33,7 @@ public class FileWatchTest {
 
     // create
     tmp.writeFile("abc/child", "");
-    int count;
+    final int count;
     // The number of events fired is an implementation detail of the VFS. We just need at least one.
     assertNotEquals(0, count = eventCount.get());
 
