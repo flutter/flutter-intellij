@@ -5,7 +5,6 @@
  */
 package io.flutter.actions;
 
-
 import com.android.tools.idea.ui.wizard.StudioWizardDialogBuilder;
 import com.android.tools.idea.wizard.model.ModelWizard;
 import com.android.tools.idea.wizard.model.ModelWizardDialog;
@@ -14,7 +13,6 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAware;
-import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.impl.welcomeScreen.NewWelcomeScreen;
 import com.intellij.ui.LayeredIcon;
@@ -61,7 +59,8 @@ public class FlutterNewProjectAction extends AnAction implements DumbAware {
       catch (NoSuchElementException ex) {
         // This happens if no Flutter SDK is installed and the user cancels the FlutterProjectStep.
       }
-    } catch (NoSuchMethodError x) {
+    }
+    catch (NoSuchMethodError x) {
       Messages.showMessageDialog("Android Studio canary is not supported", "Unsupported IDE", Messages.getErrorIcon());
     }
   }
