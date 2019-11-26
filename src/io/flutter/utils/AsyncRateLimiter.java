@@ -66,7 +66,7 @@ public class AsyncRateLimiter {
     }
   }
 
-  // THis method may be called on any thread.
+  // This method may be called on any thread.
   public void scheduleRequestHelper() {
     // Don't schedule the request if this rate limiter has been disposed.
     if (requestScheduler.isDisposed()) {
@@ -89,7 +89,7 @@ public class AsyncRateLimiter {
     };
     final Application app = ApplicationManager.getApplication();
     if (app == null || app.isUnitTestMode()) {
-      // This case existing to support unittesting.
+      // This case exists to support unittesting.
       SwingUtilities.invokeLater(doRun);
     }
     else {
