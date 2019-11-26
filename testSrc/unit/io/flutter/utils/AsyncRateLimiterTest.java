@@ -112,7 +112,6 @@ public class AsyncRateLimiterTest {
     // will be that long before the next event fires.
     final double requestsPerSecond = (numEvents - 1) / ((delta + MS_PER_EVENT) * 0.001);
 
-    // Use an epsilon of 10% for comparisons to TEST_FRAMES_PER_SECOND.
     assertTrue("Requests per second does not exceed limit. Actual: " + requestsPerSecond,
                requestsPerSecond <= TEST_FRAMES_PER_SECOND);
 
