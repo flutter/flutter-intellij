@@ -12,6 +12,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class FlutterColors {
@@ -40,6 +42,11 @@ public class FlutterColors {
 
   private static final Properties colors;
 
+  private static final Map<Color, String> colorToName;
+
+  private static final String primarySuffix = ".primary";
+  private static final String defaultShade = "[500]";
+
   static {
     colors = new Properties();
 
@@ -48,6 +55,16 @@ public class FlutterColors {
     }
     catch (IOException e) {
       FlutterUtils.warn(LOG, e);
+    }
+
+    colorToName = new HashMap<>();
+    for (Map.Entry<Object, Object> entry : colors.entrySet()) {
+      final String name = (String)entry.getKey();
+      final String value = (String)entry.getValue();
+      final Color color = parseColor(value);
+      if (color != null) {
+        colorToName.put(color, name);
+      }
     }
   }
 
@@ -67,8 +84,8 @@ public class FlutterColors {
         return new FlutterColor(color, false);
       }
     }
-    else if (colors.containsKey(key + ".primary")) {
-      final Color color = getColorValue(key + ".primary");
+    else if (colors.containsKey(key + primarySuffix)) {
+      final Color color = getColorValue(key + primarySuffix);
       if (color != null) {
         return new FlutterColor(color, true);
       }
@@ -77,13 +94,32 @@ public class FlutterColors {
     return null;
   }
 
-  private static Color getColorValue(String name) {
-    try {
-      final String hexValue = colors.getProperty(name);
-      if (hexValue == null) {
-        return null;
-      }
+  /**
+   * Returns the the shortest material color name matching a color if one exists.
+   */
+  public static @Nullable
+  String getColorName(Color color) {
+    String name = colorToName.get(color);
+    if (name == null) return null;
+    // Normalize to avoid including suffixes that are not required.
+    name = maybeTrimSuffix(name, primarySuffix);
+    name = maybeTrimSuffix(name, defaultShade);
+    return name;
+  }
 
+  private static String maybeTrimSuffix(String value, String suffix) {
+    if (value.endsWith(suffix)) {
+      return value.substring(0, value.length() - suffix.length());
+    }
+    return value;
+  }
+
+  private static Color parseColor(String hexValue) {
+    if (hexValue == null) {
+      return null;
+    }
+
+    try {
       // argb to r, g, b, a
       final long value = Long.parseLong(hexValue, 16);
 
@@ -93,5 +129,10 @@ public class FlutterColors {
     catch (IllegalArgumentException e) {
       return null;
     }
+  }
+
+  private static Color getColorValue(String name) {
+    final String hexValue = colors.getProperty(name);
+    return parseColor(hexValue);
   }
 }

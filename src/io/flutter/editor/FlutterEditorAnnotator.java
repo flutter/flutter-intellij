@@ -74,7 +74,7 @@ public class FlutterEditorAnnotator implements Annotator {
       final String constColorText = "const Color(";
 
       if (text.startsWith(constIconDataText)) {
-        final Integer val = parseNumberFromCallParam(text, constIconDataText);
+        final Integer val = ExpressionParsingUtils.parseNumberFromCallParam(text, constIconDataText);
         if (val != null) {
           final String hex = Long.toHexString(val);
           // We look for the codepoint for material icons, and fall back on those for Cupertino.
@@ -91,11 +91,8 @@ public class FlutterEditorAnnotator implements Annotator {
         }
       }
       else if (text.startsWith(constColorText)) {
-        final Integer val = parseNumberFromCallParam(text, constColorText);
-        if (val != null) {
-          final int value = val;
-          //noinspection UseJBColor
-          final Color color = new Color((int)(value >> 16) & 0xFF, (int)(value >> 8) & 0xFF, (int)value & 0xFF, (int)(value >> 24) & 0xFF);
+        final Color color = ExpressionParsingUtils.parseColor(text, constColorText);
+        if (color != null) {
           attachColorIcon(element, holder, color);
         }
       }
@@ -111,7 +108,7 @@ public class FlutterEditorAnnotator implements Annotator {
       final String colorText = "Color(";
 
       if (text.startsWith(iconDataText)) {
-        final Integer val = parseNumberFromCallParam(text, iconDataText);
+        final Integer val = ExpressionParsingUtils.parseNumberFromCallParam(text, iconDataText);
         if (val != null) {
           final String hex = Long.toHexString(val);
           // We look for the codepoint for material icons, and fall back on those for Cupertino.
@@ -128,34 +125,12 @@ public class FlutterEditorAnnotator implements Annotator {
         }
       }
       else if (text.startsWith(colorText)) {
-        final Integer val = parseNumberFromCallParam(text, colorText);
-        if (val != null) {
-          final int value = val;
-          //noinspection UseJBColor
-          final Color color = new Color((int)(value >> 16) & 0xFF, (int)(value >> 8) & 0xFF, (int)value & 0xFF, (int)(value >> 24) & 0xFF);
+        final Color color = ExpressionParsingUtils.parseColor(text, colorText);
+        if (color != null) {
           attachColorIcon(element, holder, color);
         }
       }
     }
-  }
-
-  private static Integer parseNumberFromCallParam(String callText, String prefix) {
-    if (callText.startsWith(prefix) && callText.endsWith(")")) {
-      String val = callText.substring(prefix.length(), callText.length() - 1).trim();
-      final int index = val.indexOf(',');
-      if (index != -1) {
-        val = val.substring(0, index);
-      }
-      try {
-        return val.startsWith("0x")
-               ? Integer.parseUnsignedInt(val.substring(2), 16)
-               : Integer.parseUnsignedInt(val);
-      }
-      catch (NumberFormatException ignored) {
-      }
-    }
-
-    return null;
   }
 
   private static void attachColorIcon(final PsiElement element, AnnotationHolder holder, Color color) {
