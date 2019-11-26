@@ -34,7 +34,7 @@ public class ExpressionParsingUtils {
   }
 
   public static Color parseColor(String text, String colorText) {
-    final Integer val = ExpressionParsingUtils.parseNumberFromCallParam(text, colorText);
+    final Integer val = parseNumberFromCallParam(text, colorText);
     if (val == null) return null;
     final int value = val;
     //noinspection UseJBColor
