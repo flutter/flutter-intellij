@@ -25,20 +25,16 @@ import static org.junit.Assert.*;
 
 public class AsyncRateLimiterTest {
 
-  final Clock clock = Clock.systemUTC();
-
-  private AsyncRateLimiter rateLimiter;
-
-  private final List<String> logEntries = new ArrayList<>();
-
   private static final double TEST_FRAMES_PER_SECOND = 10.0;
   private static final long MS_PER_EVENT = (long)(1000.0 / TEST_FRAMES_PER_SECOND);
-
+  final Clock clock = Clock.systemUTC();
+  private final List<String> logEntries = new ArrayList<>();
+  private AsyncRateLimiter rateLimiter;
   private Computable<CompletableFuture<?>> callback;
   private CompletableFuture<Void> callbacksDone;
   private CompositeDisposable disposable;
   private int expectedEvents;
-  private int numEvents;
+  private volatile int numEvents;
 
   @Before
   public void setUp() {
@@ -82,7 +78,7 @@ public class AsyncRateLimiterTest {
   }
 
   void scheduleRequest() {
-    SwingUtilities.invokeLater(() -> rateLimiter.scheduleRequest());
+    rateLimiter.scheduleRequest();
   }
 
   @Test
@@ -90,6 +86,7 @@ public class AsyncRateLimiterTest {
     final long start = clock.millis();
     expectedEvents = 4;
 
+    callback = null;
     while (!callbacksDone.isDone()) {
       // Schedule requests at many times the rate limit.
       SwingUtilities.invokeLater(() -> {
@@ -111,11 +108,12 @@ public class AsyncRateLimiterTest {
     checkLog("EVENT", "EVENT", "EVENT", "EVENT", "DONE");
 
     // First event should occur immediately so don't count it.
-    final double requestsPerSecond = (expectedEvents - 1) / (delta * 0.001);
+    // The last event just fired so add in MS_PER_EVENT to factor in that it
+    // will be that long before the next event fires.
+    final double requestsPerSecond = (numEvents - 1) / ((delta + MS_PER_EVENT) * 0.001);
 
-    // Use an epsilon of 10% for comparisons to TEST_FRAMES_PER_SECOND.
     assertTrue("Requests per second does not exceed limit. Actual: " + requestsPerSecond,
-               requestsPerSecond <= (TEST_FRAMES_PER_SECOND * 1.1));
+               requestsPerSecond <= TEST_FRAMES_PER_SECOND);
 
     // We use a large delta so that tests run under load do not result in flakes.
     assertTrue("Requests per second within 3 fps of rate limit:", requestsPerSecond + 3.0 > TEST_FRAMES_PER_SECOND);
@@ -153,18 +151,60 @@ public class AsyncRateLimiterTest {
         reportFailure(e);
       }
     }
+
     final long current = clock.millis();
     final long delta = current - start;
 
     checkLog("EVENT", "EVENT", "EVENT", "DONE");
 
     // First event should occur immediately so don't count it.
-    final double requestsPerSecond = (expectedEvents - 1) / (delta * 0.001);
+    // The last event just fired so add in MS_PER_EVENT to factor in that it
+    // will be that long before the next event fires.
+    final double requestsPerSecond = (expectedEvents - 1) / ((delta + MS_PER_EVENT) * 0.001);
     assertTrue("Requests per second less than 10 times limit. Actual: " + requestsPerSecond,
                requestsPerSecond * 10 < TEST_FRAMES_PER_SECOND);
     // We use a large delta so that tests run under load do not result in flakes.
     assertTrue("Requests per second within 5 fps of rate limit. ACTUAL: " + requestsPerSecond,
                requestsPerSecond * 10 + 5.0 > TEST_FRAMES_PER_SECOND);
+  }
+
+  @Test
+  public void avoidUnneededRequests() {
+    // In this test we verify that we don't accidentally schedule unneeded
+
+    final long start = clock.millis();
+    expectedEvents = 1;
+    callback = () -> {
+      // Make the first event slow but other events instant.
+      // This will make it easier to catch if we accidentally schedule a second
+      // request when we shouldn't.
+      if (numEvents == 0) {
+        try {
+          Thread.sleep(MS_PER_EVENT);
+        }
+        catch (InterruptedException e) {
+          reportFailure(e);
+        }
+      }
+      return null;
+    };
+
+    // Schedule 4 requests immediatelly one after each other and verify that
+    // only one is actually triggered.
+    scheduleRequest();
+    scheduleRequest();
+    scheduleRequest();
+    scheduleRequest();
+
+    // Extra sleep to ensure no unexpected events fire.
+    try {
+      Thread.sleep(MS_PER_EVENT * 10);
+    }
+    catch (InterruptedException e) {
+      reportFailure(e);
+    }
+
+    assertEquals(numEvents, expectedEvents);
   }
 
   private synchronized void log(String message) {
