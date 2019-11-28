@@ -18,9 +18,8 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import com.jetbrains.lang.dart.psi.DartClass;
@@ -95,28 +94,20 @@ public class FlutterSampleNotificationProvider extends EditorNotifications.Provi
     final PsiFile psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document);
     assert (psiFile != null);
 
-    final List<DartClass> classDeclartions = new ArrayList<>();
-
-    psiFile.acceptChildren(new PsiElementVisitor() {
-      @Override
-      public void visitElement(PsiElement element) {
-        if (element instanceof DartClass) {
-          final String name = ((DartClass)element).getName();
-          if (name != null && !(name.startsWith("_"))) {
-            classDeclartions.add((DartClass)element);
-          }
-        }
-      }
-    });
-
-    if (classDeclartions.isEmpty()) {
+    final DartClass[] classes = PsiTreeUtil.getChildrenOfType(psiFile, DartClass.class);
+    if (classes == null) {
       return Collections.emptyList();
     }
 
     // Get the dartdoc for the classes and use a regex to identify which ones have
     // "/// {@tool dartpad ...}".
 
-    for (DartClass declaration : classDeclartions) {
+    for (DartClass declaration : classes) {
+      final String name = declaration.getName();
+      if (name == null || name.startsWith("_")) {
+        continue;
+      }
+
       final List<String> dartdoc = DartDocumentUtils.getDartdocFor(document, declaration);
       if (containsDartdocFlutterSample(dartdoc)) {
         assert (declaration.getName() != null);
@@ -136,7 +127,7 @@ public class FlutterSampleNotificationProvider extends EditorNotifications.Provi
   }
 
   // "/// {@tool dartpad ...}"
-  private static final Pattern toolDartPadPattern = Pattern.compile("\\{@tool.*\\sdartpad.*}");
+  private static final Pattern DARTPAD_TOOL_PATTERN = Pattern.compile("\\{@tool.*\\sdartpad.*}");
 
   /**
    * Return whether the given lines of dartdoc text contain a reference to an embedded dartpad Flutter
@@ -149,7 +140,7 @@ public class FlutterSampleNotificationProvider extends EditorNotifications.Provi
     }
 
     for (String line : lines) {
-      if (toolDartPadPattern.matcher(line).find()) {
+      if (DARTPAD_TOOL_PATTERN.matcher(line).find()) {
         return true;
       }
     }
