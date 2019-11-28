@@ -119,6 +119,7 @@ public class TestFields {
   public VirtualFile getFileOrDir() {
     final String path = testFile != null ? testFile : testDir;
     if (path == null) return null;
+
     return LocalFileSystem.getInstance().findFileByPath(path);
   }
 
@@ -128,8 +129,12 @@ public class TestFields {
   @Nullable
   public PubRoot getPubRoot(@NotNull Project project) {
     final VirtualFile dir = getFileOrDir();
+    if (dir == null) return null;
+
     final PubRoot root = PubRoot.forFile(dir);
-    return root != null ? root : PubRoot.forDescendant(dir, project);
+    if (root != null) return root;
+
+    return PubRoot.forDescendant(dir, project);
   }
 
   /**
@@ -171,6 +176,7 @@ public class TestFields {
           return "all tests in " + root.getRoot().getName();
         }
     }
+
     return defaultName;
   }
 
