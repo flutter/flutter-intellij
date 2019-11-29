@@ -127,7 +127,7 @@ public class PubRoot {
    * Based on the filesystem cache; doesn't refresh anything.
    */
   @Nullable
-  public static PubRoot forDescendant(VirtualFile fileOrDir, Project project) {
+  public static PubRoot forDescendant(@NotNull VirtualFile fileOrDir, @NotNull Project project) {
     final ProjectFileIndex index = ProjectRootManager.getInstance(project).getFileIndex();
     final VirtualFile root = index.getContentRootForFile(fileOrDir);
     return forDirectory(root);
