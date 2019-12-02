@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -119,12 +120,11 @@ public class FlutterDartAnalysisServer implements Disposable {
   }
 
   @Nullable
-  public List<FlutterWidgetProperty> getWidgetDescription(@NotNull VirtualFile file, int _offset) {
+  public CompletableFuture<List<FlutterWidgetProperty>> getWidgetDescription(@NotNull VirtualFile file, int _offset) {
+    final CompletableFuture<List<FlutterWidgetProperty>> result = new CompletableFuture<>();
     final String filePath = FileUtil.toSystemDependentName(file.getPath());
     final int offset = analysisService.getOriginalOffset(file, _offset);
 
-    final CountDownLatch latch = new CountDownLatch(1);
-    final AtomicReference<List<FlutterWidgetProperty>> result = new AtomicReference<>();
     final String id = analysisService.generateUniqueId();
     synchronized (responseConsumers) {
       responseConsumers.put(id, (resultObject) -> {
@@ -134,19 +134,17 @@ public class FlutterDartAnalysisServer implements Disposable {
           for (JsonElement propertyObject : propertiesObject) {
             properties.add(FlutterWidgetProperty.fromJson(propertyObject.getAsJsonObject()));
           }
-          result.set(properties);
+          result.complete(properties);
         }
         catch (Throwable ignored) {
         }
-        latch.countDown();
       });
     }
 
     final JsonObject request = FlutterRequestUtilities.generateFlutterGetWidgetDescription(id, filePath, offset);
     analysisService.sendRequest(id, request);
 
-    Uninterruptibles.awaitUninterruptibly(latch, 100, TimeUnit.MILLISECONDS);
-    return result.get();
+    return result;
   }
 
 
