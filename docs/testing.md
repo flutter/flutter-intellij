@@ -184,7 +184,10 @@ Verify installation and configuration in a fresh IDEA installation.
 * Verify project creation, run/debug.
 
 ## Add-to-app module integration test
-Create and debug a Flutter module in an Android app.
+Create and debug a Flutter module in an Android app. Do this twice, once 
+using Java and again with Kotlin as the language choice for the Android app.
+The location of the Flutter module is important. Put it in the Android app
+directory once and put it outside the app another time.
 
 ###Create an Android app
 
@@ -219,6 +222,19 @@ Go to the editor for MainActivity.kt. Change the onCreate method:
             FlutterEngineCache.getInstance().put("1", engine)
             startActivity(FlutterActivity.withCachedEngine("1").build(this))
         }
+    }
+```
+If you opted to use Java, use this:
+```java
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        FlutterEngine engine = new FlutterEngine(getApplicationContext());
+        engine.getDartExecutor().executeDartEntrypoint(DartExecutor.DartEntrypoint.createDefault());
+        findViewById(R.id.fab).setOnClickListener(view -> {
+            FlutterEngineCache.getInstance().put("1", engine);
+            startActivity(FlutterActivity.withCachedEngine("1").build(this));
+        });
     }
 ```
 You need to add some imports. Click on each red name then type

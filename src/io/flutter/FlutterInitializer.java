@@ -63,22 +63,6 @@ public class FlutterInitializer implements StartupActivity {
 
   @Override
   public void runActivity(@NotNull Project project) {
-    // TODO(messick): Remove 'FlutterUtils.isAndroidStudio()' after Android Q sources are published.
-    if (FlutterUtils.isAndroidStudio() && !FlutterModuleUtils.hasFlutterModule(project)) {
-      final MessageBusConnection connection = project.getMessageBus().connect(project);
-      connection.subscribe(ProjectTopics.MODULES, new ModuleListener() {
-        @Override
-        public void moduleAdded(@NotNull Project proj, @NotNull Module mod) {
-          if (AndroidUtils.FLUTTER_MODULE_NAME.equals(mod.getName())) {
-            connection.disconnect();
-            AppExecutorUtil.getAppExecutorService().execute(() -> {
-              AndroidUtils.enableCoeditIfAddToAppDetected(project);
-            });
-          }
-        }
-      });
-    }
-
     // Convert all modules of deprecated type FlutterModuleType.
     if (FlutterModuleUtils.convertFromDeprecatedModuleType(project)) {
       // If any modules were converted over, create a notification

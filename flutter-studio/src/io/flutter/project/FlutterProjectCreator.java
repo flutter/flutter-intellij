@@ -5,13 +5,15 @@
  */
 package io.flutter.project;
 
+import static com.intellij.openapi.util.io.FileUtilRt.toSystemIndependentName;
+import static io.flutter.FlutterUtils.disableGradleProjectMigrationNotification;
+
 import com.android.repository.io.FileOpUtils;
 import com.intellij.conversion.ConversionListener;
 import com.intellij.conversion.ConversionService;
 import com.intellij.execution.OutputListener;
 import com.intellij.ide.RecentProjectsManager;
 import com.intellij.ide.highlighter.ModuleFileType;
-import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.ide.projectView.impl.ProjectViewPane;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
@@ -29,6 +31,7 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectTypeService;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Computable;
@@ -41,23 +44,22 @@ import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.platform.PlatformProjectOpenProcessor;
-import io.flutter.FlutterUtils;
 import io.flutter.FlutterMessages;
+import io.flutter.FlutterUtils;
+import io.flutter.ProjectOpenActivity;
 import io.flutter.module.FlutterModuleBuilder;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
-import org.jetbrains.android.facet.AndroidFacet;
-import org.jetbrains.annotations.NotNull;
-
 import java.io.File;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static com.intellij.openapi.util.io.FileUtilRt.toSystemIndependentName;
-import static io.flutter.FlutterUtils.disableGradleProjectMigrationNotification;
+import org.jetbrains.android.facet.AndroidFacet;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Create a Flutter project.
@@ -84,9 +86,20 @@ public class FlutterProjectCreator {
     if (baseDir == null) {
       return; // Project was deleted.
     }
-    String baseDirPath = baseDir.getPath();
-    String moduleName = ProjectWizardUtil.findNonExistingFileName(baseDirPath, myModel.projectName().get(), "");
-    String contentRoot = baseDirPath + "/" + moduleName;
+    String moduleName, contentRoot;
+    if (AndroidUtils.isAndroidProject(project)) {
+      VirtualFile location = getLocationFromModel(null, false);
+      if (location == null) {
+        return;
+      }
+      moduleName = myModel.projectName().get();
+      contentRoot = location.getPath();
+    }
+    else {
+      String baseDirPath = baseDir.getPath();
+      moduleName = ProjectWizardUtil.findNonExistingFileName(baseDirPath, myModel.projectName().get(), "");
+      contentRoot = baseDirPath + "/" + moduleName;
+    }
     File location = new File(contentRoot);
     if (!location.exists() && !location.mkdirs()) {
       String message = ActionsBundle.message("action.NewDirectoryProject.cannot.create.dir", location.getAbsolutePath());
@@ -138,27 +151,14 @@ public class FlutterProjectCreator {
     IdeFrame frame = IdeFocusManager.getGlobalInstance().getLastFocusedFrame();
     final Project projectToClose = frame != null ? frame.getProject() : null;
 
-    final File location = new File(FileUtil.toSystemDependentName(myModel.projectLocation().get()));
-    if (!location.exists() && !location.mkdirs()) {
-      String message = ActionsBundle.message("action.NewDirectoryProject.cannot.create.dir", location.getAbsolutePath());
-      Messages.showErrorDialog(projectToClose, message, ActionsBundle.message("action.NewDirectoryProject.title"));
-      return;
-    }
-    final File baseFile = new File(location, myModel.projectName().get());
-    //noinspection ResultOfMethodCallIgnored
-    baseFile.mkdirs();
-    final VirtualFile baseDir = ApplicationManager.getApplication().runWriteAction(
-      (Computable<VirtualFile>)() -> LocalFileSystem.getInstance().refreshAndFindFileByIoFile(baseFile));
+    VirtualFile baseDir = getLocationFromModel(projectToClose, true);
     if (baseDir == null) {
-      FlutterUtils.warn(LOG, "Couldn't find '" + location + "' in VFS");
       return;
     }
     // TODO(messick): Remove the project converter when it is no longer needed (probably by the AS 3.2 release).
     ConversionService.getInstance().convertSilently(baseDir.getPath(), new MyConversionListener());
     //noinspection ConstantConditions (Keep this refresh even if the converter is removed.)
     VfsUtil.markDirtyAndRefresh(false, true, true, baseDir);
-
-    RecentProjectsManager.getInstance().setLastProjectCreationLocation(location.getPath());
 
     // Create the project files using 'flutter create'.
     FlutterSdk sdk = FlutterSdk.forPath(myModel.flutterSdk().get());
@@ -191,6 +191,8 @@ public class FlutterProjectCreator {
     }
 
     if (project != null) {
+      // Android Studio changes the default project type, so we need to set it.
+      ProjectTypeService.setProjectType(project, ProjectOpenActivity.FLUTTER_PROJECT_TYPE);
       disableGradleProjectMigrationNotification(project);
       disableUserConfig(project);
       Project proj = project;
@@ -205,6 +207,28 @@ public class FlutterProjectCreator {
               });
           }, ModalityState.defaultModalityState()));
     }
+  }
+
+  private VirtualFile getLocationFromModel(@Nullable Project projectToClose, boolean saveLocation) {
+    final File location = new File(FileUtil.toSystemDependentName(myModel.projectLocation().get()));
+    if (!location.exists() && !location.mkdirs()) {
+      String message = ActionsBundle.message("action.NewDirectoryProject.cannot.create.dir", location.getAbsolutePath());
+      Messages.showErrorDialog(projectToClose, message, ActionsBundle.message("action.NewDirectoryProject.title"));
+      return null;
+    }
+    final File baseFile = new File(location, myModel.projectName().get());
+    //noinspection ResultOfMethodCallIgnored
+    baseFile.mkdirs();
+    final VirtualFile baseDir = ApplicationManager.getApplication().runWriteAction(
+      (Computable<VirtualFile>)() -> LocalFileSystem.getInstance().refreshAndFindFileByIoFile(baseFile));
+    if (baseDir == null) {
+      FlutterUtils.warn(LOG, "Couldn't find '" + location + "' in VFS");
+      return null;
+    }
+    if (saveLocation) {
+      RecentProjectsManager.getInstance().setLastProjectCreationLocation(location.getPath());
+    }
+    return baseDir;
   }
 
   private FlutterCreateAdditionalSettings makeAdditionalSettings() {

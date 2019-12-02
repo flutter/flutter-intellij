@@ -467,6 +467,8 @@ public class AndroidUtils {
   }
 
   private static class CoEditHelper {
+    // TODO(messick) Rewrite this to use ProjectBuildModel. See FlutterModuleImporter for an example.
+
     @NotNull
     private final Project project;
     @NotNull
@@ -502,6 +504,9 @@ public class AndroidUtils {
         addCoeditTransformedProject(project);
         // We may have multiple Gradle sync listeners. Write the files to disk synchronously so we won't edit them twice.
         projectRoot.refresh(false, true);
+        if (!projectRoot.equals(flutterModuleDir.getParent())) {
+          flutterModuleDir.refresh(false, true);
+        }
         AppExecutorUtil.getAppExecutorService().execute(() -> scheduleGradleSyncAfterSyncFinishes(project));
       }
     }
