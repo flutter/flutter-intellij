@@ -7,7 +7,6 @@ package io.flutter.sdk;
 
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.module.FlutterProjectType;
-import io.flutter.samples.FlutterSample;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -158,8 +157,6 @@ public class FlutterCreateAdditionalSettings {
     private Boolean kotlin;
     @Nullable
     private Boolean offlineMode;
-    @Nullable
-    private FlutterSample sampleContent;
     private boolean isAndroidX;
 
     public Builder() {
@@ -197,11 +194,6 @@ public class FlutterCreateAdditionalSettings {
 
     public Builder setOffline(@Nullable Boolean offlineMode) {
       this.offlineMode = offlineMode;
-      return this;
-    }
-
-    public Builder setSampleContent(@Nullable FlutterSample sampleContent) {
-      this.sampleContent = sampleContent;
       return this;
     }
 
