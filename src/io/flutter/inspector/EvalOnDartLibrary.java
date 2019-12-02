@@ -17,13 +17,23 @@ import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.EvaluateConsumer;
 import org.dartlang.vm.service.consumer.GetIsolateConsumer;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
+import org.dartlang.vm.service.consumer.ServiceExtensionConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
+import java.util.Base64.Decoder;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Invoke methods from a specified Dart library using the observatory protocol.
@@ -32,6 +42,7 @@ public class EvalOnDartLibrary implements Disposable {
   private static final Logger LOG = Logger.getInstance(EvalOnDartLibrary.class);
 
   private final StreamSubscription<IsolateRef> subscription;
+  private final ScheduledThreadPoolExecutor delayer;
   private String isolateId;
   private final VmService vmService;
   @SuppressWarnings("FieldCanBeLocal") private final VMServiceManager vmServiceManager;
@@ -39,6 +50,7 @@ public class EvalOnDartLibrary implements Disposable {
   CompletableFuture<LibraryRef> libraryRef;
   private final Alarm myRequestsScheduler;
 
+  static final int DEFAULT_REQUEST_TIMEOUT_SECONDS = 5;
   /**
    * For robustness we ensure at most one pending request is issued at a time.
    */
@@ -74,7 +86,7 @@ public class EvalOnDartLibrary implements Disposable {
     }
 
     // Future that completes when the request has finished.
-    final CompletableFuture<T> response = new CompletableFuture<>();
+    final CompletableFuture<T> response = timeoutAfter(DEFAULT_REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     // This is an optimization to avoid sending stale requests across the wire.
     final Runnable wrappedRequest = () -> {
       if (isAlive != null && isAlive.isDisposed()) {
@@ -129,15 +141,46 @@ public class EvalOnDartLibrary implements Disposable {
         initialize(isolate.getId());
       }
     }, true);
+    delayer = new ScheduledThreadPoolExecutor(1);
   }
 
   public String getIsolateId() {
     return isolateId;
   }
 
+  CompletableFuture<LibraryRef> getLibraryRef() {
+    return libraryRef;
+  }
+
   public void dispose() {
     subscription.dispose();
     // TODO(jacobr): complete all pending futures as cancelled?
+  }
+
+  public CompletableFuture<JsonObject> invokeServiceMethod(String method, JsonObject params) {
+    CompletableFuture<JsonObject> ret = timeoutAfter(DEFAULT_REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+    vmService.callServiceExtension(isolateId, method, params, new ServiceExtensionConsumer() {
+
+      @Override
+      public void onError(RPCError error) {
+        ret.completeExceptionally(new RuntimeException(error.getMessage()));
+      }
+
+      @Override
+      public void received(JsonObject object) {
+        ret.complete(object);
+      }
+    });
+
+    return ret;
+  }
+
+  // TODO(jacobr): remove this method after we switch to Java9+ which supports
+  // this method directly on CompletableFuture.
+  public <T> CompletableFuture<T> timeoutAfter(long timeout, TimeUnit unit) {
+    CompletableFuture<T> result = new CompletableFuture<T>();
+    delayer.schedule(() -> result.completeExceptionally(new TimeoutException()), timeout, unit);
+    return result;
   }
 
   public CompletableFuture<InstanceRef> eval(String expression, Map<String, String> scope, InspectorService.ObjectGroup isAlive) {
