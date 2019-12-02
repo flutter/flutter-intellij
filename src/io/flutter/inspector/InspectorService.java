@@ -60,14 +60,14 @@ public class InspectorService implements Disposable {
 
   public static class Location {
 
-    public Location(VirtualFile file, int line, int column, int offset) {
+    public Location(@NotNull VirtualFile file, int line, int column, int offset) {
       this.file = file;
       this.line = line;
       this.column = column;
       this.offset = offset;
     }
 
-    private final VirtualFile file;
+    private final @NotNull VirtualFile file;
     public final int line;
     public final int column;
     private final int offset;
@@ -88,11 +88,11 @@ public class InspectorService implements Disposable {
       return file;
     }
 
-    public String getPath() {
+    public @NotNull String getPath() {
       return toSourceLocationUri(file.getPath());
     }
 
-    public XSourcePosition getXSourcePosition() {
+    public @NotNull XSourcePosition getXSourcePosition() {
       if (file == null) {
         return null;
       }
@@ -133,28 +133,29 @@ public class InspectorService implements Disposable {
       // Flutter kernel transformer.
       if (outline.getClassName() != null) {
         final PsiFile psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document);
-
-        final PsiElement element = psiFile.findElementAt(nodeOffset);
-        DartCallExpression callExpression = PsiTreeUtil.getParentOfType(element, DartCallExpression.class);
-        PsiElement match = null;
-        if (callExpression != null) {
-          final DartExpression expression = callExpression.getExpression();
-          if (expression instanceof DartReferenceExpression) {
-            DartReferenceExpression referenceExpression = (DartReferenceExpression)expression;
-            PsiElement[] children = referenceExpression.getChildren();
-            if (children.length > 1) {
-              // This case handles expressions like 'ClassName.namedConstructor'
-              // and 'libraryPrefix.ClassName.namedConstructor'
-              match = children[children.length - 1];
-            }
-            else {
-              // this case handles the simple 'ClassName' case.
-              match = referenceExpression;
+        if (psiFile != null) {
+          final PsiElement element = psiFile.findElementAt(nodeOffset);
+          final DartCallExpression callExpression = PsiTreeUtil.getParentOfType(element, DartCallExpression.class);
+          PsiElement match = null;
+          if (callExpression != null) {
+            final DartExpression expression = callExpression.getExpression();
+            if (expression instanceof DartReferenceExpression) {
+              final DartReferenceExpression referenceExpression = (DartReferenceExpression)expression;
+              final PsiElement[] children = referenceExpression.getChildren();
+              if (children.length > 1) {
+                // This case handles expressions like 'ClassName.namedConstructor'
+                // and 'libraryPrefix.ClassName.namedConstructor'
+                match = children[children.length - 1];
+              }
+              else {
+                // this case handles the simple 'ClassName' case.
+                match = referenceExpression;
+              }
             }
           }
-        }
-        if (match != null) {
-          nodeOffset = match.getTextOffset();
+          if (match != null) {
+            nodeOffset = match.getTextOffset();
+          }
         }
       }
       final int line = document.getLineNumber(nodeOffset);
@@ -872,8 +873,8 @@ public class InspectorService implements Disposable {
     }
 
     private CompletableFuture<InstanceRef> evaluateCustomApiHelper(String command, Map<String, String> scope) {
-      // Avoid running command if we interupted executing code as results will
-      // be wierd. Repeatedly run the command until we hit idle.
+      // Avoid running command if we interrupted executing code as results will
+      // be weird. Repeatedly run the command until we hit idle.
       // We cannot execute the command at a later point due to eval bugs where
       // the VM crashes executing a closure created by eval asynchronously.
       if (isDisposed()) return CompletableFuture.completedFuture(null);
