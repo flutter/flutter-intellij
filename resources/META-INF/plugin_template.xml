@@ -312,6 +312,15 @@
     <projectService serviceInterface="io.flutter.editor.ActiveEditorsOutlineService"
                     serviceImplementation="io.flutter.editor.ActiveEditorsOutlineService"
                     overrides="false"/>
+    <projectService serviceInterface="io.flutter.editor.EditorMouseEventService"
+                    serviceImplementation="io.flutter.editor.EditorMouseEventService"
+                    overrides="false"/>
+    <projectService serviceInterface="io.flutter.editor.EditorPositionService"
+                    serviceImplementation="io.flutter.editor.EditorPositionService"
+                    overrides="false"/>
+    <projectService serviceInterface="io.flutter.inspector.InspectorGroupManagerService"
+                    serviceImplementation="io.flutter.inspector.InspectorGroupManagerService"
+                    overrides="false"/>
 
     <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>
 
