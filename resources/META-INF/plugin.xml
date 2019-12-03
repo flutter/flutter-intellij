@@ -29,6 +29,54 @@
 
   <change-notes>
     <![CDATA[
+<h2>42.0</h2>
+<ul>
+  <li>Hot UI implementation (#4160)</li>
+  <li>Support new Inspector select api and a few other minor tweaks (#4158)</li>
+  <li>Services to manage tracking inspector and editor events more effectively</li>
+  <li>Support Inspector APIs needed for HOTUI (#4153)</li>
+  <li>Smooth out the rough spots in add-to-app support (#4129)</li>
+  <li>Remove an unused field (#4152)</li>
+  <li>Switch getWidgetDescription to use CompletableFuture as it sometimes takes more than 100ms (#4151)</li>
+  <li>Update the product matrix for 2019.3 stable (#4148)</li>
+  <li>Fix an NPE in PubRoot.forDescendant (#4147)</li>
+  <li>Remove FlutterSampleManager; for embedded flutter samples, open the hosted docs (#4139)</li>
+  <li>Make the async rate limiter implementation a bit more robust (#4144)</li>
+  <li>Refactor of Color parsing code to share more logic with HotUI (#4141)</li>
+  <li>Show error dialog when creating a project with canary builds (#4140)</li>
+  <li>Misc test cleanup (#4138)</li>
+  <li>Add null check to guard against missing property (#4135)</li>
+  <li>Add some more logging information to help diagnose the 'method not found' errors (#4125)</li>
+  <li>Force VFS refresh to prevent adding multiple include statements (#4126)</li>
+  <li>Fix an npe when getting the target fps for a device (#4124)</li>
+  <li>Add missing Nullable annotation (#4122)</li>
+  <li>Remove the two secondary UI guides settings (#4121)</li>
+  <li>Allow defining location of Android add-to-app modules (#4117)</li>
+  <li>Use a LinkLabel for the privacy link in the settings page (#4120)</li>
+  <li>Fix cases where ActiveEditorsOutlineService was not thread safe (#4119)</li>
+  <li>Refactor the UI and location of the Flutter Performance tool window (#4111)</li>
+  <li>Support removing widget property values (#4118)</li>
+  <li>Build for Android Studio beta 4 and later (#4109)</li>
+  <li>Support for debugging add-to-app modules in Android Studio (#4097)</li>
+  <li>Update FlutterDartAnalysisServer to support Widget manipulation methods (#4102)</li>
+  <li>Improve devtools launching (#4105)</li>
+  <li>Reduce the severity of a warning (#4107)</li>
+  <li>Address an 'Unknown platform' message in the IntelliJ log (#4104)</li>
+  <li>Address a npe / race condition in StdoutJsonParser.java (#4101)</li>
+  <li>Remove support for package:flutter_web (#4088)</li>
+  <li>Don't try to format a read only doc (#4098)</li>
+  <li>Address a disposable issue (#4094)</li>
+  <li>Add more diagnostics for an error (#4092)</li>
+  <li>Silence a log warning (#4091)</li>
+  <li>Use NotNull and remove an if check (#4087)</li>
+  <li>Address a resource leak on shutdown (#4074)</li>
+  <li>Fix a null assertion (#4076)</li>
+  <li>Remove a System.out.print reference (#4075)</li>
+  <li>Address an npe in FlutterConsole.java (#4077)</li>
+  <li>Misc cleanup to the HeapMonitor class (#4078)</li>
+  <li>Add diagnostics for 'Runner must be specified' error (#4068)</li>
+  <li>Prevent an exception related to use of a disposed Alarm (#4071)</li>
+</ul>
 <h2>41.1</h2>
 <ul>
   <li>Adjust build range for AS beta 3 (#4061)</li>
