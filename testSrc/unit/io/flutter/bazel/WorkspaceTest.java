@@ -7,9 +7,12 @@ package io.flutter.bazel;
 
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.TestDir;
 import io.flutter.testing.Testing;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -21,6 +24,18 @@ public class WorkspaceTest {
 
   @Rule
   public final TestDir tmp = new TestDir();
+
+  private boolean originalShouldUseBazel;
+  @Before
+  public void beforeTest() {
+    originalShouldUseBazel = FlutterSettings.getInstance().shouldUseBazel();
+    FlutterSettings.getInstance().setShouldUseBazel(true);
+  }
+
+  @After
+  public void afterTest() {
+    FlutterSettings.getInstance().setShouldUseBazel(originalShouldUseBazel);
+  }
 
   @Test
   public void canLoadWorkspaceWithoutConfigFile() throws Exception {
