@@ -264,7 +264,7 @@ public class InspectorGroupManagerService implements Disposable {
 
           service.addClient(new InspectorService.InspectorServiceClient() {
             @Override
-            public void onInspectorSelectionChanged() {
+            public void onInspectorSelectionChanged(boolean uiAlreadyUpdated, boolean textEditorUpdated) {
               loadSelection();
             }
 

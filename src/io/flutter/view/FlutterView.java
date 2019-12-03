@@ -57,8 +57,6 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-import static io.flutter.utils.AsyncUtils.whenCompleteUiThread;
-
 @com.intellij.openapi.components.State(
   name = "FlutterView",
   storages = {@Storage("$WORKSPACE_FILE$")}
@@ -141,7 +139,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
     final PerAppState state = getOrCreateStateForApp(app);
 
-    toolbarGroup.add(state.registerAction(new ToggleInspectModeAction(app)));
     if (inspectorService != null) {
       toolbarGroup.addSeparator();
       toolbarGroup.add(state.registerAction(new ForceRefreshAction(app, inspectorService)));
@@ -155,6 +152,25 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     toolbarGroup.add(state.registerAction(new TimeDilationAction(app, true)));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new TogglePlatformAction(app, getOrCreateStateForApp(app)));
+
+    final FlutterViewAction selectModeAction = state.registerAction(new ToggleSelectWidgetMode(app));
+    final FlutterViewAction legacySelectModeAction = state.registerAction(new ToggleOnDeviceWidgetInspector(app));
+    final FlutterViewAction currentExtension[] = { null };
+
+    app.getVMServiceManager().hasServiceExtension(ServiceExtensions.enableOnDeviceInspector.getExtension(), (hasExtension) -> {
+      if (hasExtension) {
+        if (toolWindow.isDisposed()) return;
+
+        FlutterViewAction nextExtension = hasExtension ? selectModeAction : legacySelectModeAction;
+        if (currentExtension[0] != nextExtension) {
+          if (currentExtension[0] != null) {
+            toolbarGroup.remove(currentExtension[0]);
+          }
+          toolbarGroup.add(nextExtension, Constraints.FIRST);
+          currentExtension[0] = nextExtension;
+        }
+      }
+    });
 
     return toolbarGroup;
   }
@@ -320,8 +336,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       ApplicationManager.getApplication().invokeLater(() -> debugActiveHelper(app, null));
     }
     else {
-      whenCompleteUiThread(
-        InspectorService.create(app, app.getFlutterDebugProcess(), app.getVmService()),
+      AsyncUtils.whenCompleteUiThread(
+        app.getFlutterDebugProcess().getInspectorService(),
         (InspectorService inspectorService, Throwable throwable) -> {
           if (throwable != null) {
             FlutterUtils.warn(LOG, throwable);
@@ -564,8 +580,8 @@ class RepaintRainbowAction extends FlutterViewToggleableAction {
   }
 }
 
-class ToggleInspectModeAction extends FlutterViewToggleableAction {
-  ToggleInspectModeAction(@NotNull FlutterApp app) {
+class ToggleSelectWidgetMode extends FlutterViewToggleableAction {
+  ToggleSelectWidgetMode(@NotNull FlutterApp app) {
     super(app, AllIcons.General.Locate, ServiceExtensions.toggleSelectWidgetMode);
   }
 
@@ -592,6 +608,33 @@ class ToggleInspectModeAction extends FlutterViewToggleableAction {
   }
 }
 
+class ToggleOnDeviceWidgetInspector extends FlutterViewToggleableAction {
+  ToggleOnDeviceWidgetInspector(@NotNull FlutterApp app) {
+    super(app, AllIcons.General.Locate, ServiceExtensions.toggleOnDeviceWidgetInspector);
+  }
+
+  @Override
+  protected void perform(AnActionEvent event) {
+    super.perform(event);
+
+    if (app.isSessionActive()) {
+      // If toggling inspect mode on, bring the app's device to the foreground.
+      if (isSelected()) {
+        final FlutterDevice device = app.device();
+        if (device != null) {
+          device.bringToFront();
+        }
+      }
+    }
+  }
+
+  @Override
+  public void handleAppRestarted() {
+    if (isSelected()) {
+      setSelected(null, false);
+    }
+  }
+}
 class ForceRefreshAction extends FlutterViewAction {
   final @NotNull InspectorService inspectorService;
 
