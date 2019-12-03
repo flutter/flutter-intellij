@@ -57,9 +57,6 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-import static io.flutter.utils.AsyncUtils.whenCompleteUiThread;
-import static io.flutter.vmService.ServiceExtensions.enableOnDeviceInspector;
-
 @com.intellij.openapi.components.State(
   name = "FlutterView",
   storages = {@Storage("$WORKSPACE_FILE$")}
@@ -160,7 +157,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final FlutterViewAction legacySelectModeAction = state.registerAction(new ToggleOnDeviceWidgetInspector(app));
     final FlutterViewAction currentExtension[] = { null };
 
-    app.getVMServiceManager().hasServiceExtension(enableOnDeviceInspector.getExtension(), (hasExtension) -> {
+    app.getVMServiceManager().hasServiceExtension(ServiceExtensions.enableOnDeviceInspector.getExtension(), (hasExtension) -> {
       if (hasExtension) {
         if (toolWindow.isDisposed()) return;
 
@@ -339,11 +336,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       ApplicationManager.getApplication().invokeLater(() -> debugActiveHelper(app, null));
     }
     else {
-      whenCompleteUiThread(
+      AsyncUtils.whenCompleteUiThread(
         app.getFlutterDebugProcess().getInspectorService(),
         (InspectorService inspectorService, Throwable throwable) -> {
-          // XXX remove
-          // app.getFlutterDebugProcess().setInspectorService(inspectorService);
           if (throwable != null) {
             FlutterUtils.warn(LOG, throwable);
             return;

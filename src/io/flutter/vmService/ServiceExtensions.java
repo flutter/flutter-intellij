@@ -100,7 +100,7 @@ public class ServiceExtensions {
 
   /**
    * Toggle whether the inspector on-device overlay is enabled.
-   *
+   * <p>
    * When available, the inspector overlay can be enabled at any time as it will
    * not interfere with user interaction with the app unless inspector select
    * mode is triggered.
@@ -159,16 +159,17 @@ public class ServiceExtensions {
     debugAllowBanner,
     debugPaint,
     debugPaintBaselines,
+    enableOnDeviceInspector,
     performanceOverlay,
     repaintRainbow,
     slowAnimations,
+    toggleOnDeviceWidgetInspector,
     togglePlatformMode,
     toggleSelectWidgetMode,
-    toggleOnDeviceWidgetInspector,
-    enableOnDeviceInspector,
     toggleShowStructuredErrors,
     trackRebuildWidgets,
-    trackRepaintWidgets);
+    trackRepaintWidgets
+  );
 
   public static final Map<String, ServiceExtensionDescription> toggleableExtensionsWhitelist =
     toggleableExtensionDescriptions.stream().collect(
