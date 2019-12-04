@@ -108,8 +108,9 @@ public class StableWidgetTracker implements Disposable {
     }
     path.add(outline);
     if (converter.getConvertedOutlineOffset(outline) <= offset && offset <= converter.getConvertedOutlineEnd(outline)) {
-      if (outline.getChildren() != null) {
-        for (FlutterOutline child : outline.getChildren()) {
+      final List<FlutterOutline> children = outline.getChildren();
+      if (children != null) {
+        for (FlutterOutline child : children) {
           final boolean foundChild = findOutlineAtOffset(child, offset, path);
           if (foundChild) {
             return true;

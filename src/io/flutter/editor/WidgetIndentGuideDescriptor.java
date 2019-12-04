@@ -44,7 +44,7 @@ public class WidgetIndentGuideDescriptor {
     public int getEndOffset() {
       if (marker == null) {
         final Location location = attribute.getValueLocation();
-        final int startOffset = attribute.getValueLocation().getOffset();
+        final int startOffset = location.getOffset();
         final int endOffset = startOffset + location.getLength();
         return endOffset;
       }
@@ -62,7 +62,7 @@ public class WidgetIndentGuideDescriptor {
       // to the column of the actual entity.
       final int docLength = document.getTextLength();
       final Location location = attribute.getValueLocation();
-      final int startOffset = Math.min(attribute.getValueLocation().getOffset(), docLength);
+      final int startOffset = Math.min(location.getOffset(), docLength);
       final int endOffset = Math.min(startOffset + location.getLength(), docLength);
 
       marker = document.createRangeMarker(startOffset, endOffset);

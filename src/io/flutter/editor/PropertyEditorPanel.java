@@ -509,9 +509,6 @@ public class PropertyEditorPanel extends SimpleToolWindowPanel {
         }
         else {
           String expression = property.getExpression();
-          /*if (expression == null || expression.isEmpty()) {
-            continue;
-          }*/
           if (expression == null) {
             expression = "";
           }

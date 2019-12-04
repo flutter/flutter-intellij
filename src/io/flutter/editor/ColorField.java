@@ -170,7 +170,6 @@ class ColorField extends ExtendableTextField {
     disposeColorPicker();
     assert (colorPicker == null);
     colorPicker = ColorPickerProvider.EP_NAME.getExtensionList().get(0);
-    ;
     if (colorPicker != null) {
       colorAtPopupLaunch = currentColor;
       final Insets insets = this.getInsets();
