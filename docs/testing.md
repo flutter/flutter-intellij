@@ -29,7 +29,6 @@ This might require a reboot. Start from the Welcome screen at least once.
     * Verify that a run configuration (`main.dart`) is enabled in the run/debug selector.
   * Navigation works.
     * Open `lib/main.dart` and navigate to `Scaffold`, from line 37 or so.
-    * Verify that the new editor includes a sample creation banner.
   * There are no analysis errors or warnings.
   * Pub operations work.
     * Open `pubspec.yaml` and click the "Packages get" and "Packages upgrade" links.
