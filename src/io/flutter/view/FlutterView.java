@@ -158,17 +158,15 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final FlutterViewAction currentExtension[] = { null };
 
     app.getVMServiceManager().hasServiceExtension(ServiceExtensions.enableOnDeviceInspector.getExtension(), (hasExtension) -> {
-      if (hasExtension) {
-        if (toolWindow.isDisposed()) return;
+      if (toolWindow.isDisposed()) return;
 
-        FlutterViewAction nextExtension = hasExtension ? selectModeAction : legacySelectModeAction;
-        if (currentExtension[0] != nextExtension) {
-          if (currentExtension[0] != null) {
-            toolbarGroup.remove(currentExtension[0]);
-          }
-          toolbarGroup.add(nextExtension, Constraints.FIRST);
-          currentExtension[0] = nextExtension;
+      FlutterViewAction nextExtension = hasExtension ? selectModeAction : legacySelectModeAction;
+      if (currentExtension[0] != nextExtension) {
+        if (currentExtension[0] != null) {
+          toolbarGroup.remove(currentExtension[0]);
         }
+        toolbarGroup.add(nextExtension, Constraints.FIRST);
+        currentExtension[0] = nextExtension;
       }
     });
 
