@@ -189,7 +189,7 @@ using Java and again with Kotlin as the language choice for the Android app.
 The location of the Flutter module is important. Put it in the Android app
 directory once and put it outside the app another time.
 
-###Create an Android app
+### Create an Android app
 
 Start Android Studio and use the File > New > New Project menu to fire 
 up the new project wizard. Choose the template that includes a Basic
