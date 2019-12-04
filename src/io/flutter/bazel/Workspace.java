@@ -17,6 +17,7 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -205,6 +206,7 @@ public class Workspace {
    */
   @Nullable
   public static Workspace load(@NotNull Project project) {
+    if (!FlutterSettings.getInstance().shouldUseBazel()) return null;
     final VirtualFile workspaceFile = findWorkspaceFile(project);
     if (workspaceFile == null) return null;
 
