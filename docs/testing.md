@@ -199,7 +199,7 @@ Let the system stabilize (Gradle sync).
 Close the editor for content_main.xml. Switch the Project view to
 the Project Files mode. Collapse the Gradle window if it is open.
 
-###Create a Flutter module
+### Create a Flutter module
 
 Use the File > New > New Module menu to start the new module wizard.
 Choose the Flutter Module template. Fill out the wizard pages and
@@ -208,7 +208,7 @@ successive Gradle sync's. The first one generates an error message,
 which is corrected by the second one. Ignore the error. Let the
 system stabilize again.
 
-###Link the Flutter module to the Android app
+### Link the Flutter module to the Android app
 
 Go to the editor for MainActivity.kt. Change the onCreate method:
 ```kotlin
@@ -249,7 +249,7 @@ Open an editor on the AndroidManifest.xml. Add this line to the
   
 At this point, click the "hammer" icon to build the application.
 
-###Debug the app
+### Debug the app
 
 The run config should show the Flutter run config, which makes the Flutter Attach
 button active. Click the Flutter Attach button, or use the menu item Run > Flutter
