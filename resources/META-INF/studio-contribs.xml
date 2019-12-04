@@ -14,6 +14,7 @@
 
   <extensions defaultExtensionNs="io.flutter">
     <gradleSyncProvider implementation="io.flutter.android.AndroidStudioGradleSyncProvider" order="first"/>
+    <colorPickerProvider implementation="io.flutter.editor.AndroidStudioColorPickerProvider" order="first"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

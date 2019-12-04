@@ -28,6 +28,7 @@ public class FlutterSettings {
   private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
   private static final String showStructuredErrors = "io.flutter.showStructuredErrors";
   private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
+  private static final String enableHotUiKey = "io.flutter.editor.enableHotUi";
 
   /**
    * The Dart plugin uses this registry key to avoid bazel users getting their settings overridden on projects that include a
@@ -279,5 +280,21 @@ public class FlutterSettings {
   private static String afterLastPeriod(String str) {
     final int index = str.lastIndexOf('.');
     return index == -1 ? str : str.substring(index + 1);
+  }
+
+  public boolean isEnableHotUi() {
+    return getPropertiesComponent().getBoolean(enableHotUiKey, false);
+  }
+
+  public void setEnableHotUi(boolean value) {
+    getPropertiesComponent().setValue(enableHotUiKey, value, false);
+
+    fireEvent();
+  }
+
+  public boolean isEnableHotUiInCodeEditor() {
+    // We leave this setting off for now to avoid possible performance and
+    // usability issues rendering previews directly in the code editor.
+    return false;
   }
 }

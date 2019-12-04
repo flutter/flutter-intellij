@@ -64,6 +64,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myDisableTrackWidgetCreationCheckBox;
   private JCheckBox myShowStructuredErrors;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
+  private JCheckBox myEnableHotUiCheckBox;
 
   // Settings for Bazel users.
   private JPanel myBazelOptionsSection;
@@ -129,21 +130,17 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myFormatCodeOnSaveCheckBox.addChangeListener(
       (e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
 
-    // Only show the experiments panel if there are visible items in it.
-    if (FlutterUtils.isAndroidStudio()) {
-      mySyncAndroidLibrariesCheckBox.setVisible(true);
-      experimentsPanel.setVisible(true);
-    }
-    else {
-      mySyncAndroidLibrariesCheckBox.setVisible(false);
-      experimentsPanel.setVisible(false);
-    }
+    // There are other experiments so it is alright to show the experiments
+    // panel even if the syncAndroidLibraries experiment is hidden.
+    // If there are only experiments available on Android studio then add back
+    // the following statement:
+    // experimentsPanel.setVisible(FlutterUtils.isAndroidStudio());
+    mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
   }
 
   private void createUIComponents() {
     mySdkCombo = new ComboboxWithBrowseButton(new ComboBox<>());
   }
-
   @Override
   @NotNull
   public String getId() {
@@ -222,6 +219,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isEnableHotUi() != myEnableHotUiCheckBox.isSelected()) {
+      return true;
+    }
+
     if (settings.shouldUseBazel() != myUseBazelByDefaultCheckBox.isSelected()) {
       return true;
     }
@@ -264,6 +265,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setDisableTrackWidgetCreation(myDisableTrackWidgetCreationCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
+    settings.setEnableHotUi(myEnableHotUiCheckBox.isSelected());
     settings.setShouldUseBazel(myUseBazelByDefaultCheckBox.isSelected());
     settings.setShowAllRunConfigurationsInContext(myShowAllRunConfigurationsInContextCheckBox.isSelected());
 
@@ -305,6 +307,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myDisableTrackWidgetCreationCheckBox.setSelected(settings.isDisableTrackWidgetCreation());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
+
+    myEnableHotUiCheckBox.setSelected(settings.isEnableHotUi());
 
     myHotReloadIgnoreErrorCheckBox.setEnabled(myHotReloadOnSaveCheckBox.isSelected());
 

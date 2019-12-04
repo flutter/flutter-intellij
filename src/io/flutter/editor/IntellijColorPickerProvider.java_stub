@@ -1,0 +1,31 @@
+/*
+ * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+package io.flutter.editor;
+
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+
+import com.intellij.openapi.ui.popup.Balloon;
+
+// Stub implementation of IntellijColorPickerProvider so that we don't throw
+// exceptions when running on AndroidStudio. We cannot include the real
+// implementation of IntellijColorPickerProvider when building for
+// AndroidStudio as it will generate compile errors.
+// see product-matrix.json which specifies that IntellijColorPickerProvider
+// should be stubbed out under AndroidStudio.
+public class IntellijColorPickerProvider implements ColorPickerProvider {
+
+  @Override
+  public void show(Color initialColor, JComponent component, Point offset, Balloon.Position position, ColorListener colorListener, Runnable onCancel, Runnable onOk) {
+  }
+
+  @Override
+  public void dispose() {
+  }
+}

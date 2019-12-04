@@ -1075,10 +1075,13 @@
 
   <extensionPoints>
     <extensionPoint name="gradleSyncProvider" interface="io.flutter.android.GradleSyncProvider"/>
+    <extensionPoint name="colorPickerProvider" interface="io.flutter.editor.ColorPickerProvider"/>
   </extensionPoints>
+
 
   <extensions defaultExtensionNs="io.flutter">
     <gradleSyncProvider implementation="io.flutter.android.IntellijGradleSyncProvider" order="last"/>
+    <colorPickerProvider implementation="io.flutter.editor.IntellijColorPickerProvider" order="last"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

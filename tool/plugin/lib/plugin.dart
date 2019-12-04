@@ -578,6 +578,12 @@ class BuildCommand extends ProductCommand {
             FileSystemEntity.isFileSync(file) ? File(file) : Directory(file);
         if (entity.existsSync()) {
           await entity.rename('$file~');
+          if (entity is File) {
+            var stubFile = File('${file}_stub');
+            if (stubFile.existsSync()) {
+              await stubFile.copy('$file');
+            }
+          }
         }
       }
 

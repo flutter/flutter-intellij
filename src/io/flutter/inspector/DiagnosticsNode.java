@@ -886,7 +886,7 @@ public class DiagnosticsNode {
       if (service == null) {
         return;
       }
-      service.setSelection(ref, uiAlreadyUpdated);
+      service.setSelection(ref, uiAlreadyUpdated, false);
     });
   }
 }
