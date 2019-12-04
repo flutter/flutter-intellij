@@ -293,6 +293,12 @@ public class InspectorService implements Disposable {
     return hasServiceMethod("getSelectedSummaryWidget");
   }
 
+  public boolean isHotUiScreenMirrorSupported() {
+    // Somewhat arbitrarily chosen new API that is required for full Hot UI
+    // support.
+    return hasServiceMethod("getBoundingBoxes");
+  }
+
   /**
    * Use this method to write code that is backwards compatible with versions
    * of Flutter that are too old to contain specific service methods.

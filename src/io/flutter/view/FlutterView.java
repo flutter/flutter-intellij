@@ -155,12 +155,13 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     final FlutterViewAction selectModeAction = state.registerAction(new ToggleSelectWidgetMode(app));
     final FlutterViewAction legacySelectModeAction = state.registerAction(new ToggleOnDeviceWidgetInspector(app));
-    final FlutterViewAction currentExtension[] = { null };
+    final FlutterViewAction[] currentExtension = { null };
 
+    assert (app.getVMServiceManager() != null);
     app.getVMServiceManager().hasServiceExtension(ServiceExtensions.enableOnDeviceInspector.getExtension(), (hasExtension) -> {
-      if (toolWindow.isDisposed()) return;
+      if (toolWindow.isDisposed() || myProject.isDisposed()) return;
 
-      FlutterViewAction nextExtension = hasExtension ? selectModeAction : legacySelectModeAction;
+      final FlutterViewAction nextExtension = hasExtension ? selectModeAction : legacySelectModeAction;
       if (currentExtension[0] != nextExtension) {
         if (currentExtension[0] != null) {
           toolbarGroup.remove(currentExtension[0]);
