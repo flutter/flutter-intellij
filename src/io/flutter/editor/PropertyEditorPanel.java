@@ -562,11 +562,20 @@ public class PropertyEditorPanel extends SimpleToolWindowPanel {
         add(field, "span, growx");
       }
       else {
-        final JBLabel label = new JBLabel(property.getName());
-        add(label, "right");
+        final String propertyName = property.getName();
+        final JBLabel label = new JBLabel(propertyName);
+        // 120 is the max width of the column but that does not appear to be
+        // applied unless it is also set here.
+        add(label, "right, wmax 120px");
+        final ArrayList<String> tooltipBlocks = new ArrayList<>();
+        tooltipBlocks.add("<strong>" + propertyName + "</strong>");
+
         if (documentation != null) {
-          label.setToolTipText(documentation);
+          tooltipBlocks.add(documentation);
         }
+        // Use multiple line breaks so there is a clear separation between blocks.
+        label.setToolTipText(Joiner.on("\n\n").join(tooltipBlocks));
+
         add(field, "wrap, growx");
       }
       if (documentation != null) {
