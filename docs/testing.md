@@ -44,7 +44,7 @@ This might require a reboot. Start from the Welcome screen at least once.
 * Confirm that:
   * Project contents are created.
     * Verify that `<project root>/ios/Classes/Swift<Project Name>Plugin.swift` exists.
-    * Verify that a run configuration (`<Project Name>.dart`) is enabled in the run/debug selector.
+    * Verify that a run configuration (`main.dart`) is enabled in the run/debug selector.
   * `Open Android module in Android Studio` does the right thing
     * Navigate to and select `<project root>/android/src/main`
     * Select `Flutter > Open Android module in Android Studio` from the project list menu
@@ -53,7 +53,7 @@ This might require a reboot. Start from the Welcome screen at least once.
 * Create a **module project** (`File > New > Project...`, pick `Flutter`; on Android Studio, `File > New > New Flutter Project...`), specify "Module" as the project type.
 * Confirm that:
   * Project contents are created.
-    * Verify that a run configuration (`<Project Name>.dart`) is enabled in the run/debug selector.
+    * Verify that a run configuration (`main.dart`) is enabled in the run/debug selector.
     * Verify that directories `.ios` and `.android` exist.
 * Convert to editable native code (`Tools > Flutter > Make host app editable`)
 * Confirm that:
@@ -147,7 +147,7 @@ Keybindings:
 ## Hot Restart
 
 * change the text and counter line back
-* hit the `Flutter Hot Restart` button (or hit the Debug button again, or cmd-shift-s / ctrl-shift-s)
+* hit the `Flutter Hot Restart` button (or hit the Debug button again)
 * validate that the text and state resets, and the count increases
 
 ## Debugging Sessions
@@ -165,10 +165,10 @@ Verify that projects without Flutter project metadata open properly and are give
 * create a new Flutter project and delete IntelliJ metadata:
   * `flutter create foo_bar`
   * `cd foo_bar`
-  * `rm -rf .idea`
-  * `rm foo_bar.iml`
+  * `rm -rf .idea` (Windows: `rd /s /q .idea`)
+  * `rm foo_bar.iml` (Windows: `del foo_bar.iml`)
 * open project ("File > Open")
-* verify that the project has the Flutter module type (the device pull-down displays) and analyzes cleanly
+* verify that the project has the Flutter module type (the device pull-down displays, the Flutter Outline window is present, etc.) and analyzes cleanly
 
 ## Fresh Install Configuration
 
@@ -246,6 +246,9 @@ Open an editor on the AndroidManifest.xml. Add this line to the
 ```xml
         <activity android:name="io.flutter.embedding.android.FlutterActivity" />
 ```
+  
+At this point, click the "hammer" icon to build the application.
+
 ###Debug the app
 
 The run config should show the Flutter run config, which makes the Flutter Attach
