@@ -79,7 +79,7 @@ public class FlutterModuleImporter {
       showHowToEditDialog();
       return;
     }
-    myRelativePath = StringUtil.escapeBackSlashes(newPath);
+    myRelativePath = newPath;
     VirtualFile settingsFile = projectRoot.findChild("settings.gradle");
     if (settingsFile == null) {
       showHowToEditDialog();
