@@ -401,7 +401,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
         @Override
         public void onInspectorAvailabilityChanged() {
           super.onInspectorAvailabilityChanged();
-          // Only show the screen mirror if there is not a running device and
+          // Only show the screen mirror if there is a running device and
           // the inspector supports the neccessary apis.
           if (getInspectorService() != null && getInspectorService().isHotUiScreenMirrorSupported()) {
             // Wait to create the preview area until it is needed.
