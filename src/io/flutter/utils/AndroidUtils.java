@@ -603,7 +603,7 @@ public class AndroidUtils {
         content.append("project(':");
         content.append(flutterModuleName);
         content.append("').projectDir = new File('");
-        content.append(pathToModule);
+        content.append(pathToModule.replace('\\', '/'));
         content.append("')\n");
       }
       return content.toString();
