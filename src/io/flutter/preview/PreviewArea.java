@@ -93,6 +93,9 @@ public class PreviewArea {
     return window;
   }
 
+  // TODO(jacobr): switch the previewArea to listen on the event stream of
+  // selected outlines and editors instead like the PropertyEditPanel
+  // already does.
   public void select(@NotNull List<FlutterOutline> outlines, Editor editor) {
     if (editor.isDisposed()) return;
 

@@ -12,7 +12,6 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ide.CommonActionsManager;
 import com.intellij.ide.DefaultTreeExpander;
 import com.intellij.ide.TreeExpander;
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
@@ -25,7 +24,6 @@ import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.ui.Splitter;
-import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -56,8 +54,6 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -82,7 +78,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
   private final FlutterDartAnalysisServer flutterAnalysisServer;
 
   private final InspectorGroupManagerService inspectorGroupManagerService;
-  private final InspectorGroupManagerService.Client inspectorStateServiceClient;
 
   private SimpleToolWindowPanel windowPanel;
 
@@ -92,7 +87,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
   private JScrollPane scrollPane;
   private JScrollPane propertyScrollPane;
   private OutlineTree tree;
-  private PreviewArea previewArea;
+  private @Nullable PreviewArea previewArea;
 
   private final Set<FlutterOutline> outlinesWithWidgets = Sets.newHashSet();
   private final Map<FlutterOutline, DefaultMutableTreeNode> outlineToNodeMap = Maps.newHashMap();
@@ -136,12 +131,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
   private PropertyEditorPanel propertyEditPanel;
   private DefaultActionGroup propertyEditToolbarGroup;
 
-  private void minimizePreviewArea() {
-    // TODO(devoncarew): We should size the preview area to a fixed, smaller size (based on the largest
-    //                   non-preview sized content).
-    setSplitterProportion(0.85f);
-  }
-
   public PreviewView(@NotNull Project project) {
     this.project = project;
     currentFile = new EventStream<>();
@@ -149,8 +138,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
     flutterAnalysisServer = FlutterDartAnalysisServer.getInstance(project);
 
     inspectorGroupManagerService = InspectorGroupManagerService.getInstance(project);
-    inspectorStateServiceClient = new InspectorGroupManagerService.Client(project);
-    inspectorGroupManagerService.addListener(inspectorStateServiceClient, project);
 
     // Show preview for the file selected when the view is being opened.
     final VirtualFile[] selectedFiles = FileEditorManager.getInstance(project).getSelectedFiles();
@@ -264,8 +251,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
     contentManager.addContent(content);
     contentManager.setSelectedContent(content);
 
-    previewArea = new PreviewArea(project, outlinesWithWidgets, project);
-
     splitter = new Splitter(true);
     setSplitterProportion(getState().getSplitterProportion());
     getState().addListener(e -> {
@@ -286,16 +271,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
     scrollPane.setMinimumSize(new Dimension(1, 1));
     splitter.setFirstComponent(scrollPane);
     windowPanel.setContent(splitter);
-  }
-
-  private InspectorService.ObjectGroup objectGroup;
-
-  InspectorService.ObjectGroup getObjectGroup() {
-    final InspectorObjectGroupManager groupManager = inspectorStateServiceClient.getGroupManager();
-    if (groupManager == null) {
-      return null;
-    }
-    return groupManager.getCurrent();
   }
 
   private void initTreePopup() {
@@ -354,8 +329,11 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
       }
     }
 
-    // TODO(jacobr): refactor the previewArea to listen on the stream of selected outlines instead.
-    previewArea.select(ImmutableList.of(outline), currentEditor);
+    // TODO(jacobr): refactor the previewArea to listen on the stream of
+    // selected outlines instead.
+    if (previewArea != null) {
+      previewArea.select(ImmutableList.of(outline), currentEditor);
+    }
   }
 
   // TODO: Add parent relationship info to FlutterOutline instead of this O(n^2) traversal.
@@ -408,19 +386,37 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
     }
 
     if (FlutterSettings.getInstance().isEnableHotUi() && propertyEditPanel == null) {
-      propertyEditSplitter  = new Splitter(false, 0.75f);
+      propertyEditSplitter = new Splitter(false, 0.75f);
       propertyEditPanel = new PropertyEditorPanel(inspectorGroupManagerService, project, flutterAnalysisServer, false, false, project);
       propertyEditPanel.initalize(null, activeOutlines, currentFile);
       propertyEditToolbarGroup = new DefaultActionGroup();
       final ActionToolbar windowToolbar = ActionManager.getInstance().createActionToolbar("PropertyArea", propertyEditToolbarGroup, true);
-
 
       final SimpleToolWindowPanel window = new SimpleToolWindowPanel(true, true);
       window.setToolbar(windowToolbar.getComponent());
       propertyScrollPane = ScrollPaneFactory.createScrollPane(propertyEditPanel);
       window.setContent(propertyScrollPane);
       propertyEditSplitter.setFirstComponent(window.getComponent());
-      propertyEditSplitter.setSecondComponent(previewArea.getComponent());
+      final InspectorGroupManagerService.Client inspectorStateServiceClient = new InspectorGroupManagerService.Client(project) {
+        @Override
+        public void onInspectorAvailabilityChanged() {
+          super.onInspectorAvailabilityChanged();
+          // Don't show the screen mirror if there is not a running device or
+          // it doesn't support the neccessary inspector apis.
+          if (getInspectorService() == null || getInspectorService().isHotUiScreenMirrorSupported()) {
+            propertyEditSplitter.setSecondComponent(null);
+          }
+          else {
+            // Wait to create the preview area until it is needed.
+            if (previewArea == null) {
+              previewArea = new PreviewArea(project, outlinesWithWidgets, project);
+            }
+            propertyEditSplitter.setSecondComponent(previewArea.getComponent());
+          }
+        }
+      };
+      inspectorGroupManagerService.addListener(inspectorStateServiceClient, project);
+
       splitter.setSecondComponent(propertyEditSplitter);
     }
 
@@ -594,7 +590,11 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
 
     applyOutlinesSelectionToTree(selectedOutlines);
 
-    previewArea.select(selectedOutlines, currentEditor);
+    // TODO(jacobr): refactor the previewArea to listen on the stream of
+    // selected outlines instead.
+    if (previewArea != null) {
+      previewArea.select(selectedOutlines, currentEditor);
+    }
   }
 
   private void applyOutlinesSelectionToTree(List<FlutterOutline> outlines) {
@@ -762,7 +762,7 @@ class OutlineObject {
 
     return icon;
   }
-  
+
   /**
    * Return the string that is suitable for speed search. It has every name part separated so that we search only inside individual name
    * parts, but not in their accidential concatenation.
