@@ -15,7 +15,6 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
@@ -60,8 +59,8 @@ public class FlutterSampleNotificationProvider extends EditorNotifications.Provi
       return null;
     }
 
-    final String flutterPackagePath = FileUtil.normalize(sdk.getHomePath()) + "/packages/flutter/lib/src/";
-    final String filePath = FileUtil.normalize(file.getPath());
+    final String flutterPackagePath = sdk.getHomePath() + "/packages/flutter/lib/src/";
+    final String filePath = file.getPath();
 
     // Only show for files in the flutter sdk.
     if (!filePath.startsWith(flutterPackagePath)) {
