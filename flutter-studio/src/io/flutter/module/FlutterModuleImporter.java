@@ -19,6 +19,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
@@ -79,7 +80,7 @@ public class FlutterModuleImporter {
       showHowToEditDialog();
       return;
     }
-    myRelativePath = StringUtil.escapeBackSlashes(newPath);
+    myRelativePath = FileUtil.normalize(newPath);
     VirtualFile settingsFile = projectRoot.findChild("settings.gradle");
     if (settingsFile == null) {
       showHowToEditDialog();
