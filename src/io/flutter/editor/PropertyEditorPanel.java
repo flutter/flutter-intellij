@@ -479,22 +479,12 @@ public class PropertyEditorPanel extends SimpleToolWindowPanel {
     int added = 0;
     for (FlutterWidgetProperty property : properties) {
       final String name = property.getName();
-      if (name.startsWith("on") || name.endsWith("Callback")) {
-        continue;
-      }
-      if (name.equals("key")) {
-        continue;
-      }
       if (name.equals("child") || name.equals("children")) {
         continue;
       }
       if (name.equals("Container")) {
         final List<FlutterWidgetProperty> containerProperties = property.getChildren();
         // TODO(jacobr): add support for container properties.
-        continue;
-      }
-      // Text widget properties to demote.
-      if (name.equals("strutStyle") || name.equals("locale") || name.equals("semanticsLabel")) {
         continue;
       }
       final String documentation = property.getDocumentation();
@@ -513,6 +503,10 @@ public class PropertyEditorPanel extends SimpleToolWindowPanel {
             expression = "";
           }
           final JBTextField textField = new JBTextField(expression);
+          // Make sure we show the text at the beginning of the text field.
+          // The default is to show the end if the content scrolls which looks
+          // bad in a property editor.
+          textField.setCaretPosition(0);
           addTextFieldListeners(name, textField);
           field = textField;
         }
@@ -547,6 +541,10 @@ public class PropertyEditorPanel extends SimpleToolWindowPanel {
             // TODO(jacobr): show as boolean.
           }
           final JBTextField textField = new JBTextField(property.getExpression());
+          // Make sure we show the text at the beginning of the text field.
+          // The default is to show the end if the content scrolls which looks
+          // bad in a property editor.
+          textField.setCaretPosition(0);
           field = textField;
           addTextFieldListeners(name, textField);
         }

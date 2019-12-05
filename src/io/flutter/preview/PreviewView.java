@@ -423,12 +423,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
     // TODO(jacobr): this is the wrong spot.
     if (propertyEditToolbarGroup != null) {
       TitleAction propertyTitleAction;
-      if (currentOutline != null && Objects.equals(currentOutline.getKind(), FlutterOutlineKind.NEW_INSTANCE)) {
-        propertyTitleAction = new TitleAction(currentOutline.getClassName() + " Properties");
-      }
-      else {
-        propertyTitleAction = new TitleAction("Widget Properties");
-      }
+      propertyTitleAction = new TitleAction("Properties");
       propertyEditToolbarGroup.removeAll();
       propertyEditToolbarGroup.add(propertyTitleAction);
     }
