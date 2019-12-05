@@ -401,17 +401,17 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
         @Override
         public void onInspectorAvailabilityChanged() {
           super.onInspectorAvailabilityChanged();
-          // Don't show the screen mirror if there is not a running device or
-          // it doesn't support the neccessary inspector apis.
-          if (getInspectorService() == null || getInspectorService().isHotUiScreenMirrorSupported()) {
-            propertyEditSplitter.setSecondComponent(null);
-          }
-          else {
+          // Only show the screen mirror if there is not a running device and
+          // the inspector supports the neccessary apis.
+          if (getInspectorService() != null && getInspectorService().isHotUiScreenMirrorSupported()) {
             // Wait to create the preview area until it is needed.
             if (previewArea == null) {
               previewArea = new PreviewArea(project, outlinesWithWidgets, project);
             }
             propertyEditSplitter.setSecondComponent(previewArea.getComponent());
+          }
+          else {
+            propertyEditSplitter.setSecondComponent(null);
           }
         }
       };
