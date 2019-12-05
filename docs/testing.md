@@ -239,7 +239,7 @@ If you opted to use Java, use this:
 ```
 You need to add some imports. Click on each red name then type
 `alt-return`. Accept the suggestion. "FlutterActivity" has two choices;
-use the one from io.flutter.embedGradle.
+use the one from the io.flutter.embedGradle library, io.flutter.embedding.android.FlutterActivity.
 
 Open an editor on the AndroidManifest.xml. Add this line to the
 <application> tag:
