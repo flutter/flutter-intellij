@@ -64,11 +64,19 @@ public abstract class CommonTestConfigUtils {
     return null;
   }
 
+  Map<DartCallExpression, TestType> cachedCallToTestType;
+
+  private void clearCachedInfo() {
+    synchronized (this) {
+      cachedCallToTestType = null;
+    }
+  }
+
   /**
    * Gets the elements from the outline that are runnable tests.
    */
   @NotNull
-  protected Map<DartCallExpression, TestType> getTestsFromOutline(@NotNull PsiFile file) {
+  private Map<DartCallExpression, TestType> getTestsFromOutline(@NotNull PsiFile file) {
     final Project project = file.getProject();
     final ActiveEditorsOutlineService outlineService = getActiveEditorsOutlineService(project);
     if (outlineService == null) {
@@ -79,23 +87,19 @@ public abstract class CommonTestConfigUtils {
     // If the outline is outdated, then request a new pass to generate line markers.
     if (outline == null) {
       clearCachedInfo();
-      outlineService.addListener(forFile(file));
+      outlineService.addListener(getListenerForFile(file));
       return new HashMap<>();
     }
 
-    // Visit the fields on the outline to get which calls are actual named tests.
-    if (cachedCallToTestType == null) {
-      cachedCallToTestType = new HashMap<>();
-      visit(outline, cachedCallToTestType, file);
+    synchronized (this) {
+      // Visit the fields on the outline to get which calls are actual named tests.
+      if (cachedCallToTestType == null) {
+        cachedCallToTestType = new HashMap<>();
+        populateTestTypeMap(outline, cachedCallToTestType, file);
+      }
+
+      return cachedCallToTestType;
     }
-
-    return cachedCallToTestType;
-  }
-
-  Map<DartCallExpression, TestType> cachedCallToTestType;
-
-  private void clearCachedInfo() {
-    cachedCallToTestType = null;
   }
 
   @Nullable
@@ -155,7 +159,9 @@ public abstract class CommonTestConfigUtils {
   /**
    * Traverses the {@param outline} tree and adds to {@param callToTestType } the {@link DartCallExpression}s that are tests or test groups.
    */
-  private void visit(@NotNull FlutterOutline outline, @NotNull Map<DartCallExpression, TestType> callToTestType, @NotNull PsiFile file) {
+  private void populateTestTypeMap(@NotNull FlutterOutline outline,
+                                   @NotNull Map<DartCallExpression, TestType> callToTestType,
+                                   @NotNull PsiFile file) {
     final PsiElement element = file.findElementAt(outline.getOffset());
     // If the outline is out-of-sync with the file, the element from that offset may be null.
     // The outline analysis is eventually consistent with the contents of the file, so if this happens,
@@ -180,7 +186,7 @@ public abstract class CommonTestConfigUtils {
     }
     if (outline.getChildren() != null) {
       for (FlutterOutline child : outline.getChildren()) {
-        visit(child, callToTestType, file);
+        populateTestTypeMap(child, callToTestType, file);
       }
     }
   }
@@ -190,7 +196,7 @@ public abstract class CommonTestConfigUtils {
    */
   private static final Map<String, LineMarkerUpdatingListener> listenerCache = new HashMap<>();
 
-  private LineMarkerUpdatingListener forFile(@NotNull final PsiFile file) {
+  private LineMarkerUpdatingListener getListenerForFile(@NotNull final PsiFile file) {
     final String path = file.getVirtualFile().getCanonicalPath();
     final ActiveEditorsOutlineService service = getActiveEditorsOutlineService(file.getProject());
     if (!listenerCache.containsKey(path) && service != null) {
