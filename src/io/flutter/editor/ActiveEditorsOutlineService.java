@@ -110,19 +110,21 @@ public class ActiveEditorsOutlineService implements Disposable {
 
     final Set<String> newPaths = new HashSet<>();
     for (VirtualFile file : files) {
-      if (FlutterUtils.isDartFile(file)) {
+      if (FlutterUtils.isDartFile(file) && file.getCanonicalPath() != null) {
         newPaths.add(file.getCanonicalPath());
       }
     }
 
     // Remove obsolete outline listeners.
     final List<String> obsoletePaths = new ArrayList<>();
+
     synchronized (outlineListeners) {
       for (final String path : outlineListeners.keySet()) {
         if (!newPaths.contains(path)) {
           obsoletePaths.add(path);
         }
       }
+
       for (final String path : obsoletePaths) {
         final FlutterOutlineListener listener = outlineListeners.remove(path);
         if (listener != null) {
@@ -132,9 +134,11 @@ public class ActiveEditorsOutlineService implements Disposable {
 
       // Register new outline listeners.
       for (final String path : newPaths) {
-        if (outlineListeners.containsKey(path)) continue;
-        final FlutterOutlineListener listener = new OutlineListener(path);
+        if (outlineListeners.containsKey(path)) {
+          continue;
+        }
 
+        final FlutterOutlineListener listener = new OutlineListener(path);
         outlineListeners.put(path, listener);
         analysisServer.addOutlineListener(FileUtil.toSystemDependentName(path), listener);
       }
@@ -142,15 +146,14 @@ public class ActiveEditorsOutlineService implements Disposable {
 
     synchronized (pathToOutline) {
       for (final String path : obsoletePaths) {
-        // Clear the current outline as it may become out of date before the
-        // file is visible again.
+        // Clear the current outline as it may become out of date before the file is visible again.
         pathToOutline.remove(path);
       }
     }
   }
 
   private void notifyOutlineUpdated(String path) {
-    ArrayList<Listener> listenerList;
+    final ArrayList<Listener> listenerList;
     synchronized (listeners) {
       listenerList = Lists.newArrayList(listeners);
     }
