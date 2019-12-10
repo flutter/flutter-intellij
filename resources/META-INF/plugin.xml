@@ -29,6 +29,12 @@
 
   <change-notes>
     <![CDATA[
+<h2>42.1</h2>
+<ul>
+  <li>Enable Hot UI for Flutter Interact</li>
+  <li>Fix two NPEs from the outline view (#4188)</li>
+  <li>Fix an NPE from CommonTestConfigUtils.getTestsFromOutline (#4184)</li>
+</ul>
 <h2>42.0</h2>
 <ul>
   <li>Hot UI implementation (#4160)</li>
