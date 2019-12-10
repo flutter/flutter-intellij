@@ -172,14 +172,11 @@ public class EvalOnDartLibrary implements Disposable {
 
   // TODO(jacobr): remove this method after we switch to Java9+ which supports this method directly on CompletableFuture.
   private <T> CompletableFuture<T> timeoutAfter(long timeout, TimeUnit unit, String operationName) {
-    final Throwable cause = new Throwable("calling operation: " + operationName);
+    // Create the timeout exception now, so we can capture the stack trace of the caller.
+    final TimeoutException timeoutException = new TimeoutException(operationName);
 
     final CompletableFuture<T> result = new CompletableFuture<>();
-    delayer.schedule(() -> {
-      final TimeoutException timeoutException = new TimeoutException(operationName);
-      timeoutException.initCause(cause);
-      return result.completeExceptionally(timeoutException);
-    }, timeout, unit);
+    delayer.schedule(() -> result.completeExceptionally(timeoutException), timeout, unit);
     return result;
   }
 
