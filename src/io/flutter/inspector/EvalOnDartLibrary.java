@@ -20,20 +20,14 @@ import org.dartlang.vm.service.consumer.GetObjectConsumer;
 import org.dartlang.vm.service.consumer.ServiceExtensionConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
-import java.util.Base64.Decoder;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.Base64;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 
 /**
  * Invoke methods from a specified Dart library using the observatory protocol.
@@ -76,7 +70,9 @@ public class EvalOnDartLibrary implements Disposable {
    * the user is quickly navigating through the UI generating lots of stale
    * requests to view specific details subtrees.
    */
-  public <T> CompletableFuture<T> addRequest(InspectorService.ObjectGroup isAlive, Supplier<CompletableFuture<T>> request) {
+  public <T> CompletableFuture<T> addRequest(InspectorService.ObjectGroup isAlive,
+                                             String requestName,
+                                             Supplier<CompletableFuture<T>> request) {
     if (isAlive != null && isAlive.isDisposed()) {
       return CompletableFuture.completedFuture(null);
     }
@@ -86,7 +82,7 @@ public class EvalOnDartLibrary implements Disposable {
     }
 
     // Future that completes when the request has finished.
-    final CompletableFuture<T> response = timeoutAfter(DEFAULT_REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+    final CompletableFuture<T> response = timeoutAfter(DEFAULT_REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS, requestName);
     // This is an optimization to avoid sending stale requests across the wire.
     final Runnable wrappedRequest = () -> {
       if (isAlive != null && isAlive.isDisposed()) {
@@ -158,9 +154,8 @@ public class EvalOnDartLibrary implements Disposable {
   }
 
   public CompletableFuture<JsonObject> invokeServiceMethod(String method, JsonObject params) {
-    CompletableFuture<JsonObject> ret = timeoutAfter(DEFAULT_REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+    final CompletableFuture<JsonObject> ret = timeoutAfter(DEFAULT_REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS, "service method " + method);
     vmService.callServiceExtension(isolateId, method, params, new ServiceExtensionConsumer() {
-
       @Override
       public void onError(RPCError error) {
         ret.completeExceptionally(new RuntimeException(error.getMessage()));
@@ -175,16 +170,18 @@ public class EvalOnDartLibrary implements Disposable {
     return ret;
   }
 
-  // TODO(jacobr): remove this method after we switch to Java9+ which supports
-  // this method directly on CompletableFuture.
-  public <T> CompletableFuture<T> timeoutAfter(long timeout, TimeUnit unit) {
-    CompletableFuture<T> result = new CompletableFuture<T>();
-    delayer.schedule(() -> result.completeExceptionally(new TimeoutException()), timeout, unit);
+  // TODO(jacobr): remove this method after we switch to Java9+ which supports this method directly on CompletableFuture.
+  private <T> CompletableFuture<T> timeoutAfter(long timeout, TimeUnit unit, String operationName) {
+    // Create the timeout exception now, so we can capture the stack trace of the caller.
+    final TimeoutException timeoutException = new TimeoutException(operationName);
+
+    final CompletableFuture<T> result = new CompletableFuture<>();
+    delayer.schedule(() -> result.completeExceptionally(timeoutException), timeout, unit);
     return result;
   }
 
   public CompletableFuture<InstanceRef> eval(String expression, Map<String, String> scope, InspectorService.ObjectGroup isAlive) {
-    return addRequest(isAlive, () -> {
+    return addRequest(isAlive, "evaluate", () -> {
       final CompletableFuture<InstanceRef> future = new CompletableFuture<>();
       libraryRef.thenAcceptAsync((LibraryRef ref) -> vmService.evaluate(
         getIsolateId(), ref.getId(), expression,
@@ -219,8 +216,8 @@ public class EvalOnDartLibrary implements Disposable {
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Obj> CompletableFuture<T> getObjHelper(ObjRef instance, InspectorService.ObjectGroup isAlive) {
-    return addRequest(isAlive, () -> {
+  public <T extends Obj> CompletableFuture<T> getObjectHelper(ObjRef instance, InspectorService.ObjectGroup isAlive) {
+    return addRequest(isAlive, "getObject", () -> {
       final CompletableFuture<T> future = new CompletableFuture<>();
       vmService.getObject(
         getIsolateId(), instance.getId(), new GetObjectConsumer() {
@@ -249,23 +246,24 @@ public class EvalOnDartLibrary implements Disposable {
                                                               ScriptRef script,
                                                               int tokenPos,
                                                               InspectorService.ObjectGroup isAlive) {
-    return addRequest(isAlive, () -> CompletableFuture.completedFuture(debugProcess.getSourcePosition(isolateId, script, tokenPos)));
+    return addRequest(isAlive, "getSourcePosition",
+                      () -> CompletableFuture.completedFuture(debugProcess.getSourcePosition(isolateId, script, tokenPos)));
   }
 
   public CompletableFuture<Instance> getInstance(InstanceRef instance, InspectorService.ObjectGroup isAlive) {
-    return getObjHelper(instance, isAlive);
+    return getObjectHelper(instance, isAlive);
   }
 
   public CompletableFuture<Library> getLibrary(LibraryRef instance, InspectorService.ObjectGroup isAlive) {
-    return getObjHelper(instance, isAlive);
+    return getObjectHelper(instance, isAlive);
   }
 
   public CompletableFuture<ClassObj> getClass(ClassRef instance, InspectorService.ObjectGroup isAlive) {
-    return getObjHelper(instance, isAlive);
+    return getObjectHelper(instance, isAlive);
   }
 
   public CompletableFuture<Func> getFunc(FuncRef instance, InspectorService.ObjectGroup isAlive) {
-    return getObjHelper(instance, isAlive);
+    return getObjectHelper(instance, isAlive);
   }
 
   public CompletableFuture<Instance> getInstance(CompletableFuture<InstanceRef> instanceFuture, InspectorService.ObjectGroup isAlive) {
