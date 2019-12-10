@@ -1,3 +1,8 @@
+## 42.1
+- Enable Hot UI for Flutter Interact
+- Fix two NPEs from the outline view (#4188)
+- Fix an NPE from CommonTestConfigUtils.getTestsFromOutline (#4184)
+
 ## 42.0
 - Hot UI implementation (#4160)
 - Support new Inspector select api and a few other minor tweaks (#4158)
