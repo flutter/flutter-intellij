@@ -9,11 +9,11 @@ import com.google.common.base.Joiner;
 import com.google.gson.*;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.ex.EditorEx;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
@@ -23,20 +23,22 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
 import com.intellij.xdebugger.impl.XSourcePositionImpl;
-import com.jetbrains.lang.dart.psi.*;
-import io.flutter.vmService.VmServiceConsumers;
+import com.jetbrains.lang.dart.psi.DartCallExpression;
+import com.jetbrains.lang.dart.psi.DartExpression;
+import com.jetbrains.lang.dart.psi.DartReferenceExpression;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.vmService.ServiceExtensions;
+import io.flutter.vmService.VmServiceConsumers;
 import io.flutter.vmService.frame.DartVmServiceValue;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.ServiceExtensionConsumer;
-import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.element.Event;
+import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,8 +47,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BiConsumer;
@@ -88,11 +90,13 @@ public class InspectorService implements Disposable {
       return file;
     }
 
-    public @NotNull String getPath() {
+    public @NotNull
+    String getPath() {
       return toSourceLocationUri(file.getPath());
     }
 
-    public @NotNull XSourcePosition getXSourcePosition() {
+    public @NotNull
+    XSourcePosition getXSourcePosition() {
       if (file == null) {
         return null;
       }
@@ -723,6 +727,7 @@ public class InspectorService implements Disposable {
     CompletableFuture<JsonElement> invokeVmServiceExtension(String methodName, JsonObject paramsMap) {
       return getInspectorLibrary().addRequest(
         this,
+        methodName,
         () -> {
           return invokeServiceExtensionHelper(methodName, paramsMap);
         }
