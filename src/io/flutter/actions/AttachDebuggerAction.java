@@ -6,11 +6,14 @@
 package io.flutter.actions;
 
 import com.google.common.base.Joiner;
+import com.intellij.execution.ExecutionListener;
+import com.intellij.execution.ExecutionManager;
 import com.intellij.execution.Executor;
 import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -20,7 +23,10 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.wm.ToolWindowId;
+import com.intellij.util.ThreeState;
+import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import io.flutter.pub.PubRoot;
@@ -32,6 +38,7 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
@@ -39,6 +46,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class AttachDebuggerAction extends FlutterSdkAction {
+
+  // Is 'flutter attach' running for a project?
+  // The three states are true, false, and non-existent (null).
+  //   true = run automatically via the debug listener in FlutterStudioStartupActivity
+  //   false = run from button press here
+  //   null = no attach process is running
+  // The button is still required because there may be multiple Flutter run configs.
+  public static final Key<ThreeState> ATTACH_IS_ACTIVE = new Key<>("attach-is-active");
+
   @Override
   public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root, @NotNull DataContext context) {
     // NOTE: When making changes here, consider making similar changes to RunFlutterAction.
@@ -91,6 +107,10 @@ public class AttachDebuggerAction extends FlutterSdkAction {
     ExecutionEnvironment env = builder.activeTarget().dataContext(context).build();
     FlutterLaunchMode.addToEnvironment(env, FlutterLaunchMode.DEBUG);
 
+    if (project.getUserData(ATTACH_IS_ACTIVE) == null) {
+      project.putUserData(ATTACH_IS_ACTIVE, ThreeState.fromBoolean(false));
+      onAttachTermination(project, (p) -> p.putUserData(ATTACH_IS_ACTIVE, null));
+    }
     ProgramRunnerUtil.executeConfiguration(env, false, true);
   }
 
@@ -121,12 +141,15 @@ public class AttachDebuggerAction extends FlutterSdkAction {
     else {
       enabled = true;
     }
+    if (enabled && (project.getUserData(ATTACH_IS_ACTIVE) != null)) {
+      enabled = false;
+    }
     e.getPresentation().setVisible(true);
     e.getPresentation().setEnabled(enabled);
   }
 
   @Nullable
-  private static RunConfiguration findRunConfig(Project project) {
+  public static RunConfiguration findRunConfig(Project project) {
     // Look for a Flutter run config. If exactly one is found then return it otherwise return null.
     RunManagerEx mgr = RunManagerEx.getInstanceEx(project);
     List<RunConfiguration> configs = mgr.getAllConfigurationsList();
@@ -139,6 +162,33 @@ public class AttachDebuggerAction extends FlutterSdkAction {
       }
     }
     return count == 1 ? sdkConfig : null;
+  }
+
+  private static void onAttachTermination(@NotNull Project project, @NotNull Consumer<Project> runner) {
+    MessageBusConnection connection = project.getMessageBus().connect();
+
+    // Need an ExecutionListener to clean up project-scoped state when the Stop button is clicked.
+    connection.subscribe(ExecutionManager.EXECUTION_TOPIC, new ExecutionListener() {
+      Object handler;
+
+      @Override
+      public void processStarted(@NotNull String executorId, @NotNull ExecutionEnvironment env, @NotNull ProcessHandler handler) {
+        if (env.getRunProfile() instanceof SdkAttachConfig) {
+          this.handler = handler;
+        }
+      }
+
+      @Override
+      public void processTerminated(@NotNull String executorId,
+                                    @NotNull ExecutionEnvironment env,
+                                    @NotNull ProcessHandler handler,
+                                    int exitCode) {
+        if (this.handler == handler) {
+          runner.accept(project);
+          connection.disconnect();
+        }
+      }
+    });
   }
 
   private static void showSelectConfigDialog() {

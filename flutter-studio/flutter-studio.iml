@@ -49,5 +49,6 @@
     <orderEntry type="library" name="com.android.tools:repository" level="project" />
     <orderEntry type="library" name="studio-analytics-proto" level="project" />
     <orderEntry type="module" module-name="intellij.groovy.psi" />
+    <orderEntry type="module" module-name="intellij.java.debugger.impl" />
   </component>
 </module>
