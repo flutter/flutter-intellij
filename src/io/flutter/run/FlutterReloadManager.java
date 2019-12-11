@@ -118,7 +118,7 @@ public class FlutterReloadManager {
           }
           catch (Throwable t) {
             // A catch-all, so any exceptions don't bubble through to the users.
-            LOG.warn("Exception from hot reload on save", t);
+            LOG.warn("Exception from FlutterReloadManager", t);
           }
         }
         else {
@@ -142,7 +142,7 @@ public class FlutterReloadManager {
           handleSaveAllNotification(eventEditor);
         }
         catch (Throwable t) {
-          FlutterUtils.warn(LOG, t);
+          FlutterUtils.warn(LOG, "Exception from hot reload on save", t);
         }
       }
     }, project);
