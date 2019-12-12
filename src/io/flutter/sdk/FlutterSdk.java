@@ -248,6 +248,9 @@ public class FlutterSdk {
       if (FlutterSettings.getInstance().isTrackWidgetCreationEnabled(project)) {
         args.add("--track-widget-creation");
       }
+      else {
+        args.add("--no-track-widget-creation");
+      }
     }
 
     if (device != null) {
