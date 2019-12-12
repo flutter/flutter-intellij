@@ -345,6 +345,9 @@ public class AndroidUtils {
       return true;
     }
     GradleSettingsFile parsedSettings = parseSettings(project);
+    if (parsedSettings == null) {
+      return false;
+    }
     // Check settings for "include :name".
     return findInclude(requireNonNull(parsedSettings), name) == null;
   }
@@ -353,6 +356,7 @@ public class AndroidUtils {
     return new File(dir.getPath(), SdkConstants.FN_BUILD_GRADLE).exists();
   }
 
+  @Nullable
   private static GradleSettingsFile parseSettings(Project project) {
     // Get the PSI for settings.gradle. In IntelliJ it is just this, but Android Studio uses a VirtualFile.
     //GradleSettingsFile parsedSettings =
@@ -447,6 +451,7 @@ public class AndroidUtils {
     return tasks;
   }
 
+  @Nullable
   private static PsiElement findInclude(GradleSettingsFile parsedSettings, String name) {
     Map<String, GradleDslElement> elements = parsedSettings.getPropertyElements();
     GradleDslElement includes = elements.get("include");
