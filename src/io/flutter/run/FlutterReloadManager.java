@@ -108,7 +108,7 @@ public class FlutterReloadManager {
       private @Nullable Project eventProject;
       private @Nullable Editor eventEditor;
 
-      public void beforeActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, AnActionEvent event) {
+      public void beforeActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
         if (action instanceof SaveAllAction) {
           // Save the current project value here. If we access later (in afterActionPerformed), we can get
           // exceptions if another event occurs before afterActionPerformed is called.
@@ -118,7 +118,7 @@ public class FlutterReloadManager {
           }
           catch (Throwable t) {
             // A catch-all, so any exceptions don't bubble through to the users.
-            LOG.info(t);
+            LOG.warn("Exception from FlutterReloadManager", t);
           }
         }
         else {
@@ -128,7 +128,7 @@ public class FlutterReloadManager {
       }
 
       @Override
-      public void afterActionPerformed(AnAction action, @NotNull DataContext dataContext, AnActionEvent event) {
+      public void afterActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
         if (!(action instanceof SaveAllAction)) {
           return;
         }
@@ -142,7 +142,7 @@ public class FlutterReloadManager {
           handleSaveAllNotification(eventEditor);
         }
         catch (Throwable t) {
-          FlutterUtils.warn(LOG, t);
+          FlutterUtils.warn(LOG, "Exception from hot reload on save", t);
         }
       }
     }, project);
