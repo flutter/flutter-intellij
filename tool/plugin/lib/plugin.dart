@@ -219,7 +219,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
   var isGitDir = await GitDir.isGitDir(rootPath);
   if (isGitDir) {
     if (cmd.isTestMode) {
-      return new Future(() => true);
+      return true;
     }
     if (!cmd.isReleaseValid) {
       log('the release identifier ("${cmd.release}") must be of the form xx.x (major.minor)');
@@ -236,7 +236,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
             name.lastIndexOf(new RegExp("\.[0-9]")) == name.length - 2;
       if (result) {
         if (isTravisFileValid()) {
-          return new Future(() => result);
+          return result;
         } else {
           log('the .travis.yml file needs updating: plugin generate');
         }
@@ -249,7 +249,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
   } else {
     log('the current working directory is not managed by git: $rootPath');
   }
-  return new Future(() => false);
+  return false;
 }
 
 List readProductMatrix() {
@@ -504,7 +504,7 @@ class ArtifactManager {
 
       log('');
     }
-    return new Future(() => result);
+    return result;
   }
 }
 
@@ -525,6 +525,10 @@ class BuildCommand extends ProductCommand {
             'even if the cache appears fresh.\n'
             'This flag is ignored if --release is given.',
         defaultsTo: false);
+    argParser.addOption('channel',
+        abbr: 'c',
+        help: 'Select the channel to build: stable or dev',
+        defaultsTo: 'stable');
   }
 
   String get description => 'Build a deployable version of the Flutter plugin, '
@@ -554,6 +558,7 @@ class BuildCommand extends ProductCommand {
 
     var result = 0;
     for (var spec in buildSpecs) {
+      if (spec.channel != argResults['channel']) continue;
       if (!(isForIntelliJ && isForAndroidStudio)) {
         // This is a little more complicated than I'd like because the default
         // is to always do both.
@@ -682,7 +687,7 @@ class BuildCommand extends ProductCommand {
           'build/classes', 'build/flutter-intellij/lib/flutter-intellij.jar');
       if (result != 0) {
         log('jar failed: ${result.toString()}');
-        return new Future(() => result);
+        return result;
       }
       if (spec.isTestTarget && !isReleaseMode) {
         _copyFile(File('build/flutter-intellij/lib/flutter-intellij.jar'),
@@ -793,6 +798,7 @@ compile
 class BuildSpec {
   // Build targets
   final String name;
+  final String channel;
   final String version;
   final String ijVersion;
   final bool isTestTarget;
@@ -816,6 +822,7 @@ class BuildSpec {
   BuildSpec.fromJson(Map json, String releaseNum)
       : release = releaseNum,
         name = json['name'],
+        channel = json['channel'],
         version = json['version'],
         ijVersion = json['ijVersion'] ?? null,
         ideaProduct = json['ideaProduct'],
@@ -840,7 +847,11 @@ class BuildSpec {
 
   String get changeLog {
     if (_changeLog == null) {
-      _changeLog = _parseChangelog();
+      if (channel == 'stable') {
+        _changeLog = _parseChangelog();
+      } else {
+        _changeLog = '';
+      }
     }
 
     return _changeLog;
@@ -878,6 +889,13 @@ class BuildSpec {
   String toString() {
     return 'BuildSpec($ideaProduct $ideaVersion $dartPluginVersion $sinceBuild '
         '$untilBuild version: "$release")';
+  }
+
+  Future<BuildSpec> initChangeLog() async {
+    if (channel == 'dev') {
+      _changeLog = await makeDevLog(this);
+    }
+    return this;
   }
 }
 
@@ -991,10 +1009,10 @@ class GenerateCommand extends ProductCommand {
     }
     if (isReleaseMode) {
       if (!await performReleaseChecks(this)) {
-        return new Future(() => 1);
+        return 1;
       }
     }
-    return new Future(() => value);
+    return value;
   }
 
   SyntheticBuildSpec makeSyntheticSpec(List specs) =>
@@ -1083,13 +1101,17 @@ abstract class ProductCommand extends Command {
     if (rel != null) {
       rootPath = p.normalize(p.join(rootPath, rel));
     }
-    specs = createBuildSpecs(this);
+    var list = createBuildSpecs(this);
+    specs = List();
+    list.forEach((BuildSpec s) async =>
+        s.initChangeLog().then((b) =>
+            specs.add(b)));
     try {
       return await doit();
     } catch (ex, stack) {
       log(ex.toString());
       log(stack.toString());
-      return new Future(() => 1);
+      return 1;
     }
   }
 }
@@ -1146,5 +1168,38 @@ class TestCommand extends ProductCommand {
 
   Future<int> _runIntegrationTests() async {
     throw 'integration test execution not yet implemented';
+  }
+}
+
+Future<String> makeDevLog(BuildSpec spec) async {
+  _checkGitDir();
+  var gitDir = await GitDir.fromExisting(rootPath);
+  var since = await lastRelease();
+  var processResult = await gitDir.runCommand(['log', '$since..HEAD', '--oneline']);
+  String out = processResult.stdout;
+  var messages = out.trim().split('\n');
+  print(messages);
+  var devLog = StringBuffer();
+  devLog.writeln('## Changes since $since');
+  messages.forEach((m) {
+    devLog.writeln(m.replaceFirst(RegExp(r'^[0-9A-Fa-f]+ '), '- '));
+  });
+  devLog.writeln();
+  print(devLog.toString());
+  return devLog.toString();
+}
+
+Future<String> lastRelease() async {
+  _checkGitDir();
+  var gitDir = await GitDir.fromExisting(rootPath);
+  var processResult = await gitDir.runCommand(['branch', '--list', 'release*']);
+  String out = processResult.stdout;
+  return out.trim().split('\n').last.trim();//
+}
+
+void _checkGitDir() async {
+  var isGitDir = await GitDir.isGitDir(rootPath);
+  if (!isGitDir) {
+    throw 'the current working directory is not managed by git: $rootPath';
   }
 }
