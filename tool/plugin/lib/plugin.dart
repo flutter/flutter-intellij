@@ -49,20 +49,20 @@ void addProductFlags(ArgParser argParser, String verb) {
 
 void copyResources({String from, String to}) {
   log('copying resources from $from to $to');
-  _copyResources(new Directory(from), new Directory(to));
+  _copyResources(Directory(from), Directory(to));
 }
 
 List<BuildSpec> createBuildSpecs(ProductCommand command) {
-  var specs = new List<BuildSpec>();
+  var specs = List<BuildSpec>();
   var input = readProductMatrix();
   input.forEach((json) {
-    specs.add(new BuildSpec.fromJson(json, command.release));
+    specs.add(BuildSpec.fromJson(json, command.release));
   });
   return specs;
 }
 
 void createDir(String name) {
-  final dir = new Directory(name);
+  final dir = Directory(name);
   if (!dir.existsSync()) {
     log('creating $name/');
     dir.createSync(recursive: true);
@@ -74,9 +74,9 @@ Future<int> curl(String url, {String to}) async {
 }
 
 Future<int> deleteBuildContents() async {
-  final dir = new Directory(p.join(rootPath, 'build'));
+  final dir = Directory(p.join(rootPath, 'build'));
   if (!dir.existsSync()) throw 'No build directory found';
-  var args = new List<String>();
+  var args = List<String>();
   args.add('-rf');
   args.add(p.join(rootPath, 'build', '*'));
   return await exec('rm', args);
@@ -97,7 +97,7 @@ Future<int> exec(String cmd, List<String> args, {String cwd}) async {
 }
 
 List<File> findJars(String path) {
-  final dir = new Directory(path);
+  final dir = Directory(path);
   return dir
       .listSync(recursive: true, followLinks: false)
       .where((e) => e is File && e.path.endsWith('.jar'))
@@ -106,7 +106,7 @@ List<File> findJars(String path) {
 }
 
 List<String> findJavaFiles(String path) {
-  final dir = new Directory(path);
+  final dir = Directory(path);
   return dir
       .listSync(recursive: true, followLinks: false)
       .where((e) => e.path.endsWith('.java'))
@@ -126,29 +126,29 @@ Future<File> genPluginXml(BuildSpec spec, String destDir, String path) async {
   var templatePath =
       path.substring(0, path.length - '.xml'.length) + '_template.xml';
   var file =
-      await new File(p.join(rootPath, destDir, path)).create(recursive: true);
+      await File(p.join(rootPath, destDir, path)).create(recursive: true);
   log('writing ${p.relative(file.path)}');
   var dest = file.openWrite();
   dest.writeln(
       "<!-- Do not edit; instead, modify ${p.basename(templatePath)}, and run './bin/plugin generate'. -->");
   dest.writeln();
   await utf8.decoder
-      .bind(new File(p.join(rootPath, 'resources', templatePath)).openRead())
-      .transform(new LineSplitter())
+      .bind(File(p.join(rootPath, 'resources', templatePath)).openRead())
+      .transform(LineSplitter())
       .forEach((l) => dest.writeln(substituteTemplateVariables(l, spec)));
   await dest.close();
   return await dest.done;
 }
 
 void genTravisYml(List<BuildSpec> specs) {
-  var file = new File(p.join(rootPath, '.travis.yml'));
+  var file = File(p.join(rootPath, '.travis.yml'));
   var env = '';
   for (var spec in specs) {
     if (!spec.untilBuild.contains('SNAPSHOT'))
       env += '  - IDEA_VERSION=${spec.version}\n';
   }
 
-  var templateFile = new File(p.join(rootPath, '.travis_template.yml'));
+  var templateFile = File(p.join(rootPath, '.travis_template.yml'));
   var templateContents = templateFile.readAsStringSync();
   var header =
       "# Do not edit; instead, modify ${p.basename(templateFile.path)},"
@@ -160,12 +160,12 @@ void genTravisYml(List<BuildSpec> specs) {
 
 bool isCacheDirectoryValid(Artifact artifact) {
   var dirPath = artifact.outPath;
-  var dir = new Directory(dirPath);
+  var dir = Directory(dirPath);
   if (!dir.existsSync()) {
     return false;
   }
   var filePath = artifact.file;
-  var file = new File(p.join(rootPath, 'artifacts', filePath));
+  var file = File(p.join(rootPath, 'artifacts', filePath));
   if (!file.existsSync()) {
     throw 'Artifact file missing: $filePath';
   }
@@ -178,12 +178,12 @@ bool isNewer(FileSystemEntity newer, FileSystemEntity older) {
 
 bool isTravisFileValid() {
   var travisPath = p.join(rootPath, '.travis.yml');
-  var travisFile = new File(travisPath);
+  var travisFile = File(travisPath);
   if (!travisFile.existsSync()) {
     return false;
   }
   var matrixPath = p.join(rootPath, 'product-matrix.json');
-  var matrixFile = new File(matrixPath);
+  var matrixFile = File(matrixPath);
   if (!matrixFile.existsSync()) {
     throw 'product-matrix.json is missing';
   }
@@ -192,7 +192,7 @@ bool isTravisFileValid() {
 
 Future<int> jar(String directory, String outFile) async {
   var args = ['cf', p.absolute(outFile)];
-  args.addAll(new Directory(directory)
+  args.addAll(Directory(directory)
       .listSync(followLinks: false)
       .map((f) => p.basename(f.path)));
   args.remove('.DS_Store');
@@ -204,10 +204,10 @@ void log(String s, {bool indent: true}) {
 }
 
 Future<int> moveToArtifacts(ProductCommand cmd, BuildSpec spec) async {
-  final dir = new Directory(p.join(rootPath, 'artifacts'));
+  final dir = Directory(p.join(rootPath, 'artifacts'));
   if (!dir.existsSync()) throw 'No artifacts directory found';
   var file = plugins[spec.pluginId];
-  var args = new List<String>();
+  var args = List<String>();
   args.add(p.join(rootPath, 'build', file));
   args.add(cmd.releasesFilePath(spec));
   return await exec('mv', args);
@@ -223,7 +223,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
     }
     if (!cmd.isReleaseValid) {
       log('the release identifier ("${cmd.release}") must be of the form xx.x (major.minor)');
-      return new Future(() => false);
+      return false;
     }
     var gitDir = await GitDir.fromExisting(rootPath);
     var isClean = await gitDir.isWorkingTreeClean();
@@ -233,7 +233,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
       var result = name == "release_${cmd.releaseMajor}";
       if (!result)
         result = name.startsWith("release_${cmd.releaseMajor}") &&
-            name.lastIndexOf(new RegExp("\.[0-9]")) == name.length - 2;
+            name.lastIndexOf(RegExp("\.[0-9]")) == name.length - 2;
       if (result) {
         if (isTravisFileValid()) {
           return result;
@@ -254,7 +254,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
 
 List readProductMatrix() {
   var contents =
-      new File(p.join(rootPath, 'product-matrix.json')).readAsStringSync();
+      File(p.join(rootPath, 'product-matrix.json')).readAsStringSync();
   var map = json.decode(contents);
   return map['list'];
 }
@@ -264,7 +264,7 @@ Future<int> removeAll(String dir) async {
   return await exec('rm', args);
 }
 
-final Ansi ansi = new Ansi(true);
+final Ansi ansi = Ansi(true);
 
 void separator(String name) {
   log('');
@@ -324,7 +324,7 @@ void _copyFile(File file, Directory to, {String filename = ''}) {
     to.createSync(recursive: true);
   }
   if (filename == '') filename = p.basename(file.path);
-  final target = new File(p.join(to.path, filename));
+  final target = File(p.join(to.path, filename));
   target.writeAsBytesSync(file.readAsBytesSync());
 }
 
@@ -341,7 +341,7 @@ void _copyResources(Directory from, Directory to) {
     if (entity is File) {
       _copyFile(entity, to);
     } else if (entity is Directory) {
-      _copyResources(entity, new Directory(p.join(to.path, basename)));
+      _copyResources(entity, Directory(p.join(to.path, basename)));
     }
   }
 }
@@ -391,7 +391,7 @@ class ArtifactManager {
   Artifact javac;
 
   ArtifactManager() {
-    javac = add(new Artifact(
+    javac = add(Artifact(
       'intellij-javac2.zip',
       output: 'javac2',
       bareArchive: true,
@@ -434,7 +434,7 @@ class ArtifactManager {
             log('download failed');
             break;
           }
-          var archiveFile = new File(path);
+          var archiveFile = File(path);
           if (!_isValidDownloadArtifact(archiveFile)) {
             // If the file is missing the server returns a small file containing
             // an error message. Delete it and try again. The smallest file we
@@ -449,7 +449,7 @@ class ArtifactManager {
                 log('download failed');
                 break;
               }
-              var archiveFile = new File(path);
+              var archiveFile = File(path);
               if (!_isValidDownloadArtifact(archiveFile)) {
                 log('archive file not found: $base/${artifact.file}');
                 archiveFile.deleteSync();
@@ -470,7 +470,7 @@ class ArtifactManager {
       }
 
       // expand
-      if (new Directory(artifact.outPath).existsSync()) {
+      if (Directory(artifact.outPath).existsSync()) {
         await removeAll(artifact.outPath);
       }
       createDir(artifact.outPath);
@@ -740,33 +740,6 @@ class BuildCommandRunner extends CommandRunner {
     );
   }
 
-  // Use this to compile test code, which should not define forms.
-  Future<int> javac(
-      {List sourcepath,
-      String destdir,
-      List classpath,
-      List<String> sources}) async {
-    //final Directory javacDir = new Directory('artifacts/${artifacts.javac.output}');
-
-    final args = [
-      '-d',
-      destdir,
-      '-encoding',
-      'UTF-8',
-      '-source',
-      '8',
-      '-target',
-      '8',
-      '-classpath',
-      classpath.join(':'),
-      '-sourcepath',
-      sourcepath.join(':'),
-    ];
-    args.addAll(sources);
-
-    return await exec('javac', args);
-  }
-
   // Use this to compile plugin sources to get forms processed.
   Future<int> javac2(BuildSpec spec) async {
     var args = '''
@@ -777,7 +750,7 @@ class BuildCommandRunner extends CommandRunner {
 compile
 ''';
     try {
-      return await exec('ant', args.split(new RegExp(r'\s')));
+      return await exec('ant', args.split(RegExp(r'\s')));
     } on ProcessException catch (x) {
       if (x.message == 'No such file or directory') {
         log(
@@ -814,7 +787,7 @@ class BuildSpec {
   final List<dynamic> filesToSkip;
   String _changeLog;
 
-  ArtifactManager artifacts = new ArtifactManager();
+  ArtifactManager artifacts = ArtifactManager();
 
   Artifact product;
   Artifact dartPlugin;
@@ -859,18 +832,18 @@ class BuildSpec {
 
   void createArtifacts() {
     if (ideaProduct == 'android-studio') {
-      product = artifacts.add(new Artifact(
+      product = artifacts.add(Artifact(
           '$ideaProduct-ide-$ideaVersion-linux.zip',
           output: ideaProduct));
     } else {
-      product = artifacts.add(new Artifact('$ideaProduct-$ideaVersion.tar.gz',
-          output: ideaProduct));
+      product = artifacts.add(
+          Artifact('$ideaProduct-$ideaVersion.tar.gz', output: ideaProduct));
     }
-    dartPlugin = artifacts.add(new Artifact('Dart-$dartPluginVersion.zip'));
+    dartPlugin = artifacts.add(Artifact('Dart-$dartPluginVersion.zip'));
   }
 
   String _parseChangelog() {
-    var text = new File('CHANGELOG.md').readAsStringSync();
+    var text = File('CHANGELOG.md').readAsStringSync();
     var html = markdownToHtml(text);
 
     // Translate our markdown based changelog into html; remove unwanted
@@ -914,11 +887,11 @@ class DeployCommand extends ProductCommand {
   Future<int> doit() async {
     if (isReleaseMode) {
       if (!await performReleaseChecks(this)) {
-        return new Future(() => 1);
+        return 1;
       }
     } else {
       log('Deploy must have a --release argument');
-      return new Future(() => 1);
+      return 1;
     }
 
     String password;
@@ -940,7 +913,7 @@ class DeployCommand extends ProductCommand {
 
     var directory = Directory.systemTemp.createTempSync('plugin');
     tempDir = directory.path;
-    var file = new File('$tempDir/.content');
+    var file = File('$tempDir/.content');
     file.writeAsStringSync(password, flush: true);
 
     var value = 0;
@@ -960,7 +933,7 @@ class DeployCommand extends ProductCommand {
   }
 
   Future<int> upload(String filePath, String pluginNumber) async {
-    if (!new File(filePath).existsSync()) {
+    if (!File(filePath).existsSync()) {
       throw 'File not found: $filePath';
     }
     log("uploading $filePath");
@@ -973,7 +946,7 @@ class DeployCommand extends ProductCommand {
 "https://plugins.jetbrains.com/plugin/uploadPlugin"
 ''';
 
-    final process = await Process.start('curl', args.split(new RegExp(r'\s')));
+    final process = await Process.start('curl', args.split(RegExp(r'\s')));
     var result = await process.exitCode;
     if (result != 0) {
       log('Upload failed: ${result.toString()} for file: $filePath');
@@ -1000,7 +973,7 @@ class GenerateCommand extends ProductCommand {
 
   Future<int> doit() async {
     var json = readProductMatrix();
-    var spec = new SyntheticBuildSpec.fromJson(json.first, release, json.last);
+    var spec = SyntheticBuildSpec.fromJson(json.first, release, json.last);
     var value = 1;
     var result = await genPluginFiles(spec, 'resources');
     if (result != null) {
@@ -1016,7 +989,7 @@ class GenerateCommand extends ProductCommand {
   }
 
   SyntheticBuildSpec makeSyntheticSpec(List specs) =>
-      new SyntheticBuildSpec.fromJson(specs[0], release, specs[2]);
+      SyntheticBuildSpec.fromJson(specs[0], release, specs[2]);
 }
 
 abstract class ProductCommand extends Command {
@@ -1042,7 +1015,7 @@ abstract class ProductCommand extends Command {
       return false;
     }
     // Validate for '00.0'.
-    return rel == new RegExp(r'\d+\.\d').stringMatch(rel);
+    return rel == RegExp(r'\d+\.\d').stringMatch(rel);
   }
 
   bool get isTestMode => globalResults['cwd'] != null;
@@ -1101,11 +1074,7 @@ abstract class ProductCommand extends Command {
     if (rel != null) {
       rootPath = p.normalize(p.join(rootPath, rel));
     }
-    var list = createBuildSpecs(this);
-    specs = List();
-    list.forEach((BuildSpec s) async =>
-        s.initChangeLog().then((b) =>
-            specs.add(b)));
+    await _initSpecs();
     try {
       return await doit();
     } catch (ex, stack) {
@@ -1113,6 +1082,14 @@ abstract class ProductCommand extends Command {
       log(stack.toString());
       return 1;
     }
+  }
+
+  Future<int> _initSpecs() async {
+    specs = createBuildSpecs(this);
+    for (var i = 0; i < specs.length; i++) {
+      await specs[i].initChangeLog();
+    }
+    return specs.length;
   }
 }
 
@@ -1175,17 +1152,16 @@ Future<String> makeDevLog(BuildSpec spec) async {
   _checkGitDir();
   var gitDir = await GitDir.fromExisting(rootPath);
   var since = await lastRelease();
-  var processResult = await gitDir.runCommand(['log', '$since..HEAD', '--oneline']);
+  var processResult =
+      await gitDir.runCommand(['log', '$since..HEAD', '--oneline']);
   String out = processResult.stdout;
   var messages = out.trim().split('\n');
-  print(messages);
   var devLog = StringBuffer();
   devLog.writeln('## Changes since $since');
   messages.forEach((m) {
     devLog.writeln(m.replaceFirst(RegExp(r'^[0-9A-Fa-f]+ '), '- '));
   });
   devLog.writeln();
-  print(devLog.toString());
   return devLog.toString();
 }
 
@@ -1194,7 +1170,7 @@ Future<String> lastRelease() async {
   var gitDir = await GitDir.fromExisting(rootPath);
   var processResult = await gitDir.runCommand(['branch', '--list', 'release*']);
   String out = processResult.stdout;
-  return out.trim().split('\n').last.trim();//
+  return out.trim().split('\n').last.trim(); //
 }
 
 void _checkGitDir() async {
