@@ -29,6 +29,10 @@
 
   <change-notes>
     <![CDATA[
+<h2>42.2</h2>
+<ul>
+  <li>Support Android Studio 3.6 RC 1</li>
+</ul>
 <h2>42.1</h2>
 <ul>
   <li>Enable Hot UI for Flutter Interact</li>
