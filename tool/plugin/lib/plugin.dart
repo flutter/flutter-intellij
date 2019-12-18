@@ -1168,6 +1168,9 @@ Future<String> makeDevLog(BuildSpec spec) async {
 Future<String> lastRelease() async {
   _checkGitDir();
   var gitDir = await GitDir.fromExisting(rootPath);
+  // TODO(messick): dd git magic to ensure the latest release branch exists locally.
+  // For more context, see comments on this method in the PR:
+  // https://github.com/flutter/flutter-intellij/pull/4213
   var processResult = await gitDir.runCommand(['branch', '--list', 'release*']);
   String out = processResult.stdout;
   return out.trim().split('\n').last.trim(); //
