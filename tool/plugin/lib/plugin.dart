@@ -268,7 +268,7 @@ final Ansi ansi = new Ansi(true);
 
 void separator(String name) {
   log('');
-  log('${ansi.yellow}${ansi.bold}$name${ansi.none}', indent: false);
+  log('${ansi.red}${ansi.bold}$name${ansi.none}', indent: false);
 }
 
 String substituteTemplateVariables(String line, BuildSpec spec) {
@@ -591,49 +591,9 @@ class BuildCommand extends ProductCommand {
       var files = <File, String>{};
       var processedFile, source;
 
-      // TODO: Remove this when we no longer support 191.x
+      // TODO: Remove this when we no longer support AS 3.5
 
-      // This is for versions prior to AS 3.5
-      if (spec.version.startsWith('2019.1')) {
-        processedFile = File(
-            'flutter-studio/src/io/flutter/FlutterStudioStartupActivity.java');
-        source = processedFile.readAsStringSync();
-        files[processedFile] = source;
-        source = source.replaceAll(
-            'Topic topic = GradleSyncState.GRADLE_SYNC_TOPIC;', '');
-        source = source.replaceAll(
-            'connection.subscribe((Topic<GradleSyncListener>)topic, makeSyncListener(project));',
-            '');
-        processedFile.writeAsStringSync(source);
-      }
-
-      if (!spec.version.startsWith('3.5') &&
-          !spec.version.startsWith('3.6') &&
-          !spec.version.startsWith('2019.2') &&
-          !(spec.version == '2019.1.2')) {
-        processedFile = File(
-            'flutter-studio/src/io/flutter/project/FlutterProjectModel.java');
-        source = processedFile.readAsStringSync();
-        files[processedFile] = source;
-        source = source.replaceAll('addListener(()', 'addListener(sender');
-        processedFile.writeAsStringSync(source);
-
-        processedFile = File(
-            'flutter-studio/src/io/flutter/project/FlutterSettingsStep.java');
-        source = processedFile.readAsStringSync();
-        files[processedFile] = source;
-        source = source.replaceAll('listen', 'receive');
-        processedFile.writeAsStringSync(source);
-
-        processedFile = File('resources/META-INF/studio-contribs_template.xml');
-        source = processedFile.readAsStringSync();
-        files[processedFile] = source;
-        source = source.replaceAll(
-            'JavaNewProjectOrModuleGroup', 'NewProjectOrModuleGroup');
-        processedFile.writeAsStringSync(source);
-      }
-
-      if (spec.version.startsWith('2019.1') || spec.version.startsWith('3.5')) {
+      if (spec.version.startsWith('3.5')) {
         processedFile = File(
             'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
         source = processedFile.readAsStringSync();
@@ -644,6 +604,15 @@ class BuildCommand extends ProductCommand {
         var end = source.indexOf(last);
         // Change the initializer to use null, equivalent to original code.
         source = '${source.substring(0, end + last.length)}null;\n}}';
+        processedFile.writeAsStringSync(source);
+
+        processedFile = File(
+            'flutter-studio/src/io/flutter/utils/AddToAppUtils.java');
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll(
+            'connection.subscribe(DebuggerManagerListener.TOPIC, makeAddToAppAttachListener(project));',
+            '');
         processedFile.writeAsStringSync(source);
       }
 
