@@ -607,7 +607,7 @@ class BuildCommand extends ProductCommand {
         processedFile.writeAsStringSync(source);
 
         processedFile = File(
-            'flutter-studio/src/io/flutter/FlutterStudioStartupActivity.java');
+            'flutter-studio/src/io/flutter/utils/AddToAppUtils.java');
         source = processedFile.readAsStringSync();
         files[processedFile] = source;
         source = source.replaceAll(
