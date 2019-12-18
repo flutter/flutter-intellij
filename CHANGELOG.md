@@ -1,3 +1,6 @@
+## 42.2
+- Support Android Studio 3.6 RC 1
+
 ## 42.1
 - Enable Hot UI for Flutter Interact
 - Fix two NPEs from the outline view (#4188)
