@@ -973,7 +973,7 @@ class GenerateCommand extends ProductCommand {
 
   Future<int> doit() async {
     var json = readProductMatrix();
-    var spec = SyntheticBuildSpec.fromJson(json.first, release, json.last);
+    var spec = SyntheticBuildSpec.fromJson(json.first, release, specs);
     var value = 1;
     var result = await genPluginFiles(spec, 'resources');
     if (result != null) {
@@ -1100,12 +1100,14 @@ abstract class ProductCommand extends Command {
 /// last one is the latest used during development. This BuildSpec combines
 /// those two.
 class SyntheticBuildSpec extends BuildSpec {
-  final Map alternate;
+  BuildSpec alternate;
 
-  SyntheticBuildSpec.fromJson(Map json, String releaseNum, this.alternate)
-      : super.fromJson(json, releaseNum);
+  SyntheticBuildSpec.fromJson(Map json, String releaseNum, List<BuildSpec> specs)
+      : super.fromJson(json, releaseNum) {
+    alternate = specs.firstWhere((s) => s.isTestTarget);
+  }
 
-  String get untilBuild => alternate['untilBuild'];
+  String get untilBuild => alternate.untilBuild;
 
   bool get isSynthetic => true;
 }
