@@ -1064,7 +1064,7 @@
     </group>
 
     <!-- refactoring menu -->
-    <action class="io.flutter.actions.ExtractWidgetAction" id="Flutter.ExtractWidget" text="Flutter Widget...">
+    <action class="io.flutter.actions.ExtractWidgetAction" id="Flutter.ExtractWidget" text="Extract Flutter Widget...">
       <add-to-group group-id="IntroduceActionsGroup" anchor="after" relative-to-action="ExtractMethod"/>
       <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt W"/>
     </action>
