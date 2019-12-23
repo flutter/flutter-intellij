@@ -35,6 +35,9 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
   @Nullable
   @Override
   public ProblemDescriptor[] checkFile(@NotNull final PsiFile psiFile, @NotNull final InspectionManager manager, final boolean isOnTheFly) {
+    // If the project should use bazel instead of pub, don't surface this warning.
+    if (FlutterSettings.getInstance().shouldUseBazel()) return null;
+
     if (!isOnTheFly) return null;
 
     if (!(psiFile instanceof DartFile)) return null;
@@ -54,9 +57,6 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
     final PubRoot root = PubRootCache.getInstance(project).getRoot(psiFile);
 
     if (root == null || myIgnoredPubspecPaths.contains(root.getPubspec().getPath())) return null;
-
-    // If the project should use bazel instead of pub, don't surface this warning.
-    if (FlutterSettings.getInstance().shouldUseBazel()) return null;
 
     // TODO(pq): consider validating package name here (`get` will fail if it's invalid).
 
