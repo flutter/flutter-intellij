@@ -330,9 +330,8 @@ public class PropertyEditorPanel extends SimpleToolWindowPanel {
   int getOffset() {
     if (outline == null) return -1;
     final VirtualFile file = activeFile.getValue();
-
-    assert (activeFile.getValue() != null);
-    final OutlineOffsetConverter converter = new OutlineOffsetConverter(project, activeFile.getValue());
+    if (file == null) return -1;
+    final OutlineOffsetConverter converter = new OutlineOffsetConverter(project, file);
     return converter.getConvertedOutlineOffset(outline);
   }
 
