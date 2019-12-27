@@ -284,7 +284,15 @@ public class PubRoot {
    */
   @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public boolean hasUpToDatePackages() {
-    return packagesFile != null && pubspec.getTimeStamp() < packagesFile.getTimeStamp();
+    if (packagesFile == null) {
+      return false;
+    }
+
+    // Refresh our view of the modification stamps.
+    pubspec.refresh(true, false);
+    packagesFile.refresh(true, false);
+
+    return pubspec.getTimeStamp() < packagesFile.getTimeStamp();
   }
 
   @Nullable
