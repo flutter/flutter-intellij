@@ -97,8 +97,8 @@ public class FlutterColors {
   /**
    * Returns the the shortest material color name matching a color if one exists.
    */
-  public static @Nullable
-  String getColorName(Color color) {
+  @Nullable
+  public static String getColorName(@Nullable Color color) {
     String name = colorToName.get(color);
     if (name == null) return null;
     // Normalize to avoid including suffixes that are not required.

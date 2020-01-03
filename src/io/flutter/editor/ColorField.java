@@ -19,6 +19,7 @@ import io.flutter.utils.ColorIconMaker;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.dartlang.analysis.server.protocol.FlutterWidgetProperty;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,32 +32,30 @@ import java.util.concurrent.CompletableFuture;
  * opens a color picker.
  */
 class ColorField extends ExtendableTextField {
-  private final FlutterWidgetProperty property;
   private final String originalExpression;
   private final String name;
-  private final Color initialColor;
   private final Extension setColorExtension;
-  private Color currentColor;
-  ColorPickerProvider colorPicker;
-  private PropertyEditorPanel panel;
+  @Nullable private Color currentColor;
+  private ColorPickerProvider colorPicker;
+  private final PropertyEditorPanel panel;
   private Color colorAtPopupLaunch;
   private String expressionAtPopupLaunch;
 
   public ColorField(PropertyEditorPanel panel, String name, FlutterWidgetProperty property, Disposable parentDisposable) {
     super("", 1);
+
     this.name = name;
-    this.property = property;
 
     final String expression = property.getExpression();
     if (expression != null) {
       setText(expression);
     }
     this.originalExpression = expression;
-    initialColor = parseColorExpression(expression);
-    currentColor = initialColor;
+    currentColor = parseColorExpression(expression);
 
     final ColorIconMaker maker = new ColorIconMaker();
 
+    // InputEvent.SHIFT_DOWN_MASK ?
     final KeyStroke keyStroke = KeyStroke.getKeyStroke(10, 64);
     setColorExtension =
       new Extension() {
@@ -85,11 +84,14 @@ class ColorField extends ExtendableTextField {
         showColorFieldPopup();
       }
     }).registerCustomShortcutSet(new CustomShortcutSet(keyStroke), this, parentDisposable);
+
     addExtension(setColorExtension);
     panel.addTextFieldListeners(name, this);
+
     this.panel = panel;
   }
 
+  @Nullable
   private static Color parseColorExpression(String expression) {
     if (expression == null) return null;
 
@@ -103,20 +105,21 @@ class ColorField extends ExtendableTextField {
     return ExpressionParsingUtils.parseColor(expression);
   }
 
-  private static String buildColorExpression(Color color) {
+  private static String buildColorExpression(@Nullable Color color) {
+    if (color == null) {
+      return "";
+    }
+
     final String flutterColorName = FlutterColors.getColorName(color);
     if (flutterColorName != null) {
-      // TODO(jacobr): only apply this conversion if the material library is
-      // already imported in the library being edited.
-      // We also need to be able to handle cases where the material library
-      // is imported with a prefix.
+      // TODO(jacobr): only apply this conversion if the material library is already imported in the
+      // library being edited. We also need to be able to handle cases where the material library is
+      // imported with a prefix.
       return "Colors." + flutterColorName;
     }
-    final int alpha = color.getAlpha();
-    final int red = color.getRed();
-    final int green = color.getGreen();
-    final int blue = color.getBlue();
-    return String.format("Color(0x%02x%02x%02x%02x)", alpha, red, green, blue);
+
+    return String.format(
+      "Color(0x%02x%02x%02x%02x)", color.getAlpha(), color.getRed(), color.getGreen(), color.getBlue());
   }
 
   public void addTextFieldListeners(String name, JBTextField field) {
@@ -175,14 +178,15 @@ class ColorField extends ExtendableTextField {
       final Insets insets = this.getInsets();
 
       final Point bottomColorIconOffset =
-        new Point(insets.left  + setColorExtension.getIconGap(),
+        new Point(insets.left + setColorExtension.getIconGap(),
                   this.getHeight() / 2);
-      colorPicker.show(currentColor, this, bottomColorIconOffset, Balloon.Position.atLeft, this::colorListener, this::cancelPopup, this::applyColor);
+      colorPicker
+        .show(currentColor, this, bottomColorIconOffset, Balloon.Position.atLeft, this::colorListener, this::cancelPopup, this::applyColor);
       expressionAtPopupLaunch = getText();
     }
   }
 
-  private void colorListener(Color color, Object o) {
+  private void colorListener(@Nullable Color color, Object o) {
     if (colorPicker == null) {
       // This can happen after a call to cancel.
       return;
