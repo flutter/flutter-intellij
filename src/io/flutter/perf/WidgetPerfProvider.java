@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Interface defining what information about widget performance can be fetched
  * from the running device.
- *
+ * <p>
  * See VMServiceWidgetPerfProvider for the non-test implementation of this class.
  */
 public interface WidgetPerfProvider extends Disposable {

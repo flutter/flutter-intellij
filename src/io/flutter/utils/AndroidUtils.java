@@ -45,6 +45,7 @@ import com.intellij.util.containers.WeakList;
 import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import io.flutter.FlutterUtils;
 import io.flutter.android.GradleSyncProvider;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -63,6 +64,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.gradle.settings.GradleProjectSettings;
@@ -645,9 +647,13 @@ public class AndroidUtils {
 }
 
 class SdkConstants {
-  /** An SDK Project's build.gradle file */
+  /**
+   * An SDK Project's build.gradle file
+   */
   public static final String FN_BUILD_GRADLE = "build.gradle";
 
-  /** An SDK Project's settings.gradle file */
+  /**
+   * An SDK Project's settings.gradle file
+   */
   public static final String FN_SETTINGS_GRADLE = "settings.gradle";
 }

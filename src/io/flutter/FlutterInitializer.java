@@ -5,7 +5,6 @@
  */
 package io.flutter;
 
-import com.intellij.ProjectTopics;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
@@ -18,12 +17,9 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupActivity;
-import com.intellij.util.concurrency.AppExecutorUtil;
-import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.android.IntelliJAndroidSdk;
@@ -39,7 +35,6 @@ import io.flutter.run.daemon.DeviceService;
 import io.flutter.sdk.FlutterPluginsLibraryManager;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.survey.FlutterSurveyNotifications;
-import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.view.FlutterViewFactory;
 import org.jetbrains.annotations.NotNull;

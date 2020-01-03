@@ -46,5 +46,4 @@ public class FlutterWidgetPropertyEditorKind {
    * The editor for a property of the type String.
    */
   public static final String STRING = "STRING";
-
 }

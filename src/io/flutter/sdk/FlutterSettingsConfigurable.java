@@ -141,6 +141,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private void createUIComponents() {
     mySdkCombo = new ComboboxWithBrowseButton(new ComboBox<>());
   }
+
   @Override
   @NotNull
   public String getId() {

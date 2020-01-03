@@ -35,7 +35,9 @@ public class WidgetIndentGuideDescriptor {
       this.attribute = attribute;
     }
 
-    public String getName() { return attribute.getName();}
+    public String getName() {
+      return attribute.getName();
+    }
 
     public FlutterOutlineAttribute getAttribute() {
       return attribute;
@@ -99,7 +101,7 @@ public class WidgetIndentGuideDescriptor {
     this.indentLevel = indentLevel;
     this.startLine = startLine;
     this.endLine = endLine;
-    this.outlineNode =  outlineNode;
+    this.outlineNode = outlineNode;
   }
 
   void dispose() {
@@ -123,6 +125,7 @@ public class WidgetIndentGuideDescriptor {
    * obsolete.
    */
   boolean tracked = false;
+
   public void trackLocations(Document document) {
 
     if (tracked) return;

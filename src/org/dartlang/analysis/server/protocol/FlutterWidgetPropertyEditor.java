@@ -8,19 +8,18 @@
  */
 package org.dartlang.analysis.server.protocol;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+
 import com.google.common.collect.Lists;
-import com.google.dart.server.utilities.general.JsonUtilities;
 import com.google.dart.server.utilities.general.ObjectUtilities;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import java.util.ArrayList;
 import java.util.Iterator;
+
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -50,7 +49,7 @@ public class FlutterWidgetPropertyEditor {
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof FlutterWidgetPropertyEditor) {
-      FlutterWidgetPropertyEditor other = (FlutterWidgetPropertyEditor) obj;
+      FlutterWidgetPropertyEditor other = (FlutterWidgetPropertyEditor)obj;
       return
         ObjectUtilities.equals(other.kind, kind) &&
         ObjectUtilities.equals(other.enumItems, enumItems);
@@ -60,7 +59,10 @@ public class FlutterWidgetPropertyEditor {
 
   public static FlutterWidgetPropertyEditor fromJson(JsonObject jsonObject) {
     String kind = jsonObject.get("kind").getAsString();
-    List<FlutterWidgetPropertyValueEnumItem> enumItems = jsonObject.get("enumItems") == null ? null : FlutterWidgetPropertyValueEnumItem.fromJsonArray(jsonObject.get("enumItems").getAsJsonArray());
+    List<FlutterWidgetPropertyValueEnumItem> enumItems = jsonObject.get("enumItems") == null
+                                                         ? null
+                                                         : FlutterWidgetPropertyValueEnumItem
+                                                           .fromJsonArray(jsonObject.get("enumItems").getAsJsonArray());
     return new FlutterWidgetPropertyEditor(kind, enumItems);
   }
 
@@ -116,5 +118,4 @@ public class FlutterWidgetPropertyEditor {
     builder.append("]");
     return builder.toString();
   }
-
 }

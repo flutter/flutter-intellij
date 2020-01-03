@@ -42,7 +42,8 @@ public class AsyncUtils {
     if (app == null || app.isUnitTestMode()) {
       // This case existing to support unittesting.
       SwingUtilities.invokeLater(runnable);
-    } else {
+    }
+    else {
       app.invokeLater(runnable);
     }
   }

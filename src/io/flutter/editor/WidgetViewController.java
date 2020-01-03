@@ -15,11 +15,10 @@ import io.flutter.run.daemon.FlutterApp;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * Base class for a controller managing UI describing a widget.
- *
+ * <p>
  * See PreviewViewController which extends this class to render previews of
  * widgets. This class is also intented to be extended to support rendering
  * visualizations of widget properties inline in a text editor.
@@ -40,6 +39,7 @@ public abstract class WidgetViewController implements EditorMouseEventService.Li
   public InspectorObjectGroupManager getGroupManagner() {
     return groupClient.getGroupManager();
   }
+
   public FlutterApp getApp() {
     return groupClient.getApp();
   }
@@ -79,13 +79,15 @@ public abstract class WidgetViewController implements EditorMouseEventService.Li
 
   /**
    * Subclasses can override this method to be notified when whether the widget is visible in IntelliJ.
-   *
+   * <p>
    * This is whether the UI for this component is visible not whether the widget is visible on the device.
    */
   public void onVisibleChanged() {
   }
 
-  public boolean updateVisiblityLocked(Rectangle newRectangle) { return false; }
+  public boolean updateVisiblityLocked(Rectangle newRectangle) {
+    return false;
+  }
 
   public void onInspectorAvailabilityChanged() {
     setElements(null);
@@ -107,8 +109,9 @@ public abstract class WidgetViewController implements EditorMouseEventService.Li
   public void onSelectionChanged(DiagnosticsNode selection) {
 
     final InspectorObjectGroupManager manager = getGroups();
-    if (manager != null ){
-      manager.cancelNext();;
+    if (manager != null) {
+      manager.cancelNext();
+      ;
     }
   }
 

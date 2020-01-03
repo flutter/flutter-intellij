@@ -5,6 +5,6 @@
  */
 package io.flutter.perf;
 
-public interface  FileLocationMapperFactory {
+public interface FileLocationMapperFactory {
   FileLocationMapper create(String path);
 }

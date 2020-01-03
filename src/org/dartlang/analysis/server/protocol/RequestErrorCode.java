@@ -159,7 +159,7 @@ public class RequestErrorCode {
 
   /**
    * The analysis server has already been started (and hence won't accept new connections).
-   *
+   * <p>
    * This error is included for future expansion; at present the analysis server can only speak to
    * one client at a time so this error will never occur.
    */
@@ -195,9 +195,8 @@ public class RequestErrorCode {
 
   /**
    * The analysis server was requested to perform an action which is not supported.
-   *
+   * <p>
    * This is a legacy error; it will be removed before the API reaches version 1.0.
    */
   public static final String UNSUPPORTED_FEATURE = "UNSUPPORTED_FEATURE";
-
 }

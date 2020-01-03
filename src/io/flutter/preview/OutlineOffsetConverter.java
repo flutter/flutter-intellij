@@ -13,6 +13,7 @@ import org.dartlang.analysis.server.protocol.FlutterOutline;
 public class OutlineOffsetConverter {
   private final VirtualFile currentFile;
   private final Project project;
+
   public OutlineOffsetConverter(Project project, VirtualFile currentFile) {
     this.project = project;
     this.currentFile = currentFile;

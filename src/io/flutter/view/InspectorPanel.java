@@ -674,7 +674,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     return valueToTreeNode.get(subtreeRoot.getValueRef());
   }
 
-  private void refreshSelection(DiagnosticsNode newSelection, DiagnosticsNode detailsSelection, boolean setSubtreeRoot, boolean textEditorUpdated) {
+  private void refreshSelection(DiagnosticsNode newSelection,
+                                DiagnosticsNode detailsSelection,
+                                boolean setSubtreeRoot,
+                                boolean textEditorUpdated) {
     if (newSelection == null) {
       newSelection = getSelectedDiagnostic();
     }

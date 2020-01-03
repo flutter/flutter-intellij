@@ -74,7 +74,7 @@ public class FlutterDevice {
 
   /**
    * Whether the device is persistent on the machine.
-   *
+   * <p>
    * Web and desktop devices are generally non-ephemeral; mobile devices are generally ephemeral
    */
   public boolean ephemeral() {

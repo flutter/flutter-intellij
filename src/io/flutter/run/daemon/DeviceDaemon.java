@@ -211,7 +211,7 @@ class DeviceDaemon {
         final Listener listener = new Listener(daemonId, api, devices, deviceChanged, processStopped);
         api.listen(process, listener);
 
-        final Future<Void> ready = listener.connected.thenCompose((Void ignored) -> api.enableDeviceEvents());;
+        final Future<Void> ready = listener.connected.thenCompose((Void ignored) -> api.enableDeviceEvents());
 
         // Block until we get a response, or are cancelled.
         int attempts = 0;

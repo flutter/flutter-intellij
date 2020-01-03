@@ -155,7 +155,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     final FlutterViewAction selectModeAction = state.registerAction(new ToggleSelectWidgetMode(app));
     final FlutterViewAction legacySelectModeAction = state.registerAction(new ToggleOnDeviceWidgetInspector(app));
-    final FlutterViewAction[] currentExtension = { null };
+    final FlutterViewAction[] currentExtension = {null};
 
     assert (app.getVMServiceManager() != null);
     app.getVMServiceManager().hasServiceExtension(ServiceExtensions.enableOnDeviceInspector.getExtension(), (hasExtension) -> {
@@ -634,6 +634,7 @@ class ToggleOnDeviceWidgetInspector extends FlutterViewToggleableAction {
     }
   }
 }
+
 class ForceRefreshAction extends FlutterViewAction {
   final @NotNull InspectorService inspectorService;
 

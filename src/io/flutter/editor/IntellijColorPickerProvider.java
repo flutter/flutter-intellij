@@ -20,7 +20,13 @@ public class IntellijColorPickerProvider implements ColorPickerProvider {
   private LightCalloutPopup popup;
 
   @Override
-  public void show(Color initialColor, JComponent component, Point offset, Balloon.Position position, ColorListener colorListener, Runnable onCancel, Runnable onOk) {
+  public void show(Color initialColor,
+                   JComponent component,
+                   Point offset,
+                   Balloon.Position position,
+                   ColorListener colorListener,
+                   Runnable onCancel,
+                   Runnable onOk) {
     if (popup != null) {
       popup.close();
     }

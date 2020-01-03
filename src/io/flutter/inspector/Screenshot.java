@@ -5,8 +5,6 @@
  */
 package io.flutter.inspector;
 
-import com.google.gson.JsonObject;
-
 import java.awt.image.BufferedImage;
 
 public class Screenshot {

@@ -143,7 +143,8 @@ public class Analytics {
     try {
       final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
       args.put("sr", screenSize.width + "x" + screenSize.height);
-    } catch (HeadlessException he) {
+    }
+    catch (HeadlessException he) {
       // ignore this - allow the tests to run when the IDE is headless
     }
 

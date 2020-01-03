@@ -8,20 +8,17 @@
  */
 package org.dartlang.analysis.server.protocol;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+
 import com.google.common.collect.Lists;
-import com.google.dart.server.utilities.general.JsonUtilities;
 import com.google.dart.server.utilities.general.ObjectUtilities;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import java.util.ArrayList;
 import java.util.Iterator;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * A value of a property of a Flutter widget.
@@ -53,7 +50,12 @@ public class FlutterWidgetPropertyValue {
   /**
    * Constructor for {@link FlutterWidgetPropertyValue}.
    */
-  public FlutterWidgetPropertyValue(Boolean boolValue, Double doubleValue, Integer intValue, String stringValue, FlutterWidgetPropertyValueEnumItem enumValue, String expression) {
+  public FlutterWidgetPropertyValue(Boolean boolValue,
+                                    Double doubleValue,
+                                    Integer intValue,
+                                    String stringValue,
+                                    FlutterWidgetPropertyValueEnumItem enumValue,
+                                    String expression) {
     this.boolValue = boolValue;
     this.doubleValue = doubleValue;
     this.intValue = intValue;
@@ -65,7 +67,7 @@ public class FlutterWidgetPropertyValue {
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof FlutterWidgetPropertyValue) {
-      FlutterWidgetPropertyValue other = (FlutterWidgetPropertyValue) obj;
+      FlutterWidgetPropertyValue other = (FlutterWidgetPropertyValue)obj;
       return
         ObjectUtilities.equals(other.boolValue, boolValue) &&
         ObjectUtilities.equals(other.doubleValue, doubleValue) &&
@@ -82,7 +84,10 @@ public class FlutterWidgetPropertyValue {
     Double doubleValue = jsonObject.get("doubleValue") == null ? null : jsonObject.get("doubleValue").getAsDouble();
     Integer intValue = jsonObject.get("intValue") == null ? null : jsonObject.get("intValue").getAsInt();
     String stringValue = jsonObject.get("stringValue") == null ? null : jsonObject.get("stringValue").getAsString();
-    FlutterWidgetPropertyValueEnumItem enumValue = jsonObject.get("enumValue") == null ? null : FlutterWidgetPropertyValueEnumItem.fromJson(jsonObject.get("enumValue").getAsJsonObject());
+    FlutterWidgetPropertyValueEnumItem enumValue = jsonObject.get("enumValue") == null
+                                                   ? null
+                                                   : FlutterWidgetPropertyValueEnumItem
+                                                     .fromJson(jsonObject.get("enumValue").getAsJsonObject());
     String expression = jsonObject.get("expression") == null ? null : jsonObject.get("expression").getAsString();
     return new FlutterWidgetPropertyValue(boolValue, doubleValue, intValue, stringValue, enumValue, expression);
   }
@@ -180,5 +185,4 @@ public class FlutterWidgetPropertyValue {
     builder.append("]");
     return builder.toString();
   }
-
 }

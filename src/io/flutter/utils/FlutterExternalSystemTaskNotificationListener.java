@@ -10,7 +10,8 @@ import org.jetbrains.plugins.gradle.util.GradleConstants;
 
 public class FlutterExternalSystemTaskNotificationListener extends ExternalSystemTaskNotificationListenerAdapter {
 
-  public FlutterExternalSystemTaskNotificationListener() { }
+  public FlutterExternalSystemTaskNotificationListener() {
+  }
 
   @Override
   public void onSuccess(@NotNull ExternalSystemTaskId id) {

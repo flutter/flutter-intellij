@@ -160,8 +160,8 @@ public class MainFile {
     private final String error;
 
     private Result(@Nullable MainFile file, @Nullable String error) {
-      assert(file == null || error == null);
-      assert(file != null || error != null);
+      assert (file == null || error == null);
+      assert (file != null || error != null);
       this.file = file;
       this.error = error;
     }

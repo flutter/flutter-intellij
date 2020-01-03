@@ -11,14 +11,17 @@ public interface ObservatoryConnector {
   /**
    * Returns the WebSocket URL used by the observatory, or null if the app didn't connect yet.
    */
-  @Nullable String getWebSocketUrl();
+  @Nullable
+  String getWebSocketUrl();
 
   /**
    * Returns the http URL to open a browser session, if available.
    */
-  @Nullable String getBrowserUrl();
+  @Nullable
+  String getBrowserUrl();
 
-  @Nullable String getRemoteBaseUrl();
+  @Nullable
+  String getRemoteBaseUrl();
 
   /**
    * Called when the debugger has paused.

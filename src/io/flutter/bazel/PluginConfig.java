@@ -192,7 +192,13 @@ public class PluginConfig {
     /**
      * Convenience constructor that takes all parameters.
      */
-    Fields(String daemonScript, String doctorScript, String launchScript, String testScript, String sdkHome, String versionFile, String devtoolsScript) {
+    Fields(String daemonScript,
+           String doctorScript,
+           String launchScript,
+           String testScript,
+           String sdkHome,
+           String versionFile,
+           String devtoolsScript) {
       this.daemonScript = daemonScript;
       this.doctorScript = doctorScript;
       this.launchScript = launchScript;

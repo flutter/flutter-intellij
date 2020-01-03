@@ -10,7 +10,6 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
-import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterAppManager;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AsyncUtils;

@@ -12,7 +12,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Computable;
 import com.intellij.util.Alarm;
-import io.flutter.view.InspectorPanel;
 
 import javax.swing.*;
 import java.util.concurrent.CompletableFuture;
@@ -36,7 +35,7 @@ public class AsyncRateLimiter {
   private volatile int numRequestsPending;
   /**
    * Number of requests currently executing.
-   *
+   * <p>
    * This should only be 0 or 1 but we track it as an integer to make it easier
    * to catch logic bugs.
    */
@@ -104,10 +103,11 @@ public class AsyncRateLimiter {
       numRequestsExecuting++;
     }
     try {
-       final CompletableFuture<?> requestComplete = callback.compute();
-       requestComplete.whenCompleteAsync(
-         (v, e) -> onRequestComplete());
-     } catch (Exception e) {
+      final CompletableFuture<?> requestComplete = callback.compute();
+      requestComplete.whenCompleteAsync(
+        (v, e) -> onRequestComplete());
+    }
+    catch (Exception e) {
       LOG.warn(e);
       onRequestComplete();
     }

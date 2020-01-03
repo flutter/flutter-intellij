@@ -13,7 +13,7 @@ import java.awt.*;
 public class FlutterEditorColors {
   // These colors are by design identical for the light and dark theme.
   @SuppressWarnings("UseJBColor") public final static Color TOOLTIP_BACKGROUND_COLOR = new Color(60, 60, 60, 230);
-  @SuppressWarnings("UseJBColor") public final static Color HIGHLIGHTED_RENDER_OBJECT_FILL_COLOR = new Color( 128, 128, 255, 128);
+  @SuppressWarnings("UseJBColor") public final static Color HIGHLIGHTED_RENDER_OBJECT_FILL_COLOR = new Color(128, 128, 255, 128);
   @SuppressWarnings("UseJBColor") public final static Color HIGHLIGHTED_RENDER_OBJECT_BORDER_COLOR = new Color(64, 64, 128, 128);
 
   public final static JBColor VERY_LIGHT_GRAY = new JBColor(Gray._224, Gray._80);

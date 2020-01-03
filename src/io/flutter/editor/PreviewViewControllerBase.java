@@ -8,7 +8,6 @@ package io.flutter.editor;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.ui.popup.Balloon;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
@@ -263,7 +262,8 @@ public abstract class PreviewViewControllerBase extends WidgetViewController {
 
   protected abstract void showPopup(Point location, DiagnosticsNode node);
 
-  abstract @Nullable TextRange getActiveRange();
+  abstract @Nullable
+  TextRange getActiveRange();
 
   void setMouseInScreenshot(boolean v) {
     if (_mouseInScreenshot == v) return;

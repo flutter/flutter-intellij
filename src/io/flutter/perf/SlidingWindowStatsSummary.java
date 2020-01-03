@@ -22,7 +22,8 @@ public class SlidingWindowStatsSummary {
     this.location = location;
   }
 
-  public @NotNull Location getLocation() {
+  public @NotNull
+  Location getLocation() {
     return location;
   }
 

@@ -12,6 +12,7 @@ import com.intellij.execution.process.ProcessOutput;
 import com.intellij.execution.util.ExecUtil;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.concurrency.AppExecutorUtil;
+
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
 

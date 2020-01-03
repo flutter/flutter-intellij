@@ -18,9 +18,11 @@ import org.jetbrains.annotations.Nullable;
 public class BazelTestConfigUtils extends CommonTestConfigUtils {
 
   @VisibleForTesting
-  BazelTestConfigUtils() {}
+  BazelTestConfigUtils() {
+  }
 
   private static BazelTestConfigUtils instance;
+
   public static BazelTestConfigUtils getInstance() {
     if (instance == null) {
       instance = new BazelTestConfigUtils();

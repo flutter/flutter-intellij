@@ -62,8 +62,9 @@ public class FileWatch {
   /**
    * Starts watching a single file or directory.
    */
-  public static @NotNull FileWatch subscribe(@NotNull VirtualFile file, @NotNull Runnable callback) {
-    final FileWatch watcher =  new FileWatch(ImmutableSet.of(new Location(file, null)), callback);
+  public static @NotNull
+  FileWatch subscribe(@NotNull VirtualFile file, @NotNull Runnable callback) {
+    final FileWatch watcher = new FileWatch(ImmutableSet.of(new Location(file, null)), callback);
     subscriptions.subscribe(watcher);
     return watcher;
   }
@@ -75,12 +76,13 @@ public class FileWatch {
    *
    * @param callback will be run asynchronously sometime after the file changed.
    */
-  public static @NotNull FileWatch subscribe(@NotNull VirtualFile base, @NotNull Iterable<String> paths, @NotNull Runnable callback) {
+  public static @NotNull
+  FileWatch subscribe(@NotNull VirtualFile base, @NotNull Iterable<String> paths, @NotNull Runnable callback) {
     final ImmutableSet.Builder<Location> builder = ImmutableSet.builder();
     for (String path : paths) {
       builder.add(new Location(base, path));
     }
-    final FileWatch watcher =  new FileWatch(builder.build(), callback);
+    final FileWatch watcher = new FileWatch(builder.build(), callback);
     subscriptions.subscribe(watcher);
     return watcher;
   }
@@ -127,7 +129,8 @@ public class FileWatch {
 
     try {
       callback.run();
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       FlutterUtils.warn(LOG, "Uncaught exception in FileWatch callback", e);
       unsubscribe(); // avoid further errors
     }
@@ -135,7 +138,7 @@ public class FileWatch {
 
   /**
    * The location of a file or directory being watched.
-   *
+   * <p>
    * Since it might not exist yet, this consists of a base VirtualFile and a path to where it might appear.
    */
   private static class Location {
@@ -162,7 +165,8 @@ public class FileWatch {
     String getName() {
       if (reversedNames.isEmpty()) {
         return base.getName();
-      } else {
+      }
+      else {
         return reversedNames.get(0);
       }
     }
@@ -239,7 +243,8 @@ public class FileWatch {
           bus = app.getMessageBus().connect();
           bus.subscribe(VirtualFileManager.VFS_CHANGES, this);
         }
-      } else {
+      }
+      else {
         if (bus != null) {
           bus.disconnect();
           bus = null;
@@ -248,7 +253,8 @@ public class FileWatch {
     }
 
     @Override
-    public void before(@NotNull List<? extends VFileEvent> events) {}
+    public void before(@NotNull List<? extends VFileEvent> events) {
+    }
 
     @Override
     public void after(@NotNull List<? extends VFileEvent> events) {

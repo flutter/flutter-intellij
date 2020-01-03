@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * View model for displaying perf stats for a TextEditor.
- *
+ * <p>
  * This model tracks the state defining how perf stats should be displayed in
  * the text editor along with the actual perf stats accessible via the
  * getStats method.

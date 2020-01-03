@@ -30,7 +30,7 @@ public class TransformedRect {
   public Matrix4 getTransform() {
     final JsonArray data = json.getAsJsonArray("transform");
     final double[] storage = new double[16];
-    for (int i =0 ; i < 16; i++) {
+    for (int i = 0; i < 16; i++) {
       storage[i] = data.get(i).getAsDouble();
     }
     return new Matrix4(storage);

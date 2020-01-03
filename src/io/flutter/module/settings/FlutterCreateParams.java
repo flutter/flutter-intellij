@@ -43,10 +43,10 @@ public class FlutterCreateParams {
     try {
       new Socket(InetAddress.getByName("pub.dartlang.org"), 80).close();
       return true;
-    } catch (IOException ex) {
+    }
+    catch (IOException ex) {
       // Ignore.
     }
     return false;
   }
-
 }

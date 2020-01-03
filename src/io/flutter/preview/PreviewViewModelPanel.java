@@ -5,7 +5,6 @@
  */
 package io.flutter.preview;
 
-import com.intellij.openapi.ui.popup.Balloon;
 import io.flutter.editor.PreviewViewController;
 import io.flutter.editor.PreviewViewControllerBase;
 

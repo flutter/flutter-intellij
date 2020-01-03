@@ -36,12 +36,14 @@ import io.flutter.run.SdkFields;
 import io.flutter.run.SdkRunConfig;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

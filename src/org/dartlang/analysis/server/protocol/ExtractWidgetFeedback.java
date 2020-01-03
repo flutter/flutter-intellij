@@ -8,20 +8,16 @@
  */
 package org.dartlang.analysis.server.protocol;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+
 import com.google.common.collect.Lists;
-import com.google.dart.server.utilities.general.JsonUtilities;
-import com.google.dart.server.utilities.general.ObjectUtilities;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import java.util.ArrayList;
 import java.util.Iterator;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * @coverage dart.server.generated.types
@@ -42,7 +38,7 @@ public class ExtractWidgetFeedback extends RefactoringFeedback {
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof ExtractWidgetFeedback) {
-      ExtractWidgetFeedback other = (ExtractWidgetFeedback) obj;
+      ExtractWidgetFeedback other = (ExtractWidgetFeedback)obj;
       return
         true;
     }
@@ -83,5 +79,4 @@ public class ExtractWidgetFeedback extends RefactoringFeedback {
     builder.append("]");
     return builder.toString();
   }
-
 }

@@ -6,12 +6,8 @@
 package io.flutter.editor;
 
 import com.intellij.openapi.editor.markup.RangeHighlighter;
-import io.flutter.inspector.DiagnosticsNode;
-import io.flutter.inspector.InspectorService;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 
-import java.awt.*;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
