@@ -27,7 +27,8 @@ public class PreviewViewController extends PreviewViewControllerBase {
   }
 
   public void setScreenshotBounds(Rectangle bounds) {
-    final boolean sizeChanged = screenshotBounds != null && (screenshotBounds.width != bounds.width || screenshotBounds.height != bounds.height);
+    final boolean sizeChanged =
+      screenshotBounds != null && (screenshotBounds.width != bounds.width || screenshotBounds.height != bounds.height);
     screenshotBoundsOverride = bounds;
     screenshotBounds = bounds;
     if (sizeChanged) {
@@ -55,7 +56,8 @@ public class PreviewViewController extends PreviewViewControllerBase {
   @Override
   protected void showPopup(Point location, DiagnosticsNode node) {
     popup = PropertyEditorPanel
-      .showPopup(data.context.inspectorGroupManagerService, data.context.project, getComponent(), node, node.getCreationLocation().getLocation(), data.context.flutterDartAnalysisService, location);
+      .showPopup(data.context.inspectorGroupManagerService, data.context.project, getComponent(), node,
+                 node.getCreationLocation().getLocation(), data.context.flutterDartAnalysisService, location);
   }
 
   @Override

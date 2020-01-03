@@ -16,8 +16,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import java.util.ArrayList;
 import java.util.Iterator;
+
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -88,7 +90,15 @@ public class FlutterWidgetProperty {
   /**
    * Constructor for {@link FlutterWidgetProperty}.
    */
-  public FlutterWidgetProperty(String documentation, String expression, int id, boolean isRequired, boolean isSafeToUpdate, String name, List<FlutterWidgetProperty> children, FlutterWidgetPropertyEditor editor, FlutterWidgetPropertyValue value) {
+  public FlutterWidgetProperty(String documentation,
+                               String expression,
+                               int id,
+                               boolean isRequired,
+                               boolean isSafeToUpdate,
+                               String name,
+                               List<FlutterWidgetProperty> children,
+                               FlutterWidgetPropertyEditor editor,
+                               FlutterWidgetPropertyValue value) {
     this.documentation = documentation;
     this.expression = expression;
     this.id = id;
@@ -103,7 +113,7 @@ public class FlutterWidgetProperty {
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof FlutterWidgetProperty) {
-      FlutterWidgetProperty other = (FlutterWidgetProperty) obj;
+      FlutterWidgetProperty other = (FlutterWidgetProperty)obj;
       return
         ObjectUtilities.equals(other.documentation, documentation) &&
         ObjectUtilities.equals(other.expression, expression) &&
@@ -125,9 +135,12 @@ public class FlutterWidgetProperty {
     boolean isRequired = jsonObject.get("isRequired").getAsBoolean();
     boolean isSafeToUpdate = jsonObject.get("isSafeToUpdate").getAsBoolean();
     String name = jsonObject.get("name").getAsString();
-    List<FlutterWidgetProperty> children = jsonObject.get("children") == null ? null : FlutterWidgetProperty.fromJsonArray(jsonObject.get("children").getAsJsonArray());
-    FlutterWidgetPropertyEditor editor = jsonObject.get("editor") == null ? null : FlutterWidgetPropertyEditor.fromJson(jsonObject.get("editor").getAsJsonObject());
-    FlutterWidgetPropertyValue value = jsonObject.get("value") == null ? null : FlutterWidgetPropertyValue.fromJson(jsonObject.get("value").getAsJsonObject());
+    List<FlutterWidgetProperty> children =
+      jsonObject.get("children") == null ? null : FlutterWidgetProperty.fromJsonArray(jsonObject.get("children").getAsJsonArray());
+    FlutterWidgetPropertyEditor editor =
+      jsonObject.get("editor") == null ? null : FlutterWidgetPropertyEditor.fromJson(jsonObject.get("editor").getAsJsonObject());
+    FlutterWidgetPropertyValue value =
+      jsonObject.get("value") == null ? null : FlutterWidgetPropertyValue.fromJson(jsonObject.get("value").getAsJsonObject());
     return new FlutterWidgetProperty(documentation, expression, id, isRequired, isSafeToUpdate, name, children, editor, value);
   }
 
@@ -282,5 +295,4 @@ public class FlutterWidgetProperty {
     builder.append("]");
     return builder.toString();
   }
-
 }

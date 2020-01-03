@@ -30,7 +30,7 @@ public class Location {
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof Location)) return false;
-    final Location other = (Location) obj;
+    final Location other = (Location)obj;
     return Objects.equal(line, other.line)
            && Objects.equal(column, other.column)
            && Objects.equal(path, other.path)
@@ -64,7 +64,7 @@ public class Location {
 
   /**
    * Text of the identifier at this location.
-   *
+   * <p>
    * Typically this is the name of a widget class.
    */
   public final String name;

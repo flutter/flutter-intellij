@@ -35,7 +35,7 @@ public class JsonUtils {
     if (!json.has(memberName)) return -1;
 
     final JsonElement value = json.get(memberName);
-    return value instanceof JsonNull ? -1: value.getAsInt();
+    return value instanceof JsonNull ? -1 : value.getAsInt();
   }
 
   @NotNull

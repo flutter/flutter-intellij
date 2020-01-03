@@ -16,8 +16,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import java.util.ArrayList;
 import java.util.Iterator;
+
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -103,7 +105,18 @@ public class FlutterOutline {
   /**
    * Constructor for {@link FlutterOutline}.
    */
-  public FlutterOutline(String kind, int offset, int length, int codeOffset, int codeLength, String label, Element dartElement, List<FlutterOutlineAttribute> attributes, String className, String parentAssociationLabel, String variableName, List<FlutterOutline> children) {
+  public FlutterOutline(String kind,
+                        int offset,
+                        int length,
+                        int codeOffset,
+                        int codeLength,
+                        String label,
+                        Element dartElement,
+                        List<FlutterOutlineAttribute> attributes,
+                        String className,
+                        String parentAssociationLabel,
+                        String variableName,
+                        List<FlutterOutline> children) {
     this.kind = kind;
     this.offset = offset;
     this.length = length;
@@ -121,7 +134,7 @@ public class FlutterOutline {
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof FlutterOutline) {
-      FlutterOutline other = (FlutterOutline) obj;
+      FlutterOutline other = (FlutterOutline)obj;
       return
         ObjectUtilities.equals(other.kind, kind) &&
         other.offset == offset &&
@@ -147,12 +160,16 @@ public class FlutterOutline {
     int codeLength = jsonObject.get("codeLength").getAsInt();
     String label = jsonObject.get("label") == null ? null : jsonObject.get("label").getAsString();
     Element dartElement = jsonObject.get("dartElement") == null ? null : Element.fromJson(jsonObject.get("dartElement").getAsJsonObject());
-    List<FlutterOutlineAttribute> attributes = jsonObject.get("attributes") == null ? null : FlutterOutlineAttribute.fromJsonArray(jsonObject.get("attributes").getAsJsonArray());
+    List<FlutterOutlineAttribute> attributes =
+      jsonObject.get("attributes") == null ? null : FlutterOutlineAttribute.fromJsonArray(jsonObject.get("attributes").getAsJsonArray());
     String className = jsonObject.get("className") == null ? null : jsonObject.get("className").getAsString();
-    String parentAssociationLabel = jsonObject.get("parentAssociationLabel") == null ? null : jsonObject.get("parentAssociationLabel").getAsString();
+    String parentAssociationLabel =
+      jsonObject.get("parentAssociationLabel") == null ? null : jsonObject.get("parentAssociationLabel").getAsString();
     String variableName = jsonObject.get("variableName") == null ? null : jsonObject.get("variableName").getAsString();
-    List<FlutterOutline> children = jsonObject.get("children") == null ? null : FlutterOutline.fromJsonArray(jsonObject.get("children").getAsJsonArray());
-    return new FlutterOutline(kind, offset, length, codeOffset, codeLength, label, dartElement, attributes, className, parentAssociationLabel, variableName, children);
+    List<FlutterOutline> children =
+      jsonObject.get("children") == null ? null : FlutterOutline.fromJsonArray(jsonObject.get("children").getAsJsonArray());
+    return new FlutterOutline(kind, offset, length, codeOffset, codeLength, label, dartElement, attributes, className,
+                              parentAssociationLabel, variableName, children);
   }
 
   public static List<FlutterOutline> fromJsonArray(JsonArray jsonArray) {
@@ -352,5 +369,4 @@ public class FlutterOutline {
     builder.append("]");
     return builder.toString();
   }
-
 }

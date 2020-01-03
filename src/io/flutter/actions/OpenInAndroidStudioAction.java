@@ -213,7 +213,7 @@ public class OpenInAndroidStudioAction extends AnAction {
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk != null) {
       String androidSdkLocation = flutterSdk.queryFlutterConfig("android-studio-dir", true);
-      if (androidSdkLocation!= null && !new File(androidSdkLocation).exists()) {
+      if (androidSdkLocation != null && !new File(androidSdkLocation).exists()) {
         androidSdkLocation = flutterSdk.queryFlutterConfig("android-studio-dir", false);
       }
       if (androidSdkLocation != null) {

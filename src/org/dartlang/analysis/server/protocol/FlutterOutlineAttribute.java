@@ -16,6 +16,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -67,7 +68,7 @@ public class FlutterOutlineAttribute {
 
   /**
    * The location of the value.
-   *
+   * <p>
    * This field is always available, but marked optional for backward compatibility between new
    * clients with older servers.
    */
@@ -76,7 +77,13 @@ public class FlutterOutlineAttribute {
   /**
    * Constructor for {@link FlutterOutlineAttribute}.
    */
-  public FlutterOutlineAttribute(String name, String label, Boolean literalValueBoolean, Integer literalValueInteger, String literalValueString, Location nameLocation, Location valueLocation) {
+  public FlutterOutlineAttribute(String name,
+                                 String label,
+                                 Boolean literalValueBoolean,
+                                 Integer literalValueInteger,
+                                 String literalValueString,
+                                 Location nameLocation,
+                                 Location valueLocation) {
     this.name = name;
     this.label = label;
     this.literalValueBoolean = literalValueBoolean;
@@ -89,7 +96,7 @@ public class FlutterOutlineAttribute {
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof FlutterOutlineAttribute) {
-      FlutterOutlineAttribute other = (FlutterOutlineAttribute) obj;
+      FlutterOutlineAttribute other = (FlutterOutlineAttribute)obj;
       return
         ObjectUtilities.equals(other.name, name) &&
         ObjectUtilities.equals(other.label, label) &&
@@ -105,12 +112,16 @@ public class FlutterOutlineAttribute {
   public static FlutterOutlineAttribute fromJson(JsonObject jsonObject) {
     String name = jsonObject.get("name").getAsString();
     String label = jsonObject.get("label").getAsString();
-    Boolean literalValueBoolean = jsonObject.get("literalValueBoolean") == null ? null : jsonObject.get("literalValueBoolean").getAsBoolean();
+    Boolean literalValueBoolean =
+      jsonObject.get("literalValueBoolean") == null ? null : jsonObject.get("literalValueBoolean").getAsBoolean();
     Integer literalValueInteger = jsonObject.get("literalValueInteger") == null ? null : jsonObject.get("literalValueInteger").getAsInt();
     String literalValueString = jsonObject.get("literalValueString") == null ? null : jsonObject.get("literalValueString").getAsString();
-    Location nameLocation = jsonObject.get("nameLocation") == null ? null : Location.fromJson(jsonObject.get("nameLocation").getAsJsonObject());
-    Location valueLocation = jsonObject.get("valueLocation") == null ? null : Location.fromJson(jsonObject.get("valueLocation").getAsJsonObject());
-    return new FlutterOutlineAttribute(name, label, literalValueBoolean, literalValueInteger, literalValueString, nameLocation, valueLocation);
+    Location nameLocation =
+      jsonObject.get("nameLocation") == null ? null : Location.fromJson(jsonObject.get("nameLocation").getAsJsonObject());
+    Location valueLocation =
+      jsonObject.get("valueLocation") == null ? null : Location.fromJson(jsonObject.get("valueLocation").getAsJsonObject());
+    return new FlutterOutlineAttribute(name, label, literalValueBoolean, literalValueInteger, literalValueString, nameLocation,
+                                       valueLocation);
   }
 
   public static List<FlutterOutlineAttribute> fromJsonArray(JsonArray jsonArray) {
@@ -173,7 +184,7 @@ public class FlutterOutlineAttribute {
 
   /**
    * The location of the value.
-   *
+   * <p>
    * This field is always available, but marked optional for backward compatibility between new
    * clients with older servers.
    */
@@ -237,5 +248,4 @@ public class FlutterOutlineAttribute {
     builder.append("]");
     return builder.toString();
   }
-
 }

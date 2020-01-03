@@ -39,7 +39,8 @@ public class FlutterDoctorAction extends FlutterSdkAction {
     final String doctorScript = workspace.getDoctorScript();
     if (doctorScript != null) {
       runWorkspaceFlutterDoctorScript(project, workspace.getRoot().getPath(), doctorScript);
-    } else {
+    }
+    else {
       FlutterUtils.warn(LOG, "No \"doctorScript\" script in the flutter.json file.");
     }
   }

@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Toolbar containing all the widget refactor actions.
- *
+ * <p>
  * This toolbar is extracted out from the OutlineView so that it can be reused
  * anywhere we want to expose Flutter widget refactors. For example, as a
  * toolbar of a property editing popop exposed directly in a code editor.

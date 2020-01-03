@@ -36,7 +36,8 @@ public class FlutterProjectStructureDetector extends ProjectStructureDetector {
       if (pubRoot != null) {
         if (pubRoot.declaresFlutter()) {
           result.add(new FlutterProjectRoot(parent));
-        } else {
+        }
+        else {
           // TODO(pq): consider pushing pure dart project detection down into the Dart Plugin.
           result.add(new DartProjectRoot(parent));
         }

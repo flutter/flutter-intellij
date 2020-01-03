@@ -131,12 +131,13 @@ public class TestForm extends SettingsEditor<TestConfig> {
       if (path.contains(sep) && path.endsWith(".dart")) {
         // Remove the last part of the path to get a directory.
         testDir.setText(path.substring(0, path.lastIndexOf(sep) + 1));
-      } else if (testDir.getText().isEmpty()) {
+      }
+      else if (testDir.getText().isEmpty()) {
         // Keep the same path; better than starting blank.
         testDir.setText(path);
       }
-
-    } else if (next != Scope.DIRECTORY && displayedScope == Scope.DIRECTORY) {
+    }
+    else if (next != Scope.DIRECTORY && displayedScope == Scope.DIRECTORY) {
       if (testFile.getText().isEmpty()) {
         testFile.setText(testDir.getText());
       }

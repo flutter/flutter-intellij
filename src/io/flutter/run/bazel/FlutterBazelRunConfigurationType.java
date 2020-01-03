@@ -20,8 +20,7 @@ import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
-  @VisibleForTesting
-  final Factory factory = new Factory(this);
+  @VisibleForTesting final Factory factory = new Factory(this);
 
   public FlutterBazelRunConfigurationType() {
     super("FlutterBazelRunConfigurationType", FlutterBundle.message("runner.flutter.bazel.configuration.name"),

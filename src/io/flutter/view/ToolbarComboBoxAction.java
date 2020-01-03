@@ -112,7 +112,7 @@ public abstract class ToolbarComboBoxAction extends AnAction implements CustomCo
   protected abstract DefaultActionGroup createPopupActionGroup(JComponent button);
 
   @NotNull
-  protected DefaultActionGroup createPopupActionGroup(JComponent button, @NotNull  DataContext dataContext) {
+  protected DefaultActionGroup createPopupActionGroup(JComponent button, @NotNull DataContext dataContext) {
     return createPopupActionGroup(button);
   }
 
@@ -256,7 +256,8 @@ public abstract class ToolbarComboBoxAction extends AnAction implements CustomCo
       if (Registry.is("ide.helptooltip.enabled") && StringUtil.isNotEmpty(tooltip)) {
         HelpTooltip.dispose(this);
         new HelpTooltip().setDescription(tooltip).setLocation(HelpTooltip.Alignment.BOTTOM).installOn(this);
-      } else {
+      }
+      else {
         setToolTipText(!tooltip.isEmpty() ? tooltip : null);
       }
     }
@@ -351,7 +352,8 @@ public abstract class ToolbarComboBoxAction extends AnAction implements CustomCo
       return true;
     }
 
-    @Override public void updateUI() {
+    @Override
+    public void updateUI() {
       super.updateUI();
       setMargin(JBUI.insets(0, 0, 0, 2));
       updateButtonSize();
@@ -365,5 +367,7 @@ public abstract class ToolbarComboBoxAction extends AnAction implements CustomCo
     }
   }
 
-  protected Condition<AnAction> getPreselectCondition() { return null; }
+  protected Condition<AnAction> getPreselectCondition() {
+    return null;
+  }
 }

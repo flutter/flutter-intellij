@@ -23,7 +23,7 @@ class TextRangeTracker {
 
   void track(Document document) {
     if (marker != null) {
-      assert(document == marker.getDocument());
+      assert (document == marker.getDocument());
       return;
     }
     // Create a range marker that goes from the start of the indent for the line
@@ -36,7 +36,8 @@ class TextRangeTracker {
     marker = document.createRangeMarker(startOffset, endOffset);
   }
 
-  @Nullable TextRange getRange() {
+  @Nullable
+  TextRange getRange() {
     if (marker == null) {
       return rawRange;
     }
@@ -48,7 +49,8 @@ class TextRangeTracker {
 
   void dispose() {
     if (marker != null) {
-      marker.dispose();;
+      marker.dispose();
+      ;
     }
     marker = null;
   }
@@ -91,11 +93,11 @@ class TextRangeTracker {
       return false;
     }
     return // Verify that the word starting at the end of the marker matches
-           // its expected value. This is sometimes not the case if the logic
-           // to update marker locations has hit a bad edge case as sometimes
-           // happens when there is a large document edit due to running a
-           // code formatter.
-           endingWord.equals(TextRangeTracker.getCurrentWord(marker.getDocument(), marker.getEndOffset() - 1));
+      // its expected value. This is sometimes not the case if the logic
+      // to update marker locations has hit a bad edge case as sometimes
+      // happens when there is a large document edit due to running a
+      // code formatter.
+      endingWord.equals(TextRangeTracker.getCurrentWord(marker.getDocument(), marker.getEndOffset() - 1));
   }
 }
 
@@ -158,7 +160,8 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
       guideTracker.dispose();
     }
     if (fullTracker != null) {
-      fullTracker.dispose();;
+      fullTracker.dispose();
+      ;
     }
   }
 

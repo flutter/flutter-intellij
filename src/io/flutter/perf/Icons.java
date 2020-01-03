@@ -27,7 +27,6 @@ public class Icons {
       return YELLOW_PROGRESS;
     }
     return NORMAL_PROGRESS;
-
   }
 
   private static class EmptyIcon implements Icon {

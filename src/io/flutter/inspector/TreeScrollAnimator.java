@@ -28,7 +28,7 @@ import static java.lang.Math.max;
  * <p>
  * If autoHorizontalScroll is true, the tree automatically scrolls horizontally
  * to keep as many rows as possible in view any time the tree scrolls vertically.
- *
+ * <p>
  * All scrolling operations are animated to improve usability.
  */
 public class TreeScrollAnimator implements Disposable {

@@ -46,5 +46,4 @@ public class FlutterOutlineKind {
    * Widget to.
    */
   public static final String PLACEHOLDER = "PLACEHOLDER";
-
 }

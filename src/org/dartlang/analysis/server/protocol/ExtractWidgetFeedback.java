@@ -15,6 +15,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -37,7 +38,7 @@ public class ExtractWidgetFeedback extends RefactoringFeedback {
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof ExtractWidgetFeedback) {
-      ExtractWidgetFeedback other = (ExtractWidgetFeedback) obj;
+      ExtractWidgetFeedback other = (ExtractWidgetFeedback)obj;
       return
         true;
     }
@@ -78,5 +79,4 @@ public class ExtractWidgetFeedback extends RefactoringFeedback {
     builder.append("]");
     return builder.toString();
   }
-
 }

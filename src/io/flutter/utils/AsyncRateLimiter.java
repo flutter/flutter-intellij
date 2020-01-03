@@ -35,7 +35,7 @@ public class AsyncRateLimiter {
   private volatile int numRequestsPending;
   /**
    * Number of requests currently executing.
-   *
+   * <p>
    * This should only be 0 or 1 but we track it as an integer to make it easier
    * to catch logic bugs.
    */
@@ -103,10 +103,11 @@ public class AsyncRateLimiter {
       numRequestsExecuting++;
     }
     try {
-       final CompletableFuture<?> requestComplete = callback.compute();
-       requestComplete.whenCompleteAsync(
-         (v, e) -> onRequestComplete());
-     } catch (Exception e) {
+      final CompletableFuture<?> requestComplete = callback.compute();
+      requestComplete.whenCompleteAsync(
+        (v, e) -> onRequestComplete());
+    }
+    catch (Exception e) {
       LOG.warn(e);
       onRequestComplete();
     }

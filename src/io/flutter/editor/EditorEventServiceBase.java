@@ -59,7 +59,7 @@ public class EditorEventServiceBase<L> implements Disposable {
   public void addListener(@NotNull EditorEx editor, @NotNull L listener, Disposable parent) {
     synchronized (listeners) {
       listeners.put(editor, listener);
-      Disposer.register(parent,() -> removeListener(editor, listener));
+      Disposer.register(parent, () -> removeListener(editor, listener));
     }
   }
 

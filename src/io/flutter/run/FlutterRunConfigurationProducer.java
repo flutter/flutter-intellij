@@ -81,7 +81,9 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Sd
    * Returns the file containing a Flutter app's main() function, or null if not a match.
    */
   @Nullable
-  public static VirtualFile getFlutterEntryFile(final @NotNull ConfigurationContext context, boolean requireFlutterImport, boolean omitTests) {
+  public static VirtualFile getFlutterEntryFile(final @NotNull ConfigurationContext context,
+                                                boolean requireFlutterImport,
+                                                boolean omitTests) {
     final DartFile dart = getDartFile(context);
     return getFlutterEntryFile(dart, requireFlutterImport, omitTests);
   }
@@ -134,14 +136,16 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Sd
   /**
    * Returns the Dart file at the current location, or null if not a match.
    */
-  public static @Nullable DartFile getDartFile(final @NotNull ConfigurationContext context) {
+  public static @Nullable
+  DartFile getDartFile(final @NotNull ConfigurationContext context) {
     return FlutterUtils.getDartFile(context.getPsiLocation());
   }
 
   /**
    * Returns the import URL's in a Dart file.
    */
-  private static @NotNull Stream<String> findImportUrls(@NotNull DartFile file) {
+  private static @NotNull
+  Stream<String> findImportUrls(@NotNull DartFile file) {
     final DartImportStatement[] imports = PsiTreeUtil.getChildrenOfType(file, DartImportStatement.class);
     if (imports == null) return Stream.empty();
 

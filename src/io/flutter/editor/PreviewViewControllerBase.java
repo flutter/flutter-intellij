@@ -262,7 +262,8 @@ public abstract class PreviewViewControllerBase extends WidgetViewController {
 
   protected abstract void showPopup(Point location, DiagnosticsNode node);
 
-  abstract @Nullable TextRange getActiveRange();
+  abstract @Nullable
+  TextRange getActiveRange();
 
   void setMouseInScreenshot(boolean v) {
     if (_mouseInScreenshot == v) return;

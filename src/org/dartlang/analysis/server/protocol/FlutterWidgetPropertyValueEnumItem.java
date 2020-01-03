@@ -16,6 +16,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -66,7 +67,7 @@ public class FlutterWidgetPropertyValueEnumItem {
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof FlutterWidgetPropertyValueEnumItem) {
-      FlutterWidgetPropertyValueEnumItem other = (FlutterWidgetPropertyValueEnumItem) obj;
+      FlutterWidgetPropertyValueEnumItem other = (FlutterWidgetPropertyValueEnumItem)obj;
       return
         ObjectUtilities.equals(other.libraryUri, libraryUri) &&
         ObjectUtilities.equals(other.className, className) &&
@@ -162,5 +163,4 @@ public class FlutterWidgetPropertyValueEnumItem {
     builder.append("]");
     return builder.toString();
   }
-
 }

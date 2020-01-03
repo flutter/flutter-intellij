@@ -39,7 +39,8 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
 
   @Nullable private FlutterSettings settings;
 
-  public ProjectOpenActivity() {}
+  public ProjectOpenActivity() {
+  }
 
   public ProjectOpenActivity(@NotNull FlutterSettings settings) {
     this.settings = settings;

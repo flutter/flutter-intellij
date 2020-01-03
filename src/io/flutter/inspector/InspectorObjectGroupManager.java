@@ -33,7 +33,9 @@ public class InspectorObjectGroupManager {
 
   private CompletableFuture<Void> pendingNextFuture;
 
-  public InspectorService getInspectorService() { return inspectorService; }
+  public InspectorService getInspectorService() {
+    return inspectorService;
+  }
 
   public InspectorObjectGroupManager(InspectorService inspectorService, String debugName) {
     this.inspectorService = inspectorService;

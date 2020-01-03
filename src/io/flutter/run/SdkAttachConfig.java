@@ -81,7 +81,7 @@ public class SdkAttachConfig extends SdkRunConfig {
       final GeneralCommandLine command = getCommand(env, device);
 
       final FlutterApp app = FlutterApp.start(env, project, module, mode, device, command,
-                                        StringUtil.capitalize(mode.mode()) + "App",
+                                              StringUtil.capitalize(mode.mode()) + "App",
                                               "StopApp");
 
       // Stop the app if the Flutter SDK changes.

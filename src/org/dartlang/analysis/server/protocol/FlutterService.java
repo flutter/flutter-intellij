@@ -17,5 +17,4 @@ package org.dartlang.analysis.server.protocol;
 public class FlutterService {
 
   public static final String OUTLINE = "OUTLINE";
-
 }
