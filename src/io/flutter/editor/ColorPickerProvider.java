@@ -7,6 +7,7 @@ package io.flutter.editor;
 
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.ui.popup.Balloon;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,11 +15,17 @@ import java.awt.*;
 public interface ColorPickerProvider {
   ExtensionPointName<ColorPickerProvider> EP_NAME = ExtensionPointName.create("io.flutter.colorPickerProvider");
 
-  public interface ColorListener {
-    void colorChanged(Color var1, Object var2);
+  interface ColorListener {
+    void colorChanged(@Nullable Color var1, Object var2);
   }
 
-  void show(Color initialColor, JComponent component, Point offset, Balloon.Position position, ColorListener colorListener, Runnable onCancel, Runnable onOk);
+  void show(Color initialColor,
+            JComponent component,
+            Point offset,
+            Balloon.Position position,
+            ColorListener colorListener,
+            Runnable onCancel,
+            Runnable onOk);
 
   void dispose();
 }
