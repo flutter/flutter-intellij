@@ -62,7 +62,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -109,21 +108,19 @@ public class FlutterReloadManager {
       private @Nullable Editor eventEditor;
 
       public void beforeActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
-        if (action instanceof SaveAllAction) {
-          // Save the current project value here. If we access later (in afterActionPerformed), we can get
-          // exceptions if another event occurs before afterActionPerformed is called.
-          try {
-            eventProject = event.getProject();
-            eventEditor = CommonDataKeys.EDITOR.getData(event.getDataContext());
-          }
-          catch (Throwable t) {
-            // A catch-all, so any exceptions don't bubble through to the users.
-            LOG.warn("Exception from FlutterReloadManager", t);
-          }
+        if (!(action instanceof SaveAllAction)) {
+          return;
         }
-        else {
-          eventProject = null;
-          eventEditor = null;
+
+        // Save the current project value here. If we access later (in afterActionPerformed), we can get
+        // exceptions if another event occurs before afterActionPerformed is called.
+        try {
+          eventProject = event.getProject();
+          eventEditor = CommonDataKeys.EDITOR.getData(event.getDataContext());
+        }
+        catch (Throwable t) {
+          // A catch-all, so any exceptions don't bubble through to the users.
+          LOG.warn("Exception from FlutterReloadManager", t);
         }
       }
 
@@ -148,14 +145,8 @@ public class FlutterReloadManager {
     }, project);
   }
 
-  private final AtomicBoolean handlingSave = new AtomicBoolean(false);
-
   private void handleSaveAllNotification(@Nullable Editor editor) {
     if (!mySettings.isReloadOnSave() || editor == null) {
-      return;
-    }
-
-    if (handlingSave.get()) {
       return;
     }
 
@@ -165,11 +156,11 @@ public class FlutterReloadManager {
       return;
     }
 
-    if (!app.isStarted() || app.isReloading()) {
+    if (!app.getLaunchMode().supportsReload() || !app.appSupportsHotReload()) {
       return;
     }
 
-    if (!app.getLaunchMode().supportsReload() || !app.appSupportsHotReload()) {
+    if (!app.isStarted() || app.isReloading()) {
       return;
     }
 
@@ -178,28 +169,31 @@ public class FlutterReloadManager {
     // edit and immediately hits save.
     final int reloadDelayMs = 125;
 
-    handlingSave.set(true);
+    // Transition the app to an about-to-reload state.
+    final FlutterApp.State previousAppState = app.transitionStartingHotReload();
 
     JobScheduler.getScheduler().schedule(() -> {
       clearLastNotification();
 
-      if (app.getState() == FlutterApp.State.TERMINATING || app.getState() == FlutterApp.State.TERMINATED) {
-        handlingSave.set(false);
-
+      if (!app.isConnected()) {
         return;
       }
 
-      // If the analysis server detects any errors in the project, it will not perform a hot reload.
-      // This can cause hot reload to stop working needlessly when, eg, there is an analysis error in a test file.
-      // The reloadWithError option in settings is a workaround.
-      // See https://github.com/flutter/flutter/issues/27618 for the high-level goal.
-      if (hasErrors(app.getProject(), app.getModule(), editor.getDocument()) && !mySettings.isReloadWithError()) {
-        handlingSave.set(false);
+      // If the analysis server detects any errors in the project, it will not perform a hot reload. This can
+      // cause hot reload to stop working needlessly when, eg, there is an analysis error in a test file. The
+      // reloadWithError option in settings is a workaround; see
+      // https://github.com/flutter/flutter/issues/27618 for the high-level goal.
+      // TODO(devoncarew): Consider removing this setting and always allowing reload (hot reload is fast,
+      //                   and the compile errors from the front end are reasonable).
+      if (!mySettings.allowReloadWithErrors()) {
+        if (hasErrors(app.getProject(), app.getModule(), editor.getDocument())) {
+          app.cancelHotReloadState(previousAppState);
+          showAnalysisNotification("Reload not performed", "Analysis issues found", true);
 
-        showAnalysisNotification("Reload not performed", "Analysis issues found", true);
-
-        return;
+          return;
+        }
       }
+
       final Notification notification = showRunNotification(app, null, "Reloading…", false);
       final long startTime = System.currentTimeMillis();
 
@@ -221,7 +215,7 @@ public class FlutterReloadManager {
             }
           }), delay, TimeUnit.MILLISECONDS);
         }
-      }).whenComplete((aVoid, throwable) -> handlingSave.set(false));
+      });
     }, reloadDelayMs, TimeUnit.MILLISECONDS);
   }
 
@@ -229,10 +223,10 @@ public class FlutterReloadManager {
     if (app.isStarted()) {
       app.performHotReload(true, reason).thenAccept(result -> {
         if (!result.ok()) {
-          showRunNotification(app, "Hot Reload", result.getMessage(), true);
+          showRunNotification(app, "Hot Reload Error", result.getMessage(), true);
         }
       }).exceptionally(throwable -> {
-        showRunNotification(app, "Hot Reload", throwable.getMessage(), true);
+        showRunNotification(app, "Hot Reload Error", throwable.getMessage(), true);
         return null;
       });
     }
@@ -240,11 +234,16 @@ public class FlutterReloadManager {
 
   public void saveAllAndReload(@NotNull FlutterApp app, @NotNull String reason) {
     FileDocumentManager.getInstance().saveAllDocuments();
+
+    clearLastNotification();
+
     reloadApp(app, reason);
   }
 
   public void saveAllAndReloadAll(@NotNull List<FlutterApp> appsToReload, @NotNull String reason) {
     FileDocumentManager.getInstance().saveAllDocuments();
+
+    clearLastNotification();
 
     for (FlutterApp app : appsToReload) {
       reloadApp(app, reason);
@@ -255,10 +254,10 @@ public class FlutterReloadManager {
     if (app.isStarted()) {
       app.performRestartApp(reason).thenAccept(result -> {
         if (!result.ok()) {
-          showRunNotification(app, "Hot Restart", result.getMessage(), true);
+          showRunNotification(app, "Hot Restart Error", result.getMessage(), true);
         }
       }).exceptionally(throwable -> {
-        showRunNotification(app, "Hot Restart", throwable.getMessage(), true);
+        showRunNotification(app, "Hot Restart Error", throwable.getMessage(), true);
         return null;
       });
 
@@ -271,11 +270,16 @@ public class FlutterReloadManager {
 
   public void saveAllAndRestart(@NotNull FlutterApp app, @NotNull String reason) {
     FileDocumentManager.getInstance().saveAllDocuments();
+
+    clearLastNotification();
+
     restartApp(app, reason);
   }
 
   public void saveAllAndRestartAll(@NotNull List<FlutterApp> appsToRestart, @NotNull String reason) {
     FileDocumentManager.getInstance().saveAllDocuments();
+
+    clearLastNotification();
 
     for (FlutterApp app : appsToRestart) {
       restartApp(app, reason);
