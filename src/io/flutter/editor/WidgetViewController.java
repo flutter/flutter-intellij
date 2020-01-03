@@ -15,7 +15,6 @@ import io.flutter.run.daemon.FlutterApp;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * Base class for a controller managing UI describing a widget.

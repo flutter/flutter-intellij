@@ -12,7 +12,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Computable;
 import com.intellij.util.Alarm;
-import io.flutter.view.InspectorPanel;
 
 import javax.swing.*;
 import java.util.concurrent.CompletableFuture;

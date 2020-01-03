@@ -8,9 +8,6 @@ package io.flutter.editor;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.util.TextRange;
-import org.jetbrains.annotations.Nullable;
-
-import java.awt.*;
 
 public class InlineWidgetViewModelData extends WidgetViewModelData {
   public final WidgetIndentGuideDescriptor descriptor;
