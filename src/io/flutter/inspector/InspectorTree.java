@@ -33,7 +33,7 @@ public class InspectorTree extends Tree implements DataProvider {
 
   public static final DataKey<Tree> INSPECTOR_KEY = DataKey.create("Flutter.InspectorKey");
 
-  static final JBColor VERY_LIGHT_GREY = new JBColor(Gray._220, Gray._65);
+  private static final JBColor VERY_LIGHT_GREY = new JBColor(Gray._220, Gray._65);
 
   public DefaultMutableTreeNode getHighlightedRoot() {
     return highlightedRoot;
@@ -46,11 +46,6 @@ public class InspectorTree extends Tree implements DataProvider {
     highlightedRoot = value;
     // TODO(jacobr): we only really need to repaint the selected subtree.
     repaint();
-  }
-
-  @Override
-  protected boolean isCustomUI() {
-    return true;
   }
 
   @Override
