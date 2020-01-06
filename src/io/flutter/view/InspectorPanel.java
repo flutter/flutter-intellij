@@ -68,7 +68,9 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   // We have to define this because SimpleTextAttributes does not define a
   // value for warnings.
   private static final SimpleTextAttributes WARNING_ATTRIBUTES = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, JBColor.ORANGE);
+
   private static final Logger LOG = Logger.getInstance(InspectorPanel.class);
+
   protected final boolean detailsSubtree;
   protected final boolean isSummaryTree;
   /**
@@ -84,8 +86,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   @Nullable private final PropertiesPanel myPropertiesPanel;
   private final Computable<Boolean> isApplicable;
   private final InspectorService.FlutterTreeType treeType;
-  @NotNull
-  private final FlutterApp flutterApp;
+  @NotNull private final FlutterApp flutterApp;
   @NotNull private final InspectorService inspectorService;
   private final StreamSubscription<IsolateRef> flutterIsolateSubscription;
   private final TreeScrollAnimator scrollAnimator;
@@ -288,6 +289,11 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     });
 
     determineSplitterOrientation();
+
+    if (isDetailsSubtree()) {
+      // Draw a separator line between the main inspector tree and the details tree.
+      setBorder(JBUI.Borders.customLine(JBColor.border(), 1, 0, 0, 0));
+    }
 
     flutterIsolateSubscription = inspectorService.getApp().getVMServiceManager().getCurrentFlutterIsolate((IsolateRef flutterIsolate) -> {
       if (flutterIsolate == null) {

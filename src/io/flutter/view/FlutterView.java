@@ -241,8 +241,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         addInspectorPanel(WIDGET_TAB_LABEL, runnerTabs, state, InspectorService.FlutterTreeType.widget, app, inspectorService, toolWindow,
                           toolbarGroup, true, detailsSummaryViewSupported);
         addInspectorPanel(RENDER_TAB_LABEL, runnerTabs, state, InspectorService.FlutterTreeType.renderObject, app, inspectorService,
-                          toolWindow,
-                          toolbarGroup, false, false);
+                          toolWindow, toolbarGroup, false, false);
       }
       else {
         // If in profile mode, add disabled tabs for the inspector.
