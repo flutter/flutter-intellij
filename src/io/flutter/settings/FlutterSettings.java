@@ -72,7 +72,7 @@ public class FlutterSettings {
     if (isReloadOnSave()) {
       analytics.sendEvent("settings", afterLastPeriod(reloadOnSaveKey));
     }
-    if (isReloadWithError()) {
+    if (allowReloadWithErrors()) {
       analytics.sendEvent("settings", afterLastPeriod(reloadWithErrorKey));
     }
     if (isOpenInspectorOnAppLaunch()) {
@@ -120,7 +120,7 @@ public class FlutterSettings {
     return getPropertiesComponent().getBoolean(reloadOnSaveKey, true);
   }
 
-  public boolean isReloadWithError() {
+  public boolean allowReloadWithErrors() {
     return getPropertiesComponent().getBoolean(reloadWithErrorKey, false);
   }
 

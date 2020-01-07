@@ -179,10 +179,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isReloadWithError() != myHotReloadIgnoreErrorCheckBox.isSelected()) {
+    if (settings.allowReloadWithErrors() != myHotReloadIgnoreErrorCheckBox.isSelected()) {
       return true;
     }
-
 
     if (settings.isFormatCodeOnSave() != myFormatCodeOnSaveCheckBox.isSelected()) {
       return true;
@@ -295,7 +294,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     final FlutterSettings settings = FlutterSettings.getInstance();
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
-    myHotReloadIgnoreErrorCheckBox.setSelected(settings.isReloadWithError());
+    myHotReloadIgnoreErrorCheckBox.setSelected(settings.allowReloadWithErrors());
     myFormatCodeOnSaveCheckBox.setSelected(settings.isFormatCodeOnSave());
     myOrganizeImportsOnSaveCheckBox.setSelected(settings.isOrganizeImportsOnSave());
 

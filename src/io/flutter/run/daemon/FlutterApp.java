@@ -397,11 +397,41 @@ public class FlutterApp implements Disposable {
   }
 
   /**
+   * Indicate that we are about the start hot reload for this app.
+   * <p>
+   * This state change is useful as we can delay the actual hot reload slightly, but still change the
+   * app state in order to prevent starting two simultaneous hot reloads.
+   * <p>
+   * Return the previous app state.
+   */
+  public State transitionStartingHotReload() {
+    final State newState = State.RELOADING;
+    final State oldState = myState.getAndSet(newState);
+    if (oldState != newState) {
+      listenersDispatcher.getMulticaster().stateChanged(newState);
+    }
+    return oldState;
+  }
+
+  /**
+   * Cancel a hot reload state and restore the app's previous state (generally, `State.STARTED`).
+   */
+  public void cancelHotReloadState(@Nullable State previousState) {
+    if (previousState != null) {
+      changeState(previousState);
+    }
+  }
+
+  /**
    * Perform a hot reload of the app.
    */
   public CompletableFuture<DaemonApi.RestartResult> performHotReload(boolean pauseAfterRestart, @NotNull String reason) {
     if (myAppId == null) {
       FlutterUtils.warn(LOG, "cannot reload Flutter app because app id is not set");
+
+      if (getState() == State.RELOADING) {
+        changeState(State.STARTED);
+      }
 
       final CompletableFuture<DaemonApi.RestartResult> result = new CompletableFuture<>();
       result.completeExceptionally(new IllegalStateException("cannot reload Flutter app because app id is not set"));
@@ -523,7 +553,7 @@ public class FlutterApp implements Disposable {
    * <p>
    * If no change is needed, returns false and does not fire events.
    */
-  boolean changeState(State newState) {
+  boolean changeState(@NotNull State newState) {
     final State oldState = myState.getAndSet(newState);
     if (oldState == newState) {
       return false; // debounce
