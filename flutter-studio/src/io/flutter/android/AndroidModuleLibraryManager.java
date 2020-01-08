@@ -11,9 +11,9 @@ import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_NAME;
 
 import com.android.tools.idea.gradle.project.sync.GradleSyncInvoker;
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
+import com.android.tools.idea.gradle.project.sync.GradleSyncState;
 import com.intellij.ProjectTopics;
 import com.intellij.facet.FacetManager;
-import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.TransactionGuard;
@@ -49,6 +49,7 @@ import com.intellij.util.containers.hash.HashSet;
 import com.intellij.util.modules.CircularModuleDependenciesDetector;
 import io.flutter.sdk.AbstractLibraryManager;
 import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -318,5 +319,27 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
       path = filePath;
     }
 
-    static final String TEMPLATE_PROJECT_NAME = null;
-}}
+    static final String TEMPLATE_PROJECT_NAME = "_android";
+
+    @Override
+    public void init(@Nullable ProgressIndicator indicator) {
+      boolean finished = false;
+      try {
+        registerComponents();
+        getStateStore().setPath(path, true, null);
+        super.init(indicator);
+        finished = true;
+      }
+      finally {
+        if (!finished) {
+          TransactionGuard.submitTransaction(this, () -> WriteAction.run(() -> Disposer.dispose(this)));
+        }
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Project" + (isDisposed() ? " (Disposed)" : " ") + TEMPLATE_PROJECT_NAME;
+    }
+  }
+}

@@ -119,4 +119,10 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
   public SourceProvidersFactory getSourceProvidersFactory() {
     return gradleProjectSystem.getSourceProvidersFactory();
   }
+
+  @NotNull
+  @SuppressWarnings("override")
+  public Collection<Module> getSubmodules() {
+    return gradleProjectSystem.getSubmodules();
+  }
 }
