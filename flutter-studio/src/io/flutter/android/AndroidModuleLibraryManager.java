@@ -11,7 +11,6 @@ import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_NAME;
 
 import com.android.tools.idea.gradle.project.sync.GradleSyncInvoker;
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
-import com.android.tools.idea.gradle.project.sync.GradleSyncState;
 import com.intellij.ProjectTopics;
 import com.intellij.facet.FacetManager;
 import com.intellij.openapi.application.ApplicationManager;
@@ -49,7 +48,6 @@ import com.intellij.util.containers.hash.HashSet;
 import com.intellij.util.modules.CircularModuleDependenciesDetector;
 import io.flutter.sdk.AbstractLibraryManager;
 import io.flutter.sdk.FlutterSdkUtil;
-import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
 import java.nio.file.Path;
 import java.nio.file.Paths;
