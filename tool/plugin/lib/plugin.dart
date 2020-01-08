@@ -646,6 +646,12 @@ class BuildCommand extends ProductCommand {
           'gradleProjectSystem.getSourceProvidersFactory()',
           'new Object()',
         );
+        if (spec.version.startsWith('3.5') || spec.version.startsWith('3.6')) {
+          source = source.replaceAll(
+            'gradleProjectSystem.getSubmodules()',
+            'new java.util.ArrayList()',
+          );
+        }
         processedFile.writeAsStringSync(source);
 
         processedFile = File(
@@ -673,10 +679,6 @@ class BuildCommand extends ProductCommand {
         source = source.replaceAll(
           'FlutterProjectModel model(@NotNull Project project,',
           'FlutterProjectModel model(@NotNull NewModuleModel project,',
-        );
-        source = source.replaceAll(
-          'mySharedModel.getValue().project().setValue(project);',
-          'mySharedModel.getValue().project().setValue(project.getProject().getValue());',
         );
         source = source.replaceAll(
           'mySharedModel.getValue().project().setValue(project);',
