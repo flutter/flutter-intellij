@@ -48,7 +48,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
 
   private final Project project;
   private final FlutterDartAnalysisServer flutterDartAnalysisService;
-  private final InspectorGroupManagerService inspectorGroupManagerService;
+  private /*final*/ InspectorGroupManagerService inspectorGroupManagerService;
   private final EditorMouseEventService editorEventService;
   private final EditorPositionService editorPositionService;
   private final ActiveEditorsOutlineService editorOutlineService;
@@ -63,7 +63,16 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     this.project = project;
     flutterDartAnalysisService = FlutterDartAnalysisServer.getInstance(project);
     this.editorOutlineService = ActiveEditorsOutlineService.getInstance(project);
-    this.inspectorGroupManagerService = InspectorGroupManagerService.getInstance(project);
+    if (!project.getClass().getSimpleName().startsWith("Embed")) {
+      // This class is registered as a <project-component> in plugin.xml, therefore this constructor
+      // runs as a result of the call to Project.init() in AndroidModuleLibraryManager.EmbeddedAndroidProject.
+      // An EmbeddedAndroidProject is created to drive Gradle sync's on the Android module that is part
+      // of a Flutter project, but only if the experimental option is turned on. Downstream of the following
+      // line an IDE frame is created, which results in an empty, un-closeable window being created.
+      // This has been reported a few times and is affecting all users who enable Java indexing.
+      // See https://github.com/flutter/flutter-intellij/issues/4217
+      this.inspectorGroupManagerService = InspectorGroupManagerService.getInstance(project);
+    }
     this.editorEventService = EditorMouseEventService.getInstance(project);
     this.editorPositionService = EditorPositionService.getInstance(project);
     this.settingsListener = new SettingsListener();
@@ -277,6 +286,7 @@ class PlaceholderHighlightingPass extends TextEditorHighlightingPass {
     super(project, document, isRunIntentionPassAfter);
   }
 
+  @Override
   public void doCollectInformation(@NotNull ProgressIndicator indicator) {
   }
 
