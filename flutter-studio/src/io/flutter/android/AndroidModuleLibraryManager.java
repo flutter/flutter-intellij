@@ -50,6 +50,8 @@ import com.intellij.util.modules.CircularModuleDependenciesDetector;
 import io.flutter.sdk.AbstractLibraryManager;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.FlutterModuleUtils;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -208,7 +210,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     VirtualFile dir = flutterProject.getBaseDir().findChild("android");
     if (dir == null) dir = flutterProject.getBaseDir().findChild(".android"); // For modules.
     assert (dir != null);
-    EmbeddedAndroidProject androidProject = new EmbeddedAndroidProject(FileUtilRt.toSystemIndependentName(dir.getPath()));
+    EmbeddedAndroidProject androidProject = new EmbeddedAndroidProject(Paths.get(FileUtilRt.toSystemIndependentName(dir.getPath())));
     androidProject.init(null);
     Disposer.register(flutterProject, androidProject);
 
@@ -309,34 +311,12 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   }
 
   private static class EmbeddedAndroidProject extends ProjectImpl {
-    private String path;
+    private Path path;
 
-    protected EmbeddedAndroidProject(@NotNull String filePath) {
+    protected EmbeddedAndroidProject(@NotNull Path filePath) {
       super(filePath, TEMPLATE_PROJECT_NAME);
       path = filePath;
     }
 
-    static final String TEMPLATE_PROJECT_NAME = "_android";
-
-    @Override
-    public void init(@Nullable ProgressIndicator indicator) {
-      boolean finished = false;
-      try {
-        registerComponents(PluginManagerCore.getLoadedPlugins());
-        getStateStore().setPath(path, true, null);
-        super.init(indicator);
-        finished = true;
-      }
-      finally {
-        if (!finished) {
-          TransactionGuard.submitTransaction(this, () -> WriteAction.run(() -> Disposer.dispose(this)));
-        }
-      }
-    }
-
-    @Override
-    public String toString() {
-      return "Project" + (isDisposed() ? " (Disposed)" : " ") + TEMPLATE_PROJECT_NAME;
-    }
-  }
-}
+    static final String TEMPLATE_PROJECT_NAME = null;
+}}

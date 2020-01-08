@@ -5,7 +5,7 @@
  */
 package io.flutter.module;
 
-import com.android.tools.idea.npw.model.NewModuleModel;
+import com.android.tools.idea.npw.model.ProjectSyncInvoker;
 import com.android.tools.idea.npw.module.ModuleDescriptionProvider;
 import com.android.tools.idea.npw.module.ModuleGalleryEntry;
 import com.android.tools.idea.observable.core.OptionalValueProperty;
@@ -20,9 +20,9 @@ import io.flutter.project.FlutterProjectModel;
 import io.flutter.project.FlutterProjectStep;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import javax.swing.Icon;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,15 +30,16 @@ import org.jetbrains.annotations.Nullable;
 public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
   @Override
-  public Collection<? extends ModuleGalleryEntry> getDescriptions(Project project) {
+  @NotNull
+  public Collection<ModuleGalleryEntry> getDescriptions(@NotNull Project project) {
     return getGalleryList(false);
   }
 
-  public static List<FlutterGalleryEntry> getGalleryList(boolean isCreatingProject) {
+  public static Collection<ModuleGalleryEntry> getGalleryList(boolean isCreatingProject) {
     boolean projectHasFlutter = isCreatingProject; // True for projects, false for modules.
     boolean isAndroidProject = false; // True if the host project is an Android app.
     OptionalValueProperty<FlutterProjectModel> sharedModel = new OptionalValueProperty<>();
-    ArrayList<FlutterGalleryEntry> res = new ArrayList<>();
+    ArrayList<ModuleGalleryEntry> res = new ArrayList<>();
     if (!isCreatingProject) {
       IdeFrame frame = IdeFocusManager.getGlobalInstance().getLastFocusedFrame();
       Project project = frame == null ? null : frame.getProject();
@@ -82,25 +83,25 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     // Using an optional value because the model cannot be created until after the gallery entry is initialized.
     private OptionalValueProperty<FlutterProjectModel> mySharedModel;
 
-    private FlutterGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
+    private FlutterGalleryEntry(@NotNull OptionalValueProperty<FlutterProjectModel> sharedModel) {
       mySharedModel = sharedModel;
     }
 
-    protected FlutterProjectModel model(NewModuleModel npwModel, FlutterProjectType type) {
+    protected FlutterProjectModel model(@NotNull Project project, @NotNull FlutterProjectType type) {
       if (!mySharedModel.isPresent().get()) {
         mySharedModel.setValue(createModel(type));
-        mySharedModel.getValue().project().setValue(npwModel.getProject().getValue());
+        mySharedModel.getValue().project().setValue(project);
       }
       return mySharedModel.getValue();
     }
 
-    protected FlutterProjectModel createModel(FlutterProjectType type) {
+    protected FlutterProjectModel createModel(@NotNull FlutterProjectType type) {
       // Note: This object is shared with all templates and all their steps.
       return new FlutterModuleModel(type);
     }
 
     @NotNull
-    abstract public FlutterProjectStep createFlutterStep(FlutterProjectModel model);
+    abstract public FlutterProjectStep createFlutterStep(@NotNull FlutterProjectModel model);
 
     @Nullable
     abstract public String getHelpText();
@@ -109,11 +110,16 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     public String toString() {
       return getName();
     }
+
+    @SuppressWarnings({"override"})
+    public File getTemplateFile() {
+      return null;
+    }
   }
 
   private static class FlutterApplicationGalleryEntry extends FlutterGalleryEntry {
 
-    private FlutterApplicationGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
+    private FlutterApplicationGalleryEntry(@NotNull OptionalValueProperty<FlutterProjectModel> sharedModel) {
       super(sharedModel);
     }
 
@@ -143,7 +149,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
+    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
       return new FlutterModuleStep(
         model(model, FlutterProjectType.APP),
         FlutterBundle.message("module.wizard.app_step_title"),
@@ -152,7 +158,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public FlutterProjectStep createFlutterStep(FlutterProjectModel model) {
+    public FlutterProjectStep createFlutterStep(@NotNull FlutterProjectModel model) {
       return new FlutterProjectStep(
         model, FlutterBundle.message("module.wizard.app_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.APP);
@@ -161,7 +167,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
   private static class FlutterPackageGalleryEntry extends FlutterGalleryEntry {
 
-    private FlutterPackageGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
+    private FlutterPackageGalleryEntry(@NotNull OptionalValueProperty<FlutterProjectModel> sharedModel) {
       super(sharedModel);
     }
 
@@ -191,7 +197,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
+    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
       return new FlutterModuleStep(
         model(model, FlutterProjectType.PACKAGE),
         FlutterBundle.message("module.wizard.package_step_title"),
@@ -209,7 +215,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
   private static class FlutterPluginGalleryEntry extends FlutterGalleryEntry {
 
-    private FlutterPluginGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
+    private FlutterPluginGalleryEntry(@NotNull OptionalValueProperty<FlutterProjectModel> sharedModel) {
       super(sharedModel);
     }
 
@@ -239,7 +245,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
+    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
       return new FlutterModuleStep(
         model(model, FlutterProjectType.PLUGIN),
         FlutterBundle.message("module.wizard.plugin_step_title"),
@@ -257,7 +263,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
   private static class FlutterModuleGalleryEntry extends FlutterGalleryEntry {
 
-    private FlutterModuleGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
+    private FlutterModuleGalleryEntry(@NotNull OptionalValueProperty<FlutterProjectModel> sharedModel) {
       super(sharedModel);
     }
 
@@ -287,7 +293,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
+    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
       return new FlutterModuleStep(
         model(model, FlutterProjectType.MODULE),
         FlutterBundle.message("module.wizard.module_step_title"),
@@ -305,7 +311,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
   private static class ImportFlutterModuleGalleryEntry extends FlutterGalleryEntry {
 
-    private ImportFlutterModuleGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
+    private ImportFlutterModuleGalleryEntry(@NotNull OptionalValueProperty<FlutterProjectModel> sharedModel) {
       super(sharedModel);
     }
 
@@ -335,7 +341,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
+    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
       return new ImportFlutterModuleStep(
         model(model, FlutterProjectType.IMPORT),
         FlutterBundle.message("module.wizard.import_module_step_title"),
@@ -353,7 +359,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
   private static class AddToAppModuleGalleryEntry extends FlutterGalleryEntry {
 
-    private AddToAppModuleGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
+    private AddToAppModuleGalleryEntry(@NotNull OptionalValueProperty<FlutterProjectModel> sharedModel) {
       super(sharedModel);
     }
 
@@ -383,7 +389,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
+    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
       return new FlutterModuleStep(
         model(model, FlutterProjectType.MODULE),
         FlutterBundle.message("module.wizard.module_step_title"),

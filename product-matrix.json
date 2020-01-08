@@ -38,14 +38,14 @@
     },
     {
       "channel": "dev",
-      "comments": "Android Studio 4.0 Canary 4",
+      "comments": "Android Studio 4.0 Canary 8",
       "name": "Android Studio 4.0",
       "version": "4.0",
       "ideaProduct": "android-studio",
-      "ideaVersion": "192.5947919",
-      "dartPluginVersion": "192.6603.23",
-      "sinceBuild": "192.6262",
-      "untilBuild": "192.7141",
+      "ideaVersion": "193.6107147",
+      "dartPluginVersion": "193.5731",
+      "sinceBuild": "193.5233",
+      "untilBuild": "193.*",
       "filesToSkip": ["src/io/flutter/editor/IntellijColorPickerProvider.java"]
     }
   ]
