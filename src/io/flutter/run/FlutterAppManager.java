@@ -61,7 +61,11 @@ public class FlutterAppManager implements Disposable {
    */
   @Nullable
   public FlutterApp getActiveApp() {
-    final RunContentDescriptor descriptor = getRunContentManager().getSelectedContent();
+    RunContentManager mgr = getRunContentManager();
+    if (mgr == null) {
+      return null;
+    }
+    final RunContentDescriptor descriptor = mgr.getSelectedContent();
     if (descriptor == null) {
       return null;
     }
@@ -84,9 +88,12 @@ public class FlutterAppManager implements Disposable {
    */
   public List<FlutterApp> getApps() {
     final List<FlutterApp> apps = new ArrayList<>();
+    RunContentManager mgr = getRunContentManager();
+    if (mgr == null) {
+      return apps;
+    }
 
-    final List<RunContentDescriptor> runningProcesses =
-      getRunContentManager().getAllDescriptors();
+    final List<RunContentDescriptor> runningProcesses = mgr.getAllDescriptors();
     for (RunContentDescriptor descriptor : runningProcesses) {
       final ProcessHandler process = descriptor.getProcessHandler();
       if (process != null) {
@@ -109,7 +116,13 @@ public class FlutterAppManager implements Disposable {
     }
   }
 
+  @Nullable
   private RunContentManager getRunContentManager() {
+    // Creating a RunContentManager causes a blank window to appear, so don't create it here.
+    // See https://github.com/flutter/flutter-intellij/issues/4217
+    if (ServiceManager.getServiceIfCreated(project, RunContentManager.class) == null) {
+      return null;
+    }
     return ExecutionManager.getInstance(project).getContentManager();
   }
 }
