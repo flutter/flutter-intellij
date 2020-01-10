@@ -9,6 +9,7 @@ import com.android.tools.idea.projectsystem.AndroidModuleSystem;
 import com.android.tools.idea.projectsystem.AndroidProjectSystem;
 import com.android.tools.idea.projectsystem.LightResourceClassService;
 import com.android.tools.idea.projectsystem.ProjectSystemSyncManager;
+import com.android.tools.idea.projectsystem.SourceProvidersFactory;
 import com.android.tools.idea.projectsystem.gradle.GradleProjectSystem;
 import com.android.tools.idea.projectsystem.gradle.GradleProjectSystemProvider;
 import com.intellij.openapi.diagnostic.Logger;
@@ -111,5 +112,17 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
   @SuppressWarnings("override")
   public LightResourceClassService getLightResourceClassService() {
     return gradleProjectSystem.getLightResourceClassService();
+  }
+
+  @NotNull
+  @SuppressWarnings("override")
+  public SourceProvidersFactory getSourceProvidersFactory() {
+    return gradleProjectSystem.getSourceProvidersFactory();
+  }
+
+  @NotNull
+  @SuppressWarnings("override")
+  public Collection<Module> getSubmodules() {
+    return gradleProjectSystem.getSubmodules();
   }
 }

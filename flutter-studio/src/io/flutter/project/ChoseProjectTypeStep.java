@@ -40,7 +40,7 @@ import org.jetbrains.annotations.Nullable;
 public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
   private static final Logger LOG = Logger.getInstance(ChoseProjectTypeStep.class);
 
-  private final List<FlutterGalleryEntry> myModuleGalleryEntryList;
+  private final Collection<ModuleGalleryEntry> myModuleGalleryEntryList;
   private final JComponent myRootPanel;
   private JLabel[] helpLabels;
 
@@ -51,7 +51,7 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
     this(model, FlutterDescriptionProvider.getGalleryList(true));
   }
 
-  private ChoseProjectTypeStep(@NotNull FlutterProjectModel model, @NotNull List<FlutterGalleryEntry> moduleGalleryEntries) {
+  private ChoseProjectTypeStep(@NotNull FlutterProjectModel model, @NotNull Collection<ModuleGalleryEntry> moduleGalleryEntries) {
     super(model, "New Flutter Project");
 
     myModuleGalleryEntryList = moduleGalleryEntries;
@@ -63,8 +63,8 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
     section.setLayout(new VerticalFlowLayout());
     helpLabels = new JLabel[moduleGalleryEntries.size()];
     int idx = 0;
-    for (FlutterGalleryEntry entry : moduleGalleryEntries) {
-      helpLabels[idx] = new JLabel(entry.getHelpText());
+    for (ModuleGalleryEntry entry : moduleGalleryEntries) {
+      helpLabels[idx] = new JLabel(((FlutterGalleryEntry)entry).getHelpText());
       helpLabels[idx].setEnabled(false);
       section.add(helpLabels[idx++]);
     }

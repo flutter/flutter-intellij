@@ -113,7 +113,7 @@ public class AddToAppUtils {
         AndroidUtils.checkDartSupport(project);
       }
 
-      @Override
+      @SuppressWarnings("override")
       public void sourceGenerationFinished(@NotNull Project project) {
       }
     };

@@ -13,7 +13,6 @@ import com.android.tools.idea.gradle.project.sync.GradleSyncInvoker;
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.intellij.ProjectTopics;
 import com.intellij.facet.FacetManager;
-import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.TransactionGuard;
@@ -50,6 +49,8 @@ import com.intellij.util.modules.CircularModuleDependenciesDetector;
 import io.flutter.sdk.AbstractLibraryManager;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.FlutterModuleUtils;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -208,7 +209,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     VirtualFile dir = flutterProject.getBaseDir().findChild("android");
     if (dir == null) dir = flutterProject.getBaseDir().findChild(".android"); // For modules.
     assert (dir != null);
-    EmbeddedAndroidProject androidProject = new EmbeddedAndroidProject(FileUtilRt.toSystemIndependentName(dir.getPath()));
+    EmbeddedAndroidProject androidProject = new EmbeddedAndroidProject(Paths.get(FileUtilRt.toSystemIndependentName(dir.getPath())));
     androidProject.init(null);
     Disposer.register(flutterProject, androidProject);
 
@@ -309,9 +310,9 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   }
 
   private static class EmbeddedAndroidProject extends ProjectImpl {
-    private String path;
+    private Path path;
 
-    protected EmbeddedAndroidProject(@NotNull String filePath) {
+    protected EmbeddedAndroidProject(@NotNull Path filePath) {
       super(filePath, TEMPLATE_PROJECT_NAME);
       path = filePath;
     }
@@ -322,7 +323,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     public void init(@Nullable ProgressIndicator indicator) {
       boolean finished = false;
       try {
-        registerComponents(PluginManagerCore.getLoadedPlugins());
+        registerComponents();
         getStateStore().setPath(path, true, null);
         super.init(indicator);
         finished = true;

@@ -596,28 +596,94 @@ class BuildCommand extends ProductCommand {
       var files = <File, String>{};
       var processedFile, source;
 
-      // TODO: Remove this when we no longer support AS 3.5
+      // TODO: Remove this when we no longer support the corresponding version.
 
-      if (spec.version.startsWith('3.5')) {
+      if (spec.version.startsWith('3.5') || spec.version.startsWith('3.6')) {
         processedFile = File(
             'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
         source = processedFile.readAsStringSync();
         files[processedFile] = source;
-        source = source.replaceAll(
-            'androidProject.init(null);', 'androidProject.init();');
+        if (spec.version.startsWith('3.5')) {
+          source = source.replaceAll(
+            'androidProject.init(null);',
+            'androidProject.init();',
+          );
+        }
         var last = 'static final String TEMPLATE_PROJECT_NAME = ';
         var end = source.indexOf(last);
         // Change the initializer to use null, equivalent to original code.
         source = '${source.substring(0, end + last.length)}null;\n}}';
+        source = source.replaceAll(
+          'super(filePath',
+          'super(filePath.toString()',
+        );
         processedFile.writeAsStringSync(source);
+      }
 
-        processedFile = File(
-            'flutter-studio/src/io/flutter/utils/AddToAppUtils.java');
+      if (spec.version.startsWith('3.5')) {
+        processedFile =
+            File('flutter-studio/src/io/flutter/utils/AddToAppUtils.java');
         source = processedFile.readAsStringSync();
         files[processedFile] = source;
         source = source.replaceAll(
-            'connection.subscribe(DebuggerManagerListener.TOPIC, makeAddToAppAttachListener(project));',
-            '');
+          'connection.subscribe(DebuggerManagerListener.TOPIC, makeAddToAppAttachListener(project));',
+          '',
+        );
+        processedFile.writeAsStringSync(source);
+      }
+
+      if (spec.channel == 'stable') {
+        processedFile = File(
+            'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java');
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll(
+          'import com.android.tools.idea.projectsystem.SourceProvidersFactory;',
+          '',
+        );
+        source = source.replaceAll(' SourceProvidersFactory ', ' Object ');
+        source = source.replaceAll(
+          'gradleProjectSystem.getSourceProvidersFactory()',
+          'new Object()',
+        );
+        if (spec.version.startsWith('3.5') || spec.version.startsWith('3.6')) {
+          source = source.replaceAll(
+            'gradleProjectSystem.getSubmodules()',
+            'new java.util.ArrayList()',
+          );
+        }
+        processedFile.writeAsStringSync(source);
+
+        processedFile = File(
+            'flutter-studio/src/io/flutter/project/FlutterProjectCreator.java');
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll(
+          'Paths.get(baseDir.getPath())',
+          'baseDir.getPath()',
+        );
+        processedFile.writeAsStringSync(source);
+
+        processedFile = File(
+            'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll(
+          'import com.android.tools.idea.npw.model.ProjectSyncInvoker',
+          'import com.android.tools.idea.npw.model.NewModuleModel',
+        );
+        source = source.replaceAll(
+          'createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent)',
+          'createStep(@NotNull NewModuleModel model)',
+        );
+        source = source.replaceAll(
+          'FlutterProjectModel model(@NotNull Project project,',
+          'FlutterProjectModel model(@NotNull NewModuleModel project,',
+        );
+        source = source.replaceAll(
+          'mySharedModel.getValue().project().setValue(project);',
+          'mySharedModel.getValue().project().setValue(project.getProject().getValue());',
+        );
         processedFile.writeAsStringSync(source);
       }
 
@@ -1071,7 +1137,8 @@ abstract class ProductCommand extends Command {
 class SyntheticBuildSpec extends BuildSpec {
   BuildSpec alternate;
 
-  SyntheticBuildSpec.fromJson(Map json, String releaseNum, List<BuildSpec> specs)
+  SyntheticBuildSpec.fromJson(
+      Map json, String releaseNum, List<BuildSpec> specs)
       : super.fromJson(json, releaseNum) {
     alternate = specs.firstWhere((s) => s.isTestTarget);
   }
