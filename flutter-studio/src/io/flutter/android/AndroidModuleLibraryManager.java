@@ -208,7 +208,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     // TODO(messick): Collect URLs for all Android modules, including those within plugins.
     VirtualFile dir = flutterProject.getBaseDir().findChild("android");
     if (dir == null) dir = flutterProject.getBaseDir().findChild(".android"); // For modules.
-    assert (dir != null);
+    if (dir == null) return;
     EmbeddedAndroidProject androidProject = new EmbeddedAndroidProject(Paths.get(FileUtilRt.toSystemIndependentName(dir.getPath())));
     androidProject.init(null);
     Disposer.register(flutterProject, androidProject);
