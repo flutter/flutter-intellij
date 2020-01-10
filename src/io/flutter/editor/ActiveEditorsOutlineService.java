@@ -180,7 +180,7 @@ public class ActiveEditorsOutlineService implements Disposable {
    * To get an outline that is guaranteed in-sync with the file it outlines, see {@link #getIfUpdated}.
    */
   @Nullable
-  public FlutterOutline getOutline(String path) {
+  public FlutterOutline getOutline(@Nullable String path) {
     return pathToOutline.get(path);
   }
 
@@ -192,7 +192,7 @@ public class ActiveEditorsOutlineService implements Disposable {
    */
   @Nullable
   public FlutterOutline getIfUpdated(@NotNull PsiFile file) {
-    final FlutterOutline outline = getOutline(file.getVirtualFile().getCanonicalPath());
+    final FlutterOutline outline = getOutline(file.getOriginalFile().getVirtualFile().getPath());
     if (isOutdated(outline, file)) {
       return null;
     }
