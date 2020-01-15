@@ -411,7 +411,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
   }
 
   public void showFor(Set<TextEditor> editors) {
-    ApplicationManager.getApplication().invokeLater(() -> {
+    AsyncUtils.invokeLater(() -> {
       currentEditors.clear();
       currentEditors.addAll(editors);
 
@@ -460,7 +460,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     }
     Disposer.dispose(perfProvider);
 
-    ApplicationManager.getApplication().invokeLater(() -> {
+    AsyncUtils.invokeLater(() -> {
       clearModels();
 
       for (EditorPerfModel decorations : editorDecorations.values()) {
@@ -484,11 +484,11 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
   }
 
   protected void clear() {
-    ApplicationManager.getApplication().invokeLater(this::clearModels);
+    AsyncUtils.invokeLater(this::clearModels);
   }
 
   protected void onRestart() {
-    ApplicationManager.getApplication().invokeLater(() -> {
+    AsyncUtils.invokeLater(() -> {
       // The app has restarted. Location ids may not be valid.
       knownLocationIds.clear();
       stats.clear();
