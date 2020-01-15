@@ -66,6 +66,9 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
 
   private final Set<PerfModel> perfListeners = new HashSet<>();
 
+  /**
+   * Note: any access of editorDecorations contents must happen on the UI thread.
+   */
   private final Map<TextEditor, EditorPerfModel> editorDecorations = new HashMap<>();
   private final TIntObjectHashMap<Location> knownLocationIds = new TIntObjectHashMap<>();
   private final SetMultimap<String, Location> locationsPerFile = HashMultimap.create();
@@ -408,19 +411,21 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
   }
 
   public void showFor(Set<TextEditor> editors) {
-    currentEditors.clear();
-    currentEditors.addAll(editors);
+    AsyncUtils.invokeAndWait(() -> {
+      currentEditors.clear();
+      currentEditors.addAll(editors);
 
-    // Harvest old editors.
-    harvestInvalidEditors(editors);
+      // Harvest old editors.
+      harvestInvalidEditors(editors);
 
-    for (TextEditor fileEditor : currentEditors) {
-      // Create a new EditorPerfModel if necessary.
-      if (!editorDecorations.containsKey(fileEditor)) {
-        editorDecorations.put(fileEditor, perfModelFactory.create(fileEditor));
+      for (TextEditor fileEditor : currentEditors) {
+        // Create a new EditorPerfModel if necessary.
+        if (!editorDecorations.containsKey(fileEditor)) {
+          editorDecorations.put(fileEditor, perfModelFactory.create(fileEditor));
+        }
       }
-    }
-    requestRepaint(When.now);
+      requestRepaint(When.now);
+    });
   }
 
   private void harvestInvalidEditors(Set<TextEditor> newEditors) {
@@ -455,15 +460,21 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     }
     Disposer.dispose(perfProvider);
 
-    clearModels();
-    for (EditorPerfModel decorations : editorDecorations.values()) {
-      Disposer.dispose(decorations);
-    }
-    editorDecorations.clear();
-    perfListeners.clear();
+    AsyncUtils.invokeLater(() -> {
+      clearModels();
+
+      for (EditorPerfModel decorations : editorDecorations.values()) {
+        Disposer.dispose(decorations);
+      }
+      editorDecorations.clear();
+      perfListeners.clear();
+    });
   }
 
-  void clearModels() {
+  /**
+   * Note: this must be called on the UI thread.
+   */
+  private void clearModels() {
     for (EditorPerfModel decorations : editorDecorations.values()) {
       decorations.clear();
     }
@@ -472,19 +483,17 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     }
   }
 
-  public void clear() {
-    ApplicationManager.getApplication().invokeLater(this::clearModels);
+  protected void clear() {
+    AsyncUtils.invokeLater(this::clearModels);
   }
 
-  private void onRestartHelper() {
-    // The app has restarted. Location ids may not be valid.
-    knownLocationIds.clear();
-    stats.clear();
-    clearModels();
-  }
-
-  public void onRestart() {
-    ApplicationManager.getApplication().invokeLater(this::onRestartHelper);
+  protected void onRestart() {
+    AsyncUtils.invokeLater(() -> {
+      // The app has restarted. Location ids may not be valid.
+      knownLocationIds.clear();
+      stats.clear();
+      clearModels();
+    });
   }
 
   public WidgetPerfLinter getPerfLinter() {
