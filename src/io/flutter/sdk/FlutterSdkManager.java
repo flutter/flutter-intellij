@@ -42,7 +42,7 @@ public class FlutterSdkManager {
     libraryTable.addListener(libraryTableListener);
 
     // TODO(devoncarew): We should replace this polling solution with listeners to project structure changes.
-    final ScheduledFuture timer = JobScheduler.getScheduler().scheduleWithFixedDelay(
+    final ScheduledFuture<?> timer = JobScheduler.getScheduler().scheduleWithFixedDelay(
       this::checkForFlutterSdkChange, 1, 1, TimeUnit.SECONDS);
 
     Disposer.register(project, () -> {
