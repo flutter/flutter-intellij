@@ -7,8 +7,10 @@ package io.flutter.utils;
 
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.progress.ProcessCanceledException;
 
 import javax.swing.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
@@ -40,11 +42,27 @@ public class AsyncUtils {
   public static void invokeLater(Runnable runnable) {
     final Application app = ApplicationManager.getApplication();
     if (app == null || app.isUnitTestMode()) {
-      // This case existing to support unittesting.
+      // This case existing to support unit testing.
       SwingUtilities.invokeLater(runnable);
     }
     else {
       app.invokeLater(runnable);
+    }
+  }
+
+  public static void invokeAndWait(Runnable runnable) throws ProcessCanceledException {
+    final Application app = ApplicationManager.getApplication();
+    if (app == null || app.isUnitTestMode()) {
+      try {
+        // This case existing to support unit testing.
+        SwingUtilities.invokeAndWait(runnable);
+      }
+      catch (InterruptedException | InvocationTargetException e) {
+        throw new ProcessCanceledException(e);
+      }
+    }
+    else {
+      app.invokeAndWait(runnable);
     }
   }
 }

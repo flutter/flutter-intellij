@@ -365,7 +365,6 @@ public class FlutterWidgetPerfTest {
     assertEquals(726, rangeStats.get(0).getValue(PerfMetric.total));
     assertEquals("Widget:52:12", rangeStats.get(0).getDescription());
 
-
     rangeStats = Lists.newArrayList(stats.getRangeStats(locations.get(4)));
 
     assertEquals(1, rangeStats.size());
@@ -407,9 +406,8 @@ public class FlutterWidgetPerfTest {
     assert clockModel != null;
     assert mainModel != null;
 
-    FilePerfInfo mainStats;
     stats = clockModel.getStatsFuture().get();
-    mainStats = mainModel.getStatsFuture().get();
+    final FilePerfInfo mainStats = mainModel.getStatsFuture().get();
 
     // We have new fake data for the files so the count in the past second is
     // back up from zero
@@ -430,7 +428,6 @@ public class FlutterWidgetPerfTest {
     assertEquals(6, rangeStats.get(1).getValue(PerfMetric.pastSecond));
     assertEquals(732, rangeStats.get(1).getValue(PerfMetric.total));
     assertEquals("Widget:52:12", rangeStats.get(1).getDescription());
-
 
     rangeStats = Lists.newArrayList(stats.getRangeStats(locations.get(5)));
 

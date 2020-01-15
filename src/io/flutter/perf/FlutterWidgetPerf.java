@@ -411,7 +411,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
   }
 
   public void showFor(Set<TextEditor> editors) {
-    AsyncUtils.invokeLater(() -> {
+    AsyncUtils.invokeAndWait(() -> {
       currentEditors.clear();
       currentEditors.addAll(editors);
 
