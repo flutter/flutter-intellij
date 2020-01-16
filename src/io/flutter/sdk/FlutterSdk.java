@@ -94,34 +94,6 @@ public class FlutterSdk {
   }
 
   /**
-   * Return the FlutterSdk for a project in a Bazel workspace.
-   * <p>
-   * Returns null if we are not in a bazel project.
-   * <p>
-   * NOTE that the Bazel FlutterSdk does not have the same features defined as the normal SDK.
-   * Only use this if you are sure you know what you are doing.
-   */
-  public static FlutterSdk forBazel(@NotNull final Project project) {
-    // If this is not a bazel project, return null.
-    final Workspace workspace = Workspace.load(project);
-    if (workspace == null) {
-      return null;
-    }
-    return new BazelSdk(project, workspace);
-  }
-
-  /**
-   * Return the FlutterSdk for a project, using a pub or bazel-based SDK as appropriate.
-   * <p>
-   * NOTE that the Bazel FlutterSdk does not have the same features defined as the normal SDK.
-   * Only use this if you are sure you know what you are doing.
-   */
-  @Nullable
-  public static FlutterSdk forPubOrBazel(@NotNull final Project project) {
-    return FlutterSettings.getInstance().shouldUseBazel() ? FlutterSdk.forBazel(project) : FlutterSdk.getFlutterSdk(project);
-  }
-
-  /**
    * Returns the Flutter SDK for a project that has a possibly broken "Dart SDK" project library.
    * <p>
    * (This can happen for a newly-cloned Flutter SDK where the Dart SDK is not cached yet.)

@@ -20,6 +20,7 @@ import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
 import io.flutter.bazel.Workspace;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.common.RunMode;
@@ -127,7 +128,7 @@ public class BazelFields {
   // TODO(djshuckerow): this is dependency injection; switch this to a framework as we need more DI.
   @Nullable
   protected Workspace getWorkspace(@NotNull Project project) {
-    return Workspace.load(project);
+    return WorkspaceCache.getInstance(project).get();
   }
 
   /**

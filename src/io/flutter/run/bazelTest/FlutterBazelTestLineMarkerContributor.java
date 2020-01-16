@@ -23,7 +23,6 @@ public class FlutterBazelTestLineMarkerContributor extends TestLineMarkerContrib
   @Nullable
   @Override
   public Info getInfo(@NotNull PsiElement element) {
-    final FlutterSettings settings = FlutterSettings.getInstance();
     return super.getInfo(element);
   }
 }

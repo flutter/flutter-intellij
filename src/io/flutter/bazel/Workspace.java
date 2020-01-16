@@ -201,12 +201,13 @@ public class Workspace {
    * <p>Also loads flutter.plugin if present.
    * <p>
    * <p>(Note that we might not load all the way from disk due to the VirtualFileSystem's caching.)
+   * <p> Never call this method directly. Instead use WorkespaceCache.getInstance().
+   * </p>
    *
    * @return the Workspace, or null if there is none.
    */
   @Nullable
-  public static Workspace load(@NotNull Project project) {
-    if (!FlutterSettings.getInstance().shouldUseBazel()) return null;
+  static Workspace loadUncached(@NotNull Project project) {
     final VirtualFile workspaceFile = findWorkspaceFile(project);
     if (workspaceFile == null) return null;
 

@@ -31,14 +31,6 @@ public class FlutterSettings {
   private static final String enableHotUiKey = "io.flutter.editor.enableHotUi";
 
   /**
-   * The Dart plugin uses this registry key to avoid bazel users getting their settings overridden on projects that include a
-   * pubspec.yaml.
-   * <p>
-   * In other words, this key tells the plugin to configure dart projects without pubspec.yaml.
-   */
-  private static final String dartProjectsWithoutPubspecRegistryKey = "dart.projects.without.pubspec";
-
-  /**
    * Registry key to suggest all run configurations instead of just one.
    * <p>
    * Useful for {@link io.flutter.run.bazelTest.FlutterBazelTestConfigurationType} to show both watch and regular configurations
@@ -102,9 +94,6 @@ public class FlutterSettings {
 
     if (isShowStructuredErrors()) {
       analytics.sendEvent("settings", afterLastPeriod(showStructuredErrors));
-    }
-    if (shouldUseBazel()) {
-      analytics.sendEvent("settings", afterLastPeriod(dartProjectsWithoutPubspecRegistryKey));
     }
   }
 
@@ -212,19 +201,6 @@ public class FlutterSettings {
 
   public void setOpenInspectorOnAppLaunch(boolean value) {
     getPropertiesComponent().setValue(openInspectorOnAppLaunchKey, value, false);
-
-    fireEvent();
-  }
-
-  /**
-   * Determines whether to use bazel package management.
-   */
-  public boolean shouldUseBazel() {
-    return Registry.is(dartProjectsWithoutPubspecRegistryKey, false);
-  }
-
-  public void setShouldUseBazel(boolean value) {
-    Registry.get(dartProjectsWithoutPubspecRegistryKey).setValue(value);
 
     fireEvent();
   }

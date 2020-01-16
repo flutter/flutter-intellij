@@ -9,7 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.FlutterUtils;
-import io.flutter.bazel.Workspace;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.run.common.TestType;
 import org.jetbrains.annotations.NotNull;
@@ -32,7 +32,7 @@ public class BazelTestConfigUtils extends CommonTestConfigUtils {
 
 
   private boolean isBazelFlutterCode(@Nullable DartFile file) {
-    return file != null && Workspace.load(file.getProject()) != null;
+    return file != null && WorkspaceCache.getInstance(file.getProject()).isBazel();
   }
 
   @Nullable

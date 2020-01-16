@@ -19,6 +19,7 @@ import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.FlutterRunConfigurationProducer;
 import org.jetbrains.annotations.NotNull;
@@ -54,7 +55,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
   @VisibleForTesting
   @Nullable
   protected Workspace getWorkspace(@NotNull Project project) {
-    return Workspace.load(project);
+    return WorkspaceCache.getInstance(project).get();
   }
 
   /**

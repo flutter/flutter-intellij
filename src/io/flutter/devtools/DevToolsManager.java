@@ -28,11 +28,11 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.console.FlutterConsoles;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
 import io.flutter.utils.MostlySilentOsProcessHandler;
 import org.jetbrains.annotations.NotNull;
@@ -66,6 +66,7 @@ public class DevToolsManager {
 
   public CompletableFuture<Boolean> installDevTools() {
     if (isBazel(project)) {
+      // TODO(jacobr): prebuild devtools so the initial devtools load is faster.
       // Bazel projects do not need to load DevTools.
       return createCompletedFuture(true);
     }
@@ -181,8 +182,13 @@ public class DevToolsManager {
    */
   @Nullable
   private OSProcessHandler getProcessHandlerForBazel() {
-    final Workspace workspace = Workspace.load(project);
-    if (workspace == null || workspace.getDevtoolsScript() == null) {
+    final WorkspaceCache workspaceCache = WorkspaceCache.getInstance(project);
+    if (!workspaceCache.isBazel()) {
+      return null;
+    }
+    final Workspace workspace = workspaceCache.get();
+    assert (workspace != null);
+    if (workspace.getDevtoolsScript() == null) {
       return null;
     }
 
@@ -208,7 +214,7 @@ public class DevToolsManager {
   }
 
   private boolean isBazel(Project project) {
-    return FlutterSettings.getInstance().shouldUseBazel() && Workspace.load(project) != null;
+    return WorkspaceCache.getInstance(project).isBazel();
   }
 
   private void openBrowserImpl(String uri, String screen) {

@@ -5,15 +5,21 @@
  */
 package io.flutter.bazel;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableSet;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.registry.Registry;
+import io.flutter.FlutterUtils;
 import io.flutter.project.ProjectWatch;
 import io.flutter.utils.FileWatch;
-import io.flutter.utils.Refreshable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -23,24 +29,25 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class WorkspaceCache {
   @NotNull private final Project project;
-  @NotNull private final Refreshable<Workspace> cache;
+  @Nullable private Workspace cache;
+
+  private boolean refreshScheduled = false;
+
+  private final Set<Runnable> subscribers = new LinkedHashSet<>();
 
   private WorkspaceCache(@NotNull final Project project) {
     this.project = project;
 
-    cache = new Refreshable<>();
-    cache.setDisposeParent(project);
-
     // Trigger a reload when file dependencies change.
     final AtomicReference<FileWatch> fileWatch = new AtomicReference<>();
-    cache.subscribe(() -> {
+    subscribe(() -> {
       if (project.isDisposed()) return;
 
-      final Workspace next = cache.getNow();
+      final Workspace next = cache;
 
       FileWatch nextWatch = null;
       if (next != null) {
-        nextWatch = FileWatch.subscribe(next.getRoot(), next.getDependencies(), this::refreshAsync);
+        nextWatch = FileWatch.subscribe(next.getRoot(), next.getDependencies(), this::scheduleRefresh);
         nextWatch.setDisposeParent(project);
       }
 
@@ -49,10 +56,21 @@ public class WorkspaceCache {
     });
 
     // Detect module root changes.
-    ProjectWatch.subscribe(project, this::refreshAsync);
+    ProjectWatch.subscribe(project, this::scheduleRefresh);
 
     // Load initial value.
-    refreshAsync();
+    refresh();
+  }
+
+  private void scheduleRefresh() {
+    if (refreshScheduled) {
+      return;
+    }
+    refreshScheduled = true;
+    SwingUtilities.invokeLater(() -> {
+      refreshScheduled = false;
+      refresh();
+    });
   }
 
   @NotNull
@@ -64,46 +82,82 @@ public class WorkspaceCache {
    * Returns the Workspace in the cache.
    * <p>
    * <p>Returning a null means there is no current workspace for this project.
-   * <p>
-   * <p>If the cache hasn't loaded yet, blocks until it's ready.
-   * Otherwise doesn't block.
    */
   @Nullable
-  public Workspace getNow() {
-    return cache.getNow();
+  public Workspace get() {
+    return cache;
   }
 
   /**
-   * Waits for any refreshes to finish, then returns the new workspace (or null).
-   *
-   * @throws IllegalStateException if called on the Swing dispatch thread.
+   * Returns whether the  project is a bazel project.
    */
-  @Nullable
-  public Workspace getWhenReady() {
-    return cache.getWhenReady();
+  public boolean isBazel() {
+    return cache != null;
   }
 
   /**
    * Runs a callback each time the current Workspace changes.
    */
   public void subscribe(Runnable callback) {
-    cache.subscribe(callback);
+    synchronized (subscribers) {
+      subscribers.add(callback);
+    }
   }
 
   /**
    * Stops notifications to a callback passed to {@link #subscribe}.
    */
   public void unsubscribe(Runnable callback) {
-    cache.unsubscribe(callback);
+    synchronized (subscribers) {
+      subscribers.remove(callback);
+    }
   }
 
   /**
-   * Triggers a cache refresh.
+   * The Dart plugin uses this registry key to avoid bazel users getting their settings overridden on projects that include a
+   * pubspec.yaml.
    * <p>
-   * If a refresh is already in progress, schedules another one.
+   * In other words, this key tells the plugin to configure dart projects without pubspec.yaml.
    */
-  private void refreshAsync() {
-    cache.refresh(() -> Workspace.load(project));
+  private static final String dartProjectsWithoutPubspecRegistryKey = "dart.projects.without.pubspec";
+
+  /**
+   * Executes a cache refresh.
+   */
+  private void refresh() {
+    final Workspace workspace = Workspace.loadUncached(project);
+    if (workspace == cache) return;
+    cache = workspace;
+
+    // If the current workspace is a bazel workspace, update the Dart plugin
+    // registry key to indicate that there are dart projects without pubspec
+    // registry keys. TODO(jacobr): it would be nice if the Dart plugin was
+    // instead smarter about handling Bazel projects.
+    if (cache != null) {
+      if (!Registry.is(dartProjectsWithoutPubspecRegistryKey, false)) {
+        Registry.get(dartProjectsWithoutPubspecRegistryKey).setValue(true);
+      }
+    }
+    notifyListeners();
+  }
+
+  private Set<Runnable> getSubscribers() {
+    synchronized (subscribers) {
+      return ImmutableSet.copyOf(subscribers);
+    }
+  }
+
+  private void notifyListeners() {
+    for (Runnable sub : getSubscribers()) {
+      try {
+        sub.run();
+      }
+      catch (Exception e) {
+        if (!Objects.equal(e.getMessage(), "expected failure in test")) {
+          FlutterUtils.warn(LOG, "A subscriber to a WorkspaceCache threw an exception", e);
+        }
+      }
+    }
   }
 
   private static final Logger LOG = Logger.getInstance(WorkspaceCache.class);

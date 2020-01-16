@@ -141,8 +141,6 @@ public class BazelTestFields {
 
   @NotNull
   BazelTestFields copyTemplateToNonTemplate(@NotNull final Project project) {
-    final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
-    if (workspace == null) return new BazelTestFields(this);
     return new BazelTestFields(this);
   }
 
@@ -234,7 +232,7 @@ public class BazelTestFields {
 
   @Nullable
   protected Workspace getWorkspace(@NotNull Project project) {
-    return Workspace.load(project);
+    return WorkspaceCache.getInstance(project).get();
   }
 
   protected void verifyMainFile(Project project) throws RuntimeConfigurationError {
