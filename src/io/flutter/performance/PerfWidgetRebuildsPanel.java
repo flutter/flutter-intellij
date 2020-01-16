@@ -72,7 +72,7 @@ public class PerfWidgetRebuildsPanel extends JBPanel {
     scrollPane.setViewportBorder(JBUI.Borders.empty());
     perfSummaryPlaceholder.add(scrollPane);
 
-    final JPanel perfViewSettings = new JPanel(new VerticalLayout(5));
+    final JPanel perfViewSettings = new JPanel(new VerticalLayout(5, 4));
     trackRebuildsCheckbox = new JCheckBox("Track widget rebuilds");
     trackRebuildsCheckbox.setHorizontalAlignment(JLabel.RIGHT);
     trackRebuildsCheckbox.setToolTipText(
@@ -83,6 +83,7 @@ public class PerfWidgetRebuildsPanel extends JBPanel {
     perfViewSettings.add(trackRebuildsCheckbox);
     if (ENABLE_TRACK_REPAINTS) {
       trackRepaintsCheckbox = new JCheckBox("Show widget repaint information");
+      trackRepaintsCheckbox.setHorizontalAlignment(JLabel.RIGHT);
       perfViewSettings.add(trackRepaintsCheckbox);
     }
     perfViewSettings.add(new JSeparator());
