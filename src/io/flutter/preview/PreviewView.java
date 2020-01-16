@@ -555,9 +555,9 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
     }
 
     // Subscribe for the outline for the new file.
-    if (newFile != null && newFile.getCanonicalPath() != null) {
+    if (newFile != null) {
       currentFile.setValue(newFile);
-      currentFilePath = FileUtil.toSystemDependentName(newFile.getCanonicalPath());
+      currentFilePath = FileUtil.toSystemDependentName(newFile.getPath());
       flutterAnalysisServer.addOutlineListener(currentFilePath, outlineListener);
     }
   }
