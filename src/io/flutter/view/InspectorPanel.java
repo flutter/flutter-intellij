@@ -95,7 +95,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
    * a summary tree.
    */
   private final boolean legacyMode;
-  private final AsyncRateLimiter refreshRateLimiter;
+  @Nullable private AsyncRateLimiter refreshRateLimiter;
 
   /**
    * Groups used to manage and cancel requests to load data to display directly
@@ -175,7 +175,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     this.defaultIcon = iconMaker.fromInfo("Default");
 
-    refreshRateLimiter = new AsyncRateLimiter(REFRESH_FRAMES_PER_SECOND, this::refresh, flutterApp);
+    if (!Disposer.isDisposed(flutterApp)) {
+      // Only process refresh requests if the app is still running.
+      refreshRateLimiter = new AsyncRateLimiter(REFRESH_FRAMES_PER_SECOND, this::refresh, flutterApp);
+    }
 
     final String parentTreeDisplayName = (parentTree != null) ? parentTree.treeType.displayName : null;
 
@@ -838,7 +841,9 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       // This was the first frame.
       maybeLoadUI();
     }
-    refreshRateLimiter.scheduleRequest();
+    if (refreshRateLimiter != null) {
+      refreshRateLimiter.scheduleRequest();
+    }
   }
 
   @SuppressWarnings("BooleanMethodIsAlwaysInverted")
