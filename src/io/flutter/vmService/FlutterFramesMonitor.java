@@ -122,7 +122,8 @@ public class FlutterFramesMonitor {
       return 0.0;
     }
 
-    return frameCount * 60.0 / costCount;
+    final double targetDisplayRefreshRate = vmServiceManager.getCurrentDisplayRefreshRateRaw();
+    return frameCount * targetDisplayRefreshRate / costCount;
   }
 
   public void addListener(Listener listener) {
