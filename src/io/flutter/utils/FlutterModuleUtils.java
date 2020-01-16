@@ -11,7 +11,11 @@ import com.intellij.facet.Facet;
 import com.intellij.facet.FacetManager;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.module.*;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleType;
+import com.intellij.openapi.module.ModuleTypeManager;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -56,7 +60,7 @@ public class FlutterModuleUtils {
     return "JAVA_MODULE";
   }
 
-  public static ModuleType getFlutterModuleType() {
+  public static ModuleType<?> getFlutterModuleType() {
     return ModuleTypeManager.getInstance().findByID(getModuleTypeIDForFlutter());
   }
 
@@ -176,7 +180,7 @@ public class FlutterModuleUtils {
   @NotNull
   public static Module[] getModules(@NotNull Project project) {
     // A disposed project has no modules.
-    if (project.isDisposed()) return new Module[]{ };
+    if (project.isDisposed()) return Module.EMPTY_ARRAY;
 
     return ModuleManager.getInstance(project).getModules();
   }
@@ -230,7 +234,7 @@ public class FlutterModuleUtils {
       return;
     }
 
-    final RunnerAndConfigurationSettings settings = runManager.createRunConfiguration(project.getName(), configType.getFactory());
+    final RunnerAndConfigurationSettings settings = runManager.createConfiguration(project.getName(), configType.getFactory());
     final SdkRunConfig config = (SdkRunConfig)settings.getConfiguration();
 
     // Set config name.
@@ -319,7 +323,7 @@ public class FlutterModuleUtils {
   public static boolean isInFlutterAndroidModule(@NotNull Project project, @NotNull VirtualFile file) {
     final Module module = FlutterBuildActionGroup.findFlutterModule(project, file);
     if (module != null) {
-      for (Facet facet : FacetManager.getInstance(module).getAllFacets()) {
+      for (Facet<?> facet : FacetManager.getInstance(module).getAllFacets()) {
         if ("Android".equals(facet.getName())) {
           return declaresFlutter(project);
         }
