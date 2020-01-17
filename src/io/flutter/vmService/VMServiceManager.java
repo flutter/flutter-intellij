@@ -14,6 +14,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import gnu.trove.THashMap;
+import io.flutter.FlutterMessages;
 import io.flutter.inspector.EvalOnDartLibrary;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.EventStream;
@@ -630,7 +631,16 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
             ret.complete(null);
           }
           else {
-            ret.complete(object.get(fpsField).getAsDouble());
+            final double fps = object.get(fpsField).getAsDouble();
+            // Defend against invalid refresh rate for Flutter Desktop devices (0.0).
+            if (fps == 0.0) {
+              FlutterMessages.showWarning("Flutter device frame rate invalid",
+                                       "Device returned a target frame rate of " + fps + " FPS." + " Using 60 FPS instead."
+                                       );
+              ret.complete(defaultRefreshRate);
+            } else {
+              ret.complete(fps);
+            }
           }
         }
       }
