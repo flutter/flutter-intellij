@@ -18,11 +18,11 @@ import com.jetbrains.lang.dart.psi.DartFile;
 import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRootCache;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,9 +35,6 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
   @Nullable
   @Override
   public ProblemDescriptor[] checkFile(@NotNull final PsiFile psiFile, @NotNull final InspectionManager manager, final boolean isOnTheFly) {
-    // If the project should use bazel instead of pub, don't surface this warning.
-    if (FlutterSettings.getInstance().shouldUseBazel()) return null;
-
     if (!isOnTheFly) return null;
 
     if (!(psiFile instanceof DartFile)) return null;
@@ -48,6 +45,9 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
     if (file == null || !file.isInLocalFileSystem()) return null;
 
     final Project project = psiFile.getProject();
+    // If the project should use bazel instead of pub, don't surface this warning.
+    if (WorkspaceCache.getInstance(project).isBazel()) return null;
+
     if (!ProjectRootManager.getInstance(project).getFileIndex().isInContent(file)) return null;
 
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);

@@ -20,6 +20,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.bazel.Workspace;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.common.ConsoleProps;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.DaemonConsoleView;
@@ -45,9 +46,12 @@ public class BazelTestLaunchState extends CommandLineState {
     super(env);
     this.config = config;
     this.fields = config.getFields();
-    this.testFile = testFile == null
-                    ? Workspace.load(env.getProject()).getRoot()
-                    : testFile;
+    if (testFile == null) {
+      Workspace workspace = WorkspaceCache.getInstance(env.getProject()).get();
+      assert(workspace != null);
+      testFile = workspace.getRoot();
+    }
+    this.testFile = testFile;
   }
 
   @NotNull
@@ -91,7 +95,7 @@ public class BazelTestLaunchState extends CommandLineState {
 
     // Create a console showing a test tree.
     final Project project = getEnvironment().getProject();
-    final Workspace workspace = Workspace.load(project);
+    final Workspace workspace = WorkspaceCache.getInstance(project).get();
 
     // Fail gracefully if we have an unexpected null.
     if (workspace == null) {

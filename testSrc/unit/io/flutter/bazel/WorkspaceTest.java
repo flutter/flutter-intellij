@@ -7,12 +7,9 @@ package io.flutter.bazel;
 
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.TestDir;
 import io.flutter.testing.Testing;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -25,18 +22,6 @@ public class WorkspaceTest {
   @Rule
   public final TestDir tmp = new TestDir();
 
-  private boolean originalShouldUseBazel;
-  @Before
-  public void beforeTest() {
-    originalShouldUseBazel = FlutterSettings.getInstance().shouldUseBazel();
-    FlutterSettings.getInstance().setShouldUseBazel(true);
-  }
-
-  @After
-  public void afterTest() {
-    FlutterSettings.getInstance().setShouldUseBazel(originalShouldUseBazel);
-  }
-
   @Test
   public void canLoadWorkspaceWithoutConfigFile() throws Exception {
     final VirtualFile expectedRoot = tmp.ensureDir("abc");
@@ -46,7 +31,7 @@ public class WorkspaceTest {
     final VirtualFile contentRoot = tmp.ensureDir("abc/dart/something");
     ModuleRootModificationUtil.addContentRoot(fixture.getModule(), contentRoot.getPath());
 
-    final Workspace w = Workspace.load(fixture.getProject());
+    final Workspace w = Workspace.loadUncached(fixture.getProject());
 
     assertNotNull("expected a workspace", w);
     assertEquals(expectedRoot, w.getRoot());
@@ -69,7 +54,7 @@ public class WorkspaceTest {
     tmp.writeFile("abc/something_daemon.sh", "");
     tmp.writeFile("abc/something_doctor.sh", "");
 
-    final Workspace w = Workspace.load(fixture.getProject());
+    final Workspace w = Workspace.loadUncached(fixture.getProject());
 
     assertNotNull("expected a workspace", w);
     assertEquals(expectedRoot, w.getRoot());
@@ -94,7 +79,7 @@ public class WorkspaceTest {
     tmp.writeFile("READONLY/abc/scripts/flutter_daemon.sh", "");
     tmp.writeFile("READONLY/abc/scripts/flutter_doctor.sh", "");
 
-    final Workspace w = Workspace.load(fixture.getProject());
+    final Workspace w = Workspace.loadUncached(fixture.getProject());
 
     assertNotNull("expected a workspace", w);
     assertEquals(expectedRoot, w.getRoot());

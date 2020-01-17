@@ -23,6 +23,7 @@ import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.FlutterDevice;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.MostlySilentOsProcessHandler;
 import org.jetbrains.annotations.NotNull;
@@ -127,7 +128,7 @@ class DeviceDaemon {
     final String androidHome = IntelliJAndroidSdk.chooseAndroidHome(project, false);
 
     // See if the Bazel workspace provides a script.
-    final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
+    final Workspace workspace = WorkspaceCache.getInstance(project).get();
     if (workspace != null) {
       final String script = workspace.getDaemonScript();
       if (script != null) {

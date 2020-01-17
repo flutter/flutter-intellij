@@ -107,7 +107,7 @@ public class FlutterModuleUtils {
   public static Workspace getFlutterBazelWorkspace(@Nullable Project project) {
     if (project == null || project.isDisposed()) return null;
 
-    final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
+    final Workspace workspace = WorkspaceCache.getInstance(project).get();
     if (workspace == null) return null;
 
     for (Module module : getModules(project)) {

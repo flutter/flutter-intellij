@@ -83,22 +83,22 @@ public class WorkspaceCacheTest {
   }
 
   private void checkNoWorkspaceExists() {
-    assertNull("expected no workspace to exist", cache.getWhenReady());
+    assertNull("expected no workspace to exist", cache.get());
   }
 
 
   private void checkWorkspaceExists() {
-    assertNotNull("expected a workspace but it doesn't exist", cache.getWhenReady());
+    assertNotNull("expected a workspace but it doesn't exist", cache.get());
   }
 
   private void checkNoConfig() {
-    final Workspace w = cache.getWhenReady();
+    final Workspace w = cache.get();
     assertNotNull("expected a workspace but it doesn't exist", w);
     assertFalse("workspace has unexpected plugin config", w.hasPluginConfig());
   }
 
   private void checkConfigSetting(String expected) {
-    final Workspace w = cache.getWhenReady();
+    final Workspace w = cache.get();
     assertNotNull("expected a workspace but it doesn't exist", w);
     assertEquals(expected, w.getDaemonScript());
   }

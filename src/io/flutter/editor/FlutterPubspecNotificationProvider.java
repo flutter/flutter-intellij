@@ -16,9 +16,9 @@ import com.intellij.ui.EditorNotifications;
 import com.intellij.ui.HyperlinkLabel;
 import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -48,7 +48,7 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
 
     // If the user has opted out of using pub in a project with both bazel rules and pub rules,
     // then we will default to bazel instead of pub.
-    if (FlutterSettings.getInstance().shouldUseBazel()) {
+    if (WorkspaceCache.getInstance(project).isBazel()) {
       return null;
     }
 

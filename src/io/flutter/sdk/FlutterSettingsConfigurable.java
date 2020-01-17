@@ -32,6 +32,8 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
+import io.flutter.bazel.Workspace;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -68,7 +70,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   // Settings for Bazel users.
   private JPanel myBazelOptionsSection;
-  private JCheckBox myUseBazelByDefaultCheckBox;
   private JCheckBox myShowAllRunConfigurationsInContextCheckBox;
 
   // Settings for UI as Code experiments:
@@ -78,6 +79,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JPanel experimentsPanel;
 
   private final @NotNull Project myProject;
+  private final WorkspaceCache workspaceCache;
 
   private boolean ignoringSdkChanges = false;
 
@@ -85,7 +87,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   FlutterSettingsConfigurable(@NotNull Project project) {
     this.myProject = project;
-
+    workspaceCache = WorkspaceCache.getInstance(project);
     init();
 
     myVersionLabel.setText(" ");
@@ -111,6 +113,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
         }
       }
     });
+
+    workspaceCache.subscribe(this::onVersionChanged);
 
     mySdkCombo.addBrowseFolderListener("Select Flutter SDK Path", null, null,
                                        FileChooserDescriptorFactory.createSingleFolderDescriptor(),
@@ -223,10 +227,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.shouldUseBazel() != myUseBazelByDefaultCheckBox.isSelected()) {
-      return true;
-    }
-
     //noinspection RedundantIfStatement
     if (settings.showAllRunConfigurationsInContext() != myShowAllRunConfigurationsInContextCheckBox.isSelected()) {
       return true;
@@ -266,7 +266,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
     settings.setEnableHotUi(myEnableHotUiCheckBox.isSelected());
-    settings.setShouldUseBazel(myUseBazelByDefaultCheckBox.isSelected());
     settings.setShowAllRunConfigurationsInContext(myShowAllRunConfigurationsInContextCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
@@ -314,11 +313,18 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
 
-    myUseBazelByDefaultCheckBox.setSelected(settings.shouldUseBazel());
     myShowAllRunConfigurationsInContextCheckBox.setSelected(settings.showAllRunConfigurationsInContext());
   }
 
   private void onVersionChanged() {
+    final Workspace workspace = workspaceCache.get();
+    if (workspaceCache.isBazel()) {
+        mySdkCombo.setEnabled(false);
+        mySdkCombo.getComboBox().getEditor().setItem(workspace.getRoot().getPath() + '/' + workspace.getSdkHome() + " <set by bazel project>");
+    } else {
+      mySdkCombo.setEnabled(true);
+    }
+
     final FlutterSdk sdk = FlutterSdk.forPath(getSdkPathText());
     if (sdk == null) {
       // Clear the label out with a non-empty string, so that the layout doesn't give this element 0 height.
