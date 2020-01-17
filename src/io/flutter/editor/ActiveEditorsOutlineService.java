@@ -110,7 +110,7 @@ public class ActiveEditorsOutlineService implements Disposable {
 
     final Set<String> newPaths = new HashSet<>();
     for (VirtualFile file : files) {
-      if (FlutterUtils.isDartFile(file)) {
+      if (file.isInLocalFileSystem() && FlutterUtils.isDartFile(file)) {
         newPaths.add(file.getPath());
       }
     }
@@ -192,7 +192,10 @@ public class ActiveEditorsOutlineService implements Disposable {
    */
   @Nullable
   public FlutterOutline getIfUpdated(@NotNull PsiFile file) {
-    final FlutterOutline outline = getOutline(file.getOriginalFile().getVirtualFile().getPath());
+    final FlutterOutline outline = getOutline(file.getVirtualFile().getPath());
+    if (outline == null) {
+      return null;
+    }
     if (isOutdated(outline, file)) {
       return null;
     }
@@ -205,11 +208,8 @@ public class ActiveEditorsOutlineService implements Disposable {
    * <p>
    * An outline and file match if they have the same length.
    */
-  private boolean isOutdated(@Nullable FlutterOutline outline, @NotNull PsiFile file) {
+  private boolean isOutdated(@NotNull FlutterOutline outline, @NotNull PsiFile file) {
     final DartAnalysisServerService das = DartAnalysisServerService.getInstance(file.getProject());
-    if (outline == null) {
-      return true;
-    }
     return file.getTextLength() != outline.getLength()
            && file.getTextLength() != das.getConvertedOffset(file.getVirtualFile(), outline.getLength());
   }

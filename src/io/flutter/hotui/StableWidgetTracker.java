@@ -31,7 +31,7 @@ import java.util.Objects;
  * occur.
  */
 public class StableWidgetTracker implements Disposable {
-  @Nullable private String currentFilePath;
+  @NotNull private final String currentFilePath;
   private final InspectorService.Location initialLocation;
   private final FlutterDartAnalysisServer flutterAnalysisServer;
 
@@ -139,20 +139,15 @@ public class StableWidgetTracker implements Disposable {
     currentOutlines = new EventStream<>(ImmutableList.of());
     this.flutterAnalysisServer = flutterAnalysisServer;
     this.initialLocation = initialLocation;
+
     final DartAnalysisServerService analysisServerService = DartAnalysisServerService.getInstance(project);
-    if (initialLocation.getFile().getCanonicalPath() != null) {
-      currentFilePath = FileUtil.toSystemDependentName(initialLocation.getFile().getCanonicalPath());
-    }
-    if (currentFilePath != null) {
-      flutterAnalysisServer.addOutlineListener(currentFilePath, outlineListener);
-    }
+    currentFilePath = FileUtil.toSystemDependentName(initialLocation.getFile().getPath());
+    flutterAnalysisServer.addOutlineListener(currentFilePath, outlineListener);
   }
 
   @Override
   public void dispose() {
-    if (currentFilePath != null) {
-      flutterAnalysisServer.removeOutlineListener(currentFilePath, outlineListener);
-    }
+    flutterAnalysisServer.removeOutlineListener(currentFilePath, outlineListener);
   }
 
   public boolean isValid() {
