@@ -22,6 +22,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
+import com.intellij.xdebugger.impl.XSourcePositionImpl;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
 import com.jetbrains.lang.dart.psi.DartExpression;
 import com.jetbrains.lang.dart.psi.DartReferenceExpression;
@@ -60,6 +61,7 @@ import java.util.function.Supplier;
 public class InspectorService implements Disposable {
 
   public static class Location {
+
     public Location(@NotNull VirtualFile file, int line, int column, int offset) {
       this.file = file;
       this.line = line;
@@ -92,6 +94,16 @@ public class InspectorService implements Disposable {
     @NotNull
     public String getPath() {
       return toSourceLocationUri(file.getPath());
+    }
+
+    @Nullable
+    public XSourcePosition getXSourcePosition() {
+      final int line = getLine();
+      final int column = getColumn();
+      if (line < 0 || column < 0) {
+        return null;
+      }
+      return XSourcePositionImpl.create(file, line - 1, column - 1);
     }
 
     /**

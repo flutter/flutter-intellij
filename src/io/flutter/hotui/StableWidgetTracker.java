@@ -31,7 +31,7 @@ import java.util.Objects;
  * occur.
  */
 public class StableWidgetTracker implements Disposable {
-  @NotNull private final String currentFilePath;
+  private final String currentFilePath;
   private final InspectorService.Location initialLocation;
   private final FlutterDartAnalysisServer flutterAnalysisServer;
 
