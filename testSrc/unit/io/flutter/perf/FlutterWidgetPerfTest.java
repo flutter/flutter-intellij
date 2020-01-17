@@ -184,6 +184,12 @@ class MockEditorPerfModel extends MockPerfModel implements EditorPerfModel {
 
 class FakeFileLocationMapper implements FileLocationMapper {
 
+  private final String path;
+
+  FakeFileLocationMapper(String path) {
+    this.path = path;
+  }
+
   Map<TextRange, String> mockText = new HashMap<>();
 
   @Override
@@ -201,6 +207,11 @@ class FakeFileLocationMapper implements FileLocationMapper {
   public String getText(TextRange textRange) {
     assert mockText.containsKey(textRange);
     return mockText.get(textRange);
+  }
+
+  @Override
+  public String getPath() {
+    return path;
   }
 }
 
@@ -332,7 +343,7 @@ public class FlutterWidgetPerfTest {
         perfModels.put(textEditor.getName(), model);
         return model;
       },
-      path -> new FakeFileLocationMapper()
+      path -> new FakeFileLocationMapper(path)
     );
     widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild,
                                                "{\"startTime\":1000,\"events\":[1,1,2,1,3,1,4,1,6,1,10,4,11,4,12,4,13,1,14,1,95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1],\"newLocations\":{\"file:///sample/project/main.dart\":[1,11,14,2,18,16,3,23,17,4,40,16,6,46,16,10,69,9,11,70,9,12,71,18,13,41,19,14,42,20,95,51,58],\"file:///sample/project/clock.dart\":[96,33,12,97,52,12,100,53,16,102,54,14,104,55,17,105,34,15,106,35,16]}}");
@@ -461,7 +472,7 @@ public class FlutterWidgetPerfTest {
       true,
       widgetPerfProvider,
       textEditor -> null,
-      path -> new FakeFileLocationMapper()
+      path -> new FakeFileLocationMapper(path)
     );
     final MockPerfModel perfModel = new MockPerfModel();
     flutterWidgetPerf.addPerfListener(perfModel);

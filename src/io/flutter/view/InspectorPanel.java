@@ -565,12 +565,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     }
 
     if (flutterAppFrameReady) {
-      // We need to start by quering the inspector service to find out the
-      // current state of the UI.
-      AsyncUtils.whenCompleteUiThread(inspectorService.inferPubRootDirectoryIfNeeded(), (String directory, Throwable throwable) -> {
-        // Ignore exceptions, we still want to show the Inspector View.
-        updateSelectionFromService(false);
-      });
+      updateSelectionFromService(false);
     }
     else {
       AsyncUtils.whenCompleteUiThread(inspectorService.isWidgetTreeReady(), (Boolean ready, Throwable throwable) -> {
@@ -1208,31 +1203,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   boolean isCreatedByLocalProject(DiagnosticsNode node) {
-    if (node.isCreatedByLocalProject()) {
-      return true;
-    }
-    // TODO(jacobr): remove the following code once the
-    // `setPubRootDirectories` method has been in two revs of the Flutter Alpha
-    // channel. The feature is expected to have landed in the Flutter dev
-    // chanel on March 2, 2018.
-    final InspectorSourceLocation location = node.getCreationLocation();
-    if (location == null) {
-      return false;
-    }
-    final VirtualFile file = location.getFile();
-    if (file == null) {
-      return false;
-    }
-    final String filePath = file.getCanonicalPath();
-    if (filePath != null) {
-      for (PubRoot root : getFlutterApp().getPubRoots()) {
-        final String canonicalPath = root.getRoot().getCanonicalPath();
-        if (canonicalPath != null && filePath.startsWith(canonicalPath)) {
-          return true;
-        }
-      }
-    }
-    return false;
+    return node.isCreatedByLocalProject();
   }
 
   boolean hasPlaceholderChildren(DefaultMutableTreeNode node) {

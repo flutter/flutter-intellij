@@ -31,12 +31,12 @@ public class DocumentFileLocationMapper implements FileLocationMapper {
   private final XDebuggerUtil debuggerUtil;
 
   public DocumentFileLocationMapper(String path, Project project) {
-    this(lookupDocument(path), project);
+    this(lookupDocument(path, project), project);
   }
 
   @Nullable
-  public static Document lookupDocument(String path) {
-    final String fileName = InspectorService.fromSourceLocationUri(path);
+  public static Document lookupDocument(String path, Project project) {
+    final String fileName = InspectorService.fromSourceLocationUri(path, project);
 
     final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(fileName);
     if (virtualFile != null && virtualFile.exists() &&
@@ -105,5 +105,10 @@ public class DocumentFileLocationMapper implements FileLocationMapper {
       return null;
     }
     return document.getText(textRange);
+  }
+
+  @Override
+  public String getPath() {
+    return psiFile == null ? null : psiFile.getVirtualFile().getPath();
   }
 }

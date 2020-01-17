@@ -191,7 +191,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
               if (name == null) {
                 name = "";
               }
-              final Location location = new Location(path, line, column, id, textRange, name);
+              final Location location = new Location(locationMapper.getPath(), line, column, id, textRange, name);
 
               final Location existingLocation = knownLocationIds.get(id);
               if (existingLocation == null) {

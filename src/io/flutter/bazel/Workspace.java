@@ -33,6 +33,8 @@ import java.util.*;
 public class Workspace {
   private static final String PLUGIN_CONFIG_PATH = "dart/config/intellij-plugins/flutter.json";
 
+  public static final String BAZEL_URI_SCHEME = "google3://";
+
   @NotNull private final VirtualFile root;
   @Nullable private final PluginConfig config;
   @Nullable private final String daemonScript;
@@ -208,6 +210,9 @@ public class Workspace {
    */
   @Nullable
   static Workspace loadUncached(@NotNull Project project) {
+    if (project.isDisposed()) {
+      return null;
+    }
     final VirtualFile workspaceFile = findWorkspaceFile(project);
     if (workspaceFile == null) return null;
 
@@ -316,4 +321,11 @@ public class Workspace {
   }
 
   private static final Logger LOG = Logger.getInstance(Workspace.class);
+
+  public String convertPath(String path) {
+    if (path.startsWith(Workspace.BAZEL_URI_SCHEME)) {
+      return getRoot().getPath() + path.substring(Workspace.BAZEL_URI_SCHEME.length());
+    }
+    return path;
+  }
 }
