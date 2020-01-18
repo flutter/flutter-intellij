@@ -44,6 +44,7 @@ import io.flutter.utils.MostlySilentOsProcessHandler;
 import io.flutter.utils.ProgressHelper;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
+import io.flutter.vmService.DisplayRefreshRateManager;
 import io.flutter.vmService.ServiceExtensions;
 import io.flutter.vmService.VMServiceManager;
 import org.dartlang.vm.service.VmService;
@@ -686,6 +687,11 @@ public class FlutterApp implements Disposable {
   @Nullable
   public VMServiceManager getVMServiceManager() {
     return myVMServiceManager;
+  }
+
+  @Nullable
+  public DisplayRefreshRateManager getDisplayRefreshRateManager() {
+    return myVMServiceManager != null ? myVMServiceManager.displayRefreshRateManager : null;
   }
 
   @NotNull
