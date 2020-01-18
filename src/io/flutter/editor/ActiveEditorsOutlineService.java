@@ -110,7 +110,7 @@ public class ActiveEditorsOutlineService implements Disposable {
 
     final Set<String> newPaths = new HashSet<>();
     for (VirtualFile file : files) {
-      if (file.isInLocalFileSystem() && FlutterUtils.isDartFile(file)) {
+      if (FlutterUtils.isDartFile(file) && file.isInLocalFileSystem()) {
         newPaths.add(file.getPath());
       }
     }
