@@ -41,18 +41,25 @@ import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.dart.FlutterOutlineListener;
 import io.flutter.editor.PropertyEditorPanel;
-import io.flutter.inspector.*;
+import io.flutter.inspector.FlutterWidget;
+import io.flutter.inspector.InspectorGroupManagerService;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.CustomIconMaker;
 import io.flutter.utils.EventStream;
-import org.dartlang.analysis.server.protocol.*;
+import org.dartlang.analysis.server.protocol.Element;
+import org.dartlang.analysis.server.protocol.FlutterOutline;
+import org.dartlang.analysis.server.protocol.FlutterOutlineAttribute;
+import org.dartlang.analysis.server.protocol.FlutterOutlineKind;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -85,7 +92,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
   private Splitter splitter;
   private Splitter propertyEditSplitter;
   private JScrollPane scrollPane;
-  private JScrollPane propertyScrollPane;
   private OutlineTree tree;
   private @Nullable PreviewArea previewArea;
 
@@ -394,7 +400,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
 
       final SimpleToolWindowPanel window = new SimpleToolWindowPanel(true, true);
       window.setToolbar(windowToolbar.getComponent());
-      propertyScrollPane = ScrollPaneFactory.createScrollPane(propertyEditPanel);
+      final JScrollPane propertyScrollPane = ScrollPaneFactory.createScrollPane(propertyEditPanel);
       window.setContent(propertyScrollPane);
       propertyEditSplitter.setFirstComponent(window.getComponent());
       final InspectorGroupManagerService.Client inspectorStateServiceClient = new InspectorGroupManagerService.Client(project) {

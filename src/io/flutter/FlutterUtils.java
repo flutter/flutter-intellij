@@ -102,8 +102,7 @@ public class FlutterUtils {
     if (file instanceof LightVirtualFile) {
       return false;
     }
-    // TODO(jacobr): we might also want to filter for files not under the
-    // current project root.
+    // TODO(jacobr): we might also want to filter for files not under the current project root.
     return file != null && isDartFile(file);
   }
 
@@ -171,7 +170,7 @@ public class FlutterUtils {
    * Test if the given element is contained in a module with a pub root that declares a flutter dependency.
    */
   public static boolean isInFlutterProject(@NotNull Project project, @NotNull PsiElement element) {
-    PsiFile file = element.getContainingFile();
+    final PsiFile file = element.getContainingFile();
     if (file == null) {
       return false;
     }
@@ -213,7 +212,7 @@ public class FlutterUtils {
     assert !project.isDefault();
     @SystemIndependent String path = project.getBasePath();
     assert path != null;
-    VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
+    final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
     return Objects.requireNonNull(file);
   }
 

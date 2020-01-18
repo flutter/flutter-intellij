@@ -34,7 +34,6 @@ public class StableWidgetTracker implements Disposable {
   private final String currentFilePath;
   private final InspectorService.Location initialLocation;
   private final FlutterDartAnalysisServer flutterAnalysisServer;
-  private final DartAnalysisServerService analysisServerService;
 
   private final OutlineOffsetConverter converter;
   // Path to the current outline
@@ -79,7 +78,7 @@ public class StableWidgetTracker implements Disposable {
     path.add(node);
     int i = 1;
     while (i < lastPath.size() && node != null && !node.getChildren().isEmpty()) {
-      FlutterOutline oldChild = lastPath.get(i);
+      final FlutterOutline oldChild = lastPath.get(i);
       final int expectedIndex = findChildIndex(lastPath.get(i - 1), oldChild);
       assert (expectedIndex != -1);
       final List<FlutterOutline> children = node.getChildren();
@@ -140,7 +139,8 @@ public class StableWidgetTracker implements Disposable {
     currentOutlines = new EventStream<>(ImmutableList.of());
     this.flutterAnalysisServer = flutterAnalysisServer;
     this.initialLocation = initialLocation;
-    analysisServerService = DartAnalysisServerService.getInstance(project);
+
+    final DartAnalysisServerService analysisServerService = DartAnalysisServerService.getInstance(project);
     currentFilePath = FileUtil.toSystemDependentName(initialLocation.getFile().getPath());
     flutterAnalysisServer.addOutlineListener(currentFilePath, outlineListener);
   }

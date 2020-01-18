@@ -110,8 +110,8 @@ public class ActiveEditorsOutlineService implements Disposable {
 
     final Set<String> newPaths = new HashSet<>();
     for (VirtualFile file : files) {
-      if (FlutterUtils.isDartFile(file) && file.getCanonicalPath() != null) {
-        newPaths.add(file.getCanonicalPath());
+      if (FlutterUtils.isDartFile(file) && file.isInLocalFileSystem()) {
+        newPaths.add(file.getPath());
       }
     }
 
@@ -180,7 +180,7 @@ public class ActiveEditorsOutlineService implements Disposable {
    * To get an outline that is guaranteed in-sync with the file it outlines, see {@link #getIfUpdated}.
    */
   @Nullable
-  public FlutterOutline getOutline(String path) {
+  public FlutterOutline getOutline(@Nullable String path) {
     return pathToOutline.get(path);
   }
 
@@ -192,11 +192,13 @@ public class ActiveEditorsOutlineService implements Disposable {
    */
   @Nullable
   public FlutterOutline getIfUpdated(@NotNull PsiFile file) {
-    final FlutterOutline outline = getOutline(file.getVirtualFile().getCanonicalPath());
-    if (isOutdated(outline, file)) {
+    final FlutterOutline outline = getOutline(file.getVirtualFile().getPath());
+    if (outline == null || isOutdated(outline, file)) {
       return null;
     }
-    return outline;
+    else {
+      return outline;
+    }
   }
 
   /**
@@ -205,11 +207,8 @@ public class ActiveEditorsOutlineService implements Disposable {
    * <p>
    * An outline and file match if they have the same length.
    */
-  private boolean isOutdated(@Nullable FlutterOutline outline, @NotNull PsiFile file) {
+  private boolean isOutdated(@NotNull FlutterOutline outline, @NotNull PsiFile file) {
     final DartAnalysisServerService das = DartAnalysisServerService.getInstance(file.getProject());
-    if (outline == null) {
-      return true;
-    }
     return file.getTextLength() != outline.getLength()
            && file.getTextLength() != das.getConvertedOffset(file.getVirtualFile(), outline.getLength());
   }

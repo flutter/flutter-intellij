@@ -96,12 +96,24 @@ public class FlutterDartAnalysisServer implements Disposable {
     }
   }
 
+  /**
+   * Adds a flutter event subscription to the analysis server.
+   * <p>
+   * Note that <code>filePath</code> must be an absolute path.
+   */
   private void addSubscription(@NotNull final String service, @NotNull final String filePath) {
     final List<String> files = subscriptions.computeIfAbsent(service, k -> new ArrayList<>());
-    files.add(filePath);
-    sendSubscriptions();
+    if (!files.contains(filePath)) {
+      files.add(filePath);
+      sendSubscriptions();
+    }
   }
 
+  /**
+   * Removes a flutter event subscription from the analysis server.
+   * <p>
+   * Note that <code>filePath</code> must be an absolute path.
+   */
   private void removeSubscription(@NotNull final String service, @NotNull final String filePath) {
     final List<String> files = subscriptions.get(service);
     if (files != null && files.remove(filePath)) {

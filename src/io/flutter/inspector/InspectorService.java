@@ -69,7 +69,7 @@ public class InspectorService implements Disposable {
       this.offset = offset;
     }
 
-    private final @NotNull VirtualFile file;
+    @NotNull private final VirtualFile file;
     public final int line;
     public final int column;
     private final int offset;
@@ -86,20 +86,18 @@ public class InspectorService implements Disposable {
       return offset;
     }
 
+    @NotNull
     public VirtualFile getFile() {
       return file;
     }
 
-    public @NotNull
-    String getPath() {
+    @NotNull
+    public String getPath() {
       return toSourceLocationUri(file.getPath());
     }
 
-    public @NotNull
-    XSourcePosition getXSourcePosition() {
-      if (file == null) {
-        return null;
-      }
+    @Nullable
+    public XSourcePosition getXSourcePosition() {
       final int line = getLine();
       final int column = getColumn();
       if (line < 0 || column < 0) {
@@ -116,7 +114,7 @@ public class InspectorService implements Disposable {
     public static @Nullable
     InspectorService.Location outlineToLocation(Editor editor, FlutterOutline outline) {
       if (!(editor instanceof EditorEx)) return null;
-      EditorEx editorEx = (EditorEx)editor;
+      final EditorEx editorEx = (EditorEx)editor;
       return outlineToLocation(editor.getProject(), editorEx.getVirtualFile(), outline, editor.getDocument());
     }
 
