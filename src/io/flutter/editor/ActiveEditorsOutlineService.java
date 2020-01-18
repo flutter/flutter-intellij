@@ -193,13 +193,12 @@ public class ActiveEditorsOutlineService implements Disposable {
   @Nullable
   public FlutterOutline getIfUpdated(@NotNull PsiFile file) {
     final FlutterOutline outline = getOutline(file.getVirtualFile().getPath());
-    if (outline == null) {
+    if (outline == null || isOutdated(outline, file)) {
       return null;
     }
-    if (isOutdated(outline, file)) {
-      return null;
+    else {
+      return outline;
     }
-    return outline;
   }
 
   /**
