@@ -118,7 +118,7 @@ public class DisplayRefreshRateManager {
           else {
             final double fps = object.get(fpsField).getAsDouble();
             // Defend against invalid refresh rate for Flutter Desktop devices (0.0).
-            if (fps == 0.0) {
+            if (invalidFps(fps)) {
               NotificationManager.showWarning(
                 "Flutter device frame rate invalid",
                 "Device returned a target frame rate of " + fps + " FPS." + " Using 60 FPS instead.",
@@ -134,5 +134,10 @@ public class DisplayRefreshRateManager {
       }
     );
     return ret;
+  }
+
+  private boolean invalidFps(double fps) {
+    // Use an epsilon to avoid issues with double comparison.
+    return fps > -1.0 && fps < 1.0;
   }
 }
