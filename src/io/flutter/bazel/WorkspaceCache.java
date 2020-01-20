@@ -69,6 +69,9 @@ public class WorkspaceCache {
     refreshScheduled = true;
     SwingUtilities.invokeLater(() -> {
       refreshScheduled = false;
+      if (project.isDisposed()) {
+        return;
+      }
       refresh();
     });
   }
@@ -148,6 +151,9 @@ public class WorkspaceCache {
   }
 
   private void notifyListeners() {
+    if (project.isDisposed()) {
+      return;
+    }
     for (Runnable sub : getSubscribers()) {
       try {
         sub.run();
