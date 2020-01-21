@@ -137,7 +137,7 @@ public class DisplayRefreshRateManager {
   }
 
   private boolean invalidFps(double fps) {
-    // Use an epsilon to avoid issues with double comparison.
-    return fps > -1.0 && fps < 1.0;
+    // 24 FPS is the lowest frame rate that can be considered "smooth".
+    return fps < 24.0;
   }
 }

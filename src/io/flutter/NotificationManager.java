@@ -5,9 +5,9 @@
  */
 package io.flutter;
 
-import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
+import org.jetbrains.annotations.Nullable;
 
 // TODO(kenz): it would be nice to consolidate all notifications to use a single manager. Perhaps we should
 // make `FlutterMessages` a private class in this file. Optionally, we could also move this functionality
