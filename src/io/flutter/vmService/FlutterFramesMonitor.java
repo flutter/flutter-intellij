@@ -21,7 +21,7 @@ import java.util.List;
 public class FlutterFramesMonitor {
   static final int maxFrames = 200;
 
-  private final VMServiceManager vmServiceManager;
+  private final DisplayRefreshRateManager displayRefreshRateManager;
 
   private final EventDispatcher<Listener> eventDispatcher = EventDispatcher.create(Listener.class);
 
@@ -42,7 +42,7 @@ public class FlutterFramesMonitor {
       frameId = json.get("number").getAsInt();
       startTimeMicros = json.get("startTime").getAsLong();
       elapsedMicros = json.get("elapsed").getAsLong();
-      frameSetStart = (startTimeMicros - lastEventFinished) > (vmServiceManager.getTargetMicrosPerFrame() * 2);
+      frameSetStart = (startTimeMicros - lastEventFinished) > (displayRefreshRateManager.getTargetMicrosPerFrame() * 2);
     }
 
     public long getFrameFinishedMicros() {
@@ -50,7 +50,7 @@ public class FlutterFramesMonitor {
     }
 
     public boolean isSlowFrame() {
-      return elapsedMicros > vmServiceManager.getTargetMicrosPerFrame();
+      return elapsedMicros > displayRefreshRateManager.getTargetMicrosPerFrame();
     }
 
     public int hashCode() {
@@ -68,8 +68,8 @@ public class FlutterFramesMonitor {
 
   public List<FlutterFrameEvent> frames = new LinkedList<>();
 
-  public FlutterFramesMonitor(@NotNull VMServiceManager vmServiceManager, @NotNull VmService vmService) {
-    this.vmServiceManager = vmServiceManager;
+  public FlutterFramesMonitor(@NotNull DisplayRefreshRateManager displayRefreshRateManager, @NotNull VmService vmService) {
+    this.displayRefreshRateManager = displayRefreshRateManager;
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
       public void received(String streamId, Event event) {
@@ -105,8 +105,9 @@ public class FlutterFramesMonitor {
       for (FlutterFrameEvent frame : frames) {
         frameCount++;
 
-        long thisCost = frame.elapsedMicros / vmServiceManager.getTargetMicrosPerFrame();
-        if (frame.elapsedMicros > (thisCost * vmServiceManager.getTargetMicrosPerFrame())) {
+        int targetMicrosPerFrame = displayRefreshRateManager.getTargetMicrosPerFrame();
+        long thisCost = frame.elapsedMicros / targetMicrosPerFrame;
+        if (frame.elapsedMicros > (thisCost * targetMicrosPerFrame)) {
           thisCost++;
         }
 
@@ -122,7 +123,7 @@ public class FlutterFramesMonitor {
       return 0.0;
     }
 
-    final double targetDisplayRefreshRate = vmServiceManager.getCurrentDisplayRefreshRateRaw();
+    final double targetDisplayRefreshRate = displayRefreshRateManager.getCurrentDisplayRefreshRateRaw();
     return frameCount * targetDisplayRefreshRate / costCount;
   }
 

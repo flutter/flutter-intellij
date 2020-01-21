@@ -9,7 +9,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
@@ -36,8 +35,6 @@ import java.util.function.Consumer;
 import static io.flutter.vmService.ServiceExtensions.enableOnDeviceInspector;
 
 public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposable {
-  public final double defaultRefreshRate = 60.0;
-
   private static final Logger LOG = Logger.getInstance(VMServiceManager.class);
 
   @NotNull private final FlutterApp app;
@@ -53,8 +50,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
   private final EventStream<IsolateRef> flutterIsolateRefStream;
 
-  private final EventStream<Double> displayRefreshRateStream;
-
   private volatile boolean firstFrameEventReceived = false;
   private final VmService vmService;
 
@@ -66,6 +61,8 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
   private final Set<String> registeredServices = new HashSet<>();
 
+  @NotNull public final DisplayRefreshRateManager displayRefreshRateManager;
+
   public VMServiceManager(@NotNull FlutterApp app, @NotNull VmService vmService) {
     this.app = app;
     this.vmService = vmService;
@@ -74,9 +71,9 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
     assert (app.getFlutterDebugProcess() != null);
 
     this.heapMonitor = new HeapMonitor(app.getFlutterDebugProcess().getVmServiceWrapper());
-    this.flutterFramesMonitor = new FlutterFramesMonitor(this, vmService);
+    this.displayRefreshRateManager = new DisplayRefreshRateManager(this, vmService);
+    this.flutterFramesMonitor = new FlutterFramesMonitor(displayRefreshRateManager, vmService);
     flutterIsolateRefStream = new EventStream<>();
-    displayRefreshRateStream = new EventStream<>();
 
     // The VM Service depends on events from the Extension event stream to determine when Flutter.Frame
     // events are fired. Without the call to listen, events from the stream will not be sent.
@@ -357,11 +354,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
       pendingServiceExtensions.clear();
 
       // Query for display refresh rate and add the value to the stream.
-      // This needs to happen on the UI thread.
-      //noinspection CodeBlock2Expr
-      ApplicationManager.getApplication().invokeLater(() -> {
-        getDisplayRefreshRate().thenAcceptAsync(displayRefreshRateStream::setValue);
-      });
+      displayRefreshRateManager.queryRefreshRate();
     }
   }
 
@@ -556,89 +549,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
     }
   }
 
-  public int getTargetMicrosPerFrame() {
-    Double fps = getCurrentDisplayRefreshRateRaw();
-    if (fps == null) {
-      fps = defaultRefreshRate;
-    }
-    return (int)Math.round((Math.floor(1000000.0f / fps)));
-  }
-
-  /**
-   * Returns a StreamSubscription providing the queried display refresh rate.
-   * <p>
-   * The current value of the subscription can be null occasionally during initial application startup and for a brief time when doing a
-   * hot restart.
-   */
-  public StreamSubscription<Double> getCurrentDisplayRefreshRate(Consumer<Double> onValue, boolean onUIThread) {
-    return displayRefreshRateStream.listen(onValue, onUIThread);
-  }
-
-  /**
-   * Return the current display refresh rate, if any.
-   * <p>
-   * Note that this may not be immediately populated at app startup for Flutter apps. In that case, this will return
-   * the default value (defaultRefreshRate). Clients that wish to be notified when the refresh rate is discovered
-   * should prefer the StreamSubscription variant of this method (getCurrentDisplayRefreshRate()).
-   */
-  public Double getCurrentDisplayRefreshRateRaw() {
-    synchronized (displayRefreshRateStream) {
-      Double fps = displayRefreshRateStream.getValue();
-      if (fps == null) {
-        fps = defaultRefreshRate;
-      }
-      return fps;
-    }
-  }
-
-  public CompletableFuture<Double> getDisplayRefreshRate() {
-    final double unknownRefreshRate = 0.0;
-
-    final String flutterViewId = getFlutterViewId().exceptionally(exception -> {
-      // We often see "java.lang.RuntimeException: Method not found" from here; perhaps a race condition?
-      LOG.warn(exception.getMessage());
-      return null;
-    }).join();
-
-    if (flutterViewId == null) {
-      // Fail gracefully by returning the default.
-      return CompletableFuture.completedFuture(defaultRefreshRate);
-    }
-
-    return invokeGetDisplayRefreshRate(flutterViewId);
-  }
-
-  private CompletableFuture<Double> invokeGetDisplayRefreshRate(String flutterViewId) {
-    final CompletableFuture<Double> ret = new CompletableFuture<>();
-
-    final JsonObject params = new JsonObject();
-    params.addProperty("viewId", flutterViewId);
-
-    vmService.callServiceExtension(
-      getCurrentFlutterIsolateRaw().getId(), ServiceExtensions.displayRefreshRate, params,
-      new ServiceExtensionConsumer() {
-        @Override
-        public void onError(RPCError error) {
-          ret.completeExceptionally(new RuntimeException(error.getMessage()));
-        }
-
-        @Override
-        public void received(JsonObject object) {
-          final String fpsField = "fps";
-
-          if (object == null || !object.has(fpsField)) {
-            ret.complete(null);
-          }
-          else {
-            ret.complete(object.get(fpsField).getAsDouble());
-          }
-        }
-      }
-    );
-    return ret;
-  }
-
-  private CompletableFuture<String> getFlutterViewId() {
+  public CompletableFuture<String> getFlutterViewId() {
     return getFlutterViewsList().exceptionally(exception -> {
       throw new RuntimeException(exception.getMessage());
     }).thenApplyAsync((JsonElement element) -> {

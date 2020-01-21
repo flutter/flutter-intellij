@@ -1,9 +1,9 @@
 /*
- * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Copyright 2020 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.inspector;
+package io.flutter.performance;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
@@ -13,6 +13,7 @@ import com.intellij.ui.components.JBPanel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.vmService.DisplayRefreshRateManager;
 import io.flutter.vmService.FlutterFramesMonitor;
 import io.flutter.vmService.VMServiceManager;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +43,7 @@ public class FrameRenderingDisplay {
     assert app.getVMServiceManager() != null;
     final FlutterFramesMonitor flutterFramesMonitor = app.getVMServiceManager().getFlutterFramesMonitor();
 
-    final FrameRenderingPanel frameRenderingPanel = new FrameRenderingPanel(flutterFramesMonitor, app.getVMServiceManager());
+    final FrameRenderingPanel frameRenderingPanel = new FrameRenderingPanel(flutterFramesMonitor, app.getDisplayRefreshRateManager());
 
     final JBLabel targetFrameTimeLabel = new JBLabel();
     targetFrameTimeLabel.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
@@ -50,12 +51,16 @@ public class FrameRenderingDisplay {
     targetFrameTimeLabel.setBorder(JBUI.Borders.empty(2));
     targetFrameTimeLabel.setOpaque(false);
 
-    final double defaultRefreshRate = app.getVMServiceManager().defaultRefreshRate;
-    updateTargetLabelForRefreshRate(app.getVMServiceManager().getCurrentDisplayRefreshRateRaw(), defaultRefreshRate, targetFrameTimeLabel);
+
+    updateTargetLabelForRefreshRate(
+      app.getDisplayRefreshRateManager().getCurrentDisplayRefreshRateRaw(),
+      DisplayRefreshRateManager.defaultRefreshRate,
+      targetFrameTimeLabel
+    );
 
     // Listen for updates to the display refresh rate.
-    app.getVMServiceManager().getCurrentDisplayRefreshRate((fps) -> {
-      updateTargetLabelForRefreshRate(fps, defaultRefreshRate, targetFrameTimeLabel);
+    app.getDisplayRefreshRateManager().getCurrentDisplayRefreshRate((fps) -> {
+      updateTargetLabelForRefreshRate(fps, DisplayRefreshRateManager.defaultRefreshRate, targetFrameTimeLabel);
     }, false);
 
     final JBPanel targetFrameTimePanel = new JBPanel();
@@ -98,15 +103,15 @@ public class FrameRenderingDisplay {
 class FrameRenderingPanel extends JPanel {
   private final FlutterFramesMonitor framesMonitor;
 
-  private final VMServiceManager vmServiceManager;
+  private final DisplayRefreshRateManager displayRefreshRateManager;
 
   private final Map<FlutterFramesMonitor.FlutterFrameEvent, JComponent> frameWidgets = new HashMap<>();
 
   private Rectangle lastSavedBounds;
 
-  FrameRenderingPanel(@NotNull FlutterFramesMonitor framesMonitor, @NotNull VMServiceManager vmServiceManager) {
+  FrameRenderingPanel(@NotNull FlutterFramesMonitor framesMonitor, @NotNull DisplayRefreshRateManager displayRefreshRateManager) {
     this.framesMonitor = framesMonitor;
-    this.vmServiceManager = vmServiceManager;
+    this.displayRefreshRateManager = displayRefreshRateManager;
 
     setLayout(null);
     final Color color = UIUtil.getLabelDisabledForeground();
@@ -144,7 +149,7 @@ class FrameRenderingPanel extends JPanel {
     final Graphics2D g2 = (Graphics2D)g;
 
     final float msPerPixel = (2.0f * 1000000.0f / 60.0f) / height;
-    final float y = vmServiceManager.getTargetMicrosPerFrame() / msPerPixel;
+    final float y = displayRefreshRateManager.getTargetMicrosPerFrame() / msPerPixel;
     final Stroke oldStroke = g2.getStroke();
     try {
       g2.setStroke(STROKE);
@@ -193,7 +198,7 @@ class FrameRenderingPanel extends JPanel {
                                 ? "This frame took " +
                                   FrameRenderingDisplay.df.format(frame.elapsedMicros / 1000.0d) +
                                   "ms to render, which\ncan cause frame rate to drop below " +
-                                  Math.round(vmServiceManager.getCurrentDisplayRefreshRateRaw()) + " FPS."
+                                  Math.round(displayRefreshRateManager.getCurrentDisplayRefreshRateRaw()) + " FPS."
                                 : "This frame took " + FrameRenderingDisplay.df.format(frame.elapsedMicros / 1000.0d) + "ms to render.");
           frameWidgets.put(frame, widget);
           add(widget);
