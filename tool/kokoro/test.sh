@@ -16,11 +16,11 @@ export FLUTTER_SDK=`pwd`/../flutter
 java -version
 echo "JAVA_HOME=$JAVA_HOME"
 
-sudo apt-get update
-sudo apt-get install ant
+curl https://www-us.apache.org/dist//ant/binaries/apache-ant-1.10.7-bin.tar.gz >ant.tar.gz
+tar vfx ant.tar.gz
+export PATH=`pwd`/apache-ant-1.10.7/bin:$PATH
 
 ant -version
-curl --version
 zip --version
 
 ./bin/plugin test
