@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Fail on any error.
-#set -e
+set -e
 
 # Display commands being run. Only do this while debugging and be careful
 # that no confidential information is displayed.
@@ -20,9 +20,11 @@ curl https://www-us.apache.org/dist//ant/binaries/apache-ant-1.10.7-bin.tar.gz >
 tar vfx ant.tar.gz
 export PATH=`pwd`/apache-ant-1.10.7/bin:$PATH
 
-ant -version
-zip --version
+echo "pub get `pwd`"; pub get
+(cd testData/sample_tests; echo "pub get `pwd`"; pub get)
+(cd tool/plugin; echo "pub get `pwd`"; pub get)
 
+echo "kokoro build start"
 ./bin/plugin build --channel=dev
 
 echo "kokoro build finished"
