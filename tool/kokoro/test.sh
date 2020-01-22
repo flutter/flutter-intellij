@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-source ./setup.sh
+source ./tool/kokoro/setup.sh
 setup
 
 echo "kokoro test start"
