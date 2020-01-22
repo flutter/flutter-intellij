@@ -17,12 +17,12 @@ java -version
 echo "JAVA_HOME=$JAVA_HOME"
 
 curl https://www-us.apache.org/dist//ant/binaries/apache-ant-1.10.7-bin.tar.gz >ant.tar.gz
-tar vfx ant.tar.gz
+tar vfx ant.tar.gz > /dev/null
 export PATH=`pwd`/apache-ant-1.10.7/bin:$PATH
 
-echo "pub get `pwd`"; pub get
-(cd testData/sample_tests; echo "pub get `pwd`"; pub get)
-(cd tool/plugin; echo "pub get `pwd`"; pub get)
+echo "pub get `pwd`"; pub get --no-precompile
+(cd testData/sample_tests; echo "pub get `pwd`"; pub get --no-precompile)
+(cd tool/plugin; echo "pub get `pwd`"; pub get --no-precompile)
 
 echo "kokoro build start"
 ./bin/plugin build --channel=dev
