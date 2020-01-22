@@ -20,9 +20,17 @@ curl https://www-us.apache.org/dist//ant/binaries/apache-ant-1.10.7-bin.tar.gz >
 tar vfx ant.tar.gz
 export PATH=`pwd`/apache-ant-1.10.7/bin:$PATH
 
-ant -version
-zip --version
+echo "pub get `pwd`"; pub get
+(cd testData/sample_tests; echo "pub get `pwd`"; pub get)
+(cd tool/plugin; echo "pub get `pwd`"; pub get)
 
+echo "kokoro test start"
 ./bin/plugin test
 
 echo "kokoro test finished"
+
+
+echo "kokoro build start"
+./bin/plugin build --channel=dev
+
+echo "kokoro build finished"
