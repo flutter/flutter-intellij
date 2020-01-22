@@ -19,6 +19,6 @@ ant -version
 curl --version
 zip --version
 
-./bin/plugin build --channel=dev
+./bin/plugin test
 
-echo "kokoro build finished"
+echo "kokoro test finished"
