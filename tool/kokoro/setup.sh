@@ -9,6 +9,7 @@ setup() {
   # that no confidential information is displayed.
   # set -x
 
+  # If we move to branch-based builds we might not be able to use such a shallow clone.
   git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
   export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
   flutter config --no-analytics
@@ -19,7 +20,7 @@ setup() {
   echo "JAVA_HOME=$JAVA_HOME"
 
   echo "install ant"
-  curl https://www-us.apache.org/dist//ant/binaries/apache-ant-1.10.7-bin.tar.gz > ../ant.tar.gz
+  curl https://www-us.apache.org/dist/ant/binaries/apache-ant-1.10.7-bin.tar.gz > ../ant.tar.gz
   (cd ..; tar fx ant.tar.gz)
   export PATH=$PATH:`pwd`/../apache-ant-1.10.7/bin
 

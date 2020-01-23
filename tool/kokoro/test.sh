@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-source ./setup.sh
+source ./tool/kokoro/setup.sh
 setup
 
 echo "kokoro test start"
@@ -9,7 +9,7 @@ echo "kokoro test start"
 
 echo "kokoro test finished"
 
-# This is temporary, duplicating build.sh
+# TODO(messick): This is temporary, duplicating build.sh
 echo "kokoro build start"
 ./bin/plugin build --channel=dev
 
