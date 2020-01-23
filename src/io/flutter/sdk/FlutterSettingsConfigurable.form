@@ -98,7 +98,7 @@
           </component>
         </children>
       </grid>
-      <grid id="919ec" layout-manager="GridLayoutManager" row-count="5" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="919ec" layout-manager="GridLayoutManager" row-count="4" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -108,7 +108,7 @@
         <children>
           <component id="356a" class="javax.swing.JCheckBox" binding="myOpenInspectorOnAppLaunchCheckBox">
             <constraints>
-              <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.open.inspector.on.launch"/>
@@ -125,25 +125,16 @@
           </component>
           <component id="6d6f0" class="javax.swing.JCheckBox" binding="myDisableTrackWidgetCreationCheckBox">
             <constraints>
-              <grid row="4" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.disable.tracking.widget.creation"/>
               <toolTipText value="Disabling this setting breaks advanced Flutter Inspector functionality and performance tools. Only disable if you are noticing unexpected behavior differences between apps run in debug and release build."/>
             </properties>
           </component>
-          <component id="ff6b2" class="javax.swing.JCheckBox" binding="myHotReloadIgnoreErrorCheckBox">
-            <constraints>
-              <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="2" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text resource-bundle="io/flutter/FlutterBundle" key="settings.hot.reload.with.error"/>
-              <toolTipText value="Hot reload changes into running Flutter apps even if there are analysis errors"/>
-            </properties>
-          </component>
           <component id="b1533" class="javax.swing.JCheckBox" binding="myShowStructuredErrors">
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="Show structured errors for Flutter framework issues"/>
