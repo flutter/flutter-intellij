@@ -24,7 +24,5 @@ setup() {
   (cd ..; tar fx ant.tar.gz)
   export PATH=$PATH:`pwd`/../apache-ant-1.10.7/bin
 
-  echo "pub get `pwd`"; pub get --no-precompile
-  (cd testData/sample_tests; echo "pub get `pwd`"; pub get --no-precompile)
   (cd tool/plugin; echo "pub get `pwd`"; pub get --no-precompile)
 }
