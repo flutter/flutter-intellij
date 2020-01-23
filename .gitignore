@@ -12,7 +12,7 @@ flutter-gui-tests/.gradle/
 flutter-gui-tests/guitest.log
 flutter-intellij.jar
 flutter-intellij.zip
-lib/*.jar
+lib/
 material-design-icons/
 out/
 packages

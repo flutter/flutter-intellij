@@ -1083,7 +1083,9 @@ abstract class ProductCommand extends Command {
   }
 
   String releasesFilePath(BuildSpec spec) {
-    var subDir = isReleaseMode ? 'release_$releaseMajor' : 'release_master';
+    var subDir = isReleaseMode
+        ? 'release_$releaseMajor'
+        : (spec.channel == "stable" ? 'release_master' : 'release_dev');
     var filePath = p.join(
         rootPath, 'releases', subDir, spec.version, 'flutter-intellij.zip');
     return filePath;
@@ -1206,7 +1208,7 @@ Future<String> makeDevLog(BuildSpec spec) async {
 Future<String> lastRelease() async {
   _checkGitDir();
   var gitDir = await GitDir.fromExisting(rootPath);
-  // TODO(messick): dd git magic to ensure the latest release branch exists locally.
+  // TODO(messick): Add git magic to ensure the latest release branch exists locally.
   // For more context, see comments on this method in the PR:
   // https://github.com/flutter/flutter-intellij/pull/4213
   var processResult = await gitDir.runCommand(['branch', '--list', 'release*']);
