@@ -137,7 +137,7 @@ public class DisplayRefreshRateManager {
   }
 
   private boolean invalidFps(double fps) {
-    // 24 FPS is the lowest frame rate that can be considered "smooth".
+    // 24 FPS is the lowest frame rate that can be considered smooth.
     return fps < 24.0;
   }
 }
