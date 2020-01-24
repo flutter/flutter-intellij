@@ -43,7 +43,7 @@ class EnableDartSupportForModule implements Runnable {
         });
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
           ApplicationManager.getApplication().runReadAction(() -> {
-            DartAnalysisServerService.getInstance(project).serverReadyForRequest(project);
+            DartAnalysisServerService.getInstance(project).serverReadyForRequest();
           });
         });
       });
