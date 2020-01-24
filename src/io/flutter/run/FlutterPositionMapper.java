@@ -369,7 +369,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
     @Nullable
     static Analyzer create(@NotNull Project project, @NotNull VirtualFile sourceLocation) {
       final DartAnalysisServerService service = DartPlugin.getInstance().getAnalysisService(project);
-      if (!service.serverReadyForRequest(project)) {
+      if (!service.serverReadyForRequest()) {
         // TODO(skybrian) make this required to debug at all? It seems bad for breakpoints to be flaky.
         FlutterUtils.warn(LOG, "Dart analysis server is not running. Some breakpoints may not work.");
         return null;
