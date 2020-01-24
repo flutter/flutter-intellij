@@ -114,10 +114,6 @@ public class FlutterUtils {
     return StringUtil.equals(PlatformUtils.getPlatformPrefix(), "AndroidStudio");
   }
 
-  public static boolean is2018_3_or_higher() {
-    return getBaselineVersion() >= 183;
-  }
-
   /**
    * Write a warning message to the IntelliJ log.
    * <p>
