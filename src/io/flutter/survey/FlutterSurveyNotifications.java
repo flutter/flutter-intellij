@@ -38,13 +38,14 @@ public class FlutterSurveyNotifications {
   private static final long CHECK_INTERVAL_IN_MS = TimeUnit.HOURS.toMillis(40);
 
   private static final String SURVEY_ACTION_TEXT = "Take survey";
-  private static final String SURVEY_TITLE = "Help improve Flutter! Take our Q4 survey.";
+  private static final String SURVEY_TITLE = "Help improve Flutter! Take our Q1 survey.";
 
   private static final String ANALYTICS_OPT_IN_DETAILS =
     "By clicking on this link you agree to share feature usage along with the survey responses.";
 
-  private static final String SURVEY_TAKEN = "io.flutter.survey.2019.q4.alreadyTaken";
-  private static final String SURVEY_URL = "https://google.qualtrics.com/jfe/form/SV_5BhR2R8DZIEE6dn?Source=IntelliJ";
+  private static final String SURVEY_TAKEN = "io.flutter.survey.2020.q1.alreadyTaken";
+  private static final String SURVEY_PREFIX = "https://google.qualtrics.com/jfe/form/SV_6YBXYxIR69pgpr7";
+  private static final String SURVEY_URL = SURVEY_PREFIX + "?Source=IntelliJ";
 
   private static long SURVEY_START_MS_EPOCH;
   private static long SURVEY_END_MS_EPOCH;
@@ -53,8 +54,8 @@ public class FlutterSurveyNotifications {
     final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
     dateFormat.setTimeZone(TimeZone.getTimeZone("PST"));
     try {
-      SURVEY_START_MS_EPOCH = dateFormat.parse("2019/11/22 9:00").getTime();
-      SURVEY_END_MS_EPOCH = dateFormat.parse("2019/12/01 18:00").getTime();
+      SURVEY_START_MS_EPOCH = dateFormat.parse("2020/02/24 9:00").getTime();
+      SURVEY_END_MS_EPOCH = dateFormat.parse("2020/03/02 9:00").getTime();
     }
     catch (ParseException e) {
       // Shouldn't happen.
