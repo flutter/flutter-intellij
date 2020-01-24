@@ -18,7 +18,6 @@ import java.util.EventListener;
 
 public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
-  private static final String reloadWithErrorKey = "io.flutter.reloadWithError";
   private static final String openInspectorOnAppLaunchKey = "io.flutter.openInspectorOnAppLaunch";
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
   private static final String formatCodeOnSaveKey = "io.flutter.formatCodeOnSave";
@@ -64,9 +63,6 @@ public class FlutterSettings {
     if (isReloadOnSave()) {
       analytics.sendEvent("settings", afterLastPeriod(reloadOnSaveKey));
     }
-    if (allowReloadWithErrors()) {
-      analytics.sendEvent("settings", afterLastPeriod(reloadWithErrorKey));
-    }
     if (isOpenInspectorOnAppLaunch()) {
       analytics.sendEvent("settings", afterLastPeriod(openInspectorOnAppLaunchKey));
     }
@@ -109,10 +105,6 @@ public class FlutterSettings {
     return getPropertiesComponent().getBoolean(reloadOnSaveKey, true);
   }
 
-  public boolean allowReloadWithErrors() {
-    return getPropertiesComponent().getBoolean(reloadWithErrorKey, false);
-  }
-
   public boolean isTrackWidgetCreationEnabled(Project project) {
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk != null && flutterSdk.getVersion().isTrackWidgetCreationRecommended()) {
@@ -135,12 +127,6 @@ public class FlutterSettings {
 
   public void setReloadOnSave(boolean value) {
     getPropertiesComponent().setValue(reloadOnSaveKey, value, true);
-
-    fireEvent();
-  }
-
-  public void setReloadWithError(boolean value) {
-    getPropertiesComponent().setValue(reloadWithErrorKey, value, false);
 
     fireEvent();
   }

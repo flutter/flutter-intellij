@@ -58,7 +58,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myReportUsageInformationCheckBox;
   private LinkLabel myPrivacyPolicy;
   private JCheckBox myHotReloadOnSaveCheckBox;
-  private JCheckBox myHotReloadIgnoreErrorCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
   private JCheckBox myOpenInspectorOnAppLaunchCheckBox;
   private JCheckBox myFormatCodeOnSaveCheckBox;
@@ -129,8 +128,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       }
     }, null);
 
-    myHotReloadOnSaveCheckBox.addChangeListener(
-      (e) -> myHotReloadIgnoreErrorCheckBox.setEnabled(myHotReloadOnSaveCheckBox.isSelected()));
     myFormatCodeOnSaveCheckBox.addChangeListener(
       (e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
 
@@ -180,10 +177,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     }
 
     if (settings.isReloadOnSave() != myHotReloadOnSaveCheckBox.isSelected()) {
-      return true;
-    }
-
-    if (settings.allowReloadWithErrors() != myHotReloadIgnoreErrorCheckBox.isSelected()) {
       return true;
     }
 
@@ -254,7 +247,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     final FlutterSettings settings = FlutterSettings.getInstance();
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
-    settings.setReloadWithError(myHotReloadIgnoreErrorCheckBox.isSelected());
     settings.setFormatCodeOnSave(myFormatCodeOnSaveCheckBox.isSelected());
     settings.setOrganizeImportsOnSave(myOrganizeImportsOnSaveCheckBox.isSelected());
 
@@ -293,7 +285,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     final FlutterSettings settings = FlutterSettings.getInstance();
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
-    myHotReloadIgnoreErrorCheckBox.setSelected(settings.allowReloadWithErrors());
     myFormatCodeOnSaveCheckBox.setSelected(settings.isFormatCodeOnSave());
     myOrganizeImportsOnSaveCheckBox.setSelected(settings.isOrganizeImportsOnSave());
 
@@ -309,8 +300,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myEnableHotUiCheckBox.setSelected(settings.isEnableHotUi());
 
-    myHotReloadIgnoreErrorCheckBox.setEnabled(myHotReloadOnSaveCheckBox.isSelected());
-
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
 
     myShowAllRunConfigurationsInContextCheckBox.setSelected(settings.showAllRunConfigurationsInContext());
@@ -319,9 +308,14 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private void onVersionChanged() {
     final Workspace workspace = workspaceCache.get();
     if (workspaceCache.isBazel()) {
-        mySdkCombo.setEnabled(false);
-        mySdkCombo.getComboBox().getEditor().setItem(workspace.getRoot().getPath() + '/' + workspace.getSdkHome() + " <set by bazel project>");
-    } else {
+      // The workspace is not null if workspaceCache.isBazel() is true.
+      assert (workspace != null);
+
+      mySdkCombo.setEnabled(false);
+      mySdkCombo.getComboBox().getEditor()
+        .setItem(workspace.getRoot().getPath() + '/' + workspace.getSdkHome() + " <set by bazel project>");
+    }
+    else {
       mySdkCombo.setEnabled(true);
     }
 

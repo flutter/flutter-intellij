@@ -26,44 +26,38 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.Balloon;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.search.ProjectAndLibrariesScope;
+import com.intellij.psi.PsiDocumentManager;
+import com.intellij.psi.PsiErrorElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.LightweightHint;
 import com.intellij.util.ui.UIUtil;
-import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
-import com.jetbrains.lang.dart.analyzer.DartServerData;
 import com.jetbrains.lang.dart.ide.errorTreeView.DartProblemsView;
+import com.jetbrains.lang.dart.psi.DartFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterAppAction;
 import io.flutter.actions.ProjectActions;
 import io.flutter.actions.ReloadFlutterApp;
-import io.flutter.pub.PubRoot;
-import io.flutter.pub.PubRoots;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
-import org.dartlang.analysis.server.protocol.AnalysisErrorSeverity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 /**
  * Handle the mechanics of performing a hot reload on file save.
@@ -179,19 +173,12 @@ public class FlutterReloadManager {
         return;
       }
 
-      // If the analysis server detects any errors in the project, it will not perform a hot reload. This can
-      // cause hot reload to stop working needlessly when, eg, there is an analysis error in a test file. The
-      // reloadWithError option in settings is a workaround; see
-      // https://github.com/flutter/flutter/issues/27618 for the high-level goal.
-      // TODO(devoncarew): Consider removing this setting and always allowing reload (hot reload is fast,
-      //                   and the compile errors from the front end are reasonable).
-      if (!mySettings.allowReloadWithErrors()) {
-        if (hasErrors(app.getProject(), app.getModule(), editor.getDocument())) {
-          app.cancelHotReloadState(previousAppState);
-          showAnalysisNotification("Reload not performed", "Analysis issues found", true);
+      // Don't reload if we find structural errors with the current file.
+      if (hasErrorsInFile(editor.getDocument())) {
+        app.cancelHotReloadState(previousAppState);
+        showAnalysisNotification("Reload not performed", "Analysis issues found", true);
 
-          return;
-        }
+        return;
       }
 
       final Notification notification = showRunNotification(app, null, "Reloading…", false);
@@ -353,30 +340,22 @@ public class FlutterReloadManager {
     }
   }
 
-  private boolean hasErrors(@NotNull Project project, @Nullable Module module, @NotNull Document document) {
-    final DartAnalysisServerService analysisServerService = DartAnalysisServerService.getInstance(project);
-    final GlobalSearchScope scope = module == null ? new ProjectAndLibrariesScope(project) : module.getModuleContentScope();
-    List<DartServerData.DartError> errors = analysisServerService.getErrors(scope);
-    errors = errors.stream().filter(error -> shouldBlockReload(error, project, module)).collect(Collectors.toList());
-    return !errors.isEmpty();
-  }
+  private boolean hasErrorsInFile(@NotNull Document document) {
+    // We use the IntelliJ parser and look for syntax errors in the current document.
+    // We block reload if we find issues in the immediate file. We don't block reload if there
+    // are analysis issues in other files; the compilation errors from the flutter tool
+    // will indicate to the user where the problems are.
 
-  private static boolean shouldBlockReload(@NotNull DartServerData.DartError error, @NotNull Project project, @Nullable Module module) {
-    // Only block on errors.
-    if (!error.getSeverity().equals(AnalysisErrorSeverity.ERROR)) return false;
-
-    final File file = new File(error.getAnalysisErrorFileSD());
-    final VirtualFile virtualFile = VfsUtil.findFileByIoFile(file, false);
-    if (virtualFile != null) {
-      final List<PubRoot> roots = module == null ? PubRoots.forProject(project) : PubRoots.forModule(module);
-      for (PubRoot root : roots) {
-        // Skip errors in test files.
-        final String relativePath = root.getRelativePath(virtualFile);
-        if (relativePath != null && relativePath.startsWith("test/")) return false;
+    final PsiErrorElement firstError = ApplicationManager.getApplication().runReadAction((Computable<PsiErrorElement>)() -> {
+      final PsiFile psiFile = PsiDocumentManager.getInstance(myProject).getPsiFile(document);
+      if (psiFile instanceof DartFile) {
+        return PsiTreeUtil.findChildOfType(psiFile, PsiErrorElement.class, false);
       }
-    }
-
-    return true;
+      else {
+        return null;
+      }
+    });
+    return firstError != null;
   }
 
   private LightweightHint showEditorHint(@NotNull Editor editor, String message, boolean isError) {
