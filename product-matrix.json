@@ -47,6 +47,18 @@
       "sinceBuild": "193.5233",
       "untilBuild": "193.*",
       "filesToSkip": ["src/io/flutter/editor/IntellijColorPickerProvider.java"]
+    },
+    {
+      "channel": "stable",
+      "comments": "IntelliJ 2020.1 EAP",
+      "name": "IntelliJ 2020.1",
+      "version": "2020.1",
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "201.3803.71",
+      "dartPluginVersion": "201.3803.32",
+      "sinceBuild": "201.0",
+      "untilBuild": "201.*",
+      "filesToSkip": ["src/io/flutter/editor/IntellijColorPickerProvider.java"]
     }
   ]
 }
