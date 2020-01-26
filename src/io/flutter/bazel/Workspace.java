@@ -159,7 +159,6 @@ public class Workspace {
     return versionFile;
   }
 
-
   /**
    * Returns the bazel target to be run with {@link Workspace#getLaunchScript} to launch DevTools.
    */

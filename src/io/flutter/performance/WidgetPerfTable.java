@@ -131,7 +131,7 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
     for (TextEditor editor : perfManager.getSelectedEditors()) {
       final VirtualFile file = editor.getFile();
       if (file != null) {
-        openPaths.add(InspectorService.toSourceLocationUri(file.getPath()));
+        openPaths.add(file.getPath());
       }
     }
 
