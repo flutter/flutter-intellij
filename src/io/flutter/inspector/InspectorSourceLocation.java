@@ -7,6 +7,7 @@ package io.flutter.inspector;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XSourcePosition;
@@ -18,10 +19,12 @@ import java.util.ArrayList;
 public class InspectorSourceLocation {
   private final JsonObject json;
   private final InspectorSourceLocation parent;
+  private final Project project;
 
-  public InspectorSourceLocation(JsonObject json, InspectorSourceLocation parent) {
+  public InspectorSourceLocation(JsonObject json, InspectorSourceLocation parent, Project project) {
     this.json = json;
     this.parent = parent;
+    this.project = project;
   }
 
   public String getPath() {
@@ -34,13 +37,7 @@ public class InspectorSourceLocation {
       return parent != null ? parent.getFile() : null;
     }
 
-    // We have to strip the file:// or file:/// prefix depending on the
-    // operating system to convert from paths stored as URIs to local operating
-    // system paths.
-    // TODO(jacobr): remove this workaround after the code in package:flutter
-    // is fixed to return operating system paths instead of URIs.
-    // https://github.com/flutter/flutter-intellij/issues/2217
-    fileName = InspectorService.fromSourceLocationUri(fileName);
+    fileName = InspectorService.fromSourceLocationUri(fileName, project);
 
     final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(fileName);
     if (virtualFile != null && !virtualFile.exists()) {
@@ -79,7 +76,7 @@ public class InspectorSourceLocation {
       final JsonArray parametersJson = json.getAsJsonArray("parameterLocations");
       final ArrayList<InspectorSourceLocation> ret = new ArrayList<>();
       for (int i = 0; i < parametersJson.size(); ++i) {
-        ret.add(new InspectorSourceLocation(parametersJson.get(i).getAsJsonObject(), this));
+        ret.add(new InspectorSourceLocation(parametersJson.get(i).getAsJsonObject(), this, project));
       }
       return ret;
     }

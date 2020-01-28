@@ -21,4 +21,6 @@ public interface FileLocationMapper {
 
   @Nullable
   String getText(@Nullable TextRange textRange);
+
+  String getPath();
 }

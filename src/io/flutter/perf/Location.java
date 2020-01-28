@@ -6,6 +6,7 @@
 package io.flutter.perf;
 
 import com.google.common.base.Objects;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -18,6 +19,7 @@ import io.flutter.inspector.InspectorService;
  * running Flutter application.
  */
 public class Location {
+
   public Location(String path, int line, int column, int id, TextRange textRange, String name) {
     this.path = path;
     this.line = line;
@@ -48,8 +50,7 @@ public class Location {
   public final String path;
 
   public XSourcePosition getXSourcePosition() {
-    final String fileName = InspectorService.fromSourceLocationUri(path);
-    final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(fileName);
+    final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
 
     if (file == null) {
       return null;

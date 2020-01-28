@@ -230,17 +230,21 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Override
   public void apply() throws ConfigurationException {
-    final String errorMessage = FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(getSdkPathText());
-    if (errorMessage != null) {
-      throw new ConfigurationException(errorMessage);
-    }
+    // Bazel workspaces do not specify a sdk path so we do not need to update the sdk path if using
+    // a bazel workspace.
+    if (!workspaceCache.isBazel()) {
+      final String errorMessage = FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(getSdkPathText());
+      if (errorMessage != null) {
+        throw new ConfigurationException(errorMessage);
+      }
 
-    final String sdkHomePath = getSdkPathText();
-    if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
-      ApplicationManager.getApplication().runWriteAction(() -> {
-        FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath);
-        FlutterSdkUtil.enableDartSdk(myProject);
-      });
+      final String sdkHomePath = getSdkPathText();
+      if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
+        ApplicationManager.getApplication().runWriteAction(() -> {
+          FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath);
+          FlutterSdkUtil.enableDartSdk(myProject);
+        });
+      }
     }
 
     FlutterInitializer.setCanReportAnalytics(myReportUsageInformationCheckBox.isSelected());
