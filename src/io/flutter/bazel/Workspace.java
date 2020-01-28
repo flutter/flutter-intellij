@@ -33,7 +33,8 @@ import java.util.*;
 public class Workspace {
   private static final String PLUGIN_CONFIG_PATH = "dart/config/intellij-plugins/flutter.json";
 
-  // TODO(jacobr): find a way to load the bazel uri scheme rather than hard coding it.
+  // TODO(jacobr): find a way to load the bazel uri scheme rather than hard coding it
+  // as this scheme may change in the future.
   public static final String BAZEL_URI_SCHEME = "google3://";
 
   @NotNull private final VirtualFile root;
