@@ -10,6 +10,7 @@ import com.intellij.execution.ExecutionBundle;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationTypeBase;
 import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.configurations.RunConfigurationSingletonPolicy;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -86,6 +87,12 @@ public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
     @NotNull
     public String getId() {
       return FlutterBundle.message("runner.flutter.bazel.configuration.name");
+    }
+
+    @NotNull
+    @Override
+    public RunConfigurationSingletonPolicy getSingletonPolicy() {
+      return RunConfigurationSingletonPolicy.MULTIPLE_INSTANCE_ONLY;
     }
   }
 }
