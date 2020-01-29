@@ -514,6 +514,8 @@ class ArtifactManager {
 class BuildCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
+  bool get isDevChannel => channel == 'dev';
+
   BuildCommand(this.runner) : super('build') {
     argParser.addOption('only-version',
         abbr: 'o',
@@ -530,6 +532,8 @@ class BuildCommand extends ProductCommand {
         help: 'Select the channel to build: stable or dev',
         defaultsTo: 'stable');
   }
+
+  String get channel => argResults['channel'];
 
   String get description => 'Build a deployable version of the Flutter plugin, '
       'compiled against the specified artifacts.';
@@ -558,7 +562,7 @@ class BuildCommand extends ProductCommand {
 
     var result = 0;
     for (var spec in buildSpecs) {
-      if (spec.channel != argResults['channel']) continue;
+      if (spec.channel != channel) continue;
       if (!(isForIntelliJ && isForAndroidStudio)) {
         // This is a little more complicated than I'd like because the default
         // is to always do both.
@@ -806,7 +810,6 @@ compile
 class BuildSpec {
   // Build targets
   final String name;
-  final String channel;
   final String version;
   final String ijVersion;
   final bool isTestTarget;
@@ -820,6 +823,7 @@ class BuildSpec {
   final String pluginId = 'io.flutter';
   final String release;
   final List<dynamic> filesToSkip;
+  String channel;
   String _changeLog;
 
   ArtifactManager artifacts = ArtifactManager();
@@ -904,6 +908,11 @@ class BuildSpec {
       _changeLog = await makeDevLog(this);
     }
     return this;
+  }
+
+  void buildForDev() {
+    // Build everything. For stable channel we do not build specs on the dev channel.
+    channel = 'dev';
   }
 }
 
@@ -1030,6 +1039,7 @@ class GenerateCommand extends ProductCommand {
 abstract class ProductCommand extends Command {
   final String name;
   List<BuildSpec> specs;
+  DateTime _releaseDate;
 
   ProductCommand(this.name) {
     addProductFlags(argParser, name[0].toUpperCase() + name.substring(1));
@@ -1038,9 +1048,13 @@ abstract class ProductCommand extends Command {
   /// Returns true when running in the context of a unit test.
   bool get isTesting => false;
 
+  bool get isDevChannel => false;
+
   bool get isForAndroidStudio => argResults['as'];
 
   bool get isForIntelliJ => argResults['ij'];
+
+  DateTime get releaseDate => _releaseDate;
 
   bool get isReleaseMode => release != null;
 
@@ -1049,8 +1063,8 @@ abstract class ProductCommand extends Command {
     if (rel == null) {
       return false;
     }
-    // Validate for '00.0'.
-    return rel == RegExp(r'\d+\.\d').stringMatch(rel);
+    // Validate for '00.0' with optional '-dev.0'
+    return rel == RegExp(r'^\d+\.\d(?:-dev.\d)?$').stringMatch(rel);
   }
 
   bool get isTestMode => globalResults['cwd'] != null;
@@ -1062,13 +1076,21 @@ abstract class ProductCommand extends Command {
       if (rel.startsWith('=')) {
         rel = rel.substring(1);
       }
-
       if (!rel.contains('.')) {
         rel = '$rel.0';
+      }
+      if (isDevChannel) {
+        rel += '-dev.$devBuildNumber';
       }
     }
 
     return rel;
+  }
+
+  int get devBuildNumber {
+    var dayNumber = releaseDate.day;
+    var weekNumber = dayNumber ~/ 7 + 1;
+    return weekNumber;
   }
 
   String get releaseMajor {
@@ -1111,6 +1133,9 @@ abstract class ProductCommand extends Command {
     if (rel != null) {
       rootPath = p.normalize(p.join(rootPath, rel));
     }
+    if (isDevChannel) {
+      //await _initLastReleaseDate(); // TODO Debug
+    }
     await _initSpecs();
     try {
       return await doit();
@@ -1126,7 +1151,17 @@ abstract class ProductCommand extends Command {
     for (var i = 0; i < specs.length; i++) {
       await specs[i].initChangeLog();
     }
+    if (isDevChannel) {
+      for (var i = 0; i < specs.length; i++) {
+        specs[i].buildForDev();
+      }
+    }
     return specs.length;
+  }
+
+  Future<DateTime> _initLastReleaseDate() async {
+    _releaseDate = await dateOfLastRelease();
+    return _releaseDate;
   }
 }
 
@@ -1205,6 +1240,25 @@ Future<String> makeDevLog(BuildSpec spec) async {
   return devLog.toString();
 }
 
+// git branch --list -v --no-abbrev 'release*'
+// git show --pretty=tformat:"%cI" 8f1af8fc
+Future<DateTime> dateOfLastRelease() async {
+  var lastReleaseName = await lastRelease();
+  var gitDir = await GitDir.fromExisting(rootPath);
+  var processResult = await gitDir
+      .runCommand(['branch', '--list', '-v', '--no-abbrev', lastReleaseName]);
+  String out = processResult.stdout;
+  var logLine = out.trim().split('\n').first.trim();
+  print('$logLine\n');
+  var match = r'\s*release_\d*\s*([\da-fA-F]*)'.matchAsPrefix(logLine);
+  var commitHash = match.group(1);
+  processResult =
+      await gitDir.runCommand(['show', '--pretty=tformat:"%cI"', commitHash]);
+  out = processResult.stdout;
+  var date = out.trim().split('\n').first.trim();
+  return DateTime.parse(date);
+}
+
 Future<String> lastRelease() async {
   _checkGitDir();
   var gitDir = await GitDir.fromExisting(rootPath);
@@ -1213,7 +1267,7 @@ Future<String> lastRelease() async {
   // https://github.com/flutter/flutter-intellij/pull/4213
   var processResult = await gitDir.runCommand(['branch', '--list', 'release*']);
   String out = processResult.stdout;
-  return out.trim().split('\n').last.trim(); //
+  return out.trim().split('\n').last.trim();
 }
 
 void _checkGitDir() async {
