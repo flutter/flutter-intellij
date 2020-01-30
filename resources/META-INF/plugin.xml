@@ -29,6 +29,53 @@
 
   <change-notes>
     <![CDATA[
+<h1>43.0</h1>
+<ul>
+  <li>Don't use deprecated API; Hide 'Allow parallel run' checkbox (#4331)</li>
+  <li>Fix Inspector and WidgetRebuildIndicators for bazel projects (#4302)</li>
+  <li>Simplify flutter-intellij project setup for new contributors (#4330)</li>
+  <li>support 2020.1 EAP (#4335)</li>
+  <li>Define dev channel artifacts (#4328)</li>
+  <li>Simplify the logic we use to prevent reload on save (#4327)</li>
+  <li>Don't use deprecated DartAnalysisServerService.serverReadyForRequest(Project) (#4332)</li>
+  <li>Separate build vs test scripts (#4326)</li>
+  <li>Update the dart plugin to IntelliJ 2019.2 (#4324)</li>
+  <li>Refactor fix (#4321)</li>
+  <li>Refactor build script (#4320)</li>
+  <li>Check pre-reqs for build (#4308)</li>
+  <li>Make build script executable (#4306)</li>
+  <li>Defend against invalid refresh rates for flutter desktop devices (#4299)</li>
+  <li>Kokoro build configuration (#4280)</li>
+  <li>Increase default memory usage to make testing the Flutter plugin on large projects more pleasant (#4300)</li>
+  <li>Revert "Update error message to suggest the typical solution (#4219)" (#4303)</li>
+  <li>Cleanup update after dispose edge cases (#4301)</li>
+  <li>Fix an issue with sending in non-absolute paths to flutter.subscriptions (#4275)</li>
+  <li>Switch to using WorkspaceCache (#4295)</li>
+  <li>Don't process refresh requests for app's which have terminated (#4294)</li>
+  <li>Restrict checkbox selectable region in performance window (#4292)</li>
+  <li>Restore ability to use Java 11 (#4290)</li>
+  <li>Remove hard coded refresh rate for fps calculation (#4289)</li>
+  <li>Address a concurrent modification exception in the widget build count code (#4283)</li>
+  <li>Tweak the text for a UI setting (#4288)</li>
+  <li>Add an 'Open Dart DevTools' menu item (#4284)</li>
+  <li>Change assert to null check and return (#4274)</li>
+  <li>Build dev channel (#4267)</li>
+  <li>Avoid creating RunContentManager (#4271)</li>
+  <li>Refactor the reload on save implementation (#4247)</li>
+  <li>Draw a separator line between the main inspector tree and the details tree (#4253)</li>
+  <li>Format source and remove unused imports (#4250)</li>
+  <li>Fix an npe related to hot ui (#4249)</li>
+  <li>Fail gracefully if there is not an active file just as we fail gracefully if there is no outline (#4220)</li>
+  <li>Rename a flutter refactor action (#4237)</li>
+  <li>Fix an issue with the pub notification showing when things were already up to date (#4239)</li>
+  <li>Generate dev log (#4213)</li>
+  <li>Fix NPE in add-to-app support (#4207)</li>
+  <li>Launch flutter attach when the Android app starts (#4200)</li>
+  <li>Update error message to suggest the typical solution (#4219)</li>
+  <li>If track widget creation is not enabled, pass in --no-track-widget-creation (#4196)</li>
+  <li>Surface reload exceptions (#4198)</li>
+  <li>Provide more stack trace details for inspector timeouts (#4193)</li>
+</ul>
 <h2>42.2</h2>
 <ul>
   <li>Support Android Studio 3.6 RC 1</li>
