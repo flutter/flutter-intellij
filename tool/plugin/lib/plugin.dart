@@ -1193,7 +1193,7 @@ Future<String> makeDevLog(BuildSpec spec) async {
   var gitDir = await GitDir.fromExisting(rootPath);
   var since = await lastRelease();
   var processResult =
-      await gitDir.runCommand(['log', '$since..HEAD', '--oneline']);
+      await gitDir.runCommand(['log', '--oneline', '$since..HEAD']);
   String out = processResult.stdout;
   var messages = out.trim().split('\n');
   var devLog = StringBuffer();
