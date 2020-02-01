@@ -9,7 +9,6 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ui.ColorIcon;
 import com.intellij.util.ui.EmptyIcon;
-import com.intellij.util.ui.JBUI;
 import com.jetbrains.lang.dart.ide.completion.DartCompletionExtension;
 import com.jetbrains.lang.dart.ide.completion.DartServerCompletionContributor;
 import org.apache.commons.lang.StringUtils;
@@ -23,7 +22,7 @@ import java.util.Objects;
 
 public class FlutterCompletionContributor extends DartCompletionExtension {
   private static final int ICON_SIZE = 16;
-  private static final Icon EMPTY_ICON = JBUI.scale(EmptyIcon.create(ICON_SIZE));
+  private static final Icon EMPTY_ICON = EmptyIcon.create(ICON_SIZE);
 
   @Override
   @Nullable
@@ -50,7 +49,7 @@ public class FlutterCompletionContributor extends DartCompletionExtension {
           if (Objects.equals(declaringType, "Colors")) {
             final FlutterColors.FlutterColor color = FlutterColors.getColor(name);
             if (color != null) {
-              return JBUI.scale(new ColorIcon(ICON_SIZE, color.getAWTColor()));
+              return new ColorIcon(ICON_SIZE, color.getAWTColor());
             }
           }
           else if (Objects.equals(declaringType, "Icons")) {
