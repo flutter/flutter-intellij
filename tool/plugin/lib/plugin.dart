@@ -1313,7 +1313,9 @@ Future<String> lastRelease() async {
   if (!release.isEmpty) return release;
   processResult = await gitDir.runCommand(['branch', '--list', '-a', '*release_*']);
   out = processResult.stdout;
+  print(out);
   var remote = out.trim().split('\n').last.trim(); // "remotes/origin/release_43"
+  print(remote);
   release = remote.substring(remote.lastIndexOf('/') + 1);
   await gitDir.runCommand(['branch', '--track', release, remote]);
   return release;
