@@ -1192,8 +1192,10 @@ abstract class ProductCommand extends Command {
     if (rel != null) {
       rootPath = p.normalize(p.join(rootPath, rel));
     }
-    lastReleaseName = await lastRelease();
-    lastReleaseDate = await dateOfLastRelease();
+    if (isDevChannel) {
+      lastReleaseName = await lastRelease();
+      lastReleaseDate = await dateOfLastRelease();
+    }
   }
 
   Future<int> _initSpecs() async {
@@ -1309,11 +1311,9 @@ Future<String> lastRelease() async {
   var processResult = await gitDir.runCommand(['branch', '--list', 'release_*']);
   String out = processResult.stdout;
   var release = out.trim().split('\n').last.trim();
-  release = ''; // DEBUG delete
   if (!release.isEmpty) return release;
   processResult = await gitDir.runCommand(['branch', '--list', '-a', '*release_*']);
   out = processResult.stdout;
-  print(out);
   var remote = out.trim().split('\n').last.trim(); // "remotes/origin/release_43"
   print(remote);
   release = remote.substring(remote.lastIndexOf('/') + 1);
