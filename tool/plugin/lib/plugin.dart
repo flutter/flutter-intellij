@@ -228,7 +228,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
       return true;
     }
     if (cmd.isDevChannel) {
-      log('release node is incompatible with the dev channel');
+      log('release mode is incompatible with the dev channel');
       return false;
     }
     if (!cmd.isReleaseValid) {
@@ -351,8 +351,6 @@ Future<int> zip(String directory, String outFile) async {
 String _nextRelease() {
   var num = RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName).group(1);
   var val = int.parse(num) + 1;
-  // If we have 10 point releases then we will have a problem here.
-  // We currently have no way to determine what the last point release was.
   return '$val.0';
 }
 
@@ -963,7 +961,7 @@ class BuildSpec {
   }
 
   void buildForDev() {
-    // Build everything. For stable channel we do not build specs on the dev channel.
+    // Build everything. For release builds we do not build specs on the dev channel.
     channel = 'dev';
   }
 
