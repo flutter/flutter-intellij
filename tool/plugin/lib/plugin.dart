@@ -1269,6 +1269,7 @@ class TestCommand extends ProductCommand {
 }
 
 Future<String> makeDevLog(BuildSpec spec) async {
+  if (lastReleaseName.isEmpty) return ''; // The shallow on travis causes problems.
   _checkGitDir();
   var gitDir = await GitDir.fromExisting(rootPath);
   var since = lastReleaseName;
