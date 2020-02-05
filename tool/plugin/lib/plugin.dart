@@ -38,7 +38,13 @@ const Map<String, String> plugins = const {
 
 const int cloudErrorFileMaxSize = 1000; // In bytes.
 
+// Globals are initialized early in ProductCommand, and everything in this
+// file is a subclass of ProductCommand. It is not ideal, but the "proper"
+// solution would be to move nearly all the top-level functions to methods
+// in ProductCommand.
 String rootPath;
+String lastReleaseName;
+DateTime lastReleaseDate;
 int pluginCount = 0;
 
 void addProductFlags(ArgParser argParser, String verb) {
@@ -221,6 +227,10 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
     if (cmd.isTestMode) {
       return true;
     }
+    if (cmd.isDevChannel) {
+      log('release node is incompatible with the dev channel');
+      return false;
+    }
     if (!cmd.isReleaseValid) {
       log('the release identifier ("${cmd.release}") must be of the form xx.x (major.minor)');
       return false;
@@ -230,7 +240,9 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
     if (isClean) {
       var branch = await gitDir.getCurrentBranch();
       var name = branch.branchName;
-      var result = name == "release_${cmd.releaseMajor}";
+      var expectedName =
+          cmd.isDevChannel ? 'master' : "release_${cmd.releaseMajor}";
+      var result = name == expectedName;
       if (!result)
         result = name.startsWith("release_${cmd.releaseMajor}") &&
             name.lastIndexOf(RegExp("\.[0-9]")) == name.length - 2;
@@ -241,7 +253,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
           log('the .travis.yml file needs updating: plugin generate');
         }
       } else {
-        log('the current git branch must be named "release_${cmd.releaseMajor}"');
+        log('the current git branch must be named "$expectedName"');
       }
     } else {
       log('the current git branch has uncommitted changes');
@@ -271,6 +283,15 @@ void separator(String name) {
   log('${ansi.red}${ansi.bold}$name${ansi.none}', indent: false);
 }
 
+int get devBuildNumber {
+  // The dev channel is automatically refreshed weekly, so the build number
+  // is just the number of weeks since the last stable release.
+  var today = DateTime.now();
+  var daysSinceRelease = today.difference(lastReleaseDate).inDays;
+  var weekNumber = daysSinceRelease ~/ 7 + 1;
+  return weekNumber;
+}
+
 String substituteTemplateVariables(String line, BuildSpec spec) {
   String valueOf(String name) {
     switch (name) {
@@ -281,9 +302,16 @@ String substituteTemplateVariables(String line, BuildSpec spec) {
       case 'UNTIL':
         return spec.untilBuild;
       case 'VERSION':
-        return spec.release == null
-            ? '<version>SNAPSHOT</version>'
-            : '<version>${spec.release}.${++pluginCount}</version>';
+        var releaseNo = spec.isDevChannel ? _nextRelease() : spec.release;
+        if (releaseNo == null) {
+          releaseNo = 'SNAPSHOT';
+        } else {
+          releaseNo = '$releaseNo.${++pluginCount}';
+          if (spec.isDevChannel) {
+            releaseNo += '-dev.$devBuildNumber';
+          }
+        }
+        return '<version>$releaseNo</version>';
       case 'CHANGELOG':
         return spec.changeLog;
       case 'DEPEND':
@@ -300,10 +328,14 @@ String substituteTemplateVariables(String line, BuildSpec spec) {
   var start = line.indexOf('@');
   while (start >= 0 && start < line.length) {
     var end = line.indexOf('@', start + 1);
-    var name = line.substring(start + 1, end);
-    line = line.replaceRange(start, end + 1, valueOf(name));
-    if (end < line.length - 1) {
-      start = line.indexOf('@', end + 1);
+    if (end > 0) {
+      var name = line.substring(start + 1, end);
+      line = line.replaceRange(start, end + 1, valueOf(name));
+      if (end < line.length - 1) {
+        start = line.indexOf('@', end + 1);
+      }
+    } else {
+      break; // Some commit message has a '@' in it.
     }
   }
   return line;
@@ -314,6 +346,14 @@ Future<int> zip(String directory, String outFile) async {
   createDir(p.dirname(dest));
   var args = ['-r', dest, p.basename(directory)];
   return await exec('zip', args, cwd: p.dirname(directory));
+}
+
+String _nextRelease() {
+  var num = RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName).group(1);
+  var val = int.parse(num) + 1;
+  // If we have 10 point releases then we will have a problem here.
+  // We currently have no way to determine what the last point release was.
+  return '$val.0';
 }
 
 String _convertToTar(String path) =>
@@ -562,12 +602,18 @@ class BuildCommand extends ProductCommand {
 
     var result = 0;
     for (var spec in buildSpecs) {
-      if (spec.channel != channel) continue;
+      if (spec.channel != channel && isReleaseMode) {
+        continue;
+      }
       if (!(isForIntelliJ && isForAndroidStudio)) {
         // This is a little more complicated than I'd like because the default
         // is to always do both.
         if (isForAndroidStudio && !spec.isAndroidStudio) continue;
         if (isForIntelliJ && spec.isAndroidStudio) continue;
+      }
+
+      if (spec.isDevChannel && !isDevChannel) {
+        spec.buildForMaster();
       }
 
       result = await spec.artifacts.provision(
@@ -636,7 +682,7 @@ class BuildCommand extends ProductCommand {
         processedFile.writeAsStringSync(source);
       }
 
-      if (spec.channel == 'stable') {
+      if (!spec.version.startsWith('4.')) {
         processedFile = File(
             'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java');
         source = processedFile.readAsStringSync();
@@ -728,7 +774,7 @@ class BuildCommand extends ProductCommand {
         log('jar failed: ${result.toString()}');
         return result;
       }
-      if (spec.isTestTarget && !isReleaseMode) {
+      if (spec.isTestTarget && !isReleaseMode && !isDevChannel) {
         _copyFile(File('build/flutter-intellij/lib/flutter-intellij.jar'),
             Directory(testTargetPath(spec)),
             filename: 'io.flutter.jar');
@@ -748,7 +794,7 @@ class BuildCommand extends ProductCommand {
         log('zip failed: ${result.toString()}');
         return result;
       }
-      if (spec.copyIjVersion && !isReleaseMode) {
+      if (spec.copyIjVersion && !isReleaseMode && !isDevChannel) {
         _copyFile(File(releasesFilePath(spec)), Directory(ijVersionPath(spec)),
             filename: 'flutter-intellij.zip');
       }
@@ -851,6 +897,8 @@ class BuildSpec {
 
   bool get isAndroidStudio => ideaProduct.contains('android-studio');
 
+  bool get isDevChannel => channel == 'dev';
+
   bool get isReleaseMode => release != null;
 
   bool get isSynthetic => false;
@@ -883,6 +931,10 @@ class BuildSpec {
 
   String _parseChangelog() {
     var text = File('CHANGELOG.md').readAsStringSync();
+    return _parseChanges(text);
+  }
+
+  String _parseChanges(String text) {
     var html = markdownToHtml(text);
 
     // Translate our markdown based changelog into html; remove unwanted
@@ -905,7 +957,7 @@ class BuildSpec {
 
   Future<BuildSpec> initChangeLog() async {
     if (channel == 'dev') {
-      _changeLog = await makeDevLog(this);
+      _changeLog = _parseChanges(await makeDevLog(this));
     }
     return this;
   }
@@ -913,6 +965,11 @@ class BuildSpec {
   void buildForDev() {
     // Build everything. For stable channel we do not build specs on the dev channel.
     channel = 'dev';
+  }
+
+  void buildForMaster() {
+    // Ensure the dev-channel-only files are stored in release_master.
+    channel = 'stable';
   }
 }
 
@@ -1039,7 +1096,6 @@ class GenerateCommand extends ProductCommand {
 abstract class ProductCommand extends Command {
   final String name;
   List<BuildSpec> specs;
-  DateTime _releaseDate;
 
   ProductCommand(this.name) {
     addProductFlags(argParser, name[0].toUpperCase() + name.substring(1));
@@ -1054,7 +1110,7 @@ abstract class ProductCommand extends Command {
 
   bool get isForIntelliJ => argResults['ij'];
 
-  DateTime get releaseDate => _releaseDate;
+  DateTime get releaseDate => lastReleaseDate;
 
   bool get isReleaseMode => release != null;
 
@@ -1079,18 +1135,9 @@ abstract class ProductCommand extends Command {
       if (!rel.contains('.')) {
         rel = '$rel.0';
       }
-      if (isDevChannel) {
-        rel += '-dev.$devBuildNumber';
-      }
     }
 
     return rel;
-  }
-
-  int get devBuildNumber {
-    var dayNumber = releaseDate.day;
-    var weekNumber = dayNumber ~/ 7 + 1;
-    return weekNumber;
   }
 
   String get releaseMajor {
@@ -1128,14 +1175,7 @@ abstract class ProductCommand extends Command {
   Future<int> doit();
 
   Future<int> run() async {
-    rootPath = Directory.current.path;
-    var rel = globalResults['cwd'];
-    if (rel != null) {
-      rootPath = p.normalize(p.join(rootPath, rel));
-    }
-    if (isDevChannel) {
-      //await _initLastReleaseDate(); // TODO Debug
-    }
+    await _initGlobals();
     await _initSpecs();
     try {
       return await doit();
@@ -1146,22 +1186,27 @@ abstract class ProductCommand extends Command {
     }
   }
 
+  Future<void> _initGlobals() async {
+    // Initialization constraint: rootPath depends on arg parsing, and
+    // lastReleaseName and lastReleaseDate depend on rootPath.
+    rootPath = Directory.current.path;
+    var rel = globalResults['cwd'];
+    if (rel != null) {
+      rootPath = p.normalize(p.join(rootPath, rel));
+    }
+    lastReleaseName = await lastRelease();
+    lastReleaseDate = await dateOfLastRelease();
+  }
+
   Future<int> _initSpecs() async {
     specs = createBuildSpecs(this);
     for (var i = 0; i < specs.length; i++) {
-      await specs[i].initChangeLog();
-    }
-    if (isDevChannel) {
-      for (var i = 0; i < specs.length; i++) {
+      if (isDevChannel) {
         specs[i].buildForDev();
       }
+      await specs[i].initChangeLog();
     }
     return specs.length;
-  }
-
-  Future<DateTime> _initLastReleaseDate() async {
-    _releaseDate = await dateOfLastRelease();
-    return _releaseDate;
   }
 }
 
@@ -1226,37 +1271,35 @@ class TestCommand extends ProductCommand {
 Future<String> makeDevLog(BuildSpec spec) async {
   _checkGitDir();
   var gitDir = await GitDir.fromExisting(rootPath);
-  var since = await lastRelease();
+  var since = lastReleaseName;
   var processResult =
       await gitDir.runCommand(['log', '--oneline', '$since..HEAD']);
   String out = processResult.stdout;
   var messages = out.trim().split('\n');
   var devLog = StringBuffer();
-  devLog.writeln('## Changes since $since');
+  devLog.writeln('## Changes since ${since.replaceAll('_', ' ')}');
   messages.forEach((m) {
-    devLog.writeln(m.replaceFirst(RegExp(r'^[0-9A-Fa-f]+ '), '- '));
+    devLog.writeln(m.replaceFirst(RegExp(r'^[A-Fa-f\d]+\s+'), '- '));
   });
   devLog.writeln();
   return devLog.toString();
 }
 
-// git branch --list -v --no-abbrev 'release*'
-// git show --pretty=tformat:"%cI" 8f1af8fc
 Future<DateTime> dateOfLastRelease() async {
-  var lastReleaseName = await lastRelease();
+  _checkGitDir();
   var gitDir = await GitDir.fromExisting(rootPath);
   var processResult = await gitDir
       .runCommand(['branch', '--list', '-v', '--no-abbrev', lastReleaseName]);
   String out = processResult.stdout;
   var logLine = out.trim().split('\n').first.trim();
-  print('$logLine\n');
-  var match = r'\s*release_\d*\s*([\da-fA-F]*)'.matchAsPrefix(logLine);
+  var match =
+      RegExp(r'release_\d+\s+([A-Fa-f\d]{40})\s').matchAsPrefix(logLine);
   var commitHash = match.group(1);
   processResult =
       await gitDir.runCommand(['show', '--pretty=tformat:"%cI"', commitHash]);
   out = processResult.stdout;
   var date = out.trim().split('\n').first.trim();
-  return DateTime.parse(date);
+  return DateTime.parse(date.replaceAll('"', ''));
 }
 
 Future<String> lastRelease() async {
