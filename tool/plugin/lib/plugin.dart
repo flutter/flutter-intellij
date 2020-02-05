@@ -1306,9 +1306,6 @@ Future<DateTime> dateOfLastRelease() async {
 Future<String> lastRelease() async {
   _checkGitDir();
   var gitDir = await GitDir.fromExisting(rootPath);
-  // TODO(messick): Add git magic to ensure the latest release branch exists locally.
-  // For more context, see comments on this method in the PR:
-  // https://github.com/flutter/flutter-intellij/pull/4213
   var processResult = await gitDir.runCommand(['branch', '--list', 'release_*']);
   String out = processResult.stdout;
   var release = out.trim().split('\n').last.trim();
