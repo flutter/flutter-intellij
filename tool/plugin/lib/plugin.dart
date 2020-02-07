@@ -552,8 +552,6 @@ class ArtifactManager {
 class BuildCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
-  bool get isDevChannel => channel == 'dev';
-
   BuildCommand(this.runner) : super('build') {
     argParser.addOption('only-version',
         abbr: 'o',
@@ -565,13 +563,7 @@ class BuildCommand extends ProductCommand {
             'even if the cache appears fresh.\n'
             'This flag is ignored if --release is given.',
         defaultsTo: false);
-    argParser.addOption('channel',
-        abbr: 'c',
-        help: 'Select the channel to build: stable or dev',
-        defaultsTo: 'stable');
   }
-
-  String get channel => argResults['channel'];
 
   String get description => 'Build a deployable version of the Flutter plugin, '
       'compiled against the specified artifacts.';
@@ -971,13 +963,10 @@ class BuildSpec {
   }
 }
 
-/// Prompt for the JetBrains account password then upload
-/// the plugin distribution files to the JetBrains site.
-/// The --release argument is not optional.
+/// Either the --release or --channel options must be provided.
+/// The permanent token is read from the file specified by Kokoro.
 class DeployCommand extends ProductCommand {
   final BuildCommandRunner runner;
-  String username;
-  String tempDir;
 
   DeployCommand(this.runner) : super('deploy');
 
@@ -988,69 +977,74 @@ class DeployCommand extends ProductCommand {
       if (!await performReleaseChecks(this)) {
         return 1;
       }
-    } else {
-      log('Deploy must have a --release argument');
+    } else if (!isDevChannel) {
+      log('Deploy must have a --release or --channel=dev argument');
       return 1;
     }
 
-    String password;
-
+    var token;
     if (isTesting) {
-      password = "hello"; // For testing.
-      username = "test";
+      stdout.writeln('Please enter the permanent token '
+          'for the JetBrains Marketplace');
+      stdout.write('Token: ');
+      token = stdin.readLineSync();
     } else {
-      var mode = stdin.echoMode;
-      stdout.writeln('Please enter the username and password '
-          'for the JetBrains plugin repository');
-      stdout.write('Username: ');
-      username = stdin.readLineSync();
-      stdout.write('Password: ');
-      stdin.echoMode = false;
-      password = stdin.readLineSync();
-      stdin.echoMode = mode;
+      token = readTokenFile();
     }
-
-    var directory = Directory.systemTemp.createTempSync('plugin');
-    tempDir = directory.path;
-    var file = File('$tempDir/.content');
-    file.writeAsStringSync(password, flush: true);
 
     var value = 0;
-    try {
-      for (var spec in specs) {
-        var filePath = releasesFilePath(spec);
-        value = await upload(filePath, plugins[spec.pluginId]);
-        if (value != 0) {
-          return value;
-        }
+    var originalDir = Directory.current;
+    for (var spec in specs) {
+      if (spec.channel != channel) continue;
+      var filePath = releasesFilePath(spec);
+      log("uploading $filePath");
+      var file = File(filePath);
+      Directory.current = file.parent;
+      var pluginNumber = plugins[spec.pluginId];
+      value = await upload(p.basename(file.path), pluginNumber, token, spec.channel);
+      if (value != 0) {
+        return value;
       }
-    } finally {
-      file.deleteSync();
-      directory.deleteSync();
     }
+    Directory.current = originalDir;
     return value;
   }
 
-  Future<int> upload(String filePath, String pluginNumber) async {
+  String readTokenFile() {
+    var base = String.fromEnvironment('KOKORO_KEYSTORE_DIR');
+    var id = String.fromEnvironment('FLUTTER_KEYSTORE_ID');
+    var name = String.fromEnvironment('FLUTTER_KEYSTORE_NAME');
+    var file = File('$base/${id}_$name');
+    var token = file.readAsStringSync();
+    return token;
+  }
+
+  Future<int> upload(String filePath, String pluginNumber, String token,
+      String channel) async {
     if (!File(filePath).existsSync()) {
       throw 'File not found: $filePath';
     }
-    log("uploading $filePath");
-    var args = '''
--i 
--F userName="${username}" 
--F password="<${tempDir}/.content" 
--F pluginId="$pluginNumber" 
--F file="@$filePath" 
-"https://plugins.jetbrains.com/plugin/uploadPlugin"
+    // See https://plugins.jetbrains.com/docs/marketplace/plugin-upload.html#PluginUploadAPI-POST
+    // Trying to run curl directly doesn't work; something odd happens to the quotes.
+    var cmd = '''
+curl
+-i
+--header "Authorization: Bearer $token"
+-F pluginId=$pluginNumber
+-F file=@$filePath
+-F channel=$channel
+https://plugins.jetbrains.com/plugin/uploadPlugin
 ''';
 
-    final process = await Process.start('curl', args.split(RegExp(r'\s')));
-    var result = await process.exitCode;
-    if (result != 0) {
-      log('Upload failed: ${result.toString()} for file: $filePath');
+    var args = ['-c', cmd.split('\n').join(' ')];
+    final processResult = await Process.run('sh', args);
+    if (processResult.exitCode != 0) {
+      log('Upload failed: ${processResult.stderr} for file: $filePath');
     }
-    return result;
+    String out = processResult.stdout;
+    var message = out.trim().split('\n').last.trim();
+    log(message);
+    return processResult.exitCode;
   }
 }
 
@@ -1097,12 +1091,18 @@ abstract class ProductCommand extends Command {
 
   ProductCommand(this.name) {
     addProductFlags(argParser, name[0].toUpperCase() + name.substring(1));
+    argParser.addOption('channel',
+        abbr: 'c',
+        help: 'Select the channel to build: stable or dev',
+        defaultsTo: 'stable');
   }
+
+  String get channel => argResults['channel'];
+
+  bool get isDevChannel => channel == 'dev';
 
   /// Returns true when running in the context of a unit test.
   bool get isTesting => false;
-
-  bool get isDevChannel => false;
 
   bool get isForAndroidStudio => argResults['as'];
 
@@ -1269,7 +1269,8 @@ class TestCommand extends ProductCommand {
 }
 
 Future<String> makeDevLog(BuildSpec spec) async {
-  if (lastReleaseName == null) return ''; // The shallow on travis causes problems.
+  if (lastReleaseName == null)
+    return ''; // The shallow on travis causes problems.
   _checkGitDir();
   var gitDir = await GitDir.fromExisting(rootPath);
   var since = lastReleaseName;
@@ -1306,14 +1307,15 @@ Future<DateTime> dateOfLastRelease() async {
 Future<String> lastRelease() async {
   _checkGitDir();
   var gitDir = await GitDir.fromExisting(rootPath);
-  var processResult = await gitDir.runCommand(['branch', '--list', 'release_*']);
+  var processResult =
+      await gitDir.runCommand(['branch', '--list', 'release_*']);
   String out = processResult.stdout;
   var release = out.trim().split('\n').last.trim();
   if (!release.isEmpty) return release;
-  processResult = await gitDir.runCommand(['branch', '--list', '-a', '*release_*']);
+  processResult =
+      await gitDir.runCommand(['branch', '--list', '-a', '*release_*']);
   out = processResult.stdout;
   var remote = out.trim().split('\n').last.trim(); // "remotes/origin/release_43"
-  print(remote);
   release = remote.substring(remote.lastIndexOf('/') + 1);
   await gitDir.runCommand(['branch', '--track', release, remote]);
   return release;
