@@ -349,8 +349,8 @@ Future<int> zip(String directory, String outFile) async {
 }
 
 String _nextRelease() {
-  var num = RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName).group(1);
-  var val = int.parse(num) + 1;
+  var current = RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName).group(1);
+  var val = int.parse(current) + 1;
   return '$val.0';
 }
 
