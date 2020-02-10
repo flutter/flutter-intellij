@@ -17,6 +17,6 @@ echo "kokoro build start"
 # -rw-r--r--  1 kbuilder  admin  61 Feb 10 10:45 /tmpfs/src/keystore/74840_flutter-intellij-plugin-auth-token
 
 ./bin/plugin build --channel=dev
-./bin/plugin deploy --channel=dev
+dart tool/plugin/bin/main.dart deploy --channel=dev
 
 echo "kokoro build finished"
