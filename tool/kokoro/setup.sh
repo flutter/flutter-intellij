@@ -16,6 +16,7 @@ setup() {
   flutter doctor
   export FLUTTER_SDK=`pwd`/../flutter
 
+  export
   java -version
   echo "JAVA_HOME=$JAVA_HOME"
 
