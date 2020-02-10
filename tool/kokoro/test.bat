@@ -1,5 +1,6 @@
 git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
 set PATH=%PATH%;..\flutter\bin;..\flutter\bin\cache\dart-sdk\bin
+goto :error
 flutter config --no-analytics
 flutter doctor
 set FLUTTER_SDK=../flutter
