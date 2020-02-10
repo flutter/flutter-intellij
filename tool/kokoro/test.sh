@@ -12,7 +12,7 @@ echo "kokoro test finished"
 #TODO(messick) Temprary
 echo "kokoro build start"
 echo "KOKORO_KEYSTORE_DIR $KOKORO_KEYSTORE_DIR"
-ls -l $KOKORO_KEYSTORE_DIR/74840_flutter-intellij-kokoro
+ls -l $KOKORO_KEYSTORE_DIR/74840_flutter-intellij-plugin-auth-token
 
 #./bin/plugin build --channel=dev
 
