@@ -1,28 +1,27 @@
-REM Copied from setup.sh
-REM TODO(messick) Translate to CMD
-
-REM  git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
-REM  export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
-REM  flutter config --no-analytics
-REM  flutter doctor
-REM  export FLUTTER_SDK=`pwd`/../flutter
-
-REM  java -version
-REM  echo "JAVA_HOME=$JAVA_HOME"
-
-REM  echo "install ant"
-REM  curl https://www-us.apache.org/dist/ant/binaries/apache-ant-1.10.7-bin.tar.gz > ../ant.tar.gz
-REM  (cd ..; tar fx ant.tar.gz)
-REM  export PATH=$PATH:`pwd`/../apache-ant-1.10.7/bin
-
-REM  export FLUTTER_KEYSTORE_ID=74840
-REM  export FLUTTER_KEYSTORE_NAME=flutter-intellij-plugin-auth-token
-
-REM  (cd tool/plugin; echo "pub get `pwd`"; pub get --no-precompile)
-
-REM ./bin/plugin test
+git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
+set PATH=%PATH%;..\flutter\bin;..\flutter\bin\cache\dart-sdk\bin
+flutter config --no-analytics
+flutter doctor
+set FLUTTER_SDK=../flutter
 
 java -version
-ant -version
-curl --version
-git --version
+echo "JAVA_HOME=%JAVA_HOME%"
+
+echo "install ant"
+curl https://www-us.apache.org/dist/ant/binaries/apache-ant-1.10.7-bin.zip > ../ant.zip
+(cd ..; unzip ant.tar.gz)
+set PATH=%PATH%;../apache-ant-1.10.7/bin
+ant --version || goto :error
+
+set FLUTTER_KEYSTORE_ID=74840
+set FLUTTER_KEYSTORE_NAME=flutter-intellij-plugin-auth-token
+
+(cd tool/plugin; echo "pub get `pwd`"; pub get --no-precompile)
+
+.\bin\plugin test || goto :error
+
+:; exit 0
+exit /b 0
+
+:error
+exit /b %errorlevel%
