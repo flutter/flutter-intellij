@@ -119,6 +119,7 @@ void main() {
 
   group('deploy', () {
     test('clean', () async {
+      var dir = Directory.current;
       var runner = makeTestRunner();
       await runner.run([
         "-r=19",
@@ -127,8 +128,7 @@ void main() {
         "--no-as",
         "--no-ij"
       ]).whenComplete(() {
-        var dir = (runner.commands['deploy'] as DeployCommand).tempDir;
-        expect(new Directory(dir).existsSync(), false);
+        expect(Directory.current.path, equals(dir.path));
       });
     });
 
@@ -147,15 +147,8 @@ void main() {
       await runner.run(["--release=19", "-d../..", "deploy"]).whenComplete(() {
         cmd = (runner.commands['deploy'] as TestDeployCommand);
       });
-      expect(
-          cmd.paths.map((p) => p.substring(p.indexOf('releases'))),
-          orderedEquals([
-            'releases/release_19/3.5/flutter-intellij.zip',
-            'releases/release_19/3.6/flutter-intellij.zip',
-            'releases/release_19/2019.3/flutter-intellij.zip',
-            'releases/release_19/4.0/flutter-intellij.zip',
-            'releases/release_19/2020.1/flutter-intellij.zip',
-          ]));
+      var specs = cmd.specs.where((s) => !s.isDevChannel).toList();
+      expect(cmd.paths.length, specs.length);
     });
   });
 
@@ -268,7 +261,14 @@ class TestDeployCommand extends DeployCommand {
 
   bool get isTesting => true;
 
-  Future<int> upload(String filePath, String pluginNumber) {
+  String readTokenFile() {
+    return "token";
+  }
+
+  void changeDirectory(Directory dir) {}
+
+  Future<int> upload(String filePath, String pluginNumber, String token,
+      String channel) {
     paths.add(filePath);
     plugins.add(pluginNumber);
     return new Future(() => 0);

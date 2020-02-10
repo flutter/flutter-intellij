@@ -982,16 +982,7 @@ class DeployCommand extends ProductCommand {
       return 1;
     }
 
-    var token;
-    if (isTesting) {
-      stdout.writeln('Please enter the permanent token '
-          'for the JetBrains Marketplace');
-      stdout.write('Token: ');
-      token = stdin.readLineSync();
-    } else {
-      token = readTokenFile();
-    }
-
+    var token = readTokenFile();
     var value = 0;
     var originalDir = Directory.current;
     for (var spec in specs) {
@@ -999,15 +990,19 @@ class DeployCommand extends ProductCommand {
       var filePath = releasesFilePath(spec);
       log("uploading $filePath");
       var file = File(filePath);
-      Directory.current = file.parent;
+      changeDirectory(file.parent);
       var pluginNumber = plugins[spec.pluginId];
       value = await upload(p.basename(file.path), pluginNumber, token, spec.channel);
       if (value != 0) {
         return value;
       }
     }
-    Directory.current = originalDir;
+    changeDirectory(originalDir);
     return value;
+  }
+
+  void changeDirectory(Directory dir) {
+    Directory.current = dir.path;
   }
 
   String readTokenFile() {
