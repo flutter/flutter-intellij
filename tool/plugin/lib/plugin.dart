@@ -38,7 +38,13 @@ const Map<String, String> plugins = const {
 
 const int cloudErrorFileMaxSize = 1000; // In bytes.
 
+// Globals are initialized early in ProductCommand, and everything in this
+// file is a subclass of ProductCommand. It is not ideal, but the "proper"
+// solution would be to move nearly all the top-level functions to methods
+// in ProductCommand.
 String rootPath;
+String lastReleaseName;
+DateTime lastReleaseDate;
 int pluginCount = 0;
 
 void addProductFlags(ArgParser argParser, String verb) {
@@ -221,6 +227,10 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
     if (cmd.isTestMode) {
       return true;
     }
+    if (cmd.isDevChannel) {
+      log('release mode is incompatible with the dev channel');
+      return false;
+    }
     if (!cmd.isReleaseValid) {
       log('the release identifier ("${cmd.release}") must be of the form xx.x (major.minor)');
       return false;
@@ -230,7 +240,9 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
     if (isClean) {
       var branch = await gitDir.getCurrentBranch();
       var name = branch.branchName;
-      var result = name == "release_${cmd.releaseMajor}";
+      var expectedName =
+          cmd.isDevChannel ? 'master' : "release_${cmd.releaseMajor}";
+      var result = name == expectedName;
       if (!result)
         result = name.startsWith("release_${cmd.releaseMajor}") &&
             name.lastIndexOf(RegExp("\.[0-9]")) == name.length - 2;
@@ -241,7 +253,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
           log('the .travis.yml file needs updating: plugin generate');
         }
       } else {
-        log('the current git branch must be named "release_${cmd.releaseMajor}"');
+        log('the current git branch must be named "$expectedName"');
       }
     } else {
       log('the current git branch has uncommitted changes');
@@ -271,6 +283,15 @@ void separator(String name) {
   log('${ansi.red}${ansi.bold}$name${ansi.none}', indent: false);
 }
 
+int get devBuildNumber {
+  // The dev channel is automatically refreshed weekly, so the build number
+  // is just the number of weeks since the last stable release.
+  var today = DateTime.now();
+  var daysSinceRelease = today.difference(lastReleaseDate).inDays;
+  var weekNumber = daysSinceRelease ~/ 7 + 1;
+  return weekNumber;
+}
+
 String substituteTemplateVariables(String line, BuildSpec spec) {
   String valueOf(String name) {
     switch (name) {
@@ -281,9 +302,16 @@ String substituteTemplateVariables(String line, BuildSpec spec) {
       case 'UNTIL':
         return spec.untilBuild;
       case 'VERSION':
-        return spec.release == null
-            ? '<version>SNAPSHOT</version>'
-            : '<version>${spec.release}.${++pluginCount}</version>';
+        var releaseNo = spec.isDevChannel ? _nextRelease() : spec.release;
+        if (releaseNo == null) {
+          releaseNo = 'SNAPSHOT';
+        } else {
+          releaseNo = '$releaseNo.${++pluginCount}';
+          if (spec.isDevChannel) {
+            releaseNo += '-dev.$devBuildNumber';
+          }
+        }
+        return '<version>$releaseNo</version>';
       case 'CHANGELOG':
         return spec.changeLog;
       case 'DEPEND':
@@ -300,10 +328,14 @@ String substituteTemplateVariables(String line, BuildSpec spec) {
   var start = line.indexOf('@');
   while (start >= 0 && start < line.length) {
     var end = line.indexOf('@', start + 1);
-    var name = line.substring(start + 1, end);
-    line = line.replaceRange(start, end + 1, valueOf(name));
-    if (end < line.length - 1) {
-      start = line.indexOf('@', end + 1);
+    if (end > 0) {
+      var name = line.substring(start + 1, end);
+      line = line.replaceRange(start, end + 1, valueOf(name));
+      if (end < line.length - 1) {
+        start = line.indexOf('@', end + 1);
+      }
+    } else {
+      break; // Some commit message has a '@' in it.
     }
   }
   return line;
@@ -314,6 +346,12 @@ Future<int> zip(String directory, String outFile) async {
   createDir(p.dirname(dest));
   var args = ['-r', dest, p.basename(directory)];
   return await exec('zip', args, cwd: p.dirname(directory));
+}
+
+String _nextRelease() {
+  var current = RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName).group(1);
+  var val = int.parse(current) + 1;
+  return '$val.0';
 }
 
 String _convertToTar(String path) =>
@@ -525,10 +563,6 @@ class BuildCommand extends ProductCommand {
             'even if the cache appears fresh.\n'
             'This flag is ignored if --release is given.',
         defaultsTo: false);
-    argParser.addOption('channel',
-        abbr: 'c',
-        help: 'Select the channel to build: stable or dev',
-        defaultsTo: 'stable');
   }
 
   String get description => 'Build a deployable version of the Flutter plugin, '
@@ -558,12 +592,18 @@ class BuildCommand extends ProductCommand {
 
     var result = 0;
     for (var spec in buildSpecs) {
-      if (spec.channel != argResults['channel']) continue;
+      if (spec.channel != channel && isReleaseMode) {
+        continue;
+      }
       if (!(isForIntelliJ && isForAndroidStudio)) {
         // This is a little more complicated than I'd like because the default
         // is to always do both.
         if (isForAndroidStudio && !spec.isAndroidStudio) continue;
         if (isForIntelliJ && spec.isAndroidStudio) continue;
+      }
+
+      if (spec.isDevChannel && !isDevChannel) {
+        spec.buildForMaster();
       }
 
       result = await spec.artifacts.provision(
@@ -632,7 +672,7 @@ class BuildCommand extends ProductCommand {
         processedFile.writeAsStringSync(source);
       }
 
-      if (spec.channel == 'stable') {
+      if (!spec.version.startsWith('4.')) {
         processedFile = File(
             'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java');
         source = processedFile.readAsStringSync();
@@ -724,7 +764,7 @@ class BuildCommand extends ProductCommand {
         log('jar failed: ${result.toString()}');
         return result;
       }
-      if (spec.isTestTarget && !isReleaseMode) {
+      if (spec.isTestTarget && !isReleaseMode && !isDevChannel) {
         _copyFile(File('build/flutter-intellij/lib/flutter-intellij.jar'),
             Directory(testTargetPath(spec)),
             filename: 'io.flutter.jar');
@@ -744,7 +784,7 @@ class BuildCommand extends ProductCommand {
         log('zip failed: ${result.toString()}');
         return result;
       }
-      if (spec.copyIjVersion && !isReleaseMode) {
+      if (spec.copyIjVersion && !isReleaseMode && !isDevChannel) {
         _copyFile(File(releasesFilePath(spec)), Directory(ijVersionPath(spec)),
             filename: 'flutter-intellij.zip');
       }
@@ -806,7 +846,6 @@ compile
 class BuildSpec {
   // Build targets
   final String name;
-  final String channel;
   final String version;
   final String ijVersion;
   final bool isTestTarget;
@@ -820,6 +859,7 @@ class BuildSpec {
   final String pluginId = 'io.flutter';
   final String release;
   final List<dynamic> filesToSkip;
+  String channel;
   String _changeLog;
 
   ArtifactManager artifacts = ArtifactManager();
@@ -846,6 +886,8 @@ class BuildSpec {
   bool get copyIjVersion => isAndroidStudio && ijVersion != null;
 
   bool get isAndroidStudio => ideaProduct.contains('android-studio');
+
+  bool get isDevChannel => channel == 'dev';
 
   bool get isReleaseMode => release != null;
 
@@ -879,6 +921,10 @@ class BuildSpec {
 
   String _parseChangelog() {
     var text = File('CHANGELOG.md').readAsStringSync();
+    return _parseChanges(text);
+  }
+
+  String _parseChanges(String text) {
     var html = markdownToHtml(text);
 
     // Translate our markdown based changelog into html; remove unwanted
@@ -901,19 +947,26 @@ class BuildSpec {
 
   Future<BuildSpec> initChangeLog() async {
     if (channel == 'dev') {
-      _changeLog = await makeDevLog(this);
+      _changeLog = _parseChanges(await makeDevLog(this));
     }
     return this;
   }
+
+  void buildForDev() {
+    // Build everything. For release builds we do not build specs on the dev channel.
+    channel = 'dev';
+  }
+
+  void buildForMaster() {
+    // Ensure the dev-channel-only files are stored in release_master.
+    channel = 'stable';
+  }
 }
 
-/// Prompt for the JetBrains account password then upload
-/// the plugin distribution files to the JetBrains site.
-/// The --release argument is not optional.
+/// Either the --release or --channel options must be provided.
+/// The permanent token is read from the file specified by Kokoro.
 class DeployCommand extends ProductCommand {
   final BuildCommandRunner runner;
-  String username;
-  String tempDir;
 
   DeployCommand(this.runner) : super('deploy');
 
@@ -924,69 +977,69 @@ class DeployCommand extends ProductCommand {
       if (!await performReleaseChecks(this)) {
         return 1;
       }
-    } else {
-      log('Deploy must have a --release argument');
+    } else if (!isDevChannel) {
+      log('Deploy must have a --release or --channel=dev argument');
       return 1;
     }
 
-    String password;
-
-    if (isTesting) {
-      password = "hello"; // For testing.
-      username = "test";
-    } else {
-      var mode = stdin.echoMode;
-      stdout.writeln('Please enter the username and password '
-          'for the JetBrains plugin repository');
-      stdout.write('Username: ');
-      username = stdin.readLineSync();
-      stdout.write('Password: ');
-      stdin.echoMode = false;
-      password = stdin.readLineSync();
-      stdin.echoMode = mode;
-    }
-
-    var directory = Directory.systemTemp.createTempSync('plugin');
-    tempDir = directory.path;
-    var file = File('$tempDir/.content');
-    file.writeAsStringSync(password, flush: true);
-
+    var token = readTokenFile();
     var value = 0;
-    try {
-      for (var spec in specs) {
-        var filePath = releasesFilePath(spec);
-        value = await upload(filePath, plugins[spec.pluginId]);
-        if (value != 0) {
-          return value;
-        }
+    var originalDir = Directory.current;
+    for (var spec in specs) {
+      if (spec.channel != channel) continue;
+      var filePath = releasesFilePath(spec);
+      log("uploading $filePath");
+      var file = File(filePath);
+      changeDirectory(file.parent);
+      var pluginNumber = plugins[spec.pluginId];
+      value = await upload(p.basename(file.path), pluginNumber, token, spec.channel);
+      if (value != 0) {
+        return value;
       }
-    } finally {
-      file.deleteSync();
-      directory.deleteSync();
     }
+    changeDirectory(originalDir);
     return value;
   }
 
-  Future<int> upload(String filePath, String pluginNumber) async {
+  void changeDirectory(Directory dir) {
+    Directory.current = dir.path;
+  }
+
+  String readTokenFile() {
+    var base = String.fromEnvironment('KOKORO_KEYSTORE_DIR');
+    var id = String.fromEnvironment('FLUTTER_KEYSTORE_ID');
+    var name = String.fromEnvironment('FLUTTER_KEYSTORE_NAME');
+    var file = File('$base/${id}_$name');
+    var token = file.readAsStringSync();
+    return token;
+  }
+
+  Future<int> upload(String filePath, String pluginNumber, String token,
+      String channel) async {
     if (!File(filePath).existsSync()) {
       throw 'File not found: $filePath';
     }
-    log("uploading $filePath");
-    var args = '''
--i 
--F userName="${username}" 
--F password="<${tempDir}/.content" 
--F pluginId="$pluginNumber" 
--F file="@$filePath" 
-"https://plugins.jetbrains.com/plugin/uploadPlugin"
+    // See https://plugins.jetbrains.com/docs/marketplace/plugin-upload.html#PluginUploadAPI-POST
+    // Trying to run curl directly doesn't work; something odd happens to the quotes.
+    var cmd = '''
+curl
+-i
+--header "Authorization: Bearer $token"
+-F pluginId=$pluginNumber
+-F file=@$filePath
+-F channel=$channel
+https://plugins.jetbrains.com/plugin/uploadPlugin
 ''';
 
-    final process = await Process.start('curl', args.split(RegExp(r'\s')));
-    var result = await process.exitCode;
-    if (result != 0) {
-      log('Upload failed: ${result.toString()} for file: $filePath');
+    var args = ['-c', cmd.split('\n').join(' ')];
+    final processResult = await Process.run('sh', args);
+    if (processResult.exitCode != 0) {
+      log('Upload failed: ${processResult.stderr} for file: $filePath');
     }
-    return result;
+    String out = processResult.stdout;
+    var message = out.trim().split('\n').last.trim();
+    log(message);
+    return processResult.exitCode;
   }
 }
 
@@ -1033,7 +1086,15 @@ abstract class ProductCommand extends Command {
 
   ProductCommand(this.name) {
     addProductFlags(argParser, name[0].toUpperCase() + name.substring(1));
+    argParser.addOption('channel',
+        abbr: 'c',
+        help: 'Select the channel to build: stable or dev',
+        defaultsTo: 'stable');
   }
+
+  String get channel => argResults['channel'];
+
+  bool get isDevChannel => channel == 'dev';
 
   /// Returns true when running in the context of a unit test.
   bool get isTesting => false;
@@ -1042,6 +1103,8 @@ abstract class ProductCommand extends Command {
 
   bool get isForIntelliJ => argResults['ij'];
 
+  DateTime get releaseDate => lastReleaseDate;
+
   bool get isReleaseMode => release != null;
 
   bool get isReleaseValid {
@@ -1049,8 +1112,8 @@ abstract class ProductCommand extends Command {
     if (rel == null) {
       return false;
     }
-    // Validate for '00.0'.
-    return rel == RegExp(r'\d+\.\d').stringMatch(rel);
+    // Validate for '00.0' with optional '-dev.0'
+    return rel == RegExp(r'^\d+\.\d(?:-dev.\d)?$').stringMatch(rel);
   }
 
   bool get isTestMode => globalResults['cwd'] != null;
@@ -1062,7 +1125,6 @@ abstract class ProductCommand extends Command {
       if (rel.startsWith('=')) {
         rel = rel.substring(1);
       }
-
       if (!rel.contains('.')) {
         rel = '$rel.0';
       }
@@ -1106,11 +1168,7 @@ abstract class ProductCommand extends Command {
   Future<int> doit();
 
   Future<int> run() async {
-    rootPath = Directory.current.path;
-    var rel = globalResults['cwd'];
-    if (rel != null) {
-      rootPath = p.normalize(p.join(rootPath, rel));
-    }
+    await _initGlobals();
     await _initSpecs();
     try {
       return await doit();
@@ -1121,9 +1179,26 @@ abstract class ProductCommand extends Command {
     }
   }
 
+  Future<void> _initGlobals() async {
+    // Initialization constraint: rootPath depends on arg parsing, and
+    // lastReleaseName and lastReleaseDate depend on rootPath.
+    rootPath = Directory.current.path;
+    var rel = globalResults['cwd'];
+    if (rel != null) {
+      rootPath = p.normalize(p.join(rootPath, rel));
+    }
+    if (isDevChannel) {
+      lastReleaseName = await lastRelease();
+      lastReleaseDate = await dateOfLastRelease();
+    }
+  }
+
   Future<int> _initSpecs() async {
     specs = createBuildSpecs(this);
     for (var i = 0; i < specs.length; i++) {
+      if (isDevChannel) {
+        specs[i].buildForDev();
+      }
       await specs[i].initChangeLog();
     }
     return specs.length;
@@ -1189,31 +1264,56 @@ class TestCommand extends ProductCommand {
 }
 
 Future<String> makeDevLog(BuildSpec spec) async {
+  if (lastReleaseName == null)
+    return ''; // The shallow on travis causes problems.
   _checkGitDir();
   var gitDir = await GitDir.fromExisting(rootPath);
-  var since = await lastRelease();
+  var since = lastReleaseName;
   var processResult =
       await gitDir.runCommand(['log', '--oneline', '$since..HEAD']);
   String out = processResult.stdout;
   var messages = out.trim().split('\n');
   var devLog = StringBuffer();
-  devLog.writeln('## Changes since $since');
+  devLog.writeln('## Changes since ${since.replaceAll('_', ' ')}');
   messages.forEach((m) {
-    devLog.writeln(m.replaceFirst(RegExp(r'^[0-9A-Fa-f]+ '), '- '));
+    devLog.writeln(m.replaceFirst(RegExp(r'^[A-Fa-f\d]+\s+'), '- '));
   });
   devLog.writeln();
   return devLog.toString();
 }
 
+Future<DateTime> dateOfLastRelease() async {
+  _checkGitDir();
+  var gitDir = await GitDir.fromExisting(rootPath);
+  var processResult = await gitDir
+      .runCommand(['branch', '--list', '-v', '--no-abbrev', lastReleaseName]);
+  String out = processResult.stdout;
+  var logLine = out.trim().split('\n').first.trim();
+  var match =
+      RegExp(r'release_\d+\s+([A-Fa-f\d]{40})\s').matchAsPrefix(logLine);
+  var commitHash = match.group(1);
+  processResult =
+      await gitDir.runCommand(['show', '--pretty=tformat:"%cI"', commitHash]);
+  out = processResult.stdout;
+  var date = out.trim().split('\n').first.trim();
+  return DateTime.parse(date.replaceAll('"', ''));
+}
+
 Future<String> lastRelease() async {
   _checkGitDir();
   var gitDir = await GitDir.fromExisting(rootPath);
-  // TODO(messick): Add git magic to ensure the latest release branch exists locally.
-  // For more context, see comments on this method in the PR:
-  // https://github.com/flutter/flutter-intellij/pull/4213
-  var processResult = await gitDir.runCommand(['branch', '--list', 'release*']);
+  var processResult =
+      await gitDir.runCommand(['branch', '--list', 'release_*']);
   String out = processResult.stdout;
-  return out.trim().split('\n').last.trim(); //
+  var release = out.trim().split('\n').last.trim();
+  if (!release.isEmpty) return release;
+  processResult =
+      await gitDir.runCommand(['branch', '--list', '-a', '*release_*']);
+  out = processResult.stdout;
+  var remote = out.trim().split('\n').last.trim(); // "remotes/origin/release_43"
+  release = remote.substring(remote.lastIndexOf('/') + 1);
+  await gitDir.runCommand(['branch', '--track', release, remote]);
+  return release;
 }
 
 void _checkGitDir() async {
