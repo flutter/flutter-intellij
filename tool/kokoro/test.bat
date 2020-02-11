@@ -1,4 +1,4 @@
-@echo off
+rem @echo off
 git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
 set PATH=%PATH%;..\flutter\bin\cache\dart-sdk\bin
 
