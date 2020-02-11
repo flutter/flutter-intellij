@@ -1,8 +1,8 @@
 rem @echo off
-dir t:\tmp
-dir T:\src\github\flutter-intellij-kokoro
-dir c:\users\root
 
+rem dir t:\tmp
+rem dir T:\src\github\flutter-intellij-kokoro
+rem dir c:\users\root
 rem dir t:\
 rem dir t:\src
 rem dir T:\src\github
@@ -12,6 +12,8 @@ rem dir c:\Users
 rem dir c:\windows
 rem dir C:\ProgramData
 rem dir "C:\Program Files (x86)"
+
+dir C:\ProgramData\chocolatey\bin
 
 dart --version || goto :error
 
