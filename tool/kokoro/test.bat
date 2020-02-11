@@ -12,7 +12,7 @@ curl https://www-us.apache.org/dist/ant/binaries/apache-ant-1.10.7-bin.zip > ant
 unzip -q ant.zip
 cd ..
 set PATH=%PATH%;ant/apache-ant-1.10.7/bin
-ant -version
+rem ant -version
 
 set FLUTTER_KEYSTORE_ID=74840
 set FLUTTER_KEYSTORE_NAME=flutter-intellij-plugin-auth-token
