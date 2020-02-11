@@ -242,7 +242,7 @@ public class FlutterUtils {
   /**
    * Checks whether a given string is a valid Dart identifier.
    * <p>
-   * See: https://www.dartlang.org/guides/language/spec
+   * See: https://dart.dev/guides/language/spec
    *
    * @param id the string to check
    * @return true if a valid identifer, false otherwise.
@@ -257,7 +257,7 @@ public class FlutterUtils {
    *
    * @param name the string to check
    * @return true if a valid package name, false otherwise.
-   * @see <a href="www.dartlang.org/tools/pub/pubspec#name">https://www.dartlang.org/tools/pub/pubspec#name</a>
+   * @see <a href="dart.dev/tools/pub/pubspec#name">https://dart.dev/tools/pub/pubspec#name</a>
    */
   public static boolean isValidPackageName(@NotNull String name) {
     return VALID_PACKAGE.matcher(name).matches();

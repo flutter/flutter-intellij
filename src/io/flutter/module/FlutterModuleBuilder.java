@@ -219,7 +219,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   }
 
   /**
-   * @see <a href="www.dartlang.org/tools/pub/pubspec#name">https://www.dartlang.org/tools/pub/pubspec#name</a>
+   * @see <a href="dart.dev/tools/pub/pubspec#name">https://dart.dev/tools/pub/pubspec#name</a>
    */
   @Override
   public boolean validateModuleName(@NotNull String moduleName) throws ConfigurationException {

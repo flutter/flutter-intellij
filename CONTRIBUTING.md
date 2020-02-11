@@ -26,7 +26,7 @@ file.
 * Open flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository). Build it using `Build` | `Make Project`
 * Try running the plugin; there is an existing launch config for "Flutter IntelliJ".
 * If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install"
-* Install Flutter SDK from [Flutter SDK download](https://flutter.io/docs/get-started/install) or [github](https://github.com/flutter/flutter) and set it up according to its instructions.
+* Install Flutter SDK from [Flutter SDK download](https://flutter.dev/docs/get-started/install) or [github](https://github.com/flutter/flutter) and set it up according to its instructions.
 * Verify installation from the command line:
   - Connect an android device with USB debugging.
   - `cd <flutter>/examples/hello_world`

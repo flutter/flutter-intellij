@@ -1,7 +1,7 @@
 # Editing Android Native Code
 
 This is a replacement for:
-https://flutter.io/using-ide/#edit-android-code
+https://flutter.dev/using-ide/#edit-android-code
 
 ***
 
