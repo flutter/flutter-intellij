@@ -1,7 +1,7 @@
 cd %KOKORO_ARTIFACTS_DIR%\github\flutter-intellij-kokoro
 
 rem Use choco to install dart so we get the latest version without having to edit this script
-choco -y install dart-sdk
+choco -y install dart-sdk --verbose --trace
 call RefreshEnv.cmd
 
 rem Run the test script in a new shell so it gets the updated environment and path.
