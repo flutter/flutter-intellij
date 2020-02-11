@@ -1,6 +1,7 @@
 rem @echo off
 echo %PATH%
 choco -y install dart-sdk
+refreshenv
 echo %PATH%
 dart --version || goto :error
 
