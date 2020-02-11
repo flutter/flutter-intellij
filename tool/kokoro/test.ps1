@@ -1,0 +1,1 @@
+cmd /c test.bat
