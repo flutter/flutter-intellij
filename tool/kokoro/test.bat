@@ -1,6 +1,4 @@
 rem @echo off
-dir c:\tool
-dir c:\tools
 
 dart --version || goto :error
 
