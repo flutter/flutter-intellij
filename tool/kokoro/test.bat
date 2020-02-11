@@ -1,8 +1,5 @@
 git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
-set PATH=%PATH%;..\flutter\bin;..\flutter\bin\cache\dart-sdk\bin
-flutter config --no-analytics || goto :error
-flutter doctor
-set FLUTTER_SDK=../flutter
+set PATH=%PATH%;..\flutter\bin\cache\dart-sdk\bin
 
 java -version
 echo "JAVA_HOME=%JAVA_HOME%"
@@ -18,7 +15,7 @@ set FLUTTER_KEYSTORE_NAME=flutter-intellij-plugin-auth-token
 
 (cd tool/plugin; echo "pub get `pwd`"; pub get --no-precompile)
 
-.\bin\plugin test || goto :error
+dart tool\plugin\bin\main.dart test || goto :error
 
 :; exit 0
 exit /b 0
