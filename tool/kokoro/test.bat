@@ -12,8 +12,9 @@ rem dir c:\Users
 rem dir c:\windows
 rem dir C:\ProgramData
 rem dir "C:\Program Files (x86)"
+rem dir C:\ProgramData\chocolatey\bin
 
-dir C:\ProgramData\chocolatey\bin
+call RefreshEnv.cmd
 
 dart --version || goto :error
 

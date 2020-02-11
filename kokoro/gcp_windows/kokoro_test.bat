@@ -5,4 +5,4 @@ choco -y install dart-sdk
 call RefreshEnv.cmd
 
 rem Run the test script in a new shell so it gets the updated environment and path.
-cmd.exe /c "call tool\kokoro\test.bat"
+cmd /c "call tool\kokoro\test.bat"
