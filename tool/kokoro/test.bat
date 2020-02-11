@@ -12,14 +12,14 @@ curl https://www-us.apache.org/dist/ant/binaries/apache-ant-1.10.7-bin.zip > ant
 unzip -q ant.zip
 cd ..
 set PATH=%PATH%;ant/apache-ant-1.10.7/bin
-ant -version || goto :error
+ant -version
 
 set FLUTTER_KEYSTORE_ID=74840
 set FLUTTER_KEYSTORE_NAME=flutter-intellij-plugin-auth-token
 
 cd tool\plugin
-echo "pub get `pwd`"
-pub get --no-precompile
+echo "pub get"
+..\..\..\flutter\bin\cache\dart-sdk\bin\pub get --no-precompile || goto :error
 cd ..\..
 
 dart tool\plugin\bin\main.dart test || goto :error
