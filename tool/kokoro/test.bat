@@ -1,5 +1,5 @@
 rem @echo off
-
+dir /s/o c:\
 rem dir t:\tmp
 rem dir T:\src\github\flutter-intellij-kokoro
 rem dir c:\users\root
@@ -14,23 +14,27 @@ rem dir C:\ProgramData
 rem dir "C:\Program Files (x86)"
 rem dir C:\ProgramData\chocolatey\bin
 
-call RefreshEnv.cmd
+echo "install dart"
+md ..\dart
+cd ..\dart
+curl https://storage.googleapis.com/dart-archive/channels/stable/release/2.7.1/sdk/dartsdk-windows-ia32-release.zip > dart.zip
+unzip -q dart.zip
+REM "%~dp0" is the directory of this file including trailing backslash
+cd %~dp0
+set PATH=%PATH%;%~dp0..\dart\dart-sdk\bin
 
 dart --version || goto :error
-
-REM "%~dp0" is the directory of this file including trailing backslash
-SET PATH=%~dp0bin;%PATH%
 
 java -version
 echo "JAVA_HOME=%JAVA_HOME%"
 
 echo "install ant"
-md ant
-cd ant
+md ..\ant
+cd ..\ant
 curl https://www-us.apache.org/dist/ant/binaries/apache-ant-1.10.7-bin.zip > ant.zip
 unzip -q ant.zip
-cd ..
-set PATH=%PATH%;%~dp0ant\apache-ant-1.10.7\bin
+cd %~dp0
+set PATH=%PATH%;%~dp0..\ant\apache-ant-1.10.7\bin
 rem ant -version
 
 set FLUTTER_KEYSTORE_ID=74840
