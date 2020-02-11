@@ -1,9 +1,11 @@
 rem @echo off
 
-dir "c:\Program Files"
-dir c:\windows
-dir C:\ProgramData
-dir "C:\Program Files (x86)"
+rem dir "c:\Program Files"
+dir "c:\Windows\Downloaded Program Files"
+dir c:\
+rem dir c:\windows
+rem dir C:\ProgramData
+rem dir "C:\Program Files (x86)"
 
 dart --version || goto :error
 
