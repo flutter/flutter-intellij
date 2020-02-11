@@ -1,8 +1,10 @@
 rem @echo off
-
+dir t:\
+dir t:\src
+dir T:\src\github
 rem dir "c:\Program Files"
 rem dir "c:\Windows\Downloaded Program Files"
-dir c:\Users
+rem dir c:\Users
 rem dir c:\windows
 rem dir C:\ProgramData
 rem dir "C:\Program Files (x86)"
