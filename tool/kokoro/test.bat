@@ -1,5 +1,8 @@
 rem @echo off
+echo %PATH%
 choco -y install dart-sdk
+echo %PATH%
+dart --version || goto :error
 
 REM "%~dp0" is the directory of this file including trailing backslash
 SET PATH=%~dp0bin;%PATH%
