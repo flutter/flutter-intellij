@@ -1,1 +1,1 @@
-cmd /c test.bat
+cmd /c tool\kokoro\test.bat
