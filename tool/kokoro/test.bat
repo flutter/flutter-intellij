@@ -1,7 +1,11 @@
 rem @echo off
-dir t:\
-dir t:\src
-dir T:\src\github
+dir t:\tmp
+dir T:\src\github\flutter-intellij-kokoro
+dir c:\users\root
+
+rem dir t:\
+rem dir t:\src
+rem dir T:\src\github
 rem dir "c:\Program Files"
 rem dir "c:\Windows\Downloaded Program Files"
 rem dir c:\Users
