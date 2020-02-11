@@ -1,8 +1,8 @@
 rem @echo off
 
 rem dir "c:\Program Files"
-dir "c:\Windows\Downloaded Program Files"
-dir c:\
+rem dir "c:\Windows\Downloaded Program Files"
+dir c:\Users
 rem dir c:\windows
 rem dir C:\ProgramData
 rem dir "C:\Program Files (x86)"
