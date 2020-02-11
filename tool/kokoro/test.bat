@@ -1,5 +1,3 @@
-powershell
-
 git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
 set PATH=%PATH%;..\flutter\bin;..\flutter\bin\cache\dart-sdk\bin
 flutter config --no-analytics || goto :error
