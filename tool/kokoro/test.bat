@@ -1,5 +1,10 @@
 rem @echo off
 
+dir "c:\Program Files"
+dir c:\windows
+dir C:\ProgramData
+dir "C:\Program Files (x86)"
+
 dart --version || goto :error
 
 REM "%~dp0" is the directory of this file including trailing backslash
