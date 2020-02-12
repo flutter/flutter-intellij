@@ -43,7 +43,7 @@ set FLUTTER_KEYSTORE_NAME=flutter-intellij-plugin-auth-token
 cd tool\plugin
 rem dir /s/o ..\..\..
 echo "pub get"
-pub get --no-precompile || goto :error
+pub get --no-precompile
 cd ..\..
 
 dart tool\plugin\bin\main.dart test || goto :error
