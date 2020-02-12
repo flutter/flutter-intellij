@@ -78,8 +78,6 @@ public class DisplayRefreshRateManager {
   }
 
   private CompletableFuture<Double> getDisplayRefreshRate() {
-    final double unknownRefreshRate = 0.0;
-
     final CompletableFuture<Double> displayRefreshRate = new CompletableFuture<Double>();
     vmServiceManager.getFlutterViewId().exceptionally(exception -> {
       // We often see "java.lang.RuntimeException: Method not found" from here; perhaps a race condition?
