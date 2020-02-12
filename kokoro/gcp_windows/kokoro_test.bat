@@ -5,4 +5,7 @@ rem Can't find where choco puts dart-sdk
 choco -y install dart-sdk
 rem call RefreshEnv.cmd
 
+dir /s/o t:\ > dir.log
+findstr dart-sdk dir.log
+
 call tool\kokoro\test.bat
