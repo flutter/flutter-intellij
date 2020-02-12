@@ -80,18 +80,22 @@ public class DisplayRefreshRateManager {
   private CompletableFuture<Double> getDisplayRefreshRate() {
     final double unknownRefreshRate = 0.0;
 
-    try {
-      final String flutterViewId = vmServiceManager.getFlutterViewId().exceptionally(exception -> {
-        // We often see "java.lang.RuntimeException: Method not found" from here; perhaps a race condition?
-        LOG.warn(exception.getMessage());
-        return null;
-      }).get();
-      return invokeGetDisplayRefreshRate(flutterViewId);
-    } catch (Exception e) {
-      LOG.warn(e.getMessage());
-      // Fail gracefully by returning the default.
-      return CompletableFuture.completedFuture(defaultRefreshRate);
-    }
+    final CompletableFuture<Double> displayRefreshRate = new CompletableFuture<Double>();
+    vmServiceManager.getFlutterViewId().exceptionally(exception -> {
+      // We often see "java.lang.RuntimeException: Method not found" from here; perhaps a race condition?
+      LOG.warn(exception.getMessage());
+      return null;
+    }).whenComplete((String id, Throwable throwable) -> {
+      if (id == null) {
+        // Fail gracefully by returning the default.
+        displayRefreshRate.complete(defaultRefreshRate);
+      } else {
+        invokeGetDisplayRefreshRate(id).whenComplete((Double refreshRate, Throwable t) -> {
+          displayRefreshRate.complete(refreshRate);
+        });
+      }
+    });
+    return displayRefreshRate;
   }
 
   private CompletableFuture<Double> invokeGetDisplayRefreshRate(String flutterViewId) {
