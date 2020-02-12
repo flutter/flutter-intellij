@@ -1256,7 +1256,11 @@ class TestCommand extends ProductCommand {
 
   Future<int> _runUnitTests() async {
     // run './gradlew test'
-    return await exec('./gradlew', ['test']);
+    if (Platform.isWindows) {
+      return await exec('./gradlew.bat', ['test']);
+    } else {
+      return await exec('./gradlew', ['test']);
+    }
   }
 
   Future<int> _runIntegrationTests() async {
