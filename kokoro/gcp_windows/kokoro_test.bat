@@ -5,4 +5,5 @@ rem Can't find where choco puts dart-sdk
 rem choco -y install dart-sdk
 rem call RefreshEnv.cmd
 
-call tool\kokoro\test.bat
+rem Tests don't run on Windows 7
+rem call tool\kokoro\test.bat
