@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# This script should execute during the scheduled builds.
+date
+echo "Automatic build started"
+
 # Fail on any error.
 set -e
 

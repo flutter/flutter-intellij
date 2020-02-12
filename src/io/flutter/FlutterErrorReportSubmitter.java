@@ -50,15 +50,14 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     return "Create Flutter Bug Report";
   }
 
-  @SuppressWarnings("deprecation")
   @Override
-  public void submitAsync(@NotNull IdeaLoggingEvent[] events,
-                          @Nullable String additionalInfo,
-                          @NotNull Component parentComponent,
-                          @NotNull Consumer<SubmittedReportInfo> consumer) {
+  public boolean submit(@NotNull IdeaLoggingEvent[] events,
+                        @Nullable String additionalInfo,
+                        @NotNull Component parentComponent,
+                        @NotNull Consumer<SubmittedReportInfo> consumer) {
     if (events.length == 0) {
       fail(consumer);
-      return;
+      return false;
     }
 
     String stackTrace = null;
@@ -98,7 +97,7 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     final Project project = PROJECT.getData(dataContext);
     if (project == null) {
       fail(consumer);
-      return;
+      return false;
     }
 
     final StringBuilder builder = new StringBuilder();
@@ -191,7 +190,7 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
 
     if (file == null) {
       fail(consumer);
-      return;
+      return false;
     }
 
     // Open the file.
@@ -201,13 +200,8 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
       null,
       "",
       SubmittedReportInfo.SubmissionStatus.NEW_ISSUE));
-  }
 
-  @SuppressWarnings("deprecation")
-  @Override
-  public SubmittedReportInfo submit(IdeaLoggingEvent[] events, Component parentComponent) {
-    // obsolete API
-    return new SubmittedReportInfo(null, "0", SubmittedReportInfo.SubmissionStatus.FAILED);
+    return true;
   }
 
   private static String getFlutterVersion(final FlutterSdk sdk) {

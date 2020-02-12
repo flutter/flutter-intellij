@@ -113,7 +113,7 @@ public class FlutterSaveActionsManager {
       return;
     }
 
-    if (DartAnalysisServerService.getInstance(myProject).serverReadyForRequest(myProject)) {
+    if (DartAnalysisServerService.getInstance(myProject).serverReadyForRequest()) {
       if (settings.isOrganizeImportsOnSave()) {
         performOrganizeThenFormat(document, file);
       }

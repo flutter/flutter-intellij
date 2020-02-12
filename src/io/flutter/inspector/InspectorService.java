@@ -12,7 +12,10 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.ex.EditorEx;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -26,6 +29,8 @@ import com.intellij.xdebugger.impl.XSourcePositionImpl;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
 import com.jetbrains.lang.dart.psi.DartExpression;
 import com.jetbrains.lang.dart.psi.DartReferenceExpression;
+import io.flutter.bazel.Workspace;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.FlutterApp;
@@ -263,19 +268,40 @@ public class InspectorService implements Disposable {
         if (!available) {
           return;
         }
+        final Workspace workspace = WorkspaceCache.getInstance(app.getProject()).get();
         final ArrayList<String> rootDirectories = new ArrayList<>();
-        for (PubRoot root : app.getPubRoots()) {
-          String path = root.getRoot().getCanonicalPath();
-          if (SystemInfo.isWindows) {
-            // TODO(jacobr): remove after https://github.com/flutter/flutter-intellij/issues/2217.
-            // The problem is setPubRootDirectories is currently expecting
-            // valid URIs as opposed to windows paths.
-            path = "file:///" + path;
+        if (workspace != null) {
+          for (VirtualFile root : rootsForProject(app.getProject())) {
+            final String relativePath = workspace.getRelativePath(root);
+            // TODO(jacobr): is it an error that the relative path can sometimes be null?
+            if (relativePath != null) {
+              rootDirectories.add(Workspace.BAZEL_URI_SCHEME + "/" + relativePath);
+            }
           }
-          rootDirectories.add(path);
+        }
+        else {
+          for (PubRoot root : app.getPubRoots()) {
+            String path = root.getRoot().getCanonicalPath();
+            if (SystemInfo.isWindows) {
+              // TODO(jacobr): remove after https://github.com/flutter/flutter-intellij/issues/2217.
+              // The problem is setPubRootDirectories is currently expecting
+              // valid URIs as opposed to windows paths.
+              path = "file:///" + path;
+            }
+            rootDirectories.add(path);
+          }
         }
         setPubRootDirectories(rootDirectories);
       });
+  }
+
+  @NotNull
+  private static List<VirtualFile> rootsForProject(@NotNull Project project) {
+    final List<VirtualFile> result = new ArrayList<>();
+    for (Module module : ModuleManager.getInstance(project).getModules()) {
+      Collections.addAll(result, ModuleRootManager.getInstance(module).getContentRoots());
+    }
+    return result;
   }
 
   /**
@@ -417,81 +443,6 @@ public class InspectorService implements Disposable {
       params.addProperty("arg" + i, args.get(i));
     }
     return invokeServiceExtensionNoGroup(methodName, params);
-  }
-
-  /*
-   * We make a best guess for the pub directory based on the the root directory
-   * of the first non artifical widget in the tree.
-   */
-  public CompletableFuture<String> inferPubRootDirectoryIfNeeded() {
-    ObjectGroup group = createObjectGroup("temp");
-
-    return group.getRoot(FlutterTreeType.widget).<String>thenComposeAsync((DiagnosticsNode root) -> {
-      if (root == null) {
-        // No need to do anything as there isn't a valid tree (yet?).
-        group.dispose();
-        return CompletableFuture.completedFuture(null);
-      }
-
-      return root.getChildren().<String>thenComposeAsync((ArrayList<DiagnosticsNode> children) -> {
-        if (children != null && !children.isEmpty()) {
-          // There are already widgets identified as being from the summary tree so
-          // no need to guess the pub root directory.
-          return CompletableFuture.<String>completedFuture(null);
-        }
-
-        return group.getChildren(root.getDartDiagnosticRef(), false, null).thenComposeAsync((ArrayList<DiagnosticsNode> allChildren) -> {
-
-          if (allChildren == null || allChildren.isEmpty()) {
-            return null;
-          }
-
-          InspectorSourceLocation location = allChildren.get(0).getCreationLocation();
-          if (location == null) {
-            return CompletableFuture.<String>completedFuture(null);
-          }
-          String path = location.getPath();
-          if (path == null) {
-            group.dispose();
-            return CompletableFuture.<String>completedFuture(null);
-          }
-          // TODO(jacobr): it would be nice to use Isolate.rootLib.
-          // We are currently blocked by the --track-widget-creation transformer
-          // generating absolute paths instead of package:paths.
-          // Once https://github.com/flutter/flutter/issues/26615 is fixed we will be
-          // able to use package: paths. Temporarily all tools tracking widget
-          // locations will need to support both path formats.
-          // TODO(jacobr): use the list of loaded scripts to determine the appropriate
-          // package root directory given that the root script of this project is in
-          // this directory rather than guessing based on url structure.
-          ArrayList<String> parts = new ArrayList<>(Arrays.asList(path.split("/")));
-          String pubRootDirectory = null;
-
-          for (int i = parts.size() - 1; i >= 0; i--) {
-            String part = parts.get(i);
-            if (part.equals("lib") || part.equals("web")) {
-              pubRootDirectory = String.join("/", parts.subList(0, i));
-              break;
-            }
-
-            if (part.equals("packages")) {
-              pubRootDirectory = String.join("/", parts.subList(0, i + 1));
-              break;
-            }
-          }
-          if (pubRootDirectory == null) {
-            parts.remove(parts.size() - 1);
-            pubRootDirectory = String.join("/", parts);
-          }
-
-          final String finalPubRootDirectory = pubRootDirectory;
-          return setPubRootDirectories(new ArrayList<>(Collections.singletonList(pubRootDirectory))).thenApplyAsync((ignored) -> {
-            group.dispose();
-            return finalPubRootDirectory;
-          });
-        });
-      });
-    });
   }
 
   private CompletableFuture<Void> setPubRootDirectories(List<String> rootDirectories) {
@@ -1497,7 +1448,12 @@ public class InspectorService implements Disposable {
     return getFileUriPrefix() + path;
   }
 
-  public static String fromSourceLocationUri(String path) {
+  public static String fromSourceLocationUri(String path, Project project) {
+    final Workspace workspace = WorkspaceCache.getInstance(project).get();
+    if (workspace != null) {
+      path = workspace.convertPath(path);
+    }
+
     final String filePrefix = getFileUriPrefix();
     return (path.startsWith(filePrefix)) ? path.substring(filePrefix.length()) : path;
   }

@@ -5,6 +5,7 @@
  */
 package io.flutter.perf;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
@@ -28,8 +29,6 @@ import javax.swing.Timer;
 import java.awt.event.ActionEvent;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-
-import static io.flutter.inspector.InspectorService.toSourceLocationUri;
 
 /**
  * This class provides the glue code between code fetching performance
@@ -191,7 +190,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
               if (name == null) {
                 name = "";
               }
-              final Location location = new Location(path, line, column, id, textRange, name);
+              final Location location = new Location(locationMapper.getPath(), line, column, id, textRange, name);
 
               final Location existingLocation = knownLocationIds.get(id);
               if (existingLocation == null) {
@@ -293,7 +292,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
       if (file == null) {
         continue;
       }
-      final String uri = toSourceLocationUri(file.getPath());
+      final String uri = file.getPath();
       editorForPath.put(uri, editor);
       uris.add(uri);
     }
@@ -314,20 +313,17 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     synchronized (this) {
       for (String path : editorForPath.keySet()) {
         for (TextEditor fileEditor : editorForPath.get(path)) {
-          // Ensure the fileEditor is still dealing with this path.
-          // TODO(jacobr): can file editors really change their associated path?
-          if (fileEditor.getFile() != null && toSourceLocationUri(fileEditor.getFile().getPath()).equals(path)) {
-            final EditorPerfModel editorDecoration = editorDecorations.get(fileEditor);
-            if (editorDecoration != null) {
-              if (!perfProvider.shouldDisplayPerfStats(fileEditor)) {
-                editorDecoration.clear();
-                continue;
-              }
-              final FilePerfInfo fileStats = buildSummaryStats(fileEditor);
-              editorDecoration.setPerfInfo(fileStats);
-              if (editorDecoration.isAnimationActive()) {
-                animate = true;
-              }
+          if (!fileEditor.isValid()) return;
+          final EditorPerfModel editorDecoration = editorDecorations.get(fileEditor);
+          if (editorDecoration != null) {
+            if (!perfProvider.shouldDisplayPerfStats(fileEditor)) {
+              editorDecoration.clear();
+              continue;
+            }
+            final FilePerfInfo fileStats = buildSummaryStats(fileEditor);
+            editorDecoration.setPerfInfo(fileStats);
+            if (editorDecoration.isAnimationActive()) {
+              animate = true;
             }
           }
         }
@@ -355,7 +351,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
   }
 
   private FilePerfInfo buildSummaryStats(TextEditor fileEditor) {
-    final String path = toSourceLocationUri(fileEditor.getFile().getPath());
+    final String path = fileEditor.getFile().getPath();
     final FilePerfInfo fileStats = new FilePerfInfo();
     for (PerfReportKind kind : PerfReportKind.values()) {
       final StatsForReportKind forKind = stats.get(kind);
@@ -474,7 +470,8 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
   /**
    * Note: this must be called on the UI thread.
    */
-  private void clearModels() {
+  @VisibleForTesting()
+  public void clearModels() {
     for (EditorPerfModel decorations : editorDecorations.values()) {
       decorations.clear();
     }

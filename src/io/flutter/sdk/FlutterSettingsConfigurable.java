@@ -58,7 +58,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myReportUsageInformationCheckBox;
   private LinkLabel myPrivacyPolicy;
   private JCheckBox myHotReloadOnSaveCheckBox;
-  private JCheckBox myHotReloadIgnoreErrorCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
   private JCheckBox myOpenInspectorOnAppLaunchCheckBox;
   private JCheckBox myFormatCodeOnSaveCheckBox;
@@ -129,8 +128,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       }
     }, null);
 
-    myHotReloadOnSaveCheckBox.addChangeListener(
-      (e) -> myHotReloadIgnoreErrorCheckBox.setEnabled(myHotReloadOnSaveCheckBox.isSelected()));
     myFormatCodeOnSaveCheckBox.addChangeListener(
       (e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
 
@@ -180,10 +177,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     }
 
     if (settings.isReloadOnSave() != myHotReloadOnSaveCheckBox.isSelected()) {
-      return true;
-    }
-
-    if (settings.allowReloadWithErrors() != myHotReloadIgnoreErrorCheckBox.isSelected()) {
       return true;
     }
 
@@ -237,24 +230,27 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Override
   public void apply() throws ConfigurationException {
-    final String errorMessage = FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(getSdkPathText());
-    if (errorMessage != null) {
-      throw new ConfigurationException(errorMessage);
-    }
+    // Bazel workspaces do not specify a sdk path so we do not need to update the sdk path if using
+    // a bazel workspace.
+    if (!workspaceCache.isBazel()) {
+      final String errorMessage = FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(getSdkPathText());
+      if (errorMessage != null) {
+        throw new ConfigurationException(errorMessage);
+      }
 
-    final String sdkHomePath = getSdkPathText();
-    if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
-      ApplicationManager.getApplication().runWriteAction(() -> {
-        FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath);
-        FlutterSdkUtil.enableDartSdk(myProject);
-      });
+      final String sdkHomePath = getSdkPathText();
+      if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
+        ApplicationManager.getApplication().runWriteAction(() -> {
+          FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath);
+          FlutterSdkUtil.enableDartSdk(myProject);
+        });
+      }
     }
 
     FlutterInitializer.setCanReportAnalytics(myReportUsageInformationCheckBox.isSelected());
 
     final FlutterSettings settings = FlutterSettings.getInstance();
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
-    settings.setReloadWithError(myHotReloadIgnoreErrorCheckBox.isSelected());
     settings.setFormatCodeOnSave(myFormatCodeOnSaveCheckBox.isSelected());
     settings.setOrganizeImportsOnSave(myOrganizeImportsOnSaveCheckBox.isSelected());
 
@@ -293,7 +289,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     final FlutterSettings settings = FlutterSettings.getInstance();
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
-    myHotReloadIgnoreErrorCheckBox.setSelected(settings.allowReloadWithErrors());
     myFormatCodeOnSaveCheckBox.setSelected(settings.isFormatCodeOnSave());
     myOrganizeImportsOnSaveCheckBox.setSelected(settings.isOrganizeImportsOnSave());
 
@@ -309,8 +304,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myEnableHotUiCheckBox.setSelected(settings.isEnableHotUi());
 
-    myHotReloadIgnoreErrorCheckBox.setEnabled(myHotReloadOnSaveCheckBox.isSelected());
-
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
 
     myShowAllRunConfigurationsInContextCheckBox.setSelected(settings.showAllRunConfigurationsInContext());
@@ -319,9 +312,14 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private void onVersionChanged() {
     final Workspace workspace = workspaceCache.get();
     if (workspaceCache.isBazel()) {
-        mySdkCombo.setEnabled(false);
-        mySdkCombo.getComboBox().getEditor().setItem(workspace.getRoot().getPath() + '/' + workspace.getSdkHome() + " <set by bazel project>");
-    } else {
+      // The workspace is not null if workspaceCache.isBazel() is true.
+      assert (workspace != null);
+
+      mySdkCombo.setEnabled(false);
+      mySdkCombo.getComboBox().getEditor()
+        .setItem(workspace.getRoot().getPath() + '/' + workspace.getSdkHome() + " <set by bazel project>");
+    }
+    else {
       mySdkCombo.setEnabled(true);
     }
 

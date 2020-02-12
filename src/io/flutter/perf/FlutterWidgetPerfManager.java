@@ -238,7 +238,7 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
   }
 
   private void syncBooleanServiceExtension(String serviceExtension, Computable<Boolean> valueProvider) {
-    StreamSubscription<Boolean> subscription = app.hasServiceExtension(serviceExtension, (supported) -> {
+    final StreamSubscription<Boolean> subscription = app.hasServiceExtension(serviceExtension, (supported) -> {
       if (supported) {
         app.callBooleanExtension(serviceExtension, valueProvider.compute());
       }
@@ -294,19 +294,15 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
       currentStats.showFor(lastSelectedEditors);
       return;
     }
-    final Module module = app.getModule();
     final Set<TextEditor> editors = new HashSet<>();
-    if (module != null) {
-      for (TextEditor editor : lastSelectedEditors) {
-        final VirtualFile file = editor.getFile();
-        if (file != null &&
-            ModuleUtilCore.moduleContainsFile(module, file, false) &&
-            !app.isReloading() || !app.isLatestVersionRunning(file)) {
-          // We skip querying files that have been modified locally as we
-          // cannot safely display the profile information so there is no
-          // point in tracking it.
-          editors.add(editor);
-        }
+    for (TextEditor editor : lastSelectedEditors) {
+      final VirtualFile file = editor.getFile();
+      if (file != null &&
+          !app.isReloading() || !app.isLatestVersionRunning(file)) {
+        // We skip querying files that have been modified locally as we
+        // cannot safely display the profile information so there is no
+        // point in tracking it.
+        editors.add(editor);
       }
     }
     currentStats.showFor(editors);

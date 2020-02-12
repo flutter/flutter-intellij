@@ -183,7 +183,7 @@ public class LaunchState extends CommandLineState {
   protected void showNoDeviceConnectedMessage(Project project) {
     Messages.showDialog(
       project,
-      "No connected devices found; please connect a device, or see flutter.io/setup for getting started instructions.",
+      "No connected devices found; please connect a device, or see flutter.dev/setup for getting started instructions.",
       "No Connected Devices Found",
       new String[]{Messages.OK_BUTTON}, 0, AllIcons.General.InformationDialog);
   }

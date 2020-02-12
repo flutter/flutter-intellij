@@ -8,6 +8,7 @@ package io.flutter.run;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationTypeBase;
 import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.configurations.RunConfigurationSingletonPolicy;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.search.FileTypeIndex;
@@ -36,7 +37,6 @@ public class FlutterRunConfigurationType extends ConfigurationTypeBase {
     return FileTypeIndex.containsFileOfType(DartFileType.INSTANCE, GlobalSearchScope.projectScope(project)) &&
            FlutterModuleUtils.hasFlutterModule(project);
   }
-
 
   public Factory getFactory() {
     return factory;
@@ -67,6 +67,12 @@ public class FlutterRunConfigurationType extends ConfigurationTypeBase {
     @Override
     public boolean isApplicable(@NotNull Project project) {
       return FlutterRunConfigurationType.doShowFlutterRunConfigurationForProject(project);
+    }
+
+    @NotNull
+    @Override
+    public RunConfigurationSingletonPolicy getSingletonPolicy() {
+      return RunConfigurationSingletonPolicy.MULTIPLE_INSTANCE_ONLY;
     }
   }
 }

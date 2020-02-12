@@ -24,7 +24,8 @@ setup() {
   (cd ..; tar fx ant.tar.gz)
   export PATH=$PATH:`pwd`/../apache-ant-1.10.7/bin
 
-  echo "pub get `pwd`"; pub get --no-precompile
-  (cd testData/sample_tests; echo "pub get `pwd`"; pub get --no-precompile)
+  export FLUTTER_KEYSTORE_ID=74840
+  export FLUTTER_KEYSTORE_NAME=flutter-intellij-kokoro
+
   (cd tool/plugin; echo "pub get `pwd`"; pub get --no-precompile)
 }

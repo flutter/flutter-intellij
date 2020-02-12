@@ -44,7 +44,7 @@ public class EvalOnDartLibrary implements Disposable {
   CompletableFuture<LibraryRef> libraryRef;
   private final Alarm myRequestsScheduler;
 
-  static final int DEFAULT_REQUEST_TIMEOUT_SECONDS = 5;
+  static final int DEFAULT_REQUEST_TIMEOUT_SECONDS = 10;
   /**
    * For robustness we ensure at most one pending request is issued at a time.
    */
@@ -82,13 +82,15 @@ public class EvalOnDartLibrary implements Disposable {
     }
 
     // Future that completes when the request has finished.
-    final CompletableFuture<T> response = timeoutAfter(DEFAULT_REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS, requestName);
+    final CompletableFuture<T> response = new CompletableFuture<>();
     // This is an optimization to avoid sending stale requests across the wire.
     final Runnable wrappedRequest = () -> {
       if (isAlive != null && isAlive.isDisposed()) {
         response.complete(null);
         return;
       }
+      // No need to timeout until the request has actually started.
+      timeoutAfter(response, DEFAULT_REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS, requestName);
       final CompletableFuture<T> future = request.get();
       future.whenCompleteAsync((v, t) -> {
         if (t != null) {
@@ -154,7 +156,8 @@ public class EvalOnDartLibrary implements Disposable {
   }
 
   public CompletableFuture<JsonObject> invokeServiceMethod(String method, JsonObject params) {
-    final CompletableFuture<JsonObject> ret = timeoutAfter(DEFAULT_REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS, "service method " + method);
+    final CompletableFuture<JsonObject> ret = new CompletableFuture<>();
+    timeoutAfter(ret, DEFAULT_REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS, "service method " + method);
     vmService.callServiceExtension(isolateId, method, params, new ServiceExtensionConsumer() {
       @Override
       public void onError(RPCError error) {
@@ -171,13 +174,10 @@ public class EvalOnDartLibrary implements Disposable {
   }
 
   // TODO(jacobr): remove this method after we switch to Java9+ which supports this method directly on CompletableFuture.
-  private <T> CompletableFuture<T> timeoutAfter(long timeout, TimeUnit unit, String operationName) {
+  private void timeoutAfter(CompletableFuture<?> future, long timeout, TimeUnit unit, String operationName) {
     // Create the timeout exception now, so we can capture the stack trace of the caller.
     final TimeoutException timeoutException = new TimeoutException(operationName);
-
-    final CompletableFuture<T> result = new CompletableFuture<>();
-    delayer.schedule(() -> result.completeExceptionally(timeoutException), timeout, unit);
-    return result;
+    delayer.schedule(() -> future.completeExceptionally(timeoutException), timeout, unit);
   }
 
   public CompletableFuture<InstanceRef> eval(String expression, Map<String, String> scope, InspectorService.ObjectGroup isAlive) {

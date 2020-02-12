@@ -448,7 +448,7 @@ public class DiagnosticsNode {
     if (!hasCreationLocation()) {
       return null;
     }
-    location = new InspectorSourceLocation(json.getAsJsonObject("creationLocation"), null);
+    location = new InspectorSourceLocation(json.getAsJsonObject("creationLocation"), null, app.getProject());
     return location;
   }
 

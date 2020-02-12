@@ -22,17 +22,11 @@ file.
   - extend it with additional plugin libraries (only until Android Q is released)
     - plugins/android/lib/android.jar
     - plugins/gradle/lib/gradle-common.jar
-* In the Project Structure dialog (`File | Project Structure`), select "Libraries" 
-  - click the "+" sign at the top "From maven..." to add libraries for PowerMock. Do this twice, for:
-    - powermock-module-junit4
-    - powermock-api-mockito2
-    - com.google.protobuf:protobuf-java:3.5.1
-  - Use the 2.0.0 version, or whatever is current in `flutter-intellij.iml`
 * One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin.  `Configure | Plugins` and install the Dart plugin, then restart the IDE
 * Open flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository). Build it using `Build` | `Make Project`
 * Try running the plugin; there is an existing launch config for "Flutter IntelliJ".
 * If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install"
-* Install Flutter SDK from [Flutter SDK download](https://flutter.io/docs/get-started/install) or [github](https://github.com/flutter/flutter) and set it up according to its instructions.
+* Install Flutter SDK from [Flutter SDK download](https://flutter.dev/docs/get-started/install) or [github](https://github.com/flutter/flutter) and set it up according to its instructions.
 * Verify installation from the command line:
   - Connect an android device with USB debugging.
   - `cd <flutter>/examples/hello_world`
