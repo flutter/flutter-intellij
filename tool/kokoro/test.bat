@@ -35,7 +35,8 @@ echo "pub get"
 cmd /c "pub get --no-precompile"
 cd ..\..
 
-dart tool\plugin\bin\main.dart test || goto :error
+dart tool\plugin\bin\main.dart test > test.log || goto :error
+type test.log
 
 :; exit 0
 exit /b 0
