@@ -3,20 +3,6 @@ rem @echo off
 set DART_VERSION=2.7.1
 set ANT_VERSION=1.10.7
 
-rem dir t:\tmp
-rem dir T:\src\github\flutter-intellij-kokoro
-rem dir c:\users\root
-rem dir t:\
-rem dir t:\src
-rem dir T:\src\github
-rem dir "c:\Program Files"
-rem dir "c:\Windows\Downloaded Program Files"
-rem dir c:\Users
-rem dir c:\windows
-rem dir C:\ProgramData
-rem dir "C:\Program Files (x86)"
-rem dir C:\ProgramData\chocolatey\bin
-
 echo "install dart"
 md ..\dart
 cd ..\dart
@@ -46,7 +32,7 @@ set FLUTTER_KEYSTORE_NAME=flutter-intellij-plugin-auth-token
 cd tool\plugin
 rem dir /s/o ..\..\..
 echo "pub get"
-call /c "pub get --no-precompile"
+cmd /c "pub get --no-precompile"
 cd ..\..
 
 dart tool\plugin\bin\main.dart test || goto :error
