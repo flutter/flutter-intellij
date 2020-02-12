@@ -1,5 +1,8 @@
 rem @echo off
 
+set DART_VERSION=2.7.1
+set ANT_VERSION=1.10.7
+
 rem dir t:\tmp
 rem dir T:\src\github\flutter-intellij-kokoro
 rem dir c:\users\root
@@ -17,7 +20,7 @@ rem dir C:\ProgramData\chocolatey\bin
 echo "install dart"
 md ..\dart
 cd ..\dart
-curl https://storage.googleapis.com/dart-archive/channels/stable/release/2.7.1/sdk/dartsdk-windows-ia32-release.zip > dart.zip
+curl https://storage.googleapis.com/dart-archive/channels/stable/release/%DART_VERSION%/sdk/dartsdk-windows-ia32-release.zip > dart.zip
 unzip -q dart.zip
 REM "%~dp0" is the directory of this file including trailing backslash
 cd %~dp0..\..
@@ -31,7 +34,7 @@ echo "JAVA_HOME=%JAVA_HOME%"
 echo "install ant"
 md ..\ant
 cd ..\ant
-curl https://www-us.apache.org/dist/ant/binaries/apache-ant-1.10.7-bin.zip > ant.zip
+curl https://www-us.apache.org/dist/ant/binaries/apache-ant-%ANT_VERSION%-bin.zip > ant.zip
 unzip -q ant.zip
 cd %~dp0..\..
 set PATH=%PATH%;%~dp0..\..\..ant\apache-ant-1.10.7\bin
