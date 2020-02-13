@@ -88,7 +88,11 @@ public class DisplayRefreshRateManager {
         // Fail gracefully by returning the default.
         displayRefreshRate.complete(defaultRefreshRate);
       } else {
-        invokeGetDisplayRefreshRate(id).whenComplete((Double refreshRate, Throwable t) -> {
+        invokeGetDisplayRefreshRate(id).exceptionally(exception -> {
+          LOG.warn(exception.getMessage());
+          // Fail gracefully by returning the default.
+          return defaultRefreshRate;
+        }).whenComplete((Double refreshRate, Throwable t) -> {
           displayRefreshRate.complete(refreshRate);
         });
       }
