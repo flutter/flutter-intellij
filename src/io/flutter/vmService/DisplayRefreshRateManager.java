@@ -91,8 +91,9 @@ public class DisplayRefreshRateManager {
             LOG.warn(t.getMessage());
             // Fail gracefully by returning the default.
             displayRefreshRate.complete(defaultRefreshRate);
+          } else {
+            displayRefreshRate.complete(refreshRate);
           }
-          displayRefreshRate.complete(refreshRate);
         });
       }
     });
