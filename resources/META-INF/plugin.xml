@@ -9,7 +9,7 @@
     Installing this plugin will also install the Dart plugin.
   </description>
   <!--suppress PluginXmlValidity -->
-  <vendor url="https://github.com/flutter/flutter-intellij">flutter.io</vendor>
+  <vendor url="https://github.com/flutter/flutter-intellij">flutter.dev</vendor>
 
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
