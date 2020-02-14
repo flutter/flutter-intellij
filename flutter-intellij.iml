@@ -80,12 +80,12 @@
     <orderEntry type="library" name="Dart Packages" level="project" />
     <orderEntry type="module" module-name="intellij.platform.externalSystem" />
     <orderEntry type="module" module-name="intellij.gradle.common" />
-    <orderEntry type="library" name="com.android.tools:common" level="project" />
-    <orderEntry type="library" name="studio-analytics-proto" level="project" />
-    <orderEntry type="library" name="protobuf" level="project" />
     <orderEntry type="module" module-name="intellij.java.compiler.impl" />
     <orderEntry type="module" module-name="plugin" />
     <orderEntry type="module" module-name="intellij.platform.serviceContainer" />
+    <orderEntry type="library" name="com.android.tools:common" level="project" />
+    <orderEntry type="library" name="studio-analytics-proto" level="project" />
+    <orderEntry type="library" name="protobuf" level="project" />
     <orderEntry type="library" name="com.android.tools.analytics-library:protos" level="project" />
     <orderEntry type="library" name="com.android.tools:common:26.5.0" level="project" />
     <orderEntry type="library" name="com.android.tools.analytics-library:protos:25.3.0" level="project" />

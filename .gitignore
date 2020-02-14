@@ -1,7 +1,8 @@
 .dart_tool/
 .DS_Store
 .gradle/
-.idea/
+.idea/workspace.xml
+.idea/libraries/Dart_*.xml
 .packages
 .pub/
 .sandbox/
