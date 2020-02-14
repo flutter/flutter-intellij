@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script should execute after a commit (but it doesn't because there is only one webhook).
+# This script should execute during the scheduled builds.
 date
 echo "Automatic build started"
 
@@ -16,4 +16,4 @@ set -e
 # in the job configuration.
 cd ${KOKORO_ARTIFACTS_DIR}/github/flutter-intellij-kokoro
 
-./tool/kokoro/build.sh
+./tool/kokoro/deploy.sh

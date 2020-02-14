@@ -1006,9 +1006,10 @@ class DeployCommand extends ProductCommand {
   }
 
   String readTokenFile() {
-    var base = String.fromEnvironment('KOKORO_KEYSTORE_DIR');
-    var id = String.fromEnvironment('FLUTTER_KEYSTORE_ID');
-    var name = String.fromEnvironment('FLUTTER_KEYSTORE_NAME');
+    var env = Platform.environment;
+    var base = env['KOKORO_KEYSTORE_DIR'];
+    var id = env['FLUTTER_KEYSTORE_ID'];
+    var name = env['FLUTTER_KEYSTORE_NAME'];
     var file = File('$base/${id}_$name');
     var token = file.readAsStringSync();
     return token;
@@ -1255,7 +1256,11 @@ class TestCommand extends ProductCommand {
 
   Future<int> _runUnitTests() async {
     // run './gradlew test'
-    return await exec('./gradlew', ['test']);
+    if (Platform.isWindows) {
+      return await exec('.\\gradlew.bat', ['test']);
+    } else {
+      return await exec('./gradlew', ['test']);
+    }
   }
 
   Future<int> _runIntegrationTests() async {

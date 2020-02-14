@@ -25,7 +25,7 @@ setup() {
   export PATH=$PATH:`pwd`/../apache-ant-1.10.7/bin
 
   export FLUTTER_KEYSTORE_ID=74840
-  export FLUTTER_KEYSTORE_NAME=flutter-intellij-kokoro
+  export FLUTTER_KEYSTORE_NAME=flutter-intellij-plugin-auth-token
 
   (cd tool/plugin; echo "pub get `pwd`"; pub get --no-precompile)
 }

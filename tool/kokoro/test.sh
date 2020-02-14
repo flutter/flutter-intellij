@@ -8,9 +8,3 @@ echo "kokoro test start"
 ./bin/plugin test
 
 echo "kokoro test finished"
-
-#TODO(messick) Temprary
-echo "kokoro build start"
-./bin/plugin build --channel=dev
-
-echo "kokoro build finished"
