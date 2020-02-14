@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script should execute after a commit (but it doesn't because there is only one webhook).
+# This script should execute after a commit.
 date
 echo "Automatic build started"
 
