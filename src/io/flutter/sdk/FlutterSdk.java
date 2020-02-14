@@ -331,39 +331,6 @@ public class FlutterSdk {
   }
 
   /**
-   * Runs "flutter --version" and waits for it to complete.
-   * <p>
-   * This ensures that the Dart SDK exists and is up to date.
-   * <p>
-   * If project is not null, displays output in a console.
-   *
-   * @return true if successful (the Dart SDK exists).
-   */
-  public boolean sync(@NotNull Project project) {
-    try {
-      final OSProcessHandler handler = flutterVersion().startInConsole(project);
-      if (handler == null) {
-        return false;
-      }
-      final Process process = handler.getProcess();
-      process.waitFor();
-      if (process.exitValue() != 0) {
-        return false;
-      }
-      final VirtualFile flutterBin = myHome.findChild("bin");
-      if (flutterBin == null) {
-        return false;
-      }
-      flutterBin.refresh(false, true);
-      return flutterBin.findFileByRelativePath("cache/dart-sdk") != null;
-    }
-    catch (InterruptedException e) {
-      FlutterUtils.warn(LOG, e);
-      return false;
-    }
-  }
-
-  /**
    * Runs flutter create and waits for it to finish.
    * <p>
    * Shows output in a console unless the module parameter is null.

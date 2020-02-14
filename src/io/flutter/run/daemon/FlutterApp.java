@@ -839,25 +839,32 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
   }
 
   @Override
-  public void onAppDebugPort(@NotNull DaemonEvent.AppDebugPort port) {
-    app.setWsUrl(port.wsUri);
+  public void onAppDebugPort(@NotNull DaemonEvent.AppDebugPort debugInfo) {
+    app.setWsUrl(debugInfo.wsUri);
 
-    String uri = port.baseUri;
-    if (uri == null) return;
+    // Print the conneciton info to the console.
+    final ConsoleView console = app.getConsole();
+    if (console != null) {
+      console.print("Debug service listening on " + debugInfo.wsUri + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
+    }
 
-    if (uri.startsWith("file:")) {
-      // Convert the file: url to a path.
-      try {
-        uri = new URL(uri).getPath();
-        if (uri.endsWith(File.separator)) {
-          uri = uri.substring(0, uri.length() - 1);
+    String uri = debugInfo.baseUri;
+    if (uri != null) {
+      if (uri.startsWith("file:")) {
+        // Convert the file: url to a path.
+        try {
+          uri = new URL(uri).getPath();
+          if (uri.endsWith(File.separator)) {
+            uri = uri.substring(0, uri.length() - 1);
+          }
+        }
+        catch (MalformedURLException e) {
+          // ignore
         }
       }
-      catch (MalformedURLException e) {
-        // ignore
-      }
+
+      app.setBaseUri(uri);
     }
-    app.setBaseUri(uri);
   }
 
   @Override
