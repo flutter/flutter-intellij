@@ -2,7 +2,7 @@
 .DS_Store
 .gradle/
 .idea/workspace.xml
-.idea/libraries/Dart_Packages.xml
+.idea/libraries/Dart_*.xml
 .packages
 .pub/
 .sandbox/
