@@ -64,7 +64,7 @@ public abstract class CommonTestConfigUtils {
     return null;
   }
 
-  private final Map<String, Map<DartCallExpression, TestType>> cachedCallToTestType = new HashMap<>();
+  private final Map<String, Map<Integer, TestType>> cachedCallToTestType = new HashMap<>();
 
   private void clearCachedInfo(String path) {
     synchronized (this) {
@@ -76,7 +76,7 @@ public abstract class CommonTestConfigUtils {
    * Gets the elements from the outline that are runnable tests.
    */
   @NotNull
-  private Map<DartCallExpression, TestType> getTestsFromOutline(@NotNull PsiFile file) {
+  private Map<Integer, TestType> getTestsFromOutline(@NotNull PsiFile file) {
     final Project project = file.getProject();
     final ActiveEditorsOutlineService outlineService = getActiveEditorsOutlineService(project);
     if (outlineService == null) {
@@ -135,11 +135,11 @@ public abstract class CommonTestConfigUtils {
    * Finds the {@link DartCallExpression} in the key set of {@param callToTestType} and also the closest parent of {@param element}.
    */
   @Nullable
-  private DartCallExpression findEnclosingTestCall(@NotNull PsiElement element, @NotNull Map<DartCallExpression, TestType> callToTestType) {
+  private DartCallExpression findEnclosingTestCall(@NotNull PsiElement element, @NotNull Map<Integer, TestType> callToTestType) {
     while (element != null) {
       if (element instanceof DartCallExpression) {
         final DartCallExpression call = (DartCallExpression)element;
-        if (callToTestType.containsKey(call)) {
+        if (callToTestType.containsKey(call.getStartOffsetInParent())) {
           return call;
         }
         // If we found nothing, move up to the element's parent before finding the enclosing function call.
@@ -161,7 +161,7 @@ public abstract class CommonTestConfigUtils {
    * Traverses the {@param outline} tree and adds to {@param callToTestType } the {@link DartCallExpression}s that are tests or test groups.
    */
   private void populateTestTypeMap(@NotNull FlutterOutline outline,
-                                   @NotNull Map<DartCallExpression, TestType> callToTestType,
+                                   @NotNull Map<Integer, TestType> callToTestType,
                                    @NotNull PsiFile file) {
     final PsiElement element = file.findElementAt(outline.getOffset());
     // If the outline is out-of-sync with the file, the element from that offset may be null.
@@ -174,11 +174,11 @@ public abstract class CommonTestConfigUtils {
       switch (outline.getDartElement().getKind()) {
         case UNIT_TEST_GROUP:
           // We found a test group.
-          callToTestType.put(DartSyntax.findClosestEnclosingFunctionCall(element), TestType.GROUP);
+          callToTestType.put(DartSyntax.findClosestEnclosingFunctionCall(element).getStartOffsetInParent(), TestType.GROUP);
           break;
         case UNIT_TEST_TEST:
           // We found a unit test.
-          callToTestType.put(DartSyntax.findClosestEnclosingFunctionCall(element), TestType.SINGLE);
+          callToTestType.put(DartSyntax.findClosestEnclosingFunctionCall(element).getStartOffsetInParent(), TestType.SINGLE);
           break;
         default:
           // We found no test.
