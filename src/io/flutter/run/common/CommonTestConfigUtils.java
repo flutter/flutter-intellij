@@ -64,11 +64,11 @@ public abstract class CommonTestConfigUtils {
     return null;
   }
 
-  Map<DartCallExpression, TestType> cachedCallToTestType;
+  private final Map<String, Map<DartCallExpression, TestType>> cachedCallToTestType = new HashMap<>();
 
-  private void clearCachedInfo() {
+  private void clearCachedInfo(String path) {
     synchronized (this) {
-      cachedCallToTestType = null;
+      cachedCallToTestType.remove(path);
     }
   }
 
@@ -84,21 +84,22 @@ public abstract class CommonTestConfigUtils {
     }
 
     final FlutterOutline outline = outlineService.getIfUpdated(file);
+    final String path = file.getVirtualFile().getPath();
     // If the outline is outdated, then request a new pass to generate line markers.
     if (outline == null) {
-      clearCachedInfo();
+      clearCachedInfo(path);
       outlineService.addListener(getListenerForFile(file));
       return new HashMap<>();
     }
 
     synchronized (this) {
       // Visit the fields on the outline to get which calls are actual named tests.
-      if (cachedCallToTestType == null) {
-        cachedCallToTestType = new HashMap<>();
-        populateTestTypeMap(outline, cachedCallToTestType, file);
+      if (!cachedCallToTestType.containsKey(path)) {
+        cachedCallToTestType.put(path, new HashMap<>());
+        populateTestTypeMap(outline, cachedCallToTestType.get(path), file);
       }
 
-      return cachedCallToTestType;
+      return cachedCallToTestType.get(path);
     }
   }
 
@@ -227,7 +228,7 @@ public abstract class CommonTestConfigUtils {
 
     @Override
     public void onOutlineChanged(@NotNull String filePath, @Nullable FlutterOutline outline) {
-      commonTestConfigUtils.clearCachedInfo();
+      commonTestConfigUtils.clearCachedInfo(filePath);
       forceFileAnnotation();
       service.removeListener(this);
     }
