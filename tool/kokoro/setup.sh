@@ -20,7 +20,7 @@ setup() {
   echo "JAVA_HOME=$JAVA_HOME"
 
   echo "install ant"
-  curl https://www-us.apache.org/dist/ant/binaries/apache-ant-1.10.7-bin.tar.gz > ../ant.tar.gz
+  curl https://downloads.apache.org/ant/binaries/apache-ant-1.10.7-bin.tar.gz > ../ant.tar.gz
   (cd ..; tar fx ant.tar.gz)
   export PATH=$PATH:`pwd`/../apache-ant-1.10.7/bin
 
