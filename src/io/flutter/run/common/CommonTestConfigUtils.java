@@ -107,7 +107,7 @@ public abstract class CommonTestConfigUtils {
   protected TestType findNamedTestCall(@NotNull PsiElement element) {
     if (element instanceof DartCallExpression) {
       final DartCallExpression call = (DartCallExpression)element;
-      return getTestsFromOutline(element.getContainingFile()).get(call);
+      return getTestsFromOutline(element.getContainingFile()).get(call.getTextOffset());
     }
     return null;
   }
@@ -139,7 +139,7 @@ public abstract class CommonTestConfigUtils {
     while (element != null) {
       if (element instanceof DartCallExpression) {
         final DartCallExpression call = (DartCallExpression)element;
-        if (callToTestType.containsKey(call.getStartOffsetInParent())) {
+        if (callToTestType.containsKey(call.getTextOffset())) {
           return call;
         }
         // If we found nothing, move up to the element's parent before finding the enclosing function call.
@@ -163,22 +163,18 @@ public abstract class CommonTestConfigUtils {
   private void populateTestTypeMap(@NotNull FlutterOutline outline,
                                    @NotNull Map<Integer, TestType> callToTestType,
                                    @NotNull PsiFile file) {
-    final PsiElement element = file.findElementAt(outline.getOffset());
-    // If the outline is out-of-sync with the file, the element from that offset may be null.
-    // The outline analysis is eventually consistent with the contents of the file, so if this happens,
-    // this visitor will be invoked again later with a corrected outline.
-    if (element == null) {
-      return;
-    }
     if (outline.getDartElement() != null) {
+      final PsiElement element;
       switch (outline.getDartElement().getKind()) {
         case UNIT_TEST_GROUP:
           // We found a test group.
-          callToTestType.put(DartSyntax.findClosestEnclosingFunctionCall(element).getStartOffsetInParent(), TestType.GROUP);
+          element = file.findElementAt(outline.getOffset());
+          callToTestType.put(DartSyntax.findClosestEnclosingFunctionCall(element).getTextOffset(), TestType.GROUP);
           break;
         case UNIT_TEST_TEST:
           // We found a unit test.
-          callToTestType.put(DartSyntax.findClosestEnclosingFunctionCall(element).getStartOffsetInParent(), TestType.SINGLE);
+          element = file.findElementAt(outline.getOffset());
+          callToTestType.put(DartSyntax.findClosestEnclosingFunctionCall(element).getTextOffset(), TestType.SINGLE);
           break;
         default:
           // We found no test.

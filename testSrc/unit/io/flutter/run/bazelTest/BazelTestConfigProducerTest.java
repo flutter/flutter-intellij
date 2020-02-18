@@ -38,12 +38,13 @@ import static org.junit.Assert.assertThat;
 
 public class BazelTestConfigProducerTest extends AbstractDartElementTest {
 
+  private static final String TEST_FILE_PATH = "workspace/foo/bar.dart";
   private String fileContents;
 
   private final BazelTestConfigUtils bazelTestConfigUtils = new BazelTestConfigUtils() {
     @Override
     protected ActiveEditorsOutlineService getActiveEditorsOutlineService(@NotNull Project project) {
-      return new FakeActiveEditorsOutlineService(project, FakeActiveEditorsOutlineService.SIMPLE_OUTLINE_PATH);
+      return new FakeActiveEditorsOutlineService(project, "/" + TEST_FILE_PATH, FakeActiveEditorsOutlineService.SIMPLE_OUTLINE_PATH);
     }
   };
 
@@ -135,7 +136,7 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
   private ConfigurationContext getTest1Context() {
     // Set up fake source code.
     final PsiElement testIdentifier = setUpDartElement(
-      "workspace/foo/bar.dart", fileContents, "test 1", LeafPsiElement.class);
+      TEST_FILE_PATH, fileContents, "test 1", LeafPsiElement.class);
     final PsiElement test =
       PsiTreeUtil.findFirstParent(testIdentifier, element -> element instanceof DartStringLiteralExpression);
     assertThat(test, not(equalTo(null)));

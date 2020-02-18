@@ -19,6 +19,8 @@ import org.junit.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.IsNot.not;
@@ -32,15 +34,21 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
   /**
    * The contents of data/test_file.dart.
    */
-  private String fileContents;
+  private Map<String, String> fileContents = new HashMap<>();
 
   CommonTestConfigUtils utils;
   FakeActiveEditorsOutlineService service;
 
+  static final String CUSTOM_TEST_LOCAL_PATH = "test/custom_test.dart";
+  static final String SIMPLE_TEST_LOCAL_PATH = "test/simple_test.dart";
+
   @Before
   public void setUp() throws Exception {
-    fileContents = new String(Files.readAllBytes(Paths.get(FakeActiveEditorsOutlineService.CUSTOM_TEST_PATH)));
-    service = new FakeActiveEditorsOutlineService(fixture.getProject(), FakeActiveEditorsOutlineService.CUSTOM_OUTLINE_PATH);
+    fileContents.put(
+      CUSTOM_TEST_LOCAL_PATH,
+      new String(Files.readAllBytes(Paths.get(FakeActiveEditorsOutlineService.CUSTOM_TEST_PATH)))
+    );
+    service = new FakeActiveEditorsOutlineService(fixture.getProject(), "/" + CUSTOM_TEST_LOCAL_PATH, FakeActiveEditorsOutlineService.CUSTOM_OUTLINE_PATH);
     utils = new CommonTestConfigUtils() {
       @Override
       protected ActiveEditorsOutlineService getActiveEditorsOutlineService(@NotNull Project project) {
@@ -126,20 +134,64 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
+  @Test
+  public void shouldMatchWhenMultipleFilesLoad() throws Exception {
+    run(() -> {
+      fileContents.put(
+        SIMPLE_TEST_LOCAL_PATH,
+        new String(Files.readAllBytes(Paths.get(FakeActiveEditorsOutlineService.SIMPLE_TEST_PATH)))
+      );
+      service.loadOutline("/" + SIMPLE_TEST_LOCAL_PATH, FakeActiveEditorsOutlineService.SIMPLE_OUTLINE_PATH);
+
+      final PsiElement singleTest = getTestCallWithName("test", "test 1", SIMPLE_TEST_LOCAL_PATH);
+      assertThat(utils.asTestCall(singleTest), equalTo(TestType.SINGLE));
+      assertThat(utils.findTestName(singleTest), equalTo("test 1"));
+
+      final PsiElement customTest = getTestCallWithName("t", "custom test", CUSTOM_TEST_LOCAL_PATH);
+      assertThat(utils.asTestCall(customTest), equalTo(TestType.SINGLE));
+      assertThat(utils.findTestName(customTest), equalTo("custom test"));
+    });
+  }
+
+  @Test
+  public void shouldNotMatchWhenAOutlineIsOutOfDate() throws Exception {
+    run(() -> {
+      // We'll replace the correct outline with an incorrect outline, which will flag the outline as invalid.
+      // Results should be null.
+      service.loadOutline("/" + CUSTOM_TEST_LOCAL_PATH, FakeActiveEditorsOutlineService.SIMPLE_OUTLINE_PATH);
+
+      final PsiElement customTest = getTestCallWithName("t", "custom test", CUSTOM_TEST_LOCAL_PATH);
+      assertThat(utils.asTestCall(customTest), equalTo(null));
+      assertThat(utils.findTestName(customTest), equalTo(null));
+    });
+  }
+
   /**
    * Gets a specific test or test group call.
+   *
+   * @param functionName The name of the function being called, eg test() or testWidgets()
+   * @param testName     The name of the test desired, such as 'test 0' or 'test widgets 0'
+   * @param filePath     The file containing the desired test.
+   */
+  @NotNull
+  private DartCallExpression getTestCallWithName(String functionName, String testName, String filePath) {
+    final PsiElement testIdentifier = setUpDartElement(filePath,
+                                                       fileContents.get(filePath), testName, LeafPsiElement.class);
+    assertThat(testIdentifier, not(equalTo(null)));
+
+    final DartCallExpression result = DartSyntax.findClosestEnclosingFunctionCall(testIdentifier);
+    assertThat(result, not(equalTo(null)));
+    return result;
+  }
+
+  /**
+   * Gets a specific test or test group call from {@code CUSTOM_TEST_LOCAL_PATH}.
    *
    * @param functionName The name of the function being called, eg test() or testWidgets()
    * @param testName     The name of the test desired, such as 'test 0' or 'test widgets 0'
    */
   @NotNull
   private DartCallExpression getTestCallWithName(String functionName, String testName) {
-    final PsiElement testIdentifier = setUpDartElement("test/custom_test.dart",
-                                                       fileContents, testName, LeafPsiElement.class);
-    assertThat(testIdentifier, not(equalTo(null)));
-
-    final DartCallExpression result = DartSyntax.findClosestEnclosingFunctionCall(testIdentifier);
-    assertThat(result, not(equalTo(null)));
-    return result;
+    return getTestCallWithName(functionName, testName, CUSTOM_TEST_LOCAL_PATH);
   }
 }
