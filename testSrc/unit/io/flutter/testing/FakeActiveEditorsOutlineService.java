@@ -16,19 +16,21 @@ import org.junit.Assert;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A fake implementation of the {@link ActiveEditorsOutlineService} that always returns a golden {@link FlutterOutline} from a file.
  */
 public class FakeActiveEditorsOutlineService extends ActiveEditorsOutlineService {
-  private FlutterOutline flutterOutline;
+  private Map<String, FlutterOutline> pathToFlutterOutline = new HashMap<>();
 
-  public FakeActiveEditorsOutlineService(Project project, @NotNull String flutterOutlinePath) {
+  public FakeActiveEditorsOutlineService(Project project, @NotNull String filePath, @NotNull String flutterOutlinePath) {
     super(project);
-    loadOutline(flutterOutlinePath);
+    loadOutline(filePath, flutterOutlinePath);
   }
 
-  public void loadOutline(@NotNull String flutterOutlinePath) {
+  public void loadOutline(@NotNull String filePath, @NotNull String flutterOutlinePath) {
     String outlineContents;
     try {
       outlineContents = new String(Files.readAllBytes(Paths.get(flutterOutlinePath)));
@@ -38,16 +40,19 @@ public class FakeActiveEditorsOutlineService extends ActiveEditorsOutlineService
       e.printStackTrace();
       outlineContents = null;
     }
-    flutterOutline = null;
+    FlutterOutline flutterOutline = null;
     if (outlineContents != null) {
       flutterOutline = FlutterOutline.fromJson(new JsonParser().parse(outlineContents).getAsJsonObject());
     }
+    pathToFlutterOutline.put(filePath, flutterOutline);
+
   }
 
   @Nullable
   @Override
   public FlutterOutline getOutline(String path) {
-    return flutterOutline;
+    // The path string that we get will be prepended with a '/' character, compared to how the cache was initialized.
+    return pathToFlutterOutline.get(path);
   }
 
   public static final String SIMPLE_TEST_PATH = "testData/sample_tests/test/simple_test.dart";
