@@ -87,7 +87,8 @@ public abstract class CommonTestConfigUtils {
     final String path = file.getVirtualFile().getPath();
     final boolean outlineOutdated;
     synchronized (this) {
-      outlineOutdated = cache.containsKey(path) && outline != cache.get(path).outline;
+      final OutlineCache entry = cache.get(path);
+      outlineOutdated = cache.containsKey(path) && outline != entry.outline;
     }
     // If the outline is outdated, then request a new pass to generate line markers.
     if (outline == null || outlineOutdated) {
@@ -97,8 +98,9 @@ public abstract class CommonTestConfigUtils {
     }
 
     synchronized (this) {
-      cache.put(path, new OutlineCache(outline, file));
-      return cache.get(path).callToTestType;
+      final OutlineCache entry = new OutlineCache(outline, file);
+      cache.put(path, entry);
+      return entry.callToTestType;
     }
   }
 
