@@ -65,9 +65,11 @@ public abstract class CommonTestConfigUtils {
   }
 
   private final Map<String, Map<Integer, TestType>> cachedCallToTestType = new HashMap<>();
+  private final Map<String, FlutterOutline> pathToPreviouslyUsedOutline = new HashMap<>();
 
   private void clearCachedInfo(String path) {
     synchronized (this) {
+      pathToPreviouslyUsedOutline.remove(path);
       cachedCallToTestType.remove(path);
     }
   }
@@ -85,14 +87,19 @@ public abstract class CommonTestConfigUtils {
 
     final FlutterOutline outline = outlineService.getIfUpdated(file);
     final String path = file.getVirtualFile().getPath();
+    final boolean outlineOutdated;
+    synchronized (this) {
+      outlineOutdated = pathToPreviouslyUsedOutline.containsKey(path) && outline != pathToPreviouslyUsedOutline.get(path);
+    }
     // If the outline is outdated, then request a new pass to generate line markers.
-    if (outline == null) {
+    if (outline == null || outlineOutdated) {
       clearCachedInfo(path);
       outlineService.addListener(getListenerForFile(file));
       return new HashMap<>();
     }
 
     synchronized (this) {
+      pathToPreviouslyUsedOutline.put(path, outline);
       // Visit the fields on the outline to get which calls are actual named tests.
       if (!cachedCallToTestType.containsKey(path)) {
         cachedCallToTestType.put(path, new HashMap<>());
