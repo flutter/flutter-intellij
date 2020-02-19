@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="Gradle: net.bytebuddy:byte-buddy:1.9.3">
-    <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/net/bytebuddy/byte-buddy/1.9.3/byte-buddy-1.9.3.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

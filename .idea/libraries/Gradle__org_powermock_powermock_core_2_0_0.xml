@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="Gradle: org.powermock:powermock-core:2.0.0">
-    <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/org/powermock/powermock-core/2.0.0/powermock-core-2.0.0.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
