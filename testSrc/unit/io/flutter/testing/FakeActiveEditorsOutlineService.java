@@ -52,8 +52,7 @@ public class FakeActiveEditorsOutlineService extends ActiveEditorsOutlineService
   @Override
   public FlutterOutline getOutline(String path) {
     // The path string that we get will be prepended with a '/' character, compared to how the cache was initialized.
-    final FlutterOutline result = pathToFlutterOutline.get(path);
-    return result;
+    return pathToFlutterOutline.get(path);
   }
 
   public static final String SIMPLE_TEST_PATH = "testData/sample_tests/test/simple_test.dart";
