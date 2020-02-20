@@ -44,7 +44,6 @@ import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileContentsChangedAdapter;
 import com.intellij.openapi.vfs.VirtualFileManager;
-import com.intellij.util.containers.hash.HashSet;
 import com.intellij.util.modules.CircularModuleDependenciesDetector;
 import io.flutter.sdk.AbstractLibraryManager;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -52,6 +51,7 @@ import io.flutter.utils.FlutterModuleUtils;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -132,8 +132,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
         Set<String> filteredRoots = roots.stream().filter(s -> shouldIncludeRoot(s)).collect(Collectors.toSet());
         if (filteredRoots.isEmpty()) continue;
 
-        HashSet<String> sources = new HashSet<>();
-        sources.addAll(Arrays.asList(library.getRootProvider().getUrls(OrderRootType.SOURCES)));
+        HashSet<String> sources = new HashSet<>(Arrays.asList(library.getRootProvider().getUrls(OrderRootType.SOURCES)));
 
         updateLibraryContent(library.getName(), filteredRoots, sources);
         updateAndroidModuleLibraryDependencies(flutterModule);
