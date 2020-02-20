@@ -19,3 +19,8 @@ out/
 packages
 pubspec.lock
 releases/
+.idea/encodings.xml
+.idea/gradle.xml
+.idea/jarRepositories.xml
+.idea/kotlinc.xml
+.idea/modules/

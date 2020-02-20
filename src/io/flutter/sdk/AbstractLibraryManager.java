@@ -5,6 +5,7 @@
  */
 package io.flutter.sdk;
 
+import com.intellij.openapi.application.AppUIExecutor;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.module.Module;
@@ -95,7 +96,7 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
         model.addRoot(url, OrderRootType.CLASSES);
       }
 
-      model.commit();
+      AppUIExecutor.onUiThread().inSmartMode(project).execute(() -> model.commit());
     });
 
     updateModuleLibraryDependencies(library);

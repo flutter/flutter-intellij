@@ -5,7 +5,6 @@
  */
 package io.flutter.project;
 
-import com.android.tools.adtui.LabelWithEditButton;
 import com.android.tools.adtui.util.FormScalingUtil;
 import com.android.tools.adtui.validation.ValidatorPanel;
 import com.android.tools.idea.observable.BindingsManager;
@@ -19,8 +18,8 @@ import com.android.tools.idea.observable.ui.TextProperty;
 import com.android.tools.idea.ui.wizard.StudioWizardStepPanel;
 import com.android.tools.idea.wizard.model.ModelWizard;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
-import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBLayeredPane;
 import com.intellij.ui.components.JBScrollPane;
@@ -30,6 +29,10 @@ import java.awt.Container;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -51,8 +54,7 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
   private JPanel myRootPanel;
   private ValidatorPanel myValidatorPanel;
 
-  private JTextField myCompanyDomain;
-  private LabelWithEditButton myPackageName;
+  private JTextField myPackageName;
   private JCheckBox myKotlinCheckBox;
   private JCheckBox mySwiftCheckBox;
   private JLabel myLanguageLabel;
@@ -88,15 +90,9 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
     myBindings.bind(model.packageName(), packageNameText);
     myListeners.listen(packageNameText, value -> isPackageSynced.set(value.equals(computedPackageName.get())));
 
-    myBindings.bindTwoWay(new TextProperty(myCompanyDomain), model.companyDomain());
-
     // The wizard changed substantially in 3.5. Something causes this page to not get properly validated
     // after it is added to the Swing tree. Here we check that we have to validate the tree, then do so.
     // It only needs to be done once, so we remove the listener to prevent possible flicker.
-    ApplicationInfo info = ApplicationInfo.getInstance();
-    if (info.getMajorVersion().equals("3") && info.getMinorVersion().equals("4")) { // "0" while debugging
-      return; // Do nothing for 3.4
-    }
     focusListener = new FocusAdapter() {
       @Override
       public void focusGained(FocusEvent e) {
@@ -108,10 +104,10 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
         if (parent != null) {
           parent.validate();
         }
-        myCompanyDomain.removeFocusListener(focusListener);
+        myPackageName.removeFocusListener(focusListener);
       }
     };
-    myCompanyDomain.addFocusListener(focusListener);
+    myPackageName.addFocusListener(focusListener);
   }
 
   @Override
@@ -129,7 +125,7 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
   @Nullable
   @Override
   protected JComponent getPreferredFocusComponent() {
-    return myCompanyDomain;
+    return myPackageName;
   }
 
   @NotNull
@@ -170,6 +166,27 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
 
   @Override
   protected void onProceeding() {
+    String fullPackageName = getModel().packageName().get();
+    String name = getDomainFromPackage(fullPackageName);
+    if (name != null) {
+      // Saving the domain resets the package name to default because package name is used by two wizard pages' binding managers.
+      getModel().companyDomain().set(name);
+      // Using getModel().packageName().set() triggers the same reset.
+      // Setting the text field restores the model's package name to what the user edited it to be w/o triggering the reset.
+      myPackageName.setText(fullPackageName);
+    }
+  }
 
+  @Nullable
+  private static String getDomainFromPackage(String packageName) {
+    List<String> split = new ArrayList<>(Arrays.asList(packageName.split("\\.")));
+    if (split.isEmpty()) {
+      return null;
+    }
+    split.remove(split.size() - 1);
+    Collections.reverse(split);
+    StringBuilder builder = new StringBuilder();
+    StringUtil.join(split, ".", builder);
+    return builder.toString();
   }
 }
