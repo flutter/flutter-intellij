@@ -60,7 +60,7 @@ public class ProgressHelper {
 
         ApplicationManager.getApplication().invokeLater(() -> {
           synchronized (myTasks) {
-            if (myTask != null) {
+            if (myTask != null && !myProject.isDisposed()) {
               ProgressManager.getInstance().run(myTask);
             }
           }
