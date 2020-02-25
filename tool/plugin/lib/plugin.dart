@@ -349,7 +349,8 @@ Future<int> zip(String directory, String outFile) async {
 }
 
 String _nextRelease() {
-  var current = RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName).group(1);
+  var current =
+      RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName).group(1);
   var val = int.parse(current) + 1;
   return '$val.0';
 }
@@ -649,14 +650,25 @@ class BuildCommand extends ProductCommand {
             'androidProject.init();',
           );
         }
-        var last = 'static final String TEMPLATE_PROJECT_NAME = ';
-        var end = source.indexOf(last);
-        // Change the initializer to use null, equivalent to original code.
-        source = '${source.substring(0, end + last.length)}null;\n}}';
+        if (spec.version.startsWith('3.5')) {
+          // This version does not define the init() method, so remove it.
+          var last = 'static final String TEMPLATE_PROJECT_NAME = ';
+          var end = source.indexOf(last);
+          // Change the initializer to use null, equivalent to original code.
+          source = '${source.substring(0, end + last.length)}null;\n}}';
+        }
         source = source.replaceAll(
           'super(filePath',
           'super(filePath.toString()',
         );
+        if (spec.version.startsWith('3.6')) {
+          // Starting with 3.6 we need to call a simplified init().
+          // This is where the $PROJECT_FILE$ macro is defined, #registerComponents.
+          source = source.replaceAll(
+            'getStateStore().setPath(path',
+            'getStateStore().setPath(path.toString()',
+          );
+        }
         processedFile.writeAsStringSync(source);
       }
 
@@ -992,7 +1004,8 @@ class DeployCommand extends ProductCommand {
       var file = File(filePath);
       changeDirectory(file.parent);
       var pluginNumber = plugins[spec.pluginId];
-      value = await upload(p.basename(file.path), pluginNumber, token, spec.channel);
+      value = await upload(
+          p.basename(file.path), pluginNumber, token, spec.channel);
       if (value != 0) {
         return value;
       }
@@ -1315,7 +1328,8 @@ Future<String> lastRelease() async {
   processResult =
       await gitDir.runCommand(['branch', '--list', '-a', '*release_*']);
   out = processResult.stdout;
-  var remote = out.trim().split('\n').last.trim(); // "remotes/origin/release_43"
+  var remote =
+      out.trim().split('\n').last.trim(); // "remotes/origin/release_43"
   release = remote.substring(remote.lastIndexOf('/') + 1);
   await gitDir.runCommand(['branch', '--track', release, remote]);
   return release;
