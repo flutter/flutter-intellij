@@ -117,7 +117,8 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     myProjectLocation.getChildComponent().setText(initialLocation);
     TextProperty locationText = new TextProperty(myProjectLocation.getChildComponent());
     myBindings.bind(model.projectLocation(), locationText);
-    myBindings.bindTwoWay(new TextProperty(myProjectName), model.projectName());
+    myProjectName.setText(model.projectName().get());
+    myBindings.bind(getModel().projectName(), new TextProperty(myProjectName));
 
     myBindings.bind(model.description(), new TextProperty(myDescription));
 
