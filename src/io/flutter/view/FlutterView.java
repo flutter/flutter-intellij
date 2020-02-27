@@ -134,7 +134,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   private DefaultActionGroup createToolbar(@NotNull ToolWindow toolWindow,
                                            @NotNull FlutterApp app,
-                                           Disposable parentDisposable,
                                            InspectorService inspectorService) {
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
     final PerAppState state = getOrCreateStateForApp(app);
@@ -219,9 +218,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final PerAppState state = getOrCreateStateForApp(app);
     assert (state.content == null);
     state.content = content;
-    state.tabs = runnerTabs;
 
-    final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app, runnerTabs, inspectorService);
+    final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app, inspectorService);
     toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
 
     toolbarGroup.add(new OverflowAction(getOrCreateStateForApp(app), this, app));
@@ -727,7 +725,6 @@ class OverflowAction extends ToolbarComboBoxAction implements RightAlignedToolba
 
 class AppState {
   ArrayList<FlutterViewAction> flutterViewActions = new ArrayList<>();
-  JBRunnerTabs tabs;
   Content content;
 
   FlutterViewAction registerAction(FlutterViewAction action) {
