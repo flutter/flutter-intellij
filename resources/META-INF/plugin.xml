@@ -29,6 +29,21 @@
 
   <change-notes>
     <![CDATA[
+<h1>44.0</h1>
+<ul>
+  <li>Use --project-name in flutter create (#4389)</li>
+  <li>Check for disposed project (#4391)</li>
+  <li>Replace deprecated API usage (#4390)</li>
+  <li>Switch common test config utils to use a per-file cache (#4385)</li>
+  <li>Make the gitignore more specific for content within the .idea directory (#4380)</li>
+  <li>Print the debug service uri on app startup (#4381)</li>
+  <li>Fix crash caused by getting flutter view id with .join() (#4373)</li>
+  <li>Change flutter.io to flutter.dev (#4376)</li>
+  <li>Update README.md (#4374)</li>
+  <li>Tidy up old domain name links (#4370)</li>
+  <li>Remove use of deprecated APIs (#4351)</li>
+  <li>Push back survey window (#4348)</li>
+</ul>
 <h1>43.0</h1>
 <ul>
   <li>Don't use deprecated API; Hide 'Allow parallel run' checkbox (#4331)</li>

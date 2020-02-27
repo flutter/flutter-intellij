@@ -1,3 +1,17 @@
+# 44.0
+- Use --project-name in flutter create (#4389)
+- Check for disposed project (#4391)
+- Replace deprecated API usage (#4390)
+- Switch common test config utils to use a per-file cache (#4385)
+- Make the gitignore more specific for content within the .idea directory (#4380)
+- Print the debug service uri on app startup (#4381)
+- Fix crash caused by getting flutter view id with .join() (#4373)
+- Change flutter.io to flutter.dev (#4376)
+- Update README.md (#4374)
+- Tidy up old domain name links (#4370)
+- Remove use of deprecated APIs (#4351)
+- Push back survey window (#4348)
+
 # 43.0
 - Don't use deprecated API; Hide 'Allow parallel run' checkbox (#4331)
 - Fix Inspector and WidgetRebuildIndicators for bazel projects (#4302)
