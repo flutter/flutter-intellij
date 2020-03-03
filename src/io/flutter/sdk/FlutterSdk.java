@@ -6,10 +6,8 @@
 package io.flutter.sdk;
 
 import com.google.gson.*;
-import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.externalSystem.service.execution.InvalidSdkException;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -19,12 +17,13 @@ import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.vfs.*;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.ui.EdtInvocationManager;
 import com.jetbrains.lang.dart.sdk.DartSdk;
-import com.jetbrains.lang.dart.sdk.DartSdkUtil;
 import io.flutter.FlutterUtils;
-import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterDevice;
@@ -34,8 +33,10 @@ import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 
@@ -146,6 +147,18 @@ public class FlutterSdk {
   }
 
   public FlutterCommand flutterVersion() {
+    // TODO(devoncarew): Switch to calling 'flutter --version --machine'. The ouput will look like:
+    // Building flutter tool...
+    // {
+    //   "frameworkVersion": "1.15.4-pre.249",
+    //   "channel": "master",
+    //   "repositoryUrl": "https://github.com/flutter/flutter",
+    //   "frameworkRevision": "3551a51df48743ebd4faa91cc5e3d23db645bdce",
+    //   "frameworkCommitDate": "2020-03-03 08:19:06 +0800",
+    //   "engineRevision": "5e474ee860a3dfa5970a6c54b1cb584152f9c86f",
+    //   "dartSdkVersion": "2.8.0 (build 2.8.0-dev.10.0 fbe9f6115d)"
+    // }
+
     return new FlutterCommand(this, getHome(), FlutterCommand.Type.VERSION);
   }
 
@@ -197,10 +210,6 @@ public class FlutterSdk {
 
   public FlutterCommand flutterConfig(String... additionalArgs) {
     return new FlutterCommand(this, getHome(), FlutterCommand.Type.CONFIG, additionalArgs);
-  }
-
-  public FlutterCommand flutterListSamples(@NotNull File indexFile) {
-    return new FlutterCommand(this, getHome(), FlutterCommand.Type.LIST_SAMPLES, indexFile.getAbsolutePath());
   }
 
   public FlutterCommand flutterRun(@NotNull PubRoot root,
@@ -421,7 +430,7 @@ public class FlutterSdk {
   }
 
   /**
-   * Returns the Flutter Version as captured in the VERSION file. This version is very coarse grained and not meant for presentation and
+   * Returns the Flutter Version as captured in the 'version' file. This version is very coarse grained and not meant for presentation and
    * rather only for sanity-checking the presence of baseline features (e.g, hot-reload).
    */
   @NotNull

@@ -336,6 +336,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final boolean trackWidgetCreationRecommended = sdk.getVersion().isTrackWidgetCreationRecommended();
     myDisableTrackWidgetCreationCheckBox.setVisible(trackWidgetCreationRecommended);
 
+    // TODO(devoncarew): Switch this to expecting json output.
     sdk.flutterVersion().start((ProcessOutput output) -> {
       final String fullVersionText = output.getStdout();
       fullVersionString = fullVersionText;
