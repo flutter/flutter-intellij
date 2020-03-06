@@ -10,7 +10,7 @@ import static org.jetbrains.android.util.AndroidBundle.message;
 
 import com.android.tools.adtui.ASGallery;
 import com.android.tools.adtui.util.FormScalingUtil;
-import com.android.tools.idea.npw.module.ModuleGalleryEntry;
+import com.android.tools.idea.npwOld.module.ModuleGalleryEntry;
 import com.android.tools.idea.wizard.model.ModelWizard;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
 import com.google.common.collect.Lists;
@@ -19,6 +19,7 @@ import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.util.IconUtil;
 import com.intellij.util.containers.HashMap;
 import io.flutter.module.FlutterDescriptionProvider;
 import io.flutter.module.FlutterDescriptionProvider.FlutterGalleryEntry;
@@ -31,6 +32,7 @@ import java.util.Map;
 import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -109,7 +111,7 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
   private JComponent createGallery() {
     myProjectTypeGallery = new ASGallery<ModuleGalleryEntry>(
       JBList.createDefaultListModel(),
-      image -> image == null ? null : image.getIcon() == null ? null : image.getIcon(),
+      image -> image == null ? null : image.getIcon() == null ? null : IconUtil.createImageIcon(image.getIcon()),
       label -> label == null ? message("android.wizard.gallery.item.none") : label.getName(), DEFAULT_GALLERY_THUMBNAIL_SIZE,
       null
     ) {

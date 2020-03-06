@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.android.tools.idea.npwOld.project.ConfigureAndroidProjectStep">
+  <grid id="27dc6" binding="myPanel" layout-manager="GridLayoutManager" row-count="20" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="5" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="445" height="641"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <component id="b07f9" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="0" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
+            <preferred-size width="-1" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <font style="0"/>
+          <labelFor value="9116"/>
+          <text value="&amp;Name"/>
+          <verticalAlignment value="0"/>
+        </properties>
+      </component>
+      <component id="df734" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="3" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font style="0"/>
+          <labelFor value="21da5"/>
+          <text value="&amp;Package name"/>
+          <verticalAlignment value="0"/>
+        </properties>
+      </component>
+      <component id="ef020" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="9" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font style="0"/>
+          <labelFor value="37c5e"/>
+          <text value="&amp;Language"/>
+          <verticalAlignment value="0"/>
+        </properties>
+      </component>
+      <component id="9116" class="javax.swing.JTextField" binding="myAppName">
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="150" height="-1"/>
+          </grid>
+        </constraints>
+        <properties>
+          <toolTipText value="The name that will be shown in the Android launcher for this application"/>
+        </properties>
+      </component>
+      <component id="21da5" class="javax.swing.JTextField" binding="myPackageName">
+        <constraints>
+          <grid row="4" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="150" height="-1"/>
+          </grid>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="c6a43" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="6" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font style="0"/>
+          <labelFor value="4f4fc"/>
+          <text value="&amp;Save location"/>
+          <verticalAlignment value="0"/>
+        </properties>
+      </component>
+      <component id="4f4fc" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myProjectLocation">
+        <constraints>
+          <grid row="7" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="150" height="-1"/>
+          </grid>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="37c5e" class="javax.swing.JComboBox" binding="myProjectLanguage" custom-create="true">
+        <constraints>
+          <grid row="10" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="13798" class="javax.swing.JSeparator">
+        <constraints>
+          <grid row="11" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+            <minimum-size width="-1" height="1"/>
+            <preferred-size width="-1" height="24"/>
+            <maximum-size width="-1" height="1"/>
+          </grid>
+        </constraints>
+        <properties/>
+      </component>
+      <vspacer id="19261">
+        <constraints>
+          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
+            <preferred-size width="-1" height="16"/>
+          </grid>
+        </constraints>
+      </vspacer>
+      <vspacer id="57d0">
+        <constraints>
+          <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
+            <preferred-size width="-1" height="16"/>
+          </grid>
+        </constraints>
+      </vspacer>
+      <vspacer id="7ded3">
+        <constraints>
+          <grid row="8" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
+            <preferred-size width="-1" height="16"/>
+          </grid>
+        </constraints>
+      </vspacer>
+      <grid id="e0f3a" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="1" column="0" row-span="19" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <preferred-size width="250" height="-1"/>
+            <maximum-size width="250" height="-1"/>
+          </grid>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="ff026" class="javax.swing.JLabel" binding="myTemplateIconTitle">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <horizontalAlignment value="0"/>
+              <horizontalTextPosition value="0"/>
+              <text value="Template Label"/>
+              <verticalTextPosition value="3"/>
+            </properties>
+          </component>
+          <component id="bedde" class="javax.swing.JLabel" binding="myTemplateIconDetail">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <horizontalAlignment value="0"/>
+              <text value="Detail"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <grid id="efd17" binding="myFormFactorSdkControlsPanel" custom-create="true" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="12" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children/>
+      </grid>
+      <vspacer id="45f83">
+        <constraints>
+          <grid row="18" column="1" row-span="2" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+      <component id="39004" class="javax.swing.JCheckBox" binding="myInstantAppCheck">
+        <constraints>
+          <grid row="13" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font style="0"/>
+          <label value="This project will support instant apps"/>
+          <text value="This project will support instant apps"/>
+        </properties>
+      </component>
+      <component id="25f85" class="javax.swing.JCheckBox" binding="myWearCheck">
+        <constraints>
+          <grid row="14" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font style="0"/>
+          <label value="Pair with Empty Phone app"/>
+          <text value="Pair with Empty Phone app"/>
+        </properties>
+      </component>
+      <component id="b05d3" class="javax.swing.JCheckBox" binding="myTvCheck">
+        <constraints>
+          <grid row="15" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font style="0"/>
+          <label value="Pair with companion Phone app"/>
+          <text value="Pair with companion Phone app"/>
+        </properties>
+      </component>
+      <component id="9af35" class="javax.swing.JCheckBox" binding="myOfflineRepoCheck">
+        <constraints>
+          <grid row="16" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font style="0"/>
+          <label value="Use offline repo"/>
+          <selected value="true"/>
+          <text value="Use offline repo"/>
+        </properties>
+      </component>
+      <component id="9863d" class="javax.swing.JCheckBox" binding="myUseAndroidxCheck">
+        <constraints>
+          <grid row="17" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font style="0"/>
+          <label value="Use androidx.* artifacts"/>
+          <selected value="true"/>
+          <text value="Use androidx.* artifacts"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>

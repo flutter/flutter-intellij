@@ -5,7 +5,7 @@
  */
 package io.flutter.project;
 
-import com.android.tools.idea.npw.model.NewProjectModel;
+import com.android.tools.idea.npwOld.model.NewProjectModel;
 import com.android.tools.idea.observable.core.StringProperty;
 import com.android.tools.idea.observable.expressions.Expression;
 import com.google.common.base.Splitter;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * name (eg: "com.mycompany.myapp"). Besides reversing the Company Name, taking spaces, a lower casing, it also takes care of
  * invalid java keywords (eg "new", "switch", "if", etc).
  */
-// Copied from com.android.tools.idea.npw.project.DomainToPackageExpression, which is now final.
+// Copied from com.android.tools.idea.npwOld.project.DomainToPackageExpression, which is now final.
 public class DomainToPackageExpression extends Expression<String> {
   private static final Pattern MODULE_NAME_GROUP = Pattern.compile(".*:"); // Anything before ":" belongs to the module parent name
   private static final Pattern DISALLOWED_IN_DOMAIN = Pattern.compile("[^a-zA-Z0-9_]");

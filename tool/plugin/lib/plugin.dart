@@ -22,6 +22,7 @@ Future<int> main(List<String> args) async {
   runner.addCommand(new TestCommand(runner));
   runner.addCommand(new DeployCommand(runner));
   runner.addCommand(new GenerateCommand(runner));
+  runner.addCommand(new RenamePackageCommand(runner));
 
   try {
     return await runner.run(args) ?? 0;
@@ -1237,6 +1238,96 @@ class SyntheticBuildSpec extends BuildSpec {
   String get untilBuild => alternate.untilBuild;
 
   bool get isSynthetic => true;
+}
+
+class RenamePackageCommand extends ProductCommand {
+  final BuildCommandRunner runner;
+  String baseDir = Directory.current.path; // Run from flutter-intellij dir.
+  String oldName, newName;
+
+  RenamePackageCommand(this.runner) : super('rename') {
+    argParser.addOption('package',
+        defaultsTo: 'com.android.tools.idea.npw',
+        help: 'Package to be renamed');
+    argParser.addOption('append',
+        defaultsTo: 'Old', help: 'Suffix to be appended to package name');
+    argParser.addOption('new-name', help: 'Name of package after renaming');
+    argParser.addFlag('studio',
+        negatable: true, help: 'The package is in the flutter-studio module');
+  }
+
+  String get description => 'Rename a package in the plugin sources';
+
+  Future<int> doit() async {
+    if (argResults['studio']) baseDir = p.join(baseDir, 'flutter-studio/src');
+    oldName = argResults['package'];
+    newName = argResults.wasParsed('new-name')
+        ? argResults['new-name']
+        : oldName + argResults['append'];
+    if (oldName == newName) {
+      log('Nothing to do; new name is same as old name');
+      return 1;
+    }
+    // TODO(messick) If the package is not in flutter-studio then we need to edit it too
+    moveFiles();
+    editReferences();
+    await deleteDir();
+    return 0;
+  }
+
+  void moveFiles() {
+    final srcDir = Directory(p.join(baseDir, oldName.replaceAll('.', '/')));
+    final destDir = Directory(p.join(baseDir, newName.replaceAll('.', '/')));
+    _editAndMoveAll(srcDir, destDir);
+  }
+
+  void editReferences() {
+    final srcDir = Directory(p.join(baseDir, oldName.replaceAll('.', '/')));
+    final destDir = Directory(p.join(baseDir, newName.replaceAll('.', '/')));
+    _editAll(Directory(baseDir), skipOld: srcDir, skipNew: destDir);
+  }
+
+  Future<int> deleteDir() async {
+    final dir = Directory(p.join(baseDir, oldName.replaceAll('.', '/')));
+    await dir.delete(recursive: true);
+    return 0;
+  }
+
+  void _editAndMoveFile(File file, Directory to) {
+    if (!to.existsSync()) {
+      to.createSync(recursive: true);
+    }
+    final filename = p.basename(file.path);
+    if (filename.startsWith('.')) return;
+    final target = File(p.join(to.path, filename));
+    var source = file.readAsStringSync();
+    source = source.replaceAll(oldName, newName);
+    target.writeAsStringSync(source);
+    if (to.path != file.parent.path) file.deleteSync();
+  }
+
+  void _editAndMoveAll(Directory from, Directory to) {
+    for (var entity in from.listSync(followLinks: false)) {
+      final basename = p.basename(entity.path);
+
+      if (entity is File) {
+        _editAndMoveFile(entity, to);
+      } else if (entity is Directory) {
+        _editAndMoveAll(entity, Directory(p.join(to.path, basename)));
+      }
+    }
+  }
+
+  void _editAll(Directory src, {Directory skipOld, Directory skipNew}) {
+    if (src.path == skipOld.path || src.path == skipNew.path) return;
+    for (var entity in src.listSync(followLinks: false)) {
+      if (entity is File) {
+        _editAndMoveFile(entity, src);
+      } else if (entity is Directory) {
+        _editAll(entity, skipOld: skipOld, skipNew: skipNew);
+      }
+    }
+  }
 }
 
 /// Build the tests if necessary then run them and return any failure code.

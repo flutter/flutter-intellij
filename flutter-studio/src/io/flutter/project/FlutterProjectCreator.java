@@ -157,7 +157,7 @@ public class FlutterProjectCreator {
       return;
     }
     // TODO(messick): Remove the project converter when it is no longer needed (probably by the AS 3.2 release).
-    ConversionService.getInstance().convertSilently(Paths.get(baseDir.getPath()), new MyConversionListener());
+    ConversionService.getInstance().convertSilently(baseDir.getPath(), new MyConversionListener());
     //noinspection ConstantConditions (Keep this refresh even if the converter is removed.)
     VfsUtil.markDirtyAndRefresh(false, true, true, baseDir);
 

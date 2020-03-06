@@ -5,25 +5,27 @@
  */
 package io.flutter.module;
 
-import com.android.tools.idea.npw.model.ProjectSyncInvoker;
-import com.android.tools.idea.npw.module.ModuleDescriptionProvider;
-import com.android.tools.idea.npw.module.ModuleGalleryEntry;
+import com.android.tools.idea.npwOld.model.NewModuleModel;
+import com.android.tools.idea.npwOld.model.ProjectSyncInvoker;
+import com.android.tools.idea.npwOld.module.ModuleDescriptionProvider;
+import com.android.tools.idea.npwOld.module.ModuleGalleryEntry;
 import com.android.tools.idea.observable.core.OptionalValueProperty;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.IdeFrame;
+import com.intellij.util.IconUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.project.FlutterProjectModel;
 import io.flutter.project.FlutterProjectStep;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
+import java.awt.Image;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import javax.swing.Icon;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -73,6 +75,15 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
       res.add(new ImportFlutterModuleGalleryEntry(sharedModel));
     }
     return res;
+  }
+
+  public static class ModuleModelWrapper extends NewModuleModel {
+    FlutterModuleModel model;
+
+    public ModuleModelWrapper(@NotNull Project project, FlutterModuleModel model) {
+      super(project, new ProjectSyncInvoker.DefaultProjectSyncInvoker());
+      this.model = model;
+    }
   }
 
   /**
@@ -125,8 +136,8 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @Nullable
     @Override
-    public Icon getIcon() {
-      return FlutterIcons.AndroidStudioNewProject;
+    public Image getIcon() {
+      return IconUtil.toImage(FlutterIcons.AndroidStudioNewProject);
     }
 
     @NotNull
@@ -149,9 +160,9 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
+    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
       return new FlutterModuleStep(
-        model(model, FlutterProjectType.APP),
+        model(model.getProject().getValue(), FlutterProjectType.APP),
         FlutterBundle.message("module.wizard.app_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.APP);
     }
@@ -173,8 +184,8 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @Nullable
     @Override
-    public Icon getIcon() {
-      return FlutterIcons.AndroidStudioNewPackage;
+    public Image getIcon() {
+      return IconUtil.toImage(FlutterIcons.AndroidStudioNewPackage);
     }
 
     @NotNull
@@ -197,9 +208,9 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
+    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
       return new FlutterModuleStep(
-        model(model, FlutterProjectType.PACKAGE),
+        model(model.getProject().getValue(), FlutterProjectType.PACKAGE),
         FlutterBundle.message("module.wizard.package_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.PACKAGE);
     }
@@ -221,8 +232,8 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @Nullable
     @Override
-    public Icon getIcon() {
-      return FlutterIcons.AndroidStudioNewPlugin;
+    public Image getIcon() {
+      return IconUtil.toImage(FlutterIcons.AndroidStudioNewPlugin);
     }
 
     @NotNull
@@ -245,9 +256,9 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
+    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
       return new FlutterModuleStep(
-        model(model, FlutterProjectType.PLUGIN),
+        model(model.getProject().getValue(), FlutterProjectType.PLUGIN),
         FlutterBundle.message("module.wizard.plugin_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.PLUGIN);
     }
@@ -269,8 +280,8 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @Nullable
     @Override
-    public Icon getIcon() {
-      return FlutterIcons.AndroidStudioNewModule;
+    public Image getIcon() {
+      return IconUtil.toImage(FlutterIcons.AndroidStudioNewModule);
     }
 
     @NotNull
@@ -293,9 +304,9 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
+    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
       return new FlutterModuleStep(
-        model(model, FlutterProjectType.MODULE),
+        model(model.getProject().getValue(), FlutterProjectType.MODULE),
         FlutterBundle.message("module.wizard.module_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.MODULE);
     }
@@ -317,8 +328,8 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @Nullable
     @Override
-    public Icon getIcon() {
-      return FlutterIcons.AndroidStudioNewModule;
+    public Image getIcon() {
+      return IconUtil.toImage(FlutterIcons.AndroidStudioNewModule);
     }
 
     @NotNull
@@ -341,9 +352,9 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
+    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
       return new ImportFlutterModuleStep(
-        model(model, FlutterProjectType.IMPORT),
+        model(model.getProject().getValue(), FlutterProjectType.IMPORT),
         FlutterBundle.message("module.wizard.import_module_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.IMPORT);
     }
@@ -365,8 +376,8 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @Nullable
     @Override
-    public Icon getIcon() {
-      return FlutterIcons.AndroidStudioNewModule; // TODO(messick) New icon here, or perhaps even better to change import.
+    public Image getIcon() {
+      return IconUtil.toImage(FlutterIcons.AndroidStudioNewModule); // TODO(messick) New icon here, or perhaps even better to change import.
     }
 
     @NotNull
@@ -389,9 +400,9 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
+    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
       return new FlutterModuleStep(
-        model(model, FlutterProjectType.MODULE),
+        model(model.getProject().getValue(), FlutterProjectType.MODULE),
         FlutterBundle.message("module.wizard.module_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.MODULE);
     }

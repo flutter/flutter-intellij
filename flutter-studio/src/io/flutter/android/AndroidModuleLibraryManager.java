@@ -312,7 +312,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     private Path path;
 
     protected EmbeddedAndroidProject(@NotNull Path filePath) {
-      super(filePath, TEMPLATE_PROJECT_NAME);
+      super(filePath.toString(), TEMPLATE_PROJECT_NAME);
       path = filePath;
     }
 
@@ -323,7 +323,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
       boolean finished = false;
       try {
         registerComponents();
-        getStateStore().setPath(path, true, null);
+        getStateStore().setPath(path.toString(), true, null);
         super.init(indicator);
         finished = true;
       }
