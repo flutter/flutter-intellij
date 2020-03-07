@@ -49,6 +49,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.IconUtil;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
@@ -102,7 +103,7 @@ public class ChooseActivityTypeStep extends SkippableWizardStep<NewModuleModel> 
   private void init(@NotNull FormFactor formFactor,
                     @NotNull List<NamedModuleTemplate> moduleTemplates) {
     myModuleTemplates = moduleTemplates;
-    List<TemplateHandle> templateHandles = TemplateManager.getInstance().getTemplateList(formFactor);
+    List<TemplateHandle> templateHandles = new ArrayList<>();//TemplateManager.getInstance().getTemplateList(formFactor);
 
     myTemplateRenderers = Lists.newArrayListWithExpectedSize(templateHandles.size() + 1);  // Extra entry for "Add No Activity" template
     if (isNewModule()) {

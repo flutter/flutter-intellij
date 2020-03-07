@@ -39,7 +39,7 @@
           <text value="Fusing (install module on devices that don't support on-demand delivery)"/>
         </properties>
       </component>
-      <nested-form id="744a7" form-file="com/android/tools/idea/npw/dynamicapp/ModuleDownloadConditions.form" binding="myDownloadConditionsForm">
+      <nested-form id="744a7" form-file="com/android/tools/idea/npwOld/dynamicapp/ModuleDownloadConditions.form" binding="myDownloadConditionsForm">
         <constraints>
           <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="3" use-parent-layout="false"/>
         </constraints>

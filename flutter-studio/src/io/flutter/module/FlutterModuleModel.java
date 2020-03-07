@@ -21,8 +21,23 @@ import java.nio.charset.StandardCharsets;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterModuleModel extends FlutterProjectModel {
+  Project project; // for npwOld
+
   public FlutterModuleModel(@NotNull FlutterProjectType type) {
     super(type);
+  }
+
+  public FlutterModuleModel(@NotNull Project project, @NotNull FlutterProjectType type) { // for npwOld
+    super(type);
+    this.project = project;
+  }
+
+  @NotNull
+  public Project getProject() { // for npwOld
+    if (project == null) {
+      throw new NullPointerException(); // not reached
+    }
+    return project;
   }
 
   @Override

@@ -16,7 +16,7 @@
 package com.android.tools.idea.npwOld.assetstudio;
 
 import static com.android.SdkConstants.ANDROID_URI;
-import static com.android.utils.XmlUtils.formatFloatValue;
+//import static com.android.utils.XmlUtils.formatFloatValue;
 
 import com.android.SdkConstants;
 import com.android.tools.idea.res.ResourceHelper;
@@ -95,7 +95,7 @@ public class VectorDrawableTransformer {
       if (originalAlphaValue != null) {
         opacity *= parseDoubleValue(originalAlphaValue, "");
       }
-      String alphaValue = formatFloatValue(opacity);
+      String alphaValue = "";//formatFloatValue(opacity);
       if (alphaValue.equals("1")) {
         alphaValue = null; // No need to set the default opacity.
       }
@@ -176,10 +176,10 @@ public class VectorDrawableTransformer {
         }
       }
 
-      result.append(String.format("%s%sandroid:width=\"%sdp\"", lineSeparator, DOUBLE_INDENT, formatFloatValue(targetWidth)));
-      result.append(String.format("%s%sandroid:height=\"%sdp\"", lineSeparator, DOUBLE_INDENT, formatFloatValue(targetHeight)));
-      result.append(String.format("%s%sandroid:viewportWidth=\"%s\"", lineSeparator, DOUBLE_INDENT, formatFloatValue(viewportWidth)));
-      result.append(String.format("%s%sandroid:viewportHeight=\"%s\"", lineSeparator, DOUBLE_INDENT, formatFloatValue(viewportHeight)));
+      //result.append(String.format("%s%sandroid:width=\"%sdp\"", lineSeparator, DOUBLE_INDENT, formatFloatValue(targetWidth)));
+      //result.append(String.format("%s%sandroid:height=\"%sdp\"", lineSeparator, DOUBLE_INDENT, formatFloatValue(targetHeight)));
+      //result.append(String.format("%s%sandroid:viewportWidth=\"%s\"", lineSeparator, DOUBLE_INDENT, formatFloatValue(viewportWidth)));
+      //result.append(String.format("%s%sandroid:viewportHeight=\"%s\"", lineSeparator, DOUBLE_INDENT, formatFloatValue(viewportHeight)));
       if (tintValue != null) {
         result.append(String.format("%s%sandroid:tint=\"%s\"", lineSeparator, DOUBLE_INDENT, tintValue));
       }
@@ -201,8 +201,8 @@ public class VectorDrawableTransformer {
       result.append('>');
 
       String indent = "";
-      String translateX = isSignificantlyDifferentFromZero(x / viewportWidth) ? formatFloatValue(x) : null;
-      String translateY = isSignificantlyDifferentFromZero(y / viewportHeight) ? formatFloatValue(y) : null;
+      String translateX = "";//isSignificantlyDifferentFromZero(x / viewportWidth) ? formatFloatValue(x) : null;
+      String translateY = "";//isSignificantlyDifferentFromZero(y / viewportHeight) ? formatFloatValue(y) : null;
       if (translateX != null || translateY != null) {
         // Wrap the contents of the drawable into a translation group.
         result.append(lineSeparator).append(INDENT);

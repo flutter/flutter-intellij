@@ -55,6 +55,7 @@ import java.awt.Component;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -239,7 +240,7 @@ public class ChooseAndroidProjectStep extends ModelWizardStep<NewProjectModel> {
 
   @NotNull
   private static List<TemplateHandle> getFilteredTemplateHandles(@NotNull FormFactor formFactor) {
-    List<TemplateHandle> templateHandles = TemplateManager.getInstance().getTemplateList(formFactor);
+    List<TemplateHandle> templateHandles = new ArrayList<>();//TemplateManager.getInstance().getTemplateList(formFactor);
 
     if (formFactor == FormFactor.MOBILE) {
       Map<String, TemplateHandle> entryMap = templateHandles.stream().collect(toMap(it -> it.getMetadata().getTitle(), it -> it));

@@ -22,6 +22,7 @@ import com.android.tools.adtui.validation.Validator;
 import com.android.tools.adtui.validation.ValidatorPanel;
 import com.android.tools.adtui.validation.validators.PositiveIntegerValidator;
 import com.android.tools.idea.model.AndroidModuleInfo;
+import com.android.tools.idea.npwOld.assetstudio.wizard.PersistentStateUtil;
 import com.android.tools.idea.npwOld.assetstudio.VectorIconGenerator;
 import com.android.tools.idea.npwOld.assetstudio.assets.VectorAsset;
 import com.android.tools.idea.npwOld.assetstudio.ui.VectorAssetBrowser;

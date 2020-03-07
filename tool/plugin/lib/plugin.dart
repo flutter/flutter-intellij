@@ -716,7 +716,7 @@ class BuildCommand extends ProductCommand {
           'baseDir.getPath()',
         );
         processedFile.writeAsStringSync(source);
-
+/*
         processedFile = File(
             'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
         source = processedFile.readAsStringSync();
@@ -737,7 +737,7 @@ class BuildCommand extends ProductCommand {
           'mySharedModel.getValue().project().setValue(project);',
           'mySharedModel.getValue().project().setValue(project.getProject().getValue());',
         );
-        processedFile.writeAsStringSync(source);
+        processedFile.writeAsStringSync(source);*/
       }
 
       try {
@@ -1240,6 +1240,11 @@ class SyntheticBuildSpec extends BuildSpec {
   bool get isSynthetic => true;
 }
 
+/// A crude rename utility. The IntelliJ feature does not work on the case
+/// needed. This just substitutes package names and assumes all are FQN-form.
+/// It does not update forms; they use paths instead of packages.
+/// It would be easy to do forms but it isn't worth the trouble. Only one
+/// had to be edited.
 class RenamePackageCommand extends ProductCommand {
   final BuildCommandRunner runner;
   String baseDir = Directory.current.path; // Run from flutter-intellij dir.

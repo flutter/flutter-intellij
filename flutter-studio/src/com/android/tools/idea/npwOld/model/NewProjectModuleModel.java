@@ -49,6 +49,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import java.io.File;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
@@ -263,13 +264,13 @@ public final class NewProjectModuleModel extends WizardModel {
       .addTemplateAdditionalValues(packageName, isInstantApp, renderTemplateModel.getTemplate());
     additionalValues.put(ATTR_PACKAGE_NAME, renderTemplateModel.packageName().get());
 
-    try {
+    //try {
       Collection<Parameter> renderParameters = templateMetadata.getParameters();
-      Map<Parameter, Object> parameterValues = ParameterValueResolver.Companion.resolve(renderParameters, userValues, additionalValues);
+      Map<Parameter, Object> parameterValues = new HashMap();//ParameterValueResolver.Companion.resolve(renderParameters, userValues, additionalValues);
       parameterValues.forEach(((parameter, value) -> templateValues.put(parameter.id, value)));
-    } catch (CircularParameterDependencyException e) {
-      getLog().error("Circular dependency between parameters in template %1$s", e, templateMetadata.getTitle());
-    }
+    //} catch (CircularParameterDependencyException e) {
+    //  getLog().error("Circular dependency between parameters in template %1$s", e, templateMetadata.getTitle());
+    //}
   }
 
   private static Logger getLog() {

@@ -142,7 +142,7 @@ public final class ConfirmGenerateIconsStep extends ModelWizardStep<GenerateIcon
 
   @Override
   public void loadState(@NotNull PersistentState state) {
-    String templateName = state.get(RESOURCE_DIRECTORY_PROPERTY);
+    String templateName = "";//state.get(RESOURCE_DIRECTORY_PROPERTY);
     if (templateName != null) {
       for (NamedModuleTemplate template : myTemplates) {
         if (template.getName().equals(templateName)) {
@@ -208,9 +208,9 @@ public final class ConfirmGenerateIconsStep extends ModelWizardStep<GenerateIcon
         pathToIcon.put(entry.getKey(), new ImageIcon(image));
       }
 
-      ProposedFileTreeModel treeModel = new ProposedFileTreeModel(resDirectory.getParentFile(), pathToIcon);
+      ProposedFileTreeModel treeModel = new ProposedFileTreeModel();
 
-      myFilesAlreadyExist.set(treeModel.hasConflicts());
+      //myFilesAlreadyExist.set(treeModel.hasConflicts());
       myOutputPreviewTree.setModel(treeModel);
 
       // The tree should be totally expanded by default.

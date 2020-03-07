@@ -202,7 +202,7 @@ public class AndroidVersionsInfo {
     myKnownTargetVersions.clear();
 
     if (AndroidSdkUtils.isAndroidSdkAvailable()) {
-      String[] knownVersions = TemplateUtils.getKnownVersions().toArray(new String[0]);
+      String[] knownVersions = new String[0];//TemplateUtils.getKnownVersions().toArray(new String[0]);
       for (int i = 0; i < knownVersions.length; i++) {
         myKnownTargetVersions.add(new VersionItem(knownVersions[i], i + 1));
       }

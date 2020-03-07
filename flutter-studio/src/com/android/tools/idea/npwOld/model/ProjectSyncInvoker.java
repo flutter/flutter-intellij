@@ -33,7 +33,7 @@ public interface ProjectSyncInvoker {
   class DefaultProjectSyncInvoker implements ProjectSyncInvoker {
     @Override
     public void syncProject(@NotNull Project project) {
-      ProjectSystemUtil.getProjectSystem(project).getSyncManager().syncProject(PROJECT_MODIFIED);
+      //ProjectSystemUtil.getProjectSystem(project).getSyncManager().syncProject(PROJECT_MODIFIED);
     }
   }
 }

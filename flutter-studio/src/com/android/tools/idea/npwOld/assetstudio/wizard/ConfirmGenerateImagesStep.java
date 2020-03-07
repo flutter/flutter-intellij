@@ -197,96 +197,96 @@ public final class ConfirmGenerateImagesStep extends ModelWizardStep<GenerateIco
   }
 
   private void showSelectedNodeDetails(TreePath newPath) {
-    if (newPath != null && newPath.getLastPathComponent() instanceof ProposedFileTreeModel.Node) {
-      ProposedFileTreeModel.Node node = (ProposedFileTreeModel.Node)newPath.getLastPathComponent();
-
-      GeneratedIcon generatedIcon = myPathToPreviewImage.get(node.getFile());
-      if (generatedIcon instanceof GeneratedImageIcon) {
-        GeneratedImageIcon generatedImageIcon = (GeneratedImageIcon)generatedIcon;
-        BufferedImage image = generatedImageIcon.getImage();
-        ImageIcon icon = new ImageIcon(image);
-        myPreviewIcon.setIcon(icon);
-        myPreviewIcon.setVisible(true);
-
-        //noinspection StringToUpperCaseOrToLowerCaseWithoutLocale  // file names are not locale sensitive
-        String extension = FileUtilRt.getExtension(node.getFile().getName()).toUpperCase();
-        if (StringUtil.isEmpty(extension)) {
-          myFileTypeTextField.setText("N/A");
-        }
-        else {
-          myFileTypeTextField.setText(String.format("%s File", extension));
-        }
-
-        mySizePxTextField.setText(String.format("%dx%d", icon.getIconWidth(), icon.getIconHeight()));
-
-        Density density = generatedImageIcon.getDensity();
-        myDensityTextField.setText(density.getResourceValue());
-
-        double scaleFactor = getMdpiScaleFactor(density);
-        mySizeDpTextField.setText(
-            String.format("%dx%d", Math.round(icon.getIconWidth() / scaleFactor), Math.round(icon.getIconHeight() / scaleFactor)));
-
-        mySizeDetailsRow.setVisible(true);
-        mySizePxRow.setVisible(true);
-        myImagePreviewPanel.setVisible(true);
-        myXmlPreviewPanel.setVisible(false);
-        return;
-      }
-      else if (generatedIcon instanceof GeneratedXmlResource) {
-        GeneratedXmlResource xml = (GeneratedXmlResource)generatedIcon;
-        String xmlText = xml.getXmlText();
-        BufferedImage image = getPreviewImage(xml);
-        if (image == null) {
-          ApplicationManager.getApplication().runWriteAction(() -> {
-            if (myEditorFactory == null) {
-              myEditorFactory = EditorFactory.getInstance();
-            }
-
-            if (myXmlPreviewDocument == null) {
-              myXmlPreviewDocument = myEditorFactory.createDocument("");
-            }
-            myXmlPreviewDocument.setReadOnly(false);
-            myXmlPreviewDocument.setText(StringUtil.convertLineSeparators(xmlText));
-            myXmlPreviewDocument.setReadOnly(true);
-
-            if (myFilePreviewEditor == null) {
-              myFilePreviewEditor = (EditorEx)myEditorFactory.createViewer(myXmlPreviewDocument);
-              myFilePreviewEditor.setCaretVisible(false);
-              myFilePreviewEditor.getSettings().setLineNumbersShown(false);
-              myFilePreviewEditor.getSettings().setLineMarkerAreaShown(false);
-              myFilePreviewEditor.getSettings().setFoldingOutlineShown(false);
-              myFilePreviewEditor.setHighlighter(EditorHighlighterFactory.getInstance().createEditorHighlighter(null, StdFileTypes.XML));
-              myXmlPreviewPanel.removeAll();
-              myXmlPreviewPanel.add(myFilePreviewEditor.getComponent());
-            }
-          });
-
-          myImagePreviewPanel.setVisible(false);
-          myXmlPreviewPanel.setVisible(true);
-        }
-        else {
-          ImageIcon icon = new ImageIcon(image);
-          myPreviewIcon.setIcon(icon);
-          String drawableType = getDrawableType(xmlText);
-          myFileTypeTextField.setText(drawableType);
-          myPreviewIcon.setVisible(true);
-          myDensityTextField.setText(Density.ANYDPI.getShortDisplayValue());
-          Dimension dpSize = getDpSize(xml);
-          if (dpSize == null) {
-            mySizeDetailsRow.setVisible(false);
-          }
-          else {
-            mySizeDpTextField.setText(String.format("%dx%d", dpSize.width, dpSize.height));
-            mySizeDetailsRow.setVisible(true);
-          }
-          mySizePxRow.setVisible(false);
-          myImagePreviewPanel.setVisible(true);
-          myXmlPreviewPanel.setVisible(false);
-        }
-
-        return;
-      }
-    }
+    //if (newPath != null && newPath.getLastPathComponent() instanceof ProposedFileTreeModel.Node) {
+    //  ProposedFileTreeModel.Node node = (ProposedFileTreeModel.Node)newPath.getLastPathComponent();
+    //
+    //  GeneratedIcon generatedIcon = myPathToPreviewImage.get(node.getFile());
+    //  if (generatedIcon instanceof GeneratedImageIcon) {
+    //    GeneratedImageIcon generatedImageIcon = (GeneratedImageIcon)generatedIcon;
+    //    BufferedImage image = generatedImageIcon.getImage();
+    //    ImageIcon icon = new ImageIcon(image);
+    //    myPreviewIcon.setIcon(icon);
+    //    myPreviewIcon.setVisible(true);
+    //
+    //    //noinspection StringToUpperCaseOrToLowerCaseWithoutLocale  // file names are not locale sensitive
+    //    String extension = FileUtilRt.getExtension(node.getFile().getName()).toUpperCase();
+    //    if (StringUtil.isEmpty(extension)) {
+    //      myFileTypeTextField.setText("N/A");
+    //    }
+    //    else {
+    //      myFileTypeTextField.setText(String.format("%s File", extension));
+    //    }
+    //
+    //    mySizePxTextField.setText(String.format("%dx%d", icon.getIconWidth(), icon.getIconHeight()));
+    //
+    //    Density density = generatedImageIcon.getDensity();
+    //    myDensityTextField.setText(density.getResourceValue());
+    //
+    //    double scaleFactor = getMdpiScaleFactor(density);
+    //    mySizeDpTextField.setText(
+    //        String.format("%dx%d", Math.round(icon.getIconWidth() / scaleFactor), Math.round(icon.getIconHeight() / scaleFactor)));
+    //
+    //    mySizeDetailsRow.setVisible(true);
+    //    mySizePxRow.setVisible(true);
+    //    myImagePreviewPanel.setVisible(true);
+    //    myXmlPreviewPanel.setVisible(false);
+    //    return;
+    //  }
+    //  else if (generatedIcon instanceof GeneratedXmlResource) {
+    //    GeneratedXmlResource xml = (GeneratedXmlResource)generatedIcon;
+    //    String xmlText = xml.getXmlText();
+    //    BufferedImage image = getPreviewImage(xml);
+    //    if (image == null) {
+    //      ApplicationManager.getApplication().runWriteAction(() -> {
+    //        if (myEditorFactory == null) {
+    //          myEditorFactory = EditorFactory.getInstance();
+    //        }
+    //
+    //        if (myXmlPreviewDocument == null) {
+    //          myXmlPreviewDocument = myEditorFactory.createDocument("");
+    //        }
+    //        myXmlPreviewDocument.setReadOnly(false);
+    //        myXmlPreviewDocument.setText(StringUtil.convertLineSeparators(xmlText));
+    //        myXmlPreviewDocument.setReadOnly(true);
+    //
+    //        if (myFilePreviewEditor == null) {
+    //          myFilePreviewEditor = (EditorEx)myEditorFactory.createViewer(myXmlPreviewDocument);
+    //          myFilePreviewEditor.setCaretVisible(false);
+    //          myFilePreviewEditor.getSettings().setLineNumbersShown(false);
+    //          myFilePreviewEditor.getSettings().setLineMarkerAreaShown(false);
+    //          myFilePreviewEditor.getSettings().setFoldingOutlineShown(false);
+    //          myFilePreviewEditor.setHighlighter(EditorHighlighterFactory.getInstance().createEditorHighlighter(null, StdFileTypes.XML));
+    //          myXmlPreviewPanel.removeAll();
+    //          myXmlPreviewPanel.add(myFilePreviewEditor.getComponent());
+    //        }
+    //      });
+    //
+    //      myImagePreviewPanel.setVisible(false);
+    //      myXmlPreviewPanel.setVisible(true);
+    //    }
+    //    else {
+    //      ImageIcon icon = new ImageIcon(image);
+    //      myPreviewIcon.setIcon(icon);
+    //      String drawableType = getDrawableType(xmlText);
+    //      myFileTypeTextField.setText(drawableType);
+    //      myPreviewIcon.setVisible(true);
+    //      myDensityTextField.setText(Density.ANYDPI.getShortDisplayValue());
+    //      Dimension dpSize = getDpSize(xml);
+    //      if (dpSize == null) {
+    //        mySizeDetailsRow.setVisible(false);
+    //      }
+    //      else {
+    //        mySizeDpTextField.setText(String.format("%dx%d", dpSize.width, dpSize.height));
+    //        mySizeDetailsRow.setVisible(true);
+    //      }
+    //      mySizePxRow.setVisible(false);
+    //      myImagePreviewPanel.setVisible(true);
+    //      myXmlPreviewPanel.setVisible(false);
+    //    }
+    //
+    //    return;
+    //  }
+    //}
 
     // Reset properties of both preview panels.
     myPreviewIcon.setVisible(false);
@@ -379,7 +379,7 @@ public final class ConfirmGenerateImagesStep extends ModelWizardStep<GenerateIco
 
   @Override
   public void loadState(@NotNull PersistentState state) {
-    String templateName = state.get(RESOURCE_DIRECTORY_PROPERTY);
+    String templateName = "";//state.get(RESOURCE_DIRECTORY_PROPERTY);
     if (templateName != null) {
       for (NamedModuleTemplate template : myTemplates) {
         if (template.getName().equals(templateName)) {
@@ -436,9 +436,9 @@ public final class ConfirmGenerateImagesStep extends ModelWizardStep<GenerateIco
         .orderedBy(new DensityAwareFileComparator(outputDirectories))
         .addAll(myPathToPreviewImage.keySet())
         .build();
-      ProposedFileTreeModel treeModel = new ProposedFileTreeModel(resDirectory.getParentFile(), proposedFiles);
+      ProposedFileTreeModel treeModel = new ProposedFileTreeModel();
 
-      myFilesAlreadyExist.set(treeModel.hasConflicts());
+      //myFilesAlreadyExist.set(treeModel.hasConflicts());
       myOutputPreviewTree.setModel(treeModel);
 
       // The tree should be totally expanded by default

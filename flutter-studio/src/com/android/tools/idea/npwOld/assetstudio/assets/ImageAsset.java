@@ -218,7 +218,7 @@ public final class ImageAsset extends BaseAsset {
             break;
         }
       }
-      catch (IOException | SAXException e) {
+      catch (Exception e) {
         validityState = Validator.Result.fromThrowable(e);
       }
     }

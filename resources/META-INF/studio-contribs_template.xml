@@ -3,7 +3,7 @@
 
   <extensions defaultExtensionNs="com.android">
     <!-- Add Flutter module types to the New Module wizard -->
-    <moduleDescriptionProvider implementation="io.flutter.module.FlutterDescriptionProvider"/>
+    <!-- moduleDescriptionProvider implementation="io.flutter.module.FlutterDescriptionProvider"/ -->
   </extensions>
 
   <extensions defaultExtensionNs="com.android.project">
@@ -33,6 +33,13 @@
             text="New Flutter Project..."
             description="Create a new Flutter project">
       <add-to-group group-id="JavaNewProjectOrModuleGroup" anchor="after" relative-to-action="NewProject"/>
+    </action>
+
+    <!-- Define the 'New Flutter Module' menu item -->
+    <action id="flutter.NewModule" class="io.flutter.actions.FlutterNewModuleAction"
+            text="New Flutter Module..."
+            description="Create a new Flutter module">
+      <add-to-group group-id="JavaNewProjectOrModuleGroup" anchor="after" relative-to-action="NewModule"/>
     </action>
 
     <!-- The icon isn't being used here, but it is set by the action -->

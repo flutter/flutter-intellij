@@ -77,11 +77,12 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     return res;
   }
 
-  public static class ModuleModelWrapper extends NewModuleModel {
+  // In the hope that the copy of NPW can be deleted, additions required to make it work are labelled for npwOld
+  public static class ModuleModelWrapper extends NewModuleModel { // for npwOld
     FlutterModuleModel model;
 
-    public ModuleModelWrapper(@NotNull Project project, FlutterModuleModel model) {
-      super(project, new ProjectSyncInvoker.DefaultProjectSyncInvoker());
+    public ModuleModelWrapper(FlutterModuleModel model) {
+      super(model.getProject(), new ProjectSyncInvoker.DefaultProjectSyncInvoker());
       this.model = model;
     }
   }
@@ -96,6 +97,14 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     private FlutterGalleryEntry(@NotNull OptionalValueProperty<FlutterProjectModel> sharedModel) {
       mySharedModel = sharedModel;
+    }
+
+    protected void sharedModel(NewModuleModel model) { // for npwOld
+      if (!mySharedModel.isPresent().get()) {
+        ModuleModelWrapper wrapper = (ModuleModelWrapper)model;
+        mySharedModel.setValue(wrapper.model);
+        mySharedModel.getValue().project().setValue(wrapper.model.getProject());
+      }
     }
 
     protected FlutterProjectModel model(@NotNull Project project, @NotNull FlutterProjectType type) {
@@ -161,6 +170,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     @NotNull
     @Override
     public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
+      sharedModel(model); // for npwOld
       return new FlutterModuleStep(
         model(model.getProject().getValue(), FlutterProjectType.APP),
         FlutterBundle.message("module.wizard.app_step_title"),
@@ -209,6 +219,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     @NotNull
     @Override
     public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
+      sharedModel(model); // for npwOld
       return new FlutterModuleStep(
         model(model.getProject().getValue(), FlutterProjectType.PACKAGE),
         FlutterBundle.message("module.wizard.package_step_title"),
@@ -257,6 +268,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     @NotNull
     @Override
     public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
+      sharedModel(model); // for npwOld
       return new FlutterModuleStep(
         model(model.getProject().getValue(), FlutterProjectType.PLUGIN),
         FlutterBundle.message("module.wizard.plugin_step_title"),
@@ -305,6 +317,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     @NotNull
     @Override
     public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
+      sharedModel(model); // for npwOld
       return new FlutterModuleStep(
         model(model.getProject().getValue(), FlutterProjectType.MODULE),
         FlutterBundle.message("module.wizard.module_step_title"),
@@ -353,6 +366,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     @NotNull
     @Override
     public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
+      sharedModel(model); // for npwOld
       return new ImportFlutterModuleStep(
         model(model.getProject().getValue(), FlutterProjectType.IMPORT),
         FlutterBundle.message("module.wizard.import_module_step_title"),
@@ -401,6 +415,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     @NotNull
     @Override
     public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
+      sharedModel(model); // for npwOld
       return new FlutterModuleStep(
         model(model.getProject().getValue(), FlutterProjectType.MODULE),
         FlutterBundle.message("module.wizard.module_step_title"),

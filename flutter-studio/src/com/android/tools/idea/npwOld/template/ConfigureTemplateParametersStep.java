@@ -91,6 +91,7 @@ import java.awt.FlowLayout;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -174,17 +175,17 @@ public final class ConfigureTemplateParametersStep extends ModelWizardStep<Rende
   @Override
   protected Collection<? extends ModelWizardStep> createDependentSteps() {
     TemplateHandle template = getModel().getTemplateHandle();
-    if (template != null && template.getMetadata().getIconType() == AndroidIconType.NOTIFICATION) {
-      // The Android Facet field will only be null if this step is being shown for a brand new, not-yet-created
-      // project (a project must exist before it gets a facet associated with it). However, there are
-      // currently no activities in the "new project" flow that need to create notification icons, so we
-      // can always assume that Android Facet will be non-null here.
-      assert getModel().getAndroidFacet() != null;
-      return Collections.singletonList(new GenerateIconsStep(getModel().getAndroidFacet(), getModel()));
-    }
-    else {
+    //if (template != null && template.getMetadata().getIconType() == AndroidIconType.NOTIFICATION) {
+    //  // The Android Facet field will only be null if this step is being shown for a brand new, not-yet-created
+    //  // project (a project must exist before it gets a facet associated with it). However, there are
+    //  // currently no activities in the "new project" flow that need to create notification icons, so we
+    //  // can always assume that Android Facet will be non-null here.
+    //  assert getModel().getAndroidFacet() != null;
+    //  return Collections.singletonList(new GenerateIconsStep(getModel().getAndroidFacet(), getModel()));
+    //}
+    //else {
       return super.createDependentSteps();
-    }
+    //}
   }
 
   @Override
@@ -420,8 +421,8 @@ public final class ConfigureTemplateParametersStep extends ModelWizardStep<Rende
 
       Map<String, Object> allValues = Maps.newHashMap(additionalValues);
 
-      Map<Parameter, Object> parameterValues =
-        ParameterValueResolver.Companion.resolve(parameters, myUserValues, additionalValues, new ParameterDeduplicator());
+      Map<Parameter, Object> parameterValues = new HashMap();
+        //ParameterValueResolver.Companion.resolve(parameters, myUserValues, additionalValues, new ParameterDeduplicator());
       for (Parameter parameter : parameters) {
         Object value = parameterValues.get(parameter);
         if (value == null) continue;
@@ -458,9 +459,9 @@ public final class ConfigureTemplateParametersStep extends ModelWizardStep<Rende
       // Aggressively update the icon path just in case it changed
       myThumbPath.set(getCurrentThumbnailPath());
     }
-    catch (CircularParameterDependencyException e) {
-      getLog().error("Circular dependency between parameters in template %1$s", e, getModel().getTemplateHandle().getMetadata().getTitle());
-    }
+    //catch (CircularParameterDependencyException e) {
+    //  getLog().error("Circular dependency between parameters in template %1$s", e, getModel().getTemplateHandle().getMetadata().getTitle());
+    //}
     finally {
       myEvaluationState = EvaluationState.NOT_EVALUATING;
     }

@@ -43,7 +43,7 @@ public final class GenerateIconsStep extends ModelWizardStep<RenderTemplateModel
 
     TemplateHandle templateHandle = getModel().getTemplateHandle();
     assert templateHandle != null;
-    AndroidIconType iconType = templateHandle.getMetadata().getIconType();
+    AndroidIconType iconType = null;//templateHandle.getMetadata().getIconType();
     assert iconType != null; // It's an error to create <icon> tags w/o types.
     myGenerateIconsPanel = new GenerateImageAssetPanel(this, facet, model.getTemplate().get().getPaths(), iconType);
 

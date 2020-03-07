@@ -41,7 +41,6 @@ import java.nio.charset.StandardCharsets;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 /**
  * An asset which represents a vector graphics image. This can be loaded either from an SVG file,
@@ -138,7 +137,7 @@ public final class VectorAsset extends BaseAsset {
           xmlFileContent = Files.toString(path, StandardCharsets.UTF_8);
           break;
       }
-    } catch (IOException | SAXException e) {
+    } catch (Exception e) {
       errorBuffer.append(e.getMessage());
     }
 
