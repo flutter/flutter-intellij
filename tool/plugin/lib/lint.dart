@@ -99,12 +99,19 @@ class LintCommand extends Command {
 
       final String results = result.stdout.trim();
       if (results.isNotEmpty) {
-        print('Found proscribed imports:\n');
-        print(results);
-        return true;
-      } else {
-        print('  none found');
+        var lines = results.split('\n');
+        var found = false;
+        for (var line in lines) {
+          if (line.contains('src/com/android')) continue;
+          found = true;
+        }
+        if (found) {
+          print('Found proscribed imports:\n');
+          print(results);
+          return true;
+        }
       }
+      print('  none found');
     }
 
     final partialImports = [
