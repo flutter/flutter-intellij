@@ -114,11 +114,9 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
     return gradleProjectSystem.getLightResourceClassService();
   }
 
-  //@NotNull
-  //@SuppressWarnings("override")
   //public SourceProvidersFactory getSourceProvidersFactory() {
   //  return gradleProjectSystem.getSourceProvidersFactory();
-  //}
+  //} // for AS 4.0
 
   //@NotNull
   //@SuppressWarnings("override")

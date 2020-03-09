@@ -20,12 +20,12 @@ import static com.android.tools.idea.observable.BatchInvoker.INVOKE_IMMEDIATELY_
 //import static com.android.tools.idea.templates.TemplateMetadata.ATTR_HAS_INSTANT_APP_WRAPPER;
 //import static com.android.tools.idea.templates.TemplateMetadata.ATTR_HAS_MONOLITHIC_APP_WRAPPER;
 //import static com.android.tools.idea.templates.TemplateMetadata.ATTR_INSTANT_APP_PACKAGE_NAME;
-import static com.android.tools.idea.templates.TemplateMetadata.ATTR_IS_LIBRARY_MODULE;
+//import static com.android.tools.idea.templates.TemplateMetadata.ATTR_IS_LIBRARY_MODULE;
 import static org.jetbrains.android.util.AndroidBundle.message;
 
-import com.android.tools.idea.instantapp.InstantApps;
+//import com.android.tools.idea.instantapp.InstantApps;
 import com.android.tools.idea.npwOld.platform.Language;
-import com.android.tools.idea.npwOld.template.TemplateValueInjector;
+//import com.android.tools.idea.npwOld.template.TemplateValueInjector;
 import com.android.tools.idea.observable.BindingsManager;
 import com.android.tools.idea.observable.core.BoolProperty;
 import com.android.tools.idea.observable.core.BoolValueProperty;
@@ -211,14 +211,14 @@ public class NewModuleModel extends WizardModel {
    * This method should be called if there is no "Activity Render Template" step (For example when creating a Library, or the activity
    * creation is skipped by the user)
    */
-  public void setDefaultRenderTemplateValues(@NotNull RenderTemplateModel renderModel, @Nullable Project project) {
-    Map<String, Object> renderTemplateValues = Maps.newHashMap();
-    new TemplateValueInjector(renderTemplateValues)
-      .setBuildVersion(renderModel.androidSdkInfo().getValue(), project)
-      .setModuleRoots(renderModel.getTemplate().get().getPaths(), project.getBasePath(), moduleName().get(), packageName().get());
-
-    getRenderTemplateValues().setValue(renderTemplateValues);
-  }
+  //public void setDefaultRenderTemplateValues(@NotNull RenderTemplateModel renderModel, @Nullable Project project) {
+  //  Map<String, Object> renderTemplateValues = Maps.newHashMap();
+  //  new TemplateValueInjector(renderTemplateValues)
+  //    .setBuildVersion(renderModel.androidSdkInfo().getValue(), project)
+  //    .setModuleRoots(renderModel.getTemplate().get().getPaths(), project.getBasePath(), moduleName().get(), packageName().get());
+  //
+  //  getRenderTemplateValues().setValue(renderTemplateValues);
+  //}
 
   @NotNull
   public static File getModuleRoot(@NotNull String projectLocation, @NotNull String moduleName) {
@@ -256,7 +256,7 @@ public class NewModuleModel extends WizardModel {
       Map<String, Object> renderTemplateValues = myRenderTemplateValues.getValueOrNull();
 
       myTemplateValues = new HashMap<>(NewModuleModel.this.myTemplateValues);
-      myTemplateValues.put(ATTR_IS_LIBRARY_MODULE, myIsLibrary.get());
+      //myTemplateValues.put(ATTR_IS_LIBRARY_MODULE, myIsLibrary.get());
 
       Project project = myProject.getValue();
       //if (myIsInstantApp.get()) {
@@ -276,7 +276,7 @@ public class NewModuleModel extends WizardModel {
 
       if (renderTemplateValues != null) {
         if (language().get().isPresent()) { // For new Projects, we have a different UI, so no Language should be present
-          new TemplateValueInjector(renderTemplateValues).setLanguage(language().getValue());
+          //new TemplateValueInjector(renderTemplateValues).setLanguage(language().getValue());
         }
         myTemplateValues.putAll(renderTemplateValues);
       }

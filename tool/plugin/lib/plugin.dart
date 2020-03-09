@@ -740,6 +740,46 @@ class BuildCommand extends ProductCommand {
         processedFile.writeAsStringSync(source);*/
       }
 
+      if (spec.version.startsWith('4.')) {
+        processedFile = File(
+            'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll(
+          'super(filePath.toString()',
+          'super(filePath',
+        );
+        // Starting with 3.6 we need to call a simplified init().
+        // This is where the $PROJECT_FILE$ macro is defined, #registerComponents.
+        source = source.replaceAll(
+          'getStateStore().setPath(path.toString()',
+          'getStateStore().setPath(path',
+        );
+        processedFile.writeAsStringSync(source);
+
+        processedFile = File(
+            'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java');
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll(
+          '//import com.android.tools.idea.projectsystem.SourceProvidersFactory;',
+          'import com.android.tools.idea.projectsystem.SourceProvidersFactory;',
+        );
+        source = source.replaceAll(
+          '  //public SourceProvidersFactory getSourceProvidersFactory() {',
+          '  public SourceProvidersFactory getSourceProvidersFactory() {',
+        );
+        source = source.replaceAll(
+          '  //  return gradleProjectSystem.getSourceProvidersFactory();',
+          '    return gradleProjectSystem.getSourceProvidersFactory();',
+        );
+        source = source.replaceAll(
+          '  //} // for AS 4.0',
+          '  } // for AS 4.0',
+        );
+        processedFile.writeAsStringSync(source);
+      }
+
       try {
         result = await runner.javac2(spec);
 

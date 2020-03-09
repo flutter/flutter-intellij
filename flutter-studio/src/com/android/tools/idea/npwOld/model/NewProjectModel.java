@@ -16,10 +16,10 @@
 package com.android.tools.idea.npwOld.model;
 
 import static com.android.SdkConstants.GRADLE_LATEST_VERSION;
-import static com.android.tools.idea.templates.TemplateMetadata.ATTR_ANDROIDX_SUPPORT;
-import static com.android.tools.idea.templates.TemplateMetadata.ATTR_CPP_FLAGS;
-import static com.android.tools.idea.templates.TemplateMetadata.ATTR_CPP_SUPPORT;
-import static com.android.tools.idea.templates.TemplateMetadata.ATTR_TOP_OUT;
+//import static com.android.tools.idea.templates.TemplateMetadata.ATTR_ANDROIDX_SUPPORT;
+//import static com.android.tools.idea.templates.TemplateMetadata.ATTR_CPP_FLAGS;
+//import static com.android.tools.idea.templates.TemplateMetadata.ATTR_CPP_SUPPORT;
+//import static com.android.tools.idea.templates.TemplateMetadata.ATTR_TOP_OUT;
 import static org.jetbrains.android.util.AndroidBundle.message;
 
 import com.android.repository.io.FileOpUtils;
@@ -29,9 +29,9 @@ import com.android.tools.idea.gradle.project.importing.GradleProjectImporter;
 import com.android.tools.idea.gradle.util.EmbeddedDistributionPaths;
 import com.android.tools.idea.gradle.util.GradleWrapper;
 import com.android.tools.idea.instantapp.InstantApps;
-import com.android.tools.idea.npwOld.project.AndroidGradleModuleUtils;
-import com.android.tools.idea.npwOld.project.AndroidPackageUtils;
-import com.android.tools.idea.npwOld.project.DomainToPackageExpression;
+//import com.android.tools.idea.npwOld.project.AndroidGradleModuleUtils;
+//import com.android.tools.idea.npwOld.project.AndroidPackageUtils;
+//import com.android.tools.idea.npwOld.project.DomainToPackageExpression;
 import com.android.tools.idea.observable.core.BoolProperty;
 import com.android.tools.idea.observable.core.BoolValueProperty;
 import com.android.tools.idea.observable.core.OptionalProperty;
@@ -236,7 +236,7 @@ public class NewProjectModel extends WizardModel {
   public static String getInitialDomain(boolean includeUserName) {
     String androidPackage = PropertiesComponent.getInstance().getValue(PROPERTIES_ANDROID_PACKAGE_KEY);
     if (androidPackage != null) {
-      return new DomainToPackageExpression(new StringValueProperty(androidPackage), new StringValueProperty("")).get();
+      //return new DomainToPackageExpression(new StringValueProperty(androidPackage), new StringValueProperty("")).get();
     }
 
     String domain = PropertiesComponent.getInstance().getValue(PROPERTIES_DOMAIN_KEY);
@@ -253,23 +253,23 @@ public class NewProjectModel extends WizardModel {
    * Tries to get a valid package suggestion for the specifies Project. For instant apps, the base feature module package is used, for
    * other modules, the saved user domain is used.
    */
-  @NotNull
-  public static String getSuggestedProjectPackage(@NotNull Project project, boolean isInstantApp) {
-    String basePackage = null;
-    if (isInstantApp) {
-      Module baseFeatureModule = InstantApps.findBaseFeature(project);
-      AndroidFacet androidFacet = baseFeatureModule == null ? null : AndroidFacet.getInstance(baseFeatureModule);
-      if (androidFacet != null && androidFacet.getConfiguration().getModel() != null) {
-        basePackage = AndroidPackageUtils.getPackageForApplication(androidFacet);
-      }
-    }
-
-    if (basePackage == null) {
-      StringProperty companyDomain = new StringValueProperty(getInitialDomain(false));
-      basePackage = new DomainToPackageExpression(companyDomain, new StringValueProperty("")).get();
-    }
-    return basePackage;
-  }
+  //@NotNull
+  //public static String getSuggestedProjectPackage(@NotNull Project project, boolean isInstantApp) {
+  //  String basePackage = null;
+  //  if (isInstantApp) {
+  //    Module baseFeatureModule = InstantApps.findBaseFeature(project);
+  //    AndroidFacet androidFacet = baseFeatureModule == null ? null : AndroidFacet.getInstance(baseFeatureModule);
+  //    if (androidFacet != null && androidFacet.getConfiguration().getModel() != null) {
+  //      basePackage = AndroidPackageUtils.getPackageForApplication(androidFacet);
+  //    }
+  //  }
+  //
+  //  if (basePackage == null) {
+  //    StringProperty companyDomain = new StringValueProperty(getInitialDomain(false));
+  //    basePackage = new DomainToPackageExpression(companyDomain, new StringValueProperty("")).get();
+  //  }
+  //  return basePackage;
+  //}
 
   /**
    * Loads saved value for Cpp support.
@@ -378,9 +378,9 @@ public class NewProjectModel extends WizardModel {
 
       try {
         File projectRoot = VfsUtilCore.virtualToIoFile(project().getValue().getBaseDir());
-        AndroidGradleModuleUtils.setGradleWrapperExecutable(projectRoot);
+        //AndroidGradleModuleUtils.setGradleWrapperExecutable(projectRoot);
       }
-      catch (IOException e) {
+      catch (Exception e) {
         getLogger().warn("Failed to update Gradle wrapper permissions", e);
       }
 
@@ -392,9 +392,9 @@ public class NewProjectModel extends WizardModel {
       Project project = project().getValue();
 
       // Cpp Apps attributes are needed to generate the Module and to generate the Render Template files (activity and layout)
-      myTemplateValues.put(ATTR_CPP_SUPPORT, myEnableCppSupport.get());
-      myTemplateValues.put(ATTR_CPP_FLAGS, myCppFlags.get());
-      myTemplateValues.put(ATTR_TOP_OUT, project.getBasePath());
+      //myTemplateValues.put(ATTR_CPP_SUPPORT, myEnableCppSupport.get());
+      //myTemplateValues.put(ATTR_CPP_FLAGS, myCppFlags.get());
+      //myTemplateValues.put(ATTR_TOP_OUT, project.getBasePath());
       //myTemplateValues.put(ATTR_KOTLIN_SUPPORT, myEnableKotlinSupport.get());
       //
       //if (StudioFlags.NPW_OFFLINE_REPO_CHECKBOX.get()) {
@@ -406,7 +406,7 @@ public class NewProjectModel extends WizardModel {
       //  }
       //}
 
-      myTemplateValues.put(ATTR_ANDROIDX_SUPPORT, myUseAndroidx.get());
+      //myTemplateValues.put(ATTR_ANDROIDX_SUPPORT, myUseAndroidx.get());
 
       Map<String, Object> params = Maps.newHashMap(myTemplateValues);
       for (NewModuleModel newModuleModel : getNewModuleModels()) {
