@@ -715,26 +715,60 @@ class BuildCommand extends ProductCommand {
           'baseDir.getPath()',
         );
         processedFile.writeAsStringSync(source);
+      }
 
+      if (spec.version.startsWith('4.')) {
         processedFile = File(
             'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
         source = processedFile.readAsStringSync();
         files[processedFile] = source;
         source = source.replaceAll(
-          'import com.android.tools.idea.npw.model.ProjectSyncInvoker',
-          'import com.android.tools.idea.npw.model.NewModuleModel',
+          'public SkippableWizardStep createStep(@NotNull NewModuleModel model) {',
+          'public SkippableWizardStep createStep(@NotNull Project project, @NotNull ProjectSyncInvoker invoker, String parent) {',
         );
         source = source.replaceAll(
-          'createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent)',
-          'createStep(@NotNull NewModuleModel model)',
+          'model(model.getProject().getValue()',
+          'model(project',
         );
         source = source.replaceAll(
-          'FlutterProjectModel model(@NotNull Project project,',
-          'FlutterProjectModel model(@NotNull NewModuleModel project,',
+          'NewModuleModel',
+          'NewAndroidModuleModel',
+        );
+        processedFile.writeAsStringSync(source);
+
+        processedFile = File(
+            'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll(
+          'super(filePath.toString()',
+          'super(filePath',
         );
         source = source.replaceAll(
-          'mySharedModel.getValue().project().setValue(project);',
-          'mySharedModel.getValue().project().setValue(project.getProject().getValue());',
+          'getStateStore().setPath(path.toString()',
+          'getStateStore().setPath(path',
+        );
+        processedFile.writeAsStringSync(source);
+
+        processedFile = File(
+            'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java');
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll(
+          '//import com.android.tools.idea.projectsystem.SourceProvidersFactory;',
+          'import com.android.tools.idea.projectsystem.SourceProvidersFactory;',
+        );
+        source = source.replaceAll(
+          '//public SourceProvidersFactory getSourceProvidersFactory() {',
+          'public SourceProvidersFactory getSourceProvidersFactory() {',
+        );
+        source = source.replaceAll(
+          '//  return gradleProjectSystem.getSourceProvidersFactory();',
+          '  return gradleProjectSystem.getSourceProvidersFactory();',
+        );
+        source = source.replaceAll(
+          '//} // for 4.0',
+          '} // for 4.0',
         );
         processedFile.writeAsStringSync(source);
       }

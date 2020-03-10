@@ -5,6 +5,7 @@
  */
 package io.flutter.module;
 
+import com.android.tools.idea.npw.model.NewModuleModel;
 import com.android.tools.idea.npw.model.ProjectSyncInvoker;
 import com.android.tools.idea.npw.module.ModuleDescriptionProvider;
 import com.android.tools.idea.npw.module.ModuleGalleryEntry;
@@ -149,9 +150,9 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
+    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
       return new FlutterModuleStep(
-        model(model, FlutterProjectType.APP),
+        model(model.getProject().getValue(), FlutterProjectType.APP),
         FlutterBundle.message("module.wizard.app_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.APP);
     }
@@ -197,9 +198,9 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
+    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
       return new FlutterModuleStep(
-        model(model, FlutterProjectType.PACKAGE),
+        model(model.getProject().getValue(), FlutterProjectType.PACKAGE),
         FlutterBundle.message("module.wizard.package_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.PACKAGE);
     }
@@ -245,9 +246,9 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
+    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
       return new FlutterModuleStep(
-        model(model, FlutterProjectType.PLUGIN),
+        model(model.getProject().getValue(), FlutterProjectType.PLUGIN),
         FlutterBundle.message("module.wizard.plugin_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.PLUGIN);
     }
@@ -293,9 +294,9 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
+    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
       return new FlutterModuleStep(
-        model(model, FlutterProjectType.MODULE),
+        model(model.getProject().getValue(), FlutterProjectType.MODULE),
         FlutterBundle.message("module.wizard.module_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.MODULE);
     }
@@ -341,9 +342,9 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
+    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
       return new ImportFlutterModuleStep(
-        model(model, FlutterProjectType.IMPORT),
+        model(model.getProject().getValue(), FlutterProjectType.IMPORT),
         FlutterBundle.message("module.wizard.import_module_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.IMPORT);
     }
@@ -389,9 +390,9 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @NotNull
     @Override
-    public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent) {
+    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
       return new FlutterModuleStep(
-        model(model, FlutterProjectType.MODULE),
+        model(model.getProject().getValue(), FlutterProjectType.MODULE),
         FlutterBundle.message("module.wizard.module_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.MODULE);
     }
