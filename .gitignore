@@ -25,3 +25,4 @@ releases/
 .idea/kotlinc.xml
 .idea/modules/
 .idea/libraries/Gradle_*.xml
+.idea/modules.xml
