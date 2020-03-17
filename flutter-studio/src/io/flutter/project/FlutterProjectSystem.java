@@ -9,7 +9,7 @@ import com.android.tools.idea.projectsystem.AndroidModuleSystem;
 import com.android.tools.idea.projectsystem.AndroidProjectSystem;
 import com.android.tools.idea.projectsystem.LightResourceClassService;
 import com.android.tools.idea.projectsystem.ProjectSystemSyncManager;
-//import com.android.tools.idea.projectsystem.SourceProvidersFactory;
+import com.android.tools.idea.projectsystem.SourceProvidersFactory;
 import com.android.tools.idea.projectsystem.gradle.GradleProjectSystem;
 import com.android.tools.idea.projectsystem.gradle.GradleProjectSystemProvider;
 import com.intellij.openapi.diagnostic.Logger;
@@ -17,6 +17,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElementFinder;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.ReflectionUtil;
 import io.flutter.FlutterUtils;
 import java.lang.reflect.InvocationTargetException;
@@ -24,6 +25,7 @@ import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
+import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,18 +66,22 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
     return gradleProjectSystem.getModuleSystem(module);
   }
 
-  @SuppressWarnings("override")
-  public boolean upgradeProjectToSupportInstantRun() {
-    // TODO(messick) Remove when 3.5 is stable
-    return false; // Already done.
-  }
-
-  @NotNull
-  @Override
   public String mergeBuildFiles(@NotNull String dependencies,
                                 @NotNull String destinationContents,
                                 @Nullable String supportLibVersionFilter) {
-    return gradleProjectSystem.mergeBuildFiles(dependencies, destinationContents, supportLibVersionFilter);
+    Method finders = ReflectionUtil.getMethod(gradleProjectSystem.getClass(), "mergeBuildFiles");
+    if (finders == null) {
+      FlutterUtils.warn(LOG, "No method found: GradleProjectSystem.getPsiElementFinders()");
+      return null;
+    }
+    try {
+      //noinspection unchecked
+      return (String)finders.invoke(gradleProjectSystem, dependencies, destinationContents, supportLibVersionFilter);
+    }
+    catch (IllegalAccessException | InvocationTargetException e) {
+      LOG.error(e);
+      throw new IllegalArgumentException(e);
+    }
   }
 
   @NotNull
@@ -108,13 +114,23 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
     return gradleProjectSystem.getLightResourceClassService();
   }
 
-  //@NotNull
-  //public SourceProvidersFactory getSourceProvidersFactory() {
-  //  return gradleProjectSystem.getSourceProvidersFactory();
-  //} // for 4.0
+  @NotNull
+  @SuppressWarnings("override")
+  public SourceProvidersFactory getSourceProvidersFactory() {
+    return gradleProjectSystem.getSourceProvidersFactory();
+  }
 
-  //@NotNull
-  //public Collection<Module> getSubmodules() {
-  //  return gradleProjectSystem.getSubmodules();
-  //}
+  @NotNull
+  @SuppressWarnings("override")
+  public Collection<Module> getSubmodules() {
+    return gradleProjectSystem.getSubmodules();
+  }
+
+  @NotNull
+  @SuppressWarnings("override")
+  public Collection<AndroidFacet> getAndroidFacetsWithPackageName(@NotNull Project project,
+                                                                  @NotNull String packageName,
+                                                                  @NotNull GlobalSearchScope scope) {
+    return gradleProjectSystem.getAndroidFacetsWithPackageName(project, packageName, scope);
+  }
 }

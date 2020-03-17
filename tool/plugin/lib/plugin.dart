@@ -698,6 +698,10 @@ class BuildCommand extends ProductCommand {
           'gradleProjectSystem.getSourceProvidersFactory()',
           'new Object()',
         );
+        source = source.replaceAll(
+          'gradleProjectSystem.getAndroidFacetsWithPackageName(project, packageName, scope)',
+          'Collections.emptyList()',
+        );
         if (spec.version.startsWith('3.5') || spec.version.startsWith('3.6')) {
           source = source.replaceAll(
             'gradleProjectSystem.getSubmodules()',
@@ -715,60 +719,38 @@ class BuildCommand extends ProductCommand {
           'baseDir.getPath()',
         );
         processedFile.writeAsStringSync(source);
-      }
 
-      if (spec.version.startsWith('4.')) {
         processedFile = File(
             'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
         source = processedFile.readAsStringSync();
         files[processedFile] = source;
         source = source.replaceAll(
-          'public SkippableWizardStep createStep(@NotNull NewModuleModel model) {',
-          'public SkippableWizardStep createStep(@NotNull Project project, @NotNull ProjectSyncInvoker invoker, String parent) {',
+          'import com.android.tools.idea.npw.model.ProjectSyncInvoker',
+          'import com.android.tools.idea.npw.model.NewModuleModel',
         );
         source = source.replaceAll(
-          'model(model.getProject().getValue()',
-          'model(project',
+          'createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent)',
+          'createStep(@NotNull NewModuleModel model)',
         );
         source = source.replaceAll(
-          'NewModuleModel',
-          'NewAndroidModuleModel',
+          'FlutterProjectModel model(@NotNull Project project,',
+          'FlutterProjectModel model(@NotNull NewModuleModel project,',
+        );
+        source = source.replaceAll(
+          'mySharedModel.getValue().project().setValue(project);',
+          'mySharedModel.getValue().project().setValue(project.getProject().getValue());',
         );
         processedFile.writeAsStringSync(source);
 
-        processedFile = File(
-            'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
-        source = processedFile.readAsStringSync();
-        files[processedFile] = source;
-        source = source.replaceAll(
-          'super(filePath.toString()',
-          'super(filePath',
-        );
-        source = source.replaceAll(
-          'getStateStore().setPath(path.toString()',
-          'getStateStore().setPath(path',
-        );
-        processedFile.writeAsStringSync(source);
+      } else if (spec.version.startsWith('4.0')) {
 
         processedFile = File(
             'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java');
         source = processedFile.readAsStringSync();
         files[processedFile] = source;
         source = source.replaceAll(
-          '//import com.android.tools.idea.projectsystem.SourceProvidersFactory;',
-          'import com.android.tools.idea.projectsystem.SourceProvidersFactory;',
-        );
-        source = source.replaceAll(
-          '//public SourceProvidersFactory getSourceProvidersFactory() {',
-          'public SourceProvidersFactory getSourceProvidersFactory() {',
-        );
-        source = source.replaceAll(
-          '//  return gradleProjectSystem.getSourceProvidersFactory();',
-          '  return gradleProjectSystem.getSourceProvidersFactory();',
-        );
-        source = source.replaceAll(
-          '//} // for 4.0',
-          '} // for 4.0',
+          'gradleProjectSystem.getAndroidFacetsWithPackageName(project, packageName, scope)',
+          'Collections.emptyList()',
         );
         processedFile.writeAsStringSync(source);
       }
@@ -1250,6 +1232,101 @@ abstract class ProductCommand extends Command {
       await specs[i].initChangeLog();
     }
     return specs.length;
+  }
+}
+
+/// A crude rename utility. The IntelliJ feature does not work on the case
+/// needed. This just substitutes package names and assumes all are FQN-form.
+/// It does not update forms; they use paths instead of packages.
+/// It would be easy to do forms but it isn't worth the trouble. Only one
+/// had to be edited.
+class RenamePackageCommand extends ProductCommand {
+  final BuildCommandRunner runner;
+  String baseDir = Directory.current.path; // Run from flutter-intellij dir.
+  String oldName, newName;
+
+  RenamePackageCommand(this.runner) : super('rename') {
+    argParser.addOption('package',
+        defaultsTo: 'com.android.tools.idea.npw',
+        help: 'Package to be renamed');
+    argParser.addOption('append',
+        defaultsTo: 'Old', help: 'Suffix to be appended to package name');
+    argParser.addOption('new-name', help: 'Name of package after renaming');
+    argParser.addFlag('studio',
+        negatable: true, help: 'The package is in the flutter-studio module');
+  }
+
+  String get description => 'Rename a package in the plugin sources';
+
+  Future<int> doit() async {
+    if (argResults['studio']) baseDir = p.join(baseDir, 'flutter-studio/src');
+    oldName = argResults['package'];
+    newName = argResults.wasParsed('new-name')
+        ? argResults['new-name']
+        : oldName + argResults['append'];
+    if (oldName == newName) {
+      log('Nothing to do; new name is same as old name');
+      return 1;
+    }
+    // TODO(messick) If the package is not in flutter-studio then we need to edit it too
+    moveFiles();
+    editReferences();
+    await deleteDir();
+    return 0;
+  }
+
+  void moveFiles() {
+    final srcDir = Directory(p.join(baseDir, oldName.replaceAll('.', '/')));
+    final destDir = Directory(p.join(baseDir, newName.replaceAll('.', '/')));
+    _editAndMoveAll(srcDir, destDir);
+  }
+
+  void editReferences() {
+    final srcDir = Directory(p.join(baseDir, oldName.replaceAll('.', '/')));
+    final destDir = Directory(p.join(baseDir, newName.replaceAll('.', '/')));
+    _editAll(Directory(baseDir), skipOld: srcDir, skipNew: destDir);
+  }
+
+  Future<int> deleteDir() async {
+    final dir = Directory(p.join(baseDir, oldName.replaceAll('.', '/')));
+    await dir.delete(recursive: true);
+    return 0;
+  }
+
+  void _editAndMoveFile(File file, Directory to) {
+    if (!to.existsSync()) {
+      to.createSync(recursive: true);
+    }
+    final filename = p.basename(file.path);
+    if (filename.startsWith('.')) return;
+    final target = File(p.join(to.path, filename));
+    var source = file.readAsStringSync();
+    source = source.replaceAll(oldName, newName);
+    target.writeAsStringSync(source);
+    if (to.path != file.parent.path) file.deleteSync();
+  }
+
+  void _editAndMoveAll(Directory from, Directory to) {
+    for (var entity in from.listSync(followLinks: false)) {
+      final basename = p.basename(entity.path);
+
+      if (entity is File) {
+        _editAndMoveFile(entity, to);
+      } else if (entity is Directory) {
+        _editAndMoveAll(entity, Directory(p.join(to.path, basename)));
+      }
+    }
+  }
+
+  void _editAll(Directory src, {Directory skipOld, Directory skipNew}) {
+    if (src.path == skipOld.path || src.path == skipNew.path) return;
+    for (var entity in src.listSync(followLinks: false)) {
+      if (entity is File) {
+        _editAndMoveFile(entity, src);
+      } else if (entity is Directory) {
+        _editAll(entity, skipOld: skipOld, skipNew: skipNew);
+      }
+    }
   }
 }
 

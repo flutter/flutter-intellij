@@ -13,6 +13,8 @@ import com.android.tools.idea.tests.gui.framework.fixture.FlutterFrameFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.FlutterProjectStepFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.FlutterSettingsStepFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.NewFlutterModuleWizardFixture;
+import com.intellij.testGuiFramework.framework.GuiTestRemoteRunner;
+import com.intellij.testGuiFramework.launcher.GuiTestOptions;
 import io.flutter.module.FlutterProjectType;
 import java.io.IOException;
 import org.junit.Rule;
@@ -26,6 +28,7 @@ public class NewModuleTest {
 
   @Test
   public void createNewAppModule() throws IOException {
+    System.out.println("TEST_DIR="+System.getProperty("TEST_DIR"));
     FlutterFrameFixture ideFrame = myGuiTest.importSimpleApplication();
     EditorFixture editor = ideFrame.getEditor();
     editor.waitUntilErrorAnalysisFinishes();
@@ -77,7 +80,10 @@ public class NewModuleTest {
 
     public GuiTestRemoteRunner(Class<?> suiteClass) {
       super(suiteClass);
-      System.setProperty("gui.tests.root.dir.path", "somewhere");
+      System.setProperty("gui.tests.root.dir.path", new java.io.File("testSrc").getAbsolutePath());
+      //System.setProperty(GuiTestOptions.IS_RUNNING_ON_RELEASE, "true");
+      //System.setProperty(GuiTestOptions.REMOTE_IDE_PATH_KEY, "/Applications/Android Studio.app/Contents/MacOS/studio");
+      //System.setProperty(GuiTestOptions.REMOTE_IDE_VM_OPTIONS_PATH_KEY, "/Applications/Android Studio.app/Contents/bin/studio.vmoptions");
     }
   }
 }
