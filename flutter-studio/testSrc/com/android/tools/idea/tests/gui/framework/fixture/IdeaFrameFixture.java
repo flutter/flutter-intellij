@@ -396,7 +396,7 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
    * Returns the virtual file corresponding to the given path. The path must be relative to the project root directory
    * (the top-level directory containing all source files associated with the project).
    *
-   * @param relativePath  a file path relative to the project root directory
+   * @param relativePath a file path relative to the project root directory
    * @return the virtual file corresponding to {@code relativePath}, or {@code null} if no such file exists
    */
   @Nullable

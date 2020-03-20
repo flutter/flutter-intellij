@@ -102,7 +102,9 @@ import org.junit.runners.model.Statement;
 // Remove mySetNdkPath and refs to it
 public class FlutterGuiTestRule implements TestRule {
 
-  /** Hack to solve focus issue when running with no window manager */
+  /**
+   * Hack to solve focus issue when running with no window manager
+   */
   private static final boolean HAS_EXTERNAL_WINDOW_MANAGER = Toolkit.getDefaultToolkit().isFrameStateSupported(Frame.MAXIMIZED_BOTH);
 
   private FlutterFrameFixture myIdeFrameFixture;
@@ -174,18 +176,22 @@ public class FlutterGuiTestRule implements TestRule {
           List<Throwable> errors = new ArrayList<>();
           try {
             base.evaluate();
-          } catch (MultipleFailureException e) {
+          }
+          catch (MultipleFailureException e) {
             errors.addAll(e.getFailures());
-          } catch (Throwable e) {
+          }
+          catch (Throwable e) {
             errors.add(e);
-          } finally {
+          }
+          finally {
             try {
               boolean hasTestPassed = errors.isEmpty();
               errors.addAll(tearDown());  // shouldn't throw, but called inside a try-finally for defense in depth
               if (hasTestPassed && !errors.isEmpty()) { // If we get a problem during tearDown, take a snapshot.
                 new ScreenshotOnFailure().failed(errors.get(0), description);
               }
-            } finally {
+            }
+            finally {
               //noinspection ThrowFromFinallyBlock; assertEmpty is intended to throw here
               MultipleFailureException.assertEmpty(errors);
             }
@@ -199,7 +205,8 @@ public class FlutterGuiTestRule implements TestRule {
     boolean welcomeFrameNotShowing = false;
     try {
       WelcomeFrameFixture.find(robot());
-    } catch (WaitTimedOutError e) {
+    }
+    catch (WaitTimedOutError e) {
       welcomeFrameNotShowing = true;
     }
     if (welcomeFrameNotShowing || GuiTests.windowsShowing().size() != 1) {
@@ -324,24 +331,24 @@ public class FlutterGuiTestRule implements TestRule {
   public FlutterFrameFixture openApplication(String projectDirName) {
     try {
       openProject(projectDirName, false);
-    } catch (JDOMException | IOException ex) {
+    }
+    catch (JDOMException | IOException ex) {
       fail();
     }
     ProjectViewFixture projectView = ideFrame().getProjectView();
     projectView.activate();
-    //projectView.selectProjectPane();
     return ideFrame();
   }
 
   public FlutterFrameFixture importApplication(String projectDirName) {
     try {
       openProject(projectDirName, true);
-    } catch (JDOMException | IOException ex) {
+    }
+    catch (JDOMException | IOException ex) {
       fail();
     }
     ProjectViewFixture projectView = ideFrame().getProjectView();
     projectView.activate();
-    projectView.selectProjectPane();
     return ideFrame();
   }
 
@@ -385,7 +392,8 @@ public class FlutterGuiTestRule implements TestRule {
   public String getProjectFileText(@NotNull String fileRelPath) {
     try {
       return asCharSource(getProjectPath(fileRelPath), UTF_8).read();
-    } catch (IOException e) {
+    }
+    catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
