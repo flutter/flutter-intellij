@@ -35,6 +35,19 @@ Configure IntelliJ as you would for Flutter plugin development,
 then import the flutter-studio plugin and add it as a dependent on
 the Flutter plugin.
 
+TODO: Update instructions for running GUI tests.
+
+Modify auto-generated run config:
+- Change working directory to $SRC$
+- Use class path of module intellij.idea.community.main
+- Add envar: GUI_TEST_SRC=/path/to/flutter-intellij/flutter-studio/testSrc
+
+Use IntelliJ CE to run tests. UE has a React Native plugin that
+causes errors. Have to edit two Dart classes that do not compile:
+OpenObservatoryUrlAction and DartProjectTemplate.
+
+REMAINDER IS OBSOLETE
+
 The GUI tests must be run in the same version of IntelliJ used by
 the Android Studio dev team. Currently that is 2018.2.
 
