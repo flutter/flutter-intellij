@@ -5,7 +5,6 @@
  */
 package com.android.tools.idea.tests.gui.framework;
 
-import static com.android.tools.idea.tests.gui.framework.GuiTests.refreshFiles;
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.io.Files.asCharSource;
 import static com.intellij.openapi.util.io.FileUtil.sanitizeFileName;
@@ -23,13 +22,8 @@ import com.android.tools.idea.tests.gui.framework.fixture.WelcomeFrameFixture;
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
 import com.google.common.collect.ImmutableList;
 import com.intellij.ide.GeneralSettings;
-import com.intellij.ide.impl.ProjectUtil;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.util.io.FileUtilRt;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
@@ -57,11 +51,7 @@ import javax.swing.SwingUtilities;
 import org.fest.swing.core.Robot;
 import org.fest.swing.exception.WaitTimedOutError;
 import org.fest.swing.timing.Wait;
-import org.jdom.Document;
-import org.jdom.Element;
 import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-import org.jdom.xpath.XPath;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.rules.RuleChain;

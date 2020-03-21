@@ -11,7 +11,6 @@ import static org.fest.swing.edt.GuiActionRunner.execute;
 import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardStepFixture;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
-import com.intellij.ui.components.JBLabel;
 import io.flutter.project.FlutterProjectStep;
 import java.awt.Component;
 import java.io.File;
