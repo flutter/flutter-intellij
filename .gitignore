@@ -26,3 +26,7 @@ releases/
 .idea/modules/
 .idea/libraries/Gradle_*.xml
 .idea/modules.xml
+flutter-studio/testSrc/config
+flutter-studio/testSrc/failures
+flutter-studio/testSrc/system
+flutter-studio/testSrc/classpath.jar

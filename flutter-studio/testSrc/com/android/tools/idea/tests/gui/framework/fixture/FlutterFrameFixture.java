@@ -11,7 +11,6 @@ import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.NewFl
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import org.fest.swing.core.Robot;
-import org.fest.swing.timing.Wait;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings({"MethodOverridesStaticMethodOfSuperclass", "UnusedReturnValue"})

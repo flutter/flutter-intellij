@@ -11,12 +11,12 @@ import static org.fest.swing.edt.GuiActionRunner.execute;
 import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardStepFixture;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
-import com.intellij.ui.components.JBLabel;
 import io.flutter.project.FlutterProjectStep;
 import java.awt.Component;
 import java.io.File;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JRootPane;
 import javax.swing.text.JTextComponent;
 import org.fest.swing.edt.GuiQuery;
@@ -96,9 +96,9 @@ public class FlutterProjectStepFixture<W extends AbstractWizardFixture> extends 
 
   @Nullable
   public String getErrorMessage() {
-    Component comp = robot().finder().findByName("ValidationLabel");
-    if (comp instanceof JBLabel) {
-      JBLabel label = (JBLabel)comp;
+    Component comp = robot().finder().findByName("ValidationText");
+    if (comp instanceof JEditorPane) {
+      JEditorPane label = (JEditorPane)comp;
       return label.getText();
     }
     return null;
@@ -113,9 +113,9 @@ public class FlutterProjectStepFixture<W extends AbstractWizardFixture> extends 
   public boolean isConfiguredForModules() {
     try {
       return isShown(findTextFieldWithLabel("Project name")) &&
-             isShown(findTextFieldWithLabel("Description")) &&
-             isShown(findComboBox().target()) &&
-             !isShown(getLocationField());
+             isShown(findTextFieldWithLabel("Description"));// &&
+             //isShown(findComboBox().target()) &&
+             //!isShown(getLocationField());
     }
     catch (ComponentLookupException ex) {
       // Expect this exception when the location field is not found.

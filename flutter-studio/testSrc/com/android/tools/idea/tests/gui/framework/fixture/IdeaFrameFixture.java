@@ -17,7 +17,6 @@ import static org.fest.swing.edt.GuiActionRunner.execute;
 import static org.jetbrains.plugins.gradle.settings.DistributionType.LOCAL;
 import static org.junit.Assert.fail;
 
-import com.android.tools.idea.flags.StudioFlags;
 import com.android.tools.idea.gradle.dsl.api.GradleBuildModel;
 import com.android.tools.idea.gradle.project.build.GradleBuildContext;
 import com.android.tools.idea.gradle.project.build.GradleBuildState;
@@ -75,7 +74,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import org.fest.swing.core.GenericTypeMatcher;
@@ -90,7 +88,6 @@ import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.gradle.settings.GradleProjectSettings;
-import org.jetbrains.plugins.gradle.settings.GradleSettings;
 
 // Changes from original IdeFrame
 // Added field: myIdeFrameFixture
@@ -396,7 +393,7 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
    * Returns the virtual file corresponding to the given path. The path must be relative to the project root directory
    * (the top-level directory containing all source files associated with the project).
    *
-   * @param relativePath  a file path relative to the project root directory
+   * @param relativePath a file path relative to the project root directory
    * @return the virtual file corresponding to {@code relativePath}, or {@code null} if no such file exists
    */
   @Nullable

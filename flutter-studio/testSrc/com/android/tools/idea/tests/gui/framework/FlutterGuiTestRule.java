@@ -5,10 +5,10 @@
  */
 package com.android.tools.idea.tests.gui.framework;
 
-import static com.android.tools.idea.tests.gui.framework.GuiTests.refreshFiles;
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.io.Files.asCharSource;
 import static com.intellij.openapi.util.io.FileUtil.sanitizeFileName;
+import static junit.framework.TestCase.fail;
 import static org.fest.reflect.core.Reflection.field;
 import static org.fest.reflect.core.Reflection.method;
 import static org.fest.reflect.core.Reflection.type;
@@ -17,17 +17,13 @@ import com.android.testutils.TestUtils;
 import com.android.tools.idea.tests.gui.framework.aspects.AspectsAgentLogger;
 import com.android.tools.idea.tests.gui.framework.fixture.FlutterFrameFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.FlutterWelcomeFrameFixture;
+import com.android.tools.idea.tests.gui.framework.fixture.ProjectViewFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.WelcomeFrameFixture;
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
 import com.google.common.collect.ImmutableList;
 import com.intellij.ide.GeneralSettings;
-import com.intellij.ide.impl.ProjectUtil;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.util.io.FileUtilRt;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
@@ -55,10 +51,7 @@ import javax.swing.SwingUtilities;
 import org.fest.swing.core.Robot;
 import org.fest.swing.exception.WaitTimedOutError;
 import org.fest.swing.timing.Wait;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.input.SAXBuilder;
-import org.jdom.xpath.XPath;
+import org.jdom.JDOMException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.rules.RuleChain;
@@ -96,14 +89,16 @@ import org.junit.runners.model.Statement;
 // Change type ref: WelcomeFrameFixture -> FlutterWelcomeFrameFixture (but not in restartIdeIfWelcomeFrameNotShowing())
 // Rewrite project open and import methods
 // Add TestUtils.getWorkspaceRoot(); to setUp()
+// Remove mySetNdkPath and refs to it
 public class FlutterGuiTestRule implements TestRule {
 
-  /** Hack to solve focus issue when running with no window manager */
+  /**
+   * Hack to solve focus issue when running with no window manager
+   */
   private static final boolean HAS_EXTERNAL_WINDOW_MANAGER = Toolkit.getDefaultToolkit().isFrameStateSupported(Frame.MAXIMIZED_BOTH);
 
   private FlutterFrameFixture myIdeFrameFixture;
   @Nullable private String myTestDirectory;
-  private boolean mySetNdkPath = false;
 
   private final RobotTestRule myRobotTestRule = new RobotTestRule();
   private final LeakCheck myLeakCheck = new LeakCheck();
@@ -130,11 +125,6 @@ public class FlutterGuiTestRule implements TestRule {
 
   public FlutterGuiTestRule withLeakCheck() {
     myLeakCheck.setEnabled(true);
-    return this;
-  }
-
-  public FlutterGuiTestRule settingNdkPath() {
-    mySetNdkPath = true;
     return this;
   }
 
@@ -176,18 +166,22 @@ public class FlutterGuiTestRule implements TestRule {
           List<Throwable> errors = new ArrayList<>();
           try {
             base.evaluate();
-          } catch (MultipleFailureException e) {
+          }
+          catch (MultipleFailureException e) {
             errors.addAll(e.getFailures());
-          } catch (Throwable e) {
+          }
+          catch (Throwable e) {
             errors.add(e);
-          } finally {
+          }
+          finally {
             try {
               boolean hasTestPassed = errors.isEmpty();
               errors.addAll(tearDown());  // shouldn't throw, but called inside a try-finally for defense in depth
               if (hasTestPassed && !errors.isEmpty()) { // If we get a problem during tearDown, take a snapshot.
                 new ScreenshotOnFailure().failed(errors.get(0), description);
               }
-            } finally {
+            }
+            finally {
               //noinspection ThrowFromFinallyBlock; assertEmpty is intended to throw here
               MultipleFailureException.assertEmpty(errors);
             }
@@ -201,7 +195,8 @@ public class FlutterGuiTestRule implements TestRule {
     boolean welcomeFrameNotShowing = false;
     try {
       WelcomeFrameFixture.find(robot());
-    } catch (WaitTimedOutError e) {
+    }
+    catch (WaitTimedOutError e) {
       welcomeFrameNotShowing = true;
     }
     if (welcomeFrameNotShowing || GuiTests.windowsShowing().size() != 1) {
@@ -310,9 +305,9 @@ public class FlutterGuiTestRule implements TestRule {
   }
 
   @NotNull
-  public Project openProject(@NotNull String projectDirName) throws Exception {
-    File projectDir = copyProjectBeforeOpening(projectDirName);
-    VirtualFile fileToSelect = VfsUtil.findFileByIoFile(projectDir, true);
+  public Project openProject(@NotNull String projectDirName, boolean isImport) throws IOException, JDOMException {
+    ProjectWrangler wrangler = new ProjectWrangler(myTestDirectory);
+    VirtualFile fileToSelect = VfsUtil.findFileByIoFile(wrangler.setUpProject(projectDirName, isImport), true);
     ProjectManager.getInstance().loadAndOpenProject(fileToSelect.getPath());
 
     Wait.seconds(5).expecting("Project to be open").until(() -> ProjectManager.getInstance().getOpenProjects().length == 1);
@@ -323,64 +318,36 @@ public class FlutterGuiTestRule implements TestRule {
     return project;
   }
 
-  public FlutterFrameFixture importSimpleApplication() throws IOException {
-    return importProjectAndWaitForProjectSyncToFinish("SimpleApplication");
-  }
-
-  public FlutterFrameFixture importMultiModule() throws IOException {
-    return importProjectAndWaitForProjectSyncToFinish("MultiModule");
-  }
-
-  public FlutterFrameFixture importProjectAndWaitForProjectSyncToFinish(@NotNull String projectDirName) throws IOException {
-    importProject(projectDirName);
-    return ideFrame().waitForGradleProjectSyncToFinish();
-  }
-
-  public FlutterFrameFixture importProject(@NotNull String projectDirName) throws IOException {
-    File projectDir = setUpProject(projectDirName);
-    return openProject(projectDir);
-  }
-
-  @NotNull
-  public FlutterFrameFixture openProject(@NotNull File projectDir) {
-    ApplicationManager.getApplication().invokeAndWait(() -> ProjectUtil.openOrImport(projectDir.getAbsolutePath(), null, true));
-
-    Wait.seconds(5).expecting("Project to be open").until(() -> ProjectManager.getInstance().getOpenProjects().length != 0);
-
-    // After the project is opened there will be an Index and a Gradle Sync phase, and these can happen in any order.
-    // Waiting for indexing to finish, makes sure Sync will start next or all Sync was done already.
-    GuiTests.waitForProjectIndexingToFinish(ProjectManager.getInstance().getOpenProjects()[0]);
+  public FlutterFrameFixture openApplication(String projectDirName) {
+    try {
+      openProject(projectDirName, false);
+    }
+    catch (JDOMException | IOException ex) {
+      fail();
+    }
+    ProjectViewFixture projectView = ideFrame().getProjectView();
+    projectView.activate();
     return ideFrame();
   }
 
-  /**
-   * Sets up a project before using it in a UI test:
-   * <ul>
-   * <li>Makes a copy of the project in testData/guiTests/newProjects (deletes any existing copy of the project first.) This copy is
-   * the one the test will use.</li>
-   * <li>Deletes .idea directory, .iml files and build directories, if the project will be imported.</li>
-   * </ul>
-   *
-   * @param projectDirName             the name of the project's root directory. Tests are located in testData/flutter_projects.
-   * @throws IOException if an unexpected I/O error occurs.
-   */
-  public File setUpProject(@NotNull String projectDirName) throws IOException {
-    File projectPath = copyProjectBeforeOpening(projectDirName);
-
-    cleanUpProjectForImport(projectPath);
-    refreshFiles();
-    return projectPath;
+  public FlutterFrameFixture importApplication(String projectDirName) {
+    try {
+      openProject(projectDirName, true);
+    }
+    catch (JDOMException | IOException ex) {
+      fail();
+    }
+    ProjectViewFixture projectView = ideFrame().getProjectView();
+    projectView.activate();
+    return ideFrame();
   }
 
-  public File copyProjectBeforeOpening(@NotNull String projectDirName) throws IOException {
-    File masterProjectPath = getMasterProjectDirPath(projectDirName);
+  public FlutterFrameFixture importSimpleApplication() {
+    return openApplication("simple_app");
+  }
 
-    File projectPath = getTestProjectDirPath(projectDirName);
-    if (projectPath.isDirectory()) {
-      FileUtilRt.delete(projectPath);
-    }
-    FileUtil.copyDir(masterProjectPath, projectPath);
-    return projectPath;
+  public FlutterFrameFixture openSimpleApplication() {
+    return importApplication("simple_app");
   }
 
   @NotNull
@@ -391,42 +358,6 @@ public class FlutterGuiTestRule implements TestRule {
   @NotNull
   protected File getTestProjectDirPath(@NotNull String projectDirName) {
     return new File(GuiTests.getProjectCreationDirPath(myTestDirectory), projectDirName);
-  }
-
-  public void cleanUpProjectForImport(@NotNull File projectPath) {
-    File dotIdeaFolderPath = new File(projectPath, Project.DIRECTORY_STORE_FOLDER);
-    if (dotIdeaFolderPath.isDirectory()) {
-      File modulesXmlFilePath = new File(dotIdeaFolderPath, "modules.xml");
-      if (modulesXmlFilePath.isFile()) {
-        SAXBuilder saxBuilder = new SAXBuilder();
-        try {
-          Document document = saxBuilder.build(modulesXmlFilePath);
-          XPath xpath = XPath.newInstance("//*[@fileurl]");
-          //noinspection unchecked
-          List<Element> modules = (List<Element>)xpath.selectNodes(document);
-          int urlPrefixSize = "file://$PROJECT_DIR$/".length();
-          for (Element module : modules) {
-            String fileUrl = module.getAttributeValue("fileurl");
-            if (!StringUtil.isEmpty(fileUrl)) {
-              String relativePath = FileUtil.toSystemDependentName(fileUrl.substring(urlPrefixSize));
-              File imlFilePath = new File(projectPath, relativePath);
-              if (imlFilePath.isFile()) {
-                FileUtilRt.delete(imlFilePath);
-              }
-              // It is likely that each module has a "build" folder. Delete it as well.
-              File buildFilePath = new File(imlFilePath.getParentFile(), "build");
-              if (buildFilePath.isDirectory()) {
-                FileUtilRt.delete(buildFilePath);
-              }
-            }
-          }
-        }
-        catch (Throwable ignored) {
-          // if something goes wrong, just ignore. Most likely it won't affect project import in any way.
-        }
-      }
-      FileUtilRt.delete(dotIdeaFolderPath);
-    }
   }
 
   public void waitForBackgroundTasks() {
@@ -451,7 +382,8 @@ public class FlutterGuiTestRule implements TestRule {
   public String getProjectFileText(@NotNull String fileRelPath) {
     try {
       return asCharSource(getProjectPath(fileRelPath), UTF_8).read();
-    } catch (IOException e) {
+    }
+    catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
