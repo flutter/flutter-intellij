@@ -29,6 +29,7 @@
         </constraints>
         <properties>
           <font style="1"/>
+          <labelFor value="4d99a"/>
           <text value="Package name"/>
         </properties>
       </component>
