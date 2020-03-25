@@ -49,7 +49,7 @@ import org.jetbrains.annotations.Nullable;
 public class FlutterModuleImporter {
   @SuppressWarnings("FieldCanBeLocal")
   private static String EDIT_INSTR_LINK =
-    "https://github.com/flutter/flutter/wiki/Add-Flutter-to-existing-apps#make-the-host-app-depend-on-the-flutter-module";
+    "https://flutter.dev/docs/development/add-to-app/android/project-setup#add-the-flutter-module-as-a-dependency";
 
   private final FlutterProjectModel myModel;
   private boolean hasFinishedEditing = false;
