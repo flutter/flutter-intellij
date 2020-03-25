@@ -5,18 +5,12 @@
  */
 package com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard;
 
-import static com.google.common.truth.Truth.assertThat;
-import static org.fest.swing.edt.GuiActionRunner.execute;
-
-import com.android.tools.adtui.LabelWithEditButton;
 import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardStepFixture;
 import io.flutter.FlutterBundle;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JRootPane;
 import javax.swing.text.JTextComponent;
-import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.fixture.JCheckBoxFixture;
 import org.jetbrains.annotations.NotNull;
 
