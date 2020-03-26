@@ -179,32 +179,44 @@ public abstract class CommonTestConfigUtils {
     private OutlineCache(FlutterOutline outline, PsiFile file) {
       this.callToTestType = new HashMap<>();
       this.outline = outline;
+
       populateTestTypeMap(outline, file);
     }
 
     /**
      * Traverses the {@param outline} tree and adds to {@link OutlineCache#callToTestType } the {@link DartCallExpression}s that are tests or test groups.
      */
-    private void populateTestTypeMap(@NotNull FlutterOutline outline,
-                             @NotNull PsiFile file) {
+    private void populateTestTypeMap(@NotNull FlutterOutline outline, @NotNull PsiFile file) {
       if (outline.getDartElement() != null) {
         final PsiElement element;
+
         switch (outline.getDartElement().getKind()) {
-          case UNIT_TEST_GROUP:
+          case UNIT_TEST_GROUP: {
             // We found a test group.
             element = file.findElementAt(outline.getOffset());
-            callToTestType.put(DartSyntax.findClosestEnclosingFunctionCall(element).getTextOffset(), TestType.GROUP);
-            break;
-          case UNIT_TEST_TEST:
+            final DartCallExpression enclosingCall = DartSyntax.findClosestEnclosingFunctionCall(element);
+            if (enclosingCall != null) {
+              callToTestType.put(enclosingCall.getTextOffset(), TestType.GROUP);
+            }
+          }
+          break;
+
+          case UNIT_TEST_TEST: {
             // We found a unit test.
             element = file.findElementAt(outline.getOffset());
-            callToTestType.put(DartSyntax.findClosestEnclosingFunctionCall(element).getTextOffset(), TestType.SINGLE);
-            break;
+            final DartCallExpression enclosingCall = DartSyntax.findClosestEnclosingFunctionCall(element);
+            if (enclosingCall != null) {
+              callToTestType.put(enclosingCall.getTextOffset(), TestType.SINGLE);
+            }
+          }
+          break;
+
           default:
             // We found no test.
             break;
         }
       }
+
       if (outline.getChildren() != null) {
         for (FlutterOutline child : outline.getChildren()) {
           populateTestTypeMap(child, file);
