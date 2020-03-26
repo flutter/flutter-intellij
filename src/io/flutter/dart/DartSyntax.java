@@ -72,7 +72,7 @@ public class DartSyntax {
    * @param element
    */
   @Nullable
-  public static DartCallExpression findClosestEnclosingFunctionCall(@NotNull PsiElement element) {
+  public static DartCallExpression findClosestEnclosingFunctionCall(@Nullable PsiElement element) {
     while (element != null) {
       if (element instanceof DartCallExpression) {
         final DartCallExpression call = (DartCallExpression)element;
