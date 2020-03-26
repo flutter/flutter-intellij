@@ -9,7 +9,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import com.android.tools.idea.tests.gui.framework.FlutterGuiTestRule;
-import com.android.tools.idea.tests.gui.framework.GuiTestSuiteRunner;
 import com.android.tools.idea.tests.gui.framework.fixture.EditorFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.FlutterProjectStepFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.FlutterSettingsStepFixture;
@@ -35,7 +34,7 @@ import org.junit.runner.RunWith;
  * festSettings.delayBetweenEvents(50); // 30
  * festSettings.eventPostingDelay(150); // 100
  */
-@RunWith(GuiTestSuiteRunner.class)
+@RunWith(NewModuleTest.GuiTestRemoteRunner.class)//@RunWith(GuiTestSuiteRunner.class)
 public class NewProjectTest {
   @Rule public final FlutterGuiTestRule myGuiTest = new FlutterGuiTestRule();
 
@@ -63,7 +62,20 @@ public class NewProjectTest {
     String expected =
       "import 'package:flutter/material.dart';\n" +
       "\n" +
-      "void main() => runApp(new MyApp());\n";
+      "void main() => runApp(MyApp());\n";
+
+    assertEquals(expected, editor.getCurrentFileContents().substring(0, expected.length()));
+  }
+
+  @Test
+  public void createNewModuleWithDefaults() {
+    WizardUtils.createNewModule(myGuiTest);
+    EditorFixture editor = myGuiTest.ideFrame().getEditor();
+    editor.waitUntilErrorAnalysisFinishes();
+    String expected =
+      "import 'package:flutter/material.dart';\n" +
+      "\n" +
+      "void main() => runApp(MyApp());\n";
 
     assertEquals(expected, editor.getCurrentFileContents().substring(0, expected.length()));
   }
@@ -74,13 +86,14 @@ public class NewProjectTest {
     EditorFixture editor = myGuiTest.ideFrame().getEditor();
     editor.waitUntilErrorAnalysisFinishes();
     String expected =
-      "library flutter_package;\n" +
+      "# flutterpackage\n" +
       "\n" +
-      "/// A Calculator.\n" +
-      "class Calculator {\n" +
-      "  /// Returns [value] plus 1.\n" +
-      "  int addOne(int value) => value + 1;\n" +
-      "}\n";
+      "A new Flutter package.\n" +
+      "\n" +
+      "## Getting Started\n" +
+      "\n" +
+      "This project is a starting point for a Dart\n" +
+      "[package]";
 
     assertEquals(expected, editor.getCurrentFileContents().substring(0, expected.length()));
   }
@@ -95,13 +108,7 @@ public class NewProjectTest {
       "\n" +
       "import 'package:flutter/services.dart';\n" +
       "\n" +
-      "class FlutterPlugin {\n" +
-      "  static const MethodChannel _channel =\n" +
-      "      const MethodChannel('flutter_plugin');\n" +
-      "\n" +
-      "  static Future<String> get platformVersion =>\n" +
-      "      _channel.invokeMethod('getPlatformVersion');\n" +
-      "}\n";
+      "class Flutterplugin";
 
     assertEquals(expected, editor.getCurrentFileContents().substring(0, expected.length()));
   }
@@ -109,7 +116,7 @@ public class NewProjectTest {
   @Test
   public void checkPersistentState() {
     FlutterProjectType type = FlutterProjectType.APP;
-    WizardUtils.createNewProject(myGuiTest, type, "super_tron", "A super fancy tron", "google.com", true, true);
+    WizardUtils.createNewProject(myGuiTest, type, "super_tron", "A super fancy tron", "com.google.super_tron", true, true);
     EditorFixture editor = myGuiTest.ideFrame().getEditor();
     editor.waitUntilErrorAnalysisFinishes();
 
@@ -120,13 +127,12 @@ public class NewProjectTest {
     FlutterProjectStepFixture projectStep = wizard.getFlutterProjectStep(type);
     assertThat(projectStep.getProjectName()).isEqualTo("flutter_app"); // Not persisting
     assertThat(projectStep.getSdkPath()).isNotEmpty(); // Persisting
-    assertThat(projectStep.getProjectLocation()).endsWith("flutter_app"); // Not persisting
+    assertThat(projectStep.getProjectLocation()).endsWith("checkPersistentState"); // Not persisting
     assertThat(projectStep.getDescription()).isEqualTo("A new Flutter application."); // Not persisting
     wizard.clickNext();
 
     FlutterSettingsStepFixture settingsStep = wizard.getFlutterSettingsStep();
-    assertThat(settingsStep.getCompanyDomain()).isEqualTo("google.com"); // Persisting
-    assertThat(settingsStep.getPackageName()).isEqualTo("com.google.flutter_app"); // Partially persisting
+    assertThat(settingsStep.getPackageName()).isEqualTo("com.google.flutterapp"); // Partially persisting
     settingsStep.getKotlinFixture().requireSelected(); // Persisting
     settingsStep.getSwiftFixture().requireSelected(); // Persisting
     settingsStep.getKotlinFixture().setSelected(false);

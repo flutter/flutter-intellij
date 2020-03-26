@@ -5,18 +5,12 @@
  */
 package com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard;
 
-import static com.google.common.truth.Truth.assertThat;
-import static org.fest.swing.edt.GuiActionRunner.execute;
-
-import com.android.tools.adtui.LabelWithEditButton;
 import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardStepFixture;
 import io.flutter.FlutterBundle;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JRootPane;
 import javax.swing.text.JTextComponent;
-import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.fixture.JCheckBoxFixture;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,42 +22,14 @@ public class FlutterSettingsStepFixture<W extends AbstractWizardFixture>
   }
 
   @NotNull
-  public FlutterSettingsStepFixture enterCompanyDomain(@NotNull String text) {
-    JTextComponent textField = findTextFieldWithLabel("Company domain");
-    replaceText(textField, text);
-    return this;
-  }
-
-  @SuppressWarnings("Duplicates")
-  @NotNull
   public FlutterSettingsStepFixture enterPackageName(@NotNull String text) {
-    LabelWithEditButton editLabel = robot().finder().findByType(target(), LabelWithEditButton.class);
-
-    JButton editButton = robot().finder().findByType(editLabel, JButton.class);
-    robot().click(editButton);
-
     JTextComponent textField = findTextFieldWithLabel("Package name");
     replaceText(textField, text);
-
-    // click "Done"
-    robot().click(editButton);
     return this;
-  }
-
-  public String getCompanyDomain() {
-    return findTextFieldWithLabel("Company domain").getText();
   }
 
   public String getPackageName() {
-    final LabelWithEditButton locationField = robot().finder().findByType(target(), LabelWithEditButton.class);
-    return execute(new GuiQuery<String>() {
-      @Override
-      protected String executeInEDT() {
-        String location = locationField.getText();
-        assertThat(location).isNotEmpty();
-        return location;
-      }
-    });
+    return findTextFieldWithLabel("Package name").getText();
   }
 
   public JCheckBoxFixture getKotlinFixture() {

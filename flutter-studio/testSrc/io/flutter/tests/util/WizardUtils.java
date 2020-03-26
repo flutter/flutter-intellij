@@ -19,6 +19,10 @@ public class WizardUtils {
     createNewProject(guiTest, FlutterProjectType.APP);
   }
 
+  public static void createNewModule(@NotNull FlutterGuiTestRule guiTest) {
+    createNewProject(guiTest, FlutterProjectType.MODULE);
+  }
+
   public static void createNewPackage(@NotNull FlutterGuiTestRule guiTest) {
     createNewProject(guiTest, FlutterProjectType.PACKAGE);
   }
@@ -28,7 +32,7 @@ public class WizardUtils {
   }
 
   public static void createNewProject(@NotNull FlutterGuiTestRule guiTest, @NotNull FlutterProjectType type,
-                                      String name, String description, String domain, Boolean isKotlin, Boolean isSwift) {
+                                      String name, String description, String packageName, Boolean isKotlin, Boolean isSwift) {
     String sdkPath = FlutterSdkUtil.locateSdkFromPath();
     if (sdkPath == null) {
       // Fail fast if the Flutter SDK is not found.
@@ -46,6 +50,9 @@ public class WizardUtils {
       case PLUGIN:
         projectType = "Flutter Plugin";
         break;
+      case MODULE:
+        projectType = "Flutter Module";
+        break;
       default:
         throw new IllegalArgumentException();
     }
@@ -62,16 +69,18 @@ public class WizardUtils {
       wizard.getFlutterProjectStep(type).enterDescription(description);
     }
 
-    if (type == FlutterProjectType.APP || type == FlutterProjectType.PLUGIN) {
+    if (type != FlutterProjectType.PACKAGE) {
       wizard.clickNext();
-      if (domain != null) {
-        wizard.getFlutterSettingsStep().enterCompanyDomain(domain);
+      if (packageName != null) {
+        wizard.getFlutterSettingsStep().enterPackageName(packageName);
       }
-      if (isKotlin != null) {
-        wizard.getFlutterSettingsStep().setKotlinSupport(isKotlin);
-      }
-      if (isSwift != null) {
-        wizard.getFlutterSettingsStep().setSwiftSupport(isSwift);
+      if (type != FlutterProjectType.MODULE) {
+        if (isKotlin != null) {
+          wizard.getFlutterSettingsStep().setKotlinSupport(isKotlin);
+        }
+        if (isSwift != null) {
+          wizard.getFlutterSettingsStep().setSwiftSupport(isSwift);
+        }
       }
     }
     wizard.clickFinish();

@@ -51,6 +51,9 @@ public class NewFlutterProjectWizardFixture extends AbstractWizardFixture<NewFlu
       case APP:
         projectType = "application";
         break;
+      case MODULE:
+        projectType = "module";
+        break;
       case PACKAGE:
         projectType = "package";
         break;
@@ -73,7 +76,7 @@ public class NewFlutterProjectWizardFixture extends AbstractWizardFixture<NewFlu
   @NotNull
   public NewFlutterProjectWizardFixture clickFinish() {
     List<Project> previouslyOpenProjects = newArrayList(ProjectManager.getInstance().getOpenProjects());
-    super.clickFinish(Wait.seconds(10));
+    super.clickFinish(Wait.seconds(30));
 
     List<Project> newOpenProjects = newArrayList();
     Wait.seconds(5).expecting("Project to be created")
