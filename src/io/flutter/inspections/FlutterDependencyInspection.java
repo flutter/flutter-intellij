@@ -61,7 +61,7 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
     // TODO(pq): consider validating package name here (`get` will fail if it's invalid).
 
     if (root.getPackagesFile() == null) {
-      return createProblemDescriptors(manager, psiFile, root, FlutterBundle.message("packages.get.never.done"));
+      return createProblemDescriptors(manager, psiFile, root, FlutterBundle.message("pub.get.not.run"));
     }
 
     if (!root.hasUpToDatePackages()) {
@@ -77,8 +77,8 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
                                                        @NotNull final PubRoot root,
                                                        @NotNull final String errorMessage) {
     final LocalQuickFix[] fixes = new LocalQuickFix[]{
-      new PackageUpdateFix(FlutterBundle.message("get.dependencies"), FlutterSdk::startPackagesGet),
-      new PackageUpdateFix(FlutterBundle.message("upgrade.dependencies"), FlutterSdk::startPackagesUpgrade),
+      new PackageUpdateFix(FlutterBundle.message("get.dependencies"), FlutterSdk::startPubGet),
+      new PackageUpdateFix(FlutterBundle.message("upgrade.dependencies"), FlutterSdk::startPubUpgrade),
       new IgnoreWarningFix(myIgnoredPubspecPaths, root.getPubspec().getPath())};
 
     return new ProblemDescriptor[]{

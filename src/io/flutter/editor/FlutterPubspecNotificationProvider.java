@@ -82,24 +82,28 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
       icon(FlutterIcons.Flutter);
       text("Flutter commands");
 
-      // "flutter.packages.get"
-      HyperlinkLabel label = createActionLabel("Packages get", () -> runPackagesGet(false));
+      // "flutter.pub.get"
+      HyperlinkLabel label = createActionLabel("Pub get", () -> runPubGet(false));
       label.setToolTipText("Install referenced packages");
 
-      // "flutter.packages.upgrade"
-      label = createActionLabel("Packages upgrade", () -> runPackagesGet(true));
+      // "flutter.pub.upgrade"
+      label = createActionLabel("Pub upgrade", () -> runPubGet(true));
       label.setToolTipText("Upgrade referenced packages to the latest versions");
 
-      myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
-      label = createActionLabel("Flutter upgrade", "flutter.upgrade");
-      label.setToolTipText("Upgrade the Flutter framework to the latest version");
+      // If the SDK is the right version, add a 'flutter pub outdated' command.
+      final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+      if (sdk != null && sdk.getVersion().isPubOutdatedSupported()) {
+        // "flutter.pub.outdated"
+        label = createActionLabel("Pub outdated", this::runPubOutdated);
+        label.setToolTipText("Analyze packages to determine which ones can be upgraded");
+      }
 
       myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
       label = createActionLabel("Flutter doctor", "flutter.doctor");
       label.setToolTipText("Validate installed tools and their versions");
     }
 
-    private void runPackagesGet(boolean upgrade) {
+    private void runPubGet(boolean upgrade) {
       final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
       if (sdk == null) {
         return;
@@ -108,11 +112,23 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
       final PubRoot root = PubRoot.forDirectory(myFile.getParent());
       if (root != null) {
         if (!upgrade) {
-          sdk.startPackagesGet(root, project);
+          sdk.startPubGet(root, project);
         }
         else {
-          sdk.startPackagesUpgrade(root, project);
+          sdk.startPubUpgrade(root, project);
         }
+      }
+    }
+
+    private void runPubOutdated() {
+      final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+      if (sdk == null) {
+        return;
+      }
+
+      final PubRoot root = PubRoot.forDirectory(myFile.getParent());
+      if (root != null) {
+        sdk.startPubOutdated(root, project);
       }
     }
   }

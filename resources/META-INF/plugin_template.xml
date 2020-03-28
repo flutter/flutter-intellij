@@ -70,12 +70,12 @@
               text="Flutter Doctor"
               description="Run 'flutter doctor'"/>
       <separator/>
-      <action id="flutter.packages.get" class="io.flutter.actions.FlutterPackagesGetAction"
-              text="Flutter Packages Get"
-              description="Run 'flutter packages get'"/>
-      <action id="flutter.packages.upgrade" class="io.flutter.actions.FlutterPackagesUpgradeAction"
-              text="Flutter Packages Upgrade"
-              description="Run 'flutter packages upgrade'"/>
+      <action id="flutter.pub.get" class="io.flutter.actions.FlutterPackagesGetAction"
+              text="Flutter Pub Get"
+              description="Run 'flutter pub get'"/>
+      <action id="flutter.pub.upgrade" class="io.flutter.actions.FlutterPackagesUpgradeAction"
+              text="Flutter Pub Upgrade"
+              description="Run 'flutter pub upgrade'"/>
       <separator/>
       <action id="flutter.clean" class="io.flutter.actions.FlutterCleanAction"
               text="Flutter Clean"
@@ -105,8 +105,8 @@
       <separator/>
       <group text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">
         <separator/>
-        <reference ref="flutter.packages.get"/>
-        <reference ref="flutter.packages.upgrade"/>
+        <reference ref="flutter.pub.get"/>
+        <reference ref="flutter.pub.upgrade"/>
         <separator/>
         <reference ref="flutter.androidstudio.open"/>
         <reference ref="flutter.xcode.open"/>

@@ -15,14 +15,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FlutterPackagesUpgradeAction extends FlutterSdkAction {
-
   @Override
   public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root, @NotNull DataContext context) {
     if (root == null) {
       FlutterMessages.showError("Cannot Find Pub Root",
-                                "Flutter packages upgrade can only be run within a directory with a pubspec.yaml file");
+                                "Flutter pub upgrade can only be run within a directory with a pubspec.yaml file");
       return;
     }
-    sdk.startPackagesUpgrade(root, project);
+    sdk.startPubUpgrade(root, project);
   }
 }

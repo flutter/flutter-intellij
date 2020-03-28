@@ -35,7 +35,7 @@ public class FlutterCommand {
   private static final Logger LOG = Logger.getInstance(FlutterCommand.class);
 
   private static final Set<Type> pubRelatedCommands = new HashSet<>(
-    Arrays.asList(Type.PACKAGES_GET, Type.PACKAGES_UPGRADE, Type.UPGRADE));
+    Arrays.asList(Type.PUB_GET, Type.PUB_UPGRADE, Type.PUB_OUTDATED, Type.UPGRADE));
 
   @NotNull
   protected final FlutterSdk sdk;
@@ -275,8 +275,9 @@ public class FlutterCommand {
     CREATE("Flutter create", "create"),
     DOCTOR("Flutter doctor", "doctor", "--verbose"),
     MAKE_HOST_APP_EDITABLE("Flutter make-host-app-editable", "make-host-app-editable"),
-    PACKAGES_GET("Flutter packages get", "packages", "get"),
-    PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),
+    PUB_GET("Flutter pub get", "pub", "get"),
+    PUB_UPGRADE("Flutter pub upgrade", "pub", "upgrade"),
+    PUB_OUTDATED("Flutter pub outdated", "pub", "outdated"),
     PUB("Flutter pub", "pub"),
     RUN("Flutter run", "run"),
     UPGRADE("Flutter upgrade", "upgrade"),
