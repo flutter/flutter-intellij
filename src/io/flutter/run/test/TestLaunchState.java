@@ -20,6 +20,7 @@ import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
+import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterBundle;
 import io.flutter.pub.PubRoot;
@@ -115,6 +116,10 @@ class TestLaunchState extends CommandLineState {
 
     final Module module = ModuleUtil.findModuleForFile(testFileOrDir, project);
     console.addMessageFilter(new DartConsoleFilter(project, getTestFileOrDir()));
+    final String baseDir = getBaseDir();
+    if (baseDir != null) {
+      console.addMessageFilter(new DartRelativePathsConsoleFilter(project, baseDir));
+    }
     console.addMessageFilter(new UrlFilter());
 
     return console;
