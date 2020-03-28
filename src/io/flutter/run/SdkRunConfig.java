@@ -218,7 +218,6 @@ public class SdkRunConfig extends LocatableConfigurationBase
     // Set up additional console filters.
     final TextConsoleBuilder builder = launcher.getConsoleBuilder();
     builder.addFilter(new DartConsoleFilter(env.getProject(), mainFile.getFile()));
-
     if (module != null) {
       builder.addFilter(new FlutterConsoleFilter(module));
     }

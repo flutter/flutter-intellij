@@ -46,6 +46,7 @@ public class DaemonConsoleView extends ConsoleViewImpl {
     };
 
     // Set up basic console filters. (More may be added later.)
+    // TODO(devoncarew): Do we need this filter? What about DartConsoleFilter (for package: uris)?
     builder.addFilter(new DartRelativePathsConsoleFilter(env.getProject(), workDir.getPath()));
     launcher.setConsoleBuilder(builder);
   }
