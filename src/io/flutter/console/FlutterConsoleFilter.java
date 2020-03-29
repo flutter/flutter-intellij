@@ -26,10 +26,15 @@ import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * The FlutterConsoleFilter handles link detection in consoles for:
+ * <p>
+ * - linking an action to the term 'flutter doctor'
+ * - linking the text "Launching lib/main.dart" or "open ios/Runner.xcworkspace"
+ * - some embedded paths, like "MyApp.xzzzz (lib/main.dart:6)"
+ */
 public class FlutterConsoleFilter implements Filter {
-
   private static class OpenExternalFileHyperlink implements HyperlinkInfo {
-
     private final String myPath;
 
     OpenExternalFileHyperlink(VirtualFile file) {
@@ -176,6 +181,7 @@ public class FlutterConsoleFilter implements Filter {
     if (file == null) {
       file = fileAtPath(pathPart);
     }
+
     if (file != null) {
       // "open ios/Runner.xcworkspace"
       final boolean openAsExternalFile = FlutterUtils.isXcodeFileName(pathPart);

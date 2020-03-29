@@ -18,6 +18,7 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
+import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
@@ -108,6 +109,8 @@ public class BazelTestLaunchState extends CommandLineState {
 
     // TODO(devoncarew): Will DartConsoleFilter work well in a Bazel context?
     console.addMessageFilter(new DartConsoleFilter(project, testFile));
+    final String baseDir = workspace.getRoot().getPath();
+    console.addMessageFilter(new DartRelativePathsConsoleFilter(project, baseDir));
     console.addMessageFilter(new UrlFilter());
     return console;
   }
