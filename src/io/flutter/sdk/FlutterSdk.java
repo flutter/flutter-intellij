@@ -189,11 +189,15 @@ public class FlutterSdk {
   }
 
   public FlutterCommand flutterPackagesGet(@NotNull PubRoot root) {
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PACKAGES_GET);
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PUB_GET);
   }
 
   public FlutterCommand flutterPackagesUpgrade(@NotNull PubRoot root) {
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PACKAGES_UPGRADE);
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PUB_UPGRADE);
+  }
+
+  public FlutterCommand flutterPackagesOutdated(@NotNull PubRoot root) {
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PUB_OUTDATED);
   }
 
   public FlutterCommand flutterPub(@Nullable PubRoot root, String... args) {
@@ -389,13 +393,13 @@ public class FlutterSdk {
   }
 
   /**
-   * Starts running 'flutter packages get' on the given pub root provided it's in one of this project's modules.
+   * Starts running 'flutter pub get' on the given pub root provided it's in one of this project's modules.
    * <p>
    * Shows output in the console associated with the given module.
    * <p>
    * Returns the process if successfully started.
    */
-  public Process startPackagesGet(@NotNull PubRoot root, @NotNull Project project) {
+  public Process startPubGet(@NotNull PubRoot root, @NotNull Project project) {
     final Module module = root.getModule(project);
     if (module == null) return null;
     // Ensure pubspec is saved.
@@ -405,18 +409,33 @@ public class FlutterSdk {
   }
 
   /**
-   * Starts running 'flutter packages upgrade' on the given pub root.
+   * Starts running 'flutter pub upgrade' on the given pub root.
    * <p>
    * Shows output in the console associated with the given module.
    * <p>
    * Returns the process if successfully started.
    */
-  public Process startPackagesUpgrade(@NotNull PubRoot root, @NotNull Project project) {
+  public Process startPubUpgrade(@NotNull PubRoot root, @NotNull Project project) {
     final Module module = root.getModule(project);
     if (module == null) return null;
     // Ensure pubspec is saved.
     FileDocumentManager.getInstance().saveAllDocuments();
     return flutterPackagesUpgrade(root).startInModuleConsole(module, root::refresh, null);
+  }
+
+  /**
+   * Starts running 'flutter pub outdated' on the given pub root.
+   * <p>
+   * Shows output in the console associated with the given module.
+   * <p>
+   * Returns the process if successfully started.
+   */
+  public Process startPubOutdated(@NotNull PubRoot root, @NotNull Project project) {
+    final Module module = root.getModule(project);
+    if (module == null) return null;
+    // Ensure pubspec is saved.
+    FileDocumentManager.getInstance().saveAllDocuments();
+    return flutterPackagesOutdated(root).startInModuleConsole(module, root::refresh, null);
   }
 
   @NotNull

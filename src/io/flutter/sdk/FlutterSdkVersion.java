@@ -34,6 +34,11 @@ public class FlutterSdkVersion {
    */
   private static final FlutterSdkVersion MIN_ANDROIDX_SDK = new FlutterSdkVersion("1.7.8");
 
+  /**
+   * The version of the stable channel that suppoorts --androidx in the create command.
+   */
+  private static final FlutterSdkVersion MIN_PUB_OUTDATED_SDK = new FlutterSdkVersion("1.16.4");
+
   @Nullable
   private final Version version;
 
@@ -105,6 +110,11 @@ public class FlutterSdkVersion {
 
   public boolean flutterTestSupportsFiltering() {
     return isMinRecommendedSupported();
+  }
+
+  public boolean isPubOutdatedSupported() {
+    //noinspection ConstantConditions
+    return version != null && version.compareTo(MIN_PUB_OUTDATED_SDK.version) >= 0;
   }
 
   @Override

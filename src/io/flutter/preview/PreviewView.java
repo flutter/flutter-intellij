@@ -41,7 +41,6 @@ import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.dart.FlutterOutlineListener;
 import io.flutter.editor.PropertyEditorPanel;
-import io.flutter.inspector.FlutterWidget;
 import io.flutter.inspector.InspectorGroupManagerService;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.CustomIconMaker;
@@ -428,8 +427,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
 
     // TODO(jacobr): this is the wrong spot.
     if (propertyEditToolbarGroup != null) {
-      TitleAction propertyTitleAction;
-      propertyTitleAction = new TitleAction("Properties");
+      final TitleAction propertyTitleAction = new TitleAction("Properties");
       propertyEditToolbarGroup.removeAll();
       propertyEditToolbarGroup.add(propertyTitleAction);
     }
@@ -752,10 +750,6 @@ class OutlineObject {
 
     if (icon == null) {
       final String className = outline.getClassName();
-      final FlutterWidget widget = FlutterWidget.getCatalog().getWidget(className);
-      if (widget != null) {
-        icon = widget.getIcon();
-      }
       if (icon == null) {
         icon = iconMaker.fromWidgetName(className);
       }
@@ -874,8 +868,6 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
           }
 
           appendSearch(attribute.getLabel(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
-
-          // TODO(scheglov): custom display for units, colors, iterables, and icons?
         }
       }
     }
@@ -895,12 +887,12 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
     return false;
   }
 
-  private static boolean isAttributeElidable(String name) {
-    return StringUtil.equals("text", name) || StringUtil.equals("icon", name);
-  }
-
   void appendSearch(@NotNull String text, @NotNull SimpleTextAttributes attributes) {
     SpeedSearchUtil.appendFragmentsForSpeedSearch(tree, text, attributes, selected, this);
+  }
+
+  private static boolean isAttributeElidable(String name) {
+    return StringUtil.equals("text", name) || StringUtil.equals("icon", name);
   }
 }
 

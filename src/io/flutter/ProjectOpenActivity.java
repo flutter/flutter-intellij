@@ -81,15 +81,15 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     @NotNull private final PubRoot myRoot;
 
     public PackagesOutOfDateNotification(@NotNull Project project, @NotNull PubRoot root) {
-      super("Flutter Packages", FlutterIcons.Flutter, "Flutter packages get.",
+      super("Flutter Packages", FlutterIcons.Flutter, "Flutter pub get.",
             null, "The pubspec.yaml file has been modified since " +
-                  "the last time 'flutter packages get' was run.",
+                  "the last time 'flutter pub get' was run.",
             NotificationType.INFORMATION, null);
 
       myProject = project;
       myRoot = root;
 
-      addAction(new AnAction("Run 'flutter packages get'") {
+      addAction(new AnAction("Run 'flutter pub get'") {
         @Override
         public void actionPerformed(@NotNull AnActionEvent event) {
           expire();
@@ -100,8 +100,8 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
             return;
           }
 
-          if (sdk.startPackagesGet(root, project) == null) {
-            Messages.showErrorDialog("Unable to run 'flutter packages get'", "Error");
+          if (sdk.startPubGet(root, project) == null) {
+            Messages.showErrorDialog("Unable to run 'flutter pub get'", "Error");
           }
         }
       });
