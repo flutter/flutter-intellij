@@ -17,6 +17,7 @@ import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.bazel.Workspace;
@@ -47,8 +48,8 @@ public class BazelTestLaunchState extends CommandLineState {
     this.config = config;
     this.fields = config.getFields();
     if (testFile == null) {
-      Workspace workspace = WorkspaceCache.getInstance(env.getProject()).get();
-      assert(workspace != null);
+      final Workspace workspace = WorkspaceCache.getInstance(env.getProject()).get();
+      assert (workspace != null);
       testFile = workspace.getRoot();
     }
     this.testFile = testFile;
@@ -106,6 +107,8 @@ public class BazelTestLaunchState extends CommandLineState {
     final ConsoleProps props = ConsoleProps.forBazel(config, executor, resolver);
     final BaseTestsOutputConsoleView console = SMTestRunnerConnectionUtil.createConsole(ConsoleProps.bazelFrameworkName, props);
 
+    // TODO(devoncarew): Will DartConsoleFilter work well in a Bazel context?
+    console.addMessageFilter(new DartConsoleFilter(project, testFile));
     final String baseDir = workspace.getRoot().getPath();
     console.addMessageFilter(new DartRelativePathsConsoleFilter(project, baseDir));
     console.addMessageFilter(new UrlFilter());

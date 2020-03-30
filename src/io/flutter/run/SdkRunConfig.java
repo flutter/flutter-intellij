@@ -54,7 +54,7 @@ import static java.nio.file.FileVisitResult.CONTINUE;
 /**
  * Run configuration used for launching a Flutter app using the Flutter SDK.
  */
-public class SdkRunConfig extends LocatableConfigurationBase
+public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
   implements LaunchState.RunConfig, RefactoringListenerProvider, RunConfigurationWithSuppressedDefaultRunAction {
 
   private static final Logger LOG = Logger.getInstance(SdkRunConfig.class);
@@ -85,9 +85,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
     return new FlutterConfigurationEditorForm(getProject());
   }
 
-  public static class RecursiveDeleter
-    extends SimpleFileVisitor<Path> {
-
+  public static class RecursiveDeleter extends SimpleFileVisitor<Path> {
     private final PathMatcher matcher;
 
     RecursiveDeleter(String pattern) {
@@ -217,11 +215,15 @@ public class SdkRunConfig extends LocatableConfigurationBase
                                    @Nullable Module module) {
     // Set up additional console filters.
     final TextConsoleBuilder builder = launcher.getConsoleBuilder();
+    // file:, package:, and dart: references
     builder.addFilter(new DartConsoleFilter(env.getProject(), mainFile.getFile()));
-
+    //// links often found when running tests
+    //builder.addFilter(new DartRelativePathsConsoleFilter(env.getProject(), mainFile.getAppDir().getPath()));
     if (module != null) {
+      // various flutter run links
       builder.addFilter(new FlutterConsoleFilter(module));
     }
+    // general urls
     builder.addFilter(new UrlFilter());
   }
 

@@ -19,10 +19,10 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterBundle;
-import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.common.ConsoleProps;
 import io.flutter.run.common.RunMode;
@@ -113,15 +113,15 @@ class TestLaunchState extends CommandLineState {
     final DartUrlResolver resolver = DartUrlResolver.getInstance(project, testFileOrDir);
     final ConsoleProps props = ConsoleProps.forPub(config, executor, resolver);
     final BaseTestsOutputConsoleView console = SMTestRunnerConnectionUtil.createConsole(ConsoleProps.pubFrameworkName, props);
+
     final Module module = ModuleUtil.findModuleForFile(testFileOrDir, project);
-    if (module != null) {
-      console.addMessageFilter(new FlutterConsoleFilter(module));
-    }
+    console.addMessageFilter(new DartConsoleFilter(project, getTestFileOrDir()));
     final String baseDir = getBaseDir();
     if (baseDir != null) {
       console.addMessageFilter(new DartRelativePathsConsoleFilter(project, baseDir));
     }
     console.addMessageFilter(new UrlFilter());
+
     return console;
   }
 
