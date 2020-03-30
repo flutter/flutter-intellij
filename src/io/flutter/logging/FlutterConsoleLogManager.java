@@ -75,12 +75,36 @@ public class FlutterConsoleLogManager {
   @NotNull final ConsoleView console;
   @NotNull final FlutterApp app;
 
+  private int frameErrorCount = 0;
+
   public FlutterConsoleLogManager(@NotNull ConsoleView console, @NotNull FlutterApp app) {
     this.console = console;
     this.app = app;
 
     assert (app.getVmService() != null);
     this.service = app.getVmService();
+
+    app.addStateListener(new FlutterApp.FlutterAppListener() {
+      @Override
+      public void notifyFrameRendered() {
+        frameErrorCount = 0;
+      }
+
+      @Override
+      public void stateChanged(FlutterApp.State newState) {
+        frameErrorCount = 0;
+      }
+
+      @Override
+      public void notifyAppReloaded() {
+        frameErrorCount = 0;
+      }
+
+      @Override
+      public void notifyAppRestarted() {
+        frameErrorCount = 0;
+      }
+    });
 
     assert (app.getFlutterDebugProcess() != null);
     objectGroup = InspectorService.createGroup(app, app.getFlutterDebugProcess(), app.getVmService(), "console-group");
@@ -101,14 +125,6 @@ public class FlutterConsoleLogManager {
       final JsonObject jsonObject = extensionData.getJson().getAsJsonObject();
       final DiagnosticsNode diagnosticsNode = new DiagnosticsNode(jsonObject, objectGroup, app, false, null);
 
-      final int errorsSinceReload;
-      if (jsonObject.has("errorsSinceReload")) {
-        errorsSinceReload = jsonObject.get("errorsSinceReload").getAsInt();
-      }
-      else {
-        errorsSinceReload = 0;
-      }
-
       // Send analytics for the diagnosticsNode.
       final String errorId = FlutterErrorHelper.getAnalyticsId(diagnosticsNode);
       if (errorId != null) {
@@ -118,7 +134,7 @@ public class FlutterConsoleLogManager {
       if (FlutterSettings.getInstance().isShowStructuredErrors()) {
         queue.add(() -> {
           try {
-            processFlutterErrorEvent(diagnosticsNode, errorsSinceReload);
+            processFlutterErrorEvent(diagnosticsNode);
           }
           catch (Throwable t) {
             LOG.warn(t);
@@ -139,21 +155,21 @@ public class FlutterConsoleLogManager {
   /**
    * Pretty print the error using the available console syling attributes.
    */
-  private void processFlutterErrorEvent(@NotNull DiagnosticsNode diagnosticsNode, int errorsSinceReload) {
+  private void processFlutterErrorEvent(@NotNull DiagnosticsNode diagnosticsNode) {
     final String description = " " + diagnosticsNode.toString() + " ";
 
-    final boolean terseError = errorsSinceReload != 0;
+    frameErrorCount++;
 
-    // TODO(devoncarew): Potentially change the error separator chars based on the error type (overflow, ...).
+    final boolean terseError = frameErrorCount > 1;
+
     final String prefix = "════════";
-    final String multiplicity = errorsSinceReload == 0 ? "" : (" (" + (errorsSinceReload + 1) + ")");
     final String suffix = "══";
 
     console.print("\n" + prefix, TITLE_CONTENT_TYPE);
-    console.print(multiplicity + description, NORMAL_CONTENT_TYPE);
+    console.print(description, NORMAL_CONTENT_TYPE);
     console.print(
       StringUtil.repeat(errorSeparatorChar, Math.max(
-        errorSeparatorLength - prefix.length() - multiplicity.length() - description.length() - suffix.length(), 0)),
+        errorSeparatorLength - prefix.length() - description.length() - suffix.length(), 0)),
       TITLE_CONTENT_TYPE);
     console.print(suffix + "\n", TITLE_CONTENT_TYPE);
 
