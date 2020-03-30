@@ -10,15 +10,17 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.diagnostic.Logger;
-import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class FlutterSurveyService {
   private static final String FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY = "FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY";
@@ -54,14 +56,21 @@ public class FlutterSurveyService {
   private static FlutterSurvey fetchSurveyContent() {
     if (CONTENT_URL != null) {
       try {
-        final String contents = IOUtils.toString(CONTENT_URL.toURI(), StandardCharsets.UTF_8);
+        final String contents = readString(CONTENT_URL);
         final JsonObject json = new JsonParser().parse(contents).getAsJsonObject();
         return FlutterSurvey.fromJson(json);
       }
-      catch (URISyntaxException | IOException | JsonSyntaxException e) {
+      catch (IOException | JsonSyntaxException e) {
         // Null content is OK in case of a transient exception.
       }
     }
     return null;
+  }
+
+  private static String readString(URL url) throws IOException {
+    try (final InputStream in = url.openStream()) {
+      final BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+      return reader.lines().collect(Collectors.joining(System.lineSeparator()));
+    }
   }
 }
