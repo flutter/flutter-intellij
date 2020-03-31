@@ -42,6 +42,6 @@ public class FlutterSurvey {
 
   boolean isSurveyOpen() {
     final LocalDate now = LocalDate.now();
-    return now.isAfter(startDate) && now.isBefore(endDate);
+    return (now.isEqual(startDate) || now.isAfter(startDate)) && now.isBefore(endDate);
   }
 }
