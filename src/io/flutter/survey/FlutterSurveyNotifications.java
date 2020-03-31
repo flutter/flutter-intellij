@@ -24,9 +24,6 @@ import io.flutter.FlutterMessages;
 import io.flutter.pub.PubRoot;
 import org.jetbrains.annotations.NotNull;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -34,41 +31,22 @@ import java.util.concurrent.TimeUnit;
 public class FlutterSurveyNotifications {
   private static final int NOTIFICATION_DELAY_IN_SECS = 3;
 
-  private static final String FLUTTER_LAST_SURVEY_CHECK_KEY = "FLUTTER_LAST_SURVEY_CHECK_KEY";
-  private static final long CHECK_INTERVAL_IN_MS = TimeUnit.HOURS.toMillis(40);
+  private static final String FLUTTER_LAST_SURVEY_PROMPT_KEY = "FLUTTER_LAST_SURVEY_PROMPT_KEY";
+  private static final long PROMPT_INTERVAL_IN_MS = TimeUnit.HOURS.toMillis(40);
 
   private static final String SURVEY_ACTION_TEXT = "Take survey";
-  private static final String SURVEY_TITLE = "Help improve Flutter! Take our Q1 survey.";
+  private static final String SURVEY_DISMISSAL_TEXT = "No thanks";
 
   private static final String ANALYTICS_OPT_IN_DETAILS =
     "By clicking on this link you agree to share feature usage along with the survey responses.";
 
-  private static final String SURVEY_TAKEN = "io.flutter.survey.2020.q1.alreadyTaken";
-  private static final String SURVEY_PREFIX = "https://google.qualtrics.com/jfe/form/SV_6YBXYxIR69pgpr7";
-  private static final String SURVEY_URL = SURVEY_PREFIX + "?Source=IntelliJ";
-
-  private static long SURVEY_START_MS_EPOCH;
-  private static long SURVEY_END_MS_EPOCH;
-
-  static {
-    final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-    dateFormat.setTimeZone(TimeZone.getTimeZone("PST"));
-    try {
-      SURVEY_START_MS_EPOCH = dateFormat.parse("2020/03/03 9:00").getTime();
-      SURVEY_END_MS_EPOCH = dateFormat.parse("2020/03/10 9:00").getTime();
-    }
-    catch (ParseException e) {
-      // Shouldn't happen.
-    }
-  }
-
-  private static boolean isSurveyOpen() {
-    final long now = System.currentTimeMillis();
-    return now >= SURVEY_START_MS_EPOCH && now <= SURVEY_END_MS_EPOCH;
-  }
-
   interface FlutterSurveyNotifier {
     void prompt();
+  }
+  @NotNull final Project myProject;
+
+  FlutterSurveyNotifications(@NotNull Project project) {
+    this.myProject = project;
   }
 
   public static void init(@NotNull Project project) {
@@ -94,26 +72,23 @@ public class FlutterSurveyNotifications {
     });
   }
 
-  @NotNull final Project myProject;
-
-  FlutterSurveyNotifications(@NotNull Project project) {
-    this.myProject = project;
-  }
-
   private void checkForDisplaySurvey() {
+    final FlutterSurvey survey = FlutterSurveyService.getLatestSurveyContent();
+    if (survey == null) return;
+
     // Limit display to the survey window.
-    if (!isSurveyOpen()) return;
+    if (!survey.isSurveyOpen()) return;
 
     final PropertiesComponent properties = PropertiesComponent.getInstance();
 
     // Don't prompt more often than every 40 hours.
-    final long lastCheckedMillis = properties.getOrInitLong(FLUTTER_LAST_SURVEY_CHECK_KEY, 0);
-    if (System.currentTimeMillis() - lastCheckedMillis < CHECK_INTERVAL_IN_MS) return;
+    final long lastPromptedMillis = properties.getOrInitLong(FLUTTER_LAST_SURVEY_PROMPT_KEY, 0);
+    if (System.currentTimeMillis() - lastPromptedMillis < PROMPT_INTERVAL_IN_MS) return;
 
-    properties.setValue(FLUTTER_LAST_SURVEY_CHECK_KEY, String.valueOf(System.currentTimeMillis()));
+    properties.setValue(FLUTTER_LAST_SURVEY_PROMPT_KEY, String.valueOf(System.currentTimeMillis()));
 
     // Or, if the survey has already been taken.
-    if (properties.getBoolean(SURVEY_TAKEN)) return;
+    if (properties.getBoolean(survey.uniqueId)) return;
 
     final boolean reportAnalytics = FlutterInitializer.getCanReportAnalytics();
     final String notificationContents = reportAnalytics ?
@@ -122,20 +97,21 @@ public class FlutterSurveyNotifications {
     final Notification notification = new Notification(
       FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
       FlutterIcons.Flutter,
-      SURVEY_TITLE,
+      survey.title,
       null,
       notificationContents,
       NotificationType.INFORMATION,
       null
     );
 
+    //noinspection DialogTitleCapitalization
     notification.addAction(new AnAction(SURVEY_ACTION_TEXT) {
       @Override
       public void actionPerformed(@NotNull AnActionEvent event) {
-        properties.setValue(SURVEY_TAKEN, true);
+        properties.setValue(survey.uniqueId, true);
         notification.expire();
 
-        String url = SURVEY_URL;
+        String url = survey.urlPrefix + "?Source=IntelliJ";
         // Add a client ID if analytics have been opted into.
         if (reportAnalytics) {
           final String clientId = FlutterInitializer.getAnalytics().getClientId();
@@ -145,10 +121,12 @@ public class FlutterSurveyNotifications {
         BrowserUtil.browse(url);
       }
     });
-    notification.addAction(new AnAction("No thanks") {
+
+    //noinspection DialogTitleCapitalization
+    notification.addAction(new AnAction(SURVEY_DISMISSAL_TEXT) {
       @Override
       public void actionPerformed(@NotNull AnActionEvent event) {
-        properties.setValue(SURVEY_TAKEN, true);
+        properties.setValue(survey.uniqueId, true);
         notification.expire();
       }
     });
