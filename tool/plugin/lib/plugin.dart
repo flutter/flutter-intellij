@@ -742,7 +742,10 @@ class BuildCommand extends ProductCommand {
             'Collections.emptyList()',
           );
           processedFile.writeAsStringSync(source);
-        } else if (!spec.version.startsWith('4.1')) {
+
+        }
+        if (!spec.version.startsWith('4.1')) {
+
           processedFile = File(
               'src/io/flutter/utils/AndroidUtils.java');
           source = processedFile.readAsStringSync();

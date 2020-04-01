@@ -10,7 +10,7 @@
       "dartPluginVersion": "192.7761",
       "sinceBuild": "192.7142",
       "untilBuild": "192.*",
-      "filesToIgnore:": ["io/flutter/utils/AndroidLocationProvider"]
+      "filesToSkip": ["src/main/java/io/flutter/utils/AndroidLocationProvider.java"]
     },
     {
       "channel": "stable",
@@ -22,7 +22,7 @@
       "dartPluginVersion": "193.6494.35",
       "sinceBuild": "193.3519.25",
       "untilBuild": "193.*",
-      "filesToIgnore:": ["io/flutter/utils/AndroidLocationProvider"]
+      "filesToSkip": ["src/main/java/io/flutter/utils/AndroidLocationProvider.java"]
     },
     {
       "channel": "stable",
@@ -34,7 +34,7 @@
       "dartPluginVersion": "201.6668.22",
       "sinceBuild": "201.6668.13",
       "untilBuild": "201.*",
-      "filesToIgnore:": ["io/flutter/utils/AndroidLocationProvider"]
+      "filesToSkip": ["src/main/java/io/flutter/utils/AndroidLocationProvider.java"]
     },
     {
       "channel": "dev",
