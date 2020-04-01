@@ -1,3 +1,18 @@
+# 45.0
+- Add support for 'flutter pub outdated' (#4444)
+- Improve how we calculate when to summarize flutter errors (#4447)
+- Fix an issue with discovering hyperlinks in test consoles (#4443)
+- Delete unused redundant test (#4438)
+- Fix an NPE in CommonTestConfigUtils.java (#4437)
+- Revive GUI test NewProjectTest (#4434)
+- Fix link to Flutter docs (#4435)
+- Revive the GUI test NewModuleTest (#4432)
+- Build for AS 4.1; start fixing integration tests (#4428)
+- Fix API incompatibilities (#4423)
+- Remove an unused flutter command (#4415)
+- No longer depend on JBRunnerTabs implementing Disposable (#4406)
+- Ensure indexing is finished before updating library model (#4409)
+
 # 44.0
 - Use --project-name in flutter create (#4389)
 - Check for disposed project (#4391)

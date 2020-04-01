@@ -23,7 +23,6 @@
     <orderEntry type="module" module-name="intellij.android.adt.ui.model" />
     <orderEntry type="module" module-name="intellij.android.observable" />
     <orderEntry type="module" module-name="intellij.android.observable.ui" />
-    <orderEntry type="module" module-name="Dart-community" />
     <orderEntry type="module" module-name="intellij.platform.ide" />
     <orderEntry type="module" module-name="intellij.platform.lang" />
     <orderEntry type="module" module-name="intellij.platform.lang.impl" />
@@ -57,5 +56,7 @@
     <orderEntry type="module" module-name="intellij.platform.serviceContainer" />
     <orderEntry type="module" module-name="fest-swing" />
     <orderEntry type="module" module-name="android.sdktools.testutils" />
+    <orderEntry type="module" module-name="intellij.android.gradle.dsl" />
+    <orderEntry type="module" module-name="intellij.android.projectSystem.gradle.psd" />
   </component>
 </module>

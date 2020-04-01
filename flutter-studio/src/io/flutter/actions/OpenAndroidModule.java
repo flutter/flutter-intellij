@@ -23,7 +23,7 @@ import org.jetbrains.plugins.gradle.util.GradleConstants;
 
 import java.awt.event.InputEvent;
 
-import static com.android.tools.idea.gradle.project.ProjectImportUtil.findImportTarget;
+import static com.android.tools.idea.gradle.project.ProjectImportUtil.findGradleTarget;
 import static com.intellij.ide.impl.ProjectUtil.*;
 import static com.intellij.openapi.fileChooser.impl.FileChooserUtil.setLastOpenedFile;
 
@@ -58,7 +58,7 @@ public class OpenAndroidModule extends OpenInAndroidStudioAction implements Dumb
                                           boolean forceOpenInNewFrame) {
     // This is very similar to AndroidOpenFileAction.openOrImportProject().
     if (canImportAsGradleProject(projectFile)) {
-      VirtualFile target = findImportTarget(projectFile);
+      VirtualFile target = findGradleTarget(projectFile);
       if (target != null) {
         Project[] openProjects = ProjectManager.getInstance().getOpenProjects();
         if (openProjects.length > 0) {
@@ -97,7 +97,7 @@ public class OpenAndroidModule extends OpenInAndroidStudioAction implements Dumb
   }
 
   public static boolean canImportAsGradleProject(@NotNull VirtualFile importSource) {
-    VirtualFile target = findImportTarget(importSource);
+    VirtualFile target = findGradleTarget(importSource);
     return target != null && GradleConstants.EXTENSION.equals(target.getExtension());
   }
 }
