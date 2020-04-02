@@ -20,6 +20,7 @@ import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -78,6 +79,7 @@ public class ActiveEditorsOutlineServiceTest {
   // below mock out the behavior by notifying the Flutter Dart Analysis Server's listeners of changes when the DAS should do this.
 
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void notifiesWhenOutlinesChange() throws Exception {
     assertThat(listener.outlineChanged.keySet(), not(hasItem(mainPath)));
     assertThat(listener.outlineChanged.get(mainPath), equalTo(null));
@@ -107,6 +109,7 @@ public class ActiveEditorsOutlineServiceTest {
   }
 
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void notifiesOutlineChangedWhenOpeningAndClosingFiles() throws Exception {
     assertThat(listener.outlineChanged.keySet(), not(hasItem(mainPath)));
     assertThat(listener.outlineChanged.get(mainPath), equalTo(null));
@@ -149,6 +152,7 @@ public class ActiveEditorsOutlineServiceTest {
   }
 
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void getIfUpdatedDeterminesOutlineValidity() throws Exception {
     Testing.runOnDispatchThread(() -> {
       innerFixture.openFileInEditor(mainFile.getVirtualFile());

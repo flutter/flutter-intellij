@@ -9,8 +9,7 @@
       "ideaVersion": "192.6200805",
       "dartPluginVersion": "192.7761",
       "sinceBuild": "192.7142",
-      "untilBuild": "192.*",
-      "filesToSkip": ["src/main/java/io/flutter/utils/AndroidLocationProvider.java"]
+      "untilBuild": "192.*"
     },
     {
       "channel": "stable",
@@ -21,8 +20,7 @@
       "ideaVersion": "193.6220182",
       "dartPluginVersion": "193.6494.35",
       "sinceBuild": "193.3519.25",
-      "untilBuild": "193.*",
-      "filesToSkip": ["src/main/java/io/flutter/utils/AndroidLocationProvider.java"]
+      "untilBuild": "193.*"
     },
     {
       "channel": "stable",
@@ -30,11 +28,10 @@
       "name": "IntelliJ 2020.1",
       "version": "2020.1",
       "ideaProduct": "ideaIC",
-      "ideaVersion": "201.6668.13",
+      "ideaVersion": "201.6668.60",
       "dartPluginVersion": "201.6668.22",
       "sinceBuild": "201.6668.13",
-      "untilBuild": "201.*",
-      "filesToSkip": ["src/main/java/io/flutter/utils/AndroidLocationProvider.java"]
+      "untilBuild": "201.*"
     },
     {
       "channel": "dev",
@@ -46,7 +43,8 @@
       "ideaVersion": "193.6325121",
       "dartPluginVersion": "193.6494.35",
       "sinceBuild": "193.6494.35.41.*",
-      "untilBuild": "193.*"
+      "untilBuild": "193.*",
+      "filesToSkip": ["src/main/java/io/flutter/utils/AndroidLocationProvider.java"]
     }
   ]
 }

@@ -26,6 +26,7 @@ import io.flutter.testing.FakeActiveEditorsOutlineService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -54,6 +55,7 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
   }
 
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void producesFileConfigurationInsideABazelWorkspace() throws Exception {
     run(() -> {
       // Set up the configuration producer.
@@ -71,6 +73,7 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
   }
 
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void producesTestNameConfigurationInsideABazelWorkspace() throws Exception {
     run(() -> {
       // Set up the configuration producer.
@@ -89,6 +92,7 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
 
 
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void producesNoConfigurationOutsideABazelWorkspace() throws Exception {
     run(() -> {
       // Set up the configuration producer.
@@ -106,6 +110,7 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
   }
 
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void producesNoConfigurationWithAnInvalidTestFile() throws Exception {
     run(() -> {
       // Set up the configuration producer.

@@ -747,16 +747,6 @@ class BuildCommand extends ProductCommand {
         if (!spec.version.startsWith('4.1')) {
 
           processedFile = File(
-              'src/io/flutter/utils/AndroidUtils.java');
-          source = processedFile.readAsStringSync();
-          files[processedFile] = source;
-          source = source.replaceAll(
-            'import com.android.tools.idea.gradle.dsl.model.BuildModelContext;',
-            'import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;',
-          );
-          processedFile.writeAsStringSync(source);
-
-          processedFile = File(
               'flutter-studio/src/io/flutter/actions/FlutterShowStructureSettingsAction.java');
           source = processedFile.readAsStringSync();
           files[processedFile] = source;
@@ -775,6 +765,19 @@ class BuildCommand extends ProductCommand {
             'findImportTarget',
           );
           processedFile.writeAsStringSync(source);
+
+        } else {
+
+          processedFile = File(
+              'src/io/flutter/utils/AndroidUtils.java');
+          source = processedFile.readAsStringSync();
+          files[processedFile] = source;
+          source = source.replaceAll(
+            'import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;',
+            'import com.android.tools.idea.gradle.dsl.model.BuildModelContext;',
+          );
+          processedFile.writeAsStringSync(source);
+
         }
       } catch (ex) {
         // Restore sources.
