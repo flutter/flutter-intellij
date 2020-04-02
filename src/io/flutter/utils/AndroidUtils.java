@@ -377,10 +377,41 @@ public class AndroidUtils {
       return null;
     }
     try {
-      return (GradleSettingsFile)method.invoke(BuildModelContext.create(project), param);
+      return (GradleSettingsFile)method.invoke(makeBuildModelContext(project), param);
     }
     catch (InvocationTargetException | IllegalAccessException e) {
       return null;
+    }
+  }
+
+  @SuppressWarnings("rawtypes")
+  private static BuildModelContext makeBuildModelContext(Project project) {
+    // return BuildModelContext.create(project);
+    Method method = ReflectionUtil.getDeclaredMethod(BuildModelContext.class, "create", Project.class);
+    if (method != null) {
+      try {
+        return (BuildModelContext)method.invoke(project);
+      }
+      catch (IllegalAccessException | InvocationTargetException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    // If we get here we're using the 4.1 API.
+    // return BuildModelContext.create(project, new AndroidLocationProvider());
+    Class locationProviderClass;
+    try {
+      locationProviderClass = Class.forName("com.android.tools.idea.gradle.dsl.model.BuildModelContext.ResolvedConfigurationFileLocationProvider");
+    }
+    catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+    method = ReflectionUtil.getDeclaredMethod(BuildModelContext.class, "create", Project.class, locationProviderClass);
+    assert method != null;
+    try {
+      return (BuildModelContext)method.invoke(project, new AndroidLocationProvider());
+    }
+    catch (IllegalAccessException | InvocationTargetException e) {
+      throw new RuntimeException(e);
     }
   }
 

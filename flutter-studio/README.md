@@ -35,6 +35,9 @@ Configure IntelliJ as you would for Flutter plugin development,
 then import the flutter-studio plugin and add it as a dependent on
 the Flutter plugin.
 
+The Android Studio repository has some documentation.
+prebuilts/tools/common/lint-psi/README
+
 TODO: Update instructions for running GUI tests.
 
 Modify auto-generated run config:

@@ -13,7 +13,7 @@
 
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
-  <idea-version since-build="191.8026" until-build="193.*"/>
+  <idea-version since-build="192.7142" until-build="193.*"/>
 
   <depends>Dart</depends>
 
@@ -29,6 +29,22 @@
 
   <change-notes>
     <![CDATA[
+<h1>45.0</h1>
+<ul>
+  <li>Add support for 'flutter pub outdated' (#4444)</li>
+  <li>Improve how we calculate when to summarize flutter errors (#4447)</li>
+  <li>Fix an issue with discovering hyperlinks in test consoles (#4443)</li>
+  <li>Delete unused redundant test (#4438)</li>
+  <li>Fix an NPE in CommonTestConfigUtils.java (#4437)</li>
+  <li>Revive GUI test NewProjectTest (#4434)</li>
+  <li>Fix link to Flutter docs (#4435)</li>
+  <li>Revive the GUI test NewModuleTest (#4432)</li>
+  <li>Build for AS 4.1; start fixing integration tests (#4428)</li>
+  <li>Fix API incompatibilities (#4423)</li>
+  <li>Remove an unused flutter command (#4415)</li>
+  <li>No longer depend on JBRunnerTabs implementing Disposable (#4406)</li>
+  <li>Ensure indexing is finished before updating library model (#4409)</li>
+</ul>
 <h1>44.0</h1>
 <ul>
   <li>Use --project-name in flutter create (#4389)</li>

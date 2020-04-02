@@ -5,7 +5,7 @@
  */
 package io.flutter.actions;
 
-import com.android.tools.idea.gradle.actions.AndroidShowStructureSettingsAction;
+import com.android.tools.idea.gradle.structure.actions.AndroidShowStructureSettingsAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import io.flutter.utils.FlutterModuleUtils;
