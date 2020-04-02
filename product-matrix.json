@@ -42,7 +42,7 @@
       "ideaProduct": "android-studio",
       "ideaVersion": "193.6325121",
       "dartPluginVersion": "193.6494.35",
-      "sinceBuild": "193.6494.35.41.*",
+      "sinceBuild": "193.6494.35",
       "untilBuild": "193.*",
       "filesToSkip": ["src/main/java/io/flutter/utils/AndroidLocationProvider.java"]
     }
