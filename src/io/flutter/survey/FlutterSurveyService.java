@@ -9,68 +9,57 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.util.io.HttpRequests;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class FlutterSurveyService {
   private static final String FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY = "FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY";
   private static final long CHECK_INTERVAL_IN_MS = TimeUnit.HOURS.toMillis(40);
+  private static final String CONTENT_URL = "https://flutter.dev/f/flutter-survey-metadata.json";
   private static final PropertiesComponent properties = PropertiesComponent.getInstance();
   private static final Logger LOG = Logger.getInstance(FlutterSurveyService.class);
-  private static URL CONTENT_URL;
   private static FlutterSurvey cachedSurvey;
 
-  static {
-    try {
-      CONTENT_URL = new URL("https://flutter.dev/f/flutter-survey-metadata.json");
-    }
-    catch (MalformedURLException e) {
-      // Shouldn't happen.
-    }
-  }
 
   private static boolean timeToUpdateCachedContent() {
-    // Don't check more often than once a day.
+    // Don't check more often than daily.
+    final long currentTimeMillis = System.currentTimeMillis();
     final long lastCheckedMillis = properties.getOrInitLong(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, 0);
-    return System.currentTimeMillis() - lastCheckedMillis >= CHECK_INTERVAL_IN_MS;
+    final boolean timeToUpdateCache = currentTimeMillis - lastCheckedMillis >= CHECK_INTERVAL_IN_MS;
+    if (timeToUpdateCache) {
+      properties.setValue(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, String.valueOf(currentTimeMillis));
+      return true;
+    }
+    return false;
   }
 
+  @Nullable
   static FlutterSurvey getLatestSurveyContent() {
-    if (timeToUpdateCachedContent() || cachedSurvey == null) {
-      cachedSurvey = fetchSurveyContent();
+    if (timeToUpdateCachedContent()) {
+      // This async call will set the survey cache when content is fetched.  (It's important that we not block the UI thread.)
+      // The fetched content will get picked up in a subsequent call (on editor open or tab change).
+      ApplicationManager.getApplication().executeOnPooledThread(() -> {
+        cachedSurvey = fetchSurveyContent();
+      });
     }
     return cachedSurvey;
   }
 
   @Nullable
   private static FlutterSurvey fetchSurveyContent() {
-    if (CONTENT_URL != null) {
-      try {
-        final String contents = readString(CONTENT_URL);
-        final JsonObject json = new JsonParser().parse(contents).getAsJsonObject();
-        return FlutterSurvey.fromJson(json);
-      }
-      catch (IOException | JsonSyntaxException e) {
-        // Null content is OK in case of a transient exception.
-      }
+    try {
+      final String contents = HttpRequests.request(CONTENT_URL).readString();
+      final JsonObject json = new JsonParser().parse(contents).getAsJsonObject();
+      return FlutterSurvey.fromJson(json);
+    }
+    catch (IOException | JsonSyntaxException e) {
+      // Null content is OK in case of a transient exception.
     }
     return null;
-  }
-
-  private static String readString(URL url) throws IOException {
-    try (final InputStream in = url.openStream()) {
-      final BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-      return reader.lines().collect(Collectors.joining(System.lineSeparator()));
-    }
   }
 }
