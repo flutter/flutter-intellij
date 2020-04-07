@@ -32,6 +32,7 @@ public class FlutterSurveyService {
     return System.currentTimeMillis() - lastCheckedMillis >= CHECK_INTERVAL_IN_MS;
   }
 
+  @Nullable
   static FlutterSurvey getLatestSurveyContent() {
     // Update the cache daily.
     if (timeToUpdateCachedContent()) {
