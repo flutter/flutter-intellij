@@ -1,3 +1,8 @@
+# 45.1
+- Automatically re-import add-to-app module when host app is opened for the first time (#4479)
+- Harden survey checking network access (#4469)
+- Restore missing Attach Debugger action (#4468)
+
 # 45.0
 - Add support for 'flutter pub outdated' (#4444)
 - Improve how we calculate when to summarize flutter errors (#4447)

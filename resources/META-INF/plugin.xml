@@ -29,6 +29,12 @@
 
   <change-notes>
     <![CDATA[
+<h1>45.1</h1>
+<ul>
+  <li>Automatically re-import add-to-app module when host app is opened for the first time (#4479)</li>
+  <li>Harden survey checking network access (#4469)</li>
+  <li>Restore missing Attach Debugger action (#4468)</li>
+</ul>
 <h1>45.0</h1>
 <ul>
   <li>Add support for 'flutter pub outdated' (#4444)</li>
