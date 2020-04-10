@@ -17,6 +17,7 @@ import com.android.tools.idea.gradle.project.sync.GradleSyncState;
 import com.android.tools.idea.gradle.util.GradleUtil;
 import com.intellij.lang.java.JavaParserDefinition;
 import com.intellij.lexer.Lexer;
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalProjectInfo;
@@ -63,6 +64,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.gradle.settings.GradleProjectSettings;
@@ -247,17 +249,14 @@ public class AndroidUtils {
     Map<ProjectData, MultiMap<String, String>> tasks = getTasksMap(project);
     @NotNull String projectName = project.getName();
     for (ProjectData projectData : tasks.keySet()) {
-      String dataName = projectData.getExternalName();
-      if (projectName.equals(dataName)) {
-        MultiMap<String, String> map = tasks.get(projectData);
-        Collection<String> col = map.get(FLUTTER_PROJECT_NAME);
-        if (col.isEmpty()) {
-          col = map.get(""); // Android Studio uses this.
-        }
-        if (!col.isEmpty()) {
-          if (col.parallelStream().anyMatch((x) -> x.startsWith(FLUTTER_TASK_PREFIX))) {
-            ApplicationManager.getApplication().invokeLater(() -> enableCoEditing(project));
-          }
+      MultiMap<String, String> map = tasks.get(projectData);
+      Collection<String> col = map.get(FLUTTER_PROJECT_NAME);
+      if (col.isEmpty()) {
+        col = map.get(""); // Android Studio uses this.
+      }
+      if (!col.isEmpty()) {
+        if (col.parallelStream().anyMatch((x) -> x.startsWith(FLUTTER_TASK_PREFIX))) {
+          ApplicationManager.getApplication().invokeLater(() -> enableCoEditing(project));
         }
       }
     }
