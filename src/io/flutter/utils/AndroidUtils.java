@@ -9,7 +9,7 @@ import static com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil.get
 import static com.intellij.openapi.util.text.StringUtil.isNotEmpty;
 import static java.util.Objects.requireNonNull;
 
-import com.android.tools.idea.gradle.dsl.model.BuildModelContext;
+import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;
 import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslElement;
 import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslLiteral;
 import com.android.tools.idea.gradle.dsl.parser.files.GradleSettingsFile;
@@ -45,7 +45,6 @@ import com.intellij.util.containers.WeakList;
 import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import io.flutter.FlutterUtils;
 import io.flutter.android.GradleSyncProvider;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -64,7 +63,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.gradle.settings.GradleProjectSettings;
@@ -390,7 +388,7 @@ public class AndroidUtils {
     Method method = ReflectionUtil.getDeclaredMethod(BuildModelContext.class, "create", Project.class);
     if (method != null) {
       try {
-        return (BuildModelContext)method.invoke(project);
+        return (BuildModelContext)method.invoke(null, project);
       }
       catch (IllegalAccessException | InvocationTargetException e) {
         throw new RuntimeException(e);
@@ -398,17 +396,13 @@ public class AndroidUtils {
     }
     // If we get here we're using the 4.1 API.
     // return BuildModelContext.create(project, new AndroidLocationProvider());
-    Class locationProviderClass;
-    try {
-      locationProviderClass = Class.forName("com.android.tools.idea.gradle.dsl.model.BuildModelContext.ResolvedConfigurationFileLocationProvider");
-    }
-    catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
+    Class locationProviderClass = AndroidLocationProvider.class.getInterfaces()[0];
+    // Class.forName("com.android.tools.idea.gradle.dsl.model.BuildModelContext.ResolvedConfigurationFileLocationProvider");
+    // does not work in the debugger. That's why we get it from the interfaces of AndroidLocationProvider.
     method = ReflectionUtil.getDeclaredMethod(BuildModelContext.class, "create", Project.class, locationProviderClass);
     assert method != null;
     try {
-      return (BuildModelContext)method.invoke(project, new AndroidLocationProvider());
+      return (BuildModelContext)method.invoke(null, project, new AndroidLocationProvider());
     }
     catch (IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);
@@ -419,9 +413,9 @@ public class AndroidUtils {
   private static void enableCoEditing(@NotNull Project project) {
     Module module = FlutterUtils.findFlutterGradleModule(project);
     if (module == null) return;
-    VirtualFile moduleFile = module.getModuleFile();
-    if (moduleFile == null) return;
-    VirtualFile androidDir = moduleFile.getParent().getParent();
+    VirtualFile root = FlutterUtils.locateModuleRoot(module);
+    if (root == null) return;
+    VirtualFile androidDir = root.getParent();
     VirtualFile flutterModuleDir = androidDir.getParent();
     String flutterModuleName = flutterModuleDir.getName();
     if (!isVanillaAddToApp(project, androidDir, flutterModuleName)) return;

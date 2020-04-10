@@ -22,6 +22,9 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.ModuleSourceOrderEntry;
+import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -33,7 +36,14 @@ import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRootCache;
+import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.regex.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.SystemIndependent;
@@ -43,13 +53,6 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.resolver.Resolver;
-
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.regex.Pattern;
 
 public class FlutterUtils {
   public static class FlutterPubspecInfo {
@@ -498,25 +501,53 @@ public class FlutterUtils {
     return null;
   }
 
+  public static String flutterGradleModuleName(Project project) {
+    return project.getName().replaceAll(" ", "_") + "." + AndroidUtils.FLUTTER_MODULE_NAME;
+  }
+
   @Nullable
   public static Module findFlutterGradleModule(@NotNull Project project) {
-    Module module = findModuleNamed(project, "flutter");
+    String moduleName = AndroidUtils.FLUTTER_MODULE_NAME;
+    Module module = findModuleNamed(project, moduleName);
     if (module == null) {
+      moduleName = flutterGradleModuleName(project);
+      module = findModuleNamed(project, moduleName);
+      if (module == null) {
+        return null;
+      }
+    }
+    VirtualFile file = locateModuleRoot(module);
+    if (file == null) {
       return null;
     }
-    if (module.getModuleFilePath().endsWith(".android/Flutter/flutter.iml")) {
-      VirtualFile file = module.getModuleFile();
-      if (file == null) {
-        return null;
-      }
-      file = file.getParent().getParent().getParent();
-      VirtualFile meta = file.findChild(".metadata");
-      if (meta == null) {
-        return null;
-      }
-      VirtualFile android = getFlutterManagedAndroidDir(meta.getParent());
-      if (android != null && android.getName().equals(".android")) {
-        return module; // Only true for Flutter modules.
+    file = file.getParent().getParent();
+    VirtualFile meta = file.findChild(".metadata");
+    if (meta == null) {
+      return null;
+    }
+    VirtualFile android = getFlutterManagedAndroidDir(meta.getParent());
+    if (android != null && android.getName().equals(".android")) {
+      return module; // Only true for Flutter modules.
+    }
+    return null;
+  }
+
+  @Nullable
+  public static VirtualFile locateModuleRoot(@NotNull Module module) {
+    ModuleSourceOrderEntry entry = findModuleSourceEntry(module);
+    if (entry == null) return null;
+    VirtualFile[] roots = entry.getRootModel().getContentRoots();
+    if (roots.length == 0) return null;
+    return roots[0];
+  }
+
+  @Nullable
+  private static ModuleSourceOrderEntry findModuleSourceEntry(@NotNull Module module) {
+    ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
+    OrderEntry[] orderEntries = moduleRootManager.getOrderEntries();
+    for (OrderEntry entry : orderEntries) {
+      if (entry instanceof ModuleSourceOrderEntry) {
+        return (ModuleSourceOrderEntry)entry;
       }
     }
     return null;

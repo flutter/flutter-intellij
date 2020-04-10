@@ -29,6 +29,7 @@ import com.intellij.util.ThreeState;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.messages.Topic;
+import io.flutter.FlutterUtils;
 import io.flutter.actions.AttachDebuggerAction;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.SdkRunConfig;
@@ -58,7 +59,8 @@ public class AddToAppUtils {
       connection.subscribe(ProjectTopics.MODULES, new ModuleListener() {
         @Override
         public void moduleAdded(@NotNull Project proj, @NotNull Module mod) {
-          if (AndroidUtils.FLUTTER_MODULE_NAME.equals(mod.getName())) {
+          if (AndroidUtils.FLUTTER_MODULE_NAME.equals(mod.getName()) ||
+              (FlutterUtils.flutterGradleModuleName(project)).equals(mod.getName())) {
             //connection.disconnect(); TODO(messick) Test this deletion!
             AppExecutorUtil.getAppExecutorService().execute(() -> {
               AndroidUtils.enableCoeditIfAddToAppDetected(project);
