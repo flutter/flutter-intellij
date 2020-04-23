@@ -178,8 +178,7 @@ public class BazelTestFields {
    */
   @NotNull
   GeneralCommandLine getLaunchCommand(@NotNull final Project project,
-                                      @NotNull final RunMode mode)
-    throws ExecutionException {
+                                      @NotNull final RunMode mode) throws ExecutionException {
     try {
       checkRunnable(project);
     }

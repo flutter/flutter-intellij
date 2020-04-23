@@ -12,6 +12,7 @@ import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import icons.FlutterIcons;
 import io.flutter.run.FlutterRunConfigurationType;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -19,8 +20,8 @@ import org.jetbrains.annotations.NotNull;
  */
 public class FlutterTestConfigType extends ConfigurationTypeBase {
   protected FlutterTestConfigType() {
-    super("FlutterTestConfigType", "Flutter Test",
-          "description", FlutterIcons.Flutter_test);
+    super("FlutterTestConfigType", "Flutter Test", "description", FlutterIcons.Flutter_test);
+
     addFactory(new Factory(this));
   }
 
@@ -31,6 +32,13 @@ public class FlutterTestConfigType extends ConfigurationTypeBase {
   private static class Factory extends ConfigurationFactory {
     public Factory(FlutterTestConfigType type) {
       super(type);
+    }
+
+    @NotNull
+    @Override
+    @NonNls
+    public String getId() {
+      return "Flutter Test";
     }
 
     @NotNull

@@ -151,10 +151,10 @@ public class BazelFields {
     }
 
     final String launchScript = getLaunchScriptFromWorkspace(project);
-
     if (launchScript == null) {
       throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noLaunchingScript"));
     }
+
     final VirtualFile scriptFile = LocalFileSystem.getInstance().findFileByPath(launchScript);
     if (scriptFile == null) {
       throw new RuntimeConfigurationError(
@@ -296,7 +296,6 @@ public class BazelFields {
 
     return commandLine;
   }
-
 
   public void writeTo(Element element) {
     ElementIO.addOption(element, "bazelTarget", bazelTarget);

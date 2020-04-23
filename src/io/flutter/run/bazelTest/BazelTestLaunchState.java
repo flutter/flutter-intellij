@@ -45,8 +45,10 @@ public class BazelTestLaunchState extends CommandLineState {
 
   protected BazelTestLaunchState(ExecutionEnvironment env, @NotNull BazelTestConfig config, @Nullable VirtualFile testFile) {
     super(env);
+
     this.config = config;
     this.fields = config.getFields();
+
     if (testFile == null) {
       final Workspace workspace = WorkspaceCache.getInstance(env.getProject()).get();
       assert (workspace != null);
