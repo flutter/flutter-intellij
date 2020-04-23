@@ -241,7 +241,6 @@ public class BazelTestRunner extends GenericProgramRunner {
   }
 
   private static final class BazelPositionMapper extends FlutterPositionMapper {
-
     @NotNull final Connector connector;
 
     public BazelPositionMapper(@NotNull final Project project,
@@ -268,7 +267,7 @@ public class BazelTestRunner extends GenericProgramRunner {
       int workspaceEndOffset = filePath.lastIndexOf(workspaceDirName + "/");
       if (workspaceEndOffset != -1) {
         workspaceEndOffset += workspaceDirName.length();
-        results.add(workspaceDirName + "://" + filePath.substring(workspaceEndOffset, filePath.length()));
+        results.add(workspaceDirName + "://" + filePath.substring(workspaceEndOffset));
       }
       return results;
     }
@@ -286,7 +285,7 @@ public class BazelTestRunner extends GenericProgramRunner {
       // uri then return the super invocation of this method. This prevents the unknown URI type from being passed to the analysis server.
       if (StringUtils.isEmpty(workspaceDirName) || !uri.startsWith(workspaceDirName + ":/")) return super.findLocalFile(uri);
 
-      final String pathFromWorkspace = uri.substring(workspaceDirName.length() + 1, uri.length());
+      final String pathFromWorkspace = uri.substring(workspaceDirName.length() + 1);
 
       // For each root in each module, look for a bazel workspace path, if found attempt to compute the VirtualFile, return when found.
       return ApplicationManager.getApplication().runReadAction((Computable<VirtualFile>)() -> {
