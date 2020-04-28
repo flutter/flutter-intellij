@@ -33,7 +33,7 @@ void main() async {
   // tell the user how to generate the icons
   print('');
   print("In order to re-generate the icons, open the iOS Simulator, and "
-      "'flutter run' from the tool/icon_generator/ directory.");
+      "'flutter run' from the tool/icon_generator directory.");
 }
 
 Future<String> downloadUrl(String url) async {
