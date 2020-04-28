@@ -57,7 +57,7 @@ In order to be able to run a single test class or test method you need to do the
   VM Options to the corresponding field
 * Repeat the same with Working directory field - it must point to intellij-community/bin
 
-If running the full unit tests suite fails, check the run configuration and verify that 'Use classpath of module' is set to `flutter-intellij.test`.
+If running the full unit test suite fails, check the run configuration and verify that 'Use classpath of module' is set to `flutter-intellij.test`.
 
 ## Adding platform sources
 Sometimes browsing the source code of IntelliJ is helpful for understanding platform details that aren't documented.
