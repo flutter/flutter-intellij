@@ -14,7 +14,7 @@ import 'cupertino.dart' as cupertino;
 import 'material.dart' as material;
 
 const String root =
-    '/Users/devoncarew/projects/intellij/flutter-intellij/resources/flutter';
+    '/Users/devoncarew/projects/flutter/flutter-intellij/resources/flutter';
 
 Future main() async {
   MyIconApp app = MyIconApp(material.icons, cupertino.icons);
