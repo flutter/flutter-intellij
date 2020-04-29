@@ -336,7 +336,17 @@ public class WidgetIndentsHighlightingPass {
             // Draw horizontal line to the child.
             final VisualPosition widgetVisualPosition = editor.offsetToVisualPosition(childLine.getGuideOffset());
             final Point widgetPoint = editor.visualPositionToXY(widgetVisualPosition);
-            final int deltaX = widgetPoint.x - start.x;
+
+            final int startIdx = doc.getLineStartOffset(childLine.getLine());
+            final int endIdx = doc.getLineEndOffset(childLine.getLine());
+            int firstCharPosition = 0;
+            while (startIdx + firstCharPosition < endIdx && Character.isWhitespace(chars.charAt(startIdx + firstCharPosition))) {
+              firstCharPosition += 1;
+            }
+            final Point firstCharPoint = editor.visualPositionToXY(new VisualPosition(childLine.getLine(), firstCharPosition));
+
+            final int widgetLineStartX = min(widgetPoint.x, firstCharPoint.x);
+            final int deltaX = widgetLineStartX - start.x;
             // We add a larger amount of panding at the end of the line if the indent is larger up until a max of 6 pixels which is the max
             // amount that looks reasonable. We could remove this and always used a fixed padding.
             final int padding = max(min(abs(deltaX) / 3, 6), 2);
@@ -347,7 +357,7 @@ public class WidgetIndentsHighlightingPass {
                 start.x + 2,
                 newY + lineHeight * 0.5,
                 //start.x + charWidth  * childIndent - padding,
-                widgetPoint.x - padding,
+                widgetLineStartX - padding,
                 newY + lineHeight * 0.5
               );
             }
