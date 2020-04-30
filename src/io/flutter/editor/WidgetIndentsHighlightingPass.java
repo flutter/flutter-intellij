@@ -337,10 +337,13 @@ public class WidgetIndentsHighlightingPass {
             final VisualPosition widgetVisualPosition = editor.offsetToVisualPosition(childLine.getGuideOffset());
             final Point widgetPoint = editor.visualPositionToXY(widgetVisualPosition);
 
-            final int startIdx = doc.getLineStartOffset(childLine.getLine());
-            final int endIdx = doc.getLineEndOffset(childLine.getLine());
+            // This additional point is computed because sometimes there are other characters on a line before the widget, e.g. if a
+            // widget has been moved to a line with other code but the new outline has not been received yet (see issue #4297)
+            // We want to compute the earliest position to avoid drawing a line through any characters before the widget if they're present.
+            final int startIndex = doc.getLineStartOffset(childLine.getLine());
+            final int endIndex = doc.getLineEndOffset(childLine.getLine());
             int firstCharPosition = 0;
-            while (startIdx + firstCharPosition < endIdx && Character.isWhitespace(chars.charAt(startIdx + firstCharPosition))) {
+            while (startIndex + firstCharPosition < endIndex && Character.isWhitespace(chars.charAt(startIndex + firstCharPosition))) {
               firstCharPosition += 1;
             }
             final Point firstCharPoint = editor.visualPositionToXY(new VisualPosition(childLine.getLine(), firstCharPosition));
