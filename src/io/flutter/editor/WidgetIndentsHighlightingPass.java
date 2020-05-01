@@ -365,6 +365,10 @@ public class WidgetIndentsHighlightingPass {
               );
             }
             else {
+              // If there are other characters on the same line as the widget, avoid drawing a backwards line
+              if (widgetLineStartX != widgetPoint.x) {
+                return;
+              }
               // Edge case where we draw a backwards line to clarify
               // that the node is still a child even though the line is in
               // the wrong direction. This is mainly for debugging but could help
