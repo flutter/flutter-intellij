@@ -44,3 +44,4 @@ public class AndroidLocationProvider implements BuildModelContext.ResolvedConfig
     return projectDir.getPath();
   }
 }
+
