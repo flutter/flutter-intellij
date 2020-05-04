@@ -25,7 +25,7 @@
 
   <!-- Contributes Android Studio-specific features and implementations. -->
   <!--suppress PluginXmlValidity -->
-  <depends optional="true" config-file="studio-contribs.xml">ccom.intellij.modules.androidstudio</depends>
+  <depends optional="true" config-file="studio-contribs.xml">com.intellij.modules.androidstudio</depends>
 
   <change-notes>
     <![CDATA[
