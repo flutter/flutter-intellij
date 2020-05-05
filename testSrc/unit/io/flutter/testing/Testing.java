@@ -5,7 +5,6 @@
  */
 package io.flutter.testing;
 
-import com.intellij.idea.IdeaTestApplication;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.TransactionGuard;
@@ -22,11 +21,6 @@ import javax.swing.SwingUtilities;
  * Test utilities.
  */
 public class Testing {
-
-  static {
-    // Initialize the application.
-    IdeaTestApplication.getInstance();
-  }
 
   private Testing() {
   }

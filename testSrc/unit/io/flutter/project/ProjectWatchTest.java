@@ -9,6 +9,7 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.Testing;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -23,6 +24,7 @@ public class ProjectWatchTest {
   public final ProjectFixture fixture = Testing.makeEmptyModule();
 
   @Test
+  @Ignore
   public void shouldSendEventWhenProjectCloses() throws Exception {
     Testing.runOnDispatchThread(() -> {
       final AtomicInteger callCount = new AtomicInteger();

@@ -5,9 +5,6 @@
  */
 package io.flutter.run.bazelTest;
 
-import io.flutter.testing.ProjectFixture;
-import io.flutter.testing.Testing;
-import org.junit.Rule;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -22,9 +19,6 @@ import static org.junit.Assert.assertThat;
  */
 public class BazelTestConfigurationFactoryTest {
   final FlutterBazelTestConfigurationType type = new FlutterBazelTestConfigurationType();
-
-  @Rule
-  public ProjectFixture projectFixture = Testing.makeEmptyModule();
 
   @Test
   public void factoryIdsAreCorrect() {
