@@ -23,8 +23,8 @@ import static org.junit.Assert.assertThat;
 public class BazelTestConfigurationFactoryTest {
   final FlutterBazelTestConfigurationType type = new FlutterBazelTestConfigurationType();
 
-  @Rule
-  public ProjectFixture projectFixture = Testing.makeEmptyModule();
+  //@Rule
+  //public ProjectFixture projectFixture = Testing.makeEmptyModule();
 
   @Test
   public void factoryIdsAreCorrect() {
