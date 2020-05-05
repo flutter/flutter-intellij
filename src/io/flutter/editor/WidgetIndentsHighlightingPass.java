@@ -334,22 +334,11 @@ public class WidgetIndentsHighlightingPass {
           if (childLine != null) {
             final int childIndent = childLine.getIndent();
             // Draw horizontal line to the child.
-            final VisualPosition widgetVisualPosition = editor.offsetToVisualPosition(childLine.getGuideOffset());
+            final GuidelineOffsetDetail guidelineOffsetDetail = getGuidelineOffsetDetail(childLine, editor, doc, chars);
+            final VisualPosition widgetVisualPosition = editor.offsetToVisualPosition(guidelineOffsetDetail.textStartOffset);
             final Point widgetPoint = editor.visualPositionToXY(widgetVisualPosition);
 
-            // This additional point is computed because sometimes there are other characters on a line before the widget, e.g. if a
-            // widget has been moved to a line with other code but the new outline has not been received yet (see issue #4297)
-            // We want to compute the earliest position to avoid drawing a line through any characters before the widget if they're present.
-            final int startIndex = doc.getLineStartOffset(childLine.getLine());
-            final int endIndex = doc.getLineEndOffset(childLine.getLine());
-            int firstCharPosition = 0;
-            while (startIndex + firstCharPosition < endIndex && Character.isWhitespace(chars.charAt(startIndex + firstCharPosition))) {
-              firstCharPosition += 1;
-            }
-            final Point firstCharPoint = editor.visualPositionToXY(new VisualPosition(childLine.getLine(), firstCharPosition));
-
-            final int widgetLineStartX = min(widgetPoint.x, firstCharPoint.x);
-            final int deltaX = widgetLineStartX - start.x;
+            final int deltaX = widgetPoint.x - start.x;
             // We add a larger amount of panding at the end of the line if the indent is larger up until a max of 6 pixels which is the max
             // amount that looks reasonable. We could remove this and always used a fixed padding.
             final int padding = max(min(abs(deltaX) / 3, 6), 2);
@@ -360,13 +349,13 @@ public class WidgetIndentsHighlightingPass {
                 start.x + 2,
                 newY + lineHeight * 0.5,
                 //start.x + charWidth  * childIndent - padding,
-                widgetLineStartX - padding,
+                widgetPoint.x - padding,
                 newY + lineHeight * 0.5
               );
             }
             else {
               // If there are other characters on the same line as the widget, avoid drawing a backwards line
-              if (widgetLineStartX != widgetPoint.x) {
+              if (guidelineOffsetDetail.textStartOffset != guidelineOffsetDetail.offset) {
                 return;
               }
               // Edge case where we draw a backwards line to clarify
@@ -442,6 +431,38 @@ public class WidgetIndentsHighlightingPass {
         }
       }
       g2d.dispose();
+    }
+
+    private static class GuidelineOffsetDetail {
+      // This is the offset of the widget.
+      final int offset;
+      // This is the offset of the start of text in the line of the widget (which may differ from offset).
+      final int textStartOffset;
+
+      GuidelineOffsetDetail(int offset, int textStartOffset) {
+        this.offset = offset;
+        this.textStartOffset = textStartOffset;
+      }
+    }
+
+    private GuidelineOffsetDetail getGuidelineOffsetDetail(OutlineLocation childLine,
+                                                           Editor editor,
+                                                           Document doc,
+                                                           CharSequence chars) {
+      // This additional point is computed because sometimes there are other characters on a line before the widget, e.g. if a
+      // widget has been moved to a line with other code but the new outline has not been received yet (see issue #4297)
+      // We want to compute the earliest position to avoid drawing a line through any characters before the widget if they're present.
+      final int startIndex = doc.getLineStartOffset(childLine.getLine());
+      final int endIndex = doc.getLineEndOffset(childLine.getLine());
+      int firstCharPosition = 0;
+      while (startIndex + firstCharPosition < endIndex && Character.isWhitespace(chars.charAt(startIndex + firstCharPosition))) {
+        firstCharPosition += 1;
+      }
+
+      return new GuidelineOffsetDetail(
+        childLine.getGuideOffset(),
+        editor.logicalPositionToOffset(new LogicalPosition(childLine.getLine(), firstCharPosition))
+      );
     }
   }
 
