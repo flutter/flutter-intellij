@@ -354,7 +354,8 @@ public class WidgetIndentsHighlightingPass {
               );
             }
             else {
-              // If there are other characters on the same line as the widget, avoid drawing a backwards line
+              // If there are other characters on the same line as the widget,
+              // avoid drawing a backwards line.
               if (guidelineOffsetDetail.textStartOffset != guidelineOffsetDetail.offset) {
                 return;
               }
@@ -449,9 +450,12 @@ public class WidgetIndentsHighlightingPass {
                                                            Editor editor,
                                                            Document doc,
                                                            CharSequence chars) {
-      // This additional point is computed because sometimes there are other characters on a line before the widget, e.g. if a
-      // widget has been moved to a line with other code but the new outline has not been received yet (see issue #4297)
-      // We want to compute the earliest position to avoid drawing a line through any characters before the widget if they're present.
+      // This additional point is computed because sometimes there are other
+      // characters on a line before the widget, e.g. if a widget has been moved
+      // to a line with other code but the new outline has not been received yet
+      // (see issue #4297). We want to compute the earliest position to avoid
+      // drawing a line through any characters before the widget if they're
+      // present.
       final int startIndex = doc.getLineStartOffset(childLine.getLine());
       final int endIndex = doc.getLineEndOffset(childLine.getLine());
       int firstCharPosition = 0;
