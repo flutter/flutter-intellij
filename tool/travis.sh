@@ -60,7 +60,7 @@ elif [ "$CHECK_BOT" = true ] ; then
 elif [ "$UNIT_TEST_BOT" = true ] ; then
 
   # Run unit tests.
-  ./gradlew -s test
+  ./bin/plugin test
 
 else
 
