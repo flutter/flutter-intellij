@@ -18,6 +18,7 @@ java {
 intellij {
   // This adds nullability assertions, but also compiles forms.
   instrumentCode = true
+  updateSinceUntilBuild = false
   downloadSources false
   localPath "${project.rootDir.absolutePath}/artifacts/$ide"
   plugins "java", "Dart:$dartVersion", "properties", "junit",

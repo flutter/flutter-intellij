@@ -920,6 +920,7 @@ class BuildSpec {
   final String version;
   final String ijVersion;
   final bool isTestTarget;
+  final bool isUnitTestTarget;
   final String ideaProduct;
   final String ideaVersion;
   final String dartPluginVersion;
@@ -950,6 +951,7 @@ class BuildSpec {
         sinceBuild = json['sinceBuild'],
         untilBuild = json['untilBuild'],
         filesToSkip = json['filesToSkip'] ?? [],
+        isUnitTestTarget = (json['isUnitTestTarget'] ?? 'false') == 'true',
         isTestTarget = (json['isTestTarget'] ?? 'false') == 'true' {
     createArtifacts();
   }
@@ -1385,7 +1387,8 @@ class SyntheticBuildSpec extends BuildSpec {
   SyntheticBuildSpec.fromJson(
       Map json, String releaseNum, List<BuildSpec> specs)
       : super.fromJson(json, releaseNum) {
-    alternate = specs.firstWhere((s) => s.isTestTarget);
+    // 'isUnitTestTarget' should always be in the spec for the latest IntelliJ (not AS).
+    alternate = specs.firstWhere((s) => s.isUnitTestTarget);
   }
 
   String get untilBuild => alternate.untilBuild;
@@ -1414,6 +1417,8 @@ class TestCommand extends ProductCommand {
 
     log('JAVA_HOME=$javaHome');
 
+    final spec = specs.firstWhere((s) => s.isUnitTestTarget);
+    await spec.artifacts.provision(rebuildCache: true);
     if (argResults['integration']) {
       return _runIntegrationTests();
     } else {
