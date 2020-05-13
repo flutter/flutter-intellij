@@ -17,3 +17,19 @@ Make sure the proper IDE is unpacked in the artifacts directory. Open a terminal
 `./gradlew clean buildPlugin`
 
 The plugin will be found in build/distributions/flutter-intellij-NN.zip.
+
+## Working with Android Studio sources
+
+If this project is to be used in a full-source configuration with Android Studio (as described in the
+flutter-studio module), then some adjustments need to be made after importing the Gradle modules.
+Select the flutter-intellij module and select the Paths tab. For each of these projects change
+`Compiler output` to `Inherit project compile output path`:
+- `flutter-intellij.main`
+- `flutter-intellij.test`
+- `flutter-intellij.flutter-idea.main`
+- `flutter-intellij.flutter-idea.test`
+- `flutter-intellij.flutter-studio.main`
+- `flutter-intellij.flutter-studio.test`
+
+This needs to be done every time the Gradle module is imported or re-imported.
+There doesn't seem to be any config setting in the IntelliJ plugin for Gradle to configure this.
