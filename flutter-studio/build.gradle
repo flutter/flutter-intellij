@@ -1,0 +1,45 @@
+/*
+ * Copyright 2020 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+apply plugin: 'java'
+apply plugin: "org.jetbrains.intellij"
+
+group 'io.flutter'
+version flutterPluginVersion
+
+java {
+  sourceCompatibility = JavaVersion.VERSION_1_8
+  targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+intellij {
+  // This adds nullability assertions, but also compiles forms.
+  instrumentCode = true
+  updateSinceUntilBuild = false
+  downloadSources false
+  localPath "${project.rootDir.absolutePath}/artifacts/$ide"
+  plugins "java", "Dart:$dartVersion", "properties", "junit",
+          "gradle", "android", "Groovy", "smali", "IntelliLang"
+}
+
+sourceSets {
+  main.java.srcDir 'src/main/java'
+}
+
+buildSearchableOptions.enabled = false
+
+dependencies {
+  compileOnly project(':flutter-idea')
+  compileOnly fileTree(dir: "$project.rootDir/artifacts/android-studio/lib",
+                       includes: ["*.jar"])
+  compileOnly fileTree(dir: "$project.rootDir/artifacts/android-studio/plugins",
+                       includes: ["**/*.jar"],
+                       excludes: ["**/kotlin-compiler.jar", "**/kotlin-plugin.jar"])
+}
+
+verifyPlugin {
+  ignoreFailures true
+}

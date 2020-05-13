@@ -4,111 +4,42 @@
  * found in the LICENSE file.
  */
 
-buildscript {
-  repositories {
-    mavenLocal()
-    mavenCentral()
-    gradlePluginPortal()
-    maven { url "https://maven-central.storage-download.googleapis.com/repos/central/data/" }
-    maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-    maven { url "https://jetbrains.bintray.com/intellij-third-party-dependencies" }
-  }
-
-  dependencies {
-    classpath "gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.4.9"
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-  }
-}
-
 plugins {
-  id 'org.jetbrains.kotlin.jvm' version '1.3.71'
-  id "org.jetbrains.intellij" version "0.4.10"
-  id "com.adarshr.test-logger" version "1.6.0"
-  id "de.undercouch.download" version "3.4.2"
-  id "jacoco"
-}
-
-testlogger {
-  theme "mocha"
+  id "org.jetbrains.intellij" version "0.4.18"
 }
 
 repositories {
   mavenLocal()
-  maven { url "https://maven-central.storage-download.googleapis.com/repos/central/data/" }
-  maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
-  maven { url "https://jetbrains.bintray.com/intellij-third-party-dependencies" }
+  mavenCentral()
 }
 
-apply plugin: 'java'
-apply plugin: "idea"
-apply plugin: "kotlin"
 apply plugin: "org.jetbrains.intellij"
-apply plugin: "jacoco"
+
+group 'io.flutter'
+version flutterPluginVersion
 
 intellij {
-  pluginName name
-
-  instrumentCode = false
-  version ideaVersion
-  type "IU"
-  downloadSources Boolean.valueOf(downloadIdeaSources)
+  // This adds nullability assertions, but also compiles forms.
+  instrumentCode = true
   updateSinceUntilBuild = false
-
-  sandboxDirectory project.rootDir.canonicalPath + "/.sandbox"
-  plugins "org.jetbrains.kotlin:$kotlinVersion-$kotlinRelease", "Dart:$dartVersion", "properties", "junit",
-          "java", "gradle", "android", "Groovy", "smali", "IntelliLang"
-}
-
-publishPlugin {
-  def authenticationToken = "$System.env.token"
-  token authenticationToken
-  channels publishChannels
-}
-
-idea {
-  project {
-    jdkName = javaVersion
-    languageLevel = javaVersion
+  localPath "${project.rootDir.absolutePath}/artifacts/$ide"
+  downloadSources false
+  def pluginList = [project(':flutter-idea'), "java", "Dart:$dartVersion", "properties", "junit",
+                    "Kotlin", "gradle", "android", "Groovy", "smali", "IntelliLang"]
+  if (ide == 'android-studio') {
+    pluginList.add(project(':flutter-studio'))
   }
+  plugins = pluginList
 }
 
 dependencies {
-  testCompile("io.kotlintest:kotlintest:2.0.7")
-  testCompile "org.powermock:powermock-api-mockito2:2.0.0"
-  testCompile "org.powermock:powermock-module-junit4:2.0.0"
-  compile "com.android.tools.analytics-library:protos"
-  compile "com.android.tools:common:25.3.0"
-  compile "com.android.tools.analytics-library:protos:25.3.0"
-  compile "com.google.protobuf:protobuf-java:3.5.1"
+  implementation project('flutter-idea')
+  if (ide == 'android-studio') {
+    implementation project('flutter-studio')
+  }
 }
 
-/* Need to swizzle source and resource paths to match standard or buildPlugin does nothing. */
 sourceSets {
-  main.java.srcDirs = [
-    "src/main/java",
-    "gen",
-    "third_party/vmServiceDrivers",
-    "src/main/resources"
-  ]
-  test {
-    java {
-      srcDirs = [
-        "gen",
-        "src/main/java",
-        "testSrc/unit",
-        "third_party/vmServiceDrivers"
-      ]
-    }
-    resources {
-      srcDirs = [
-        "resources",
-        "src",
-        "testData/unit",
-        "testSrc/unit"
-      ]
-    }
-  }
 }
 
 test {
@@ -116,67 +47,11 @@ test {
   //ignoreFailures true
 }
 
-/* This fails in a way that suggests internal version skew at JetBrains. */
-task buildSearchableOptions(overwrite: true) {}
+buildSearchableOptions.enabled = false
 
-sourceCompatibility = javaVersion
-targetCompatibility = javaVersion
+// See https://github.com/gradle/gradle/issues/9202
+// This does not clean sub-projects.
+buildPlugin.dependsOn clean
 
-jar.archiveName = "flutter-intellij.jar"
-
-[compileKotlin, compileTestKotlin]*.kotlinOptions {
-  languageVersion = kotlinLanguageVersion
-  apiVersion = kotlinTargetVersion
-  jvmTarget = javaVersion
-  freeCompilerArgs = ["-Xskip-runtime-version-check"]
-}
-
-jacocoTestReport {
-  reports {
-    xml.enabled true
-    csv.enabled false
-    html.enabled true
-  }
-}
-
-check.dependsOn jacocoTestReport
-
-task downloadIntellijPluginVerifier(type: Download) {
-  src "https://dl.bintray.com/jetbrains/intellij-plugin-service/org/jetbrains/intellij/plugins/verifier-cli/$pluginVerifierVersion/verifier-cli-$pluginVerifierVersion-all.jar"
-  dest buildDir
-  overwrite false
-}
-
-task listPlugins(type: Exec) {
-  workingDir = buildDir
-  executable = "sh"
-  args = ["-c", "ls ../releases/release_master/*/*.zip >release.list"]
-}
-
-task verifyPluginCompatibility(type: Exec, dependsOn: ["downloadIntellijPluginVerifier"]) {
-  workingDir = buildDir
-  executable = "sh"
-  args =
-    ["-c", "java -jar verifier-cli-$pluginVerifierVersion-all.jar check-plugin distributions/flutter-intellij-$version\\.zip ~/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/LATEST-EAP-SNAPSHOT/80852e6b02067b26385f5f0ef8e2174f0cd4576/ideaIC-LATEST-EAP-SNAPSHOT"]
-/*  args = ["-c", "java -jar verifier-cli-$pluginVerifierVersion-all.jar check-plugin @release.list ~/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/LATEST-EAP-SNAPSHOT/80852e6b02067b26385f5f0ef8e2174f0cd4576/ideaIC-LATEST-EAP-SNAPSHOT"]*/
-}
-
-verifyPlugin {
-  pluginDirectory "resources/META-INF"
-  ignoreFailures true
-}
-
-jacocoTestReport {
-  afterEvaluate {
-    classDirectories.setFrom(
-      files(classDirectories.files.collect {
-        fileTree(dir: it, exclude: [
-          "**/settings/**"
-        ])
-      })
-    )
-  }
-}
-
-check.dependsOn verifyPluginCompatibility
-check.dependsOn verifyPlugin
+// Need to delete cache so sub-project tests get run.
+test.dependsOn clean

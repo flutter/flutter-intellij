@@ -1,0 +1,66 @@
+/*
+ * Copyright 2020 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+apply plugin: 'java'
+apply plugin: "org.jetbrains.intellij"
+
+group 'io.flutter'
+version flutterPluginVersion
+
+java {
+  sourceCompatibility = JavaVersion.VERSION_1_8
+  targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+intellij {
+  // This adds nullability assertions, but also compiles forms.
+  instrumentCode = true
+  updateSinceUntilBuild = false
+  downloadSources false
+  localPath "${project.rootDir.absolutePath}/artifacts/$ide"
+  plugins "java", "Dart:$dartVersion", "properties", "junit", "Kotlin",
+          "gradle", "android", "Groovy", "smali", "IntelliLang"
+}
+
+dependencies {
+  testCompile "org.powermock:powermock-api-mockito2:2.0.0"
+  testCompile "org.powermock:powermock-module-junit4:2.0.0"
+}
+
+/* Need to swizzle source and resource paths to match standard or buildPlugin does nothing. */
+sourceSets {
+  main.java.srcDirs = [
+    "src/main/java",
+    "gen",
+    "third_party/vmServiceDrivers",
+    "src/main/resources"
+  ]
+  // Add main.kotlin.srcDirs if we start using Kotlin in the main plugin.
+  main.resources.srcDirs = [
+    "src/main/java",
+    "src/main/resources",
+  ]
+  test.java.srcDirs = [
+    "gen",
+    "src/main/java",
+    "testSrc/unit",
+    "third_party/vmServiceDrivers"
+  ]
+  test.resources.srcDirs = [
+    "src/main/resources",
+    "testData/unit",
+    "testSrc/unit"
+  ]
+}
+
+buildSearchableOptions.enabled = false
+
+check.dependsOn verifyPlugin

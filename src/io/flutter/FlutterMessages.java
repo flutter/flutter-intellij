@@ -49,7 +49,7 @@ public class FlutterMessages {
 
   public static int showDialog(@Nullable Project project,
                                @NotNull String message,
-                               @NotNull @Nls(capitalization = Nls.Capitalization.Title) String title,
+                               @NotNull @Nls String title,
                                @NotNull String[] options,
                                int defaultOptionIndex) {
     return Messages.showIdeaMessageDialog(project, message, title,

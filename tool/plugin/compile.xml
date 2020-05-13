@@ -68,7 +68,7 @@ Include -D arguments to define these properties: idea.product, idea.version.
 
     <path id="src.sourcepath">
       <dirset dir=".">
-        <include name="src/main/java"/>
+        <include name="src"/>
         <include name="resources"/>
         <include name="gen"/>
         <include name="third_party/vmServiceDrivers"/>
@@ -77,7 +77,7 @@ Include -D arguments to define these properties: idea.product, idea.version.
 
     <path id="studioSrc.sourcepath">
       <dirset dir="flutter-studio">
-        <include name="src"/>
+        <include name="src/main/java"/>
       </dirset>
     </path>
   </target>

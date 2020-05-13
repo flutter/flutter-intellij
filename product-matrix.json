@@ -27,6 +27,7 @@
       "comments": "IntelliJ 2020.1 Beta",
       "name": "IntelliJ 2020.1",
       "version": "2020.1",
+      "isUnitTestTarget": "true",
       "ideaProduct": "ideaIC",
       "ideaVersion": "201.6668.60",
       "dartPluginVersion": "201.6668.22",
