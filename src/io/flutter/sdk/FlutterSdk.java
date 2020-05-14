@@ -44,6 +44,8 @@ public class FlutterSdk {
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
 
   public static final String DART_SDK_SUFFIX = "/bin/cache/dart-sdk";
+  public static final String LINUX_DART_SUFFIX = "/google-dartlang";
+  public static final String MAC_DART_SUFFIX = "/dart_lang/macos_sdk";
 
   private static final String DART_CORE_SUFFIX = DART_SDK_SUFFIX + "/lib/core";
 

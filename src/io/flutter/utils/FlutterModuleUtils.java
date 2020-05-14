@@ -81,12 +81,19 @@ public class FlutterModuleUtils {
       //   [Dart support enabled && referenced Dart SDK is the one inside a Flutter SDK]
       final DartSdk dartSdk = DartPlugin.getDartSdk(module.getProject());
       final String dartSdkPath = dartSdk != null ? dartSdk.getHomePath() : null;
-      return dartSdkPath != null && dartSdkPath.endsWith(FlutterSdk.DART_SDK_SUFFIX) && DartPlugin.isDartSdkEnabled(module);
+      return validDartSdkPath(dartSdkPath) && DartPlugin.isDartSdkEnabled(module);
     }
     else {
       // If not IntelliJ, assume a small IDE (no multi-module project support).
       return declaresFlutter(module);
     }
+  }
+
+  private static boolean validDartSdkPath(String path) {
+    return path != null &&
+           (path.endsWith(FlutterSdk.DART_SDK_SUFFIX) ||
+            path.endsWith(FlutterSdk.LINUX_DART_SUFFIX) ||
+            path.endsWith(FlutterSdk.MAC_DART_SUFFIX));
   }
 
   public static boolean hasFlutterModule(@NotNull Project project) {
