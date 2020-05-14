@@ -90,7 +90,10 @@ public class FlutterModuleUtils {
   }
 
   private static boolean validDartSdkPath(String path) {
-    return path != null && (path.endsWith(FlutterSdk.DART_SDK_SUFFIX) || path.endsWith(FlutterSdk.LINUX_DART_SUFFIX) || path.endsWith(FlutterSdk.MAC_DART_SUFFIX));
+    return path != null &&
+           (path.endsWith(FlutterSdk.DART_SDK_SUFFIX) ||
+            path.endsWith(FlutterSdk.LINUX_DART_SUFFIX) ||
+            path.endsWith(FlutterSdk.MAC_DART_SUFFIX));
   }
 
   public static boolean hasFlutterModule(@NotNull Project project) {
