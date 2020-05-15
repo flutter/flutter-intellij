@@ -5,6 +5,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:plugin_tool/plugin.dart';
+import 'package:plugin_tool/runner.dart';
+import 'package:plugin_tool/util.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -264,8 +266,8 @@ class TestDeployCommand extends DeployCommand {
 
   void changeDirectory(Directory dir) {}
 
-  Future<int> upload(String filePath, String pluginNumber, String token,
-      String channel) {
+  Future<int> upload(
+      String filePath, String pluginNumber, String token, String channel) {
     paths.add(filePath);
     plugins.add(pluginNumber);
     return new Future(() => 0);

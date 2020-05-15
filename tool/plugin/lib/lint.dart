@@ -6,7 +6,8 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 
-import 'plugin.dart';
+import 'runner.dart';
+import 'util.dart';
 
 class LintCommand extends Command {
   final BuildCommandRunner runner;

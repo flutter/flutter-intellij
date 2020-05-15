@@ -7,12 +7,14 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
-import 'package:cli_util/cli_logging.dart';
 import 'package:git/git.dart';
-import 'package:markdown/markdown.dart';
 import 'package:path/path.dart' as p;
 
+import 'build_spec.dart';
+import 'globals.dart';
 import 'lint.dart';
+import 'runner.dart';
+import 'util.dart';
 
 Future<int> main(List<String> args) async {
   var runner = new BuildCommandRunner();
@@ -30,22 +32,6 @@ Future<int> main(List<String> args) async {
     return 1;
   }
 }
-
-const Map<String, String> plugins = const {
-  'io.flutter': '9212',
-  'io.flutter.as': '10139', // Currently unused.
-};
-
-const int cloudErrorFileMaxSize = 1000; // In bytes.
-
-// Globals are initialized early in ProductCommand, and everything in this
-// file is a subclass of ProductCommand. It is not ideal, but the "proper"
-// solution would be to move nearly all the top-level functions to methods
-// in ProductCommand.
-String rootPath;
-String lastReleaseName;
-DateTime lastReleaseDate;
-int pluginCount = 0;
 
 void addProductFlags(ArgParser argParser, String verb) {
   argParser.addFlag('ij', help: '$verb the IntelliJ plugin', defaultsTo: true);
@@ -67,18 +53,6 @@ List<BuildSpec> createBuildSpecs(ProductCommand command) {
   return specs;
 }
 
-void createDir(String name) {
-  final dir = Directory(name);
-  if (!dir.existsSync()) {
-    log('creating $name/');
-    dir.createSync(recursive: true);
-  }
-}
-
-Future<int> curl(String url, {String to}) async {
-  return await exec('curl', ['-o', to, url]);
-}
-
 Future<int> deleteBuildContents() async {
   final dir = Directory(p.join(rootPath, 'build'));
   if (!dir.existsSync()) throw 'No build directory found';
@@ -86,20 +60,6 @@ Future<int> deleteBuildContents() async {
   args.add('-rf');
   args.add(p.join(rootPath, 'build', '*'));
   return await exec('rm', args);
-}
-
-Future<int> exec(String cmd, List<String> args, {String cwd}) async {
-  if (cwd != null) {
-    log(_shorten('$cmd ${args.join(' ')} {cwd=$cwd}'));
-  } else {
-    log(_shorten('$cmd ${args.join(' ')}'));
-  }
-
-  final process = await Process.start(cmd, args, workingDirectory: cwd);
-  _toLineStream(process.stderr, utf8).listen(log);
-  _toLineStream(process.stdout, utf8).listen(log);
-
-  return await process.exitCode;
 }
 
 List<File> findJars(String path) {
@@ -164,24 +124,6 @@ void genTravisYml(List<BuildSpec> specs) {
   file.writeAsStringSync(contents, flush: true);
 }
 
-bool isCacheDirectoryValid(Artifact artifact) {
-  var dirPath = artifact.outPath;
-  var dir = Directory(dirPath);
-  if (!dir.existsSync()) {
-    return false;
-  }
-  var filePath = artifact.file;
-  var file = File(p.join(rootPath, 'artifacts', filePath));
-  if (!file.existsSync()) {
-    throw 'Artifact file missing: $filePath';
-  }
-  return isNewer(dir, file);
-}
-
-bool isNewer(FileSystemEntity newer, FileSystemEntity older) {
-  return newer.statSync().modified.isAfter(older.statSync().modified);
-}
-
 bool isTravisFileValid() {
   var travisPath = p.join(rootPath, '.travis.yml');
   var travisFile = File(travisPath);
@@ -203,10 +145,6 @@ Future<int> jar(String directory, String outFile) async {
       .map((f) => p.basename(f.path)));
   args.remove('.DS_Store');
   return await exec('jar', args, cwd: directory);
-}
-
-void log(String s, {bool indent: true}) {
-  indent ? print('  $s') : print(s);
 }
 
 Future<int> moveToArtifacts(ProductCommand cmd, BuildSpec spec) async {
@@ -269,18 +207,6 @@ List readProductMatrix() {
       File(p.join(rootPath, 'product-matrix.json')).readAsStringSync();
   var map = json.decode(contents);
   return map['list'];
-}
-
-Future<int> removeAll(String dir) async {
-  var args = ['-rf', dir];
-  return await exec('rm', args);
-}
-
-final Ansi ansi = Ansi(true);
-
-void separator(String name) {
-  log('');
-  log('${ansi.red}${ansi.bold}$name${ansi.none}', indent: false);
 }
 
 int get devBuildNumber {
@@ -355,9 +281,6 @@ String _nextRelease() {
   return '$val.0';
 }
 
-String _convertToTar(String path) =>
-    path.replaceFirst('.zip', '.tar.gz', path.length - 5);
-
 void _copyFile(File file, Directory to, {String filename = ''}) {
   if (!to.existsSync()) {
     to.createSync(recursive: true);
@@ -382,168 +305,6 @@ void _copyResources(Directory from, Directory to) {
     } else if (entity is Directory) {
       _copyResources(entity, Directory(p.join(to.path, basename)));
     }
-  }
-}
-
-bool _isValidDownloadArtifact(File archiveFile) =>
-    archiveFile.existsSync() &&
-    archiveFile.lengthSync() > cloudErrorFileMaxSize;
-
-String _shorten(String str) {
-  return str.length < 200
-      ? str
-      : str.substring(0, 170) + ' ... ' + str.substring(str.length - 30);
-}
-
-Stream<String> _toLineStream(Stream<List<int>> s, Encoding encoding) =>
-    s.transform(encoding.decoder).transform(const LineSplitter());
-
-class Artifact {
-  String file;
-  final bool bareArchive;
-  String output;
-
-  Artifact(this.file, {this.bareArchive: false, this.output}) {
-    if (output == null) {
-      output = file.substring(0, file.lastIndexOf('-'));
-    }
-  }
-
-  bool get isZip => file.endsWith('.zip');
-
-  String get outPath => p.join(rootPath, 'artifacts', output);
-
-  // Historically, Android Studio has been distributed as a zip file.
-  // Recent distros are packaged as gzip'd tar files.
-  void convertToTar() {
-    if (!isZip) return;
-    file = _convertToTar(file);
-  }
-}
-
-class ArtifactManager {
-  final String base =
-      'https://storage.googleapis.com/flutter_infra/flutter/intellij';
-
-  final List<Artifact> artifacts = [];
-
-  Artifact javac;
-
-  ArtifactManager() {
-    javac = add(Artifact(
-      'intellij-javac2.zip',
-      output: 'javac2',
-      bareArchive: true,
-    ));
-  }
-
-  Artifact add(Artifact artifact) {
-    artifacts.add(artifact);
-    return artifact;
-  }
-
-  Future<int> provision({bool rebuildCache = false}) async {
-    separator('Getting artifacts');
-    createDir('artifacts');
-
-    var result = 0;
-    for (var artifact in artifacts) {
-      var doDownload = true;
-
-      void alreadyDownloaded(String path) {
-        log('$path exists in cache');
-        doDownload = false;
-      }
-
-      var path = 'artifacts/${artifact.file}';
-      if (FileSystemEntity.isFileSync(path)) {
-        alreadyDownloaded(path);
-      } else {
-        if (artifact.isZip) {
-          var tarPath = _convertToTar(path);
-          if (FileSystemEntity.isFileSync(tarPath)) {
-            artifact.convertToTar();
-            alreadyDownloaded(tarPath);
-          }
-        }
-        if (doDownload) {
-          log('downloading $path...');
-          result = await curl('$base/${artifact.file}', to: path);
-          if (result != 0) {
-            log('download failed');
-            break;
-          }
-          var archiveFile = File(path);
-          if (!_isValidDownloadArtifact(archiveFile)) {
-            // If the file is missing the server returns a small file containing
-            // an error message. Delete it and try again. The smallest file we
-            // store in the cloud is over 700K.
-            log('archive file not found: $base/${artifact.file}');
-            archiveFile.deleteSync();
-            if (artifact.isZip) {
-              artifact.convertToTar();
-              path = 'artifacts/${artifact.file}';
-              result = await curl('$base/${artifact.file}', to: path);
-              if (result != 0) {
-                log('download failed');
-                break;
-              }
-              var archiveFile = File(path);
-              if (!_isValidDownloadArtifact(archiveFile)) {
-                log('archive file not found: $base/${artifact.file}');
-                archiveFile.deleteSync();
-                result = 1;
-                break;
-              }
-            }
-          }
-        }
-      }
-
-      // clear unpacked cache
-      if (rebuildCache || !FileSystemEntity.isDirectorySync(artifact.outPath)) {
-        await removeAll(artifact.outPath);
-      }
-      if (isCacheDirectoryValid(artifact)) {
-        continue;
-      }
-
-      // expand
-      if (Directory(artifact.outPath).existsSync()) {
-        await removeAll(artifact.outPath);
-      }
-      createDir(artifact.outPath);
-
-      if (artifact.isZip) {
-        if (artifact.bareArchive) {
-          result = await exec(
-              'unzip', ['-q', '-d', artifact.output, artifact.file],
-              cwd: 'artifacts');
-        } else {
-          result = await exec('unzip', ['-q', artifact.file], cwd: 'artifacts');
-        }
-      } else {
-        result = await exec(
-          'tar',
-          [
-            '--strip-components=1',
-            '-zxf',
-            artifact.file,
-            '-C',
-            artifact.output
-          ],
-          cwd: p.join(rootPath, 'artifacts'),
-        );
-      }
-      if (result != 0) {
-        log('unpacking failed');
-        await removeAll(artifact.output);
-        break;
-      }
-
-      log('');
-    }
-    return result;
   }
 }
 
@@ -865,174 +626,6 @@ class BuildCommand extends ProductCommand {
     }
 
     return 0;
-  }
-}
-
-class BuildCommandRunner extends CommandRunner {
-  BuildCommandRunner()
-      : super('plugin',
-            'A script to build, test, and deploy the Flutter IntelliJ plugin.') {
-    argParser.addOption(
-      'release',
-      abbr: 'r',
-      help: 'The release identifier; the numeric suffix of the git branch name',
-      valueHelp: 'id',
-    );
-    argParser.addOption(
-      'cwd',
-      abbr: 'd',
-      help: 'For testing only; the prefix used to locate the root path (../..)',
-      valueHelp: 'relative-path',
-    );
-  }
-
-  // Use this to compile plugin sources to get forms processed.
-  Future<int> javac2(BuildSpec spec) async {
-    var args = '''
--f tool/plugin/compile.xml
--Didea.product=${spec.ideaProduct}
--Didea.version=${spec.ideaVersion}
--Dbasedir=$rootPath
-compile
-''';
-    try {
-      return await exec('ant', args.split(RegExp(r'\s')));
-    } on ProcessException catch (x) {
-      if (x.message == 'No such file or directory') {
-        log(
-            '\nThe build command requires ant to be installed. '
-            '\nPlease ensure ant is on your \$PATH.',
-            indent: false);
-        exit(x.errorCode);
-        // The call to `exit` above does not return, but we return a value from
-        // the function here to make the analyzer happy.
-        return 0;
-      } else {
-        throw x;
-      }
-    }
-  }
-}
-
-class BuildSpec {
-  // Build targets
-  final String name;
-  final String version;
-  final String ijVersion;
-  final bool isTestTarget;
-  final bool isUnitTestTarget;
-  final String ideaProduct;
-  final String ideaVersion;
-  final String dartPluginVersion;
-
-  // plugin.xml variables
-  final String sinceBuild;
-  final String untilBuild;
-  final String pluginId = 'io.flutter';
-  final String release;
-  final List<dynamic> filesToSkip;
-  String channel;
-  String _changeLog;
-
-  ArtifactManager artifacts = ArtifactManager();
-
-  Artifact product;
-  Artifact dartPlugin;
-
-  BuildSpec.fromJson(Map json, String releaseNum)
-      : release = releaseNum,
-        name = json['name'],
-        channel = json['channel'],
-        version = json['version'],
-        ijVersion = json['ijVersion'] ?? null,
-        ideaProduct = json['ideaProduct'],
-        ideaVersion = json['ideaVersion'],
-        dartPluginVersion = json['dartPluginVersion'],
-        sinceBuild = json['sinceBuild'],
-        untilBuild = json['untilBuild'],
-        filesToSkip = json['filesToSkip'] ?? [],
-        isUnitTestTarget = (json['isUnitTestTarget'] ?? 'false') == 'true',
-        isTestTarget = (json['isTestTarget'] ?? 'false') == 'true' {
-    createArtifacts();
-  }
-
-  bool get copyIjVersion => isAndroidStudio && ijVersion != null;
-
-  bool get isAndroidStudio => ideaProduct.contains('android-studio');
-
-  bool get isDevChannel => channel == 'dev';
-
-  bool get isReleaseMode => release != null;
-
-  bool get isSynthetic => false;
-
-  String get productFile => isAndroidStudio ? "$ideaProduct-ide" : ideaProduct;
-
-  String get changeLog {
-    if (_changeLog == null) {
-      if (channel == 'stable') {
-        _changeLog = _parseChangelog();
-      } else {
-        _changeLog = '';
-      }
-    }
-
-    return _changeLog;
-  }
-
-  void createArtifacts() {
-    if (ideaProduct == 'android-studio') {
-      product = artifacts.add(Artifact(
-          '$ideaProduct-ide-$ideaVersion-linux.zip',
-          output: ideaProduct));
-    } else {
-      product = artifacts.add(
-          Artifact('$ideaProduct-$ideaVersion.tar.gz', output: ideaProduct));
-    }
-    dartPlugin = artifacts.add(Artifact('Dart-$dartPluginVersion.zip'));
-  }
-
-  String _parseChangelog() {
-    var text = File('CHANGELOG.md').readAsStringSync();
-    return _parseChanges(text);
-  }
-
-  String _parseChanges(String text) {
-    var html = markdownToHtml(text);
-
-    // Translate our markdown based changelog into html; remove unwanted
-    // paragraph tags.
-    return html
-        .replaceAll('</h2><ul>', '</h2>\n<ul>')
-        .replaceAll('<ul>\n<li>', '<ul>\n  <li>')
-        .replaceAll('</li>\n<li>', '</li>\n  <li>')
-        .replaceAll('</li></ul>', '</li>\n</ul>')
-        .replaceAll('\n<p>', '')
-        .replaceAll('<p>', '')
-        .replaceAll('</p>\n', '')
-        .replaceAll('</p>', '');
-  }
-
-  String toString() {
-    return 'BuildSpec($ideaProduct $ideaVersion $dartPluginVersion $sinceBuild '
-        '$untilBuild version: "$release")';
-  }
-
-  Future<BuildSpec> initChangeLog() async {
-    if (channel == 'dev') {
-      _changeLog = _parseChanges(await makeDevLog(this));
-    }
-    return this;
-  }
-
-  void buildForDev() {
-    // Build everything. For release builds we do not build specs on the dev channel.
-    channel = 'dev';
-  }
-
-  void buildForMaster() {
-    // Ensure the dev-channel-only files are stored in release_master.
-    channel = 'stable';
   }
 }
 
@@ -1375,27 +968,6 @@ class RenamePackageCommand extends ProductCommand {
   }
 }
 
-/// This represents a BuildSpec that is used to generate the plugin.xml
-/// that is used during development. It needs to span all possible versions.
-/// The product-matrix.json file lists the versions in increasing build order.
-/// The first one is the earliest version used during development and the
-/// last one is the latest used during development. This BuildSpec combines
-/// those two.
-class SyntheticBuildSpec extends BuildSpec {
-  BuildSpec alternate;
-
-  SyntheticBuildSpec.fromJson(
-      Map json, String releaseNum, List<BuildSpec> specs)
-      : super.fromJson(json, releaseNum) {
-    // 'isUnitTestTarget' should always be in the spec for the latest IntelliJ (not AS).
-    alternate = specs.firstWhere((s) => s.isUnitTestTarget);
-  }
-
-  String get untilBuild => alternate.untilBuild;
-
-  bool get isSynthetic => true;
-}
-
 /// Build the tests if necessary then run them and return any failure code.
 class TestCommand extends ProductCommand {
   final BuildCommandRunner runner;
@@ -1437,66 +1009,5 @@ class TestCommand extends ProductCommand {
 
   Future<int> _runIntegrationTests() async {
     throw 'integration test execution not yet implemented';
-  }
-}
-
-Future<String> makeDevLog(BuildSpec spec) async {
-  if (lastReleaseName == null)
-    return ''; // The shallow on travis causes problems.
-  _checkGitDir();
-  var gitDir = await GitDir.fromExisting(rootPath);
-  var since = lastReleaseName;
-  var processResult =
-      await gitDir.runCommand(['log', '--oneline', '$since..HEAD']);
-  String out = processResult.stdout;
-  var messages = out.trim().split('\n');
-  var devLog = StringBuffer();
-  devLog.writeln('## Changes since ${since.replaceAll('_', ' ')}');
-  messages.forEach((m) {
-    devLog.writeln(m.replaceFirst(RegExp(r'^[A-Fa-f\d]+\s+'), '- '));
-  });
-  devLog.writeln();
-  return devLog.toString();
-}
-
-Future<DateTime> dateOfLastRelease() async {
-  _checkGitDir();
-  var gitDir = await GitDir.fromExisting(rootPath);
-  var processResult = await gitDir
-      .runCommand(['branch', '--list', '-v', '--no-abbrev', lastReleaseName]);
-  String out = processResult.stdout;
-  var logLine = out.trim().split('\n').first.trim();
-  var match =
-      RegExp(r'release_\d+\s+([A-Fa-f\d]{40})\s').matchAsPrefix(logLine);
-  var commitHash = match.group(1);
-  processResult =
-      await gitDir.runCommand(['show', '--pretty=tformat:"%cI"', commitHash]);
-  out = processResult.stdout;
-  var date = out.trim().split('\n').first.trim();
-  return DateTime.parse(date.replaceAll('"', ''));
-}
-
-Future<String> lastRelease() async {
-  _checkGitDir();
-  var gitDir = await GitDir.fromExisting(rootPath);
-  var processResult =
-      await gitDir.runCommand(['branch', '--list', 'release_*']);
-  String out = processResult.stdout;
-  var release = out.trim().split('\n').last.trim();
-  if (!release.isEmpty) return release;
-  processResult =
-      await gitDir.runCommand(['branch', '--list', '-a', '*release_*']);
-  out = processResult.stdout;
-  var remote =
-      out.trim().split('\n').last.trim(); // "remotes/origin/release_43"
-  release = remote.substring(remote.lastIndexOf('/') + 1);
-  await gitDir.runCommand(['branch', '--track', release, remote]);
-  return release;
-}
-
-void _checkGitDir() async {
-  var isGitDir = await GitDir.isGitDir(rootPath);
-  if (!isGitDir) {
-    throw 'the current working directory is not managed by git: $rootPath';
   }
 }
