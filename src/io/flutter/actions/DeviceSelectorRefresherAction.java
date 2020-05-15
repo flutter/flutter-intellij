@@ -28,6 +28,6 @@ public class DeviceSelectorRefresherAction extends AnAction {
 
   @Override
   public void update(@NotNull AnActionEvent e) {
-    e.getPresentation().setVisible(FlutterModuleUtils.isFlutterBazelProject(e.getProject()));
+    e.getPresentation().setVisible(FlutterModuleUtils.hasInternalDartSdkPath(e.getProject()));
   }
 }

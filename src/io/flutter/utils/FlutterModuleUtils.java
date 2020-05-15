@@ -96,6 +96,12 @@ public class FlutterModuleUtils {
             path.endsWith(FlutterSdk.MAC_DART_SUFFIX));
   }
 
+  public static boolean hasInternalDartSdkPath(Project project) {
+    DartSdk dartSdk = DartPlugin.getDartSdk(project);
+    final String dartSdkPath = dartSdk != null ? dartSdk.getHomePath() : null;
+    return dartSdkPath.endsWith(FlutterSdk.LINUX_DART_SUFFIX) || dartSdkPath.endsWith(FlutterSdk.MAC_DART_SUFFIX);
+  }
+
   public static boolean hasFlutterModule(@NotNull Project project) {
     if (project.isDisposed()) return false;
 
