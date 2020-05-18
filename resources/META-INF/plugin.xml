@@ -1011,6 +1011,9 @@
       <action id="Flutter.DeviceSelector" class="io.flutter.actions.DeviceSelectorAction"
               description="Flutter Device Selection"
               icon="FlutterIcons.Phone"/>
+      <action id="Flutter.DeviceSelectorRefresher" class="io.flutter.actions.DeviceSelectorRefresherAction"
+              text="Refresh Device List"
+              description="Refresh device list" />
       <separator/>
       <add-to-group anchor="before" group-id="RunContextGroup" relative-to-action="RunConfiguration"/>
       <add-to-group anchor="before" group-id="ToolbarRunGroup" relative-to-action="RunConfiguration"/>
