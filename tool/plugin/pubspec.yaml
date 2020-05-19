@@ -1,16 +1,16 @@
 name: plugin_tool
 description: Flutter plugin tool.
-version: 0.0.1
+version: 0.1.1
 
 environment:
-  sdk: '>=2.0.0-dev <3.0.0'
+  sdk: '>=2.2.0 <3.0.0'
 
 dependencies:
-  args: ^1.0.0
+  args: ^1.5.2
   cli_util: ^0.1.0
   git: ^0.5.1
-  markdown: ^2.1.1
-  path: ^1.6.2
+  markdown: ^2.1.3
+  path: ^1.7.0
 
 dev_dependencies:
-  test: ^1.5.0
+  test: ^1.9.4

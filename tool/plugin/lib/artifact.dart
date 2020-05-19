@@ -163,4 +163,4 @@ String _convertToTar(String path) =>
 
 bool _isValidDownloadArtifact(File archiveFile) =>
     archiveFile.existsSync() &&
-        archiveFile.lengthSync() > cloudErrorFileMaxSize;
+    archiveFile.lengthSync() > cloudErrorFileMaxSize;
