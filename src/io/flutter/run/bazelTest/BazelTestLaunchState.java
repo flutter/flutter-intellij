@@ -15,6 +15,7 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil;
 import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView;
 import com.intellij.execution.ui.ConsoleView;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
@@ -77,6 +78,7 @@ public class BazelTestLaunchState extends CommandLineState {
     catch (RuntimeConfigurationError e) {
       throw new ExecutionException(e);
     }
+    FileDocumentManager.getInstance().saveAllDocuments();
 
     final VirtualFile virtualFile = fields.getFile();
 
