@@ -3,6 +3,7 @@
 
 import 'dart:async';
 import 'dart:io';
+
 import 'package:args/command_runner.dart';
 
 import 'build_spec.dart';
@@ -12,7 +13,7 @@ import 'util.dart';
 class BuildCommandRunner extends CommandRunner {
   BuildCommandRunner()
       : super('plugin',
-      'A script to build, test, and deploy the Flutter IntelliJ plugin.') {
+            'A script to build, test, and deploy the Flutter IntelliJ plugin.') {
     argParser.addOption(
       'release',
       abbr: 'r',
@@ -42,7 +43,7 @@ compile
       if (x.message == 'No such file or directory') {
         log(
             '\nThe build command requires ant to be installed. '
-                '\nPlease ensure ant is on your \$PATH.',
+            '\nPlease ensure ant is on your \$PATH.',
             indent: false);
         exit(x.errorCode);
         // The call to `exit` above does not return, but we return a value from

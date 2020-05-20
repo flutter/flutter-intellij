@@ -81,8 +81,8 @@ class LintCommand extends Command {
       'com.android.annotations.NonNull',
       'io.netty.',
       'javax.annotation.Nullable',
-       // Not technically a bad import, but we are using
-       // org.apache.commons.lang.StringUtils already in the codebase.
+      // Not technically a bad import, but we are using
+      // org.apache.commons.lang.StringUtils already in the codebase.
       'org.apache.commons.lang3.StringUtils',
 
       // Not technically a bad import, but not all IntelliJ platforms provide
