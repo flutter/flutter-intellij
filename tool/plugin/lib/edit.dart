@@ -28,29 +28,35 @@ List<EditCommand> editCommands = [
   EditFlutterProjectSystem(),
   EditFlutterDescriptionProvider(),
   Subst(
-      path: 'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java',
-      initial:
-          'gradleProjectSystem.getAndroidFacetsWithPackageName(project, packageName, scope)',
-      replacement: 'Collections.emptyList()',
-      version: '4.0'),
+    path: 'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java',
+    initial:
+        'gradleProjectSystem.getAndroidFacetsWithPackageName(project, packageName, scope)',
+    replacement: 'Collections.emptyList()',
+    version: '4.0',
+  ),
   Subst(
-      path:
-          'flutter-studio/src/io/flutter/actions/FlutterShowStructureSettingsAction.java',
-      initial: 'import com.android.tools.idea.gradle.structure.actions.AndroidShowStructureSettingsAction;',
-      replacement: 'import com.android.tools.idea.gradle.actions.AndroidShowStructureSettingsAction;',
-      versions: ['3.6', '4.0', '2020.1']),
+    path:
+        'flutter-studio/src/io/flutter/actions/FlutterShowStructureSettingsAction.java',
+    initial:
+        'import com.android.tools.idea.gradle.structure.actions.AndroidShowStructureSettingsAction;',
+    replacement:
+        'import com.android.tools.idea.gradle.actions.AndroidShowStructureSettingsAction;',
+    versions: ['3.6', '4.0', '2020.1'],
+  ),
   Subst(
-      path: 'flutter-studio/src/io/flutter/actions/OpenAndroidModule.java',
-      initial: 'findGradleTarget',
-      replacement: 'findImportTarget',
-      versions: ['3.6', '4.0', '2020.1']),
+    path: 'flutter-studio/src/io/flutter/actions/OpenAndroidModule.java',
+    initial: 'findGradleTarget',
+    replacement: 'findImportTarget',
+    versions: ['3.6', '4.0', '2020.1'],
+  ),
   Subst(
-      path: 'src/io/flutter/utils/AndroidUtils.java',
-      initial:
-          'import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;',
-      replacement:
-          'import com.android.tools.idea.gradle.dsl.model.BuildModelContext;',
-      version: '4.1'),
+    path: 'src/io/flutter/utils/AndroidUtils.java',
+    initial:
+        'import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;',
+    replacement:
+        'import com.android.tools.idea.gradle.dsl.model.BuildModelContext;',
+    version: '4.1',
+  ),
 ];
 
 // Used to test checkAndClearAppliedEditCommands()
@@ -264,9 +270,7 @@ class Subst extends EditCommand {
     }
   }
 
-  String toString() {
-    return "Subst(path: $path, versions: $versions)";
-  }
+  String toString() => "Subst(path: $path, versions: $versions)";
 
   bool versionMatches(BuildSpec spec) {
     return versions.any((v) => spec.version.startsWith(v));
