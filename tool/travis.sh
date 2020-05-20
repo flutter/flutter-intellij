@@ -65,6 +65,6 @@ elif [ "$UNIT_TEST_BOT" = true ] ; then
 else
 
   # Run the build.
-  ./bin/plugin build --only-version=$IDEA_VERSION
+  ./bin/plugin make --only-version=$IDEA_VERSION
 
 fi
