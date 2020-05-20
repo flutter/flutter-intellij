@@ -15,6 +15,7 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil;
 import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView;
 import com.intellij.execution.ui.ConsoleView;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
@@ -68,6 +69,7 @@ class TestLaunchState extends CommandLineState {
     catch (RuntimeConfigurationError e) {
       throw new ExecutionException(e);
     }
+    FileDocumentManager.getInstance().saveAllDocuments();
 
     final VirtualFile fileOrDir = fields.getFileOrDir();
     assert (fileOrDir != null);
