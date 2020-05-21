@@ -323,19 +323,25 @@ class AntBuildCommand extends BuildCommand {
     // create the jars
     createDir('build/flutter-intellij/lib');
     result = await jar(
-        'build/classes', 'build/flutter-intellij/lib/flutter-intellij.jar');
+      'build/classes',
+      'build/flutter-intellij/lib/flutter-intellij.jar',
+    );
     if (result != 0) {
       log('jar failed: ${result.toString()}');
       return result;
     }
     if (spec.isTestTarget && !isReleaseMode && !isDevChannel) {
-      _copyFile(File('build/flutter-intellij/lib/flutter-intellij.jar'),
-          Directory(testTargetPath(spec)),
-          filename: 'io.flutter.jar');
+      _copyFile(
+        File('build/flutter-intellij/lib/flutter-intellij.jar'),
+        Directory(testTargetPath(spec)),
+        filename: 'io.flutter.jar',
+      );
     }
     if (spec.isAndroidStudio) {
       result = await jar(
-          'build/studio', 'build/flutter-intellij/lib/flutter-studio.jar');
+        'build/studio',
+        'build/flutter-intellij/lib/flutter-studio.jar',
+      );
       if (result != 0) {
         log('jar failed: ${result.toString()}');
         return result;
@@ -349,8 +355,11 @@ class AntBuildCommand extends BuildCommand {
       return result;
     }
     if (spec.copyIjVersion && !isReleaseMode && !isDevChannel) {
-      _copyFile(File(releasesFilePath(spec)), Directory(ijVersionPath(spec)),
-          filename: 'flutter-intellij.zip');
+      _copyFile(
+        File(releasesFilePath(spec)),
+        Directory(ijVersionPath(spec)),
+        filename: 'flutter-intellij.zip',
+      );
     }
     return result;
   }
@@ -364,10 +373,12 @@ class GradleBuildCommand extends BuildCommand {
   }
 
   Future<int> savePluginArtifact(BuildSpec spec, String version) async {
-    var file = File(releasesFilePath(spec));
+    final file = File(releasesFilePath(spec));
     _copyFile(
-        File('build/distributions/flutter-intellij-$version.zip'), file.parent,
-        filename: p.basename(file.path));
+      File('build/distributions/flutter-intellij-$version.zip'),
+      file.parent,
+      filename: p.basename(file.path),
+    );
     return 0;
   }
 
@@ -463,8 +474,8 @@ abstract class BuildCommand extends ProductCommand {
 
       log('spec.version: ${spec.version}');
 
-      var compileFn = () async {
-        var r = await externalBuildCommand(spec);
+      final compileFn = () async {
+        final r = await externalBuildCommand(spec);
         if (r == 0) {
           // copy resources
           copyResources(from: 'src', to: 'build/classes');

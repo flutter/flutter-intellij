@@ -56,15 +56,15 @@ compile
   }
 
   Future<int> buildPlugin(BuildSpec spec, String version) async {
-    var contents = '''
+    final contents = '''
 org.gradle.parallel=true
 org.gradle.jvmargs=-Xms128m -Xmx1024m -XX:+CMSClassUnloadingEnabled
 dartVersion=${spec.dartPluginVersion}
 flutterPluginVersion=$version
 ide=${spec.ideaProduct}
 ''';
-    var propertiesFile = File("$rootPath/gradle.properties");
-    var source = propertiesFile.readAsStringSync();
+    final propertiesFile = File("$rootPath/gradle.properties");
+    final source = propertiesFile.readAsStringSync();
     propertiesFile.writeAsStringSync(contents);
     // Using the Gradle daemon causes a strange problem.
     // --daemon => Invalid byte 1 of 1-byte UTF-8 sequence, which is nonsense.
