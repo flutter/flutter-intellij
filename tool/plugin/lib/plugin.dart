@@ -21,7 +21,8 @@ Future<int> main(List<String> args) async {
   var runner = new BuildCommandRunner();
 
   runner.addCommand(new LintCommand(runner));
-  runner.addCommand(new BuildCommand(runner));
+  runner.addCommand(new AntBuildCommand(runner));
+  runner.addCommand(new GradleBuildCommand(runner));
   runner.addCommand(new TestCommand(runner));
   runner.addCommand(new DeployCommand(runner));
   runner.addCommand(new GenerateCommand(runner));
@@ -309,13 +310,98 @@ void _copyResources(Directory from, Directory to) {
   }
 }
 
+class AntBuildCommand extends BuildCommand {
+  AntBuildCommand(BuildCommandRunner runner) : super(runner, 'build');
+
+  Future<int> externalBuildCommand(BuildSpec spec) async {
+    return runner.javac2(spec);
+  }
+
+  Future<int> savePluginArtifact(BuildSpec spec, String version) async {
+    int result;
+
+    // create the jars
+    createDir('build/flutter-intellij/lib');
+    result = await jar(
+      'build/classes',
+      'build/flutter-intellij/lib/flutter-intellij.jar',
+    );
+    if (result != 0) {
+      log('jar failed: ${result.toString()}');
+      return result;
+    }
+    if (spec.isTestTarget && !isReleaseMode && !isDevChannel) {
+      _copyFile(
+        File('build/flutter-intellij/lib/flutter-intellij.jar'),
+        Directory(testTargetPath(spec)),
+        filename: 'io.flutter.jar',
+      );
+    }
+    if (spec.isAndroidStudio) {
+      result = await jar(
+        'build/studio',
+        'build/flutter-intellij/lib/flutter-studio.jar',
+      );
+      if (result != 0) {
+        log('jar failed: ${result.toString()}');
+        return result;
+      }
+    }
+
+    // zip it up
+    result = await zip('build/flutter-intellij', releasesFilePath(spec));
+    if (result != 0) {
+      log('zip failed: ${result.toString()}');
+      return result;
+    }
+    if (spec.copyIjVersion && !isReleaseMode && !isDevChannel) {
+      _copyFile(
+        File(releasesFilePath(spec)),
+        Directory(ijVersionPath(spec)),
+        filename: 'flutter-intellij.zip',
+      );
+    }
+    return result;
+  }
+}
+
+class GradleBuildCommand extends BuildCommand {
+  GradleBuildCommand(BuildCommandRunner runner) : super(runner, 'make');
+
+  Future<int> externalBuildCommand(BuildSpec spec) async {
+    return runner.buildPlugin(spec, pluginVersion);
+  }
+
+  Future<int> savePluginArtifact(BuildSpec spec, String version) async {
+    final file = File(releasesFilePath(spec));
+    _copyFile(
+      File('build/distributions/flutter-intellij-$version.zip'),
+      file.parent,
+      filename: p.basename(file.path),
+    );
+    return 0;
+  }
+
+  Future<int> doit() async {
+    try {
+      return await super.doit();
+    } finally {
+      if (Platform.isWindows) {
+        return await exec('.\\gradlew.bat', ['--stop']);
+      } else {
+        return await exec('./gradlew', ['--stop']);
+      }
+    }
+  }
+}
+
 /// Build deployable plugin files. If the --release argument is given
 /// then perform additional checks to verify that the release environment
 /// is in good order.
-class BuildCommand extends ProductCommand {
+abstract class BuildCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
-  BuildCommand(this.runner) : super('build') {
+  BuildCommand(this.runner, String commandName) : super(commandName) {
     argParser.addOption('only-version',
         abbr: 'o',
         help: 'Only build the specified IntelliJ version; useful for sharding '
@@ -330,6 +416,12 @@ class BuildCommand extends ProductCommand {
 
   String get description => 'Build a deployable version of the Flutter plugin, '
       'compiled against the specified artifacts.';
+
+  Future<int> externalBuildCommand(BuildSpec spec);
+
+  Future<int> savePluginArtifact(BuildSpec spec, String version);
+
+  String get pluginVersion => release ?? 'DEV';
 
   Future<int> doit() async {
     if (isReleaseMode) {
@@ -382,8 +474,8 @@ class BuildCommand extends ProductCommand {
 
       log('spec.version: ${spec.version}');
 
-      var compileFn = () async {
-        var r = await runner.javac2(spec);
+      final compileFn = () async {
+        final r = await externalBuildCommand(spec);
         if (r == 0) {
           // copy resources
           copyResources(from: 'src', to: 'build/classes');
@@ -395,42 +487,13 @@ class BuildCommand extends ProductCommand {
       };
 
       result = await applyEdits(spec, compileFn);
-
       if (result != 0) {
         return result;
       }
 
-      // create the jars
-      createDir('build/flutter-intellij/lib');
-      result = await jar(
-          'build/classes', 'build/flutter-intellij/lib/flutter-intellij.jar');
+      result = await savePluginArtifact(spec, pluginVersion);
       if (result != 0) {
-        log('jar failed: ${result.toString()}');
         return result;
-      }
-      if (spec.isTestTarget && !isReleaseMode && !isDevChannel) {
-        _copyFile(File('build/flutter-intellij/lib/flutter-intellij.jar'),
-            Directory(testTargetPath(spec)),
-            filename: 'io.flutter.jar');
-      }
-      if (spec.isAndroidStudio) {
-        result = await jar(
-            'build/studio', 'build/flutter-intellij/lib/flutter-studio.jar');
-        if (result != 0) {
-          log('jar failed: ${result.toString()}');
-          return result;
-        }
-      }
-
-      // zip it up
-      result = await zip('build/flutter-intellij', releasesFilePath(spec));
-      if (result != 0) {
-        log('zip failed: ${result.toString()}');
-        return result;
-      }
-      if (spec.copyIjVersion && !isReleaseMode && !isDevChannel) {
-        _copyFile(File(releasesFilePath(spec)), Directory(ijVersionPath(spec)),
-            filename: 'flutter-intellij.zip');
       }
 
       separator('Built artifact');

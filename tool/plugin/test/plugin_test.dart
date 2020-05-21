@@ -12,7 +12,11 @@ import 'package:test/test.dart';
 void main() {
   group("create", () {
     test('build', () {
-      expect(new BuildCommand(new BuildCommandRunner()).name, "build");
+      expect(new AntBuildCommand(new BuildCommandRunner()).name, "build");
+    });
+
+    test('make', () {
+      expect(new GradleBuildCommand(new BuildCommandRunner()).name, "make");
     });
 
     test('test', () {
@@ -238,14 +242,23 @@ void main() {
 BuildCommandRunner makeTestRunner() {
   var runner = new BuildCommandRunner();
   runner.addCommand(new TestBuildCommand(runner));
+  runner.addCommand(new TestMakeCommand(runner));
   runner.addCommand(new TestTestCommand(runner));
   runner.addCommand(new TestDeployCommand(runner));
   runner.addCommand(new TestGenCommand(runner));
   return runner;
 }
 
-class TestBuildCommand extends BuildCommand {
+class TestBuildCommand extends AntBuildCommand {
   TestBuildCommand(runner) : super(runner);
+
+  bool get isTesting => true;
+
+  Future<int> doit() async => new Future(() => 0);
+}
+
+class TestMakeCommand extends GradleBuildCommand {
+  TestMakeCommand(runner) : super(runner);
 
   bool get isTesting => true;
 
