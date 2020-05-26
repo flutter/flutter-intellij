@@ -62,6 +62,6 @@ Please note the following known issues:
 ## Dev Channel
 
 If you like getting new features as soon as they've been added to the code then you
-might want to try out the dev channel. It is updated weekly with whatever is the
-repository. It has minimal testing. Set up instructions are in the wiki's
+might want to try out the dev channel. It is updated weekly with the latest contents
+from the "master" branch. It has minimal testing. Set up instructions are in the wiki's
 [dev channel page](https://github.com/flutter/flutter-intellij/wiki/Dev-Channel).
