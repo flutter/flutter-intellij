@@ -312,12 +312,14 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private void onVersionChanged() {
     final Workspace workspace = workspaceCache.get();
     if (workspaceCache.isBazel()) {
-      // The workspace is not null if workspaceCache.isBazel() is true.
-      assert (workspace != null);
+      if (mySdkCombo.isEnabled()) {
+        // The workspace is not null if workspaceCache.isBazel() is true.
+        assert (workspace != null);
 
-      mySdkCombo.setEnabled(false);
-      mySdkCombo.getComboBox().getEditor()
-        .setItem(workspace.getRoot().getPath() + '/' + workspace.getSdkHome() + " <set by bazel project>");
+        mySdkCombo.setEnabled(false);
+        mySdkCombo.getComboBox().getEditor()
+          .setItem(workspace.getRoot().getPath() + '/' + workspace.getSdkHome() + " <set by bazel project>");
+      }
     }
     else {
       mySdkCombo.setEnabled(true);
