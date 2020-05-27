@@ -49,4 +49,11 @@ public class FlutterConsoleFilterTest {
     Filter.Result link = new FlutterConsoleFilter(fixture.getModule()).applyFilter(line, line.length());
     assertNotNull(link);
   }
+
+  @Test
+  public void checkErrorMessage() {
+    final String line = "test/widget_test.dart:23:18: Error: Expected ';' after this.";
+    final Filter.Result link = new FlutterConsoleFilter(fixture.getModule()).applyFilter(line, line.length());
+    assertNotNull(link);
+  }
 }
