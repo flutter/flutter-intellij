@@ -1,3 +1,16 @@
+# 46.0
+- Apply link filter to error messages
+- Save files before launching debug tests (#4556)
+- Add null check to device refresh (#4557)
+- Add device selector refresh button for internal projects (#4550)
+- Allow internal Dart SDK paths (#4546)
+- Prevent drawing child lines through other chars (#4522)
+- Update tests for 2020.1 (#4530)
+- Update setup instructions (#4520)
+- Update the material and cupertino icons (#4517)
+- In-line run config names to address runtime wanrings (#4500)
+- Only show the Flutter device selector in projects that have a Flutter module (#4483)
+
 # 45.1
 - Automatically re-import add-to-app module when host app is opened for the first time (#4479)
 - Harden survey checking network access (#4469)
