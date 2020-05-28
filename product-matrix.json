@@ -44,19 +44,6 @@
       "dartPluginVersion": "202.4357.23",
       "sinceBuild": "202.4357.23",
       "untilBuild": "202.*"
-    },
-    {
-      "channel": "dev",
-      "comments": "Android Studio 4.1 Canary 10",
-      "name": "Android Studio 4.1",
-      "version": "4.1",
-      "isTestTarget": "true",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "201.6507185",
-      "dartPluginVersion": "201.6668.22",
-      "sinceBuild": "201.7223",
-      "untilBuild": "201.*",
-      "filesToSkip": ["src/main/java/io/flutter/utils/AndroidLocationProvider.java"]
     }
   ]
 }
