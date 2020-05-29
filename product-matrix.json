@@ -13,18 +13,18 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2019.3.3, Android Studio 4.0 beta",
-      "name": "IntelliJ 2019.3",
+      "comments": "IntelliJ 2019.3.5, Android Studio 4.0",
+      "name": "Android Studio 4.0",
       "version": "4.0",
       "ideaProduct": "android-studio",
-      "ideaVersion": "193.6220182",
-      "dartPluginVersion": "193.6494.35",
-      "sinceBuild": "193.3519.25",
+      "ideaVersion": "193.6514223",
+      "dartPluginVersion": "193.7361",
+      "sinceBuild": "193.6911",
       "untilBuild": "193.*"
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2020.1 Beta",
+      "comments": "IntelliJ 2020.1",
       "name": "IntelliJ 2020.1",
       "version": "2020.1",
       "isUnitTestTarget": "true",
@@ -35,17 +35,15 @@
       "untilBuild": "201.*"
     },
     {
-      "channel": "dev",
-      "comments": "Android Studio 4.1 Canary 4",
-      "name": "Android Studio 4.1",
-      "version": "4.1",
-      "isTestTarget": "true",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "193.6325121",
-      "dartPluginVersion": "193.6494.35",
-      "sinceBuild": "193.6494.35",
-      "untilBuild": "193.*",
-      "filesToSkip": ["src/main/java/io/flutter/utils/AndroidLocationProvider.java"]
+      "channel": "stable",
+      "comments": "IntelliJ 2020.2 EAP",
+      "name": "IntelliJ 2020.2",
+      "version": "2020.2",
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "202.4357.23",
+      "dartPluginVersion": "202.4357.23",
+      "sinceBuild": "202.4357.23",
+      "untilBuild": "202.*"
     }
   ]
 }
