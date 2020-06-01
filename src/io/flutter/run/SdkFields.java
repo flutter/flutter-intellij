@@ -130,7 +130,7 @@ public class SdkFields {
     if (buildFlavor != null) {
       args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
     }
-    if (FlutterSettings.getInstance().isShowStructuredErrors()) {
+    if (FlutterSettings.getInstance().isShowStructuredErrors() && flutterSdk.getVersion().isDartDefineSupported()) {
       args = ArrayUtil.append(args, "--dart-define=flutter.inspector.structuredErrors=true");
     }
     command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
