@@ -158,11 +158,6 @@ public class FlutterReloadManager {
       return;
     }
 
-    // Add an arbitrary 125ms delay to allow analysis to catch up. This delay gives the analysis server a
-    // small pause to return error results in the (relatively infrequent) case where the user makes a bad
-    // edit and immediately hits save.
-    final int reloadDelayMs = 125;
-
     // Transition the app to an about-to-reload state.
     final FlutterApp.State previousAppState = app.transitionStartingHotReload();
 
@@ -203,7 +198,7 @@ public class FlutterReloadManager {
           }), delay, TimeUnit.MILLISECONDS);
         }
       });
-    }, reloadDelayMs, TimeUnit.MILLISECONDS);
+    }, 0, TimeUnit.MILLISECONDS);
   }
 
   private void reloadApp(@NotNull FlutterApp app, @NotNull String reason) {
