@@ -20,6 +20,7 @@ import io.flutter.pub.PubRootCache;
 import io.flutter.run.common.RunMode;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -128,6 +129,9 @@ public class SdkFields {
     String[] args = additionalArgs == null ? new String[]{ } : additionalArgs.split(" ");
     if (buildFlavor != null) {
       args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
+    }
+    if (FlutterSettings.getInstance().isShowStructuredErrors() && flutterSdk.getVersion().isDartDefineSupported()) {
+      args = ArrayUtil.append(args, "--dart-define=flutter.inspector.structuredErrors=true");
     }
     command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
     return command.createGeneralCommandLine(project);

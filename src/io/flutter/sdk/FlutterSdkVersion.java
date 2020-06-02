@@ -30,14 +30,19 @@ public class FlutterSdkVersion {
   private static final FlutterSdkVersion MIN_SAFE_TRACK_WIDGET_CREATION_SDK = new FlutterSdkVersion("0.10.2");
 
   /**
-   * The version of the stable channel that suppoorts --androidx in the create command.
+   * The version of the stable channel that supports --androidx in the create command.
    */
   private static final FlutterSdkVersion MIN_ANDROIDX_SDK = new FlutterSdkVersion("1.7.8");
 
   /**
-   * The version of the stable channel that suppoorts --androidx in the create command.
+   * The version of the stable channel that supports --androidx in the create command.
    */
   private static final FlutterSdkVersion MIN_PUB_OUTDATED_SDK = new FlutterSdkVersion("1.16.4");
+
+  /**
+   * The version that supports --dart-define in the run command.
+   */
+  private static final FlutterSdkVersion MIN_DART_DEFINE_SDK = new FlutterSdkVersion("1.12.0");
 
   @Nullable
   private final Version version;
@@ -102,6 +107,10 @@ public class FlutterSdkVersion {
   public boolean isAndroidxSupported() {
     //noinspection ConstantConditions
     return version != null && version.compareTo(MIN_ANDROIDX_SDK.version) >= 0;
+  }
+
+  public boolean isDartDefineSupported() {
+    return version != null && version.compareTo(MIN_DART_DEFINE_SDK.version) >= 0;
   }
 
   public boolean flutterTestSupportsMachineMode() {
