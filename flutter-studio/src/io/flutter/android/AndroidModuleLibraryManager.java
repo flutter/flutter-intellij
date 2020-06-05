@@ -25,6 +25,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.impl.ProjectImpl;
+import com.intellij.openapi.project.impl.ProjectManagerImpl;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.DependencyScope;
 import com.intellij.openapi.roots.JavaProjectModelModifier;
@@ -44,10 +45,13 @@ import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileContentsChangedAdapter;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.util.ReflectionUtil;
 import com.intellij.util.modules.CircularModuleDependenciesDetector;
 import io.flutter.sdk.AbstractLibraryManager;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.FlutterModuleUtils;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -209,7 +213,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     if (dir == null) dir = flutterProject.getBaseDir().findChild(".android"); // For modules.
     if (dir == null) return;
     EmbeddedAndroidProject androidProject = new EmbeddedAndroidProject(Paths.get(FileUtilRt.toSystemIndependentName(dir.getPath())));
-    androidProject.init(null);
+    androidProject.init41(null);
     Disposer.register(flutterProject, androidProject);
 
     GradleSyncListener listener = new GradleSyncListener() {
@@ -219,7 +223,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
       // TODO(messick) Remove when 3.6 is stable.
       public void syncStarted(@NotNull Project project, boolean skipped, boolean sourceGenerationRequested) {}
 
-      @Override
+      @SuppressWarnings("override")
       public void setupStarted(@NotNull Project project) {}
 
       @Override
@@ -318,11 +322,41 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
 
     static final String TEMPLATE_PROJECT_NAME = "_android";
 
-    @Override
-    public void init(@Nullable ProgressIndicator indicator) {
+    public void init41(@Nullable ProgressIndicator indicator) {
       boolean finished = false;
       try {
-        registerComponents();
+        //ProjectManagerImpl.initProject(path, this, true, null, null);
+        Method method = ReflectionUtil
+          .getDeclaredMethod(ProjectManagerImpl.class, "initProject", Path.class, ProjectImpl.class, boolean.class, Project.class,
+                             ProgressIndicator.class);
+        assert (method != null);
+        try {
+          method.invoke(null, path, this, true, null, null);
+        }
+        catch (IllegalAccessException | InvocationTargetException e) {
+          throw new RuntimeException(e);
+        }
+        finished = true;
+      }
+      finally {
+        if (!finished) {
+          TransactionGuard.submitTransaction(this, () -> WriteAction.run(() -> Disposer.dispose(this)));
+        }
+      }
+    }
+
+    public void initPre41(@Nullable ProgressIndicator indicator) {
+      boolean finished = false;
+      try {
+        //registerComponents();
+        Method method = ReflectionUtil.getDeclaredMethod(ProjectImpl.class, "registerComponents");
+        assert (method != null);
+        try {
+          method.invoke(null);
+        }
+        catch (IllegalAccessException | InvocationTargetException e) {
+          throw new RuntimeException(e);
+        }
         getStateStore().setPath(path, true, null);
         super.init(indicator);
         finished = true;
