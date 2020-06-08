@@ -60,5 +60,6 @@
     <orderEntry type="module" module-name="android.sdktools.testutils" />
     <orderEntry type="module" module-name="intellij.android.gradle.dsl" />
     <orderEntry type="module" module-name="intellij.android.projectSystem.gradle.psd" />
+    <orderEntry type="module" module-name="intellij.android.deploy" />
   </component>
 </module>
