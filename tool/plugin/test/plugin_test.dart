@@ -43,8 +43,8 @@ void main() {
             orderedEquals([
               'android-studio',
               'android-studio',
-              'ideaIC',
               'android-studio',
+              'ideaIC',
             ]));
       });
     });
@@ -59,8 +59,8 @@ void main() {
             orderedEquals([
               'android-studio',
               'android-studio',
-              'ideaIC',
               'android-studio',
+              'ideaIC',
             ]));
       });
     });
@@ -75,8 +75,8 @@ void main() {
             orderedEquals([
               'android-studio',
               'android-studio',
-              'ideaIC',
               'android-studio',
+              'ideaIC',
             ]));
       });
     });
