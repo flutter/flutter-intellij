@@ -41,13 +41,25 @@ List<EditCommand> editCommands = [
         'import com.android.tools.idea.gradle.structure.actions.AndroidShowStructureSettingsAction;',
     replacement:
         'import com.android.tools.idea.gradle.actions.AndroidShowStructureSettingsAction;',
-    versions: ['3.6', '4.0', '2020.1'],
+    versions: ['3.6', '4.0', '2020.2'],
+  ),
+  MultiSubst(
+    path: 'flutter-studio/src/io/flutter/actions/OpenAndroidModule.java',
+    initials: [
+      'findGradleTarget',
+      'importAndOpenProjectCore(null, true, projectFile)',
+    ],
+    replacements: [
+      'findImportTarget',
+      'importProjectCore(projectFile)',
+    ],
+    versions: ['3.6', '4.0', '2020.2'],
   ),
   Subst(
-    path: 'flutter-studio/src/io/flutter/actions/OpenAndroidModule.java',
-    initial: 'findGradleTarget',
-    replacement: 'findImportTarget',
-    versions: ['3.6', '4.0', '2020.1'],
+    path: 'flutter-studio/src/io/flutter/utils/AddToAppUtils.java',
+    initial: '.project.importing.GradleProjectImporter',
+    replacement: '.project.importing.NewProjectSetup',
+    versions: ['3.6', '4.0', '2020.2'],
   ),
   Subst(
     path: 'src/io/flutter/utils/AndroidUtils.java',
@@ -93,6 +105,19 @@ class EditAndroidModuleLibraryManager extends EditCommand {
         'getStateStore().setPath(path',
         'getStateStore().setPath(path.toString()',
       );
+      source = source.replaceAll(
+          "androidProject.init41", "androidProject.initPre41");
+      processedFile.writeAsStringSync(source);
+      return original;
+    } else if (spec.version.startsWith("4.0") ||
+        spec.version.startsWith("2020.2")) {
+      var processedFile, source;
+      processedFile = File(
+          'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
+      source = processedFile.readAsStringSync();
+      var original = source;
+      source = source.replaceAll(
+          "androidProject.init41", "androidProject.initPre41");
       processedFile.writeAsStringSync(source);
       return original;
     } else {
@@ -263,6 +288,49 @@ class Subst extends EditCommand {
       var source = processedFile.readAsStringSync();
       var original = source;
       source = source.replaceAll(initial, replacement);
+      processedFile.writeAsStringSync(source);
+      return original;
+    } else {
+      return null;
+    }
+  }
+
+  String toString() => "Subst(path: $path, versions: $versions)";
+
+  bool versionMatches(BuildSpec spec) {
+    return versions.any((v) => spec.version.startsWith(v));
+  }
+}
+
+// TODO Unify Subst and MultiSubst, and find a better name.
+class MultiSubst extends EditCommand {
+  @override
+  String path;
+  List<String> initials;
+  List<String> replacements;
+  List<String> versions;
+
+  MultiSubst({
+    this.versions,
+    this.initials,
+    this.replacements,
+    this.path,
+  }) {
+    assert(initials.length == replacements.length);
+    assert(path != null);
+    assert(versions.isNotEmpty);
+    assert(initials.isNotEmpty);
+  }
+
+  @override
+  String convert(BuildSpec spec) {
+    if (versionMatches(spec)) {
+      var processedFile = File(path);
+      var source = processedFile.readAsStringSync();
+      var original = source;
+      for (var i = 0; i < initials.length; i++) {
+        source = source.replaceAll(initials[i], replacements[i]);
+      }
       processedFile.writeAsStringSync(source);
       return original;
     } else {

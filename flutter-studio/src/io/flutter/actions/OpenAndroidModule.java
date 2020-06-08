@@ -75,7 +75,7 @@ public class OpenAndroidModule extends OpenInAndroidStudioAction implements Dumb
         }
 
         GradleProjectImporter gradleImporter = GradleProjectImporter.getInstance();
-        gradleImporter.importProjectCore(projectFile);
+        gradleImporter.importAndOpenProjectCore(null, true, projectFile);
         for (Project proj : ProjectManager.getInstance().getOpenProjects()) {
           if (projectFile.equals(proj.getBaseDir()) || projectFile.equals(proj.getProjectFile())) {
             if (sourceFile != null && !sourceFile.isDirectory()) {

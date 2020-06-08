@@ -5,7 +5,7 @@
  */
 package io.flutter.utils;
 
-import static com.android.tools.idea.gradle.project.importing.NewProjectSetup.ANDROID_PROJECT_TYPE;
+import static com.android.tools.idea.gradle.project.importing.GradleProjectImporter.ANDROID_PROJECT_TYPE;
 import static com.intellij.util.ReflectionUtil.findAssignableField;
 import static io.flutter.actions.AttachDebuggerAction.ATTACH_IS_ACTIVE;
 import static io.flutter.actions.AttachDebuggerAction.findRunConfig;
