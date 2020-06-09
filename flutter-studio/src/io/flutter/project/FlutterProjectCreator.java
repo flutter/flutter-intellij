@@ -236,7 +236,6 @@ public class FlutterProjectCreator {
       .setType(myModel.projectType().getValue())
       .setAndroidX(myModel.isGeneratingAndroidX())
       .setOrg(myModel.packageName().get().isEmpty() ? null : reversedOrgFromPackage(myModel.packageName().get()))
-      .setProject(myModel.packageName().get().isEmpty() ? null : projectFromPackage(myModel.packageName().get()))
       .setKotlin(isNotModule() && myModel.useKotlin().get() ? true : null)
       .setSwift(isNotModule() && myModel.useSwift().get() ? true : null)
       .setOffline(myModel.isOfflineSelected().get())
@@ -291,18 +290,6 @@ public class FlutterProjectCreator {
       return packageName;
     }
     return packageName.substring(0, idx);
-  }
-
-  @Nullable
-  private static String projectFromPackage(@NotNull String packageName) {
-    if (packageName.isEmpty()) {
-      return null;
-    }
-    int idx = packageName.lastIndexOf('.');
-    if (idx <= 0) {
-      return null;
-    }
-    return packageName.substring(idx + 1);
   }
 
   public static class MyConversionListener implements ConversionListener {
