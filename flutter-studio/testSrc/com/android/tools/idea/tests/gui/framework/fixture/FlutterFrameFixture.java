@@ -34,13 +34,6 @@ public class FlutterFrameFixture extends IdeaFrameFixture {
     return NewFlutterModuleWizardFixture.find(this);
   }
 
-  @Override
-  @NotNull
-  public FlutterFrameFixture waitForGradleProjectSyncToFinish() {
-    super.waitForGradleProjectSyncToFinish();
-    return this;
-  }
-
   public void waitForProjectSyncToFinish() {
     GuiTests.waitForBackgroundTasks(robot());
   }
