@@ -22,8 +22,6 @@ public class FlutterCreateAdditionalSettings {
   @Nullable
   private String org;
   @Nullable
-  private String project;
-  @Nullable
   private Boolean swift;
   @Nullable
   private Boolean kotlin;
@@ -41,7 +39,6 @@ public class FlutterCreateAdditionalSettings {
                                           @Nullable FlutterProjectType type,
                                           @Nullable String description,
                                           @Nullable String org,
-                                          @Nullable String project,
                                           @Nullable Boolean swift,
                                           @Nullable Boolean kotlin,
                                           @Nullable Boolean offlineMode,
@@ -50,7 +47,6 @@ public class FlutterCreateAdditionalSettings {
     this.type = type;
     this.description = description;
     this.org = org;
-    this.project = project;
     this.swift = swift;
     this.kotlin = kotlin;
     this.offlineMode = offlineMode;
@@ -66,17 +62,8 @@ public class FlutterCreateAdditionalSettings {
     return org;
   }
 
-  @Nullable
-  public String getProject() {
-    return project;
-  }
-
   public void setOrg(@Nullable String value) {
     org = value;
-  }
-
-  public void setProject(@Nullable String value) {
-    project = value;
   }
 
   public void setSwift(boolean value) {
@@ -111,11 +98,6 @@ public class FlutterCreateAdditionalSettings {
     if (!StringUtil.isEmptyOrSpaces(org)) {
       args.add("--org");
       args.add(org);
-    }
-
-    if (!StringUtil.isEmptyOrSpaces(project)) {
-      args.add("--project-name");
-      args.add(project);
     }
 
     if (swift == null || Boolean.FALSE.equals(swift)) {
@@ -170,8 +152,6 @@ public class FlutterCreateAdditionalSettings {
     @Nullable
     private String org;
     @Nullable
-    private String project;
-    @Nullable
     private Boolean swift;
     @Nullable
     private Boolean kotlin;
@@ -202,11 +182,6 @@ public class FlutterCreateAdditionalSettings {
       return this;
     }
 
-    public Builder setProject(@Nullable String project) {
-      this.project = project;
-      return this;
-    }
-
     public Builder setSwift(@Nullable Boolean swift) {
       this.swift = swift;
       return this;
@@ -228,7 +203,7 @@ public class FlutterCreateAdditionalSettings {
     }
 
     public FlutterCreateAdditionalSettings build() {
-      return new FlutterCreateAdditionalSettings(includeDriverTest, type, description, org, project, swift, kotlin, offlineMode, isAndroidX);
+      return new FlutterCreateAdditionalSettings(includeDriverTest, type, description, org, swift, kotlin, offlineMode, isAndroidX);
     }
   }
 }
