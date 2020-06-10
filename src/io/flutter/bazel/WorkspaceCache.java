@@ -52,10 +52,8 @@ public class WorkspaceCache {
         nextWatch.setDisposeParent(project);
       }
 
-      if (!disconnected) {
-        final FileWatch prevWatch = fileWatch.getAndSet(nextWatch);
-        if (prevWatch != null) prevWatch.unsubscribe();
-      }
+      final FileWatch prevWatch = fileWatch.getAndSet(nextWatch);
+      if (prevWatch != null) prevWatch.unsubscribe();
     });
 
     // Detect module root changes.
@@ -135,9 +133,10 @@ public class WorkspaceCache {
     if (workspace == cache && !disconnected) return;
     if (cache != null && workspace == null) {
       disconnected = true;
-    } else {
-      disconnected = false;
+      return;
     }
+
+    disconnected = false;
     cache = workspace;
 
     // If the current workspace is a bazel workspace, update the Dart plugin
