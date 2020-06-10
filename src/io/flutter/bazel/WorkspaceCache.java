@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class WorkspaceCache {
   @NotNull private final Project project;
   @Nullable private Workspace cache;
+  @NotNull private boolean disconnected = false;
 
   private boolean refreshScheduled = false;
 
@@ -129,7 +130,13 @@ public class WorkspaceCache {
    */
   private void refresh() {
     final Workspace workspace = Workspace.loadUncached(project);
-    if (workspace == cache) return;
+    if (workspace == cache && !disconnected) return;
+    if (cache != null && workspace == null) {
+      disconnected = true;
+      return;
+    }
+
+    disconnected = false;
     cache = workspace;
 
     // If the current workspace is a bazel workspace, update the Dart plugin
