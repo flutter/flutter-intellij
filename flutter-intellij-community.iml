@@ -16,6 +16,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/artifacts" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/flutter-idea" />
       <excludeFolder url="file://$MODULE_DIR$/flutter-idea/testData/sample_tests/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/flutter-idea/testData/sample_tests/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/flutter-idea/testData/sample_tests/build" />
@@ -92,5 +93,6 @@
     <orderEntry type="library" name="com.android.tools.analytics-library:protos" level="project" />
     <orderEntry type="module" module-name="intellij.android.gradle.dsl" />
     <orderEntry type="module" module-name="intellij.android.projectSystem" />
+    <orderEntry type="module" module-name="assistant" />
   </component>
 </module>

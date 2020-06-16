@@ -134,4 +134,8 @@ public class FlutterSdkVersion {
   public boolean isValid() {
     return version != null;
   }
+
+  public String fullVersion() {
+    return version.toString();
+  }
 }
