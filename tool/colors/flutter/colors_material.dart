@@ -4,7 +4,7 @@
 
 // @dart = 2.8
 
-import 'colors_main.dart';
+import '../stubs.dart';
 
 /// Defines a single color as well a color swatch with ten shades of the color.
 ///
