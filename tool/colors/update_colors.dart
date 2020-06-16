@@ -12,6 +12,8 @@ import 'generated/colors_material.dart' as material;
 import 'stubs.dart';
 
 void main(List<String> args) async {
+  // TODO(dantup): Split into two scripts instead of using a flag? It's allow
+  // easier debugging of the second step.
   if (args.contains("--generate-properties")) {
     generatePropertiesFiles();
   } else {
