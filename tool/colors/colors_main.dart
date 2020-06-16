@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'colors.dart';
+import 'colors_material.dart';
 
 void main() {
   // https://github.com/flutter/flutter/blob/master/packages/flutter/lib/src/material/colors.dart
