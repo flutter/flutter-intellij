@@ -21,6 +21,7 @@ public class StdoutJsonParser {
   private boolean bufferIsJson = false;
   private final List<String> lines = new ArrayList<>();
   private boolean eatNextEol = false;
+  private boolean isPotentialWindowsReturn = false;
 
   /**
    * Write new output to this [StdoutJsonParser].
@@ -32,8 +33,22 @@ public class StdoutJsonParser {
       if (eatNextEol) {
         eatNextEol = false;
 
-        if (c == '\n' || c == '\r') {
+        if (c == '\n') {
           continue;
+        }
+
+        if (c == '\r' && !isPotentialWindowsReturn) {
+          eatNextEol = true;
+          isPotentialWindowsReturn = true;
+          continue;
+        }
+      }
+
+      if (isPotentialWindowsReturn) {
+        isPotentialWindowsReturn = false;
+
+        if (c != '\n') {
+          flushLine();
         }
       }
 
@@ -46,8 +61,13 @@ public class StdoutJsonParser {
         flushLine();
       }
 
-      if (c == '\n' || c == '\r') {
+      if (c == '\n') {
         flushLine();
+      }
+
+      if (c == '\r') {
+        // Wait and decide whether to flush depending on next character.
+        isPotentialWindowsReturn = true;
       }
     }
 
