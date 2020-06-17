@@ -32,7 +32,7 @@ public class StdoutJsonParser {
       if (eatNextEol) {
         eatNextEol = false;
 
-        if (c == '\n') {
+        if (c == '\n' || c == '\r') {
           continue;
         }
       }
@@ -46,7 +46,7 @@ public class StdoutJsonParser {
         flushLine();
       }
 
-      if (c == '\n') {
+      if (c == '\n' || c == '\r') {
         flushLine();
       }
     }
