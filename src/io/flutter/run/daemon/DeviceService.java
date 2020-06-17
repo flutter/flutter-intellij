@@ -226,7 +226,9 @@ public class DeviceService {
     emulatorManager.refresh();
 
     try {
-      // Wait for indexing to finish before starting daemon process
+      // Wait for indexing to finish before starting daemon process.
+      // There seem to be initialization processes in some situations (new project and on IDE startup) that cause `flutter daemon` command
+      // to fail if it's called too early.
       DumbService.getInstance(project).waitForSmartMode();
       return nextCommand.start(request::isCancelled, this::refreshDeviceSelection, this::daemonStopped);
     }
