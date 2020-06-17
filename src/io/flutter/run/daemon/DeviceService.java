@@ -12,6 +12,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ex.ProjectRootManagerEx;
 import com.intellij.openapi.util.Disposer;
@@ -225,6 +226,8 @@ public class DeviceService {
     emulatorManager.refresh();
 
     try {
+      // Wait for indexing to finish before starting daemon process
+      DumbService.getInstance(project).waitForSmartMode();
       return nextCommand.start(request::isCancelled, this::refreshDeviceSelection, this::daemonStopped);
     }
     catch (ExecutionException executionException) {
