@@ -54,14 +54,17 @@ public class StdoutJsonParserTest {
   @Test
   public void jsonWithLineBreaks() {
     final StdoutJsonParser parser = new StdoutJsonParser();
-    parser.appendOutput("[{'foo':'bar'}]\ntest\n");
-    parser.appendOutput("[{'foo':'baz'}]\rtest\r");
-    parser.appendOutput("[{'foo':'baz'}]\r\n");
+    parser.appendOutput("[{'foo':'bar'}]");
+    parser.appendOutput("\ntest\n");
+    parser.appendOutput("[{'foo':'baz'}]");
+    parser.appendOutput("\rtest\r");
+    parser.appendOutput("[{'foo':'baz2'}]");
+    parser.appendOutput("\r\nwindows");
     parser.appendOutput("bye\n");
 
     assertArrayEquals(
       "validating parser results",
-      new String[]{"[{'foo':'bar'}]\n", "test\n", "[{'foo':'baz'}]\r", "test\r", "[{'foo':'baz'}]\r\n", "bye\n"},
+      new String[]{"[{'foo':'bar'}]", "test\n", "[{'foo':'baz'}]", "test\r", "[{'foo':'baz2'}]", "windows", "bye\n"},
       parser.getAvailableLines().toArray()
     );
   }
