@@ -11,7 +11,7 @@
       <option name="DART_TOPLEVEL" value="true" />
     </context>
   </template>
-  <template name="inh" value="class $NAME$ extends InheritedWidget {&#10;  const $NAME$({&#10;    Key key,&#10;    @required Widget child,&#10;  }) : assert(child != null),&#10;       super(key: key, child: child);&#10;&#10;  static $NAME$ of(BuildContext context) {&#10;    return context.inheritFromWidgetOfExactType($NAME$) as $NAME$;&#10;  }&#10;&#10;  @override&#10;  bool updateShouldNotify($NAME$ old) {&#10;    return $SHOULD_NOTIFY$;&#10;  }&#10;}" description="New Inherited widget" toReformat="true" toShortenFQNames="true">
+  <template name="inh" value="class $NAME$ extends InheritedWidget {&#10;  const $NAME$({&#10;    Key key,&#10;    @required Widget child,&#10;  }) : assert(child != null),&#10;       super(key: key, child: child);&#10;&#10;  static $NAME$ of(BuildContext context) {&#10;    return context.dependOnInheritedWidgetOfExactType&lt;$NAME$&gt;();&#10;  }&#10;&#10;  @override&#10;  bool updateShouldNotify($NAME$ old) {&#10;    return $SHOULD_NOTIFY$;&#10;  }&#10;}" description="New Inherited widget" toReformat="true" toShortenFQNames="true">
     <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
     <variable name="SHOULD_NOTIFY" expression="" defaultValue="" alwaysStopAt="true" />
     <context>
