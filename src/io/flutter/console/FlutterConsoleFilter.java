@@ -23,11 +23,10 @@ import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdk;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The FlutterConsoleFilter handles link detection in consoles for:
@@ -183,19 +182,27 @@ public class FlutterConsoleFilter implements Filter {
 
     if (lineStart < 0) {
       // lib/registerC.dart:104:73: Error: Expected ';' after this.
-      String filePathAndLineNumberExpr = "^.*?((?:[^/]*?/)*?)(.*?):(\\d+?):\\d+?:\\s*?Error";
+      String filePathAndLineNumberExpr = "(^.*?):(\\d+?):\\d+?:\\s*?Error";
       Pattern pattern = Pattern.compile(filePathAndLineNumberExpr);
       Matcher matcher = pattern.matcher(line);
       boolean found = matcher.find();
       if (found) {
-        String path = matcher.group(1) + matcher.group(2);
-        file = fileAtPath(path);
-        if (file == null) {
+        String filePathExpr = "((?:[^/]*/)*)(.*)";
+        Pattern pathPattern = Pattern.compile(filePathExpr);
+        Matcher pathMatcher = pathPattern.matcher(matcher.group(1));
+        if (pathMatcher.find()) {
+          String path = pathMatcher.group(1) + pathMatcher.group(2);
+          file = fileAtPath(path);
+          if (file == null) {
+            return null;
+          }
+          lineNumber = Integer.parseInt(matcher.group(2));
+          lineStart = entireLength - line.length();
+          highlightLength = path.length();
+        }
+        else {
           return null;
         }
-        lineNumber = Integer.parseInt(matcher.group(3));
-        lineStart = entireLength - line.length();
-        highlightLength = path.length();
       }
       else {
         return null;
