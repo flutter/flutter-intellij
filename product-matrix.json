@@ -24,12 +24,11 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2020.1.1, Android Studio 4.1 Canary 10",
+      "comments": "IntelliJ 2020.1.1, Android Studio 4.1 Beta 1 & 4.2 Canary 1",
       "name": "Android Studio 4.1",
       "version": "4.1",
-      "isTestTarget": "true",
       "ideaProduct": "android-studio",
-      "ideaVersion": "201.6507185",
+      "ideaVersion": "201.6565218",
       "dartPluginVersion": "201.7223.99",
       "sinceBuild": "201.7223",
       "untilBuild": "201.*"
