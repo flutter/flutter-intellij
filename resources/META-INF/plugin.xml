@@ -1075,6 +1075,9 @@
       <action id="flutter.submitFeedback" class="io.flutter.actions.FlutterSubmitFeedback"
               text="Submit Feedback..."
               description="Provide feedback for the Flutter plugin"/>
+      <action id="flutter.testJxBrowser" class="io.flutter.actions.TestJxBrowserAction"
+              text="Test JxBrowser"
+              description="Open the sample JxBrowser pane"/>
     </group>
 
     <!-- project explorer actions -->
