@@ -5,12 +5,7 @@
  */
 package io.flutter.actions;
 
-import com.intellij.openapi.actionSystem.ActionPlaces;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.Presentation;
-import com.intellij.openapi.actionSystem.Separator;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -24,20 +19,21 @@ import io.flutter.run.FlutterDevice;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.sdk.AndroidEmulatorManager;
 import io.flutter.utils.FlutterModuleUtils;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import javax.swing.JComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import java.util.*;
 
 public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   private final List<AnAction> actions = new ArrayList<>();
   private final List<Project> knownProjects = Collections.synchronizedList(new ArrayList<>());
 
   private SelectDeviceAction selectedDeviceAction;
+
+  DeviceSelectorAction() {
+    setSmallVariant(false);
+  }
 
   @NotNull
   @Override
