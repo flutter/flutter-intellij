@@ -29,6 +29,25 @@
 
   <change-notes>
     <![CDATA[
+<h1>47.0</h1>
+<ul>
+  <li>Adapt to API changes in AS 4.2c2 (#4652)</li>
+  <li>Fix a display issue with the device selector (#4651)</li>
+  <li>Update product matrix for canary (#4645)</li>
+  <li>Dual regex (#4634)</li>
+  <li>Update the InheritedWidget template (#4636)</li>
+  <li>Recognize \r as newlines from flutter (#4633)</li>
+  <li>Update tool/colors to support generating mapping for CupertinoColor (#4628)</li>
+  <li>Start paused during run mode (#4622)</li>
+  <li>Avoid updating subscribers if bazel project is disconnected (#4603)</li>
+  <li>Stop specifying project name during creation (#4615)</li>
+  <li>Update integration tests for canary (#4612)</li>
+  <li>Update build to support canary (#4604)</li>
+  <li>Use lazy regexp with bounds (#4605)</li>
+  <li>Display structured errors immediately (#4587)</li>
+  <li>Upgrade ant for kokoro (#4594)</li>
+  <li>Remove a delay with hot reload (#4595)</li>
+</ul>
 <h1>46.0</h1>
 <ul>
   <li>Apply link filter to error messages</li>

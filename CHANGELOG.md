@@ -1,3 +1,21 @@
+# 47.0
+- Adapt to API changes in AS 4.2c2 (#4652)
+- Fix a display issue with the device selector (#4651)
+- Update product matrix for canary (#4645)
+- Dual regex (#4634)
+- Update the InheritedWidget template (#4636)
+- Recognize \r as newlines from flutter (#4633)
+- Update tool/colors to support generating mapping for CupertinoColor (#4628)
+- Start paused during run mode (#4622)
+- Avoid updating subscribers if bazel project is disconnected (#4603)
+- Stop specifying project name during creation (#4615)
+- Update integration tests for canary (#4612)
+- Update build to support canary (#4604)
+- Use lazy regexp with bounds (#4605)
+- Display structured errors immediately (#4587)
+- Upgrade ant for kokoro (#4594)
+- Remove a delay with hot reload (#4595)
+
 # 46.0
 - Apply link filter to error messages
 - Save files before launching debug tests (#4556)
