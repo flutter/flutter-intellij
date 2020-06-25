@@ -105,7 +105,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     abstract public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent);
 
-    @Override
+    @SuppressWarnings("override")
     public SkippableWizardStep createStep(@NotNull Project model, String parent, @NotNull ProjectSyncInvoker invoker) {
       // 4.2 canary 2 swapped the order of two args.
       // This whole framework is planned to be deleted at some future date, so we need to revise our templates

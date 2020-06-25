@@ -167,6 +167,17 @@ class EditFlutterProjectSystem extends EditCommand {
 }
 
 class EditFlutterDescriptionProvider extends EditCommand {
+  final String CODE_TO_DELETE = """
+    abstract public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent);
+
+    @SuppressWarnings("override")
+    public SkippableWizardStep createStep(@NotNull Project model, String parent, @NotNull ProjectSyncInvoker invoker) {
+      // 4.2 canary 2 swapped the order of two args.
+      // This whole framework is planned to be deleted at some future date, so we need to revise our templates
+      // to work with the new extendible model.
+      return createStep(model, invoker, parent);
+    }
+""";
   @override
   String get path =>
       'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java';
@@ -183,6 +194,7 @@ class EditFlutterDescriptionProvider extends EditCommand {
         'import com.android.tools.idea.npw.model.ProjectSyncInvoker',
         'import com.android.tools.idea.npw.model.NewModuleModel',
       );
+      source = source.replaceAll(CODE_TO_DELETE, '');
       source = source.replaceAll(
         'createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent)',
         'createStep(@NotNull NewModuleModel model)',
