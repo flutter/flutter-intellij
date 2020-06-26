@@ -26,6 +26,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentManager;
+import com.teamdev.jxbrowser.browser.Browser;
+import com.teamdev.jxbrowser.engine.Engine;
+import com.teamdev.jxbrowser.engine.EngineOptions;
+import com.teamdev.jxbrowser.view.swing.BrowserView;
+import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
@@ -38,7 +46,11 @@ import io.flutter.utils.MostlySilentOsProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.concurrent.CompletableFuture;
+
+import static com.teamdev.jxbrowser.engine.RenderingMode.HARDWARE_ACCELERATED;
 
 /**
  * Manage installing and opening DevTools.
@@ -217,6 +229,36 @@ public class DevToolsManager {
     return WorkspaceCache.getInstance(project).isBazel();
   }
 
+  public void openBrowserIntoPanel(String uri, ContentManager contentManager, String tabName) {
+    String screen = null;
+
+    if (devToolsInstance != null) {
+      devToolsInstance.openPanel(uri, contentManager, tabName);
+    }
+    else {
+      @Nullable final OSProcessHandler handler =
+        isBazel(project) ? getProcessHandlerForBazel() : getProcessHandlerForPub();
+
+      if (handler != null) {
+        // TODO(devoncarew) Add a Task.Backgroundable here; "Starting devtools..."
+
+        // start the server
+        DevToolsInstance.startServer(handler, instance -> {
+          devToolsInstance = instance;
+
+          devToolsInstance.openPanel(uri, contentManager, tabName);
+        }, () -> {
+          // Listen for closing; null out the devToolsInstance.
+          devToolsInstance = null;
+        });
+      }
+      else {
+        // TODO(devoncarew): We should provide feedback to callers that the open browser call failed.
+        devToolsInstance = null;
+      }
+    }
+  }
+
   private void openBrowserImpl(String uri, String screen) {
     if (devToolsInstance != null) {
       devToolsInstance.openBrowserAndConnect(uri, screen);
@@ -310,6 +352,36 @@ class DevToolsInstance {
       DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page),
       null
     );
+  }
+
+  public void openPanel(String serviceProtocolUri, ContentManager contentManager, String tabName) {
+    String address = DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, null) + "&embed=true&page=inspector";
+
+    EngineOptions options =
+      EngineOptions.newBuilder(HARDWARE_ACCELERATED).build();
+    Engine engine = Engine.newInstance(options);
+    Browser browser = engine.newBrowser();
+
+    final JPanel tabContainer = new JPanel(new BorderLayout());
+
+    final Content content = contentManager.getFactory().createContent(null, tabName, false);
+
+    SwingUtilities.invokeLater(() -> {
+      // Creating Swing component for rendering web content
+      // loaded in the given Browser instance.
+      BrowserView view = BrowserView.newInstance(browser);
+      view.setPreferredSize(new Dimension(400, 600));
+      JScrollPane pane = new JScrollPane(view);
+      pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
+      tabContainer.add(pane, BorderLayout.CENTER);
+      content.setComponent(tabContainer);
+      content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
+      content.setIcon(FlutterIcons.Phone);
+      contentManager.addContent(content);
+
+      browser.navigation().loadUrl(address);
+    });
   }
 }
 

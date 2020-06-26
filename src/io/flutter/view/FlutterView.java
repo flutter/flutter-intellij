@@ -9,23 +9,21 @@ import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.execution.ui.layout.impl.JBRunnerTabs;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.Constraints;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.RightAlignedToolbarAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.ActionCallback;
 import com.intellij.openapi.util.ActiveRunnable;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
-import com.intellij.ui.IdeBorderFactory;
-import com.intellij.ui.SideBorder;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.content.Content;
@@ -44,10 +42,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.EventStream;
-import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.vmService.ServiceExtensions;
-import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -182,11 +177,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private void addInspectorViewContent(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
+    String browserUrl = app.getConnector().getBrowserUrl();
+
+    System.setProperty("jxbrowser.license.key", "6P830J66YAO1XQRI1FNEXP8ZTHUOQTY2YUJRCN9RTARQ58QFAP63GRRH20B3P5PB7PC8");
+
     final ContentManager contentManager = toolWindow.getContentManager();
-    final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true);
-    final JBRunnerTabs runnerTabs = new JBRunnerTabs(myProject, ActionManager.getInstance(), IdeFocusManager.getInstance(myProject), this);
-    runnerTabs.setSelectionChangeHandler(this::onTabSelectionChange);
-    final JPanel tabContainer = new JPanel(new BorderLayout());
 
     final String tabName;
     final FlutterDevice device = app.device();
@@ -201,57 +196,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       tabName = device.getUniqueName(existingDevices);
     }
 
-    final Content content = contentManager.getFactory().createContent(null, tabName, false);
-    tabContainer.add(runnerTabs.getComponent(), BorderLayout.CENTER);
-    content.setComponent(tabContainer);
-    content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
-    content.setIcon(FlutterIcons.Phone);
-    contentManager.addContent(content);
+    DevToolsManager.getInstance(app.getProject()).openBrowserIntoPanel(browserUrl, contentManager, tabName);
 
     if (emptyContent != null) {
       contentManager.removeContent(emptyContent, true);
       emptyContent = null;
-    }
-
-    contentManager.setSelectedContent(content);
-
-    final PerAppState state = getOrCreateStateForApp(app);
-    assert (state.content == null);
-    state.content = content;
-
-    final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app, inspectorService);
-    toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
-
-    toolbarGroup.add(new OverflowAction(getOrCreateStateForApp(app), this, app));
-
-    final ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("InspectorToolbar", toolbarGroup, true);
-    final JComponent toolbarComponent = toolbar.getComponent();
-    toolbarComponent.setBorder(IdeBorderFactory.createBorder(SideBorder.BOTTOM));
-    tabContainer.add(toolbarComponent, BorderLayout.NORTH);
-
-    final boolean debugConnectionAvailable = app.getLaunchMode().supportsDebugConnection();
-    final boolean hasInspectorService = inspectorService != null;
-
-    // If the inspector is available (non-release mode), then show it.
-    if (debugConnectionAvailable) {
-      if (hasInspectorService) {
-        final boolean detailsSummaryViewSupported = inspectorService.isDetailsSummaryViewSupported();
-        addInspectorPanel(WIDGET_TAB_LABEL, runnerTabs, state, InspectorService.FlutterTreeType.widget, app, inspectorService, toolWindow,
-                          toolbarGroup, true, detailsSummaryViewSupported);
-        addInspectorPanel(RENDER_TAB_LABEL, runnerTabs, state, InspectorService.FlutterTreeType.renderObject, app, inspectorService,
-                          toolWindow, toolbarGroup, false, false);
-      }
-      else {
-        // If in profile mode, add disabled tabs for the inspector.
-        addDisabledTab(WIDGET_TAB_LABEL, runnerTabs, toolbarGroup);
-        addDisabledTab(RENDER_TAB_LABEL, runnerTabs, toolbarGroup);
-      }
-    }
-    else {
-      // Add a message about the inspector not being available in release mode.
-      final JBLabel label = new JBLabel("Inspector not available in release mode", SwingConstants.CENTER);
-      label.setForeground(UIUtil.getLabelDisabledForeground());
-      tabContainer.add(label, BorderLayout.CENTER);
     }
   }
 
@@ -372,51 +321,16 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
 
     toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
+    final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
-    listenForRenderTreeActivations(toolWindow);
-
-    addInspectorViewContent(app, inspectorService, toolWindow);
-
-    app.getVmService().addVmServiceListener(new VmServiceListenerAdapter() {
-      @Override
-      public void connectionOpened() {
-        onAppChanged(app);
-      }
-
-      @Override
-      public void received(String streamId, Event event) {
-        if (StringUtil.equals(streamId, VmService.EXTENSION_STREAM_ID)) {
-          if (StringUtil.equals("Flutter.Frame", event.getExtensionKind())) {
-            handleFlutterFrame(app);
-          }
-        }
-      }
-
-      @Override
-      public void connectionClosed() {
-        ApplicationManager.getApplication().invokeLater(() -> {
-          if (inspectorService != null) {
-            Disposer.dispose(inspectorService);
-          }
-
-          if (toolWindow.isDisposed()) return;
-          final ContentManager contentManager = toolWindow.getContentManager();
-          onAppChanged(app);
-          final PerAppState state = perAppViewState.remove(app);
-          if (state != null) {
-            if (state.content != null) {
-              contentManager.removeContent(state.content, true);
-            }
-            state.dispose();
-          }
-          if (perAppViewState.isEmpty()) {
-            // No more applications are running.
-            updateForEmptyContent(toolWindow);
-          }
-        });
-      }
-    });
-
+    if (devToolsManager.hasInstalledDevTools()) {
+      addInspectorViewContent(app, inspectorService, toolWindow);
+    }
+    else {
+      final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
+      result.thenAccept(o -> addInspectorViewContent(app, inspectorService, toolWindow));
+    }
+    
     onAppChanged(app);
 
     app.addStateListener(new FlutterApp.FlutterAppListener() {
