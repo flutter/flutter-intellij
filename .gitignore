@@ -6,6 +6,7 @@
 .packages
 .pub/
 .vscode/
+.sandbox/
 artifacts/
 build/
 flutter-gui-tests/.gradle/
