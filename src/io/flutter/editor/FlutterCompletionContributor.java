@@ -52,6 +52,12 @@ public class FlutterCompletionContributor extends DartCompletionExtension {
               return new ColorIcon(ICON_SIZE, color.getAWTColor());
             }
           }
+          else if (Objects.equals(declaringType, "CupertinoColors")) {
+            final FlutterColors.FlutterColor color = FlutterCupertinoColors.getColor(name);
+            if (color != null) {
+              return new ColorIcon(ICON_SIZE, color.getAWTColor());
+            }
+          }
           else if (Objects.equals(declaringType, "Icons")) {
             final Icon icon = FlutterMaterialIcons.getIconForName(name);
             // If we have no icon, show an empty node (which is preferable to the default "IconData" text).

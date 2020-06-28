@@ -65,6 +65,26 @@ public class FlutterEditorAnnotator implements Annotator {
           attachIcon(element, holder, icon);
         }
       }
+      else if (text.startsWith("CupertinoColors.")) {
+        final String key = text.substring("CupertinoColors.".length());
+        final FlutterColor color = FlutterCupertinoColors.getColor(key);
+        if (color != null) {
+          if (!color.isPrimary()) {
+            attachColorIcon(element, holder, color.getAWTColor());
+          }
+          else {
+            // If we're a primary color access, and
+            // - we're not followed by an array access (really referencing a more specific color)
+            // - we're not followed by a shadeXXX access
+            final boolean inColorIndexExpression = element.getParent() instanceof DartArrayAccessExpression;
+            final boolean inShadeExpression =
+              (element.getParent() instanceof DartReferenceExpression && element.getParent().getText().startsWith(text + ".shade"));
+            if (!inShadeExpression && !inColorIndexExpression) {
+              attachColorIcon(element, holder, color.getAWTColor());
+            }
+          }
+        }
+      }
     }
     else if (element instanceof DartNewExpression) {
       // const IconData(0xe914)
