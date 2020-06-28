@@ -1,14 +1,16 @@
+/// This file was downloaded by update_colors.dart.
+
 // Copyright 2014 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // @dart = 2.8
 
+import '../stubs.dart';
+
 // Examples can assume:
 // Widget child;
 // BuildContext context;
-
-import '../stubs.dart';
 
 /// A palette of [Color] constants that describe colors commonly used when
 /// matching the iOS platform aesthetics.
