@@ -5,6 +5,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:path/path.dart' as path;
+
 import 'flutter/colors_cupertino.dart';
 import 'flutter/colors_material.dart';
 import 'generated/colors_cupertino.dart' as cupertino;
@@ -12,22 +14,38 @@ import 'generated/colors_material.dart' as material;
 import 'stubs.dart';
 
 void main(List<String> args) async {
-  // TODO(dantup): Split into two scripts instead of using a flag? It's allow
+  // Verify that we're running from the project root.
+  if (path.basename(Directory.current.path) != 'flutter-intellij') {
+    print('Please run this script from the directory root.');
+    exit(1);
+  }
+
+  // TODO(dantup): Split into two scripts instead of using a flag? It's to allow
   // easier debugging of the second step.
-  if (args.contains("--generate-properties")) {
+  if (args.contains('--generate-properties')) {
+    print('Generating property files:');
     generatePropertiesFiles();
+
+    exit(0);
   } else {
+    print('Generating dart files:');
     await generateDartFiles();
+
     // Re-run the script with `--generate-properties` so it can load the files
     // we generated.
-    final results = await Process.run(Platform.executable,
-        [Platform.script.toFilePath(), "--generate-propertes"]);
+    final results = Process.runSync(Platform.resolvedExecutable,
+        [Platform.script.toFilePath(), '--generate-propertes']);
     stdout.write(results.stdout);
     stderr.write(results.stderr);
+
+    exit(0);
   }
 }
 
-void generateDartFiles() async {
+Future generateDartFiles() async {
+  // TODO: Use the files from the local flutter checkout instead of a download
+  // here.
+
   // download material/colors.dart and cupertino/colors.dart
   String materialData =
       await downloadUrl('https://raw.githubusercontent.com/flutter/flutter/'
@@ -46,7 +64,7 @@ void generateDartFiles() async {
 }
 
 void generatePropertiesFiles() {
-  final output = '../../resources/flutter/';
+  final output = 'resources/flutter/';
   generateProperties(material.colors, '$output/colors.properties');
   generateProperties(cupertino.colors, '$output/cupertino_colors.properties');
 }
@@ -66,10 +84,25 @@ Future<String> downloadUrl(String url) async {
 // The pattern below is meant to match lines like:
 //   'static const Color black45 = Color(0x73000000);'
 //   'static const MaterialColor cyan = MaterialColor('
-final RegExp regexp = new RegExp(r'static const \w*Color (\S+) = \w*Color\(');
+final RegExp regexpColor1 =
+    new RegExp(r'static const \w*Color (\S+) = \w*Color\(');
+// The pattern below is meant to match lines like:
+//   'static const CupertinoDynamicColor activeBlue = systemBlue;'
+final RegExp regexpColor2 = new RegExp(r'static const \w*Color (\S+) = \w+;');
+// The pattern below is meant to match lines like:
+//   'static const CupertinoDynamicColor systemGreen = CupertinoDynamicColor.withBrightnessAndContrast('
+final RegExp regexpColor3 =
+    new RegExp(r'static const \w*Color (\S+) = \w+.\w+\(');
 
 List<String> extractColorNames(String data) {
-  return regexp.allMatches(data).map((Match match) => match.group(1)).toList();
+  List<String> names = [
+    ...regexpColor1.allMatches(data).map((Match match) => match.group(1)),
+    ...regexpColor2.allMatches(data).map((Match match) => match.group(1)),
+    ...regexpColor3.allMatches(data).map((Match match) => match.group(1)),
+  ];
+
+  // Remove any duplicates.
+  return Set<String>.from(names).toList();
 }
 
 void generateDart(List<String> colors, String filename, String className) {
@@ -83,14 +116,15 @@ import '../flutter/${filename}';
 final Map<String, Color> colors = <String, Color>{''');
 
   for (String colorName in colors) {
-    buf.writeln('  "${colorName}": ${className}.${colorName},');
+    buf.writeln("  '${colorName}': ${className}.${colorName},");
   }
 
   buf.writeln('};');
 
-  new File('generated/$filename').writeAsStringSync(buf.toString());
+  File out = new File('tool/colors/generated/$filename');
+  out.writeAsStringSync(buf.toString());
 
-  print('wrote generated/$filename');
+  print('wrote ${out.path}');
 }
 
 void generateProperties(Map<String, Color> colors, String filename) {

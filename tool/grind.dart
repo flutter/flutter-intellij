@@ -50,14 +50,14 @@ colors() async {
   // Remove an import and define the Color class.
   String str = data.join('');
   str = str.replaceFirst(
-      "import 'dart:ui' show Color;", "import 'colors_main.dart';");
+      "import 'dart:ui' show Color;", "import 'update_colors.dart';");
   str = str.replaceFirst("import 'package:flutter/painting.dart';", '');
   File file = new File('tool/colors/colors.dart');
   file.writeAsStringSync(str);
 
-  // Run tool/color/colors_main.dart, pipe output to //resources/flutter/color.properties.
+  // Run tool/color/update_colors.dart, pipe output to //resources/flutter/color.properties.
   ProcessResult result = Process.runSync(
-      Platform.resolvedExecutable, ['tool/colors/colors_main.dart']);
+      Platform.resolvedExecutable, ['tool/colors/update_colors.dart']);
   if (result.exitCode != 0) {
     fail('${result.stdout}\n${result.stderr}');
   }
