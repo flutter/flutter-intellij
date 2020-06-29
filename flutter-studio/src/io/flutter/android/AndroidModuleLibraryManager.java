@@ -352,7 +352,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
         Method method = ReflectionUtil.getDeclaredMethod(ProjectImpl.class, "registerComponents");
         assert (method != null);
         try {
-          method.invoke(null);
+          method.invoke(this);
         }
         catch (IllegalAccessException | InvocationTargetException e) {
           throw new RuntimeException(e);
