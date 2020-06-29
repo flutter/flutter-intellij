@@ -17,8 +17,12 @@
       <sourceFolder url="file://$MODULE_DIR$/tool/icon_generator/lib" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/.sandbox" />
       <excludeFolder url="file://$MODULE_DIR$/artifacts" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/flutter-idea/testData/sample_tests/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/flutter-idea/testData/sample_tests/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/flutter-idea/testData/sample_tests/build" />
       <excludeFolder url="file://$MODULE_DIR$/material-design-icons" />
       <excludeFolder url="file://$MODULE_DIR$/releases" />
       <excludeFolder url="file://$MODULE_DIR$/src/main" />

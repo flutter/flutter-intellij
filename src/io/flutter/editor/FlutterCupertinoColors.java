@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Copyright 2020 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -16,40 +16,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public class FlutterColors {
-  private static final Logger LOG = Logger.getInstance(FlutterColors.class);
-
-  public static class FlutterColor {
-    @NotNull
-    private final Color color;
-    private final boolean isPrimary;
-
-    FlutterColor(@NotNull Color color, boolean isPrimary) {
-      this.color = color;
-      this.isPrimary = isPrimary;
-    }
-
-    @NotNull
-    public Color getAWTColor() {
-      return color;
-    }
-
-    public boolean isPrimary() {
-      return isPrimary;
-    }
-  }
-
-  static final String primarySuffix = ".primary";
-  static final String defaultShade = "[500]";
+public class FlutterCupertinoColors {
+  private static final Logger LOG = Logger.getInstance(FlutterCupertinoColors.class);
 
   private static final Properties colors;
+
   private static final Map<Color, String> colorToName;
 
   static {
     colors = new Properties();
 
     try {
-      colors.load(FlutterUtils.class.getResourceAsStream("/flutter/colors.properties"));
+      colors.load(FlutterUtils.class.getResourceAsStream("/flutter/cupertino_colors.properties"));
     }
     catch (IOException e) {
       FlutterUtils.warn(LOG, e);
@@ -70,7 +48,7 @@ public class FlutterColors {
    * @return the AWT color corresponding to the given Flutter color key.
    */
   @Nullable
-  public static FlutterColor getColor(@NotNull String key) {
+  public static FlutterColors.FlutterColor getColor(@NotNull String key) {
     // Handle things like Colors.blue.shade200; convert the text to blue[200].
     if (key.contains(".shade")) {
       key = key.replace(".shade", "[") + "]";
@@ -79,13 +57,13 @@ public class FlutterColors {
     if (colors.containsKey(key)) {
       final Color color = getColorValue(key);
       if (color != null) {
-        return new FlutterColor(color, false);
+        return new FlutterColors.FlutterColor(color, false);
       }
     }
-    else if (colors.containsKey(key + primarySuffix)) {
-      final Color color = getColorValue(key + primarySuffix);
+    else if (colors.containsKey(key + FlutterColors.primarySuffix)) {
+      final Color color = getColorValue(key + FlutterColors.primarySuffix);
       if (color != null) {
-        return new FlutterColor(color, true);
+        return new FlutterColors.FlutterColor(color, true);
       }
     }
 
@@ -100,8 +78,8 @@ public class FlutterColors {
     String name = colorToName.get(color);
     if (name == null) return null;
     // Normalize to avoid including suffixes that are not required.
-    name = maybeTrimSuffix(name, primarySuffix);
-    name = maybeTrimSuffix(name, defaultShade);
+    name = maybeTrimSuffix(name, FlutterColors.primarySuffix);
+    name = maybeTrimSuffix(name, FlutterColors.defaultShade);
     return name;
   }
 
