@@ -244,7 +244,7 @@ public class FlutterSdk {
       args.add("--device-id=" + device.deviceId());
     }
 
-    if (mode == RunMode.DEBUG || mode == RunMode.RUN) {
+    if (mode == RunMode.DEBUG) {
       args.add("--start-paused");
     }
 
@@ -320,8 +320,6 @@ public class FlutterSdk {
       if (!myVersion.flutterTestSupportsMachineMode()) {
         throw new IllegalStateException("Flutter SDK is too old to debug tests");
       }
-    }
-    if (mode == RunMode.DEBUG || mode == RunMode.RUN) {
       args.add("--start-paused");
     }
     if (FlutterSettings.getInstance().isVerboseLogging()) {
