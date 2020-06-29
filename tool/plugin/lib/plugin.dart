@@ -366,10 +366,34 @@ class AntBuildCommand extends BuildCommand {
 }
 
 class GradleBuildCommand extends BuildCommand {
+  static const String propertiesTemplate = """
+org.gradle.parallel=true
+dartVersion=DART_VERSION
+flutterPluginVersion=SNAPSHOT
+ide=ideaIC
+""";
+
   GradleBuildCommand(BuildCommandRunner runner) : super(runner, 'make');
 
   Future<int> externalBuildCommand(BuildSpec spec) async {
-    return runner.buildPlugin(spec, pluginVersion);
+    var result;
+    var propertiesFile = File('gradle.properties');
+    var original = propertiesFile.readAsStringSync();
+    try {
+      var properties =
+          propertiesTemplate.replaceAll('DART_VERSION', spec.dartPluginVersion);
+      if (spec.isReleaseMode) {
+        properties.replaceAll('SNAPSHOT', spec.version);
+      }
+      if (spec.isAndroidStudio) {
+        properties.replaceAll('ideaIC', 'android-studio');
+      }
+      propertiesFile.writeAsStringSync(properties);
+      result = runner.buildPlugin(spec, pluginVersion);
+    } finally {
+      propertiesFile.writeAsStringSync(original);
+    }
+    return result;
   }
 
   Future<int> savePluginArtifact(BuildSpec spec, String version) async {
@@ -387,9 +411,9 @@ class GradleBuildCommand extends BuildCommand {
       return await super.doit();
     } finally {
       if (Platform.isWindows) {
-        return await exec('.\\gradlew.bat', ['--stop']);
+        await exec('.\\gradlew.bat', ['--stop']);
       } else {
-        return await exec('./gradlew', ['--stop']);
+        await exec('./gradlew', ['--stop']);
       }
     }
   }
