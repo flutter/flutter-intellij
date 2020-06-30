@@ -314,7 +314,7 @@ class AntBuildCommand extends BuildCommand {
   AntBuildCommand(BuildCommandRunner runner) : super(runner, 'build');
 
   Future<int> externalBuildCommand(BuildSpec spec) async {
-    return runner.javac2(spec);
+    return await runner.javac2(spec);
   }
 
   Future<int> savePluginArtifact(BuildSpec spec, String version) async {
@@ -369,7 +369,7 @@ class GradleBuildCommand extends BuildCommand {
   GradleBuildCommand(BuildCommandRunner runner) : super(runner, 'make');
 
   Future<int> externalBuildCommand(BuildSpec spec) async {
-    return runner.buildPlugin(spec, pluginVersion);
+    return await runner.buildPlugin(spec, pluginVersion);
   }
 
   Future<int> savePluginArtifact(BuildSpec spec, String version) async {
