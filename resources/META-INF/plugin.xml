@@ -29,6 +29,10 @@
 
   <change-notes>
     <![CDATA[
+#47.1<ul>
+  <li>Revert "Start paused during run mode (#4622)" (#4673)</li>
+  <li>Add target to registerComponents() (#4672)</li>
+</ul>
 <h1>47.0</h1>
 <ul>
   <li>Adapt to API changes in AS 4.2c2 (#4652)</li>
