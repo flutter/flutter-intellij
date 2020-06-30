@@ -4,6 +4,10 @@
  * found in the LICENSE file.
  */
 
+repositories {
+  jcenter()
+}
+
 apply plugin: 'java'
 apply plugin: "org.jetbrains.intellij"
 

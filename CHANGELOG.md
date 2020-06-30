@@ -1,3 +1,7 @@
+#47.1
+- Revert "Start paused during run mode (#4622)" (#4673)
+- Add target to registerComponents() (#4672)
+
 # 47.0
 - Adapt to API changes in AS 4.2c2 (#4652)
 - Fix a display issue with the device selector (#4651)

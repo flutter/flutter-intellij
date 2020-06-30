@@ -314,7 +314,7 @@ class AntBuildCommand extends BuildCommand {
   AntBuildCommand(BuildCommandRunner runner) : super(runner, 'build');
 
   Future<int> externalBuildCommand(BuildSpec spec) async {
-    return runner.javac2(spec);
+    return await runner.javac2(spec);
   }
 
   Future<int> savePluginArtifact(BuildSpec spec, String version) async {
@@ -366,34 +366,10 @@ class AntBuildCommand extends BuildCommand {
 }
 
 class GradleBuildCommand extends BuildCommand {
-  static const String propertiesTemplate = """
-org.gradle.parallel=true
-dartVersion=DART_VERSION
-flutterPluginVersion=SNAPSHOT
-ide=ideaIC
-""";
-
   GradleBuildCommand(BuildCommandRunner runner) : super(runner, 'make');
 
   Future<int> externalBuildCommand(BuildSpec spec) async {
-    var result;
-    var propertiesFile = File('gradle.properties');
-    var original = propertiesFile.readAsStringSync();
-    try {
-      var properties =
-          propertiesTemplate.replaceAll('DART_VERSION', spec.dartPluginVersion);
-      if (spec.isReleaseMode) {
-        properties.replaceAll('SNAPSHOT', spec.version);
-      }
-      if (spec.isAndroidStudio) {
-        properties.replaceAll('ideaIC', 'android-studio');
-      }
-      propertiesFile.writeAsStringSync(properties);
-      result = runner.buildPlugin(spec, pluginVersion);
-    } finally {
-      propertiesFile.writeAsStringSync(original);
-    }
-    return result;
+    return await runner.buildPlugin(spec, pluginVersion);
   }
 
   Future<int> savePluginArtifact(BuildSpec spec, String version) async {
@@ -411,9 +387,9 @@ ide=ideaIC
       return await super.doit();
     } finally {
       if (Platform.isWindows) {
-        await exec('.\\gradlew.bat', ['--stop']);
+        return await exec('.\\gradlew.bat', ['--stop']);
       } else {
-        await exec('./gradlew', ['--stop']);
+        return await exec('./gradlew', ['--stop']);
       }
     }
   }

@@ -66,17 +66,19 @@ ide=${spec.ideaProduct}
     final propertiesFile = File("$rootPath/gradle.properties");
     final source = propertiesFile.readAsStringSync();
     propertiesFile.writeAsStringSync(contents);
+    var result;
     // Using the Gradle daemon causes a strange problem.
     // --daemon => Invalid byte 1 of 1-byte UTF-8 sequence, which is nonsense.
     // During instrumentation of FlutterProjectStep.form, which is a UTF-8 file.
     try {
       if (Platform.isWindows) {
-        return await exec('.\\gradlew.bat', ['buildPlugin']);
+        result = await exec('.\\gradlew.bat', ['buildPlugin']);
       } else {
-        return await exec('./gradlew', ['buildPlugin']);
+        result = await exec('./gradlew', ['buildPlugin']);
       }
     } finally {
       propertiesFile.writeAsStringSync(source);
     }
+    return result;
   }
 }
