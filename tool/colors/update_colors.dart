@@ -28,6 +28,7 @@ void main(List<String> args) async {
 }
 
 Future<void> generateDartFiles() async {
+  // TODO: Use the files from the local flutter checkout instead of a download
   // download material/colors.dart and cupertino/colors.dart
   await Future.wait([
     downloadFile(materialColorsUrl, materialFile),
@@ -54,7 +55,7 @@ Future<void> downloadFile(String url, File file) async {
         data.join('').replaceFirst(imports, "import '../stubs.dart';\n\n");
 
     file.writeAsStringSync(
-      '/// This file was downloaded by update_colors.dart.\n\n'
+      '// This file was downloaded by update_colors.dart.\n\n'
       '$contents',
     );
   } finally {
