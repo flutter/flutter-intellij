@@ -17,6 +17,7 @@ import com.intellij.execution.runners.GenericProgramRunner;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
@@ -44,7 +45,7 @@ public class FlutterTestRunner extends GenericProgramRunner {
 
   @Override
   public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
-    if (!DefaultDebugExecutor.EXECUTOR_ID.equals(executorId) || !(profile instanceof TestConfig)) {
+    if (!(DefaultDebugExecutor.EXECUTOR_ID.equals(executorId) || ToolWindowId.RUN.equals(executorId)) || !(profile instanceof TestConfig)) {
       return false;
     }
 
