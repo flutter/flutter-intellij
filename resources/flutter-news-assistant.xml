@@ -38,30 +38,9 @@
               weekly with the latest changes from the master branch.
               <br><br>There are
               <a href="https://github.com/flutter/flutter-intellij/wiki/Dev-Channel">instructions on the web</a>
-              for how to use it. But now we can make it super easy! Just click the button below.
+              for how to use it.
             ]]>
           </section>
-        </stepElement>
-        <stepElement>
-          <action
-            key="FlutterNewsAssistant.SwitchToDevChannel"
-            label="Use Dev Channel"
-            successMessage="You are now using the dev channel of the Flutter plugin.">
-          </action>
-        </stepElement>
-        <stepElement>
-          <section>
-            <![CDATA[
-              If later you decide you don't want to use the dev channel, just come back here and click this button.
-            ]]>
-          </section>
-        </stepElement>
-        <stepElement>
-          <action
-            key="FlutterNewsAssistant.SwitchToStableChannel"
-            label="Use Stable Channel"
-            successMessage="You are now using the stable channel of the Flutter plugin.">
-          </action>
         </stepElement>
       </step>
       <step label="Label for Step 2">

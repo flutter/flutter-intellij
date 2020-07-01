@@ -1210,13 +1210,13 @@
             text="Open DevTools" description="Open Dart DevTools" icon="FlutterIcons.Dart_16">
     </action>
 
-    <action
+    <!-- action
       id="DeveloperServices.FlutterNewsAssistant"
       class="io.flutter.actions.OpenFlutterNewsSidePanelAction"
       icon="/icons/flutter.png"
       text="What's New in Flutter">
       <add-to-group group-id="HelpMenu" />
-    </action>
+    </action -->
 
   </actions>
 
@@ -1229,11 +1229,6 @@
   <extensions defaultExtensionNs="io.flutter">
     <gradleSyncProvider implementation="io.flutter.android.IntellijGradleSyncProvider" order="last"/>
     <colorPickerProvider implementation="io.flutter.editor.IntellijColorPickerProvider" order="last"/>
-  </extensions>
-
-  <extensions defaultExtensionNs="com.android.tools.idea.assistant">
-    <assistantBundleCreator implementation="io.flutter.assistant.whatsnew.FlutterNewsBundleCreator"/>
-    <actionHandler implementation="io.flutter.assistant.whatsnew.actions.SwitchToDevChannel"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

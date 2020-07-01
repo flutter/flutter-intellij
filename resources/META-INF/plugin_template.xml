@@ -212,6 +212,15 @@
     <action id="io.flutter.OpenDevToolsAction" class="io.flutter.run.OpenDevToolsAction"
             text="Open DevTools" description="Open Dart DevTools" icon="FlutterIcons.Dart_16">
     </action>
+
+    <!-- action
+      id="DeveloperServices.FlutterNewsAssistant"
+      class="io.flutter.actions.OpenFlutterNewsSidePanelAction"
+      icon="/icons/flutter.png"
+      text="What's New in Flutter">
+      <add-to-group group-id="HelpMenu" />
+    </action -->
+
   </actions>
 
   <extensionPoints>
