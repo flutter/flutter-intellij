@@ -1,14 +1,16 @@
+// This file was downloaded by update_colors.dart.
+
 // Copyright 2014 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // @dart = 2.8
 
+import '../stubs.dart';
+
 // Examples can assume:
 // Widget child;
 // BuildContext context;
-
-import '../stubs.dart';
 
 /// A palette of [Color] constants that describe colors commonly used when
 /// matching the iOS platform aesthetics.
@@ -77,8 +79,7 @@ class CupertinoColors {
   /// Not the same grey as disabled buttons etc.
   ///
   /// This is the disabled color in the iOS palette.
-  static const CupertinoDynamicColor inactiveGray =
-      CupertinoDynamicColor.withBrightness(
+  static const CupertinoDynamicColor inactiveGray = CupertinoDynamicColor.withBrightness(
     debugLabel: 'inactiveGray',
     color: Color(0xFF999999),
     darkColor: Color(0xFF757575),
@@ -99,8 +100,7 @@ class CupertinoColors {
   ///
   ///  * [UIColor.systemBlue](https://developer.apple.com/documentation/uikit/uicolor/3173141-systemblue),
   ///    the `UIKit` equivalent.
-  static const CupertinoDynamicColor systemBlue =
-      CupertinoDynamicColor.withBrightnessAndContrast(
+  static const CupertinoDynamicColor systemBlue = CupertinoDynamicColor.withBrightnessAndContrast(
     debugLabel: 'systemBlue',
     color: Color.fromARGB(255, 0, 122, 255),
     darkColor: Color.fromARGB(255, 10, 132, 255),
@@ -114,8 +114,7 @@ class CupertinoColors {
   ///
   ///  * [UIColor.systemGreen](https://developer.apple.com/documentation/uikit/uicolor/3173144-systemgreen),
   ///    the `UIKit` equivalent.
-  static const CupertinoDynamicColor systemGreen =
-      CupertinoDynamicColor.withBrightnessAndContrast(
+  static const CupertinoDynamicColor systemGreen = CupertinoDynamicColor.withBrightnessAndContrast(
     debugLabel: 'systemGreen',
     color: Color.fromARGB(255, 52, 199, 89),
     darkColor: Color.fromARGB(255, 48, 209, 88),
@@ -129,8 +128,7 @@ class CupertinoColors {
   ///
   ///  * [UIColor.systemIndigo](https://developer.apple.com/documentation/uikit/uicolor/3173146-systemindigo),
   ///    the `UIKit` equivalent.
-  static const CupertinoDynamicColor systemIndigo =
-      CupertinoDynamicColor.withBrightnessAndContrast(
+  static const CupertinoDynamicColor systemIndigo = CupertinoDynamicColor.withBrightnessAndContrast(
     debugLabel: 'systemIndigo',
     color: Color.fromARGB(255, 88, 86, 214),
     darkColor: Color.fromARGB(255, 94, 92, 230),
@@ -144,8 +142,7 @@ class CupertinoColors {
   ///
   ///  * [UIColor.systemOrange](https://developer.apple.com/documentation/uikit/uicolor/3173147-systemorange),
   ///    the `UIKit` equivalent.
-  static const CupertinoDynamicColor systemOrange =
-      CupertinoDynamicColor.withBrightnessAndContrast(
+  static const CupertinoDynamicColor systemOrange = CupertinoDynamicColor.withBrightnessAndContrast(
     debugLabel: 'systemOrange',
     color: Color.fromARGB(255, 255, 149, 0),
     darkColor: Color.fromARGB(255, 255, 159, 10),
@@ -159,8 +156,7 @@ class CupertinoColors {
   ///
   ///  * [UIColor.systemPink](https://developer.apple.com/documentation/uikit/uicolor/3173148-systempink),
   ///    the `UIKit` equivalent.
-  static const CupertinoDynamicColor systemPink =
-      CupertinoDynamicColor.withBrightnessAndContrast(
+  static const CupertinoDynamicColor systemPink = CupertinoDynamicColor.withBrightnessAndContrast(
     debugLabel: 'systemPink',
     color: Color.fromARGB(255, 255, 45, 85),
     darkColor: Color.fromARGB(255, 255, 55, 95),
@@ -174,8 +170,7 @@ class CupertinoColors {
   ///
   ///  * [UIColor.systemPurple](https://developer.apple.com/documentation/uikit/uicolor/3173149-systempurple),
   ///    the `UIKit` equivalent.
-  static const CupertinoDynamicColor systemPurple =
-      CupertinoDynamicColor.withBrightnessAndContrast(
+  static const CupertinoDynamicColor systemPurple = CupertinoDynamicColor.withBrightnessAndContrast(
     debugLabel: 'systemPurple',
     color: Color.fromARGB(255, 175, 82, 222),
     darkColor: Color.fromARGB(255, 191, 90, 242),
@@ -189,8 +184,7 @@ class CupertinoColors {
   ///
   ///  * [UIColor.systemRed](https://developer.apple.com/documentation/uikit/uicolor/3173150-systemred),
   ///    the `UIKit` equivalent.
-  static const CupertinoDynamicColor systemRed =
-      CupertinoDynamicColor.withBrightnessAndContrast(
+  static const CupertinoDynamicColor systemRed = CupertinoDynamicColor.withBrightnessAndContrast(
     debugLabel: 'systemRed',
     color: Color.fromARGB(255, 255, 59, 48),
     darkColor: Color.fromARGB(255, 255, 69, 58),
@@ -204,8 +198,7 @@ class CupertinoColors {
   ///
   ///  * [UIColor.systemTeal](https://developer.apple.com/documentation/uikit/uicolor/3173151-systemteal),
   ///    the `UIKit` equivalent.
-  static const CupertinoDynamicColor systemTeal =
-      CupertinoDynamicColor.withBrightnessAndContrast(
+  static const CupertinoDynamicColor systemTeal = CupertinoDynamicColor.withBrightnessAndContrast(
     debugLabel: 'systemTeal',
     color: Color.fromARGB(255, 90, 200, 250),
     darkColor: Color.fromARGB(255, 100, 210, 255),
@@ -219,8 +212,7 @@ class CupertinoColors {
   ///
   ///  * [UIColor.systemYellow](https://developer.apple.com/documentation/uikit/uicolor/3173152-systemyellow),
   ///    the `UIKit` equivalent.
-  static const CupertinoDynamicColor systemYellow =
-      CupertinoDynamicColor.withBrightnessAndContrast(
+  static const CupertinoDynamicColor systemYellow = CupertinoDynamicColor.withBrightnessAndContrast(
     debugLabel: 'systemYellow',
     color: Color.fromARGB(255, 255, 204, 0),
     darkColor: Color.fromARGB(255, 255, 214, 10),
@@ -234,8 +226,7 @@ class CupertinoColors {
   ///
   ///  * [UIColor.systemGray](https://developer.apple.com/documentation/uikit/uicolor/3173143-systemgray),
   ///    the `UIKit` equivalent.
-  static const CupertinoDynamicColor systemGrey =
-      CupertinoDynamicColor.withBrightnessAndContrast(
+  static const CupertinoDynamicColor systemGrey = CupertinoDynamicColor.withBrightnessAndContrast(
     debugLabel: 'systemGrey',
     color: Color.fromARGB(255, 142, 142, 147),
     darkColor: Color.fromARGB(255, 142, 142, 147),
@@ -249,8 +240,7 @@ class CupertinoColors {
   ///
   ///  * [UIColor.systemGray2](https://developer.apple.com/documentation/uikit/uicolor/3255071-systemgray2),
   ///    the `UIKit` equivalent.
-  static const CupertinoDynamicColor systemGrey2 =
-      CupertinoDynamicColor.withBrightnessAndContrast(
+  static const CupertinoDynamicColor systemGrey2 = CupertinoDynamicColor.withBrightnessAndContrast(
     debugLabel: 'systemGrey2',
     color: Color.fromARGB(255, 174, 174, 178),
     darkColor: Color.fromARGB(255, 99, 99, 102),
@@ -264,8 +254,7 @@ class CupertinoColors {
   ///
   ///  * [UIColor.systemGray3](https://developer.apple.com/documentation/uikit/uicolor/3255072-systemgray3),
   ///    the `UIKit` equivalent.
-  static const CupertinoDynamicColor systemGrey3 =
-      CupertinoDynamicColor.withBrightnessAndContrast(
+  static const CupertinoDynamicColor systemGrey3 = CupertinoDynamicColor.withBrightnessAndContrast(
     debugLabel: 'systemGrey3',
     color: Color.fromARGB(255, 199, 199, 204),
     darkColor: Color.fromARGB(255, 72, 72, 74),
@@ -279,8 +268,7 @@ class CupertinoColors {
   ///
   ///  * [UIColor.systemGray4](https://developer.apple.com/documentation/uikit/uicolor/3255073-systemgray4),
   ///    the `UIKit` equivalent.
-  static const CupertinoDynamicColor systemGrey4 =
-      CupertinoDynamicColor.withBrightnessAndContrast(
+  static const CupertinoDynamicColor systemGrey4 = CupertinoDynamicColor.withBrightnessAndContrast(
     debugLabel: 'systemGrey4',
     color: Color.fromARGB(255, 209, 209, 214),
     darkColor: Color.fromARGB(255, 58, 58, 60),
@@ -294,8 +282,7 @@ class CupertinoColors {
   ///
   ///  * [UIColor.systemGray5](https://developer.apple.com/documentation/uikit/uicolor/3255074-systemgray5),
   ///    the `UIKit` equivalent.
-  static const CupertinoDynamicColor systemGrey5 =
-      CupertinoDynamicColor.withBrightnessAndContrast(
+  static const CupertinoDynamicColor systemGrey5 = CupertinoDynamicColor.withBrightnessAndContrast(
     debugLabel: 'systemGrey5',
     color: Color.fromARGB(255, 229, 229, 234),
     darkColor: Color.fromARGB(255, 44, 44, 46),
@@ -309,8 +296,7 @@ class CupertinoColors {
   ///
   ///  * [UIColor.systemGray6](https://developer.apple.com/documentation/uikit/uicolor/3255075-systemgray6),
   ///    the `UIKit` equivalent.
-  static const CupertinoDynamicColor systemGrey6 =
-      CupertinoDynamicColor.withBrightnessAndContrast(
+  static const CupertinoDynamicColor systemGrey6 = CupertinoDynamicColor.withBrightnessAndContrast(
     debugLabel: 'systemGrey6',
     color: Color.fromARGB(255, 242, 242, 247),
     darkColor: Color.fromARGB(255, 28, 28, 30),
@@ -344,7 +330,7 @@ class CupertinoColors {
     darkElevatedColor: Color.fromARGB(153, 235, 235, 245),
     highContrastElevatedColor: Color.fromARGB(173, 60, 60, 67),
     darkHighContrastElevatedColor: Color.fromARGB(173, 235, 235, 245),
-  );
+);
 
   /// The color for text labels containing tertiary content, equivalent to
   /// [UIColor.tertiaryLabel](https://developer.apple.com/documentation/uikit/uicolor/3173153-tertiarylabel).
@@ -390,8 +376,7 @@ class CupertinoColors {
 
   /// An overlay fill color for medium-size shapes, equivalent to
   /// [UIColor.secondarySystemFill](https://developer.apple.com/documentation/uikit/uicolor/3255069-secondarysystemfill).
-  static const CupertinoDynamicColor secondarySystemFill =
-      CupertinoDynamicColor(
+  static const CupertinoDynamicColor secondarySystemFill = CupertinoDynamicColor(
     debugLabel: 'secondarySystemFill',
     color: Color.fromARGB(40, 120, 120, 128),
     darkColor: Color.fromARGB(81, 120, 120, 128),
@@ -419,8 +404,7 @@ class CupertinoColors {
 
   /// An overlay fill color for large areas containing complex content, equivalent
   /// to [UIColor.quaternarySystemFill](https://developer.apple.com/documentation/uikit/uicolor/3255068-quaternarysystemfill).
-  static const CupertinoDynamicColor quaternarySystemFill =
-      CupertinoDynamicColor(
+  static const CupertinoDynamicColor quaternarySystemFill = CupertinoDynamicColor(
     debugLabel: 'quaternarySystemFill',
     color: Color.fromARGB(20, 116, 116, 128),
     darkColor: Color.fromARGB(45, 118, 118, 128),
@@ -466,8 +450,7 @@ class CupertinoColors {
   /// [UIColor.secondarySystemBackground](https://developer.apple.com/documentation/uikit/uicolor/3173137-secondarysystembackground).
   ///
   /// Typically used for designs that have a white primary background in a light environment.
-  static const CupertinoDynamicColor secondarySystemBackground =
-      CupertinoDynamicColor(
+  static const CupertinoDynamicColor secondarySystemBackground = CupertinoDynamicColor(
     debugLabel: 'secondarySystemBackground',
     color: Color.fromARGB(255, 242, 242, 247),
     darkColor: Color.fromARGB(255, 28, 28, 30),
@@ -483,8 +466,7 @@ class CupertinoColors {
   /// to [UIColor.tertiarySystemBackground](https://developer.apple.com/documentation/uikit/uicolor/3173154-tertiarysystembackground).
   ///
   /// Typically used for designs that have a white primary background in a light environment.
-  static const CupertinoDynamicColor tertiarySystemBackground =
-      CupertinoDynamicColor(
+  static const CupertinoDynamicColor tertiarySystemBackground = CupertinoDynamicColor(
     debugLabel: 'tertiarySystemBackground',
     color: Color.fromARGB(255, 255, 255, 255),
     darkColor: Color.fromARGB(255, 44, 44, 46),
@@ -500,8 +482,7 @@ class CupertinoColors {
   /// [UIColor.systemGroupedBackground](https://developer.apple.com/documentation/uikit/uicolor/3173145-systemgroupedbackground).
   ///
   /// Typically used for grouped content, including table views and platter-based designs.
-  static const CupertinoDynamicColor systemGroupedBackground =
-      CupertinoDynamicColor(
+  static const CupertinoDynamicColor systemGroupedBackground = CupertinoDynamicColor(
     debugLabel: 'systemGroupedBackground',
     color: Color.fromARGB(255, 242, 242, 247),
     darkColor: Color.fromARGB(255, 0, 0, 0),
@@ -517,8 +498,7 @@ class CupertinoColors {
   /// equivalent to [UIColor.secondarySystemGroupedBackground](https://developer.apple.com/documentation/uikit/uicolor/3173138-secondarysystemgroupedbackground).
   ///
   /// Typically used for grouped content, including table views and platter-based designs.
-  static const CupertinoDynamicColor secondarySystemGroupedBackground =
-      CupertinoDynamicColor(
+  static const CupertinoDynamicColor secondarySystemGroupedBackground = CupertinoDynamicColor(
     debugLabel: 'secondarySystemGroupedBackground',
     color: Color.fromARGB(255, 255, 255, 255),
     darkColor: Color.fromARGB(255, 28, 28, 30),
@@ -534,8 +514,7 @@ class CupertinoColors {
   /// equivalent to [UIColor.tertiarySystemGroupedBackground](https://developer.apple.com/documentation/uikit/uicolor/3173155-tertiarysystemgroupedbackground).
   ///
   /// Typically used for grouped content, including table views and platter-based designs.
-  static const CupertinoDynamicColor tertiarySystemGroupedBackground =
-      CupertinoDynamicColor(
+  static const CupertinoDynamicColor tertiarySystemGroupedBackground = CupertinoDynamicColor(
     debugLabel: 'tertiarySystemGroupedBackground',
     color: Color.fromARGB(255, 242, 242, 247),
     darkColor: Color.fromARGB(255, 44, 44, 46),
@@ -709,18 +688,18 @@ class CupertinoDynamicColor extends Color with Diagnosticable {
     @required Color highContrastElevatedColor,
     @required Color darkHighContrastElevatedColor,
   }) : this._(
-          color,
-          color,
-          darkColor,
-          highContrastColor,
-          darkHighContrastColor,
-          elevatedColor,
-          darkElevatedColor,
-          highContrastElevatedColor,
-          darkHighContrastElevatedColor,
-          null,
-          debugLabel,
-        );
+         color,
+         color,
+         darkColor,
+         highContrastColor,
+         darkHighContrastColor,
+         elevatedColor,
+         darkElevatedColor,
+         highContrastElevatedColor,
+         darkHighContrastElevatedColor,
+         null,
+         debugLabel,
+       );
 
   /// Creates an adaptive [Color] that changes its effective color based on the
   /// given [BuildContext]'s brightness (from [MediaQueryData.platformBrightness]
@@ -735,16 +714,16 @@ class CupertinoDynamicColor extends Color with Diagnosticable {
     @required Color highContrastColor,
     @required Color darkHighContrastColor,
   }) : this(
-          debugLabel: debugLabel,
-          color: color,
-          darkColor: darkColor,
-          highContrastColor: highContrastColor,
-          darkHighContrastColor: darkHighContrastColor,
-          elevatedColor: color,
-          darkElevatedColor: darkColor,
-          highContrastElevatedColor: highContrastColor,
-          darkHighContrastElevatedColor: darkHighContrastColor,
-        );
+    debugLabel: debugLabel,
+    color: color,
+    darkColor: darkColor,
+    highContrastColor: highContrastColor,
+    darkHighContrastColor: darkHighContrastColor,
+    elevatedColor: color,
+    darkElevatedColor: darkColor,
+    highContrastElevatedColor: highContrastColor,
+    darkHighContrastElevatedColor: darkHighContrastColor,
+  );
 
   /// Creates an adaptive [Color] that changes its effective color based on the given
   /// [BuildContext]'s brightness (from [MediaQueryData.platformBrightness] or
@@ -756,16 +735,16 @@ class CupertinoDynamicColor extends Color with Diagnosticable {
     @required Color color,
     @required Color darkColor,
   }) : this(
-          debugLabel: debugLabel,
-          color: color,
-          darkColor: darkColor,
-          highContrastColor: color,
-          darkHighContrastColor: darkColor,
-          elevatedColor: color,
-          darkElevatedColor: darkColor,
-          highContrastElevatedColor: color,
-          darkHighContrastElevatedColor: darkColor,
-        );
+    debugLabel: debugLabel,
+    color: color,
+    darkColor: darkColor,
+    highContrastColor: color,
+    darkHighContrastColor: darkColor,
+    elevatedColor: color,
+    darkElevatedColor: darkColor,
+    highContrastElevatedColor: color,
+    darkHighContrastElevatedColor: darkColor,
+  );
 
   const CupertinoDynamicColor._(
     this._effectiveColor,
@@ -779,19 +758,19 @@ class CupertinoDynamicColor extends Color with Diagnosticable {
     this.darkHighContrastElevatedColor,
     this._debugResolveContext,
     this._debugLabel,
-  )   : assert(color != null),
-        assert(darkColor != null),
-        assert(highContrastColor != null),
-        assert(darkHighContrastColor != null),
-        assert(elevatedColor != null),
-        assert(darkElevatedColor != null),
-        assert(highContrastElevatedColor != null),
-        assert(darkHighContrastElevatedColor != null),
-        assert(_effectiveColor != null),
-        // The super constructor has to be called with a dummy value in order to mark
-        // this constructor const.
-        // The field `value` is overridden in the class implementation.
-        super(0);
+  ) : assert(color != null),
+      assert(darkColor != null),
+      assert(highContrastColor != null),
+      assert(darkHighContrastColor != null),
+      assert(elevatedColor != null),
+      assert(darkElevatedColor != null),
+      assert(highContrastElevatedColor != null),
+      assert(darkHighContrastElevatedColor != null),
+      assert(_effectiveColor != null),
+      // The super constructor has to be called with a dummy value in order to mark
+      // this constructor const.
+      // The field `value` is overridden in the class implementation.
+      super(0);
 
   /// The current effective color.
   ///
@@ -903,34 +882,34 @@ class CupertinoDynamicColor extends Color with Diagnosticable {
   /// value will be used ([Brightness.light] platform brightness, normal contrast,
   /// [CupertinoUserInterfaceLevelData.base] elevation level), unless [nullOk] is
   /// set to false, in which case an exception will be thrown.
-  static Color resolve(Color resolvable, BuildContext context,
-      {bool nullOk = true}) {
-    if (resolvable == null) return null;
+  static Color resolve(Color resolvable, BuildContext context, { bool nullOk = true }) {
+    if (resolvable == null)
+      return null;
     assert(context != null);
     return (resolvable is CupertinoDynamicColor)
-        ? resolvable.resolveFrom(context, nullOk: nullOk)
-        : resolvable;
+      ? resolvable.resolveFrom(context, nullOk: nullOk)
+      : resolvable;
   }
 
   bool get _isPlatformBrightnessDependent {
-    return color != darkColor ||
-        elevatedColor != darkElevatedColor ||
-        highContrastColor != darkHighContrastColor ||
-        highContrastElevatedColor != darkHighContrastElevatedColor;
+    return color != darkColor
+        || elevatedColor != darkElevatedColor
+        || highContrastColor != darkHighContrastColor
+        || highContrastElevatedColor != darkHighContrastElevatedColor;
   }
 
   bool get _isHighContrastDependent {
-    return color != highContrastColor ||
-        darkColor != darkHighContrastColor ||
-        elevatedColor != highContrastElevatedColor ||
-        darkElevatedColor != darkHighContrastElevatedColor;
+    return color != highContrastColor
+        || darkColor != darkHighContrastColor
+        || elevatedColor != highContrastElevatedColor
+        || darkElevatedColor != darkHighContrastElevatedColor;
   }
 
   bool get _isInterfaceElevationDependent {
-    return color != elevatedColor ||
-        darkColor != darkElevatedColor ||
-        highContrastColor != highContrastElevatedColor ||
-        darkHighContrastColor != darkHighContrastElevatedColor;
+    return color != elevatedColor
+        || darkColor != darkElevatedColor
+        || highContrastColor != highContrastElevatedColor
+        || darkHighContrastColor != darkHighContrastElevatedColor;
   }
 
   /// Resolves this [CupertinoDynamicColor] using the provided [BuildContext].
@@ -961,20 +940,18 @@ class CupertinoDynamicColor extends Color with Diagnosticable {
   /// brightness, normal contrast, [CupertinoUserInterfaceLevelData.base] elevation
   /// level), unless [nullOk] is set to false, in which case an exception will be
   /// thrown.
-  CupertinoDynamicColor resolveFrom(BuildContext context,
-      {bool nullOk = true}) {
+  CupertinoDynamicColor resolveFrom(BuildContext context, { bool nullOk = true }) {
     final Brightness brightness = _isPlatformBrightnessDependent
-        ? CupertinoTheme.brightnessOf(context, nullOk: nullOk) ??
-            Brightness.light
-        : Brightness.light;
+      ? CupertinoTheme.brightnessOf(context, nullOk: nullOk) ?? Brightness.light
+      : Brightness.light;
 
-    final bool isHighContrastEnabled = _isHighContrastDependent &&
-        (MediaQuery.of(context, nullOk: nullOk)?.highContrast ?? false);
+    final bool isHighContrastEnabled = _isHighContrastDependent
+      && (MediaQuery.of(context, nullOk: nullOk)?.highContrast ?? false);
+
 
     final CupertinoUserInterfaceLevelData level = _isInterfaceElevationDependent
-        ? CupertinoUserInterfaceLevel.of(context, nullOk: nullOk) ??
-            CupertinoUserInterfaceLevelData.base
-        : CupertinoUserInterfaceLevelData.base;
+      ? CupertinoUserInterfaceLevel.of(context, nullOk: nullOk) ?? CupertinoUserInterfaceLevelData.base
+      : CupertinoUserInterfaceLevelData.base;
 
     Color resolved;
     switch (brightness) {
@@ -984,22 +961,17 @@ class CupertinoDynamicColor extends Color with Diagnosticable {
             resolved = isHighContrastEnabled ? highContrastColor : color;
             break;
           case CupertinoUserInterfaceLevelData.elevated:
-            resolved = isHighContrastEnabled
-                ? highContrastElevatedColor
-                : elevatedColor;
+            resolved = isHighContrastEnabled ? highContrastElevatedColor : elevatedColor;
             break;
         }
         break;
       case Brightness.dark:
         switch (level) {
           case CupertinoUserInterfaceLevelData.base:
-            resolved =
-                isHighContrastEnabled ? darkHighContrastColor : darkColor;
+            resolved = isHighContrastEnabled ? darkHighContrastColor : darkColor;
             break;
           case CupertinoUserInterfaceLevelData.elevated:
-            resolved = isHighContrastEnabled
-                ? darkHighContrastElevatedColor
-                : darkElevatedColor;
+            resolved = isHighContrastEnabled ? darkHighContrastElevatedColor : darkElevatedColor;
             break;
         }
     }
@@ -1026,18 +998,20 @@ class CupertinoDynamicColor extends Color with Diagnosticable {
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    if (other.runtimeType != runtimeType) return false;
-    return other is CupertinoDynamicColor &&
-        other.value == value &&
-        other.color == color &&
-        other.darkColor == darkColor &&
-        other.highContrastColor == highContrastColor &&
-        other.darkHighContrastColor == darkHighContrastColor &&
-        other.elevatedColor == elevatedColor &&
-        other.darkElevatedColor == darkElevatedColor &&
-        other.highContrastElevatedColor == highContrastElevatedColor &&
-        other.darkHighContrastElevatedColor == darkHighContrastElevatedColor;
+    if (identical(this, other))
+      return true;
+    if (other.runtimeType != runtimeType)
+      return false;
+    return other is CupertinoDynamicColor
+        && other.value == value
+        && other.color == color
+        && other.darkColor == darkColor
+        && other.highContrastColor == highContrastColor
+        && other.darkHighContrastColor == darkHighContrastColor
+        && other.elevatedColor == elevatedColor
+        && other.darkElevatedColor == darkElevatedColor
+        && other.highContrastElevatedColor == highContrastElevatedColor
+        && other.darkHighContrastElevatedColor == darkHighContrastElevatedColor;
   }
 
   @override
@@ -1056,30 +1030,20 @@ class CupertinoDynamicColor extends Color with Diagnosticable {
   }
 
   @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+  String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
     String toString(String name, Color color) {
       final String marker = color == _effectiveColor ? '*' : '';
       return '$marker$name = $color$marker';
     }
 
-    final List<String> xs = <String>[
-      toString('color', color),
+    final List<String> xs = <String>[toString('color', color),
       if (_isPlatformBrightnessDependent) toString('darkColor', darkColor),
-      if (_isHighContrastDependent)
-        toString('highContrastColor', highContrastColor),
-      if (_isPlatformBrightnessDependent && _isHighContrastDependent)
-        toString('darkHighContrastColor', darkHighContrastColor),
-      if (_isInterfaceElevationDependent)
-        toString('elevatedColor', elevatedColor),
-      if (_isPlatformBrightnessDependent && _isInterfaceElevationDependent)
-        toString('darkElevatedColor', darkElevatedColor),
-      if (_isHighContrastDependent && _isInterfaceElevationDependent)
-        toString('highContrastElevatedColor', highContrastElevatedColor),
-      if (_isPlatformBrightnessDependent &&
-          _isHighContrastDependent &&
-          _isInterfaceElevationDependent)
-        toString(
-            'darkHighContrastElevatedColor', darkHighContrastElevatedColor),
+      if (_isHighContrastDependent) toString('highContrastColor', highContrastColor),
+      if (_isPlatformBrightnessDependent && _isHighContrastDependent) toString('darkHighContrastColor', darkHighContrastColor),
+      if (_isInterfaceElevationDependent) toString('elevatedColor', elevatedColor),
+      if (_isPlatformBrightnessDependent && _isInterfaceElevationDependent) toString('darkElevatedColor', darkElevatedColor),
+      if (_isHighContrastDependent && _isInterfaceElevationDependent) toString('highContrastElevatedColor', highContrastElevatedColor),
+      if (_isPlatformBrightnessDependent && _isHighContrastDependent && _isInterfaceElevationDependent) toString('darkHighContrastElevatedColor', darkHighContrastElevatedColor),
     ];
 
     return '${_debugLabel ?? objectRuntimeType(this, 'CupertinoDynamicColor')}(${xs.join(', ')}, resolved by: ${_debugResolveContext?.widget ?? "UNRESOLVED"})';
@@ -1094,29 +1058,20 @@ class CupertinoDynamicColor extends Color with Diagnosticable {
     if (_isPlatformBrightnessDependent)
       properties.add(createCupertinoColorProperty('darkColor', darkColor));
     if (_isHighContrastDependent)
-      properties.add(
-          createCupertinoColorProperty('highContrastColor', highContrastColor));
+      properties.add(createCupertinoColorProperty('highContrastColor', highContrastColor));
     if (_isPlatformBrightnessDependent && _isHighContrastDependent)
-      properties.add(createCupertinoColorProperty(
-          'darkHighContrastColor', darkHighContrastColor));
+      properties.add(createCupertinoColorProperty('darkHighContrastColor', darkHighContrastColor));
     if (_isInterfaceElevationDependent)
-      properties
-          .add(createCupertinoColorProperty('elevatedColor', elevatedColor));
+      properties.add(createCupertinoColorProperty('elevatedColor', elevatedColor));
     if (_isPlatformBrightnessDependent && _isInterfaceElevationDependent)
-      properties.add(
-          createCupertinoColorProperty('darkElevatedColor', darkElevatedColor));
+      properties.add(createCupertinoColorProperty('darkElevatedColor', darkElevatedColor));
     if (_isHighContrastDependent && _isInterfaceElevationDependent)
-      properties.add(createCupertinoColorProperty(
-          'highContrastElevatedColor', highContrastElevatedColor));
-    if (_isPlatformBrightnessDependent &&
-        _isHighContrastDependent &&
-        _isInterfaceElevationDependent)
-      properties.add(createCupertinoColorProperty(
-          'darkHighContrastElevatedColor', darkHighContrastElevatedColor));
+      properties.add(createCupertinoColorProperty('highContrastElevatedColor', highContrastElevatedColor));
+    if (_isPlatformBrightnessDependent && _isHighContrastDependent && _isInterfaceElevationDependent)
+      properties.add(createCupertinoColorProperty('darkHighContrastElevatedColor', darkHighContrastElevatedColor));
 
     if (_debugResolveContext != null)
-      properties.add(
-          DiagnosticsProperty<Element>('last resolved', _debugResolveContext));
+      properties.add(DiagnosticsProperty<Element>('last resolved', _debugResolveContext));
   }
 }
 
@@ -1126,10 +1081,10 @@ class CupertinoDynamicColor extends Color with Diagnosticable {
 DiagnosticsProperty<Color> createCupertinoColorProperty(
   String name,
   Color value, {
-  bool showName = true,
-  Object defaultValue = kNoDefaultValue,
-  DiagnosticsTreeStyle style = DiagnosticsTreeStyle.singleLine,
-  DiagnosticLevel level = DiagnosticLevel.info,
+    bool showName = true,
+    Object defaultValue = kNoDefaultValue,
+    DiagnosticsTreeStyle style = DiagnosticsTreeStyle.singleLine,
+    DiagnosticLevel level = DiagnosticLevel.info,
 }) {
   if (value is CupertinoDynamicColor) {
     return DiagnosticsProperty<CupertinoDynamicColor>(

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:grinder/grinder.dart';
@@ -39,31 +38,8 @@ generate() => null;
 
 @Task('Generate Flutter color information')
 colors() async {
-  final String kUrl = 'https://raw.githubusercontent.com/flutter/flutter/'
-      'master/packages/flutter/lib/src/material/colors.dart';
-
-  // Get color file from flutter.
-  HttpClientRequest request = await new HttpClient().getUrl(Uri.parse(kUrl));
-  HttpClientResponse response = await request.close();
-  List<String> data = await utf8.decoder.bind(response).toList();
-
-  // Remove an import and define the Color class.
-  String str = data.join('');
-  str = str.replaceFirst(
-      "import 'dart:ui' show Color;", "import 'update_colors.dart';");
-  str = str.replaceFirst("import 'package:flutter/painting.dart';", '');
-  File file = new File('tool/colors/colors.dart');
-  file.writeAsStringSync(str);
-
-  // Run tool/color/update_colors.dart, pipe output to //resources/flutter/color.properties.
-  ProcessResult result = Process.runSync(
-      Platform.resolvedExecutable, ['tool/colors/update_colors.dart']);
-  if (result.exitCode != 0) {
-    fail('${result.stdout}\n${result.stderr}');
-  }
-  File outFile = new File('resources/flutter/colors.properties');
-  outFile.writeAsStringSync(result.stdout.toString());
-  log('wrote ${outFile.path}');
+  await Dart.runAsync('tool/colors/update_colors.dart');
+  await Dart.runAsync('tool/colors/generate_properties.dart');
 }
 
 @Task('Generate Flutter icon information')
