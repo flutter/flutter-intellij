@@ -94,6 +94,5 @@
     <orderEntry type="library" name="com.android.tools.analytics-library:protos" level="project" />
     <orderEntry type="module" module-name="intellij.android.gradle.dsl" />
     <orderEntry type="module" module-name="intellij.android.projectSystem" />
-    <orderEntry type="module" module-name="assistant" />
   </component>
 </module>
