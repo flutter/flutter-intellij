@@ -66,27 +66,20 @@ Future<void> downloadFile(String url, File file) async {
 // The pattern below is meant to match lines like:
 //   'static const Color black45 = Color(0x73000000);'
 //   'static const MaterialColor cyan = MaterialColor('
-final RegExp regexpColor1 =
-    new RegExp(r'static const \w*Color (\S+) = \w*Color\(');
-// The pattern below is meant to match lines like:
 //   'static const CupertinoDynamicColor activeBlue = systemBlue;'
-final RegExp regexpColor2 = new RegExp(r'static const \w*Color (\S+) = \w+;');
-// The pattern below is meant to match lines like:
 //   'static const CupertinoDynamicColor systemGreen = CupertinoDynamicColor.withBrightnessAndContrast('
-final RegExp regexpColor3 =
-    new RegExp(r'static const \w*Color (\S+) = \w+.\w+\(');
+final RegExp regexpColor = new RegExp(r'static const \w*Color (\S+) =');
 
 List<String> extractColorNames(File file) {
   String data = file.readAsStringSync();
 
-  List<String> names = [
-    ...regexpColor1.allMatches(data).map((Match match) => match.group(1)),
-    ...regexpColor2.allMatches(data).map((Match match) => match.group(1)),
-    ...regexpColor3.allMatches(data).map((Match match) => match.group(1)),
-  ];
+  List<String> names = regexpColor
+      .allMatches(data)
+      .map((Match match) => match.group(1))
+      .toList();
 
   // Remove any duplicates.
-  return Set<String>.from(names).toList();
+  return Set<String>.from(names).toList()..sort();
 }
 
 void generateDart(List<String> colors, String filename, String className) {
