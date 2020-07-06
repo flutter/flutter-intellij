@@ -24,6 +24,7 @@ import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.AndroidUtils;
+import io.flutter.utils.FileUtils;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,12 +36,19 @@ import org.jetbrains.annotations.NotNull;
 public class ProjectOpenActivity implements StartupActivity, DumbAware {
   public static final ProjectType FLUTTER_PROJECT_TYPE = new ProjectType("io.flutter");
   private static final Logger LOG = Logger.getInstance(ProjectOpenActivity.class);
+  private static final String DOWNLOAD_PATH = FileUtils.platformPath();
 
   public ProjectOpenActivity() {
   }
 
+  private void verifyJxBrowser() {
+    System.out.println(DOWNLOAD_PATH);
+  }
+
   @Override
   public void runActivity(@NotNull Project project) {
+    verifyJxBrowser();
+
     // TODO(messick): Remove 'FlutterUtils.isAndroidStudio()' after Android Q sources are published.
     if (FlutterUtils.isAndroidStudio() && AndroidUtils.isAndroidProject(project)) {
       AndroidUtils.addGradleListeners(project);
