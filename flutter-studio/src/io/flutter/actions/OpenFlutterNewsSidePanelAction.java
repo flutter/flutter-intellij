@@ -28,7 +28,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerListener;
 import io.flutter.FlutterInitializer;
-import io.flutter.assistant.whatsnew.whatsnew.FlutterNewsBundleCreator;
+import io.flutter.assistant.whatsnew.FlutterNewsBundleCreator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -135,7 +135,7 @@ public class OpenFlutterNewsSidePanelAction extends OpenAssistSidePanelAction {
      * hides and then shows the window. Otherwise, the handler would think the window was closed,
      * even though it was only dragged.
      */
-    @Override
+    @SuppressWarnings("override")
     public void stateChanged(@NotNull ToolWindowManager toolWindowManager) {
       ApplicationManager.getApplication().invokeLater(() -> {
         if (myProject.isDisposed()) {
