@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<!--
+ * Copyright 2020 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+  -->
+
+<!-- TODO Fill this out! -->
+
+<tutorialBundle
+  icon="icons/flutter_13.png"
+  logo="icons/flutter_13.png"
+  name="Flutter News"
+  version="1.17.1"
+  resourceRoot="/"
+  stepByStep="false"
+  hideStepIndex="true">
+  <feature
+    name="New Features">
+    <tutorial
+      key="flutter_news"
+      label="New Features in 1.17.1 and 47"
+      remoteLink="TODO_url_to_web_version"
+      remoteLinkLabel="Read in a browser">
+      <description>
+        <![CDATA[
+        This panel describes some of the new features and behavior changes included in this update. This
+        panel is applicable to Flutter SDK 1.17.1 and plugin 47.
+        <br><br>
+        To open this panel again later, select <b>Help &gt; What's New in Flutter</b> from the main menu.
+        ]]>
+      </description>
+      <step label="Plugin Dev Channel">
+        <stepElement>
+          <section>
+            <![CDATA[
+              The dev channel isn't really new; it was introduced in plugin version 45. It is updated
+              weekly with the latest changes from the master branch.
+              <br><br>There are
+              <a href="https://github.com/flutter/flutter-intellij/wiki/Dev-Channel">instructions on the web</a>
+              for how to use it.
+            ]]>
+          </section>
+        </stepElement>
+      </step>
+      <step label="Label for Step 2">
+        <stepElement>
+          <section>
+            <![CDATA[Arbitrary text that may contain simple html]]>
+          </section>
+        </stepElement>
+        <stepElement>
+          <code fileType="DART">dart code</code>
+        </stepElement>
+      </step>
+    </tutorial>
+  </feature>
+</tutorialBundle>

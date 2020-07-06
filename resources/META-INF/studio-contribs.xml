@@ -50,6 +50,14 @@
             project-type="io.flutter"
             icon="AllIcons.General.ProjectStructure"/>
 
+    <!-- action
+      id="DeveloperServices.FlutterNewsAssistant"
+      class="io.flutter.actions.OpenFlutterNewsSidePanelAction"
+      icon="/icons/flutter.png"
+      text="What's New in Flutter">
+      <add-to-group group-id="HelpMenu" />
+    </action -->
+
   </actions>
 
 </idea-plugin>
