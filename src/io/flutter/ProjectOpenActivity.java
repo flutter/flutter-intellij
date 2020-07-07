@@ -23,6 +23,7 @@ import com.intellij.openapi.project.ProjectTypeService;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Pair;
+import com.intellij.util.ReflectionUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.download.DownloadableFileDescription;
 import com.intellij.util.download.DownloadableFileService;
@@ -106,8 +107,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     final URLClassLoader classLoader = (URLClassLoader)ClassLoader.getSystemClassLoader();
     try {
       final URL url = file.toURI().toURL();
-      final Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-      method.setAccessible(true);
+      final Method method = ReflectionUtil.getDeclaredMethod(URLClassLoader.class, "addURL", URL.class);
       method.invoke(classLoader, url);
       System.out.println("Loaded classes from url: " + url.toString());
     }
