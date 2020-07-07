@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.flutter.assistant.whatsnew.whatsnew;
+package io.flutter.assistant.whatsnew;
 
 import com.android.tools.idea.assistant.DefaultTutorialBundle;
 

@@ -69,6 +69,18 @@ List<EditCommand> editCommands = [
         'import com.android.tools.idea.gradle.dsl.model.BuildModelContext;',
     version: '4.1',
   ),
+  Subst(
+    path:
+        'flutter-studio/src/io/flutter/assistant/whatsnew/FlutterNewsBundleCreator.java',
+    initial: """
+    PluginManager pluginManager = PluginManager.getInstance();
+    IdeaPluginDescriptor descriptor = pluginManager.findEnabledPlugin(PluginId.getId("io.flutter"));
+""",
+    replacement: """
+    IdeaPluginDescriptor descriptor = PluginManager.getPlugin(PluginId.getId("io.flutter"));
+""",
+    versions: ['3.6', '4.0'],
+  ),
 ];
 
 // Used to test checkAndClearAppliedEditCommands()
@@ -178,6 +190,7 @@ class EditFlutterDescriptionProvider extends EditCommand {
       return createStep(model, invoker, parent);
     }
 """;
+
   @override
   String get path =>
       'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java';
