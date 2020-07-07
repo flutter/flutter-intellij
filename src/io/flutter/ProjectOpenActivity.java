@@ -40,6 +40,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.List;
 
@@ -68,6 +71,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     if (jxbrowserPlatformFile.exists()) {
       // Skip downloading
       System.out.println("JxBrowser platform file already exists");
+      loadClasses(jxbrowserPlatformFile);
       return;
     }
 
@@ -78,7 +82,6 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     Task.Backgroundable task = new Task.Backgroundable(project, "Downloading jxbrowser") {
       @Override
       public void run(@NotNull ProgressIndicator indicator) {
-        System.out.println("In background job to download file");
         try {
           List<Pair<File, DownloadableFileDescription>> pairs = downloader.download(new File(DOWNLOAD_PATH));
           Pair<File, DownloadableFileDescription> first = ContainerUtil.getFirstItem(pairs);
@@ -86,6 +89,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
           if (file != null) {
             System.out.println("File downloaded: " + file.getAbsolutePath());
           }
+          loadClasses(file);
         }
         catch (IOException e) {
           System.out.println("Unable to download file");
@@ -95,6 +99,22 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     BackgroundableProcessIndicator processIndicator = new BackgroundableProcessIndicator(task);
     processIndicator.setIndeterminate(false);
     ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, processIndicator);
+  }
+
+  private void loadClasses(File file) {
+    System.out.println("Loading classes from file: " + file.getAbsolutePath());
+    final URLClassLoader classLoader = (URLClassLoader)ClassLoader.getSystemClassLoader();
+    try {
+      final URL url = file.toURI().toURL();
+      final Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+      method.setAccessible(true);
+      method.invoke(classLoader, url);
+      System.out.println("Loaded classes from url: " + url.toString());
+    }
+    catch (Exception e) {
+      System.out.println("Unable to load URL: " + file.getAbsolutePath());
+      e.printStackTrace();
+    }
   }
 
   @Override
