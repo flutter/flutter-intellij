@@ -12,12 +12,21 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectType;
 import com.intellij.openapi.project.ProjectTypeService;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.Pair;
+import com.intellij.util.containers.ContainerUtil;
+import com.intellij.util.download.DownloadableFileDescription;
+import com.intellij.util.download.DownloadableFileService;
+import com.intellij.util.download.FileDownloader;
 import icons.FlutterIcons;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.pub.PubRoot;
@@ -26,7 +35,13 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FileUtils;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.JxBrowserUtils;
 import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Runs startup actions just after a project is opened, before it's indexed.
@@ -41,13 +56,50 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
   public ProjectOpenActivity() {
   }
 
-  private void verifyJxBrowser() {
-    System.out.println(DOWNLOAD_PATH);
+  private void verifyJxBrowser(Project project) {
+    final File directory = new File(DOWNLOAD_PATH);
+    if (!directory.exists()) {
+      //noinspection ResultOfMethodCallIgnored
+      directory.mkdirs();
+    }
+
+    String jxbrowserFileName = JxBrowserUtils.getPlatformFileName();
+    final File jxbrowserPlatformFile = new File(DOWNLOAD_PATH + File.separator + jxbrowserFileName);
+    if (jxbrowserPlatformFile.exists()) {
+      // Skip downloading
+      System.out.println("JxBrowser platform file already exists");
+      return;
+    }
+
+    DownloadableFileService service = DownloadableFileService.getInstance();
+    DownloadableFileDescription description = service.createFileDescription(JxBrowserUtils.getDistributionLink(jxbrowserFileName), jxbrowserFileName);
+    FileDownloader downloader = service.createDownloader(Collections.singletonList(description), jxbrowserFileName);
+
+    Task.Backgroundable task = new Task.Backgroundable(project, "Downloading jxbrowser") {
+      @Override
+      public void run(@NotNull ProgressIndicator indicator) {
+        System.out.println("In background job to download file");
+        try {
+          List<Pair<File, DownloadableFileDescription>> pairs = downloader.download(new File(DOWNLOAD_PATH));
+          Pair<File, DownloadableFileDescription> first = ContainerUtil.getFirstItem(pairs);
+          File file = first != null ? first.first : null;
+          if (file != null) {
+            System.out.println("File downloaded: " + file.getAbsolutePath());
+          }
+        }
+        catch (IOException e) {
+          System.out.println("Unable to download file");
+        }
+      }
+    };
+    BackgroundableProcessIndicator processIndicator = new BackgroundableProcessIndicator(task);
+    processIndicator.setIndeterminate(false);
+    ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, processIndicator);
   }
 
   @Override
   public void runActivity(@NotNull Project project) {
-    verifyJxBrowser();
+    verifyJxBrowser(project);
 
     // TODO(messick): Remove 'FlutterUtils.isAndroidStudio()' after Android Q sources are published.
     if (FlutterUtils.isAndroidStudio() && AndroidUtils.isAndroidProject(project)) {
