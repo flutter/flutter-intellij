@@ -41,11 +41,9 @@ public class JxBrowserManager {
   private static JxBrowserManager manager;
   private static final String DOWNLOAD_PATH = FileUtils.platformPath();
 
-  private AtomicReference<JxBrowserStatus> status;
+  private static final AtomicReference<JxBrowserStatus> status = new AtomicReference<>(JxBrowserStatus.NOT_INSTALLED);
 
-  private JxBrowserManager() {
-    this.status = new AtomicReference<>(JxBrowserStatus.NOT_INSTALLED);
-  }
+  private JxBrowserManager() {}
 
   public static JxBrowserManager get() {
     if (manager == null) {
@@ -55,13 +53,14 @@ public class JxBrowserManager {
   }
 
   public void setUp(Project project) {
-    // TODO: Maybe status isn't needed if we have to rely on loading file anyway?
-    if (status.compareAndSet(JxBrowserStatus.NOT_INSTALLED, JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
-      loadJxBrowser(project);
+    if (!status.compareAndSet(JxBrowserStatus.NOT_INSTALLED, JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
+      // If already in progress, let calling point wait until success or failure (it may make sense to call setUp but proceed).
+      // If already succeeded or failed, no need to continue.
+      return;
     }
-  }
 
-  private void loadJxBrowser(Project project) {
+    System.out.println("Installing for project: " + project.getName());
+
     final File directory = new File(DOWNLOAD_PATH);
     if (!directory.exists()) {
       //noinspection ResultOfMethodCallIgnored
