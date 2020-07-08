@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 enum JxBrowserStatus {
   NOT_INSTALLED,
-  DOWNLOADING,
+  INSTALLATION_IN_PROGRESS,
   INSTALLED,
   INSTALLATION_FAILED,
 }
@@ -55,17 +55,21 @@ public class JxBrowserManager {
   }
 
   public void setUp(Project project) {
-    verifyJxBrowser(project);
+    // TODO: Maybe status isn't needed if we have to rely on loading file anyway?
+    if (status.compareAndSet(JxBrowserStatus.NOT_INSTALLED, JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
+      loadJxBrowser(project);
+    }
   }
 
-  private void verifyJxBrowser(Project project) {
+  private void loadJxBrowser(Project project) {
     final File directory = new File(DOWNLOAD_PATH);
     if (!directory.exists()) {
       //noinspection ResultOfMethodCallIgnored
       directory.mkdirs();
     }
 
-    String jxbrowserFileName = JxBrowserUtils.getPlatformFileName();
+    // Check for file or loading file
+    final String jxbrowserFileName = JxBrowserUtils.getPlatformFileName();
     final File jxbrowserPlatformFile = new File(DOWNLOAD_PATH + File.separator + jxbrowserFileName);
     if (jxbrowserPlatformFile.exists()) {
       // Skip downloading
@@ -74,6 +78,41 @@ public class JxBrowserManager {
       return;
     }
 
+    final File tempLoadingFile = new File(DOWNLOAD_PATH + File.separator + JxBrowserUtils.getLoadingFileName());
+    boolean created = false;
+    try {
+      created = tempLoadingFile.createNewFile();
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    if (!created) {
+      // This means another project already created this file and has started downloading
+      // Wait for download to finish and then try loading again
+      int attempts = 0;
+      while (attempts < 100) {
+        if (tempLoadingFile.exists()) {
+          try {
+            Thread.sleep(1000);
+          }
+          catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+          attempts += 1;
+        }
+        else {
+          loadClasses(jxbrowserPlatformFile);
+          return;
+        }
+      }
+      // If jxbrowser was not downloaded within 100 sec.
+      status.set(JxBrowserStatus.INSTALLATION_FAILED);
+    }
+    downloadJxBrowser(project, jxbrowserFileName, tempLoadingFile);
+  }
+
+  private void downloadJxBrowser(Project project, String jxbrowserFileName, File tempLoadingFile) {
     DownloadableFileService service = DownloadableFileService.getInstance();
     DownloadableFileDescription
       description = service.createFileDescription(JxBrowserUtils.getDistributionLink(jxbrowserFileName), jxbrowserFileName);
@@ -89,10 +128,13 @@ public class JxBrowserManager {
           if (file != null) {
             System.out.println("File downloaded: " + file.getAbsolutePath());
           }
+          tempLoadingFile.delete();
           loadClasses(file);
         }
         catch (IOException e) {
           System.out.println("Unable to download file");
+          status.set(JxBrowserStatus.INSTALLATION_FAILED);
+          tempLoadingFile.delete();
         }
       }
     };
@@ -109,10 +151,12 @@ public class JxBrowserManager {
       final Method method = ReflectionUtil.getDeclaredMethod(URLClassLoader.class, "addURL", URL.class);
       method.invoke(classLoader, url);
       System.out.println("Loaded classes from url: " + url.toString());
+      status.set(JxBrowserStatus.INSTALLED);
     }
     catch (Exception e) {
       System.out.println("Unable to load URL: " + file.getAbsolutePath());
       e.printStackTrace();
+      status.set(JxBrowserStatus.INSTALLATION_FAILED);
     }
   }
 
