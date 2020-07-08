@@ -33,6 +33,14 @@ public class JxBrowserUtils {
     return String.format("%s-%s-%s.%s", JXBROWSER_FILE_PREFIX, name, JXBROWSER_FILE_VERSION, JXBROWSER_FILE_SUFFIX);
   }
 
+  public static String getApiFileName() {
+    return String.format("%s-%s.%s", JXBROWSER_FILE_PREFIX, JXBROWSER_FILE_VERSION, JXBROWSER_FILE_SUFFIX);
+  }
+
+  public static String getSwingFileName() {
+    return String.format("%s-swing-%s.%s", JXBROWSER_FILE_PREFIX, JXBROWSER_FILE_VERSION, JXBROWSER_FILE_SUFFIX);
+  }
+
   public static String getLoadingFileName() {
     return String.format("loading-%s", JXBROWSER_FILE_VERSION);
   }
