@@ -5,6 +5,7 @@
  */
 package io.flutter.jxbrowser;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -40,8 +41,8 @@ enum JxBrowserStatus {
 public class JxBrowserManager {
   private static JxBrowserManager manager;
   private static final String DOWNLOAD_PATH = FileUtils.platformPath();
-
   private static final AtomicReference<JxBrowserStatus> status = new AtomicReference<>(JxBrowserStatus.NOT_INSTALLED);
+  private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
 
   private JxBrowserManager() {}
 
@@ -54,12 +55,13 @@ public class JxBrowserManager {
 
   public void setUp(Project project) {
     if (!status.compareAndSet(JxBrowserStatus.NOT_INSTALLED, JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
+      // This check ensures that an IDE only downloads and installs JxBrowser once, even if multiple projects are open.
       // If already in progress, let calling point wait until success or failure (it may make sense to call setUp but proceed).
       // If already succeeded or failed, no need to continue.
       return;
     }
 
-    System.out.println("Installing for project: " + project.getName());
+    LOG.info(project.getName() + ": Installing JxBrowser");
 
     final File directory = new File(DOWNLOAD_PATH);
     if (!directory.exists()) {
@@ -71,8 +73,7 @@ public class JxBrowserManager {
     final String jxbrowserFileName = JxBrowserUtils.getPlatformFileName();
     final File jxbrowserPlatformFile = new File(DOWNLOAD_PATH + File.separator + jxbrowserFileName);
     if (jxbrowserPlatformFile.exists()) {
-      // Skip downloading
-      System.out.println("JxBrowser platform file already exists");
+      LOG.info(project.getName() + ": JxBrowser platform file already exists, skipping download");
       loadClasses(jxbrowserPlatformFile);
       return;
     }
@@ -87,8 +88,9 @@ public class JxBrowserManager {
     }
 
     if (!created) {
-      // This means another project already created this file and has started downloading
-      // Wait for download to finish and then try loading again
+      // This means another IDE already created this file and has started downloading.
+      // Wait for download to finish and then try loading again.
+      LOG.info(project.getName() + ": Waiting for JxBrowser file to download");
       int attempts = 0;
       while (attempts < 100) {
         if (tempLoadingFile.exists()) {
@@ -101,11 +103,13 @@ public class JxBrowserManager {
           attempts += 1;
         }
         else {
+          LOG.info(project.getName() + ": JxBrowser file downloaded, attempting to load");
           loadClasses(jxbrowserPlatformFile);
           return;
         }
       }
       // If jxbrowser was not downloaded within 100 sec.
+      LOG.info(project.getName() + ": JxBrowser downloaded timed out");
       status.set(JxBrowserStatus.INSTALLATION_FAILED);
     }
     downloadJxBrowser(project, jxbrowserFileName, tempLoadingFile);
@@ -125,13 +129,14 @@ public class JxBrowserManager {
           Pair<File, DownloadableFileDescription> first = ContainerUtil.getFirstItem(pairs);
           File file = first != null ? first.first : null;
           if (file != null) {
-            System.out.println("File downloaded: " + file.getAbsolutePath());
+            LOG.info(project.getName() + ": JxBrowser file downloaded: " + file.getAbsolutePath());
           }
           tempLoadingFile.delete();
           loadClasses(file);
         }
         catch (IOException e) {
-          System.out.println("Unable to download file");
+          LOG.info(project.getName() + ": JxBrowser file downloaded failed: " + jxbrowserFileName);
+          e.printStackTrace();
           status.set(JxBrowserStatus.INSTALLATION_FAILED);
           tempLoadingFile.delete();
         }
@@ -143,17 +148,16 @@ public class JxBrowserManager {
   }
 
   private void loadClasses(File file) {
-    System.out.println("Loading classes from file: " + file.getAbsolutePath());
     final URLClassLoader classLoader = (URLClassLoader)ClassLoader.getSystemClassLoader();
     try {
       final URL url = file.toURI().toURL();
       final Method method = ReflectionUtil.getDeclaredMethod(URLClassLoader.class, "addURL", URL.class);
       method.invoke(classLoader, url);
-      System.out.println("Loaded classes from url: " + url.toString());
+      LOG.info("Loaded JxBrowser file successfully: " + url.toString());
       status.set(JxBrowserStatus.INSTALLED);
     }
     catch (Exception e) {
-      System.out.println("Unable to load URL: " + file.getAbsolutePath());
+      LOG.info("Failed to load JxBrowser file: " + file.getAbsolutePath());
       e.printStackTrace();
       status.set(JxBrowserStatus.INSTALLATION_FAILED);
     }
