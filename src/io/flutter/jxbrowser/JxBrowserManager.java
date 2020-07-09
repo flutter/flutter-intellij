@@ -180,32 +180,6 @@ public class JxBrowserManager {
     ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, processIndicator);
   }
 
-  private void loadClasses(File platformFile, File apiFile, File swingFile) {
-    final URLClassLoader classLoader = (URLClassLoader)ClassLoader.getSystemClassLoader();
-    try {
-      final Method method = ReflectionUtil.getDeclaredMethod(URLClassLoader.class, "addURL", URL.class);
-
-      final URL platformUrl = platformFile.toURI().toURL();
-      method.invoke(classLoader, platformUrl);
-      LOG.info("Loaded JxBrowser file successfully: " + platformUrl.toString());
-
-      final URL apiUrl = apiFile.toURI().toURL();
-      method.invoke(classLoader, apiUrl);
-      LOG.info("Loaded JxBrowser file successfully: " + apiUrl.toString());
-
-      final URL swingUrl = platformFile.toURI().toURL();
-      method.invoke(classLoader, swingUrl);
-      LOG.info("Loaded JxBrowser file successfully: " + swingUrl.toString());
-
-      status.set(JxBrowserStatus.INSTALLED);
-    }
-    catch (Exception e) {
-      LOG.info("Failed to load JxBrowser files");
-      e.printStackTrace();
-      status.set(JxBrowserStatus.INSTALLATION_FAILED);
-    }
-  }
-
   private void loadClasses(List<File> files) {
     final URLClassLoader classLoader = (URLClassLoader)ClassLoader.getSystemClassLoader();
     try {
