@@ -370,7 +370,7 @@ class DevToolsInstance {
       // Creating Swing component for rendering web content
       // loaded in the given Browser instance.
       BrowserView view = BrowserView.newInstance(browser);
-      view.setPreferredSize(new Dimension(400, 600));
+      view.setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
       JScrollPane pane = new JScrollPane(view);
       pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
