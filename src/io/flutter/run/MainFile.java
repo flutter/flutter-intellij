@@ -127,7 +127,7 @@ public class MainFile {
 
   private static boolean isAppDir(@NotNull VirtualFile dir) {
     return dir.isDirectory() && (
-      dir.findChild("pubspec.yaml") != null || dir.findChild("BUILD") != null || dir.findChild(".packages") != null);
+      dir.findChild("pubspec.yaml") != null || dir.findChild(".packages") != null);
   }
 
   private static boolean inProject(@Nullable VirtualFile file, @NotNull Project project) {
