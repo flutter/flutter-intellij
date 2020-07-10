@@ -256,7 +256,7 @@ public class FlutterEditorAnnotatorTest extends AbstractDartElementTest {
   }
 
   @Test
-  public void locatesRBOColor() throws Exception {
+  public void locatesRGBOColor() throws Exception {
     run(() -> {
       final PsiElement testIdentifier = setUpDartElement("main() { Colors.fromRGBO(255, 255, 0, 1.0); }", "Colors.fromRGBO", LeafPsiElement.class);
       final DartNewExpression element = DartSyntax.findEnclosingNewExpression(testIdentifier);
