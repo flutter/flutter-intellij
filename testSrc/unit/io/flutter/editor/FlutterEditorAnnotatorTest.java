@@ -191,4 +191,88 @@ public class FlutterEditorAnnotatorTest extends AbstractDartElementTest {
       assertEquals(HighlightSeverity.INFORMATION, annotation.getSeverity());
     });
   }
+
+  @Test
+  public void locatesConstARGBColor() throws Exception {
+    run(() -> {
+      final PsiElement testIdentifier = setUpDartElement("main() { const Colors.fromARGB(255, 255, 0,0); }", "Colors.fromARGB", LeafPsiElement.class);
+      final DartNewExpression element = DartSyntax.findEnclosingNewExpression(testIdentifier);
+      assert element != null;
+
+      final FlutterEditorAnnotator annotator = new FlutterEditorAnnotator();
+      final AnnotationSession annotationSession = new AnnotationSession(testIdentifier.getContainingFile());
+      final AnnotationHolderImpl annotationHolder = new AnnotationHolderImpl(annotationSession);
+
+      annotator.annotate(element, annotationHolder);
+
+      assertTrue(annotationHolder.hasAnnotations());
+      assertEquals(1, annotationHolder.size());
+
+      final Annotation annotation = annotationHolder.get(0);
+      assertEquals(HighlightSeverity.INFORMATION, annotation.getSeverity());
+    });
+  }
+
+  @Test
+  public void locatesARGBColor() throws Exception {
+    run(() -> {
+      final PsiElement testIdentifier = setUpDartElement("main() { Colors.fromARGB(255, 255, 0,0); }", "Colors.fromARGB", LeafPsiElement.class);
+      final DartNewExpression element = DartSyntax.findEnclosingNewExpression(testIdentifier);
+      assert element != null;
+
+      final FlutterEditorAnnotator annotator = new FlutterEditorAnnotator();
+      final AnnotationSession annotationSession = new AnnotationSession(testIdentifier.getContainingFile());
+      final AnnotationHolderImpl annotationHolder = new AnnotationHolderImpl(annotationSession);
+
+      annotator.annotate(element, annotationHolder);
+
+      assertTrue(annotationHolder.hasAnnotations());
+      assertEquals(1, annotationHolder.size());
+
+      final Annotation annotation = annotationHolder.get(0);
+      assertEquals(HighlightSeverity.INFORMATION, annotation.getSeverity());
+    });
+  }
+
+  @Test
+  public void locatesConstRGBOColor() throws Exception {
+    run(() -> {
+      final PsiElement testIdentifier = setUpDartElement("main() { const Colors.fromRGBO(255,0,0,1.0); }", "Colors.fromRGBO", LeafPsiElement.class);
+      final DartNewExpression element = DartSyntax.findEnclosingNewExpression(testIdentifier);
+      assert element != null;
+
+      final FlutterEditorAnnotator annotator = new FlutterEditorAnnotator();
+      final AnnotationSession annotationSession = new AnnotationSession(testIdentifier.getContainingFile());
+      final AnnotationHolderImpl annotationHolder = new AnnotationHolderImpl(annotationSession);
+
+      annotator.annotate(element, annotationHolder);
+
+      assertTrue(annotationHolder.hasAnnotations());
+      assertEquals(1, annotationHolder.size());
+
+      final Annotation annotation = annotationHolder.get(0);
+      assertEquals(HighlightSeverity.INFORMATION, annotation.getSeverity());
+    });
+  }
+
+  @Test
+  public void locatesRBOColor() throws Exception {
+    run(() -> {
+      final PsiElement testIdentifier = setUpDartElement("main() { Colors.fromRGBO(255, 255, 0, 1.0); }", "Colors.fromRGBO", LeafPsiElement.class);
+      final DartNewExpression element = DartSyntax.findEnclosingNewExpression(testIdentifier);
+      assert element != null;
+
+      final FlutterEditorAnnotator annotator = new FlutterEditorAnnotator();
+      final AnnotationSession annotationSession = new AnnotationSession(testIdentifier.getContainingFile());
+      final AnnotationHolderImpl annotationHolder = new AnnotationHolderImpl(annotationSession);
+
+      annotator.annotate(element, annotationHolder);
+
+      assertTrue(annotationHolder.hasAnnotations());
+      assertEquals(1, annotationHolder.size());
+
+      final Annotation annotation = annotationHolder.get(0);
+      assertEquals(HighlightSeverity.INFORMATION, annotation.getSeverity());
+    });
+  }
 }

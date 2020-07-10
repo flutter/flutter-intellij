@@ -91,7 +91,9 @@ public class FlutterEditorAnnotator implements Annotator {
       final String text = element.getText();
 
       final String constIconDataText = "const IconData(";
-      final String constColorText = "const Color(";
+      final String constColorConstrutorText = "const Color(";
+      final String constColorFromARGB = "const Color.fromARGB(";
+      final String constColorFromRGBO = "const Color.fromRGBO(";
 
       if (text.startsWith(constIconDataText)) {
         final Integer val = ExpressionParsingUtils.parseNumberFromCallParam(text, constIconDataText);
@@ -110,13 +112,26 @@ public class FlutterEditorAnnotator implements Annotator {
           }
         }
       }
-      else if (text.startsWith(constColorText)) {
-        final Color color = ExpressionParsingUtils.parseColor(text, constColorText);
+      else if (text.startsWith(constColorConstrutorText)) {
+        final Color color = ExpressionParsingUtils.parseColor(text, constColorConstrutorText);
+        if (color != null) {
+          attachColorIcon(element, holder, color);
+        }
+      }
+      else if (text.startsWith(constColorFromARGB)) {
+        final Color color = ExpressionParsingUtils.parseColorComponents(text, constColorFromARGB, true);
+        if (color != null) {
+          attachColorIcon(element, holder, color);
+        }
+      }
+      else if (text.startsWith(constColorFromRGBO)) {
+        final Color color = ExpressionParsingUtils.parseColorComponents(text, constColorFromRGBO, false);
         if (color != null) {
           attachColorIcon(element, holder, color);
         }
       }
     }
+
     else if (element instanceof DartCallExpression) {
       // Look for call expressions that are really new (constructor) expressions; The IntelliJ parser can't
       // distinguish between call expressions, and call expressions that are really constructor calls.
@@ -125,7 +140,9 @@ public class FlutterEditorAnnotator implements Annotator {
       final String text = element.getText();
 
       final String iconDataText = "IconData(";
-      final String colorText = "Color(";
+      final String colorConstructorText = "Color(";
+      final String colorFromARGB = "Color.fromARGB(";
+      final String colorFromRGBO = "Color.fromRGBO(";
 
       if (text.startsWith(iconDataText)) {
         final Integer val = ExpressionParsingUtils.parseNumberFromCallParam(text, iconDataText);
@@ -144,8 +161,20 @@ public class FlutterEditorAnnotator implements Annotator {
           }
         }
       }
-      else if (text.startsWith(colorText)) {
-        final Color color = ExpressionParsingUtils.parseColor(text, colorText);
+      else if (text.startsWith(colorConstructorText)) {
+        final Color color = ExpressionParsingUtils.parseColor(text, colorConstructorText);
+        if (color != null) {
+          attachColorIcon(element, holder, color);
+        }
+      }
+      else if (text.startsWith(colorFromARGB)) {
+        final Color color = ExpressionParsingUtils.parseColorComponents(text, colorFromARGB, true);
+        if (color != null) {
+          attachColorIcon(element, holder, color);
+        }
+      }
+      else if (text.startsWith(colorFromRGBO)) {
+        final Color color = ExpressionParsingUtils.parseColorComponents(text, colorFromRGBO, false);
         if (color != null) {
           attachColorIcon(element, holder, color);
         }
