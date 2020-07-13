@@ -32,7 +32,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   private SelectDeviceAction selectedDeviceAction;
 
   DeviceSelectorAction() {
-    setSmallVariant(false);
+    setSmallVariant(true);
   }
 
   @NotNull
@@ -74,9 +74,9 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
       // Listen for android device changes, and rebuild the menu if necessary.
       AndroidEmulatorManager.getInstance(project).addListener(() -> update(project, e.getPresentation()));
-
-      update(project, e.getPresentation());
     }
+
+    update(project, e.getPresentation());
   }
 
   private void update(Project project, Presentation presentation) {
