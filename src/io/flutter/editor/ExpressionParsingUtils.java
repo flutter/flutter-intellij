@@ -59,8 +59,14 @@ public class ExpressionParsingUtils {
     }
     final int[] argb = new int[4];
     for (int i = 0; i < 4; ++i) {
+      final String maybeNumber = maybeNumbers[i].trim();
       try {
-        argb[i] = Integer.parseUnsignedInt(maybeNumbers[i].trim());
+        if (maybeNumber.startsWith("0x")) {
+          argb[i] = Integer.parseUnsignedInt(maybeNumber.substring(2), 16);
+        }
+        else {
+          argb[i] = Integer.parseUnsignedInt(maybeNumber);
+        }
       }
       catch (NumberFormatException ignored) {
         return null;
@@ -73,15 +79,21 @@ public class ExpressionParsingUtils {
   private static Color parseRGBOColorComponents(String[] maybeNumbers) {
     final float[] rgbo = new float[4];
     for (int i = 0; i < 4; ++i) {
+      final String maybeNumber = maybeNumbers[i].trim();
       try {
         if (i == 3) {
-          rgbo[i] = Float.parseFloat(maybeNumbers[i].trim());
+          rgbo[i] = Float.parseFloat(maybeNumber);
           if (rgbo[3] < 0.0f || rgbo[3] > 1.0f) {
             return null;
           }
         }
         else {
-          rgbo[i] = (float)Integer.parseUnsignedInt(maybeNumbers[i].trim()) / 255;
+          if (maybeNumber.startsWith("0x")) {
+            rgbo[i] = (float)Integer.parseUnsignedInt(maybeNumber.substring(2), 16) / 255;
+          }
+          else {
+            rgbo[i] = (float)Integer.parseUnsignedInt(maybeNumber) / 255;
+          }
           if (rgbo[i] < 0.0f || rgbo[i] > 1.0f) {
             return null;
           }
