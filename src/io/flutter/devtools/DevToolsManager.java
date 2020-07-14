@@ -362,8 +362,6 @@ class DevToolsInstance {
     Engine engine = Engine.newInstance(options);
     Browser browser = engine.newBrowser();
 
-    final JPanel tabContainer = new JPanel(new BorderLayout());
-
     final Content content = contentManager.getFactory().createContent(null, tabName, false);
 
     SwingUtilities.invokeLater(() -> {
@@ -371,11 +369,8 @@ class DevToolsInstance {
       // loaded in the given Browser instance.
       BrowserView view = BrowserView.newInstance(browser);
       view.setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
-      JScrollPane pane = new JScrollPane(view);
-      pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
-      tabContainer.add(pane, BorderLayout.CENTER);
-      content.setComponent(tabContainer);
+      content.setComponent(view);
       content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
       content.setIcon(FlutterIcons.Phone);
       contentManager.addContent(content);
