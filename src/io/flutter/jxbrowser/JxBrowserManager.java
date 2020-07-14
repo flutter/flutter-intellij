@@ -12,20 +12,18 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
-import com.intellij.util.ReflectionUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.download.DownloadableFileDescription;
 import com.intellij.util.download.DownloadableFileService;
 import com.intellij.util.download.FileDownloader;
+import com.intellij.util.lang.UrlClassLoader;
 import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -181,13 +179,11 @@ public class JxBrowserManager {
   }
 
   private void loadClasses(List<File> files) {
-    final URLClassLoader classLoader = (URLClassLoader)ClassLoader.getSystemClassLoader();
+    final UrlClassLoader classLoader = (UrlClassLoader) this.getClass().getClassLoader();
     try {
-      final Method method = ReflectionUtil.getDeclaredMethod(URLClassLoader.class, "addURL", URL.class);
-
       for (File file : files) {
         final URL url = file.toURI().toURL();
-        method.invoke(classLoader, url);
+        classLoader.addURL(url);
         LOG.info("Loaded JxBrowser file successfully: " + url.toString());
       }
 
