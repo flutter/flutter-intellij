@@ -179,8 +179,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private void addInspectorViewContent(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
     String browserUrl = app.getConnector().getBrowserUrl();
 
-    System.setProperty("jxbrowser.license.key", "6P830J66YAO1XQRI1FNEXP8ZTHUOQTY2YUJRCN9RTARQ58QFAP63GRRH20B3P5PB7PC8");
-
     final ContentManager contentManager = toolWindow.getContentManager();
 
     final String tabName;
