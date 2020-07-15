@@ -14,9 +14,7 @@ flutter-gui-tests/guitest.log
 flutter-intellij.jar
 flutter-intellij.zip
 lib/*.jar
-lib/jxbrowser/*
-!lib/jxbrowser/jxbrowser-7.8.jar
-!lib/jxbrowser/jxbrowser-swing-7.8.jar
+lib/jxbrowser/
 material-design-icons/
 out/
 packages
