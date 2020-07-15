@@ -43,6 +43,8 @@ public class JxBrowserManager {
   private static final String DOWNLOAD_PATH = FileUtils.platformPath();
   private static final AtomicReference<JxBrowserStatus> status = new AtomicReference<>(JxBrowserStatus.NOT_INSTALLED);
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
+  // We will be gating JxBrowser features until all of the features are landed.
+  private static final boolean ENABLE_JXBROWSER = false;
 
   private JxBrowserManager() {}
 
@@ -54,6 +56,10 @@ public class JxBrowserManager {
   }
 
   public void setUp(Project project) {
+    if (!ENABLE_JXBROWSER) {
+      return;
+    }
+
     if (!status.compareAndSet(JxBrowserStatus.NOT_INSTALLED, JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
       // This check ensures that an IDE only downloads and installs JxBrowser once, even if multiple projects are open.
       // If already in progress, let calling point wait until success or failure (it may make sense to call setUp but proceed).
