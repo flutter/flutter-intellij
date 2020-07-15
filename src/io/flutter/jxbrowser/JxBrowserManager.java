@@ -36,7 +36,8 @@ enum JxBrowserStatus {
   INSTALLATION_FAILED,
 }
 
-
+// JxBrowser provides Chromium to display web pages within IntelliJ. This class manages downloading the required files and adding them to
+// the class path.
 public class JxBrowserManager {
   private static JxBrowserManager manager;
   private static final String DOWNLOAD_PATH = FileUtils.platformPath();

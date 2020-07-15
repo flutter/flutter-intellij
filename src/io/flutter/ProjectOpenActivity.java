@@ -42,8 +42,6 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
 
   @Override
   public void runActivity(@NotNull Project project) {
-    JxBrowserManager.get().setUp(project);
-
     // TODO(messick): Remove 'FlutterUtils.isAndroidStudio()' after Android Q sources are published.
     if (FlutterUtils.isAndroidStudio() && AndroidUtils.isAndroidProject(project)) {
       AndroidUtils.addGradleListeners(project);
@@ -57,6 +55,8 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       // We can't do anything without a Flutter SDK.
       return;
     }
+
+    JxBrowserManager.get().setUp(project);
 
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       sdk.queryFlutterConfig("android-studio-dir", false);
