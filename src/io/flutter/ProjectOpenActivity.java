@@ -56,7 +56,9 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       return;
     }
 
-    JxBrowserManager.get().setUp(project);
+    if (JxBrowserManager.ENABLE_JX_BROWSER) {
+      JxBrowserManager.get().setUp(project);
+    }
 
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       sdk.queryFlutterConfig("android-studio-dir", false);
