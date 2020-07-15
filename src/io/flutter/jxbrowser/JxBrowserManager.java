@@ -72,8 +72,11 @@ public class JxBrowserManager {
 
     final File directory = new File(DOWNLOAD_PATH);
     if (!directory.exists()) {
-      //noinspection ResultOfMethodCallIgnored
-      directory.mkdirs();
+      if (!directory.mkdirs()) {
+        LOG.info(project.getName() + ": Unable to create directory for JxBrowser files");
+        status.set(JxBrowserStatus.INSTALLATION_FAILED);
+        return;
+      }
     }
 
     // Check for file or loading file
