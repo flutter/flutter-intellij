@@ -55,6 +55,10 @@ public class JxBrowserManager {
     return manager;
   }
 
+  public boolean isInstalled() {
+    return status.get().equals(JxBrowserStatus.INSTALLED);
+  }
+
   public void setUp(Project project) {
     if (!ENABLE_JXBROWSER) {
       return;

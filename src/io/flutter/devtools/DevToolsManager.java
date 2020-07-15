@@ -230,7 +230,7 @@ public class DevToolsManager {
   }
 
   public void openBrowserIntoPanel(String uri, ContentManager contentManager, String tabName) {
-    String screen = null;
+    final String screen = null;
 
     if (devToolsInstance != null) {
       devToolsInstance.openPanel(uri, contentManager, tabName);
@@ -240,8 +240,6 @@ public class DevToolsManager {
         isBazel(project) ? getProcessHandlerForBazel() : getProcessHandlerForPub();
 
       if (handler != null) {
-        // TODO(devoncarew) Add a Task.Backgroundable here; "Starting devtools..."
-
         // start the server
         DevToolsInstance.startServer(handler, instance -> {
           devToolsInstance = instance;
@@ -253,7 +251,7 @@ public class DevToolsManager {
         });
       }
       else {
-        // TODO(devoncarew): We should provide feedback to callers that the open browser call failed.
+        // TODO(helin24): Return message/boolean to calling location to indicate that opening devtools failed.
         devToolsInstance = null;
       }
     }
