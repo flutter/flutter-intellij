@@ -57,7 +57,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     }
 
     if (JxBrowserManager.ENABLE_JX_BROWSER) {
-      JxBrowserManager.get().setUp(project);
+      JxBrowserManager.getInstance().setUp(project);
     }
 
     ApplicationManager.getApplication().executeOnPooledThread(() -> {

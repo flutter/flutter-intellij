@@ -401,7 +401,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
 
-    if (JxBrowserManager.get().isInstalled()) {
+    if (JxBrowserManager.getInstance().isInstalled()) {
       final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
       if (devToolsManager.hasInstalledDevTools()) {
