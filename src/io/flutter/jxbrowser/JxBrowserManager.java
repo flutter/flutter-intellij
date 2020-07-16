@@ -5,6 +5,9 @@
  */
 package io.flutter.jxbrowser;
 
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -17,6 +20,8 @@ import com.intellij.util.download.DownloadableFileDescription;
 import com.intellij.util.download.DownloadableFileService;
 import com.intellij.util.download.FileDownloader;
 import com.intellij.util.lang.UrlClassLoader;
+import icons.FlutterIcons;
+import io.flutter.FlutterMessages;
 import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
 import org.jetbrains.annotations.NotNull;
@@ -130,6 +135,18 @@ public class JxBrowserManager {
       }
       // If jxbrowser was not downloaded within allowed time.
       LOG.info(project.getName() + ": JxBrowser download timed out");
+      Notifications.Bus.notify(
+        new Notification(
+          FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
+          FlutterIcons.Flutter,
+          "JxBrowser download timed out",
+          null,
+          // TODO(helin24): Replace with better message or retry download action.
+          String.format("Retry by deleting files in %s and restarting IntelliJ", DOWNLOAD_PATH),
+          NotificationType.INFORMATION,
+          null
+        )
+      );
       status.set(JxBrowserStatus.INSTALLATION_FAILED);
       return;
     }
