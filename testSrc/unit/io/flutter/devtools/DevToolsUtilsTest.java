@@ -35,12 +35,12 @@ public class DevToolsUtilsTest {
     );
 
     assertEquals(
-      "http://127.0.0.1:9100/?ide=IntelliJ-IDEA&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F&embed=true#timeline",
+      "http://127.0.0.1:9100/?ide=IntelliJ-IDEA&embed=true&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F#timeline",
       generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, true, null)
     );
 
     assertEquals(
-      "http://127.0.0.1:9100/?ide=IntelliJ-IDEA&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F&page=timeline#timeline",
+      "http://127.0.0.1:9100/?ide=IntelliJ-IDEA&page=timeline&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F#timeline",
       generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, pageName)
     );
 
