@@ -110,16 +110,17 @@ public class JxBrowserManager {
       // This means another IDE already created this file and has started downloading.
       // Wait for download to finish and then try loading again.
       LOG.info(project.getName() + ": Waiting for JxBrowser file to download");
-      int attempts = 0;
-      while (attempts < 100) {
+      int waitSeconds = 1;
+      while (waitSeconds <= 128) {
         if (tempLoadingFile.exists()) {
           try {
-            Thread.sleep(1000);
+            Thread.sleep(waitSeconds * 1000);
           }
           catch (InterruptedException e) {
             e.printStackTrace();
+            break;
           }
-          attempts += 1;
+          waitSeconds = waitSeconds * 2;
         }
         else {
           LOG.info(project.getName() + ": JxBrowser file downloaded, attempting to load");
@@ -127,9 +128,10 @@ public class JxBrowserManager {
           return;
         }
       }
-      // If jxbrowser was not downloaded within 100 sec.
-      LOG.info(project.getName() + ": JxBrowser downloaded timed out");
+      // If jxbrowser was not downloaded within allowed time.
+      LOG.info(project.getName() + ": JxBrowser download timed out");
       status.set(JxBrowserStatus.INSTALLATION_FAILED);
+      return;
     }
 
     // Delete any already existing files.
