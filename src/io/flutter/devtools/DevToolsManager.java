@@ -229,11 +229,11 @@ public class DevToolsManager {
     return WorkspaceCache.getInstance(project).isBazel();
   }
 
-  public void openBrowserIntoPanel(String uri, ContentManager contentManager, String tabName) {
+  public void openBrowserIntoPanel(String uri, ContentManager contentManager, String tabName, String pageName) {
     final String screen = null;
 
     if (devToolsInstance != null) {
-      devToolsInstance.openPanel(uri, contentManager, tabName);
+      devToolsInstance.openPanel(uri, contentManager, tabName, pageName);
     }
     else {
       @Nullable final OSProcessHandler handler =
@@ -244,7 +244,7 @@ public class DevToolsManager {
         DevToolsInstance.startServer(handler, instance -> {
           devToolsInstance = instance;
 
-          devToolsInstance.openPanel(uri, contentManager, tabName);
+          devToolsInstance.openPanel(uri, contentManager, tabName, pageName);
         }, () -> {
           // Listen for closing; null out the devToolsInstance.
           devToolsInstance = null;
@@ -347,13 +347,13 @@ class DevToolsInstance {
 
   public void openBrowserAndConnect(String serviceProtocolUri, String page) {
     BrowserLauncher.getInstance().browse(
-      DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page),
+      DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null),
       null
     );
   }
 
-  public void openPanel(String serviceProtocolUri, ContentManager contentManager, String tabName) {
-    String address = DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, null) + "&embed=true&page=inspector";
+  public void openPanel(String serviceProtocolUri, ContentManager contentManager, String tabName, String pageName) {
+    String url = DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, null, true, pageName);
 
     EngineOptions options =
       EngineOptions.newBuilder(HARDWARE_ACCELERATED).build();
@@ -370,10 +370,11 @@ class DevToolsInstance {
 
       content.setComponent(view);
       content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
+      // TODO(helin24): Use differentiated icons for each tab and copy from devtools toolbar.
       content.setIcon(FlutterIcons.Phone);
       contentManager.addContent(content);
 
-      browser.navigation().loadUrl(address);
+      browser.navigation().loadUrl(url);
     });
   }
 }

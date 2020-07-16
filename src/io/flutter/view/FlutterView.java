@@ -206,7 +206,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     // TODO(helin24): Add message to panel to communicate that opening devtools is in progress.
 
     final String browserUrl = app.getConnector().getBrowserUrl();
-    DevToolsManager.getInstance(app.getProject()).openBrowserIntoPanel(browserUrl, contentManager, tabName);
+    DevToolsManager.getInstance(app.getProject()).openBrowserIntoPanel(browserUrl, contentManager, tabName, "inspector");
   }
 
   private void addInspectorViewContent(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
