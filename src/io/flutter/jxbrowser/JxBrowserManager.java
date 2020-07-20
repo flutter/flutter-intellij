@@ -79,7 +79,7 @@ public class JxBrowserManager {
       }
     }
 
-    // Check for file or loading file
+    // Check whether the files already exist.
     final String[] fileNames = {JxBrowserUtils.getPlatformFileName(), JxBrowserUtils.getApiFileName(), JxBrowserUtils.getSwingFileName()};
     boolean allDownloaded = true;
     final List<File> files = new ArrayList<>();
