@@ -8,6 +8,7 @@ package io.flutter.jxbrowser;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -22,7 +23,6 @@ import com.intellij.util.download.FileDownloader;
 import com.intellij.util.lang.UrlClassLoader;
 import icons.FlutterIcons;
 import io.flutter.FlutterMessages;
-import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,7 +45,7 @@ enum JxBrowserStatus {
 // the class path.
 public class JxBrowserManager {
   private static JxBrowserManager manager;
-  private static final String DOWNLOAD_PATH = FileUtils.platformPath();
+  private static final String DOWNLOAD_PATH = PathManager.getPluginsPath() + '/' + "flutter-intellij/jxbrowser";
   private static final AtomicReference<JxBrowserStatus> status = new AtomicReference<>(JxBrowserStatus.NOT_INSTALLED);
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
   // We will be gating JxBrowser features until all of the features are landed.
