@@ -26,18 +26,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
-import com.teamdev.jxbrowser.browser.Browser;
-import com.teamdev.jxbrowser.engine.Engine;
-import com.teamdev.jxbrowser.engine.EngineOptions;
-import com.teamdev.jxbrowser.view.swing.BrowserView;
-import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.console.FlutterConsoles;
+import io.flutter.jxbrowser.EmbeddedBrowser;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
@@ -46,11 +40,7 @@ import io.flutter.utils.MostlySilentOsProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import java.awt.*;
 import java.util.concurrent.CompletableFuture;
-
-import static com.teamdev.jxbrowser.engine.RenderingMode.HARDWARE_ACCELERATED;
 
 /**
  * Manage installing and opening DevTools.
@@ -355,26 +345,8 @@ class DevToolsInstance {
   public void openPanel(String serviceProtocolUri, ContentManager contentManager, String tabName, String pageName) {
     String url = DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, null, true, pageName);
 
-    EngineOptions options =
-      EngineOptions.newBuilder(HARDWARE_ACCELERATED).build();
-    Engine engine = Engine.newInstance(options);
-    Browser browser = engine.newBrowser();
-
-    final Content content = contentManager.getFactory().createContent(null, tabName, false);
-
-    SwingUtilities.invokeLater(() -> {
-      // Creating Swing component for rendering web content
-      // loaded in the given Browser instance.
-      BrowserView view = BrowserView.newInstance(browser);
-      view.setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
-
-      content.setComponent(view);
-      content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
-      // TODO(helin24): Use differentiated icons for each tab and copy from devtools toolbar.
-      content.setIcon(FlutterIcons.Phone);
-      contentManager.addContent(content);
-
-      browser.navigation().loadUrl(url);
+    ApplicationManager.getApplication().invokeLater(() -> {
+      new EmbeddedBrowser().openPanel(contentManager, tabName, url);
     });
   }
 }
