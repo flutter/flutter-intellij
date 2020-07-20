@@ -25,6 +25,9 @@ public class EmbeddedBrowser {
     Engine engine = Engine.newInstance(options);
     Browser browser = engine.newBrowser();
 
+    if (contentManager.isDisposed()) {
+      return;
+    }
     final Content content = contentManager.getFactory().createContent(null, tabName, false);
 
     // Creating Swing component for rendering web content
