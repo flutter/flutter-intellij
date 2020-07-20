@@ -5,9 +5,6 @@
  */
 package io.flutter.jxbrowser;
 
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -21,8 +18,6 @@ import com.intellij.util.download.DownloadableFileDescription;
 import com.intellij.util.download.DownloadableFileService;
 import com.intellij.util.download.FileDownloader;
 import com.intellij.util.lang.UrlClassLoader;
-import icons.FlutterIcons;
-import io.flutter.FlutterMessages;
 import io.flutter.utils.JxBrowserUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -102,55 +97,6 @@ public class JxBrowserManager {
       return;
     }
 
-    final File tempLoadingFile = new File(DOWNLOAD_PATH + File.separator + JxBrowserUtils.getLoadingFileName());
-    boolean created = false;
-    try {
-      created = tempLoadingFile.createNewFile();
-    }
-    catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    if (!created) {
-      // This means another IDE already created this file and has started downloading.
-      // Wait for download to finish and then try loading again.
-      LOG.info(project.getName() + ": Waiting for JxBrowser file to download");
-      int waitSeconds = 1;
-      while (waitSeconds <= 128) {
-        if (tempLoadingFile.exists()) {
-          try {
-            Thread.sleep(waitSeconds * 1000);
-          }
-          catch (InterruptedException e) {
-            e.printStackTrace();
-            break;
-          }
-          waitSeconds = waitSeconds * 2;
-        }
-        else {
-          LOG.info(project.getName() + ": JxBrowser file downloaded, attempting to load");
-          loadClasses(files);
-          return;
-        }
-      }
-      // If jxbrowser was not downloaded within allowed time.
-      LOG.info(project.getName() + ": JxBrowser download timed out");
-      Notifications.Bus.notify(
-        new Notification(
-          FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
-          FlutterIcons.Flutter,
-          "JxBrowser download timed out",
-          null,
-          // TODO(helin24): Replace with better message or retry download action.
-          String.format("Retry by deleting files in %s and restarting IntelliJ", DOWNLOAD_PATH),
-          NotificationType.INFORMATION,
-          null
-        )
-      );
-      status.set(JxBrowserStatus.INSTALLATION_FAILED);
-      return;
-    }
-
     // Delete any already existing files.
     // TODO: Handle if files cannot be deleted.
     for (File file : files) {
@@ -161,11 +107,11 @@ public class JxBrowserManager {
       }
     }
 
-    downloadJxBrowser(project, fileNames, tempLoadingFile);
+    downloadJxBrowser(project, fileNames);
   }
 
-  private void downloadJxBrowser(Project project, String[] fileNames, File tempLoadingFile) {
-    // FileDownloader API is used by other plugins - e.g.
+  private void downloadJxBrowser(Project project, String[] fileNames) {
+    // The FileDownloader API is used by other plugins - e.g.
     // https://github.com/JetBrains/intellij-community/blob/b09f8151e0d189d70363266c3bb6edb5f6bfeca4/plugins/markdown/src/org/intellij/plugins/markdown/ui/preview/javafx/JavaFXInstallator.java#L48
     final List<FileDownloader> fileDownloaders = new ArrayList<>();
     final DownloadableFileService service = DownloadableFileService.getInstance();
@@ -193,14 +139,12 @@ public class JxBrowserManager {
             }
           }
 
-          tempLoadingFile.delete();
           loadClasses(files);
         }
         catch (IOException e) {
           LOG.info(project.getName() + ": JxBrowser file downloaded failed: " + currentFileName);
           e.printStackTrace();
           status.set(JxBrowserStatus.INSTALLATION_FAILED);
-          tempLoadingFile.delete();
         }
       }
     };
