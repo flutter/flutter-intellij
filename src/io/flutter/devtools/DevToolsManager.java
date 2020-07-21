@@ -26,10 +26,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
-import com.intellij.ui.components.JBLabel;
-import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
-import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
@@ -43,8 +40,6 @@ import io.flutter.utils.MostlySilentOsProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import java.awt.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -231,13 +226,6 @@ public class DevToolsManager {
       devToolsInstance.openPanel(uri, contentManager, tabName, pageName);
     }
     else {
-      final JPanel panel = new JPanel(new BorderLayout());
-      final JBLabel label = new JBLabel("Starting devtools", SwingConstants.CENTER);
-      label.setForeground(UIUtil.getLabelDisabledForeground());
-      panel.add(label, BorderLayout.CENTER);
-      final Content content = contentManager.getFactory().createContent(panel, tabName, false);
-      contentManager.addContent(content);
-
       @Nullable final OSProcessHandler handler =
         isBazel(project) ? getProcessHandlerForBazel() : getProcessHandlerForPub();
 

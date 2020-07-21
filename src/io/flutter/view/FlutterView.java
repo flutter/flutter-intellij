@@ -40,6 +40,7 @@ import io.flutter.FlutterUtils;
 import io.flutter.devtools.DevToolsManager;
 import io.flutter.inspector.InspectorService;
 import io.flutter.jxbrowser.JxBrowserManager;
+import io.flutter.jxbrowser.JxBrowserStatus;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
@@ -54,9 +55,13 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+
+import static com.intellij.ui.JBColor.BLUE;
 
 @com.intellij.openapi.components.State(
   name = "FlutterView",
@@ -401,27 +406,90 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
 
-    if (JxBrowserManager.getInstance().isInstalled()) {
+    if (JxBrowserManager.ENABLE_JX_BROWSER) {
+      final JxBrowserManager jxBrowserManager = JxBrowserManager.getInstance();
       final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
-      if (devToolsManager.hasInstalledDevTools()) {
-        addBrowserInspectorViewContent(app, inspectorService, toolWindow);
-      }
-      else {
+      JxBrowserStatus jxBrowserStatus = jxBrowserManager.getStatus();
+      if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {
+        if (devToolsManager.hasInstalledDevTools()) {
+          addBrowserInspectorViewContent(app, inspectorService, toolWindow);
+        }
+        else {
+          final JPanel panel = new JPanel(new BorderLayout());
+          final JBLabel label = new JBLabel("Installing DevTools...", SwingConstants.CENTER);
+          label.setForeground(UIUtil.getLabelDisabledForeground());
+          panel.add(label, BorderLayout.CENTER);
+          final Content content = contentManager.getFactory().createContent(panel, null, false);
+          contentManager.addContent(content);
+
+          final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
+          result.thenAccept(succeeded -> {
+            if (succeeded) {
+              addBrowserInspectorViewContent(app, inspectorService, toolWindow);
+            }
+            // TODO(helin24): Handle with alternative instructions if devtools fails.
+          });
+        }
+      } else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
         final JPanel panel = new JPanel(new BorderLayout());
-        final JBLabel label = new JBLabel("Installing devtools...", SwingConstants.CENTER);
+        final JBLabel label = new JBLabel("Installing JxBrowser and DevTools...", SwingConstants.CENTER);
         label.setForeground(UIUtil.getLabelDisabledForeground());
         panel.add(label, BorderLayout.CENTER);
         final Content content = contentManager.getFactory().createContent(panel, null, false);
         contentManager.addContent(content);
 
+        // Start devtools while waiting for JxBrowser download.
         final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
         result.thenAccept(succeeded -> {
           if (succeeded) {
-            addBrowserInspectorViewContent(app, inspectorService, toolWindow);
+            if (jxBrowserManager.getStatus().equals(JxBrowserStatus.INSTALLED)) {
+              addBrowserInspectorViewContent(app, inspectorService, toolWindow);
+            } else {
+              // Periodically check for download to finish.
+              // TODO(helin24): Maybe set up JxBrowserManager as listener instead.
+              int waitSeconds = 1;
+              while (waitSeconds <= 128) {
+                final JxBrowserStatus newStatus = jxBrowserManager.getStatus();
+                if (newStatus.equals(JxBrowserStatus.INSTALLED)) {
+                  addBrowserInspectorViewContent(app, inspectorService, toolWindow);
+                  return;
+                } else if (newStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
+                  System.out.println("failed");
+                } else {
+                  try {
+                    Thread.sleep(waitSeconds * 1000);
+                  }
+                  catch (InterruptedException e) {
+                    e.printStackTrace();
+                    break;
+                  }
+                  waitSeconds = waitSeconds * 2;
+                }
+              }
+              // TODO(helin24): Are there better options for this case? e.g. stop installation and retry, link to open in browser?
+              label.setText("Waiting for JxBrowser installation timed out. Restart your IDE to try again.");
+            }
+          } else {
+            // TODO(helin24): Handle with alternative instructions if devtools fails.
+            label.setText("Setting up DevTools failed.");
           }
-          // TODO(helin24): Handle with alternative instructions if devtools fails.
         });
+      } else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
+        // Allow user to manually restart.
+        final JPanel panel = new JPanel(new BorderLayout());
+        final JBLabel label = new JBLabel("JxBrowser installation failed. Click to retry.", SwingConstants.CENTER);
+        label.setForeground(BLUE.darker());
+        label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        label.addMouseListener(new MouseAdapter() {
+          @Override
+          public void mouseClicked(MouseEvent e) {
+            System.out.println("Mouse clicked");
+          }
+        });
+        panel.add(label, BorderLayout.CENTER);
+        final Content content = contentManager.getFactory().createContent(panel, null, false);
+        contentManager.addContent(content);
       }
       return;
     }

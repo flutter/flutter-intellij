@@ -31,13 +31,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-enum JxBrowserStatus {
-  NOT_INSTALLED,
-  INSTALLATION_IN_PROGRESS,
-  INSTALLED,
-  INSTALLATION_FAILED,
-}
-
 // JxBrowser provides Chromium to display web pages within IntelliJ. This class manages downloading the required files and adding them to
 // the class path.
 public class JxBrowserManager {
@@ -47,7 +40,7 @@ public class JxBrowserManager {
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
   // We will be gating JxBrowser features until all of the features are landed.
   // To test JxBrowser, set this to true and also add license key to VM options (-Djxbrowser.license.key=<key>).
-  public static final boolean ENABLE_JX_BROWSER = false;
+  public static final boolean ENABLE_JX_BROWSER = true;
 
   private JxBrowserManager() {}
 
@@ -58,8 +51,8 @@ public class JxBrowserManager {
     return manager;
   }
 
-  public boolean isInstalled() {
-    return status.get().equals(JxBrowserStatus.INSTALLED);
+  public JxBrowserStatus getStatus() {
+    return status.get();
   }
 
   public void setUp(Project project) {
@@ -175,7 +168,7 @@ public class JxBrowserManager {
         LOG.info("Loaded JxBrowser file successfully: " + url.toString());
       }
 
-      status.set(JxBrowserStatus.INSTALLED);
+      status.set(JxBrowserStatus.INSTALLATION_IN_PROGRESS);
     }
     catch (MalformedURLException e) {
       LOG.info("Failed to load JxBrowser files");
