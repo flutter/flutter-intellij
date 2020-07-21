@@ -392,9 +392,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         updateToolWindowVisibility(toolWindow);
       });
     }
+    final ContentManager contentManager = toolWindow.getContentManager();
 
     if (emptyContent != null) {
-      final ContentManager contentManager = toolWindow.getContentManager();
       contentManager.removeContent(emptyContent, true);
       emptyContent = null;
     }
@@ -408,6 +408,13 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         addBrowserInspectorViewContent(app, inspectorService, toolWindow);
       }
       else {
+        final JPanel panel = new JPanel(new BorderLayout());
+        final JBLabel label = new JBLabel("Installing devtools...", SwingConstants.CENTER);
+        label.setForeground(UIUtil.getLabelDisabledForeground());
+        panel.add(label, BorderLayout.CENTER);
+        final Content content = contentManager.getFactory().createContent(panel, null, false);
+        contentManager.addContent(content);
+
         final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
         result.thenAccept(succeeded -> {
           if (succeeded) {
