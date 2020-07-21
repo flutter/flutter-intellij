@@ -7,12 +7,14 @@ package io.flutter.utils;
 
 import com.intellij.openapi.util.SystemInfo;
 
+import java.io.FileNotFoundException;
+
 public class JxBrowserUtils {
   private static final String JXBROWSER_FILE_PREFIX = "jxbrowser";
   private static final String JXBROWSER_FILE_VERSION = "7.8";
   private static final String JXBROWSER_FILE_SUFFIX = "jar";
 
-  public static String getPlatformFileName() {
+  public static String getPlatformFileName() throws FileNotFoundException {
     String name = "";
     if (SystemInfo.isMac) {
       name = "mac";
@@ -27,7 +29,7 @@ public class JxBrowserUtils {
     }
 
     if (name.isEmpty()) {
-      throw new UnsupportedOperationException("Unable to find matching JxBrowser platform file for: " + SystemInfo.getOsNameAndVersion());
+      throw new FileNotFoundException("Unable to find matching JxBrowser platform file for: " + SystemInfo.getOsNameAndVersion());
     }
 
     return String.format("%s-%s-%s.%s", JXBROWSER_FILE_PREFIX, name, JXBROWSER_FILE_VERSION, JXBROWSER_FILE_SUFFIX);
@@ -39,10 +41,6 @@ public class JxBrowserUtils {
 
   public static String getSwingFileName() {
     return String.format("%s-swing-%s.%s", JXBROWSER_FILE_PREFIX, JXBROWSER_FILE_VERSION, JXBROWSER_FILE_SUFFIX);
-  }
-
-  public static String getLoadingFileName() {
-    return String.format("loading-%s", JXBROWSER_FILE_VERSION);
   }
 
   public static String getDistributionLink(String fileName) {

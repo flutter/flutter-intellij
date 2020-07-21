@@ -22,7 +22,9 @@ import io.flutter.utils.JxBrowserUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,8 +81,19 @@ public class JxBrowserManager {
       }
     }
 
+    final String platformFileName;
+    try {
+      platformFileName = JxBrowserUtils.getPlatformFileName();
+    }
+    catch (FileNotFoundException e) {
+      LOG.info(project.getName() + ": Unable to find JxBrowser platform file");
+      e.printStackTrace();
+      status.set(JxBrowserStatus.INSTALLATION_FAILED);
+      return;
+    }
+
     // Check whether the files already exist.
-    final String[] fileNames = {JxBrowserUtils.getPlatformFileName(), JxBrowserUtils.getApiFileName(), JxBrowserUtils.getSwingFileName()};
+    final String[] fileNames = {platformFileName, JxBrowserUtils.getApiFileName(), JxBrowserUtils.getSwingFileName()};
     boolean allDownloaded = true;
     final List<File> files = new ArrayList<>();
     for (String fileName : fileNames) {
@@ -98,7 +111,7 @@ public class JxBrowserManager {
     }
 
     // Delete any already existing files.
-    // TODO: Handle if files cannot be deleted.
+    // TODO(helin24): Handle if files cannot be deleted.
     for (File file : files) {
       if (file.exists()) {
         if (!file.delete()) {
@@ -164,7 +177,7 @@ public class JxBrowserManager {
 
       status.set(JxBrowserStatus.INSTALLED);
     }
-    catch (Exception e) {
+    catch (MalformedURLException e) {
       LOG.info("Failed to load JxBrowser files");
       e.printStackTrace();
       status.set(JxBrowserStatus.INSTALLATION_FAILED);
