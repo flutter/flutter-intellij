@@ -203,7 +203,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       emptyContent = null;
     }
 
-    // TODO(helin24): Add message to panel to communicate that opening devtools is in progress.
+    // TODO(helin24): Add a message to communicate that opening devtools is in progress.
 
     final String browserUrl = app.getConnector().getBrowserUrl();
     DevToolsManager.getInstance(app.getProject()).openBrowserIntoPanel(browserUrl, contentManager, tabName, "inspector");
@@ -409,26 +409,13 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
       else {
         final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-        result.thenAccept(o -> addBrowserInspectorViewContent(app, inspectorService, toolWindow));
-      }
-
-      onAppChanged(app);
-
-      app.addStateListener(new FlutterApp.FlutterAppListener() {
-        public void notifyAppRestarted() {
-          // When we get a restart finished event, queue up a notification to the flutter view
-          // actions. We don't notify right away because the new isolate can take a little
-          // while to start up. We wait until we get the first frame event, which is
-          // enough of an indication that the isolate and flutter framework are initialized
-          // to where they can receive service calls (for example, calls to restore various
-          // framework debugging settings).
-          final PerAppState state = getStateForApp(app);
-          if (state != null) {
-            state.sendRestartNotificationOnNextFrame = true;
+        result.thenAccept(succeeded -> {
+          if (succeeded) {
+            addBrowserInspectorViewContent(app, inspectorService, toolWindow);
           }
-        }
-      });
-
+          // TODO(helin24): Handle with alternative instructions if devtools fails.
+        });
+      }
       return;
     }
 
