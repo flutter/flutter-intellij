@@ -179,7 +179,6 @@ public class JxBrowserManager {
     }
     catch (MalformedURLException e) {
       LOG.info("Failed to load JxBrowser files");
-      e.printStackTrace();
       status.set(JxBrowserStatus.INSTALLATION_FAILED);
     }
   }
