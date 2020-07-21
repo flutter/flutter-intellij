@@ -1,0 +1,49 @@
+/*
+ * Copyright 2020 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+package io.flutter.utils;
+
+import com.intellij.openapi.util.SystemInfo;
+
+import java.io.FileNotFoundException;
+
+public class JxBrowserUtils {
+  private static final String JXBROWSER_FILE_PREFIX = "jxbrowser";
+  private static final String JXBROWSER_FILE_VERSION = "7.8";
+  private static final String JXBROWSER_FILE_SUFFIX = "jar";
+
+  public static String getPlatformFileName() throws FileNotFoundException {
+    String name = "";
+    if (SystemInfo.isMac) {
+      name = "mac";
+    } else if (SystemInfo.isWindows) {
+      if (SystemInfo.is32Bit) {
+        name = "win32";
+      } else if (SystemInfo.is64Bit) {
+        name = "win64";
+      }
+    } else if (SystemInfo.isLinux && SystemInfo.is64Bit) {
+      name = "linux64";
+    }
+
+    if (name.isEmpty()) {
+      throw new FileNotFoundException("Unable to find matching JxBrowser platform file for: " + SystemInfo.getOsNameAndVersion());
+    }
+
+    return String.format("%s-%s-%s.%s", JXBROWSER_FILE_PREFIX, name, JXBROWSER_FILE_VERSION, JXBROWSER_FILE_SUFFIX);
+  }
+
+  public static String getApiFileName() {
+    return String.format("%s-%s.%s", JXBROWSER_FILE_PREFIX, JXBROWSER_FILE_VERSION, JXBROWSER_FILE_SUFFIX);
+  }
+
+  public static String getSwingFileName() {
+    return String.format("%s-swing-%s.%s", JXBROWSER_FILE_PREFIX, JXBROWSER_FILE_VERSION, JXBROWSER_FILE_SUFFIX);
+  }
+
+  public static String getDistributionLink(String fileName) {
+    return "https://storage.googleapis.com/flutter_infra/flutter/intellij/jxbrowser/" + fileName;
+  }
+}

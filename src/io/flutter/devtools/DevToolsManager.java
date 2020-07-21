@@ -26,10 +26,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
+import com.intellij.ui.content.ContentManager;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.console.FlutterConsoles;
+import io.flutter.jxbrowser.EmbeddedBrowser;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
@@ -217,6 +219,34 @@ public class DevToolsManager {
     return WorkspaceCache.getInstance(project).isBazel();
   }
 
+  public void openBrowserIntoPanel(String uri, ContentManager contentManager, String tabName, String pageName) {
+    final String screen = null;
+
+    if (devToolsInstance != null) {
+      devToolsInstance.openPanel(uri, contentManager, tabName, pageName);
+    }
+    else {
+      @Nullable final OSProcessHandler handler =
+        isBazel(project) ? getProcessHandlerForBazel() : getProcessHandlerForPub();
+
+      if (handler != null) {
+        // start the server
+        DevToolsInstance.startServer(handler, instance -> {
+          devToolsInstance = instance;
+
+          devToolsInstance.openPanel(uri, contentManager, tabName, pageName);
+        }, () -> {
+          // Listen for closing; null out the devToolsInstance.
+          devToolsInstance = null;
+        });
+      }
+      else {
+        // TODO(helin24): Return message/boolean to calling location to indicate that opening devtools failed.
+        devToolsInstance = null;
+      }
+    }
+  }
+
   private void openBrowserImpl(String uri, String screen) {
     if (devToolsInstance != null) {
       devToolsInstance.openBrowserAndConnect(uri, screen);
@@ -307,9 +337,17 @@ class DevToolsInstance {
 
   public void openBrowserAndConnect(String serviceProtocolUri, String page) {
     BrowserLauncher.getInstance().browse(
-      DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page),
+      DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null),
       null
     );
+  }
+
+  public void openPanel(String serviceProtocolUri, ContentManager contentManager, String tabName, String pageName) {
+    String url = DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, null, true, pageName);
+
+    ApplicationManager.getApplication().invokeLater(() -> {
+      new EmbeddedBrowser().openPanel(contentManager, tabName, url);
+    });
   }
 }
 

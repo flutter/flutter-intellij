@@ -39,6 +39,7 @@ import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.devtools.DevToolsManager;
 import io.flutter.inspector.InspectorService;
+import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
@@ -179,6 +180,33 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   private PerAppState getOrCreateStateForApp(FlutterApp app) {
     return perAppViewState.computeIfAbsent(app, k -> new PerAppState());
+  }
+
+  private void addBrowserInspectorViewContent(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
+    final ContentManager contentManager = toolWindow.getContentManager();
+
+    final String tabName;
+    final FlutterDevice device = app.device();
+    if (device == null) {
+      tabName = app.getProject().getName();
+    }
+    else {
+      final List<FlutterDevice> existingDevices = new ArrayList<>();
+      for (FlutterApp otherApp : perAppViewState.keySet()) {
+        existingDevices.add(otherApp.device());
+      }
+      tabName = device.getUniqueName(existingDevices);
+    }
+
+    if (emptyContent != null) {
+      contentManager.removeContent(emptyContent, true);
+      emptyContent = null;
+    }
+
+    // TODO(helin24): Add a message to communicate that opening devtools is in progress.
+
+    final String browserUrl = app.getConnector().getBrowserUrl();
+    DevToolsManager.getInstance(app.getProject()).openBrowserIntoPanel(browserUrl, contentManager, tabName, "inspector");
   }
 
   private void addInspectorViewContent(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
@@ -372,6 +400,24 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
 
     toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
+
+    if (JxBrowserManager.getInstance().isInstalled()) {
+      final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
+
+      if (devToolsManager.hasInstalledDevTools()) {
+        addBrowserInspectorViewContent(app, inspectorService, toolWindow);
+      }
+      else {
+        final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
+        result.thenAccept(succeeded -> {
+          if (succeeded) {
+            addBrowserInspectorViewContent(app, inspectorService, toolWindow);
+          }
+          // TODO(helin24): Handle with alternative instructions if devtools fails.
+        });
+      }
+      return;
+    }
 
     listenForRenderTreeActivations(toolWindow);
 

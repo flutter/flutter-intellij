@@ -20,6 +20,7 @@ import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.ui.Messages;
 import icons.FlutterIcons;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
@@ -53,6 +54,10 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     if (sdk == null) {
       // We can't do anything without a Flutter SDK.
       return;
+    }
+
+    if (JxBrowserManager.ENABLE_JX_BROWSER) {
+      JxBrowserManager.getInstance().setUp(project);
     }
 
     ApplicationManager.getApplication().executeOnPooledThread(() -> {

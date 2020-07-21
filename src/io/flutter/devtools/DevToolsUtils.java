@@ -17,11 +17,20 @@ public class DevToolsUtils {
     String devtoolsHost,
     int devtoolsPort,
     String serviceProtocolUri,
-    String page
+    String page,
+    boolean embed,
+    String pageName
   ) {
     final List<String> params = new ArrayList<>();
 
     params.add("ide=" + FlutterSdkUtil.getFlutterHostEnvValue());
+
+    if (pageName != null) {
+      params.add("page=" + pageName);
+    }
+    if (embed) {
+      params.add("embed=true");
+    }
 
     if (serviceProtocolUri != null) {
       try {
