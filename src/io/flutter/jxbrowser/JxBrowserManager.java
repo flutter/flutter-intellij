@@ -40,7 +40,7 @@ public class JxBrowserManager {
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
   // We will be gating JxBrowser features until all of the features are landed.
   // To test JxBrowser, set this to true and also add license key to VM options (-Djxbrowser.license.key=<key>).
-  public static final boolean ENABLE_JX_BROWSER = true;
+  public static final boolean ENABLE_JX_BROWSER = false;
 
   private JxBrowserManager() {}
 
@@ -175,7 +175,7 @@ public class JxBrowserManager {
         LOG.info("Loaded JxBrowser file successfully: " + url.toString());
       }
 
-      status.set(JxBrowserStatus.INSTALLATION_IN_PROGRESS);
+      status.set(JxBrowserStatus.INSTALLED);
     }
     catch (MalformedURLException e) {
       LOG.info("Failed to load JxBrowser files");
