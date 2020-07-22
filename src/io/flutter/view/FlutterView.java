@@ -86,6 +86,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   public static final String WIDGET_TAB_LABEL = "Widgets";
   public static final String RENDER_TAB_LABEL = "Render Tree";
   public static final String PERFORMANCE_TAB_LABEL = "Performance";
+  protected static final String INSTALLATION_IN_PROGRESS_LABEL = "Installing JxBrowser and DevTools...";
 
   protected final EventStream<Boolean> shouldAutoHorizontalScroll = new EventStream<>(FlutterViewState.AUTO_SCROLL_DEFAULT);
   protected final EventStream<Boolean> highlightNodesShownInBothTrees =
@@ -395,27 +396,23 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           addBrowserInspectorViewContent(app, inspectorService, toolWindow);
         } else {
           // TODO(helin24): Handle with alternative instructions if devtools fails.
-          final JBLabel failedLabel = new JBLabel("Setting up DevTools failed.", SwingConstants.CENTER);
-          failedLabel.setForeground(UIUtil.getLabelDisabledForeground());
-          replacePanelLabel(toolWindow, failedLabel);
+          presentLabel(toolWindow, "Setting up DevTools failed.");
         }
       });
     }
   }
 
-  private void handleJxBrowserInstallationInProgress(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
+  protected void handleJxBrowserInstallationInProgress(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
     final JxBrowserManager jxBrowserManager = JxBrowserManager.getInstance();
     final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
-    final JBLabel label = new JBLabel("Installing JxBrowser and DevTools...", SwingConstants.CENTER);
-    label.setForeground(UIUtil.getLabelDisabledForeground());
-    replacePanelLabel(toolWindow, label);
+    presentLabel(toolWindow, INSTALLATION_IN_PROGRESS_LABEL);
 
     // Start devtools while waiting for JxBrowser download.
     devToolsManager.installDevTools();
 
     if (jxBrowserManager.getStatus().equals(JxBrowserStatus.INSTALLED)) {
-      addBrowserInspectorViewContent(app, inspectorService, toolWindow);
+      handleJxBrowserInstalled(app, inspectorService, toolWindow);
     } else {
       ApplicationManager.getApplication().executeOnPooledThread(() -> {
         // Periodically check for download to finish.
@@ -440,9 +437,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           }
         }
         // TODO(helin24): Are there better options for this case? e.g. stop installation and retry, link to open in browser?
-        final JBLabel timedOutLabel = new JBLabel("Waiting for JxBrowser installation timed out. Restart your IDE to try again.", SwingConstants.CENTER);
-        label.setForeground(UIUtil.getLabelDisabledForeground());
-        replacePanelLabel(toolWindow, timedOutLabel);
+        presentLabel(toolWindow, "Waiting for JxBrowser installation timed out. Restart your IDE to try again.");
       });
     }
   }
@@ -459,6 +454,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     });
   }
 
+  protected void presentLabel(ToolWindow toolWindow, String text) {
+    final JBLabel label = new JBLabel(text, SwingConstants.CENTER);
+    label.setForeground(UIUtil.getLabelDisabledForeground());
+    replacePanelLabel(toolWindow, label);
+  }
+
   protected void presentClickableLabel(ToolWindow toolWindow, String text, MouseAdapter mouseAdapter) {
     final JBLabel label = new JBLabel(text, SwingConstants.CENTER);
     label.setForeground(BLUE.darker());
@@ -467,7 +468,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     replacePanelLabel(toolWindow, label);
   }
 
-  protected void replacePanelLabel(ToolWindow toolWindow, JBLabel label) {
+  private void replacePanelLabel(ToolWindow toolWindow, JBLabel label) {
     ApplicationManager.getApplication().invokeLater(() -> {
       final ContentManager contentManager = toolWindow.getContentManager();
       contentManager.removeAllContents(true);

@@ -10,6 +10,8 @@ import com.intellij.openapi.wm.ToolWindow;
 import io.flutter.ObservatoryConnector;
 import io.flutter.devtools.DevToolsManager;
 import io.flutter.inspector.InspectorService;
+import io.flutter.jxbrowser.JxBrowserManager;
+import io.flutter.jxbrowser.JxBrowserStatus;
 import io.flutter.run.daemon.FlutterApp;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,11 +22,12 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.awt.event.MouseAdapter;
 
+import static io.flutter.view.FlutterView.INSTALLATION_IN_PROGRESS_LABEL;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(DevToolsManager.class)
+@PrepareForTest({DevToolsManager.class, JxBrowserManager.class})
 public class FlutterViewTest {
   @Mock Project mockProject;
   @Mock FlutterApp mockApp;
@@ -32,6 +35,7 @@ public class FlutterViewTest {
   @Mock ToolWindow mockToolWindow;
   @Mock DevToolsManager mockDevToolsManager;
   @Mock ObservatoryConnector mockObservatoryConnector;
+  @Mock JxBrowserManager mockJxBrowserManager;
 
   @Test
   public void testHandleJxBrowserInstalled() {
@@ -53,6 +57,8 @@ public class FlutterViewTest {
     verify(mockDevToolsManager, times(1)).openBrowserIntoPanel(testUrl, null, projectName, "inspector");
   }
 
+  // Also test when devtools fails
+
   @Test
   public void testHandleJxBrowserInstallationFailed() {
     final FlutterView partialMockFlutterView = mock(FlutterView.class);
@@ -64,6 +70,25 @@ public class FlutterViewTest {
       any(MouseAdapter.class)
     );
   }
+
+  @Test
+  public void testHandleJxBrowserInstallationInProgressWithSuccessfulInstall() {
+    final FlutterView partialMockFlutterView = mock(FlutterView.class);
+    doCallRealMethod().when(partialMockFlutterView).handleJxBrowserInstallationInProgress(mockApp, mockInspectorService, mockToolWindow);
+
+    PowerMockito.mockStatic(DevToolsManager.class);
+    when(DevToolsManager.getInstance(null)).thenReturn(mockDevToolsManager);
+    when(mockDevToolsManager.installDevTools()).thenReturn(null);
+
+    PowerMockito.mockStatic(JxBrowserManager.class);
+    when(JxBrowserManager.getInstance()).thenReturn(mockJxBrowserManager);
+    when(mockJxBrowserManager.getStatus()).thenReturn(JxBrowserStatus.INSTALLED);
+
+    partialMockFlutterView.handleJxBrowserInstallationInProgress(mockApp, mockInspectorService, mockToolWindow);
+    verify(partialMockFlutterView, times(1)).presentLabel(mockToolWindow, INSTALLATION_IN_PROGRESS_LABEL);
+    verify(partialMockFlutterView, times(1)).handleJxBrowserInstalled(mockApp, mockInspectorService, mockToolWindow);
+  }
+
 
 
 }
