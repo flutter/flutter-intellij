@@ -61,4 +61,14 @@ public class ThreadUtil {
 
     return result;
   }
+
+  public static boolean sleep(int seconds) {
+    try {
+      Thread.sleep(seconds * 1000);
+      return true;
+    }
+    catch (InterruptedException e) {
+      return false;
+    }
+  }
 }

@@ -46,6 +46,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.EventStream;
+import io.flutter.utils.ThreadUtil;
 import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.vmService.ServiceExtensions;
 import org.dartlang.vm.service.VmService;
@@ -87,6 +88,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   public static final String RENDER_TAB_LABEL = "Render Tree";
   public static final String PERFORMANCE_TAB_LABEL = "Performance";
   protected static final String INSTALLATION_IN_PROGRESS_LABEL = "Installing JxBrowser and DevTools...";
+  protected static final String INSTALLATION_TIMED_OUT_LABEL = "Waiting for JxBrowser installation timed out. Restart your IDE to try again.";
 
   protected final EventStream<Boolean> shouldAutoHorizontalScroll = new EventStream<>(FlutterViewState.AUTO_SCROLL_DEFAULT);
   protected final EventStream<Boolean> highlightNodesShownInBothTrees =
@@ -414,32 +416,36 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (jxBrowserManager.getStatus().equals(JxBrowserStatus.INSTALLED)) {
       handleJxBrowserInstalled(app, inspectorService, toolWindow);
     } else {
-      ApplicationManager.getApplication().executeOnPooledThread(() -> {
-        // Periodically check for download to finish.
-        // TODO(helin24): Maybe set up JxBrowserManager as listener instead.
-        int waitSeconds = 1;
-        while (waitSeconds <= 128) {
-          final JxBrowserStatus newStatus = jxBrowserManager.getStatus();
-          if (newStatus.equals(JxBrowserStatus.INSTALLED)) {
-            handleJxBrowserInstalled(app, inspectorService, toolWindow);
-            return;
-          } else if (newStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
-            handleJxBrowserInstallationFailed(app, inspectorService, toolWindow);
-            return;
-          } else {
-            try {
-              Thread.sleep(waitSeconds * 1000);
-            }
-            catch (InterruptedException e) {
-              break;
-            }
-            waitSeconds = waitSeconds * 2;
-          }
-        }
-        // TODO(helin24): Are there better options for this case? e.g. stop installation and retry, link to open in browser?
-        presentLabel(toolWindow, "Waiting for JxBrowser installation timed out. Restart your IDE to try again.");
-      });
+      startJxBrowserInstallationWaitingThread(app, inspectorService, toolWindow);
     }
+  }
+
+  protected void startJxBrowserInstallationWaitingThread(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      waitForJxBrowserInstallation(app, inspectorService, toolWindow);
+    });
+  }
+
+  protected void waitForJxBrowserInstallation(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
+    final JxBrowserManager jxBrowserManager = JxBrowserManager.getInstance();
+    // Periodically check for download to finish.
+    // TODO(helin24): Maybe set up JxBrowserManager as listener instead.
+    int waitSeconds = 1;
+    while (waitSeconds <= 128) {
+      final JxBrowserStatus newStatus = jxBrowserManager.getStatus();
+      if (newStatus.equals(JxBrowserStatus.INSTALLED)) {
+        handleJxBrowserInstalled(app, inspectorService, toolWindow);
+        return;
+      } else if (newStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
+        handleJxBrowserInstallationFailed(app, inspectorService, toolWindow);
+        return;
+      } else {
+        ThreadUtil.sleep(waitSeconds);
+        waitSeconds = waitSeconds * 2;
+      }
+    }
+    // TODO(helin24): Are there better options for this case? e.g. stop installation and retry, link to open in browser?
+    presentLabel(toolWindow, INSTALLATION_TIMED_OUT_LABEL);
   }
 
   protected void handleJxBrowserInstallationFailed(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
