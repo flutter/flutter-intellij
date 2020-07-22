@@ -22,9 +22,9 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.awt.event.MouseAdapter;
+import java.util.concurrent.CompletableFuture;
 
-import static io.flutter.view.FlutterView.INSTALLATION_IN_PROGRESS_LABEL;
-import static io.flutter.view.FlutterView.INSTALLATION_TIMED_OUT_LABEL;
+import static io.flutter.view.FlutterView.*;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -59,7 +59,32 @@ public class FlutterViewTest {
     verify(mockDevToolsManager, times(1)).openBrowserIntoPanel(testUrl, null, projectName, "inspector");
   }
 
-  // Also test when devtools fails
+  @Test
+  public void testHandleJxBrowserInstalledWithoutDevtools() {
+    final String testUrl = "http://www.testUrl.com";
+    final String projectName = "Test Project Name";
+
+    final FlutterView partialMockFlutterView = mock(FlutterView.class);
+    doCallRealMethod().when(partialMockFlutterView).handleJxBrowserInstalled(mockApp, mockInspectorService, mockToolWindow);
+
+    PowerMockito.mockStatic(DevToolsManager.class);
+    when(DevToolsManager.getInstance(mockProject)).thenReturn(mockDevToolsManager);
+    when(mockDevToolsManager.hasInstalledDevTools()).thenReturn(false);
+    final CompletableFuture<Boolean> result = new CompletableFuture<>();
+    result.complete(true);
+    when(mockDevToolsManager.installDevTools()).thenReturn(result);
+
+    when(mockApp.getConnector()).thenReturn(mockObservatoryConnector);
+    when(mockObservatoryConnector.getBrowserUrl()).thenReturn(testUrl);
+    when(mockToolWindow.getContentManager()).thenReturn(null);
+    when(mockApp.device()).thenReturn(null);
+    when(mockApp.getProject()).thenReturn(mockProject);
+    when(mockProject.getName()).thenReturn(projectName);
+
+    partialMockFlutterView.handleJxBrowserInstalled(mockApp, mockInspectorService, mockToolWindow);
+    verify(partialMockFlutterView, times(1)).presentLabel(mockToolWindow, INSTALLING_DEVTOOLS_LABEL);
+    verify(mockDevToolsManager, times(1)).openBrowserIntoPanel(testUrl, null, projectName, "inspector");
+  }
 
   @Test
   public void testHandleJxBrowserInstallationFailed() {
