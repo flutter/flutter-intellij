@@ -55,6 +55,13 @@ public class JxBrowserManager {
     return status.get();
   }
 
+  public void retryFromFailed(Project project) {
+    if (!status.compareAndSet(JxBrowserStatus.INSTALLATION_FAILED, JxBrowserStatus.NOT_INSTALLED)) {
+      return;
+    }
+    setUp(project);
+  }
+
   public void setUp(Project project) {
     if (!status.compareAndSet(JxBrowserStatus.NOT_INSTALLED, JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
       // This check ensures that an IDE only downloads and installs JxBrowser once, even if multiple projects are open.
