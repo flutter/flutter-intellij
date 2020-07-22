@@ -7,6 +7,7 @@ package io.flutter.view;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.ui.components.labels.LinkListener;
 import io.flutter.ObservatoryConnector;
 import io.flutter.devtools.DevToolsManager;
 import io.flutter.inspector.InspectorService;
@@ -21,7 +22,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.awt.event.MouseAdapter;
 import java.util.concurrent.CompletableFuture;
 
 import static io.flutter.view.FlutterView.*;
@@ -121,7 +121,7 @@ public class FlutterViewTest {
     verify(partialMockFlutterView, times(1)).presentClickableLabel(
       eq(mockToolWindow),
       eq("JxBrowser installation failed. Click to retry."),
-      any(MouseAdapter.class)
+      any(LinkListener.class)
     );
   }
 

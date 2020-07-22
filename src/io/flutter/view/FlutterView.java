@@ -28,6 +28,8 @@ import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.SideBorder;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.labels.LinkLabel;
+import com.intellij.ui.components.labels.LinkListener;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerAdapter;
@@ -56,13 +58,9 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-
-import static com.intellij.ui.JBColor.BLUE;
 
 @com.intellij.openapi.components.State(
   name = "FlutterView",
@@ -450,13 +448,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   protected void handleJxBrowserInstallationFailed(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
     // Allow user to manually restart.
-    presentClickableLabel(toolWindow, "JxBrowser installation failed. Click to retry.", new MouseAdapter() {
-      @Override
-      public void mouseClicked(MouseEvent e) {
-        JxBrowserManager.getInstance().retryFromFailed(app.getProject());
-        handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
-
-      }
+    presentClickableLabel(toolWindow, "JxBrowser installation failed. Click to retry.", (linkLabel, data) -> {
+      JxBrowserManager.getInstance().retryFromFailed(app.getProject());
+      handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
     });
   }
 
@@ -466,15 +460,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     replacePanelLabel(toolWindow, label);
   }
 
-  protected void presentClickableLabel(ToolWindow toolWindow, String text, MouseAdapter mouseAdapter) {
-    final JBLabel label = new JBLabel(text, SwingConstants.CENTER);
-    label.setForeground(BLUE.darker());
-    label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    label.addMouseListener(mouseAdapter);
+  protected void presentClickableLabel(ToolWindow toolWindow, String text, LinkListener<Integer> listener) {
+    final LinkLabel label = new LinkLabel(text, null);
+    label.setListener(listener, null);
+    label.setHorizontalAlignment(SwingConstants.CENTER);
     replacePanelLabel(toolWindow, label);
   }
 
-  private void replacePanelLabel(ToolWindow toolWindow, JBLabel label) {
+  private void replacePanelLabel(ToolWindow toolWindow, JLabel label) {
     ApplicationManager.getApplication().invokeLater(() -> {
       final ContentManager contentManager = toolWindow.getContentManager();
       contentManager.removeAllContents(true);
