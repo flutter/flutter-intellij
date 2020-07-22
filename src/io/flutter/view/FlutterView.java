@@ -418,17 +418,21 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (jxBrowserManager.getStatus().equals(JxBrowserStatus.INSTALLED)) {
       addBrowserInspectorViewContent(app, inspectorService, toolWindow);
     } else {
-      ApplicationManager.getApplication().invokeLater(() -> {
+      ApplicationManager.getApplication().executeOnPooledThread(() -> {
         // Periodically check for download to finish.
         // TODO(helin24): Maybe set up JxBrowserManager as listener instead.
         int waitSeconds = 1;
         while (waitSeconds <= 128) {
           final JxBrowserStatus newStatus = jxBrowserManager.getStatus();
           if (newStatus.equals(JxBrowserStatus.INSTALLED)) {
-            handleJxBrowserInstalled(app, inspectorService, toolWindow);
+            ApplicationManager.getApplication().invokeLater(() -> {
+              handleJxBrowserInstalled(app, inspectorService, toolWindow);
+            });
             return;
           } else if (newStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
-            handleJxBrowserInstallationFailed(app, inspectorService, toolWindow);
+            ApplicationManager.getApplication().invokeLater(() -> {
+              handleJxBrowserInstallationFailed(app, inspectorService, toolWindow);
+            });
             return;
           } else {
             try {
@@ -441,10 +445,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
             waitSeconds = waitSeconds * 2;
           }
         }
-        // TODO(helin24): Are there better options for this case? e.g. stop installation and retry, link to open in browser?
-        final JBLabel timedOutLabel = new JBLabel("Waiting for JxBrowser installation timed out. Restart your IDE to try again.", SwingConstants.CENTER);
-        label.setForeground(UIUtil.getLabelDisabledForeground());
-        replacePanelLabel(toolWindow, timedOutLabel);
+        ApplicationManager.getApplication().invokeLater(() -> {
+          // TODO(helin24): Are there better options for this case? e.g. stop installation and retry, link to open in browser?
+          final JBLabel timedOutLabel = new JBLabel("Waiting for JxBrowser installation timed out. Restart your IDE to try again.", SwingConstants.CENTER);
+          label.setForeground(UIUtil.getLabelDisabledForeground());
+          replacePanelLabel(toolWindow, timedOutLabel);
+        });
       });
     }
   }
