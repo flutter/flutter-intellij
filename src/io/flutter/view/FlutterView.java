@@ -90,6 +90,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   protected static final String INSTALLATION_IN_PROGRESS_LABEL = "Installing JxBrowser and DevTools...";
   protected static final String INSTALLATION_TIMED_OUT_LABEL = "Waiting for JxBrowser installation timed out. Restart your IDE to try again.";
   protected static final String INSTALLING_DEVTOOLS_LABEL = "Installing DevTools...";
+  protected static final String DEVTOOLS_FAILED_LABEL = "Setting up DevTools failed.";
 
   protected final EventStream<Boolean> shouldAutoHorizontalScroll = new EventStream<>(FlutterViewState.AUTO_SCROLL_DEFAULT);
   protected final EventStream<Boolean> highlightNodesShownInBothTrees =
@@ -397,7 +398,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           addBrowserInspectorViewContent(app, inspectorService, toolWindow);
         } else {
           // TODO(helin24): Handle with alternative instructions if devtools fails.
-          presentLabel(toolWindow, "Setting up DevTools failed.");
+          presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
         }
       });
     }

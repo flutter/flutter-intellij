@@ -60,7 +60,7 @@ public class FlutterViewTest {
   }
 
   @Test
-  public void testHandleJxBrowserInstalledWithoutDevtools() {
+  public void testHandleJxBrowserInstalledWithDevtoolsSucceeded() {
     final String testUrl = "http://www.testUrl.com";
     final String projectName = "Test Project Name";
 
@@ -84,6 +84,33 @@ public class FlutterViewTest {
     partialMockFlutterView.handleJxBrowserInstalled(mockApp, mockInspectorService, mockToolWindow);
     verify(partialMockFlutterView, times(1)).presentLabel(mockToolWindow, INSTALLING_DEVTOOLS_LABEL);
     verify(mockDevToolsManager, times(1)).openBrowserIntoPanel(testUrl, null, projectName, "inspector");
+  }
+
+  @Test
+  public void testHandleJxBrowserInstalledWithDevtoolsFailed() {
+    final String testUrl = "http://www.testUrl.com";
+    final String projectName = "Test Project Name";
+
+    final FlutterView partialMockFlutterView = mock(FlutterView.class);
+    doCallRealMethod().when(partialMockFlutterView).handleJxBrowserInstalled(mockApp, mockInspectorService, mockToolWindow);
+
+    PowerMockito.mockStatic(DevToolsManager.class);
+    when(DevToolsManager.getInstance(mockProject)).thenReturn(mockDevToolsManager);
+    when(mockDevToolsManager.hasInstalledDevTools()).thenReturn(false);
+    final CompletableFuture<Boolean> result = new CompletableFuture<>();
+    result.complete(false);
+    when(mockDevToolsManager.installDevTools()).thenReturn(result);
+
+    when(mockApp.getConnector()).thenReturn(mockObservatoryConnector);
+    when(mockObservatoryConnector.getBrowserUrl()).thenReturn(testUrl);
+    when(mockToolWindow.getContentManager()).thenReturn(null);
+    when(mockApp.device()).thenReturn(null);
+    when(mockApp.getProject()).thenReturn(mockProject);
+    when(mockProject.getName()).thenReturn(projectName);
+
+    partialMockFlutterView.handleJxBrowserInstalled(mockApp, mockInspectorService, mockToolWindow);
+    verify(partialMockFlutterView, times(1)).presentLabel(mockToolWindow, INSTALLING_DEVTOOLS_LABEL);
+    verify(partialMockFlutterView, times(1)).presentLabel(mockToolWindow, DEVTOOLS_FAILED_LABEL);
   }
 
   @Test
