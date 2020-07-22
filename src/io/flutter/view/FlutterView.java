@@ -378,7 +378,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
   }
 
-  private void handleJxBrowserInstalled(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
+  protected void handleJxBrowserInstalled(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
     final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
     if (devToolsManager.hasInstalledDevTools()) {
