@@ -18,8 +18,9 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import java.awt.event.MouseAdapter;
+
+import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
@@ -51,4 +52,18 @@ public class FlutterViewTest {
     flutterView.handleJxBrowserInstalled(mockApp, mockInspectorService, mockToolWindow);
     verify(mockDevToolsManager, times(1)).openBrowserIntoPanel(testUrl, null, projectName, "inspector");
   }
+
+  @Test
+  public void testHandleJxBrowserInstallationFailed() {
+    final FlutterView partialMockFlutterView = mock(FlutterView.class);
+    doCallRealMethod().when(partialMockFlutterView).handleJxBrowserInstallationFailed(mockApp, mockInspectorService, mockToolWindow);
+    partialMockFlutterView.handleJxBrowserInstallationFailed(mockApp, mockInspectorService, mockToolWindow);
+    verify(partialMockFlutterView, times(1)).presentClickableLabel(
+      eq(mockToolWindow),
+      eq("JxBrowser installation failed. Click to retry."),
+      any(MouseAdapter.class)
+    );
+  }
+
+
 }

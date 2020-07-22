@@ -447,22 +447,27 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
   }
 
-  private void handleJxBrowserInstallationFailed(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
+  protected void handleJxBrowserInstallationFailed(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
     // Allow user to manually restart.
-    final JBLabel label = new JBLabel("JxBrowser installation failed. Click to retry.", SwingConstants.CENTER);
-    label.setForeground(BLUE.darker());
-    label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    label.addMouseListener(new MouseAdapter() {
+    presentClickableLabel(toolWindow, "JxBrowser installation failed. Click to retry.", new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
         JxBrowserManager.getInstance().retryFromFailed(app.getProject());
         handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
+
       }
     });
+  }
+
+  protected void presentClickableLabel(ToolWindow toolWindow, String text, MouseAdapter mouseAdapter) {
+    final JBLabel label = new JBLabel(text, SwingConstants.CENTER);
+    label.setForeground(BLUE.darker());
+    label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    label.addMouseListener(mouseAdapter);
     replacePanelLabel(toolWindow, label);
   }
 
-  private void replacePanelLabel(ToolWindow toolWindow, JBLabel label) {
+  protected void replacePanelLabel(ToolWindow toolWindow, JBLabel label) {
     ApplicationManager.getApplication().invokeLater(() -> {
       final ContentManager contentManager = toolWindow.getContentManager();
       contentManager.removeAllContents(true);
