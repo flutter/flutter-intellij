@@ -18,6 +18,7 @@ import com.intellij.util.download.DownloadableFileDescription;
 import com.intellij.util.download.DownloadableFileService;
 import com.intellij.util.download.FileDownloader;
 import com.intellij.util.lang.UrlClassLoader;
+import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -39,7 +40,7 @@ import java.util.concurrent.atomic.AtomicReference;
 // the class path.
 public class JxBrowserManager {
   private static JxBrowserManager manager;
-  private static final String DOWNLOAD_PATH = PathManager.getPluginsPath() + File.separatorChar + "flutter-intellij" + File.separatorChar + "jxbrowser";
+  protected static final String DOWNLOAD_PATH = PathManager.getPluginsPath() + File.separatorChar + "flutter-intellij" + File.separatorChar + "jxbrowser";
   private static final AtomicReference<JxBrowserStatus> status = new AtomicReference<>(JxBrowserStatus.NOT_INSTALLED);
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
   // We will be gating JxBrowser features until all of the features are landed.
@@ -103,13 +104,11 @@ public class JxBrowserManager {
 
     LOG.info(project.getName() + ": Installing JxBrowser");
 
-    final File directory = new File(DOWNLOAD_PATH);
-    if (!directory.exists()) {
-      if (!directory.mkdirs()) {
-        LOG.info(project.getName() + ": Unable to create directory for JxBrowser files");
-        setStatusFailed();
-        return;
-      }
+    final boolean directoryExists = FileUtils.makeDirectoryIfNotExists(DOWNLOAD_PATH);
+    if (!directoryExists) {
+      LOG.info(project.getName() + ": Unable to create directory for JxBrowser files");
+      setStatusFailed();
+      return;
     }
 
     final String platformFileName;
