@@ -13,6 +13,7 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.download.DownloadableFileDescription;
 import com.intellij.util.download.DownloadableFileService;
@@ -116,8 +117,7 @@ public class JxBrowserManager {
       platformFileName = JxBrowserUtils.getPlatformFileName();
     }
     catch (FileNotFoundException e) {
-      LOG.info(project.getName() + ": Unable to find JxBrowser platform file");
-      e.printStackTrace();
+      LOG.info(project.getName() + ": Unable to find JxBrowser platform file for " + SystemInfo.getOsNameAndVersion());
       setStatusFailed();
       return;
     }
