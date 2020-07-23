@@ -89,7 +89,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   protected static final String INSTALLATION_TIMED_OUT_LABEL = "Waiting for JxBrowser installation timed out. Restart your IDE to try again.";
   protected static final String INSTALLING_DEVTOOLS_LABEL = "Installing DevTools...";
   protected static final String DEVTOOLS_FAILED_LABEL = "Setting up DevTools failed.";
-  protected static final int INSTALLATION_WAIT_LIMIT_SECONDS = 200;
+  protected static final int INSTALLATION_WAIT_LIMIT_SECONDS = 2000;
 
   protected final EventStream<Boolean> shouldAutoHorizontalScroll = new EventStream<>(FlutterViewState.AUTO_SCROLL_DEFAULT);
   protected final EventStream<Boolean> highlightNodesShownInBothTrees =
@@ -415,22 +415,33 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (jxBrowserManager.getStatus().equals(JxBrowserStatus.INSTALLED)) {
       handleJxBrowserInstalled(app, inspectorService, toolWindow);
     } else {
-      try {
-        final JxBrowserStatus newStatus = jxBrowserManager.waitForInstallation(INSTALLATION_WAIT_LIMIT_SECONDS);
+      waitForJxBrowserInstallation(app, inspectorService, toolWindow);
+    }
+  }
 
-        if (newStatus.equals(JxBrowserStatus.INSTALLED)) {
-          handleJxBrowserInstalled(app, inspectorService, toolWindow);
-        } else if (newStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
-          handleJxBrowserInstallationFailed(app, inspectorService, toolWindow);
-        } else {
-          // TODO(helin24): This function can return null for exception conditions. Present different error message?
-          presentLabel(toolWindow, INSTALLATION_TIMED_OUT_LABEL);
-        }
-      }
-      catch (TimeoutException e) {
-        // TODO(helin24): Are there better options for this case? e.g. stop installation and retry, link to open in browser?
+  protected void startJxBrowserInstallationWaitingThread(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      waitForJxBrowserInstallation(app, inspectorService, toolWindow);
+    });
+  }
+
+  protected void waitForJxBrowserInstallation(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
+    final JxBrowserManager jxBrowserManager = JxBrowserManager.getInstance();
+    try {
+      final JxBrowserStatus newStatus = jxBrowserManager.waitForInstallation(INSTALLATION_WAIT_LIMIT_SECONDS);
+
+      if (newStatus.equals(JxBrowserStatus.INSTALLED)) {
+        handleJxBrowserInstalled(app, inspectorService, toolWindow);
+      } else if (newStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
+        handleJxBrowserInstallationFailed(app, inspectorService, toolWindow);
+      } else {
+        // TODO(helin24): This function can return null for exception conditions. Present different error message?
         presentLabel(toolWindow, INSTALLATION_TIMED_OUT_LABEL);
       }
+    }
+    catch (TimeoutException e) {
+      // TODO(helin24): Are there better options for this case? e.g. stop installation and retry, link to open in browser?
+      presentLabel(toolWindow, INSTALLATION_TIMED_OUT_LABEL);
     }
   }
 
