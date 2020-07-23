@@ -415,7 +415,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (jxBrowserManager.getStatus().equals(JxBrowserStatus.INSTALLED)) {
       handleJxBrowserInstalled(app, inspectorService, toolWindow);
     } else {
-      waitForJxBrowserInstallation(app, inspectorService, toolWindow);
+      startJxBrowserInstallationWaitingThread(app, inspectorService, toolWindow);
     }
   }
 

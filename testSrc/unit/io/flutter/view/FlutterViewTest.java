@@ -159,7 +159,7 @@ public class FlutterViewTest {
 
     partialMockFlutterView.handleJxBrowserInstallationInProgress(mockApp, mockInspectorService, mockToolWindow);
     verify(partialMockFlutterView, times(1)).presentLabel(mockToolWindow, INSTALLATION_IN_PROGRESS_LABEL);
-    verify(partialMockFlutterView, times(1)).waitForJxBrowserInstallation(mockApp, mockInspectorService, mockToolWindow);
+    verify(partialMockFlutterView, times(1)).startJxBrowserInstallationWaitingThread(mockApp, mockInspectorService, mockToolWindow);
   }
 
   @Test
