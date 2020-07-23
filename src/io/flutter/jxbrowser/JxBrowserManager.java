@@ -60,11 +60,10 @@ public class JxBrowserManager {
     return status.get();
   }
 
+  /**
+   * Call {@link #setUp} before this function to ensure that an installation has started.
+   */
   public JxBrowserStatus waitForInstallation(int seconds) throws TimeoutException {
-    if (installation == null) {
-      return null;
-    }
-
     try {
       return installation.get(seconds, TimeUnit.SECONDS);
     }
