@@ -29,14 +29,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
-
-enum JxBrowserStatus {
-  NOT_INSTALLED,
-  INSTALLATION_IN_PROGRESS,
-  INSTALLED,
-  INSTALLATION_FAILED,
-}
 
 // JxBrowser provides Chromium to display web pages within IntelliJ. This class manages downloading the required files and adding them to
 // the class path.
@@ -48,6 +45,7 @@ public class JxBrowserManager {
   // We will be gating JxBrowser features until all of the features are landed.
   // To test JxBrowser, set this to true and also add license key to VM options (-Djxbrowser.license.key=<key>).
   public static final boolean ENABLE_JX_BROWSER = false;
+  private static CompletableFuture<JxBrowserStatus> installation = new CompletableFuture<>();
 
   private JxBrowserManager() {}
 
@@ -58,8 +56,34 @@ public class JxBrowserManager {
     return manager;
   }
 
-  public boolean isInstalled() {
-    return status.get().equals(JxBrowserStatus.INSTALLED);
+  public JxBrowserStatus getStatus() {
+    return status.get();
+  }
+
+  /**
+   * Call {@link #setUp} before this function to ensure that an installation has started.
+   */
+  public JxBrowserStatus waitForInstallation(int seconds) throws TimeoutException {
+    try {
+      return installation.get(seconds, TimeUnit.SECONDS);
+    }
+    catch (InterruptedException | ExecutionException e) {
+      LOG.info("Waiting for JxBrowser to install threw an exception");
+      return null;
+    }
+  }
+
+  public void retryFromFailed(Project project) {
+    if (!status.compareAndSet(JxBrowserStatus.INSTALLATION_FAILED, JxBrowserStatus.NOT_INSTALLED)) {
+      return;
+    }
+    LOG.info(project.getName() + ": Retrying JxBrowser installation");
+    setUp(project);
+  }
+
+  private void setStatusFailed() {
+    status.set(JxBrowserStatus.INSTALLATION_FAILED);
+    installation.complete(JxBrowserStatus.INSTALLATION_FAILED);
   }
 
   public void setUp(Project project) {
@@ -70,13 +94,20 @@ public class JxBrowserManager {
       return;
     }
 
+    // If installation future has not finished, we don't want to overwrite it. There could be other code listening for the previous attempt
+    // to succeed or fail.
+    // We expect to create a new CompletableFuture only if the previous installation attempt failed.
+    if (installation.isDone()) {
+      installation = new CompletableFuture<>();
+    }
+
     LOG.info(project.getName() + ": Installing JxBrowser");
 
     final File directory = new File(DOWNLOAD_PATH);
     if (!directory.exists()) {
       if (!directory.mkdirs()) {
         LOG.info(project.getName() + ": Unable to create directory for JxBrowser files");
-        status.set(JxBrowserStatus.INSTALLATION_FAILED);
+        setStatusFailed();
         return;
       }
     }
@@ -88,7 +119,7 @@ public class JxBrowserManager {
     catch (FileNotFoundException e) {
       LOG.info(project.getName() + ": Unable to find JxBrowser platform file");
       e.printStackTrace();
-      status.set(JxBrowserStatus.INSTALLATION_FAILED);
+      setStatusFailed();
       return;
     }
 
@@ -157,7 +188,7 @@ public class JxBrowserManager {
         catch (IOException e) {
           LOG.info(project.getName() + ": JxBrowser file downloaded failed: " + currentFileName);
           e.printStackTrace();
-          status.set(JxBrowserStatus.INSTALLATION_FAILED);
+          setStatusFailed();
         }
       }
     };
@@ -176,10 +207,11 @@ public class JxBrowserManager {
       }
 
       status.set(JxBrowserStatus.INSTALLED);
+      installation.complete(JxBrowserStatus.INSTALLED);
     }
     catch (MalformedURLException e) {
       LOG.info("Failed to load JxBrowser files");
-      status.set(JxBrowserStatus.INSTALLATION_FAILED);
+      setStatusFailed();
     }
   }
 }
