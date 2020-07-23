@@ -45,7 +45,7 @@ public class JxBrowserManager {
   // We will be gating JxBrowser features until all of the features are landed.
   // To test JxBrowser, set this to true and also add license key to VM options (-Djxbrowser.license.key=<key>).
   public static final boolean ENABLE_JX_BROWSER = false;
-  private static CompletableFuture<JxBrowserStatus> installation;
+  private static CompletableFuture<JxBrowserStatus> installation = new CompletableFuture<>();
 
   private JxBrowserManager() {}
 
@@ -78,6 +78,7 @@ public class JxBrowserManager {
     if (!status.compareAndSet(JxBrowserStatus.INSTALLATION_FAILED, JxBrowserStatus.NOT_INSTALLED)) {
       return;
     }
+    LOG.info(project.getName() + ": Retrying JxBrowser installation");
     setUp(project);
   }
 
@@ -93,7 +94,13 @@ public class JxBrowserManager {
       // If already succeeded or failed, no need to continue.
       return;
     }
-    installation = new CompletableFuture<>();
+
+    // If installation future has not finished, we don't want to overwrite it. There could be other code listening for the previous attempt
+    // to succeed or fail.
+    // We expect to create a new CompletableFuture only if the previous installation attempt failed.
+    if (installation.isDone()) {
+      installation = new CompletableFuture<>();
+    }
 
     LOG.info(project.getName() + ": Installing JxBrowser");
 
