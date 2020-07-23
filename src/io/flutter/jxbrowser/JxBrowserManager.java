@@ -81,6 +81,11 @@ public class JxBrowserManager {
     setUp(project);
   }
 
+  private void setStatusFailed() {
+    status.set(JxBrowserStatus.INSTALLATION_FAILED);
+    installation.complete(JxBrowserStatus.INSTALLATION_FAILED);
+  }
+
   public void setUp(Project project) {
     if (!status.compareAndSet(JxBrowserStatus.NOT_INSTALLED, JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
       // This check ensures that an IDE only downloads and installs JxBrowser once, even if multiple projects are open.
@@ -96,8 +101,7 @@ public class JxBrowserManager {
     if (!directory.exists()) {
       if (!directory.mkdirs()) {
         LOG.info(project.getName() + ": Unable to create directory for JxBrowser files");
-        status.set(JxBrowserStatus.INSTALLATION_FAILED);
-        installation.complete(JxBrowserStatus.INSTALLATION_FAILED);
+        setStatusFailed();
         return;
       }
     }
@@ -109,8 +113,7 @@ public class JxBrowserManager {
     catch (FileNotFoundException e) {
       LOG.info(project.getName() + ": Unable to find JxBrowser platform file");
       e.printStackTrace();
-      status.set(JxBrowserStatus.INSTALLATION_FAILED);
-      installation.complete(JxBrowserStatus.INSTALLATION_FAILED);
+      setStatusFailed();
       return;
     }
 
@@ -179,8 +182,7 @@ public class JxBrowserManager {
         catch (IOException e) {
           LOG.info(project.getName() + ": JxBrowser file downloaded failed: " + currentFileName);
           e.printStackTrace();
-          status.set(JxBrowserStatus.INSTALLATION_FAILED);
-          installation.complete(JxBrowserStatus.INSTALLATION_FAILED);
+          setStatusFailed();
         }
       }
     };
@@ -203,8 +205,7 @@ public class JxBrowserManager {
     }
     catch (MalformedURLException e) {
       LOG.info("Failed to load JxBrowser files");
-      status.set(JxBrowserStatus.INSTALLATION_FAILED);
-      installation.complete(JxBrowserStatus.INSTALLATION_FAILED);
+      setStatusFailed();
     }
   }
 }
