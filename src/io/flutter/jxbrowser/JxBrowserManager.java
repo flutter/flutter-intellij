@@ -18,7 +18,6 @@ import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.download.DownloadableFileDescription;
 import com.intellij.util.download.DownloadableFileService;
 import com.intellij.util.download.FileDownloader;
-import com.intellij.util.lang.UrlClassLoader;
 import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
 import org.jetbrains.annotations.NotNull;
@@ -26,8 +25,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -125,28 +122,24 @@ public class JxBrowserManager {
     // Check whether the files already exist.
     final String[] fileNames = {platformFileName, JxBrowserUtils.getApiFileName(), JxBrowserUtils.getSwingFileName()};
     boolean allDownloaded = true;
-    final List<File> files = new ArrayList<>();
     for (String fileName : fileNames) {
-      final File file = new File(DOWNLOAD_PATH + File.separator + fileName);
-      files.add(file);
-      if (!file.exists()) {
+      if (!FileUtils.fileExists(fileName)) {
         allDownloaded = false;
+        break;
       }
     }
 
     if (allDownloaded) {
       LOG.info(project.getName() + ": JxBrowser platform files already exist, skipping download");
-      loadClasses(files);
+      loadClasses(fileNames);
       return;
     }
 
     // Delete any already existing files.
     // TODO(helin24): Handle if files cannot be deleted.
-    for (File file : files) {
-      if (file.exists()) {
-        if (!file.delete()) {
-          LOG.info(project.getName() + ": Existing file could not be deleted - " + file.getAbsolutePath());
-        }
+    for (String fileName : fileNames) {
+      if (!FileUtils.deleteFileIfExists(fileName)) {
+        LOG.info(project.getName() + ": Existing file could not be deleted - " + fileName);
       }
     }
 
@@ -182,7 +175,7 @@ public class JxBrowserManager {
             }
           }
 
-          loadClasses(files);
+          loadClasses(fileNames);
         }
         catch (IOException e) {
           LOG.info(project.getName() + ": JxBrowser file downloaded failed: " + currentFileName);
@@ -196,21 +189,19 @@ public class JxBrowserManager {
     ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, processIndicator);
   }
 
-  private void loadClasses(List<File> files) {
-    final UrlClassLoader classLoader = (UrlClassLoader) this.getClass().getClassLoader();
-    try {
-      for (File file : files) {
-        final URL url = file.toURI().toURL();
-        classLoader.addURL(url);
-        LOG.info("Loaded JxBrowser file successfully: " + url.toString());
+  private void loadClasses(String[] fileNames) {
+    final ClassLoader classLoader = this.getClass().getClassLoader();
+    for (String fileName : fileNames) {
+      if (!FileUtils.loadClassWithClassLoader(classLoader, fileName)) {
+        LOG.info("Failed to load JxBrowser file: " + fileName);
+        setStatusFailed();
+        return;
+      } else {
+        LOG.info("Loaded JxBrowser file successfully: " + fileName);
       }
+    }
 
-      status.set(JxBrowserStatus.INSTALLED);
-      installation.complete(JxBrowserStatus.INSTALLED);
-    }
-    catch (MalformedURLException e) {
-      LOG.info("Failed to load JxBrowser files");
-      setStatusFailed();
-    }
+    status.set(JxBrowserStatus.INSTALLED);
+    installation.complete(JxBrowserStatus.INSTALLED);
   }
 }
