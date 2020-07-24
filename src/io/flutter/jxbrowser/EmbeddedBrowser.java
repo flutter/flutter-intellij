@@ -5,25 +5,29 @@
  */
 package io.flutter.jxbrowser;
 
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.teamdev.jxbrowser.browser.Browser;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.engine.EngineOptions;
+import com.teamdev.jxbrowser.engine.RenderingMode;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
 import icons.FlutterIcons;
 
 import java.awt.*;
 
 import static com.teamdev.jxbrowser.engine.RenderingMode.HARDWARE_ACCELERATED;
+import static com.teamdev.jxbrowser.engine.RenderingMode.OFF_SCREEN;
 
 public class EmbeddedBrowser {
   public void openPanel(ContentManager contentManager, String tabName, String url) {
-    EngineOptions options =
-      EngineOptions.newBuilder(HARDWARE_ACCELERATED).build();
-    Engine engine = Engine.newInstance(options);
-    Browser browser = engine.newBrowser();
+    final RenderingMode renderingMode = SystemInfo.isMac ? OFF_SCREEN : HARDWARE_ACCELERATED;
+    final EngineOptions options =
+      EngineOptions.newBuilder(renderingMode).build();
+    final Engine engine = Engine.newInstance(options);
+    final Browser browser = engine.newBrowser();
 
     if (contentManager.isDisposed()) {
       return;
@@ -33,7 +37,7 @@ public class EmbeddedBrowser {
 
     // Creating Swing component for rendering web content
     // loaded in the given Browser instance.
-    BrowserView view = BrowserView.newInstance(browser);
+    final BrowserView view = BrowserView.newInstance(browser);
     view.setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
 
     content.setComponent(view);
