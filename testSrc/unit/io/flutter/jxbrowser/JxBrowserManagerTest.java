@@ -20,6 +20,8 @@ import java.io.FileNotFoundException;
 
 import static io.flutter.jxbrowser.JxBrowserManager.DOWNLOAD_PATH;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
@@ -76,7 +78,33 @@ public class JxBrowserManagerTest {
   }
 
   @Test
-  public void testSetUpIfFilesMissing() {
+  public void testSetUpIfFilesMissing() throws FileNotFoundException {
+    // If any of our required files do not exist, we want to delete any existing files and start a download of all of the required files.
+    final JxBrowserManager partialMockManager = mock(JxBrowserManager.class);
+    doCallRealMethod().when(partialMockManager).setUp(mockProject);
 
+    PowerMockito.mockStatic(FileUtils.class);
+    when(FileUtils.makeDirectoryIfNotExists(DOWNLOAD_PATH)).thenReturn(true);
+    when(FileUtils.fileExists(PLATFORM_FILE_NAME)).thenReturn(true);
+    when(FileUtils.fileExists(API_FILE_NAME)).thenReturn(false);
+    when(FileUtils.fileExists(SWING_FILE_NAME)).thenReturn(true);
+    when(FileUtils.deleteFileIfExists(anyString())).thenReturn(true);
+
+    PowerMockito.mockStatic(JxBrowserUtils.class);
+    when(JxBrowserUtils.getPlatformFileName()).thenReturn(PLATFORM_FILE_NAME);
+    when(JxBrowserUtils.getApiFileName()).thenReturn(API_FILE_NAME);
+    when(JxBrowserUtils.getSwingFileName()).thenReturn(SWING_FILE_NAME);
+
+    partialMockManager.setUp(mockProject);
+
+    verifyStatic(FileUtils.class);
+    FileUtils.deleteFileIfExists(PLATFORM_FILE_NAME);
+    verifyStatic(FileUtils.class);
+    FileUtils.deleteFileIfExists(API_FILE_NAME);
+    verifyStatic(FileUtils.class);
+    FileUtils.deleteFileIfExists(SWING_FILE_NAME);
+
+    final String[] expectedFileNames = {PLATFORM_FILE_NAME, API_FILE_NAME, SWING_FILE_NAME};
+    verify(partialMockManager, times(1)).downloadJxBrowser(mockProject, expectedFileNames);
   }
 }

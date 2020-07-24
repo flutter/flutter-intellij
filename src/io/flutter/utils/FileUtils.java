@@ -30,7 +30,7 @@ public class FileUtils {
     if (file.exists()) {
       return file.delete();
     }
-    return false;
+    return true;
   }
 
   public static boolean loadClassWithClassLoader(ClassLoader classLoader, String path) {

@@ -146,7 +146,7 @@ public class JxBrowserManager {
     downloadJxBrowser(project, fileNames);
   }
 
-  private void downloadJxBrowser(Project project, String[] fileNames) {
+  protected void downloadJxBrowser(Project project, String[] fileNames) {
     // The FileDownloader API is used by other plugins - e.g.
     // https://github.com/JetBrains/intellij-community/blob/b09f8151e0d189d70363266c3bb6edb5f6bfeca4/plugins/markdown/src/org/intellij/plugins/markdown/ui/preview/javafx/JavaFXInstallator.java#L48
     final List<FileDownloader> fileDownloaders = new ArrayList<>();
