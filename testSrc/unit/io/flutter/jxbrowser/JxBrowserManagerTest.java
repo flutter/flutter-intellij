@@ -34,6 +34,7 @@ public class JxBrowserManagerTest {
 
   @Test
   public void testSetUpIfDirectoryFails() {
+    // If the directory for JxBrowser files cannot be created, the installation should fail.
     final JxBrowserManager manager = JxBrowserManager.getInstance();
     PowerMockito.mockStatic(FileUtils.class);
     when(FileUtils.makeDirectoryIfNotExists(DOWNLOAD_PATH)).thenReturn(false);
@@ -44,6 +45,7 @@ public class JxBrowserManagerTest {
 
   @Test
   public void testSetUpIfPlatformFileNotFound() throws FileNotFoundException {
+    // If the system platform is not found among JxBrowser files, then the installation should fail.
     final JxBrowserManager manager = JxBrowserManager.getInstance();
 
     PowerMockito.mockStatic(FileUtils.class);
