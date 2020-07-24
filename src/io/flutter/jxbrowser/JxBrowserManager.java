@@ -18,6 +18,7 @@ import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.download.DownloadableFileDescription;
 import com.intellij.util.download.DownloadableFileService;
 import com.intellij.util.download.FileDownloader;
+import com.intellij.util.lang.UrlClassLoader;
 import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +26,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,6 +56,10 @@ public class JxBrowserManager {
       return new JxBrowserManager();
     }
     return manager;
+  }
+
+  protected static void resetForTest() {
+    status.set(JxBrowserStatus.NOT_INSTALLED);
   }
 
   public JxBrowserStatus getStatus() {
@@ -189,19 +196,22 @@ public class JxBrowserManager {
     ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, processIndicator);
   }
 
-  private void loadClasses(String[] fileNames) {
-    final ClassLoader classLoader = this.getClass().getClassLoader();
-    for (String fileName : fileNames) {
-      if (!FileUtils.loadClassWithClassLoader(classLoader, fileName)) {
-        LOG.info("Failed to load JxBrowser file: " + fileName);
-        setStatusFailed();
-        return;
-      } else {
-        LOG.info("Loaded JxBrowser file successfully: " + fileName);
+  protected void loadClasses(String[] fileNames) {
+    final UrlClassLoader classLoader = (UrlClassLoader) this.getClass().getClassLoader();
+    try {
+      for (String fileName : fileNames) {
+        final File file = new File(fileName);
+        final URL url = file.toURI().toURL();
+        classLoader.addURL(url);
+        LOG.info("Loaded JxBrowser file successfully: " + url.toString());
       }
-    }
 
-    status.set(JxBrowserStatus.INSTALLED);
-    installation.complete(JxBrowserStatus.INSTALLED);
+      status.set(JxBrowserStatus.INSTALLED);
+      installation.complete(JxBrowserStatus.INSTALLED);
+    }
+    catch (MalformedURLException e) {
+      LOG.info("Failed to load JxBrowser files");
+      setStatusFailed();
+    }
   }
 }

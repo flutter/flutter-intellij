@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project;
 import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -32,6 +33,11 @@ public class JxBrowserManagerTest {
   final String API_FILE_NAME = "test/api/file/name";
   final String SWING_FILE_NAME = "test/swing/file/name";
 
+  @Before
+  public void setUp() {
+    JxBrowserManager.resetForTest();
+  }
+
   @Test
   public void testSetUpIfDirectoryFails() {
     // If the directory for JxBrowser files cannot be created, the installation should fail.
@@ -40,7 +46,7 @@ public class JxBrowserManagerTest {
     when(FileUtils.makeDirectoryIfNotExists(DOWNLOAD_PATH)).thenReturn(false);
 
     manager.setUp(mockProject);
-    Assert.assertEquals(manager.getStatus(), JxBrowserStatus.INSTALLATION_FAILED);
+    Assert.assertEquals(JxBrowserStatus.INSTALLATION_FAILED, manager.getStatus());
   }
 
   @Test
@@ -55,13 +61,14 @@ public class JxBrowserManagerTest {
     when(JxBrowserUtils.getPlatformFileName()).thenThrow(new FileNotFoundException());
 
     manager.setUp(mockProject);
-    Assert.assertEquals(manager.getStatus(), JxBrowserStatus.INSTALLATION_FAILED);
+    Assert.assertEquals(JxBrowserStatus.INSTALLATION_FAILED, manager.getStatus());
   }
 
   @Test
   public void testSetUpIfAllFilesExist() throws FileNotFoundException {
-    // Status should be set to 'installed' if all of the files are already downloaded and we can load them with the ClassLoader.
-    final JxBrowserManager manager = JxBrowserManager.getInstance();
+    // If all of the files are already downloaded, we should load the existing files.
+    final JxBrowserManager partialMockManager = mock(JxBrowserManager.class);
+    doCallRealMethod().when(partialMockManager).setUp(mockProject);
 
     PowerMockito.mockStatic(FileUtils.class);
     when(FileUtils.makeDirectoryIfNotExists(DOWNLOAD_PATH)).thenReturn(true);
@@ -75,8 +82,9 @@ public class JxBrowserManagerTest {
     when(JxBrowserUtils.getApiFileName()).thenReturn(API_FILE_NAME);
     when(JxBrowserUtils.getSwingFileName()).thenReturn(SWING_FILE_NAME);
 
-    manager.setUp(mockProject);
-    Assert.assertEquals(manager.getStatus(), JxBrowserStatus.INSTALLED);
+    partialMockManager.setUp(mockProject);
+    final String[] expectedFileNames = {PLATFORM_FILE_NAME, API_FILE_NAME, SWING_FILE_NAME};
+    verify(partialMockManager, times(1)).loadClasses(expectedFileNames);
   }
 
   @Test
