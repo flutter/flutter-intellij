@@ -32,22 +32,6 @@ checkUrls() async {
   log('OK!');
 }
 
-@Task()
-@Depends(colors, icons)
-generate() => null;
-
-@Task('Generate Flutter color information')
-colors() async {
-  await Dart.runAsync('tool/colors/update_colors.dart');
-  await Dart.runAsync('tool/colors/generate_properties.dart');
-}
-
-@Task('Generate Flutter icon information')
-icons() async {
-  // Run tool/icons/update_icons.dart.
-  await Dart.runAsync('tool/icons/update_icons.dart');
-}
-
 @Task('Create Outline view icons from svgs')
 outlineIcons() async {
   Directory previewIconsDir = getDir('resources/icons/preview');
