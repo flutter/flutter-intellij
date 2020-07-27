@@ -24,6 +24,7 @@ public class EmbeddedBrowser {
       EngineOptions.newBuilder(HARDWARE_ACCELERATED).build();
     Engine engine = Engine.newInstance(options);
     Browser browser = engine.newBrowser();
+    browser.settings().enableTransparentBackground();
 
     if (contentManager.isDisposed()) {
       return;
