@@ -270,7 +270,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
           final String name = extensionData.get("extension").getAsString();
           final String valueFromJson = extensionData.get("value").getAsString();
 
-          final ServiceExtensionDescription extension = ServiceExtensions.toggleableExtensionsWhitelist.get(name);
+          final ServiceExtensionDescription extension = ServiceExtensions.toggleableExtensionsAllowList.get(name);
           if (extension != null) {
             final Object value = getExtensionValueFromEventJson(name, valueFromJson);
             if (extension instanceof ToggleableServiceExtensionDescription) {
@@ -315,7 +315,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
   private Object getExtensionValueFromEventJson(String name, String valueFromJson) {
     final Class valueClass =
-      ServiceExtensions.toggleableExtensionsWhitelist.get(name).getValueClass();
+      ServiceExtensions.toggleableExtensionsAllowList.get(name).getValueClass();
 
     if (valueClass == Boolean.class) {
       return valueFromJson.equals("true");
@@ -381,11 +381,11 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
   }
 
   private void restoreExtensionFromDevice(String name) {
-    if (!ServiceExtensions.toggleableExtensionsWhitelist.containsKey(name)) {
+    if (!ServiceExtensions.toggleableExtensionsAllowList.containsKey(name)) {
       return;
     }
     final Class valueClass =
-      ServiceExtensions.toggleableExtensionsWhitelist.get(name).getValueClass();
+      ServiceExtensions.toggleableExtensionsAllowList.get(name).getValueClass();
 
     final CompletableFuture<JsonObject> response = app.callServiceExtension(name);
     response.thenApply(obj -> {
@@ -409,9 +409,9 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
   }
 
   private void maybeRestoreExtension(String name, Object value) {
-    if (ServiceExtensions.toggleableExtensionsWhitelist.get(name) instanceof ToggleableServiceExtensionDescription) {
+    if (ServiceExtensions.toggleableExtensionsAllowList.get(name) instanceof ToggleableServiceExtensionDescription) {
       final ToggleableServiceExtensionDescription extensionDescription =
-        (ToggleableServiceExtensionDescription)ServiceExtensions.toggleableExtensionsWhitelist.get(name);
+        (ToggleableServiceExtensionDescription)ServiceExtensions.toggleableExtensionsAllowList.get(name);
       if (value.equals(extensionDescription.getEnabledValue())) {
         setServiceExtensionState(name, true, value);
       }
