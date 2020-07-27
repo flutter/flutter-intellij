@@ -195,7 +195,7 @@ public class FlutterEditorAnnotatorTest extends AbstractDartElementTest {
   @Test
   public void locatesConstARGBColor() throws Exception {
     run(() -> {
-      final PsiElement testIdentifier = setUpDartElement("main() { const Colors.fromARGB(255, 255, 0,0); }", "main", LeafPsiElement.class);
+      final PsiElement testIdentifier = setUpDartElement("main() { const Color.fromARGB(255, 255, 0, 0); }", "Color", LeafPsiElement.class);
       final DartNewExpression element = DartSyntax.findEnclosingNewExpression(testIdentifier);
       assert element != null;
 
@@ -216,8 +216,8 @@ public class FlutterEditorAnnotatorTest extends AbstractDartElementTest {
   @Test
   public void locatesARGBColor() throws Exception {
     run(() -> {
-      final PsiElement testIdentifier = setUpDartElement("main() { Colors.fromARGB(255, 255, 0,0); }", "main", LeafPsiElement.class);
-      final DartNewExpression element = DartSyntax.findEnclosingNewExpression(testIdentifier);
+      final PsiElement testIdentifier = setUpDartElement("main() { Color.fromARGB(255, 255, 0, 0); }", "Color", LeafPsiElement.class);
+      final DartCallExpression element = DartSyntax.findEnclosingFunctionCall(testIdentifier, "Color.fromARGB");
       assert element != null;
 
       final FlutterEditorAnnotator annotator = new FlutterEditorAnnotator();
@@ -237,7 +237,7 @@ public class FlutterEditorAnnotatorTest extends AbstractDartElementTest {
   @Test
   public void locatesConstRGBOColor() throws Exception {
     run(() -> {
-      final PsiElement testIdentifier = setUpDartElement("main() { const Colors.fromRGBO(255,0,0,1.0); }", "main", LeafPsiElement.class);
+      final PsiElement testIdentifier = setUpDartElement("main() { const Color.fromRGBO(255, 0, 0, 1.0); }", "Color", LeafPsiElement.class);
       final DartNewExpression element = DartSyntax.findEnclosingNewExpression(testIdentifier);
       assert element != null;
 
@@ -258,8 +258,8 @@ public class FlutterEditorAnnotatorTest extends AbstractDartElementTest {
   @Test
   public void locatesRGBOColor() throws Exception {
     run(() -> {
-      final PsiElement testIdentifier = setUpDartElement("main() { Colors.fromRGBO(255, 255, 0, 1.0); }", "main", LeafPsiElement.class);
-      final DartNewExpression element = DartSyntax.findEnclosingNewExpression(testIdentifier);
+      final PsiElement testIdentifier = setUpDartElement("main() { Color.fromRGBO(255, 255, 0, 1.0); }", "Color", LeafPsiElement.class);
+      final DartCallExpression element = DartSyntax.findEnclosingFunctionCall(testIdentifier, "Color.fromRGBO");
       assert element != null;
 
       final FlutterEditorAnnotator annotator = new FlutterEditorAnnotator();
