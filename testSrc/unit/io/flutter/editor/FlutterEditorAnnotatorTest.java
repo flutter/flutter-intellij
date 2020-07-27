@@ -21,6 +21,7 @@ import org.junit.Test;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
+@SuppressWarnings("UnstableApiUsage")
 public class FlutterEditorAnnotatorTest extends AbstractDartElementTest {
   @Test
   public void locatesColorReference() throws Exception {
@@ -195,7 +196,7 @@ public class FlutterEditorAnnotatorTest extends AbstractDartElementTest {
   @Test
   public void locatesConstARGBColor() throws Exception {
     run(() -> {
-      final PsiElement testIdentifier = setUpDartElement("main() { const Colors.fromARGB(255, 255, 0,0); }", "main", LeafPsiElement.class);
+      final PsiElement testIdentifier = setUpDartElement("main() { const Colors.fromARGB(255, 255, 0,0); }", "Color", LeafPsiElement.class);
       final DartNewExpression element = DartSyntax.findEnclosingNewExpression(testIdentifier);
       assert element != null;
 
@@ -216,7 +217,8 @@ public class FlutterEditorAnnotatorTest extends AbstractDartElementTest {
   @Test
   public void locatesARGBColor() throws Exception {
     run(() -> {
-      final PsiElement testIdentifier = setUpDartElement("main() { Colors.fromARGB(255, 255, 0,0); }", "main", LeafPsiElement.class);
+      final PsiElement testIdentifier = setUpDartElement("main() { Colors.fromARGB(255, 255, 0,0); }", "Color", LeafPsiElement.class);
+      // todo: use findEnclosingFunctionCall?
       final DartNewExpression element = DartSyntax.findEnclosingNewExpression(testIdentifier);
       assert element != null;
 
@@ -237,7 +239,7 @@ public class FlutterEditorAnnotatorTest extends AbstractDartElementTest {
   @Test
   public void locatesConstRGBOColor() throws Exception {
     run(() -> {
-      final PsiElement testIdentifier = setUpDartElement("main() { const Colors.fromRGBO(255,0,0,1.0); }", "main", LeafPsiElement.class);
+      final PsiElement testIdentifier = setUpDartElement("main() { const Colors.fromRGBO(255,0,0,1.0); }", "Color", LeafPsiElement.class);
       final DartNewExpression element = DartSyntax.findEnclosingNewExpression(testIdentifier);
       assert element != null;
 
@@ -258,7 +260,8 @@ public class FlutterEditorAnnotatorTest extends AbstractDartElementTest {
   @Test
   public void locatesRGBOColor() throws Exception {
     run(() -> {
-      final PsiElement testIdentifier = setUpDartElement("main() { Colors.fromRGBO(255, 255, 0, 1.0); }", "main", LeafPsiElement.class);
+      final PsiElement testIdentifier = setUpDartElement("main() { Colors.fromRGBO(255, 255, 0, 1.0); }", "Color", LeafPsiElement.class);
+      // todo: use findEnclosingFunctionCall?
       final DartNewExpression element = DartSyntax.findEnclosingNewExpression(testIdentifier);
       assert element != null;
 
