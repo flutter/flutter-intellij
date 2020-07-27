@@ -218,7 +218,7 @@ public class FlutterEditorAnnotatorTest extends AbstractDartElementTest {
   public void locatesARGBColor() throws Exception {
     run(() -> {
       final PsiElement testIdentifier = setUpDartElement("main() { Color.fromARGB(255, 255, 0,0); }", "Color", LeafPsiElement.class);
-      final DartNewExpression element = DartSyntax.findEnclosingFunctionCall(testIdentifier);
+      final DartCallExpression element = DartSyntax.findEnclosingFunctionCall(testIdentifier, "Color");
       assert element != null;
 
       final FlutterEditorAnnotator annotator = new FlutterEditorAnnotator();
@@ -260,7 +260,7 @@ public class FlutterEditorAnnotatorTest extends AbstractDartElementTest {
   public void locatesRGBOColor() throws Exception {
     run(() -> {
       final PsiElement testIdentifier = setUpDartElement("main() { Color.fromRGBO(255, 255, 0, 1.0); }", "Color", LeafPsiElement.class);
-      final DartNewExpression element = DartSyntax.findEnclosingFunctionCall(testIdentifier);
+      final DartCallExpression element = DartSyntax.findEnclosingFunctionCall(testIdentifier, "Color");
       assert element != null;
 
       final FlutterEditorAnnotator annotator = new FlutterEditorAnnotator();
