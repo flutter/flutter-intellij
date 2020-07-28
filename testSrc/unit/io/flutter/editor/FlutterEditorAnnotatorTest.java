@@ -21,6 +21,7 @@ import org.junit.Test;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
+@SuppressWarnings("UnstableApiUsage")
 public class FlutterEditorAnnotatorTest extends AbstractDartElementTest {
   @Test
   public void locatesColorReference() throws Exception {
