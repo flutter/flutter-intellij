@@ -27,7 +27,7 @@ public class FlutterCupertinoColors {
     colors = new Properties();
 
     try {
-      colors.load(FlutterUtils.class.getResourceAsStream("/flutter/cupertino_colors.properties"));
+      colors.load(FlutterUtils.class.getResourceAsStream("/flutter/colors/cupertino.properties"));
     }
     catch (IOException e) {
       FlutterUtils.warn(LOG, e);

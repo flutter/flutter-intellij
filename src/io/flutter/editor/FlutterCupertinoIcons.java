@@ -22,7 +22,7 @@ public class FlutterCupertinoIcons {
     icons = new Properties();
 
     try {
-      icons.load(FlutterEditorAnnotator.class.getResourceAsStream("/flutter/cupertino_icons.properties"));
+      icons.load(FlutterEditorAnnotator.class.getResourceAsStream("/flutter/icons/cupertino.properties"));
     }
     catch (IOException e) {
       FlutterUtils.warn(LOG, e);
@@ -46,6 +46,6 @@ public class FlutterCupertinoIcons {
     if (path == null) {
       return null;
     }
-    return IconLoader.findIcon(path, FlutterCupertinoIcons.class);
+    return IconLoader.findIcon("/flutter/icons/" + path, FlutterCupertinoIcons.class);
   }
 }
