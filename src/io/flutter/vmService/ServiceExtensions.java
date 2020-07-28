@@ -171,7 +171,7 @@ public class ServiceExtensions {
     trackRepaintWidgets
   );
 
-  public static final Map<String, ServiceExtensionDescription> toggleableExtensionsWhitelist =
+  public static final Map<String, ServiceExtensionDescription> toggleableExtensionsAllowList =
     toggleableExtensionDescriptions.stream().collect(
       Collectors.toMap(
         ServiceExtensionDescription::getExtension,
