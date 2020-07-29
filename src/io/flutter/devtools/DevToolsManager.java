@@ -16,6 +16,9 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.ide.browsers.BrowserLauncher;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -27,6 +30,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.ui.content.ContentManager;
+import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
@@ -41,6 +45,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Manage installing and opening DevTools.
@@ -288,6 +295,17 @@ class DevToolsInstance {
     @NotNull Callback<DevToolsInstance> onSuccess,
     @NotNull Runnable onClose
   ) {
+    final Notification notification = new Notification(
+      FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
+      "Installing DevTools...",
+      "The DevTools build is in progress",
+      NotificationType.INFORMATION);
+
+    // We only want to show the notification if installation is taking a while.
+    // If the notification is expired by time notify is called, it will not appear.
+    final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    scheduler.schedule(() -> Notifications.Bus.notify(notification), 2, TimeUnit.SECONDS);
+
     processHandler.addProcessListener(new ProcessAdapter() {
       @Override
       public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
@@ -317,6 +335,7 @@ class DevToolsInstance {
           catch (JsonSyntaxException e) {
             processHandler.destroyProcess();
           }
+          notification.expire();
         }
       }
 
