@@ -215,10 +215,10 @@ Go to the editor for MainActivity.kt. Change the onCreate method:
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(findViewById(R.id.toolbar))
         val engine = FlutterEngine(this.applicationContext)
         engine.dartExecutor.executeDartEntrypoint(DartExecutor.DartEntrypoint.createDefault())
-        fab.setOnClickListener { view ->
+        findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
             FlutterEngineCache.getInstance().put("1", engine)
             startActivity(FlutterActivity.withCachedEngine("1").build(this))
         }

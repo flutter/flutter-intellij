@@ -35,7 +35,7 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2020.2 EAP",
+      "comments": "IntelliJ 2020.2",
       "name": "IntelliJ 2020.2",
       "version": "2020.2",
       "isUnitTestTarget": "true",
