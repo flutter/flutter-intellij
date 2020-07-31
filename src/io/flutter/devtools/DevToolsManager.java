@@ -25,6 +25,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.Pair;
 import com.intellij.ui.content.ContentManager;
 import io.flutter.FlutterMessages;
 import io.flutter.bazel.Workspace;
@@ -38,6 +39,7 @@ import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -247,25 +249,38 @@ public class DevToolsManager {
       devToolsInstance.openBrowserAndConnect(uri, screen);
     }
     else {
-      @Nullable final OSProcessHandler handler =
-        isBazel(project) ? getProcessHandlerForBazel() : getProcessHandlerForPub();
+      if (isBazel(project)) {
+        final Optional<FlutterApp> first =
+          FlutterApp.allFromProjectProcess(project).stream().filter((FlutterApp app) -> app.getProject() == project).findFirst();
 
-      if (handler != null) {
-        // TODO(devoncarew) Add a Task.Backgroundable here; "Starting devtools..."
+        if (first.isEmpty()) {
+          return;
+        }
 
-        // start the server
-        DevToolsInstance.startServer(handler, instance -> {
-          devToolsInstance = instance;
-
+        first.get().serveDevTools().thenAccept((Pair<String, Integer> hostAndPort) -> {
+          devToolsInstance = new DevToolsInstance(hostAndPort.first, hostAndPort.second);
           devToolsInstance.openBrowserAndConnect(uri, screen);
-        }, () -> {
-          // Listen for closing; null out the devToolsInstance.
-          devToolsInstance = null;
         });
-      }
-      else {
-        // TODO(devoncarew): We should provide feedback to callers that the open browser call failed.
-        devToolsInstance = null;
+      } else {
+        @Nullable final OSProcessHandler handler = getProcessHandlerForPub();
+
+        if (handler != null) {
+          // TODO(devoncarew) Add a Task.Backgroundable here; "Starting devtools..."
+
+          // start the server
+          DevToolsInstance.startServer(handler, instance -> {
+            devToolsInstance = instance;
+
+            devToolsInstance.openBrowserAndConnect(uri, screen);
+          }, () -> {
+            // Listen for closing; null out the devToolsInstance.
+            devToolsInstance = null;
+          });
+        }
+        else {
+          // TODO(devoncarew): We should provide feedback to callers that the open browser call failed.
+          devToolsInstance = null;
+        }
       }
     }
   }

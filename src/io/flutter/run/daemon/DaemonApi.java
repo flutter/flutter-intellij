@@ -13,6 +13,7 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.Pair;
 import io.flutter.FlutterUtils;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
@@ -80,7 +81,7 @@ public class DaemonApi {
     return send("app.stop", new AppStop(appId));
   }
 
-  CompletableFuture<List<String>> devToolsServe() {
+  CompletableFuture<Pair<String, Integer>> devToolsServe() {
     return send("devtools.serve", new DevToolsServe());
   }
 
@@ -489,30 +490,24 @@ public class DaemonApi {
     }
   }
 
-  private static class DevToolsServe extends Params<List<String>> {
+  private static class DevToolsServe extends Params<Pair<String, Integer>> {
     @Override
-    List<String> parseResult(JsonElement result) {
+    Pair<String, Integer> parseResult(JsonElement result) {
       // There should be no result here, just skip adding this class and send empty params?
       System.out.println(result);
       // {"platforms":["ios","android"]}
 
       if (!(result instanceof JsonObject)) {
-        return Collections.emptyList();
+        return null;
       }
 
-      final JsonElement obj = ((JsonObject)result).get("platforms");
-      if (!(obj instanceof JsonArray)) {
-        return Collections.emptyList();
+      final String host = ((JsonObject)result).get("host").getAsString();
+      final int port = ((JsonObject)result).get("port").getAsInt();
+      if (host.isEmpty() || port == 0) {
+        return null;
       }
 
-      final List<String> platforms = new ArrayList<>();
-
-      for (int i = 0; i < ((JsonArray)obj).size(); i++) {
-        final JsonElement element = ((JsonArray)obj).get(i);
-        platforms.add(element.getAsString());
-      }
-
-      return platforms;
+      return Pair.create(host, port);
     }
   }
 }
