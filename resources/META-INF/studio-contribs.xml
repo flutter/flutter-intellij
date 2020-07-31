@@ -39,7 +39,7 @@
 
     <!-- The icon isn't being used here, but it is set by the action -->
     <action id="flutter.NewProject.welcome" class="io.flutter.actions.FlutterNewProjectAction"
-            text="Start a new Flutter project"
+            text="Create New Flutter Project"
             icon="FlutterIcons.Flutter"
             description="Create a new Flutter project">
       <add-to-group group-id="WelcomeScreen.QuickStart.IDEA" anchor="after" relative-to-action="WelcomeScreen.CreateNewProject"/>

@@ -1,3 +1,22 @@
+#48.0
+- Show notification for when devtools build is slow (#4728)
+- Use the new, generated metadata from flutter/tools_metadata (#4724)
+- Remove the framework metadata generation code from this repo (#4721)
+- Suppress several UnstableApiUsage warnings (#4722)
+- Replace Whitelist terminology to Allow List (#4723)
+- Resolve the issue displaying color icons in IntelliJ Idea and Android studio [ISSUE-3347] (#4695)
+- Add handling and messaging for when JxBrowser is not installed (#4712)
+- Update our analytics text (#4711)
+- Add JxBrowser dependencies and show in panel (#4664)
+- Start paused for run mode and use FlutterTestRunner for run tests (#4678)
+- Update the device selector presentation on toolbar change (#4698)
+- Stop checking for BUILD when looking for root dir (#4693)
+- Build issues (#4688)
+- Flutter news (#4680)
+- Simplify regex and sort colors (#4687)
+- Split icon generation into two scripts + use single set of downloaded files (#4671)
+- Update build script (#4674)
+
 #47.1
 - Revert "Start paused during run mode (#4622)" (#4673)
 - Add target to registerComponents() (#4672)
