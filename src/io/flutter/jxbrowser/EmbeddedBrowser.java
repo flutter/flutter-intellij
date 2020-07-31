@@ -11,6 +11,7 @@ import com.intellij.ui.content.ContentManager;
 import com.teamdev.jxbrowser.browser.Browser;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.engine.EngineOptions;
+import com.teamdev.jxbrowser.time.Timestamp;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
 import icons.FlutterIcons;
 
@@ -37,12 +38,13 @@ public class EmbeddedBrowser {
     BrowserView view = BrowserView.newInstance(browser);
     view.setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
 
+    // Wait for browser to load devtools before component is shown.
+    browser.navigation().loadUrlAndWait(url, Timestamp.fromSeconds(30));
+
     content.setComponent(view);
     content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
     // TODO(helin24): Use differentiated icons for each tab and copy from devtools toolbar.
     content.setIcon(FlutterIcons.Phone);
     contentManager.addContent(content);
-
-    browser.navigation().loadUrl(url);
   }
 }
