@@ -80,6 +80,10 @@ public class DaemonApi {
     return send("app.stop", new AppStop(appId));
   }
 
+  CompletableFuture<List<String>> devToolsServe() {
+    return send("devtools.serve", new DevToolsServe());
+  }
+
   CompletableFuture<Boolean> detachApp(@NotNull String appId) {
     return send("app.detach", new AppDetach(appId));
   }
@@ -463,6 +467,33 @@ public class DaemonApi {
 
     @Override
     List<String> parseResult(JsonElement result) {
+      // {"platforms":["ios","android"]}
+
+      if (!(result instanceof JsonObject)) {
+        return Collections.emptyList();
+      }
+
+      final JsonElement obj = ((JsonObject)result).get("platforms");
+      if (!(obj instanceof JsonArray)) {
+        return Collections.emptyList();
+      }
+
+      final List<String> platforms = new ArrayList<>();
+
+      for (int i = 0; i < ((JsonArray)obj).size(); i++) {
+        final JsonElement element = ((JsonArray)obj).get(i);
+        platforms.add(element.getAsString());
+      }
+
+      return platforms;
+    }
+  }
+
+  private static class DevToolsServe extends Params<List<String>> {
+    @Override
+    List<String> parseResult(JsonElement result) {
+      // There should be no result here, just skip adding this class and send empty params?
+      System.out.println(result);
       // {"platforms":["ios","android"]}
 
       if (!(result instanceof JsonObject)) {
