@@ -29,7 +29,25 @@
 
   <change-notes>
     <![CDATA[
-#47.1<ul>
+#48.0<ul>
+  <li>Show notification for when devtools build is slow (#4728)</li>
+  <li>Use the new, generated metadata from flutter/tools_metadata (#4724)</li>
+  <li>Remove the framework metadata generation code from this repo (#4721)</li>
+  <li>Suppress several UnstableApiUsage warnings (#4722)</li>
+  <li>Replace Whitelist terminology to Allow List (#4723)</li>
+  <li>Resolve the issue displaying color icons in IntelliJ Idea and Android studio [ISSUE-3347] (#4695)</li>
+  <li>Add handling and messaging for when JxBrowser is not installed (#4712)</li>
+  <li>Update our analytics text (#4711)</li>
+  <li>Add JxBrowser dependencies and show in panel (#4664)</li>
+  <li>Start paused for run mode and use FlutterTestRunner for run tests (#4678)</li>
+  <li>Update the device selector presentation on toolbar change (#4698)</li>
+  <li>Stop checking for BUILD when looking for root dir (#4693)</li>
+  <li>Build issues (#4688)</li>
+  <li>Flutter news (#4680)</li>
+  <li>Simplify regex and sort colors (#4687)</li>
+  <li>Split icon generation into two scripts + use single set of downloaded files (#4671)</li>
+  <li>Update build script (#4674)</li>
+</ul>#47.1<ul>
   <li>Revert "Start paused during run mode (#4622)" (#4673)</li>
   <li>Add target to registerComponents() (#4672)</li>
 </ul>
