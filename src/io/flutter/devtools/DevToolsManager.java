@@ -264,7 +264,7 @@ public class DevToolsManager {
         final Optional<FlutterApp> first =
           FlutterApp.allFromProjectProcess(project).stream().filter((FlutterApp app) -> app.getProject() == project).findFirst();
 
-        if (first.isEmpty()) {
+        if (!first.isPresent()) {
           return;
         }
 
