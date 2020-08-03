@@ -9,6 +9,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
@@ -26,8 +28,11 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.ui.content.ContentManager;
 import io.flutter.FlutterMessages;
+import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.console.FlutterConsoles;
@@ -36,6 +41,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.JsonUtils;
+import io.flutter.utils.MostlySilentOsProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -197,13 +203,19 @@ public class DevToolsManager {
       return null;
     }
 
-    final FlutterApp flutterApp = FlutterApp.firstFromProjectProcess(project);
+    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workspace.getRoot().getPath());
+    commandLine.setExePath(FileUtil.toSystemDependentName(workspace.getRoot().getPath() + "/" + workspace.getLaunchScript()));
+    commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
+    commandLine.addParameters(workspace.getDevtoolsScript(), "--", "--machine", "--port=0");
+    OSProcessHandler handler;
 
-    if (flutterApp == null) {
-      return null;
+    try {
+      handler = new MostlySilentOsProcessHandler(commandLine);
     }
-    final OSProcessHandler handler = (OSProcessHandler)flutterApp.getProcessHandler();
-    flutterApp.serveDevTools();
+    catch (ExecutionException e) {
+      FlutterUtils.warn(LOG, e);
+      handler = null;
+    }
 
     if (handler != null) {
       FlutterConsoles.displayProcessLater(handler, project, null, handler::startNotify);
@@ -211,7 +223,6 @@ public class DevToolsManager {
 
     return handler;
   }
-
   private boolean isBazel(Project project) {
     return WorkspaceCache.getInstance(project).isBazel();
   }
@@ -313,7 +324,6 @@ class DevToolsInstance {
       @Override
       public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
         final String text = event.getText().trim();
-        System.out.println(text);
 
         if (text.startsWith("{") && text.endsWith("}")) {
           // {"event":"server.started","params":{"host":"127.0.0.1","port":9100}}
