@@ -5,12 +5,14 @@
  */
 package io.flutter.jxbrowser;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.teamdev.jxbrowser.browser.Browser;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.engine.EngineOptions;
+import com.teamdev.jxbrowser.navigation.event.LoadFinished;
 import com.teamdev.jxbrowser.time.Timestamp;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
 import icons.FlutterIcons;
@@ -30,21 +32,30 @@ public class EmbeddedBrowser {
     if (contentManager.isDisposed()) {
       return;
     }
-    contentManager.removeAllContents(false);
-    final Content content = contentManager.getFactory().createContent(null, tabName, false);
 
     // Creating Swing component for rendering web content
     // loaded in the given Browser instance.
     BrowserView view = BrowserView.newInstance(browser);
     view.setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
+    System.out.println("before browser loading");
 
     // Wait for browser to load devtools before component is shown.
     browser.navigation().loadUrlAndWait(url, Timestamp.fromSeconds(30));
+    browser.navigation().on(LoadFinished.class, event -> {
+      int index = event.navigation().currentEntryIndex();
+      System.out.println(event.navigation().entryAtIndex(index).originalUrl());
+      ApplicationManager.getApplication().invokeLater(() -> {
+        System.out.println("after browser loading");
 
-    content.setComponent(view);
-    content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
-    // TODO(helin24): Use differentiated icons for each tab and copy from devtools toolbar.
-    content.setIcon(FlutterIcons.Phone);
-    contentManager.addContent(content);
+        contentManager.removeAllContents(false);
+        final Content content = contentManager.getFactory().createContent(null, tabName, false);
+
+        content.setComponent(view);
+        content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
+        // TODO(helin24): Use differentiated icons for each tab and copy from devtools toolbar.
+        content.setIcon(FlutterIcons.Phone);
+        contentManager.addContent(content);
+      });
+    });
   }
 }
