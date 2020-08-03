@@ -493,10 +493,6 @@ public class DaemonApi {
   private static class DevToolsServe extends Params<Pair<String, Integer>> {
     @Override
     Pair<String, Integer> parseResult(JsonElement result) {
-      // There should be no result here, just skip adding this class and send empty params?
-      System.out.println(result);
-      // {"platforms":["ios","android"]}
-
       if (!(result instanceof JsonObject)) {
         return null;
       }
