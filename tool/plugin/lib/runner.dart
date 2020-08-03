@@ -46,9 +46,6 @@ compile
             '\nPlease ensure ant is on your \$PATH.',
             indent: false);
         exit(x.errorCode);
-        // The call to `exit` above does not return, but we return a value from
-        // the function here to make the analyzer happy.
-        return 0;
       } else {
         throw x;
       }
