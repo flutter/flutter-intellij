@@ -122,19 +122,19 @@ public class MainFile {
   @Nullable
   private static VirtualFile findAppDir(@Nullable VirtualFile file, @NotNull Project project) {
     if (WorkspaceCache.getInstance(project).isBazel()) {
-      Workspace workspace = WorkspaceCache.getInstance(project).get();
-      if (workspace != null) {
-        return workspace.getRoot();
-      }
+      final Workspace workspace = WorkspaceCache.getInstance(project).get();
+      assert(workspace != null);
+      return workspace.getRoot();
     }
 
     for (VirtualFile candidate = file; inProject(candidate, project); candidate = candidate.getParent()) {
-      if (isAppDir(candidate)) return candidate;
+      if (isAppDir(candidate, project)) return candidate;
     }
     return null;
   }
 
-  private static boolean isAppDir(@NotNull VirtualFile dir) {
+  private static boolean isAppDir(@NotNull VirtualFile dir, @NotNull Project project) {
+    assert(!WorkspaceCache.getInstance(project).isBazel());
     return dir.isDirectory() && (
       dir.findChild("pubspec.yaml") != null ||
       dir.findChild(".packages") != null
