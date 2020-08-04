@@ -12,7 +12,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class FileUtils {
-  public static boolean makeDirectoryIfNotExists(String path) {
+  /**
+   * Makes a directory at the provided path.
+   * @param path path of the directory to be created.
+   * @return true if the directory already existed, or if it was successfully created; false if the directory could not be created.
+   */
+  public static boolean makeDirectory(String path) {
     final File directory = new File(path);
     if (!directory.exists()) {
       return directory.mkdirs();
@@ -25,7 +30,12 @@ public class FileUtils {
     return file.exists();
   }
 
-  public static boolean deleteFileIfExists(String path) {
+  /**
+   * Deletes a file at the provided path.
+   * @param path path of the file to be deleted.
+   * @return true if the file does not exist, or if it was successfully deleted; false if the file could not be deleted.
+   */
+  public static boolean deleteFile(String path) {
     final File file = new File(path);
     if (file.exists()) {
       return file.delete();
@@ -33,7 +43,7 @@ public class FileUtils {
     return true;
   }
 
-  public static boolean loadClassWithClassLoader(ClassLoader classLoader, String path) {
+  public static boolean loadClass(ClassLoader classLoader, String path) {
     final UrlClassLoader urlClassLoader = (UrlClassLoader) classLoader;
     final File file = new File(path);
     final URL url;

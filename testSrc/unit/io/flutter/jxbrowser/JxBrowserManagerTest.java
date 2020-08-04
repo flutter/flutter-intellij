@@ -43,7 +43,7 @@ public class JxBrowserManagerTest {
     // If the directory for JxBrowser files cannot be created, the installation should fail.
     final JxBrowserManager manager = JxBrowserManager.getInstance();
     PowerMockito.mockStatic(FileUtils.class);
-    when(FileUtils.makeDirectoryIfNotExists(DOWNLOAD_PATH)).thenReturn(false);
+    when(FileUtils.makeDirectory(DOWNLOAD_PATH)).thenReturn(false);
 
     manager.setUp(mockProject);
     Assert.assertEquals(JxBrowserStatus.INSTALLATION_FAILED, manager.getStatus());
@@ -55,7 +55,7 @@ public class JxBrowserManagerTest {
     final JxBrowserManager manager = JxBrowserManager.getInstance();
 
     PowerMockito.mockStatic(FileUtils.class);
-    when(FileUtils.makeDirectoryIfNotExists(DOWNLOAD_PATH)).thenReturn(true);
+    when(FileUtils.makeDirectory(DOWNLOAD_PATH)).thenReturn(true);
 
     PowerMockito.mockStatic(JxBrowserUtils.class);
     when(JxBrowserUtils.getPlatformFileName()).thenThrow(new FileNotFoundException());
@@ -71,11 +71,11 @@ public class JxBrowserManagerTest {
     doCallRealMethod().when(partialMockManager).setUp(mockProject);
 
     PowerMockito.mockStatic(FileUtils.class);
-    when(FileUtils.makeDirectoryIfNotExists(DOWNLOAD_PATH)).thenReturn(true);
+    when(FileUtils.makeDirectory(DOWNLOAD_PATH)).thenReturn(true);
     when(FileUtils.fileExists(anyString())).thenReturn(true);
-    when(FileUtils.loadClassWithClassLoader(any(ClassLoader.class), eq(PLATFORM_FILE_NAME))).thenReturn(true);
-    when(FileUtils.loadClassWithClassLoader(any(ClassLoader.class), eq(API_FILE_NAME))).thenReturn(true);
-    when(FileUtils.loadClassWithClassLoader(any(ClassLoader.class), eq(SWING_FILE_NAME))).thenReturn(true);
+    when(FileUtils.loadClass(any(ClassLoader.class), eq(PLATFORM_FILE_NAME))).thenReturn(true);
+    when(FileUtils.loadClass(any(ClassLoader.class), eq(API_FILE_NAME))).thenReturn(true);
+    when(FileUtils.loadClass(any(ClassLoader.class), eq(SWING_FILE_NAME))).thenReturn(true);
 
     PowerMockito.mockStatic(JxBrowserUtils.class);
     when(JxBrowserUtils.getPlatformFileName()).thenReturn(PLATFORM_FILE_NAME);
@@ -94,11 +94,11 @@ public class JxBrowserManagerTest {
     doCallRealMethod().when(partialMockManager).setUp(mockProject);
 
     PowerMockito.mockStatic(FileUtils.class);
-    when(FileUtils.makeDirectoryIfNotExists(DOWNLOAD_PATH)).thenReturn(true);
+    when(FileUtils.makeDirectory(DOWNLOAD_PATH)).thenReturn(true);
     when(FileUtils.fileExists(PLATFORM_FILE_NAME)).thenReturn(true);
     when(FileUtils.fileExists(API_FILE_NAME)).thenReturn(false);
     when(FileUtils.fileExists(SWING_FILE_NAME)).thenReturn(true);
-    when(FileUtils.deleteFileIfExists(anyString())).thenReturn(true);
+    when(FileUtils.deleteFile(anyString())).thenReturn(true);
 
     PowerMockito.mockStatic(JxBrowserUtils.class);
     when(JxBrowserUtils.getPlatformFileName()).thenReturn(PLATFORM_FILE_NAME);
@@ -108,11 +108,11 @@ public class JxBrowserManagerTest {
     partialMockManager.setUp(mockProject);
 
     verifyStatic(FileUtils.class);
-    FileUtils.deleteFileIfExists(PLATFORM_FILE_NAME);
+    FileUtils.deleteFile(PLATFORM_FILE_NAME);
     verifyStatic(FileUtils.class);
-    FileUtils.deleteFileIfExists(API_FILE_NAME);
+    FileUtils.deleteFile(API_FILE_NAME);
     verifyStatic(FileUtils.class);
-    FileUtils.deleteFileIfExists(SWING_FILE_NAME);
+    FileUtils.deleteFile(SWING_FILE_NAME);
 
     final String[] expectedFileNames = {PLATFORM_FILE_NAME, API_FILE_NAME, SWING_FILE_NAME};
     verify(partialMockManager, times(1)).downloadJxBrowser(mockProject, expectedFileNames);

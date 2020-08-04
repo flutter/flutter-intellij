@@ -113,7 +113,7 @@ public class JxBrowserManager {
 
     LOG.info(project.getName() + ": Installing JxBrowser");
 
-    final boolean directoryExists = FileUtils.makeDirectoryIfNotExists(DOWNLOAD_PATH);
+    final boolean directoryExists = FileUtils.makeDirectory(DOWNLOAD_PATH);
     if (!directoryExists) {
       LOG.info(project.getName() + ": Unable to create directory for JxBrowser files");
       setStatusFailed();
@@ -149,7 +149,7 @@ public class JxBrowserManager {
     // Delete any already existing files.
     // TODO(helin24): Handle if files cannot be deleted.
     for (String fileName : fileNames) {
-      if (!FileUtils.deleteFileIfExists(fileName)) {
+      if (!FileUtils.deleteFile(fileName)) {
         LOG.info(project.getName() + ": Existing file could not be deleted - " + fileName);
       }
     }
