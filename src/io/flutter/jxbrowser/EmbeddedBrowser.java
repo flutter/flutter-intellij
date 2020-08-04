@@ -20,7 +20,6 @@ import static com.teamdev.jxbrowser.engine.RenderingMode.HARDWARE_ACCELERATED;
 
 public class EmbeddedBrowser {
   public void openPanel(ContentManager contentManager, String tabName, String url) {
-    System.setProperty("jxbrowser.license.key", "6P83ACG409A8WGBSFIBUARBTNCLB4U9JHNK8FA3N59XH5Y7ZULRCP50NN2O9TRTT4CDC");
     EngineOptions options =
       EngineOptions.newBuilder(HARDWARE_ACCELERATED).build();
     Engine engine = Engine.newInstance(options);
