@@ -20,6 +20,7 @@ import com.jetbrains.lang.dart.psi.DartFile;
 import com.jetbrains.lang.dart.psi.DartImportStatement;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import io.flutter.FlutterBundle;
+import io.flutter.bazel.WorkspaceCache;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -120,14 +121,17 @@ public class MainFile {
   @Nullable
   private static VirtualFile findAppDir(@Nullable VirtualFile file, @NotNull Project project) {
     for (VirtualFile candidate = file; inProject(candidate, project); candidate = candidate.getParent()) {
-      if (isAppDir(candidate)) return candidate;
+      if (isAppDir(candidate, project)) return candidate;
     }
     return null;
   }
 
-  private static boolean isAppDir(@NotNull VirtualFile dir) {
+  private static boolean isAppDir(@NotNull VirtualFile dir, @NotNull Project project) {
     return dir.isDirectory() && (
-      dir.findChild("pubspec.yaml") != null || dir.findChild(".packages") != null);
+      dir.findChild("pubspec.yaml") != null ||
+      (WorkspaceCache.getInstance(project).isBazel() && dir.findChild("BUILD") != null) ||
+      dir.findChild(".packages") != null
+    );
   }
 
   private static boolean inProject(@Nullable VirtualFile file, @NotNull Project project) {
