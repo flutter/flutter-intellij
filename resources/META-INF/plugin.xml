@@ -29,7 +29,8 @@
 
   <change-notes>
     <![CDATA[
-#48.0<ul>
+<h1>48.0</h1>
+<ul>
   <li>Show notification for when devtools build is slow (#4728)</li>
   <li>Use the new, generated metadata from flutter/tools_metadata (#4724)</li>
   <li>Remove the framework metadata generation code from this repo (#4721)</li>
@@ -47,7 +48,9 @@
   <li>Simplify regex and sort colors (#4687)</li>
   <li>Split icon generation into two scripts + use single set of downloaded files (#4671)</li>
   <li>Update build script (#4674)</li>
-</ul>#47.1<ul>
+</ul>
+<h1>47.1</h1>
+<ul>
   <li>Revert "Start paused during run mode (#4622)" (#4673)</li>
   <li>Add target to registerComponents() (#4672)</li>
 </ul>

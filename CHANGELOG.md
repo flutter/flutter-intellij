@@ -1,4 +1,4 @@
-#48.0
+# 48.0
 - Show notification for when devtools build is slow (#4728)
 - Use the new, generated metadata from flutter/tools_metadata (#4724)
 - Remove the framework metadata generation code from this repo (#4721)
@@ -17,7 +17,7 @@
 - Split icon generation into two scripts + use single set of downloaded files (#4671)
 - Update build script (#4674)
 
-#47.1
+# 47.1
 - Revert "Start paused during run mode (#4622)" (#4673)
 - Add target to registerComponents() (#4672)
 
