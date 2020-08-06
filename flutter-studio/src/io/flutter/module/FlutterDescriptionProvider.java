@@ -83,7 +83,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     // Using an optional value because the model cannot be created until after the gallery entry is initialized.
     private OptionalValueProperty<FlutterProjectModel> mySharedModel;
 
-    private FlutterGalleryEntry(@NotNull OptionalValueProperty<FlutterProjectModel> sharedModel) {
+    protected FlutterGalleryEntry(@NotNull OptionalValueProperty<FlutterProjectModel> sharedModel) {
       mySharedModel = sharedModel;
     }
 

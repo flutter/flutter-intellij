@@ -5,6 +5,9 @@
  */
 package io.flutter.project;
 
+import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER;
+import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED;
+
 import com.android.tools.adtui.util.FormScalingUtil;
 import com.android.tools.adtui.validation.Validator;
 import com.android.tools.adtui.validation.ValidatorPanel;
@@ -19,7 +22,7 @@ import com.android.tools.idea.observable.ui.SelectedItemProperty;
 import com.android.tools.idea.observable.ui.SelectedProperty;
 import com.android.tools.idea.observable.ui.TextProperty;
 import com.android.tools.idea.ui.validation.validators.PathValidator;
-import com.android.tools.idea.ui.wizard.StudioWizardStepPanel;
+import com.android.tools.idea.ui.wizard.deprecated.StudioWizardStepPanel;
 import com.android.tools.idea.ui.wizard.WizardUtils;
 import com.android.tools.idea.wizard.model.ModelWizard;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
@@ -57,6 +60,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JComboBox;
@@ -105,7 +109,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     myProjectType = new OptionalValueProperty<>(type);
     myValidatorPanel = new ValidatorPanel(this, myPanel);
     myInstallSdkAction = new InstallSdkAction(this);
-    myRootPanel = StudioWizardStepPanel.wrappedWithVScroll(myValidatorPanel);
+    myRootPanel = wrappedWithVScroll(myValidatorPanel);
     FormScalingUtil.scaleComponentTree(this.getClass(), myRootPanel);
   }
 
@@ -451,4 +455,15 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     comboBox.setSelectedItem(currentItem); // to set focus on current item in combo popup
     comboBox.getEditor().setItem(currentItem); // to set current item in combo itself
   }
+  /**
+   * When creating a StudioWizardStepPanel which may be so tall as to require vertical scrolling,
+   * using this helper method to automatically wrap it with an appropriate JScrollPane.
+   */
+  @NotNull
+  public static JBScrollPane wrappedWithVScroll(@NotNull JPanel innerPanel) {
+    JBScrollPane sp = new JBScrollPane(new StudioWizardStepPanel(innerPanel), VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER);
+    sp.setBorder(BorderFactory.createEmptyBorder());
+    return sp;
+  }
+
 }
