@@ -29,6 +29,7 @@ import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.common.RunMode;
+import io.flutter.run.test.TestFields;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -309,7 +310,7 @@ public class FlutterSdk {
   }
 
   public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir, @Nullable String testNameSubstring,
-                                    @NotNull RunMode mode) {
+                                    @NotNull RunMode mode, TestFields.Scope scope) {
 
     final List<String> args = new ArrayList<>();
     if (myVersion.flutterTestSupportsMachineMode()) {
@@ -321,7 +322,7 @@ public class FlutterSdk {
         throw new IllegalStateException("Flutter SDK is too old to debug tests");
       }
     }
-    if (mode == RunMode.DEBUG || mode == RunMode.RUN) {
+    if (mode == RunMode.DEBUG || (mode == RunMode.RUN && !scope.equals(TestFields.Scope.DIRECTORY))) {
       args.add("--start-paused");
     }
     if (FlutterSettings.getInstance().isVerboseLogging()) {
