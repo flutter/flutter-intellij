@@ -5,6 +5,8 @@
  */
 package io.flutter.project;
 
+import static io.flutter.project.FlutterProjectStep.wrappedWithVScroll;
+
 import com.android.tools.adtui.util.FormScalingUtil;
 import com.android.tools.adtui.validation.ValidatorPanel;
 import com.android.tools.idea.observable.BindingsManager;
@@ -15,7 +17,6 @@ import com.android.tools.idea.observable.core.ObservableBool;
 import com.android.tools.idea.observable.expressions.Expression;
 import com.android.tools.idea.observable.ui.SelectedProperty;
 import com.android.tools.idea.observable.ui.TextProperty;
-import com.android.tools.idea.ui.wizard.StudioWizardStepPanel;
 import com.android.tools.idea.wizard.model.ModelWizard;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
 import com.intellij.openapi.project.Project;
@@ -66,7 +67,7 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
   public FlutterSettingsStep(FlutterProjectModel model, String title, Icon icon) {
     super(model, title, icon);
     myValidatorPanel = new ValidatorPanel(this, myRootPanel);
-    myRoot = StudioWizardStepPanel.wrappedWithVScroll(myRootPanel);
+    myRoot = wrappedWithVScroll(myRootPanel);
     FormScalingUtil.scaleComponentTree(this.getClass(), myRoot);
   }
 

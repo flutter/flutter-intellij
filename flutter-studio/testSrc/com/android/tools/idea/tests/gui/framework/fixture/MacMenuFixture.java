@@ -25,6 +25,7 @@ import org.fest.swing.timing.Wait;
 import org.jetbrains.annotations.NotNull;
 
 // Use the MenuItemFixture from fest to control Mac menus.
+// This is currently unused. If menus work properly now this class should be deleted.
 public class MacMenuFixture extends MenuFixture {
 
   @NotNull private final Robot myRobot;
@@ -41,7 +42,6 @@ public class MacMenuFixture extends MenuFixture {
    *
    * @param path the series of menu names, e.g. {@link invokeActionByMenuPath("Build", "Make Project ")}
    */
-  @Override
   void invokeMenuPath(@NotNull String... path) {
     JMenuItem menuItem = findActionMenuItem(path);
     assertWithMessage("Menu path \"" + Joiner.on(" -> ").join(path) + "\" is not enabled").that(menuItem.isEnabled()).isTrue();
