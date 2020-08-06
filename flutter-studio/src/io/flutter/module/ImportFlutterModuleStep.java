@@ -11,7 +11,7 @@ import com.android.tools.adtui.validation.ValidatorPanel;
 import com.android.tools.idea.observable.BindingsManager;
 import com.android.tools.idea.observable.core.ObservableBool;
 import com.android.tools.idea.observable.ui.TextProperty;
-import com.android.tools.idea.ui.wizard.StudioWizardStepPanel;
+import com.android.tools.idea.ui.wizard.deprecated.StudioWizardStepPanel;
 import com.android.tools.idea.ui.wizard.WizardUtils;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
