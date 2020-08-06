@@ -8,6 +8,7 @@ package com.android.tools.idea.tests.gui.framework.fixture;
 import static com.android.tools.idea.gradle.util.BuildMode.ASSEMBLE;
 import static com.android.tools.idea.gradle.util.BuildMode.SOURCE_GEN;
 import static com.android.tools.idea.gradle.util.GradleUtil.getGradleBuildFile;
+import static com.android.tools.idea.tests.gui.framework.GuiTests.waitForBackgroundTasks;
 import static com.android.tools.idea.tests.gui.framework.GuiTests.waitUntilShowingAndEnabled;
 import static com.android.tools.idea.tests.gui.framework.UiTestUtilsKt.waitForIdle;
 import static com.android.tools.idea.ui.GuiTestingService.EXECUTE_BEFORE_PROJECT_BUILD_IN_GUI_TEST_KEY;
@@ -16,9 +17,11 @@ import static java.awt.event.InputEvent.CTRL_MASK;
 import static java.awt.event.InputEvent.META_MASK;
 import static org.fest.swing.edt.GuiActionRunner.execute;
 import static org.jetbrains.plugins.gradle.settings.DistributionType.LOCAL;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.android.tools.idea.gradle.dsl.api.GradleBuildModel;
+import com.android.tools.idea.gradle.project.build.BuildStatus;
 import com.android.tools.idea.gradle.project.build.GradleBuildContext;
 import com.android.tools.idea.gradle.project.build.GradleBuildState;
 import com.android.tools.idea.gradle.project.build.PostProjectBuildTasksExecutor;
@@ -107,7 +110,6 @@ import org.jetbrains.plugins.gradle.settings.GradleProjectSettings;
 public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFrameImpl> {
   private EditorFixture myEditor;
   private boolean myIsClosed;
-  private GradleProjectEventListener myGradleProjectEventListener = new GradleProjectEventListener();
   @NotNull private IdeFrameFixture myIdeFrameFixture;
 
   @NotNull
@@ -117,13 +119,7 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
 
   protected IdeaFrameFixture(@NotNull Robot robot, @NotNull IdeFrameImpl target) {
     super(IdeaFrameFixture.class, robot, target);
-    Project project = getProject();
     myIdeFrameFixture = IdeFrameFixture.find(robot);
-
-    Disposable disposable = new IdeaFrameFixture.NoOpDisposable();
-    Disposer.register(project, disposable);
-
-    GradleBuildState.subscribe(project, myGradleProjectEventListener);
   }
 
   @NotNull
@@ -178,39 +174,23 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
   }
 
   @NotNull
-  public GradleInvocationResult invokeProjectMake() {
+  public BuildStatus invokeProjectMake() {
     return invokeProjectMake(null);
   }
 
   @NotNull
-  public GradleInvocationResult invokeProjectMake(@Nullable Wait wait) {
-    myGradleProjectEventListener.reset();
-
-    AtomicReference<GradleInvocationResult> resultRef = new AtomicReference<>();
-    AndroidProjectBuildNotifications.subscribe(
-      getProject(), context -> {
-        if (context instanceof GradleBuildContext) {
-          resultRef.set(((GradleBuildContext)context).getBuildResult());
-        }
-      });
-    selectProjectMakeAction();
-
-    waitForBuildToFinish(ASSEMBLE, wait);
-
-    Wait.seconds(10)
-      .expecting("Listeners to be notified of build-finished event")
-      .until(() -> resultRef.get() != null);
-    return resultRef.get();
+  public BuildStatus invokeProjectMake(@Nullable Wait wait) {
+    return actAndWaitForBuildToFinish(wait, it -> it.waitAndInvokeMenuPath("Build", "Make Project"));
   }
 
   @NotNull
-  public IdeFrameFixture invokeProjectMakeAndSimulateFailure(@NotNull String failure) {
+  public IdeaFrameFixture invokeProjectMakeAndSimulateFailure(@NotNull String failure) {
     Runnable failTask = () -> {
       throw new ExternalSystemException(failure);
     };
     ApplicationManager.getApplication().putUserData(EXECUTE_BEFORE_PROJECT_BUILD_IN_GUI_TEST_KEY, failTask);
-    selectProjectMakeAction();
-    return myIdeFrameFixture;
+    waitAndInvokeMenuPath("Build", "Make Project");
+    return this;
   }
 
   @NotNull
@@ -273,17 +253,30 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
   }
 
   public void debugApp(@NotNull String appName, @NotNull String deviceName) {
+    debugApp(appName, deviceName, null);
+  }
+
+  public void debugApp(@NotNull String appName, @NotNull String deviceName, @Nullable Wait wait) {
     new DeviceSelectorFixture(robot(), myIdeFrameFixture).debugApp(appName, deviceName);
+    waitForIdle();
+    waitForBackgroundTasks(robot(), wait);
+    waitForIdle();
   }
 
   public void runApp(@NotNull String appName, @NotNull String deviceName) {
+    runApp(appName, deviceName, null);
+  }
+
+  public void runApp(@NotNull String appName, @NotNull String deviceName, @Nullable Wait wait) {
     new DeviceSelectorFixture(robot(), myIdeFrameFixture).runApp(appName, deviceName);
+    waitForIdle();
+    waitForBackgroundTasks(robot(), wait);
+    waitForIdle();
   }
 
   @NotNull
   public IdeaFrameFixture stopApp() {
-    String appModuleName = TestModuleUtil.findAppModule(getProject()).getName();
-    return invokeMenuPath("Run", "Stop '" + appModuleName + "'");
+    return invokeMenuPath("Run", "Stop \'app\'");
   }
 
   @NotNull
@@ -318,15 +311,11 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
     return new DebugToolWindowFixture(myIdeFrameFixture);
   }
 
-  protected void selectProjectMakeAction() {
-    waitAndInvokeMenuPath("Build", "Make Project");
-  }
-
   /**
    * Selects the item at {@code menuPath} and returns the result of {@code fixtureFunction} applied to this {@link IdeFrameFixture}.
    */
   public <T> T openFromMenu(Function<IdeaFrameFixture, T> fixtureFunction, @NotNull String... menuPath) {
-    getMenuFixture().invokeMenuPath(menuPath);
+    getMenuFixture().invokeMenuPath(10, menuPath);
     return fixtureFunction.apply(this);
   }
 
@@ -334,9 +323,9 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
    * Selects the item at {@code menuPath} in a contextual menu
    * and returns the result of {@code fixtureFunction} applied to this {@link IdeFrameFixture}.
    */
-  public <T> T openFromContextualMenu(Function<IdeaFrameFixture, T> fixtureFunction, @NotNull String... menuPath) {
+  public <T> T openFromContextualMenu(Function<IdeFrameFixture, T> fixtureFunction, @NotNull String... menuPath) {
     getMenuFixture().invokeContextualMenuPath(menuPath);
-    return fixtureFunction.apply(this);
+    return fixtureFunction.apply(myIdeFrameFixture);
   }
 
   /**
@@ -345,7 +334,7 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
    * @param path the series of menu names, e.g. {@link invokeActionByMenuPath("Build", "Make Project")}
    */
   public IdeaFrameFixture invokeMenuPath(@NotNull String... path) {
-    getMenuFixture().invokeMenuPath(path);
+    getMenuFixture().invokeMenuPath(10, path);
     return this;
   }
 
@@ -355,9 +344,12 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
    * @param path the series of menu names, e.g. {@link invokeActionByMenuPath("Build", "Make Project")}
    */
   public IdeaFrameFixture waitAndInvokeMenuPath(@NotNull String... path) {
-    Wait.seconds(10).expecting("Wait until the path " + Arrays.toString(path) + " is ready.")
-      .until(() -> getMenuFixture().isMenuPathEnabled(path));
-    getMenuFixture().invokeMenuPath(path);
+    waitAndInvokeMenuPath(10, path);
+    return this;
+  }
+
+  private IdeaFrameFixture waitAndInvokeMenuPath(int timeToWait, @NotNull String... path) {
+    getMenuFixture().invokeMenuPath(timeToWait, path);
     return this;
   }
 
@@ -373,63 +365,35 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
 
   @NotNull
   public IdeaFrameFixture invokeAndWaitForBuildAction(@Nullable Wait wait, @NotNull String... menuPath) {
-    return actAndWaitForBuildToFinish(wait, it -> it.waitAndInvokeMenuPath(menuPath));
+    assertTrue("Build failed", actAndWaitForBuildToFinish(wait, it -> it.waitAndInvokeMenuPath(menuPath)).isBuildSuccessful());
+    return this;
   }
 
-  @NotNull
-  public IdeaFrameFixture actAndWaitForBuildToFinish(@NotNull Consumer<IdeaFrameFixture> actions) {
+  public BuildStatus actAndWaitForBuildToFinish(@NotNull Consumer<IdeFrameFixture> actions) {
     return actAndWaitForBuildToFinish(null, actions);
   }
 
-  @NotNull
-  public IdeaFrameFixture actAndWaitForBuildToFinish(@Nullable Wait wait, @NotNull Consumer<IdeaFrameFixture> actions) {
-    long beforeStartedTimeStamp = System.currentTimeMillis();
-    Project project = getProject();
-    actions.accept(this);
+  public BuildStatus actAndWaitForBuildToFinish(@Nullable Wait wait, @NotNull Consumer<IdeFrameFixture> actions) {
+    GradleProjectEventListener gradleProjectEventListener = new GradleProjectEventListener();
+    Disposable disposable = Disposer.newDisposable();
+    try {
+      GradleBuildState.subscribe(getProject(), gradleProjectEventListener, disposable);
+      long beforeStartedTimeStamp = System.currentTimeMillis();
+      Project project = getProject();
+      actions.accept(myIdeFrameFixture);
 
-    (wait != null ? wait : Wait.seconds(60))
-      .expecting("build '" + project.getName() + "' to finish")
-      .until(() -> myGradleProjectEventListener.getLastBuildTimestamp() > beforeStartedTimeStamp);
+      (wait != null ? wait : Wait.seconds(60))
+        .expecting("build '" + project.getName() + "' to finish")
+        .until(() -> gradleProjectEventListener.getLastBuildTimestamp() > beforeStartedTimeStamp);
 
-    GuiTests.waitForProjectIndexingToFinish(getProject());
-    GuiTests.waitForBackgroundTasks(robot());
-    waitForIdle();
-    return this;
-  }
-
-  @NotNull
-  public IdeaFrameFixture waitForBuildToFinish(@NotNull BuildMode buildMode) {
-    return waitForBuildToFinish(buildMode, null);
-  }
-
-  @NotNull
-  public IdeaFrameFixture waitForBuildToFinish(@NotNull BuildMode buildMode, @Nullable Wait wait) {
-    Project project = getProject();
-    if (wait == null) {
-      // http://b/72834057 - If we keep tweaking this value we should consider a different way of waiting for this.
-      wait = Wait.seconds(60);
+      GuiTests.waitForProjectIndexingToFinish(getProject());
+      GuiTests.waitForBackgroundTasks(robot());
+      waitForIdle();
+      return gradleProjectEventListener.getBuildStatus();
     }
-    wait.expecting("Build (" + buildMode + ") for project '" + project.getName() + "' to finish'")
-      .until(() -> {
-        if (buildMode == SOURCE_GEN) {
-          if (PostProjectBuildTasksExecutor.getInstance(project).getLastBuildTimestamp() != null ||
-              GradleSyncState.getInstance(project).isSourceGenerationFinished()) {
-            // This will happen when creating a new project. Source generation happens before the IDE frame is found and build listeners
-            // are created. It is fairly safe to assume that source generation happened if we have a timestamp for a "last performed build".
-            return true;
-          }
-        }
-        return myGradleProjectEventListener.isBuildFinished(buildMode);
-      });
-
-    GuiTests.waitForBackgroundTasks(robot());
-
-    return this;
-  }
-
-  @NotNull
-  public FileFixture findExistingFileByRelativePath(@NotNull String relativePath) {
-    return new FileFixture(getProject(), findFileByRelativePath(relativePath));
+    finally {
+      Disposer.dispose(disposable);
+    }
   }
 
   /**
@@ -449,10 +413,8 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
   }
 
   public void requestProjectSync() {
-    myGradleProjectEventListener.reset();
-
     GuiTests.waitForBackgroundTasks(robot(), null);
-    invokeMenuPath("File", "Sync Project with Gradle Files");
+    waitAndInvokeMenuPath(20, "File", "Sync Project with Gradle Files");
   }
 
   @NotNull
@@ -512,6 +474,8 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
     }
 
     GuiTests.waitForProjectIndexingToFinish(ideFixture.getProject());
+    waitForIdle();
+    // Wait for other tasks like native sync that might have been triggered.
     GuiTests.waitForBackgroundTasks(ideFixture.robot());
     waitForIdle();
     return ideFixture;
@@ -697,12 +661,6 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
     return openFromMenu(FlutterWelcomeFrameFixture::find, "File", "Close Project");
   }
 
-  public IdeaFrameFixture closeProjectWithPrompt() {
-    myIsClosed = true;
-    requestFocusIfLost(); // "Close Project" can be disabled if no component has focus
-    return invokeMenuPath("File", "Close Project");
-  }
-
   public boolean isClosed() {
     return myIsClosed;
   }
@@ -740,18 +698,17 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
   public void selectApp(@NotNull String appName) {
     ActionButtonFixture runButton = findRunApplicationButton();
     Container actionToolbarContainer = GuiQuery.getNonNull(() -> runButton.target().getParent());
-    String appModuleName = TestModuleUtil.findModule(getProject(), appName).getName();
 
     ComboBoxActionFixture comboBoxActionFixture = ComboBoxActionFixture.findComboBoxByClientPropertyAndText(
       robot(),
       actionToolbarContainer,
       "styleCombo",
       RunConfigurationsComboBoxAction.class,
-      appModuleName);
+      appName);
 
-    comboBoxActionFixture.selectItem(appModuleName);
+    comboBoxActionFixture.selectItem(appName);
     robot().pressAndReleaseKey(KeyEvent.VK_ENTER);
-    Wait.seconds(1).expecting("ComboBox to be selected").until(() -> appModuleName.equals(comboBoxActionFixture.getSelectedItemText()));
+    Wait.seconds(1).expecting("ComboBox to be selected").until(() -> appName.equals(comboBoxActionFixture.getSelectedItemText()));
   }
 
   /**
