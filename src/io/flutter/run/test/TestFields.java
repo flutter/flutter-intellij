@@ -236,7 +236,7 @@ public class TestFields {
       throw new ExecutionException("Test file isn't within a Flutter pub root");
     }
 
-    return sdk.flutterTest(root, fileOrDir, testName, mode).startProcess(project);
+    return sdk.flutterTest(root, fileOrDir, testName, mode, getScope()).startProcess(project);
   }
 
   private void checkSdk(@NotNull Project project) throws RuntimeConfigurationError {
