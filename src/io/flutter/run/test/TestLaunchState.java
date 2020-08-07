@@ -51,6 +51,8 @@ class TestLaunchState extends CommandLineState {
 
   private final boolean testConsoleEnabled;
 
+  private ProcessHandler processHandler;
+
   private TestLaunchState(@NotNull ExecutionEnvironment env, @NotNull TestConfig config, @NotNull VirtualFile testFileOrDir,
                           @NotNull PubRoot pubRoot, boolean testConsoleEnabled) {
     super(env);
@@ -94,6 +96,7 @@ class TestLaunchState extends CommandLineState {
     switch (result.status) {
       case OK:
         assert result.processHandler != null;
+        processHandler = result.processHandler;
         return result.processHandler;
       case EXCEPTION:
         assert result.exception != null;
@@ -145,5 +148,9 @@ class TestLaunchState extends CommandLineState {
   @NotNull
   PubRoot getPubRoot() {
     return pubRoot;
+  }
+
+  public boolean isTerminated() {
+    return processHandler != null && processHandler.isProcessTerminated();
   }
 }

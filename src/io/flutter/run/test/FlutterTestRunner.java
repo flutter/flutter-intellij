@@ -89,9 +89,12 @@ public class FlutterTestRunner extends GenericProgramRunner {
       String url = connector.getWebSocketUrl();
 
       while (url == null) {
+        if (launcher.isTerminated()) return;
         TimeoutUtil.sleep(100);
         url = connector.getWebSocketUrl();
       }
+
+      if (launcher.isTerminated()) return;
 
       try {
         // We want to resume any isolates paused at start.
