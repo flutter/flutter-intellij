@@ -93,9 +93,9 @@ public class FlutterTestRunner extends GenericProgramRunner {
         url = connector.getWebSocketUrl();
       }
 
-      final VmService vmService;
       try {
-        vmService = VmService.connect(url);
+        // We want to resume any isolates paused at start.
+        final VmService vmService = VmService.connect(url);
         vmService.getVM(new VMConsumer() {
           @Override
           public void received(VM response) {
