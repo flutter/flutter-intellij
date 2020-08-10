@@ -29,6 +29,12 @@
 
   <change-notes>
     <![CDATA[
+<h1>48.1</h1>
+<ul>
+  <li>Avoid start-paused for directory scope tests (#4748)</li>
+  <li>Fix Android Studio canary build (#4745)</li>
+  <li>Fix CHANGELOG version headings (#4739)</li>
+</ul>
 <h1>48.0</h1>
 <ul>
   <li>Show notification for when devtools build is slow (#4728)</li>
