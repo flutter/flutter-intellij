@@ -85,7 +85,7 @@ public class FlutterTestRunner extends GenericProgramRunner {
 
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       // Poll, waiting for "flutter run" to give us a websocket.
-      // This is adapted from DartVmServiceDebugProcess::scheduleConnect
+      // This is adapted from DartVmServiceDebugProcess::scheduleConnect.
       String url = connector.getWebSocketUrl();
 
       while (url == null) {
