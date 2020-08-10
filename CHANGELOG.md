@@ -1,3 +1,8 @@
+# 48.1
+- Avoid start-paused for directory scope tests (#4748)
+- Fix Android Studio canary build (#4745)
+- Fix CHANGELOG version headings (#4739)
+
 # 48.0
 - Show notification for when devtools build is slow (#4728)
 - Use the new, generated metadata from flutter/tools_metadata (#4724)
