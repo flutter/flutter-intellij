@@ -14,10 +14,13 @@ import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.process.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.GenericProgramRunner;
+import com.intellij.execution.runners.RunContentBuilder;
 import com.intellij.execution.ui.RunContentDescriptor;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.wm.ToolWindowId;
+import com.intellij.util.TimeoutUtil;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
@@ -30,8 +33,14 @@ import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
+import org.dartlang.vm.service.VmService;
+import org.dartlang.vm.service.consumer.SuccessConsumer;
+import org.dartlang.vm.service.consumer.VMConsumer;
+import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.IOException;
 
 /**
  * Runs a Flutter test configuration in the debugger.
@@ -62,8 +71,66 @@ public class FlutterTestRunner extends GenericProgramRunner {
   @Override
   protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env)
     throws ExecutionException {
-    return runInDebugger((TestLaunchState)state, env);
+    if (env.getExecutor().getId().equals(ToolWindowId.RUN)) {
+      return run((TestLaunchState)state, env);
+    } else {
+      return runInDebugger((TestLaunchState)state, env);
+    }
   }
+
+  protected RunContentDescriptor run(@NotNull TestLaunchState launcher, @NotNull ExecutionEnvironment env)
+    throws ExecutionException {
+    final ExecutionResult executionResult = launcher.execute(env.getExecutor(), this);
+    final ObservatoryConnector connector = new Connector(executionResult.getProcessHandler());
+
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      // Poll, waiting for "flutter run" to give us a websocket.
+      // This is adapted from DartVmServiceDebugProcess::scheduleConnect.
+      String url = connector.getWebSocketUrl();
+
+      while (url == null) {
+        if (launcher.isTerminated()) return;
+        TimeoutUtil.sleep(100);
+        url = connector.getWebSocketUrl();
+      }
+
+      if (launcher.isTerminated()) return;
+
+      try {
+        // We want to resume any isolates paused at start.
+        final VmService vmService = VmService.connect(url);
+        vmService.getVM(new VMConsumer() {
+          @Override
+          public void received(VM response) {
+            final ElementList<IsolateRef> isolates = response.getIsolates();
+
+            for (IsolateRef isolateRef : isolates) {
+              vmService.resume(isolateRef.getId(), new SuccessConsumer() {
+                @Override
+                public void received(Success response) {}
+
+                @Override
+                public void onError(RPCError error) {
+                  LOG.error(error);
+                }
+              });
+            }
+          }
+
+          @Override
+          public void onError(RPCError error) {
+            LOG.error(error);
+          }
+        });
+      }
+      catch (IOException | RuntimeException e) {
+        LOG.error("Failed to connect to the VM observatory service at: " + url + "\n"
+                  + e.toString());
+      }
+    });
+
+  return new RunContentBuilder(executionResult, env).showRunContent(env.getContentToReuse());
+}
 
   protected RunContentDescriptor runInDebugger(@NotNull TestLaunchState launcher, @NotNull ExecutionEnvironment env)
     throws ExecutionException {
