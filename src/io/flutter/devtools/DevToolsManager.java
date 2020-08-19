@@ -269,30 +269,38 @@ public class DevToolsManager {
         }
 
         first.get().serveDevTools().thenAccept((Pair<String, Integer> hostAndPort) -> {
-          devToolsInstance = new DevToolsInstance(hostAndPort.first, hostAndPort.second);
-          devToolsInstance.openBrowserAndConnect(uri, screen);
+          if (hostAndPort == null) {
+            @Nullable final OSProcessHandler handler = getProcessHandlerForBazel();
+            startDevToolsServerAndConnect(handler, uri, screen);
+          } else {
+            devToolsInstance = new DevToolsInstance(hostAndPort.first, hostAndPort.second);
+            devToolsInstance.openBrowserAndConnect(uri, screen);
+          }
         });
       } else {
         @Nullable final OSProcessHandler handler = getProcessHandlerForPub();
-
-        if (handler != null) {
-          // TODO(devoncarew) Add a Task.Backgroundable here; "Starting devtools..."
-
-          // start the server
-          DevToolsInstance.startServer(handler, instance -> {
-            devToolsInstance = instance;
-
-            devToolsInstance.openBrowserAndConnect(uri, screen);
-          }, () -> {
-            // Listen for closing; null out the devToolsInstance.
-            devToolsInstance = null;
-          });
-        }
-        else {
-          // TODO(devoncarew): We should provide feedback to callers that the open browser call failed.
-          devToolsInstance = null;
-        }
+        startDevToolsServerAndConnect(handler, uri, screen);
       }
+    }
+  }
+
+  private void startDevToolsServerAndConnect(OSProcessHandler handler, String uri, String screen) {
+    if (handler != null) {
+      // TODO(devoncarew) Add a Task.Backgroundable here; "Starting devtools..."
+
+      // start the server
+      DevToolsInstance.startServer(handler, instance -> {
+        devToolsInstance = instance;
+
+        devToolsInstance.openBrowserAndConnect(uri, screen);
+      }, () -> {
+        // Listen for closing; null out the devToolsInstance.
+        devToolsInstance = null;
+      });
+    }
+    else {
+      // TODO(devoncarew): We should provide feedback to callers that the open browser call failed.
+      devToolsInstance = null;
     }
   }
 
