@@ -245,7 +245,8 @@ public class FlutterSdk {
       args.add("--device-id=" + device.deviceId());
     }
 
-    if (mode == RunMode.DEBUG || mode == RunMode.RUN) {
+    // The web-server 'device' does not provide structured errors in run mode and we don't get a debug URI to connect to and resume.
+    if (mode == RunMode.DEBUG || (mode == RunMode.RUN && !device.deviceId().equals("web-server"))) {
       args.add("--start-paused");
     }
 
