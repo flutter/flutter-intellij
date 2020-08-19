@@ -245,7 +245,8 @@ public class FlutterSdk {
       args.add("--device-id=" + device.deviceId());
     }
 
-    // The web-server 'device' does not provide structured errors in run mode and we don't get a debug URI to connect to and resume.
+    // TODO (helin24): Remove special handling for web-server if we can fix https://github.com/flutter/flutter-intellij/issues/4767.
+    // Currently we can't connect to the VM service for the web-server 'device' to resume.
     if (mode == RunMode.DEBUG || (mode == RunMode.RUN && !device.deviceId().equals("web-server"))) {
       args.add("--start-paused");
     }
