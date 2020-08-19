@@ -245,7 +245,9 @@ public class FlutterSdk {
       args.add("--device-id=" + device.deviceId());
     }
 
-    if (mode == RunMode.DEBUG || mode == RunMode.RUN) {
+    // TODO (helin24): Remove special handling for web-server if we can fix https://github.com/flutter/flutter-intellij/issues/4767.
+    // Currently we can't connect to the VM service for the web-server 'device' to resume.
+    if (mode == RunMode.DEBUG || (mode == RunMode.RUN && !device.deviceId().equals("web-server"))) {
       args.add("--start-paused");
     }
 
