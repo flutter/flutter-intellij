@@ -274,8 +274,8 @@ public class DevToolsManager {
         FlutterApp app = first.get();
 
         app.serveDevTools().thenAccept((DaemonApi.DevToolsAddress address) -> {
-          if (!app.isConnected() || !project.isOpen()) {
-            // We can skip opening DevTools if the app has been disconnected or the project has been closed.
+          if (!project.isOpen()) {
+            // We should skip starting DevTools (and doing any UI work) if the project has been closed.
             return;
           }
           if (address == null) {
