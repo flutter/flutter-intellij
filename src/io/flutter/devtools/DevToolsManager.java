@@ -27,7 +27,6 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.ui.content.ContentManager;
@@ -37,6 +36,7 @@ import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.console.FlutterConsoles;
 import io.flutter.jxbrowser.EmbeddedBrowser;
+import io.flutter.run.daemon.DaemonApi;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
@@ -267,15 +267,22 @@ public class DevToolsManager {
           FlutterApp.allFromProjectProcess(project).stream().filter((FlutterApp app) -> app.getProject() == project).findFirst();
 
         if (!first.isPresent()) {
+          LOG.error("DevTools cannot be opened because the app has been closed");
           return;
         }
 
-        first.get().serveDevTools().thenAccept((Pair<String, Integer> hostAndPort) -> {
-          if (hostAndPort == null) {
+        FlutterApp app = first.get();
+
+        app.serveDevTools().thenAccept((DaemonApi.DevToolsAddress address) -> {
+          if (!app.isConnected() || !project.isOpen()) {
+            // We can skip opening DevTools if the app has been disconnected or the project has been closed.
+            return;
+          }
+          if (address == null) {
             @Nullable final OSProcessHandler handler = getProcessHandlerForBazel();
             startDevToolsServerAndConnect(handler, uri, screen);
           } else {
-            devToolsInstance = new DevToolsInstance(hostAndPort.first, hostAndPort.second);
+            devToolsInstance = new DevToolsInstance(address.host, address.port);
             devToolsInstance.openBrowserAndConnect(uri, screen);
           }
         });

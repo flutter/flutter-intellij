@@ -13,7 +13,6 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.Pair;
 import io.flutter.FlutterUtils;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
@@ -81,7 +80,7 @@ public class DaemonApi {
     return send("app.stop", new AppStop(appId));
   }
 
-  CompletableFuture<Pair<String, Integer>> devToolsServe() {
+  CompletableFuture<DevToolsAddress> devToolsServe() {
     return send("devtools.serve", new DevToolsServe());
   }
 
@@ -490,9 +489,20 @@ public class DaemonApi {
     }
   }
 
-  private static class DevToolsServe extends Params<Pair<String, Integer>> {
+  public static class DevToolsAddress {
+    public String host;
+    public int port;
+
+    public DevToolsAddress(String host, int port) {
+      this.host = host;
+      this.port = port;
+    }
+  }
+
+
+  private static class DevToolsServe extends Params<DevToolsAddress> {
     @Override
-    Pair<String, Integer> parseResult(JsonElement result) {
+    DevToolsAddress parseResult(JsonElement result) {
       if (!(result instanceof JsonObject)) {
         return null;
       }
@@ -503,7 +513,7 @@ public class DaemonApi {
         return null;
       }
 
-      return Pair.create(host, port);
+      return new DevToolsAddress(host, port);
     }
   }
 }
