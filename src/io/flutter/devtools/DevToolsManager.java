@@ -260,6 +260,8 @@ public class DevToolsManager {
       devToolsInstance.openBrowserAndConnect(uri, screen);
     }
     else {
+      // For internal users, we can connect to the DevTools server started by flutter daemon. For external users, the flutter daemon has an
+      // older version of DevTools, so we launch the server using `pub global run` instead.
       if (isBazel(project)) {
         final Optional<FlutterApp> first =
           FlutterApp.allFromProjectProcess(project).stream().filter((FlutterApp app) -> app.getProject() == project).findFirst();
