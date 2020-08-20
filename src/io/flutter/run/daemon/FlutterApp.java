@@ -454,6 +454,10 @@ public class FlutterApp implements Disposable {
     return future;
   }
 
+  public CompletableFuture<DaemonApi.DevToolsAddress> serveDevTools() {
+    return myDaemonApi.devToolsServe();
+  }
+
   public CompletableFuture<String> togglePlatform() {
     if (myAppId == null) {
       FlutterUtils.warn(LOG, "cannot invoke togglePlatform on Flutter app because app id is not set");

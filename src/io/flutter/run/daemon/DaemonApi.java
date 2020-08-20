@@ -80,6 +80,10 @@ public class DaemonApi {
     return send("app.stop", new AppStop(appId));
   }
 
+  CompletableFuture<DevToolsAddress> devToolsServe() {
+    return send("devtools.serve", new DevToolsServe());
+  }
+
   CompletableFuture<Boolean> detachApp(@NotNull String appId) {
     return send("app.detach", new AppDetach(appId));
   }
@@ -482,6 +486,34 @@ public class DaemonApi {
       }
 
       return platforms;
+    }
+  }
+
+  public static class DevToolsAddress {
+    public String host;
+    public int port;
+
+    public DevToolsAddress(String host, int port) {
+      this.host = host;
+      this.port = port;
+    }
+  }
+
+
+  private static class DevToolsServe extends Params<DevToolsAddress> {
+    @Override
+    DevToolsAddress parseResult(JsonElement result) {
+      if (!(result instanceof JsonObject)) {
+        return null;
+      }
+
+      final String host = ((JsonObject)result).get("host").getAsString();
+      final int port = ((JsonObject)result).get("port").getAsInt();
+      if (host.isEmpty() || port == 0) {
+        return null;
+      }
+
+      return new DevToolsAddress(host, port);
     }
   }
 }

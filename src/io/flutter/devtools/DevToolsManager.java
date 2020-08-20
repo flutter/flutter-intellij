@@ -36,6 +36,7 @@ import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.console.FlutterConsoles;
 import io.flutter.jxbrowser.EmbeddedBrowser;
+import io.flutter.run.daemon.DaemonApi;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
@@ -44,6 +45,7 @@ import io.flutter.utils.MostlySilentOsProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -221,7 +223,6 @@ public class DevToolsManager {
 
     return handler;
   }
-
   private boolean isBazel(Project project) {
     return WorkspaceCache.getInstance(project).isBazel();
   }
@@ -259,26 +260,56 @@ public class DevToolsManager {
       devToolsInstance.openBrowserAndConnect(uri, screen);
     }
     else {
-      @Nullable final OSProcessHandler handler =
-        isBazel(project) ? getProcessHandlerForBazel() : getProcessHandlerForPub();
+      // For internal users, we can connect to the DevTools server started by flutter daemon. For external users, the flutter daemon has an
+      // older version of DevTools, so we launch the server using `pub global run` instead.
+      if (isBazel(project)) {
+        final Optional<FlutterApp> first =
+          FlutterApp.allFromProjectProcess(project).stream().filter((FlutterApp app) -> app.getProject() == project).findFirst();
 
-      if (handler != null) {
-        // TODO(devoncarew) Add a Task.Backgroundable here; "Starting devtools..."
+        if (!first.isPresent()) {
+          LOG.error("DevTools cannot be opened because the app has been closed");
+          return;
+        }
 
-        // start the server
-        DevToolsInstance.startServer(handler, instance -> {
-          devToolsInstance = instance;
+        FlutterApp app = first.get();
 
-          devToolsInstance.openBrowserAndConnect(uri, screen);
-        }, () -> {
-          // Listen for closing; null out the devToolsInstance.
-          devToolsInstance = null;
+        app.serveDevTools().thenAccept((DaemonApi.DevToolsAddress address) -> {
+          if (!project.isOpen()) {
+            // We should skip starting DevTools (and doing any UI work) if the project has been closed.
+            return;
+          }
+          if (address == null) {
+            @Nullable final OSProcessHandler handler = getProcessHandlerForBazel();
+            startDevToolsServerAndConnect(handler, uri, screen);
+          } else {
+            devToolsInstance = new DevToolsInstance(address.host, address.port);
+            devToolsInstance.openBrowserAndConnect(uri, screen);
+          }
         });
+      } else {
+        @Nullable final OSProcessHandler handler = getProcessHandlerForPub();
+        startDevToolsServerAndConnect(handler, uri, screen);
       }
-      else {
-        // TODO(devoncarew): We should provide feedback to callers that the open browser call failed.
+    }
+  }
+
+  private void startDevToolsServerAndConnect(OSProcessHandler handler, String uri, String screen) {
+    if (handler != null) {
+      // TODO(devoncarew) Add a Task.Backgroundable here; "Starting devtools..."
+
+      // start the server
+      DevToolsInstance.startServer(handler, instance -> {
+        devToolsInstance = instance;
+
+        devToolsInstance.openBrowserAndConnect(uri, screen);
+      }, () -> {
+        // Listen for closing; null out the devToolsInstance.
         devToolsInstance = null;
-      }
+      });
+    }
+    else {
+      // TODO(devoncarew): We should provide feedback to callers that the open browser call failed.
+      devToolsInstance = null;
     }
   }
 
