@@ -15,8 +15,8 @@ flutter-intellij.jar
 flutter-intellij.zip
 lib/*.jar
 lib/jxbrowser/*
-!lib/jxbrowser/jxbrowser-7.8.jar
-!lib/jxbrowser/jxbrowser-swing-7.8.jar
+!lib/jxbrowser/jxbrowser-7.10.jar
+!lib/jxbrowser/jxbrowser-swing-7.10.jar
 material-design-icons/
 out/
 packages

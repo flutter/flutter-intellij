@@ -44,7 +44,7 @@ public class JxBrowserManager {
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
   // We will be gating JxBrowser features until all of the features are landed.
   // To test JxBrowser, set this to true and also add license key to VM options (-Djxbrowser.license.key=<key>).
-  public static final boolean ENABLE_JX_BROWSER = false;
+  public static final boolean ENABLE_JX_BROWSER = true;
   private static CompletableFuture<JxBrowserStatus> installation = new CompletableFuture<>();
 
   private JxBrowserManager() {}
@@ -136,7 +136,7 @@ public class JxBrowserManager {
     }
 
     if (allDownloaded) {
-      LOG.info(project.getName() + ": JxBrowser platform file already exists, skipping download");
+      LOG.info(project.getName() + ": JxBrowser platform files already exist, skipping download");
       loadClasses(files);
       return;
     }

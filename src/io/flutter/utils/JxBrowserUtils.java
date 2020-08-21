@@ -11,7 +11,7 @@ import java.io.FileNotFoundException;
 
 public class JxBrowserUtils {
   private static final String JXBROWSER_FILE_PREFIX = "jxbrowser";
-  private static final String JXBROWSER_FILE_VERSION = "7.8";
+  private static final String JXBROWSER_FILE_VERSION = "7.10";
   private static final String JXBROWSER_FILE_SUFFIX = "jar";
 
   public static String getPlatformFileName() throws FileNotFoundException {
