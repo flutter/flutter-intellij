@@ -85,7 +85,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-7.8.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-7.10.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -94,7 +94,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-swing-7.8.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-swing-7.10.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

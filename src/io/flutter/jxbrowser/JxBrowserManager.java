@@ -136,7 +136,7 @@ public class JxBrowserManager {
     }
 
     if (allDownloaded) {
-      LOG.info(project.getName() + ": JxBrowser platform file already exists, skipping download");
+      LOG.info(project.getName() + ": JxBrowser platform files already exist, skipping download");
       loadClasses(files);
       return;
     }
