@@ -39,9 +39,25 @@ public class JxBrowserManagerTest {
   }
 
   @Test
-  public void testSetUpIfDirectoryFails() {
+  public void testSetUpIfKeyNotFound() throws FileNotFoundException {
     // If the directory for JxBrowser files cannot be created, the installation should fail.
     final JxBrowserManager manager = JxBrowserManager.getInstance();
+
+    PowerMockito.mockStatic(JxBrowserUtils.class);
+    when(JxBrowserUtils.getJxBrowserKey(any(Project.class))).thenThrow(new FileNotFoundException("Key not found"));
+
+    manager.setUp(mockProject);
+    Assert.assertEquals(JxBrowserStatus.INSTALLATION_FAILED, manager.getStatus());
+  }
+
+  @Test
+  public void testSetUpIfDirectoryFails() throws FileNotFoundException {
+    // If the directory for JxBrowser files cannot be created, the installation should fail.
+    final JxBrowserManager manager = JxBrowserManager.getInstance();
+
+    PowerMockito.mockStatic(JxBrowserUtils.class);
+    when(JxBrowserUtils.getJxBrowserKey(any(Project.class))).thenReturn("KEY");
+
     PowerMockito.mockStatic(FileUtils.class);
     when(FileUtils.makeDirectory(DOWNLOAD_PATH)).thenReturn(false);
 
@@ -58,6 +74,7 @@ public class JxBrowserManagerTest {
     when(FileUtils.makeDirectory(DOWNLOAD_PATH)).thenReturn(true);
 
     PowerMockito.mockStatic(JxBrowserUtils.class);
+    when(JxBrowserUtils.getJxBrowserKey(any(Project.class))).thenReturn("KEY");
     when(JxBrowserUtils.getPlatformFileName()).thenThrow(new FileNotFoundException());
 
     manager.setUp(mockProject);
@@ -78,6 +95,7 @@ public class JxBrowserManagerTest {
     when(FileUtils.loadClass(any(ClassLoader.class), eq(SWING_FILE_NAME))).thenReturn(true);
 
     PowerMockito.mockStatic(JxBrowserUtils.class);
+    when(JxBrowserUtils.getJxBrowserKey(any(Project.class))).thenReturn("KEY");
     when(JxBrowserUtils.getPlatformFileName()).thenReturn(PLATFORM_FILE_NAME);
     when(JxBrowserUtils.getApiFileName()).thenReturn(API_FILE_NAME);
     when(JxBrowserUtils.getSwingFileName()).thenReturn(SWING_FILE_NAME);
@@ -101,6 +119,7 @@ public class JxBrowserManagerTest {
     when(FileUtils.deleteFile(anyString())).thenReturn(true);
 
     PowerMockito.mockStatic(JxBrowserUtils.class);
+    when(JxBrowserUtils.getJxBrowserKey(any(Project.class))).thenReturn("KEY");
     when(JxBrowserUtils.getPlatformFileName()).thenReturn(PLATFORM_FILE_NAME);
     when(JxBrowserUtils.getApiFileName()).thenReturn(API_FILE_NAME);
     when(JxBrowserUtils.getSwingFileName()).thenReturn(SWING_FILE_NAME);
