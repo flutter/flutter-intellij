@@ -83,3 +83,12 @@ Sometimes browsing the source code of IntelliJ is helpful for understanding plat
     - flutter-intellij/flutter-intellij-community.iml
 6. Select the `community-main` module and add a module dependency to
    `flutter-intellij-community`.
+
+## Working with Embedded DevTools (JxBrowser)
+
+We use [JxBrowser](https://www.teamdev.com/jxbrowser) to embed DevTools within IntelliJ. A license key is required to use this feature in development, but it is not required for developing unrelated (most) features. 
+
+To set up the license key:
+1. Ask an internal contributor to give you access to the key.
+2. Copy the template at resources/jxbrowser/jxbrowser.properties.template and save it as resources/jxbrowser/jxbrowser.properties.
+3. Replace `<KEY>` with the actual key.
