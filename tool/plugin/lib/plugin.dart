@@ -526,7 +526,7 @@ class DeployCommand extends ProductCommand {
       return 1;
     }
 
-    var token = readTokenFile();
+    var token = readTokenFromKeystore('FLUTTER_KEYSTORE_NAME');
     var value = 0;
     var originalDir = Directory.current;
     for (var spec in specs) {
@@ -548,16 +548,6 @@ class DeployCommand extends ProductCommand {
 
   void changeDirectory(Directory dir) {
     Directory.current = dir.path;
-  }
-
-  String readTokenFile() {
-    var env = Platform.environment;
-    var base = env['KOKORO_KEYSTORE_DIR'];
-    var id = env['FLUTTER_KEYSTORE_ID'];
-    var name = env['FLUTTER_KEYSTORE_NAME'];
-    var file = File('$base/${id}_$name');
-    var token = file.readAsStringSync();
-    return token;
   }
 
   Future<int> upload(String filePath, String pluginNumber, String token,

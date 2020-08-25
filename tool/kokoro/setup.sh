@@ -28,6 +28,7 @@ setup() {
 
   export FLUTTER_KEYSTORE_ID=74840
   export FLUTTER_KEYSTORE_NAME=flutter-intellij-plugin-auth-token
+  export FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME=flutter-intellij-plugin-jxbrowser-license-key
 
   (cd tool/plugin; echo "pub get `pwd`"; pub get --no-precompile)
 }
