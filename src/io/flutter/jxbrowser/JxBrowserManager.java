@@ -5,7 +5,6 @@
  */
 package io.flutter.jxbrowser;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -14,13 +13,11 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.download.DownloadableFileDescription;
 import com.intellij.util.download.DownloadableFileService;
 import com.intellij.util.download.FileDownloader;
 import com.intellij.util.lang.UrlClassLoader;
-import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -42,9 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
 // the class path.
 public class JxBrowserManager {
   private static JxBrowserManager manager;
-
-  @VisibleForTesting
-  protected static final String DOWNLOAD_PATH = PathManager.getPluginsPath() + File.separatorChar + "flutter-intellij" + File.separatorChar + "jxbrowser";
+  private static final String DOWNLOAD_PATH = PathManager.getPluginsPath() + File.separatorChar + "flutter-intellij" + File.separatorChar + "jxbrowser";
   private static final AtomicReference<JxBrowserStatus> status = new AtomicReference<>(JxBrowserStatus.NOT_INSTALLED);
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
   // We will be gating JxBrowser features until all of the features are landed.
@@ -59,11 +54,6 @@ public class JxBrowserManager {
       return new JxBrowserManager();
     }
     return manager;
-  }
-
-  @VisibleForTesting
-  protected static void resetForTest() {
-    status.set(JxBrowserStatus.NOT_INSTALLED);
   }
 
   public JxBrowserStatus getStatus() {
@@ -113,11 +103,13 @@ public class JxBrowserManager {
 
     LOG.info(project.getName() + ": Installing JxBrowser");
 
-    final boolean directoryExists = FileUtils.makeDirectory(DOWNLOAD_PATH);
-    if (!directoryExists) {
-      LOG.info(project.getName() + ": Unable to create directory for JxBrowser files");
-      setStatusFailed();
-      return;
+    final File directory = new File(DOWNLOAD_PATH);
+    if (!directory.exists()) {
+      if (!directory.mkdirs()) {
+        LOG.info(project.getName() + ": Unable to create directory for JxBrowser files");
+        setStatusFailed();
+        return;
+      }
     }
 
     final String platformFileName;
@@ -125,7 +117,8 @@ public class JxBrowserManager {
       platformFileName = JxBrowserUtils.getPlatformFileName();
     }
     catch (FileNotFoundException e) {
-      LOG.info(project.getName() + ": Unable to find JxBrowser platform file for " + SystemInfo.getOsNameAndVersion());
+      LOG.info(project.getName() + ": Unable to find JxBrowser platform file");
+      e.printStackTrace();
       setStatusFailed();
       return;
     }
@@ -133,31 +126,35 @@ public class JxBrowserManager {
     // Check whether the files already exist.
     final String[] fileNames = {platformFileName, JxBrowserUtils.getApiFileName(), JxBrowserUtils.getSwingFileName()};
     boolean allDownloaded = true;
+    final List<File> files = new ArrayList<>();
     for (String fileName : fileNames) {
-      if (!FileUtils.fileExists(fileName)) {
+      final File file = new File(DOWNLOAD_PATH + File.separator + fileName);
+      files.add(file);
+      if (!file.exists()) {
         allDownloaded = false;
-        break;
       }
     }
 
     if (allDownloaded) {
       LOG.info(project.getName() + ": JxBrowser platform files already exist, skipping download");
-      loadClasses(fileNames);
+      loadClasses(files);
       return;
     }
 
     // Delete any already existing files.
     // TODO(helin24): Handle if files cannot be deleted.
-    for (String fileName : fileNames) {
-      if (!FileUtils.deleteFile(fileName)) {
-        LOG.info(project.getName() + ": Existing file could not be deleted - " + fileName);
+    for (File file : files) {
+      if (file.exists()) {
+        if (!file.delete()) {
+          LOG.info(project.getName() + ": Existing file could not be deleted - " + file.getAbsolutePath());
+        }
       }
     }
 
     downloadJxBrowser(project, fileNames);
   }
 
-  protected void downloadJxBrowser(Project project, String[] fileNames) {
+  private void downloadJxBrowser(Project project, String[] fileNames) {
     // The FileDownloader API is used by other plugins - e.g.
     // https://github.com/JetBrains/intellij-community/blob/b09f8151e0d189d70363266c3bb6edb5f6bfeca4/plugins/markdown/src/org/intellij/plugins/markdown/ui/preview/javafx/JavaFXInstallator.java#L48
     final List<FileDownloader> fileDownloaders = new ArrayList<>();
@@ -186,7 +183,7 @@ public class JxBrowserManager {
             }
           }
 
-          loadClasses(fileNames);
+          loadClasses(files);
         }
         catch (IOException e) {
           LOG.info(project.getName() + ": JxBrowser file downloaded failed: " + currentFileName);
@@ -200,11 +197,10 @@ public class JxBrowserManager {
     ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, processIndicator);
   }
 
-  protected void loadClasses(String[] fileNames) {
+  private void loadClasses(List<File> files) {
     final UrlClassLoader classLoader = (UrlClassLoader) this.getClass().getClassLoader();
     try {
-      for (String fileName : fileNames) {
-        final File file = new File(fileName);
+      for (File file : files) {
         final URL url = file.toURI().toURL();
         classLoader.addURL(url);
         LOG.info("Loaded JxBrowser file successfully: " + url.toString());
