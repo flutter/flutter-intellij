@@ -28,6 +28,7 @@ public class FlutterSettings {
   private static final String showStructuredErrors = "io.flutter.showStructuredErrors";
   private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
   private static final String enableHotUiKey = "io.flutter.editor.enableHotUi";
+  private static final String enableEmbeddedInspectorKey = "io.flutter.editor.enableEmbeddedInspector";
 
   /**
    * Registry key to suggest all run configurations instead of just one.
@@ -258,5 +259,15 @@ public class FlutterSettings {
     // We leave this setting off for now to avoid possible performance and
     // usability issues rendering previews directly in the code editor.
     return false;
+  }
+
+  public boolean isEnableEmbeddedInspector() {
+    return getPropertiesComponent().getBoolean(enableEmbeddedInspectorKey, false);
+  }
+
+  public void setEnableEmbeddedInspector(boolean value) {
+    getPropertiesComponent().setValue(enableEmbeddedInspectorKey, value, false);
+
+    fireEvent();
   }
 }
