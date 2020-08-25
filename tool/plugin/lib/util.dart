@@ -150,6 +150,5 @@ String readTokenFromKeystore(String keyName) {
   var name = env[keyName];
 
   var file = File('$base/${id}_$name');
-  var token = file.readAsStringSync();
-  return token;
+  return file.existsSync() ? file.readAsStringSync() : '';
 }
