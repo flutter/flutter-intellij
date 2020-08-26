@@ -158,7 +158,7 @@ public class JxBrowserManager {
     // Delete any already existing files.
     // TODO(helin24): Handle if files cannot be deleted.
     for (String fileName : fileNames) {
-      String filePath = getFilePath(fileName);
+      final String filePath = getFilePath(fileName);
       if (!FileUtils.deleteFile(filePath)) {
         LOG.info(project.getName() + ": Existing file could not be deleted - " + filePath);
       }
