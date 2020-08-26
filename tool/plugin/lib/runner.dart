@@ -37,6 +37,7 @@ class BuildCommandRunner extends CommandRunner {
 -Dbasedir=$rootPath
 compile
 ''';
+    writeJxBrowserKeyToFile();
     try {
       return await exec('ant', args.split(RegExp(r'\s')));
     } on ProcessException catch (x) {
@@ -52,7 +53,18 @@ compile
     }
   }
 
+  void writeJxBrowserKeyToFile() {
+    final jxBrowserKey =
+        readTokenFromKeystore('FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME');
+    final propertiesFile = File("$rootPath/resources/jxbrowser/jxbrowser.properties");
+    final contents = '''
+jxbrowser.license.key=${jxBrowserKey}
+''';
+    propertiesFile.writeAsStringSync(contents);
+  }
+
   Future<int> buildPlugin(BuildSpec spec, String version) async {
+    writeJxBrowserKeyToFile();
     final contents = '''
 org.gradle.parallel=true
 org.gradle.jvmargs=-Xms128m -Xmx1024m -XX:+CMSClassUnloadingEnabled

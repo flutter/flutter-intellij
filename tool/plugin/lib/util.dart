@@ -142,3 +142,24 @@ String _shorten(String str) {
 
 Stream<String> _toLineStream(Stream<List<int>> s, Encoding encoding) =>
     s.transform(encoding.decoder).transform(const LineSplitter());
+
+String readTokenFromKeystore(String keyName) {
+  var env = Platform.environment;
+  var base = env['KOKORO_KEYSTORE_DIR'];
+  var id = env['FLUTTER_KEYSTORE_ID'];
+  var name = env[keyName];
+
+  var file = File('$base/${id}_$name');
+  if (file.existsSync()) {
+    return file.readAsStringSync();
+  }
+
+  // If building locally, this key may be in resources.
+  var localFile = File('resources/jxbrowser/jxbrowser.properties');
+  if (!file.existsSync()) {
+    return '';
+  }
+  
+  var keyAndValue = localFile.readAsStringSync().split('=');
+  return keyAndValue.length == 2 ? keyAndValue[1] : '';
+}

@@ -5,14 +5,18 @@
  */
 package io.flutter.utils;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
 
 public class JxBrowserUtils {
   private static final String JXBROWSER_FILE_PREFIX = "jxbrowser";
   private static final String JXBROWSER_FILE_VERSION = "7.10";
   private static final String JXBROWSER_FILE_SUFFIX = "jar";
+  public static final String PROPERTY_NAME = "jxbrowser.license.key";
 
   public static String getPlatformFileName() throws FileNotFoundException {
     String name = "";
@@ -45,5 +49,22 @@ public class JxBrowserUtils {
 
   public static String getDistributionLink(String fileName) {
     return "https://storage.googleapis.com/flutter_infra/flutter/intellij/jxbrowser/" + fileName;
+  }
+
+  public static String getJxBrowserKey(Project project) throws FileNotFoundException {
+    final Properties properties = new Properties();
+    try {
+      properties.load(JxBrowserUtils.class.getResourceAsStream("/jxbrowser/jxbrowser.properties"));
+    }
+    catch (IOException ex) {
+      throw new FileNotFoundException("Unable to load properties of JxBrowser key file");
+    }
+
+    final String value = properties.getProperty(PROPERTY_NAME);
+    if (value == null) {
+      throw new FileNotFoundException("No value for JxBrowser key exists");
+    }
+
+    return value;
   }
 }

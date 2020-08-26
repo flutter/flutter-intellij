@@ -104,6 +104,18 @@ public class JxBrowserManager {
       return;
     }
 
+    // Retrieve key
+    try {
+      final String key = JxBrowserUtils.getJxBrowserKey(project);
+      System.setProperty(JxBrowserUtils.PROPERTY_NAME, key);
+    }
+    catch (FileNotFoundException e) {
+      LOG.info(e.getMessage());
+      LOG.info(project.getName() + ": Unable to find JxBrowser licence key file");
+      setStatusFailed();
+      return;
+    }
+
     // If installation future has not finished, we don't want to overwrite it. There could be other code listening for the previous attempt
     // to succeed or fail.
     // We expect to create a new CompletableFuture only if the previous installation attempt failed.
