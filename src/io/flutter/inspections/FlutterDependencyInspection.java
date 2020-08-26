@@ -50,13 +50,14 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
 
     if (!ProjectRootManager.getInstance(project).getFileIndex().isInContent(file)) return null;
 
-    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     final Module module = ModuleUtilCore.findModuleForFile(file, project);
     if (!FlutterModuleUtils.isFlutterModule(module)) return null;
 
     final PubRoot root = PubRootCache.getInstance(project).getRoot(psiFile);
 
     if (root == null || myIgnoredPubspecPaths.contains(root.getPubspec().getPath())) return null;
+
+    if (!root.declaresFlutter()) return null;
 
     // TODO(pq): consider validating package name here (`get` will fail if it's invalid).
 
