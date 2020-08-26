@@ -150,5 +150,13 @@ String readTokenFromKeystore(String keyName) {
   var name = env[keyName];
 
   var file = File('$base/${id}_$name');
-  return file.existsSync() ? file.readAsStringSync() : '';
+  if (file.existsSync()) {
+    return file.readAsStringSync();
+  }
+
+  // If building locally, this key may be in resources.
+  var localFile = File('resources/jxbrowser/jxbrowser.properties').readAsStringSync();
+  var keyAndValue = localFile.split('=');
+  print(keyAndValue[0]);
+  return keyAndValue.length == 2 ? keyAndValue[1] : '';
 }
