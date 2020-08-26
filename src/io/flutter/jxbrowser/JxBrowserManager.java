@@ -210,7 +210,7 @@ public class JxBrowserManager {
     ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, processIndicator);
   }
 
-  protected void loadClasses(String[] fileNames) {
+  private void loadClasses(String[] fileNames) {
     for (String fileName : fileNames) {
       final boolean success = FileUtils.loadClass(this.getClass().getClassLoader(), getFilePath(fileName));
       if (success) {

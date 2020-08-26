@@ -85,15 +85,14 @@ public class JxBrowserManagerTest {
   @Test
   public void testSetUpIfAllFilesExist() throws FileNotFoundException {
     // If all of the files are already downloaded, we should load the existing files.
-    final JxBrowserManager partialMockManager = mock(JxBrowserManager.class);
-    doCallRealMethod().when(partialMockManager).setUp(mockProject);
+    final JxBrowserManager manager = JxBrowserManager.getInstance();
 
     PowerMockito.mockStatic(FileUtils.class);
     when(FileUtils.makeDirectory(DOWNLOAD_PATH)).thenReturn(true);
     when(FileUtils.fileExists(anyString())).thenReturn(true);
-    when(FileUtils.loadClass(any(ClassLoader.class), eq(PLATFORM_FILE_NAME))).thenReturn(true);
-    when(FileUtils.loadClass(any(ClassLoader.class), eq(API_FILE_NAME))).thenReturn(true);
-    when(FileUtils.loadClass(any(ClassLoader.class), eq(SWING_FILE_NAME))).thenReturn(true);
+    when(FileUtils.loadClass(any(ClassLoader.class), endsWith(PLATFORM_FILE_NAME))).thenReturn(true);
+    when(FileUtils.loadClass(any(ClassLoader.class), endsWith(API_FILE_NAME))).thenReturn(true);
+    when(FileUtils.loadClass(any(ClassLoader.class), endsWith(SWING_FILE_NAME))).thenReturn(true);
 
     PowerMockito.mockStatic(JxBrowserUtils.class);
     when(JxBrowserUtils.getJxBrowserKey(any(Project.class))).thenReturn("KEY");
@@ -101,9 +100,9 @@ public class JxBrowserManagerTest {
     when(JxBrowserUtils.getApiFileName()).thenReturn(API_FILE_NAME);
     when(JxBrowserUtils.getSwingFileName()).thenReturn(SWING_FILE_NAME);
 
-    partialMockManager.setUp(mockProject);
+    manager.setUp(mockProject);
     final String[] expectedFileNames = {PLATFORM_FILE_NAME, API_FILE_NAME, SWING_FILE_NAME};
-    verify(partialMockManager, times(1)).loadClasses(expectedFileNames);
+    Assert.assertEquals(JxBrowserStatus.INSTALLED, manager.getStatus());
   }
 
   @Test
