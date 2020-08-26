@@ -37,18 +37,10 @@ public class PubRoot {
   @NotNull
   private final VirtualFile pubspec;
 
-  @Nullable
-  private final VirtualFile packagesFile;
-
-  @Nullable
-  private final VirtualFile lib;
-
-  private PubRoot(@NotNull VirtualFile root, @NotNull VirtualFile pubspec, @Nullable VirtualFile packagesFile, @Nullable VirtualFile lib) {
+  private PubRoot(@NotNull VirtualFile root, @NotNull VirtualFile pubspec) {
     assert (!root.getPath().endsWith("/"));
     this.root = root;
     this.pubspec = pubspec;
-    this.packagesFile = packagesFile;
-    this.lib = lib;
   }
 
   /**
@@ -151,17 +143,7 @@ public class PubRoot {
       return null;
     }
 
-    VirtualFile packages = dir.findChild(".packages");
-    if (packages == null || !packages.exists() || packages.isDirectory()) {
-      packages = null;
-    }
-
-    VirtualFile lib = dir.findChild("lib");
-    if (lib == null || !lib.exists() || !lib.isDirectory()) {
-      lib = null;
-    }
-
-    return new PubRoot(dir, pubspec, packages, lib);
+    return new PubRoot(dir, pubspec);
   }
 
   /**
@@ -276,7 +258,12 @@ public class PubRoot {
 
   @Nullable
   public VirtualFile getPackagesFile() {
-    return packagesFile;
+    final VirtualFile packages = root.findChild(".packages");
+    if (packages != null && !packages.isDirectory()) {
+      return packages;
+    }
+
+    return null;
   }
 
   /**
@@ -284,20 +271,22 @@ public class PubRoot {
    */
   @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public boolean hasUpToDatePackages() {
+    final VirtualFile packagesFile = getPackagesFile();
     if (packagesFile == null) {
       return false;
     }
-
-    // Refresh our view of the modification stamps.
-    pubspec.refresh(true, false);
-    packagesFile.refresh(true, false);
 
     return pubspec.getTimeStamp() < packagesFile.getTimeStamp();
   }
 
   @Nullable
   public VirtualFile getLib() {
-    return lib;
+    final VirtualFile lib = root.findChild("lib");
+    if (lib != null && lib.isDirectory()) {
+      return lib;
+    }
+
+    return null;
   }
 
   /**
@@ -309,6 +298,8 @@ public class PubRoot {
     if (main != null) {
       return main;
     }
+
+    final VirtualFile lib = getLib();
     if (lib != null) {
       final VirtualFile[] files = lib.getChildren();
       if (files.length != 0) {
@@ -323,6 +314,7 @@ public class PubRoot {
    */
   @Nullable
   public VirtualFile getLibMain() {
+    final VirtualFile lib = getLib();
     return lib == null ? null : lib.findChild("main.dart");
   }
 
