@@ -17,6 +17,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 
 import static io.flutter.jxbrowser.JxBrowserManager.DOWNLOAD_PATH;
@@ -127,11 +128,11 @@ public class JxBrowserManagerTest {
     partialMockManager.setUp(mockProject);
 
     verifyStatic(FileUtils.class);
-    FileUtils.deleteFile(PLATFORM_FILE_NAME);
+    FileUtils.deleteFile(DOWNLOAD_PATH + File.separatorChar + PLATFORM_FILE_NAME);
     verifyStatic(FileUtils.class);
-    FileUtils.deleteFile(API_FILE_NAME);
+    FileUtils.deleteFile(DOWNLOAD_PATH + File.separatorChar + API_FILE_NAME);
     verifyStatic(FileUtils.class);
-    FileUtils.deleteFile(SWING_FILE_NAME);
+    FileUtils.deleteFile(DOWNLOAD_PATH + File.separatorChar + SWING_FILE_NAME);
 
     final String[] expectedFileNames = {PLATFORM_FILE_NAME, API_FILE_NAME, SWING_FILE_NAME};
     verify(partialMockManager, times(1)).downloadJxBrowser(mockProject, expectedFileNames);
