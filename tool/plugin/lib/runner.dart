@@ -57,10 +57,12 @@ compile
     final jxBrowserKey =
         readTokenFromKeystore('FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME');
     final propertiesFile = File("$rootPath/resources/jxbrowser/jxbrowser.properties");
-    final contents = '''
+    if (jxBrowserKey.isNotEmpty) {
+      final contents = '''
 jxbrowser.license.key=${jxBrowserKey}
 ''';
-    propertiesFile.writeAsStringSync(contents);
+      propertiesFile.writeAsStringSync(contents);
+    }
   }
 
   Future<int> buildPlugin(BuildSpec spec, String version) async {
