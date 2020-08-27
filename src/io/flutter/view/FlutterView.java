@@ -506,7 +506,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
 
-    if (JxBrowserManager.ENABLE_JX_BROWSER) {
+    if (FlutterSettings.getInstance().isEnableEmbeddedBrowsers()) {
       JxBrowserStatus jxBrowserStatus = JxBrowserManager.getInstance().getStatus();
 
       if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {

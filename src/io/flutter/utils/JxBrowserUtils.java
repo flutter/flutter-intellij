@@ -5,7 +5,6 @@
  */
 package io.flutter.utils;
 
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 
 import java.io.FileNotFoundException;
@@ -51,7 +50,7 @@ public class JxBrowserUtils {
     return "https://storage.googleapis.com/flutter_infra/flutter/intellij/jxbrowser/" + fileName;
   }
 
-  public static String getJxBrowserKey(Project project) throws FileNotFoundException {
+  public static String getJxBrowserKey() throws FileNotFoundException {
     final Properties properties = new Properties();
     try {
       properties.load(JxBrowserUtils.class.getResourceAsStream("/jxbrowser/jxbrowser.properties"));

@@ -19,6 +19,7 @@ import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.download.DownloadableFileDescription;
 import com.intellij.util.download.DownloadableFileService;
 import com.intellij.util.download.FileDownloader;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
 import org.jetbrains.annotations.NotNull;
@@ -33,6 +34,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 // JxBrowser provides Chromium to display web pages within IntelliJ. This class manages downloading the required files and adding them to
@@ -43,10 +45,8 @@ public class JxBrowserManager {
   @VisibleForTesting
   protected static final String DOWNLOAD_PATH = PathManager.getPluginsPath() + File.separatorChar + "flutter-intellij" + File.separatorChar + "jxbrowser";
   private static final AtomicReference<JxBrowserStatus> status = new AtomicReference<>(JxBrowserStatus.NOT_INSTALLED);
+  private static final AtomicBoolean listeningForSetting = new AtomicBoolean(false);
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
-  // We will be gating JxBrowser features until all of the features are landed.
-  // To test JxBrowser, set this to true and also add license key to VM options (-Djxbrowser.license.key=<key>).
-  public static final boolean ENABLE_JX_BROWSER = false;
   private static CompletableFuture<JxBrowserStatus> installation = new CompletableFuture<>();
 
   private JxBrowserManager() {}
@@ -88,9 +88,36 @@ public class JxBrowserManager {
     setUp(project);
   }
 
+  private class SettingsListener implements FlutterSettings.Listener {
+    final Project project;
+
+    public SettingsListener(Project project) {
+      this.project = project;
+    }
+
+    @Override
+    public void settingsChanged() {
+      final FlutterSettings settings = FlutterSettings.getInstance();
+
+      // Set up JxBrowser files if the embedded inspector option has been turned on and the files aren't already loaded.
+      if (settings.isEnableEmbeddedBrowsers() && getStatus().equals(JxBrowserStatus.NOT_INSTALLED)) {
+        setUp(project);
+      }
+    }
+  }
+
   private void setStatusFailed() {
     status.set(JxBrowserStatus.INSTALLATION_FAILED);
     installation.complete(JxBrowserStatus.INSTALLATION_FAILED);
+  }
+
+  public void listenForSettingChanges(Project project) {
+    if (!listeningForSetting.compareAndSet(false, true)) {
+      // We can return early because another project already triggered the listener.
+      return;
+    }
+
+    FlutterSettings.getInstance().addListener(new SettingsListener(project));
   }
 
   public void setUp(Project project) {
@@ -103,7 +130,7 @@ public class JxBrowserManager {
 
     // Retrieve key
     try {
-      final String key = JxBrowserUtils.getJxBrowserKey(project);
+      final String key = JxBrowserUtils.getJxBrowserKey();
       System.setProperty(JxBrowserUtils.PROPERTY_NAME, key);
     }
     catch (FileNotFoundException e) {

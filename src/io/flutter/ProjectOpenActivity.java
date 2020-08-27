@@ -24,6 +24,7 @@ import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
@@ -56,7 +57,9 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       return;
     }
 
-    if (JxBrowserManager.ENABLE_JX_BROWSER) {
+    // Set up JxBrowser listening and check if it's already enabled.
+    JxBrowserManager.getInstance().listenForSettingChanges(project);
+    if (FlutterSettings.getInstance().isEnableEmbeddedBrowsers()) {
       JxBrowserManager.getInstance().setUp(project);
     }
 
