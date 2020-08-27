@@ -59,7 +59,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
 
     // Set up JxBrowser listening and check if it's already enabled.
     JxBrowserManager.getInstance().listenForSettingChanges(project);
-    if (FlutterSettings.getInstance().isEnableEmbeddedInspector()) {
+    if (FlutterSettings.getInstance().isEnableEmbeddedBrowsers()) {
       JxBrowserManager.getInstance().setUp(project);
     }
 

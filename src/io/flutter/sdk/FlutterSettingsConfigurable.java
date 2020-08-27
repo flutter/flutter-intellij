@@ -66,7 +66,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myShowStructuredErrors;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
   private JCheckBox myEnableHotUiCheckBox;
-  private JCheckBox myEnableEmbeddedInspectorCheckBox;
+  private JCheckBox myEnableEmbeddedBrowsersCheckBox;
 
   // Settings for Bazel users.
   private JPanel myBazelOptionsSection;
@@ -139,7 +139,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     // experimentsPanel.setVisible(FlutterUtils.isAndroidStudio());
     mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
 
-    myEnableEmbeddedInspectorCheckBox.setVisible(true);
+    myEnableEmbeddedBrowsersCheckBox.setVisible(true);
   }
 
   private void createUIComponents() {
@@ -223,7 +223,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isEnableEmbeddedInspector() != myEnableEmbeddedInspectorCheckBox.isSelected()) {
+    if (settings.isEnableEmbeddedBrowsers() != myEnableEmbeddedBrowsersCheckBox.isSelected()) {
       return true;
     }
 
@@ -269,7 +269,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
     settings.setEnableHotUi(myEnableHotUiCheckBox.isSelected());
-    settings.setEnableEmbeddedInspector(myEnableEmbeddedInspectorCheckBox.isSelected());
+    settings.setEnableEmbeddedBrowsers(myEnableEmbeddedBrowsersCheckBox.isSelected());
     settings.setShowAllRunConfigurationsInContext(myShowAllRunConfigurationsInContextCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
@@ -312,7 +312,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myEnableHotUiCheckBox.setSelected(settings.isEnableHotUi());
 
-    myEnableEmbeddedInspectorCheckBox.setSelected(settings.isEnableEmbeddedInspector());
+    myEnableEmbeddedBrowsersCheckBox.setSelected(settings.isEnableEmbeddedBrowsers());
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
 

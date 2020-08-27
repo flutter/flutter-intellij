@@ -19,7 +19,6 @@ import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.download.DownloadableFileDescription;
 import com.intellij.util.download.DownloadableFileService;
 import com.intellij.util.download.FileDownloader;
-import com.intellij.util.lang.UrlClassLoader;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
@@ -101,7 +100,7 @@ public class JxBrowserManager {
       final FlutterSettings settings = FlutterSettings.getInstance();
 
       // Set up JxBrowser files if the embedded inspector option has been turned on and the files aren't already loaded.
-      if (settings.isEnableEmbeddedInspector() && getStatus().equals(JxBrowserStatus.NOT_INSTALLED)) {
+      if (settings.isEnableEmbeddedBrowsers() && getStatus().equals(JxBrowserStatus.NOT_INSTALLED)) {
         setUp(project);
       }
     }
