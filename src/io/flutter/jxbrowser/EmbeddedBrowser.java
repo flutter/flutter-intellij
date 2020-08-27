@@ -13,42 +13,42 @@ import com.teamdev.jxbrowser.browser.Browser;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.engine.EngineOptions;
 import com.teamdev.jxbrowser.navigation.event.LoadFinished;
-import com.teamdev.jxbrowser.time.Timestamp;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
 import icons.FlutterIcons;
 
 import java.awt.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.teamdev.jxbrowser.engine.RenderingMode.HARDWARE_ACCELERATED;
 
 public class EmbeddedBrowser {
   public void openPanel(ContentManager contentManager, String tabName, String url) {
-    EngineOptions options =
+    final EngineOptions options =
       EngineOptions.newBuilder(HARDWARE_ACCELERATED).build();
-    Engine engine = Engine.newInstance(options);
-    Browser browser = engine.newBrowser();
+    final Engine engine = Engine.newInstance(options);
+    final Browser browser = engine.newBrowser();
     browser.settings().enableTransparentBackground();
 
-    if (contentManager.isDisposed()) {
-      return;
-    }
+    // Multiple LoadFinished events can occur, but we only need to add content the first time.
+    final AtomicBoolean contentLoaded = new AtomicBoolean(false);
 
-    // Creating Swing component for rendering web content
-    // loaded in the given Browser instance.
-    BrowserView view = BrowserView.newInstance(browser);
-    view.setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
-    System.out.println("before browser loading");
-
-    // Wait for browser to load devtools before component is shown.
-    browser.navigation().loadUrlAndWait(url, Timestamp.fromSeconds(30));
+    browser.navigation().loadUrl(url);
     browser.navigation().on(LoadFinished.class, event -> {
-      int index = event.navigation().currentEntryIndex();
-      System.out.println(event.navigation().entryAtIndex(index).originalUrl());
+      if (!contentLoaded.compareAndSet(false, true)) {
+        return;
+      }
       ApplicationManager.getApplication().invokeLater(() -> {
-        System.out.println("after browser loading");
+        if (contentManager.isDisposed()) {
+          return;
+        }
 
         contentManager.removeAllContents(false);
         final Content content = contentManager.getFactory().createContent(null, tabName, false);
+
+        // Creating Swing component for rendering web content
+        // loaded in the given Browser instance.
+        final BrowserView view = BrowserView.newInstance(browser);
+        view.setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
 
         content.setComponent(view);
         content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
