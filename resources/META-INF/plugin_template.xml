@@ -2,9 +2,17 @@
   <id>@PLUGINID@</id>
   <name>Flutter</name>
   <description>
-    Support for developing Flutter applications. Flutter gives developers an easy and productive
+    <![CDATA[
+    <p>Support for developing Flutter applications. Flutter gives developers an easy and productive
     way to build and deploy cross-platform, high-performance mobile apps for both Android and iOS.
-    Installing this plugin will also install the Dart plugin.
+    Installing this plugin will also install the Dart plugin.</p>
+    <br>
+    <p>For some tools, this plugin uses Chromium through JxBrowser to display content from the web.
+    JxBrowser complies with LGPL and offers an option to replace Chromium with another component.
+    To do this:</p>
+    <li>Find the JxBrowser files stored in the <a href="https://www.jetbrains.com/help/idea/tuning-the-ide.html?_ga=2.242942337.2083770720.1598541288-1470153005.1588544220#plugins-directory">plugins directory</a>, under /flutter-intellij/jxbrowser.</li>
+    <li>Use the instructions and build script <a href="http://cloud.teamdev.com/downloads/jxbrowser/7.10/jxbrowser-7.10-relink.zip">from JxBrowser</a> to relink it with modified components.</li>
+    ]]>
   </description>
   <!--suppress PluginXmlValidity -->
   <vendor url="https://github.com/flutter/flutter-intellij">flutter.dev</vendor>
