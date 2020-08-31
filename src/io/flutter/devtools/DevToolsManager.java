@@ -29,6 +29,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
+import com.intellij.ui.ColorUtil;
 import com.intellij.ui.content.ContentManager;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
@@ -45,6 +46,9 @@ import io.flutter.utils.MostlySilentOsProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.JComponent;
+import java.awt.Color;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -393,7 +397,12 @@ class DevToolsInstance {
   }
 
   public void openPanel(String serviceProtocolUri, ContentManager contentManager, String tabName, String pageName) {
-    String url = DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, null, true, pageName);
+    String color = null;
+    if (contentManager.getContents().length > 0) {
+      final JComponent component = Objects.requireNonNull(contentManager.getContent(0)).getComponent();
+      color = ColorUtil.toHex(new Color(component.getBackground().getRGB()));
+    }
+    final String url = DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, null, true, pageName, color);
 
     ApplicationManager.getApplication().invokeLater(() -> {
       new EmbeddedBrowser().openPanel(contentManager, tabName, url);
