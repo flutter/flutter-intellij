@@ -29,7 +29,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
+import com.intellij.ui.ColorUtil;
 import com.intellij.ui.content.ContentManager;
+import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
@@ -393,7 +395,8 @@ class DevToolsInstance {
   }
 
   public void openPanel(String serviceProtocolUri, ContentManager contentManager, String tabName, String pageName) {
-    String url = DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, null, true, pageName);
+    final String color = ColorUtil.toHex(UIUtil.getEditorPaneBackground());
+    final String url = DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, null, true, pageName, color);
 
     ApplicationManager.getApplication().invokeLater(() -> {
       new EmbeddedBrowser().openPanel(contentManager, tabName, url);

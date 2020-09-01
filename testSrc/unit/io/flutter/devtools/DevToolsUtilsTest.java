@@ -55,5 +55,15 @@ public class DevToolsUtilsTest {
       generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null),
       "http://127.0.0.1:9100/?ide=Android-Studio&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F#timeline"
     );
+
+    assertEquals(
+      generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, "3c3f41"),
+      "http://127.0.0.1:9100/?ide=Android-Studio&backgroundColor=3c3f41&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F#timeline"
+    );
+
+    assertEquals(
+      generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, "ffffff"),
+      "http://127.0.0.1:9100/?ide=Android-Studio&backgroundColor=ffffff&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F#timeline"
+    );
   }
 }

@@ -21,9 +21,24 @@ public class DevToolsUtils {
     boolean embed,
     String pageName
   ) {
+    return generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, embed, pageName, null);
+  }
+
+  public static String generateDevToolsUrl(
+    String devtoolsHost,
+    int devtoolsPort,
+    String serviceProtocolUri,
+    String page,
+    boolean embed,
+    String pageName,
+    String colorHexCode
+  ) {
     final List<String> params = new ArrayList<>();
 
     params.add("ide=" + FlutterSdkUtil.getFlutterHostEnvValue());
+    if (colorHexCode != null) {
+      params.add("backgroundColor=" + colorHexCode);
+    }
 
     if (pageName != null) {
       params.add("page=" + pageName);
