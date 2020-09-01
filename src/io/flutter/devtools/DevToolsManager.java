@@ -30,8 +30,8 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.ui.ColorUtil;
-import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
+import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
@@ -48,7 +48,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -397,11 +396,7 @@ class DevToolsInstance {
   }
 
   public void openPanel(String serviceProtocolUri, ContentManager contentManager, String tabName, String pageName) {
-    String color = null;
-    if (contentManager.getContents().length > 0) {
-      final Container container = Objects.requireNonNull(contentManager.getContent(0)).getComponent().getParent();
-      color = ColorUtil.toHex(new Color(container.getBackground().getRGB()));
-    }
+    final String color = ColorUtil.toHex(new Color(UIUtil.getEditorPaneBackground().getRGB()));
     final String url = DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, null, true, pageName, color);
 
     ApplicationManager.getApplication().invokeLater(() -> {
