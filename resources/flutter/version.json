@@ -1,9 +1,9 @@
 {
-  "frameworkVersion": "1.21.0-1.0.pre",
+  "frameworkVersion": "1.22.0-1.0.pre",
   "channel": "dev",
   "repositoryUrl": "https://github.com/flutter/flutter",
-  "frameworkRevision": "f25bd9c55c48c139524139b477d04b13e9f36b2c",
-  "frameworkCommitDate": "2020-07-14 20:26:01 -0400",
-  "engineRevision": "99c2b3a2455511c3fd37521d9b00972c5345b75b",
-  "dartSdkVersion": "2.9.0 (build 2.9.0-21.0.dev 20bf2fcf56)"
+  "frameworkRevision": "ce40de69b7b4f89c66d19c8dbd3bd86ae30f1bc6",
+  "frameworkCommitDate": "2020-08-20 07:31:50 -0700",
+  "engineRevision": "81027ab0cc0e7974beee760eb042827a44dd12f3",
+  "dartSdkVersion": "2.10.0 (build 2.10.0-45.0.dev)"
 }
