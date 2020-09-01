@@ -1,6 +1,6 @@
 {
   "flutter": {
-    "version": "1.21.0-1.0.pre",
+    "version": "1.22.0-1.0.pre",
     "channel": "dev"
   },
   "widgets": [
@@ -1217,7 +1217,7 @@
       "name": "InputDatePickerFormField",
       "parent": "StatefulWidget",
       "library": "material",
-      "description": "A [TextFormField] configured to accept and validate a date entered by the user."
+      "description": "A [TextFormField] configured to accept and validate a date entered by a user."
     },
     {
       "name": "InputDateRangePicker",
@@ -1247,7 +1247,7 @@
       "name": "IntrinsicWidth",
       "parent": "SingleChildRenderObjectWidget",
       "library": "widgets",
-      "description": "A widget that sizes its child to the child's intrinsic width."
+      "description": "A widget that sizes its child to the child's maximum intrinsic width."
     },
     {
       "name": "KeepAlive",
@@ -1517,6 +1517,12 @@
       "description": "Overrides the default [ButtonStyle] of its [OutlinedButton] descendants."
     },
     {
+      "name": "OverflowBar",
+      "parent": "MultiChildRenderObjectWidget",
+      "library": "widgets",
+      "description": "A widget that lays out its [children] in a row unless they \"overflow\" the available horizontal space, in which case it lays them out in a column instead."
+    },
+    {
       "name": "OverflowBox",
       "parent": "SingleChildRenderObjectWidget",
       "library": "widgets",
@@ -1779,10 +1785,22 @@
       "description": "A widget that creates a separate display list for its child."
     },
     {
+      "name": "RestorationScope",
+      "parent": "StatefulWidget",
+      "library": "widgets",
+      "description": "Creates a new scope for restoration IDs used by descendant widgets to claim [RestorationBucket]s."
+    },
+    {
       "name": "RichText",
       "parent": "MultiChildRenderObjectWidget",
       "library": "widgets",
       "description": "A paragraph of rich text."
+    },
+    {
+      "name": "RootRestorationScope",
+      "parent": "StatefulWidget",
+      "library": "widgets",
+      "description": "Inserts a child bucket of [RestorationManager.rootBucket] into the widget tree and makes it available to descendants via [RestorationScope.of]."
     },
     {
       "name": "RotatedBox",
@@ -1795,6 +1813,12 @@
       "parent": "AnimatedWidget",
       "library": "widgets",
       "description": "Animates the rotation of a widget."
+    },
+    {
+      "name": "Router",
+      "parent": "StatefulWidget",
+      "library": "widgets",
+      "description": "The dispatcher for opening and closing pages of an application."
     },
     {
       "name": "Row",
@@ -1946,7 +1970,7 @@
       "name": "SliderTheme",
       "parent": "InheritedTheme",
       "library": "material",
-      "description": "{@template flutter.material.slider.seeAlso.sliderComponentShape}  * [SliderComponentShape], which can be used to create custom shapes for    the [Slider]'s thumb, overlay, and value indicator and the    [RangeSlider]'s overlay. {@endtemplate}"
+      "description": "Applies a slider theme to descendant [Slider] widgets."
     },
     {
       "name": "SliverAnimatedList",
@@ -2255,6 +2279,12 @@
       "description": "A gesture detector to respond to non-exclusive event chains for a text field."
     },
     {
+      "name": "TextSelectionTheme",
+      "parent": "InheritedTheme",
+      "library": "material",
+      "description": "An inherited widget that defines the appearance of text selection in this widget's subtree."
+    },
+    {
       "name": "Texture",
       "parent": "LeafRenderObjectWidget",
       "library": "widgets",
@@ -2338,6 +2368,12 @@
       "library": "widgets",
       "abstract": true,
       "description": "Base class for stateful widgets that have exactly one inflated instance in the tree."
+    },
+    {
+      "name": "UnmanagedRestorationScope",
+      "parent": "InheritedWidget",
+      "library": "widgets",
+      "description": "Inserts a provided [RestorationBucket] into the widget tree and makes it available to descendants via [RestorationScope.of]."
     },
     {
       "name": "UserAccountsDrawerHeader",
