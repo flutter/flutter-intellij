@@ -47,7 +47,6 @@ import io.flutter.utils.MostlySilentOsProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.*;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -396,7 +395,7 @@ class DevToolsInstance {
   }
 
   public void openPanel(String serviceProtocolUri, ContentManager contentManager, String tabName, String pageName) {
-    final String color = ColorUtil.toHex(new Color(UIUtil.getEditorPaneBackground().getRGB()));
+    final String color = ColorUtil.toHex(UIUtil.getEditorPaneBackground());
     final String url = DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, null, true, pageName, color);
 
     ApplicationManager.getApplication().invokeLater(() -> {
