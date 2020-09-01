@@ -19,6 +19,7 @@ import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.download.DownloadableFileDescription;
 import com.intellij.util.download.DownloadableFileService;
 import com.intellij.util.download.FileDownloader;
+import io.flutter.FlutterInitializer;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
@@ -106,7 +107,8 @@ public class JxBrowserManager {
     }
   }
 
-  private void setStatusFailed() {
+  private void setStatusFailed(String failureReason) {
+    FlutterInitializer.getAnalytics().sendEvent("jxbrowser", "installationFailed-" + failureReason);
     status.set(JxBrowserStatus.INSTALLATION_FAILED);
     installation.complete(JxBrowserStatus.INSTALLATION_FAILED);
   }
@@ -136,7 +138,7 @@ public class JxBrowserManager {
     catch (FileNotFoundException e) {
       LOG.info(e.getMessage());
       LOG.info(project.getName() + ": Unable to find JxBrowser licence key file");
-      setStatusFailed();
+      setStatusFailed("missingKey");
       return;
     }
 
@@ -152,7 +154,7 @@ public class JxBrowserManager {
     final boolean directoryExists = FileUtils.makeDirectory(DOWNLOAD_PATH);
     if (!directoryExists) {
       LOG.info(project.getName() + ": Unable to create directory for JxBrowser files");
-      setStatusFailed();
+      setStatusFailed("directoryCreationFailed");
       return;
     }
 
@@ -162,7 +164,7 @@ public class JxBrowserManager {
     }
     catch (FileNotFoundException e) {
       LOG.info(project.getName() + ": Unable to find JxBrowser platform file for " + SystemInfo.getOsNameAndVersion());
-      setStatusFailed();
+      setStatusFailed("missingPlatformFiles-" + SystemInfo.getOsNameAndVersion());
       return;
     }
 
@@ -228,7 +230,7 @@ public class JxBrowserManager {
         catch (IOException e) {
           LOG.info(project.getName() + ": JxBrowser file downloaded failed: " + currentFileName);
           e.printStackTrace();
-          setStatusFailed();
+          setStatusFailed("fileDownloadFailed-" + currentFileName);
         }
       }
     };
@@ -244,10 +246,11 @@ public class JxBrowserManager {
         LOG.info("Loaded JxBrowser file successfully: " + fileName);
       } else {
         LOG.info("Failed to load JxBrowser file: " + fileName);
-        setStatusFailed();
+        setStatusFailed("classLoadFailed");
         return;
       }
     }
+    FlutterInitializer.getAnalytics().sendEvent("jxbrowser", "installed");
     status.set(JxBrowserStatus.INSTALLED);
     installation.complete(JxBrowserStatus.INSTALLED);
   }

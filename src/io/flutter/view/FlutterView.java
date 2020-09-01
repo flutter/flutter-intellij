@@ -442,6 +442,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     catch (TimeoutException e) {
       // TODO(helin24): Are there better options for this case? e.g. stop installation and retry, link to open in browser?
       presentLabel(toolWindow, INSTALLATION_TIMED_OUT_LABEL);
+      FlutterInitializer.getAnalytics().sendEvent("jxbrowser", "timedOut");
     }
   }
 
