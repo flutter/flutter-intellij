@@ -8,7 +8,9 @@ package io.flutter.view;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.components.labels.LinkListener;
+import io.flutter.FlutterInitializer;
 import io.flutter.ObservatoryConnector;
+import io.flutter.analytics.Analytics;
 import io.flutter.devtools.DevToolsManager;
 import io.flutter.inspector.InspectorService;
 import io.flutter.jxbrowser.JxBrowserManager;
@@ -30,7 +32,7 @@ import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({DevToolsManager.class, JxBrowserManager.class, ThreadUtil.class})
+@PrepareForTest({DevToolsManager.class, JxBrowserManager.class, ThreadUtil.class, FlutterInitializer.class})
 public class FlutterViewTest {
   @Mock Project mockProject;
   @Mock FlutterApp mockApp;
@@ -205,6 +207,10 @@ public class FlutterViewTest {
 
     setUpInstallationInProgress();
     when(mockJxBrowserManager.waitForInstallation(INSTALLATION_WAIT_LIMIT_SECONDS)).thenThrow(new TimeoutException());
+
+    final Analytics mockAnalytics = mock(Analytics.class);
+    PowerMockito.mockStatic(FlutterInitializer.class);
+    when(FlutterInitializer.getAnalytics()).thenReturn(mockAnalytics);
 
     partialMockFlutterView.waitForJxBrowserInstallation(mockApp, mockInspectorService, mockToolWindow);
     verify(partialMockFlutterView, times(1)).presentLabel(mockToolWindow, INSTALLATION_TIMED_OUT_LABEL);
