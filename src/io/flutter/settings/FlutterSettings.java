@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
+import io.flutter.FlutterUtils;
 import io.flutter.analytics.Analytics;
 import io.flutter.sdk.FlutterSdk;
 
@@ -262,11 +263,11 @@ public class FlutterSettings {
   }
 
   public boolean isEnableEmbeddedBrowsers() {
-    return getPropertiesComponent().getBoolean(enableEmbeddedBrowsersKey, false);
+    return getPropertiesComponent().getBoolean(enableEmbeddedBrowsersKey, FlutterUtils.isPluginVersionDev());
   }
 
   public void setEnableEmbeddedBrowsers(boolean value) {
-    getPropertiesComponent().setValue(enableEmbeddedBrowsersKey, value, false);
+    getPropertiesComponent().setValue(enableEmbeddedBrowsersKey, value, FlutterUtils.isPluginVersionDev());
 
     fireEvent();
   }
