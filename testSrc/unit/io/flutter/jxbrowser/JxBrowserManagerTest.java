@@ -6,6 +6,8 @@
 package io.flutter.jxbrowser;
 
 import com.intellij.openapi.project.Project;
+import io.flutter.FlutterInitializer;
+import io.flutter.analytics.Analytics;
 import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
 import org.junit.Assert;
@@ -27,7 +29,7 @@ import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({FileUtils.class, JxBrowserUtils.class})
+@PrepareForTest({FileUtils.class, JxBrowserUtils.class, FlutterInitializer.class})
 public class JxBrowserManagerTest {
   @Mock Project mockProject;
   final String PLATFORM_FILE_NAME = "test/platform/file/name";
@@ -37,6 +39,10 @@ public class JxBrowserManagerTest {
   @Before
   public void setUp() {
     JxBrowserManager.resetForTest();
+
+    final Analytics mockAnalytics = mock(Analytics.class);
+    PowerMockito.mockStatic(FlutterInitializer.class);
+    when(FlutterInitializer.getAnalytics()).thenReturn(mockAnalytics);
   }
 
   @Test
