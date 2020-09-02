@@ -25,6 +25,7 @@ import com.intellij.util.ui.EdtInvocationManager;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
+import io.flutter.module.FlutterProjectType;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
@@ -181,6 +182,11 @@ public class FlutterSdk {
     final List<String> args = new ArrayList<>();
     if (additionalSettings != null) {
       args.addAll(additionalSettings.getArgs());
+      if (FlutterProjectType.PLUGIN.equals(additionalSettings.getType()) && getVersion().flutterCreateSupportsPlatforms()) {
+        // TODO(messick): Remove this after the wizard UI is updated.
+        args.add("--platforms");
+        args.add("android,ios");
+      }
     }
 
     // keep as the last argument

@@ -44,6 +44,11 @@ public class FlutterSdkVersion {
    */
   private static final FlutterSdkVersion MIN_DART_DEFINE_SDK = new FlutterSdkVersion("1.12.0");
 
+  /**
+   * The version that support --platform in flutter create.
+   */
+  private static final FlutterSdkVersion MIN_CREATE_PLATFORMS_SDK = new FlutterSdkVersion("1.20.0");
+
   @Nullable
   private final Version version;
 
@@ -110,7 +115,13 @@ public class FlutterSdkVersion {
   }
 
   public boolean isDartDefineSupported() {
+    //noinspection ConstantConditions
     return version != null && version.compareTo(MIN_DART_DEFINE_SDK.version) >= 0;
+  }
+
+  public boolean flutterCreateSupportsPlatforms() {
+    //noinspection ConstantConditions
+    return version != null && version.compareTo(MIN_CREATE_PLATFORMS_SDK.version) >= 0;
   }
 
   public boolean flutterTestSupportsMachineMode() {
