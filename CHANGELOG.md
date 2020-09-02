@@ -1,3 +1,22 @@
+# 49.0
+- Use PluginManager method for Android Studio and move function (#4794)
+- Enable embedded browser by default in dev (#4790)
+- Update flutter resources (#4789)
+- Send IntelliJ component background color to devtools (#4788)
+- Fix white screen during embedded browser load (#4787)
+- Add note on LGPL compliance to plugin description (#4786)
+- Add experimental setting for embedding devtools (#4785)
+- Don't cache VirtualFiles for '.packages' file and 'lib' folder. (#4781)
+- Load correct file path for JxBrowser files (#4782)
+- Skip write for empty JxBrowser key (#4783)
+- Use JxBrowser key during build process (#4773)
+- FlutterDependencyInspection shouldn't work in a non-Flutter project (#4780)
+- Add tests for JxBrowserManager logic and add test comments (#4714)
+- Use JxBrowser version 7.10 (#4769)
+- Use daemon API to get devtools host and port for internal use (#4733)
+- Skip start-paused for web server in run mode (#4766)
+- Show run console and skip breakpoints during test run (#4749)
+
 # 48.1
 - Avoid start-paused for directory scope tests (#4748)
 - Fix Android Studio canary build (#4745)

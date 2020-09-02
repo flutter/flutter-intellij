@@ -67,7 +67,7 @@ List<EditCommand> editCommands = [
         'import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;',
     replacement:
         'import com.android.tools.idea.gradle.dsl.model.BuildModelContext;',
-    version: '4.1',
+    versions: ['4.1', '4.2'],
   ),
   Subst(
     path:
@@ -119,10 +119,14 @@ class EditAndroidModuleLibraryManager extends EditCommand {
       );
       source = source.replaceAll(
           "androidProject.init41", "androidProject.initPre41");
+      source = source.replaceAll("ProjectExImpl", "ProjectImpl");
+      source = source.replaceAll(
+        "import com.intellij.openapi.project.impl.ProjectExImpl;", ""
+      );
       processedFile.writeAsStringSync(source);
       return original;
     } else if (spec.version.startsWith("4.0") ||
-        spec.version.startsWith("2020.2")) {
+        spec.version.startsWith("4.1")) {
       var processedFile, source;
       processedFile = File(
           'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
@@ -130,6 +134,10 @@ class EditAndroidModuleLibraryManager extends EditCommand {
       var original = source;
       source = source.replaceAll(
           "androidProject.init41", "androidProject.initPre41");
+      source = source.replaceAll("ProjectExImpl", "ProjectImpl");
+      source = source.replaceAll(
+          "import com.intellij.openapi.project.impl.ProjectExImpl;", ""
+      );
       processedFile.writeAsStringSync(source);
       return original;
     } else {

@@ -24,6 +24,8 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ex.ProjectEx;
+import com.intellij.openapi.project.impl.ProjectExImpl;
 import com.intellij.openapi.project.impl.ProjectImpl;
 import com.intellij.openapi.project.impl.ProjectManagerImpl;
 import com.intellij.openapi.projectRoots.Sdk;
@@ -312,7 +314,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     getInstance(project).scheduleUpdate();
   }
 
-  private static class EmbeddedAndroidProject extends ProjectImpl {
+  private class EmbeddedAndroidProject extends ProjectExImpl {
     private Path path;
 
     protected EmbeddedAndroidProject(@NotNull Path filePath) {
@@ -366,11 +368,6 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
           TransactionGuard.submitTransaction(this, () -> WriteAction.run(() -> Disposer.dispose(this)));
         }
       }
-    }
-
-    @Override
-    public String toString() {
-      return "Project" + (isDisposed() ? " (Disposed)" : " ") + TEMPLATE_PROJECT_NAME;
     }
   }
 }
