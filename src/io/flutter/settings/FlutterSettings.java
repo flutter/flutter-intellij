@@ -5,6 +5,8 @@
  */
 package io.flutter.settings;
 
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
@@ -263,12 +265,18 @@ public class FlutterSettings {
   }
 
   public boolean isEnableEmbeddedBrowsers() {
-    return getPropertiesComponent().getBoolean(enableEmbeddedBrowsersKey, FlutterUtils.isPluginVersionDev());
+    return getPropertiesComponent().getBoolean(enableEmbeddedBrowsersKey, isPluginVersionDev());
   }
 
   public void setEnableEmbeddedBrowsers(boolean value) {
-    getPropertiesComponent().setValue(enableEmbeddedBrowsersKey, value, FlutterUtils.isPluginVersionDev());
+    getPropertiesComponent().setValue(enableEmbeddedBrowsersKey, value, isPluginVersionDev());
 
     fireEvent();
+  }
+
+  private static boolean isPluginVersionDev() {
+    final IdeaPluginDescriptor descriptor = PluginManager.getPlugin(FlutterUtils.getPluginId());
+    assert descriptor != null;
+    return descriptor.getVersion().contains("dev") || descriptor.getVersion().contains("SNAPSHOT");
   }
 }
