@@ -24,7 +24,7 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2020.1.1, Android Studio 4.1 Beta 1 & 4.2 Canary 1",
+      "comments": "IntelliJ 2020.1.1, Android Studio 4.1 Beta 1",
       "name": "Android Studio 4.1",
       "version": "4.1",
       "ideaProduct": "android-studio",
@@ -35,14 +35,14 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2020.2",
-      "name": "IntelliJ 2020.2",
-      "version": "2020.2",
+      "comments": "IntelliJ 2020.2, & Android Studio 4.2 Canary 8",
+      "name": "Android Studio 4.2",
+      "version": "4.2",
       "isUnitTestTarget": "true",
-      "ideaProduct": "ideaIC",
-      "ideaVersion": "202.4357.23",
-      "dartPluginVersion": "202.4357.23",
-      "sinceBuild": "202.4357.23",
+      "ideaProduct": "android-studio",
+      "ideaVersion": "202.6787931",
+      "dartPluginVersion": "202.6397.47",
+      "sinceBuild": "202.6397.94",
       "untilBuild": "202.*"
     }
   ]
