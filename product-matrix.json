@@ -31,7 +31,8 @@
       "ideaVersion": "201.6565218",
       "dartPluginVersion": "201.7223.99",
       "sinceBuild": "201.7223",
-      "untilBuild": "201.*"
+      "untilBuild": "201.*",
+      "filesToSkip": ["src/io/flutter/utils/AndroidLocationProvider.java"]
     },
     {
       "channel": "stable",
@@ -43,7 +44,8 @@
       "ideaVersion": "202.6787931",
       "dartPluginVersion": "202.6397.47",
       "sinceBuild": "202.6397.94",
-      "untilBuild": "202.*"
+      "untilBuild": "202.*",
+      "filesToSkip": ["src/io/flutter/utils/AndroidLocationProvider.java"]
     }
   ]
 }
