@@ -10,6 +10,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.teamdev.jxbrowser.browser.Browser;
+import com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.engine.EngineOptions;
 import com.teamdev.jxbrowser.navigation.event.LoadFinished;
@@ -20,19 +21,30 @@ import java.awt.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.teamdev.jxbrowser.engine.RenderingMode.HARDWARE_ACCELERATED;
+import static com.teamdev.jxbrowser.engine.RenderingMode.OFF_SCREEN;
 
 public class EmbeddedBrowser {
   public void openPanel(ContentManager contentManager, String tabName, String url) {
-    final EngineOptions options =
+    EngineOptions options =
       EngineOptions.newBuilder(HARDWARE_ACCELERATED).build();
-    final Engine engine = Engine.newInstance(options);
-    final Browser browser = engine.newBrowser();
-    browser.settings().enableTransparentBackground();
+    Engine engine = Engine.newInstance(options);
+    Browser browser = engine.newBrowser();
+
+    try {
+      browser.settings().enableTransparentBackground();
+    } catch (UnsupportedRenderingModeException ex) {
+      options =
+        EngineOptions.newBuilder(OFF_SCREEN).build();
+      engine = Engine.newInstance(options);
+      browser = engine.newBrowser();
+      browser.settings().enableTransparentBackground();
+    }
 
     // Multiple LoadFinished events can occur, but we only need to add content the first time.
     final AtomicBoolean contentLoaded = new AtomicBoolean(false);
 
     browser.navigation().loadUrl(url);
+    final Browser finalBrowser = browser;
     browser.navigation().on(LoadFinished.class, event -> {
       if (!contentLoaded.compareAndSet(false, true)) {
         return;
@@ -47,7 +59,7 @@ public class EmbeddedBrowser {
 
         // Creating Swing component for rendering web content
         // loaded in the given Browser instance.
-        final BrowserView view = BrowserView.newInstance(browser);
+        final BrowserView view = BrowserView.newInstance(finalBrowser);
         view.setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
 
         content.setComponent(view);
