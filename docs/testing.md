@@ -55,13 +55,9 @@ This might require a reboot. Start from the Welcome screen at least once.
   * Project contents are created.
     * Verify that a run configuration (`main.dart`) is enabled in the run/debug selector.
     * Verify that directories `.ios` and `.android` exist.
-* Convert to editable native code (`Tools > Flutter > Make host app editable`)
-* Confirm that:
-  * Project contents are created.
-    * Verify that directories `ios` and `android` exist, in addition to `.ios` and `.android`.
 * Run the app and verify that it starts correctly.
 * Stop the app.
-* Navigate to and select `<project root>/android`
+* Navigate to and select `<project root>/.android`
 * Select `Flutter > Open Android module in Android Studio` from the project list menu
   * Opening in a new window is recommended. If necessary change your preference/setting to allow that.
 * Verify that Gradle sync completes normally
@@ -74,7 +70,7 @@ Validate that our example projects can be opened.
 
 * close any open projects in IDEA
 * from the Welcome screen choose `Open` (IntelliJ) or `Open an existing Android Studio project` (AS)
-* browse to and select `<flutter-root>/examples/flutter_gallery`
+* browse to and select `<flutter-root>/examples/catalog`
 * ensure there are no analysis errors or warnings
 * test that code completion is working as expected
 * ensure that the `main.dart` launch configuration shows up and is selected
@@ -124,7 +120,6 @@ In the newly created app:
 * open the inspector
 * change the display by clicking `Render Tree` and the refresh button
 * open the performance view
-* (in Android Studio): verify that the performance view is active and the memory view is not
 * hit resume in the debugger
 
 ## Hot Reload
@@ -196,7 +191,7 @@ up the new project wizard. Choose the template that includes a Basic
 Activity. One the next page, use Kotlin and minimum API level 16.
 Let the system stabilize (Gradle sync).
 
-Close the editor for content_main.xml. Switch the Project view to
+Switch the Project view to
 the Project Files mode. Collapse the Gradle window if it is open.
 
 ### Create a Flutter module
