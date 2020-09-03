@@ -18,10 +18,9 @@ public class DevToolsUtils {
     int devtoolsPort,
     String serviceProtocolUri,
     String page,
-    boolean embed,
-    String pageName
+    boolean embed
   ) {
-    return generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, embed, pageName, null);
+    return generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, embed, null);
   }
 
   public static String generateDevToolsUrl(
@@ -30,18 +29,16 @@ public class DevToolsUtils {
     String serviceProtocolUri,
     String page,
     boolean embed,
-    String pageName,
     String colorHexCode
   ) {
     final List<String> params = new ArrayList<>();
 
     params.add("ide=" + FlutterSdkUtil.getFlutterHostEnvValue());
+    if (page != null) {
+      params.add("page=" + page);
+    }
     if (colorHexCode != null) {
       params.add("backgroundColor=" + colorHexCode);
-    }
-
-    if (pageName != null) {
-      params.add("page=" + pageName);
     }
     if (embed) {
       params.add("embed=true");
@@ -50,8 +47,7 @@ public class DevToolsUtils {
     if (serviceProtocolUri != null) {
       try {
         final String urlParam = URLEncoder.encode(serviceProtocolUri, "UTF-8");
-        final String pageParam = page == null ? "" : ("#" + page);
-        params.add("uri=" + urlParam + pageParam);
+        params.add("uri=" + urlParam);
       }
       catch (UnsupportedEncodingException ignored) {
       }

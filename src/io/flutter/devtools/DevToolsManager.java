@@ -389,14 +389,14 @@ class DevToolsInstance {
 
   public void openBrowserAndConnect(String serviceProtocolUri, String page) {
     BrowserLauncher.getInstance().browse(
-      DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null),
+      DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false),
       null
     );
   }
 
   public void openPanel(String serviceProtocolUri, ContentManager contentManager, String tabName, String pageName) {
     final String color = ColorUtil.toHex(UIUtil.getEditorPaneBackground());
-    final String url = DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, null, true, pageName, color);
+    final String url = DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, pageName, true, color);
 
     ApplicationManager.getApplication().invokeLater(() -> {
       new EmbeddedBrowser().openPanel(contentManager, tabName, url);
