@@ -21,14 +21,23 @@ import java.awt.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.teamdev.jxbrowser.engine.RenderingMode.HARDWARE_ACCELERATED;
-import static com.teamdev.jxbrowser.engine.RenderingMode.OFF_SCREEN;
 
 public class EmbeddedBrowser {
   public void openPanel(ContentManager contentManager, String tabName, String url) {
+    final EngineOptions options =
+      EngineOptions.newBuilder(HARDWARE_ACCELERATED).build();
+    final Engine engine = Engine.newInstance(options);
+    final Browser browser = engine.newBrowser();
+
+    try {
+      browser.settings().enableTransparentBackground();
+    } catch (UnsupportedRenderingModeException ex) {
+      // Skip using a transparent background if an exception is thrown.
+    }
+
     // Multiple LoadFinished events can occur, but we only need to add content the first time.
     final AtomicBoolean contentLoaded = new AtomicBoolean(false);
 
-    final Browser browser = createBrowser();
     browser.navigation().loadUrl(url);
     browser.navigation().on(LoadFinished.class, event -> {
       if (!contentLoaded.compareAndSet(false, true)) {
@@ -54,24 +63,5 @@ public class EmbeddedBrowser {
         contentManager.addContent(content);
       });
     });
-  }
-
-  private Browser createBrowser() {
-    EngineOptions options =
-      EngineOptions.newBuilder(HARDWARE_ACCELERATED).build();
-    Engine engine = Engine.newInstance(options);
-    Browser browser = engine.newBrowser();
-
-    try {
-      browser.settings().enableTransparentBackground();
-    } catch (UnsupportedRenderingModeException ex) {
-      options =
-        EngineOptions.newBuilder(OFF_SCREEN).build();
-      engine = Engine.newInstance(options);
-      browser = engine.newBrowser();
-      browser.settings().enableTransparentBackground();
-    }
-
-    return browser;
   }
 }
