@@ -76,17 +76,17 @@ public class VmService extends VmServiceBase {
   /**
    * The major version number of the protocol supported by this client.
    */
-  public static final int versionMajor = 3;
+  public static final int versionMajor = 4;
 
   /**
    * The minor version number of the protocol supported by this client.
    */
-  public static final int versionMinor = 26;
+  public static final int versionMinor = 0;
 
   /**
    * The [addBreakpoint] RPC is used to add a breakpoint at a specific line of some script.
    */
-  public void addBreakpoint(String isolateId, String scriptId, int line, BreakpointConsumer consumer) {
+  public void addBreakpoint(String isolateId, String scriptId, int line, AddBreakpointConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("scriptId", scriptId);
@@ -98,7 +98,7 @@ public class VmService extends VmServiceBase {
    * The [addBreakpoint] RPC is used to add a breakpoint at a specific line of some script.
    * @param column This parameter is optional and may be null.
    */
-  public void addBreakpoint(String isolateId, String scriptId, int line, Integer column, BreakpointConsumer consumer) {
+  public void addBreakpoint(String isolateId, String scriptId, int line, Integer column, AddBreakpointConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("scriptId", scriptId);
@@ -110,7 +110,7 @@ public class VmService extends VmServiceBase {
   /**
    * The [addBreakpointAtEntry] RPC is used to add a breakpoint at the entrypoint of some function.
    */
-  public void addBreakpointAtEntry(String isolateId, String functionId, BreakpointConsumer consumer) {
+  public void addBreakpointAtEntry(String isolateId, String functionId, AddBreakpointAtEntryConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("functionId", functionId);
@@ -122,7 +122,7 @@ public class VmService extends VmServiceBase {
    * RPC is useful when a script has not yet been assigned an id, for example, if a script is in a
    * deferred library which has not yet been loaded.
    */
-  public void addBreakpointWithScriptUri(String isolateId, String scriptUri, int line, BreakpointConsumer consumer) {
+  public void addBreakpointWithScriptUri(String isolateId, String scriptUri, int line, AddBreakpointWithScriptUriConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("scriptUri", scriptUri);
@@ -136,13 +136,22 @@ public class VmService extends VmServiceBase {
    * deferred library which has not yet been loaded.
    * @param column This parameter is optional and may be null.
    */
-  public void addBreakpointWithScriptUri(String isolateId, String scriptUri, int line, Integer column, BreakpointConsumer consumer) {
+  public void addBreakpointWithScriptUri(String isolateId, String scriptUri, int line, Integer column, AddBreakpointWithScriptUriConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("scriptUri", scriptUri);
     params.addProperty("line", line);
     if (column != null) params.addProperty("column", column);
     request("addBreakpointWithScriptUri", params, consumer);
+  }
+
+  /**
+   * Clears all CPU profiling samples.
+   */
+  public void clearCpuSamples(String isolateId, ClearCpuSamplesConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    request("clearCpuSamples", params, consumer);
   }
 
   /**
@@ -211,24 +220,48 @@ public class VmService extends VmServiceBase {
 
   /**
    * The [getAllocationProfile] RPC is used to retrieve allocation information for a given isolate.
+   * @param reset This parameter is optional and may be null.
+   * @param gc This parameter is optional and may be null.
    */
-  public void getAllocationProfile(String isolateId, AllocationProfileConsumer consumer) {
+  public void getAllocationProfile(String isolateId, Boolean reset, Boolean gc, GetAllocationProfileConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    if (reset != null) params.addProperty("reset", reset);
+    if (gc != null) params.addProperty("gc", gc);
+    request("getAllocationProfile", params, consumer);
+  }
+
+  /**
+   * The [getAllocationProfile] RPC is used to retrieve allocation information for a given isolate.
+   */
+  public void getAllocationProfile(String isolateId, GetAllocationProfileConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("getAllocationProfile", params, consumer);
   }
 
   /**
-   * The [getAllocationProfile] RPC is used to retrieve allocation information for a given isolate.
-   * @param reset This parameter is optional and may be null.
-   * @param gc This parameter is optional and may be null.
+   * The [getClassList] RPC is used to retrieve a [ClassList] containing all classes for an isolate
+   * based on the isolate's [isolateId].
    */
-  public void getAllocationProfile(String isolateId, Boolean reset, Boolean gc, AllocationProfileConsumer consumer) {
+  public void getClassList(String isolateId, GetClassListConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
-    if (reset != null) params.addProperty("reset", reset);
-    if (gc != null) params.addProperty("gc", gc);
-    request("getAllocationProfile", params, consumer);
+    request("getClassList", params, consumer);
+  }
+
+  /**
+   * The [getCpuSamples] RPC is used to retrieve samples collected by the CPU profiler. Only
+   * samples collected in the time range <code>[timeOriginMicros, timeOriginMicros +
+   * timeExtentMicros]</code>[timeOriginMicros, timeOriginMicros + timeExtentMicros] will be
+   * reported.
+   */
+  public void getCpuSamples(String isolateId, int timeOriginMicros, int timeExtentMicros, GetCpuSamplesConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    params.addProperty("timeOriginMicros", timeOriginMicros);
+    params.addProperty("timeExtentMicros", timeExtentMicros);
+    request("getCpuSamples", params, consumer);
   }
 
   /**
@@ -256,7 +289,7 @@ public class VmService extends VmServiceBase {
    * The [getInstances] RPC is used to retrieve a set of instances which are of a specific class.
    * This does not include instances of subclasses of the given class.
    */
-  public void getInstances(String isolateId, String objectId, int limit, InstanceSetConsumer consumer) {
+  public void getInstances(String isolateId, String objectId, int limit, GetInstancesConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("objectId", objectId);
@@ -271,6 +304,25 @@ public class VmService extends VmServiceBase {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("getIsolate", params, consumer);
+  }
+
+  /**
+   * The [getIsolateGroup] RPC is used to lookup an [IsolateGroup] object by its [id].
+   */
+  public void getIsolateGroup(String isolateGroupId, GetIsolateGroupConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateGroupId", isolateGroupId);
+    request("getIsolateGroup", params, consumer);
+  }
+
+  /**
+   * The [getIsolateGroupMemoryUsage] RPC is used to lookup an isolate group's memory usage
+   * statistics by its [id].
+   */
+  public void getIsolateGroupMemoryUsage(String isolateGroupId, GetIsolateGroupMemoryUsageConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateGroupId", isolateGroupId);
+    request("getIsolateGroupMemoryUsage", params, consumer);
   }
 
   /**
@@ -307,10 +359,18 @@ public class VmService extends VmServiceBase {
   }
 
   /**
+   * Returns a description of major uses of memory known to the VM.
+   */
+  public void getProcessMemoryUsage(ProcessMemoryUsageConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    request("getProcessMemoryUsage", params, consumer);
+  }
+
+  /**
    * The [getRetainingPath] RPC is used to lookup a path from an object specified by [targetId] to
    * a GC root (i.e., the object which is preventing this object from being garbage collected).
    */
-  public void getRetainingPath(String isolateId, String targetId, int limit, RetainingPathConsumer consumer) {
+  public void getRetainingPath(String isolateId, String targetId, int limit, GetRetainingPathConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("targetId", targetId);
@@ -322,7 +382,7 @@ public class VmService extends VmServiceBase {
    * The [getScripts] RPC is used to retrieve a [ScriptList] containing all scripts for an isolate
    * based on the isolate's [isolateId].
    */
-  public void getScripts(String isolateId, ScriptListConsumer consumer) {
+  public void getScripts(String isolateId, GetScriptsConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("getScripts", params, consumer);
@@ -332,7 +392,7 @@ public class VmService extends VmServiceBase {
    * The [getSourceReport] RPC is used to generate a set of reports tied to source locations in an
    * isolate.
    */
-  public void getSourceReport(String isolateId, List<SourceReportKind> reports, SourceReportConsumer consumer) {
+  public void getSourceReport(String isolateId, List<SourceReportKind> reports, GetSourceReportConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.add("reports", convertIterableToJsonArray(reports));
@@ -347,7 +407,7 @@ public class VmService extends VmServiceBase {
    * @param endTokenPos This parameter is optional and may be null.
    * @param forceCompile This parameter is optional and may be null.
    */
-  public void getSourceReport(String isolateId, List<SourceReportKind> reports, String scriptId, Integer tokenPos, Integer endTokenPos, Boolean forceCompile, SourceReportConsumer consumer) {
+  public void getSourceReport(String isolateId, List<SourceReportKind> reports, String scriptId, Integer tokenPos, Integer endTokenPos, Boolean forceCompile, GetSourceReportConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.add("reports", convertIterableToJsonArray(reports));
@@ -362,10 +422,19 @@ public class VmService extends VmServiceBase {
    * The [getStack] RPC is used to retrieve the current execution stack and message queue for an
    * isolate. The isolate does not need to be paused.
    */
-  public void getStack(String isolateId, StackConsumer consumer) {
+  public void getStack(String isolateId, GetStackConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("getStack", params, consumer);
+  }
+
+  /**
+   * The [getSupportedProtocols] RPC is used to determine which protocols are supported by the
+   * current server.
+   */
+  public void getSupportedProtocols(ProtocolListConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    request("getSupportedProtocols", params, consumer);
   }
 
   /**
@@ -458,7 +527,7 @@ public class VmService extends VmServiceBase {
    * The [kill] RPC is used to kill an isolate as if by dart:isolate's
    * <code>Isolate.kill(IMMEDIATE)</code>Isolate.kill(IMMEDIATE).
    */
-  public void kill(String isolateId, SuccessConsumer consumer) {
+  public void kill(String isolateId, KillConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("kill", params, consumer);
@@ -468,7 +537,7 @@ public class VmService extends VmServiceBase {
    * The [pause] RPC is used to interrupt a running isolate. The RPC enqueues the interrupt request
    * and potentially returns before the isolate is paused.
    */
-  public void pause(String isolateId, SuccessConsumer consumer) {
+  public void pause(String isolateId, PauseConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("pause", params, consumer);
@@ -493,7 +562,7 @@ public class VmService extends VmServiceBase {
    * @param rootLibUri This parameter is optional and may be null.
    * @param packagesUri This parameter is optional and may be null.
    */
-  public void reloadSources(String isolateId, Boolean force, Boolean pause, String rootLibUri, String packagesUri, ReloadReportConsumer consumer) {
+  public void reloadSources(String isolateId, Boolean force, Boolean pause, String rootLibUri, String packagesUri, ReloadSourcesConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     if (force != null) params.addProperty("force", force);
@@ -506,7 +575,7 @@ public class VmService extends VmServiceBase {
   /**
    * The [reloadSources] RPC is used to perform a hot reload of an Isolate's sources.
    */
-  public void reloadSources(String isolateId, ReloadReportConsumer consumer) {
+  public void reloadSources(String isolateId, ReloadSourcesConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("reloadSources", params, consumer);
@@ -515,7 +584,7 @@ public class VmService extends VmServiceBase {
   /**
    * The [removeBreakpoint] RPC is used to remove a breakpoint by its [id].
    */
-  public void removeBreakpoint(String isolateId, String breakpointId, SuccessConsumer consumer) {
+  public void removeBreakpoint(String isolateId, String breakpointId, RemoveBreakpointConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("breakpointId", breakpointId);
@@ -525,10 +594,19 @@ public class VmService extends VmServiceBase {
   /**
    * Requests a dump of the Dart heap of the given isolate.
    */
-  public void requestHeapSnapshot(String isolateId, SuccessConsumer consumer) {
+  public void requestHeapSnapshot(String isolateId, RequestHeapSnapshotConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("requestHeapSnapshot", params, consumer);
+  }
+
+  /**
+   * The [resume] RPC is used to resume execution of a paused isolate.
+   */
+  public void resume(String isolateId, ResumeConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    request("resume", params, consumer);
   }
 
   /**
@@ -537,20 +615,11 @@ public class VmService extends VmServiceBase {
    * parameter is optional and may be null.
    * @param frameIndex This parameter is optional and may be null.
    */
-  public void resume(String isolateId, StepOption step, Integer frameIndex, SuccessConsumer consumer) {
+  public void resume(String isolateId, StepOption step, Integer frameIndex, ResumeConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     if (step != null) params.addProperty("step", step.name());
     if (frameIndex != null) params.addProperty("frameIndex", frameIndex);
-    request("resume", params, consumer);
-  }
-
-  /**
-   * The [resume] RPC is used to resume execution of a paused isolate.
-   */
-  public void resume(String isolateId, SuccessConsumer consumer) {
-    final JsonObject params = new JsonObject();
-    params.addProperty("isolateId", isolateId);
     request("resume", params, consumer);
   }
 
@@ -560,7 +629,7 @@ public class VmService extends VmServiceBase {
    * @param mode An [ExceptionPauseMode] indicates how the isolate pauses when an exception is
    * thrown.
    */
-  public void setExceptionPauseMode(String isolateId, ExceptionPauseMode mode, SuccessConsumer consumer) {
+  public void setExceptionPauseMode(String isolateId, ExceptionPauseMode mode, SetExceptionPauseModeConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("mode", mode.name());
@@ -571,7 +640,7 @@ public class VmService extends VmServiceBase {
    * The [setFlag] RPC is used to set a VM flag at runtime. Returns an error if the named flag does
    * not exist, the flag may not be set at runtime, or the value is of the wrong type for the flag.
    */
-  public void setFlag(String name, String value, SuccessConsumer consumer) {
+  public void setFlag(String name, String value, SetFlagConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("name", name);
     params.addProperty("value", value);
@@ -582,7 +651,7 @@ public class VmService extends VmServiceBase {
    * The [setLibraryDebuggable] RPC is used to enable or disable whether breakpoints and stepping
    * work for a given library.
    */
-  public void setLibraryDebuggable(String isolateId, String libraryId, boolean isDebuggable, SuccessConsumer consumer) {
+  public void setLibraryDebuggable(String isolateId, String libraryId, boolean isDebuggable, SetLibraryDebuggableConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("libraryId", libraryId);
@@ -593,7 +662,7 @@ public class VmService extends VmServiceBase {
   /**
    * The [setName] RPC is used to change the debugging name for an isolate.
    */
-  public void setName(String isolateId, String name, SuccessConsumer consumer) {
+  public void setName(String isolateId, String name, SetNameConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("name", name);
@@ -655,15 +724,43 @@ public class VmService extends VmServiceBase {
 
   @Override
   void forwardResponse(Consumer consumer, String responseType, JsonObject json) {
-    if (consumer instanceof AllocationProfileConsumer) {
-      if (responseType.equals("AllocationProfile")) {
-        ((AllocationProfileConsumer) consumer).received(new AllocationProfile(json));
+    if (consumer instanceof AddBreakpointAtEntryConsumer) {
+      if (responseType.equals("Breakpoint")) {
+        ((AddBreakpointAtEntryConsumer) consumer).received(new Breakpoint(json));
+        return;
+      }
+      if (responseType.equals("Sentinel")) {
+        ((AddBreakpointAtEntryConsumer) consumer).received(new Sentinel(json));
         return;
       }
     }
-    if (consumer instanceof BreakpointConsumer) {
+    if (consumer instanceof AddBreakpointConsumer) {
       if (responseType.equals("Breakpoint")) {
-        ((BreakpointConsumer) consumer).received(new Breakpoint(json));
+        ((AddBreakpointConsumer) consumer).received(new Breakpoint(json));
+        return;
+      }
+      if (responseType.equals("Sentinel")) {
+        ((AddBreakpointConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+    }
+    if (consumer instanceof AddBreakpointWithScriptUriConsumer) {
+      if (responseType.equals("Breakpoint")) {
+        ((AddBreakpointWithScriptUriConsumer) consumer).received(new Breakpoint(json));
+        return;
+      }
+      if (responseType.equals("Sentinel")) {
+        ((AddBreakpointWithScriptUriConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+    }
+    if (consumer instanceof ClearCpuSamplesConsumer) {
+      if (responseType.equals("Sentinel")) {
+        ((ClearCpuSamplesConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+      if (responseType.equals("Success")) {
+        ((ClearCpuSamplesConsumer) consumer).received(new Success(json));
         return;
       }
     }
@@ -709,6 +806,36 @@ public class VmService extends VmServiceBase {
         return;
       }
     }
+    if (consumer instanceof GetAllocationProfileConsumer) {
+      if (responseType.equals("AllocationProfile")) {
+        ((GetAllocationProfileConsumer) consumer).received(new AllocationProfile(json));
+        return;
+      }
+      if (responseType.equals("Sentinel")) {
+        ((GetAllocationProfileConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+    }
+    if (consumer instanceof GetClassListConsumer) {
+      if (responseType.equals("ClassList")) {
+        ((GetClassListConsumer) consumer).received(new ClassList(json));
+        return;
+      }
+      if (responseType.equals("Sentinel")) {
+        ((GetClassListConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+    }
+    if (consumer instanceof GetCpuSamplesConsumer) {
+      if (responseType.equals("CpuSamples")) {
+        ((GetCpuSamplesConsumer) consumer).received(new CpuSamples(json));
+        return;
+      }
+      if (responseType.equals("Sentinel")) {
+        ((GetCpuSamplesConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+    }
     if (consumer instanceof GetInboundReferencesConsumer) {
       if (responseType.equals("InboundReferences")) {
         ((GetInboundReferencesConsumer) consumer).received(new InboundReferences(json));
@@ -719,6 +846,16 @@ public class VmService extends VmServiceBase {
         return;
       }
     }
+    if (consumer instanceof GetInstancesConsumer) {
+      if (responseType.equals("InstanceSet")) {
+        ((GetInstancesConsumer) consumer).received(new InstanceSet(json));
+        return;
+      }
+      if (responseType.equals("Sentinel")) {
+        ((GetInstancesConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+    }
     if (consumer instanceof GetIsolateConsumer) {
       if (responseType.equals("Isolate")) {
         ((GetIsolateConsumer) consumer).received(new Isolate(json));
@@ -726,6 +863,26 @@ public class VmService extends VmServiceBase {
       }
       if (responseType.equals("Sentinel")) {
         ((GetIsolateConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+    }
+    if (consumer instanceof GetIsolateGroupConsumer) {
+      if (responseType.equals("IsolateGroup")) {
+        ((GetIsolateGroupConsumer) consumer).received(new IsolateGroup(json));
+        return;
+      }
+      if (responseType.equals("Sentinel")) {
+        ((GetIsolateGroupConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+    }
+    if (consumer instanceof GetIsolateGroupMemoryUsageConsumer) {
+      if (responseType.equals("MemoryUsage")) {
+        ((GetIsolateGroupMemoryUsageConsumer) consumer).received(new MemoryUsage(json));
+        return;
+      }
+      if (responseType.equals("Sentinel")) {
+        ((GetIsolateGroupMemoryUsageConsumer) consumer).received(new Sentinel(json));
         return;
       }
     }
@@ -793,9 +950,43 @@ public class VmService extends VmServiceBase {
         return;
       }
     }
-    if (consumer instanceof InstanceSetConsumer) {
-      if (responseType.equals("InstanceSet")) {
-        ((InstanceSetConsumer) consumer).received(new InstanceSet(json));
+    if (consumer instanceof GetRetainingPathConsumer) {
+      if (responseType.equals("RetainingPath")) {
+        ((GetRetainingPathConsumer) consumer).received(new RetainingPath(json));
+        return;
+      }
+      if (responseType.equals("Sentinel")) {
+        ((GetRetainingPathConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+    }
+    if (consumer instanceof GetScriptsConsumer) {
+      if (responseType.equals("ScriptList")) {
+        ((GetScriptsConsumer) consumer).received(new ScriptList(json));
+        return;
+      }
+      if (responseType.equals("Sentinel")) {
+        ((GetScriptsConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+    }
+    if (consumer instanceof GetSourceReportConsumer) {
+      if (responseType.equals("Sentinel")) {
+        ((GetSourceReportConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+      if (responseType.equals("SourceReport")) {
+        ((GetSourceReportConsumer) consumer).received(new SourceReport(json));
+        return;
+      }
+    }
+    if (consumer instanceof GetStackConsumer) {
+      if (responseType.equals("Sentinel")) {
+        ((GetStackConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+      if (responseType.equals("Stack")) {
+        ((GetStackConsumer) consumer).received(new Stack(json));
         return;
       }
     }
@@ -817,33 +1008,115 @@ public class VmService extends VmServiceBase {
         return;
       }
     }
-    if (consumer instanceof ReloadReportConsumer) {
+    if (consumer instanceof KillConsumer) {
+      if (responseType.equals("Sentinel")) {
+        ((KillConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+      if (responseType.equals("Success")) {
+        ((KillConsumer) consumer).received(new Success(json));
+        return;
+      }
+    }
+    if (consumer instanceof PauseConsumer) {
+      if (responseType.equals("Sentinel")) {
+        ((PauseConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+      if (responseType.equals("Success")) {
+        ((PauseConsumer) consumer).received(new Success(json));
+        return;
+      }
+    }
+    if (consumer instanceof ProcessMemoryUsageConsumer) {
+      if (responseType.equals("ProcessMemoryUsage")) {
+        ((ProcessMemoryUsageConsumer) consumer).received(new ProcessMemoryUsage(json));
+        return;
+      }
+    }
+    if (consumer instanceof ProtocolListConsumer) {
+      if (responseType.equals("ProtocolList")) {
+        ((ProtocolListConsumer) consumer).received(new ProtocolList(json));
+        return;
+      }
+    }
+    if (consumer instanceof ReloadSourcesConsumer) {
       if (responseType.equals("ReloadReport")) {
-        ((ReloadReportConsumer) consumer).received(new ReloadReport(json));
+        ((ReloadSourcesConsumer) consumer).received(new ReloadReport(json));
+        return;
+      }
+      if (responseType.equals("Sentinel")) {
+        ((ReloadSourcesConsumer) consumer).received(new Sentinel(json));
         return;
       }
     }
-    if (consumer instanceof RetainingPathConsumer) {
-      if (responseType.equals("RetainingPath")) {
-        ((RetainingPathConsumer) consumer).received(new RetainingPath(json));
+    if (consumer instanceof RemoveBreakpointConsumer) {
+      if (responseType.equals("Sentinel")) {
+        ((RemoveBreakpointConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+      if (responseType.equals("Success")) {
+        ((RemoveBreakpointConsumer) consumer).received(new Success(json));
         return;
       }
     }
-    if (consumer instanceof ScriptListConsumer) {
-      if (responseType.equals("ScriptList")) {
-        ((ScriptListConsumer) consumer).received(new ScriptList(json));
+    if (consumer instanceof RequestHeapSnapshotConsumer) {
+      if (responseType.equals("Sentinel")) {
+        ((RequestHeapSnapshotConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+      if (responseType.equals("Success")) {
+        ((RequestHeapSnapshotConsumer) consumer).received(new Success(json));
         return;
       }
     }
-    if (consumer instanceof SourceReportConsumer) {
-      if (responseType.equals("SourceReport")) {
-        ((SourceReportConsumer) consumer).received(new SourceReport(json));
+    if (consumer instanceof ResumeConsumer) {
+      if (responseType.equals("Sentinel")) {
+        ((ResumeConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+      if (responseType.equals("Success")) {
+        ((ResumeConsumer) consumer).received(new Success(json));
         return;
       }
     }
-    if (consumer instanceof StackConsumer) {
-      if (responseType.equals("Stack")) {
-        ((StackConsumer) consumer).received(new Stack(json));
+    if (consumer instanceof SetExceptionPauseModeConsumer) {
+      if (responseType.equals("Sentinel")) {
+        ((SetExceptionPauseModeConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+      if (responseType.equals("Success")) {
+        ((SetExceptionPauseModeConsumer) consumer).received(new Success(json));
+        return;
+      }
+    }
+    if (consumer instanceof SetFlagConsumer) {
+      if (responseType.equals("Error")) {
+        ((SetFlagConsumer) consumer).received(new ErrorObj(json));
+        return;
+      }
+      if (responseType.equals("Success")) {
+        ((SetFlagConsumer) consumer).received(new Success(json));
+        return;
+      }
+    }
+    if (consumer instanceof SetLibraryDebuggableConsumer) {
+      if (responseType.equals("Sentinel")) {
+        ((SetLibraryDebuggableConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+      if (responseType.equals("Success")) {
+        ((SetLibraryDebuggableConsumer) consumer).received(new Success(json));
+        return;
+      }
+    }
+    if (consumer instanceof SetNameConsumer) {
+      if (responseType.equals("Sentinel")) {
+        ((SetNameConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+      if (responseType.equals("Success")) {
+        ((SetNameConsumer) consumer).received(new Success(json));
         return;
       }
     }

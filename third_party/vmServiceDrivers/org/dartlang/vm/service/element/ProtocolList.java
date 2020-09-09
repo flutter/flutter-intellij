@@ -15,36 +15,28 @@ package org.dartlang.vm.service.element;
 
 // This is a generated file.
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import java.util.List;
 
+/**
+ * A {@link ProtocolList} contains a list of all protocols supported by the service instance.
+ */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class TimelineFlags extends Response {
+public class ProtocolList extends Response {
 
-  public TimelineFlags(JsonObject json) {
+  public ProtocolList(JsonObject json) {
     super(json);
   }
 
   /**
-   * The list of all available timeline streams.
+   * A list of supported protocols provided by this service.
    */
-  public List<String> getAvailableStreams() {
-    return getListString("availableStreams");
-  }
-
-  /**
-   * The list of timeline streams that are currently enabled.
-   */
-  public List<String> getRecordedStreams() {
-    return getListString("recordedStreams");
-  }
-
-  /**
-   * The name of the recorder currently in use. Recorder types include, but are not limited to:
-   * Callback, Endless, Fuchsia, Macos, Ring, Startup, and Systrace. Set to "null" if no recorder
-   * is currently set.
-   */
-  public String getRecorderName() {
-    return getAsString("recorderName");
+  public ElementList<Protocol> getProtocols() {
+    return new ElementList<Protocol>(json.get("protocols").getAsJsonArray()) {
+      @Override
+      protected Protocol basicGet(JsonArray array, int index) {
+        return new Protocol(array.get(index).getAsJsonObject());
+      }
+    };
   }
 }

@@ -19,7 +19,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 /**
- * An {@link ErrorObj} represents a Dart language level error. This is distinct from an rpc error.
+ * An {@link ErrorObj} represents a Dart language level error. This is distinct from an RPC error.
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class ErrorObj extends Obj {

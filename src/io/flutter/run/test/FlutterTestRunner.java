@@ -34,7 +34,7 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
 import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.consumer.SuccessConsumer;
+import org.dartlang.vm.service.consumer.ResumeConsumer;
 import org.dartlang.vm.service.consumer.VMConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
@@ -73,7 +73,8 @@ public class FlutterTestRunner extends GenericProgramRunner {
     throws ExecutionException {
     if (env.getExecutor().getId().equals(ToolWindowId.RUN)) {
       return run((TestLaunchState)state, env);
-    } else {
+    }
+    else {
       return runInDebugger((TestLaunchState)state, env);
     }
   }
@@ -105,9 +106,14 @@ public class FlutterTestRunner extends GenericProgramRunner {
             final ElementList<IsolateRef> isolates = response.getIsolates();
 
             for (IsolateRef isolateRef : isolates) {
-              vmService.resume(isolateRef.getId(), new SuccessConsumer() {
+              vmService.resume(isolateRef.getId(), new ResumeConsumer() {
                 @Override
-                public void received(Success response) {}
+                public void received(Sentinel response) {
+                }
+
+                @Override
+                public void received(Success response) {
+                }
 
                 @Override
                 public void onError(RPCError error) {
@@ -129,8 +135,8 @@ public class FlutterTestRunner extends GenericProgramRunner {
       }
     });
 
-  return new RunContentBuilder(executionResult, env).showRunContent(env.getContentToReuse());
-}
+    return new RunContentBuilder(executionResult, env).showRunContent(env.getContentToReuse());
+  }
 
   protected RunContentDescriptor runInDebugger(@NotNull TestLaunchState launcher, @NotNull ExecutionEnvironment env)
     throws ExecutionException {

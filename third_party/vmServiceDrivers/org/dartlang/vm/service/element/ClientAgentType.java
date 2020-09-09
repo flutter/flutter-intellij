@@ -16,35 +16,20 @@ package org.dartlang.vm.service.element;
 // This is a generated file.
 
 import com.google.gson.JsonObject;
-import java.util.List;
 
+/**
+ * See Client Agents.
+ */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class TimelineFlags extends Response {
+public class ClientAgentType extends Response {
+    public ClientAgentType(JsonObject json) {
+        super(json);
+    }
 
-  public TimelineFlags(JsonObject json) {
-    super(json);
-  }
-
-  /**
-   * The list of all available timeline streams.
+    /**
+   * The agent type for a client. null if no agent type is associated with a client.
    */
-  public List<String> getAvailableStreams() {
-    return getListString("availableStreams");
-  }
-
-  /**
-   * The list of timeline streams that are currently enabled.
-   */
-  public List<String> getRecordedStreams() {
-    return getListString("recordedStreams");
-  }
-
-  /**
-   * The name of the recorder currently in use. Recorder types include, but are not limited to:
-   * Callback, Endless, Fuchsia, Macos, Ring, Startup, and Systrace. Set to "null" if no recorder
-   * is currently set.
-   */
-  public String getRecorderName() {
-    return getAsString("recorderName");
-  }
+    public String getName() {
+        return getAsString("name");
+    }
 }

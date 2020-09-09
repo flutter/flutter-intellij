@@ -15,31 +15,44 @@ package org.dartlang.vm.service.element;
 
 // This is a generated file.
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 /**
- * {@link IsolateRef} is a reference to an {@link Isolate} object.
+ * An {@link Isolate} object provides information about one isolate in the VM.
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class IsolateRef extends Response {
+public class IsolateGroup extends Response {
 
-  public IsolateRef(JsonObject json) {
+  public IsolateGroup(JsonObject json) {
     super(json);
   }
 
   /**
-   * The id which is passed to the getIsolate RPC to load this isolate.
+   * The id which is passed to the getIsolate RPC to reload this isolate.
    */
   public String getId() {
     return getAsString("id");
   }
 
   /**
-   * Specifies whether the isolate was spawned by the VM or embedder for internal use. If `false`,
-   * this isolate is likely running user code.
+   * Specifies whether the isolate group was spawned by the VM or embedder for internal use. If
+   * `false`, this isolate group is likely running user code.
    */
-  public boolean getIsSystemIsolate() {
-    return getAsBoolean("isSystemIsolate");
+  public boolean getIsSystemIsolateGroup() {
+    return getAsBoolean("isSystemIsolateGroup");
+  }
+
+  /**
+   * A list of all isolates in this isolate group.
+   */
+  public ElementList<IsolateRef> getIsolates() {
+    return new ElementList<IsolateRef>(json.get("isolates").getAsJsonArray()) {
+      @Override
+      protected IsolateRef basicGet(JsonArray array, int index) {
+        return new IsolateRef(array.get(index).getAsJsonObject());
+      }
+    };
   }
 
   /**

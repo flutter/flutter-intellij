@@ -80,4 +80,18 @@ public class Func extends Obj {
     if (elem.get("type").getAsString().equals("@Func")) return new FuncRef(elem);
     return null;
   }
+
+  /**
+   * Is this function const?
+   */
+  public boolean isConst() {
+    return getAsBoolean("const");
+  }
+
+  /**
+   * Is this function static?
+   */
+  public boolean isStatic() {
+    return getAsBoolean("static");
+  }
 }

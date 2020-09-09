@@ -87,6 +87,14 @@ public class Isolate extends Response {
   }
 
   /**
+   * Specifies whether the isolate was spawned by the VM or embedder for internal use. If `false`,
+   * this isolate is likely running user code.
+   */
+  public boolean getIsSystemIsolate() {
+    return getAsBoolean("isSystemIsolate");
+  }
+
+  /**
    * A list of all libraries for this isolate.
    *
    * Guaranteed to be initialized when the IsolateRunnable event fires.
