@@ -25,6 +25,38 @@ import static com.teamdev.jxbrowser.engine.RenderingMode.OFF_SCREEN;
 
 public class EmbeddedBrowser {
   public void openPanel(ContentManager contentManager, String tabName, String url) {
+    // Multiple LoadFinished events can occur, but we only need to add content the first time.
+    final AtomicBoolean contentLoaded = new AtomicBoolean(false);
+
+    final Browser browser = createBrowser();
+    browser.navigation().loadUrl(url);
+    browser.navigation().on(LoadFinished.class, event -> {
+      if (!contentLoaded.compareAndSet(false, true)) {
+        return;
+      }
+      ApplicationManager.getApplication().invokeLater(() -> {
+        if (contentManager.isDisposed()) {
+          return;
+        }
+
+        contentManager.removeAllContents(false);
+        final Content content = contentManager.getFactory().createContent(null, tabName, false);
+
+        // Creating Swing component for rendering web content
+        // loaded in the given Browser instance.
+        final BrowserView view = BrowserView.newInstance(browser);
+        view.setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
+
+        content.setComponent(view);
+        content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
+        // TODO(helin24): Use differentiated icons for each tab and copy from devtools toolbar.
+        content.setIcon(FlutterIcons.Phone);
+        contentManager.addContent(content);
+      });
+    });
+  }
+
+  private Browser createBrowser() {
     EngineOptions options =
       EngineOptions.newBuilder(HARDWARE_ACCELERATED).build();
     Engine engine = Engine.newInstance(options);
@@ -40,34 +72,6 @@ public class EmbeddedBrowser {
       browser.settings().enableTransparentBackground();
     }
 
-    // Multiple LoadFinished events can occur, but we only need to add content the first time.
-    final AtomicBoolean contentLoaded = new AtomicBoolean(false);
-
-    browser.navigation().loadUrl(url);
-    final Browser finalBrowser = browser;
-    browser.navigation().on(LoadFinished.class, event -> {
-      if (!contentLoaded.compareAndSet(false, true)) {
-        return;
-      }
-      ApplicationManager.getApplication().invokeLater(() -> {
-        if (contentManager.isDisposed()) {
-          return;
-        }
-
-        contentManager.removeAllContents(false);
-        final Content content = contentManager.getFactory().createContent(null, tabName, false);
-
-        // Creating Swing component for rendering web content
-        // loaded in the given Browser instance.
-        final BrowserView view = BrowserView.newInstance(finalBrowser);
-        view.setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
-
-        content.setComponent(view);
-        content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
-        // TODO(helin24): Use differentiated icons for each tab and copy from devtools toolbar.
-        content.setIcon(FlutterIcons.Phone);
-        contentManager.addContent(content);
-      });
-    });
+    return browser;
   }
 }
