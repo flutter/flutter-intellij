@@ -30,6 +30,8 @@ intellij {
     pluginList.add(project(':flutter-studio'))
   }
   plugins = pluginList
+  sourceCompatibility = JavaVersion.VERSION_11
+  targetCompatibility = JavaVersion.VERSION_11
 }
 
 dependencies {
