@@ -18,41 +18,33 @@ package org.dartlang.vm.service.element;
 import com.google.gson.JsonObject;
 
 /**
- * {@link IsolateRef} is a reference to an {@link Isolate} object.
+ * See getSupportedProtocols.
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class IsolateRef extends Response {
+public class Protocol extends Element {
 
-  public IsolateRef(JsonObject json) {
+  public Protocol(JsonObject json) {
     super(json);
   }
 
   /**
-   * The id which is passed to the getIsolate RPC to load this isolate.
+   * The major revision of the protocol.
    */
-  public String getId() {
-    return getAsString("id");
+  public int getMajor() {
+    return getAsInt("major");
   }
 
   /**
-   * Specifies whether the isolate was spawned by the VM or embedder for internal use. If `false`,
-   * this isolate is likely running user code.
+   * The minor revision of the protocol.
    */
-  public boolean getIsSystemIsolate() {
-    return getAsBoolean("isSystemIsolate");
+  public int getMinor() {
+    return getAsInt("minor");
   }
 
   /**
-   * A name identifying this isolate. Not guaranteed to be unique.
+   * The name of the supported protocol.
    */
-  public String getName() {
-    return getAsString("name");
-  }
-
-  /**
-   * A numeric id for this isolate, represented as a string. Unique.
-   */
-  public String getNumber() {
-    return getAsString("number");
+  public String getProtocolName() {
+    return getAsString("protocolName");
   }
 }

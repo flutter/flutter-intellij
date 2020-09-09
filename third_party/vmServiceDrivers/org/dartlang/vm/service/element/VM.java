@@ -40,6 +40,18 @@ public class VM extends Response {
   }
 
   /**
+   * A list of isolate groups running in the VM.
+   */
+  public ElementList<IsolateGroupRef> getIsolateGroups() {
+    return new ElementList<IsolateGroupRef>(json.get("isolateGroups").getAsJsonArray()) {
+      @Override
+      protected IsolateGroupRef basicGet(JsonArray array, int index) {
+        return new IsolateGroupRef(array.get(index).getAsJsonObject());
+      }
+    };
+  }
+
+  /**
    * A list of isolates running in the VM.
    */
   public ElementList<IsolateRef> getIsolates() {
@@ -79,6 +91,30 @@ public class VM extends Response {
    */
   public int getStartTime() {
     return getAsInt("startTime");
+  }
+
+  /**
+   * A list of isolate groups which contain system isolates running in the VM.
+   */
+  public ElementList<IsolateGroupRef> getSystemIsolateGroups() {
+    return new ElementList<IsolateGroupRef>(json.get("systemIsolateGroups").getAsJsonArray()) {
+      @Override
+      protected IsolateGroupRef basicGet(JsonArray array, int index) {
+        return new IsolateGroupRef(array.get(index).getAsJsonObject());
+      }
+    };
+  }
+
+  /**
+   * A list of system isolates running in the VM.
+   */
+  public ElementList<IsolateRef> getSystemIsolates() {
+    return new ElementList<IsolateRef>(json.get("systemIsolates").getAsJsonArray()) {
+      @Override
+      protected IsolateRef basicGet(JsonArray array, int index) {
+        return new IsolateRef(array.get(index).getAsJsonObject());
+      }
+    };
   }
 
   /**

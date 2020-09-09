@@ -18,6 +18,7 @@ package org.dartlang.vm.service.element;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import java.util.List;
 
 /**
  * An {@link Event} is an asynchronous notification from the VM. It is delivered only when the
@@ -196,6 +197,18 @@ public class Event extends Response {
   }
 
   /**
+   * Specifies whether this event is the last of a group of events.
+   *
+   * This is provided for the event kinds:
+   *  - HeapSnapshot
+   *
+   * Can return <code>null</code>.
+   */
+  public boolean getLast() {
+    return getAsBoolean("last");
+  }
+
+  /**
    * LogRecord data.
    *
    * This is provided for the Logging event.
@@ -279,7 +292,6 @@ public class Event extends Response {
   /**
    * The status (success or failure) related to the event. This is provided for the event kinds:
    *  - IsolateReloaded
-   *  - IsolateSpawn
    *
    * Can return <code>null</code>.
    */
@@ -339,6 +351,17 @@ public class Event extends Response {
       if ("Null".equals(kind)) return null;
     }
     return new Frame(obj);
+  }
+
+  /**
+   * The new set of recorded timeline streams.
+   *
+   * This is provided for the TimelineStreamSubscriptionsUpdate event.
+   *
+   * Can return <code>null</code>.
+   */
+  public List<String> getUpdatedStreams() {
+    return json.get("updatedStreams") == null ? null : getListString("updatedStreams");
   }
 
   /**

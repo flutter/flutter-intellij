@@ -15,44 +15,47 @@ package org.dartlang.vm.service.element;
 
 // This is a generated file.
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-/**
- * {@link IsolateRef} is a reference to an {@link Isolate} object.
- */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class IsolateRef extends Response {
+public class ProcessMemoryItem extends Element {
 
-  public IsolateRef(JsonObject json) {
+  public ProcessMemoryItem(JsonObject json) {
     super(json);
   }
 
   /**
-   * The id which is passed to the getIsolate RPC to load this isolate.
+   * Subdivisons of this bucket of memory.
    */
-  public String getId() {
-    return getAsString("id");
+  public ElementList<ProcessMemoryItem> getChildren() {
+    return new ElementList<ProcessMemoryItem>(json.get("children").getAsJsonArray()) {
+      @Override
+      protected ProcessMemoryItem basicGet(JsonArray array, int index) {
+        return new ProcessMemoryItem(array.get(index).getAsJsonObject());
+      }
+    };
   }
 
   /**
-   * Specifies whether the isolate was spawned by the VM or embedder for internal use. If `false`,
-   * this isolate is likely running user code.
+   * A longer description for this item.
    */
-  public boolean getIsSystemIsolate() {
-    return getAsBoolean("isSystemIsolate");
+  public String getDescription() {
+    return getAsString("description");
   }
 
   /**
-   * A name identifying this isolate. Not guaranteed to be unique.
+   * A short name for this bucket of memory.
    */
   public String getName() {
     return getAsString("name");
   }
 
   /**
-   * A numeric id for this isolate, represented as a string. Unique.
+   * The amount of memory in bytes. This is a retained size, not a shallow size. That is, it
+   * includes the size of children.
    */
-  public String getNumber() {
-    return getAsString("number");
+  public int getSize() {
+    return getAsInt("size");
   }
 }

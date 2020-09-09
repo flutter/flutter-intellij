@@ -36,6 +36,44 @@ public class InstanceRef extends ObjRef {
   }
 
   /**
+   * The context associated with a Closure instance.
+   *
+   * Provided for instance kinds:
+   *  - Closure
+   *
+   * Can return <code>null</code>.
+   */
+  public ContextRef getClosureContext() {
+    JsonObject obj = (JsonObject) json.get("closureContext");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new ContextRef(obj);
+  }
+
+  /**
+   * The function associated with a Closure instance.
+   *
+   * Provided for instance kinds:
+   *  - Closure
+   *
+   * Can return <code>null</code>.
+   */
+  public FuncRef getClosureFunction() {
+    JsonObject obj = (JsonObject) json.get("closureFunction");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new FuncRef(obj);
+  }
+
+  /**
    * What kind of instance is this?
    */
   public InstanceKind getKind() {

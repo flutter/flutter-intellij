@@ -211,14 +211,25 @@ public class VmServiceWrapper implements Disposable {
 
     // Just to make sure that the main isolate is not handled twice, both from handleDebuggerConnected() and DartVmServiceListener.received(PauseStart)
     if (newIsolate) {
-      addRequest(() -> myVmService.setExceptionPauseMode(isolateRef.getId(),
-                                                         myDebugProcess.getBreakOnExceptionMode(),
-                                                         new VmServiceConsumers.SuccessConsumerWrapper() {
-                                                           @Override
-                                                           public void received(Success response) {
-                                                             setInitialBreakpointsAndResume(isolateRef);
-                                                           }
-                                                         }));
+      addRequest(() -> myVmService.setExceptionPauseMode(
+        isolateRef.getId(),
+        myDebugProcess.getBreakOnExceptionMode(),
+        new SetExceptionPauseModeConsumer() {
+          @Override
+          public void received(Success response) {
+            setInitialBreakpointsAndResume(isolateRef);
+          }
+
+          @Override
+          public void onError(RPCError error) {
+
+          }
+
+          @Override
+          public void received(Sentinel response) {
+
+          }
+        }));
     }
     else {
       checkInitialResume(isolateRef);
@@ -234,14 +245,25 @@ public class VmServiceWrapper implements Disposable {
         session.reset();
         session.initBreakpoints();
       });
-      addRequest(() -> myVmService.setExceptionPauseMode(isolateRef.getId(),
-                                                         myDebugProcess.getBreakOnExceptionMode(),
-                                                         new VmServiceConsumers.SuccessConsumerWrapper() {
-                                                           @Override
-                                                           public void received(Success response) {
-                                                             setInitialBreakpointsAndCheckExtensions(isolateRef, isolate);
-                                                           }
-                                                         }));
+      addRequest(() -> myVmService.setExceptionPauseMode(
+        isolateRef.getId(),
+        myDebugProcess.getBreakOnExceptionMode(),
+        new SetExceptionPauseModeConsumer() {
+          @Override
+          public void received(Success response) {
+            setInitialBreakpointsAndCheckExtensions(isolateRef, isolate);
+          }
+
+          @Override
+          public void onError(RPCError error) {
+
+          }
+
+          @Override
+          public void received(Sentinel response) {
+
+          }
+        }));
     }
   }
 
@@ -348,11 +370,16 @@ public class VmServiceWrapper implements Disposable {
       final List<RPCError> errorResponses = new ArrayList<>();
 
       for (String uri : scriptUris) {
-        myVmService.addBreakpointWithScriptUri(isolateId, uri, line, new BreakpointConsumer() {
+        myVmService.addBreakpointWithScriptUri(isolateId, uri, line, new AddBreakpointWithScriptUriConsumer() {
           @Override
           public void received(Breakpoint response) {
             breakpointResponses.add(response);
 
+            checkDone();
+          }
+
+          @Override
+          public void received(Sentinel response) {
             checkDone();
           }
 
@@ -421,19 +448,64 @@ public class VmServiceWrapper implements Disposable {
   }
 
   public void removeBreakpoint(@NotNull final String isolateId, @NotNull final String vmBreakpointId) {
-    addRequest(() -> myVmService.removeBreakpoint(isolateId, vmBreakpointId, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER));
+    addRequest(() -> myVmService.removeBreakpoint(isolateId, vmBreakpointId, new RemoveBreakpointConsumer() {
+      @Override
+      public void onError(RPCError error) {
+
+      }
+
+      @Override
+      public void received(Sentinel response) {
+
+      }
+
+      @Override
+      public void received(Success response) {
+
+      }
+    }));
   }
 
   public void resumeIsolate(@NotNull final String isolateId, @Nullable final StepOption stepOption) {
     addRequest(() -> {
       myLatestStep = stepOption;
-      myVmService.resume(isolateId, stepOption, null, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
+      myVmService.resume(isolateId, stepOption, null, new ResumeConsumer() {
+        @Override
+        public void onError(RPCError error) {
+
+        }
+
+        @Override
+        public void received(Sentinel response) {
+
+        }
+
+        @Override
+        public void received(Success response) {
+
+        }
+      });
     });
   }
 
   public void setExceptionPauseMode(@NotNull final ExceptionPauseMode mode) {
     for (final IsolatesInfo.IsolateInfo isolateInfo : myIsolatesInfo.getIsolateInfos()) {
-      addRequest(() -> myVmService.setExceptionPauseMode(isolateInfo.getIsolateId(), mode, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER));
+      addRequest(() -> myVmService.setExceptionPauseMode(isolateInfo.getIsolateId(), mode, new SetExceptionPauseModeConsumer() {
+        @Override
+        public void onError(RPCError error) {
+
+        }
+
+        @Override
+        public void received(Sentinel response) {
+
+        }
+
+        @Override
+        public void received(Success response) {
+
+        }
+      }));
     }
   }
 
@@ -446,11 +518,15 @@ public class VmServiceWrapper implements Disposable {
   public void dropFrame(@NotNull final String isolateId, int frameIndex) {
     addRequest(() -> {
       myLatestStep = StepOption.Rewind;
-      myVmService.resume(isolateId, StepOption.Rewind, frameIndex, new SuccessConsumer() {
+      myVmService.resume(isolateId, StepOption.Rewind, frameIndex, new ResumeConsumer() {
         @Override
         public void onError(RPCError error) {
           myDebugProcess.getSession().getConsoleView()
             .print("Error from drop frame: " + error.getMessage() + "\n", ConsoleViewContentType.ERROR_OUTPUT);
+        }
+
+        @Override
+        public void received(Sentinel response) {
         }
 
         @Override
@@ -461,14 +537,26 @@ public class VmServiceWrapper implements Disposable {
   }
 
   public void pauseIsolate(@NotNull final String isolateId) {
-    addRequest(() -> myVmService.pause(isolateId, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER));
+    addRequest(() -> myVmService.pause(isolateId, new PauseConsumer() {
+      @Override
+      public void onError(RPCError error) {
+      }
+
+      @Override
+      public void received(Sentinel response) {
+      }
+
+      @Override
+      public void received(Success response) {
+      }
+    }));
   }
 
   public void computeStackFrames(@NotNull final String isolateId,
                                  final int firstFrameIndex,
                                  @NotNull final XExecutionStack.XStackFrameContainer container,
                                  @Nullable final InstanceRef exception) {
-    addRequest(() -> myVmService.getStack(isolateId, new StackConsumer() {
+    addRequest(() -> myVmService.getStack(isolateId, new GetStackConsumer() {
       @Override
       public void received(final Stack vmStack) {
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
@@ -508,6 +596,11 @@ public class VmServiceWrapper implements Disposable {
       @Override
       public void onError(final RPCError error) {
         container.errorOccurred(error.getMessage());
+      }
+
+      @Override
+      public void received(Sentinel response) {
+        container.errorOccurred(response.getValueAsString());
       }
     }));
   }

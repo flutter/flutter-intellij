@@ -363,8 +363,10 @@ public class Instance extends Obj {
    *
    * Can return <code>null</code>.
    */
-  public String getPattern() {
-    return getAsString("pattern");
+  public InstanceRef getPattern() {
+    JsonObject obj = (JsonObject) json.get("pattern");
+    if (obj == null) return null;
+    return new InstanceRef(obj);
   }
 
   /**

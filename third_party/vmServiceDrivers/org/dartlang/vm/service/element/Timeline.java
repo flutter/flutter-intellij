@@ -40,7 +40,8 @@ public class Timeline extends Response {
   }
 
   /**
-   * A list of timeline events.
+   * A list of timeline events. No order is guarenteed for these events; in particular, these
+   * events may be unordered with respect to their timestamps.
    */
   public ElementList<TimelineEvent> getTraceEvents() {
     return new ElementList<TimelineEvent>(json.get("traceEvents").getAsJsonArray()) {

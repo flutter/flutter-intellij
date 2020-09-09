@@ -140,6 +140,20 @@ public enum EventKind {
   ServiceUnregistered,
 
   /**
+   * A block of timeline events has been completed.
+   * 
+   * This service event is not sent for individual timeline events. It is subject to buffering, so
+   * the most recent timeline events may never be included in any TimelineEvents event if no
+   * timeline events occur later to complete the block.
+   */
+  TimelineEvents,
+
+  /**
+   * The set of active timeline streams was changed via `setVMTimelineFlags`.
+   */
+  TimelineStreamSubscriptionsUpdate,
+
+  /**
    * Notification that a VM flag has been changed via the service protocol.
    */
   VMFlagUpdate,

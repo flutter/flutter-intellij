@@ -18,41 +18,20 @@ package org.dartlang.vm.service.element;
 import com.google.gson.JsonObject;
 
 /**
- * {@link IsolateRef} is a reference to an {@link Isolate} object.
+ * A {@link NativeFunction} object is used to represent native functions in profiler samples. See
+ * CpuSamples;
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class IsolateRef extends Response {
+public class NativeFunction extends Element {
 
-  public IsolateRef(JsonObject json) {
+  public NativeFunction(JsonObject json) {
     super(json);
   }
 
   /**
-   * The id which is passed to the getIsolate RPC to load this isolate.
-   */
-  public String getId() {
-    return getAsString("id");
-  }
-
-  /**
-   * Specifies whether the isolate was spawned by the VM or embedder for internal use. If `false`,
-   * this isolate is likely running user code.
-   */
-  public boolean getIsSystemIsolate() {
-    return getAsBoolean("isSystemIsolate");
-  }
-
-  /**
-   * A name identifying this isolate. Not guaranteed to be unique.
+   * The name of the native function this object represents.
    */
   public String getName() {
     return getAsString("name");
-  }
-
-  /**
-   * A numeric id for this isolate, represented as a string. Unique.
-   */
-  public String getNumber() {
-    return getAsString("number");
   }
 }
