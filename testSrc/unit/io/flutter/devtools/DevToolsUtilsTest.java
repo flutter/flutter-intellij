@@ -30,18 +30,18 @@ public class DevToolsUtilsTest {
     PowerMockito.when(FlutterSdkUtil.getFlutterHostEnvValue()).thenReturn("IntelliJ-IDEA");
 
     assertEquals(
-      "http://127.0.0.1:9100/?ide=IntelliJ-IDEA&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F#timeline",
+      "http://127.0.0.1:9100/?ide=IntelliJ-IDEA&page=timeline&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
       generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null)
     );
 
     assertEquals(
-      "http://127.0.0.1:9100/?ide=IntelliJ-IDEA&embed=true&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F#timeline",
+      "http://127.0.0.1:9100/?ide=IntelliJ-IDEA&page=timeline&embed=true&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
       generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, true, null)
     );
 
     assertEquals(
-      "http://127.0.0.1:9100/?ide=IntelliJ-IDEA&page=timeline&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F#timeline",
-      generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, pageName)
+      "http://127.0.0.1:9100/?ide=IntelliJ-IDEA&page=timeline&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
+      generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false)
     );
 
     assertEquals(
@@ -53,17 +53,17 @@ public class DevToolsUtilsTest {
 
     assertEquals(
       generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null),
-      "http://127.0.0.1:9100/?ide=Android-Studio&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F#timeline"
+      "http://127.0.0.1:9100/?ide=Android-Studio&page=timeline&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F"
     );
 
     assertEquals(
-      generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, "3c3f41"),
-      "http://127.0.0.1:9100/?ide=Android-Studio&backgroundColor=3c3f41&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F#timeline"
+      generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, "3c3f41"),
+      "http://127.0.0.1:9100/?ide=Android-Studio&page=timeline&backgroundColor=3c3f41&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F"
     );
 
     assertEquals(
-      generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, "ffffff"),
-      "http://127.0.0.1:9100/?ide=Android-Studio&backgroundColor=ffffff&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F#timeline"
+      generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, "ffffff"),
+      "http://127.0.0.1:9100/?ide=Android-Studio&page=timeline&backgroundColor=ffffff&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F"
     );
   }
 }
