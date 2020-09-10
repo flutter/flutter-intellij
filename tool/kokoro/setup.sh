@@ -16,6 +16,10 @@ setup() {
   flutter doctor
   export FLUTTER_SDK=`pwd`/../flutter
 
+  curl https://download.java.net/java/GA/jdk14.0.2/205943a0976c4ed48cb16f1043c5c647/12/GPL/openjdk-14.0.2_osx-x64_bin.tar.gz > ../java.tar.gz
+  (cd ..; tar fx java.tar.gz)
+  export JAVA_HOME=`pwd`/../jdk-14.0.2.jdk/Contents/Home
+  export PATH=$PATH:$JAVA_HOME/bin
   java -version
   echo "JAVA_HOME=$JAVA_HOME"
 
