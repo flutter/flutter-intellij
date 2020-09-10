@@ -121,8 +121,7 @@ class EditAndroidModuleLibraryManager extends EditCommand {
           "androidProject.init41", "androidProject.initPre41");
       source = source.replaceAll("ProjectExImpl", "ProjectImpl");
       source = source.replaceAll(
-        "import com.intellij.openapi.project.impl.ProjectExImpl;", ""
-      );
+          "import com.intellij.openapi.project.impl.ProjectExImpl;", "");
       processedFile.writeAsStringSync(source);
       return original;
     } else if (spec.version.startsWith("4.0") ||
@@ -132,12 +131,13 @@ class EditAndroidModuleLibraryManager extends EditCommand {
           'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
       source = processedFile.readAsStringSync();
       var original = source;
-      source = source.replaceAll(
-          "androidProject.init41", "androidProject.initPre41");
+      if (spec.version.startsWith("4.0")) {
+        source = source.replaceAll(
+            "androidProject.init41", "androidProject.initPre41");
+      }
       source = source.replaceAll("ProjectExImpl", "ProjectImpl");
       source = source.replaceAll(
-          "import com.intellij.openapi.project.impl.ProjectExImpl;", ""
-      );
+          "import com.intellij.openapi.project.impl.ProjectExImpl;", "");
       processedFile.writeAsStringSync(source);
       return original;
     } else {
