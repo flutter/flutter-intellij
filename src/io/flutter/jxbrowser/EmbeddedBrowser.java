@@ -10,6 +10,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.teamdev.jxbrowser.browser.Browser;
+import com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.engine.EngineOptions;
 import com.teamdev.jxbrowser.navigation.event.LoadFinished;
@@ -27,7 +28,12 @@ public class EmbeddedBrowser {
       EngineOptions.newBuilder(HARDWARE_ACCELERATED).build();
     final Engine engine = Engine.newInstance(options);
     final Browser browser = engine.newBrowser();
-    browser.settings().enableTransparentBackground();
+
+    try {
+      browser.settings().enableTransparentBackground();
+    } catch (UnsupportedRenderingModeException ex) {
+      // Skip using a transparent background if an exception is thrown.
+    }
 
     // Multiple LoadFinished events can occur, but we only need to add content the first time.
     final AtomicBoolean contentLoaded = new AtomicBoolean(false);
