@@ -862,17 +862,16 @@ class TestCommand extends ProductCommand {
     if (argResults['integration']) {
       return _runIntegrationTests();
     } else {
-      return _runUnitTests();
+      return _runUnitTests(spec);
     }
   }
 
-  Future<int> _runUnitTests() async {
+  Future<int> _runUnitTests(BuildSpec spec) async {
     // run './gradlew test'
-    if (Platform.isWindows) {
-      return await exec('.\\gradlew.bat', ['test']);
-    } else {
-      return await exec('./gradlew', ['test']);
-    }
+    final compileFn = () async {
+      return await runner.runGradleCommand(['test'], spec, '1', 'true');
+    };
+    return await applyEdits(spec, compileFn);
   }
 
   Future<int> _runIntegrationTests() async {

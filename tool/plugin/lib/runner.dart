@@ -56,7 +56,8 @@ compile
   void writeJxBrowserKeyToFile() {
     final jxBrowserKey =
         readTokenFromKeystore('FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME');
-    final propertiesFile = File("$rootPath/resources/jxbrowser/jxbrowser.properties");
+    final propertiesFile =
+        File("$rootPath/resources/jxbrowser/jxbrowser.properties");
     if (jxBrowserKey.isNotEmpty) {
       final contents = '''
 jxbrowser.license.key=${jxBrowserKey}
@@ -67,13 +68,20 @@ jxbrowser.license.key=${jxBrowserKey}
 
   Future<int> buildPlugin(BuildSpec spec, String version) async {
     writeJxBrowserKeyToFile();
+    return await runGradleCommand(['buildPlugin'], spec, version, 'false');
+  }
+
+  Future<int> runGradleCommand(List<String> command, BuildSpec spec,
+      String version, String testing) async {
     final contents = '''
 org.gradle.parallel=true
 org.gradle.jvmargs=-Xms128m -Xmx1024m -XX:+CMSClassUnloadingEnabled
 dartVersion=${spec.dartPluginVersion}
 flutterPluginVersion=$version
 ide=${spec.ideaProduct}
+testing=$testing
 ''';
+    print('\n$contents\n');
     final propertiesFile = File("$rootPath/gradle.properties");
     final source = propertiesFile.readAsStringSync();
     propertiesFile.writeAsStringSync(contents);
@@ -83,9 +91,9 @@ ide=${spec.ideaProduct}
     // During instrumentation of FlutterProjectStep.form, which is a UTF-8 file.
     try {
       if (Platform.isWindows) {
-        result = await exec('.\\gradlew.bat', ['buildPlugin']);
+        result = await exec('.\\gradlew.bat', command);
       } else {
-        result = await exec('./gradlew', ['buildPlugin']);
+        result = await exec('./gradlew', command);
       }
     } finally {
       propertiesFile.writeAsStringSync(source);
