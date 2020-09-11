@@ -15,7 +15,7 @@ public class JxBrowserUtils {
   private static final String JXBROWSER_FILE_PREFIX = "jxbrowser";
   private static final String JXBROWSER_FILE_VERSION = "7.10";
   private static final String JXBROWSER_FILE_SUFFIX = "jar";
-  public static final String PROPERTY_NAME = "jxbrowser.license.key";
+  public static final String LICENSE_PROPERTY_NAME = "jxbrowser.license.key";
 
   public static String getPlatformFileName() throws FileNotFoundException {
     String name = "";
@@ -51,6 +51,10 @@ public class JxBrowserUtils {
   }
 
   public static String getJxBrowserKey() throws FileNotFoundException {
+    if (JxBrowserUtils.class.getResource("/jxbrowser/jxbrowser.properties") == null) {
+      throw new FileNotFoundException("jxbrowser.properties file does not exist");
+    }
+
     final Properties properties = new Properties();
     try {
       properties.load(JxBrowserUtils.class.getResourceAsStream("/jxbrowser/jxbrowser.properties"));
@@ -59,7 +63,7 @@ public class JxBrowserUtils {
       throw new FileNotFoundException("Unable to load properties of JxBrowser key file");
     }
 
-    final String value = properties.getProperty(PROPERTY_NAME);
+    final String value = properties.getProperty(LICENSE_PROPERTY_NAME);
     if (value == null) {
       throw new FileNotFoundException("No value for JxBrowser key exists");
     }
