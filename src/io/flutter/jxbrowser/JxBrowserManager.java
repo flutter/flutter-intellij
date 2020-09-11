@@ -136,8 +136,7 @@ public class JxBrowserManager {
       System.setProperty(JxBrowserUtils.LICENSE_PROPERTY_NAME, key);
     }
     catch (FileNotFoundException e) {
-      LOG.info(e.getMessage());
-      LOG.info(project.getName() + ": Unable to find JxBrowser license key file");
+      LOG.info(project.getName() + ": Unable to find JxBrowser license key file", e);
       setStatusFailed("missingKey");
       return;
     }
