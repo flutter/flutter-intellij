@@ -394,7 +394,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     presentDevTools(app, inspectorService, toolWindow, true);
   }
 
-  protected void presentDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
+  private void presentDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
     final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
     if (devToolsManager.hasInstalledDevTools()) {
@@ -459,7 +459,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   protected void handleJxBrowserInstallationFailed(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
-    if (System.getProperty(JxBrowserUtils.LICENSE_PROPERTY_NAME) == null) {
+    if (!JxBrowserUtils.licenseIsSet()) {
       // If the license isn't available, allow the user to open the equivalent page in a non-embedded browser window.
       presentClickableLabel(toolWindow, "The JxBrowser license could not be found. Open Devtools in the browser?", (linkLabel, data) -> {
         presentDevTools(app, inspectorService, toolWindow, false);
