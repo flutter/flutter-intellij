@@ -33,10 +33,13 @@ import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
+import io.flutter.vmService.VmServiceConsumers;
 import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.consumer.ResumeConsumer;
 import org.dartlang.vm.service.consumer.VMConsumer;
-import org.dartlang.vm.service.element.*;
+import org.dartlang.vm.service.element.ElementList;
+import org.dartlang.vm.service.element.IsolateRef;
+import org.dartlang.vm.service.element.RPCError;
+import org.dartlang.vm.service.element.VM;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -106,15 +109,7 @@ public class FlutterTestRunner extends GenericProgramRunner {
             final ElementList<IsolateRef> isolates = response.getIsolates();
 
             for (IsolateRef isolateRef : isolates) {
-              vmService.resume(isolateRef.getId(), new ResumeConsumer() {
-                @Override
-                public void received(Sentinel response) {
-                }
-
-                @Override
-                public void received(Success response) {
-                }
-
+              vmService.resume(isolateRef.getId(), new VmServiceConsumers.EmptyResumeConsumer() {
                 @Override
                 public void onError(RPCError error) {
                   LOG.error(error);
