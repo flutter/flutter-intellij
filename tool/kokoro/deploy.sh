@@ -5,6 +5,7 @@ setup
 
 echo "kokoro build start"
 ./bin/plugin make --channel=dev
+ls -lR releases
 
 echo "kokoro build finished"
 
