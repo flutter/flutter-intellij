@@ -488,6 +488,7 @@ abstract class BuildCommand extends ProductCommand {
 
       result = await applyEdits(spec, compileFn);
       if (result != 0) {
+        log('applyEdits() returned ${result.toString()}');
         return result;
       }
 
