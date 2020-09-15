@@ -41,7 +41,7 @@ public class VmServiceConsumers {
     abstract void sourcePositionNotApplicable();
   }
 
-  public static abstract class EvaluateConsumerWrapper implements EvaluateConsumer {
+  public static abstract class InvokeConsumerWrapper implements InvokeConsumer {
     @Override
     public final void received(ErrorRef response) {
       noGoodResult();
@@ -60,22 +60,13 @@ public class VmServiceConsumers {
     abstract public void noGoodResult();
   }
 
-  public static abstract class InvokeConsumerWrapper implements InvokeConsumer {
+  public static abstract class EmptyResumeConsumer extends ConsumerWrapper implements ResumeConsumer {
     @Override
-    public final void received(ErrorRef response) {
-      noGoodResult();
+    public void received(Sentinel response) {
     }
 
     @Override
-    public final void received(Sentinel response) {
-      noGoodResult();
+    public void received(Success response) {
     }
-
-    @Override
-    public final void onError(RPCError error) {
-      noGoodResult();
-    }
-
-    abstract public void noGoodResult();
   }
 }

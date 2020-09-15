@@ -53,8 +53,7 @@ abstract class VmServiceBase implements VmServiceConst {
     URI uri;
     try {
       uri = new URI(url);
-    }
-    catch (URISyntaxException e) {
+    } catch (URISyntaxException e) {
       throw new IOException("Invalid URL: " + url, e);
     }
     String wsScheme = uri.getScheme();
@@ -66,8 +65,7 @@ abstract class VmServiceBase implements VmServiceConst {
     WebSocket webSocket;
     try {
       webSocket = new WebSocket(uri);
-    }
-    catch (WebSocketException e) {
+    } catch (WebSocketException e) {
       throw new IOException("Failed to create websocket: " + url, e);
     }
     final VmService vmService = new VmService();
@@ -86,8 +84,7 @@ abstract class VmServiceBase implements VmServiceConst {
         Logging.getLogger().logInformation("VM message: " + message.getText());
         try {
           vmService.processMessage(message.getText());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
           Logging.getLogger().logError(e.getMessage(), e);
         }
       }
@@ -112,11 +109,9 @@ abstract class VmServiceBase implements VmServiceConst {
     //noinspection TryWithIdenticalCatches
     try {
       webSocket.connect();
-    }
-    catch (WebSocketException e) {
+    } catch (WebSocketException e) {
       throw new IOException("Failed to connect: " + url, e);
-    }
-    catch (ArrayIndexOutOfBoundsException e) {
+    } catch (ArrayIndexOutOfBoundsException e) {
       // The weberknecht can occasionally throw an array index exception if a connect terminates on initial connect
       // (de.roderick.weberknecht.WebSocket.connect, WebSocket.java:126).
       throw new IOException("Failed to connect: " + url, e);
@@ -130,7 +125,7 @@ abstract class VmServiceBase implements VmServiceConst {
       @Override
       public void onError(RPCError error) {
         String msg = "Failed to determine protocol version: " + error.getCode() + "\n  message: "
-                     + error.getMessage() + "\n  details: " + error.getDetails();
+            + error.getMessage() + "\n  details: " + error.getDetails();
         Logging.getLogger().logInformation(msg);
         errMsg[0] = msg;
       }
@@ -150,8 +145,7 @@ abstract class VmServiceBase implements VmServiceConst {
       if (errMsg[0] != null) {
         throw new IOException(errMsg[0]);
       }
-    }
-    catch (InterruptedException e) {
+    } catch (InterruptedException e) {
       throw new RuntimeException("Interrupted while waiting for response", e);
     }
 
@@ -162,6 +156,7 @@ abstract class VmServiceBase implements VmServiceConst {
    * Connect to the VM observatory service on the given local port.
    *
    * @return an API object for interacting with the VM service (not {@code null}).
+   *
    * @deprecated prefer the Url based constructor {@link VmServiceBase#connect}
    */
   @Deprecated
@@ -258,9 +253,8 @@ abstract class VmServiceBase implements VmServiceConst {
       @Override
       public void received(Obj response) {
         if (response instanceof Instance) {
-          consumer.received((Instance)response);
-        }
-        else {
+          consumer.received((Instance) response);
+        } else {
           onError(RPCError.unexpected("Instance", response));
         }
       }
@@ -286,9 +280,8 @@ abstract class VmServiceBase implements VmServiceConst {
       @Override
       public void received(Obj response) {
         if (response instanceof Library) {
-          consumer.received((Library)response);
-        }
-        else {
+          consumer.received((Library) response);
+        } else {
           onError(RPCError.unexpected("Library", response));
         }
       }
@@ -350,8 +343,7 @@ abstract class VmServiceBase implements VmServiceConst {
     for (VmServiceListener listener : new ArrayList<>(vmListeners)) {
       try {
         listener.connectionOpened();
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         Logging.getLogger().logError("Exception notifying listener", e);
       }
     }
@@ -361,8 +353,7 @@ abstract class VmServiceBase implements VmServiceConst {
     for (VmServiceListener listener : new ArrayList<>(vmListeners)) {
       try {
         listener.received(streamId, event);
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         Logging.getLogger().logError("Exception processing event: " + streamId + ", " + event.getJson(), e);
       }
     }
@@ -372,8 +363,7 @@ abstract class VmServiceBase implements VmServiceConst {
     for (VmServiceListener listener : new ArrayList<>(vmListeners)) {
       try {
         listener.connectionClosed();
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         Logging.getLogger().logError("Exception notifying listener", e);
       }
     }
@@ -404,9 +394,8 @@ abstract class VmServiceBase implements VmServiceConst {
     // Decode the JSON
     JsonObject json;
     try {
-      json = (JsonObject)new JsonParser().parse(jsonText);
-    }
-    catch (Exception e) {
+      json = (JsonObject) new JsonParser().parse(jsonText);
+    } catch (Exception e) {
       Logging.getLogger().logError("Parse message failed: " + jsonText, e);
       return;
     }
@@ -426,15 +415,12 @@ abstract class VmServiceBase implements VmServiceConst {
       }
       if (json.has("id")) {
         processRequest(json);
-      }
-      else {
+      } else {
         processNotification(json);
       }
-    }
-    else if (json.has("result") || json.has("error")) {
+    } else if (json.has("result") || json.has("error")) {
       processResponse(json);
-    }
-    else {
+    } else {
       Logging.getLogger().logError("Malformed message");
     }
   }
@@ -447,8 +433,7 @@ abstract class VmServiceBase implements VmServiceConst {
     String id;
     try {
       id = json.get(ID).getAsString();
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       final String message = "Request malformed " + ID;
       Logging.getLogger().logError(message, e);
       final JsonObject error = new JsonObject();
@@ -464,8 +449,7 @@ abstract class VmServiceBase implements VmServiceConst {
     String method;
     try {
       method = json.get(METHOD).getAsString();
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       final String message = "Request malformed " + METHOD;
       Logging.getLogger().logError(message, e);
       final JsonObject error = new JsonObject();
@@ -479,8 +463,7 @@ abstract class VmServiceBase implements VmServiceConst {
     JsonObject params;
     try {
       params = json.get(PARAMS).getAsJsonObject();
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       final String message = "Request malformed " + METHOD;
       Logging.getLogger().logError(message, e);
       final JsonObject error = new JsonObject();
@@ -521,8 +504,7 @@ abstract class VmServiceBase implements VmServiceConst {
           requestSink.add(response);
         }
       });
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       final String message = "Internal Server Error";
       Logging.getLogger().logError(message, e);
       final JsonObject error = new JsonObject();
@@ -534,30 +516,28 @@ abstract class VmServiceBase implements VmServiceConst {
   }
 
   private static final RemoteServiceCompleter ignoreCallback =
-    new RemoteServiceCompleter() {
-      public void result(JsonObject result) {
-        // ignore
-      }
+      new RemoteServiceCompleter() {
+        public void result(JsonObject result) {
+          // ignore
+        }
 
-      public void error(int code, String message, JsonObject data) {
-        // ignore
-      }
-    };
+        public void error(int code, String message, JsonObject data) {
+          // ignore
+        }
+      };
 
   void processNotification(JsonObject json) {
     String method;
     try {
       method = json.get(METHOD).getAsString();
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Logging.getLogger().logError("Request malformed " + METHOD, e);
       return;
     }
     JsonObject params;
     try {
       params = json.get(PARAMS).getAsJsonObject();
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Logging.getLogger().logError("Event missing " + PARAMS, e);
       return;
     }
@@ -565,22 +545,19 @@ abstract class VmServiceBase implements VmServiceConst {
       String streamId;
       try {
         streamId = params.get(STREAM_ID).getAsString();
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         Logging.getLogger().logError("Event missing " + STREAM_ID, e);
         return;
       }
       Event event;
       try {
         event = new Event(params.get(EVENT).getAsJsonObject());
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         Logging.getLogger().logError("Event missing " + EVENT, e);
         return;
       }
       forwardEvent(streamId, event);
-    }
-    else {
+    } else {
       if (!remoteServiceRunners.containsKey(method)) {
         Logging.getLogger().logError("Unknown service " + method);
         return;
@@ -589,8 +566,7 @@ abstract class VmServiceBase implements VmServiceConst {
       final RemoteServiceRunner runner = remoteServiceRunners.get(method);
       try {
         runner.run(params, ignoreCallback);
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         Logging.getLogger().logError("Internal Server Error", e);
       }
     }
@@ -607,8 +583,7 @@ abstract class VmServiceBase implements VmServiceConst {
     String id;
     try {
       id = idElem.getAsString();
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Logging.getLogger().logError("Response missing " + ID, e);
       return;
     }
@@ -624,8 +599,7 @@ abstract class VmServiceBase implements VmServiceConst {
       JsonObject result;
       try {
         result = resultElem.getAsJsonObject();
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         Logging.getLogger().logError("Response has invalid " + RESULT, e);
         return;
       }
@@ -648,8 +622,7 @@ abstract class VmServiceBase implements VmServiceConst {
       JsonObject error;
       try {
         error = resultElem.getAsJsonObject();
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         Logging.getLogger().logError("Response has invalid " + RESULT, e);
         return;
       }

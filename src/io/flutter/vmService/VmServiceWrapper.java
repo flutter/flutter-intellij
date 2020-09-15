@@ -469,21 +469,7 @@ public class VmServiceWrapper implements Disposable {
   public void resumeIsolate(@NotNull final String isolateId, @Nullable final StepOption stepOption) {
     addRequest(() -> {
       myLatestStep = stepOption;
-      myVmService.resume(isolateId, stepOption, null, new ResumeConsumer() {
-        @Override
-        public void onError(RPCError error) {
-
-        }
-
-        @Override
-        public void received(Sentinel response) {
-
-        }
-
-        @Override
-        public void received(Success response) {
-
-        }
+      myVmService.resume(isolateId, stepOption, null, new VmServiceConsumers.EmptyResumeConsumer() {
       });
     });
   }
@@ -518,19 +504,11 @@ public class VmServiceWrapper implements Disposable {
   public void dropFrame(@NotNull final String isolateId, int frameIndex) {
     addRequest(() -> {
       myLatestStep = StepOption.Rewind;
-      myVmService.resume(isolateId, StepOption.Rewind, frameIndex, new ResumeConsumer() {
+      myVmService.resume(isolateId, StepOption.Rewind, frameIndex, new VmServiceConsumers.EmptyResumeConsumer() {
         @Override
         public void onError(RPCError error) {
           myDebugProcess.getSession().getConsoleView()
             .print("Error from drop frame: " + error.getMessage() + "\n", ConsoleViewContentType.ERROR_OUTPUT);
-        }
-
-        @Override
-        public void received(Sentinel response) {
-        }
-
-        @Override
-        public void received(Success response) {
         }
       });
     });
