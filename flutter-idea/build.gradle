@@ -36,10 +36,10 @@ dependencies {
   testCompile "org.powermock:powermock-api-mockito2:2.0.0"
   testCompile "org.powermock:powermock-module-junit4:2.0.0"
   testCompile project(':flutter-studio')
-  runtime fileTree(dir: "$project.rootDir/artifacts/android-studio/plugins",
+  testRuntime fileTree(dir: "$project.rootDir/artifacts/android-studio/plugins",
                    includes: ["**/*.jar"],
                    excludes: ["**/kotlin-compiler.jar", "**/kotlin-plugin.jar"])
-  runtime fileTree(dir: "$project.rootDir/artifacts/android-studio/lib",
+  testRuntime fileTree(dir: "$project.rootDir/artifacts/android-studio/lib",
                    includes: ["*.jar"])
   implementation fileTree(dir: "$project.rootDir/lib/jxbrowser",
                           includes: ["*.jar"])
