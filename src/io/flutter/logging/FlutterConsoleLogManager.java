@@ -423,20 +423,11 @@ public class FlutterConsoleLogManager {
 
     if (!stackTrace.isNull()) {
       final String padding = StringUtil.repeat(" ", prefix.length());
-      final String out = stackTrace.getValueAsString().trim();
+      final String out = stackTrace.getValueAsString() == null ? "" : stackTrace.getValueAsString().trim();
 
       console.print(
         padding + out.replaceAll("\n", "\n" + padding) + "\n", ERROR_CONTENT_TYPE);
     }
-  }
-
-  private void printStackTraceToConsole(
-    @NotNull ConsoleView console, String padding, @NotNull InstanceRef stackTrace) {
-    if (stackTrace.isNull()) return;
-
-    final String out = stackTrace.getValueAsString();
-    console.print(
-      padding + out.replaceAll("\n", "\n" + padding), ERROR_CONTENT_TYPE);
   }
 
   private String stringValueFromStringRef(InstanceRef ref) {
