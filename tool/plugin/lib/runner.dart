@@ -68,7 +68,11 @@ jxbrowser.license.key=${jxBrowserKey}
 
   Future<int> buildPlugin(BuildSpec spec, String version) async {
     writeJxBrowserKeyToFile();
-    return await runGradleCommand(['buildPlugin'], spec, version, 'false');
+    if (spec.isDevChannel)
+      return await runGradleCommand(
+          ['-i', 'buildPlugin'], spec, version, 'false');
+    else
+      return await runGradleCommand(['buildPlugin'], spec, version, 'false');
   }
 
   Future<int> runGradleCommand(List<String> command, BuildSpec spec,
