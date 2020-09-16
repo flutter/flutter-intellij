@@ -5,7 +5,7 @@
  */
 package io.flutter;
 
-import com.intellij.CommonBundle;
+import com.intellij.AbstractBundle;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.PropertyKey;
@@ -20,7 +20,7 @@ public class FlutterBundle {
   @NonNls private static final String BUNDLE = "io.flutter.FlutterBundle";
 
   public static String message(@NotNull @PropertyKey(resourceBundle = BUNDLE) String key, @NotNull Object... params) {
-    return CommonBundle.message(getBundle(), key, params);
+    return AbstractBundle.message(getBundle(), key, params);
   }
 
   private FlutterBundle() {

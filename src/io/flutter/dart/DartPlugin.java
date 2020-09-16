@@ -7,7 +7,7 @@ package io.flutter.dart;
 
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManager;
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
@@ -103,7 +103,7 @@ public class DartPlugin {
    */
   public Version getVersion() {
     if (myVersion == null) {
-      final IdeaPluginDescriptor descriptor = PluginManager.getPlugin(PluginId.getId("Dart"));
+      final IdeaPluginDescriptor descriptor = PluginManagerCore.getPlugin(PluginId.getId("Dart"));
       assert (descriptor != null);
       myVersion = Version.parseVersion(descriptor.getVersion());
     }
