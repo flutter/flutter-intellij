@@ -6,6 +6,16 @@
 
 repositories {
   jcenter()
+  mavenCentral()
+  maven {
+    url "https://oss.sonatype.org/content/repositories/snapshots/"
+  }
+  maven {
+    url 'https://jetbrains.bintray.com/intellij-plugin-service'
+  }
+  maven {
+    url 'https://jetbrains.bintray.com/intellij-third-party-dependencies'
+  }
 }
 
 apply plugin: 'java'
