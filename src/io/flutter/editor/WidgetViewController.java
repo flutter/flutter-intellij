@@ -8,9 +8,9 @@ package io.flutter.editor;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
 import io.flutter.inspector.DiagnosticsNode;
+import io.flutter.inspector.InspectorGroupManagerService;
 import io.flutter.inspector.InspectorObjectGroupManager;
 import io.flutter.inspector.InspectorService;
-import io.flutter.inspector.InspectorGroupManagerService;
 import io.flutter.run.daemon.FlutterApp;
 
 import java.awt.*;
@@ -111,7 +111,6 @@ public abstract class WidgetViewController implements EditorMouseEventService.Li
     final InspectorObjectGroupManager manager = getGroups();
     if (manager != null) {
       manager.cancelNext();
-      ;
     }
   }
 

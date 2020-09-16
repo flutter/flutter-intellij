@@ -50,7 +50,6 @@ class TextRangeTracker {
   void dispose() {
     if (marker != null) {
       marker.dispose();
-      ;
     }
     marker = null;
   }
@@ -161,7 +160,6 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
     }
     if (fullTracker != null) {
       fullTracker.dispose();
-      ;
     }
   }
 
