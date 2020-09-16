@@ -34,7 +34,6 @@ env:
   - DART_BOT=true
   - CHECK_BOT=true
   - UNIT_TEST_BOT=true
-  - IDEA_VERSION=3.6
   - IDEA_VERSION=4.0
   - IDEA_VERSION=4.1
   - IDEA_VERSION=4.2
