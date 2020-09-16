@@ -31,12 +31,14 @@ java {
 
 intellij {
   // This adds nullability assertions, but also compiles forms.
-  instrumentCode = true
+  if (testing == false) {
+    instrumentCode = true
+  }
   updateSinceUntilBuild = false
   downloadSources false
   localPath "${project.rootDir.absolutePath}/artifacts/$ide"
   plugins "java", "Dart:$dartVersion", "properties", "junit",
-          "gradle", "android", "Groovy", "smali", "IntelliLang", "org.jetbrains.android"
+          "gradle", "android", "Groovy", "smali", "IntelliLang", "android"//"org.jetbrains.android"
   sourceCompatibility = JavaVersion.VERSION_11
   targetCompatibility = JavaVersion.VERSION_11
 }
