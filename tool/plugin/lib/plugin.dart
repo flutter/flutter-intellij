@@ -284,6 +284,9 @@ String _nextRelease() {
 }
 
 void _copyFile(File file, Directory to, {String filename = ''}) {
+  if (!file.existsSync()) {
+    throw "${file.path} does not exist";
+  }
   if (!to.existsSync()) {
     to.createSync(recursive: true);
   }
