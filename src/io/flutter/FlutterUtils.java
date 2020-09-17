@@ -11,8 +11,6 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.util.ExecUtil;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.ide.impl.ProjectUtil;
-import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
@@ -52,6 +50,7 @@ import org.yaml.snakeyaml.resolver.Resolver;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -384,7 +383,7 @@ public class FlutterUtils {
   @Nullable
   public static Project findProject(@NotNull String path) {
     for (Project project : ProjectManager.getInstance().getOpenProjects()) {
-      if (ProjectUtil.isSameProject(path, project)) {
+      if (ProjectUtil.isSameProject(Paths.get(path), project)) {
         return project;
       }
     }
@@ -555,5 +554,4 @@ public class FlutterUtils {
     }
     return null;
   }
-
 }

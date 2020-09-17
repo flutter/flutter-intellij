@@ -7,7 +7,7 @@ package io.flutter;
 
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManager;
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.*;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -221,7 +221,7 @@ public class FlutterInitializer implements StartupActivity {
         properties.setValue(analyticsClientIdKey, clientId);
       }
 
-      final IdeaPluginDescriptor descriptor = PluginManager.getPlugin(FlutterUtils.getPluginId());
+      final IdeaPluginDescriptor descriptor = PluginManagerCore.getPlugin(FlutterUtils.getPluginId());
       assert descriptor != null;
       final ApplicationInfo info = ApplicationInfo.getInstance();
       analytics = new Analytics(clientId, descriptor.getVersion(), info.getVersionName(), info.getFullVersion());

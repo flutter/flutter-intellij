@@ -7,7 +7,7 @@ package io.flutter;
 
 import com.intellij.ide.DataManager;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManager;
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.scratch.ScratchRootType;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.application.ApplicationInfo;
@@ -127,11 +127,11 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     builder.append(info.getVersionName()).append(" `").append(info.getFullVersion()).append("`");
 
     final PluginId pid = FlutterUtils.getPluginId();
-    final IdeaPluginDescriptor flutterPlugin = PluginManager.getPlugin(pid);
+    final IdeaPluginDescriptor flutterPlugin = PluginManagerCore.getPlugin(pid);
     //noinspection ConstantConditions
     builder.append(" • Flutter plugin `").append(pid.getIdString()).append(' ').append(flutterPlugin.getVersion()).append("`");
 
-    final IdeaPluginDescriptor dartPlugin = PluginManager.getPlugin(PluginId.getId("Dart"));
+    final IdeaPluginDescriptor dartPlugin = PluginManagerCore.getPlugin(PluginId.getId("Dart"));
     if (dartPlugin != null) {
       builder.append(" • Dart plugin `").append(dartPlugin.getVersion()).append("`");
     }

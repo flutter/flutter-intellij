@@ -6,7 +6,7 @@
 package io.flutter.settings;
 
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManager;
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
@@ -275,7 +275,7 @@ public class FlutterSettings {
   }
 
   private static boolean isPluginVersionDev() {
-    final IdeaPluginDescriptor descriptor = PluginManager.getPlugin(FlutterUtils.getPluginId());
+    final IdeaPluginDescriptor descriptor = PluginManagerCore.getPlugin(FlutterUtils.getPluginId());
     assert descriptor != null;
     return descriptor.getVersion().contains("dev") || descriptor.getVersion().contains("SNAPSHOT");
   }
