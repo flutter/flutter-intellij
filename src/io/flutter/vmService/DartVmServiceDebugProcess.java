@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 package io.flutter.vmService;
 
 import com.google.gson.JsonObject;
@@ -56,7 +61,7 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-public class DartVmServiceDebugProcess extends XDebugProcess {
+public abstract class DartVmServiceDebugProcess extends XDebugProcess {
   private static final Logger LOG = Logger.getInstance(DartVmServiceDebugProcess.class.getName());
 
   @NotNull private final ExecutionResult myExecutionResult;
@@ -93,6 +98,8 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
       new DartVmServiceBreakpointHandler(this),
       new DartExceptionBreakpointHandler(this)
     };
+
+    session.setPauseActionSupported(true);
 
     session.addSessionListener(new XDebugSessionListener() {
       @Override
