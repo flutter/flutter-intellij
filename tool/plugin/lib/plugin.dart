@@ -495,9 +495,14 @@ abstract class BuildCommand extends ProductCommand {
         return result;
       }
 
-      result = await savePluginArtifact(spec, pluginVersion);
-      if (result != 0) {
-        return result;
+      try {
+        result = await savePluginArtifact(spec, pluginVersion);
+        if (result != 0) {
+          return result;
+        }
+      } catch (ex) {
+        log("$ex");
+        return 1;
       }
 
       separator('Built artifact');
