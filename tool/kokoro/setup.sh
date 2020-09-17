@@ -20,7 +20,6 @@ setup() {
   (cd ..; tar fx java.tar.gz)
   export JAVA_HOME=`pwd`/../jdk-11.0.2.jdk/Contents/Home
   export PATH=$PATH:$JAVA_HOME/bin
-  java -version
   echo "JAVA_HOME=$JAVA_HOME"
 
   echo "install ant"
@@ -35,4 +34,5 @@ setup() {
   export FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME=flutter-intellij-plugin-jxbrowser-license-key
 
   (cd tool/plugin; echo "pub get `pwd`"; pub get --no-precompile)
+  ./gradlew --version
 }
