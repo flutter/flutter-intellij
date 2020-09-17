@@ -1,4 +1,9 @@
-package io.flutter.util;
+/*
+ * Copyright 2020 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+package io.flutter.run.test;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
@@ -31,6 +36,7 @@ import java.util.List;
 
 @SuppressWarnings("Duplicates")
 public class DartTestLocationProviderZ implements SMTestLocator, DumbAware {
+  @SuppressWarnings("rawtypes")
   private static final List<Location> NONE = Collections.emptyList();
   private static final Gson GSON = new Gson();
 
@@ -41,6 +47,7 @@ public class DartTestLocationProviderZ implements SMTestLocator, DumbAware {
 
   @NotNull
   @Override
+  @SuppressWarnings("rawtypes")
   public List<Location> getLocation(@NotNull String protocol,
                                     @NotNull String path,
                                     @NotNull Project project,
@@ -100,10 +107,12 @@ public class DartTestLocationProviderZ implements SMTestLocator, DumbAware {
   }
 
   @VisibleForTesting
+  @SuppressWarnings("rawtypes")
   public List<Location> getLocationForTest(@NotNull final PsiFile psiFile, @NotNull final String testPath) {
     return getLocationByGroupAndTestNames(psiFile, pathToNodes(testPath));
   }
 
+  @SuppressWarnings("rawtypes")
   protected List<Location> getLocationByGroupAndTestNames(final PsiFile psiFile, final List<String> nodes) {
     final List<Location> locations = new ArrayList<>();
 
