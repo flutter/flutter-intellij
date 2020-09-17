@@ -33,6 +33,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
     FlutterMessages.showError("Error opening", e.getMessage());
   }
 
+  @NotNull
   @Override
   public String getName() {
     return FlutterBundle.message("flutter.module.name");

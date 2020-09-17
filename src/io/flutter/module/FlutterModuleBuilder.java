@@ -208,7 +208,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   }
 
   @Override
-  public boolean validate(Project current, Project dest) {
+  public boolean validate(Project current, @NotNull Project dest) {
     final String settingsValidation = validateSettings(getAdditionalSettings());
     if (settingsValidation != null) {
       Messages.showErrorDialog(settingsValidation, "Error");

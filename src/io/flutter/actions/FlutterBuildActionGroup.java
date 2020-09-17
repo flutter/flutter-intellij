@@ -8,11 +8,7 @@ package io.flutter.actions;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
@@ -28,9 +24,9 @@ import org.jetbrains.annotations.NotNull;
 public class FlutterBuildActionGroup extends DefaultActionGroup {
 
   public static OSProcessHandler build(Project project, @NotNull PubRoot pubRoot, FlutterSdk sdk, BuildType buildType, String desc) {
-    ProgressHelper progressHelper = new ProgressHelper(project);
+    final ProgressHelper progressHelper = new ProgressHelper(project);
     progressHelper.start(desc);
-    OSProcessHandler processHandler = sdk.flutterBuild(pubRoot, buildType.type).startInConsole(project);
+    final OSProcessHandler processHandler = sdk.flutterBuild(pubRoot, buildType.type).startInConsole(project);
     if (processHandler == null) {
       progressHelper.done();
     }
@@ -39,7 +35,7 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
         @Override
         public void processTerminated(@NotNull ProcessEvent event) {
           progressHelper.done();
-          int exitCode = event.getExitCode();
+          final int exitCode = event.getExitCode();
           if (exitCode != 0) {
             FlutterMessages.showError("Error while building " + buildType, "`flutter build` returned: " + exitCode);
           }
@@ -75,11 +71,11 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
   }
 
   private static Module findFlutterModule(@NotNull AnActionEvent event) {
-    Project project = event.getProject();
+    final Project project = event.getProject();
     if (project == null) {
       return null;
     }
-    VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
+    final VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
     if (file == null) {
       return null;
     }
@@ -95,7 +91,7 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
       return module;
     }
     // We may get here if the file is in the Android module of a Flutter module project.
-    VirtualFile parent = ModuleRootManager.getInstance(module).getContentRoots()[0].getParent();
+    final VirtualFile parent = ModuleRootManager.getInstance(module).getContentRoots()[0].getParent();
     module = ModuleUtilCore.findModuleForFile(parent, project);
     if (module == null) {
       return null;
@@ -109,20 +105,20 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
-      Presentation presentation = event.getPresentation();
-      Project project = event.getProject();
+      final Presentation presentation = event.getPresentation();
+      final Project project = event.getProject();
       if (project == null) {
         return;
       }
-      FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+      final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
       if (sdk == null) {
         return;
       }
-      PubRoot pubRoot = PubRoot.forEventWithRefresh(event);
+      final PubRoot pubRoot = PubRoot.forEventWithRefresh(event);
       if (pubRoot == null) {
         return;
       }
-      BuildType buildType = buildType();
+      final BuildType buildType = buildType();
       build(project, pubRoot, sdk, buildType, presentation.getDescription());
     }
   }

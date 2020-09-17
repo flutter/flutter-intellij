@@ -142,7 +142,6 @@ public class PluginConfig {
   /**
    * The JSON fields in a PluginConfig, as loaded from disk.
    */
-  @SuppressWarnings("unused")
   private static class Fields {
     /**
      * The script to run to start 'flutter daemon'.

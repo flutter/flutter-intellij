@@ -59,20 +59,20 @@ public abstract class ToolbarComboBoxAction extends AnAction implements CustomCo
 
   @Override
   public void actionPerformed(@NotNull AnActionEvent e) {
-    Project project = e.getProject();
+    final Project project = e.getProject();
     if (project == null) return;
 
-    JFrame frame = WindowManager.getInstance().getFrame(project);
+    final JFrame frame = WindowManager.getInstance().getFrame(project);
     if (!(frame instanceof IdeFrame)) return;
 
-    ListPopup popup = createActionPopup(e.getDataContext(), ((IdeFrame)frame).getComponent(), null);
+    final ListPopup popup = createActionPopup(e.getDataContext(), ((IdeFrame)frame).getComponent(), null);
     popup.showCenteredInCurrentWindow(project);
   }
 
   @NotNull
   private ListPopup createActionPopup(@NotNull DataContext context, @NotNull JComponent component, @Nullable Runnable disposeCallback) {
-    DefaultActionGroup group = createPopupActionGroup(component, context);
-    ListPopup popup = JBPopupFactory.getInstance().createActionGroupPopup(
+    final DefaultActionGroup group = createPopupActionGroup(component, context);
+    final ListPopup popup = JBPopupFactory.getInstance().createActionGroupPopup(
       myPopupTitle, group, context, false, shouldShowDisabledActions(), false, disposeCallback, getMaxRows(), getPreselectCondition());
     popup.setMinimumSize(new Dimension(getMinWidth(), getMinHeight()));
     return popup;
@@ -81,8 +81,8 @@ public abstract class ToolbarComboBoxAction extends AnAction implements CustomCo
   @NotNull
   @Override
   public JComponent createCustomComponent(@NotNull Presentation presentation) {
-    JPanel panel = new JPanel(new GridBagLayout());
-    ToolbarComboBoxButton button = createComboBoxButton(presentation);
+    final JPanel panel = new JPanel(new GridBagLayout());
+    final ToolbarComboBoxButton button = createComboBoxButton(presentation);
     panel.add(button,
               new GridBagConstraints(0, 0, 1, 1, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH, JBUI.insets(0, 3), 0, 0));
     return panel;
@@ -209,7 +209,7 @@ public abstract class ToolbarComboBoxAction extends AnAction implements CustomCo
     }
 
     public void showPopup() {
-      JBPopup popup = createPopup(setForcePressed());
+      final JBPopup popup = createPopup(setForcePressed());
       if (Registry.is("ide.helptooltip.enabled")) {
         HelpTooltip.setMasterPopup(this, popup);
       }
@@ -252,7 +252,7 @@ public abstract class ToolbarComboBoxAction extends AnAction implements CustomCo
     }
 
     private void updateTooltipText(String description) {
-      String tooltip = KeymapUtil.createTooltipText(description, ToolbarComboBoxAction.this);
+      final String tooltip = KeymapUtil.createTooltipText(description, ToolbarComboBoxAction.this);
       if (Registry.is("ide.helptooltip.enabled") && StringUtil.isNotEmpty(tooltip)) {
         HelpTooltip.dispose(this);
         new HelpTooltip().setDescription(tooltip).setLocation(HelpTooltip.Alignment.BOTTOM).installOn(this);
@@ -277,7 +277,7 @@ public abstract class ToolbarComboBoxAction extends AnAction implements CustomCo
     private class MyButtonSynchronizer implements PropertyChangeListener {
       @Override
       public void propertyChange(PropertyChangeEvent evt) {
-        String propertyName = evt.getPropertyName();
+        final String propertyName = evt.getPropertyName();
         if (Presentation.PROP_TEXT.equals(propertyName)) {
           setText((String)evt.getNewValue());
           updateButtonSize();
@@ -307,13 +307,13 @@ public abstract class ToolbarComboBoxAction extends AnAction implements CustomCo
 
     @Override
     public Dimension getPreferredSize() {
-      Dimension prefSize = super.getPreferredSize();
-      int width = prefSize.width
-                  + (myPresentation != null && isArrowVisible(myPresentation) ? getArrowIcon(isEnabled()).getIconWidth() : 0)
-                  + (StringUtil.isNotEmpty(getText()) ? getIconTextGap() : 0)
-                  + (UIUtil.isUnderWin10LookAndFeel() ? JBUI.scale(6) : 0);
+      final Dimension prefSize = super.getPreferredSize();
+      final int width = prefSize.width
+                        + (myPresentation != null && isArrowVisible(myPresentation) ? getArrowIcon(isEnabled()).getIconWidth() : 0)
+                        + (StringUtil.isNotEmpty(getText()) ? getIconTextGap() : 0)
+                        + (UIUtil.isUnderWin10LookAndFeel() ? JBUI.scale(6) : 0);
 
-      Dimension size = new Dimension(width, isSmallVariant() ? JBUI.scale(24) : Math.max(JBUI.scale(24), prefSize.height));
+      final Dimension size = new Dimension(width, isSmallVariant() ? JBUI.scale(24) : Math.max(JBUI.scale(24), prefSize.height));
       JBInsets.addTo(size, getMargin());
       return size;
     }
@@ -342,8 +342,8 @@ public abstract class ToolbarComboBoxAction extends AnAction implements CustomCo
       if (!isArrowVisible(myPresentation)) {
         return;
       }
-      Icon icon = getArrowIcon(isEnabled());
-      int x = getWidth() - icon.getIconWidth() - getInsets().right - getMargin().right;
+      final Icon icon = getArrowIcon(isEnabled());
+      final int x = getWidth() - icon.getIconWidth() - getInsets().right - getMargin().right;
 
       icon.paintIcon(null, g, x, (getHeight() - icon.getIconHeight()) / 2);
     }

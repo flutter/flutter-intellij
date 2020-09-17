@@ -68,17 +68,7 @@ public class ExtractWidgetAction extends DumbAwareAction {
     final DataContext dataContext = e.getDataContext();
     final Project project = dataContext.getData(PlatformDataKeys.PROJECT);
     final VirtualFile file = dataContext.getData(PlatformDataKeys.VIRTUAL_FILE);
-    if (file == null || !FlutterUtils.isDartFile(file)) {
-      return false;
-    }
-
-    // TODO(pq): calculating flutteriness is too expensive to happen in a call to update; we should cache the result in the datacontext.
-    return true;
-  }
-
-  @Override
-  public boolean startInTransaction() {
-    return true;
+    return file != null && FlutterUtils.isDartFile(file);
   }
 }
 
@@ -98,7 +88,7 @@ class ExtractWidgetDialog extends ServerRefactoringDialog<ExtractWidgetRefactori
     myNameField.selectAll();
     myNameField.getDocument().addDocumentListener(new DocumentAdapter() {
       @Override
-      protected void textChanged(DocumentEvent e) {
+      protected void textChanged(@NotNull DocumentEvent event) {
         updateRefactoringOptions();
       }
     });

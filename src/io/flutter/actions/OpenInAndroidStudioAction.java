@@ -36,16 +36,16 @@ public class OpenInAndroidStudioAction extends AnAction {
   private static final String DESCR_MODULE = FlutterBundle.message("flutter.androidstudio.open.module.description");
 
   @Override
-  public void update(AnActionEvent event) {
+  public void update(@NotNull AnActionEvent event) {
     updatePresentation(event, event.getPresentation());
   }
 
   @Override
-  public void actionPerformed(AnActionEvent event) {
+  public void actionPerformed(@NotNull AnActionEvent event) {
     if (FlutterUtils.isAndroidStudio()) {
       try {
         //noinspection unchecked
-        Class<OpenInAndroidStudioAction> opener = (Class<OpenInAndroidStudioAction>)Class.forName("io.flutter.actions.OpenAndroidModule");
+        final Class<OpenInAndroidStudioAction> opener = (Class<OpenInAndroidStudioAction>)Class.forName("io.flutter.actions.OpenAndroidModule");
         opener.newInstance().actionPerformed(event);
         return;
       }
@@ -76,8 +76,9 @@ public class OpenInAndroidStudioAction extends AnAction {
       state.setVisible(false);
     }
     else {
-      VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
-      String label, descr;
+      final VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
+      final String label;
+      final String descr;
       if (file != null && !file.isDirectory()) {
         // The file will be opened in an editor in the new IDE window.
         label = LABEL_FILE;
@@ -118,7 +119,7 @@ public class OpenInAndroidStudioAction extends AnAction {
         final VirtualFile projectDir = project.getBaseDir();
         for (PubRoot root : PubRoots.forProject(project)) {
           if (root.isFlutterPlugin()) {
-            VirtualFile rootFile = root.getRoot();
+            final VirtualFile rootFile = root.getRoot();
             VirtualFile aFile = file;
             while (aFile != null) {
               if (aFile.equals(rootFile)) {
@@ -247,7 +248,7 @@ public class OpenInAndroidStudioAction extends AnAction {
     if (file.isDirectory()) {
       return isAndroidWithApp(file) ? file : null;
     }
-    VirtualFile dir = file.getParent();
+    final VirtualFile dir = file.getParent();
     if (isAndroidWithApp(dir)) {
       // In case someone moves the .iml file, or the project organization gets rationalized.
       return dir;

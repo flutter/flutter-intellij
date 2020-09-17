@@ -850,8 +850,8 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
   }
 
   private static class Metadata {
-    @SuppressWarnings("unused") private boolean skip; // assigned by GSON via reflection
-    @SuppressWarnings("unused") private String skipReason; // assigned by GSON via reflection
+    private boolean skip; // assigned by GSON via reflection
+    private String skipReason; // assigned by GSON via reflection
 
     static Metadata from(JsonElement elem) {
       if (elem == null) return new Metadata();

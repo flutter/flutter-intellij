@@ -229,7 +229,7 @@ public class WidgetEditToolbar {
 
   public ActionToolbar getToolbar() {
     if (toolbar == null) {
-      DefaultActionGroup toolbarGroup = new DefaultActionGroup();
+      final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
       toolbarGroup.add(actionCenter);
       toolbarGroup.add(actionPadding);
       toolbarGroup.add(actionColumn);
@@ -310,7 +310,7 @@ public class WidgetEditToolbar {
           final InspectorService inspectorService = InspectorGroupManagerService.getInstance(project).getInspectorService();
 
           if (inspectorService != null) {
-            ArrayList<FlutterApp> apps = new ArrayList<>();
+            final ArrayList<FlutterApp> apps = new ArrayList<>();
             apps.add(inspectorService.getApp());
             FlutterReloadManager.getInstance(project).saveAllAndReloadAll(apps, "Refactor widget");
           }

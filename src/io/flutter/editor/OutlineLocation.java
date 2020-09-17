@@ -146,8 +146,8 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
     assert (column >= indent);
     assert (line >= 0);
     this.indent = indent;
-    int nodeOffset = pass.getConvertedOffset(node);
-    int endOffset = pass.getConvertedOffset(node.getOffset() + node.getLength());
+    final int nodeOffset = pass.getConvertedOffset(node);
+    final int endOffset = pass.getConvertedOffset(node.getOffset() + node.getLength());
     fullTracker = new TextRangeTracker(nodeOffset, endOffset);
     final int delta = Math.max(column - indent, 0);
     this.offset = Math.max(nodeOffset - delta, 0);
@@ -204,7 +204,7 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
    * Offset in the document accurate even if the document has been edited.
    */
   public int getGuideOffset() {
-    if (guideTracker.isTracking()) {
+    if (guideTracker.isTracking() && guideTracker.getRange() != null) {
       return guideTracker.getRange().getStartOffset();
     }
     return offset;
@@ -222,7 +222,10 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
    * Line in the document this outline node is at.
    */
   public int getLine() {
-    return guideTracker.isTracking() ? document.getLineNumber(guideTracker.getRange().getStartOffset()) : line;
+    if (guideTracker.isTracking() && guideTracker.getRange() != null) {
+      return document.getLineNumber(guideTracker.getRange().getStartOffset());
+    }
+    return line;
   }
 
   public int getColumnForOffset(int offset) {

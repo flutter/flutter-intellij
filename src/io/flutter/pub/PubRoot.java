@@ -269,7 +269,6 @@ public class PubRoot {
   /**
    * Returns true if the packages file is up to date.
    */
-  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public boolean hasUpToDatePackages() {
     final VirtualFile packagesFile = getPackagesFile();
     if (packagesFile == null) {

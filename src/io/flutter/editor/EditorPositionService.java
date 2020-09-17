@@ -67,7 +67,7 @@ public class EditorPositionService extends EditorEventServiceBase<EditorPosition
     return ServiceManager.getService(project, EditorPositionService.class);
   }
 
-  public void addListener(EditorEx editor, @NotNull Listener listener, Disposable disposable) {
+  public void addListener(@NotNull EditorEx editor, @NotNull Listener listener, Disposable disposable) {
     super.addListener(editor, listener, disposable);
     // Notify the listener of the current state.
     listener.updateVisibleArea(editor.getScrollingModel().getVisibleArea());

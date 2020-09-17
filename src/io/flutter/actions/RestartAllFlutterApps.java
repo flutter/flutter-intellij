@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Action that restarts all running Flutter apps.
  */
+@SuppressWarnings("ComponentNotRegistered")
 public class RestartAllFlutterApps extends FlutterAppAction {
   public static final String ID = "Flutter.RestartAllFlutterApps"; //NON-NLS
   public static final String TEXT = FlutterBundle.message("app.restart.all.action.text");

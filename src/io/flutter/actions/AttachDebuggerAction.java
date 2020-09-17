@@ -6,12 +6,7 @@
 package io.flutter.actions;
 
 import com.google.common.base.Joiner;
-import com.intellij.execution.ExecutionListener;
-import com.intellij.execution.ExecutionManager;
-import com.intellij.execution.Executor;
-import com.intellij.execution.ProgramRunnerUtil;
-import com.intellij.execution.RunManagerEx;
-import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.execution.*;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
@@ -36,16 +31,13 @@ import io.flutter.run.SdkFields;
 import io.flutter.run.SdkRunConfig;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JTextPane;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class AttachDebuggerAction extends FlutterSdkAction {
 
@@ -64,7 +56,7 @@ public class AttachDebuggerAction extends FlutterSdkAction {
 
     RunConfiguration configuration = findRunConfig(project);
     if (configuration == null) {
-      RunnerAndConfigurationSettings settings = RunManagerEx.getInstanceEx(project).getSelectedConfiguration();
+      final RunnerAndConfigurationSettings settings = RunManagerEx.getInstanceEx(project).getSelectedConfiguration();
       if (settings == null) {
         showSelectConfigDialog();
         return;
@@ -79,16 +71,16 @@ public class AttachDebuggerAction extends FlutterSdkAction {
       }
     }
 
-    SdkAttachConfig sdkRunConfig = new SdkAttachConfig((SdkRunConfig)configuration);
-    SdkFields fields = sdkRunConfig.getFields();
-    String additionalArgs = fields.getAdditionalArgs();
+    final SdkAttachConfig sdkRunConfig = new SdkAttachConfig((SdkRunConfig)configuration);
+    final SdkFields fields = sdkRunConfig.getFields();
+    final String additionalArgs = fields.getAdditionalArgs();
 
     String flavorArg = null;
     if (fields.getBuildFlavor() != null) {
       flavorArg = "--flavor=" + fields.getBuildFlavor();
     }
 
-    List<String> args = new ArrayList<>();
+    final List<String> args = new ArrayList<>();
     if (additionalArgs != null) {
       args.add(additionalArgs);
     }
@@ -99,14 +91,14 @@ public class AttachDebuggerAction extends FlutterSdkAction {
       fields.setAdditionalArgs(Joiner.on(" ").join(args));
     }
 
-    Executor executor = RunFlutterAction.getExecutor(ToolWindowId.DEBUG);
+    final Executor executor = RunFlutterAction.getExecutor(ToolWindowId.DEBUG);
     if (executor == null) {
       return;
     }
 
-    ExecutionEnvironmentBuilder builder = ExecutionEnvironmentBuilder.create(executor, sdkRunConfig);
+    final ExecutionEnvironmentBuilder builder = ExecutionEnvironmentBuilder.create(executor, sdkRunConfig);
 
-    ExecutionEnvironment env = builder.activeTarget().dataContext(context).build();
+    final ExecutionEnvironment env = builder.activeTarget().dataContext(context).build();
     FlutterLaunchMode.addToEnvironment(env, FlutterLaunchMode.DEBUG);
 
     if (project.getUserData(ATTACH_IS_ACTIVE) == null) {
@@ -118,7 +110,7 @@ public class AttachDebuggerAction extends FlutterSdkAction {
 
   @Override
   public void update(AnActionEvent e) {
-    Project project = e.getProject();
+    final Project project = e.getProject();
     if (project == null || project.isDefault()) {
       super.update(e);
       return;
@@ -131,7 +123,7 @@ public class AttachDebuggerAction extends FlutterSdkAction {
     RunConfiguration configuration = findRunConfig(project);
     boolean enabled;
     if (configuration == null) {
-      RunnerAndConfigurationSettings settings = RunManagerEx.getInstanceEx(project).getSelectedConfiguration();
+      final RunnerAndConfigurationSettings settings = RunManagerEx.getInstanceEx(project).getSelectedConfiguration();
       if (settings == null) {
         enabled = false;
       }
@@ -153,8 +145,8 @@ public class AttachDebuggerAction extends FlutterSdkAction {
   @Nullable
   public static RunConfiguration findRunConfig(Project project) {
     // Look for a Flutter run config. If exactly one is found then return it otherwise return null.
-    RunManagerEx mgr = RunManagerEx.getInstanceEx(project);
-    List<RunConfiguration> configs = mgr.getAllConfigurationsList();
+    final RunManagerEx mgr = RunManagerEx.getInstanceEx(project);
+    final List<RunConfiguration> configs = mgr.getAllConfigurationsList();
     int count = 0;
     RunConfiguration sdkConfig = null;
     for (RunConfiguration config : configs) {
@@ -167,7 +159,7 @@ public class AttachDebuggerAction extends FlutterSdkAction {
   }
 
   private static void onAttachTermination(@NotNull Project project, @NotNull Consumer<Project> runner) {
-    MessageBusConnection connection = project.getMessageBus().connect();
+    final MessageBusConnection connection = project.getMessageBus().connect();
 
     // Need an ExecutionListener to clean up project-scoped state when the Stop button is clicked.
     connection.subscribe(ExecutionManager.EXECUTION_TOPIC, new ExecutionListener() {
@@ -207,12 +199,12 @@ public class AttachDebuggerAction extends FlutterSdkAction {
       myPanel = new JPanel();
       myTextPane = new JTextPane();
       Messages.installHyperlinkSupport(myTextPane);
-      String selectConfig = "<html><body>" +
-                            "<p>The run configuration for the Flutter module must be selected." +
-                            "<p>Please change the run configuration to the one created when the<br>" +
-                            "module was created. See <a href=\"" +
-                            FlutterConstants.URL_RUN_AND_DEBUG +
-                            "\">the Flutter documentation</a> for more information.</body></html>";
+      final String selectConfig = "<html><body>" +
+                                  "<p>The run configuration for the Flutter module must be selected." +
+                                  "<p>Please change the run configuration to the one created when the<br>" +
+                                  "module was created. See <a href=\"" +
+                                  FlutterConstants.URL_RUN_AND_DEBUG +
+                                  "\">the Flutter documentation</a> for more information.</body></html>";
       myTextPane.setText(selectConfig);
       myPanel.add(myTextPane);
       init();

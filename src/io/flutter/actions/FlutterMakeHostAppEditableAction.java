@@ -31,7 +31,7 @@ public class FlutterMakeHostAppEditableAction extends FlutterSdkAction {
 
   @Override
   public void update(@NotNull AnActionEvent e) {
-    Project project = e.getProject();
+    final Project project = e.getProject();
     if (project == null || project.isDefault()) {
       e.getPresentation().setEnabled(false);
       return;
