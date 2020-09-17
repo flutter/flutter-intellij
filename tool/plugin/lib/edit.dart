@@ -81,6 +81,18 @@ List<EditCommand> editCommands = [
 """,
     versions: ['3.6', '4.0'],
   ),
+  Subst(
+    path: 'src/io/flutter/FlutterUtils.java',
+    initial: 'ProjectUtil.isSameProject(Paths.get(path), project)',
+    replacement: 'ProjectUtil.isSameProject(path, project)',
+    versions: ['4.0', '4.1'],
+  ),
+  Subst(
+    path: 'src/io/flutter/FlutterBundle.java',
+    initial: 'AbstractBundle',
+    replacement: 'CommonBundle',
+    version: '4.0',
+  )
 ];
 
 // Used to test checkAndClearAppliedEditCommands()

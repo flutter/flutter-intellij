@@ -39,7 +39,7 @@
       <excludeFolder url="file://$MODULE_DIR$/tool/plugin/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/tool/plugin/build" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="11" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="Dart-community" />
     <orderEntry type="module" module-name="intellij.platform.ide" />
@@ -113,5 +113,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="Trove4j" level="project" />
+    <orderEntry type="library" name="Dart Packages" level="project" />
   </component>
 </module>
