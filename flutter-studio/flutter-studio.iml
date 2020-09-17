@@ -13,7 +13,7 @@
       <excludeFolder url="file://$MODULE_DIR$/testSrc/failures" />
       <excludeFolder url="file://$MODULE_DIR$/testSrc/system" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="11" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="intellij.android.adt.branding" />
     <orderEntry type="module" module-name="intellij.android.core" />
@@ -39,7 +39,6 @@
     <orderEntry type="module" module-name="intellij.platform.externalSystem.rt" scope="TEST" />
     <orderEntry type="module" module-name="intellij.android.designer" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="truth" level="project" />
-    <orderEntry type="module" module-name="flutter-intellij-community" />
     <orderEntry type="module" module-name="intellij.android.common" />
     <orderEntry type="module" module-name="intellij.android.projectSystem" />
     <orderEntry type="module" module-name="intellij.android.projectSystem.gradle" />
