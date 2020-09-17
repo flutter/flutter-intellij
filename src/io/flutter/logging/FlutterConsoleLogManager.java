@@ -7,7 +7,10 @@
 package io.flutter.logging;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.*;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.ide.util.PropertiesComponent;
@@ -25,6 +28,7 @@ import io.flutter.inspector.DiagnosticsTreeStyle;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.JsonUtils;
 import io.flutter.vmService.VmServiceConsumers;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
@@ -381,7 +385,7 @@ public class FlutterConsoleLogManager {
         // Handle json in the error payload.
         boolean isJson = false;
         try {
-          final JsonElement json = new JsonParser().parse(string);
+          final JsonElement json = JsonUtils.parseString(string);
           isJson = true;
 
           string = new GsonBuilder().setPrettyPrinting().create().toJson(json);

@@ -7,7 +7,6 @@ package io.flutter.perf;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.mock.MockVirtualFileSystem;
 import com.intellij.openapi.editor.Editor;
@@ -21,6 +20,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.pom.Navigatable;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Ignore;
@@ -74,8 +74,7 @@ class MockWidgetPerfProvider implements WidgetPerfProvider {
   }
 
   public void simulateWidgetPerfEvent(PerfReportKind kind, String json) {
-    final JsonParser parser = new JsonParser();
-    widgetPerfListener.onWidgetPerfEvent(kind, (JsonObject)parser.parse(json));
+    widgetPerfListener.onWidgetPerfEvent(kind, (JsonObject)JsonUtils.parseString(json));
   }
 
   public void repaint(When when) {

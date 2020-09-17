@@ -7,7 +7,7 @@ package io.flutter.run.daemon;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import io.flutter.utils.JsonUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -88,7 +88,7 @@ public class DaemonApiTest {
     checkLog("{\"method\":\"device.enable\",\"id\":0}");
     assertFalse(result.isDone());
 
-    api.dispatch(new JsonParser().parse("{id: \"0\"}").getAsJsonObject(), null);
+    api.dispatch(JsonUtils.parseString("{id: \"0\"}").getAsJsonObject(), null);
     assertTrue(result.isDone());
     assertNull(result.get());
   }
@@ -119,7 +119,7 @@ public class DaemonApiTest {
   }
 
   private void replyWithResult(Future result, String resultJson) {
-    api.dispatch(new JsonParser().parse("{id: \"0\", result: " + resultJson + "}").getAsJsonObject(), null);
+    api.dispatch(JsonUtils.parseString("{id: \"0\", result: " + resultJson + "}").getAsJsonObject(), null);
     assertTrue(result.isDone());
   }
 

@@ -5,14 +5,12 @@
  */
 package io.flutter.utils;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,5 +51,19 @@ public class JsonUtils {
 
   public static boolean hasJsonData(@Nullable String data) {
     return StringUtils.isNotEmpty(data) && !Objects.equals(data, "null");
+  }
+
+  /**
+   * Parses the specified JSON string into a JsonElement.
+   */
+  public static JsonElement parseString(String json) throws JsonSyntaxException {
+    return new JsonParser().parse(json);
+  }
+
+  /**
+   * Parses the specified JSON string into a JsonElement.
+   */
+  public static JsonElement parseReader(Reader reader) throws JsonIOException, JsonSyntaxException {
+    return new JsonParser().parse(reader);
   }
 }

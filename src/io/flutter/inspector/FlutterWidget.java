@@ -10,7 +10,6 @@ import com.google.common.io.ByteStreams;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.intellij.openapi.diagnostic.Logger;
 import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
@@ -163,8 +162,7 @@ public class FlutterWidget {
         final URL resource = getClass().getResource("widgets.json");
         final byte[] contentBytes = ByteStreams.toByteArray((InputStream)resource.getContent());
         final String content = new String(contentBytes, Charsets.UTF_8);
-        final JsonParser parser = new JsonParser();
-        json = parser.parse(content);
+        json = JsonUtils.parseString(content);
         if (!(json instanceof JsonArray)) throw new IllegalStateException("Unexpected Json format: expected array");
         ((JsonArray)json).forEach(element -> {
           if (!(element instanceof JsonObject)) throw new IllegalStateException("Unexpected Json format: expected object");

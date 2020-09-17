@@ -12,6 +12,7 @@ import com.intellij.util.PathUtil;
 import com.jetbrains.lang.dart.ide.runner.util.DartTestLocationProvider;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.TIntLongHashMap;
+import io.flutter.utils.JsonUtils;
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessageVisitor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -119,10 +120,9 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
 
   @SuppressWarnings("SimplifiableIfStatement")
   private boolean processEventText(final String text) throws JsonSyntaxException, ParseException {
-    JsonParser jp = new JsonParser();
     JsonElement elem;
     try {
-      elem = jp.parse(text);
+      elem = JsonUtils.parseString(text);
     }
     catch (JsonSyntaxException ex) {
       if (text.contains("\"json\" is not an allowed value for option \"reporter\"")) {

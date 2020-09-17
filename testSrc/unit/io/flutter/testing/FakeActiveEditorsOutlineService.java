@@ -5,9 +5,9 @@
  */
 package io.flutter.testing;
 
-import com.google.gson.JsonParser;
 import com.intellij.openapi.project.Project;
 import io.flutter.editor.ActiveEditorsOutlineService;
+import io.flutter.utils.JsonUtils;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,7 +42,7 @@ public class FakeActiveEditorsOutlineService extends ActiveEditorsOutlineService
     }
     FlutterOutline flutterOutline = null;
     if (outlineContents != null) {
-      flutterOutline = FlutterOutline.fromJson(new JsonParser().parse(outlineContents).getAsJsonObject());
+      flutterOutline = FlutterOutline.fromJson(JsonUtils.parseString(outlineContents).getAsJsonObject());
     }
     pathToFlutterOutline.put(filePath, flutterOutline);
 
