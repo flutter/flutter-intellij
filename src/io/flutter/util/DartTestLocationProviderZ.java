@@ -108,7 +108,7 @@ public class DartTestLocationProviderZ implements SMTestLocator, DumbAware {
     final List<Location> locations = new ArrayList<>();
 
     if (psiFile instanceof DartFile && !nodes.isEmpty()) {
-      final PsiElementProcessor<PsiElement> collector = new PsiElementProcessor<PsiElement>() {
+      final PsiElementProcessor<PsiElement> collector = new PsiElementProcessor<>() {
         @Override
         public boolean execute(@NotNull final PsiElement element) {
           if (element instanceof DartCallExpression) {

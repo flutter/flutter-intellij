@@ -205,8 +205,7 @@ public class FlutterPerformanceView implements Disposable {
       runModeLabel.setToolTipText("Note: debug mode frame rendering times are not indicative of release mode performance");
     }
 
-    final LinkLabel openDevtools = new LinkLabel("Open DevTools...", null);
-    //noinspection unchecked
+    final LinkLabel<String> openDevtools = new LinkLabel<>("Open DevTools...", null);
     openDevtools.setListener((linkLabel, data) -> {
       final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
       devToolsManager.openToScreen(app, null);
@@ -302,7 +301,7 @@ public class FlutterPerformanceView implements Disposable {
     final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
 
     final ToolWindow toolWindow = toolWindowManager.getToolWindow(TOOL_WINDOW_ID);
-    if (toolWindow.isVisible()) {
+    if (toolWindow == null || toolWindow.isVisible()) {
       return;
     }
 

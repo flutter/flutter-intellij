@@ -12,11 +12,10 @@ import com.intellij.execution.process.ProcessOutput;
 import com.intellij.execution.util.ExecUtil;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.concurrency.AppExecutorUtil;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
-
-import org.jetbrains.annotations.Nullable;
 
 public class SystemUtils {
 
@@ -25,12 +24,10 @@ public class SystemUtils {
    * <p>
    * This is used to locate binaries that are not pre-installed. If it is necessary to find pre-installed
    * binaries it will require more work, especially on Windows.
-   *
-   * @see git4idea.config.GitExecutableDetector
    */
   @Nullable
   public static String which(String toolName) {
-    File gitExecutableFromPath =
+    final File gitExecutableFromPath =
       PathEnvironmentVariableUtil.findInPath(SystemInfo.isWindows ? toolName + ".exe" : toolName, getPath(), null);
     if (gitExecutableFromPath != null) {
       return gitExecutableFromPath.getAbsolutePath();

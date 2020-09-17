@@ -102,8 +102,8 @@ class PropertyEnumComboBoxModel extends AbstractListModel<EnumValueWrapper>
       return;
     }
     if (property.getValue() != null) {
-      FlutterWidgetPropertyValue value = property.getValue();
-      FlutterWidgetPropertyValueEnumItem enumValue = value.getEnumValue();
+      final FlutterWidgetPropertyValue value = property.getValue();
+      final FlutterWidgetPropertyValueEnumItem enumValue = value.getEnumValue();
       if (enumValue != null) {
         for (EnumValueWrapper e : myList) {
           if (e != null && e.item != null && Objects.equals(e.item.getName(), enumValue.getName())) {
@@ -138,14 +138,14 @@ class PropertyEnumComboBoxModel extends AbstractListModel<EnumValueWrapper>
   @Override
   public void setSelectedItem(Object item) {
     if (item instanceof String) {
-      String expression = (String)item;
+      final String expression = (String)item;
       for (EnumValueWrapper e : myList) {
         if (Objects.equals(e.expression, expression)) {
           mySelected = e;
           return;
         }
       }
-      EnumValueWrapper wrapper = new EnumValueWrapper(expression);
+      final EnumValueWrapper wrapper = new EnumValueWrapper(expression);
       myList.add(wrapper);
       this.fireIntervalAdded(this, myList.size() - 1, myList.size());
       setSelectedItem(wrapper);
@@ -706,7 +706,7 @@ public class PropertyEditorPanel extends SimpleToolWindowPanel {
         break;
         case FlutterWidgetPropertyEditorKind.DOUBLE: {
           try {
-            double doubleValue = Double.parseDouble(expression);
+            final double doubleValue = Double.parseDouble(expression);
             if (((double)((int)doubleValue)) == doubleValue) {
               // Express doubles that can be expressed as ints as ints.
               value = new FlutterWidgetPropertyValue(null, null, (int)doubleValue, null, null, null);
@@ -722,7 +722,7 @@ public class PropertyEditorPanel extends SimpleToolWindowPanel {
         break;
         case FlutterWidgetPropertyEditorKind.INT: {
           try {
-            int intValue = Integer.parseInt(expression);
+            final int intValue = Integer.parseInt(expression);
             value = new FlutterWidgetPropertyValue(null, null, intValue, null, null, null);
           }
           catch (NumberFormatException e) {

@@ -142,7 +142,7 @@ public abstract class PreviewViewControllerBase extends WidgetViewController {
   Rectangle getScreenshotBoundsTight() {
     // TODO(jacobr): cache this.
     if (screenshotBounds == null || extraHeight == 0) return screenshotBounds;
-    Rectangle bounds = new Rectangle(screenshotBounds);
+    final Rectangle bounds = new Rectangle(screenshotBounds);
     bounds.height -= extraHeight;
     bounds.y += extraHeight;
     return bounds;
@@ -164,7 +164,7 @@ public abstract class PreviewViewControllerBase extends WidgetViewController {
     // bounding boxes before the screenshot arives to show likely correct
     // bounding boxes sooner.
     getGroups().cancelNext();
-    InspectorService.ObjectGroup nextGroup = getGroups().getNext();
+    final InspectorService.ObjectGroup nextGroup = getGroups().getNext();
     final CompletableFuture<ArrayList<DiagnosticsNode>> selectionResults = nextGroup.getBoundingBoxes(getSelectedElement(), selection);
 
     nextGroup.safeWhenComplete(selectionResults, (boxes, error) -> {
@@ -346,7 +346,7 @@ public abstract class PreviewViewControllerBase extends WidgetViewController {
     if (screenshotBounds == null) return;
     final Point point = event.getPoint();
     if (screenshotBounds.contains(point)) {
-      Rectangle tightBounds = getScreenshotBoundsTight();
+      final Rectangle tightBounds = getScreenshotBoundsTight();
       event.consume();
       if (tightBounds.contains(point)) {
         if (isPopupTrigger(event)) {
@@ -535,10 +535,10 @@ public abstract class PreviewViewControllerBase extends WidgetViewController {
       return CompletableFuture.completedFuture(null);
     }
 
-    Dimension previewSize = getPreviewSize();
+    final Dimension previewSize = getPreviewSize();
     final long startTime = System.currentTimeMillis();
     // 0.7 is a tweak to ensure we do not try to download enormous screenshots.
-    CompletableFuture<InspectorService.InteractiveScreenshot> screenshotFuture =
+    final CompletableFuture<InspectorService.InteractiveScreenshot> screenshotFuture =
       group.getScreenshotAtLocation(getLocation(), 10, toPixels(previewSize.width), toPixels(previewSize.height), getDPI() * 0.7);
     group.safeWhenComplete(
       screenshotFuture,

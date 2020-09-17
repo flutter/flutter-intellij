@@ -29,7 +29,7 @@ public class FlutterSurveyService {
   private static boolean timeToUpdateCachedContent() {
     // Don't check more often than daily.
     final long currentTimeMillis = System.currentTimeMillis();
-    final long lastCheckedMillis = properties.getOrInitLong(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, 0);
+    final long lastCheckedMillis = properties.getLong(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, 0);
     final boolean timeToUpdateCache = currentTimeMillis - lastCheckedMillis >= CHECK_INTERVAL_IN_MS;
     if (timeToUpdateCache) {
       properties.setValue(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, String.valueOf(currentTimeMillis));

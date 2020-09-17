@@ -17,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
   private static boolean isExternalIdeFile(AnActionEvent e) {
-    VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
+    final VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
     if (file == null || !file.exists()) {
       return false;
     }

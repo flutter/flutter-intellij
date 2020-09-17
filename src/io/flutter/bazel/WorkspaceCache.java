@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class WorkspaceCache {
   @NotNull private final Project project;
   @Nullable private Workspace cache;
-  @NotNull private boolean disconnected = false;
+  private boolean disconnected = false;
 
   private boolean refreshScheduled = false;
 

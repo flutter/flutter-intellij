@@ -182,16 +182,16 @@ public class FlutterConsoleFilter implements Filter {
 
     if (lineStart < 0) {
       // lib/registerC.dart:104:73: Error: Expected ';' after this.
-      String filePathAndLineNumberExpr = "(^.*?):(\\d+?):\\d+?:\\s*?Error";
-      Pattern pattern = Pattern.compile(filePathAndLineNumberExpr);
-      Matcher matcher = pattern.matcher(line);
-      boolean found = matcher.find();
+      final String filePathAndLineNumberExpr = "(^.*?):(\\d+?):\\d+?:\\s*?Error";
+      final Pattern pattern = Pattern.compile(filePathAndLineNumberExpr);
+      final Matcher matcher = pattern.matcher(line);
+      final boolean found = matcher.find();
       if (found) {
-        String filePathExpr = "((?:[^/]*/)*)(.*)";
-        Pattern pathPattern = Pattern.compile(filePathExpr);
-        Matcher pathMatcher = pathPattern.matcher(matcher.group(1));
+        final String filePathExpr = "((?:[^/]*/)*)(.*)";
+        final Pattern pathPattern = Pattern.compile(filePathExpr);
+        final Matcher pathMatcher = pathPattern.matcher(matcher.group(1));
         if (pathMatcher.find()) {
-          String path = pathMatcher.group(1) + pathMatcher.group(2);
+          final String path = pathMatcher.group(1) + pathMatcher.group(2);
           file = fileAtPath(path);
           if (file == null) {
             return null;

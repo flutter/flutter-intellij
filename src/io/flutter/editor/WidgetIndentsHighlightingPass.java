@@ -836,7 +836,7 @@ public class WidgetIndentsHighlightingPass {
         endLine = max(endLine, childLocation.getLine());
         childrenLocations.add(childLocation);
       }
-      final Set<Integer> childrenOffsets = new HashSet<Integer>();
+      final Set<Integer> childrenOffsets = new HashSet<>();
       for (OutlineLocation childLocation : childrenLocations) {
         childrenOffsets.add(childLocation.getGuideOffset());
       }

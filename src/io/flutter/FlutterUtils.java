@@ -211,7 +211,7 @@ public class FlutterUtils {
   @NotNull
   public static VirtualFile getProjectRoot(@NotNull Project project) {
     assert !project.isDefault();
-    @SystemIndependent String path = project.getBasePath();
+    @SystemIndependent final String path = project.getBasePath();
     assert path != null;
     final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
     return Objects.requireNonNull(file);
@@ -417,9 +417,9 @@ public class FlutterUtils {
   }
 
   public static boolean isAndroidxProject(@NotNull Project project) {
-    @SystemIndependent String basePath = project.getBasePath();
+    @SystemIndependent final String basePath = project.getBasePath();
     assert basePath != null;
-    VirtualFile projectDir = LocalFileSystem.getInstance().findFileByPath(basePath);
+    final VirtualFile projectDir = LocalFileSystem.getInstance().findFileByPath(basePath);
     assert projectDir != null;
     VirtualFile androidDir = getFlutterManagedAndroidDir(projectDir);
     if (androidDir == null) {
@@ -428,18 +428,18 @@ public class FlutterUtils {
         return false;
       }
     }
-    VirtualFile propFile = androidDir.findChild("gradle.properties");
+    final VirtualFile propFile = androidDir.findChild("gradle.properties");
     if (propFile == null) {
       return false;
     }
-    Properties properties = new Properties();
+    final Properties properties = new Properties();
     try {
       properties.load(new InputStreamReader(propFile.getInputStream(), Charsets.UTF_8));
     }
     catch (IOException ex) {
       return false;
     }
-    String value = properties.getProperty("android.useAndroidX");
+    final String value = properties.getProperty("android.useAndroidX");
     if (value != null) {
       return Boolean.parseBoolean(value);
     }
@@ -452,12 +452,12 @@ public class FlutterUtils {
 
   @Nullable
   private static VirtualFile getFlutterManagedAndroidDir(VirtualFile dir) {
-    VirtualFile meta = dir.findChild(".metadata");
+    final VirtualFile meta = dir.findChild(".metadata");
     if (meta != null) {
       try {
-        Properties properties = new Properties();
+        final Properties properties = new Properties();
         properties.load(new InputStreamReader(meta.getInputStream(), Charsets.UTF_8));
-        String value = properties.getProperty("project_type");
+        final String value = properties.getProperty("project_type");
         if (value == null) {
           return null;
         }
@@ -494,7 +494,7 @@ public class FlutterUtils {
 
   @Nullable
   public static Module findModuleNamed(@NotNull Project project, @NotNull String name) {
-    Module[] modules = ModuleManager.getInstance(project).getModules();
+    final Module[] modules = ModuleManager.getInstance(project).getModules();
     for (Module module : modules) {
       if (module.getName().equals(name)) {
         return module;
@@ -523,11 +523,11 @@ public class FlutterUtils {
       return null;
     }
     file = file.getParent().getParent();
-    VirtualFile meta = file.findChild(".metadata");
+    final VirtualFile meta = file.findChild(".metadata");
     if (meta == null) {
       return null;
     }
-    VirtualFile android = getFlutterManagedAndroidDir(meta.getParent());
+    final VirtualFile android = getFlutterManagedAndroidDir(meta.getParent());
     if (android != null && android.getName().equals(".android")) {
       return module; // Only true for Flutter modules.
     }
@@ -536,17 +536,17 @@ public class FlutterUtils {
 
   @Nullable
   public static VirtualFile locateModuleRoot(@NotNull Module module) {
-    ModuleSourceOrderEntry entry = findModuleSourceEntry(module);
+    final ModuleSourceOrderEntry entry = findModuleSourceEntry(module);
     if (entry == null) return null;
-    VirtualFile[] roots = entry.getRootModel().getContentRoots();
+    final VirtualFile[] roots = entry.getRootModel().getContentRoots();
     if (roots.length == 0) return null;
     return roots[0];
   }
 
   @Nullable
   private static ModuleSourceOrderEntry findModuleSourceEntry(@NotNull Module module) {
-    ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
-    OrderEntry[] orderEntries = moduleRootManager.getOrderEntries();
+    final ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
+    final OrderEntry[] orderEntries = moduleRootManager.getOrderEntries();
     for (OrderEntry entry : orderEntries) {
       if (entry instanceof ModuleSourceOrderEntry) {
         return (ModuleSourceOrderEntry)entry;

@@ -225,6 +225,7 @@ public class DevToolsManager {
 
     return handler;
   }
+
   private boolean isBazel(Project project) {
     return WorkspaceCache.getInstance(project).isBazel();
   }
@@ -265,15 +266,16 @@ public class DevToolsManager {
       // For internal users, we can connect to the DevTools server started by flutter daemon. For external users, the flutter daemon has an
       // older version of DevTools, so we launch the server using `pub global run` instead.
       if (isBazel(project)) {
-        final Optional<FlutterApp> first =
+        final Optional<FlutterApp> appsOptional =
           FlutterApp.allFromProjectProcess(project).stream().filter((FlutterApp app) -> app.getProject() == project).findFirst();
 
-        if (!first.isPresent()) {
+        //noinspection SimplifyOptionalCallChains
+        if (!appsOptional.isPresent()) {
           LOG.error("DevTools cannot be opened because the app has been closed");
           return;
         }
 
-        FlutterApp app = first.get();
+        final FlutterApp app = appsOptional.get();
 
         app.serveDevTools().thenAccept((DaemonApi.DevToolsAddress address) -> {
           if (!project.isOpen()) {
@@ -283,12 +285,14 @@ public class DevToolsManager {
           if (address == null) {
             @Nullable final OSProcessHandler handler = getProcessHandlerForBazel();
             startDevToolsServerAndConnect(handler, uri, screen);
-          } else {
+          }
+          else {
             devToolsInstance = new DevToolsInstance(address.host, address.port);
             devToolsInstance.openBrowserAndConnect(uri, screen);
           }
         });
-      } else {
+      }
+      else {
         @Nullable final OSProcessHandler handler = getProcessHandlerForPub();
         startDevToolsServerAndConnect(handler, uri, screen);
       }
@@ -398,6 +402,7 @@ class DevToolsInstance {
     final String color = ColorUtil.toHex(UIUtil.getEditorPaneBackground());
     final String url = DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, pageName, true, color);
 
+    //noinspection CodeBlock2Expr
     ApplicationManager.getApplication().invokeLater(() -> {
       new EmbeddedBrowser().openPanel(contentManager, tabName, url);
     });

@@ -15,9 +15,12 @@ import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.dart.FlutterDartAnalysisServer;
-import io.flutter.editor.*;
-import io.flutter.inspector.InspectorService;
+import io.flutter.editor.EditorPositionService;
+import io.flutter.editor.PreviewViewController;
+import io.flutter.editor.WidgetEditingContext;
+import io.flutter.editor.WidgetViewModelData;
 import io.flutter.inspector.InspectorGroupManagerService;
+import io.flutter.inspector.InspectorService;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 
@@ -101,7 +104,7 @@ public class PreviewArea {
 
     final InspectorService.ObjectGroup group = getObjectGroup();
     if (group != null && outlines.size() > 0) {
-      FlutterOutline outline = findWidgetToHighlight(outlines.get(0));
+      final FlutterOutline outline = findWidgetToHighlight(outlines.get(0));
       if (outline == null) return;
       final InspectorService.Location location = InspectorService.Location.outlineToLocation(editor, outline);
       if (location == null) return;
@@ -157,8 +160,9 @@ class TitleAction extends AnAction implements CustomComponentAction {
   public void actionPerformed(@NotNull AnActionEvent event) {
   }
 
+  @NotNull
   @Override
-  public JComponent createCustomComponent(Presentation presentation) {
+  public JComponent createCustomComponent(@NotNull Presentation presentation) {
     final JPanel panel = new JPanel(new BorderLayout());
 
     // Add left border to make the title look similar to the tool window title.
