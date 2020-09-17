@@ -92,7 +92,19 @@ List<EditCommand> editCommands = [
     initial: 'AbstractBundle',
     replacement: 'CommonBundle',
     version: '4.0',
-  )
+  ),
+  Subst(
+    path: 'src/io/flutter/survey/FlutterSurveyService.java',
+    initial: 'properties.getLong(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, 0)',
+    replacement: 'properties.getOrInitLong(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, 0)',
+    version: '4.0',
+  ),
+  Subst(
+    path: 'src/io/flutter/survey/FlutterSurveyNotifications.java',
+    initial: 'properties.getLong(FLUTTER_LAST_SURVEY_PROMPT_KEY, 0)',
+    replacement: 'properties.getOrInitLong(FLUTTER_LAST_SURVEY_PROMPT_KEY, 0)',
+    version: '4.0',
+  ),
 ];
 
 // Used to test checkAndClearAppliedEditCommands()
