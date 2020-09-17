@@ -6,7 +6,10 @@
 package io.flutter.inspector;
 
 import com.google.common.base.Joiner;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
@@ -34,6 +37,7 @@ import io.flutter.bazel.WorkspaceCache;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.utils.JsonUtils;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.vmService.ServiceExtensions;
@@ -1068,7 +1072,7 @@ public class InspectorService implements Disposable {
     CompletableFuture<JsonElement> instanceRefToJson(InstanceRef instanceRef) {
       if (instanceRef.getValueAsString() != null && !instanceRef.getValueAsStringIsTruncated()) {
         // In some situations, the string may already be fully populated.
-        final JsonElement json = new JsonParser().parse(instanceRef.getValueAsString());
+        final JsonElement json = JsonUtils.parseString(instanceRef.getValueAsString());
         return CompletableFuture.completedFuture(json);
       }
       else {
@@ -1076,7 +1080,7 @@ public class InspectorService implements Disposable {
         return nullIfDisposed(() -> getInspectorLibrary().getInstance(instanceRef, this).thenApplyAsync((Instance instance) -> {
           return nullValueIfDisposed(() -> {
             final String json = instance.getValueAsString();
-            return new JsonParser().parse(json);
+            return JsonUtils.parseString(json);
           });
         }));
       }

@@ -15,6 +15,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import io.flutter.FlutterUtils;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.JsonUtils;
 import io.flutter.utils.StdoutJsonParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -253,8 +254,7 @@ public class DaemonApi {
     final JsonObject obj;
 
     try {
-      final JsonParser jsonParser = new JsonParser();
-      final JsonElement element = jsonParser.parse(message);
+      final JsonElement element = JsonUtils.parseString(message);
       obj = element.getAsJsonObject();
     }
     catch (JsonSyntaxException e) {

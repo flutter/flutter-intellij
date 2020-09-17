@@ -8,7 +8,6 @@ package io.flutter.logging.tree;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.openapi.project.Project;
@@ -267,7 +266,7 @@ public class DataPanel extends JPanel {
   }
 
   private boolean updateJsonTextData(String data) {
-    @SuppressWarnings("ConstantConditions") final JsonElement jsonElement = new JsonParser().parse((String)data);
+    @SuppressWarnings("ConstantConditions") final JsonElement jsonElement = JsonUtils.parseString((String)data);
     final String text = gsonHelper.toJson(jsonElement);
     if (text.isEmpty()) {
       return false;

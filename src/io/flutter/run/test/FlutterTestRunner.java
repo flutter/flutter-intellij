@@ -5,7 +5,10 @@
  */
 package io.flutter.run.test;
 
-import com.google.gson.*;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.configurations.RunProfile;
@@ -32,6 +35,7 @@ import io.flutter.run.FlutterPositionMapper;
 import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.JsonUtils;
 import io.flutter.utils.StdoutJsonParser;
 import io.flutter.vmService.VmServiceConsumers;
 import org.dartlang.vm.service.VmService;
@@ -231,8 +235,7 @@ public class FlutterTestRunner extends GenericProgramRunner {
     private void dispatchJson(String json) {
       final JsonObject obj;
       try {
-        final JsonParser jp = new JsonParser();
-        final JsonElement elem = jp.parse(json);
+        final JsonElement elem = JsonUtils.parseString(json);
         obj = elem.getAsJsonObject();
       }
       catch (JsonSyntaxException e) {

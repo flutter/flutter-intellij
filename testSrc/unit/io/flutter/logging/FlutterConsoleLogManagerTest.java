@@ -5,7 +5,6 @@
  */
 package io.flutter.logging;
 
-import com.google.gson.JsonParser;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.execution.process.ProcessHandler;
@@ -14,6 +13,7 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.actionSystem.AnAction;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.utils.JsonUtils;
 import io.flutter.vmService.VMServiceManager;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
@@ -32,7 +32,7 @@ public class FlutterConsoleLogManagerTest {
   public void testBasicLogging() {
     final ConsoleViewMock console = new ConsoleViewMock();
     final FlutterConsoleLogManager logManager = new FlutterConsoleLogManager(console, createFlutterApp());
-    final Event event = new Event(new JsonParser().parse(
+    final Event event = new Event(JsonUtils.parseReader(
       new InputStreamReader(FlutterConsoleLogManagerTest.class.getResourceAsStream("console_log_1.json"))).getAsJsonObject());
 
     logManager.processLoggingEvent(event);
@@ -44,7 +44,7 @@ public class FlutterConsoleLogManagerTest {
   public void testNoLoggerName() {
     final ConsoleViewMock console = new ConsoleViewMock();
     final FlutterConsoleLogManager logManager = new FlutterConsoleLogManager(console, createFlutterApp());
-    final Event event = new Event(new JsonParser().parse(
+    final Event event = new Event(JsonUtils.parseReader(
       new InputStreamReader(FlutterConsoleLogManagerTest.class.getResourceAsStream("console_log_2.json"))).getAsJsonObject());
 
     logManager.processLoggingEvent(event);
@@ -56,7 +56,7 @@ public class FlutterConsoleLogManagerTest {
   public void testWithError() {
     final ConsoleViewMock console = new ConsoleViewMock();
     final FlutterConsoleLogManager logManager = new FlutterConsoleLogManager(console, createFlutterApp());
-    final Event event = new Event(new JsonParser().parse(
+    final Event event = new Event(JsonUtils.parseReader(
       new InputStreamReader(FlutterConsoleLogManagerTest.class.getResourceAsStream("console_log_3.json"))).getAsJsonObject());
 
     logManager.processLoggingEvent(event);
@@ -68,7 +68,7 @@ public class FlutterConsoleLogManagerTest {
   public void testWithStacktrace() {
     final ConsoleViewMock console = new ConsoleViewMock();
     final FlutterConsoleLogManager logManager = new FlutterConsoleLogManager(console, createFlutterApp());
-    final Event event = new Event(new JsonParser().parse(
+    final Event event = new Event(JsonUtils.parseReader(
       new InputStreamReader(FlutterConsoleLogManagerTest.class.getResourceAsStream("console_log_4.json"))).getAsJsonObject());
 
     logManager.processLoggingEvent(event);

@@ -6,12 +6,12 @@
 package io.flutter.survey;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.io.HttpRequests;
+import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -54,7 +54,7 @@ public class FlutterSurveyService {
   private static FlutterSurvey fetchSurveyContent() {
     try {
       final String contents = HttpRequests.request(CONTENT_URL).readString();
-      final JsonObject json = new JsonParser().parse(contents).getAsJsonObject();
+      final JsonObject json = JsonUtils.parseString(contents).getAsJsonObject();
       return FlutterSurvey.fromJson(json);
     }
     catch (IOException | JsonSyntaxException e) {

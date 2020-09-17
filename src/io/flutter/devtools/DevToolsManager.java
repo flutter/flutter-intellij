@@ -7,7 +7,6 @@ package io.flutter.devtools;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
@@ -225,6 +224,7 @@ public class DevToolsManager {
 
     return handler;
   }
+
   private boolean isBazel(Project project) {
     return WorkspaceCache.getInstance(project).isBazel();
   }
@@ -283,12 +283,14 @@ public class DevToolsManager {
           if (address == null) {
             @Nullable final OSProcessHandler handler = getProcessHandlerForBazel();
             startDevToolsServerAndConnect(handler, uri, screen);
-          } else {
+          }
+          else {
             devToolsInstance = new DevToolsInstance(address.host, address.port);
             devToolsInstance.openBrowserAndConnect(uri, screen);
           }
         });
-      } else {
+      }
+      else {
         @Nullable final OSProcessHandler handler = getProcessHandlerForPub();
         startDevToolsServerAndConnect(handler, uri, screen);
       }
@@ -348,8 +350,7 @@ class DevToolsInstance {
           // {"event":"server.started","params":{"host":"127.0.0.1","port":9100}}
 
           try {
-            final JsonParser jsonParser = new JsonParser();
-            final JsonElement element = jsonParser.parse(text);
+            final JsonElement element = JsonUtils.parseString(text);
 
             // params.port
             final JsonObject obj = element.getAsJsonObject();

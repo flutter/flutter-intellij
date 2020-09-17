@@ -5,7 +5,10 @@
  */
 package io.flutter.sdk;
 
-import com.google.gson.*;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -32,6 +35,7 @@ import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.test.TestFields;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -532,8 +536,7 @@ public class FlutterSdk {
       final Integer code = process.getExitCode();
       if (code != null && code == 0) {
         try {
-          final JsonParser jp = new JsonParser();
-          final JsonElement elem = jp.parse(stdout.toString());
+          final JsonElement elem = JsonUtils.parseString(stdout.toString());
           if (elem.isJsonNull()) {
             FlutterUtils.warn(LOG, "Invalid Json from flutter config");
             return null;

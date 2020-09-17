@@ -10,7 +10,10 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.dart.server.AnalysisServerListenerAdapter;
 import com.google.dart.server.ResponseListener;
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
@@ -20,6 +23,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
+import io.flutter.utils.JsonUtils;
 import org.dartlang.analysis.server.protocol.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -190,7 +194,7 @@ public class FlutterDartAnalysisServer implements Disposable {
       // Short circuit just in case we have been disposed in the time it took
       // for us to get around to listening for the response.
       if (isDisposed) return;
-      processResponse(new JsonParser().parse(jsonString).getAsJsonObject());
+      processResponse(JsonUtils.parseString(jsonString).getAsJsonObject());
     });
   }
 
