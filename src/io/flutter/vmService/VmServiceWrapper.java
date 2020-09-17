@@ -113,10 +113,6 @@ public class VmServiceWrapper implements Disposable {
             getVm(new VmServiceConsumers.VmConsumerWrapper() {
               @Override
               public void received(final VM vm) {
-                if (vm.getIsolates().isEmpty()) {
-                  Logging.getLogger().logError("No isolates found after VM start: " + vm.getIsolates().size());
-                }
-
                 for (final IsolateRef isolateRef : vm.getIsolates()) {
                   getIsolate(isolateRef.getId(), new VmServiceConsumers.GetIsolateConsumerWrapper() {
                     @Override
