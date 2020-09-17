@@ -77,6 +77,7 @@
       </library>
     </orderEntry>
     <orderEntry type="library" exported="" name="Dart SDK" level="project" />
+    <orderEntry type="library" exported="" name="Dart Packages" level="project" />
     <orderEntry type="module" module-name="intellij.android.core" />
     <orderEntry type="module" module-name="intellij.platform.externalSystem" />
     <orderEntry type="module" module-name="intellij.gradle.common" />
