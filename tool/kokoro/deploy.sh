@@ -4,7 +4,7 @@ source ./tool/kokoro/setup.sh
 setup
 
 echo "kokoro build start"
-./bin/plugin make --channel=dev
+./bin/plugin make --channel=dev -o4.0 -u
 
 set +e
 pwd
