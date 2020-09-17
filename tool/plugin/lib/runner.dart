@@ -70,7 +70,7 @@ jxbrowser.license.key=${jxBrowserKey}
     writeJxBrowserKeyToFile();
     if (spec.isDevChannel)
       return await runGradleCommand(
-          ['-d', 'buildPlugin'], spec, version, 'false');
+          ['buildPlugin'], spec, version, 'false');
     else
       return await runGradleCommand(['buildPlugin'], spec, version, 'false');
   }

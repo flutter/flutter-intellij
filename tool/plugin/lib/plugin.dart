@@ -379,7 +379,9 @@ class GradleBuildCommand extends BuildCommand {
     final file = File(releasesFilePath(spec));
     var source = File('build/distributions/flutter-intellij-$version.zip');
     if (!source.existsSync()) {
-      // Setting the plugin name in Gradle should eliminate the need for this.
+      // Setting the plugin name in Gradle should eliminate the need for this,
+      // but it does not.
+      // TODO(messick) Find a way to make the Kokoro file name: flutter-intellij-DEV.zip
       source = File('build/distributions/flutter-intellij-kokoro-$version.zip');
     }
     _copyFile(source, file.parent, filename: p.basename(file.path),
