@@ -377,10 +377,12 @@ class GradleBuildCommand extends BuildCommand {
 
   Future<int> savePluginArtifact(BuildSpec spec, String version) async {
     final file = File(releasesFilePath(spec));
-    _copyFile(
-      File('build/distributions/flutter-intellij-$version.zip'),
-      file.parent,
-      filename: p.basename(file.path),
+    var source = File('build/distributions/flutter-intellij-$version.zip');
+    if (!source.existsSync()) {
+      // Setting the plugin name in Gradle should eliminate the need for this.
+      source = File('build/distributions/flutter-intellij-kokoro-$version.zip');
+    }
+    _copyFile(source, file.parent, filename: p.basename(file.path),
     );
     return 0;
   }

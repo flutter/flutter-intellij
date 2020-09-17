@@ -34,6 +34,7 @@ group 'io.flutter'
 version flutterPluginVersion
 
 intellij {
+  pluginName name
   // This adds nullability assertions, but also compiles forms.
   instrumentCode = true
   updateSinceUntilBuild = false
