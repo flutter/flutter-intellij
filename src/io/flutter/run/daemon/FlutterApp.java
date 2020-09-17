@@ -32,7 +32,6 @@ import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
 import io.flutter.logging.FlutterConsoleLogManager;
-import io.flutter.logging.FlutterLog;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterDebugProcess;
@@ -107,7 +106,6 @@ public class FlutterApp implements Disposable {
   private final AtomicReference<State> myState = new AtomicReference<>(State.STARTING);
   private final EventDispatcher<FlutterAppListener> listenersDispatcher = EventDispatcher.create(FlutterAppListener.class);
 
-  private final FlutterLog myFlutterLog;
   private final ObservatoryConnector myConnector;
   private @Nullable FlutterDebugProcess myFlutterDebugProcess;
   private @Nullable VmService myVmService;
@@ -134,7 +132,6 @@ public class FlutterApp implements Disposable {
              @NotNull GeneralCommandLine command) {
     myProject = project;
     myModule = module;
-    myFlutterLog = new FlutterLog(project, module);
     myMode = mode;
     myDevice = device;
     myProcessHandler = processHandler;
@@ -180,11 +177,6 @@ public class FlutterApp implements Disposable {
         myResume = null;
       }
     };
-  }
-
-  @NotNull
-  public FlutterLog getFlutterLog() {
-    return myFlutterLog;
   }
 
   @NotNull
@@ -655,7 +647,6 @@ public class FlutterApp implements Disposable {
 
   public void setFlutterDebugProcess(FlutterDebugProcess flutterDebugProcess) {
     myFlutterDebugProcess = flutterDebugProcess;
-    myFlutterLog.setFlutterApp(this);
   }
 
   public FlutterDebugProcess getFlutterDebugProcess() {

@@ -251,8 +251,6 @@
                     serviceImplementation="io.flutter.dart.FlutterDartAnalysisServer"/>
     <projectService serviceInterface="io.flutter.bazel.WorkspaceCache"
                     serviceImplementation="io.flutter.bazel.WorkspaceCache"/>
-    <projectService serviceInterface="io.flutter.logging.FlutterLogPreferences"
-                    serviceImplementation="io.flutter.logging.FlutterLogPreferences"/>
     <projectService serviceImplementation="io.flutter.pub.PubRootCache"/>
 
     <configurationType implementation="io.flutter.run.FlutterRunConfigurationType"/>
@@ -354,7 +352,6 @@
     <library.type implementation="io.flutter.sdk.FlutterPluginLibraryType"/>
 
     <projectStructureDetector implementation="io.flutter.project.FlutterProjectStructureDetector"/>
-    <colorSettingsPage implementation="io.flutter.logging.FlutterLogColorPage"/>
     <additionalTextAttributes scheme="Default" file="colorSchemes/FlutterLogColorSchemeDefault.xml"/>
     <additionalTextAttributes scheme="Default" file="colorSchemes/FlutterCodeColorSchemeDefault.xml"/>
     <search.optionContributor implementation="io.flutter.sdk.FlutterSearchableOptionContributor"/>
