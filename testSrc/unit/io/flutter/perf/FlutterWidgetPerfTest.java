@@ -26,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.beans.PropertyChangeListener;
 import java.util.*;
@@ -167,7 +166,7 @@ class MockEditorPerfModel extends MockPerfModel implements EditorPerfModel {
   }
 
   @Override
-  public void setPerfInfo(@Nonnull FilePerfInfo stats) {
+  public void setPerfInfo(@NotNull FilePerfInfo stats) {
     this.stats = stats;
     if (statsFuture.isDone()) {
       statsFuture = new CompletableFuture<>();

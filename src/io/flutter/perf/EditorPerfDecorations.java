@@ -30,7 +30,6 @@ import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
@@ -114,7 +113,7 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
   }
 
   @Override
-  public void setPerfInfo(@Nonnull FilePerfInfo stats) {
+  public void setPerfInfo(@NotNull FilePerfInfo stats) {
     this.stats = stats;
     final Editor editor = textEditor.getEditor();
     final MarkupModel markupModel = editor.getMarkupModel();

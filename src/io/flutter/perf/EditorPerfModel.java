@@ -10,8 +10,6 @@ import com.intellij.openapi.fileEditor.TextEditor;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
-
 /**
  * View model for displaying perf stats for a TextEditor.
  * <p>
@@ -32,5 +30,5 @@ public interface EditorPerfModel extends PerfModel, Disposable {
 
   void setAlwaysShowLineMarkersOverride(boolean show);
 
-  void setPerfInfo(@Nonnull FilePerfInfo stats);
+  void setPerfInfo(@NotNull FilePerfInfo stats);
 }
