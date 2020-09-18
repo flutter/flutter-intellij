@@ -48,6 +48,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.EventStream;
+import io.flutter.utils.JxBrowserUtils;
 import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.vmService.ServiceExtensions;
 import org.dartlang.vm.service.VmService;
@@ -191,7 +192,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     return perAppViewState.computeIfAbsent(app, k -> new PerAppState());
   }
 
-  private void addBrowserInspectorViewContent(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
+  private void addBrowserInspectorViewContent(FlutterApp app,
+                                              @Nullable InspectorService inspectorService,
+                                              ToolWindow toolWindow,
+                                              boolean isEmbedded) {
     final ContentManager contentManager = toolWindow.getContentManager();
 
     final String tabName;
@@ -212,10 +216,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       emptyContent = null;
     }
 
-    // TODO(helin24): Add a message to communicate that opening devtools is in progress.
-
     final String browserUrl = app.getConnector().getBrowserUrl();
-    DevToolsManager.getInstance(app.getProject()).openBrowserIntoPanel(browserUrl, contentManager, tabName, "inspector");
+
+    if (isEmbedded) {
+      DevToolsManager.getInstance(app.getProject()).openBrowserIntoPanel(browserUrl, contentManager, tabName, "inspector");
+    } else {
+      DevToolsManager.getInstance(app.getProject()).openBrowserAndConnect(browserUrl, "inspector");
+      presentLabel(toolWindow, "DevTools inspector has been opened in the browser.");
+    }
   }
 
   private void addInspectorViewContent(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
@@ -383,10 +391,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   protected void handleJxBrowserInstalled(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
+    presentDevTools(app, inspectorService, toolWindow, true);
+  }
+
+  private void presentDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
     final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
     if (devToolsManager.hasInstalledDevTools()) {
-      addBrowserInspectorViewContent(app, inspectorService, toolWindow);
+      addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded);
     }
     else {
       presentLabel(toolWindow, INSTALLING_DEVTOOLS_LABEL);
@@ -394,7 +406,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
       result.thenAccept(succeeded -> {
         if (succeeded) {
-          addBrowserInspectorViewContent(app, inspectorService, toolWindow);
+          addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded);
         } else {
           // TODO(helin24): Handle with alternative instructions if devtools fails.
           presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
@@ -447,11 +459,18 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   protected void handleJxBrowserInstallationFailed(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
-    // Allow user to manually restart.
-    presentClickableLabel(toolWindow, "JxBrowser installation failed. Click to retry.", (linkLabel, data) -> {
-      JxBrowserManager.getInstance().retryFromFailed(app.getProject());
-      handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
-    });
+    if (!JxBrowserUtils.licenseIsSet()) {
+      // If the license isn't available, allow the user to open the equivalent page in a non-embedded browser window.
+      presentClickableLabel(toolWindow, "The JxBrowser license could not be found. Open Devtools in the browser?", (linkLabel, data) -> {
+        presentDevTools(app, inspectorService, toolWindow, false);
+      });
+    } else {
+      // Allow the user to manually restart.
+      presentClickableLabel(toolWindow, "JxBrowser installation failed. Retry?", (linkLabel, data) -> {
+        JxBrowserManager.getInstance().retryFromFailed(app.getProject());
+        handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
+      });
+    }
   }
 
   protected void presentLabel(ToolWindow toolWindow, String text) {

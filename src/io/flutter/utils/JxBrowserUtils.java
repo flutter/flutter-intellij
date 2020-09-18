@@ -70,4 +70,8 @@ public class JxBrowserUtils {
 
     return value;
   }
+
+  public static boolean licenseIsSet() {
+    return System.getProperty(JxBrowserUtils.LICENSE_PROPERTY_NAME) != null;
+  }
 }
