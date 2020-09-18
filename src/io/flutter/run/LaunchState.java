@@ -41,8 +41,6 @@ import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
-import io.flutter.logging.FlutterLog;
-import io.flutter.logging.FlutterLogView;
 import io.flutter.run.bazel.BazelRunConfig;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.DaemonConsoleView;
@@ -95,19 +93,6 @@ public class LaunchState extends CommandLineState {
   @NotNull
   protected CreateAppCallback getCreateAppCallback() {
     return myCreateAppCallback;
-  }
-
-  @Override
-  @Nullable
-  protected ConsoleView createConsole(@NotNull final Executor executor) throws ExecutionException {
-    if (FlutterLog.useFlutterLogView()) {
-      final FlutterApp app = FlutterApp.fromEnv(getEnvironment());
-      assert app != null;
-      return new FlutterLogView(app);
-    }
-    else {
-      return super.createConsole(executor);
-    }
   }
 
   protected RunContentDescriptor launch(@NotNull ExecutionEnvironment env) throws ExecutionException {
