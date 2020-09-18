@@ -147,6 +147,6 @@ public class FlutterSdkVersion {
   }
 
   public String fullVersion() {
-    return version.toString();
+    return version == null ? "unknown version" : version.toString();
   }
 }

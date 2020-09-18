@@ -50,7 +50,7 @@ class TogglePlatformAction extends ToolbarComboBoxAction {
   }
 
   @Override
-  public final void update(AnActionEvent e) {
+  public final void update(@NotNull AnActionEvent e) {
     app.getVMServiceManager().getServiceExtensionState(extensionDescription.getExtension()).listen((state) -> {
       selectedPlatform = PlatformTarget.parseValue((String)state.getValue());
     }, true);

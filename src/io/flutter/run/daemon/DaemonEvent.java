@@ -158,7 +158,6 @@ abstract class DaemonEvent {
 
   // daemon domain
 
-  @SuppressWarnings("unused")
   static class DaemonConnected extends DaemonEvent {
     // "event":"daemon.log"
     String version;
@@ -169,7 +168,6 @@ abstract class DaemonEvent {
     }
   }
 
-  @SuppressWarnings("unused")
   static class DaemonLog extends DaemonEvent {
     // "event":"daemon.log"
     String log;
@@ -180,7 +178,6 @@ abstract class DaemonEvent {
     }
   }
 
-  @SuppressWarnings("unused")
   static class DaemonLogMessage extends DaemonEvent {
     // "event":"daemon.logMessage"
     String level;
@@ -192,7 +189,6 @@ abstract class DaemonEvent {
     }
   }
 
-  @SuppressWarnings("unused")
   static class DaemonShowMessage extends DaemonEvent {
     // "event":"daemon.showMessage"
     String level;
@@ -206,7 +202,6 @@ abstract class DaemonEvent {
 
   // app domain
 
-  @SuppressWarnings("unused")
   static class AppStarting extends DaemonEvent {
     public static final String LAUNCH_MODE_RUN = "run";
     public static final String LAUNCH_MODE_ATTACH = "attach";
@@ -223,7 +218,6 @@ abstract class DaemonEvent {
     }
   }
 
-  @SuppressWarnings("unused")
   static class AppDebugPort extends DaemonEvent {
     // "event":"app.eventDebugPort"
     String appId;
@@ -237,7 +231,6 @@ abstract class DaemonEvent {
     }
   }
 
-  @SuppressWarnings("unused")
   static class AppStarted extends DaemonEvent {
     // "event":"app.started"
     String appId;
@@ -247,7 +240,6 @@ abstract class DaemonEvent {
     }
   }
 
-  @SuppressWarnings("unused")
   static class AppLog extends DaemonEvent {
     // "event":"app.log"
     String appId;
@@ -259,7 +251,6 @@ abstract class DaemonEvent {
     }
   }
 
-  @SuppressWarnings("unused")
   static class AppProgress extends DaemonEvent {
     // "event":"app.progress"
 
@@ -300,7 +291,6 @@ abstract class DaemonEvent {
     }
   }
 
-  @SuppressWarnings("unused")
   static class AppStopped extends DaemonEvent {
     // "event":"app.stop"
     String appId;
@@ -329,7 +319,6 @@ abstract class DaemonEvent {
     }
   }
 
-  @SuppressWarnings("unused")
   static class DeviceRemoved extends DaemonEvent {
     // "event":"device.removed"
     String id;

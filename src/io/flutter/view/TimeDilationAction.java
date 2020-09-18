@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("ComponentNotRegistered")
 public class TimeDilationAction extends FlutterViewToggleableAction {
   public TimeDilationAction(@NotNull FlutterApp app, boolean showIcon) {
     super(app, showIcon ? AllIcons.Vcs.History : null, ServiceExtensions.slowAnimations);

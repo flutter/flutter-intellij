@@ -1,2 +1,4 @@
 package io.flutter.utils;
-public class AndroidLocationProvider {}
+
+public class AndroidLocationProvider {
+}

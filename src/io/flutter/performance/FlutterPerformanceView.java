@@ -269,7 +269,9 @@ public class FlutterPerformanceView implements Disposable {
     final PerfViewAppState appState = perAppViewState.get(app);
     if (appState != null) {
       final ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow(TOOL_WINDOW_ID);
-      toolWindow.getContentManager().setSelectedContent(appState.content);
+      if (toolWindow != null) {
+        toolWindow.getContentManager().setSelectedContent(appState.content);
+      }
     }
   }
 
@@ -277,8 +279,9 @@ public class FlutterPerformanceView implements Disposable {
     final PerfViewAppState appState = perAppViewState.get(app);
     if (appState != null) {
       final ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow(TOOL_WINDOW_ID);
-
-      toolWindow.getContentManager().setSelectedContent(appState.content);
+      if (toolWindow != null) {
+        toolWindow.getContentManager().setSelectedContent(appState.content);
+      }
     }
   }
 

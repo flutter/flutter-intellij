@@ -5,13 +5,10 @@
  */
 package io.flutter.module.settings;
 
-import java.awt.event.ItemListener;
-import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-
 import org.jetbrains.annotations.NotNull;
+
+import javax.swing.*;
+import java.awt.event.ItemListener;
 
 /**
  * A panel with two radios in a group.

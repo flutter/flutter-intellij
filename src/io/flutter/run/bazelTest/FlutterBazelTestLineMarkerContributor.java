@@ -7,7 +7,6 @@ package io.flutter.run.bazelTest;
 
 import com.intellij.psi.PsiElement;
 import io.flutter.run.common.TestLineMarkerContributor;
-import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

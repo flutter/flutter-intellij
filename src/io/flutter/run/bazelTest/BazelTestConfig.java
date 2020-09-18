@@ -19,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * The Bazel version of the {@link io.flutter.run.test.TestConfig}.
  */
-public class BazelTestConfig extends LocatableConfigurationBase {
+public class BazelTestConfig extends LocatableConfigurationBase<CommandLineState> {
   @NotNull private BazelTestFields fields;
 
   BazelTestConfig(@NotNull final Project project, @NotNull final ConfigurationFactory factory, @NotNull final String name) {

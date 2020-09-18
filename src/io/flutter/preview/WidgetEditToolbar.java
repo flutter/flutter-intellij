@@ -22,8 +22,8 @@ import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
 import io.flutter.dart.FlutterDartAnalysisServer;
-import io.flutter.inspector.InspectorService;
 import io.flutter.inspector.InspectorGroupManagerService;
+import io.flutter.inspector.InspectorService;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.EventStream;
@@ -33,8 +33,8 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**

@@ -290,27 +290,25 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
   protected VirtualFile findLocalFile(@NotNull String uri) {
     return ApplicationManager.getApplication().runReadAction((Computable<VirtualFile>)() -> {
       // This can be a remote file or URI.
-      final String remote = uri;
-
-      if (remoteSourceRoot != null && remote.startsWith(remoteSourceRoot)) {
+      if (remoteSourceRoot != null && uri.startsWith(remoteSourceRoot)) {
         final String rootUri = StringUtil.trimEnd(resolver.getDartUrlForFile(sourceRoot), '/');
-        final String suffix = remote.substring(remoteSourceRoot.length());
+        final String suffix = uri.substring(remoteSourceRoot.length());
         return resolver.findFileByDartUrl(rootUri + suffix);
       }
 
-      if (remoteBaseUri != null && remote.startsWith(remoteBaseUri)) {
+      if (remoteBaseUri != null && uri.startsWith(remoteBaseUri)) {
         final String rootUri = StringUtil.trimEnd(resolver.getDartUrlForFile(sourceRoot), '/');
-        final String suffix = remote.substring(remoteBaseUri.length());
+        final String suffix = uri.substring(remoteBaseUri.length());
         return resolver.findFileByDartUrl(rootUri + suffix);
       }
 
       final String remoteUri;
-      if (remote.startsWith("/")) {
+      if (uri.startsWith("/")) {
         // Convert a file path to a file: uri.
-        remoteUri = new File(remote).toURI().toString();
+        remoteUri = new File(uri).toURI().toString();
       }
       else {
-        remoteUri = remote;
+        remoteUri = uri;
       }
 
       // See if the analysis server can resolve the URI.

@@ -8,8 +8,6 @@
  */
 package org.dartlang.analysis.server.protocol;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import com.google.dart.server.utilities.general.ObjectUtilities;
 import com.google.gson.JsonArray;
@@ -19,6 +17,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * An attribute for a FlutterOutline.

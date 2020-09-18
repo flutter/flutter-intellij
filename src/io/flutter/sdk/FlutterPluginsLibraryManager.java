@@ -56,7 +56,7 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
 
     getProject().getMessageBus().connect().subscribe(ProjectTopics.PROJECT_ROOTS, new ModuleRootListener() {
       @Override
-      public void rootsChanged(ModuleRootEvent event) {
+      public void rootsChanged(@NotNull ModuleRootEvent event) {
         scheduleUpdate();
       }
     });
@@ -76,7 +76,7 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
     return FlutterPluginLibraryType.LIBRARY_KIND;
   }
 
-  private void fileChanged(@SuppressWarnings("unused") @NotNull final Project project, @NotNull final VirtualFile file) {
+  private void fileChanged(@NotNull final Project project, @NotNull final VirtualFile file) {
     if (!DotPackagesFileUtil.DOT_PACKAGES.equals(file.getName())) return;
     if (LocalFileSystem.getInstance() != file.getFileSystem() && !ApplicationManager.getApplication().isUnitTestMode()) return;
 

@@ -53,7 +53,7 @@ public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
 
     @Override
     @NotNull
-    public RunConfiguration createConfiguration(String name, RunConfiguration template) {
+    public RunConfiguration createConfiguration(String name, @NotNull RunConfiguration template) {
       // Called in two cases:
       //   - When creating a non-template config from a template.
       //   - whenever the run configuration editor is open (for creating snapshots).

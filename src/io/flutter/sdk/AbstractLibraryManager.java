@@ -11,24 +11,17 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.LibraryOrderEntry;
-import com.intellij.openapi.roots.ModifiableRootModel;
-import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.roots.OrderEntry;
-import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.*;
 import com.intellij.openapi.roots.impl.libraries.LibraryEx;
-import com.intellij.openapi.roots.libraries.Library;
-import com.intellij.openapi.roots.libraries.LibraryProperties;
-import com.intellij.openapi.roots.libraries.LibraryTable;
-import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
-import com.intellij.openapi.roots.libraries.PersistentLibraryKind;
+import com.intellij.openapi.roots.libraries.*;
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.utils.FlutterModuleUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * The shared code for managing a library. To use it, define a subclass that implements the required methods,
@@ -66,7 +59,7 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
 
   protected void updateLibraryContent(@NotNull String name,
                                       @NotNull Set<String> contentUrls,
-                                      @SuppressWarnings("unused") @Nullable Set<String> sourceUrls) {
+                                      @Nullable Set<String> sourceUrls) {
     // TODO(messick) Add support for source URLs.
     final LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
     final Library existingLibrary = getLibraryByName(name);
@@ -103,7 +96,9 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
         model.addRoot(url, OrderRootType.CLASSES);
       }
 
-      DumbService.getInstance(project).runWhenSmart(() -> ApplicationManager.getApplication().runWriteAction(() -> model.commit()));
+      DumbService.getInstance(project).runWhenSmart(() -> {
+        ApplicationManager.getApplication().runWriteAction(model::commit);
+      });
     });
 
     updateModuleLibraryDependencies(library);

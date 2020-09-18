@@ -14,13 +14,12 @@ import io.flutter.FlutterBundle;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
+import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
 import java.awt.event.ItemEvent;
 import java.util.function.Supplier;
-import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-
-import org.jetbrains.annotations.NotNull;
 
 public class FlutterCreateAdditionalSettingsFields {
   private final FlutterCreateAdditionalSettings settings;

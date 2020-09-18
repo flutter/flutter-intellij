@@ -23,10 +23,11 @@ import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdk;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The FlutterConsoleFilter handles link detection in consoles for:

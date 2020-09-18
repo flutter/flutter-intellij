@@ -5,9 +5,6 @@
  */
 package io.flutter.console;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import com.intellij.execution.filters.Filter;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -17,6 +14,9 @@ import io.flutter.testing.Testing;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class FlutterConsoleFilterTest {
   @ClassRule

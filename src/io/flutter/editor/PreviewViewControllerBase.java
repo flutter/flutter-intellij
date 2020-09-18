@@ -6,7 +6,7 @@
 package io.flutter.editor;
 
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.editor.*;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -29,7 +29,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import static io.flutter.inspector.InspectorService.toSourceLocationUri;
-import static java.lang.Math.*;
+import static java.lang.Math.min;
 
 /**
  * Controller that displays interactive screen mirrors for specific widget

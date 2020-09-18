@@ -27,14 +27,14 @@ import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
-import io.flutter.inspector.InspectorService;
 import io.flutter.inspector.InspectorGroupManagerService;
+import io.flutter.inspector.InspectorService;
 import io.flutter.settings.FlutterSettings;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Objects;
 
 /**
  * Factory that drives all rendering of widget indents.

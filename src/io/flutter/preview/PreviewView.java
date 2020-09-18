@@ -220,7 +220,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
 
       final ShowOnlyWidgetsAction showOnlyWidgetsAction = new ShowOnlyWidgetsAction();
 
-      toolWindowEx.setTitleActions(expandAllAction, collapseAllAction, showOnlyWidgetsAction);
+      toolWindowEx.setTitleActions(Arrays.asList(expandAllAction, collapseAllAction, showOnlyWidgetsAction));
     }
 
     new TreeSpeedSearch(tree) {

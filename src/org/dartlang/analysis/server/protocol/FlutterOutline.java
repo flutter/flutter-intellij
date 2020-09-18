@@ -8,19 +8,17 @@
  */
 package org.dartlang.analysis.server.protocol;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import com.google.dart.server.utilities.general.ObjectUtilities;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-
-import org.apache.commons.lang.StringUtils;
+import java.util.List;
 
 /**
  * An node in the Flutter specific outline structure of a file.

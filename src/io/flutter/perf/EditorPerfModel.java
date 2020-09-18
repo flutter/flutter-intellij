@@ -30,5 +30,5 @@ public interface EditorPerfModel extends PerfModel, Disposable {
 
   void setAlwaysShowLineMarkersOverride(boolean show);
 
-  void setPerfInfo(FilePerfInfo stats);
+  void setPerfInfo(@NotNull FilePerfInfo stats);
 }

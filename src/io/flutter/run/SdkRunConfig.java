@@ -158,7 +158,7 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
       String existingJson = null;
       if (Files.exists(cachedParametersPath)) {
         try {
-          existingJson = new String(Files.readAllBytes(cachedParametersPath), StandardCharsets.UTF_8);
+          existingJson = Files.readString(cachedParametersPath);
         }
         catch (IOException e) {
           FlutterUtils.warn(LOG, "Unable to get existing json from " + cachedParametersPath);

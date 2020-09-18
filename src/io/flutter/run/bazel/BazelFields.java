@@ -254,8 +254,6 @@ public class BazelFields {
               arch = "x86";
               break;
             case "android-x64":
-              arch = "x86_64";
-              break;
             case "linux-x64":
               arch = "x86_64";
               break;
@@ -313,7 +311,7 @@ public class BazelFields {
     final String enableReleaseMode = options.get("enableReleaseMode");
 
     try {
-      return new BazelFields(bazelTarget, bazelArgs, additionalArgs, Boolean.valueOf(enableReleaseMode));
+      return new BazelFields(bazelTarget, bazelArgs, additionalArgs, Boolean.parseBoolean(enableReleaseMode));
     }
     catch (IllegalArgumentException e) {
       throw new InvalidDataException(e.getMessage());

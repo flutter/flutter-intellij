@@ -14,9 +14,7 @@ import io.flutter.testing.Testing;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class FlutterSdkUtilTest {
   @Rule
