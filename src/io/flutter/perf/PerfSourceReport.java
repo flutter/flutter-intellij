@@ -39,7 +39,7 @@ public class PerfSourceReport {
     return entries;
   }
 
-  class Entry {
+  static class Entry {
     public final int locationId;
     public final int total;
 

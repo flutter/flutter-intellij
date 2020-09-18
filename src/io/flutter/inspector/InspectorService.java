@@ -433,7 +433,7 @@ public class InspectorService implements Disposable {
   public CompletableFuture<Boolean> isWidgetTreeReady() {
     if (useServiceExtensionApi()) {
       return invokeServiceExtensionNoGroup("isWidgetTreeReady", new JsonObject())
-        .thenApplyAsync((JsonElement element) -> element.getAsBoolean());
+        .thenApplyAsync(JsonElement::getAsBoolean);
     }
     else {
       return invokeEvalNoGroup("isWidgetTreeReady")
@@ -525,6 +525,7 @@ public class InspectorService implements Disposable {
    * futures that return null values for requests from disposed ObjectGroup
    * objects.
    */
+  @SuppressWarnings("CodeBlock2Expr")
   public class ObjectGroup implements Disposable {
     final InspectorService service;
     /**
@@ -681,9 +682,7 @@ public class InspectorService implements Disposable {
       return getInspectorLibrary().addRequest(
         this,
         methodName,
-        () -> {
-          return invokeServiceExtensionHelper(methodName, paramsMap);
-        }
+        () -> invokeServiceExtensionHelper(methodName, paramsMap)
       );
     }
 
@@ -769,7 +768,7 @@ public class InspectorService implements Disposable {
 
       if (target == null || target.getValueRef() == null || color == null) return CompletableFuture.completedFuture(false);
 
-      String command =
+      final String command =
         "final object = WidgetInspectorService.instance.toObject('" +
         target.getValueRef().getId() +
         "');" +
@@ -849,9 +848,7 @@ public class InspectorService implements Disposable {
 
 
       final String[] commandLines = command.split("\n");
-      for (String l : commandLines) {
-        lines.add(l);
-      }
+      Collections.addAll(lines, commandLines);
       lines.add(")()");
 
       // Strip out line breaks as that makes the VM evaluate expression api unhappy.
@@ -866,7 +863,7 @@ public class InspectorService implements Disposable {
         (instanceRef) -> {
           if (instanceRef == null) {
             // A null value indicates the request was cancelled.
-            return CompletableFuture.completedFuture(instanceRef);
+            return CompletableFuture.completedFuture(null);
           }
           if (instanceRef.isNull()) {
             // An InstanceRef with an explicitly null return value indicates we should issue the request again.
@@ -938,7 +935,7 @@ public class InspectorService implements Disposable {
       final Base64.Decoder decoder = Base64.getDecoder();
       final byte[] imageBytes = decoder.decode(imageString);
       final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(imageBytes);
-      BufferedImage image = null;
+      final BufferedImage image;
       try {
         image = ImageIO.read(byteArrayInputStream);
         byteArrayInputStream.close();
@@ -1326,7 +1323,7 @@ public class InspectorService implements Disposable {
         return;
       }
       if (useServiceExtensionApi()) {
-        JsonObject params = new JsonObject();
+        final JsonObject params = new JsonObject();
         addLocationToParams(location, params);
         handleSetSelectionDaemon(invokeVmServiceExtension("setSelectionByLocation", params), uiAlreadyUpdated, textEditorUpdated);
       }

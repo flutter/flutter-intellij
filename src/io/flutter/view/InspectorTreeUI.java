@@ -67,7 +67,7 @@ public class InspectorTreeUI extends BasicTreeUI {
   boolean leftToRight = true; // TODO(jacobr): actually support RTL mode.
 
   public InspectorTreeUI() {
-    this(false, Conditions.<Integer>alwaysFalse());
+    this(false, Conditions.alwaysFalse());
   }
 
   /**
@@ -100,8 +100,8 @@ public class InspectorTreeUI extends BasicTreeUI {
     return new MouseEventAdapter<MouseListener>(super.createMouseListener()) {
       @Override
       public void mouseDragged(MouseEvent event) {
-        JTree tree = (JTree)event.getSource();
-        Object property = tree.getClientProperty("DnD Source"); // DnDManagerImpl.SOURCE_KEY
+        final JTree tree = (JTree)event.getSource();
+        final Object property = tree.getClientProperty("DnD Source"); // DnDManagerImpl.SOURCE_KEY
         if (property == null) {
           super.mouseDragged(event); // use Swing-based DnD only if custom DnD is not set
         }
@@ -112,12 +112,12 @@ public class InspectorTreeUI extends BasicTreeUI {
       protected MouseEvent convert(@NotNull MouseEvent event) {
         if (!event.isConsumed() && SwingUtilities.isLeftMouseButton(event)) {
           int x = event.getX();
-          int y = event.getY();
-          JTree tree = (JTree)event.getSource();
+          final int y = event.getY();
+          final JTree tree = (JTree)event.getSource();
           if (tree.isEnabled()) {
-            TreePath path = getClosestPathForLocation(tree, x, y);
+            final TreePath path = getClosestPathForLocation(tree, x, y);
             if (path != null && !isLocationInExpandControl(path, x, y)) {
-              Rectangle bounds = getPathBounds(tree, path);
+              final Rectangle bounds = getPathBounds(tree, path);
               if (bounds != null && bounds.y <= y && y <= (bounds.y + bounds.height)) {
                 x = Math.max(bounds.x, Math.min(x, bounds.x + bounds.width - 1));
                 if (x != event.getX()) {
@@ -210,11 +210,11 @@ public class InspectorTreeUI extends BasicTreeUI {
       public void actionPerformed(final ActionEvent e) {
         final Object source = e.getSource();
         if (source instanceof JTree) {
-          JTree tree = (JTree)source;
-          int selectionRow = tree.getLeadSelectionRow();
+          final JTree tree = (JTree)source;
+          final int selectionRow = tree.getLeadSelectionRow();
           if (selectionRow == -1) return;
 
-          TreePath selectionPath = tree.getPathForRow(selectionRow);
+          final TreePath selectionPath = tree.getPathForRow(selectionRow);
           if (selectionPath == null) return;
 
           if (tree.getModel().isLeaf(selectionPath.getLastPathComponent()) || tree.isCollapsed(selectionRow)) {
@@ -267,7 +267,7 @@ public class InspectorTreeUI extends BasicTreeUI {
     if (path.getPathCount() >= 2) {
       final Object treeNode = path.getPathComponent(path.getPathCount() - 2);
       if (treeNode instanceof DefaultMutableTreeNode) {
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode)treeNode;
+        final DefaultMutableTreeNode node = (DefaultMutableTreeNode)treeNode;
         if (node.getChildCount() < 2) {
           return;
         }
@@ -457,7 +457,7 @@ public class InspectorTreeUI extends BasicTreeUI {
     final int minX = getRowX(-1, depth - 1);
     final int minY = rootBounds.y;
 
-    Rectangle bounds;
+    final Rectangle bounds;
     final Rectangle descendantBounds = tree.getPathBounds(getLastExpandedDescendant(path));
     if (descendantBounds != null) {
       final int maxY = (int)descendantBounds.getMaxY();
@@ -501,8 +501,8 @@ public class InspectorTreeUI extends BasicTreeUI {
     final int xOffset = tree.getParent() instanceof JViewport ? ((JViewport)tree.getParent()).getViewPosition().x : 0;
 
     if (path != null && myWideSelection) {
-      boolean selected = tree.isPathSelected(path);
-      Graphics2D rowGraphics = (Graphics2D)g.create();
+      final boolean selected = tree.isPathSelected(path);
+      final Graphics2D rowGraphics = (Graphics2D)g.create();
       rowGraphics.setClip(clipBounds);
 
       final Object sourceList = tree.getClientProperty(SOURCE_LIST_CLIENT_PROPERTY);
@@ -528,7 +528,7 @@ public class InspectorTreeUI extends BasicTreeUI {
       }
       else {
         if (selected && (UIUtil.isUnderAquaBasedLookAndFeel() || UIUtil.isUnderDarcula() || UIUtil.isUnderIntelliJLaF())) {
-          Color bg = getSelectionBackground(tree, true);
+          final Color bg = getSelectionBackground(tree, true);
 
           if (myWideSelectionCondition.value(row)) {
             rowGraphics.setColor(bg);
@@ -562,7 +562,7 @@ public class InspectorTreeUI extends BasicTreeUI {
     final boolean isPathSelected = tree.getSelectionModel().isPathSelected(path);
     boolean isPropertyNode = false;
     if (!isLeaf(row)) {
-      Object lastPathComponent = path.getLastPathComponent();
+      final Object lastPathComponent = path.getLastPathComponent();
       if (lastPathComponent instanceof DefaultMutableTreeNode) {
         final DiagnosticsNode diagnostic = maybeGetDiagnostic((DefaultMutableTreeNode)lastPathComponent);
         if (diagnostic != null) {
@@ -600,7 +600,7 @@ public class InspectorTreeUI extends BasicTreeUI {
 
   @Nullable
   private static Color getSelectionBackground(@NotNull JTree tree, boolean checkProperty) {
-    Object property = tree.getClientProperty(TREE_TABLE_TREE_KEY);
+    final Object property = tree.getClientProperty(TREE_TABLE_TREE_KEY);
     if (property instanceof JTable) {
       return ((JTable)property).getSelectionBackground();
     }

@@ -114,7 +114,7 @@ public class AsyncRateLimiter {
   }
 
   private void onRequestComplete() {
-    boolean requestsPending;
+    final boolean requestsPending;
     synchronized (requestScheduleLock) {
       assert (numRequestsPending > 0);
       assert (numRequestsExecuting == 1);

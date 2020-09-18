@@ -142,9 +142,7 @@ public class VmServiceWidgetPerfProvider implements WidgetPerfProvider {
     });
 
     inspectorService = InspectorService.create(app, app.getFlutterDebugProcess(), app.getVmService());
-    inspectorService.whenCompleteAsync((service, throwable) -> {
-      Disposer.register(this, service);
-    });
+    inspectorService.whenCompleteAsync((service, throwable) -> Disposer.register(this, service));
 
     requestRepaint(When.soon);
   }

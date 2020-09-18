@@ -240,8 +240,7 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
 
   @Override
   public TableCellRenderer getCellRenderer(int row, int column) {
-    final ColumnInfo m = modelColumns[column];
-    return m.getRenderer(null);
+    return modelColumns[column].getRenderer(null);
   }
 
   private ActionGroup createTreePopupActions() {

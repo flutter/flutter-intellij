@@ -7,6 +7,7 @@ package io.flutter.view;
 
 import com.intellij.ui.JBColor;
 import com.intellij.ui.table.JBTable;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.table.TableCellRenderer;
@@ -33,10 +34,11 @@ public class HighlightedTable extends JBTable {
     addMouseListener(listener);
   }
 
+  @NotNull
   @Override
-  public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
-    Component c = super.prepareRenderer(renderer, row, column);
-    Font font = c.getFont();
+  public Component prepareRenderer(@NotNull TableCellRenderer renderer, int row, int column) {
+    final Component c = super.prepareRenderer(renderer, row, column);
+    final Font font = c.getFont();
     if (font != null) {
       // Iff we have a font for this component (TableRow).
       if (lastClickedRow == row) {
@@ -69,7 +71,7 @@ public class HighlightedTable extends JBTable {
 
     @Override
     public void mouseMoved(MouseEvent e) {
-      int row = rowAtPoint(e.getPoint());
+      final int row = rowAtPoint(e.getPoint());
       if (row != rollOverRowIndex) {
         rollOverRowIndex = row;
         repaint();

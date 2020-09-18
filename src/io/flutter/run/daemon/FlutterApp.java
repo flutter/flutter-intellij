@@ -308,7 +308,6 @@ public class FlutterApp implements Disposable {
     return myConnector;
   }
 
-  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public boolean appSupportsHotReload() {
     // Introspect based on registered services.
     if (myVMServiceManager != null && myVMServiceManager.hasAnyRegisteredServices()) {

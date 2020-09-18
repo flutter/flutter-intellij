@@ -27,7 +27,7 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class BazelRunConfig extends RunConfigurationBase
+public class BazelRunConfig extends RunConfigurationBase<LaunchState>
   implements RunConfigurationWithSuppressedDefaultRunAction, LaunchState.RunConfig {
   @NotNull private BazelFields fields;
 

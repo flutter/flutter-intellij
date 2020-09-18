@@ -42,7 +42,9 @@ public class FlutterTestConfigProducer extends RunConfigurationProducer<TestConf
    * Returns true if successfully set up.
    */
   @Override
-  protected boolean setupConfigurationFromContext(TestConfig config, ConfigurationContext context, Ref<PsiElement> sourceElement) {
+  protected boolean setupConfigurationFromContext(@NotNull TestConfig config,
+                                                  @NotNull ConfigurationContext context,
+                                                  @NotNull Ref<PsiElement> sourceElement) {
     if (!isFlutterContext(context)) return false;
 
     final PsiElement elt = context.getPsiLocation();
@@ -111,7 +113,7 @@ public class FlutterTestConfigProducer extends RunConfigurationProducer<TestConf
    * Returns true if a run config was already created for this file. If so we will reuse it.
    */
   @Override
-  public boolean isConfigurationFromContext(TestConfig config, ConfigurationContext context) {
+  public boolean isConfigurationFromContext(TestConfig config, @NotNull ConfigurationContext context) {
     final VirtualFile fileOrDir = config.getFields().getFileOrDir();
     if (fileOrDir == null) return false;
 

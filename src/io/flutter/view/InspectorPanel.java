@@ -13,7 +13,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.Splitter;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.*;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.dualView.TreeTableView;
@@ -27,7 +26,6 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.editor.FlutterMaterialIcons;
 import io.flutter.inspector.*;
-import io.flutter.pub.PubRoot;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.*;
 import org.dartlang.vm.service.element.InstanceRef;
@@ -1373,7 +1371,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     }
   }
 
-  private class PropertiesPanel extends TreeTableView implements DataProvider {
+  private static class PropertiesPanel extends TreeTableView implements DataProvider {
     private final InspectorObjectGroupManager groups;
     private final FlutterApp flutterApp;
     /**
@@ -1533,7 +1531,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     @Nullable
     @Override
-    public Object getData(String dataId) {
+    public Object getData(@NotNull String dataId) {
       return InspectorTree.INSPECTOR_KEY.is(dataId) ? getTree() : null;
     }
 

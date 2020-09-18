@@ -24,12 +24,13 @@ import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.ui.ColorUtil;
 import com.intellij.ui.JBColor;
 import com.intellij.xdebugger.XSourcePosition;
+import io.flutter.performance.FlutterPerformanceView;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AsyncUtils;
-import io.flutter.performance.FlutterPerformanceView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
@@ -81,7 +82,7 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
 
   @Override
   public void setAlwaysShowLineMarkersOverride(boolean show) {
-    boolean lastValue = getAlwaysShowLineMarkers();
+    final boolean lastValue = getAlwaysShowLineMarkers();
     alwaysShowLineMarkersOverride = show;
     if (lastValue != getAlwaysShowLineMarkers()) {
       updateIconUIAnimations();
@@ -113,7 +114,7 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
   }
 
   @Override
-  public void setPerfInfo(FilePerfInfo stats) {
+  public void setPerfInfo(@Nonnull FilePerfInfo stats) {
     this.stats = stats;
     final Editor editor = textEditor.getEditor();
     final MarkupModel markupModel = editor.getMarkupModel();
@@ -217,15 +218,15 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
   }
 
   @Override
-  public void mousePressed(EditorMouseEvent e) {
+  public void mousePressed(@NotNull EditorMouseEvent e) {
   }
 
   @Override
-  public void mouseClicked(EditorMouseEvent e) {
+  public void mouseClicked(@NotNull EditorMouseEvent e) {
   }
 
   @Override
-  public void mouseReleased(EditorMouseEvent e) {
+  public void mouseReleased(@NotNull EditorMouseEvent e) {
   }
 
   @Override
@@ -292,7 +293,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
     this.highlighter = highlighter;
     this.range = range;
     this.perfModelForFile = perfModelForFile;
-    final TextAttributes textAttributes = highlighter.getTextAttributes();
+    final TextAttributes textAttributes = highlighter.getTextAttributes(null);
     assert textAttributes != null;
     textAttributes.setEffectType(EffectType.LINE_UNDERSCORE);
 
@@ -312,7 +313,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
   }
 
   private int getDisplayValue() {
-    int value = getCurrentValue();
+    final int value = getCurrentValue();
     if (value == 0 && perfModelForFile.getAlwaysShowLineMarkers()) {
       // This is the case where the value was previously non-zero but the app
       // is idle so the value was reset. For all ui rendering logic we treat
@@ -346,6 +347,10 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
 
           final ToolWindowManagerEx toolWindowManager = ToolWindowManagerEx.getInstanceEx(getApp().getProject());
           final ToolWindow flutterPerfToolWindow = toolWindowManager.getToolWindow(FlutterPerformanceView.TOOL_WINDOW_ID);
+          if (flutterPerfToolWindow == null) {
+            return;
+          }
+
           if (flutterPerfToolWindow.isVisible()) {
             showPerfViewMessage();
             return;
@@ -359,9 +364,9 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
   private void showPerfViewMessage() {
     final FlutterPerformanceView flutterPerfView = ServiceManager.getService(getApp().getProject(), FlutterPerformanceView.class);
     flutterPerfView.showForAppRebuildCounts(getApp());
-    String message = "<html><body>" +
-                     getTooltipHtmlFragment() +
-                     "</body></html>";
+    final String message = "<html><body>" +
+                           getTooltipHtmlFragment() +
+                           "</body></html>";
     final Iterable<SummaryStats> current = perfModelForFile.getStats().getRangeStats(range);
     if (current.iterator().hasNext()) {
       final SummaryStats first = current.iterator().next();
@@ -406,7 +411,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
 
   public void updateUI(boolean repaint) {
     final int count = getDisplayValue();
-    final TextAttributes textAttributes = highlighter.getTextAttributes();
+    final TextAttributes textAttributes = highlighter.getTextAttributes(null);
     assert textAttributes != null;
     boolean changed = false;
     if (count > 0) {
@@ -439,6 +444,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
     }
   }
 
+  @SuppressWarnings("StringConcatenationInsideStringBufferAppend")
   String getTooltipHtmlFragment() {
     final StringBuilder sb = new StringBuilder();
     boolean first = true;

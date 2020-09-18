@@ -16,6 +16,7 @@ import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
 import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings("ComponentNotRegistered")
 public class OpenFlutterViewAction extends DumbAwareAction {
   private final Computable<Boolean> myIsApplicable;
 

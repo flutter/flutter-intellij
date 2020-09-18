@@ -61,7 +61,7 @@ public class FlutterAppManager implements Disposable {
    */
   @Nullable
   public FlutterApp getActiveApp() {
-    RunContentManager mgr = getRunContentManager();
+    final RunContentManager mgr = getRunContentManager();
     if (mgr == null) {
       return null;
     }
@@ -88,7 +88,7 @@ public class FlutterAppManager implements Disposable {
    */
   public List<FlutterApp> getApps() {
     final List<FlutterApp> apps = new ArrayList<>();
-    RunContentManager mgr = getRunContentManager();
+    final RunContentManager mgr = getRunContentManager();
     if (mgr == null) {
       return apps;
     }

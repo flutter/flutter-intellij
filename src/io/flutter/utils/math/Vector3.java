@@ -7,13 +7,13 @@ package io.flutter.utils.math;
 
 import java.util.Arrays;
 
-@SuppressWarnings({"PointlessArithmeticExpression", "UnusedReturnValue", "DuplicatedCode", "ConstantConditions"})
 /**
  * This class is ported from the Vector3 class in the Dart vector_math
  * package. The code is ported as is without concern for making the code
  * consistent with Java api conventions to keep the code consistent with
  * the Dart code to simplify using Transform Matrixes returned by Flutter.
  */
+@SuppressWarnings({"PointlessArithmeticExpression", "UnusedReturnValue", "DuplicatedCode", "ConstantConditions"})
 public class Vector3 implements Vector {
   final double[] _v3storage;
 

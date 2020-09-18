@@ -8,8 +8,6 @@
  */
 package org.dartlang.analysis.server.protocol;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -18,6 +16,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @coverage dart.server.generated.types

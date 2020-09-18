@@ -6,13 +6,11 @@
 package io.flutter.perf;
 
 import com.google.common.base.Objects;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.impl.XSourcePositionImpl;
-import io.flutter.inspector.InspectorService;
 
 /**
  * Source location within a file with an id that is unique with the current

@@ -314,7 +314,6 @@ public class DaemonApi {
     return new PrintWriter(new OutputStreamWriter(stdin, Charsets.UTF_8));
   }
 
-  @SuppressWarnings("unused")
   public static class RestartResult {
     private int code;
     private String message;
@@ -386,7 +385,6 @@ public class DaemonApi {
     abstract T parseResult(@Nullable JsonElement result);
   }
 
-  @SuppressWarnings("unused")
   private static class AppRestart extends Params<RestartResult> {
     @NotNull final String appId;
     final boolean fullRestart;
@@ -406,7 +404,6 @@ public class DaemonApi {
     }
   }
 
-  @SuppressWarnings("unused")
   private static class AppStop extends Params<Boolean> {
     @NotNull final String appId;
 
@@ -420,7 +417,6 @@ public class DaemonApi {
     }
   }
 
-  @SuppressWarnings("unused")
   private static class AppDetach extends Params<Boolean> {
     @NotNull final String appId;
 
@@ -434,7 +430,6 @@ public class DaemonApi {
     }
   }
 
-  @SuppressWarnings("unused")
   private static class AppServiceExtension extends Params<JsonObject> {
     final String appId;
     final String methodName;

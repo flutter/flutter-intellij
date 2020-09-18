@@ -185,16 +185,12 @@ public class InspectorGroupManagerService implements Disposable {
       }
 
       selectionGroups.promoteNext();
-      invokeOnAllListeners((listener) -> {
-        listener.onSelectionChanged(selection);
-      });
+      invokeOnAllListeners((listener) -> listener.onSelectionChanged(selection));
     });
   }
 
   private void requestRepaint(boolean force) {
-    invokeOnAllListeners((listener) -> {
-      listener.requestRepaint(force);
-    });
+    invokeOnAllListeners((listener) -> listener.requestRepaint(force));
   }
 
   private void updateActiveApp(FlutterApp app) {
@@ -224,9 +220,7 @@ public class InspectorGroupManagerService implements Disposable {
         if (newState == FlutterApp.State.TERMINATING) {
           inspectorService = null;
 
-          invokeOnAllListeners((listener) -> {
-            listener.onInspectorAvailable(inspectorService);
-          });
+          invokeOnAllListeners((listener) -> listener.onInspectorAvailable(inspectorService));
         }
       }
 
@@ -249,9 +243,7 @@ public class InspectorGroupManagerService implements Disposable {
         inspectorServiceFuture = app.getFlutterDebugProcess().getInspectorService();
 
         AsyncUtils.whenCompleteUiThread(inspectorServiceFuture, (service, error) -> {
-          invokeOnAllListeners((listener) -> {
-            listener.onInspectorAvailable(service);
-          });
+          invokeOnAllListeners((listener) -> listener.onInspectorAvailable(service));
 
           if (inspectorServiceFuture == null || inspectorServiceFuture.getNow(null) != service) return;
           inspectorService = service;

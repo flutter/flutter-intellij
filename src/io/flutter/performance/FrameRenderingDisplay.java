@@ -15,7 +15,6 @@ import com.intellij.util.ui.UIUtil;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.vmService.DisplayRefreshRateManager;
 import io.flutter.vmService.FlutterFramesMonitor;
-import io.flutter.vmService.VMServiceManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
