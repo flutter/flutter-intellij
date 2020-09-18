@@ -44,13 +44,15 @@ public class JxBrowserManager {
   private static JxBrowserManager manager;
 
   @VisibleForTesting
-  protected static final String DOWNLOAD_PATH = PathManager.getPluginsPath() + File.separatorChar + "flutter-intellij" + File.separatorChar + "jxbrowser";
+  protected static final String DOWNLOAD_PATH =
+    PathManager.getPluginsPath() + File.separatorChar + "flutter-intellij" + File.separatorChar + "jxbrowser";
   private static final AtomicReference<JxBrowserStatus> status = new AtomicReference<>(JxBrowserStatus.NOT_INSTALLED);
   private static final AtomicBoolean listeningForSetting = new AtomicBoolean(false);
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
   private static CompletableFuture<JxBrowserStatus> installation = new CompletableFuture<>();
 
-  private JxBrowserManager() {}
+  private JxBrowserManager() {
+  }
 
   public static JxBrowserManager getInstance() {
     if (manager == null) {
@@ -211,7 +213,6 @@ public class JxBrowserManager {
       public void run(@NotNull ProgressIndicator indicator) {
         String currentFileName = null;
         try {
-          final List<File> files = new ArrayList<>();
           for (int i = 0; i < fileDownloaders.size(); i++) {
             final FileDownloader downloader = fileDownloaders.get(i);
             currentFileName = fileNames[i];
@@ -219,7 +220,6 @@ public class JxBrowserManager {
               ContainerUtil.getFirstItem(downloader.download(new File(DOWNLOAD_PATH)));
             final File file = download != null ? download.first : null;
             if (file != null) {
-              files.add(file);
               LOG.info(project.getName() + ": JxBrowser file downloaded: " + file.getAbsolutePath());
             }
           }
@@ -228,12 +228,11 @@ public class JxBrowserManager {
         }
         catch (IOException e) {
           LOG.info(project.getName() + ": JxBrowser file downloaded failed: " + currentFileName);
-          e.printStackTrace();
           setStatusFailed("fileDownloadFailed-" + currentFileName);
         }
       }
     };
-    BackgroundableProcessIndicator processIndicator = new BackgroundableProcessIndicator(task);
+    final BackgroundableProcessIndicator processIndicator = new BackgroundableProcessIndicator(task);
     processIndicator.setIndeterminate(false);
     ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, processIndicator);
   }
@@ -243,7 +242,8 @@ public class JxBrowserManager {
       final boolean success = FileUtils.loadClass(this.getClass().getClassLoader(), getFilePath(fileName));
       if (success) {
         LOG.info("Loaded JxBrowser file successfully: " + fileName);
-      } else {
+      }
+      else {
         LOG.info("Failed to load JxBrowser file: " + fileName);
         setStatusFailed("classLoadFailed");
         return;
