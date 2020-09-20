@@ -1,6 +1,6 @@
 {
   "flutter": {
-    "version": "1.22.0-1.0.pre",
+    "version": "1.22.0-12.0.pre",
     "channel": "dev"
   },
   "widgets": [
@@ -453,18 +453,6 @@
       "description": "An abstract superclass for widgets that defer their building until layout."
     },
     {
-      "name": "ContainedButton",
-      "parent": "ElevatedButton",
-      "library": "material",
-      "description": "Please use [ElevatedButton]."
-    },
-    {
-      "name": "ContainedButtonTheme",
-      "parent": "ElevatedButtonTheme",
-      "library": "material",
-      "description": "Please use [ElevatedButtonThemeData]."
-    },
-    {
       "name": "Container",
       "parent": "StatelessWidget",
       "library": "widgets",
@@ -697,6 +685,12 @@
       "parent": "StatelessWidget",
       "library": "material",
       "description": "A material design data table."
+    },
+    {
+      "name": "DataTableTheme",
+      "parent": "InheritedWidget",
+      "library": "material",
+      "description": "Applies a data table theme to descendant [DataTable] widgets."
     },
     {
       "name": "DatePickerHeader",
