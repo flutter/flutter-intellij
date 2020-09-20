@@ -80,7 +80,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
   }
 
   @Nullable
-  protected ProjectOpenProcessor getDelegateImportProvider(@Nullable VirtualFile file) {
+  protected ProjectOpenProcessor getDelegateImportProvider(@NotNull VirtualFile file) {
     return Arrays.stream(Extensions.getExtensions(EXTENSION_POINT_NAME)).filter(
       processor -> processor.canOpenProject(file) && !Objects.equals(processor.getName(), getName())
     ).findFirst().orElse(null);

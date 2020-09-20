@@ -8,7 +8,9 @@ package io.flutter.inspector;
 import io.flutter.inspector.TreeScrollAnimator.Interval;
 import org.junit.Test;
 
-import static junit.framework.TestCase.*;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertNotEquals;
 
 public class TreeScrollAnimatorTest {
 
@@ -136,8 +138,8 @@ public class TreeScrollAnimatorTest {
 
   @Test
   public void intervalEqualityTest() {
-    assertFalse(new Interval(0, 10).equals(new Interval(0, 11)));
-    assertFalse(new Interval(5, 10).equals(new Interval(6, 10)));
-    assertTrue(new Interval(5, 10).equals(new Interval(5, 10)));
+    assertNotEquals(new Interval(0, 10), new Interval(0, 11));
+    assertNotEquals(new Interval(5, 10), new Interval(6, 10));
+    assertEquals(new Interval(5, 10), new Interval(5, 10));
   }
 }

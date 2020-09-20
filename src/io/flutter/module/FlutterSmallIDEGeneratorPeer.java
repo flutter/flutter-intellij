@@ -89,7 +89,7 @@ public class FlutterSmallIDEGeneratorPeer implements WebProjectGenerator.Generat
   public void addSettingsStateListener(@NotNull WebProjectGenerator.SettingsStateListener stateListener) {
     final JTextComponent editorComponent = (JTextComponent)sdkPathComboWithBrowse.getComboBox().getEditor().getEditorComponent();
     editorComponent.getDocument().addDocumentListener(new DocumentAdapter() {
-      protected void textChanged(DocumentEvent e) {
+      protected void textChanged(@NotNull DocumentEvent e) {
         stateListener.stateChanged(validate() == null);
       }
     });

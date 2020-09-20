@@ -48,8 +48,9 @@ public class FlutterSampleNotificationProvider extends EditorNotifications.Provi
 
   @Nullable
   @Override
-  public EditorNotificationPanel createNotificationPanel(
-    @NotNull VirtualFile file, @NotNull FileEditor fileEditor, @NotNull Project project) {
+  public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file,
+                                                         @NotNull FileEditor fileEditor,
+                                                         @NotNull Project project) {
     if (!(fileEditor instanceof TextEditor)) {
       return null;
     }

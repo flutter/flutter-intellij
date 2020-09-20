@@ -189,9 +189,10 @@ class ConsoleViewMock implements ConsoleView {
 
   }
 
+  @NotNull
   @Override
   public JComponent getComponent() {
-    return null;
+    throw new Error("not supported");
   }
 
   @Override

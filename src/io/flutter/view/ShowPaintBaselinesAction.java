@@ -10,7 +10,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.vmService.ServiceExtensions;
 import org.jetbrains.annotations.NotNull;
 
-public class ShowPaintBaselinesAction extends FlutterViewToggleableAction {
+public class ShowPaintBaselinesAction extends FlutterViewToggleableAction<Boolean> {
   public ShowPaintBaselinesAction(@NotNull FlutterApp app, boolean showIcon) {
     super(app, showIcon ? FlutterIcons.Text : null, ServiceExtensions.debugPaintBaselines);
   }

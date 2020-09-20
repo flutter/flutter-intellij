@@ -259,7 +259,7 @@ public class LaunchCommandsTest {
   }
 
   @Test
-  public void failsForTestNameAndBazelTargetWithoutTestScript() throws ExecutionException {
+  public void failsForTestNameAndBazelTargetWithoutTestScript() {
     final BazelTestFields fields = new FakeBazelTestFields(
       new BazelTestFields(null, "/workspace/foo/test/foo_test.dart", "//foo:test", "--ignored-args"),
       "scripts/daemon.sh",
@@ -352,7 +352,7 @@ public class LaunchCommandsTest {
     }
 
     @Override
-    protected void verifyMainFile(Project project) throws RuntimeConfigurationError {
+    protected void verifyMainFile(Project project) {
       // We don't have access to the filesystem in tests, so don't verify anything.
     }
   }

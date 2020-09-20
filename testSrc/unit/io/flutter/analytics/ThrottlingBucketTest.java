@@ -10,7 +10,7 @@ import org.junit.Test;
 
 public class ThrottlingBucketTest {
   @Test
-  public void testRemoveDrop() throws Exception {
+  public void testRemoveDrop() {
     final int bucketSize = 10;
     final ThrottlingBucket bucket = new ThrottlingBucket(bucketSize);
     for (int i = 0; i < bucketSize; i++) {

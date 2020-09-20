@@ -12,8 +12,7 @@ import org.junit.Test;
 import java.util.Set;
 import java.util.TreeSet;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class BazelTestFieldsTest {
 
@@ -41,10 +40,10 @@ public class BazelTestFieldsTest {
 
     final BazelTestFields fields = BazelTestFields.readFrom(elt);
     XmlSerializer.deserializeInto(fields, elt);
-    assertEquals(null, fields.getTestName());
+    assertNull(fields.getTestName());
     assertEquals("/tmp/test/dir/lib/main.dart", fields.getEntryFile());
     assertEquals("//path/to/flutter/app:hello", fields.getBazelTarget());
-    assertEquals(null, fields.getAdditionalArgs());
+    assertNull(fields.getAdditionalArgs());
   }
 
   @Test
