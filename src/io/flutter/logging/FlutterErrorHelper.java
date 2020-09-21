@@ -36,19 +36,28 @@ public class FlutterErrorHelper {
     // normalize to lower case
     String normalized = errorSummary.toLowerCase().trim();
 
+    // Ensure that asserts are broken across lines.
+    normalized = normalized.replaceAll(": failed assertion:", ":\nfailed assertion:");
+
     // If it's an assertion, remove the leading assertion path.
     final String[] lines = normalized.split("\n");
     if (lines.length >= 2 && lines[0].endsWith(".dart':") && lines[1].startsWith("failed assertion:")) {
       normalized = StringUtil.join(lines, 1, lines.length, "\n");
+      normalized = normalized.trim();
     }
 
+    // Take the first sentence.
     if (normalized.contains(". ")) {
       normalized = normalized.substring(0, normalized.indexOf(". "));
+      normalized = normalized.trim();
     }
-    normalized = normalized.trim();
+
+    // Take the first line.
     if (normalized.contains("\n")) {
       normalized = normalized.substring(0, normalized.indexOf("\n"));
     }
+
+    // Take text before the first colon.
     if (normalized.contains(":")) {
       normalized = normalized.substring(0, normalized.indexOf(":"));
     }
@@ -59,7 +68,7 @@ public class FlutterErrorHelper {
     }
 
     // remove content in parens
-    normalized = normalized.replaceAll("\\(.*\\)", "");
+    normalized = normalized.replaceAll("\\([^)]*\\)", "");
 
     // replace numbers with a string constant
     normalized = numberPattern.matcher(normalized).replaceAll("xxx");
