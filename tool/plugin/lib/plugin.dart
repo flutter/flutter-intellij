@@ -394,9 +394,9 @@ class GradleBuildCommand extends BuildCommand {
       return await super.doit();
     } finally {
       if (Platform.isWindows) {
-        return await exec('.\\gradlew.bat', ['--stop']);
+        await exec('.\\gradlew.bat', ['--stop']);
       } else {
-        return await exec('./gradlew', ['--stop']);
+        await exec('./gradlew', ['--stop']);
       }
     }
   }
