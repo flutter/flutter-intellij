@@ -105,6 +105,24 @@ List<EditCommand> editCommands = [
     replacement: 'properties.getOrInitLong(FLUTTER_LAST_SURVEY_PROMPT_KEY, 0)',
     version: '4.0',
   ),
+  Subst(
+    path: 'src/io/flutter/perf/EditorPerfDecorations.java',
+    initial: 'highlighter.getTextAttributes(null)',
+    replacement: 'highlighter.getTextAttributes()',
+    versions: ['4.0', '4.1'],
+  ),
+  Subst(
+    path: 'src/io/flutter/preview/PreviewView.java',
+    initial: 'Arrays.asList(expandAllAction, collapseAllAction, showOnlyWidgetsAction)',
+    replacement: 'expandAllAction, collapseAllAction, showOnlyWidgetsAction',
+    versions: ['4.0', '4.1'],
+  ),
+  Subst(
+    path: 'src/io/flutter/analytics/ToolWindowTracker.java',
+    initial: '@Override',
+    replacement: '',
+    version: '4.0',
+  ),
 ];
 
 // Used to test checkAndClearAppliedEditCommands()
