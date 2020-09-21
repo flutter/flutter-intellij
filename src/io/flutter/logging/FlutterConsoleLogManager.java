@@ -130,9 +130,11 @@ public class FlutterConsoleLogManager {
       final DiagnosticsNode diagnosticsNode = new DiagnosticsNode(jsonObject, objectGroup, app, false, null);
 
       // Send analytics for the diagnosticsNode.
-      final String errorId = FlutterErrorHelper.getAnalyticsId(diagnosticsNode);
-      if (errorId != null) {
-        FlutterInitializer.getAnalytics().sendEvent("flutter-error", errorId);
+      if (isFirstErrorForFrame()) {
+        final String errorId = FlutterErrorHelper.getAnalyticsId(diagnosticsNode);
+        if (errorId != null) {
+          FlutterInitializer.getAnalytics().sendEvent("flutter-error", errorId);
+        }
       }
 
       if (FlutterSettings.getInstance().isShowStructuredErrors()) {
@@ -164,7 +166,7 @@ public class FlutterConsoleLogManager {
 
     frameErrorCount++;
 
-    final boolean terseError = frameErrorCount > 1;
+    final boolean terseError = !isFirstErrorForFrame();
 
     final String prefix = "════════";
     final String suffix = "══";
@@ -202,6 +204,10 @@ public class FlutterConsoleLogManager {
     }
 
     console.print(StringUtil.repeat(errorSeparatorChar, errorSeparatorLength) + "\n", TITLE_CONTENT_TYPE);
+  }
+
+  private boolean isFirstErrorForFrame() {
+    return frameErrorCount == 0;
   }
 
   private void printTerseNodeProperty(ConsoleView console, String indent, DiagnosticsNode property) {
