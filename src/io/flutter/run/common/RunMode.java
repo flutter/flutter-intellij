@@ -49,15 +49,18 @@ public enum RunMode {
   @NotNull
   public static RunMode fromEnv(@NotNull ExecutionEnvironment env) throws ExecutionException {
     final String mode = env.getExecutor().getId();
-    switch (mode) {
-      case DefaultRunExecutor.EXECUTOR_ID:
-        return RUN;
-      case DefaultDebugExecutor.EXECUTOR_ID:
-        return DEBUG;
-      case LaunchState.ANDROID_PROFILER_EXECUTOR_ID:
-        return PROFILE;
-      default:
-        throw new ExecutionException("unsupported run mode: " + mode);
+    // Leave this as-is until AS 4.0 is no longer supported.
+    if (DefaultRunExecutor.EXECUTOR_ID.equals(mode)) {
+      return RUN;
+    }
+    else if (DefaultDebugExecutor.EXECUTOR_ID.equals(mode)) {
+      return DEBUG;
+    }
+    else if (LaunchState.ANDROID_PROFILER_EXECUTOR_ID.equals(mode)) {
+      return PROFILE;
+    }
+    else {
+      throw new ExecutionException("unsupported run mode: " + mode);
     }
   }
 }
