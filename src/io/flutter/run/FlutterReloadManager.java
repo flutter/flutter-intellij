@@ -18,7 +18,6 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.ex.ActionManagerEx;
 import com.intellij.openapi.actionSystem.ex.AnActionListener;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
@@ -29,6 +28,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.PsiDocumentManager;
@@ -36,6 +36,7 @@ import com.intellij.psi.PsiErrorElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.LightweightHint;
+import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.UIUtil;
 import com.jetbrains.lang.dart.ide.errorTreeView.DartProblemsView;
 import com.jetbrains.lang.dart.psi.DartFile;
@@ -97,7 +98,8 @@ public class FlutterReloadManager {
     this.myProject = project;
     this.mySettings = FlutterSettings.getInstance();
 
-    ActionManagerEx.getInstanceEx().addAnActionListener(new AnActionListener.Adapter() {
+    final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect(project);
+    connection.subscribe(AnActionListener.TOPIC, new AnActionListener() {
       private @Nullable Project eventProject;
       private @Nullable Editor eventEditor;
 
@@ -136,7 +138,7 @@ public class FlutterReloadManager {
           FlutterUtils.warn(LOG, "Exception from hot reload on save", t);
         }
       }
-    }, project);
+    });
   }
 
   private void handleSaveAllNotification(@Nullable Editor editor) {
@@ -279,21 +281,25 @@ public class FlutterReloadManager {
   }
 
   private void showAnalysisNotification(@NotNull String title, @NotNull String content, boolean isError) {
-    if (!ToolWindowManager.getInstance(myProject).getToolWindow(DartProblemsView.TOOLWINDOW_ID).isVisible()) {
+    final ToolWindow dartProblemsView = ToolWindowManager.getInstance(myProject).getToolWindow(DartProblemsView.TOOLWINDOW_ID);
+    if (dartProblemsView != null && !dartProblemsView.isVisible()) {
       content += " (<a href='open.analysis.view'>view issues</a>)";
     }
 
     final NotificationGroup notificationGroup = getNotificationGroup(DartProblemsView.TOOLWINDOW_ID);
-    final Notification notification =
-      notificationGroup.createNotification(
-        title, content, isError ? NotificationType.ERROR : NotificationType.INFORMATION,
-        new NotificationListener.Adapter() {
-          @Override
-          protected void hyperlinkActivated(@NotNull final Notification notification, @NotNull final HyperlinkEvent e) {
-            notification.expire();
-            ToolWindowManager.getInstance(myProject).getToolWindow(DartProblemsView.TOOLWINDOW_ID).activate(null);
+    final Notification notification = notificationGroup.createNotification(
+      title, content, isError ? NotificationType.ERROR : NotificationType.INFORMATION,
+      new NotificationListener.Adapter() {
+        @Override
+        protected void hyperlinkActivated(@NotNull final Notification notification, @NotNull final HyperlinkEvent e) {
+          notification.expire();
+
+          final ToolWindow dartProblemsView = ToolWindowManager.getInstance(myProject).getToolWindow(DartProblemsView.TOOLWINDOW_ID);
+          if (dartProblemsView != null) {
+            dartProblemsView.activate(null);
           }
-        });
+        }
+      });
     notification.setIcon(FlutterIcons.Flutter);
     notification.notify(myProject);
 

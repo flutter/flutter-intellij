@@ -7,15 +7,16 @@ package io.flutter.analytics;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.wm.ex.ToolWindowManagerAdapter;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
+import com.intellij.openapi.wm.ex.ToolWindowManagerListener;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * This class interfaces with the IntelliJ tool window manager and reports tool window
  * usage to analytics.
  */
-public class ToolWindowTracker extends ToolWindowManagerAdapter {
+public class ToolWindowTracker implements ToolWindowManagerListener {
 
   public static void track(@NotNull Project project, @NotNull Analytics analytics) {
     new ToolWindowTracker(project, analytics);
@@ -30,13 +31,14 @@ public class ToolWindowTracker extends ToolWindowManagerAdapter {
     myAnalytics = analytics;
 
     myToolWindowManager = ToolWindowManagerEx.getInstanceEx(project);
-    myToolWindowManager.addToolWindowManagerListener(this);
+
+    project.getMessageBus().connect().subscribe(ToolWindowManagerListener.TOPIC, this);
 
     update();
   }
 
   @Override
-  public void stateChanged() {
+  public void stateChanged(@NotNull ToolWindowManager toolWindowManager) {
     update();
   }
 
