@@ -292,7 +292,8 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
     this.highlighter = highlighter;
     this.range = range;
     this.perfModelForFile = perfModelForFile;
-    final TextAttributes textAttributes = highlighter.getTextAttributes(null);
+    // TODO: Don't change to getTextAttributes(null) until our min. platform version is 2020.2.
+    final TextAttributes textAttributes = highlighter.getTextAttributes();
     assert textAttributes != null;
     textAttributes.setEffectType(EffectType.LINE_UNDERSCORE);
 
@@ -410,7 +411,8 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
 
   public void updateUI(boolean repaint) {
     final int count = getDisplayValue();
-    final TextAttributes textAttributes = highlighter.getTextAttributes(null);
+    // TODO: Don't change to getTextAttributes(null) until our min. platform version is 2020.2.
+    final TextAttributes textAttributes = highlighter.getTextAttributes();
     assert textAttributes != null;
     boolean changed = false;
     if (count > 0) {

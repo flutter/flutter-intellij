@@ -7,7 +7,6 @@ package io.flutter.analytics;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.openapi.wm.ex.ToolWindowManagerListener;
 import org.jetbrains.annotations.NotNull;
@@ -38,7 +37,8 @@ public class ToolWindowTracker implements ToolWindowManagerListener {
   }
 
   @Override
-  public void stateChanged(@NotNull ToolWindowManager toolWindowManager) {
+  // TODO: Change to stateChanged(ToolWindowManager) once 2020.1 is our min. platform version.
+  public void stateChanged() {
     update();
   }
 

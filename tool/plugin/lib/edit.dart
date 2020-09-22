@@ -82,47 +82,9 @@ List<EditCommand> editCommands = [
     versions: ['4.0'],
   ),
   Subst(
-    path: 'src/io/flutter/FlutterUtils.java',
-    initial: 'ProjectUtil.isSameProject(Paths.get(path), project)',
-    replacement: 'ProjectUtil.isSameProject(path, project)',
-    versions: ['4.0', '4.1'],
-  ),
-  Subst(
     path: 'src/io/flutter/FlutterBundle.java',
     initial: 'AbstractBundle',
     replacement: 'CommonBundle',
-    version: '4.0',
-  ),
-  Subst(
-    path: 'src/io/flutter/survey/FlutterSurveyService.java',
-    initial: 'properties.getLong(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, 0)',
-    replacement:
-        'properties.getOrInitLong(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, 0)',
-    version: '4.0',
-  ),
-  Subst(
-    path: 'src/io/flutter/survey/FlutterSurveyNotifications.java',
-    initial: 'properties.getLong(FLUTTER_LAST_SURVEY_PROMPT_KEY, 0)',
-    replacement: 'properties.getOrInitLong(FLUTTER_LAST_SURVEY_PROMPT_KEY, 0)',
-    version: '4.0',
-  ),
-  Subst(
-    path: 'src/io/flutter/perf/EditorPerfDecorations.java',
-    initial: 'highlighter.getTextAttributes(null)',
-    replacement: 'highlighter.getTextAttributes()',
-    versions: ['4.0', '4.1'],
-  ),
-  Subst(
-    path: 'src/io/flutter/preview/PreviewView.java',
-    initial:
-        'Arrays.asList(expandAllAction, collapseAllAction, showOnlyWidgetsAction)',
-    replacement: 'expandAllAction, collapseAllAction, showOnlyWidgetsAction',
-    versions: ['4.0', '4.1'],
-  ),
-  Subst(
-    path: 'src/io/flutter/analytics/ToolWindowTracker.java',
-    initial: '@Override',
-    replacement: '',
     version: '4.0',
   ),
 ];

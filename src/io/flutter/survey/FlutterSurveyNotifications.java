@@ -83,7 +83,8 @@ public class FlutterSurveyNotifications {
     final PropertiesComponent properties = PropertiesComponent.getInstance();
 
     // Don't prompt more often than every 40 hours.
-    final long lastPromptedMillis = properties.getLong(FLUTTER_LAST_SURVEY_PROMPT_KEY, 0);
+    // TODO: Don't change to getLong() until our min. platform version is 2020.1.
+    final long lastPromptedMillis = properties.getOrInitLong(FLUTTER_LAST_SURVEY_PROMPT_KEY, 0);
     if (System.currentTimeMillis() - lastPromptedMillis < PROMPT_INTERVAL_IN_MS) return;
 
     properties.setValue(FLUTTER_LAST_SURVEY_PROMPT_KEY, String.valueOf(System.currentTimeMillis()));

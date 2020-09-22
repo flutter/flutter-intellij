@@ -50,7 +50,6 @@ import org.yaml.snakeyaml.resolver.Resolver;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -383,7 +382,8 @@ public class FlutterUtils {
   @Nullable
   public static Project findProject(@NotNull String path) {
     for (Project project : ProjectManager.getInstance().getOpenProjects()) {
-      if (ProjectUtil.isSameProject(Paths.get(path), project)) {
+      // TODO: Don't switch to ProjectUtil.isSameProject(Paths.get(path), project) until 2020.2.
+      if (ProjectUtil.isSameProject(path, project)) {
         return project;
       }
     }
