@@ -46,8 +46,8 @@ public class FlutterConsoleFilterTest {
 
   @Test
   public void checkLaunchingLink() {
-    String line = "Launching test/widget_test.dart on Android SDK built for x86 in debug mode...\n";
-    Filter.Result link = new FlutterConsoleFilter(fixture.getModule()).applyFilter(line, line.length());
+    final String line = "Launching test/widget_test.dart on Android SDK built for x86 in debug mode...\n";
+    final Filter.Result link = new FlutterConsoleFilter(fixture.getModule()).applyFilter(line, line.length());
     assertNotNull(link);
   }
 
@@ -59,7 +59,7 @@ public class FlutterConsoleFilterTest {
   }
 
   @Test(timeout=1000)
-  public void checkBadErrorMessage() throws Exception {
+  public void checkBadErrorMessage() {
     final Filter.Result link = new FlutterConsoleFilter(fixture.getModule()).applyFilter(backtracker, backtracker.length());
     assertNull(link);
   }

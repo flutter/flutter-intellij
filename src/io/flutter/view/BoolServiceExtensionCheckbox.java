@@ -29,7 +29,7 @@ public class BoolServiceExtensionCheckbox implements Disposable {
 
   BoolServiceExtensionCheckbox(
     FlutterApp app,
-    @NotNull ToggleableServiceExtensionDescription extensionDescription,
+    @NotNull ToggleableServiceExtensionDescription<Boolean> extensionDescription,
     String tooltip) {
     checkbox = new JBCheckBox(extensionDescription.getDisabledText());
     checkbox.setHorizontalAlignment(JLabel.LEFT);

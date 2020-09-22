@@ -83,7 +83,6 @@ class MockWidgetPerfProvider implements WidgetPerfProvider {
 }
 
 class MockPerfModel implements PerfModel {
-
   volatile int idleCount = 0;
   volatile int clearCount = 0;
   volatile int frameCount = 0;
@@ -232,7 +231,7 @@ class MockTextEditor implements TextEditor {
   @NotNull
   @Override
   public Editor getEditor() {
-    return null;
+    throw new Error("not supported");
   }
 
   @Override
@@ -253,7 +252,7 @@ class MockTextEditor implements TextEditor {
   @NotNull
   @Override
   public JComponent getComponent() {
-    return null;
+    throw new Error("not supported");
   }
 
   @Nullable
@@ -352,7 +351,7 @@ public class FlutterWidgetPerfTest {
         perfModels.put(textEditor.getName(), model);
         return model;
       },
-      path -> new FakeFileLocationMapper(path)
+      FakeFileLocationMapper::new
     );
     widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild,
                                                "{\"startTime\":1000,\"events\":[1,1,2,1,3,1,4,1,6,1,10,4,11,4,12,4,13,1,14,1,95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1],\"newLocations\":{\"/sample/project/main.dart\":[1,11,14,2,18,16,3,23,17,4,40,16,6,46,16,10,69,9,11,70,9,12,71,18,13,41,19,14,42,20,95,51,58],\"/sample/project/clock.dart\":[96,33,12,97,52,12,100,53,16,102,54,14,104,55,17,105,34,15,106,35,16]}}");
@@ -377,7 +376,7 @@ public class FlutterWidgetPerfTest {
     assertEquals(1620, stats.getTotalValue(PerfMetric.pastSecond));
     List<TextRange> locations = Lists.newArrayList(stats.getLocations());
     assertEquals(7, locations.size());
-    TextRange textRange = getTextRange("/sample/project/clock.dart", 52, 12);
+    final TextRange textRange = getTextRange("/sample/project/clock.dart", 52, 12);
     List<SummaryStats> rangeStats = Lists.newArrayList(stats.getRangeStats(textRange));
 
     assertEquals(1, rangeStats.size());
@@ -478,14 +477,14 @@ public class FlutterWidgetPerfTest {
   }
 
   @Test
-  public void testOverallStatsCalculation() throws InterruptedException, ExecutionException {
+  public void testOverallStatsCalculation() throws InterruptedException {
     final MockWidgetPerfProvider widgetPerfProvider = new MockWidgetPerfProvider();
 
     final FlutterWidgetPerf flutterWidgetPerf = new FlutterWidgetPerf(
       true,
       widgetPerfProvider,
       textEditor -> null,
-      path -> new FakeFileLocationMapper(path)
+      FakeFileLocationMapper::new
     );
     final MockPerfModel perfModel = new MockPerfModel();
     flutterWidgetPerf.addPerfListener(perfModel);
@@ -533,6 +532,7 @@ public class FlutterWidgetPerfTest {
 
     while (perfModel.frameCount == 0) {
       try {
+        //noinspection BusyWait
         Thread.sleep(1);
       }
       catch (InterruptedException e) {

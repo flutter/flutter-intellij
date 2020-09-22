@@ -23,7 +23,7 @@ import javax.swing.*;
 class TogglePlatformAction extends ToolbarComboBoxAction {
   private static final Logger LOG = Logger.getInstance(TogglePlatformAction.class);
 
-  private static final ServiceExtensionDescription extensionDescription = ServiceExtensions.togglePlatformMode;
+  private static final ServiceExtensionDescription<String> extensionDescription = ServiceExtensions.togglePlatformMode;
 
   private final @NotNull FlutterApp app;
   private final @NotNull AppState appState;
@@ -67,7 +67,7 @@ class TogglePlatformAction extends ToolbarComboBoxAction {
         LOG.info("Unknown platform: " + selectedPlatform.name());
       }
       else {
-        selectorText = (String)extensionDescription.getTooltips().get(platformIndex);
+        selectorText = extensionDescription.getTooltips().get(platformIndex);
       }
     }
 
@@ -85,7 +85,7 @@ class TogglePlatformAction extends ToolbarComboBoxAction {
 }
 
 class PlatformTargetAction extends FlutterViewAction implements Toggleable, Disposable {
-  private static final ServiceExtensionDescription extensionDescription = ServiceExtensions.togglePlatformMode;
+  private static final ServiceExtensionDescription<String> extensionDescription = ServiceExtensions.togglePlatformMode;
   private final PlatformTarget platformTarget;
   private StreamSubscription<ServiceExtensionState> currentValueSubscription;
   private boolean selected = false;

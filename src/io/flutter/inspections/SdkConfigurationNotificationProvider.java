@@ -56,8 +56,9 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
   }
 
   @Override
-  public EditorNotificationPanel createNotificationPanel(@NotNull final VirtualFile file, @NotNull final FileEditor fileEditor) {
-
+  public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file,
+                                                         @NotNull FileEditor fileEditor,
+                                                         @NotNull Project project) {
     // If this is a Bazel configured Flutter project, exit immediately, neither of the notifications should be shown for this project type.
     if (FlutterModuleUtils.isFlutterBazelProject(project)) return null;
 

@@ -162,7 +162,7 @@ public class ActiveEditorsOutlineServiceTest {
     });
   }
 
-  private class Listener implements ActiveEditorsOutlineService.Listener {
+  private static class Listener implements ActiveEditorsOutlineService.Listener {
     int editorsChanged = 0;
     final Map<String, Integer> outlineChanged = new HashMap<>();
     FlutterOutline mostRecentOutline = null;

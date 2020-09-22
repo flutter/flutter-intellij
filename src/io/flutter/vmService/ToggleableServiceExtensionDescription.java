@@ -8,7 +8,7 @@ package io.flutter.vmService;
 import java.util.Arrays;
 import java.util.List;
 
-public class ToggleableServiceExtensionDescription<T> extends ServiceExtensionDescription {
+public class ToggleableServiceExtensionDescription<T> extends ServiceExtensionDescription<T> {
   public ToggleableServiceExtensionDescription(
     String extension,
     String description,
@@ -27,22 +27,22 @@ public class ToggleableServiceExtensionDescription<T> extends ServiceExtensionDe
   static int disabledIndex = 1;
 
   public T getEnabledValue() {
-    @SuppressWarnings("unchecked") final List<T> values = super.getValues();
+    final List<T> values = super.getValues();
     return values.get(enabledIndex);
   }
 
   public T getDisabledValue() {
-    @SuppressWarnings("unchecked") final List<T> values = super.getValues();
+    final List<T> values = super.getValues();
     return values.get(disabledIndex);
   }
 
   public String getEnabledText() {
-    @SuppressWarnings("unchecked") final List<String> tooltips = super.getTooltips();
+    final List<String> tooltips = super.getTooltips();
     return tooltips.get(enabledIndex);
   }
 
   public String getDisabledText() {
-    @SuppressWarnings("unchecked") final List<String> tooltips = super.getTooltips();
+    final List<String> tooltips = super.getTooltips();
     return tooltips.get(disabledIndex);
   }
 }

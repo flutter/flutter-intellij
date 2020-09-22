@@ -243,9 +243,9 @@ public class EventStreamTest {
   }
 
   private void checkLog(String... expectedEntries) {
-    java.util.Timer timer = new java.util.Timer();
+    final java.util.Timer timer = new java.util.Timer();
     try {
-      TimerTask task = new TimerTask() {
+      final TimerTask task = new TimerTask() {
         @Override
         public void run() {
           timer.cancel();

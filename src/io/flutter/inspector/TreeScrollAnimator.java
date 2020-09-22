@@ -114,7 +114,7 @@ public class TreeScrollAnimator implements Disposable {
    * effect because toggling that option on and off results in Swing scrolling
    * the UI to try to be clever about which UI is in view.
    */
-  private class LockableScrollbar extends JBScrollBar {
+  private static class LockableScrollbar extends JBScrollBar {
     boolean allowScroll;
 
     LockableScrollbar(int orientation) {

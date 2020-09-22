@@ -182,7 +182,7 @@ public abstract class ToolbarComboBoxAction extends AnAction implements CustomCo
     @Override
     protected void fireActionPerformed(ActionEvent event) {
       if (!myForcePressed) {
-        IdeFocusManager.getGlobalInstance().doWhenFocusSettlesDown(() -> showPopup());
+        IdeFocusManager.getGlobalInstance().doWhenFocusSettlesDown(this::showPopup);
       }
     }
 
@@ -290,7 +290,7 @@ public abstract class ToolbarComboBoxAction extends AnAction implements CustomCo
           updateButtonSize();
         }
         else if (Presentation.PROP_ENABLED.equals(propertyName)) {
-          setEnabled(((Boolean)evt.getNewValue()).booleanValue());
+          setEnabled((Boolean)evt.getNewValue());
         }
       }
     }

@@ -78,7 +78,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
   private static final Logger LOG = Logger.getInstance(MultiIconSimpleColoredComponent.class);
 
   public static final Color SHADOW_COLOR = new JBColor(new Color(250, 250, 250, 140), Gray._0.withAlpha(50));
-  @SuppressWarnings("unused") public static final Color STYLE_SEARCH_MATCH_BACKGROUND = SHADOW_COLOR; //api compatibility
+  public static final Color STYLE_SEARCH_MATCH_BACKGROUND = SHADOW_COLOR; //api compatibility
   public static final int FRAGMENT_ICON = -100;
 
   private final List<String> myFragments;
@@ -424,7 +424,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     final Insets borderInsets = myBorder != null ? myBorder.getBorderInsets(this) : JBUI.emptyInsets();
     width += borderInsets.left;
 
-    Font font = getBaseFont();
+    final Font font = getBaseFont();
 
     width += computeTextWidth(font, mainTextOnly);
     width += myIpad.right + borderInsets.right;
@@ -435,7 +435,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
       width += insets.left + insets.right;
     }
 
-    int height = computePreferredHeight();
+    final int height = computePreferredHeight();
 
     return new Dimension(width, height);
   }
@@ -443,12 +443,12 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
   public final synchronized int computePreferredHeight() {
     int height = myIpad.top + myIpad.bottom;
 
-    Font font = getBaseFont();
+    final Font font = getBaseFont();
 
     final FontMetrics metrics = getFontMetrics(font);
     int textHeight = Math.max(JBUI.scale(16), metrics.getHeight()); //avoid too narrow rows
 
-    Insets borderInsets = myBorder != null ? myBorder.getBorderInsets(this) : JBUI.emptyInsets();
+    final Insets borderInsets = myBorder != null ? myBorder.getBorderInsets(this) : JBUI.emptyInsets();
     textHeight += borderInsets.top + borderInsets.bottom;
 
     if (!myIcons.isEmpty()) {
@@ -470,7 +470,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
   }
 
   private Rectangle computePaintArea() {
-    Rectangle area = new Rectangle(getWidth(), getHeight());
+    final Rectangle area = new Rectangle(getWidth(), getHeight());
     JBInsets.removeFrom(area, getInsets());
     JBInsets.removeFrom(area, myIpad);
     return area;
@@ -478,11 +478,11 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
   private float computeTextWidth(@NotNull Font font, final boolean mainTextOnly) {
     float result = 0;
-    int baseSize = font.getSize();
+    final int baseSize = font.getSize();
     boolean wasSmaller = false;
     for (int i = 0; i < myAttributes.size(); i++) {
-      SimpleTextAttributes attributes = myAttributes.get(i);
-      boolean isSmaller = attributes.isSmaller();
+      final SimpleTextAttributes attributes = myAttributes.get(i);
+      final boolean isSmaller = attributes.isSmaller();
       if (font.getStyle() != attributes.getFontStyle() || isSmaller != wasSmaller) { // derive font only if it is necessary
         font = font.deriveFont(attributes.getFontStyle(), isSmaller ? UIUtil.getFontSize(UIUtil.FontSize.SMALL) : baseSize);
       }
@@ -516,9 +516,9 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
   }
 
   private void doDrawString(Graphics2D g, int fragmentIndex, float x, float y) {
-    String text = myFragments.get(fragmentIndex);
+    final String text = myFragments.get(fragmentIndex);
     if (StringUtil.isEmpty(text)) return;
-    TextLayout layout = getTextLayout(fragmentIndex, g.getFont(), g.getFontRenderContext());
+    final TextLayout layout = getTextLayout(fragmentIndex, g.getFont(), g.getFontRenderContext());
     if (layout != null) {
       layout.draw(g, x, y);
     }
@@ -528,10 +528,10 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
   }
 
   private float computeStringWidth(int fragmentIndex, Font font) {
-    String text = myFragments.get(fragmentIndex);
+    final String text = myFragments.get(fragmentIndex);
     if (StringUtil.isEmpty(text)) return 0;
-    FontRenderContext fontRenderContext = getFontMetrics(font).getFontRenderContext();
-    TextLayout layout = getTextLayout(fragmentIndex, font, fontRenderContext);
+    final FontRenderContext fontRenderContext = getFontMetrics(font).getFontRenderContext();
+    final TextLayout layout = getTextLayout(fragmentIndex, font, fontRenderContext);
     if (layout != null) {
       return layout.getAdvance();
     }
@@ -541,15 +541,15 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
   }
 
   private TextLayout createAndCacheTextLayout(int fragmentIndex, Font basefont, FontRenderContext fontRenderContext) {
-    String text = myFragments.get(fragmentIndex);
-    AttributedString string = new AttributedString(text);
-    int start = 0;
-    int end = text.length();
-    AttributedCharacterIterator it = string.getIterator(new AttributedCharacterIterator.Attribute[0], start, end);
+    final String text = myFragments.get(fragmentIndex);
+    final AttributedString string = new AttributedString(text);
+    final int start = 0;
+    final int end = text.length();
+    final AttributedCharacterIterator it = string.getIterator(new AttributedCharacterIterator.Attribute[0], start, end);
     Font currentFont = basefont;
     int currentIndex = start;
     for (char c = it.first(); c != CharacterIterator.DONE; c = it.next()) {
-      Font font = basefont;
+      final Font font = basefont;
       // TODO(jacobr): SuitableFontProvider is a private class so we can't
       // easily use it. How important is supporting this use case?
       /*
@@ -560,7 +560,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
         }
       }
       */
-      int i = it.getIndex();
+      final int i = it.getIndex();
       if (!Comparing.equal(currentFont, font)) {
         if (i > currentIndex) {
           string.addAttribute(TextAttribute.FONT, currentFont, currentIndex, i);
@@ -572,7 +572,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     if (currentIndex < end) {
       string.addAttribute(TextAttribute.FONT, currentFont, currentIndex, end);
     }
-    TextLayout layout = new TextLayout(string.getIterator(), fontRenderContext);
+    final TextLayout layout = new TextLayout(string.getIterator(), fontRenderContext);
     if (fragmentIndex >= myLayouts.size()) {
       myLayouts.addAll(Collections.nCopies(fragmentIndex - myLayouts.size() + 1, null));
     }
@@ -602,7 +602,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
     Font font = getBaseFont();
 
-    int baseSize = font.getSize();
+    final int baseSize = font.getSize();
     boolean wasSmaller = false;
     int i = 0;
     int iconIndex = 0;
@@ -620,8 +620,8 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
       if (i >= myAttributes.size()) {
         break;
       }
-      SimpleTextAttributes attributes = myAttributes.get(i);
-      boolean isSmaller = attributes.isSmaller();
+      final SimpleTextAttributes attributes = myAttributes.get(i);
+      final boolean isSmaller = attributes.isSmaller();
       if (font.getStyle() != attributes.getFontStyle() || isSmaller != wasSmaller) { // derive font only if it is necessary
         font = font.deriveFont(attributes.getFontStyle(), isSmaller ? UIUtil.getFontSize(UIUtil.FontSize.SMALL) : baseSize);
       }
@@ -643,13 +643,13 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
   @Nullable
   public Object getFragmentTagAt(int x) {
-    int index = findFragmentAt(x);
+    final int index = findFragmentAt(x);
     return index < 0 ? null : getFragmentTag(index);
   }
 
   @Nullable
   public Icon getIconAt(int x) {
-    int index = findFragmentAt(x);
+    final int index = findFragmentAt(x);
     return index <= FRAGMENT_ICON ? myIcons.get(FRAGMENT_ICON - index).icon : null;
   }
 
@@ -798,9 +798,9 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     final Font baseFont = getBaseFont();
     g.setFont(baseFont);
     offset += computeTextAlignShift();
-    int baseSize = baseFont.getSize();
-    FontMetrics baseMetrics = g.getFontMetrics();
-    Rectangle area = computePaintArea();
+    final int baseSize = baseFont.getSize();
+    final FontMetrics baseMetrics = g.getFontMetrics();
+    final Rectangle area = computePaintArea();
     final int textBaseline = area.y + getTextBaseLine(baseMetrics, area.height);
     boolean wasSmaller = false;
     assert (myFragments.size() == myAttributes.size());
@@ -933,13 +933,13 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
     // draw search matches after all
     for (final Object[] info : searchMatches) {
-      float x1 = (float)info[0];
-      float x2 = (float)info[1];
+      final float x1 = (float)info[0];
+      final float x2 = (float)info[1];
       UIUtil.drawSearchMatch(g, x1, x2, getHeight());
       g.setFont((Font)info[4]);
 
-      float baseline = (float)info[2];
-      String text = (String)info[3];
+      final float baseline = (float)info[2];
+      final String text = (String)info[3];
       if (shouldDrawMacShadow()) {
         g.setColor(SHADOW_COLOR);
         g.drawString(text, x1, baseline + 1);
@@ -965,8 +965,8 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
       return 0;
     }
 
-    int componentWidth = getSize().width;
-    int excessiveWidth = componentWidth - computePreferredSize(false).width;
+    final int componentWidth = getSize().width;
+    final int excessiveWidth = componentWidth - computePreferredSize(false).width;
     if (excessiveWidth <= 0) {
       return 0;
     }
@@ -993,7 +993,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
   }
 
   protected void paintIcon(@NotNull Graphics g, @NotNull Icon icon, int offset) {
-    Rectangle area = computePaintArea();
+    final Rectangle area = computePaintArea();
     icon.paintIcon(this, g, offset, area.y + (area.height - icon.getIconHeight() + 1) / 2);
   }
 
@@ -1040,7 +1040,6 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
   @NotNull
   private String logSwingPath() {
-    //noinspection HardCodedStringLiteral
     final StringBuilder buffer = new StringBuilder("Components hierarchy:\n");
     for (Container c = this; c != null; c = c.getParent()) {
       buffer.append('\n');
@@ -1085,8 +1084,8 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
   @NotNull
   public CharSequence getCharSequence(boolean mainOnly) {
-    List<String> fragments = mainOnly && myMainTextLastIndex > -1 && myMainTextLastIndex + 1 < myFragments.size() ?
-                             myFragments.subList(0, myMainTextLastIndex + 1) : myFragments;
+    final List<String> fragments = mainOnly && myMainTextLastIndex > -1 && myMainTextLastIndex + 1 < myFragments.size() ?
+                                   myFragments.subList(0, myMainTextLastIndex + 1) : myFragments;
     return StringUtil.join(fragments, "");
   }
 
@@ -1096,7 +1095,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
   }
 
   public void change(@NotNull Runnable runnable, boolean autoInvalidate) {
-    boolean old = myAutoInvalidate;
+    final boolean old = myAutoInvalidate;
     myAutoInvalidate = autoInvalidate;
     try {
       runnable.run();
@@ -1189,7 +1188,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
         myAttributes.set(myIndex, attributes);
       }
       else if (offset > 0) {   // split
-        String text = getFragment();
+        final String text = getFragment();
         myFragments.set(myIndex, text.substring(0, offset));
         myAttributes.add(myIndex, attributes);
         myFragments.add(myIndex + 1, text.substring(offset));
@@ -1213,7 +1212,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     public String next() {
       myIndex++;
       myOffset = myEndOffset;
-      String text = getFragment();
+      final String text = getFragment();
       myEndOffset += text.length();
       return text;
     }

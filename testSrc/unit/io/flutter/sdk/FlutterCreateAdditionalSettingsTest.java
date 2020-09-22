@@ -47,7 +47,7 @@ public class FlutterCreateAdditionalSettingsTest {
     final List<String> args3 = additionalSettings3.getArgs();
     final List<String> args4 = additionalSettings4.getArgs();
 
-    int base = args4.size();
+    final int base = args4.size();
     assertEquals(base + 2, args1.size());
     assertEquals("app", args1.get(1));
 

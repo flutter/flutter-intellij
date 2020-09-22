@@ -11,8 +11,7 @@ import io.flutter.testing.Testing;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Verifies the Flutter module detection utilities in {@link FlutterModuleUtils}.
@@ -25,7 +24,7 @@ public class FlutterModuleUtilsTest {
   @Test
   public void isDeprecatedFlutterModuleType_true() {
     fixture.getModule().setOption(Module.ELEMENT_TYPE, "WEB_MODULE");
-    assertTrue(FlutterModuleUtils.DEPRECATED_FLUTTER_MODULE_TYPE_ID.equals(fixture.getModule().getOptionValue("type")));
+    assertEquals(FlutterModuleUtils.DEPRECATED_FLUTTER_MODULE_TYPE_ID, fixture.getModule().getOptionValue("type"));
     // We would like to use this assert but the pub roots are not setup so
     // this assert fails.
     // TODO(jacobr): configure the pub roots correctly so this test can run

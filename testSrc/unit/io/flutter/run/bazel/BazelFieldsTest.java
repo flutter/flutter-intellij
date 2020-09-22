@@ -12,8 +12,7 @@ import org.junit.Test;
 import java.util.Set;
 import java.util.TreeSet;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * Verifies run configuration persistence.
@@ -33,7 +32,7 @@ public class BazelFieldsTest {
     assertEquals("//path/to/flutter/app:hello", fields.getBazelTarget());
     assertEquals("--define=release_channel=beta3", fields.getBazelArgs());
     assertEquals("--android_cpu=x86", fields.getAdditionalArgs());
-    assertEquals(false, fields.getEnableReleaseMode());
+    assertFalse(fields.getEnableReleaseMode());
   }
 
   @Test
@@ -48,9 +47,9 @@ public class BazelFieldsTest {
     final BazelFields fields = BazelFields.readFrom(elt);
     XmlSerializer.deserializeInto(fields, elt);
     assertEquals("//path/to/flutter/app:hello", fields.getBazelTarget());
-    assertEquals(null, fields.getBazelArgs());
+    assertNull(fields.getBazelArgs());
     assertEquals("--android_cpu=x86", fields.getAdditionalArgs());
-    assertEquals(true, fields.getEnableReleaseMode());
+    assertTrue(fields.getEnableReleaseMode());
   }
 
   @Test
@@ -67,7 +66,7 @@ public class BazelFieldsTest {
 
     // Verify that we no longer write workingDirectory.
     assertArrayEquals(
-      new String[]{"additionalArgs", "bazelArgs", "bazelTarget", "enableReleaseMode", },
+      new String[]{"additionalArgs", "bazelArgs", "bazelTarget", "enableReleaseMode",},
       getOptionNames(elt).toArray());
 
     final BazelFields after = BazelFields.readFrom(elt);
@@ -75,7 +74,7 @@ public class BazelFieldsTest {
     assertEquals("bazel_target", after.getBazelTarget());
     assertEquals("bazel_args --1 -2=3", after.getBazelArgs());
     assertEquals("additional_args --1 --2=3", after.getAdditionalArgs());
-    assertEquals(true, after.getEnableReleaseMode());
+    assertTrue(after.getEnableReleaseMode());
   }
 
   private void addOption(Element elt, String name, String value) {

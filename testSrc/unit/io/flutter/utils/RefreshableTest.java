@@ -181,7 +181,7 @@ public class RefreshableTest {
   @Test
   public void refreshShouldCancelRunningTaskWhenNewTaskIsSubmitted() throws Exception {
     // Create a task that will block until we say to finish.
-    final FutureTask startedFirstTask = new FutureTask<>(() -> null);
+    final FutureTask<?> startedFirstTask = new FutureTask<>(() -> null);
     final FutureTask<String> dependency = new FutureTask<>(() -> "first task");
 
     final AtomicReference<Refreshable.Request> firstRequest = new AtomicReference<>();

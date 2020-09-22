@@ -18,7 +18,7 @@ import static org.junit.Assert.assertThat;
 
 public class ThreadUtilTest {
   @Test
-  public void simple() throws Exception {
+  public void simple() {
     final CountDownLatch stopLatch = new CountDownLatch(1);
     try {
       final Thread newThread = new Thread(() -> Uninterruptibles.awaitUninterruptibly(stopLatch));

@@ -31,10 +31,10 @@ public class IncompatibleDartPluginNotificationProvider extends EditorNotificati
 
   private static final Key<EditorNotificationPanel> KEY = Key.create("IncompatibleDartPluginNotificationProvider");
 
-  private final Project myProject;
+  private final Project project;
 
   public IncompatibleDartPluginNotificationProvider(@NotNull Project project) {
-    this.myProject = project;
+    this.project = project;
   }
 
   @Nullable
@@ -63,10 +63,12 @@ public class IncompatibleDartPluginNotificationProvider extends EditorNotificati
   }
 
   @Override
-  public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file, @NotNull FileEditor fileEditor) {
+  public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file,
+                                                         @NotNull FileEditor fileEditor,
+                                                         @NotNull Project project) {
     if (!FlutterUtils.isFlutteryFile(file)) return null;
 
-    final PsiFile psiFile = PsiManager.getInstance(myProject).findFile(file);
+    final PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
     if (psiFile == null) return null;
 
     if (psiFile.getLanguage() != DartLanguage.INSTANCE) return null;
@@ -81,7 +83,7 @@ public class IncompatibleDartPluginNotificationProvider extends EditorNotificati
     if (dartVersion.minor == 0 && dartVersion.bugfix == 0) {
       return null; // Running from sources.
     }
-    return dartVersion.compareTo(minimumVersion) < 0 ? createUpdateDartPanel(myProject, module, dartVersion.toCompactString(),
+    return dartVersion.compareTo(minimumVersion) < 0 ? createUpdateDartPanel(project, module, dartVersion.toCompactString(),
                                                                              getPrintableRequiredDartVersion()) : null;
   }
 }

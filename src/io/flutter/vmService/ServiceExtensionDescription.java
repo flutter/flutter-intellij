@@ -13,8 +13,7 @@ public class ServiceExtensionDescription<T> {
   private final List<T> values;
   private final List<String> tooltips;
 
-  public ServiceExtensionDescription(
-    String extension, String description, List<T> values, List<String> tooltips) {
+  public ServiceExtensionDescription(String extension, String description, List<T> values, List<String> tooltips) {
     this.extension = extension;
     this.description = description;
     this.values = values;

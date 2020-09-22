@@ -83,14 +83,13 @@ public class DaemonApiTest {
   // device domain
 
   @Test
-  public void canEnableDeviceEvents() throws Exception {
-    final Future result = api.enableDeviceEvents();
+  public void canEnableDeviceEvents() {
+    final Future<Void> result = api.enableDeviceEvents();
     checkLog("{\"method\":\"device.enable\",\"id\":0}");
     assertFalse(result.isDone());
 
     api.dispatch(JsonUtils.parseString("{id: \"0\"}").getAsJsonObject(), null);
     assertTrue(result.isDone());
-    assertNull(result.get());
   }
 
   @Test
@@ -113,12 +112,12 @@ public class DaemonApiTest {
 
   // helpers
 
-  private void checkSent(Future result, String expectedMethod, String expectedParamsJson) {
+  private void checkSent(Future<?> result, String expectedMethod, String expectedParamsJson) {
     checkLog("{\"method\":\"" + expectedMethod + "\",\"params\":" + expectedParamsJson + ",\"id\":0}");
     assertFalse(result.isDone());
   }
 
-  private void replyWithResult(Future result, String resultJson) {
+  private void replyWithResult(Future<?> result, String resultJson) {
     api.dispatch(JsonUtils.parseString("{id: \"0\", result: " + resultJson + "}").getAsJsonObject(), null);
     assertTrue(result.isDone());
   }

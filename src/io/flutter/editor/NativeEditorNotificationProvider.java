@@ -25,11 +25,11 @@ import org.jetbrains.annotations.Nullable;
 public class NativeEditorNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
   private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.native.editor.notification");
 
-  private final Project myProject;
+  private final Project project;
   private boolean showNotification = true;
 
   public NativeEditorNotificationProvider(@NotNull Project project) {
-    myProject = project;
+    this.project = project;
   }
 
   @NotNull
@@ -40,11 +40,13 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
 
   @Nullable
   @Override
-  public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file, @NotNull FileEditor fileEditor) {
+  public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file,
+                                                         @NotNull FileEditor fileEditor,
+                                                         @NotNull Project project) {
     if (!file.isInLocalFileSystem() || !showNotification) {
       return null;
     }
-    return createPanelForFile(file, findRootDir(file, myProject.getBaseDir()));
+    return createPanelForFile(file, findRootDir(file, project.getBaseDir()));
   }
 
   private EditorNotificationPanel createPanelForFile(VirtualFile file, VirtualFile root) {
@@ -121,7 +123,7 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
         .setToolTipText(myAction.getTemplatePresentation().getDescription());
       createActionLabel(FlutterBundle.message("flutter.androidstudio.open.hide.notification.text"), () -> {
         showNotification = false;
-        EditorNotifications.getInstance(myProject).updateAllNotifications();
+        EditorNotifications.getInstance(project).updateAllNotifications();
       }).setToolTipText(FlutterBundle.message("flutter.androidstudio.open.hide.notification.description"));
     }
 
@@ -145,7 +147,7 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
           return myFile;
         }
         if (CommonDataKeys.PROJECT.is(dataId)) {
-          return myProject;
+          return project;
         }
         return null;
       };

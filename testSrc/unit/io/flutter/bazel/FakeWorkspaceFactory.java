@@ -24,7 +24,7 @@ public class FakeWorkspaceFactory {
     @Nullable String versionFile,
     @Nullable String devtoolsScript
   ) {
-    MockVirtualFileSystem fs = new MockVirtualFileSystem();
+    final MockVirtualFileSystem fs = new MockVirtualFileSystem();
     fs.file("/workspace/WORKSPACE", "");
     if (daemonScript != null) {
       fs.file("/workspace/" + daemonScript, "");

@@ -19,11 +19,13 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-abstract class FlutterViewToggleableAction extends FlutterViewAction implements Toggleable, Disposable {
-  private final ToggleableServiceExtensionDescription extensionDescription;
+abstract class FlutterViewToggleableAction<T> extends FlutterViewAction implements Toggleable, Disposable {
+  private final ToggleableServiceExtensionDescription<T> extensionDescription;
   private StreamSubscription<ServiceExtensionState> currentValueSubscription;
 
-  FlutterViewToggleableAction(@NotNull FlutterApp app, @Nullable Icon icon, ToggleableServiceExtensionDescription extensionDescription) {
+  FlutterViewToggleableAction(@NotNull FlutterApp app,
+                              @Nullable Icon icon,
+                              ToggleableServiceExtensionDescription<T> extensionDescription) {
     // Assume the button is not enabled by default and pass disabledText here.
     super(app, extensionDescription.getDisabledText(), null, icon);
     this.extensionDescription = extensionDescription;

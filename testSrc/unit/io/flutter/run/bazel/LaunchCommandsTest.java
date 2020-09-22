@@ -385,7 +385,7 @@ public class LaunchCommandsTest {
                     @Nullable String sdkHome,
                     @Nullable String versionFile) {
       super(template);
-      Pair.NonNull<MockVirtualFileSystem, Workspace> pair = FakeWorkspaceFactory
+      final Pair.NonNull<MockVirtualFileSystem, Workspace> pair = FakeWorkspaceFactory
         .createWorkspaceAndFilesystem(daemonScript, doctorScript, launchScript, testScript, sdkHome, versionFile, null);
       fs = pair.first;
       fakeWorkspace = pair.second;
@@ -393,7 +393,7 @@ public class LaunchCommandsTest {
 
     FakeBazelFields(@NotNull BazelFields template) {
       super(template);
-      Pair.NonNull<MockVirtualFileSystem, Workspace> pair = FakeWorkspaceFactory
+      final Pair.NonNull<MockVirtualFileSystem, Workspace> pair = FakeWorkspaceFactory
         .createWorkspaceAndFilesystem();
       fs = pair.first;
       fakeWorkspace = pair.second;
