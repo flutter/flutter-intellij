@@ -41,7 +41,7 @@ List<EditCommand> editCommands = [
         'import com.android.tools.idea.gradle.structure.actions.AndroidShowStructureSettingsAction;',
     replacement:
         'import com.android.tools.idea.gradle.actions.AndroidShowStructureSettingsAction;',
-    versions: ['3.6', '4.0', '2020.2'],
+    versions: ['4.0', '2020.2'],
   ),
   MultiSubst(
     path: 'flutter-studio/src/io/flutter/actions/OpenAndroidModule.java',
@@ -53,13 +53,13 @@ List<EditCommand> editCommands = [
       'findImportTarget',
       'importProjectCore(projectFile)',
     ],
-    versions: ['3.6', '4.0', '2020.2'],
+    versions: ['4.0', '2020.2'],
   ),
   Subst(
     path: 'flutter-studio/src/io/flutter/utils/AddToAppUtils.java',
     initial: '.project.importing.GradleProjectImporter',
     replacement: '.project.importing.NewProjectSetup',
-    versions: ['3.6', '4.0', '2020.2'],
+    versions: ['4.0', '2020.2'],
   ),
   Subst(
     path: 'src/io/flutter/utils/AndroidUtils.java',
@@ -79,7 +79,7 @@ List<EditCommand> editCommands = [
     replacement: """
     IdeaPluginDescriptor descriptor = PluginManager.getPlugin(PluginId.getId("io.flutter"));
 """,
-    versions: ['3.6', '4.0'],
+    versions: ['4.0'],
   ),
   Subst(
     path: 'src/io/flutter/FlutterUtils.java',
@@ -96,7 +96,8 @@ List<EditCommand> editCommands = [
   Subst(
     path: 'src/io/flutter/survey/FlutterSurveyService.java',
     initial: 'properties.getLong(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, 0)',
-    replacement: 'properties.getOrInitLong(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, 0)',
+    replacement:
+        'properties.getOrInitLong(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, 0)',
     version: '4.0',
   ),
   Subst(
@@ -113,7 +114,8 @@ List<EditCommand> editCommands = [
   ),
   Subst(
     path: 'src/io/flutter/preview/PreviewView.java',
-    initial: 'Arrays.asList(expandAllAction, collapseAllAction, showOnlyWidgetsAction)',
+    initial:
+        'Arrays.asList(expandAllAction, collapseAllAction, showOnlyWidgetsAction)',
     replacement: 'expandAllAction, collapseAllAction, showOnlyWidgetsAction',
     versions: ['4.0', '4.1'],
   ),
@@ -143,31 +145,7 @@ class EditAndroidModuleLibraryManager extends EditCommand {
 
   @override
   String convert(BuildSpec spec) {
-    if (spec.version.startsWith('3.6')) {
-      var processedFile, source;
-      processedFile = File(
-          'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
-      source = processedFile.readAsStringSync();
-      var original = source;
-      source = source.replaceAll(
-        'super(filePath',
-        'super(filePath.toString()',
-      );
-      // Starting with 3.6 we need to call a simplified init().
-      // This is where the $PROJECT_FILE$ macro is defined, #registerComponents.
-      source = source.replaceAll(
-        'getStateStore().setPath(path',
-        'getStateStore().setPath(path.toString()',
-      );
-      source = source.replaceAll(
-          "androidProject.init41", "androidProject.initPre41");
-      source = source.replaceAll("ProjectExImpl", "ProjectImpl");
-      source = source.replaceAll(
-          "import com.intellij.openapi.project.impl.ProjectExImpl;", "");
-      processedFile.writeAsStringSync(source);
-      return original;
-    } else if (spec.version.startsWith("4.0") ||
-        spec.version.startsWith("4.1")) {
+    if (spec.version.startsWith("4.0") || spec.version.startsWith("4.1")) {
       var processedFile, source;
       processedFile = File(
           'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
@@ -214,12 +192,6 @@ class EditFlutterProjectSystem extends EditCommand {
         'gradleProjectSystem.getAndroidFacetsWithPackageName(project, packageName, scope)',
         'Collections.emptyList()',
       );
-      if (spec.version.startsWith('3.6')) {
-        source = source.replaceAll(
-          'gradleProjectSystem.getSubmodules()',
-          'new java.util.ArrayList()',
-        );
-      }
       processedFile.writeAsStringSync(source);
       return original;
     } else {
