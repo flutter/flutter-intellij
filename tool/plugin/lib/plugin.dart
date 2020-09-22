@@ -386,18 +386,15 @@ class GradleBuildCommand extends BuildCommand {
     }
     _copyFile(source, file.parent, filename: p.basename(file.path),
     );
+    await _stopDaemon();
     return 0;
   }
 
-  Future<int> doit() async {
-    try {
-      return await super.doit();
-    } finally {
-      if (Platform.isWindows) {
-        await exec('.\\gradlew.bat', ['--stop']);
-      } else {
-        await exec('./gradlew', ['--stop']);
-      }
+  Future<int> _stopDaemon() async {
+    if (Platform.isWindows) {
+      return await exec('.\\gradlew.bat', ['--stop']);
+    } else {
+      return await exec('./gradlew', ['--stop']);
     }
   }
 }

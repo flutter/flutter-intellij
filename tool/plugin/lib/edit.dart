@@ -25,8 +25,6 @@ void checkAndClearAppliedEditCommands() {
 
 List<EditCommand> editCommands = [
   EditAndroidModuleLibraryManager(),
-  EditFlutterProjectSystem(),
-  EditFlutterDescriptionProvider(),
   Subst(
     path: 'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java',
     initial:
@@ -41,7 +39,7 @@ List<EditCommand> editCommands = [
         'import com.android.tools.idea.gradle.structure.actions.AndroidShowStructureSettingsAction;',
     replacement:
         'import com.android.tools.idea.gradle.actions.AndroidShowStructureSettingsAction;',
-    versions: ['3.6', '4.0', '2020.2'],
+    versions: ['4.0', '2020.2'],
   ),
   MultiSubst(
     path: 'flutter-studio/src/io/flutter/actions/OpenAndroidModule.java',
@@ -53,13 +51,13 @@ List<EditCommand> editCommands = [
       'findImportTarget',
       'importProjectCore(projectFile)',
     ],
-    versions: ['3.6', '4.0', '2020.2'],
+    versions: ['4.0', '2020.2'],
   ),
   Subst(
     path: 'flutter-studio/src/io/flutter/utils/AddToAppUtils.java',
     initial: '.project.importing.GradleProjectImporter',
     replacement: '.project.importing.NewProjectSetup',
-    versions: ['3.6', '4.0', '2020.2'],
+    versions: ['4.0', '2020.2'],
   ),
   Subst(
     path: 'src/io/flutter/utils/AndroidUtils.java',
@@ -79,7 +77,7 @@ List<EditCommand> editCommands = [
     replacement: """
     IdeaPluginDescriptor descriptor = PluginManager.getPlugin(PluginId.getId("io.flutter"));
 """,
-    versions: ['3.6', '4.0'],
+    version: '4.0',
   ),
   Subst(
     path: 'src/io/flutter/FlutterUtils.java',
@@ -180,96 +178,6 @@ class EditAndroidModuleLibraryManager extends EditCommand {
       source = source.replaceAll("ProjectExImpl", "ProjectImpl");
       source = source.replaceAll(
           "import com.intellij.openapi.project.impl.ProjectExImpl;", "");
-      processedFile.writeAsStringSync(source);
-      return original;
-    } else {
-      return null;
-    }
-  }
-}
-
-class EditFlutterProjectSystem extends EditCommand {
-  @override
-  String get path =>
-      'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java';
-
-  @override
-  String convert(BuildSpec spec) {
-    if (!spec.version.startsWith('4.')) {
-      var processedFile, source;
-      processedFile = File(
-          'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java');
-      source = processedFile.readAsStringSync();
-      var original = source;
-      source = source.replaceAll(
-        'import com.android.tools.idea.projectsystem.SourceProvidersFactory;',
-        '',
-      );
-      source = source.replaceAll(' SourceProvidersFactory ', ' Object ');
-      source = source.replaceAll(
-        'gradleProjectSystem.getSourceProvidersFactory()',
-        'new Object()',
-      );
-      source = source.replaceAll(
-        'gradleProjectSystem.getAndroidFacetsWithPackageName(project, packageName, scope)',
-        'Collections.emptyList()',
-      );
-      if (spec.version.startsWith('3.6')) {
-        source = source.replaceAll(
-          'gradleProjectSystem.getSubmodules()',
-          'new java.util.ArrayList()',
-        );
-      }
-      processedFile.writeAsStringSync(source);
-      return original;
-    } else {
-      return null;
-    }
-  }
-}
-
-class EditFlutterDescriptionProvider extends EditCommand {
-  final String CODE_TO_DELETE = """
-    abstract public SkippableWizardStep createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent);
-
-    @SuppressWarnings("override")
-    public SkippableWizardStep createStep(@NotNull Project model, String parent, @NotNull ProjectSyncInvoker invoker) {
-      // 4.2 canary 2 swapped the order of two args.
-      // This whole framework is planned to be deleted at some future date, so we need to revise our templates
-      // to work with the new extendible model.
-      return createStep(model, invoker, parent);
-    }
-""";
-
-  @override
-  String get path =>
-      'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java';
-
-  @override
-  String convert(BuildSpec spec) {
-    if (!spec.version.startsWith('4.')) {
-      var processedFile, source;
-      processedFile = File(
-          'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
-      source = processedFile.readAsStringSync();
-      var original = source;
-      source = source.replaceAll(
-        'import com.android.tools.idea.npw.model.ProjectSyncInvoker',
-        'import com.android.tools.idea.npw.model.NewModuleModel',
-      );
-      source = source.replaceAll(CODE_TO_DELETE, '');
-      source = source.replaceAll(
-        'createStep(@NotNull Project model, @NotNull ProjectSyncInvoker invoker, String parent)',
-        'createStep(@NotNull NewModuleModel model)',
-      );
-      source = source.replaceAll(
-        'FlutterProjectModel model(@NotNull Project project,',
-        'FlutterProjectModel model(@NotNull NewModuleModel project,',
-      );
-      source = source.replaceAll(
-        'mySharedModel.getValue().project().setValue(project);',
-        'mySharedModel.getValue().project().setValue(project.getProject().getValue());',
-      );
       processedFile.writeAsStringSync(source);
       return original;
     } else {
