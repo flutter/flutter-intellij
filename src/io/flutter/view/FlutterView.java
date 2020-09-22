@@ -20,6 +20,7 @@ import com.intellij.openapi.util.ActionCallback;
 import com.intellij.openapi.util.ActiveRunnable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
@@ -31,8 +32,8 @@ import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.ui.components.labels.LinkListener;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
+import com.intellij.ui.content.ContentManagerAdapter;
 import com.intellij.ui.content.ContentManagerEvent;
-import com.intellij.ui.content.ContentManagerListener;
 import com.intellij.ui.tabs.TabInfo;
 import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
@@ -230,7 +231,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private void addInspectorViewContent(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
     final ContentManager contentManager = toolWindow.getContentManager();
     final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true);
-    final JBRunnerTabs runnerTabs = new JBRunnerTabs(myProject, this);
+    // TODO: Don't switch to JBRunnerTabs(Project, Disposable) until 2020.1.
+    final JBRunnerTabs runnerTabs = new JBRunnerTabs(myProject, ActionManager.getInstance(), IdeFocusManager.getInstance(myProject), this);
     runnerTabs.setSelectionChangeHandler(this::onTabSelectionChange);
     final JPanel tabContainer = new JPanel(new BorderLayout());
 
@@ -629,7 +631,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   private static void listenForRenderTreeActivations(@NotNull ToolWindow toolWindow) {
     final ContentManager contentManager = toolWindow.getContentManager();
-    contentManager.addContentManagerListener(new ContentManagerListener() {
+    // TODO: Don't switch to ContentManagerListener until 2020.1.
+    contentManager.addContentManagerListener(new ContentManagerAdapter() {
       @Override
       public void selectionChanged(@NotNull ContentManagerEvent event) {
         final ContentManagerEvent.ContentOperation operation = event.getOperation();
