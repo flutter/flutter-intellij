@@ -28,7 +28,7 @@ public class DartSyntax {
    */
   @Nullable
   public static DartCallExpression findEnclosingFunctionCall(@NotNull PsiElement elt, @NotNull String functionName) {
-    return findEnclosingFunctionCall(elt, functionName, new Equator<>() {
+    return findEnclosingFunctionCall(elt, functionName, new Equator<String, String>() {
       @Override
       boolean equate(@NotNull String first, @NotNull String second) {
         return Objects.equals(first, second);
@@ -43,7 +43,7 @@ public class DartSyntax {
    */
   @Nullable
   public static DartCallExpression findEnclosingFunctionCall(@NotNull PsiElement elt, @NotNull Pattern functionRegex) {
-    return findEnclosingFunctionCall(elt, functionRegex, new Equator<>() {
+    return findEnclosingFunctionCall(elt, functionRegex, new Equator<Pattern, String>() {
       @Override
       boolean equate(@NotNull Pattern first, @NotNull String second) {
         return first.matcher(second).matches();

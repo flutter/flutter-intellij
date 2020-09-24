@@ -189,9 +189,9 @@ public class Analytics {
             if (postData.length() != 0) {
               postData.append('&');
             }
-            postData.append(URLEncoder.encode(param.getKey(), StandardCharsets.UTF_8));
+            postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
             postData.append('=');
-            postData.append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8));
+            postData.append(URLEncoder.encode(param.getValue(), "UTF-8"));
           }
           final byte[] postDataBytes = postData.toString().getBytes(StandardCharsets.UTF_8);
           final HttpURLConnection conn = (HttpURLConnection)new URL(url).openConnection();
