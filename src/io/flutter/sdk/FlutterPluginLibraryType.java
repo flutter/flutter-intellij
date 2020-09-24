@@ -22,7 +22,7 @@ public class FlutterPluginLibraryType extends LibraryType<FlutterPluginLibraryPr
   public static final String FLUTTER_PLUGINS_LIBRARY_NAME = "Flutter Plugins";
 
   public static final PersistentLibraryKind<FlutterPluginLibraryProperties> LIBRARY_KIND =
-    new PersistentLibraryKind<>("FlutterPluginsLibraryType") {
+    new PersistentLibraryKind<FlutterPluginLibraryProperties>("FlutterPluginsLibraryType") {
       @Override
       @NotNull
       public FlutterPluginLibraryProperties createDefaultProperties() {

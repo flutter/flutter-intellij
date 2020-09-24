@@ -7,8 +7,8 @@ package io.flutter.devtools;
 
 import io.flutter.sdk.FlutterSdkUtil;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,8 +45,12 @@ public class DevToolsUtils {
     }
 
     if (serviceProtocolUri != null) {
-      final String urlParam = URLEncoder.encode(serviceProtocolUri, StandardCharsets.UTF_8);
-      params.add("uri=" + urlParam);
+      try {
+        final String urlParam = URLEncoder.encode(serviceProtocolUri, "UTF-8");
+        params.add("uri=" + urlParam);
+      }
+      catch (UnsupportedEncodingException ignored) {
+      }
     }
     return "http://" + devtoolsHost + ":" + devtoolsPort + "/?" + String.join("&", params);
   }
