@@ -29,7 +29,7 @@ public class FlutterWidgetTest {
   @NotNull
   private static Matcher<FlutterWidget> hasCategories(@Nullable String... category) {
     final List<String> expected = category != null ? Arrays.asList(category) : Collections.emptyList();
-    return new BaseMatcher<>() {
+    return new BaseMatcher<FlutterWidget>() {
       @Override
       public boolean matches(final Object item) {
         final List<String> categories = ((FlutterWidget)item).getCategories();
@@ -47,7 +47,7 @@ public class FlutterWidgetTest {
   @NotNull
   private static Matcher<FlutterWidget> hasSubCategories(@Nullable String... subcategory) {
     final List<String> expected = subcategory != null ? Arrays.asList(subcategory) : Collections.emptyList();
-    return new BaseMatcher<>() {
+    return new BaseMatcher<FlutterWidget>() {
       @Override
       public boolean matches(final Object item) {
         final List<String> subcategories = ((FlutterWidget)item).getSubCategories();
@@ -69,7 +69,7 @@ public class FlutterWidgetTest {
   @Contract(pure = true)
   @NotNull
   private static Matcher<Predicate<DiagnosticsNode>> matches(@NotNull DiagnosticsNode node) {
-    return new CustomMatcher<>("Should match: " + node.getDescription()) {
+    return new CustomMatcher<Predicate<DiagnosticsNode>>("Should match: " + node.getDescription()) {
       @Override
       public boolean matches(Object o) {
         //noinspection unchecked
