@@ -220,11 +220,11 @@ public class Workspace {
     final String readonlyPath = "../READONLY/" + root.getName();
     final VirtualFile readonlyRoot = root.findFileByRelativePath(readonlyPath);
     VirtualFile configFile = root.findFileByRelativePath(PLUGIN_CONFIG_PATH);
-    if (configFile == null && readonlyRoot == null) return null;
-
     if (configFile == null && readonlyRoot != null) {
       configFile = readonlyRoot.findFileByRelativePath(PLUGIN_CONFIG_PATH);
     }
+    if (configFile == null) return null;
+
     final PluginConfig config = configFile == null ? null : PluginConfig.load(configFile);
 
     final String daemonScript = config == null ? null : getScriptFromPath(root, readonlyPath, config.getDaemonScript());
