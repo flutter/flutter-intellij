@@ -317,7 +317,15 @@ class AntBuildCommand extends BuildCommand {
   AntBuildCommand(BuildCommandRunner runner) : super(runner, 'build');
 
   Future<int> externalBuildCommand(BuildSpec spec) async {
-    return await runner.javac2(spec);
+    var r = await runner.javac2(spec);
+    if (r == 0) {
+      // copy resources
+      copyResources(from: 'src', to: 'build/classes');
+      copyResources(from: 'resources', to: 'build/classes');
+      copyResources(from: 'gen', to: 'build/classes');
+      await genPluginFiles(spec, 'build/classes');
+    }
+    return r;
   }
 
   Future<int> savePluginArtifact(BuildSpec spec, String version) async {
@@ -372,7 +380,17 @@ class GradleBuildCommand extends BuildCommand {
   GradleBuildCommand(BuildCommandRunner runner) : super(runner, 'make');
 
   Future<int> externalBuildCommand(BuildSpec spec) async {
-    return await runner.buildPlugin(spec, pluginVersion);
+    var pluginFile = File('resources/META-INF/plugin.xml');
+    var studioFile = File('resources/META-INF/studio-contribs.xml');
+    var pluginSrc = pluginFile.readAsStringSync();
+    var studioSrc = studioFile.readAsStringSync();
+    try {
+      await genPluginFiles(spec, 'resources');
+      return await runner.buildPlugin(spec, pluginVersion);
+    } finally {
+      pluginFile.writeAsStringSync(pluginSrc);
+      studioFile.writeAsStringSync(studioSrc);
+    }
   }
 
   Future<int> savePluginArtifact(BuildSpec spec, String version) async {
@@ -384,7 +402,10 @@ class GradleBuildCommand extends BuildCommand {
       // TODO(messick) Find a way to make the Kokoro file name: flutter-intellij-DEV.zip
       source = File('build/distributions/flutter-intellij-kokoro-$version.zip');
     }
-    _copyFile(source, file.parent, filename: p.basename(file.path),
+    _copyFile(
+      source,
+      file.parent,
+      filename: p.basename(file.path),
     );
     await _stopDaemon();
     return 0;
@@ -479,15 +500,7 @@ abstract class BuildCommand extends ProductCommand {
       log('spec.version: ${spec.version}');
 
       final compileFn = () async {
-        final r = await externalBuildCommand(spec);
-        if (r == 0) {
-          // copy resources
-          copyResources(from: 'src', to: 'build/classes');
-          copyResources(from: 'resources', to: 'build/classes');
-          copyResources(from: 'gen', to: 'build/classes');
-          await genPluginFiles(spec, 'build/classes');
-        }
-        return r;
+        return await externalBuildCommand(spec);
       };
 
       result = await applyEdits(spec, compileFn);

@@ -28,13 +28,24 @@
       "comments": "IntelliJ 2020.2, & Android Studio 4.2 Canary 8",
       "name": "Android Studio 4.2",
       "version": "4.2",
-      "isUnitTestTarget": "true",
       "ideaProduct": "android-studio",
       "ideaVersion": "202.6787931",
       "dartPluginVersion": "202.6397.47",
       "sinceBuild": "202.6397.94",
       "untilBuild": "202.*",
       "filesToSkip": ["src/io/flutter/utils/AndroidLocationProvider.java"]
+    },
+    {
+      "channel": "dev",
+      "comments": "IntelliJ 2020.3 EAP",
+      "name": "IntelliJ 2020.3",
+      "version": "2020.3",
+      "isUnitTestTarget": "true",
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "203.3645.34",
+      "dartPluginVersion": "203.3645.34",
+      "sinceBuild": "203.3645.34",
+      "untilBuild": "203.*"
     }
   ]
 }
