@@ -37,6 +37,36 @@
 
   <change-notes>
     <![CDATA[
+<h1>50.0</h1>
+<ul>
+  <li>More general lint cleanups (#4865)</li>
+  <li>Improve the flutter error ids we generate for analytics (#4870)</li>
+  <li>Update flutter framework metadata (#4866)</li>
+  <li>Move off two deprecated APIs (#4864)</li>
+  <li>Only send analytics for the first error for a frame (#4867)</li>
+  <li>More lint cleanups (#4861)</li>
+  <li>Address lints on JxBrowserManager.java (#4858)</li>
+  <li>Open DevTools in standard browser if JxBrowser license is missing (#4823)</li>
+  <li>Remove FlutterLogView and associated classes (#4857)</li>
+  <li>Move DartTestLocationProviderZ to io.flutter.run.test (#4851)</li>
+  <li>Update our project linting rules and fix various lints (#4845)</li>
+  <li>Support pausing a running app (#4847)</li>
+  <li>Redirect json parsing calls to JsonUtils (#4846)</li>
+  <li>Move off some deprecated methods (#4843)</li>
+  <li>Remove a log error about no isolates (#4842)</li>
+  <li>Various misc. fixes (#4840)</li>
+  <li>Remove 2019.2 from the product matrix (#4838)</li>
+  <li>Fix an NPE from console logging (#4834)</li>
+  <li>Fix an issue parsing color values (#4836)</li>
+  <li>Only reference runtime artifacts for testing (#4829)</li>
+  <li>Update to the latest VM service protocol library (#4828)</li>
+  <li>Log exception when JxBrowser license key file is missing (#4821)</li>
+  <li>Remove extra page param for launching DevTools (#4802)</li>
+  <li>Skip transparent background if hardware accelerated causes error (#4804)</li>
+  <li>Fix an issue with the JsonParser.parseString() API (#4816)</li>
+  <li>Add JxBrowser installation events (#4791)</li>
+  <li>Upgrade the vm service protocol library (#4813)</li>
+</ul>
 <h1>49.0</h1>
 <ul>
   <li>Use PluginManager method for Android Studio and move function (#4794)</li>

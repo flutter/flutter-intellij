@@ -56,7 +56,7 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
                         @NotNull Component parentComponent,
                         @NotNull Consumer<SubmittedReportInfo> consumer) {
     if (events.length == 0) {
-      fail(consumer);
+      fail(((Consumer<SubmittedReportInfo>)consumer));
       return false;
     }
 
@@ -96,7 +96,7 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     final DataContext dataContext = DataManager.getInstance().getDataContext(parentComponent);
     final Project project = PROJECT.getData(dataContext);
     if (project == null) {
-      fail(consumer);
+      fail(((Consumer<SubmittedReportInfo>)consumer));
       return false;
     }
 
@@ -189,7 +189,7 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     final VirtualFile file = scratchRoot.createScratchFile(project, "bug-report.md", PlainTextLanguage.INSTANCE, text);
 
     if (file == null) {
-      fail(consumer);
+      fail(((Consumer<SubmittedReportInfo>)consumer));
       return false;
     }
 

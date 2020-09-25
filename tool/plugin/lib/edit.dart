@@ -121,6 +121,12 @@ List<EditCommand> editCommands = [
     replacement: '',
     version: '4.0',
   ),
+  Subst(
+    path: 'src/io/flutter/FlutterErrorReportSubmitter.java',
+    initial: 'Consumer<SubmittedReportInfo> consumer',
+    replacement: 'Consumer<? super SubmittedReportInfo> consumer',
+    version: '2020.3',
+  ),
 ];
 
 // Used to test checkAndClearAppliedEditCommands()

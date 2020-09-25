@@ -35,6 +35,17 @@
       "sinceBuild": "202.6397.94",
       "untilBuild": "202.*",
       "filesToSkip": ["src/io/flutter/utils/AndroidLocationProvider.java"]
+    },
+    {
+      "channel": "stable",
+      "comments": "IntelliJ 2020.3 EAP",
+      "name": "IntelliJ 2020.3",
+      "version": "2020.3",
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "203.3645.34",
+      "dartPluginVersion": "203.3645.34",
+      "sinceBuild": "203.3645.34",
+      "untilBuild": "203.*"
     }
   ]
 }
