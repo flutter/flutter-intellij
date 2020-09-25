@@ -37,7 +37,7 @@
       "filesToSkip": ["src/io/flutter/utils/AndroidLocationProvider.java"]
     },
     {
-      "channel": "dev",
+      "channel": "stable",
       "comments": "IntelliJ 2020.3 EAP",
       "name": "IntelliJ 2020.3",
       "version": "2020.3",
