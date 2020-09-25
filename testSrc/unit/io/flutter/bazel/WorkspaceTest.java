@@ -23,7 +23,7 @@ public class WorkspaceTest {
   public final TestDir tmp = new TestDir();
 
   @Test
-  public void canLoadWorkspaceWithoutConfigFile() throws Exception {
+  public void doesNotLoadWorkspaceWithoutConfigFile() throws Exception {
     final VirtualFile expectedRoot = tmp.ensureDir("abc");
     tmp.writeFile("abc/WORKSPACE", "");
 
@@ -33,9 +33,7 @@ public class WorkspaceTest {
 
     final Workspace w = Workspace.loadUncached(fixture.getProject());
 
-    assertNotNull("expected a workspace", w);
-    assertEquals(expectedRoot, w.getRoot());
-    assertFalse("config shouldn't be there", w.hasPluginConfig());
+    assertNull(w);
   }
 
   @Test
