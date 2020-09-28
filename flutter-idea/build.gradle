@@ -52,8 +52,10 @@ dependencies {
     testRuntime fileTree(dir: "$project.rootDir/artifacts/android-studio/lib",
                          includes: ["*.jar"])
   }
-  implementation fileTree(dir: "$project.rootDir/lib/jxbrowser",
-                          includes: ["*.jar"])
+  compileOnly fileTree(dir: "$project.rootDir/lib/jxbrowser",
+                       includes: ["*.jar"])
+  testCompile fileTree(dir: "$project.rootDir/lib/jxbrowser",
+                       includes: ["*.jar"])
 }
 
 /* Need to swizzle source and resource paths to match standard or buildPlugin does nothing. */

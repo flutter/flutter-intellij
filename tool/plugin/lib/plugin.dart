@@ -341,13 +341,6 @@ class AntBuildCommand extends BuildCommand {
       log('jar failed: ${result.toString()}');
       return result;
     }
-    var dir = Directory("lib/jxbrowser");
-    var target = Directory("build/flutter-intellij/lib");
-    for (var file in dir.listSync()) {
-      if (file.path.endsWith("jar")) {
-        _copyFile(file, target);
-      }
-    }
     if (spec.isTestTarget && !isReleaseMode && !isDevChannel) {
       _copyFile(
         File('build/flutter-intellij/lib/flutter-intellij.jar'),
