@@ -218,7 +218,7 @@ Go to the editor for MainActivity.kt. Change the onCreate method:
             startActivity(FlutterActivity.withCachedEngine("1").build(this))
         }
     }
-```FlutterWidgetTest
+```
 If you opted to use Java, use this:
 ```java
     public void onCreate(Bundle savedInstanceState) {
