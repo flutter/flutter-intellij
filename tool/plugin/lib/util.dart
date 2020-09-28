@@ -152,8 +152,3 @@ String readTokenFromKeystore(String keyName) {
   var file = File('$base/${id}_$name');
   return file.existsSync() ? file.readAsStringSync() : '';
 }
-
-String findJxBrowserVersion() {
-  // TODO Look in the lib/jxbrowser directory for "jxbrowser-$ver.jar" and return ver.
-  return "7.10";
-}
