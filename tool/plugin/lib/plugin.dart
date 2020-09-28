@@ -342,11 +342,11 @@ class AntBuildCommand extends BuildCommand {
       return result;
     }
     var jxversion = findJxBrowserVersion();
-    for (name in [
+    for (var name in [
       "jxbrowser-$jxversion.jar",
       "jxbrowser-swing-$jxversion.jar"
     ]) {
-      _copyFile(File("lib/$name"), Directory("build/flutter-intellij/lib"),
+      _copyFile(File("lib/jxbrowser/$name"), Directory("build/flutter-intellij/lib"),
           filename: name);
     }
     if (spec.isTestTarget && !isReleaseMode && !isDevChannel) {
