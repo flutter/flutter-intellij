@@ -152,7 +152,7 @@ public class JxBrowserManager {
 
     LOG.info(project.getName() + ": Installing JxBrowser");
 
-    final boolean directoryExists = FileUtils.makeDirectory(DOWNLOAD_PATH);
+    final boolean directoryExists = FileUtils.getInstance().makeDirectory(DOWNLOAD_PATH);
     if (!directoryExists) {
       LOG.info(project.getName() + ": Unable to create directory for JxBrowser files");
       setStatusFailed("directoryCreationFailed");
@@ -173,7 +173,7 @@ public class JxBrowserManager {
     final String[] fileNames = {platformFileName, JxBrowserUtils.getApiFileName(), JxBrowserUtils.getSwingFileName()};
     boolean allDownloaded = true;
     for (String fileName : fileNames) {
-      if (!FileUtils.fileExists(fileName)) {
+      if (!FileUtils.getInstance().fileExists(fileName)) {
         allDownloaded = false;
         break;
       }
@@ -189,7 +189,7 @@ public class JxBrowserManager {
     // TODO(helin24): Handle if files cannot be deleted.
     for (String fileName : fileNames) {
       final String filePath = getFilePath(fileName);
-      if (!FileUtils.deleteFile(filePath)) {
+      if (!FileUtils.getInstance().deleteFile(filePath)) {
         LOG.info(project.getName() + ": Existing file could not be deleted - " + filePath);
       }
     }
@@ -239,7 +239,7 @@ public class JxBrowserManager {
 
   private void loadClasses(String[] fileNames) {
     for (String fileName : fileNames) {
-      final boolean success = FileUtils.loadClass(this.getClass().getClassLoader(), getFilePath(fileName));
+      final boolean success = FileUtils.getInstance().loadClass(this.getClass().getClassLoader(), getFilePath(fileName));
       if (success) {
         LOG.info("Loaded JxBrowser file successfully: " + fileName);
       }
