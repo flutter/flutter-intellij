@@ -229,7 +229,7 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
 
   @NotNull
   @Override
-  public GeneralCommandLine getCommand(@NotNull ExecutionEnvironment env, @Nullable FlutterDevice device) throws ExecutionException {
+  public GeneralCommandLine getCommand(@NotNull ExecutionEnvironment env, @NotNull FlutterDevice device) throws ExecutionException {
     final SdkFields launchFields = fields.copy();
     final Project project = env.getProject();
     final RunMode mode = RunMode.fromEnv(env);

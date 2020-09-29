@@ -85,7 +85,7 @@ public class BazelRunConfig extends RunConfigurationBase<LaunchState>
 
   @NotNull
   @Override
-  public GeneralCommandLine getCommand(ExecutionEnvironment env, FlutterDevice device) throws ExecutionException {
+  public GeneralCommandLine getCommand(ExecutionEnvironment env, @NotNull FlutterDevice device) throws ExecutionException {
     final BazelFields launchFields = fields.copy();
     final RunMode mode = RunMode.fromEnv(env);
     return launchFields.getLaunchCommand(env.getProject(), device, mode);
