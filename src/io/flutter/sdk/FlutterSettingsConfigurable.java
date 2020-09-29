@@ -56,7 +56,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private ComboboxWithBrowseButton mySdkCombo;
   private JBLabel myVersionLabel;
   private JCheckBox myReportUsageInformationCheckBox;
-  private LinkLabel myPrivacyPolicy;
+  private LinkLabel<?> myPrivacyPolicy;
   private JCheckBox myHotReloadOnSaveCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
   private JCheckBox myOpenInspectorOnAppLaunchCheckBox;
@@ -67,8 +67,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myEnableHotUiCheckBox;
   private JCheckBox myEnableEmbeddedBrowsersCheckBox;
 
-  // Settings for Bazel users.
-  private JPanel myBazelOptionsSection;
   private JCheckBox myShowAllRunConfigurationsInContextCheckBox;
 
   // Settings for UI as Code experiments:
@@ -119,7 +117,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
                                        FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                                        TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
 
-    //noinspection unchecked
     myPrivacyPolicy.setListener((linkLabel, data) -> {
       try {
         BrowserLauncher.getInstance().browse(new URI(FlutterBundle.message("flutter.analytics.privacyUrl")));

@@ -90,6 +90,10 @@ public class FlutterSettings {
       analytics.sendEvent("settings", afterLastPeriod(showStructuredErrors));
     }
 
+    if (showAllRunConfigurationsInContext()) {
+      analytics.sendEvent("settings", "showAllRunConfigurations");
+    }
+
     if (isEnableEmbeddedBrowsers()) {
       analytics.sendEvent("settings", afterLastPeriod(enableEmbeddedBrowsersKey));
     }
@@ -174,7 +178,7 @@ public class FlutterSettings {
   }
 
   /**
-   * Tells IntelliJ to show all run configurations possible when the user clicks on the left-hand green arror to run a test.
+   * Tells IntelliJ to show all run configurations possible when the user clicks on the left-hand green arrow to run a test.
    * <p>
    * Useful for {@link io.flutter.run.bazelTest.FlutterBazelTestConfigurationType} to show both watch and regular configurations
    * in the left-hand gutter.
