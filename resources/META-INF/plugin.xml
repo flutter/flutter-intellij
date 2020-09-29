@@ -1351,9 +1351,6 @@
     <!-- IDEA only -->
     <moduleBuilder builderClass="io.flutter.module.FlutterModuleBuilder"/>
 
-    <!-- Small IDE support (ex: WebStorm) -->
-    <directoryProjectGenerator implementation="io.flutter.module.FlutterSmallIDEProjectGenerator"/>
-
     <projectService serviceImplementation="io.flutter.sdk.FlutterSdkManager"/>
     <projectService serviceImplementation="io.flutter.sdk.AndroidEmulatorManager"/>
 
