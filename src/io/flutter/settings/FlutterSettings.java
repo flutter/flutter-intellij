@@ -89,6 +89,10 @@ public class FlutterSettings {
     if (isShowStructuredErrors()) {
       analytics.sendEvent("settings", afterLastPeriod(showStructuredErrors));
     }
+
+    if (isEnableEmbeddedBrowsers()) {
+      analytics.sendEvent("settings", afterLastPeriod(enableEmbeddedBrowsersKey));
+    }
   }
 
   public void addListener(Listener listener) {
