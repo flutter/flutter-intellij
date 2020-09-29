@@ -273,7 +273,7 @@ public class LaunchState extends CommandLineState {
     LaunchState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment environment) throws ExecutionException;
 
     @NotNull
-    GeneralCommandLine getCommand(ExecutionEnvironment environment, FlutterDevice device) throws ExecutionException;
+    GeneralCommandLine getCommand(ExecutionEnvironment environment, @NotNull FlutterDevice device) throws ExecutionException;
   }
 
   /**

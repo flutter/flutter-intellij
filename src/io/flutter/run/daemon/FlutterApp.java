@@ -634,14 +634,14 @@ public class FlutterApp implements Disposable {
            !debugProcess.getSession().isStopped();
   }
 
-  @Nullable
+  @NotNull
   public FlutterDevice device() {
     return myDevice;
   }
 
   @Nullable
   public String deviceId() {
-    return myDevice != null ? myDevice.deviceId() : null;
+    return myDevice.deviceId();
   }
 
   public void setFlutterDebugProcess(FlutterDebugProcess flutterDebugProcess) {

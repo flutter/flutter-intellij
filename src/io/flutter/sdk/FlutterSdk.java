@@ -231,7 +231,7 @@ public class FlutterSdk {
 
   public FlutterCommand flutterRun(@NotNull PubRoot root,
                                    @NotNull VirtualFile main,
-                                   @Nullable FlutterDevice device,
+                                   @NotNull FlutterDevice device,
                                    @NotNull RunMode mode,
                                    @NotNull FlutterLaunchMode flutterLaunchMode,
                                    @NotNull Project project,
@@ -251,9 +251,7 @@ public class FlutterSdk {
       }
     }
 
-    if (device != null) {
-      args.add("--device-id=" + device.deviceId());
-    }
+    args.add("--device-id=" + device.deviceId());
 
     // TODO (helin24): Remove special handling for web-server if we can fix https://github.com/flutter/flutter-intellij/issues/4767.
     // Currently we can't connect to the VM service for the web-server 'device' to resume.

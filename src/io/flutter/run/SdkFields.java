@@ -111,7 +111,7 @@ public class SdkFields {
   public GeneralCommandLine createFlutterSdkRunCommand(@NotNull Project project,
                                                        @NotNull RunMode runMode,
                                                        @NotNull FlutterLaunchMode flutterLaunchMode,
-                                                       @Nullable FlutterDevice device
+                                                       @NotNull FlutterDevice device
   ) throws ExecutionException {
     final MainFile main = MainFile.verify(filePath, project).get();
 
