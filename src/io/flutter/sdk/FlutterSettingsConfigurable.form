@@ -236,7 +236,8 @@
               <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Enable embedded DevTools inspector"/>
+              <text value="Enable embedding DevTools in the Flutter Inspector tool window"/>
+              <toolTipText value="Use the web-based DevTools inspector in the Flutter Inspector tool window"/>
             </properties>
           </component>
         </children>
