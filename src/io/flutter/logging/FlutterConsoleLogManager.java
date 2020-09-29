@@ -27,6 +27,7 @@ import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.DiagnosticsTreeStyle;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
 import io.flutter.vmService.VmServiceConsumers;
@@ -133,7 +134,8 @@ public class FlutterConsoleLogManager {
       if (isFirstErrorForFrame()) {
         final String errorId = FlutterErrorHelper.getAnalyticsId(diagnosticsNode);
         if (errorId != null) {
-          FlutterInitializer.getAnalytics().sendEvent("flutter-error", errorId);
+          FlutterInitializer.getAnalytics().sendEvent(
+            "flutter-error", errorId, FlutterSdk.getFlutterSdk(app.getProject()));
         }
       }
 
