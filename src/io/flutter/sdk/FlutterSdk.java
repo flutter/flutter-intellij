@@ -39,10 +39,7 @@ import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Arrays.asList;
 
@@ -243,11 +240,11 @@ public class FlutterSdk {
     }
 
     if (flutterLaunchMode == FlutterLaunchMode.DEBUG) {
-      if (FlutterSettings.getInstance().isTrackWidgetCreationEnabled(project)) {
-        args.add("--track-widget-creation");
-      }
-      else {
-        args.add("--no-track-widget-creation");
+      if (getVersion().isTrackWidgetCreationRecommended()) {
+        // Ensure additionalArgs doesn't have any arg like 'track-widget-creation'.
+        if (Arrays.stream(additionalArgs).noneMatch(s -> s.contains("track-widget-creation"))) {
+          args.add("--track-widget-creation");
+        }
       }
     }
 
