@@ -9,13 +9,11 @@ import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
 import io.flutter.FlutterUtils;
 import io.flutter.analytics.Analytics;
-import io.flutter.sdk.FlutterSdk;
 
 import java.util.EventListener;
 
@@ -27,7 +25,6 @@ public class FlutterSettings {
   private static final String organizeImportsOnSaveKey = "io.flutter.organizeImportsOnSave";
   private static final String showOnlyWidgetsKey = "io.flutter.showOnlyWidgets";
   private static final String syncAndroidLibrariesKey = "io.flutter.syncAndroidLibraries";
-  private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
   private static final String showStructuredErrors = "io.flutter.showStructuredErrors";
   private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
   private static final String enableHotUiKey = "io.flutter.editor.enableHotUi";
@@ -84,9 +81,6 @@ public class FlutterSettings {
     if (isSyncingAndroidLibraries()) {
       analytics.sendEvent("settings", afterLastPeriod(syncAndroidLibrariesKey));
     }
-    if (isDisableTrackWidgetCreation()) {
-      analytics.sendEvent("settings", afterLastPeriod(disableTrackWidgetCreationKey));
-    }
 
     if (isShowBuildMethodGuides()) {
       analytics.sendEvent("settings", afterLastPeriod(showBuildMethodGuidesKey));
@@ -107,26 +101,6 @@ public class FlutterSettings {
 
   public boolean isReloadOnSave() {
     return getPropertiesComponent().getBoolean(reloadOnSaveKey, true);
-  }
-
-  public boolean isTrackWidgetCreationEnabled(Project project) {
-    final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
-    if (flutterSdk != null && flutterSdk.getVersion().isTrackWidgetCreationRecommended()) {
-      return !getPropertiesComponent().getBoolean(disableTrackWidgetCreationKey, false);
-    }
-    else {
-      return false;
-    }
-  }
-
-  public boolean isDisableTrackWidgetCreation() {
-    return getPropertiesComponent().getBoolean(disableTrackWidgetCreationKey, false);
-  }
-
-  public void setDisableTrackWidgetCreation(boolean value) {
-    getPropertiesComponent().setValue(disableTrackWidgetCreationKey, value, false);
-
-    fireEvent();
   }
 
   public void setReloadOnSave(boolean value) {

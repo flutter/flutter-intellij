@@ -62,7 +62,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myOpenInspectorOnAppLaunchCheckBox;
   private JCheckBox myFormatCodeOnSaveCheckBox;
   private JCheckBox myOrganizeImportsOnSaveCheckBox;
-  private JCheckBox myDisableTrackWidgetCreationCheckBox;
   private JCheckBox myShowStructuredErrors;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
   private JCheckBox myEnableHotUiCheckBox;
@@ -207,10 +206,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isDisableTrackWidgetCreation() != myDisableTrackWidgetCreationCheckBox.isSelected()) {
-      return true;
-    }
-
     if (settings.isVerboseLogging() != myEnableVerboseLoggingCheckBox.isSelected()) {
       return true;
     }
@@ -265,7 +260,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setShowClosingLabels(myShowClosingLabels.isSelected());
     settings.setShowStructuredErrors(myShowStructuredErrors.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
-    settings.setDisableTrackWidgetCreation(myDisableTrackWidgetCreationCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
     settings.setEnableHotUi(myEnableHotUiCheckBox.isSelected());
@@ -306,7 +300,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myShowStructuredErrors.setSelected(settings.isShowStructuredErrors());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
-    myDisableTrackWidgetCreationCheckBox.setSelected(settings.isDisableTrackWidgetCreation());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
 
@@ -344,9 +337,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     }
 
     final ModalityState modalityState = ModalityState.current();
-
-    final boolean trackWidgetCreationRecommended = sdk.getVersion().isTrackWidgetCreationRecommended();
-    myDisableTrackWidgetCreationCheckBox.setVisible(trackWidgetCreationRecommended);
 
     // TODO(devoncarew): Switch this to expecting json output.
     sdk.flutterVersion().start((ProcessOutput output) -> {
