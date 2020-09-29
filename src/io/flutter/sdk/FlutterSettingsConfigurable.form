@@ -237,7 +237,7 @@
             </constraints>
             <properties>
               <text value="Enable embedding DevTools in the Flutter Inspector tool window"/>
-              <toolTipText value="Use the web based DevTools inspector in the Flutter Inspector tool window"/>
+              <toolTipText value="Use the web-based DevTools inspector in the Flutter Inspector tool window"/>
             </properties>
           </component>
         </children>
