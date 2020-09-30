@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:grinder/grinder.dart';
 import 'package:http/http.dart' as http;
+import 'package:meta/meta.dart';
 
 main(List<String> args) => grind(args);
 
@@ -47,17 +48,17 @@ outlineIcons() async {
 
     String name = fileName(file);
     name = name.substring(0, name.indexOf('.'));
-    _createPng(file, '$name.png', size: 28, forLight: true);
-    _createPng(file, '$name@2x.png', size: 56, forLight: true);
-    _createPng(file, '${name}_dark.png', size: 28, forLight: false);
-    _createPng(file, '$name@2x_dark.png', size: 56, forLight: false);
+    _createPng(file, '$name.png', size: 24, forLight: true);
+    _createPng(file, '$name@2x.png', size: 48, forLight: true);
+    _createPng(file, '${name}_dark.png', size: 24, forLight: false);
+    _createPng(file, '$name@2x_dark.png', size: 48, forLight: false);
   }
 }
 
 void _createPng(
   File sourceSvg,
   String targetName, {
-  int size: 28,
+  @required int size,
   bool forLight: false,
 }) {
   File targetFile = joinFile(sourceSvg.parent, [targetName]);
