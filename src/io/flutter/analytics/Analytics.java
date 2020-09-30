@@ -7,6 +7,8 @@ package io.flutter.analytics;
 
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.concurrency.QueueProcessor;
+import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkVersion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -76,14 +78,18 @@ public class Analytics {
   public void sendScreenView(@NotNull String viewName) {
     final Map<String, String> args = new HashMap<>();
     args.put("cd", viewName);
-    sendPayload("screenview", args);
+    sendPayload("screenview", args, null);
   }
 
   public void sendEvent(String category, String action) {
+    sendEvent(category, action, null);
+  }
+
+  public void sendEvent(String category, String action, @Nullable FlutterSdk flutterSdk) {
     final Map<String, String> args = new HashMap<>();
     args.put("ec", category);
     args.put("ea", action);
-    sendPayload("event", args);
+    sendPayload("event", args, flutterSdk);
   }
 
   public void sendEventMetric(String category, String action, int value) {
@@ -91,7 +97,7 @@ public class Analytics {
     args.put("ec", category);
     args.put("ea", action);
     args.put("ev", Integer.toString(value));
-    sendPayload("event", args);
+    sendPayload("event", args, null);
   }
 
   public void sendTiming(String category, String variable, long timeMillis) {
@@ -99,7 +105,7 @@ public class Analytics {
     args.put("utc", category);
     args.put("utv", variable);
     args.put("utt", Long.toString(timeMillis));
-    sendPayload("timing", args);
+    sendPayload("timing", args, null);
   }
 
   public void sendException(String throwableText, boolean isFatal) {
@@ -115,10 +121,10 @@ public class Analytics {
     if (isFatal) {
       args.put("'exf'", "1");
     }
-    sendPayload("exception", args);
+    sendPayload("exception", args, null);
   }
 
-  private void sendPayload(@NotNull String hitType, @NotNull Map<String, String> args) {
+  private void sendPayload(@NotNull String hitType, @NotNull Map<String, String> args, @Nullable FlutterSdk flutterSdk) {
     if (!canSend()) {
       return;
     }
@@ -135,6 +141,14 @@ public class Analytics {
 
     args.put("aiid", platformName); // Record the platform name as the application installer ID
     args.put("cd1", platformVersion); // Record the Open API version as a custom dimension
+
+    // If the Flutter SDK is provided, send the SDK version in a custom dimension.
+    if (flutterSdk != null) {
+      final FlutterSdkVersion flutterVersion = flutterSdk.getVersion();
+      if (flutterVersion.getVersionText() != null) {
+        args.put("cd2", flutterVersion.getVersionText());
+      }
+    }
 
     args.put("tid", trackingId);
     args.put("cid", clientId);

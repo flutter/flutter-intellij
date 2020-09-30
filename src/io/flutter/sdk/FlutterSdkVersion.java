@@ -5,7 +5,6 @@
  */
 package io.flutter.sdk;
 
-
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.openapi.util.Version;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -35,49 +34,48 @@ public class FlutterSdkVersion {
   private static final FlutterSdkVersion MIN_ANDROIDX_SDK = new FlutterSdkVersion("1.7.8");
 
   /**
-   * The version of the stable channel that supports --androidx in the create command.
-   */
-  private static final FlutterSdkVersion MIN_PUB_OUTDATED_SDK = new FlutterSdkVersion("1.16.4");
-
-  /**
    * The version that supports --dart-define in the run command.
    */
   private static final FlutterSdkVersion MIN_DART_DEFINE_SDK = new FlutterSdkVersion("1.12.0");
 
   /**
-   * The version that support --platform in flutter create.
+   * The version of the stable channel that supports --androidx in the create command.
+   */
+  private static final FlutterSdkVersion MIN_PUB_OUTDATED_SDK = new FlutterSdkVersion("1.16.4");
+
+  /**
+   * The version that supports --platform in flutter create.
    */
   private static final FlutterSdkVersion MIN_CREATE_PLATFORMS_SDK = new FlutterSdkVersion("1.20.0");
 
   @Nullable
   private final Version version;
+  @Nullable
+  private final String versionText;
 
   @VisibleForTesting
-  public FlutterSdkVersion(@NotNull String versionString) {
-    version = Version.parseVersion(versionString);
+  public FlutterSdkVersion(@Nullable String versionString) {
+    version = versionString == null ? null : Version.parseVersion(versionString);
+    versionText = versionString;
   }
 
   @NotNull
   public static FlutterSdkVersion readFromSdk(@NotNull VirtualFile sdkHome) {
-    final VirtualFile file = sdkHome.findChild("version");
-
-    return readFromFile(file);
+    return readFromFile(sdkHome.findChild("version"));
   }
 
   @NotNull
   private static FlutterSdkVersion readFromFile(@Nullable VirtualFile file) {
     if (file == null) {
-      return MIN_SUPPORTED_SDK;
+      return new FlutterSdkVersion(null);
     }
 
     final String versionString = readVersionString(file);
-
     if (versionString == null) {
-      return MIN_SUPPORTED_SDK;
+      return new FlutterSdkVersion(null);
     }
 
-    final FlutterSdkVersion sdkVersion = new FlutterSdkVersion(versionString);
-    return sdkVersion.isValid() ? sdkVersion : MIN_SUPPORTED_SDK;
+    return new FlutterSdkVersion(versionString);
   }
 
   private static String readVersionString(VirtualFile file) {
@@ -137,16 +135,24 @@ public class FlutterSdkVersion {
     return version != null && version.compareTo(MIN_PUB_OUTDATED_SDK.version) >= 0;
   }
 
-  @Override
-  public String toString() {
-    return version == null ? "unknown version" : version.toCompactString();
-  }
-
   public boolean isValid() {
     return version != null;
   }
 
   public String fullVersion() {
     return version == null ? "unknown version" : version.toString();
+  }
+
+  /**
+   * Return the raw version text from the version file.
+   */
+  @Nullable
+  public String getVersionText() {
+    return versionText;
+  }
+
+  @Override
+  public String toString() {
+    return version == null ? "unknown version" : version.toCompactString();
   }
 }
