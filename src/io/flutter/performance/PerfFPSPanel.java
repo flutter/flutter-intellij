@@ -20,7 +20,7 @@ import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
-public class PerfFPSPanel extends JBPanel {
+public class PerfFPSPanel extends JBPanel<PerfFPSPanel> {
   private static final NumberFormat fpsFormat = new DecimalFormat();
 
   private static final String PERFORMANCE_TAB_LABEL = "Frame rendering times";

@@ -148,18 +148,12 @@ public class FlutterPerformanceView implements Disposable {
     final ContentManager contentManager = toolWindow.getContentManager();
     final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true);
 
-    final String tabName;
     final FlutterDevice device = app.device();
-    if (device == null) {
-      tabName = app.getProject().getName();
+    final List<FlutterDevice> existingDevices = new ArrayList<>();
+    for (FlutterApp otherApp : perAppViewState.keySet()) {
+      existingDevices.add(otherApp.device());
     }
-    else {
-      final List<FlutterDevice> existingDevices = new ArrayList<>();
-      for (FlutterApp otherApp : perAppViewState.keySet()) {
-        existingDevices.add(otherApp.device());
-      }
-      tabName = device.getUniqueName(existingDevices);
-    }
+    final String tabName = device.getUniqueName(existingDevices);
 
     // mainContentPanel contains the toolbar, perfViewsPanel, and the footer
     final JPanel mainContentPanel = new JPanel(new BorderLayout());

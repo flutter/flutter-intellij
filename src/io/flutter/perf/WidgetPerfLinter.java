@@ -146,6 +146,7 @@ public class WidgetPerfLinter {
     for (FilePerfInfo fileStats : allFileStats) {
       for (SummaryStats stats : fileStats.getStats()) {
         Map<Integer, SummaryStats> map = maps.get(stats.getKind());
+        //noinspection Java8MapApi
         if (map == null) {
           map = new HashMap<>();
           maps.put(stats.getKind(), map);

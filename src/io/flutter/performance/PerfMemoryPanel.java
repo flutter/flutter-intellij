@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 
-public class PerfMemoryPanel extends JBPanel {
+public class PerfMemoryPanel extends JBPanel<PerfMemoryPanel> {
   private static final Logger LOG = Logger.getInstance(PerfMemoryPanel.class);
 
   private static final String MEMORY_TAB_LABEL = "Memory usage";
