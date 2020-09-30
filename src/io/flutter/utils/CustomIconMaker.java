@@ -11,6 +11,7 @@ import com.intellij.ui.LayeredIcon;
 import com.intellij.util.ui.GraphicsUtil;
 import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -85,6 +86,7 @@ public class CustomIconMaker {
     return iconCache.get(mapKey);
   }
 
+  @Nullable
   public Icon fromWidgetName(String name) {
     if (name == null) {
       return null;

@@ -810,21 +810,8 @@ public class DiagnosticsNode {
   }
 
   @Nullable
-  public FlutterWidget getWidget() {
-    return FlutterWidget.getCatalog().getWidget(getDescription());
-  }
-
-  @Nullable
   public Icon getIcon() {
-    Icon icon = null;
-    final FlutterWidget widget = getWidget();
-    if (widget != null) {
-      icon = widget.getIcon();
-    }
-    if (icon == null) {
-      icon = iconMaker.fromWidgetName(getDescription());
-    }
-    return icon;
+    return iconMaker.fromWidgetName(getDescription());
   }
 
   /**
