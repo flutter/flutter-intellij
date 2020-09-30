@@ -401,7 +401,8 @@ class GradleBuildCommand extends BuildCommand {
       // Setting the plugin name in Gradle should eliminate the need for this,
       // but it does not.
       // TODO(messick) Find a way to make the Kokoro file name: flutter-intellij-DEV.zip
-      source = File('build/distributions/flutter-intellij-kokoro-$version.zip');
+      source = File(
+          'build/distributions/flutter-intellij-kokoro-${version}.${pluginCount}.zip');
     }
     _copyFile(
       source,
