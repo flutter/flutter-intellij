@@ -105,7 +105,7 @@ public class FlutterFramesMonitor {
       for (FlutterFrameEvent frame : frames) {
         frameCount++;
 
-        int targetMicrosPerFrame = displayRefreshRateManager.getTargetMicrosPerFrame();
+        final int targetMicrosPerFrame = displayRefreshRateManager.getTargetMicrosPerFrame();
         long thisCost = frame.elapsedMicros / targetMicrosPerFrame;
         if (frame.elapsedMicros > (thisCost * targetMicrosPerFrame)) {
           thisCost++;
