@@ -82,7 +82,7 @@ name = "flutter-intellij"
 org.gradle.parallel=true
 org.gradle.jvmargs=-Xms128m -Xmx1024m -XX:+CMSClassUnloadingEnabled
 dartVersion=${spec.dartPluginVersion}
-flutterPluginVersion=$version
+flutterPluginVersion=${version}.${pluginCount.toString()}
 ide=${spec.ideaProduct}
 testing=$testing
 ''';
