@@ -351,8 +351,12 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
   }
 
   private FilePerfInfo buildSummaryStats(TextEditor fileEditor) {
-    final String path = fileEditor.getFile().getPath();
     final FilePerfInfo fileStats = new FilePerfInfo();
+    if (fileEditor.getFile() == null) {
+      return fileStats;
+    }
+
+    final String path = fileEditor.getFile().getPath();
     for (PerfReportKind kind : PerfReportKind.values()) {
       final StatsForReportKind forKind = stats.get(kind);
       if (forKind == null) {

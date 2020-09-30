@@ -202,7 +202,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   }
 
   @Override
-  public boolean validate(Project current, @NotNull Project dest) {
+  public boolean validate(@Nullable Project current, @NotNull Project dest) {
     final String settingsValidation = validateSettings(getAdditionalSettings());
     if (settingsValidation != null) {
       Messages.showErrorDialog(settingsValidation, "Error");
@@ -284,7 +284,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   @Override
   @NotNull
-  public ModuleType getModuleType() {
+  public ModuleType<?> getModuleType() {
     return FlutterModuleUtils.getFlutterModuleType();
   }
 
@@ -307,7 +307,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     progress.runProcessWithProgressSynchronously(() -> {
       progress.getProgressIndicator().setIndeterminate(true);
       result.set(sdk.createFiles(baseDir, null, processListener, additionalSettings));
-    }, "Creating Flutter Project", false, project);
+    }, "Creating Flutter project", false, project);
 
     return result.get();
   }

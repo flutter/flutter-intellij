@@ -22,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 
-public class PerfWidgetRebuildsPanel extends JBPanel {
+public class PerfWidgetRebuildsPanel extends JBPanel<PerfWidgetRebuildsPanel> {
   private static final Logger LOG = Logger.getInstance(PerfWidgetRebuildsPanel.class);
 
   private static final String REBUILD_STATS_TAB_LABEL = "Widget rebuild stats";

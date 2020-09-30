@@ -35,7 +35,7 @@ public class FrameRenderingDisplay {
     df.setMaximumFractionDigits(1);
   }
 
-  public static JPanel createJPanelView(Disposable parentDisposable, FlutterApp app) {
+  public static JPanel createJPanelView(@NotNull Disposable parentDisposable, @NotNull FlutterApp app) {
     final JPanel panel = new JPanel(new StackLayout());
     panel.setDoubleBuffered(true);
 
@@ -62,6 +62,7 @@ public class FrameRenderingDisplay {
       updateTargetLabelForRefreshRate(fps, DisplayRefreshRateManager.defaultRefreshRate, targetFrameTimeLabel);
     }, false);
 
+    //noinspection rawtypes
     final JBPanel targetFrameTimePanel = new JBPanel();
     targetFrameTimePanel.setLayout(new BoxLayout(targetFrameTimePanel, BoxLayout.Y_AXIS));
     targetFrameTimePanel.setOpaque(false);
@@ -276,8 +277,8 @@ class StackLayout implements LayoutManager2 {
       int height = 0;
 
       Dimension size;
-      for (final Iterator i$ = this.components.iterator(); i$.hasNext(); height = Math.max(size.height, height)) {
-        final Component comp = (Component)i$.next();
+      for (final Iterator<Component> i$ = this.components.iterator(); i$.hasNext(); height = Math.max(size.height, height)) {
+        final Component comp = i$.next();
         size = comp.getPreferredSize();
         width = Math.max(size.width, width);
       }
@@ -295,8 +296,8 @@ class StackLayout implements LayoutManager2 {
       int height = 0;
 
       Dimension size;
-      for (final Iterator i$ = this.components.iterator(); i$.hasNext(); height = Math.max(size.height, height)) {
-        final Component comp = (Component)i$.next();
+      for (final Iterator<Component> i$ = this.components.iterator(); i$.hasNext(); height = Math.max(size.height, height)) {
+        final Component comp = i$.next();
         size = comp.getMinimumSize();
         width = Math.max(size.width, width);
       }

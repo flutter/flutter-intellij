@@ -45,6 +45,7 @@ import java.util.HashSet;
 import static io.flutter.perf.Icons.getIconForCount;
 
 class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
+  @SuppressWarnings("rawtypes")
   private final ColumnInfo[] modelColumns;
   private final CountColumnInfo countColumnInfo;
   private final WidgetNameColumnInfo widgetNameColumnInfo;
@@ -240,6 +241,7 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
 
   @Override
   public TableCellRenderer getCellRenderer(int row, int column) {
+    //noinspection unchecked
     return modelColumns[column].getRenderer(null);
   }
 
