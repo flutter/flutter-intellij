@@ -395,7 +395,8 @@ class GradleBuildCommand extends BuildCommand {
 
   Future<int> savePluginArtifact(BuildSpec spec, String version) async {
     final file = File(releasesFilePath(spec));
-    var source = File('build/distributions/flutter-intellij-$version.zip');
+    var source = File(
+        'build/distributions/flutter-intellij-${version}.${pluginCount}.zip');
     if (!source.existsSync()) {
       // Setting the plugin name in Gradle should eliminate the need for this,
       // but it does not.
@@ -437,6 +438,8 @@ abstract class BuildCommand extends ProductCommand {
             'even if the cache appears fresh.\n'
             'This flag is ignored if --release is given.',
         defaultsTo: false);
+    argParser.addOption('minor',
+        abbr: 'm', help: 'Set the minor version number.');
   }
 
   String get description => 'Build a deployable version of the Flutter plugin, '
@@ -468,6 +471,11 @@ abstract class BuildCommand extends ProductCommand {
         log("No spec found for version '$onlyVersion'");
         return 1;
       }
+    }
+
+    String minorNumber = argResults['minor'];
+    if (minorNumber != null) {
+      pluginCount = int.parse(minorNumber) - 1;
     }
 
     var result = 0;

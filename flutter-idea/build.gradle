@@ -22,7 +22,7 @@ apply plugin: 'java'
 apply plugin: "org.jetbrains.intellij"
 
 group 'io.flutter'
-version flutterPluginVersion
+version=flutterPluginVersion
 
 java {
   sourceCompatibility = JavaVersion.VERSION_11
