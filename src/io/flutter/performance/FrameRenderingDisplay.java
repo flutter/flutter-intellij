@@ -35,7 +35,7 @@ public class FrameRenderingDisplay {
     df.setMaximumFractionDigits(1);
   }
 
-  public static JPanel createJPanelView(Disposable parentDisposable, @NotNull FlutterApp app) {
+  public static JPanel createJPanelView(@NotNull Disposable parentDisposable, @NotNull FlutterApp app) {
     final JPanel panel = new JPanel(new StackLayout());
     panel.setDoubleBuffered(true);
 
