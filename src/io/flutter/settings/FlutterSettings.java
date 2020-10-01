@@ -64,9 +64,11 @@ public class FlutterSettings {
     if (isReloadOnSave()) {
       analytics.sendEvent("settings", afterLastPeriod(reloadOnSaveKey));
     }
+
     if (isOpenInspectorOnAppLaunch()) {
       analytics.sendEvent("settings", afterLastPeriod(openInspectorOnAppLaunchKey));
     }
+
     if (isFormatCodeOnSave()) {
       analytics.sendEvent("settings", afterLastPeriod(formatCodeOnSaveKey));
 
@@ -74,6 +76,7 @@ public class FlutterSettings {
         analytics.sendEvent("settings", afterLastPeriod(organizeImportsOnSaveKey));
       }
     }
+
     if (isShowOnlyWidgets()) {
       analytics.sendEvent("settings", afterLastPeriod(showOnlyWidgetsKey));
     }
@@ -96,6 +99,10 @@ public class FlutterSettings {
 
     if (isEnableEmbeddedBrowsers()) {
       analytics.sendEvent("settings", afterLastPeriod(enableEmbeddedBrowsersKey));
+    }
+
+    if (isEnableHotUi()) {
+      analytics.sendEvent("settings", afterLastPeriod(enableHotUiKey));
     }
   }
 
