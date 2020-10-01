@@ -215,7 +215,7 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
   public void requestNextStep() {
     final AbstractProjectWizard wizard = (AbstractProjectWizard)myContext.getWizard();
     if (wizard != null) {
-      UIUtil.invokeAndWaitIfNeeded((Runnable)() -> wizard.doNextAction());
+      UIUtil.invokeAndWaitIfNeeded((Runnable)wizard::doNextAction);
     }
   }
 }

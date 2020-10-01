@@ -155,7 +155,7 @@ public class ServiceExtensions {
   public static final String flutterListViews = "_flutter.listViews";
   public static final String displayRefreshRate = "_flutter.getDisplayRefreshRate";
 
-  static final List<ServiceExtensionDescription> toggleableExtensionDescriptions = Arrays.asList(
+  static final List<ServiceExtensionDescription<?>> toggleableExtensionDescriptions = Arrays.asList(
     debugAllowBanner,
     debugPaint,
     debugPaintBaselines,
@@ -171,7 +171,7 @@ public class ServiceExtensions {
     trackRepaintWidgets
   );
 
-  public static final Map<String, ServiceExtensionDescription> toggleableExtensionsAllowList =
+  public static final Map<String, ServiceExtensionDescription<?>> toggleableExtensionsAllowList =
     toggleableExtensionDescriptions.stream().collect(
       Collectors.toMap(
         ServiceExtensionDescription::getExtension,

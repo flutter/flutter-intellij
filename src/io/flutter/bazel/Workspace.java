@@ -225,7 +225,7 @@ public class Workspace {
     }
     if (configFile == null) return null;
 
-    final PluginConfig config = configFile == null ? null : PluginConfig.load(configFile);
+    final PluginConfig config = PluginConfig.load(configFile);
 
     final String daemonScript = config == null ? null : getScriptFromPath(root, readonlyPath, config.getDaemonScript());
 

@@ -104,9 +104,7 @@ public abstract class PreviewViewControllerBase extends WidgetViewController {
 
   AsyncRateLimiter getScreenshotRateLimiter() {
     if (screenshotRateLimiter != null) return screenshotRateLimiter;
-    screenshotRateLimiter = new AsyncRateLimiter(SCREENSHOT_FRAMES_PER_SECOND, () -> {
-      return updateScreenshot();
-    }, this);
+    screenshotRateLimiter = new AsyncRateLimiter(SCREENSHOT_FRAMES_PER_SECOND, this::updateScreenshot, this);
     return screenshotRateLimiter;
   }
 

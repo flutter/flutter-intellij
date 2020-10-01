@@ -343,13 +343,13 @@ public class FlutterUtils {
         final Object dependencies = yamlMap.get("dependencies");
         if (dependencies instanceof Map) {
           // We use `|=` for assigning to 'flutter' below as it might have been assigned to true above.
-          info.flutter |= ((Map)dependencies).containsKey("flutter");
+          info.flutter |= ((Map<?, ?>)dependencies).containsKey("flutter");
         }
 
         // Check for a Flutter plugin.
         final Object flutterEntry = yamlMap.get("flutter");
         if (flutterEntry instanceof Map) {
-          info.plugin = ((Map)flutterEntry).containsKey("plugin");
+          info.plugin = ((Map<?, ?>)flutterEntry).containsKey("plugin");
         }
       }
     }
@@ -408,8 +408,7 @@ public class FlutterUtils {
     });
 
     try {
-      //noinspection unchecked
-      return (Map)yaml.load(yamlContents);
+      return yaml.load(yamlContents);
     }
     catch (Exception e) {
       return null;
@@ -486,6 +485,7 @@ public class FlutterUtils {
       return android;
     }
     android = dir.findFileByRelativePath("example/android");
+    //noinspection RedundantIfStatement
     if (android != null) {
       return android;
     }

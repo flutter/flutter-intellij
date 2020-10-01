@@ -118,8 +118,6 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
       }
     });
 
-    LOG.assertTrue(myExecutionResult != null, myExecutionResult);
-
     this.executionEnvironment = executionEnvironment;
     this.mapper = mapper;
     myConnector = connector;
@@ -264,13 +262,13 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
 
   @Override
   protected ProcessHandler doGetProcessHandler() {
-    return myExecutionResult == null ? super.doGetProcessHandler() : myExecutionResult.getProcessHandler();
+    return myExecutionResult.getProcessHandler();
   }
 
   @NotNull
   @Override
   public ExecutionConsole createConsole() {
-    return myExecutionResult == null ? super.createConsole() : myExecutionResult.getExecutionConsole();
+    return myExecutionResult.getExecutionConsole();
   }
 
   @NotNull
@@ -621,6 +619,10 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
 
   private static void focusProject(@NotNull Project project) {
     final JFrame projectFrame = WindowManager.getInstance().getFrame(project);
+    if (projectFrame == null) {
+      return;
+    }
+
     final int frameState = projectFrame.getExtendedState();
 
     if (BitUtil.isSet(frameState, java.awt.Frame.ICONIFIED)) {

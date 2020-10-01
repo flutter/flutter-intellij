@@ -55,7 +55,7 @@ Please note the following known issues:
   include the Flutter SDK path, this will not have an affect in IntelliJ until you
   restart the IDE.
 - If you require network access to go through proxy settings, you will need to set the 
-  `https_proxy` variable in your environment as as described in the 
+  `https_proxy` variable in your environment as described in the 
   [pub docs](https://dart.dev/tools/pub/troubleshoot#pub-get-fails-from-behind-a-corporate-firewall).
   (See also: [#2914](https://github.com/flutter/flutter-intellij/issues/2914).)
 
