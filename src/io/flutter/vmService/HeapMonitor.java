@@ -60,7 +60,7 @@ public class HeapMonitor {
   }
 
   private final List<HeapMonitor.HeapListener> heapListeners = new ArrayList<>();
-  private ScheduledFuture pollingScheduler;
+  private ScheduledFuture<?> pollingScheduler;
 
   @NotNull private final VmServiceWrapper vmServiceWrapper;
 

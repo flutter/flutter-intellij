@@ -335,7 +335,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private static void expandAll(JTree tree, TreePath parent, boolean expandProperties) {
     final TreeNode node = (TreeNode)parent.getLastPathComponent();
     if (node.getChildCount() >= 0) {
-      for (final Enumeration e = node.children(); e.hasMoreElements(); ) {
+      for (final Enumeration<? extends TreeNode> e = node.children(); e.hasMoreElements(); ) {
         final DefaultMutableTreeNode n = (DefaultMutableTreeNode)e.nextElement();
         if (n.getUserObject() instanceof DiagnosticsNode) {
           final DiagnosticsNode diagonsticsNode = (DiagnosticsNode)n.getUserObject();
@@ -355,6 +355,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       case hidden:
         return SimpleTextAttributes.GRAYED_ATTRIBUTES;
       case fine:
+        //noinspection DuplicateBranchesInSwitch
         return SimpleTextAttributes.REGULAR_ATTRIBUTES;
       case warning:
         return WARNING_ATTRIBUTES;

@@ -51,9 +51,11 @@ class TogglePlatformAction extends ToolbarComboBoxAction {
 
   @Override
   public final void update(@NotNull AnActionEvent e) {
-    app.getVMServiceManager().getServiceExtensionState(extensionDescription.getExtension()).listen((state) -> {
-      selectedPlatform = PlatformTarget.parseValue((String)state.getValue());
-    }, true);
+    if (app.getVMServiceManager() != null) {
+      app.getVMServiceManager().getServiceExtensionState(extensionDescription.getExtension()).listen((state) -> {
+        selectedPlatform = PlatformTarget.parseValue((String)state.getValue());
+      }, true);
+    }
 
     String selectorText = "Platform:";
     if (selectedPlatform != null && selectedPlatform != PlatformTarget.unknown) {
@@ -133,10 +135,12 @@ class PlatformTargetAction extends FlutterViewAction implements Toggleable, Disp
     if (app.isSessionActive()) {
       app.togglePlatform(platformTarget.name());
 
-      app.getVMServiceManager().setServiceExtensionState(
-        extensionDescription.getExtension(),
-        true,
-        platformTarget.name());
+      if (app.getVMServiceManager() != null) {
+        app.getVMServiceManager().setServiceExtensionState(
+          extensionDescription.getExtension(),
+          true,
+          platformTarget.name());
+      }
     }
   }
 

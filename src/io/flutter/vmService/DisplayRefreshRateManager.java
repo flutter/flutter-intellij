@@ -78,20 +78,22 @@ public class DisplayRefreshRateManager {
   }
 
   private CompletableFuture<Double> getDisplayRefreshRate() {
-    final CompletableFuture<Double> displayRefreshRate = new CompletableFuture<Double>();
+    final CompletableFuture<Double> displayRefreshRate = new CompletableFuture<>();
     vmServiceManager.getFlutterViewId().whenComplete((String id, Throwable throwable) -> {
       if (throwable != null) {
         // We often see "java.lang.RuntimeException: Method not found" from here; perhaps a race condition?
         LOG.warn(throwable.getMessage());
         // Fail gracefully by returning the default.
         displayRefreshRate.complete(defaultRefreshRate);
-      } else {
+      }
+      else {
         invokeGetDisplayRefreshRate(id).whenComplete((Double refreshRate, Throwable t) -> {
           if (t != null) {
             LOG.warn(t.getMessage());
             // Fail gracefully by returning the default.
             displayRefreshRate.complete(defaultRefreshRate);
-          } else {
+          }
+          else {
             displayRefreshRate.complete(refreshRate);
           }
         });
@@ -132,7 +134,8 @@ public class DisplayRefreshRateManager {
                 true
               );
               ret.complete(defaultRefreshRate);
-            } else {
+            }
+            else {
               ret.complete(fps);
             }
           }

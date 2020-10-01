@@ -166,6 +166,7 @@ public class FlutterInitializer implements StartupActivity {
             }
           }
         });
+      //noinspection DialogTitleCapitalization
       notification.addAction(new AnAction("Sounds good!") {
         @Override
         public void actionPerformed(@NotNull AnActionEvent event) {
@@ -177,6 +178,7 @@ public class FlutterInitializer implements StartupActivity {
           }
         }
       });
+      //noinspection DialogTitleCapitalization
       notification.addAction(new AnAction("No thanks") {
         @Override
         public void actionPerformed(@NotNull AnActionEvent event) {

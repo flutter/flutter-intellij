@@ -36,7 +36,7 @@ public class ServiceExtensionDescription<T> {
     return tooltips;
   }
 
-  public Class getValueClass() {
+  public Class<?> getValueClass() {
     return values.get(0).getClass();
   }
 }
