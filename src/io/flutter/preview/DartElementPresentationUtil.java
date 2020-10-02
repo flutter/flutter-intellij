@@ -44,6 +44,8 @@ public class DartElementPresentationUtil {
     switch (element.getKind()) {
       case ElementKind.CLASS:
         return element.isAbstract() ? AbstractClass : Class;
+      case ElementKind.EXTENSION:
+        return Include;
       case ElementKind.MIXIN:
         return AbstractClass;
       case ElementKind.CONSTRUCTOR:
@@ -60,7 +62,7 @@ public class DartElementPresentationUtil {
         if (element.isTopLevelOrStatic()) return STATIC_FIELD_ICON;
         return Field;
       case ElementKind.FUNCTION:
-        return element.isTopLevelOrStatic() ? TOP_LEVEL_FUNCTION_ICON : Function;
+        return element.isTopLevelOrStatic() ? TOP_LEVEL_FUNCTION_ICON : Lambda;
       case ElementKind.FUNCTION_INVOCATION:
         return FUNCTION_INVOCATION_ICON;
       case ElementKind.FUNCTION_TYPE_ALIAS:
