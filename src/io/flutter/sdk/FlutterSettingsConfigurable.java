@@ -46,6 +46,8 @@ import java.awt.datatransfer.StringSelection;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+// Note: when updating the settings here, update FlutterSearchableOptionContributor as well.
+
 public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private static final Logger LOG = Logger.getInstance(FlutterSettingsConfigurable.class);
 
@@ -69,7 +71,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   private JCheckBox myShowAllRunConfigurationsInContextCheckBox;
 
-  // Settings for UI as Code experiments:
   private JCheckBox myShowBuildMethodGuides;
   private JCheckBox myShowClosingLabels;
   private FixedSizeButton myCopyButton;
