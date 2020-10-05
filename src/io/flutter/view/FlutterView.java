@@ -16,6 +16,7 @@ import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.openapi.util.ActionCallback;
 import com.intellij.openapi.util.ActiveRunnable;
 import com.intellij.openapi.util.Disposer;
@@ -199,18 +200,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
                                               boolean isEmbedded) {
     final ContentManager contentManager = toolWindow.getContentManager();
 
-    final String tabName;
     final FlutterDevice device = app.device();
-    if (device == null) {
-      tabName = app.getProject().getName();
+    final List<FlutterDevice> existingDevices = new ArrayList<>();
+    for (FlutterApp otherApp : perAppViewState.keySet()) {
+      existingDevices.add(otherApp.device());
     }
-    else {
-      final List<FlutterDevice> existingDevices = new ArrayList<>();
-      for (FlutterApp otherApp : perAppViewState.keySet()) {
-        existingDevices.add(otherApp.device());
-      }
-      tabName = device.getUniqueName(existingDevices);
-    }
+    final String tabName = device.getUniqueName(existingDevices);
 
     if (emptyContent != null) {
       contentManager.removeContent(emptyContent, true);
@@ -236,18 +231,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     runnerTabs.setSelectionChangeHandler(this::onTabSelectionChange);
     final JPanel tabContainer = new JPanel(new BorderLayout());
 
-    final String tabName;
     final FlutterDevice device = app.device();
-    if (device == null) {
-      tabName = app.getProject().getName();
+    final List<FlutterDevice> existingDevices = new ArrayList<>();
+    for (FlutterApp otherApp : perAppViewState.keySet()) {
+      existingDevices.add(otherApp.device());
     }
-    else {
-      final List<FlutterDevice> existingDevices = new ArrayList<>();
-      for (FlutterApp otherApp : perAppViewState.keySet()) {
-        existingDevices.add(otherApp.device());
-      }
-      tabName = device.getUniqueName(existingDevices);
-    }
+    final String tabName = device.getUniqueName(existingDevices);
 
     final Content content = contentManager.getFactory().createContent(null, tabName, false);
     tabContainer.add(runnerTabs.getComponent(), BorderLayout.CENTER);
@@ -468,16 +457,19 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   protected void handleJxBrowserInstallationFailed(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
     if (!JxBrowserUtils.licenseIsSet()) {
       // If the license isn't available, allow the user to open the equivalent page in a non-embedded browser window.
-      presentClickableLabel(toolWindow, "The JxBrowser license could not be found. Open Devtools in the browser?", (linkLabel, data) -> {
-        presentDevTools(app, inspectorService, toolWindow, false);
-      });
+      presentClickableLabel(
+        toolWindow, "The JxBrowser license could not be found.", "Open DevTools in the browser?",
+        (linkLabel, data) -> {
+          presentDevTools(app, inspectorService, toolWindow, false);
+        });
     }
     else {
       // Allow the user to manually restart.
-      presentClickableLabel(toolWindow, "JxBrowser installation failed. Retry?", (linkLabel, data) -> {
-        JxBrowserManager.getInstance().retryFromFailed(app.getProject());
-        handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
-      });
+      presentClickableLabel(
+        toolWindow, "JxBrowser installation failed.", "Retry?", (linkLabel, data) -> {
+          JxBrowserManager.getInstance().retryFromFailed(app.getProject());
+          handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
+        });
     }
   }
 
@@ -487,14 +479,24 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     replacePanelLabel(toolWindow, label);
   }
 
-  protected void presentClickableLabel(ToolWindow toolWindow, String text, LinkListener<String> listener) {
-    final LinkLabel<String> label = new LinkLabel<>(text, null);
-    label.setListener(listener, null);
-    label.setHorizontalAlignment(SwingConstants.CENTER);
-    replacePanelLabel(toolWindow, label);
+  protected void presentClickableLabel(ToolWindow toolWindow, String description, String linkText, LinkListener<String> listener) {
+    final JPanel panel = new JPanel(new BorderLayout(5, 5));
+
+    final JLabel descriptionLabel = new JLabel(description);
+    descriptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    panel.add(descriptionLabel, BorderLayout.NORTH);
+
+    final LinkLabel<String> linkLabel = new LinkLabel<>(linkText, null);
+    linkLabel.setListener(listener, null);
+    linkLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    panel.add(linkLabel, BorderLayout.SOUTH);
+
+    final JPanel center = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER));
+    center.add(panel);
+    replacePanelLabel(toolWindow, center);
   }
 
-  private void replacePanelLabel(ToolWindow toolWindow, JLabel label) {
+  private void replacePanelLabel(ToolWindow toolWindow, JComponent label) {
     ApplicationManager.getApplication().invokeLater(() -> {
       final ContentManager contentManager = toolWindow.getContentManager();
       contentManager.removeAllContents(true);
@@ -766,9 +768,7 @@ class ToggleSelectWidgetMode extends FlutterViewToggleableAction {
       // If toggling inspect mode on, bring the app's device to the foreground.
       if (isSelected()) {
         final FlutterDevice device = app.device();
-        if (device != null) {
-          device.bringToFront();
-        }
+        device.bringToFront();
       }
     }
   }
@@ -794,9 +794,7 @@ class ToggleOnDeviceWidgetInspector extends FlutterViewToggleableAction {
       // If toggling inspect mode on, bring the app's device to the foreground.
       if (isSelected()) {
         final FlutterDevice device = app.device();
-        if (device != null) {
-          device.bringToFront();
-        }
+        device.bringToFront();
       }
     }
   }
