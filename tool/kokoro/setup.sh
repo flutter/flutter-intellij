@@ -22,13 +22,6 @@ setup() {
   export PATH=$PATH:$JAVA_HOME/bin
   echo "JAVA_HOME=$JAVA_HOME"
 
-  echo "install ant"
-  # If the build fails with "tar: Unrecognized archive format"
-  # check for an ant update here: https://ant.apache.org/bindownload.cgi
-  curl https://downloads.apache.org/ant/binaries/apache-ant-1.10.8-bin.tar.gz > ../ant.tar.gz
-  (cd ..; tar fx ant.tar.gz)
-  export PATH=$PATH:`pwd`/../apache-ant-1.10.8/bin
-
   export FLUTTER_KEYSTORE_ID=74840
   export FLUTTER_KEYSTORE_NAME=flutter-intellij-plugin-auth-token
   export FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME=flutter-intellij-plugin-jxbrowser-license-key
