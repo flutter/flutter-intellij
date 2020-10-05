@@ -64,8 +64,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 /**
- * Manages all communication between inspector code running on the DartVM and
- * inspector code running in the IDE.
+ * Manages all communication between inspector code running on the DartVM and inspector code running in the IDE.
  */
 public class InspectorService implements Disposable {
 

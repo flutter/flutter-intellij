@@ -73,7 +73,7 @@ public class DiagnosticsNode {
   }
 
   public DiagnosticsNode(JsonObject json,
-                         CompletableFuture<InspectorService.ObjectGroup> inspectorService,
+                         @NotNull CompletableFuture<InspectorService.ObjectGroup> inspectorService,
                          FlutterApp app,
                          boolean isProperty,
                          DiagnosticsNode parent) {
@@ -496,9 +496,9 @@ public class DiagnosticsNode {
   }
 
   /**
-   * Service used to retrieve more detailed information about the value of
-   * the property and its children and properties.
+   * Service used to retrieve more detailed information about the value of the property and its children and properties.
    */
+  @NotNull
   private final CompletableFuture<InspectorService.ObjectGroup> inspectorService;
 
   /**
@@ -805,6 +805,7 @@ public class DiagnosticsNode {
     this.location = location;
   }
 
+  @NotNull
   public CompletableFuture<InspectorService.ObjectGroup> getInspectorService() {
     return inspectorService;
   }
