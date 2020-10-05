@@ -15,6 +15,7 @@ import io.flutter.devtools.DevToolsManager;
 import io.flutter.inspector.InspectorService;
 import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.jxbrowser.JxBrowserStatus;
+import io.flutter.run.FlutterDevice;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.JxBrowserUtils;
 import io.flutter.utils.ThreadUtil;
@@ -25,6 +26,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 
@@ -37,6 +39,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 public class FlutterViewTest {
   @Mock Project mockProject;
   @Mock FlutterApp mockApp;
+  @Mock FlutterDevice mockDevice;
   @Mock InspectorService mockInspectorService;
   @Mock ToolWindow mockToolWindow;
   @Mock DevToolsManager mockDevToolsManager;
@@ -56,12 +59,14 @@ public class FlutterViewTest {
     when(mockApp.getConnector()).thenReturn(mockObservatoryConnector);
     when(mockObservatoryConnector.getBrowserUrl()).thenReturn(testUrl);
     when(mockToolWindow.getContentManager()).thenReturn(null);
-    when(mockApp.device()).thenReturn(null);
+    when(mockApp.device()).thenReturn(mockDevice);
+    when(mockDevice.getUniqueName(Collections.emptyList())).thenReturn("mock device");
     when(mockApp.getProject()).thenReturn(mockProject);
     when(mockProject.getName()).thenReturn(projectName);
 
     flutterView.handleJxBrowserInstalled(mockApp, mockInspectorService, mockToolWindow);
-    verify(mockDevToolsManager, times(1)).openBrowserIntoPanel(testUrl, null, projectName, "inspector");
+    verify(mockDevToolsManager, times(1)).
+      openBrowserIntoPanel(testUrl, null, "mock device", "inspector");
   }
 
   @Test
@@ -84,7 +89,8 @@ public class FlutterViewTest {
     when(mockApp.getConnector()).thenReturn(mockObservatoryConnector);
     when(mockObservatoryConnector.getBrowserUrl()).thenReturn(testUrl);
     when(mockToolWindow.getContentManager()).thenReturn(null);
-    when(mockApp.device()).thenReturn(null);
+    when(mockApp.device()).thenReturn(mockDevice);
+    when(mockDevice.getUniqueName(Collections.emptyList())).thenReturn("mock device");
     when(mockApp.getProject()).thenReturn(mockProject);
     when(mockProject.getName()).thenReturn(projectName);
 
@@ -112,7 +118,8 @@ public class FlutterViewTest {
     when(mockApp.getConnector()).thenReturn(mockObservatoryConnector);
     when(mockObservatoryConnector.getBrowserUrl()).thenReturn(testUrl);
     when(mockToolWindow.getContentManager()).thenReturn(null);
-    when(mockApp.device()).thenReturn(null);
+    when(mockApp.device()).thenReturn(mockDevice);
+    when(mockDevice.getUniqueName(Collections.emptyList())).thenReturn("mock device");
     when(mockApp.getProject()).thenReturn(mockProject);
     when(mockProject.getName()).thenReturn(projectName);
 
