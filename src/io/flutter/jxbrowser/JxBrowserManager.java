@@ -38,8 +38,10 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-// JxBrowser provides Chromium to display web pages within IntelliJ. This class manages downloading the required files and adding them to
-// the class path.
+/**
+ * JxBrowser provides Chromium to display web pages within IntelliJ. This class manages downloading the required files and adding them to
+ * the class path.
+ */
 public class JxBrowserManager {
   private static JxBrowserManager manager;
 
@@ -54,9 +56,10 @@ public class JxBrowserManager {
   private JxBrowserManager() {
   }
 
+  @NotNull
   public static JxBrowserManager getInstance() {
     if (manager == null) {
-      return new JxBrowserManager();
+      manager = new JxBrowserManager();
     }
     return manager;
   }
@@ -83,7 +86,7 @@ public class JxBrowserManager {
     }
   }
 
-  public void retryFromFailed(Project project) {
+  public void retryFromFailed(@NotNull Project project) {
     if (!status.compareAndSet(JxBrowserStatus.INSTALLATION_FAILED, JxBrowserStatus.NOT_INSTALLED)) {
       return;
     }
@@ -115,7 +118,7 @@ public class JxBrowserManager {
     installation.complete(JxBrowserStatus.INSTALLATION_FAILED);
   }
 
-  public void listenForSettingChanges(Project project) {
+  public void listenForSettingChanges(@NotNull Project project) {
     if (!listeningForSetting.compareAndSet(false, true)) {
       // We can return early because another project already triggered the listener.
       return;
@@ -124,7 +127,7 @@ public class JxBrowserManager {
     FlutterSettings.getInstance().addListener(new SettingsListener(project));
   }
 
-  public void setUp(Project project) {
+  public void setUp(@NotNull Project project) {
     if (!status.compareAndSet(JxBrowserStatus.NOT_INSTALLED, JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
       // This check ensures that an IDE only downloads and installs JxBrowser once, even if multiple projects are open.
       // If already in progress, let calling point wait until success or failure (it may make sense to call setUp but proceed).
