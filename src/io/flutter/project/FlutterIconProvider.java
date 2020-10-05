@@ -8,10 +8,11 @@ package io.flutter.project;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.IconProvider;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Iconable;
+import com.intellij.openapi.util.Iconable.IconFlags;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
+import com.intellij.ui.LayeredIcon;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import icons.FlutterIcons;
@@ -25,14 +26,11 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.Objects;
 
-import static com.intellij.psi.impl.ElementBase.overlayIcons;
-
 public class FlutterIconProvider extends IconProvider {
-
   private static final Icon TEST_FILE = overlayIcons(DartFileType.INSTANCE.getIcon(), AllIcons.Nodes.JunitTestMark);
 
   @Nullable
-  public Icon getIcon(@NotNull final PsiElement element, @Iconable.IconFlags final int flags) {
+  public Icon getIcon(@NotNull PsiElement element, @IconFlags int flags) {
     final Project project = element.getProject();
     if (!FlutterModuleUtils.declaresFlutter(project)) return null;
 
@@ -75,5 +73,16 @@ public class FlutterIconProvider extends IconProvider {
     }
 
     return null;
+  }
+
+  @NotNull
+  private static Icon overlayIcons(@NotNull Icon... icons) {
+    final LayeredIcon result = new LayeredIcon(icons.length);
+
+    for (int layer = 0; layer < icons.length; layer++) {
+      result.setIcon(icons[layer], layer);
+    }
+
+    return result;
   }
 }
