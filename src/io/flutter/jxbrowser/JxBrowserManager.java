@@ -228,7 +228,7 @@ public class JxBrowserManager {
         }
         catch (IOException e) {
           LOG.info(project.getName() + ": JxBrowser file downloaded failed: " + currentFileName);
-          setStatusFailed("fileDownloadFailed-" + currentFileName);
+          setStatusFailed("fileDownloadFailed-" + currentFileName + ":" + e.getMessage());
         }
       }
     };
