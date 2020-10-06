@@ -200,12 +200,18 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
                                               boolean isEmbedded) {
     final ContentManager contentManager = toolWindow.getContentManager();
 
+    final String tabName;
     final FlutterDevice device = app.device();
-    final List<FlutterDevice> existingDevices = new ArrayList<>();
-    for (FlutterApp otherApp : perAppViewState.keySet()) {
-      existingDevices.add(otherApp.device());
+    if (device == null) {
+      tabName = app.getProject().getName();
     }
-    final String tabName = device.getUniqueName(existingDevices);
+    else {
+      final List<FlutterDevice> existingDevices = new ArrayList<>();
+      for (FlutterApp otherApp : perAppViewState.keySet()) {
+        existingDevices.add(otherApp.device());
+      }
+      tabName = device.getUniqueName(existingDevices);
+    }
 
     if (emptyContent != null) {
       contentManager.removeContent(emptyContent, true);
@@ -231,12 +237,18 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     runnerTabs.setSelectionChangeHandler(this::onTabSelectionChange);
     final JPanel tabContainer = new JPanel(new BorderLayout());
 
+    final String tabName;
     final FlutterDevice device = app.device();
-    final List<FlutterDevice> existingDevices = new ArrayList<>();
-    for (FlutterApp otherApp : perAppViewState.keySet()) {
-      existingDevices.add(otherApp.device());
+    if (device == null) {
+      tabName = app.getProject().getName();
     }
-    final String tabName = device.getUniqueName(existingDevices);
+    else {
+      final List<FlutterDevice> existingDevices = new ArrayList<>();
+      for (FlutterApp otherApp : perAppViewState.keySet()) {
+        existingDevices.add(otherApp.device());
+      }
+      tabName = device.getUniqueName(existingDevices);
+    }
 
     final Content content = contentManager.getFactory().createContent(null, tabName, false);
     tabContainer.add(runnerTabs.getComponent(), BorderLayout.CENTER);
@@ -768,7 +780,9 @@ class ToggleSelectWidgetMode extends FlutterViewToggleableAction {
       // If toggling inspect mode on, bring the app's device to the foreground.
       if (isSelected()) {
         final FlutterDevice device = app.device();
-        device.bringToFront();
+        if (device != null) {
+          device.bringToFront();
+        }
       }
     }
   }
@@ -794,7 +808,9 @@ class ToggleOnDeviceWidgetInspector extends FlutterViewToggleableAction {
       // If toggling inspect mode on, bring the app's device to the foreground.
       if (isSelected()) {
         final FlutterDevice device = app.device();
-        device.bringToFront();
+        if (device != null) {
+          device.bringToFront();
+        }
       }
     }
   }
