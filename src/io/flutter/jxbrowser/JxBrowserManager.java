@@ -173,7 +173,7 @@ public class JxBrowserManager {
     final String[] fileNames = {platformFileName, JxBrowserUtils.getApiFileName(), JxBrowserUtils.getSwingFileName()};
     boolean allDownloaded = true;
     for (String fileName : fileNames) {
-      if (!FileUtils.getInstance().fileExists(fileName)) {
+      if (!FileUtils.getInstance().fileExists(getFilePath(fileName))) {
         allDownloaded = false;
         break;
       }
