@@ -59,7 +59,6 @@ public class FlutterConsoleLogManager {
     new ConsoleViewContentType("subtle", SimpleTextAttributes.GRAY_ATTRIBUTES.toTextAttributes());
   private static final ConsoleViewContentType ERROR_CONTENT_TYPE = ConsoleViewContentType.ERROR_OUTPUT;
 
-  final private CompletableFuture<InspectorService.ObjectGroup> objectGroup;
   private static QueueProcessor<Runnable> queue;
 
   /**
@@ -76,18 +75,16 @@ public class FlutterConsoleLogManager {
     }
   }
 
-  @NotNull final VmService service;
   @NotNull final ConsoleView console;
   @NotNull final FlutterApp app;
 
   private int frameErrorCount = 0;
 
+  private CompletableFuture<InspectorService.ObjectGroup> objectGroup;
+
   public FlutterConsoleLogManager(@NotNull ConsoleView console, @NotNull FlutterApp app) {
     this.console = console;
     this.app = app;
-
-    assert (app.getVmService() != null);
-    this.service = app.getVmService();
 
     app.addStateListener(new FlutterApp.FlutterAppListener() {
       @Override
@@ -111,20 +108,41 @@ public class FlutterConsoleLogManager {
       }
     });
 
-    assert (app.getFlutterDebugProcess() != null);
-    objectGroup = InspectorService.createGroup(app, app.getFlutterDebugProcess(), app.getVmService(), "console-group");
-    objectGroup.whenCompleteAsync((group, error) -> {
-      if (group != null) {
-        Disposer.register(app, group.getInspectorService());
-      }
-    });
-
     if (queue == null) {
       queue = QueueProcessor.createRunnableQueueProcessor();
     }
   }
 
+  /**
+   * This method is used to delay construction of the InspectorService ObjectGroup instance until its first used.
+   * <p>
+   * This ensures that the app's VMService field has been populated.
+   */
+  @Nullable
+  private CompletableFuture<InspectorService.ObjectGroup> getCreateInspectorGroup() {
+    if (objectGroup == null) {
+      if (app.getFlutterDebugProcess() == null || app.getVmService() == null) {
+        return null;
+      }
+
+      // TODO(devoncarew): This creates a new InspectorService but may not dispose of it.
+      objectGroup = InspectorService.createGroup(app, app.getFlutterDebugProcess(), app.getVmService(), "console-group");
+      objectGroup.whenCompleteAsync((group, error) -> {
+        if (group != null) {
+          Disposer.register(app, group.getInspectorService());
+        }
+      });
+    }
+
+    return objectGroup;
+  }
+
   public void handleFlutterErrorEvent(@NotNull Event event) {
+    final CompletableFuture<InspectorService.ObjectGroup> objectGroup = getCreateInspectorGroup();
+    if (objectGroup == null) {
+      return;
+    }
+
     try {
       final ExtensionData extensionData = event.getExtensionData();
       final JsonObject jsonObject = extensionData.getJson().getAsJsonObject();
@@ -368,6 +386,11 @@ public class FlutterConsoleLogManager {
   public void processLoggingEvent(@NotNull Event event) {
     final LogRecord logRecord = event.getLogRecord();
     if (logRecord == null) return;
+
+    final VmService service = app.getVmService();
+    if (service == null) {
+      return;
+    }
 
     final IsolateRef isolateRef = event.getIsolate();
 
