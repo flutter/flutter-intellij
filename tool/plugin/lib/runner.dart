@@ -89,7 +89,6 @@ flutterPluginVersion=${version}
 ide=${spec.ideaProduct}
 testing=$testing
 ''';
-    print(contents);
     final propertiesFile = File("$rootPath/gradle.properties");
     final source = propertiesFile.readAsStringSync();
     propertiesFile.writeAsStringSync(contents);
