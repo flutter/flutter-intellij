@@ -113,7 +113,15 @@ public class JxBrowserManager {
   }
 
   private void setStatusFailed(String failureReason) {
-    FlutterInitializer.getAnalytics().sendEvent("jxbrowser", "installationFailed-" + failureReason);
+    setStatusFailed(failureReason, null);
+  }
+
+  private void setStatusFailed(String failureReason, Long time) {
+    if (time != null) {
+      FlutterInitializer.getAnalytics().sendEventMetric("jxbrowser", "installationFailed-" + failureReason, time.intValue());
+    } else {
+      FlutterInitializer.getAnalytics().sendEvent("jxbrowser", "installationFailed-" + failureReason);
+    }
     status.set(JxBrowserStatus.INSTALLATION_FAILED);
     installation.complete(JxBrowserStatus.INSTALLATION_FAILED);
   }
@@ -215,6 +223,7 @@ public class JxBrowserManager {
       @Override
       public void run(@NotNull ProgressIndicator indicator) {
         String currentFileName = null;
+        final long startTime = System.currentTimeMillis();
         try {
           for (int i = 0; i < fileDownloaders.size(); i++) {
             final FileDownloader downloader = fileDownloaders.get(i);
@@ -230,8 +239,9 @@ public class JxBrowserManager {
           loadClasses(fileNames);
         }
         catch (IOException e) {
+          final long elapsedTime = System.currentTimeMillis() - startTime;
           LOG.info(project.getName() + ": JxBrowser file downloaded failed: " + currentFileName);
-          setStatusFailed("fileDownloadFailed-" + currentFileName);
+          setStatusFailed("fileDownloadFailed-" + currentFileName + ":" + e.getMessage(), elapsedTime);
         }
       }
     };
