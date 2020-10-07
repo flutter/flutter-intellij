@@ -152,3 +152,33 @@ String readTokenFromKeystore(String keyName) {
   var file = File('$base/${id}_$name');
   return file.existsSync() ? file.readAsStringSync() : '';
 }
+
+
+int get devBuildNumber {
+  // The dev channel is automatically refreshed weekly, so the build number
+  // is just the number of weeks since the last stable release.
+  var today = DateTime.now();
+  var daysSinceRelease = today.difference(lastReleaseDate).inDays;
+  var weekNumber = daysSinceRelease ~/ 7 + 1;
+  return weekNumber;
+}
+
+String buildVersionNumber(BuildSpec spec) {
+  var releaseNo = spec.isDevChannel ? _nextRelease() : spec.release;
+  if (releaseNo == null) {
+    releaseNo = 'SNAPSHOT';
+  } else {
+    releaseNo = '$releaseNo.${pluginCount}';
+    if (spec.isDevChannel) {
+      releaseNo += '-dev.$devBuildNumber';
+    }
+  }
+  return releaseNo;
+}
+
+String _nextRelease() {
+  var current =
+  RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName).group(1);
+  var val = int.parse(current) + 1;
+  return '$val.0';
+}
