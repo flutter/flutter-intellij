@@ -877,7 +877,7 @@ class TestCommand extends ProductCommand {
   Future<int> _runUnitTests(BuildSpec spec) async {
     // run './gradlew test'
     final compileFn = () async {
-      return await runner.runGradleCommand(['-d', 'test'], spec, '1', 'true');
+      return await runner.runGradleCommand(['test'], spec, '1', 'true');
     };
     return await applyEdits(spec, compileFn);
   }
