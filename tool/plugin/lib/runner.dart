@@ -77,10 +77,12 @@ jxbrowser.license.key=${jxBrowserKey}
 
   Future<int> runGradleCommand(List<String> command, BuildSpec spec,
       String version, String testing) async {
+    var javaVersion = ['4.0', '4.1'].contains(spec.version) ? '1.8' : '11';
     final contents = '''
 name = "flutter-intellij"
 org.gradle.parallel=true
 org.gradle.jvmargs=-Xms128m -Xmx1024m -XX:+CMSClassUnloadingEnabled
+javaVersion=$javaVersion
 dartVersion=${spec.dartPluginVersion}
 flutterPluginVersion=${version}.${pluginCount.toString()}
 ide=${spec.ideaProduct}

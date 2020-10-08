@@ -33,6 +33,11 @@ apply plugin: "org.jetbrains.intellij"
 group 'io.flutter'
 version flutterPluginVersion
 
+java {
+  sourceCompatibility = JavaVersion.toVersion(javaVersion)
+  targetCompatibility = JavaVersion.toVersion(javaVersion)
+}
+
 intellij {
   pluginName name
   // This adds nullability assertions, but also compiles forms.
@@ -46,8 +51,6 @@ intellij {
     pluginList.add(project(':flutter-studio'))
   }
   plugins = pluginList
-  sourceCompatibility = JavaVersion.VERSION_11
-  targetCompatibility = JavaVersion.VERSION_11
 }
 
 dependencies {
