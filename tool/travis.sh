@@ -14,8 +14,9 @@ flutter --version
 if [ "$IDEA_VERSION" != "4.0" -a "$IDEA_VERSION" != "4.1" ] ; then
 
   #Install Java 11
-  curl https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_osx-x64_bin.tar.gz > ../java.tar.gz
+  curl -LO https://corretto.aws/downloads/resources/11.0.8.10.1/amazon-corretto-11.0.8.10.1-linux-x86.tar.gz > ../java.tar.gz
   (cd ..; tar fx java.tar.gz)
+  ls ..
   export JAVA_HOME=`pwd`/../jdk-11.0.2.jdk/Contents/Home
   export PATH=$JAVA_HOME/bin:$PATH
 
