@@ -11,6 +11,17 @@ set -e
 echo $FLUTTER_SDK
 flutter --version
 
+if [ "$IDEA_VERSION" != "4.0" && "$IDEA_VERSION" != "4.1" ] ; then
+
+  #Install Java 11
+  curl https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_osx-x64_bin.tar.gz > ../java.tar.gz
+  (cd ..; tar fx java.tar.gz)
+  export JAVA_HOME=`pwd`/../jdk-11.0.2.jdk/Contents/Home
+  export PATH=$PATH:$JAVA_HOME/bin
+  echo "JAVA_HOME=$JAVA_HOME"
+
+fi
+
 # Get packages for the top-level grind script utilities
 echo "travis_fold:start:pub_get"
 echo "pub get `pwd`"
