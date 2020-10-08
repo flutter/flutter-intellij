@@ -18,7 +18,6 @@ if [ "$IDEA_VERSION" != "4.0" -a "$IDEA_VERSION" != "4.1" ] ; then
   (cd ..; tar fx java.tar.gz)
   export JAVA_HOME=`pwd`/../jdk-11.0.2.jdk/Contents/Home
   export PATH=$PATH:$JAVA_HOME/bin
-  echo "JAVA_HOME=$JAVA_HOME"
 
 fi
 
