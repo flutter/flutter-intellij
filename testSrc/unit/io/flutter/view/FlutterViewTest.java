@@ -132,7 +132,8 @@ public class FlutterViewTest {
     partialMockFlutterView.handleJxBrowserInstallationFailed(mockApp, mockInspectorService, mockToolWindow);
     verify(partialMockFlutterView, times(1)).presentClickableLabel(
       eq(mockToolWindow),
-      eq("JxBrowser installation failed. Retry?"),
+      eq("JxBrowser installation failed."),
+      eq("Retry?"),
       any(LinkListener.class)
     );
   }

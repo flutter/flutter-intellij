@@ -68,11 +68,7 @@ jxbrowser.license.key=${jxBrowserKey}
 
   Future<int> buildPlugin(BuildSpec spec, String version) async {
     writeJxBrowserKeyToFile();
-    if (spec.isDevChannel)
-      return await runGradleCommand(
-          ['buildPlugin'], spec, version, 'false');
-    else
-      return await runGradleCommand(['buildPlugin'], spec, version, 'false');
+    return await runGradleCommand(['buildPlugin'], spec, version, 'false');
   }
 
   Future<int> runGradleCommand(List<String> command, BuildSpec spec,
@@ -84,7 +80,7 @@ org.gradle.parallel=true
 org.gradle.jvmargs=-Xms128m -Xmx1024m -XX:+CMSClassUnloadingEnabled
 javaVersion=$javaVersion
 dartVersion=${spec.dartPluginVersion}
-flutterPluginVersion=${version}.${pluginCount.toString()}
+flutterPluginVersion=${version}
 ide=${spec.ideaProduct}
 testing=$testing
 ''';

@@ -16,6 +16,7 @@ import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.openapi.util.ActionCallback;
 import com.intellij.openapi.util.ActiveRunnable;
 import com.intellij.openapi.util.Disposer;
@@ -468,16 +469,19 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   protected void handleJxBrowserInstallationFailed(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
     if (!JxBrowserUtils.licenseIsSet()) {
       // If the license isn't available, allow the user to open the equivalent page in a non-embedded browser window.
-      presentClickableLabel(toolWindow, "The JxBrowser license could not be found. Open Devtools in the browser?", (linkLabel, data) -> {
-        presentDevTools(app, inspectorService, toolWindow, false);
-      });
+      presentClickableLabel(
+        toolWindow, "The JxBrowser license could not be found.", "Open DevTools in the browser?",
+        (linkLabel, data) -> {
+          presentDevTools(app, inspectorService, toolWindow, false);
+        });
     }
     else {
       // Allow the user to manually restart.
-      presentClickableLabel(toolWindow, "JxBrowser installation failed. Retry?", (linkLabel, data) -> {
-        JxBrowserManager.getInstance().retryFromFailed(app.getProject());
-        handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
-      });
+      presentClickableLabel(
+        toolWindow, "JxBrowser installation failed.", "Retry?", (linkLabel, data) -> {
+          JxBrowserManager.getInstance().retryFromFailed(app.getProject());
+          handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
+        });
     }
   }
 
@@ -487,14 +491,24 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     replacePanelLabel(toolWindow, label);
   }
 
-  protected void presentClickableLabel(ToolWindow toolWindow, String text, LinkListener<String> listener) {
-    final LinkLabel<String> label = new LinkLabel<>(text, null);
-    label.setListener(listener, null);
-    label.setHorizontalAlignment(SwingConstants.CENTER);
-    replacePanelLabel(toolWindow, label);
+  protected void presentClickableLabel(ToolWindow toolWindow, String description, String linkText, LinkListener<String> listener) {
+    final JPanel panel = new JPanel(new BorderLayout(5, 5));
+
+    final JLabel descriptionLabel = new JLabel(description);
+    descriptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    panel.add(descriptionLabel, BorderLayout.NORTH);
+
+    final LinkLabel<String> linkLabel = new LinkLabel<>(linkText, null);
+    linkLabel.setListener(listener, null);
+    linkLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    panel.add(linkLabel, BorderLayout.SOUTH);
+
+    final JPanel center = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER));
+    center.add(panel);
+    replacePanelLabel(toolWindow, center);
   }
 
-  private void replacePanelLabel(ToolWindow toolWindow, JLabel label) {
+  private void replacePanelLabel(ToolWindow toolWindow, JComponent label) {
     ApplicationManager.getApplication().invokeLater(() -> {
       final ContentManager contentManager = toolWindow.getContentManager();
       contentManager.removeAllContents(true);

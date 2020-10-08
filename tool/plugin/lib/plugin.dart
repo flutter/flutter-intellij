@@ -211,15 +211,6 @@ List readProductMatrix() {
   return map['list'];
 }
 
-int get devBuildNumber {
-  // The dev channel is automatically refreshed weekly, so the build number
-  // is just the number of weeks since the last stable release.
-  var today = DateTime.now();
-  var daysSinceRelease = today.difference(lastReleaseDate).inDays;
-  var weekNumber = daysSinceRelease ~/ 7 + 1;
-  return weekNumber;
-}
-
 String substituteTemplateVariables(String line, BuildSpec spec) {
   String valueOf(String name) {
     switch (name) {
@@ -230,15 +221,7 @@ String substituteTemplateVariables(String line, BuildSpec spec) {
       case 'UNTIL':
         return spec.untilBuild;
       case 'VERSION':
-        var releaseNo = spec.isDevChannel ? _nextRelease() : spec.release;
-        if (releaseNo == null) {
-          releaseNo = 'SNAPSHOT';
-        } else {
-          releaseNo = '$releaseNo.${++pluginCount}';
-          if (spec.isDevChannel) {
-            releaseNo += '-dev.$devBuildNumber';
-          }
-        }
+        var releaseNo = buildVersionNumber(spec);
         return '<version>$releaseNo</version>';
       case 'CHANGELOG':
         return spec.changeLog;
@@ -274,13 +257,6 @@ Future<int> zip(String directory, String outFile) async {
   createDir(p.dirname(dest));
   var args = ['-r', dest, p.basename(directory)];
   return await exec('zip', args, cwd: p.dirname(directory));
-}
-
-String _nextRelease() {
-  var current =
-      RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName).group(1);
-  var val = int.parse(current) + 1;
-  return '$val.0';
 }
 
 void _copyFile(File file, Directory to, {String filename = ''}) {
@@ -328,7 +304,7 @@ class AntBuildCommand extends BuildCommand {
     return r;
   }
 
-  Future<int> savePluginArtifact(BuildSpec spec, String version) async {
+  Future<int> savePluginArtifact(BuildSpec spec) async {
     int result;
 
     // create the jars
@@ -386,23 +362,24 @@ class GradleBuildCommand extends BuildCommand {
     var studioSrc = studioFile.readAsStringSync();
     try {
       await genPluginFiles(spec, 'resources');
-      return await runner.buildPlugin(spec, pluginVersion);
+      return await runner.buildPlugin(spec, buildVersionNumber(spec));
     } finally {
       pluginFile.writeAsStringSync(pluginSrc);
       studioFile.writeAsStringSync(studioSrc);
     }
   }
 
-  Future<int> savePluginArtifact(BuildSpec spec, String version) async {
+  Future<int> savePluginArtifact(BuildSpec spec) async {
     final file = File(releasesFilePath(spec));
+    final version = buildVersionNumber(spec);
     var source = File(
-        'build/distributions/flutter-intellij-${version}.${pluginCount}.zip');
+        'build/distributions/flutter-intellij-${version}.zip');
     if (!source.existsSync()) {
       // Setting the plugin name in Gradle should eliminate the need for this,
       // but it does not.
       // TODO(messick) Find a way to make the Kokoro file name: flutter-intellij-DEV.zip
       source = File(
-          'build/distributions/flutter-intellij-kokoro-${version}.${pluginCount}.zip');
+          'build/distributions/flutter-intellij-kokoro-${version}.zip');
     }
     _copyFile(
       source,
@@ -448,9 +425,7 @@ abstract class BuildCommand extends ProductCommand {
 
   Future<int> externalBuildCommand(BuildSpec spec);
 
-  Future<int> savePluginArtifact(BuildSpec spec, String version);
-
-  String get pluginVersion => release ?? 'DEV';
+  Future<int> savePluginArtifact(BuildSpec spec);
 
   Future<int> doit() async {
     if (isReleaseMode) {
@@ -481,6 +456,7 @@ abstract class BuildCommand extends ProductCommand {
 
     var result = 0;
     for (var spec in buildSpecs) {
+      pluginCount++;
       if (spec.channel != channel && isReleaseMode) {
         continue;
       }
@@ -519,7 +495,7 @@ abstract class BuildCommand extends ProductCommand {
       }
 
       try {
-        result = await savePluginArtifact(spec, pluginVersion);
+        result = await savePluginArtifact(spec);
         if (result != 0) {
           return result;
         }

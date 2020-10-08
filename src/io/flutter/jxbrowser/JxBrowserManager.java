@@ -38,8 +38,10 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-// JxBrowser provides Chromium to display web pages within IntelliJ. This class manages downloading the required files and adding them to
-// the class path.
+/**
+ * JxBrowser provides Chromium to display web pages within IntelliJ. This class manages downloading the required files and adding them to
+ * the class path.
+ */
 public class JxBrowserManager {
   private static JxBrowserManager manager;
 
@@ -54,9 +56,10 @@ public class JxBrowserManager {
   private JxBrowserManager() {
   }
 
+  @NotNull
   public static JxBrowserManager getInstance() {
     if (manager == null) {
-      return new JxBrowserManager();
+      manager = new JxBrowserManager();
     }
     return manager;
   }
@@ -83,7 +86,7 @@ public class JxBrowserManager {
     }
   }
 
-  public void retryFromFailed(Project project) {
+  public void retryFromFailed(@NotNull Project project) {
     if (!status.compareAndSet(JxBrowserStatus.INSTALLATION_FAILED, JxBrowserStatus.NOT_INSTALLED)) {
       return;
     }
@@ -110,12 +113,20 @@ public class JxBrowserManager {
   }
 
   private void setStatusFailed(String failureReason) {
-    FlutterInitializer.getAnalytics().sendEvent("jxbrowser", "installationFailed-" + failureReason);
+    setStatusFailed(failureReason, null);
+  }
+
+  private void setStatusFailed(String failureReason, Long time) {
+    if (time != null) {
+      FlutterInitializer.getAnalytics().sendEventMetric("jxbrowser", "installationFailed-" + failureReason, time.intValue());
+    } else {
+      FlutterInitializer.getAnalytics().sendEvent("jxbrowser", "installationFailed-" + failureReason);
+    }
     status.set(JxBrowserStatus.INSTALLATION_FAILED);
     installation.complete(JxBrowserStatus.INSTALLATION_FAILED);
   }
 
-  public void listenForSettingChanges(Project project) {
+  public void listenForSettingChanges(@NotNull Project project) {
     if (!listeningForSetting.compareAndSet(false, true)) {
       // We can return early because another project already triggered the listener.
       return;
@@ -124,7 +135,7 @@ public class JxBrowserManager {
     FlutterSettings.getInstance().addListener(new SettingsListener(project));
   }
 
-  public void setUp(Project project) {
+  public void setUp(@NotNull Project project) {
     if (!status.compareAndSet(JxBrowserStatus.NOT_INSTALLED, JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
       // This check ensures that an IDE only downloads and installs JxBrowser once, even if multiple projects are open.
       // If already in progress, let calling point wait until success or failure (it may make sense to call setUp but proceed).
@@ -173,7 +184,7 @@ public class JxBrowserManager {
     final String[] fileNames = {platformFileName, JxBrowserUtils.getApiFileName(), JxBrowserUtils.getSwingFileName()};
     boolean allDownloaded = true;
     for (String fileName : fileNames) {
-      if (!FileUtils.getInstance().fileExists(fileName)) {
+      if (!FileUtils.getInstance().fileExists(getFilePath(fileName))) {
         allDownloaded = false;
         break;
       }
@@ -212,6 +223,7 @@ public class JxBrowserManager {
       @Override
       public void run(@NotNull ProgressIndicator indicator) {
         String currentFileName = null;
+        final long startTime = System.currentTimeMillis();
         try {
           for (int i = 0; i < fileDownloaders.size(); i++) {
             final FileDownloader downloader = fileDownloaders.get(i);
@@ -227,8 +239,9 @@ public class JxBrowserManager {
           loadClasses(fileNames);
         }
         catch (IOException e) {
+          final long elapsedTime = System.currentTimeMillis() - startTime;
           LOG.info(project.getName() + ": JxBrowser file downloaded failed: " + currentFileName);
-          setStatusFailed("fileDownloadFailed-" + currentFileName);
+          setStatusFailed("fileDownloadFailed-" + currentFileName + ":" + e.getMessage(), elapsedTime);
         }
       }
     };
