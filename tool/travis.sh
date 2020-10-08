@@ -11,19 +11,16 @@ set -e
 echo $FLUTTER_SDK
 flutter --version
 
-if [ "$IDEA_VERSION" != "4.0" -a "$IDEA_VERSION" != "4.1" ] ; then
+if [ "$IDEA_VERSION" = "4.0" -o "$IDEA_VERSION" = "4.1" ] ; then
 
-  #Install Java 11
-  curl -LO https://corretto.aws/downloads/resources/11.0.7.10.1/amazon-corretto-11.0.7.10.1-linux-x64.tar.gz > ../java.tar.gz
-  (cd ..; tar fx java.tar.gz)
-  ls ..
-  export JAVA_HOME=`pwd`/../jdk-11.0.2.jdk/Contents/Home
-  export PATH=$JAVA_HOME/bin:$PATH
+  #Install Java 8
+  wget -O- https://apt.corretto.aws/corretto.key | sudo apt-key add -
+  sudo add-apt-repository 'deb https://apt.corretto.aws stable main'
+  sudo apt-get update; sudo apt-get install -y java-1.8.0-amazon-corretto-jdk
 
 fi
 
 java -version
-echo "PATH=$PATH"
 
 # Get packages for the top-level grind script utilities
 echo "travis_fold:start:pub_get"
