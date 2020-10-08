@@ -24,11 +24,6 @@ apply plugin: "org.jetbrains.intellij"
 group 'io.flutter'
 version flutterPluginVersion
 
-java {
-  sourceCompatibility = JavaVersion.VERSION_11
-  targetCompatibility = JavaVersion.VERSION_11
-}
-
 intellij {
   // This adds nullability assertions, but also compiles forms.
   if (testing == false) {
@@ -39,8 +34,6 @@ intellij {
   localPath "${project.rootDir.absolutePath}/artifacts/$ide"
   plugins "java", "Dart:$dartVersion", "properties", "junit",
           "gradle", "android", "Groovy", "smali", "IntelliLang", "android"//"org.jetbrains.android"
-  sourceCompatibility = JavaVersion.VERSION_11
-  targetCompatibility = JavaVersion.VERSION_11
 }
 
 sourceSets {
