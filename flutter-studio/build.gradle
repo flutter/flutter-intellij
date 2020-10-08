@@ -24,6 +24,11 @@ apply plugin: "org.jetbrains.intellij"
 group 'io.flutter'
 version flutterPluginVersion
 
+java {
+  sourceCompatibility = JavaVersion.toVersion(javaVersion)
+  targetCompatibility = JavaVersion.toVersion(javaVersion)
+}
+
 intellij {
   // This adds nullability assertions, but also compiles forms.
   if (testing == false) {
