@@ -22,6 +22,9 @@ if [ "$IDEA_VERSION" != "4.0" -a "$IDEA_VERSION" != "4.1" ] ; then
 
 fi
 
+java -version
+echo "PATH=$PATH"
+
 # Get packages for the top-level grind script utilities
 echo "travis_fold:start:pub_get"
 echo "pub get `pwd`"
