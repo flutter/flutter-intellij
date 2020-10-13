@@ -236,6 +236,7 @@ public class JxBrowserManager {
             }
           }
 
+          FlutterInitializer.getAnalytics().sendEvent("jxbrowser", "filesDownloaded");
           loadClasses(fileNames);
         }
         catch (IOException e) {
