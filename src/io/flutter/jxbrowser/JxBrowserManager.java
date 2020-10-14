@@ -52,6 +52,7 @@ public class JxBrowserManager {
   private static final AtomicBoolean listeningForSetting = new AtomicBoolean(false);
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
   private static CompletableFuture<JxBrowserStatus> installation = new CompletableFuture<>();
+  private static final String ANALYTICS_CATEGORY = "jxbrowser";
 
   private JxBrowserManager() {
   }
@@ -118,9 +119,9 @@ public class JxBrowserManager {
 
   private void setStatusFailed(String failureReason, Long time) {
     if (time != null) {
-      FlutterInitializer.getAnalytics().sendEventMetric("jxbrowser", "installationFailed-" + failureReason, time.intValue());
+      FlutterInitializer.getAnalytics().sendEventMetric(ANALYTICS_CATEGORY, "installationFailed-" + failureReason, time.intValue());
     } else {
-      FlutterInitializer.getAnalytics().sendEvent("jxbrowser", "installationFailed-" + failureReason);
+      FlutterInitializer.getAnalytics().sendEvent(ANALYTICS_CATEGORY, "installationFailed-" + failureReason);
     }
     status.set(JxBrowserStatus.INSTALLATION_FAILED);
     installation.complete(JxBrowserStatus.INSTALLATION_FAILED);
@@ -236,6 +237,7 @@ public class JxBrowserManager {
             }
           }
 
+          FlutterInitializer.getAnalytics().sendEvent(ANALYTICS_CATEGORY, "filesDownloaded");
           loadClasses(fileNames);
         }
         catch (IOException e) {
@@ -262,7 +264,7 @@ public class JxBrowserManager {
         return;
       }
     }
-    FlutterInitializer.getAnalytics().sendEvent("jxbrowser", "installed");
+    FlutterInitializer.getAnalytics().sendEvent(ANALYTICS_CATEGORY, "installed");
     status.set(JxBrowserStatus.INSTALLED);
     installation.complete(JxBrowserStatus.INSTALLED);
   }
