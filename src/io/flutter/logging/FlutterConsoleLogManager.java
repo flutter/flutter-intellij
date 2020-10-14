@@ -184,9 +184,9 @@ public class FlutterConsoleLogManager {
   private void processFlutterErrorEvent(@NotNull DiagnosticsNode diagnosticsNode) {
     final String description = " " + diagnosticsNode.toString() + " ";
 
-    frameErrorCount++;
-
     final boolean terseError = !isFirstErrorForFrame();
+
+    frameErrorCount++;
 
     final String prefix = "════════";
     final String suffix = "══";
