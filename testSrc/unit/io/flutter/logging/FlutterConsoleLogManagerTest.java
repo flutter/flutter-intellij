@@ -11,23 +11,51 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.actionSystem.AnAction;
+import io.flutter.FlutterInitializer;
+import io.flutter.analytics.Analytics;
+import io.flutter.analytics.MockAnalyticsTransport;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
 import io.flutter.vmService.VMServiceManager;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.powermock.api.mockito.PowerMockito;
 
 import javax.swing.*;
 import java.io.InputStreamReader;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class FlutterConsoleLogManagerTest {
+  private Analytics analytics;
+  private MockAnalyticsTransport transport;
+
+  @Before
+  public void setUp() {
+    transport = new MockAnalyticsTransport();
+
+    analytics = new Analytics("123e4567-e89b-12d3-a456-426655440000", "1.0", "IntelliJ CE", "2016.3.2");
+    analytics.setTransport(transport);
+    analytics.setCanSend(false);
+
+    FlutterInitializer.setAnalytics(analytics);
+  }
+
+  @After
+  public void tearDown() {
+    FlutterSettings.setInstance(null);
+  }
+
   @Test
   public void testBasicLogging() {
     final ConsoleViewMock console = new ConsoleViewMock();
@@ -62,6 +90,52 @@ public class FlutterConsoleLogManagerTest {
     logManager.processLoggingEvent(event);
 
     assertEquals("[log] hello world\n      my sample error\n", console.getText());
+  }
+
+  @Test
+  public void testFlutterError() {
+    final ConsoleViewMock console = new ConsoleViewMock();
+    final FlutterConsoleLogManager logManager = new FlutterConsoleLogManager(console, createFlutterApp());
+    final Event event = new Event(JsonUtils.parseReader(
+      new InputStreamReader(FlutterConsoleLogManagerTest.class.getResourceAsStream("flutter_error.json"))).getAsJsonObject());
+
+    final FlutterSettings settings = PowerMockito.mock(FlutterSettings.class);
+    PowerMockito.when(settings.isShowStructuredErrors()).thenReturn(true);
+    FlutterSettings.setInstance(settings);
+
+    logManager.handleFlutterErrorEvent(event);
+    logManager.flushFlutterErrorQueue();
+
+    assertThat(console.getText(), containsString("══ Exception caught by widgets library ══"));
+  }
+
+  @Test
+  public void testMultipleFlutterErrors() {
+    final ConsoleViewMock console = new ConsoleViewMock();
+    final FlutterConsoleLogManager logManager = new FlutterConsoleLogManager(console, createFlutterApp());
+    final Event event = new Event(JsonUtils.parseReader(
+      new InputStreamReader(FlutterConsoleLogManagerTest.class.getResourceAsStream("flutter_error.json"))).getAsJsonObject());
+
+    final FlutterSettings settings = PowerMockito.mock(FlutterSettings.class);
+    PowerMockito.when(settings.isShowStructuredErrors()).thenReturn(true);
+    FlutterSettings.setInstance(settings);
+
+    logManager.handleFlutterErrorEvent(event);
+    logManager.flushFlutterErrorQueue();
+
+    // Assert that the first error has the full text.
+    assertThat(console.getText(), containsString("══ Exception caught by widgets library ══"));
+    assertThat(console.getText(), containsString("PlanetWidget.build (package:planets/main.dart:229:5)"));
+
+    console.clear();
+
+    logManager.handleFlutterErrorEvent(event);
+    logManager.flushFlutterErrorQueue();
+
+    // Assert that the second error has abridged text.
+    assertThat(console.getText(), containsString("══ Exception caught by widgets library ══"));
+    assertThat(console.getText(),
+               not(containsString("PlanetWidget.build (package:planets/main.dart:229:5)")));
   }
 
   @Test

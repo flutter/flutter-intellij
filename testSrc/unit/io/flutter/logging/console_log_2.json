@@ -1,1 +1,86 @@
-{"type":"Event","kind":"Logging","isolate":{"type":"@Isolate","id":"isolates/170696135467167","name":"main","number":"170696135467167"},"timestamp":1562619110758,"logRecord":{"type":"LogRecord","sequenceNumber":4,"time":1562619110758,"level":0,"loggerName":{"type":"@Instance","_vmType":"String","class":{"type":"@Class","fixedId":true,"id":"classes/76","name":"_OneByteString","_vmName":"_OneByteString@0150898"},"kind":"String","id":"objects/18","length":0,"valueAsString":""},"message":{"type":"@Instance","_vmType":"String","class":{"type":"@Class","fixedId":true,"id":"classes/76","name":"_OneByteString","_vmName":"_OneByteString@0150898"},"kind":"String","id":"objects/19","length":11,"valueAsString":"hello world"},"zone":{"type":"@Instance","class":{"type":"@Class","fixedId":true,"id":"classes/141","name":"Null"},"kind":"Null","fixedId":true,"id":"objects/null","valueAsString":"null"},"error":{"type":"@Instance","class":{"type":"@Class","fixedId":true,"id":"classes/141","name":"Null"},"kind":"Null","fixedId":true,"id":"objects/null","valueAsString":"null"},"stackTrace":{"type":"@Instance","class":{"type":"@Class","fixedId":true,"id":"classes/141","name":"Null"},"kind":"Null","fixedId":true,"id":"objects/null","valueAsString":"null"}}}
+{
+  "type": "Event",
+  "kind": "Logging",
+  "isolate": {
+    "type": "@Isolate",
+    "id": "isolates/170696135467167",
+    "name": "main",
+    "number": "170696135467167"
+  },
+  "timestamp": 1562619110758,
+  "logRecord": {
+    "type": "LogRecord",
+    "sequenceNumber": 4,
+    "time": 1562619110758,
+    "level": 0,
+    "loggerName": {
+      "type": "@Instance",
+      "_vmType": "String",
+      "class": {
+        "type": "@Class",
+        "fixedId": true,
+        "id": "classes/76",
+        "name": "_OneByteString",
+        "_vmName": "_OneByteString@0150898"
+      },
+      "kind": "String",
+      "id": "objects/18",
+      "length": 0,
+      "valueAsString": ""
+    },
+    "message": {
+      "type": "@Instance",
+      "_vmType": "String",
+      "class": {
+        "type": "@Class",
+        "fixedId": true,
+        "id": "classes/76",
+        "name": "_OneByteString",
+        "_vmName": "_OneByteString@0150898"
+      },
+      "kind": "String",
+      "id": "objects/19",
+      "length": 11,
+      "valueAsString": "hello world"
+    },
+    "zone": {
+      "type": "@Instance",
+      "class": {
+        "type": "@Class",
+        "fixedId": true,
+        "id": "classes/141",
+        "name": "Null"
+      },
+      "kind": "Null",
+      "fixedId": true,
+      "id": "objects/null",
+      "valueAsString": "null"
+    },
+    "error": {
+      "type": "@Instance",
+      "class": {
+        "type": "@Class",
+        "fixedId": true,
+        "id": "classes/141",
+        "name": "Null"
+      },
+      "kind": "Null",
+      "fixedId": true,
+      "id": "objects/null",
+      "valueAsString": "null"
+    },
+    "stackTrace": {
+      "type": "@Instance",
+      "class": {
+        "type": "@Class",
+        "fixedId": true,
+        "id": "classes/141",
+        "name": "Null"
+      },
+      "kind": "Null",
+      "fixedId": true,
+      "id": "objects/null",
+      "valueAsString": "null"
+    }
+  }
+}

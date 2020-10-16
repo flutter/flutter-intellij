@@ -75,6 +75,7 @@ public class FlutterSdk {
     if (project.isDisposed()) {
       return null;
     }
+
     final DartSdk dartSdk = DartPlugin.getDartSdk(project);
     if (dartSdk == null) {
       return null;

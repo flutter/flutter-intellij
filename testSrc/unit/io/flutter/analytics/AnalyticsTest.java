@@ -10,9 +10,6 @@ import org.junit.Test;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -63,14 +60,5 @@ public class AnalyticsTest {
     analytics.setCanSend(false);
     analytics.sendScreenView("testAnalyticsPage");
     assertEquals(0, transport.sentValues.size());
-  }
-
-  private static class MockAnalyticsTransport implements Analytics.Transport {
-    final public List<Map<String, String>> sentValues = new ArrayList<>();
-
-    @Override
-    public void send(String url, Map<String, String> values) {
-      sentValues.add(values);
-    }
   }
 }
