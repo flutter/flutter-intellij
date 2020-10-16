@@ -480,11 +480,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     else {
       // Allow the user to manually restart or open the equivalent page in a non-embedded browser window.
       inputs.add(new LabelInput("JxBrowser installation failed."));
-      inputs.add(new LabelInput("Retry?", (linkLabel, data) -> {
+      inputs.add(new LabelInput("Retry installation?", (linkLabel, data) -> {
         JxBrowserManager.getInstance().retryFromFailed(app.getProject());
         handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
       }));
-      inputs.add(new LabelInput("Alternatively, open Devtools in the browser.", (linkLabel, data) -> {
+      inputs.add(new LabelInput("Open Devtools in a browser?", (linkLabel, data) -> {
         presentDevTools(app, inspectorService, toolWindow, false);
       }));
     }
