@@ -5,6 +5,7 @@
  */
 package io.flutter;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
@@ -210,6 +211,14 @@ public class FlutterInitializer implements StartupActivity {
     }
 
     ApplicationManager.getApplication().runWriteAction(() -> wanted.setCurrent(project));
+  }
+
+  /**
+   * This method is only used for testing.
+   */
+  @VisibleForTesting
+  public static void setAnalytics(Analytics inAnalytics) {
+    analytics = inAnalytics;
   }
 
   @NotNull

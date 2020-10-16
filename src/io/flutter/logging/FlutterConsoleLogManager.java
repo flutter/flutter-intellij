@@ -42,6 +42,7 @@ import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Handle displaying dart:developer log messages and Flutter.Error messages in the Run and Debug
@@ -60,6 +61,7 @@ public class FlutterConsoleLogManager {
   private static final ConsoleViewContentType ERROR_CONTENT_TYPE = ConsoleViewContentType.ERROR_OUTPUT;
 
   private static QueueProcessor<Runnable> queue;
+  private static final AtomicInteger queueLength = new AtomicInteger();
 
   /**
    * Set our preferred settings for the run console.
@@ -153,11 +155,15 @@ public class FlutterConsoleLogManager {
         final String errorId = FlutterErrorHelper.getAnalyticsId(diagnosticsNode);
         if (errorId != null) {
           FlutterInitializer.getAnalytics().sendEvent(
-            "flutter-error", errorId, FlutterSdk.getFlutterSdk(app.getProject()));
+            "flutter-error", errorId,
+            // Note: this can be null from tests.
+            app.getProject() == null ? null : FlutterSdk.getFlutterSdk(app.getProject()));
         }
       }
 
       if (FlutterSettings.getInstance().isShowStructuredErrors()) {
+        queueLength.incrementAndGet();
+
         queue.add(() -> {
           try {
             processFlutterErrorEvent(diagnosticsNode);
@@ -165,11 +171,37 @@ public class FlutterConsoleLogManager {
           catch (Throwable t) {
             LOG.warn(t);
           }
+          finally {
+            queueLength.decrementAndGet();
+
+            synchronized (queueLength) {
+              queueLength.notifyAll();
+            }
+          }
         });
       }
     }
     catch (Throwable t) {
       LOG.warn(t);
+    }
+  }
+
+  /**
+   * Wait until all pending work has completed.
+   */
+  public void flushFlutterErrorQueue() {
+    // If the queue isn't empty, then wait until the all the items have been processed.
+    if (queueLength.get() > 0) {
+      try {
+        while (queueLength.get() > 0) {
+          synchronized (queueLength) {
+            queueLength.wait();
+          }
+        }
+      }
+      catch (InterruptedException e) {
+        e.printStackTrace();
+      }
     }
   }
 
@@ -184,9 +216,9 @@ public class FlutterConsoleLogManager {
   private void processFlutterErrorEvent(@NotNull DiagnosticsNode diagnosticsNode) {
     final String description = " " + diagnosticsNode.toString() + " ";
 
-    frameErrorCount++;
-
     final boolean terseError = !isFirstErrorForFrame();
+
+    frameErrorCount++;
 
     final String prefix = "════════";
     final String suffix = "══";

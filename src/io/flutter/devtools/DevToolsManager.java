@@ -268,7 +268,6 @@ public class DevToolsManager {
         final Optional<FlutterApp> appsOptional =
           FlutterApp.allFromProjectProcess(project).stream().filter((FlutterApp app) -> app.getProject() == project).findFirst();
 
-        //noinspection SimplifyOptionalCallChains
         if (!appsOptional.isPresent()) {
           LOG.error("DevTools cannot be opened because the app has been closed");
           return;

@@ -5,6 +5,7 @@
  */
 package io.flutter.settings;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.util.PropertiesComponent;
@@ -38,7 +39,21 @@ public class FlutterSettings {
    */
   private static final String suggestAllRunConfigurationsFromContextKey = "suggest.all.run.configurations.from.context";
 
+  private static FlutterSettings testInstance;
+
+  /**
+   * This is only used for testing.
+   */
+  @VisibleForTesting
+  public static void setInstance(FlutterSettings instance) {
+    testInstance = instance;
+  }
+
   public static FlutterSettings getInstance() {
+    if (testInstance != null) {
+      return testInstance;
+    }
+
     return ServiceManager.getService(FlutterSettings.class);
   }
 
