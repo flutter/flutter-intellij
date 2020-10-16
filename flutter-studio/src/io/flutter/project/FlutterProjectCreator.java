@@ -162,7 +162,7 @@ public class FlutterProjectCreator {
     // Create the project files using 'flutter create'.
     FlutterSdk sdk = FlutterSdk.forPath(myModel.flutterSdk().get());
     if (sdk == null) {
-      FlutterMessages.showError("Error creating project", myModel.flutterSdk().get() + " is not a valid Flutter SDK");
+      FlutterMessages.showError("Error creating project", myModel.flutterSdk().get() + " is not a valid Flutter SDK", projectToClose);
       return;
     }
     final OutputListener listener = new OutputListener();
@@ -178,7 +178,7 @@ public class FlutterProjectCreator {
     PubRoot root = result.get();
     if (root == null) {
       String stderr = listener.getOutput().getStderr();
-      FlutterMessages.showError("Error creating project", stderr.isEmpty() ? "Flutter create command was unsuccessful" : stderr);
+      FlutterMessages.showError("Error creating project", stderr.isEmpty() ? "Flutter create command was unsuccessful" : stderr, projectToClose);
       return;
     }
 
