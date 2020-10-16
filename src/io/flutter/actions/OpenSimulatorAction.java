@@ -36,6 +36,6 @@ public class OpenSimulatorAction extends AnAction {
     //  }
     //}
 
-    XcodeUtils.openSimulator();
+    XcodeUtils.openSimulator(event.getProject());
   }
 }

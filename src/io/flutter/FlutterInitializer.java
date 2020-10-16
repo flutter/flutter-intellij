@@ -64,11 +64,9 @@ public class FlutterInitializer implements StartupActivity {
       // If any modules were converted over, create a notification
       FlutterMessages.showInfo(
         FlutterBundle.message("flutter.initializer.module.converted.title"),
-        "Converted from '" +
-        FlutterModuleUtils.DEPRECATED_FLUTTER_MODULE_TYPE_ID +
-        "' to '" +
-        FlutterModuleUtils.getModuleTypeIDForFlutter() +
-        "'.");
+        "Converted from '" + FlutterModuleUtils.DEPRECATED_FLUTTER_MODULE_TYPE_ID +
+        "' to '" + FlutterModuleUtils.getModuleTypeIDForFlutter() + "'.",
+        project);
     }
 
     // Disable the 'Migrate Project to Gradle' notification.
@@ -120,7 +118,7 @@ public class FlutterInitializer implements StartupActivity {
 
     if (hasFlutterModule) {
       // Check to see if we're on a supported version of Android Studio; warn otherwise.
-      performAndroidStudioCanaryCheck();
+      performAndroidStudioCanaryCheck(project);
     }
 
     FlutterRunNotifications.init(project);
@@ -187,7 +185,7 @@ public class FlutterInitializer implements StartupActivity {
           setCanReportAnalytics(false);
         }
       });
-      Notifications.Bus.notify(notification);
+      Notifications.Bus.notify(notification, project);
     }
     else {
       // We only track for flutter projects.
@@ -278,7 +276,7 @@ public class FlutterInitializer implements StartupActivity {
     getAnalytics().sendEvent("intellij", name);
   }
 
-  private static void performAndroidStudioCanaryCheck() {
+  private static void performAndroidStudioCanaryCheck(Project project) {
     if (!FlutterUtils.isAndroidStudio()) {
       return;
     }
@@ -287,7 +285,8 @@ public class FlutterInitializer implements StartupActivity {
     if (info.getFullVersion().contains("Canary") && !info.getBuild().isSnapshot()) {
       FlutterMessages.showWarning(
         "Unsupported Android Studio version",
-        "Canary versions of Android Studio are not supported by the Flutter plugin.");
+        "Canary versions of Android Studio are not supported by the Flutter plugin.",
+        project);
     }
   }
 }

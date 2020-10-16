@@ -63,7 +63,7 @@ public class OpenInXcodeAction extends AnAction {
 
     final PubRoot pubRoot = PubRoot.forFile(file);
     if (pubRoot == null) {
-      FlutterMessages.showError("Error Opening Xcode", "Unable to run `flutter build` (no pub root found)");
+      FlutterMessages.showError("Error Opening Xcode", "Unable to run `flutter build` (no pub root found)", project);
       return;
     }
 
@@ -77,7 +77,7 @@ public class OpenInXcodeAction extends AnAction {
       final OSProcessHandler processHandler = sdk.flutterBuild(pubRoot, "ios", "--simulator").startInConsole(project);
       if (processHandler == null) {
         progressHelper.done();
-        FlutterMessages.showError("Error Opening Xcode", "unable to run `flutter build`");
+        FlutterMessages.showError("Error Opening Xcode", "unable to run `flutter build`", project);
       }
       else {
         processHandler.addProcessListener(new ProcessAdapter() {
@@ -87,17 +87,17 @@ public class OpenInXcodeAction extends AnAction {
 
             final int exitCode = event.getExitCode();
             if (exitCode != 0) {
-              FlutterMessages.showError("Error Opening Xcode", "`flutter build` returned: " + exitCode);
+              FlutterMessages.showError("Error Opening Xcode", "`flutter build` returned: " + exitCode, project);
               return;
             }
 
-            openWithXcode(file.getPath());
+            openWithXcode(project, file.getPath());
           }
         });
       }
     }
     else {
-      openWithXcode(file.getPath());
+      openWithXcode(project, file.getPath());
     }
   }
 
@@ -106,7 +106,7 @@ public class OpenInXcodeAction extends AnAction {
     return buildDir != null && buildDir.isDirectory() && buildDir.findChild("ios") != null;
   }
 
-  private static void openWithXcode(String path) {
+  private static void openWithXcode(@Nullable Project project, String path) {
     try {
       final GeneralCommandLine cmd = new GeneralCommandLine().withExePath("open").withParameters(path);
       final OSProcessHandler handler = new OSProcessHandler(cmd);
@@ -114,7 +114,7 @@ public class OpenInXcodeAction extends AnAction {
         @Override
         public void processTerminated(@NotNull final ProcessEvent event) {
           if (event.getExitCode() != 0) {
-            FlutterMessages.showError("Error Opening", path);
+            FlutterMessages.showError("Error Opening", path, project);
           }
         }
       });
@@ -123,7 +123,8 @@ public class OpenInXcodeAction extends AnAction {
     catch (ExecutionException ex) {
       FlutterMessages.showError(
         "Error Opening",
-        "Exception: " + ex.getMessage());
+        "Exception: " + ex.getMessage(),
+        project);
     }
   }
 
@@ -148,7 +149,7 @@ public class OpenInXcodeAction extends AnAction {
       openFile(projectFile);
     }
     else {
-      FlutterMessages.showError("Error Opening Xcode", "Project not found.");
+      FlutterMessages.showError("Error Opening Xcode", "Project not found.", e.getProject());
     }
   }
 }

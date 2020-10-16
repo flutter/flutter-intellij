@@ -92,6 +92,7 @@ public class DevToolsManager {
     final FlutterCommand command = sdk.flutterPub(null, "global", "activate", "devtools");
 
     final ProgressManager progressManager = ProgressManager.getInstance();
+    //noinspection DialogTitleCapitalization
     progressManager.run(new Task.Backgroundable(project, "Installing DevTools...", true) {
       Process process;
 
@@ -248,7 +249,7 @@ public class DevToolsManager {
         }, () -> {
           // Listen for closing; null out the devToolsInstance.
           devToolsInstance = null;
-        });
+        }, project);
       }
       else {
         // TODO(helin24): Return message/boolean to calling location to indicate that opening devtools failed.
@@ -309,7 +310,7 @@ public class DevToolsManager {
       }, () -> {
         // Listen for closing; null out the devToolsInstance.
         devToolsInstance = null;
-      });
+      }, project);
     }
     else {
       // TODO(devoncarew): We should provide feedback to callers that the open browser call failed.
@@ -328,8 +329,10 @@ class DevToolsInstance {
   public static void startServer(
     @NotNull OSProcessHandler processHandler,
     @NotNull Callback<DevToolsInstance> onSuccess,
-    @NotNull Runnable onClose
+    @NotNull Runnable onClose,
+    @NotNull Project projectContext
   ) {
+    //noinspection DialogTitleCapitalization
     final Notification notification = new Notification(
       FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
       "Installing DevTools...",
@@ -339,7 +342,7 @@ class DevToolsInstance {
     // We only want to show the notification if installation is taking a while.
     // If the notification is expired by time notify is called, it will not appear.
     final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    scheduler.schedule(() -> Notifications.Bus.notify(notification), 2, TimeUnit.SECONDS);
+    scheduler.schedule(() -> Notifications.Bus.notify(notification, projectContext), 2, TimeUnit.SECONDS);
 
     processHandler.addProcessListener(new ProcessAdapter() {
       @Override

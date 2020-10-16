@@ -130,7 +130,7 @@ public class FlutterDevice {
   public void bringToFront() {
     if (emulator() && isIOS()) {
       // Bring the iOS simulator to front.
-      XcodeUtils.openSimulator();
+      XcodeUtils.openSimulator(null);
     }
   }
 

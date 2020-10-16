@@ -45,7 +45,8 @@ public class OpenInAndroidStudioAction extends AnAction {
     if (FlutterUtils.isAndroidStudio()) {
       try {
         //noinspection unchecked
-        final Class<OpenInAndroidStudioAction> opener = (Class<OpenInAndroidStudioAction>)Class.forName("io.flutter.actions.OpenAndroidModule");
+        final Class<OpenInAndroidStudioAction> opener =
+          (Class<OpenInAndroidStudioAction>)Class.forName("io.flutter.actions.OpenAndroidModule");
         opener.newInstance().actionPerformed(event);
         return;
       }
@@ -54,21 +55,22 @@ public class OpenInAndroidStudioAction extends AnAction {
     }
     final String androidStudioPath = findAndroidStudio(event.getProject());
     if (androidStudioPath == null) {
-      FlutterMessages.showError("Unable to locate Android Studio",
-                                "You can configure the Android Studio location via " +
-                                "'flutter config --android-studio-dir path-to-android-studio'.");
+      FlutterMessages.showError(
+        "Unable to locate Android Studio",
+        "You can configure the Android Studio location via 'flutter config --android-studio-dir path-to-android-studio'.",
+        event.getProject());
       return;
     }
 
     final VirtualFile projectFile = findProjectFile(event);
     if (projectFile == null) {
-      FlutterMessages.showError("Error Opening Android Studio", "Project not found.");
+      FlutterMessages.showError("Error Opening Android Studio", "Project not found.", event.getProject());
       return;
     }
 
     final VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
     final String sourceFile = file == null ? null : file.isDirectory() ? null : file.getPath();
-    openFileInStudio(projectFile, androidStudioPath, sourceFile);
+    openFileInStudio(event.getProject(), projectFile, androidStudioPath, sourceFile);
   }
 
   private static void updatePresentation(AnActionEvent event, Presentation state) {
@@ -152,7 +154,10 @@ public class OpenInAndroidStudioAction extends AnAction {
     return null;
   }
 
-  private static void openFileInStudio(@NotNull VirtualFile projectFile, @NotNull String androidStudioPath, @Nullable String sourceFile) {
+  private static void openFileInStudio(@Nullable Project project,
+                                       @NotNull VirtualFile projectFile,
+                                       @NotNull String androidStudioPath,
+                                       @Nullable String sourceFile) {
     try {
       final GeneralCommandLine cmd;
       if (SystemInfo.isMac) {
@@ -173,7 +178,7 @@ public class OpenInAndroidStudioAction extends AnAction {
         @Override
         public void processTerminated(@NotNull final ProcessEvent event) {
           if (event.getExitCode() != 0) {
-            FlutterMessages.showError("Error Opening", projectFile.getPath());
+            FlutterMessages.showError("Error Opening", projectFile.getPath(), project);
           }
         }
       });
@@ -182,7 +187,8 @@ public class OpenInAndroidStudioAction extends AnAction {
     catch (ExecutionException ex) {
       FlutterMessages.showError(
         "Error Opening",
-        "Exception: " + ex.getMessage());
+        "Exception: " + ex.getMessage(),
+        project);
     }
   }
 

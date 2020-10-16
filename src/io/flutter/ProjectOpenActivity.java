@@ -79,7 +79,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
 
     for (PubRoot pubRoot : PubRoots.forProject(project)) {
       if (!pubRoot.hasUpToDatePackages()) {
-        Notifications.Bus.notify(new PackagesOutOfDateNotification(project, pubRoot));
+        Notifications.Bus.notify(new PackagesOutOfDateNotification(project, pubRoot), project);
       }
     }
   }
