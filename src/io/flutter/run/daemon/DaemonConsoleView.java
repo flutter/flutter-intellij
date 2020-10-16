@@ -6,7 +6,6 @@
 package io.flutter.run.daemon;
 
 import com.intellij.execution.configurations.CommandLineState;
-import com.intellij.execution.configurations.SearchScopeProvider;
 import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.filters.TextConsoleBuilderImpl;
 import com.intellij.execution.impl.ConsoleViewImpl;
@@ -17,6 +16,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.GlobalSearchScopes;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
@@ -34,9 +34,8 @@ public class DaemonConsoleView extends ConsoleViewImpl {
   public static void install(@NotNull CommandLineState launcher, @NotNull ExecutionEnvironment env, @NotNull VirtualFile workDir) {
     // Create our own console builder.
     //
-    // We need to filter input to this console without affecting other consoles, so we cannot use
-    // a consoleFilterInputProvider.
-    final GlobalSearchScope searchScope = SearchScopeProvider.createSearchScope(env.getProject(), env.getRunProfile());
+    // We need to filter input to this console without affecting other consoles, so we cannot use a consoleFilterInputProvider.
+    final GlobalSearchScope searchScope = GlobalSearchScopes.executionScope(env.getProject(), env.getRunProfile());
     final TextConsoleBuilder builder = new TextConsoleBuilderImpl(env.getProject(), searchScope) {
       @NotNull
       @Override
