@@ -21,7 +21,8 @@ public class FlutterMessages {
   private FlutterMessages() {
   }
 
-  public static void showError(String title, String message) {
+  public static void showError(String title, String message, @Nullable Project project) {
+    // TODO: Make the project parameter not nullable.
     Notifications.Bus.notify(
       new Notification(FLUTTER_NOTIFICATION_GROUP_ID,
                        title,
@@ -29,22 +30,25 @@ public class FlutterMessages {
                        NotificationType.ERROR));
   }
 
-  public static void showWarning(String title, String message) {
+  public static void showWarning(String title, String message, @Nullable Project project) {
+    // TODO: Make the project parameter not nullable.
     Notifications.Bus.notify(
-      new Notification(FLUTTER_NOTIFICATION_GROUP_ID,
-                       title,
-                       message,
-                       NotificationType.WARNING));
+      new Notification(
+        FLUTTER_NOTIFICATION_GROUP_ID,
+        title,
+        message,
+        NotificationType.WARNING), project);
   }
 
-  public static void showInfo(String title, String message) {
+  public static void showInfo(String title, String message, @Nullable Project project) {
+    // TODO: Make the project parameter not nullable.
     final Notification notification = new Notification(
       FLUTTER_NOTIFICATION_GROUP_ID,
       title,
       message,
       NotificationType.INFORMATION);
     notification.setIcon(FlutterIcons.Flutter);
-    Notifications.Bus.notify(notification);
+    Notifications.Bus.notify(notification, project);
   }
 
   public static int showDialog(@Nullable Project project,
