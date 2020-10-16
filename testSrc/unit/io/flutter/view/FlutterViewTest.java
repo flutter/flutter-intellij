@@ -7,7 +7,6 @@ package io.flutter.view;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.ui.components.labels.LinkListener;
 import io.flutter.FlutterInitializer;
 import io.flutter.ObservatoryConnector;
 import io.flutter.analytics.Analytics;
@@ -132,9 +131,7 @@ public class FlutterViewTest {
     partialMockFlutterView.handleJxBrowserInstallationFailed(mockApp, mockInspectorService, mockToolWindow);
     verify(partialMockFlutterView, times(1)).presentClickableLabel(
       eq(mockToolWindow),
-      eq("JxBrowser installation failed."),
-      eq("Retry?"),
-      any(LinkListener.class)
+      anyList()
     );
   }
 

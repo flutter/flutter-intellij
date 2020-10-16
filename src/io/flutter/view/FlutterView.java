@@ -36,6 +36,7 @@ import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerAdapter;
 import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.tabs.TabInfo;
+import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
@@ -462,27 +463,33 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     catch (TimeoutException e) {
       // TODO(helin24): Are there better options for this case? e.g. stop installation and retry, link to open in browser?
       presentLabel(toolWindow, INSTALLATION_TIMED_OUT_LABEL);
-      FlutterInitializer.getAnalytics().sendEvent("jxbrowser", "timedOut");
+      FlutterInitializer.getAnalytics().sendEvent(JxBrowserManager.ANALYTICS_CATEGORY, "timedOut");
     }
   }
 
   protected void handleJxBrowserInstallationFailed(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
+    final List<LabelInput> inputs = new ArrayList<>();
+
     if (!JxBrowserUtils.licenseIsSet()) {
       // If the license isn't available, allow the user to open the equivalent page in a non-embedded browser window.
-      presentClickableLabel(
-        toolWindow, "The JxBrowser license could not be found.", "Open DevTools in the browser?",
-        (linkLabel, data) -> {
-          presentDevTools(app, inspectorService, toolWindow, false);
-        });
+      inputs.add(new LabelInput("The JxBrowser license could not be found."));
+      inputs.add(new LabelInput("Open DevTools in the browser?", (linkLabel, data) -> {
+        presentDevTools(app, inspectorService, toolWindow, false);
+      }));
     }
     else {
-      // Allow the user to manually restart.
-      presentClickableLabel(
-        toolWindow, "JxBrowser installation failed.", "Retry?", (linkLabel, data) -> {
-          JxBrowserManager.getInstance().retryFromFailed(app.getProject());
-          handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
-        });
+      // Allow the user to manually restart or open the equivalent page in a non-embedded browser window.
+      inputs.add(new LabelInput("JxBrowser installation failed."));
+      inputs.add(new LabelInput("Retry installation?", (linkLabel, data) -> {
+        JxBrowserManager.getInstance().retryFromFailed(app.getProject());
+        handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
+      }));
+      inputs.add(new LabelInput("Open Devtools in a browser?", (linkLabel, data) -> {
+        presentDevTools(app, inspectorService, toolWindow, false);
+      }));
     }
+
+    presentClickableLabel(toolWindow, inputs);
   }
 
   protected void presentLabel(ToolWindow toolWindow, String text) {
@@ -491,17 +498,23 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     replacePanelLabel(toolWindow, label);
   }
 
-  protected void presentClickableLabel(ToolWindow toolWindow, String description, String linkText, LinkListener<String> listener) {
-    final JPanel panel = new JPanel(new BorderLayout(5, 5));
+  protected void presentClickableLabel(ToolWindow toolWindow, List<LabelInput> labels) {
+    final JPanel panel = new JPanel(new GridLayout(0, 1));
 
-    final JLabel descriptionLabel = new JLabel(description);
-    descriptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
-    panel.add(descriptionLabel, BorderLayout.NORTH);
-
-    final LinkLabel<String> linkLabel = new LinkLabel<>(linkText, null);
-    linkLabel.setListener(listener, null);
-    linkLabel.setHorizontalAlignment(SwingConstants.CENTER);
-    panel.add(linkLabel, BorderLayout.SOUTH);
+    for (LabelInput input : labels) {
+      if (input.listener == null) {
+        final JLabel descriptionLabel = new JLabel(input.text);
+        descriptionLabel.setBorder(JBUI.Borders.empty(5));
+        descriptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        panel.add(descriptionLabel, BorderLayout.NORTH);
+      } else {
+        final LinkLabel<String> linkLabel = new LinkLabel<>(input.text, null);
+        linkLabel.setBorder(JBUI.Borders.empty(5));
+        linkLabel.setListener(input.listener, null);
+        linkLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        panel.add(linkLabel, BorderLayout.SOUTH);
+      }
+    }
 
     final JPanel center = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER));
     center.add(panel);
@@ -921,5 +934,19 @@ class AppState {
   FlutterViewAction registerAction(FlutterViewAction action) {
     flutterViewActions.add(action);
     return action;
+  }
+}
+
+class LabelInput {
+  String text;
+  LinkListener<String> listener;
+
+  public LabelInput(String text) {
+    this(text, null);
+  }
+
+  public LabelInput(String text, LinkListener<String> listener) {
+    this.text = text;
+    this.listener = listener;
   }
 }

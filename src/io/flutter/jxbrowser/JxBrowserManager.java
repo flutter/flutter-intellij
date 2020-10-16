@@ -52,7 +52,7 @@ public class JxBrowserManager {
   private static final AtomicBoolean listeningForSetting = new AtomicBoolean(false);
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
   private static CompletableFuture<JxBrowserStatus> installation = new CompletableFuture<>();
-  private static final String ANALYTICS_CATEGORY = "jxbrowser";
+  public static final String ANALYTICS_CATEGORY = "jxbrowser";
 
   private JxBrowserManager() {
   }
