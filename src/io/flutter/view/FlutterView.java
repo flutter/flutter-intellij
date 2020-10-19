@@ -433,10 +433,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final JxBrowserManager jxBrowserManager = JxBrowserManager.getInstance();
     final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
-    final List<LabelInput> inputs = new ArrayList<>();
-    inputs.add(new LabelInput(INSTALLATION_IN_PROGRESS_LABEL));
-    inputs.add(openDevToolsLabel(app, inspectorService, toolWindow));
-    presentClickableLabel(toolWindow, inputs);
+    presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_IN_PROGRESS_LABEL);
 
     // Start devtools while waiting for JxBrowser download.
     devToolsManager.installDevTools();
@@ -468,17 +465,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
       else {
         // newStatus can be null if installation is interrupted or stopped for another reason.
-        final List<LabelInput> inputs = new ArrayList<>();
-        inputs.add(new LabelInput(INSTALLATION_STOPPED_LABEL));
-        inputs.add(openDevToolsLabel(app, inspectorService, toolWindow));
-        presentClickableLabel(toolWindow, inputs);
+        presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_STOPPED_LABEL);
       }
     }
     catch (TimeoutException e) {
-      final List<LabelInput> inputs = new ArrayList<>();
-      inputs.add(new LabelInput(INSTALLATION_TIMED_OUT_LABEL));
-      inputs.add(openDevToolsLabel(app, inspectorService, toolWindow));
-      presentClickableLabel(toolWindow, inputs);
+      presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_TIMED_OUT_LABEL);
 
       FlutterInitializer.getAnalytics().sendEvent(JxBrowserManager.ANALYTICS_CATEGORY, "timedOut");
     }
@@ -533,6 +524,16 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final JPanel center = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER));
     center.add(panel);
     replacePanelLabel(toolWindow, center);
+  }
+
+  protected void presentOpenDevToolsOptionWithMessage(FlutterApp app,
+                                                      InspectorService inspectorService,
+                                                      ToolWindow toolWindow,
+                                                      String message) {
+    final List<LabelInput> inputs = new ArrayList<>();
+    inputs.add(new LabelInput(message));
+    inputs.add(openDevToolsLabel(app, inspectorService, toolWindow));
+    presentClickableLabel(toolWindow, inputs);
   }
 
   private void replacePanelLabel(ToolWindow toolWindow, JComponent label) {
