@@ -19,9 +19,10 @@ file.
 * In the Project Structure dialog (`File | Project Structure`), select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure an IntelliJ Platform Plugin SDK
   - Point it to the directory of your downloaded IntelliJ Community Edition installation (e.g, `IntelliJ IDEA CE.app/Contents` or `~/idea-IC-183.4886.37`)
   - Change the name to `IntelliJ IDEA Community Edition`
-  - Extend it with additional plugin libraries by adding to `Classpath` (only until Android Q is released):
+  - Extend it with additional plugin libraries by adding to `Classpath`:
     - plugins/android/lib/android.jar
     - plugins/gradle/lib/gradle-common.jar
+    - plugins/gradle-dsl-impl/lib/gradle-dsl-impl.jar
 * One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin. Find `Plugins` (in Settings/Preferences) and install the Dart plugin, then restart the IDE
 * Open flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository). Build it using `Build` | `Build Project`
 * Try running the plugin; there is an existing launch config for "Flutter IntelliJ". This should open the "runtime workbench", a new intance of IntelliJ with the plugin installed.

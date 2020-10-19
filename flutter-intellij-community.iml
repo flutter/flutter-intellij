@@ -114,5 +114,8 @@
     </orderEntry>
     <orderEntry type="library" name="Trove4j" level="project" />
     <orderEntry type="library" name="Dart Packages" level="project" />
+    <orderEntry type="module" module-name="intellij.gradle.dsl.impl" />
+    <orderEntry type="library" name="studio-sdk" level="project" />
+    <orderEntry type="library" name="studio-plugin-gradle" level="project" />
   </component>
 </module>
