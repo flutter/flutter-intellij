@@ -404,7 +404,8 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     mySuiteData.clear();
     mySuitCount = 0;
 
-    return doProcessServiceMessages(ServiceMessageBuilder.testsStarted().toString());
+    // TODO: Change to ServiceMessageBuilder.testsStarted() for 2020.1.
+    return doProcessServiceMessages(new ServiceMessageBuilder("enteredTheMatrix").toString());
   }
 
   @SuppressWarnings("RedundantThrows")
