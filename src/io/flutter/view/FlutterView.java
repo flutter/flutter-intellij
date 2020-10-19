@@ -91,6 +91,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   protected static final String INSTALLATION_IN_PROGRESS_LABEL = "Installing JxBrowser and DevTools...";
   protected static final String INSTALLATION_TIMED_OUT_LABEL =
     "Waiting for JxBrowser installation timed out. Restart your IDE to try again.";
+  protected static final String INSTALLATION_STOPPED_LABEL =
+    "The JxBrowser installation was stopped for unknown reasons. Restart your IDE to try again.";
   protected static final String INSTALLING_DEVTOOLS_LABEL = "Installing DevTools...";
   protected static final String DEVTOOLS_FAILED_LABEL = "Setting up DevTools failed.";
   protected static final int INSTALLATION_WAIT_LIMIT_SECONDS = 2000;
@@ -421,11 +423,20 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
   }
 
+  private LabelInput openDevToolsLabel(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
+    return new LabelInput("Open DevTools in the browser?", (linkLabel, data) -> {
+      presentDevTools(app, inspectorService, toolWindow, false);
+    });
+  }
+
   protected void handleJxBrowserInstallationInProgress(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
     final JxBrowserManager jxBrowserManager = JxBrowserManager.getInstance();
     final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
-    presentLabel(toolWindow, INSTALLATION_IN_PROGRESS_LABEL);
+    final List<LabelInput> inputs = new ArrayList<>();
+    inputs.add(new LabelInput(INSTALLATION_IN_PROGRESS_LABEL));
+    inputs.add(openDevToolsLabel(app, inspectorService, toolWindow));
+    presentClickableLabel(toolWindow, inputs);
 
     // Start devtools while waiting for JxBrowser download.
     devToolsManager.installDevTools();
@@ -456,26 +467,31 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         handleJxBrowserInstallationFailed(app, inspectorService, toolWindow);
       }
       else {
-        // TODO(helin24): This function can return null for exception conditions. Present different error message?
-        presentLabel(toolWindow, INSTALLATION_TIMED_OUT_LABEL);
+        // newStatus can be null if installation is interrupted or stopped for another reason.
+        final List<LabelInput> inputs = new ArrayList<>();
+        inputs.add(new LabelInput(INSTALLATION_STOPPED_LABEL));
+        inputs.add(openDevToolsLabel(app, inspectorService, toolWindow));
+        presentClickableLabel(toolWindow, inputs);
       }
     }
     catch (TimeoutException e) {
-      // TODO(helin24): Are there better options for this case? e.g. stop installation and retry, link to open in browser?
-      presentLabel(toolWindow, INSTALLATION_TIMED_OUT_LABEL);
+      final List<LabelInput> inputs = new ArrayList<>();
+      inputs.add(new LabelInput(INSTALLATION_TIMED_OUT_LABEL));
+      inputs.add(openDevToolsLabel(app, inspectorService, toolWindow));
+      presentClickableLabel(toolWindow, inputs);
+
       FlutterInitializer.getAnalytics().sendEvent(JxBrowserManager.ANALYTICS_CATEGORY, "timedOut");
     }
   }
 
   protected void handleJxBrowserInstallationFailed(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
     final List<LabelInput> inputs = new ArrayList<>();
+    final LabelInput openDevToolsLabel = openDevToolsLabel(app, inspectorService, toolWindow);
 
     if (!JxBrowserUtils.licenseIsSet()) {
       // If the license isn't available, allow the user to open the equivalent page in a non-embedded browser window.
       inputs.add(new LabelInput("The JxBrowser license could not be found."));
-      inputs.add(new LabelInput("Open DevTools in the browser?", (linkLabel, data) -> {
-        presentDevTools(app, inspectorService, toolWindow, false);
-      }));
+      inputs.add(openDevToolsLabel);
     }
     else {
       // Allow the user to manually restart or open the equivalent page in a non-embedded browser window.
@@ -484,9 +500,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         JxBrowserManager.getInstance().retryFromFailed(app.getProject());
         handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
       }));
-      inputs.add(new LabelInput("Open Devtools in a browser?", (linkLabel, data) -> {
-        presentDevTools(app, inspectorService, toolWindow, false);
-      }));
+      inputs.add(openDevToolsLabel);
     }
 
     presentClickableLabel(toolWindow, inputs);
