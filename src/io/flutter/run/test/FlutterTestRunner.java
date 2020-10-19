@@ -42,7 +42,13 @@ import io.flutter.vmService.VmServiceConsumers;
 import io.flutter.vmService.VmServiceConsumers.EmptyResumeConsumer;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.VMConsumer;
-import org.dartlang.vm.service.element.*;
+import org.dartlang.vm.service.element.ElementList;
+import org.dartlang.vm.service.element.Event;
+import org.dartlang.vm.service.element.EventKind;
+import org.dartlang.vm.service.element.Isolate;
+import org.dartlang.vm.service.element.IsolateRef;
+import org.dartlang.vm.service.element.RPCError;
+import org.dartlang.vm.service.element.VM;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
