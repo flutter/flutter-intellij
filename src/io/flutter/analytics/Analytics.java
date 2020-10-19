@@ -5,8 +5,12 @@
  */
 package io.flutter.analytics;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.concurrency.QueueProcessor;
+import com.jetbrains.lang.dart.sdk.DartSdk;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import org.jetbrains.annotations.NotNull;
@@ -150,6 +154,11 @@ public class Analytics {
       }
     }
 
+    // Record whether this client uses bazel.
+    if (anyProjectUsesBazel()) {
+      args.put("cd3", "bazel");
+    }
+
     args.put("tid", trackingId);
     args.put("cid", clientId);
     args.put("t", hitType);
@@ -168,6 +177,23 @@ public class Analytics {
     }
 
     transport.send(analyticsUrl, args);
+  }
+
+  /**
+   * Return true if any open project is a Dart project and uses Bazel.
+   */
+  private boolean anyProjectUsesBazel() {
+    for (Project project : ProjectManager.getInstance().getOpenProjects()) {
+      if (project.isDisposed()) {
+        continue;
+      }
+
+      if (DartSdk.getDartSdk(project) != null && WorkspaceCache.getInstance(project).isBazel()) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   public interface Transport {
