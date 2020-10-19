@@ -37,10 +37,15 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
 import io.flutter.utils.StdoutJsonParser;
+import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.vmService.VmServiceConsumers;
+import io.flutter.vmService.VmServiceConsumers.EmptyResumeConsumer;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.VMConsumer;
 import org.dartlang.vm.service.element.ElementList;
+import org.dartlang.vm.service.element.Event;
+import org.dartlang.vm.service.element.EventKind;
+import org.dartlang.vm.service.element.Isolate;
 import org.dartlang.vm.service.element.IsolateRef;
 import org.dartlang.vm.service.element.RPCError;
 import org.dartlang.vm.service.element.VM;
@@ -97,44 +102,93 @@ public class FlutterTestRunner extends GenericProgramRunner {
       String url = connector.getWebSocketUrl();
 
       while (url == null) {
-        if (launcher.isTerminated()) return;
+        if (launcher.isTerminated()) {
+          return;
+        }
+
         TimeoutUtil.sleep(100);
+
         url = connector.getWebSocketUrl();
       }
 
-      if (launcher.isTerminated()) return;
+      if (launcher.isTerminated()) {
+        return;
+      }
+
+      final VmService vmService;
 
       try {
-        // We want to resume any isolates paused at start.
-        final VmService vmService = VmService.connect(url);
-        vmService.getVM(new VMConsumer() {
-          @Override
-          public void received(VM response) {
-            final ElementList<IsolateRef> isolates = response.getIsolates();
-
-            for (IsolateRef isolateRef : isolates) {
-              vmService.resume(isolateRef.getId(), new VmServiceConsumers.EmptyResumeConsumer() {
-                @Override
-                public void onError(RPCError error) {
-                  LOG.error(error);
-                }
-              });
-            }
-          }
-
-          @Override
-          public void onError(RPCError error) {
-            LOG.error(error);
-          }
-        });
+        vmService = VmService.connect(url);
       }
       catch (IOException | RuntimeException e) {
-        LOG.error("Failed to connect to the VM observatory service at: " + url + "\n"
-                  + e.toString());
+        if (!launcher.isTerminated()) {
+          launcher.notifyTextAvailable(
+            "Failed to connect to the VM service at: " + url + "\n" + e.toString() + "\n",
+            ProcessOutputTypes.STDERR);
+        }
+        return;
       }
+
+      // Listen for debug 'PauseStart' events for isolates after the initial connect and resume those isolates.
+      vmService.streamListen(VmService.DEBUG_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
+      vmService.addVmServiceListener(new VmServiceListenerAdapter() {
+        @Override
+        public void received(String streamId, Event event) {
+          if (EventKind.PauseStart.equals(event.getKind())) {
+            resumePausedAtStartIsolate(launcher, vmService, event.getIsolate());
+          }
+        }
+      });
+
+      // Resume any isolates paused at the initial connect.
+      vmService.getVM(new VMConsumer() {
+        @Override
+        public void received(VM response) {
+          final ElementList<IsolateRef> isolates = response.getIsolates();
+          for (IsolateRef isolateRef : isolates) {
+            resumePausedAtStartIsolate(launcher, vmService, isolateRef);
+          }
+        }
+
+        @Override
+        public void onError(RPCError error) {
+          if (!launcher.isTerminated()) {
+            launcher.notifyTextAvailable(
+              "Error connecting to VM: " + error.getCode() + " " + error.getMessage() + "\n",
+              ProcessOutputTypes.STDERR);
+          }
+        }
+      });
     });
 
     return new RunContentBuilder(executionResult, env).showRunContent(env.getContentToReuse());
+  }
+
+  private void resumePausedAtStartIsolate(@NotNull TestLaunchState launcher, @NotNull VmService vmService, @NotNull IsolateRef isolateRef) {
+    if (isolateRef.getIsSystemIsolate()) {
+      return;
+    }
+
+    vmService.getIsolate(isolateRef.getId(), new VmServiceConsumers.GetIsolateConsumerWrapper() {
+      @Override
+      public void received(Isolate isolate) {
+        final Event event = isolate.getPauseEvent();
+        final EventKind eventKind = event.getKind();
+
+        if (eventKind == EventKind.PauseStart) {
+          vmService.resume(isolateRef.getId(), new EmptyResumeConsumer() {
+            @Override
+            public void onError(RPCError error) {
+              if (!launcher.isTerminated()) {
+                launcher.notifyTextAvailable(
+                  "Error resuming isolate " + isolateRef.getId() + ": " + error.getCode() + " " + error.getMessage() + "\n",
+                  ProcessOutputTypes.STDERR);
+              }
+            }
+          });
+        }
+      }
+    });
   }
 
   protected RunContentDescriptor runInDebugger(@NotNull TestLaunchState launcher, @NotNull ExecutionEnvironment env)
