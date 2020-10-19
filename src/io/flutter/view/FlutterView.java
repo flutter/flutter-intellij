@@ -91,8 +91,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   protected static final String INSTALLATION_IN_PROGRESS_LABEL = "Installing JxBrowser and DevTools...";
   protected static final String INSTALLATION_TIMED_OUT_LABEL =
     "Waiting for JxBrowser installation timed out. Restart your IDE to try again.";
-  protected static final String INSTALLATION_STOPPED_LABEL =
-    "The JxBrowser installation was stopped for unknown reasons. Restart your IDE to try again.";
+  protected static final String INSTALLATION_WAIT_FAILED = "The JxBrowser installation failed unexpectedly. Restart your IDE to try again.";
   protected static final String INSTALLING_DEVTOOLS_LABEL = "Installing DevTools...";
   protected static final String DEVTOOLS_FAILED_LABEL = "Setting up DevTools failed.";
   protected static final int INSTALLATION_WAIT_LIMIT_SECONDS = 2000;
@@ -465,7 +464,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
       else {
         // newStatus can be null if installation is interrupted or stopped for another reason.
-        presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_STOPPED_LABEL);
+        presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_WAIT_FAILED);
       }
     }
     catch (TimeoutException e) {
