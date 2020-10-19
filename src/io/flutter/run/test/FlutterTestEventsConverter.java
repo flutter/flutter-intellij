@@ -36,7 +36,8 @@ public class FlutterTestEventsConverter extends DartTestEventsConverterZ {
    * widget test wrapper.
    */
   private static boolean isSyntheticWidgetTestGroup(@Nullable Item item) {
-    return item instanceof Group && Objects.equals(item.getUrl(), "package:flutter_test/src/widget_tester.dart") &&
+    return item instanceof Group &&
+           Objects.equals(item.getUrl(), "package:flutter_test/src/widget_tester.dart") &&
            isSyntheticWidgetGroupName(item.getName());
   }
 
