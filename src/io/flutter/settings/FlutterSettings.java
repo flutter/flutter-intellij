@@ -269,7 +269,7 @@ public class FlutterSettings {
   }
 
   public boolean isEnableEmbeddedBrowsers() {
-    return getPropertiesComponent().getBoolean(enableEmbeddedBrowsersKey, isPluginVersionDev());
+    return getPropertiesComponent().getBoolean(enableEmbeddedBrowsersKey, true);
   }
 
   public void setEnableEmbeddedBrowsers(boolean value) {
