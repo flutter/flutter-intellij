@@ -221,12 +221,10 @@ class DeviceDaemon {
           }
           else if (process.isProcessTerminated()) {
             final Integer exitCode = process.getExitCode();
-            final String failureMessage = ("Flutter device daemon #" +
-                                           daemonId +
-                                           ": process exited during startup. Exit code: " +
-                                           exitCode +
-                                           ", stderr:\n" +
-                                           api.getStderrTail());
+            String failureMessage = "Flutter device daemon #" + daemonId + " exited (exit code " + exitCode + ")";
+            if (!api.getStderrTail().isEmpty()) {
+              failureMessage += ", stderr: " + api.getStderrTail();
+            }
             attempts++;
             if (attempts < DeviceDaemon.RESTART_ATTEMPTS_BEFORE_WARNING) {
               LOG.warn(failureMessage);

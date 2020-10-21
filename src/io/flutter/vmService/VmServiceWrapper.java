@@ -94,7 +94,7 @@ public class VmServiceWrapper implements Disposable {
       LOG.error("EDT should not be blocked by waiting for for the answer from the Dart debugger");
     }
     if (ApplicationManager.getApplication().isReadAccessAllowed()) {
-      LOG.error("Waiting for for the answer from the Dart debugger under read action may lead to EDT freeze");
+      LOG.error("Waiting for the answer from the Dart debugger under read action may lead to EDT freeze");
     }
     if (myVmServiceReceiverThreadId == Thread.currentThread().getId()) {
       LOG.error("Synchronous requests must not be made in Web Socket listening thread: answer will never be received");
