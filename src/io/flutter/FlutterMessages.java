@@ -27,7 +27,7 @@ public class FlutterMessages {
       new Notification(FLUTTER_NOTIFICATION_GROUP_ID,
                        title,
                        message,
-                       NotificationType.ERROR));
+                       NotificationType.ERROR), project);
   }
 
   public static void showWarning(String title, String message, @Nullable Project project) {
