@@ -104,7 +104,7 @@ public class FlutterCreateAdditionalSettingsTest {
     final List<String> args2 = additionalSettings2.getArgs();
     final List<String> args3 = additionalSettings3.getArgs();
 
-    assertEquals(3, args1.size());
+    assertEquals(2, args1.size());
     assertNotEquals("--ios-language", args1.get(0));
 
     assertEquals(args2.size(), args3.size());
@@ -140,7 +140,7 @@ public class FlutterCreateAdditionalSettingsTest {
 
     final String line = String.join(" ", args);
 
-    assertEquals(7, args.size());
-    assertEquals("--template plugin --description a b c --org tld.domain --no-androidx", line);
+    assertEquals(6, args.size());
+    assertEquals("--template plugin --description a b c --org tld.domain", line);
   }
 }

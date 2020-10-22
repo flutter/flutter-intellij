@@ -29,7 +29,6 @@ public class FlutterProjectModel extends WizardModel {
   private static final String PROPERTIES_DOMAIN_KEY = "FLUTTER_COMPANY_DOMAIN";
   private static final String PROPERTIES_KOTLIN_SUPPORT_KEY = "FLUTTER_PROJECT_KOTLIN_SUPPORT";
   private static final String PROPERTIES_SWIFT_SUPPORT_KEY = "FLUTTER_PROJECT_SWIFT_SUPPORT";
-  private static final String PROPERTIES_ANDROIDX_SUPPORT_KEY = "FLUTTER_PROJECT_ANDROIDX_SUPPORT";
 
   @NotNull final private OptionalValueProperty<FlutterProjectType> myProjectType = new OptionalValueProperty<>();
   @NotNull final private StringProperty myFlutterSdk = new StringValueProperty();
@@ -167,13 +166,5 @@ public class FlutterProjectModel extends WizardModel {
 
   private static void setInitialSwiftSupport(boolean isSupported) {
     PropertiesComponent.getInstance().setValue(PROPERTIES_SWIFT_SUPPORT_KEY, isSupported, true);
-  }
-
-  private static boolean getInitialAndroidxSupport() {
-    return PropertiesComponent.getInstance().getBoolean(PROPERTIES_ANDROIDX_SUPPORT_KEY, true);
-  }
-
-  private static void setInitialAndroidxSupport(boolean isSupported) {
-    PropertiesComponent.getInstance().setValue(PROPERTIES_ANDROIDX_SUPPORT_KEY, isSupported, true);
   }
 }
