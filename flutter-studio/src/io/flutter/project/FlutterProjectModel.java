@@ -13,9 +13,7 @@ import com.android.tools.idea.observable.core.StringValueProperty;
 import com.android.tools.idea.wizard.model.WizardModel;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.project.Project;
-import io.flutter.FlutterUtils;
 import io.flutter.module.FlutterProjectType;
-import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -44,7 +42,6 @@ public class FlutterProjectModel extends WizardModel {
   @NotNull final private BoolValueProperty mySwift = new BoolValueProperty(getInitialSwiftSupport());
   @NotNull final private OptionalProperty<Project> myProject = new OptionalValueProperty<>();
   @NotNull final private BoolValueProperty myIsOfflineSelected = new BoolValueProperty();
-  @NotNull final private BoolValueProperty myAndroidX = new BoolValueProperty();
 
   public FlutterProjectModel(@NotNull FlutterProjectType type) {
     myProjectType.set(new OptionalValueProperty<>(type));
@@ -64,9 +61,6 @@ public class FlutterProjectModel extends WizardModel {
 
     mySwift.set(getInitialSwiftSupport());
     mySwift.addListener(() -> setInitialSwiftSupport(mySwift.get()));
-
-    myAndroidX.set(getInitialAndroidxSupport());
-    myAndroidX.addListener(() -> setInitialAndroidxSupport(myAndroidX.get()));
   }
 
   @NotNull
@@ -107,26 +101,6 @@ public class FlutterProjectModel extends WizardModel {
   @NotNull
   public BoolValueProperty useSwift() {
     return mySwift;
-  }
-
-  @NotNull
-  public BoolValueProperty useAndroidX() {
-    return myAndroidX;
-  }
-
-  public boolean isGeneratingAndroidX() {
-    if (project().getValueOrNull() == null) {
-      FlutterSdk sdk = FlutterSdk.forPath(flutterSdk().get());
-      if (sdk == null) {
-        return false;
-      }
-      else {
-        return useAndroidX().get() && sdk.getVersion().isAndroidxSupported();
-      }
-    }
-    else {
-      return FlutterUtils.isAndroidxProject(project().getValue());
-    }
   }
 
   @NotNull
