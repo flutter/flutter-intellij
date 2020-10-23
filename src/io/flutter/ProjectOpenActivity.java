@@ -5,8 +5,8 @@
  */
 package io.flutter;
 
+import com.intellij.framework.FrameworkType;
 import com.intellij.framework.detection.DetectionExcludesConfiguration;
-import com.intellij.framework.detection.impl.exclude.DetectionExcludesConfigurationImpl;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -89,13 +89,13 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
   }
 
   private static void excludeAndroidFrameworkDetector(@NotNull Project project) {
-    DetectionExcludesConfigurationImpl
-      excludesConfiguration = (DetectionExcludesConfigurationImpl)DetectionExcludesConfiguration.getInstance(project);
-    AndroidFrameworkDetector detector = new AndroidFrameworkDetector();
-    if (!excludesConfiguration.isExcludedFromDetection(detector.getFrameworkType())) {
-      excludesConfiguration.addExcludedFramework(detector.getFrameworkType());
+    DetectionExcludesConfiguration excludesConfiguration = DetectionExcludesConfiguration.getInstance(project);
+    FrameworkType type = new AndroidFrameworkDetector().getFrameworkType();
+    if (!excludesConfiguration.isExcludedFromDetection(type)) {
+      excludesConfiguration.addExcludedFramework(type);
     }
   }
+
   private static class PackagesOutOfDateNotification extends Notification {
     @NotNull private final Project myProject;
     @NotNull private final PubRoot myRoot;
