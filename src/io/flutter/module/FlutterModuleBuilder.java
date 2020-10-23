@@ -269,7 +269,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       myProject = context.getProject();
     }
     myStep = new FlutterModuleWizardStep(context);
-    mySettingsFields = new FlutterCreateAdditionalSettingsFields(new FlutterCreateAdditionalSettings(), this::getFlutterSdk, myProject);
+    mySettingsFields = new FlutterCreateAdditionalSettingsFields(new FlutterCreateAdditionalSettings(), this::getFlutterSdk);
     Disposer.register(parentDisposable, myStep);
     return myStep;
   }
@@ -339,7 +339,6 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       final boolean valid = myPeer.validate();
       if (valid) {
         myPeer.apply();
-        mySettingsFields.update();
       }
       return valid;
     }

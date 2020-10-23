@@ -21,7 +21,6 @@ import com.android.tools.idea.wizard.model.ModelWizard;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBLayeredPane;
 import com.intellij.ui.components.JBScrollPane;
 import io.flutter.FlutterBundle;
@@ -59,8 +58,6 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
   private JCheckBox myKotlinCheckBox;
   private JCheckBox mySwiftCheckBox;
   private JLabel myLanguageLabel;
-  private JCheckBox myUseAndroidxCheckBox;
-  private JBLabel myAndroidXLabel;
   private boolean hasEntered = false;
   private FocusListener focusListener;
 
@@ -76,7 +73,6 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
     FlutterProjectModel model = getModel();
     myKotlinCheckBox.setText(FlutterBundle.message("module.wizard.language.name_kotlin"));
     mySwiftCheckBox.setText(FlutterBundle.message("module.wizard.language.name_swift"));
-    myBindings.bindTwoWay(new SelectedProperty(myUseAndroidxCheckBox), getModel().useAndroidX());
 
     TextProperty packageNameText = new TextProperty(myPackageName);
 
@@ -139,12 +135,6 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
   protected void onEntering() {
     Project project = getModel().project().getValueOrNull();
     FlutterSdk sdk = FlutterSdk.forPath(getModel().flutterSdk().get());
-    boolean enableAndroidX = project == null && sdk != null && sdk.getVersion().isAndroidxSupported();
-    if (myAndroidXLabel.isVisible() != enableAndroidX) {
-      myAndroidXLabel.setVisible(enableAndroidX);
-      myUseAndroidxCheckBox.setVisible(enableAndroidX);
-      myRootPanel.doLayout();
-    }
     if (hasEntered) {
       return;
     }
