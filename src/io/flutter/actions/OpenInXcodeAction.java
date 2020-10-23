@@ -28,28 +28,31 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class OpenInXcodeAction extends AnAction {
-  private static VirtualFile findProjectFile(@Nullable AnActionEvent e) {
-    if (e != null) {
-      final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
-      if (file != null && file.exists()) {
-        if (FlutterUtils.isXcodeFileName(file.getName())) {
-          return file;
-        }
-
-        final Project project = e.getProject();
-        assert (project != null);
-        // Return null if this is an android folder.
-        if (FlutterExternalIdeActionGroup.isWithinAndroidDirectory(file, project) ||
-            OpenInAndroidStudioAction.isProjectFileName(file.getName())) {
-          return null;
-        }
+  @Nullable
+  private static VirtualFile findProjectFile(@NotNull AnActionEvent event) {
+    final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(event.getDataContext());
+    if (file != null && file.exists()) {
+      if (FlutterUtils.isXcodeFileName(file.getName())) {
+        return file;
       }
 
-      final Project project = e.getProject();
-      if (project != null) {
-        return FlutterModuleUtils.findXcodeProjectFile(project);
+      final Project project = event.getProject();
+      if (project == null) {
+        return null;
+      }
+
+      // Return null if this is an android folder.
+      if (FlutterExternalIdeActionGroup.isWithinAndroidDirectory(file, project) ||
+          OpenInAndroidStudioAction.isProjectFileName(file.getName())) {
+        return null;
       }
     }
+
+    final Project project = event.getProject();
+    if (project != null) {
+      return FlutterModuleUtils.findXcodeProjectFile(project);
+    }
+
     return null;
   }
 
@@ -143,13 +146,15 @@ public class OpenInXcodeAction extends AnAction {
   }
 
   @Override
-  public void actionPerformed(@NotNull AnActionEvent e) {
-    final VirtualFile projectFile = findProjectFile(e);
+  public void actionPerformed(@NotNull AnActionEvent event) {
+    final VirtualFile projectFile = findProjectFile(event);
     if (projectFile != null) {
       openFile(projectFile);
     }
     else {
-      FlutterMessages.showError("Error Opening Xcode", "Project not found.", e.getProject());
+      @Nullable final Project project = event.getProject();
+
+      FlutterMessages.showError("Error Opening Xcode", "Project not found.", project);
     }
   }
 }

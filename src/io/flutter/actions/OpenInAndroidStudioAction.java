@@ -41,7 +41,9 @@ public class OpenInAndroidStudioAction extends AnAction {
   }
 
   @Override
-  public void actionPerformed(@NotNull AnActionEvent event) {
+  public void actionPerformed(@NotNull final AnActionEvent event) {
+    @Nullable final Project project = event.getProject();
+
     if (FlutterUtils.isAndroidStudio()) {
       try {
         //noinspection unchecked
@@ -53,24 +55,25 @@ public class OpenInAndroidStudioAction extends AnAction {
       catch (ClassNotFoundException | IllegalAccessException | InstantiationException ignored) {
       }
     }
-    final String androidStudioPath = findAndroidStudio(event.getProject());
+
+    final String androidStudioPath = findAndroidStudio(project);
     if (androidStudioPath == null) {
       FlutterMessages.showError(
         "Unable to locate Android Studio",
         "You can configure the Android Studio location via 'flutter config --android-studio-dir path-to-android-studio'.",
-        event.getProject());
+        project);
       return;
     }
 
     final VirtualFile projectFile = findProjectFile(event);
     if (projectFile == null) {
-      FlutterMessages.showError("Error Opening Android Studio", "Project not found.", event.getProject());
+      FlutterMessages.showError("Error Opening Android Studio", "Project not found.", project);
       return;
     }
 
     final VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
     final String sourceFile = file == null ? null : file.isDirectory() ? null : file.getPath();
-    openFileInStudio(event.getProject(), projectFile, androidStudioPath, sourceFile);
+    openFileInStudio(project, projectFile, androidStudioPath, sourceFile);
   }
 
   private static void updatePresentation(AnActionEvent event, Presentation state) {
