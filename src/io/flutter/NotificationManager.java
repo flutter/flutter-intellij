@@ -5,9 +5,10 @@
  */
 package io.flutter;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.HashSet;
 import java.util.Set;
-import org.jetbrains.annotations.Nullable;
 
 // TODO(kenz): it would be nice to consolidate all notifications to use a single manager. Perhaps we should
 // make `FlutterMessages` a private class in this file. Optionally, we could also move this functionality
@@ -18,21 +19,21 @@ public class NotificationManager {
   public static void showError(String title, String message, @Nullable String id, @Nullable Boolean showOnce) {
     if (shouldNotify(id, showOnce)) {
       shownNotifications.add(id);
-      FlutterMessages.showError(title, message);
+      FlutterMessages.showError(title, message, null);
     }
   }
 
   public static void showWarning(String title, String message, @Nullable String id, @Nullable Boolean showOnce) {
     if (shouldNotify(id, showOnce)) {
       shownNotifications.add(id);
-      FlutterMessages.showWarning(title, message);
+      FlutterMessages.showWarning(title, message, null);
     }
   }
 
   public static void showInfo(String title, String message, @Nullable String id, @Nullable Boolean showOnce) {
     if (shouldNotify(id, showOnce)) {
       shownNotifications.add(id);
-      FlutterMessages.showInfo(title, message);
+      FlutterMessages.showInfo(title, message, null);
     }
   }
 

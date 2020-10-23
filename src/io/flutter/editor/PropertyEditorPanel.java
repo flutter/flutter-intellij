@@ -174,7 +174,7 @@ public class PropertyEditorPanel extends SimpleToolWindowPanel {
   private final boolean fixedWidth;
   private final InspectorGroupManagerService.Client inspectorStateServiceClient;
   private final FlutterDartAnalysisServer flutterDartAnalysisService;
-  private final Project project;
+  @Nullable private final Project project;
   private final boolean showWidgetEditToolbar;
   private final Map<String, JComponent> fields = new HashMap<>();
   private final Map<String, FlutterWidgetProperty> propertyMap = new HashMap<>();
@@ -206,14 +206,16 @@ public class PropertyEditorPanel extends SimpleToolWindowPanel {
 
   public PropertyEditorPanel(
     @Nullable InspectorGroupManagerService inspectorGroupManagerService,
-    Project project,
+    @Nullable Project project,
     FlutterDartAnalysisServer flutterDartAnalysisService,
     boolean showWidgetEditToolbar,
     boolean fixedWidth,
     Disposable parentDisposable
   ) {
     super(true, true);
+
     setFocusable(true);
+
     this.fixedWidth = fixedWidth;
     this.parentDisposable = parentDisposable;
 
@@ -737,17 +739,16 @@ public class PropertyEditorPanel extends SimpleToolWindowPanel {
       return false;
     }
 
-
     final SourceChange change;
     try {
       change = flutterDartAnalysisService.setWidgetPropertyValue(property.getId(), value);
     }
     catch (Exception e) {
       if (value != null && value.getExpression() != null) {
-        FlutterMessages.showInfo("Invalid property value", value.getExpression());
+        FlutterMessages.showInfo("Invalid property value", value.getExpression(), project);
       }
       else {
-        FlutterMessages.showError("Unable to set propery value", e.getMessage());
+        FlutterMessages.showError("Unable to set propery value", e.getMessage(), project);
       }
       return false;
     }
@@ -761,7 +762,7 @@ public class PropertyEditorPanel extends SimpleToolWindowPanel {
           hotReload();
         }
         catch (DartSourceEditException exception) {
-          FlutterMessages.showInfo("Failed to apply code change", exception.getMessage());
+          FlutterMessages.showInfo("Failed to apply code change", exception.getMessage(), project);
         }
       });
       return true;

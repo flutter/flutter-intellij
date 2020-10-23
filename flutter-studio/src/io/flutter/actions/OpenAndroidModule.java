@@ -36,7 +36,7 @@ public class OpenAndroidModule extends OpenInAndroidStudioAction implements Dumb
   public void actionPerformed(AnActionEvent e) {
     final VirtualFile projectFile = findProjectFile(e);
     if (projectFile == null) {
-      FlutterMessages.showError("Error Opening Android Studio", "Project not found.");
+      FlutterMessages.showError("Error Opening Android Studio", "Project not found.", e.getProject());
       return;
     }
     final int modifiers = e.getModifiers();

@@ -64,7 +64,7 @@ public class FlutterRunNotifications {
           notification.expire();
         }
       });
-      Notifications.Bus.notify(notification);
+      Notifications.Bus.notify(notification, myProject);
     }
   }
 }

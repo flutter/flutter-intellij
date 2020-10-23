@@ -14,7 +14,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.projectImport.ProjectOpenProcessor;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.ProjectOpenActivity;
 import io.flutter.pub.PubRoot;
@@ -28,10 +27,6 @@ import java.util.Objects;
 
 public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
   private static final Logger LOG = Logger.getInstance(FlutterProjectOpenProcessor.class);
-
-  private static void handleError(@NotNull Exception e) {
-    FlutterMessages.showError("Error opening", e.getMessage());
-  }
 
   @NotNull
   @Override

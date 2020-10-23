@@ -53,7 +53,7 @@ public class FlutterConsoleFilter implements Filter {
           @Override
           public void processTerminated(@NotNull final ProcessEvent event) {
             if (event.getExitCode() != 0) {
-              FlutterMessages.showError("Error Opening ", myPath);
+              FlutterMessages.showError("Error Opening ", myPath, project);
             }
           }
         });
@@ -62,7 +62,8 @@ public class FlutterConsoleFilter implements Filter {
       catch (ExecutionException e) {
         FlutterMessages.showError(
           "Error Opening External File",
-          "Exception: " + e.getMessage());
+          "Exception: " + e.getMessage(),
+          project);
       }
     }
   }

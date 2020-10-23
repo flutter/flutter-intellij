@@ -22,7 +22,9 @@ public class FlutterMakeHostAppEditableAction extends FlutterSdkAction {
     if (root == null) {
       FlutterMessages.showError(
         "Cannot Find Pub Root",
-        "Flutter make-host-app-editable can only be run within a directory with a pubspec.yaml file");
+        "Flutter make-host-app-editable can only be run within a directory with a pubspec.yaml file",
+        project
+      );
       return;
     }
     sdk.startMakeHostAppEditable(root, project);

@@ -317,7 +317,7 @@ public class WidgetEditToolbar {
         }
       }
       catch (DartSourceEditException exception) {
-        FlutterMessages.showError("Error applying change", exception.getMessage());
+        FlutterMessages.showError("Error applying change", exception.getMessage(), project);
       }
     });
   }
