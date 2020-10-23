@@ -10,7 +10,6 @@ import static io.flutter.FlutterUtils.disableGradleProjectMigrationNotification;
 
 import com.android.repository.io.FileOpUtils;
 import com.intellij.conversion.ConversionListener;
-import com.intellij.conversion.ConversionService;
 import com.intellij.execution.OutputListener;
 import com.intellij.ide.RecentProjectsManager;
 import com.intellij.ide.highlighter.ModuleFileType;
@@ -234,7 +233,6 @@ public class FlutterProjectCreator {
     return new FlutterCreateAdditionalSettings.Builder()
       .setDescription(myModel.description().get().isEmpty() ? null : myModel.description().get())
       .setType(myModel.projectType().getValue())
-      .setAndroidX(myModel.isGeneratingAndroidX())
       .setOrg(myModel.packageName().get().isEmpty() ? null : reversedOrgFromPackage(myModel.packageName().get()))
       .setKotlin(isNotModule() && myModel.useKotlin().get() ? true : null)
       .setSwift(isNotModule() && myModel.useSwift().get() ? true : null)

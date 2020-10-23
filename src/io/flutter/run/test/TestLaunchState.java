@@ -19,6 +19,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
@@ -152,5 +153,11 @@ class TestLaunchState extends CommandLineState {
 
   public boolean isTerminated() {
     return processHandler != null && processHandler.isProcessTerminated();
+  }
+
+  public void notifyTextAvailable(@NotNull String text, @NotNull Key<?> outputType) {
+    if (processHandler != null) {
+      processHandler.notifyTextAvailable(text, outputType);
+    }
   }
 }

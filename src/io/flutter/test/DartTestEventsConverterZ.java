@@ -78,7 +78,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
   private static final String RESULT_ERROR = "error";
 
   private static final String EXPECTED = "Expected: ";
-  private static final Pattern EXPECTED_ACTUAL_RESULT = Pattern.compile("\\nExpected: (.*)\\n {2}Actual: (.*)\\n *\\^\\n Differ.*\\n");
+  private static final Pattern EXPECTED_ACTUAL_RESULT = Pattern.compile("\\nExpected: (.*)\\n  Actual: (.*)\\n *\\^\\n Differ.*\\n");
   private static final String FILE_URL_PREFIX = "dart_location://";
   private static final String LOADING_PREFIX = "loading ";
   private static final String COMPILING_PREFIX = "compiling ";
@@ -92,10 +92,10 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
   private String myLocation;
   private Key myCurrentOutputType;
   private ServiceMessageVisitor myCurrentVisitor;
-  private TIntLongHashMap myTestIdToTimestamp;
-  private Map<Integer, Test> myTestData;
-  private Map<Integer, Group> myGroupData;
-  private Map<Integer, Suite> mySuiteData;
+  private final TIntLongHashMap myTestIdToTimestamp;
+  private final Map<Integer, Test> myTestData;
+  private final Map<Integer, Group> myGroupData;
+  private final Map<Integer, Suite> mySuiteData;
   private int mySuitCount;
 
   public DartTestEventsConverterZ(@NotNull final String testFrameworkName,
@@ -109,6 +109,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     mySuiteData = new HashMap<>();
   }
 
+  @Override
   protected boolean processServiceMessages(final String text, final Key outputType, final ServiceMessageVisitor visitor)
     throws ParseException {
     LOG.debug("<<< " + text.trim());
@@ -403,6 +404,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     mySuiteData.clear();
     mySuitCount = 0;
 
+    // TODO: Change to ServiceMessageBuilder.testsStarted() for 2020.1.
     return doProcessServiceMessages(new ServiceMessageBuilder("enteredTheMatrix").toString());
   }
 
@@ -453,7 +455,8 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     String location = "unknown";
     String loc;
 
-    final VirtualFile file = item.getUrl() == null ? null : myUrlResolver.findFileByDartUrl(item.getUrl());
+    final boolean badUrl = item.getUrl() == null || item.getUrl().endsWith(".dart.js");
+    final VirtualFile file = badUrl ? null : myUrlResolver.findFileByDartUrl(item.getUrl());
     if (file != null) {
       loc = FILE_URL_PREFIX + file.getPath();
     }
@@ -465,8 +468,14 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     }
 
     if (loc != null) {
+      if (badUrl) {
+        loc += ",-1,-1";
+      }
+      else {
+        loc += "," + item.getLine() + "," + item.getColumn();
+      }
       String nameList = GSON.toJson(item.nameList(), DartTestLocationProvider.STRING_LIST_TYPE);
-      location = loc + "," + item.getLine() + "," + item.getColumn() + "," + nameList;
+      location = loc + "," + nameList;
     }
 
     messageBuilder.addAttribute("locationHint", location);
@@ -729,13 +738,6 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
   }
 
   protected static class Test extends Item {
-
-    private static class LocationInfo {
-      String url;
-      int line;
-      int column;
-    }
-
     private boolean myTestStartReported = false;
     private boolean myTestErrorReported = false;
 
@@ -746,26 +748,10 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
         parent = groups.get(groupIds[groupIds.length - 1]);
       }
       Suite suite = lookupSuite(obj, suites);
-
-      final LocationInfo loc = extractLocation(obj);
+      final int line = extractInt(obj, JSON_LINE);
+      final int column = extractInt(obj, JSON_COLUMN);
       return new Test(extractInt(obj, JSON_ID), extractString(obj, JSON_NAME, NO_NAME), parent, suite, extractMetadata(obj),
-                      loc.line < 0 ? -1 : loc.line - 1, loc.column < 0 ? -1 : loc.column - 1, loc.url);
-    }
-
-    private static LocationInfo extractLocation(JsonObject obj) {
-      final LocationInfo info = new LocationInfo();
-      // Check for root_* data first as it's more precise (when present).
-      info.url = extractString(obj, "root_url", null);
-      if (info.url != null) {
-        info.line = extractInt(obj, "root_line");
-        info.column = extractInt(obj, "root_column");
-      }
-      else {
-        info.url = extractString(obj, JSON_URL, null);
-        info.line = extractInt(obj, JSON_LINE);
-        info.column = extractInt(obj, JSON_COLUMN);
-      }
-      return info;
+                      line < 0 ? -1 : line - 1, column < 0 ? -1 : column - 1, extractString(obj, JSON_URL, null));
     }
 
     Test(int id, String name, Group parent, Suite suite, Metadata metadata, int line, int column, String url) {
@@ -793,7 +779,11 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
       Suite suite = lookupSuite(obj, suites);
       final int line = extractInt(obj, JSON_LINE);
       final int column = extractInt(obj, JSON_COLUMN);
-      return new Group(extractInt(obj, JSON_ID), extractString(obj, JSON_NAME, NO_NAME), parent, suite, extractMetadata(obj),
+      String groupName = extractString(obj, JSON_NAME, "");
+      if (groupName.isEmpty()) {
+        groupName = NO_NAME;
+      }
+      return new Group(extractInt(obj, JSON_ID), groupName, parent, suite, extractMetadata(obj),
                        extractInt(obj, JSON_TEST_COUNT), line < 0 ? -1 : line - 1, column < 0 ? -1 : column - 1,
                        extractString(obj, JSON_URL, null));
     }
@@ -850,8 +840,8 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
   }
 
   private static class Metadata {
-    private boolean skip; // assigned by GSON via reflection
-    private String skipReason; // assigned by GSON via reflection
+    @SuppressWarnings("unused") private boolean skip; // assigned by GSON via reflection
+    @SuppressWarnings("unused") private String skipReason; // assigned by GSON via reflection
 
     static Metadata from(JsonElement elem) {
       if (elem == null) return new Metadata();

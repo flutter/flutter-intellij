@@ -38,7 +38,6 @@ public class PubRoot {
   private final VirtualFile pubspec;
 
   private PubRoot(@NotNull VirtualFile root, @NotNull VirtualFile pubspec) {
-    assert (!root.getPath().endsWith("/"));
     this.root = root;
     this.pubspec = pubspec;
   }
@@ -134,7 +133,7 @@ public class PubRoot {
    */
   @Nullable
   public static PubRoot forDirectory(@Nullable VirtualFile dir) {
-    if (dir == null || !dir.isDirectory()) {
+    if (dir == null || !dir.isDirectory() || dir.getPath().endsWith("/")) {
       return null;
     }
 

@@ -151,7 +151,8 @@ public class FlutterViewTest {
     when(mockJxBrowserManager.getStatus()).thenReturn(JxBrowserStatus.INSTALLED);
 
     partialMockFlutterView.handleJxBrowserInstallationInProgress(mockApp, mockInspectorService, mockToolWindow);
-    verify(partialMockFlutterView, times(1)).presentLabel(mockToolWindow, INSTALLATION_IN_PROGRESS_LABEL);
+    verify(partialMockFlutterView, times(1))
+      .presentOpenDevToolsOptionWithMessage(mockApp, mockInspectorService, mockToolWindow, INSTALLATION_IN_PROGRESS_LABEL);
     verify(partialMockFlutterView, times(1)).handleJxBrowserInstalled(mockApp, mockInspectorService, mockToolWindow);
   }
 
@@ -171,7 +172,8 @@ public class FlutterViewTest {
     when(mockJxBrowserManager.getStatus()).thenReturn(JxBrowserStatus.INSTALLATION_IN_PROGRESS);
 
     partialMockFlutterView.handleJxBrowserInstallationInProgress(mockApp, mockInspectorService, mockToolWindow);
-    verify(partialMockFlutterView, times(1)).presentLabel(mockToolWindow, INSTALLATION_IN_PROGRESS_LABEL);
+    verify(partialMockFlutterView, times(1))
+      .presentOpenDevToolsOptionWithMessage(mockApp, mockInspectorService, mockToolWindow, INSTALLATION_IN_PROGRESS_LABEL);
     verify(partialMockFlutterView, times(1)).startJxBrowserInstallationWaitingThread(mockApp, mockInspectorService, mockToolWindow);
   }
 
@@ -215,7 +217,8 @@ public class FlutterViewTest {
     when(FlutterInitializer.getAnalytics()).thenReturn(mockAnalytics);
 
     partialMockFlutterView.waitForJxBrowserInstallation(mockApp, mockInspectorService, mockToolWindow);
-    verify(partialMockFlutterView, times(1)).presentLabel(mockToolWindow, INSTALLATION_TIMED_OUT_LABEL);
+    verify(partialMockFlutterView, times(1))
+      .presentOpenDevToolsOptionWithMessage(mockApp, mockInspectorService, mockToolWindow, INSTALLATION_TIMED_OUT_LABEL);
   }
 
   private void setUpInstallationInProgress() {

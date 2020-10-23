@@ -9,15 +9,20 @@ import com.android.tools.idea.ui.wizard.StudioWizardDialogBuilder;
 import com.android.tools.idea.wizard.model.ModelWizard;
 import com.android.tools.idea.wizard.model.ModelWizardDialog;
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.impl.NewProjectUtil;
+import com.intellij.ide.projectWizard.NewProjectWizard;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.wm.impl.welcomeScreen.NewWelcomeScreen;
 import com.intellij.ui.LayeredIcon;
 import com.intellij.ui.OffsetIcon;
 import icons.FlutterIcons;
+import io.flutter.FlutterBundle;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.project.ChoseProjectTypeStep;
 import io.flutter.project.FlutterProjectModel;
@@ -26,42 +31,48 @@ import javax.swing.Icon;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterNewProjectAction extends AnAction implements DumbAware {
-  private static final Logger LOG = Logger.getInstance(FlutterNewProjectAction.class);
 
   public FlutterNewProjectAction() {
-    this("New Flutter Project...");
-  }
-
-  public FlutterNewProjectAction(@NotNull String text) {
-    super(text);
+    super(FlutterBundle.message("action.new.project.title"));
   }
 
   @Override
   public void update(@NotNull AnActionEvent e) {
     if (NewWelcomeScreen.isNewWelcomeScreen(e)) {
       e.getPresentation().setIcon(getFlutterDecoratedIcon());
-      e.getPresentation().setText("Start a new Flutter project");
+      e.getPresentation().setText(
+        Registry.is("use.tabbed.welcome.screen")
+        ? FlutterBundle.message("welcome.new.project.compact")
+        : FlutterBundle.message("welcome.new.project.title"));
     }
   }
 
   @Override
-  public void actionPerformed(AnActionEvent e) {
-    FlutterProjectModel model = new FlutterProjectModel(FlutterProjectType.APP);
-    try {
-      ModelWizard wizard = new ModelWizard.Builder()
-        .addStep(new ChoseProjectTypeStep(model))
-        .build();
-      StudioWizardDialogBuilder builder = new StudioWizardDialogBuilder(wizard, "Create New Flutter Project");
-      ModelWizardDialog dialog = builder.build();
+  public void actionPerformed(@NotNull AnActionEvent e) {
+    ApplicationInfo info = ApplicationInfo.getInstance();
+    int major = Integer.parseInt(info.getMajorVersion());
+    int minor = Integer.parseInt(info.getMinorVersion());
+    if (major == 4 && minor < 3) {
+      FlutterProjectModel model = new FlutterProjectModel(FlutterProjectType.APP);
       try {
-        dialog.show();
+        ModelWizard wizard = new ModelWizard.Builder()
+          .addStep(new ChoseProjectTypeStep(model))
+          .build();
+        StudioWizardDialogBuilder builder = new StudioWizardDialogBuilder(wizard, "Create New Flutter Project");
+        ModelWizardDialog dialog = builder.build();
+        try {
+          dialog.show();
+        }
+        catch (NoSuchElementException ex) {
+          // This happens if no Flutter SDK is installed and the user cancels the FlutterProjectStep.
+        }
       }
-      catch (NoSuchElementException ex) {
-        // This happens if no Flutter SDK is installed and the user cancels the FlutterProjectStep.
+      catch (NoSuchMethodError x) {
+        Messages.showMessageDialog("Android Studio canary is not supported", "Unsupported IDE", Messages.getErrorIcon());
       }
-    }
-    catch (NoSuchMethodError x) {
-      Messages.showMessageDialog("Android Studio canary is not supported", "Unsupported IDE", Messages.getErrorIcon());
+    } else {
+      NewProjectWizard wizard = new NewProjectWizard(null, ModulesProvider.EMPTY_MODULES_PROVIDER, null);
+      NewProjectUtil.createNewProject(wizard);
     }
   }
 
