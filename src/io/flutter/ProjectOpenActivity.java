@@ -5,6 +5,8 @@
  */
 package io.flutter;
 
+import com.intellij.framework.FrameworkType;
+import com.intellij.framework.detection.DetectionExcludesConfiguration;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -27,6 +29,7 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
+import org.jetbrains.android.facet.AndroidFrameworkDetector;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -56,6 +59,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       // We can't do anything without a Flutter SDK.
       return;
     }
+    excludeAndroidFrameworkDetector(project);
 
     // Set up JxBrowser listening and check if it's already enabled.
     JxBrowserManager.getInstance().listenForSettingChanges(project);
@@ -81,6 +85,14 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       if (!pubRoot.hasUpToDatePackages()) {
         Notifications.Bus.notify(new PackagesOutOfDateNotification(project, pubRoot), project);
       }
+    }
+  }
+
+  private static void excludeAndroidFrameworkDetector(@NotNull Project project) {
+    DetectionExcludesConfiguration excludesConfiguration = DetectionExcludesConfiguration.getInstance(project);
+    FrameworkType type = new AndroidFrameworkDetector().getFrameworkType();
+    if (!excludesConfiguration.isExcludedFromDetection(type)) {
+      excludesConfiguration.addExcludedFramework(type);
     }
   }
 
