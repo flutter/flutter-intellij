@@ -41,7 +41,7 @@ public class FlutterNewProjectAction extends AnAction implements DumbAware {
     if (NewWelcomeScreen.isNewWelcomeScreen(e)) {
       e.getPresentation().setIcon(getFlutterDecoratedIcon());
       e.getPresentation().setText(
-        Registry.is("use.tabbed.welcome.screen")
+        Registry.is("use.tabbed.welcome.screen", false)
         ? FlutterBundle.message("welcome.new.project.compact")
         : FlutterBundle.message("welcome.new.project.title"));
     }

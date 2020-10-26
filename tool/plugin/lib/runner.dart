@@ -93,13 +93,39 @@ testing=$testing
     // During instrumentation of FlutterProjectStep.form, which is a UTF-8 file.
     try {
       if (Platform.isWindows) {
+        if (spec.version == '4.0' || spec.version == '4.1') {
+          log('CANNOT BUILD ${spec.version} ON WINDOWS');
+          return 0;
+        }
         result = await exec('.\\gradlew.bat', command);
       } else {
-        result = await exec('./gradlew', command);
+        if (spec.version == '4.0' || spec.version == '4.1') {
+          return await runShellScript(command, spec);
+        } else {
+          result = await exec('./gradlew', command);
+        }
       }
     } finally {
       propertiesFile.writeAsStringSync(source);
     }
     return result;
+  }
+
+  Future<int> runShellScript(List<String> command, BuildSpec spec) async {
+    var script = '''
+#!/bin/bash
+export JAVA_HOME=\$JAVA_HOME_OLD
+./gradlew ${command.join(' ')}
+''';
+    var systemTempDir = Directory.systemTemp;
+    var dir = systemTempDir.createTempSync();
+    var file = File("${dir.path}/script");
+    file.createSync();
+    file.writeAsStringSync(script);
+    try {
+      return await exec('bash', ['${file.absolute.path}']);
+    } finally {
+      dir.deleteSync(recursive: true);
+    }
   }
 }
