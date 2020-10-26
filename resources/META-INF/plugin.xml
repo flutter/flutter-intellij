@@ -1176,9 +1176,6 @@
       <action id="flutter.xcode.open" class="io.flutter.actions.OpenInXcodeAction"
               text="Open iOS module in Xcode"
               description="Launch Xcode to edit the iOS module as a top-level project"/>
-      <action id="flutter.makeHostAppEditable" class="io.flutter.actions.FlutterMakeHostAppEditableAction"
-              text="Make Host App Editable"
-              description="Run 'flutter make-host-app-editable' to use in an Android app"/>
       <separator/>
       <action id="flutter.submitFeedback" class="io.flutter.actions.FlutterSubmitFeedback"
               text="Submit Feedback..."

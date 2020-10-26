@@ -277,7 +277,6 @@ public class FlutterCommand {
     CONFIG("Flutter config", "config"),
     CREATE("Flutter create", "create"),
     DOCTOR("Flutter doctor", "doctor", "--verbose"),
-    MAKE_HOST_APP_EDITABLE("Flutter make-host-app-editable", "make-host-app-editable"),
     PUB_GET("Flutter pub get", "pub", "get"),
     PUB_UPGRADE("Flutter pub upgrade", "pub", "upgrade"),
     PUB_OUTDATED("Flutter pub outdated", "pub", "outdated"),
