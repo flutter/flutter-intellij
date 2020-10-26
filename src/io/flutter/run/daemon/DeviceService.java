@@ -188,7 +188,9 @@ public class DeviceService {
 
     // Display as a notification to the user.
     final ApplicationInfo info = ApplicationInfo.getInstance();
-    FlutterMessages.showWarning("Flutter daemon terminated", "Consider re-starting " + info.getVersionName() + ".");
+    FlutterMessages.showWarning(
+      "Flutter daemon terminated", "Consider re-starting " + info.getVersionName() + ".",
+      project);
   }
 
   /**

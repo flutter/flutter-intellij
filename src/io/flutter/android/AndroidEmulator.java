@@ -38,7 +38,8 @@ public class AndroidEmulator {
     if (emulator == null) {
       FlutterMessages.showError(
         "Error Opening Emulator",
-        "Unable to locate the emulator tool in the Android SDK.");
+        "Unable to locate the emulator tool in the Android SDK.",
+        androidSdk.project);
       return;
     }
 
@@ -68,14 +69,14 @@ public class AndroidEmulator {
             final String message = stdout.length() == 0
                                    ? "Android emulator terminated with exit code " + exitCode
                                    : stdout.toString().trim();
-            FlutterMessages.showError("Error Opening Emulator", message);
+            FlutterMessages.showError("Error Opening Emulator", message, androidSdk.project);
           }
         }
       });
       process.startNotify();
     }
     catch (ExecutionException | RuntimeException e) {
-      FlutterMessages.showError("Error Opening Emulator", e.toString());
+      FlutterMessages.showError("Error Opening Emulator", e.toString(), androidSdk.project);
     }
   }
 

@@ -17,8 +17,10 @@ public class FlutterCleanAction extends FlutterSdkAction {
   @Override
   public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root, @NotNull DataContext context) {
     if (root == null) {
-      FlutterMessages.showError("Cannot Find Pub Root",
-                                "Flutter clean can only be run within a directory with a pubspec.yaml file");
+      FlutterMessages.showError(
+        "Cannot Find Pub Root",
+        "Flutter clean can only be run within a directory with a pubspec.yaml file",
+        project);
       return;
     }
 

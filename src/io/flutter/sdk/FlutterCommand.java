@@ -177,7 +177,8 @@ public class FlutterCommand {
     catch (ExecutionException e) {
       FlutterMessages.showError(
         type.title,
-        FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
+        FlutterBundle.message("flutter.command.exception.message", e.getMessage()),
+        null);
       return null;
     }
   }
@@ -232,7 +233,9 @@ public class FlutterCommand {
     if (result.status == FlutterCommandStartResultStatus.EXCEPTION && result.exception != null) {
       FlutterMessages.showError(
         type.title,
-        FlutterBundle.message("flutter.command.exception.message", result.exception.getMessage()));
+        FlutterBundle.message("flutter.command.exception.message", result.exception.getMessage()),
+        project
+      );
     }
     return result.processHandler;
   }

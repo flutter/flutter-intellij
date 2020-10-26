@@ -10,7 +10,6 @@ import static io.flutter.FlutterUtils.disableGradleProjectMigrationNotification;
 
 import com.android.repository.io.FileOpUtils;
 import com.intellij.conversion.ConversionListener;
-import com.intellij.conversion.ConversionService;
 import com.intellij.execution.OutputListener;
 import com.intellij.ide.RecentProjectsManager;
 import com.intellij.ide.highlighter.ModuleFileType;
@@ -162,7 +161,7 @@ public class FlutterProjectCreator {
     // Create the project files using 'flutter create'.
     FlutterSdk sdk = FlutterSdk.forPath(myModel.flutterSdk().get());
     if (sdk == null) {
-      FlutterMessages.showError("Error creating project", myModel.flutterSdk().get() + " is not a valid Flutter SDK");
+      FlutterMessages.showError("Error creating project", myModel.flutterSdk().get() + " is not a valid Flutter SDK", projectToClose);
       return;
     }
     final OutputListener listener = new OutputListener();
@@ -178,7 +177,7 @@ public class FlutterProjectCreator {
     PubRoot root = result.get();
     if (root == null) {
       String stderr = listener.getOutput().getStderr();
-      FlutterMessages.showError("Error creating project", stderr.isEmpty() ? "Flutter create command was unsuccessful" : stderr);
+      FlutterMessages.showError("Error creating project", stderr.isEmpty() ? "Flutter create command was unsuccessful" : stderr, projectToClose);
       return;
     }
 
@@ -234,7 +233,6 @@ public class FlutterProjectCreator {
     return new FlutterCreateAdditionalSettings.Builder()
       .setDescription(myModel.description().get().isEmpty() ? null : myModel.description().get())
       .setType(myModel.projectType().getValue())
-      .setAndroidX(myModel.isGeneratingAndroidX())
       .setOrg(myModel.packageName().get().isEmpty() ? null : reversedOrgFromPackage(myModel.packageName().get()))
       .setKotlin(isNotModule() && myModel.useKotlin().get() ? true : null)
       .setSwift(isNotModule() && myModel.useSwift().get() ? true : null)

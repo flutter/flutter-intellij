@@ -23,7 +23,11 @@ import org.jetbrains.annotations.NotNull;
 
 public class FlutterBuildActionGroup extends DefaultActionGroup {
 
-  public static OSProcessHandler build(Project project, @NotNull PubRoot pubRoot, FlutterSdk sdk, BuildType buildType, String desc) {
+  public static OSProcessHandler build(@NotNull Project project,
+                                       @NotNull PubRoot pubRoot,
+                                       FlutterSdk sdk,
+                                       BuildType buildType,
+                                       String desc) {
     final ProgressHelper progressHelper = new ProgressHelper(project);
     progressHelper.start(desc);
     final OSProcessHandler processHandler = sdk.flutterBuild(pubRoot, buildType.type).startInConsole(project);
@@ -37,7 +41,7 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
           progressHelper.done();
           final int exitCode = event.getExitCode();
           if (exitCode != 0) {
-            FlutterMessages.showError("Error while building " + buildType, "`flutter build` returned: " + exitCode);
+            FlutterMessages.showError("Error while building " + buildType, "`flutter build` returned: " + exitCode, project);
           }
         }
       });

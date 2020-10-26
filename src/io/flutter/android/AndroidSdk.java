@@ -41,13 +41,16 @@ public class AndroidSdk {
     if (file == null) {
       return null;
     }
-    return new AndroidSdk(file);
+    return new AndroidSdk(project, file);
   }
+
+  @NotNull Project project;
 
   @NotNull
   private final VirtualFile home;
 
-  AndroidSdk(@NotNull VirtualFile home) {
+  AndroidSdk(@NotNull Project project, @NotNull VirtualFile home) {
+    this.project = project;
     this.home = home;
   }
 

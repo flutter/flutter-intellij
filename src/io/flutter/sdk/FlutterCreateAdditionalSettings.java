@@ -7,10 +7,9 @@ package io.flutter.sdk;
 
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.module.FlutterProjectType;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 public class FlutterCreateAdditionalSettings {
   @Nullable
@@ -27,7 +26,6 @@ public class FlutterCreateAdditionalSettings {
   private Boolean kotlin;
   @Nullable
   private Boolean offlineMode;
-  private boolean isAndroidX;
 
   public FlutterCreateAdditionalSettings() {
     type = FlutterProjectType.APP;
@@ -41,8 +39,7 @@ public class FlutterCreateAdditionalSettings {
                                           @Nullable String org,
                                           @Nullable Boolean swift,
                                           @Nullable Boolean kotlin,
-                                          @Nullable Boolean offlineMode,
-                                          boolean isAndroidX) {
+                                          @Nullable Boolean offlineMode) {
     this.includeDriverTest = includeDriverTest;
     this.type = type;
     this.description = description;
@@ -50,7 +47,6 @@ public class FlutterCreateAdditionalSettings {
     this.swift = swift;
     this.kotlin = kotlin;
     this.offlineMode = offlineMode;
-    this.isAndroidX = isAndroidX;
   }
 
   public void setType(@Nullable FlutterProjectType value) {
@@ -110,11 +106,6 @@ public class FlutterCreateAdditionalSettings {
       args.add("java");
     }
 
-    if (!isAndroidX) {
-      // TODO(messick): Remove the AndroidX UI components when AS 3.6 becomes the stable version. By then AndroidX should always be used.
-      args.add("--no-androidx");
-    }
-
     return args;
   }
 
@@ -157,7 +148,6 @@ public class FlutterCreateAdditionalSettings {
     private Boolean kotlin;
     @Nullable
     private Boolean offlineMode;
-    private boolean isAndroidX;
 
     public Builder() {
     }
@@ -197,13 +187,8 @@ public class FlutterCreateAdditionalSettings {
       return this;
     }
 
-    public Builder setAndroidX(boolean selected) {
-      this.isAndroidX = selected;
-      return this;
-    }
-
     public FlutterCreateAdditionalSettings build() {
-      return new FlutterCreateAdditionalSettings(includeDriverTest, type, description, org, swift, kotlin, offlineMode, isAndroidX);
+      return new FlutterCreateAdditionalSettings(includeDriverTest, type, description, org, swift, kotlin, offlineMode);
     }
   }
 }

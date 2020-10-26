@@ -236,7 +236,7 @@ class DeviceDaemon {
               // The second time we log this error, we'll show a customized message to alert the user to the specific problem.
               if (attempts == DeviceDaemon.RESTART_ATTEMPTS_BEFORE_WARNING + 1) {
                 // Show a message in the UI when we reach the warning threshold.
-                FlutterMessages.showError("Flutter device daemon", failureMessage);
+                FlutterMessages.showError("Flutter device daemon", failureMessage, null);
               }
             }
           }
@@ -352,13 +352,13 @@ class DeviceDaemon {
     @Override
     public void onDaemonShowMessage(@NotNull DaemonEvent.DaemonShowMessage event) {
       if ("error".equals(event.level)) {
-        FlutterMessages.showError(event.title, event.message);
+        FlutterMessages.showError(event.title, event.message, null);
       }
       else if ("warning".equals(event.level)) {
-        FlutterMessages.showWarning(event.title, event.message);
+        FlutterMessages.showWarning(event.title, event.message, null);
       }
       else {
-        FlutterMessages.showInfo(event.title, event.message);
+        FlutterMessages.showInfo(event.title, event.message, null);
       }
     }
 
