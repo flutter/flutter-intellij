@@ -59,7 +59,8 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       // We can't do anything without a Flutter SDK.
       return;
     }
-    excludeAndroidFrameworkDetector(project);
+    // TODO(messick) Re-enable this after dropping support for 2020.2.
+    //excludeAndroidFrameworkDetector(project);
 
     // Set up JxBrowser listening and check if it's already enabled.
     JxBrowserManager.getInstance().listenForSettingChanges(project);
