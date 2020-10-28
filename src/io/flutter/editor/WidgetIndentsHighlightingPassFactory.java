@@ -3,16 +3,16 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-
 package io.flutter.editor;
 
+import com.intellij.application.options.editor.EditorOptionsListener;
 import com.intellij.codeHighlighting.Pass;
 import com.intellij.codeHighlighting.TextEditorHighlightingPass;
 import com.intellij.codeHighlighting.TextEditorHighlightingPassFactory;
 import com.intellij.codeHighlighting.TextEditorHighlightingPassRegistrar;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.event.CaretEvent;
@@ -20,7 +20,8 @@ import com.intellij.openapi.editor.event.CaretListener;
 import com.intellij.openapi.editor.event.EditorEventMulticaster;
 import com.intellij.openapi.editor.ex.DocumentEx;
 import com.intellij.openapi.editor.ex.EditorEx;
-import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.editor.ex.EditorSettingsExternalizable;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
@@ -38,8 +39,13 @@ import java.util.Objects;
 
 /**
  * Factory that drives all rendering of widget indents.
+ *
+ * Warning: it is unsafe to register the WidgetIndentsHighlightingPassFactory
+ * without using WidgetIndentsHighlightingPassFactoryRegistrar as recent
+ * versions of IntelliJ will unpredictably clear out all existing highlighting
+ * pass factories and then rerun all registrars.
  */
-public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlightingPassFactory, Disposable {
+public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlightingPassFactory, Disposable, DumbAware {
   // This is a debugging flag to track down bugs that are hard to spot if
   // analysis server updates are occuring at their normal rate. If there are
   // bugs, With this flag on you should be able to spot flickering or invalid
@@ -52,28 +58,43 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   private final EditorMouseEventService editorEventService;
   private final EditorPositionService editorPositionService;
   private final ActiveEditorsOutlineService editorOutlineService;
-  private final SettingsListener settingsListener;
+  private final FlutterSettings.Listener settingsListener;
   private final ActiveEditorsOutlineService.Listener outlineListener;
   protected InspectorService inspectorService;
 
   // Current configuration settings used to display Widget Indent Guides cached from the FlutterSettings class.
   private boolean isShowBuildMethodGuides;
+  // Current configuration setting used to display regular indent guides cached from EditorSettingsExternalizable.
+  private boolean isIndentGuidesShown;
+
+  public static WidgetIndentsHighlightingPassFactory getInstance(Project project) {
+    return ServiceManager.getService(project, WidgetIndentsHighlightingPassFactory.class);
+  }
 
   public WidgetIndentsHighlightingPassFactory(@NotNull Project project) {
     this.project = project;
     flutterDartAnalysisService = FlutterDartAnalysisServer.getInstance(project);
+    // TODO(jacobr): I'm not clear which Disposable it is best to tie the
+    // lifecycle of this object. The FlutterDartAnalysisServer is chosen at
+    // random as a Disposable with generally the right lifecycle. IntelliJ
+    // returns a lint warning if you tie the lifecycle to the Project.
     this.editorOutlineService = ActiveEditorsOutlineService.getInstance(project);
     this.inspectorGroupManagerService = InspectorGroupManagerService.getInstance(project);
     this.editorEventService = EditorMouseEventService.getInstance(project);
     this.editorPositionService = EditorPositionService.getInstance(project);
-    this.settingsListener = new SettingsListener();
+    this.settingsListener = this::onSettingsChanged;
     this.outlineListener = this::updateEditor;
-
-    TextEditorHighlightingPassRegistrar.getInstance(project)
-      .registerTextEditorHighlightingPass(this, TextEditorHighlightingPassRegistrar.Anchor.AFTER, Pass.UPDATE_FOLDING, false, false);
-
     syncSettings(FlutterSettings.getInstance());
     FlutterSettings.getInstance().addListener(settingsListener);
+    isIndentGuidesShown = EditorSettingsExternalizable.getInstance().isIndentGuidesShown();
+    ApplicationManager.getApplication().getMessageBus().connect(this).subscribe(
+      EditorOptionsListener.APPEARANCE_CONFIGURABLE_TOPIC, () -> {
+        final boolean newValue = EditorSettingsExternalizable.getInstance().isIndentGuidesShown();
+        if (isIndentGuidesShown != newValue) {
+          isIndentGuidesShown = newValue;
+          updateAllEditors();
+        }
+      });
 
     final EditorEventMulticaster eventMulticaster = EditorFactory.getInstance().getEventMulticaster();
     eventMulticaster.addCaretListener(new CaretListener() {
@@ -92,7 +113,6 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
 
   /**
    * Updates all editors if the settings have changed.
-   *
    * <p>
    * This is useful for adding the guides in after they were turned on from the settings menu.
    */
@@ -137,52 +157,69 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     });
   }
 
-  private void updateEditorSettings(EditorEx editor) {
-    // We have to suppress the system indent guides when displaying
-    // WidgetIndentGuides as the system indent guides will overlap causing
-    // artifacts. See the io.flutter.editor.IdentsGuides class that we use
-    // instead which supports filtering out regular indent guides that overlap
-    // with indent guides.
-    editor.getSettings().setIndentGuidesShown(!isShowBuildMethodGuides);
-  }
-
+  @Nullable
   @Override
-  @NotNull
-  public TextEditorHighlightingPass createHighlightingPass(@NotNull PsiFile file, @NotNull final Editor e) {
-    if (!FlutterSettings.getInstance().isShowBuildMethodGuides()) {
-      if (e instanceof EditorEx) {
-        // Cleanup highlighters from the widget indents pass if it was
-        // previously enabled.
-        ApplicationManager.getApplication().invokeLater(() -> WidgetIndentsHighlightingPass.cleanupHighlighters(e));
-      }
-
-      // Return a placeholder editor highlighting pass. The user will get the
-      // regular IntelliJ platform provided FilteredIndentsHighlightingPass in this case.
-      // This is the special case where the user disabled the
-      // WidgetIndentsGuides after previously having them setup.
-      return new PlaceholderHighlightingPass(
-        project,
-        e.getDocument(),
-        false
-      );
+  public TextEditorHighlightingPass createHighlightingPass(@NotNull PsiFile file, @NotNull Editor e) {
+    // Surprisingly, the highlighting pass returned by this method isn't the
+    // highlighting pass to display the indent guides. It is the highlighting
+    // pass that display regular indent guides for Dart files that filters out
+    // indent guides that intersect with the widget indent guides. because
+    // the widget indent guides are powered by the Dart Analyzer, computing the
+    // widget indent guides themselves must be done asynchronously driven by
+    // analysis server updates not IntelliJ's default assumptions about how a
+    // text highlighting pass should work. See runWidgetIndentsPass for the
+    // logic that handles the actual widget indent guide pass.
+    if (!FlutterUtils.isDartFile(file.getVirtualFile())) {
+      return null;
     }
-    final FilteredIndentsHighlightingPass filteredIndentsHighlightingPass = new FilteredIndentsHighlightingPass(project, e, file);
-    if (!(e instanceof EditorEx)) return filteredIndentsHighlightingPass;
+
+    if (!isShowBuildMethodGuides) {
+      // Reset the editor back to its default indent guide setting as build
+      // method guides are disabled and the file is a dart file.
+      e.getSettings().setIndentGuidesShown(isIndentGuidesShown);
+      // Cleanup custom filtered build method guides that may be left around
+      // from when our custom filtered build method guides were previously
+      // shown. This cleanup is very cheap if it has already been performed
+      // so there is no harm in performing it more than once.
+      FilteredIndentsHighlightingPass.cleanupHighlighters(e);
+      return null;
+    }
+    // If we are showing build method guides we can never show the regular
+    // IntelliJ indent guides for a file because they will overlap with the
+    // widget indent guides in distracting ways.
+    e.getSettings().setIndentGuidesShown(false);
+
+    // If regular indent guides should be shown we need to show the filtered
+    // indents guides which look like the regular indent guides except that
+    // guides that intersect with the widget guides are filtered out.
+    final TextEditorHighlightingPass highlightingPass;
+    if (isIndentGuidesShown) {
+      highlightingPass = new FilteredIndentsHighlightingPass(project, e, file);
+    }
+    else {
+      highlightingPass = null;
+      // The filtered pass might have been shown before in which case we need to clean it up.
+      // Cleanup custom filtered build method guides that may be left around
+      // from when our custom filtered build method guides were previously
+      // shown. This cleanup is very cheap if it has already been performed
+      // so there is no harm in performing it more than once.
+      FilteredIndentsHighlightingPass.cleanupHighlighters(e);
+    }
+
+    if (!(e instanceof EditorEx)) return highlightingPass;
     final EditorEx editor = (EditorEx)e;
 
     final VirtualFile virtualFile = editor.getVirtualFile();
     if (!FlutterUtils.couldContainWidgets(virtualFile)) {
-      return filteredIndentsHighlightingPass;
+      return highlightingPass;
     }
     final FlutterOutline outline = editorOutlineService.getOutline(virtualFile.getCanonicalPath());
 
     if (outline != null) {
-      updateEditorSettings(editor);
       ApplicationManager.getApplication().invokeLater(() -> runWidgetIndentsPass(editor, outline));
     }
-    // Return the indent pass rendering regular indent guides with guides that
-    // intersect with the widget guides filtered out.
-    return filteredIndentsHighlightingPass;
+
+    return highlightingPass;
   }
 
   void runWidgetIndentsPass(EditorEx editor, FlutterOutline outline) {
@@ -195,9 +232,9 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     if (!isShowBuildMethodGuides || outline == null) {
       // If build method guides are disabled or there is no outline to use in this pass,
       // then do nothing.
+      WidgetIndentsHighlightingPass.cleanupHighlighters(editor);
       return;
     }
-
     final VirtualFile file = editor.getVirtualFile();
     if (!FlutterUtils.couldContainWidgets(file)) {
       return;
@@ -241,46 +278,21 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     editorOutlineService.removeListener(outlineListener);
   }
 
-  // Listener that asks for another pass when the Flutter settings for indent highlighting change.
-  private class SettingsListener implements FlutterSettings.Listener {
-    @Override
-    public void settingsChanged() {
-      if (project.isDisposed()) {
-        return;
-      }
-      final FlutterSettings settings = FlutterSettings.getInstance();
-      // Skip if none of the settings that impact Widget Idents were changed.
-      if (isShowBuildMethodGuides == settings.isShowBuildMethodGuides()) {
-        // Change doesn't matter for us.
-        return;
-      }
-      syncSettings(settings);
-
-      for (EditorEx editor : editorOutlineService.getActiveDartEditors()) {
-        updateEditorSettings(editor);
-        // To be safe, avoid rendering artfacts when settings were changed
-        // that only impacted rendering.
-        editor.repaint(0, editor.getDocument().getTextLength());
-      }
+  void onSettingsChanged() {
+    if (project.isDisposed()) {
+      return;
     }
-  }
-}
-
-/**
- * Highlighing pass used as a placeholder when WidgetIndentPass was enabled
- * and then later disabled.
- * <p>
- * This is required as a TextEditorHighlightingPassFactory cannot return null.
- */
-class PlaceholderHighlightingPass extends TextEditorHighlightingPass {
-  PlaceholderHighlightingPass(Project project, Document document, boolean isRunIntentionPassAfter) {
-    super(project, document, isRunIntentionPassAfter);
+    final FlutterSettings settings = FlutterSettings.getInstance();
+    // Skip if none of the settings that impact Widget Idents were changed.
+    if (isShowBuildMethodGuides == settings.isShowBuildMethodGuides()) {
+      // Change doesn't matter for us.
+      return;
+    }
+    syncSettings(settings);
   }
 
-  public void doCollectInformation(@NotNull ProgressIndicator indicator) {
-  }
-
-  @Override
-  public void doApplyInformationToEditor() {
+  public void registerHighlightingPassFactory(@NotNull TextEditorHighlightingPassRegistrar registrar) {
+    registrar
+      .registerTextEditorHighlightingPass(this, TextEditorHighlightingPassRegistrar.Anchor.AFTER, Pass.UPDATE_FOLDING, false, false);
   }
 }

@@ -87,13 +87,19 @@ public class ActiveEditorsOutlineService implements Disposable {
     if (project.isDisposed()) {
       return Collections.emptyList();
     }
-    final FileEditor[] editors = FileEditorManager.getInstance(project).getSelectedEditors();
+    final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+    if (fileEditorManager == null) {
+      // TODO(jacobr): why do we sometimes hit this edge case?
+      return Collections.emptyList();
+    }
+
+    final FileEditor[] editors = fileEditorManager.getSelectedEditors();
     final List<EditorEx> dartEditors = new ArrayList<>();
     for (FileEditor fileEditor : editors) {
       if (!(fileEditor instanceof TextEditor)) continue;
       final TextEditor textEditor = (TextEditor)fileEditor;
       final Editor editor = textEditor.getEditor();
-      if (editor instanceof EditorEx && !editor.isDisposed()) {
+      if (editor instanceof EditorEx && !editor.isDisposed() && FlutterUtils.isDartFile(((EditorEx)editor).getVirtualFile())) {
         dartEditors.add((EditorEx)editor);
       }
     }
@@ -105,8 +111,13 @@ public class ActiveEditorsOutlineService implements Disposable {
       return;
     }
 
-    final VirtualFile[] selectedFiles = FileEditorManager.getInstance(project).getSelectedFiles();
-    final VirtualFile[] files = FileEditorManager.getInstance(project).getSelectedFiles();
+    final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+    if (fileEditorManager == null) {
+      // TODO(jacobr): why do we sometimes hit this edge case?
+      return;
+    }
+
+    final VirtualFile[] files = fileEditorManager.getSelectedFiles();
 
     final Set<String> newPaths = new HashSet<>();
     for (VirtualFile file : files) {
