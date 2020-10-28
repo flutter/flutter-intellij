@@ -37,6 +37,49 @@
 
   <change-notes>
     <![CDATA[
+<h1>51.0</h1>
+<ul>
+  <li>Change predicate type for EAP (#5002)</li>
+  <li>Remove deprecated command (#4995)</li>
+  <li>Require a project parameter when creating notifications (#4972)</li>
+  <li>Remove all androidx references (#4993)</li>
+  <li>Fix hang when opening a project if previous selection was a directory (#4991)</li>
+  <li>Minor tweaks to an error message (#4976)</li>
+  <li>Enable embedded browser by default (#4988)</li>
+  <li>Improved aesthetics for the run console folding (#4975)</li>
+  <li>Fix an issue with unnamed test groups (#4980)</li>
+  <li>Migrate to IntelliJ NPW for AS 4.3 (#4985)</li>
+  <li>Resume isolates at test start (#4977)</li>
+  <li>Show option to open DevTools in browser during JxBrowser installation (#4983)</li>
+  <li>Record whether the project type is bazel (#4971)</li>
+  <li>Fix a deprecation warning (#4970)</li>
+  <li>Show option to open browser DevTools on general download failure (#4969)</li>
+  <li>Fix an issue with displaying flutter errors in terse mode (#4966)</li>
+  <li>Add analytics for download finished (#4963)</li>
+  <li>Add more detail for JxBrowser failed downloads (#4948)</li>
+  <li>Adjust the layout for the jxbrowser error feedback ui (#4945)</li>
+  <li>Prevent repeat downloads of JxBrowser files (#4949)</li>
+  <li>Address an issue with the JsBrowser singleton (#4944)</li>
+  <li>Stop downloading ant on kokoro (#4947)</li>
+  <li>Fix a null assertion in the inspector (#4938)</li>
+  <li>Fix an exception loading the FlutterIconProvider class in EAP (#4942)</li>
+  <li>Update the DartElementPresentationUtil class (#4915)</li>
+  <li>Update the FlutterSearchableOptionContributor class (#4935)</li>
+  <li>Various lint fixes (#4931)</li>
+  <li>Collect analytics for the 'enable hot ui' setting (#4910)</li>
+  <li>Address various lints in src/io/flutter/perf, src/io/flutter/performance, src/io/flutter/module (#4918)</li>
+  <li>Resize the flutter outline view icons to be slightly smaller (#4916)</li>
+  <li>Send the flutter sdk version with the analytics for flutter errors (#4913)</li>
+  <li>Re-add widgets.json (#4919)</li>
+  <li>Remove the widget catalog file and related code (#4917)</li>
+  <li>Make the settings page more compact (#4900)</li>
+  <li>Remove an older wizard for small IDEs (#4908)</li>
+  <li>Make the device param into various run methods not null (#4903)</li>
+  <li>Change FileUtils to instance for easier mocking (#4909)</li>
+  <li>Adjust the text for the jxbrowser setting (#4907)</li>
+  <li>Make the flutter settings page slightly more compact (#4899)</li>
+  <li>Remove the explicit disable track widget creation option (#4902)</li>
+</ul>
 <h1>50.0</h1>
 <ul>
   <li>More general lint cleanups (#4865)</li>
