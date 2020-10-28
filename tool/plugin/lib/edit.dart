@@ -127,6 +127,12 @@ List<EditCommand> editCommands = [
     replacement: 'Consumer<? super SubmittedReportInfo> consumer',
     version: '2020.3',
   ),
+  Subst(
+    path: 'src/io/flutter/utils/CollectionUtils.java',
+    initial: 'Predicate<T> predicate',
+    replacement: 'Predicate<? super T> predicate',
+    version: '2020.3',
+  ),
 ];
 
 // Used to test checkAndClearAppliedEditCommands()
