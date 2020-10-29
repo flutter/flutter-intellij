@@ -50,8 +50,15 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     if (FlutterUtils.isAndroidStudio() && AndroidUtils.isAndroidProject(project)) {
       AndroidUtils.addGradleListeners(project);
     }
-    if (!FlutterModuleUtils.declaresFlutter(project)) {
+
+    if (!FlutterModuleUtils.declaresFlutter(project) && !WorkspaceCache.getInstance(project).isBazel()) {
       return;
+    }
+
+    // Set up JxBrowser listening and check if it's already enabled.
+    JxBrowserManager.getInstance().listenForSettingChanges(project);
+    if (FlutterSettings.getInstance().isEnableEmbeddedBrowsers()) {
+      JxBrowserManager.getInstance().setUp(project);
     }
 
     final FlutterSdk sdk = FlutterSdk.getIncomplete(project);
@@ -61,12 +68,6 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     }
     // TODO(messick) Re-enable this after dropping support for 2020.2.
     //excludeAndroidFrameworkDetector(project);
-
-    // Set up JxBrowser listening and check if it's already enabled.
-    JxBrowserManager.getInstance().listenForSettingChanges(project);
-    if (FlutterSettings.getInstance().isEnableEmbeddedBrowsers()) {
-      JxBrowserManager.getInstance().setUp(project);
-    }
 
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       sdk.queryFlutterConfig("android-studio-dir", false);
