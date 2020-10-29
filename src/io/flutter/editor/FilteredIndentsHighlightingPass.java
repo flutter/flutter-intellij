@@ -302,6 +302,17 @@ public class FilteredIndentsHighlightingPass extends TextEditorHighlightingPass 
     return myDocument.getModificationStamp();
   }
 
+  public static void cleanupHighlighters(Editor editor) {
+    final List<RangeHighlighter> highlighters = editor.getUserData(INDENT_HIGHLIGHTERS_IN_EDITOR_KEY);
+    if (highlighters == null) return;
+
+    for (RangeHighlighter highlighter : highlighters) {
+      highlighter.dispose();
+    }
+    editor.putUserData(INDENT_HIGHLIGHTERS_IN_EDITOR_KEY, null);
+    editor.putUserData(LAST_TIME_INDENTS_BUILT, null);
+  }
+
   @Override
   public void doApplyInformationToEditor() {
     final Long stamp = myEditor.getUserData(LAST_TIME_INDENTS_BUILT);
