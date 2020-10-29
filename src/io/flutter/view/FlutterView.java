@@ -139,7 +139,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
             }
           }
         }
-        System.out.println("XXX selection changed to :" + selection);
       }
     }, this);
   }

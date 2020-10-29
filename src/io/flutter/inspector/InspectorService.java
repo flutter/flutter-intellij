@@ -398,10 +398,10 @@ public class InspectorService implements Disposable {
     switch (streamId) {
       case VmService.DEBUG_STREAM_ID: {
         if (event.getKind() == EventKind.Inspect) {
-          // Assume the inspector in Flutter DevTools or the on device
-          // has already set the selection on the device so we don't have to.
-          // Having multiple clients set the selection risks race conditions
-          // where the selection ping-pongs back an forth.
+          // Assume the inspector in Flutter DevTools or the on device widget
+          // inspector has already set the selection on the device so we don't
+          // have to Having multiple clients set the selection risks race
+          // conditions where the selection ping-pongs back and forth.
 
           // Update the UI in IntelliJ.
           notifySelectionChanged(false, false);
