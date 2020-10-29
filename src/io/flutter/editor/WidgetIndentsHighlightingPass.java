@@ -97,6 +97,8 @@ import static java.lang.Math.*;
 public class WidgetIndentsHighlightingPass {
   private static final Logger LOG = Logger.getInstance(WidgetIndentsHighlightingPass.class);
 
+  // Delta between the start of a column and where indent guides should start;
+  public static int INDENT_GUIDE_DELTA = -2;
   private final static Stroke SOLID_STROKE = new BasicStroke(1);
   private final static JBColor VERY_LIGHT_GRAY = new JBColor(Gray._224, Gray._80);
   private final static JBColor SHADOW_GRAY = new JBColor(Gray._192, Gray._100);
@@ -346,7 +348,7 @@ public class WidgetIndentsHighlightingPass {
               // This is the normal case where we draw a foward line to the connected child.
               LinePainter2D.paint(
                 g2d,
-                start.x + 2,
+                start.x + INDENT_GUIDE_DELTA,
                 newY + lineHeight * 0.5,
                 //start.x + charWidth  * childIndent - padding,
                 widgetPoint.x - padding,
@@ -371,7 +373,7 @@ public class WidgetIndentsHighlightingPass {
               final int endX = widgetPoint.x - padding;
               LinePainter2D.paint(
                 g2d,
-                start.x + 2,
+                start.x + INDENT_GUIDE_DELTA,
                 newY,
                 endX,
                 newY
@@ -424,11 +426,11 @@ public class WidgetIndentsHighlightingPass {
         if (splitY != -1) {
           drawVerticalLineHelper(g2d, lineColor, start.x, y, splitY, childLines);
           g2d.setColor(pastBlockColor);
-          g2d.drawLine(start.x + 2, (int)splitY + 1, start.x + 2, maxY);
+          g2d.drawLine(start.x + INDENT_GUIDE_DELTA, (int)splitY + 1, start.x + INDENT_GUIDE_DELTA, maxY);
         }
         else {
           g2d.setColor(pastBlockColor);
-          g2d.drawLine(start.x + 2, y, start.x + 2, maxY);
+          g2d.drawLine(start.x + INDENT_GUIDE_DELTA, y, start.x + INDENT_GUIDE_DELTA, maxY);
         }
       }
       g2d.dispose();
@@ -510,7 +512,7 @@ public class WidgetIndentsHighlightingPass {
     ArrayList<OutlineLocation> childLines
   ) {
     g.setColor(lineColor);
-    g.drawLine(x + 2, (int)yStart, x + 2, (int)yEnd + 1);
+    g.drawLine(x + INDENT_GUIDE_DELTA, (int)yStart, x + INDENT_GUIDE_DELTA, (int)yEnd + 1);
   }
 
   public static int compare(@NotNull TextRangeDescriptorPair r, @NotNull RangeHighlighter h) {

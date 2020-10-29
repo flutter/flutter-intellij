@@ -157,7 +157,7 @@ public class FilteredIndentsHighlightingPass extends TextEditorHighlightingPass 
     //     1. Show only active indent if it crosses soft wrap-introduced text;
     //     2. Show indent as is if it doesn't intersect with soft wrap-introduced text;
     if (selected) {
-      LinePainter2D.paint((Graphics2D)g, start.x + 2, start.y, start.x + 2, maxY - 1);
+      LinePainter2D.paint((Graphics2D)g, start.x + WidgetIndentsHighlightingPass.INDENT_GUIDE_DELTA, start.y, start.x + WidgetIndentsHighlightingPass.INDENT_GUIDE_DELTA, maxY - 1);
     }
     else {
       int y = start.y;
@@ -172,7 +172,7 @@ public class FilteredIndentsHighlightingPass extends TextEditorHighlightingPass 
         }
         if (!softWraps.isEmpty() && softWraps.get(0).getIndentInColumns() < indentColumn) {
           if (y < newY || i > startLine + lineShift) { // There is a possible case that soft wrap is located on indent start line.
-            LinePainter2D.paint((Graphics2D)g, start.x + 2, y, start.x + 2, newY + lineHeight - 1);
+            LinePainter2D.paint((Graphics2D)g, start.x + WidgetIndentsHighlightingPass.INDENT_GUIDE_DELTA, y, start.x + WidgetIndentsHighlightingPass.INDENT_GUIDE_DELTA, newY + lineHeight - 1);
           }
           newY += logicalLineHeight;
           y = newY;
@@ -188,7 +188,7 @@ public class FilteredIndentsHighlightingPass extends TextEditorHighlightingPass 
       }
 
       if (y < maxY) {
-        LinePainter2D.paint((Graphics2D)g, start.x + 2, y, start.x + 2, maxY - 1);
+        LinePainter2D.paint((Graphics2D)g, start.x + WidgetIndentsHighlightingPass.INDENT_GUIDE_DELTA, y, start.x + WidgetIndentsHighlightingPass.INDENT_GUIDE_DELTA, maxY - 1);
       }
     }
   };
