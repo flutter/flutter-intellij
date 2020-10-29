@@ -82,6 +82,9 @@
 </ul>
 <h1>50.0</h1>
 <ul>
+  <li>Fix bugs where widget indent behavior sometimes impacted non-dart files, stale indent guides were sometimes displayed, and filtered indent guides were unpredictably displayed (#5008)</li>
+  <li>Allow bazel projects to set up JxBrowser (#5007)</li>
+  <li>Make embedded browser default enabled, not version-specific (#5006)</li>
   <li>More general lint cleanups (#4865)</li>
   <li>Improve the flutter error ids we generate for analytics (#4870)</li>
   <li>Update flutter framework metadata (#4866)</li>
