@@ -1123,14 +1123,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       getTreeModel().nodeChanged(selectedNode.getParent());
     }
     final DiagnosticsNode diagnostic = getSelectedDiagnostic();
-    if (diagnostic != null && !textEditorUpdated) {
-      if (isCreatedByLocalProject(diagnostic)) {
-        final XSourcePosition position = diagnostic.getCreationLocation().getXSourcePosition();
-        if (position != null) {
-          position.createNavigatable(getFlutterApp().getProject()).navigate(false);
-        }
-      }
-    }
     if (myPropertiesPanel != null) {
       myPropertiesPanel.showProperties(diagnostic);
     }
