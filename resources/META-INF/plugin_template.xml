@@ -349,13 +349,12 @@
     <additionalTextAttributes scheme="Default" file="colorSchemes/FlutterLogColorSchemeDefault.xml"/>
     <additionalTextAttributes scheme="Default" file="colorSchemes/FlutterCodeColorSchemeDefault.xml"/>
     <search.optionContributor implementation="io.flutter.sdk.FlutterSearchableOptionContributor"/>
-  </extensions>
 
-  <project-components>
-    <component>
-      <implementation-class>io.flutter.editor.WidgetIndentsHighlightingPassFactory</implementation-class>
-    </component>
-  </project-components>
+    <projectService serviceInterface="io.flutter.editor.WidgetIndentsHighlightingPassFactory"
+                    serviceImplementation="io.flutter.editor.WidgetIndentsHighlightingPassFactory"
+                    overrides="false"/>
+    <highlightingPassFactory implementation="io.flutter.editor.WidgetIndentsHighlightingPassFactoryRegistrar"/>
+  </extensions>
 
   <!-- Dart Plugin extensions -->
   <extensions defaultExtensionNs="Dart">
