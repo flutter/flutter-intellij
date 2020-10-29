@@ -70,7 +70,7 @@ Validate that our example projects can be opened.
 
 * close any open projects in IDEA
 * from the Welcome screen choose `Open` (IntelliJ) or `Open an existing Android Studio project` (AS)
-* browse to and select `<flutter-root>/examples/catalog`
+* browse to and select `<flutter-root>/examples/hello_world`
 * ensure there are no analysis errors or warnings
 * test that code completion is working as expected
 * ensure that the `main.dart` launch configuration shows up and is selected
