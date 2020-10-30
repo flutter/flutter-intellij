@@ -398,12 +398,11 @@ public class InspectorService implements Disposable {
     switch (streamId) {
       case VmService.DEBUG_STREAM_ID: {
         if (event.getKind() == EventKind.Inspect) {
-          // Make sure the WidgetInspector on the device switches to show the inspected object
-          // if the inspected object is a Widget or RenderObject.
+          // Assume the inspector in Flutter DevTools or on the device widget
+          // inspector has already set the selection on the device so we don't
+          // have to. Having multiple clients set the selection risks race
+          // conditions where the selection ping-pongs back and forth.
 
-          // We create a dummy object group as this particular operation
-          // doesn't actually require an object group.
-          createObjectGroup("dummy").setSelection(event.getInspectee(), true, true);
           // Update the UI in IntelliJ.
           notifySelectionChanged(false, false);
         }
