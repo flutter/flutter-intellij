@@ -38,11 +38,15 @@ import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.tabs.TabInfo;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import com.intellij.xdebugger.XSourcePosition;
 import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.devtools.DevToolsManager;
+import io.flutter.inspector.DiagnosticsNode;
+import io.flutter.inspector.InspectorGroupManagerService;
 import io.flutter.inspector.InspectorService;
+import io.flutter.inspector.InspectorSourceLocation;
 import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.jxbrowser.JxBrowserStatus;
 import io.flutter.run.FlutterDevice;
@@ -115,6 +119,28 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     shouldAutoHorizontalScroll.listen(state::setShouldAutoScroll);
     highlightNodesShownInBothTrees.listen(state::setHighlightNodesShownInBothTrees);
+
+    InspectorGroupManagerService.getInstance(project).addListener(new InspectorGroupManagerService.Listener() {
+      @Override
+      public void onInspectorAvailable(InspectorService service) { }
+
+      @Override
+      public void onSelectionChanged(DiagnosticsNode selection) {
+        if (selection != null) {
+          final InspectorSourceLocation location = selection.getCreationLocation();
+          if (location != null) {
+            final XSourcePosition sourcePosition = location.getXSourcePosition();
+            sourcePosition.createNavigatable(project).navigate(true);
+          }
+          if (selection.isCreatedByLocalProject()) {
+            final XSourcePosition position = selection.getCreationLocation().getXSourcePosition();
+            if (position != null) {
+              position.createNavigatable(project).navigate(false);
+            }
+          }
+        }
+      }
+    }, this);
   }
 
   @Override
