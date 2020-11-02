@@ -27,15 +27,6 @@ jobs:
         run: ./tool/github.sh
         env:
           BOT: ${{matrix.bot}}
-  mac-test:
-    runs-on: macos-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v2
-      - name: macOS UNIT_TEST_BOT
-        run: ./tool/github.sh
-        env:
-          BOT: UNIT_TEST_BOT
   windows-test:
     runs-on: windows-latest
     steps:
@@ -43,5 +34,6 @@ jobs:
         uses: actions/checkout@v2
       - name: windows UNIT_TEST_BOT
         run: ./tool/github.bat
+        shell: cmd
         env:
           BOT: UNIT_TEST_BOT
