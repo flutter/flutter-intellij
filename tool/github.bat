@@ -2,9 +2,6 @@ rem @echo off
 
 set JAVA_HOME=%JAVA_HOME_11_X64%
 
-echo "install dart"
-choco install dart-sdk
-
 goto :next
 rem Make this adaptive to the possibility of a file or dir named dart, someday.
 md dart
