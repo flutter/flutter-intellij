@@ -4,7 +4,7 @@ set JAVA_HOME=%JAVA_HOME_11_X64%
 
 echo "install dart"
 choco install dart-sdk > choco.log
-refreshenv
+call RefreshEnv.cmd
 
 echo "dart version"
 dart --version
