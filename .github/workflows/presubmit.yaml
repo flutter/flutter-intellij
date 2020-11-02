@@ -11,9 +11,6 @@ jobs:
         with:
           java-version: '11'
           java-package: jdk
-      - name: setup dart
-        run: choco install dart-sdk
-        shell: cmd
       - name: windows UNIT_TEST_BOT
         run: ./tool/github.bat
         shell: cmd
