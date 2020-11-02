@@ -22,11 +22,5 @@ echo "pub get"
 ..\..\dart\dart-sdk\bin\pub get --no-precompile
 cd ..\..
 
-dart tool\plugin\bin\main.dart test > test.log || goto :error
-type test.log
-
-:; exit 0
-exit /b 0
-
-:error
-exit /b %errorlevel%
+echo "run tests"
+dart tool\plugin\bin\main.dart test
