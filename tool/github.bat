@@ -15,7 +15,7 @@ echo "JAVA_HOME=%JAVA_HOME%"
 
 cd tool\plugin
 echo "pub get"
-pub get --no-precompile
+call pub get --no-precompile
 cd ..\..
 
 echo "run tests"
