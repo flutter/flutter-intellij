@@ -19,7 +19,7 @@ echo "JAVA_HOME=%JAVA_HOME%"
 
 cd tool\plugin
 echo "pub get"
-cmd /c "pub get --no-precompile"
+..\..\dart\dart-sdk\bin\pub get --no-precompile
 cd ..\..
 
 dart tool\plugin\bin\main.dart test > test.log || goto :error
