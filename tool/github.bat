@@ -1,5 +1,6 @@
 rem @echo off
 
+set JAVA_HOME=%JAVA_HOME_11_X64%
 set DART_VERSION=2.7.1
 
 echo "install dart"
