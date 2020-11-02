@@ -1,6 +1,19 @@
 name: presubmit
 on: [push]
 jobs:
+  windows-test:
+    runs-on: windows-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: Setup java
+        uses: actions/setup-java@v1
+        with:
+          java-version: '11'
+          java-package: jdk
+      - name: windows UNIT_TEST_BOT
+        run: ./tool/github.bat
+        shell: cmd
   presubmit:
     runs-on: ubuntu-latest
     strategy:
@@ -27,18 +40,3 @@ jobs:
         run: ./tool/github.sh
         env:
           BOT: ${{matrix.bot}}
-  windows-test:
-    runs-on: windows-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v2
-      - name: Setup java
-        uses: actions/setup-java@v1
-        with:
-          java-version: '11'
-          java-package: jdk
-      - name: windows UNIT_TEST_BOT
-        run: ./tool/github.bat
-        shell: cmd
-        env:
-          BOT: UNIT_TEST_BOT

@@ -10,7 +10,7 @@ cd dart
 curl https://storage.googleapis.com/dart-archive/channels/stable/release/%DART_VERSION%/sdk/dartsdk-windows-ia32-release.zip > dart.zip
 unzip -q dart.zip
 cd ..
-set PATH=.\dart\dart-sdk\bin
+set PATH=.\dart\dart-sdk\bin:%PATH%
 
 dart --version || goto :error
 
