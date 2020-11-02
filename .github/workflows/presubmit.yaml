@@ -13,7 +13,6 @@ jobs:
           java-package: jdk
       - name: windows UNIT_TEST_BOT
         run: ./tool/github.bat
-        shell: cmd
   presubmit:
     runs-on: ubuntu-latest
     strategy:
