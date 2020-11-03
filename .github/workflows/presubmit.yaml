@@ -14,5 +14,5 @@ jobs:
       - name: windows UNIT_TEST_BOT
         run: ./tool/github.bat
         env:
-          JAVA_HOME: ${{ JAVA_HOME_11_X64 }}
+          JAVA_HOME: ${{ %JAVA_HOME_11_X64% }}
         shell: cmd
