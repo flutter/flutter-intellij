@@ -6,12 +6,11 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-      - name: setup java
+      - name: windows UNIT_TEST_BOT
         uses: actions/setup-java@v1
         with:
           java-version: '11'
           java-package: jdk
-      - name: windows UNIT_TEST_BOT
         run: ./tool/github.bat
         shell: cmd
   presubmit:
