@@ -11,6 +11,7 @@ import io.flutter.FlutterInitializer;
 import io.flutter.ObservatoryConnector;
 import io.flutter.analytics.Analytics;
 import io.flutter.devtools.DevToolsManager;
+import io.flutter.inspector.InspectorGroupManagerService;
 import io.flutter.inspector.InspectorService;
 import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.jxbrowser.JxBrowserStatus;
@@ -32,7 +33,8 @@ import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({DevToolsManager.class, JxBrowserManager.class, ThreadUtil.class, FlutterInitializer.class, JxBrowserUtils.class})
+@PrepareForTest({DevToolsManager.class, JxBrowserManager.class, ThreadUtil.class, FlutterInitializer.class, JxBrowserUtils.class,
+  InspectorGroupManagerService.class})
 public class FlutterViewTest {
   @Mock Project mockProject;
   @Mock FlutterApp mockApp;
@@ -41,16 +43,22 @@ public class FlutterViewTest {
   @Mock DevToolsManager mockDevToolsManager;
   @Mock ObservatoryConnector mockObservatoryConnector;
   @Mock JxBrowserManager mockJxBrowserManager;
+  @Mock InspectorGroupManagerService mockInspectorGroupManagerService;
 
   @Test
   public void testHandleJxBrowserInstalled() {
     // If JxBrowser has been installed and DevTools is installed, then we should immediately open the embedded browser.
     final String testUrl = "http://www.testUrl.com";
     final String projectName = "Test Project Name";
-    final FlutterView flutterView = new FlutterView(mockProject);
 
     PowerMockito.mockStatic(DevToolsManager.class);
     when(DevToolsManager.getInstance(mockProject)).thenReturn(mockDevToolsManager);
+
+    PowerMockito.mockStatic(InspectorGroupManagerService.class);
+    when(InspectorGroupManagerService.getInstance(mockProject)).thenReturn(mockInspectorGroupManagerService);
+
+    final FlutterView flutterView = new FlutterView(mockProject);
+
     when(mockDevToolsManager.hasInstalledDevTools()).thenReturn(true);
     when(mockApp.getConnector()).thenReturn(mockObservatoryConnector);
     when(mockObservatoryConnector.getBrowserUrl()).thenReturn(testUrl);
