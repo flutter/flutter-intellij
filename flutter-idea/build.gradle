@@ -54,6 +54,7 @@ dependencies {
                        includes: ["*.jar"])
   testCompile fileTree(dir: "$project.rootDir/lib/jxbrowser",
                        includes: ["*.jar"])
+  testImplementation 'junit:junit:4.13'
 }
 
 /* Need to swizzle source and resource paths to match standard or buildPlugin does nothing. */
@@ -85,3 +86,7 @@ sourceSets {
 buildSearchableOptions.enabled = false
 
 check.dependsOn verifyPlugin
+
+test {
+  useJUnit()
+}

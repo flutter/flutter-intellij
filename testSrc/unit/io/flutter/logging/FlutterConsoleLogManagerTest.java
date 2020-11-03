@@ -133,7 +133,7 @@ public class FlutterConsoleLogManagerTest {
     logManager.flushFlutterErrorQueue();
 
     // Assert that the second error has abridged text.
-    assertThat(console.getText(), containsString("══ Exception caught by widgets library ══"));
+    assertThat(console.getText(), containsString("== Exception caught by widgets library =="));
     assertThat(console.getText(),
                not(containsString("PlanetWidget.build (package:planets/main.dart:229:5)")));
   }
