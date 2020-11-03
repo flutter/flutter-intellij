@@ -17,7 +17,7 @@ export FLUTTER_SDK=`pwd`/../flutter
 
 if [ "$IDEA_VERSION" = "4.0" -o "$IDEA_VERSION" = "4.1" ] ; then
 
-  #Install Java 8 if running on 4.0 or 4.1
+  # Install Java 8 if running on 4.0 or 4.1.
   wget -O- https://apt.corretto.aws/corretto.key | sudo apt-key add -
   sudo add-apt-repository 'deb https://apt.corretto.aws stable main'
   sudo apt-get update; sudo apt-get install -y java-1.8.0-amazon-corretto-jdk
@@ -27,7 +27,7 @@ fi
 
 java -version
 
-# Get packages for the top-level grind script utilities
+# Get packages for the top-level grind script utilities.
 echo "pub get `pwd`"
 pub get
 
@@ -39,21 +39,21 @@ pub get
 
 if [ "$DART_BOT" = true ] ; then
 
-  # analyze the Dart code in the repo
+  # Analyze the Dart code in the repo.
   echo "dart analyze"
   dart analyze
 
-  # ensure that the edits have been applied to template files (and their target
-  # files have been regenerated)
+  # Ensure that the edits have been applied to template files (and their target
+  # files have been regenerated).
   ./bin/plugin generate
 
-  # show any changed files
+  # Show any changed files.
   git status --porcelain
 
-  # return a failure exit code if there are any diffs
+  # Return a failure exit code if there are any diffs.
   git diff --exit-code
 
-  # run the tests for the plugin tool
+  # Run the tests for the plugin tool.
   (cd tool/plugin; dart test/plugin_test.dart)
 
 elif [ "$CHECK_BOT" = true ] ; then
