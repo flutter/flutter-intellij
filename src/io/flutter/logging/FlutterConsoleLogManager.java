@@ -220,8 +220,8 @@ public class FlutterConsoleLogManager {
 
     frameErrorCount++;
 
-    final String prefix = "????????";
-    final String suffix = "??";
+    final String prefix = "========";
+    final String suffix = "==";
 
     console.print("\n" + prefix, TITLE_CONTENT_TYPE);
     console.print(description, NORMAL_CONTENT_TYPE);
