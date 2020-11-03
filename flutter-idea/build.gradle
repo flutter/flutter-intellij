@@ -89,7 +89,4 @@ check.dependsOn verifyPlugin
 
 test {
   useJUnit()
-  for (item in getClasspath()) {
-    println item
-  }
 }
