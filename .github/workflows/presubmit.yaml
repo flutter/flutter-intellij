@@ -11,8 +11,8 @@ jobs:
         with:
           java-version: '11'
           java-package: jdk
+      - name set java home
+        run: echo "JAVA_HOME=%JAVA_HOME_11_X64%" >> $GITHUB_ENV
       - name: windows UNIT_TEST_BOT
         run: ./tool/github.bat
-        env:
-          JAVA_HOME: ${{ %JAVA_HOME_11_X64% }}
         shell: cmd
