@@ -37,7 +37,7 @@ pub get
 # Set up the plugin tool.
 (cd tool/plugin; echo "pub get `pwd`"; pub get)
 
-if [ "$DART_BOT" = true ] ; then
+if [ "DART_BOT" = "$BOT" ] ; then
 
   # Analyze the Dart code in the repo.
   echo "dart analyze"
@@ -56,7 +56,7 @@ if [ "$DART_BOT" = true ] ; then
   # Run the tests for the plugin tool.
   (cd tool/plugin; dart test/plugin_test.dart)
 
-elif [ "$CHECK_BOT" = true ] ; then
+elif [ "CHECK_BOT" = "$BOT" ] ; then
 
   # Run some validations on the repo code.
   ./bin/plugin lint
@@ -64,7 +64,7 @@ elif [ "$CHECK_BOT" = true ] ; then
   # Check plugin-referenced urls for liveness.
   dart tool/grind.dart check-urls
 
-elif [ "$UNIT_TEST_BOT" = true ] ; then
+elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
 
   # Run unit tests.
   ./bin/plugin test
