@@ -13,30 +13,6 @@ jobs:
           java-package: jdk
       - name: windows UNIT_TEST_BOT
         run: ./tool/github.bat
+        env:
+          JAVA_HOME: ${{ $JAVA_HOME_11_X64 }}
         shell: cmd
-  presubmit:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        version: [4.1, 4.2, 2020.3]
-    steps:
-      - name: checkout
-        uses: actions/checkout@v2
-      - name: build ${{matrix.version}}
-        run: ./tool/github.sh
-        env:
-          IDEA_VERSION: ${{matrix.version}}
-  checker:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        bot: [CHECK_BOT, DART_BOT, UNIT_TEST_BOT]
-    steps:
-      - name: checkout
-        uses: actions/checkout@v2
-      - name: linux ${{matrix.bot}}
-        run: ./tool/github.sh
-        env:
-          BOT: ${{matrix.bot}}
