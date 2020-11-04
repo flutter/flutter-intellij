@@ -108,20 +108,23 @@ Future<File> genPluginXml(BuildSpec spec, String destDir, String path) async {
   return await dest.done;
 }
 
-void genTravisYml(List<BuildSpec> specs) {
-  var file = File(p.join(rootPath, '.travis.yml'));
-  var env = '';
+void genPresubmitYaml(List<BuildSpec> specs) {
+  var file = File(p.join(rootPath, '.github', 'workflows', 'presubmit.yaml'));
+  var versions = [];
   for (var spec in specs) {
-    if (!spec.untilBuild.contains('SNAPSHOT'))
-      env += '  - IDEA_VERSION=${spec.version}\n';
+    if (!spec.untilBuild.contains('SNAPSHOT')) versions.add('${spec.version}');
   }
 
-  var templateFile = File(p.join(rootPath, '.travis_template.yml'));
+  var templateFile = File(
+      p.join(rootPath, '.github', 'workflows', 'presubmit.yaml.template'));
   var templateContents = templateFile.readAsStringSync();
+  // If we need to make many changes consider something like genPluginXml().
+  templateContents =
+      templateContents.replaceFirst('@VERSIONS@', versions.join(', '));
   var header =
       "# Do not edit; instead, modify ${p.basename(templateFile.path)},"
       " and run './bin/plugin generate'.\n\n";
-  var contents = header + templateContents + env;
+  var contents = header + templateContents;
   log('writing ${p.relative(file.path)}');
   file.writeAsStringSync(contents, flush: true);
 }
@@ -372,14 +375,13 @@ class GradleBuildCommand extends BuildCommand {
   Future<int> savePluginArtifact(BuildSpec spec) async {
     final file = File(releasesFilePath(spec));
     final version = buildVersionNumber(spec);
-    var source = File(
-        'build/distributions/flutter-intellij-${version}.zip');
+    var source = File('build/distributions/flutter-intellij-${version}.zip');
     if (!source.existsSync()) {
       // Setting the plugin name in Gradle should eliminate the need for this,
       // but it does not.
       // TODO(messick) Find a way to make the Kokoro file name: flutter-intellij-DEV.zip
-      source = File(
-          'build/distributions/flutter-intellij-kokoro-${version}.zip');
+      source =
+          File('build/distributions/flutter-intellij-kokoro-${version}.zip');
     }
     _copyFile(
       source,
@@ -609,7 +611,7 @@ class GenerateCommand extends ProductCommand {
     var value = 1;
     var result = await genPluginFiles(spec, 'resources');
     if (result != null) {
-      genTravisYml(specs);
+      genPresubmitYaml(specs);
       value = 0;
     }
     if (isReleaseMode) {
