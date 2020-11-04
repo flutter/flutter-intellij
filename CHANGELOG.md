@@ -1,4 +1,7 @@
 # 51.0
+- Fix bugs where widget indent behavior sometimes impacted non-dart files, stale indent guides were sometimes displayed, and filtered indent guides were unpredictably displayed (#5008)
+- Allow bazel projects to set up JxBrowser (#5007)
+- Make embedded browser default enabled, not version-specific (#5006)
 - Change predicate type for EAP (#5002)
 - Remove deprecated command (#4995)
 - Require a project parameter when creating notifications (#4972)
@@ -41,9 +44,6 @@
 - Remove the explicit disable track widget creation option (#4902)
 
 # 50.0
-- Fix bugs where widget indent behavior sometimes impacted non-dart files, stale indent guides were sometimes displayed, and filtered indent guides were unpredictably displayed (#5008)
-- Allow bazel projects to set up JxBrowser (#5007)
-- Make embedded browser default enabled, not version-specific (#5006)
 - More general lint cleanups (#4865)
 - Improve the flutter error ids we generate for analytics (#4870)
 - Update flutter framework metadata (#4866)
