@@ -206,7 +206,7 @@ public class FlutterConsoleLogManager {
   }
 
   private static final int errorSeparatorLength = 100;
-  private static final String errorSeparatorChar = "═";
+  private static final String errorSeparatorChar = "=";
 
   private static final ArrayList<DiagnosticsNode> emptyList = new ArrayList<>();
 
@@ -220,8 +220,8 @@ public class FlutterConsoleLogManager {
 
     frameErrorCount++;
 
-    final String prefix = "════════";
-    final String suffix = "══";
+    final String prefix = "========";
+    final String suffix = "==";
 
     console.print("\n" + prefix, TITLE_CONTENT_TYPE);
     console.print(description, NORMAL_CONTENT_TYPE);

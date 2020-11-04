@@ -28,6 +28,16 @@ repositories {
   mavenCentral()
 }
 
+// Specify UTF-8 for all compilations so we avoid Windows-1252.
+allprojects {
+  tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+  }
+  tasks.withType(Test) {
+    systemProperty "file.encoding", "UTF-8"
+  }
+}
+
 apply plugin: "org.jetbrains.intellij"
 
 group 'io.flutter'

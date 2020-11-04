@@ -20,9 +20,10 @@ Future<int> exec(String cmd, List<String> args, {String cwd}) async {
     log(_shorten('$cmd ${args.join(' ')}'));
   }
 
+  var codec = Platform.isWindows ? latin1: utf8;
   final process = await Process.start(cmd, args, workingDirectory: cwd);
-  _toLineStream(process.stderr, utf8).listen(log);
-  _toLineStream(process.stdout, utf8).listen(log);
+  _toLineStream(process.stderr, codec).listen(log);
+  _toLineStream(process.stdout, codec).listen(log);
 
   return await process.exitCode;
 }
