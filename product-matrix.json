@@ -2,17 +2,6 @@
   "list": [
     {
       "channel": "stable",
-      "comments": "IntelliJ 2019.3.5, Android Studio 4.0",
-      "name": "Android Studio 4.0",
-      "version": "4.0",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "193.6514223",
-      "dartPluginVersion": "193.7361",
-      "sinceBuild": "193.6911",
-      "untilBuild": "193.*"
-    },
-    {
-      "channel": "stable",
       "comments": "IntelliJ 2020.1.1, Android Studio 4.1 Beta 1",
       "name": "Android Studio 4.1",
       "version": "4.1",
