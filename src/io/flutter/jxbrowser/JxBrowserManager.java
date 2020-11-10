@@ -45,7 +45,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public class JxBrowserManager {
   private static JxBrowserManager manager;
 
-  @VisibleForTesting
   protected static final String DOWNLOAD_PATH =
     PathManager.getPluginsPath() + File.separatorChar + "flutter-intellij" + File.separatorChar + "jxbrowser";
   private static final AtomicReference<JxBrowserStatus> status = new AtomicReference<>(JxBrowserStatus.NOT_INSTALLED);

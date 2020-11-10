@@ -404,7 +404,7 @@ class DevToolsInstance {
 
     //noinspection CodeBlock2Expr
     ApplicationManager.getApplication().invokeLater(() -> {
-      new EmbeddedBrowser().openPanel(contentManager, tabName, url);
+      EmbeddedBrowser.getInstance().openPanel(contentManager, tabName, url);
     });
   }
 }

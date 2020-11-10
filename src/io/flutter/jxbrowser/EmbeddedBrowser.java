@@ -16,25 +16,46 @@ import com.teamdev.jxbrowser.engine.EngineOptions;
 import com.teamdev.jxbrowser.navigation.event.LoadFinished;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
 import icons.FlutterIcons;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.teamdev.jxbrowser.engine.RenderingMode.HARDWARE_ACCELERATED;
 
 public class EmbeddedBrowser {
-  public void openPanel(ContentManager contentManager, String tabName, String url) {
+  private static EmbeddedBrowser embeddedBrowser;
+
+  @NotNull
+  public static EmbeddedBrowser getInstance() {
+    if (embeddedBrowser == null) {
+      embeddedBrowser = new EmbeddedBrowser();
+    }
+    return embeddedBrowser;
+  }
+
+  private Browser browser;
+
+  private EmbeddedBrowser() {
+    System.out.println(Paths.get(JxBrowserManager.DOWNLOAD_PATH + File.separatorChar + "user-data"));
+
     final EngineOptions options =
-      EngineOptions.newBuilder(HARDWARE_ACCELERATED).build();
+      EngineOptions.newBuilder(HARDWARE_ACCELERATED)
+        .userDataDir(Paths.get(JxBrowserManager.DOWNLOAD_PATH + File.separatorChar + "user-data"))
+        .build();
     final Engine engine = Engine.newInstance(options);
-    final Browser browser = engine.newBrowser();
+    this.browser = engine.newBrowser();
 
     try {
       browser.settings().enableTransparentBackground();
     } catch (UnsupportedRenderingModeException ex) {
       // Skip using a transparent background if an exception is thrown.
     }
+  }
 
+  public void openPanel(ContentManager contentManager, String tabName, String url) {
     // Multiple LoadFinished events can occur, but we only need to add content the first time.
     final AtomicBoolean contentLoaded = new AtomicBoolean(false);
 
