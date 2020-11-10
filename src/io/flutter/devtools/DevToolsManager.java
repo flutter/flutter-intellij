@@ -234,7 +234,7 @@ public class DevToolsManager {
     final String screen = null;
 
     if (devToolsInstance != null) {
-      devToolsInstance.openPanel(uri, contentManager, tabName, pageName);
+      devToolsInstance.openPanel(project, uri, contentManager, tabName, pageName);
     }
     else {
       @Nullable final OSProcessHandler handler =
@@ -245,7 +245,7 @@ public class DevToolsManager {
         DevToolsInstance.startServer(handler, instance -> {
           devToolsInstance = instance;
 
-          devToolsInstance.openPanel(uri, contentManager, tabName, pageName);
+          devToolsInstance.openPanel(project, uri, contentManager, tabName, pageName);
         }, () -> {
           // Listen for closing; null out the devToolsInstance.
           devToolsInstance = null;
@@ -398,13 +398,13 @@ class DevToolsInstance {
     );
   }
 
-  public void openPanel(String serviceProtocolUri, ContentManager contentManager, String tabName, String pageName) {
+  public void openPanel(Project project, String serviceProtocolUri, ContentManager contentManager, String tabName, String pageName) {
     final String color = ColorUtil.toHex(UIUtil.getEditorPaneBackground());
     final String url = DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, pageName, true, color);
 
     //noinspection CodeBlock2Expr
     ApplicationManager.getApplication().invokeLater(() -> {
-      new EmbeddedBrowser().openPanel(contentManager, tabName, url);
+      EmbeddedBrowser.getInstance(project).openPanel(contentManager, tabName, url);
     });
   }
 }
