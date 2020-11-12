@@ -7,6 +7,7 @@ package io.flutter.module.settings;
 
 import com.intellij.openapi.ui.ComboBox;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterUtils;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.sdk.FlutterSdk;
 import java.awt.event.ItemListener;
@@ -29,7 +30,9 @@ public class ProjectType {
 
     private ProjectTypeComboBoxModel() {
       if (System.getProperty("flutter.experimental.modules", null) == null) {
-        myList.remove(FlutterProjectType.MODULE);
+        if (!FlutterUtils.isAndroidStudio()) {
+          myList.remove(FlutterProjectType.MODULE);
+        }
         myList.remove(FlutterProjectType.IMPORT);
       }
       mySelected = myList.get(0);
@@ -64,7 +67,7 @@ public class ProjectType {
   private Supplier<? extends FlutterSdk> getSdk;
 
   private JPanel projectTypePanel;
-  private ComboBox projectTypeCombo;
+  private ComboBox<FlutterProjectType> projectTypeCombo;
 
   public ProjectType(@Nullable Supplier<? extends FlutterSdk> getSdk) {
     this.getSdk = getSdk;
@@ -91,7 +94,7 @@ public class ProjectType {
     return (FlutterProjectType)projectTypeCombo.getSelectedItem();
   }
 
-  public ComboBox getProjectTypeCombo() {
+  public ComboBox<FlutterProjectType> getProjectTypeCombo() {
     return projectTypeCombo;
   }
 

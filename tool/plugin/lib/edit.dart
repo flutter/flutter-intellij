@@ -26,20 +26,13 @@ void checkAndClearAppliedEditCommands() {
 List<EditCommand> editCommands = [
   EditAndroidModuleLibraryManager(),
   Subst(
-    path: 'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java',
-    initial:
-        'gradleProjectSystem.getAndroidFacetsWithPackageName(project, packageName, scope)',
-    replacement: 'Collections.emptyList()',
-    version: '4.0',
-  ),
-  Subst(
     path:
         'flutter-studio/src/io/flutter/actions/FlutterShowStructureSettingsAction.java',
     initial:
         'import com.android.tools.idea.gradle.structure.actions.AndroidShowStructureSettingsAction;',
     replacement:
         'import com.android.tools.idea.gradle.actions.AndroidShowStructureSettingsAction;',
-    versions: ['4.0', '2020.2'],
+    versions: ['2020.2'],
   ),
   MultiSubst(
     path: 'flutter-studio/src/io/flutter/actions/OpenAndroidModule.java',
@@ -51,13 +44,13 @@ List<EditCommand> editCommands = [
       'findImportTarget',
       'importProjectCore(projectFile)',
     ],
-    versions: ['4.0', '2020.2'],
+    versions: ['2020.2'],
   ),
   Subst(
     path: 'flutter-studio/src/io/flutter/utils/AddToAppUtils.java',
     initial: '.project.importing.GradleProjectImporter',
     replacement: '.project.importing.NewProjectSetup',
-    versions: ['4.0', '2020.2'],
+    versions: ['2020.2'],
   ),
   Subst(
     path: 'src/io/flutter/utils/AndroidUtils.java',
@@ -68,60 +61,23 @@ List<EditCommand> editCommands = [
     versions: ['4.1', '4.2'],
   ),
   Subst(
-    path:
-        'flutter-studio/src/io/flutter/assistant/whatsnew/FlutterNewsBundleCreator.java',
-    initial: """
-    PluginManager pluginManager = PluginManager.getInstance();
-    IdeaPluginDescriptor descriptor = pluginManager.findEnabledPlugin(PluginId.getId("io.flutter"));
-""",
-    replacement: """
-    IdeaPluginDescriptor descriptor = PluginManager.getPlugin(PluginId.getId("io.flutter"));
-""",
-    version: '4.0',
-  ),
-  Subst(
     path: 'src/io/flutter/FlutterUtils.java',
     initial: 'ProjectUtil.isSameProject(Paths.get(path), project)',
     replacement: 'ProjectUtil.isSameProject(path, project)',
-    versions: ['4.0', '4.1'],
-  ),
-  Subst(
-    path: 'src/io/flutter/FlutterBundle.java',
-    initial: 'AbstractBundle',
-    replacement: 'CommonBundle',
-    version: '4.0',
-  ),
-  Subst(
-    path: 'src/io/flutter/survey/FlutterSurveyService.java',
-    initial: 'properties.getLong(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, 0)',
-    replacement:
-        'properties.getOrInitLong(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, 0)',
-    version: '4.0',
-  ),
-  Subst(
-    path: 'src/io/flutter/survey/FlutterSurveyNotifications.java',
-    initial: 'properties.getLong(FLUTTER_LAST_SURVEY_PROMPT_KEY, 0)',
-    replacement: 'properties.getOrInitLong(FLUTTER_LAST_SURVEY_PROMPT_KEY, 0)',
-    version: '4.0',
+    versions: ['4.1'],
   ),
   Subst(
     path: 'src/io/flutter/perf/EditorPerfDecorations.java',
     initial: 'highlighter.getTextAttributes(null)',
     replacement: 'highlighter.getTextAttributes()',
-    versions: ['4.0', '4.1'],
+    versions: ['4.1'],
   ),
   Subst(
     path: 'src/io/flutter/preview/PreviewView.java',
     initial:
         'Arrays.asList(expandAllAction, collapseAllAction, showOnlyWidgetsAction)',
     replacement: 'expandAllAction, collapseAllAction, showOnlyWidgetsAction',
-    versions: ['4.0', '4.1'],
-  ),
-  Subst(
-    path: 'src/io/flutter/analytics/ToolWindowTracker.java',
-    initial: '@Override',
-    replacement: '',
-    version: '4.0',
+    versions: ['4.1'],
   ),
   Subst(
     path: 'src/io/flutter/FlutterErrorReportSubmitter.java',

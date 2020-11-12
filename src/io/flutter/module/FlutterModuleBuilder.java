@@ -32,6 +32,7 @@ import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterDoctorAction;
 import io.flutter.module.settings.FlutterCreateAdditionalSettingsFields;
+import io.flutter.module.settings.SettingsHelpForm;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
@@ -51,9 +52,9 @@ import static java.util.Arrays.asList;
 public class FlutterModuleBuilder extends ModuleBuilder {
   private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
 
-  private FlutterModuleWizardStep myStep;
+  protected FlutterModuleWizardStep myStep;
   private FlutterCreateAdditionalSettingsFields mySettingsFields;
-  private Project myProject;
+  protected Project myProject;
 
   @Override
   public String getName() {
@@ -262,7 +263,6 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return null;
   }
 
-  @Nullable
   @Override
   public ModuleWizardStep getCustomOptionsStep(final WizardContext context, final Disposable parentDisposable) {
     if (!context.isCreatingNewProject()) {
@@ -275,7 +275,6 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   }
 
   @Override
-  @NotNull
   public String getBuilderId() {
     // The builder id is used to distinguish between different builders with the same module type, see
     // com.intellij.ide.projectWizard.ProjectTypeStep for an example.
@@ -317,12 +316,20 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     combo.setItem(s);
   }
 
-  public class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
+  FlutterCreateAdditionalSettingsFields getSettingsField() {
+    return mySettingsFields;
+  }
+
+  public static class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
     private final FlutterGeneratorPeer myPeer;
 
     public FlutterModuleWizardStep(@NotNull WizardContext context) {
       //TODO(pq): find a way to listen to wizard cancelation and propagate to peer.
       myPeer = new FlutterGeneratorPeer(context);
+    }
+
+    public SettingsHelpForm getHelpForm() {
+      return myPeer.getHelpForm();
     }
 
     @Override
