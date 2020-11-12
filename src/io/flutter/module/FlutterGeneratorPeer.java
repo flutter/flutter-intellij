@@ -22,18 +22,26 @@ import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterUtils;
 import io.flutter.actions.InstallSdkAction;
+import io.flutter.module.settings.SettingsHelpForm;
 import io.flutter.sdk.FlutterSdkUtil;
+import java.awt.Cursor;
+import java.awt.Font;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.ComboBoxEditor;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.text.JTextComponent;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.text.JTextComponent;
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public class FlutterGeneratorPeer implements InstallSdkAction.Model {
   private final WizardContext myContext;
@@ -48,6 +56,7 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
   private JTextPane myProgressText;
   private JScrollPane myProgressScrollPane;
   private JLabel myCancelProgressButton;
+  private SettingsHelpForm myHelpForm;
 
   private final InstallSdkAction myInstallSdkAction;
   private InstallSdkAction.CancelActionListener myListener;
@@ -65,6 +74,10 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
     myProgressBar.setVisible(false);
     myProgressText.setVisible(false);
     myCancelProgressButton.setVisible(false);
+
+    if (!FlutterUtils.isNewAndroidStudioProjectWizard()) {
+      myHelpForm.getComponent().setVisible(false);
+    }
 
     init();
   }
@@ -217,5 +230,9 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
     if (wizard != null) {
       UIUtil.invokeAndWaitIfNeeded((Runnable)wizard::doNextAction);
     }
+  }
+
+  public SettingsHelpForm getHelpForm() {
+    return myHelpForm;
   }
 }

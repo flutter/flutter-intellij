@@ -7,14 +7,16 @@ package io.flutter.module.settings;
 
 import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.ui.DocumentAdapter;
-import com.intellij.util.PlatformUtils;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterUtils;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
+import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.util.function.Supplier;
+import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import org.jetbrains.annotations.NotNull;
@@ -27,6 +29,7 @@ public class FlutterCreateAdditionalSettingsFields {
   private final RadiosForm iosLanguageRadios;
   private final ProjectType projectTypeForm;
   private final FlutterCreateParams createParams;
+  private SettingsHelpForm helpForm;
 
   public FlutterCreateAdditionalSettingsFields() {
     this(new FlutterCreateAdditionalSettings(), null);
@@ -40,7 +43,7 @@ public class FlutterCreateAdditionalSettingsFields {
     projectTypeForm.addListener(e -> {
       if (e.getStateChange() == ItemEvent.SELECTED) {
         settings.setType(projectTypeForm.getType());
-        changeVisibility(projectTypeForm.getType() != FlutterProjectType.PACKAGE);
+        changeVisibility(projectTypeForm.getType());
       }
     });
 
@@ -87,27 +90,68 @@ public class FlutterCreateAdditionalSettingsFields {
     createParams = new FlutterCreateParams();
   }
 
-  private void changeVisibility(boolean areLanguageFeaturesVisible) {
-    orgField.setEnabled(areLanguageFeaturesVisible);
-    UIUtil.setEnabled(androidLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
-    UIUtil.setEnabled(iosLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
+  private void changeVisibility(FlutterProjectType projectType) {
+    boolean areLanguageFeaturesVisible = projectType != FlutterProjectType.PACKAGE && projectType != FlutterProjectType.MODULE;
+    if (helpForm != null) {
+      // Only in Android Studio.
+      helpForm.adjustContrast(projectType);
+    }
+    if (FlutterUtils.isNewAndroidStudioProjectWizard()) {
+      changeSettingsItemVisibility(orgField, projectType != FlutterProjectType.PACKAGE);
+      changeSettingsItemVisibility(androidLanguageRadios.getComponent(), areLanguageFeaturesVisible);
+      changeSettingsItemVisibility(iosLanguageRadios.getComponent(), areLanguageFeaturesVisible);
+    }
+    else {
+      orgField.setEnabled(projectType != FlutterProjectType.PACKAGE);
+      UIUtil.setEnabled(androidLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
+      UIUtil.setEnabled(iosLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
+    }
+  }
+
+  private void changeSettingsItemVisibility(JComponent component, boolean areLanguageFeaturesVisible) {
+    // Note: This requires implementation knowledge of SettingsStep.addSettingsField(), which could change.
+    if (component.getParent() == null) {
+      return;
+    }
+    Component[] components = component.getParent().getComponents();
+    int index;
+    for (index = 0; index < components.length; index++) {
+      if (components[index] == component) {
+        break;
+      }
+    }
+    Component label = components[index - 1];
+    component.setVisible(areLanguageFeaturesVisible);
+    label.setVisible(areLanguageFeaturesVisible);
   }
 
   public void addSettingsFields(@NotNull SettingsStep settingsStep) {
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.description.label"), descriptionField);
-    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.type.label"),
-                                  projectTypeForm.getComponent());
+    if (!FlutterUtils.isNewAndroidStudioProjectWizard()) {
+      settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.type.label"),
+                                    projectTypeForm.getComponent());
+    }
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.org.label"), orgField);
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.android.label"),
                                   androidLanguageRadios.getComponent());
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.ios.label"),
                                   iosLanguageRadios.getComponent());
-    // WebStorm has a smaller area for the wizard UI.
-    if (!PlatformUtils.isWebStorm()) {
+    if (!FlutterUtils.isAndroidStudio()) {
+      // In IntelliJ the help form appears on the second page of the wizard, along with the project type selection drop-down.
       settingsStep.addSettingsComponent(new SettingsHelpForm().getComponent());
     }
 
     settingsStep.addSettingsComponent(createParams.setInitialValues().getComponent());
+  }
+
+  public void updateProjectType(FlutterProjectType projectType) {
+    if (FlutterUtils.isNewAndroidStudioProjectWizard()) {
+      getAdditionalSettings().setType(projectType);
+      if (projectTypeForm.getType() == projectType) {
+        projectTypeForm.getProjectTypeCombo().setSelectedItem(FlutterProjectType.PLUGIN); // Set to something other than default.
+      }
+      projectTypeForm.getProjectTypeCombo().setSelectedItem(projectType); // Force listeners to fire.
+    }
   }
 
   public FlutterCreateAdditionalSettings getAdditionalSettings() {
@@ -124,5 +168,11 @@ public class FlutterCreateAdditionalSettingsFields {
 
   public FlutterCreateAdditionalSettings getSettings() {
     return settings;
+  }
+
+  // This is used in Android Studio to emphasize the help text for the selected project type.
+  // The help form appears on the first page of the wizard.
+  public void linkHelpForm(SettingsHelpForm form) {
+    helpForm = form;
   }
 }

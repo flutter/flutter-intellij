@@ -10,7 +10,10 @@
       "dartPluginVersion": "201.7223.99",
       "sinceBuild": "201.7223",
       "untilBuild": "201.*",
-      "filesToSkip": ["src/io/flutter/utils/AndroidLocationProvider.java"]
+      "filesToSkip": [
+        "src/io/flutter/utils/AndroidLocationProvider.java",
+        "flutter-studio/src/io/flutter/actions/FlutterNewProjectAction.java"
+      ]
     },
     {
       "channel": "stable",
