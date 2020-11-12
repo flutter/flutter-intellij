@@ -94,7 +94,8 @@ List<EditCommand> editCommands = [
   Subst(
     path: 'src/io/flutter/survey/FlutterSurveyService.java',
     initial: 'properties.getLong(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, 0)',
-    replacement: 'properties.getOrInitLong(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, 0)',
+    replacement:
+        'properties.getOrInitLong(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, 0)',
     version: '4.0',
   ),
   Subst(
@@ -111,7 +112,8 @@ List<EditCommand> editCommands = [
   ),
   Subst(
     path: 'src/io/flutter/preview/PreviewView.java',
-    initial: 'Arrays.asList(expandAllAction, collapseAllAction, showOnlyWidgetsAction)',
+    initial:
+        'Arrays.asList(expandAllAction, collapseAllAction, showOnlyWidgetsAction)',
     replacement: 'expandAllAction, collapseAllAction, showOnlyWidgetsAction',
     versions: ['4.0', '4.1'],
   ),
@@ -265,7 +267,12 @@ class Subst extends EditCommand {
   String replacement;
   List<String> versions;
 
-  Subst({this.versions, this.initial, this.replacement, this.path, version})
+  Subst(
+      {this.versions,
+      this.initial,
+      this.replacement,
+      this.path,
+      String version})
       : assert(initial != null),
         assert(replacement != null),
         assert(path != null) {

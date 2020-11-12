@@ -7,5 +7,6 @@ analyzer:
 
 linter:
   rules:
-    - unawaited_futures
     - prefer_single_quotes
+    - type_annotate_public_apis
+    - unawaited_futures
