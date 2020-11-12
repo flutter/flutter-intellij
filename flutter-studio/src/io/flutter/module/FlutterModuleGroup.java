@@ -26,7 +26,7 @@ public abstract class FlutterModuleGroup extends FlutterModuleBuilder {
     FlutterModuleWizardStep step = (FlutterModuleWizardStep)super.getCustomOptionsStep(context, parentDisposable);
     assert step!= null;
     getSettingsField().linkHelpForm(step.getHelpForm());
-    getSettingsField().updateProjectType(getFlutterProjectType());
+    setProjectTypeInSettings();
     return step;
   }
 
@@ -34,7 +34,7 @@ public abstract class FlutterModuleGroup extends FlutterModuleBuilder {
   public ModuleWizardStep modifySettingsStep(@NotNull SettingsStep settingsStep) {
     // This runs when the Next button takes the wizard to the second page.
     ModuleWizardStep wizard = super.modifySettingsStep(settingsStep);
-    setProjectTypeInSettings();
+    setProjectTypeInSettings(); // TODO (messick) Remove this if possible (needs testing).
     return wizard;
   }
 
