@@ -354,6 +354,9 @@
                     serviceImplementation="io.flutter.editor.WidgetIndentsHighlightingPassFactory"
                     overrides="false"/>
     <highlightingPassFactory implementation="io.flutter.editor.WidgetIndentsHighlightingPassFactoryRegistrar"/>
+    <projectService serviceInterface="io.flutter.jxbrowser.EmbeddedBrowser"
+                    serviceImplementation="io.flutter.jxbrowser.EmbeddedBrowser"
+                    overrides="false"/>
   </extensions>
 
   <!-- Dart Plugin extensions -->

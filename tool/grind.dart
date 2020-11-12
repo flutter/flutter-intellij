@@ -8,10 +8,10 @@ import 'package:grinder/grinder.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
-main(List<String> args) => grind(args);
+void main(List<String> args) => grind(args);
 
 @Task('Check plugin URLs for liveness')
-checkUrls() async {
+void checkUrls() async {
   log('checking URLs in FlutterBundle.properties...');
   var lines =
       await new File('src/io/flutter/FlutterBundle.properties').readAsLines();
@@ -34,7 +34,7 @@ checkUrls() async {
 }
 
 @Task('Create Outline view icons from svgs')
-outlineIcons() async {
+void outlineIcons() async {
   Directory previewIconsDir = getDir('resources/icons/preview');
 
   log('using svgexport (npm install -g svgexport)');

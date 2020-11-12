@@ -6,6 +6,9 @@
 package io.flutter.jxbrowser;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
@@ -16,25 +19,44 @@ import com.teamdev.jxbrowser.engine.EngineOptions;
 import com.teamdev.jxbrowser.navigation.event.LoadFinished;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
 import icons.FlutterIcons;
+import org.jetbrains.annotations.NotNull;
 
-import java.awt.*;
+import java.awt.Dimension;
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.teamdev.jxbrowser.engine.RenderingMode.HARDWARE_ACCELERATED;
 
 public class EmbeddedBrowser {
-  public void openPanel(ContentManager contentManager, String tabName, String url) {
+  private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
+
+  @NotNull
+  public static EmbeddedBrowser getInstance(Project project) {
+    return ServiceManager.getService(project, EmbeddedBrowser.class);
+  }
+
+  private Browser browser;
+
+  private EmbeddedBrowser(Project project) {
+    final String dataPath = JxBrowserManager.DOWNLOAD_PATH + File.separatorChar + "user-data" + File.separatorChar + project.getName();
+    LOG.info("JxBrowser user data path: " + dataPath);
+
     final EngineOptions options =
-      EngineOptions.newBuilder(HARDWARE_ACCELERATED).build();
+      EngineOptions.newBuilder(HARDWARE_ACCELERATED)
+        .userDataDir(Paths.get(dataPath))
+        .build();
     final Engine engine = Engine.newInstance(options);
-    final Browser browser = engine.newBrowser();
+    this.browser = engine.newBrowser();
 
     try {
       browser.settings().enableTransparentBackground();
     } catch (UnsupportedRenderingModeException ex) {
       // Skip using a transparent background if an exception is thrown.
     }
+  }
 
+  public void openPanel(ContentManager contentManager, String tabName, String url) {
     // Multiple LoadFinished events can occur, but we only need to add content the first time.
     final AtomicBoolean contentLoaded = new AtomicBoolean(false);
 

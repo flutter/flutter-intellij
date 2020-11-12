@@ -74,7 +74,8 @@ List<EditCommand> editCommands = [
   ),
   Subst(
     path: 'src/io/flutter/preview/PreviewView.java',
-    initial: 'Arrays.asList(expandAllAction, collapseAllAction, showOnlyWidgetsAction)',
+    initial:
+        'Arrays.asList(expandAllAction, collapseAllAction, showOnlyWidgetsAction)',
     replacement: 'expandAllAction, collapseAllAction, showOnlyWidgetsAction',
     versions: ['4.1'],
   ),
@@ -222,7 +223,12 @@ class Subst extends EditCommand {
   String replacement;
   List<String> versions;
 
-  Subst({this.versions, this.initial, this.replacement, this.path, version})
+  Subst(
+      {this.versions,
+      this.initial,
+      this.replacement,
+      this.path,
+      String version})
       : assert(initial != null),
         assert(replacement != null),
         assert(path != null) {
