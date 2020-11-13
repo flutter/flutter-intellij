@@ -205,6 +205,7 @@ public class BazelFields {
     final String inputBazelArgs = StringUtil.notNullize(bazelArgs);
     final StringBuilder fullBazelArgs = new StringBuilder(inputBazelArgs);
 
+    // TODO(helinx): Have run script handle this bazel arg instead.
     // If the user hasn't overridden the flutter_build_mode, then
     if (!StringUtil.notNullize(bazelArgs).matches(".*--define[ =]flutter_build_mode.*")) {
       if (!inputBazelArgs.isEmpty()) {
