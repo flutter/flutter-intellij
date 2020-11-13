@@ -44,6 +44,8 @@ file.
 
 ## Running plugin tests
 
+### Using test run configurations in IntelliJ
+
 The repository contains two pre-defined test run configurations. One is for 'unit' tests; that is
 currently defined as tests that do not rely on the IntelliJ APIs. The other is for 'integration'
 tests - tests that do use the IntelliJ APIs. In the future we would like for the unit tests to be
@@ -59,6 +61,28 @@ In order to be able to run a single test class or test method you need to do the
 * Repeat the same with Working directory field - it must point to intellij-community/bin
 
 If running the full unit test suite fails, check the run configuration and verify that 'Use classpath of module' is set to `flutter-intellij.test`.
+
+The test configuration can be tricky due to IntelliJ platform versioning. The plugin tool (below) can be a more reliable way to run tests.
+
+### Using the plugin tool on the command line
+
+To run unit tests on the command line:
+
+```
+bin/plugin test
+```
+
+See `TestCommand` in `tool/plugin/lib/plugin.dart` for more options.
+
+The plugin tool unpacks the dependencies required to run tests, including the correct version of IntelliJ. Once that's been done it is possible to run tests directly with Gradle:
+
+```
+./gradlew test
+```
+
+If you wanted to run a subset of the tests you could do so this way. See the [Gradle docs](https://docs.gradle.org/current/userguide/java_testing.html) for more info about testing.
+
+Note that the tests do not currently run on Windows.
 
 ## Adding platform sources
 Sometimes browsing the source code of IntelliJ is helpful for understanding platform details that aren't documented.
