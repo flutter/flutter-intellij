@@ -74,6 +74,16 @@ bin/plugin test
 
 See `TestCommand` in `tool/plugin/lib/plugin.dart` for more options.
 
+The plugin tool unpacks the dependencies required to run tests, including the correct version of IntelliJ. Once that's been done it is possible to run tests directly with Gradle:
+
+```
+./gradlew test
+```
+
+If you wanted to run a subset of the tests you could do so this way. See the [Gradle docs](https://docs.gradle.org/current/userguide/java_testing.html) for more info about testing.
+
+Note that the tests do not currently run on Windows.
+
 ## Adding platform sources
 Sometimes browsing the source code of IntelliJ is helpful for understanding platform details that aren't documented.
 
