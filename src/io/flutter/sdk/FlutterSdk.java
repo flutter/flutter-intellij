@@ -494,7 +494,7 @@ public class FlutterSdk {
     String stdout = returnOutputOfQuery(flutterConfig("--machine"));
     if (stdout != null) {
       try {
-        final JsonElement elem = JsonUtils.parseString(stdout);
+        final JsonElement elem = JsonUtils.parseString(stdout.substring(stdout.indexOf('{')));
         if (elem.isJsonNull()) {
           FlutterUtils.warn(LOG, "Invalid Json from flutter config");
           return null;
