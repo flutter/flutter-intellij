@@ -20,7 +20,6 @@ public class FakeWorkspaceFactory {
     @Nullable String doctorScript,
     @Nullable String launchScript,
     @Nullable String testScript,
-    @Nullable String runScript,
     @Nullable String sdkHome,
     @Nullable String versionFile,
     @Nullable String devtoolsScript
@@ -54,7 +53,6 @@ public class FakeWorkspaceFactory {
           doctorScript,
           launchScript,
           testScript,
-          runScript,
           sdkHome,
           versionFile,
           devtoolsScript
@@ -75,7 +73,6 @@ public class FakeWorkspaceFactory {
       "scripts/flutter-doctor.sh",
       "scripts/bazel-run.sh",
       "scripts/flutter-test.sh",
-      "scripts/flutter-run.sh",
       "scripts/",
       "flutter-version",
       "scripts/devtools:server"

@@ -41,7 +41,6 @@ public class Workspace {
   @Nullable private final String daemonScript;
   @Nullable private final String doctorScript;
   @Nullable private final String testScript;
-  @Nullable private final String runScript;
   @Nullable private final String sdkHome;
   @Nullable private final String versionFile;
   @Nullable private final String devtoolsScript;
@@ -51,7 +50,6 @@ public class Workspace {
                     @Nullable String daemonScript,
                     @Nullable String doctorScript,
                     @Nullable String testScript,
-                    @Nullable String runScript,
                     @Nullable String sdkHome,
                     @Nullable String versionFile,
                     @Nullable String devtoolsScript) {
@@ -60,7 +58,6 @@ public class Workspace {
     this.daemonScript = daemonScript;
     this.doctorScript = doctorScript;
     this.testScript = testScript;
-    this.runScript = runScript;
     this.sdkHome = sdkHome;
     this.versionFile = versionFile;
     this.devtoolsScript = devtoolsScript;
@@ -145,14 +142,6 @@ public class Workspace {
   @Nullable
   public String getTestScript() {
     return testScript;
-  }
-
-  /**
-   * Returns the script that starts 'flutter run', or null if not configured.
-   */
-  @Nullable
-  public String getRunScript() {
-    return runScript;
   }
 
   /**
@@ -244,15 +233,13 @@ public class Workspace {
 
     final String testScript = config == null ? null : getScriptFromPath(root, readonlyPath, config.getTestScript());
 
-    final String runScript = config == null ? null : getScriptFromPath(root, readonlyPath, config.getRunScript());
-
     final String sdkHome = config == null ? null : getScriptFromPath(root, readonlyPath, config.getSdkHome());
 
     final String versionFile = config == null ? null : getScriptFromPath(root, readonlyPath, config.getVersionFile());
 
     final String devtoolsScript = config == null ? null : config.getDevtoolsScript();
 
-    return new Workspace(root, config, daemonScript, doctorScript, testScript, runScript, sdkHome, versionFile, devtoolsScript);
+    return new Workspace(root, config, daemonScript, doctorScript, testScript, sdkHome, versionFile, devtoolsScript);
   }
 
   @VisibleForTesting
@@ -263,7 +250,6 @@ public class Workspace {
       pluginConfig.getDaemonScript(),
       pluginConfig.getDoctorScript(),
       pluginConfig.getTestScript(),
-      pluginConfig.getRunScript(),
       pluginConfig.getSdkHome(),
       pluginConfig.getVersionFile(),
       pluginConfig.getDevtoolsScript());

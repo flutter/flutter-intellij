@@ -55,11 +55,6 @@ public class PluginConfig {
   }
 
   @Nullable
-  String getRunScript() {
-    return fields.runScript;
-  }
-
-  @Nullable
   String getSdkHome() {
     return fields.sdkHome;
   }
@@ -128,7 +123,6 @@ public class PluginConfig {
     @Nullable String doctorScript,
     @Nullable String launchScript,
     @Nullable String testScript,
-    @Nullable String runScript,
     @Nullable String sdkHome,
     @Nullable String versionFile,
     @Nullable String devtoolsScript
@@ -138,7 +132,6 @@ public class PluginConfig {
       doctorScript,
       launchScript,
       testScript,
-      runScript,
       sdkHome,
       versionFile,
       devtoolsScript
@@ -175,12 +168,6 @@ public class PluginConfig {
     private String testScript;
 
     /**
-     * The script to run to start 'flutter run'
-     */
-    @SerializedName("runScript")
-    private String runScript;
-
-    /**
      * The directory containing the SDK tools.
      */
     @SerializedName("sdkHome")
@@ -208,7 +195,6 @@ public class PluginConfig {
            String doctorScript,
            String launchScript,
            String testScript,
-           String runScript,
            String sdkHome,
            String versionFile,
            String devtoolsScript) {
@@ -216,7 +202,6 @@ public class PluginConfig {
       this.doctorScript = doctorScript;
       this.launchScript = launchScript;
       this.testScript = testScript;
-      this.runScript = runScript;
       this.sdkHome = sdkHome;
       this.versionFile = versionFile;
       this.devtoolsScript = devtoolsScript;
@@ -230,7 +215,6 @@ public class PluginConfig {
              && Objects.equal(doctorScript, other.doctorScript)
              && Objects.equal(launchScript, other.launchScript)
              && Objects.equal(testScript, other.testScript)
-             && Objects.equal(runScript, other.runScript)
              && Objects.equal(sdkHome, other.sdkHome)
              && Objects.equal(versionFile, other.versionFile)
              && Objects.equal(devtoolsScript, other.devtoolsScript);
@@ -238,7 +222,7 @@ public class PluginConfig {
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(daemonScript, doctorScript, launchScript, testScript, runScript, sdkHome, versionFile, devtoolsScript);
+      return Objects.hashCode(daemonScript, doctorScript, launchScript, testScript, sdkHome, versionFile, devtoolsScript);
     }
   }
 
