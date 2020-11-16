@@ -223,6 +223,10 @@ public class FlutterSdk {
     return new FlutterCommand(this, getHome(), FlutterCommand.Type.CONFIG, additionalArgs);
   }
 
+  public FlutterCommand flutterChannel() {
+    return new FlutterCommand(this, getHome(), FlutterCommand.Type.CHANNEL);
+  }
+
   public FlutterCommand flutterRun(@NotNull PubRoot root,
                                    @NotNull VirtualFile main,
                                    @NotNull FlutterDevice device,
@@ -469,6 +473,15 @@ public class FlutterSdk {
     return FlutterSdkUtil.pathToDartSdk(getHomePath());
   }
 
+  @Nullable
+  public FlutterSdkChannel queryFlutterChannel() {
+    String stdout = returnOutputOfQuery(flutterChannel());
+    if (stdout == null) {
+      return null;
+    }
+    return FlutterSdkChannel.fromText(stdout);
+  }
+
   /**
    * Query 'flutter config' for the given key, and optionally use any existing cached value.
    */
@@ -478,72 +491,64 @@ public class FlutterSdk {
       return cachedConfigValues.get(key);
     }
 
-    cachedConfigValues.put(key, queryFlutterConfigImpl(key));
-    return cachedConfigValues.get(key);
+    String stdout = returnOutputOfQuery(flutterConfig("--machine"));
+    if (stdout != null) {
+      try {
+        final JsonElement elem = JsonUtils.parseString(stdout.substring(stdout.indexOf('{')));
+        if (elem.isJsonNull()) {
+          FlutterUtils.warn(LOG, "Invalid Json from flutter config");
+          return null;
+        }
+
+        final JsonObject obj = elem.getAsJsonObject();
+        final JsonPrimitive primitive = obj.getAsJsonPrimitive(key);
+        if (primitive != null) {
+          cachedConfigValues.put(key, stdout);
+          return cachedConfigValues.get(key);
+        }
+      }
+      catch (JsonSyntaxException ignored) {
+      }
+    }
+    return null;
   }
 
-  private String queryFlutterConfigImpl(String key) {
-    final FlutterCommand command = flutterConfig("--machine");
+  // Do not run this on EDT.
+  @Nullable
+  private String returnOutputOfQuery(@NotNull FlutterCommand command) {
     final OSProcessHandler process = command.startProcess(false);
-
     if (process == null) {
       return null;
     }
 
     final StringBuilder stdout = new StringBuilder();
     process.addProcessListener(new ProcessAdapter() {
-      boolean hasSeenStartingBrace = false;
-
       @Override
       public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
-        // {"android-studio-dir":"/Applications/Android Studio 3.0 Preview.app/Contents"}
         if (outputType == ProcessOutputTypes.STDOUT) {
-          // Ignore any non-json starting lines (like "Building flutter tool...").
-          if (event.getText().startsWith("{")) {
-            hasSeenStartingBrace = true;
-          }
-          if (hasSeenStartingBrace) {
-            stdout.append(event.getText());
-          }
+          stdout.append(event.getText());
         }
       }
     });
 
-    LOG.info("Calling config --machine");
+    LOG.info("Calling " + command.getDisplayCommand());
     final long start = System.currentTimeMillis();
-
     process.startNotify();
-
     if (process.waitFor(5000)) {
       final long duration = System.currentTimeMillis() - start;
-      LOG.info("flutter config --machine: " + duration + "ms");
-
+      LOG.info(command.getDisplayCommand() + ": " + duration + "ms");
       final Integer code = process.getExitCode();
       if (code != null && code == 0) {
-        try {
-          final JsonElement elem = JsonUtils.parseString(stdout.toString());
-          if (elem.isJsonNull()) {
-            FlutterUtils.warn(LOG, "Invalid Json from flutter config");
-            return null;
-          }
-
-          final JsonObject obj = elem.getAsJsonObject();
-          final JsonPrimitive primitive = obj.getAsJsonPrimitive(key);
-          if (primitive != null) {
-            return primitive.getAsString();
-          }
-        }
-        catch (JsonSyntaxException ignored) {
-        }
+        return stdout.toString();
       }
       else {
-        LOG.info("Exit code from flutter config --machine: " + code);
+        LOG.info("Exit code from " + command.getDisplayCommand() + ": " + code);
       }
     }
     else {
-      LOG.info("Timeout when calling flutter config --machine");
+      LOG.info("Timeout when calling " + command.getDisplayCommand());
     }
-
     return null;
   }
+
 }

@@ -273,6 +273,7 @@ public class FlutterCommand {
   enum Type {
     ATTACH("Flutter attach", "attach"),
     BUILD("Flutter build", "build"),
+    CHANNEL("Flutter channel", "channel"),
     CLEAN("Flutter clean", "clean"),
     CONFIG("Flutter config", "config"),
     CREATE("Flutter create", "create"),
