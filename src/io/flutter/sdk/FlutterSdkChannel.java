@@ -12,7 +12,7 @@ public class FlutterSdkChannel {
   public enum ID {
 
     // Do not change this order.
-    STABLE("stable"), BETA("beta"), DEV("dev"), MASTER("master");
+    UNKNOWN("unknown"), STABLE("stable"), BETA("beta"), DEV("dev"), MASTER("master");
 
     private final String name;
 
@@ -36,7 +36,7 @@ public class FlutterSdkChannel {
         case "stable":
           return STABLE;
         default:
-          throw new IllegalArgumentException("Unknown channel: " + name);
+          return UNKNOWN;
       }
     }
   }
