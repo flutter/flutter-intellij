@@ -9,6 +9,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
@@ -27,6 +28,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.teamdev.jxbrowser.engine.RenderingMode.HARDWARE_ACCELERATED;
+import static com.teamdev.jxbrowser.engine.RenderingMode.OFF_SCREEN;
 
 public class EmbeddedBrowser {
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
@@ -43,7 +45,7 @@ public class EmbeddedBrowser {
     LOG.info("JxBrowser user data path: " + dataPath);
 
     final EngineOptions options =
-      EngineOptions.newBuilder(HARDWARE_ACCELERATED)
+      EngineOptions.newBuilder(SystemInfo.isWindows ? OFF_SCREEN : HARDWARE_ACCELERATED)
         .userDataDir(Paths.get(dataPath))
         .build();
     final Engine engine = Engine.newInstance(options);
