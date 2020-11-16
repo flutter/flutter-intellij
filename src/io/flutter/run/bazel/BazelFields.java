@@ -116,13 +116,13 @@ public class BazelFields {
   }
 
   @Nullable
-  private String getLaunchScriptFromWorkspace(@NotNull final Project project) {
+  private String getRunScriptFromWorkspace(@NotNull final Project project) {
     final Workspace workspace = getWorkspace(project);
-    String launchScript = workspace == null ? null : workspace.getLaunchScript();
-    if (launchScript != null) {
-      launchScript = workspace.getRoot().getPath() + "/" + launchScript;
+    String runScript = workspace == null ? null : workspace.getRunScript();
+    if (runScript != null) {
+      runScript = workspace.getRoot().getPath() + "/" + runScript;
     }
-    return launchScript;
+    return runScript;
   }
 
   // TODO(djshuckerow): this is dependency injection; switch this to a framework as we need more DI.
@@ -150,15 +150,15 @@ public class BazelFields {
                                           () -> DartConfigurable.openDartSettings(project));
     }
 
-    final String launchScript = getLaunchScriptFromWorkspace(project);
-    if (launchScript == null) {
+    final String runScript = getRunScriptFromWorkspace(project);
+    if (runScript == null) {
       throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noLaunchingScript"));
     }
 
-    final VirtualFile scriptFile = LocalFileSystem.getInstance().findFileByPath(launchScript);
+    final VirtualFile scriptFile = LocalFileSystem.getInstance().findFileByPath(runScript);
     if (scriptFile == null) {
       throw new RuntimeConfigurationError(
-        FlutterBundle.message("flutter.run.bazel.launchingScriptNotFound", FileUtil.toSystemDependentName(launchScript)));
+        FlutterBundle.message("flutter.run.bazel.launchingScriptNotFound", FileUtil.toSystemDependentName(runScript)));
     }
 
     // check that bazel target is not empty
@@ -187,7 +187,7 @@ public class BazelFields {
 
     final Workspace workspace = getWorkspace(project);
 
-    final String launchingScript = getLaunchScriptFromWorkspace(project);
+    final String launchingScript = getRunScriptFromWorkspace(project);
     assert launchingScript != null; // already checked
     assert workspace != null; // if the workspace is null, then so is the launching script, therefore this was already checked.
 
@@ -201,17 +201,25 @@ public class BazelFields {
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
 
+    // Potentially add build mode to user-specified bazel arguments.
+    final String inputBazelArgs = StringUtil.notNullize(bazelArgs);
+    final StringBuilder fullBazelArgs = new StringBuilder(inputBazelArgs);
+
+    // TODO(helinx): Have run script handle this bazel arg instead.
     // If the user hasn't overridden the flutter_build_mode, then
     if (!StringUtil.notNullize(bazelArgs).matches(".*--define[ =]flutter_build_mode.*")) {
+      if (!inputBazelArgs.isEmpty()) {
+        fullBazelArgs.append(" ");
+      }
 
       // Set the mode. This section needs to match the bazel versions of the flutter_build_mode parameters.
       if (enableReleaseMode) {
-        commandLine.addParameters("--define", "flutter_build_mode=release");
+        fullBazelArgs.append("--define=flutter_build_mode=release");
       }
       else {
         switch (mode) {
           case PROFILE:
-            commandLine.addParameters("--define", "flutter_build_mode=profile");
+            fullBazelArgs.append("--define=flutter_build_mode=profile");
             break;
           case RUN:
           case DEBUG:
@@ -219,57 +227,13 @@ public class BazelFields {
             // The default mode of a flutter app is debug mode. This is the mode that supports hot reloading.
             // So far as flutter is concerned, there is no difference between debug mode and run mode;
             // the only difference is that a debug mode app will --start-paused.
-            commandLine.addParameters("--define", "flutter_build_mode=debug");
+            fullBazelArgs.append("--define=flutter_build_mode=debug");
             break;
         }
       }
     }
 
-    // User specified additional bazel arguments.
-    final CommandLineTokenizer bazelArgsTokenizer = new CommandLineTokenizer(
-      StringUtil.notNullize(bazelArgs));
-    while (bazelArgsTokenizer.hasMoreTokens()) {
-      commandLine.addParameter(bazelArgsTokenizer.nextToken());
-    }
-    // (the implicit else here is the debug case)
-
-    // Send in platform architecture based in the device info.
-    if (device != null) {
-
-      if (device.isIOS()) {
-        // --ios_cpu=[arm64, x86_64]
-        final String arch = device.emulator() ? "x86_64" : "arm64";
-        commandLine.addParameter("--ios_multi_cpus=" + arch);
-      }
-      else {
-        // --android_cpu=[armeabi-v7a, x86, x86_64]
-        String arch = null;
-        final String platform = device.platform();
-        if (platform != null) {
-          switch (platform) {
-            case "android-arm":
-              arch = "armeabi-v7a";
-              break;
-            case "android-x86":
-              arch = "x86";
-              break;
-            case "android-x64":
-            case "linux-x64":
-              arch = "x86_64";
-              break;
-          }
-        }
-
-        if (arch != null) {
-          commandLine.addParameter("--fat_apk_cpu=" + arch);
-        }
-      }
-    }
-
-    commandLine.addParameter(target);
-
-    // Pass additional args to bazel (we currently don't pass --device-id with bazel targets).
-    commandLine.addParameter("--");
+    commandLine.addParameter(String.format("--bazel-options=%s", fullBazelArgs.toString()));
 
     // Tell the flutter command-line tools that we want a machine interface on stdio.
     commandLine.addParameter("--machine");
@@ -291,6 +255,8 @@ public class BazelFields {
       commandLine.addParameter("-d");
       commandLine.addParameter(device.deviceId());
     }
+
+    commandLine.addParameter(target);
 
     return commandLine;
   }
