@@ -64,7 +64,7 @@ public class MostlySilentOsProcessHandler extends OSProcessHandler {
     if (softKill && SystemInfo.isUnix && shouldDestroyProcessRecursively() && processCanBeKilledByOS(process)) {
       final boolean result = UnixProcessManager.sendSigIntToProcessTree(process);
       if (!result) {
-        FlutterInitializer.getAnalytics().sendEvent("process", "process kill failed: " + this.commandLine.getCommandLineString());
+        FlutterInitializer.getAnalytics().sendEvent("process", "process kill failed");
         super.doDestroyProcess();
       }
     }
