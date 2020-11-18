@@ -12,6 +12,7 @@ import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.UnixProcessManager;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.io.BaseOutputReader;
+import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -32,7 +33,12 @@ import org.jetbrains.annotations.NotNull;
  * for more information.
  */
 public class MostlySilentOsProcessHandler extends OSProcessHandler {
+  /*
+  This determines whether a soft kill (SIGINT) is sent to the process on destroy, instead of the default SIGKILL. SIGKILL can't be routed
+  to remote processes spawned from the original one.
+   */
   private boolean softKill;
+  private GeneralCommandLine commandLine;
 
   public MostlySilentOsProcessHandler(@NotNull GeneralCommandLine commandLine)
     throws ExecutionException {
@@ -43,6 +49,7 @@ public class MostlySilentOsProcessHandler extends OSProcessHandler {
     throws ExecutionException {
     super(commandLine);
     this.softKill = softKill;
+    this.commandLine = commandLine;
   }
 
   @NotNull
@@ -55,7 +62,11 @@ public class MostlySilentOsProcessHandler extends OSProcessHandler {
   protected void doDestroyProcess() {
     final Process process = getProcess();
     if (softKill && SystemInfo.isUnix && shouldDestroyProcessRecursively() && processCanBeKilledByOS(process)) {
-      UnixProcessManager.sendSigIntToProcessTree(process);
+      final boolean result = UnixProcessManager.sendSigIntToProcessTree(process);
+      if (!result) {
+        FlutterInitializer.getAnalytics().sendEvent("process", "process kill failed: " + this.commandLine.getCommandLineString());
+        super.doDestroyProcess();
+      }
     }
     else {
       super.doDestroyProcess();
