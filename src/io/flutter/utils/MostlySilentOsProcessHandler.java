@@ -9,6 +9,8 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.BaseOSProcessHandler;
 import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.UnixProcessManager;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.io.BaseOutputReader;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,14 +32,33 @@ import org.jetbrains.annotations.NotNull;
  * for more information.
  */
 public class MostlySilentOsProcessHandler extends OSProcessHandler {
+  private boolean softKill;
+
   public MostlySilentOsProcessHandler(@NotNull GeneralCommandLine commandLine)
     throws ExecutionException {
+    this(commandLine, false);
+  }
+
+  public MostlySilentOsProcessHandler(@NotNull GeneralCommandLine commandLine, boolean softKill)
+    throws ExecutionException {
     super(commandLine);
+    this.softKill = softKill;
   }
 
   @NotNull
   @Override
   protected BaseOutputReader.Options readerOptions() {
     return BaseOutputReader.Options.forMostlySilentProcess();
+  }
+
+  @Override
+  protected void doDestroyProcess() {
+    final Process process = getProcess();
+    if (softKill && SystemInfo.isUnix && shouldDestroyProcessRecursively() && processCanBeKilledByOS(process)) {
+      UnixProcessManager.sendSigIntToProcessTree(process);
+    }
+    else {
+      super.doDestroyProcess();
+    }
   }
 }

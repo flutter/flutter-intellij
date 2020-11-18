@@ -170,7 +170,7 @@ public class BazelTestFields {
    */
   @NotNull
   ProcessHandler run(@NotNull final Project project, @NotNull final RunMode mode) throws ExecutionException {
-    return new MostlySilentOsProcessHandler(getLaunchCommand(project, mode));
+    return new MostlySilentOsProcessHandler(getLaunchCommand(project, mode), true);
   }
 
   /**
