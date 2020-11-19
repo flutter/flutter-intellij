@@ -270,17 +270,16 @@ public class FlutterSettings {
   }
 
   public boolean isEnableEmbeddedBrowsers() {
-    // TODO(helinx): Change default value once JxBrowser is compatible with MacOS 11.
-    return getPropertiesComponent().getBoolean(enableEmbeddedBrowsersKey, !SystemInfo.isMacOSBigSur);
+    // TODO(helinx): Remove this once JxBrowser is compatible with MacOS 11.
+    if (SystemInfo.isMacOSBigSur) {
+      return false;
+    }
+    return getPropertiesComponent().getBoolean(enableEmbeddedBrowsersKey, true);
   }
 
   public void setEnableEmbeddedBrowsers(boolean value) {
-    // TODO(helinx): Remove this and change default value below once JxBrowser is compatible with MacOS 11.
-    if (SystemInfo.isMacOSBigSur) {
-      value = false;
-    }
-    getPropertiesComponent().setValue(enableEmbeddedBrowsersKey, value, !SystemInfo.isMacOSBigSur);
-
+    getPropertiesComponent().setValue(enableEmbeddedBrowsersKey, value, true);
+    
     fireEvent();
   }
 
