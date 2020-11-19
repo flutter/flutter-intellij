@@ -10,6 +10,7 @@ import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
@@ -269,11 +270,16 @@ public class FlutterSettings {
   }
 
   public boolean isEnableEmbeddedBrowsers() {
-    return getPropertiesComponent().getBoolean(enableEmbeddedBrowsersKey, true);
+    // TODO(helinx): Change default value once JxBrowser is compatible with MacOS 11.
+    return getPropertiesComponent().getBoolean(enableEmbeddedBrowsersKey, !SystemInfo.isMacOSBigSur);
   }
 
   public void setEnableEmbeddedBrowsers(boolean value) {
-    getPropertiesComponent().setValue(enableEmbeddedBrowsersKey, value, true);
+    // TODO(helinx): Remove this and change default value below once JxBrowser is compatible with MacOS 11.
+    if (SystemInfo.isMacOSBigSur) {
+      value = false;
+    }
+    getPropertiesComponent().setValue(enableEmbeddedBrowsersKey, value, !SystemInfo.isMacOSBigSur);
 
     fireEvent();
   }
