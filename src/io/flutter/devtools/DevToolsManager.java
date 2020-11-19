@@ -8,8 +8,6 @@ package io.flutter.devtools;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
@@ -26,14 +24,10 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.ui.ColorUtil;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterMessages;
-import io.flutter.FlutterUtils;
-import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.console.FlutterConsoles;
 import io.flutter.jxbrowser.EmbeddedBrowser;
@@ -42,7 +36,6 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.JsonUtils;
-import io.flutter.utils.MostlySilentOsProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -190,42 +183,6 @@ public class DevToolsManager {
     return processHandler;
   }
 
-  /**
-   * Gets the process handler that will start DevTools in bazel.
-   */
-  @Nullable
-  private OSProcessHandler getProcessHandlerForBazel() {
-    final WorkspaceCache workspaceCache = WorkspaceCache.getInstance(project);
-    if (!workspaceCache.isBazel()) {
-      return null;
-    }
-    final Workspace workspace = workspaceCache.get();
-    assert (workspace != null);
-    if (workspace.getDevtoolsScript() == null) {
-      return null;
-    }
-
-    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workspace.getRoot().getPath());
-    commandLine.setExePath(FileUtil.toSystemDependentName(workspace.getRoot().getPath() + "/" + workspace.getLaunchScript()));
-    commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
-    commandLine.addParameters(workspace.getDevtoolsScript(), "--", "--machine", "--port=0");
-    OSProcessHandler handler;
-
-    try {
-      handler = new MostlySilentOsProcessHandler(commandLine);
-    }
-    catch (ExecutionException e) {
-      FlutterUtils.warn(LOG, e);
-      handler = null;
-    }
-
-    if (handler != null) {
-      FlutterConsoles.displayProcessLater(handler, project, null, handler::startNotify);
-    }
-
-    return handler;
-  }
-
   private boolean isBazel(Project project) {
     return WorkspaceCache.getInstance(project).isBazel();
   }
@@ -237,23 +194,27 @@ public class DevToolsManager {
       devToolsInstance.openPanel(project, uri, contentManager, tabName, pageName);
     }
     else {
-      @Nullable final OSProcessHandler handler =
-        isBazel(project) ? getProcessHandlerForBazel() : getProcessHandlerForPub();
-
-      if (handler != null) {
-        // start the server
-        DevToolsInstance.startServer(handler, instance -> {
-          devToolsInstance = instance;
-
+      if (isBazel(project)) {
+        try {
+          devToolsInstance = getDevToolsInstance().get(15, TimeUnit.SECONDS);
           devToolsInstance.openPanel(project, uri, contentManager, tabName, pageName);
-        }, () -> {
-          // Listen for closing; null out the devToolsInstance.
-          devToolsInstance = null;
-        }, project);
-      }
-      else {
-        // TODO(helin24): Return message/boolean to calling location to indicate that opening devtools failed.
-        devToolsInstance = null;
+        } catch (Exception e) {
+          LOG.info("Failed to get existing devToolsInstance");
+        }
+      } else {
+        @Nullable final OSProcessHandler handler = getProcessHandlerForPub();
+
+        if (handler != null) {
+          // start the server
+          DevToolsInstance.startServer(handler, instance -> {
+            devToolsInstance = instance;
+
+            devToolsInstance.openPanel(project, uri, contentManager, tabName, pageName);
+          }, () -> {
+            // Listen for closing; null out the devToolsInstance.
+            devToolsInstance = null;
+          }, project);
+        }
       }
     }
   }
@@ -266,36 +227,49 @@ public class DevToolsManager {
       // For internal users, we can connect to the DevTools server started by flutter daemon. For external users, the flutter daemon has an
       // older version of DevTools, so we launch the server using `pub global run` instead.
       if (isBazel(project)) {
-        final Optional<FlutterApp> appsOptional =
-          FlutterApp.allFromProjectProcess(project).stream().filter((FlutterApp app) -> app.getProject() == project).findFirst();
-
-        if (!appsOptional.isPresent()) {
-          LOG.error("DevTools cannot be opened because the app has been closed");
-          return;
+        try {
+          devToolsInstance = getDevToolsInstance().get(15, TimeUnit.SECONDS);
+          devToolsInstance.openBrowserAndConnect(uri, screen);
         }
-
-        final FlutterApp app = appsOptional.get();
-
-        app.serveDevTools().thenAccept((DaemonApi.DevToolsAddress address) -> {
-          if (!project.isOpen()) {
-            // We should skip starting DevTools (and doing any UI work) if the project has been closed.
-            return;
-          }
-          if (address == null) {
-            @Nullable final OSProcessHandler handler = getProcessHandlerForBazel();
-            startDevToolsServerAndConnect(handler, uri, screen);
-          }
-          else {
-            devToolsInstance = new DevToolsInstance(address.host, address.port);
-            devToolsInstance.openBrowserAndConnect(uri, screen);
-          }
-        });
+        catch (Exception e) {
+          LOG.info("Failed to get existing devToolsInstance");
+        }
       }
       else {
         @Nullable final OSProcessHandler handler = getProcessHandlerForPub();
         startDevToolsServerAndConnect(handler, uri, screen);
       }
     }
+  }
+
+  private CompletableFuture<DevToolsInstance> getDevToolsInstance() {
+    final CompletableFuture<DevToolsInstance> instance = new CompletableFuture<>();
+    final Optional<FlutterApp> appsOptional =
+      FlutterApp.allFromProjectProcess(project).stream().filter((FlutterApp app) -> app.getProject() == project).findFirst();
+
+    if (appsOptional.isEmpty()) {
+      LOG.error("DevTools cannot be opened because the app has been closed");
+      instance.complete(null);
+      return instance;
+    }
+
+    final FlutterApp app = appsOptional.get();
+
+    app.serveDevTools().thenAccept((DaemonApi.DevToolsAddress address) -> {
+      if (!project.isOpen()) {
+        // We should skip starting DevTools (and doing any UI work) if the project has been closed.
+        return;
+      }
+      if (address == null) {
+        LOG.error("DevTools address was null");
+        instance.complete(null);
+      }
+      else {
+        instance.complete(new DevToolsInstance(address.host, address.port));
+      }
+    });
+
+    return instance;
   }
 
   private void startDevToolsServerAndConnect(OSProcessHandler handler, String uri, String screen) {
