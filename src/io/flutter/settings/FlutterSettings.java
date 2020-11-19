@@ -10,7 +10,6 @@ import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
@@ -271,7 +270,7 @@ public class FlutterSettings {
 
   public boolean isEnableEmbeddedBrowsers() {
     // TODO(helinx): Remove this once JxBrowser is compatible with MacOS 11.
-    if (SystemInfo.isMacOSBigSur) {
+    if (FlutterUtils.isMacOsBigSur()) {
       return false;
     }
     return getPropertiesComponent().getBoolean(enableEmbeddedBrowsersKey, true);

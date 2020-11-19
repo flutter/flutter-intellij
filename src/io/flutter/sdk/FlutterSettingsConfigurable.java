@@ -20,7 +20,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.FixedSizeButton;
 import com.intellij.openapi.ui.TextComponentAccessor;
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.openapi.util.text.StringUtil;
@@ -307,8 +306,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myEnableEmbeddedBrowsersCheckBox.setSelected(settings.isEnableEmbeddedBrowsers());
 
     // TODO(helinx): Remove this once JxBrowser is compatible with MacOS 11.
-    myEnableEmbeddedBrowsersCheckBox.setEnabled(!SystemInfo.isMacOSBigSur);
-    if (SystemInfo.isMacOSBigSur) {
+    myEnableEmbeddedBrowsersCheckBox.setEnabled(!FlutterUtils.isMacOsBigSur());
+    if (FlutterUtils.isMacOsBigSur()) {
       myEnableEmbeddedBrowsersCheckBox.setToolTipText("This option is not yet supported for MacOS Big Sur.");
     }
 
