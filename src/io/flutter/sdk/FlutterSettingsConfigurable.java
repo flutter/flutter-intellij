@@ -308,6 +308,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     // TODO(helinx): Remove this once JxBrowser is compatible with MacOS 11.
     myEnableEmbeddedBrowsersCheckBox.setEnabled(!SystemInfo.isMacOSBigSur);
+    if (SystemInfo.isMacOSBigSur) {
+      myEnableEmbeddedBrowsersCheckBox.setToolTipText("This option is not yet supported for MacOS Big Sur.");
+    }
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
 
