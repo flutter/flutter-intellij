@@ -5,7 +5,7 @@
 # Use separate workflow for Windows so it can be disabled if needed.
 # https://docs.github.com/en/free-pro-team@latest/actions/managing-workflow-runs/disabling-and-enabling-a-workflow
 name: windows
-on: [push]
+on: [push, pull_request_target, workflow_dispatch]
 jobs:
   unit-tests:
     runs-on: windows-latest
