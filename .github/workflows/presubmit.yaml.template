@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 name: presubmit
-on: [push]
+on: [push, pull_request_target, workflow_dispatch]
 jobs:
   presubmit:
     runs-on: ubuntu-latest
