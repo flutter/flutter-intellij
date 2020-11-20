@@ -5,8 +5,17 @@
  */
 package io.flutter.module.settings;
 
+import static javax.accessibility.AccessibleRelation.LABELED_BY_PROPERTY;
+
 import com.intellij.ide.util.projectWizard.SettingsStep;
+import com.intellij.openapi.progress.PerformInBackgroundOption;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressIndicatorProvider;
+import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.progress.util.ProgressIndicatorBase;
+import com.intellij.openapi.progress.util.ProgressIndicatorUtils;
 import com.intellij.ui.DocumentAdapter;
+import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
@@ -14,11 +23,18 @@ import io.flutter.module.FlutterProjectType;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
 import java.awt.Component;
+import java.awt.Insets;
 import java.awt.event.ItemEvent;
+import java.util.Objects;
 import java.util.function.Supplier;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.border.AbstractBorder;
+import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
+import javax.swing.plaf.basic.BasicBorders;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterCreateAdditionalSettingsFields {
@@ -28,12 +44,9 @@ public class FlutterCreateAdditionalSettingsFields {
   private final RadiosForm androidLanguageRadios;
   private final RadiosForm iosLanguageRadios;
   private final ProjectType projectTypeForm;
+  private final PlatformsForm platformsForm;
   private final FlutterCreateParams createParams;
   private SettingsHelpForm helpForm;
-
-  public FlutterCreateAdditionalSettingsFields() {
-    this(new FlutterCreateAdditionalSettings(), null);
-  }
 
   public FlutterCreateAdditionalSettingsFields(FlutterCreateAdditionalSettings additionalSettings,
                                                Supplier<? extends FlutterSdk> getSdk) {
@@ -42,8 +55,9 @@ public class FlutterCreateAdditionalSettingsFields {
     projectTypeForm = new ProjectType(getSdk);
     projectTypeForm.addListener(e -> {
       if (e.getStateChange() == ItemEvent.SELECTED) {
-        settings.setType(projectTypeForm.getType());
-        changeVisibility(projectTypeForm.getType());
+        FlutterProjectType type = projectTypeForm.getType();
+        settings.setType(type);
+        changeVisibility(type);
       }
     });
 
@@ -87,6 +101,7 @@ public class FlutterCreateAdditionalSettingsFields {
     );
     iosLanguageRadios.setToolTipText(FlutterBundle.message("flutter.module.create.settings.radios.ios.tip"));
 
+    platformsForm = new PlatformsForm(getSdk);
     createParams = new FlutterCreateParams();
   }
 
@@ -132,16 +147,41 @@ public class FlutterCreateAdditionalSettingsFields {
                                     projectTypeForm.getComponent());
     }
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.org.label"), orgField);
+    addBorder(androidLanguageRadios.getComponent(), false);
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.android.label"),
                                   androidLanguageRadios.getComponent());
+    addBorder(iosLanguageRadios.getComponent(), false);
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.ios.label"),
                                   iosLanguageRadios.getComponent());
+    if (projectTypeHasPlatforms()) {
+      platformsForm.initChannel();
+      if (platformsForm.shouldBeVisible()) {
+        JComponent panel = platformsForm.panel();
+        addBorder(panel, true);
+        settingsStep.addSettingsField("Platforms:", panel);
+      }
+    }
+
     if (!FlutterUtils.isAndroidStudio()) {
       // In IntelliJ the help form appears on the second page of the wizard, along with the project type selection drop-down.
       settingsStep.addSettingsComponent(new SettingsHelpForm().getComponent());
     }
 
     settingsStep.addSettingsComponent(createParams.setInitialValues().getComponent());
+  }
+
+  private void addBorder(JComponent c, boolean left) {
+    // #addSettingsField() moves the second item up by 5.
+    // We also add a bit to the left of the panel to make the check box line up with the radio button.
+    c.setBorder(new AbstractBorder() {
+      public Insets getBorderInsets(Component c, Insets insets) {
+        return JBUI.insets(5, left ? 3 : 0, 0, 0);
+      }
+    });
+  }
+
+  private boolean projectTypeHasPlatforms() {
+    return settings.getType() == FlutterProjectType.APP || settings.getType() == FlutterProjectType.PLUGIN;
   }
 
   public void updateProjectType(FlutterProjectType projectType) {
@@ -163,6 +203,12 @@ public class FlutterCreateAdditionalSettingsFields {
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
       .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
       .setOffline(createParams.isOfflineSelected())
+      .setPlatformAndroid(platformsForm.getConfigAndroid())
+      .setPlatformIos(platformsForm.getConfigIos())
+      .setPlatformLinux(platformsForm.getConfigLinux())
+      .setPlatformMacos(platformsForm.getConfigMacos())
+      .setPlatformWeb(platformsForm.getConfigWeb())
+      .setPlatformWindows(platformsForm.getConfigWindows())
       .build();
   }
 

@@ -46,7 +46,7 @@ public class FlutterSdkChannel {
 
   @NotNull
   public static FlutterSdkChannel fromText(@NotNull String text) {
-    return new FlutterSdkChannel(ID.fromText(parseChannel(text)));
+    return new FlutterSdkChannel(ID.fromText(text));
   }
 
   private FlutterSdkChannel(@NotNull ID channel) {
@@ -60,16 +60,5 @@ public class FlutterSdkChannel {
 
   public String toString() {
     return "channel " + channel.toString();
-  }
-
-  @NotNull
-  private static String parseChannel(@NotNull String text) {
-    String[] lines = text.split("\n");
-    for (String line : lines) {
-      if (line.startsWith("*")) {
-        return line.substring(2);
-      }
-    }
-    throw new IllegalArgumentException("No channel found in: " + text);
   }
 }

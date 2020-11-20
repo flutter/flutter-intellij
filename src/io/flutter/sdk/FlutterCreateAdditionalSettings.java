@@ -26,6 +26,18 @@ public class FlutterCreateAdditionalSettings {
   private Boolean kotlin;
   @Nullable
   private Boolean offlineMode;
+  @Nullable
+  private Boolean platformAndroid;
+  @Nullable
+  private Boolean platformIos;
+  @Nullable
+  private Boolean platformWeb;
+  @Nullable
+  private Boolean platformLinux;
+  @Nullable
+  private Boolean platformMacos;
+  @Nullable
+  private Boolean platformWindows;
 
   public FlutterCreateAdditionalSettings() {
     type = FlutterProjectType.APP;
@@ -39,7 +51,13 @@ public class FlutterCreateAdditionalSettings {
                                           @Nullable String org,
                                           @Nullable Boolean swift,
                                           @Nullable Boolean kotlin,
-                                          @Nullable Boolean offlineMode) {
+                                          @Nullable Boolean offlineMode,
+                                          @Nullable Boolean platformAndroid,
+                                          @Nullable Boolean platformIos,
+                                          @Nullable Boolean platformWeb,
+                                          @Nullable Boolean platformLinux,
+                                          @Nullable Boolean platformMacos,
+                                          @Nullable Boolean platformWindows) {
     this.includeDriverTest = includeDriverTest;
     this.type = type;
     this.description = description;
@@ -47,6 +65,12 @@ public class FlutterCreateAdditionalSettings {
     this.swift = swift;
     this.kotlin = kotlin;
     this.offlineMode = offlineMode;
+    this.platformAndroid = platformAndroid;
+    this.platformIos = platformIos;
+    this.platformWeb = platformWeb;
+    this.platformLinux = platformLinux;
+    this.platformMacos = platformMacos;
+    this.platformWindows = platformWindows;
   }
 
   public void setType(@Nullable FlutterProjectType value) {
@@ -106,6 +130,36 @@ public class FlutterCreateAdditionalSettings {
       args.add("java");
     }
 
+    StringBuilder platforms = new StringBuilder();
+    if (Boolean.TRUE.equals(platformAndroid)) {
+      platforms.append("android,");
+    }
+    if (Boolean.TRUE.equals(platformIos)) {
+      platforms.append("ios,");
+    }
+    if (Boolean.TRUE.equals(platformWeb)) {
+      platforms.append("web,");
+    }
+    if (Boolean.TRUE.equals(platformLinux)) {
+      platforms.append("linux,");
+    }
+    if (Boolean.TRUE.equals(platformMacos)) {
+      platforms.append("macos,");
+    }
+    if (Boolean.TRUE.equals(platformWindows)) {
+      platforms.append("windows,");
+    }
+
+    int lastComma = platforms.lastIndexOf(",");
+    if (lastComma > 0) {
+      platforms.deleteCharAt(lastComma);
+      String platformsArg = platforms.toString();
+      if (!platformsArg.equals("android,ios")) {
+        args.add("--platforms");
+        args.add(platformsArg);
+      }
+    }
+
     return args;
   }
 
@@ -129,6 +183,36 @@ public class FlutterCreateAdditionalSettings {
   }
 
   @Nullable
+  public Boolean getPlatformAndroid() {
+    return platformAndroid;
+  }
+
+  @Nullable
+  public Boolean getPlatformIos() {
+    return platformIos;
+  }
+
+  @Nullable
+  public Boolean getPlatformWeb() {
+    return platformWeb;
+  }
+
+  @Nullable
+  public Boolean getPlatformLinux() {
+    return platformLinux;
+  }
+
+  @Nullable
+  public Boolean getPlatformMacos() {
+    return platformMacos;
+  }
+
+  @Nullable
+  public Boolean getPlatformWindows() {
+    return platformWindows;
+  }
+
+  @Nullable
   public FlutterProjectType getType() {
     return type;
   }
@@ -148,6 +232,18 @@ public class FlutterCreateAdditionalSettings {
     private Boolean kotlin;
     @Nullable
     private Boolean offlineMode;
+    @Nullable
+    private Boolean platformAndroid;
+    @Nullable
+    private Boolean platformIos;
+    @Nullable
+    private Boolean platformWeb;
+    @Nullable
+    private Boolean platformLinux;
+    @Nullable
+    private Boolean platformMacos;
+    @Nullable
+    private Boolean platformWindows;
 
     public Builder() {
     }
@@ -182,13 +278,45 @@ public class FlutterCreateAdditionalSettings {
       return this;
     }
 
+    public Builder setPlatformAndroid(@Nullable Boolean platformAndroid) {
+      this.platformAndroid = platformAndroid;
+      return this;
+    }
+
+    public Builder setPlatformIos(@Nullable Boolean platformIos) {
+      this.platformIos = platformIos;
+      return this;
+    }
+
+    public Builder setPlatformWeb(@Nullable Boolean platformWeb) {
+      this.platformWeb = platformWeb;
+      return this;
+    }
+
+    public Builder setPlatformLinux(@Nullable Boolean platformLinux) {
+      this.platformLinux = platformLinux;
+      return this;
+    }
+
+    public Builder setPlatformMacos(@Nullable Boolean platformMacos) {
+      this.platformMacos = platformMacos;
+      return this;
+    }
+
+    public Builder setPlatformWindows(@Nullable Boolean platformWindows) {
+      this.platformWindows = platformWindows;
+      return this;
+    }
+
     public Builder setOffline(@Nullable Boolean offlineMode) {
       this.offlineMode = offlineMode;
       return this;
     }
 
     public FlutterCreateAdditionalSettings build() {
-      return new FlutterCreateAdditionalSettings(includeDriverTest, type, description, org, swift, kotlin, offlineMode);
+      return new FlutterCreateAdditionalSettings(
+        includeDriverTest, type, description, org, swift, kotlin, offlineMode,
+        platformAndroid, platformIos, platformWeb, platformLinux, platformMacos, platformWindows);
     }
   }
 }

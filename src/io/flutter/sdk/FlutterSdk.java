@@ -5,11 +5,17 @@
  */
 package io.flutter.sdk;
 
+import static java.util.Arrays.asList;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
-import com.intellij.execution.process.*;
+import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessListener;
+import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
@@ -19,13 +25,16 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.ui.EdtInvocationManager;
 import com.jetbrains.lang.dart.sdk.DartSdk;
+import git4idea.config.GitExecutableManager;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.module.FlutterProjectType;
@@ -36,12 +45,20 @@ import io.flutter.run.common.RunMode;
 import io.flutter.run.test.TestFields;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.*;
-
-import static java.util.Arrays.asList;
 
 public class FlutterSdk {
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
@@ -87,17 +104,7 @@ public class FlutterSdk {
     }
 
     final String sdkPath = dartPath.substring(0, dartPath.length() - DART_SDK_SUFFIX.length());
-
-    // Cache based on the project and path ('e41cfa3d:/Users/devoncarew/projects/flutter/flutter').
-    final String cacheKey = project.getLocationHash() + ":" + sdkPath;
-
-    synchronized (projectSdkCache) {
-      if (!projectSdkCache.containsKey(cacheKey)) {
-        projectSdkCache.put(cacheKey, FlutterSdk.forPath(sdkPath));
-      }
-
-      return projectSdkCache.get(cacheKey);
-    }
+    return FlutterSdk.forPath(sdkPath);
   }
 
   /**
@@ -124,8 +131,19 @@ public class FlutterSdk {
       return null;
     }
     else {
-      return new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home));
+      return saveSdkInCache(home);
     }
+  }
+
+  @NotNull
+  private static FlutterSdk saveSdkInCache(VirtualFile home) {
+    String cacheKey = home.getCanonicalPath();
+    synchronized (projectSdkCache) {
+      if (!projectSdkCache.containsKey(cacheKey)) {
+        projectSdkCache.put(cacheKey, new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home)));
+      }
+    }
+    return projectSdkCache.get(cacheKey);
   }
 
   @Nullable
@@ -146,7 +164,7 @@ public class FlutterSdk {
       if (url.endsWith(DART_CORE_SUFFIX)) {
         final String flutterUrl = url.substring(0, url.length() - DART_CORE_SUFFIX.length());
         final VirtualFile home = VirtualFileManager.getInstance().findFileByUrl(flutterUrl);
-        return home == null ? null : new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home));
+        return home == null ? null : saveSdkInCache(home);
       }
     }
     return null;
@@ -273,7 +291,7 @@ public class FlutterSdk {
     }
     args.add(FileUtil.toSystemDependentName(mainPath));
 
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{ }));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
   }
 
   public FlutterCommand flutterAttach(@NotNull PubRoot root, @NotNull VirtualFile main, @Nullable FlutterDevice device,
@@ -306,7 +324,7 @@ public class FlutterSdk {
     }
     args.add(FileUtil.toSystemDependentName(mainPath));
 
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.ATTACH, args.toArray(new String[]{ }));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.ATTACH, args.toArray(new String[]{}));
   }
 
   public FlutterCommand flutterRunOnTester(@NotNull PubRoot root, @NotNull String mainPath) {
@@ -314,7 +332,7 @@ public class FlutterSdk {
     args.add("--machine");
     args.add("--device-id=flutter-tester");
     args.add(mainPath);
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{ }));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
   }
 
   public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir, @Nullable String testNameSubstring,
@@ -355,7 +373,7 @@ public class FlutterSdk {
       args.add(FileUtil.toSystemDependentName(mainPath));
     }
 
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.TEST, args.toArray(new String[]{ }));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.TEST, args.toArray(new String[]{}));
   }
 
   /**
@@ -474,12 +492,82 @@ public class FlutterSdk {
   }
 
   @Nullable
-  public FlutterSdkChannel queryFlutterChannel() {
-    String stdout = returnOutputOfQuery(flutterChannel());
-    if (stdout == null) {
-      return null;
+  public FlutterSdkChannel queryFlutterChannel(boolean useCachedValue) {
+    if (useCachedValue) {
+      String channel = cachedConfigValues.get("channel");
+      if (channel != null) {
+        return FlutterSdkChannel.fromText(channel);
+      }
     }
-    return FlutterSdkChannel.fromText(stdout);
+
+    VirtualFile dir = LocalFileSystem.getInstance().findFileByPath(getHomePath());
+    assert dir != null;
+    String branch;
+    try {
+      branch = git4idea.light.LightGitUtilKt.getLocation(dir, GitExecutableManager.getInstance().getExecutable((Project)null));
+    }
+    catch (VcsException e) {
+      LOG.error(e);
+      branch = "unknown";
+    }
+
+    cachedConfigValues.put("channel", branch);
+    return FlutterSdkChannel.fromText(branch);
+  }
+
+  private static final String[] PLATFORMS =
+    new String[]{"enable-android", "enable-ios", "enable-web", "enable-linux-desktop", "enable-macos-desktop", "enable-windows-desktop"};
+
+  @NotNull
+  public Set<String> queryConfiguredPlatforms(boolean useCachedValue) {
+    Set<String> platforms = new HashSet<>();
+    // Someone could do: flutter config --no-enable-ios --no-enable-android
+    platforms.add("enable-android");
+    platforms.add("enable-ios");
+    if (useCachedValue) {
+      for (String key : PLATFORMS) {
+        String value = cachedConfigValues.get(key);
+        if ("true".equals(value)) {
+          platforms.add(key);
+        }
+        else if ("false".equals(value)) {
+          platforms.remove(key);
+        }
+      }
+      return platforms;
+    }
+
+    String stdout;
+    try {
+      stdout = new String(Files.readAllBytes(Paths.get(configPath())), StandardCharsets.UTF_8);
+    }
+    catch (IOException e) {
+      return platforms;
+    }
+    try {
+      final JsonElement elem = JsonUtils.parseString(stdout.substring(stdout.indexOf('{')));
+      if (elem.isJsonNull()) {
+        FlutterUtils.warn(LOG, "Invalid Json from flutter config");
+        return platforms;
+      }
+
+      final JsonObject obj = elem.getAsJsonObject();
+      for (String key : PLATFORMS) {
+        final JsonPrimitive primitive = obj.getAsJsonPrimitive(key);
+        if (primitive != null) {
+          if ("true".equals(primitive.getAsString())) {
+            platforms.add(key);
+          }
+          else if ("false".equals(primitive.getAsString())) {
+            platforms.remove(key);
+          }
+          cachedConfigValues.put(key, primitive.getAsString());
+        }
+      }
+    }
+    catch (JsonSyntaxException ignored) {
+    }
+    return platforms;
   }
 
   /**
@@ -491,26 +579,30 @@ public class FlutterSdk {
       return cachedConfigValues.get(key);
     }
 
-    String stdout = returnOutputOfQuery(flutterConfig("--machine"));
-    if (stdout != null) {
-      try {
-        final JsonElement elem = JsonUtils.parseString(stdout.substring(stdout.indexOf('{')));
-        if (elem.isJsonNull()) {
-          FlutterUtils.warn(LOG, "Invalid Json from flutter config");
-          return null;
-        }
+    String stdout;
+    try {
+      stdout = new String(Files.readAllBytes(Paths.get(configPath())), StandardCharsets.UTF_8);
+    }
+    catch (IOException e) {
+      return null;
+    }
+    try {
+      final JsonElement elem = JsonUtils.parseString(stdout.substring(stdout.indexOf('{')));
+      if (elem.isJsonNull()) {
+        FlutterUtils.warn(LOG, "Invalid Json from flutter config");
+        return null;
+      }
 
-        final JsonObject obj = elem.getAsJsonObject();
-        for (String jsonKey : obj.keySet()) {
-          final JsonPrimitive primitive = obj.getAsJsonPrimitive(jsonKey);
-          if (primitive != null) {
-            cachedConfigValues.put(jsonKey, primitive.getAsString());
-          }
+      final JsonObject obj = elem.getAsJsonObject();
+      for (String jsonKey : obj.keySet()) {
+        final JsonPrimitive primitive = obj.getAsJsonPrimitive(jsonKey);
+        if (primitive != null) {
+          cachedConfigValues.put(jsonKey, primitive.getAsString());
         }
-        return cachedConfigValues.get(key);
       }
-      catch (JsonSyntaxException ignored) {
-      }
+      return cachedConfigValues.get(key);
+    }
+    catch (JsonSyntaxException ignored) {
     }
     return null;
   }
@@ -553,4 +645,28 @@ public class FlutterSdk {
     return null;
   }
 
+  @NotNull
+  private static String userHomePath() {
+    // See _userHomePath() in .../flutter/packages/flutter_tools/lib/src/base/config.dart
+    String enKey = SystemInfo.isWindows ? "APPDATA" : "HOME";
+    String dir = System.getenv(enKey);
+    return dir == null ? "." : dir;
+  }
+
+  @NotNull
+  private static String configPath() {
+    // See _configPath() in .../flutter/packages/flutter_tools/lib/src/base/config.dart
+    Path homeDirFile = Paths.get(userHomePath(), ".flutter_settings");
+    if (SystemInfo.isLinux || SystemInfo.isMac) {
+      if (homeDirFile.toFile().exists()) {
+        return homeDirFile.toString();
+      }
+      String configDir = System.getenv("XDG_CONFIG_HOME");
+      if (configDir == null) {
+        return Paths.get(userHomePath(), ".config", "flutter", "settings").toString();
+      }
+      return Paths.get(configDir, "settings").toString();
+    }
+    return homeDirFile.toString();
+  }
 }
