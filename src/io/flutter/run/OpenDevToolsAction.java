@@ -10,11 +10,14 @@ import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Computable;
 import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
 import io.flutter.devtools.DevToolsManager;
+import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class OpenDevToolsAction extends DumbAwareAction {
@@ -53,13 +56,15 @@ public class OpenDevToolsAction extends DumbAwareAction {
 
     final DevToolsManager devToolsManager = DevToolsManager.getInstance(event.getProject());
 
+    final Optional<FlutterApp> appOptional = FlutterUtils.findFlutterAppFromProject(event.getProject());
+
     if (myConnector == null) {
       if (devToolsManager.hasInstalledDevTools()) {
-        devToolsManager.openBrowser();
+        devToolsManager.openBrowser(appOptional);
       }
       else {
         final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-        result.thenAccept(o -> devToolsManager.openBrowser());
+        result.thenAccept(o -> devToolsManager.openBrowser(appOptional));
       }
     }
     else {
@@ -69,11 +74,11 @@ public class OpenDevToolsAction extends DumbAwareAction {
       }
 
       if (devToolsManager.hasInstalledDevTools()) {
-        devToolsManager.openBrowserAndConnect(urlString);
+        devToolsManager.openBrowserAndConnect(appOptional, urlString);
       }
       else {
         final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-        result.thenAccept(o -> devToolsManager.openBrowserAndConnect(urlString));
+        result.thenAccept(o -> devToolsManager.openBrowserAndConnect(appOptional, urlString));
       }
     }
   }

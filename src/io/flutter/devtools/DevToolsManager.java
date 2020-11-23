@@ -131,16 +131,16 @@ public class DevToolsManager {
     return result;
   }
 
-  public void openBrowser() {
-    openBrowserImpl(null, null);
+  public void openBrowser(Optional<FlutterApp> appOptional) {
+    openBrowserImpl(appOptional,null, null);
   }
 
-  public void openBrowserAndConnect(String uri) {
-    openBrowserAndConnect(uri, null);
+  public void openBrowserAndConnect(Optional<FlutterApp> appOptional, String uri) {
+    openBrowserAndConnect(appOptional, uri, null);
   }
 
-  public void openBrowserAndConnect(String uri, String screen) {
-    openBrowserImpl(uri, screen);
+  public void openBrowserAndConnect(Optional<FlutterApp> appOptional, String uri, String screen) {
+    openBrowserImpl(appOptional, uri, screen);
   }
 
   /**
@@ -153,11 +153,11 @@ public class DevToolsManager {
     // TODO(devoncarew): Provide feedback through the API about whether the app launch worked.
 
     if (hasInstalledDevTools()) {
-      openBrowserAndConnect(app.getConnector().getBrowserUrl(), screen);
+      openBrowserAndConnect(Optional.of(app), app.getConnector().getBrowserUrl(), screen);
     }
     else {
       final CompletableFuture<Boolean> result = installDevTools();
-      result.thenAccept(o -> openBrowserAndConnect(app.getConnector().getBrowserUrl(), screen));
+      result.thenAccept(o -> openBrowserAndConnect(Optional.of(app), app.getConnector().getBrowserUrl(), screen));
     }
   }
 
@@ -187,12 +187,12 @@ public class DevToolsManager {
     return WorkspaceCache.getInstance(project).isBazel();
   }
 
-  public void openBrowserIntoPanel(String uri, ContentManager contentManager, String tabName, String pageName) {
+  public void openBrowserIntoPanel(Optional<FlutterApp> appOptional, String uri, ContentManager contentManager, String tabName, String pageName) {
     final String screen = null;
 
     if (isBazel(project)) {
       try {
-        getDevToolsInstance().get(15, TimeUnit.SECONDS).openPanel(project, uri, contentManager, tabName, pageName);
+        getDevToolsInstance(appOptional).get(15, TimeUnit.SECONDS).openPanel(project, uri, contentManager, tabName, pageName);
       }
       catch (Exception e) {
         LOG.info("Failed to get existing devToolsInstance");
@@ -220,12 +220,12 @@ public class DevToolsManager {
     }
   }
 
-  private void openBrowserImpl(String uri, String screen) {
+  private void openBrowserImpl(Optional<FlutterApp> appOptional, String uri, String screen) {
     // For internal users, we can connect to the DevTools server started by flutter daemon. For external users, the flutter daemon has an
     // older version of DevTools, so we launch the server using `pub global run` instead.
     if (isBazel(project)) {
       try {
-        getDevToolsInstance().get(15, TimeUnit.SECONDS).openBrowserAndConnect(uri, screen);
+        getDevToolsInstance(appOptional).get(15, TimeUnit.SECONDS).openBrowserAndConnect(uri, screen);
       }
       catch (Exception e) {
         LOG.info("Failed to get existing devToolsInstance");
@@ -242,20 +242,16 @@ public class DevToolsManager {
     }
   }
 
-  private CompletableFuture<DevToolsInstance> getDevToolsInstance() {
+  private CompletableFuture<DevToolsInstance> getDevToolsInstance(Optional<FlutterApp> appOptional) {
     final CompletableFuture<DevToolsInstance> instance = new CompletableFuture<>();
-    final Optional<FlutterApp> appsOptional =
-      FlutterApp.allFromProjectProcess(project).stream().filter((FlutterApp app) -> app.getProject() == project).findFirst();
 
-    if (!appsOptional.isPresent()) {
+    if (!appOptional.isPresent()) {
       LOG.error("DevTools cannot be opened because the app has been closed");
       instance.complete(null);
       return instance;
     }
 
-    final FlutterApp app = appsOptional.get();
-
-    app.serveDevTools().thenAccept((DaemonApi.DevToolsAddress address) -> {
+    appOptional.get().serveDevTools().thenAccept((DaemonApi.DevToolsAddress address) -> {
       if (!project.isOpen()) {
         // We should skip starting DevTools (and doing any UI work) if the project has been closed.
         return;
