@@ -24,6 +24,7 @@
   <idea-version since-build="201.7223" until-build="202.8194.7"/>
 
   <depends>Dart</depends>
+  <depends>Git4Idea</depends>
 
   <!-- plugin compatibility -->
   <!-- see: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
