@@ -185,13 +185,6 @@ public class FlutterCreateAdditionalSettingsFields {
   }
 
   public FlutterCreateAdditionalSettings getAdditionalSettings() {
-    if (settings != null) {
-      panel.apply();
-      platformsForm.savePlatformSettings();
-      return settings;
-    }
-    panel.apply();
-    platformsForm.savePlatformSettings();
     return new FlutterCreateAdditionalSettings.Builder()
       .setDescription(!descriptionField.getText().trim().isEmpty() ? descriptionField.getText().trim() : null)
       .setType(projectTypeForm.getType())

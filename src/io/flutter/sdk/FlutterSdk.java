@@ -339,7 +339,7 @@ public class FlutterSdk {
   }
 
   public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir, @Nullable String testNameSubstring,
-                                    @NotNull RunMode mode, @Nullable String additionalArgs, TestFields.Scope scope) {
+                                    @NotNull RunMode mode, TestFields.Scope scope) {
 
     final List<String> args = new ArrayList<>();
     if (myVersion.flutterTestSupportsMachineMode()) {
@@ -365,10 +365,6 @@ public class FlutterSdk {
       }
       args.add("--plain-name");
       args.add(testNameSubstring);
-    }
-
-    if (additionalArgs != null && !additionalArgs.trim().isEmpty()) {
-      args.addAll(Arrays.asList(additionalArgs.trim().split(" ")));
     }
 
     if (!root.getRoot().equals(fileOrDir)) {
