@@ -221,6 +221,10 @@ public class DevToolsManager {
   }
 
   private void openBrowserImpl(Optional<FlutterApp> appOptional, String uri, String screen) {
+    // do it differently for test - maybe just launch other way?
+    // make sure daemon is separate and not using daemon from app if app/test running simultaneously
+    // are people running devtools from test (should we support at all?) ask on devexp
+
     // For internal users, we can connect to the DevTools server started by flutter daemon. For external users, the flutter daemon has an
     // older version of DevTools, so we launch the server using `pub global run` instead.
     if (isBazel(project)) {
