@@ -10,12 +10,16 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessOutputType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterBundle;
@@ -34,6 +38,7 @@ public class OpenInAndroidStudioAction extends AnAction {
   private static final String DESCR_FILE = FlutterBundle.message("flutter.androidstudio.open.file.description");
   private static final String LABEL_MODULE = FlutterBundle.message("flutter.androidstudio.open.module.text");
   private static final String DESCR_MODULE = FlutterBundle.message("flutter.androidstudio.open.module.description");
+  private static final Logger LOG = Logger.getInstance(OpenInAndroidStudioAction.class);
 
   @Override
   public void update(@NotNull AnActionEvent event) {
@@ -73,7 +78,9 @@ public class OpenInAndroidStudioAction extends AnAction {
 
     final VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
     final String sourceFile = file == null ? null : file.isDirectory() ? null : file.getPath();
-    openFileInStudio(project, projectFile, androidStudioPath, sourceFile);
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      openFileInStudio(project, projectFile, androidStudioPath, sourceFile);
+    });
   }
 
   private static void updatePresentation(AnActionEvent event, Presentation state) {
@@ -178,6 +185,12 @@ public class OpenInAndroidStudioAction extends AnAction {
       }
       final OSProcessHandler handler = new OSProcessHandler(cmd);
       handler.addProcessListener(new ProcessAdapter() {
+        @Override
+        public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
+          if (ProcessOutputType.isStderr(outputType)) {
+            LOG.error(event.getText());
+          }
+        }
         @Override
         public void processTerminated(@NotNull final ProcessEvent event) {
           if (event.getExitCode() != 0) {
