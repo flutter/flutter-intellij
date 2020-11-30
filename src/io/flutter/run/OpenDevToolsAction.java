@@ -6,11 +6,12 @@
 package io.flutter.run;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAwareAction;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
-import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
 import io.flutter.devtools.DevToolsManager;
 import io.flutter.run.daemon.FlutterApp;
@@ -50,21 +51,29 @@ public class OpenDevToolsAction extends DumbAwareAction {
   public void actionPerformed(@NotNull final AnActionEvent event) {
     FlutterInitializer.sendAnalyticsAction(this);
 
-    if (event.getProject() == null) {
+    Project project = event.getProject();
+    if (project == null) {
       return;
     }
 
-    final DevToolsManager devToolsManager = DevToolsManager.getInstance(event.getProject());
+    final DevToolsManager devToolsManager = DevToolsManager.getInstance(project);
 
-    final Optional<FlutterApp> appOptional = FlutterUtils.findFlutterAppFromProject(event.getProject());
+    final Optional<FlutterApp> appOptional =
+      FlutterApp.allFromProjectProcess(project).stream().filter((FlutterApp app) -> app.getProject() == project).findFirst();
+
+    if (!appOptional.isPresent()) {
+      Logger.getInstance(OpenDevToolsAction.class).error("DevTools cannot be opened because the app has been closed");
+      return;
+    }
+    final FlutterApp app = appOptional.get();
 
     if (myConnector == null) {
       if (devToolsManager.hasInstalledDevTools()) {
-        devToolsManager.openBrowser(appOptional);
+        devToolsManager.openBrowser(app);
       }
       else {
         final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-        result.thenAccept(o -> devToolsManager.openBrowser(appOptional));
+        result.thenAccept(o -> devToolsManager.openBrowser(app));
       }
     }
     else {
@@ -74,11 +83,11 @@ public class OpenDevToolsAction extends DumbAwareAction {
       }
 
       if (devToolsManager.hasInstalledDevTools()) {
-        devToolsManager.openBrowserAndConnect(appOptional, urlString);
+        devToolsManager.openBrowserAndConnect(app, urlString);
       }
       else {
         final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-        result.thenAccept(o -> devToolsManager.openBrowserAndConnect(appOptional, urlString));
+        result.thenAccept(o -> devToolsManager.openBrowserAndConnect(app, urlString));
       }
     }
   }

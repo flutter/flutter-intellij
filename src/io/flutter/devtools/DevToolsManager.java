@@ -39,7 +39,6 @@ import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -131,16 +130,16 @@ public class DevToolsManager {
     return result;
   }
 
-  public void openBrowser(Optional<FlutterApp> appOptional) {
-    openBrowserImpl(appOptional,null, null);
+  public void openBrowser(FlutterApp app) {
+    openBrowserImpl(app, null, null);
   }
 
-  public void openBrowserAndConnect(Optional<FlutterApp> appOptional, String uri) {
-    openBrowserAndConnect(appOptional, uri, null);
+  public void openBrowserAndConnect(FlutterApp app, String uri) {
+    openBrowserAndConnect(app, uri, null);
   }
 
-  public void openBrowserAndConnect(Optional<FlutterApp> appOptional, String uri, String screen) {
-    openBrowserImpl(appOptional, uri, screen);
+  public void openBrowserAndConnect(FlutterApp app, String uri, String screen) {
+    openBrowserImpl(app, uri, screen);
   }
 
   /**
@@ -153,11 +152,11 @@ public class DevToolsManager {
     // TODO(devoncarew): Provide feedback through the API about whether the app launch worked.
 
     if (hasInstalledDevTools()) {
-      openBrowserAndConnect(Optional.of(app), app.getConnector().getBrowserUrl(), screen);
+      openBrowserAndConnect(app, app.getConnector().getBrowserUrl(), screen);
     }
     else {
       final CompletableFuture<Boolean> result = installDevTools();
-      result.thenAccept(o -> openBrowserAndConnect(Optional.of(app), app.getConnector().getBrowserUrl(), screen));
+      result.thenAccept(o -> openBrowserAndConnect(app, app.getConnector().getBrowserUrl(), screen));
     }
   }
 
@@ -187,12 +186,12 @@ public class DevToolsManager {
     return WorkspaceCache.getInstance(project).isBazel();
   }
 
-  public void openBrowserIntoPanel(Optional<FlutterApp> appOptional, String uri, ContentManager contentManager, String tabName, String pageName) {
+  public void openBrowserIntoPanel(FlutterApp app, String uri, ContentManager contentManager, String tabName, String pageName) {
     final String screen = null;
 
     if (isBazel(project)) {
       try {
-        getDevToolsInstance(appOptional).get(15, TimeUnit.SECONDS).openPanel(project, uri, contentManager, tabName, pageName);
+        getDevToolsInstance(app).get(15, TimeUnit.SECONDS).openPanel(project, uri, contentManager, tabName, pageName);
       }
       catch (Exception e) {
         LOG.info("Failed to get existing devToolsInstance");
@@ -220,16 +219,12 @@ public class DevToolsManager {
     }
   }
 
-  private void openBrowserImpl(Optional<FlutterApp> appOptional, String uri, String screen) {
-    // do it differently for test - maybe just launch other way?
-    // make sure daemon is separate and not using daemon from app if app/test running simultaneously
-    // are people running devtools from test (should we support at all?) ask on devexp
-
+  private void openBrowserImpl(FlutterApp app, String uri, String screen) {
     // For internal users, we can connect to the DevTools server started by flutter daemon. For external users, the flutter daemon has an
     // older version of DevTools, so we launch the server using `pub global run` instead.
     if (isBazel(project)) {
       try {
-        getDevToolsInstance(appOptional).get(15, TimeUnit.SECONDS).openBrowserAndConnect(uri, screen);
+        getDevToolsInstance(app).get(15, TimeUnit.SECONDS).openBrowserAndConnect(uri, screen);
       }
       catch (Exception e) {
         LOG.info("Failed to get existing devToolsInstance");
@@ -246,16 +241,10 @@ public class DevToolsManager {
     }
   }
 
-  private CompletableFuture<DevToolsInstance> getDevToolsInstance(Optional<FlutterApp> appOptional) {
+  private CompletableFuture<DevToolsInstance> getDevToolsInstance(FlutterApp app) {
     final CompletableFuture<DevToolsInstance> instance = new CompletableFuture<>();
 
-    if (!appOptional.isPresent()) {
-      LOG.error("DevTools cannot be opened because the app has been closed");
-      instance.complete(null);
-      return instance;
-    }
-
-    appOptional.get().serveDevTools().thenAccept((DaemonApi.DevToolsAddress address) -> {
+    app.serveDevTools().thenAccept((DaemonApi.DevToolsAddress address) -> {
       if (!project.isOpen()) {
         // We should skip starting DevTools (and doing any UI work) if the project has been closed.
         return;

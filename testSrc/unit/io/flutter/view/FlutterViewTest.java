@@ -25,7 +25,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 
@@ -69,7 +68,7 @@ public class FlutterViewTest {
     when(mockProject.getName()).thenReturn(projectName);
 
     flutterView.handleJxBrowserInstalled(mockApp, mockInspectorService, mockToolWindow);
-    verify(mockDevToolsManager, times(1)).openBrowserIntoPanel(Optional.of(mockApp), testUrl, null, projectName, "inspector");
+    verify(mockDevToolsManager, times(1)).openBrowserIntoPanel(mockApp, testUrl, null, projectName, "inspector");
   }
 
   @Test
@@ -98,7 +97,7 @@ public class FlutterViewTest {
 
     partialMockFlutterView.handleJxBrowserInstalled(mockApp, mockInspectorService, mockToolWindow);
     verify(partialMockFlutterView, times(1)).presentLabel(mockToolWindow, INSTALLING_DEVTOOLS_LABEL);
-    verify(mockDevToolsManager, times(1)).openBrowserIntoPanel(Optional.of(mockApp), testUrl, null, projectName, "inspector");
+    verify(mockDevToolsManager, times(1)).openBrowserIntoPanel(mockApp, testUrl, null, projectName, "inspector");
   }
 
   @Test

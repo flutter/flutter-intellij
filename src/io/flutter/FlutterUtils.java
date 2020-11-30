@@ -37,7 +37,6 @@ import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRootCache;
-import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
@@ -55,7 +54,6 @@ import java.io.InputStreamReader;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -572,9 +570,5 @@ public class FlutterUtils {
   // SystemInfo check for Big Sur is not available for earlier IntelliJ versions.
   public static boolean isMacOsBigSur() {
     return SystemInfo.isMac && (SystemInfo.isOsVersionAtLeast("11.0") || SystemInfo.isOsVersionAtLeast("10.16"));
-  }
-
-  public static Optional<FlutterApp> findFlutterAppFromProject(@NotNull Project project) {
-    return FlutterApp.allFromProjectProcess(project).stream().filter((FlutterApp app) -> app.getProject() == project).findFirst();
   }
 }
