@@ -45,11 +45,6 @@ public class PluginConfig {
   }
 
   @Nullable
-  String getLaunchScript() {
-    return fields.launchScript;
-  }
-
-  @Nullable
   String getTestScript() {
     return fields.testScript;
   }
@@ -72,11 +67,6 @@ public class PluginConfig {
   @Nullable
   String getVersionFile() {
     return fields.versionFile;
-  }
-
-  @Nullable
-  String getDevtoolsScript() {
-    return fields.devtoolsScript;
   }
 
   @Override
@@ -131,24 +121,20 @@ public class PluginConfig {
   public static PluginConfig forTest(
     @Nullable String daemonScript,
     @Nullable String doctorScript,
-    @Nullable String launchScript,
     @Nullable String testScript,
     @Nullable String runScript,
     @Nullable String syncScript,
     @Nullable String sdkHome,
-    @Nullable String versionFile,
-    @Nullable String devtoolsScript
+    @Nullable String versionFile
   ) {
     final Fields fields = new Fields(
       daemonScript,
       doctorScript,
-      launchScript,
       testScript,
       runScript,
       syncScript,
       sdkHome,
-      versionFile,
-      devtoolsScript
+      versionFile
     );
     return new PluginConfig(fields);
   }
@@ -168,12 +154,6 @@ public class PluginConfig {
      */
     @SerializedName("doctorScript")
     private String doctorScript;
-
-    /**
-     * The script to run to start 'bazel'
-     */
-    @SerializedName("launchScript")
-    private String launchScript;
 
     /**
      * The script to run to start 'flutter test'
@@ -205,12 +185,6 @@ public class PluginConfig {
     @SerializedName("versionFile")
     private String versionFile;
 
-    /**
-     * The bazel command to run to launch DevTools.
-     */
-    @SerializedName("devtoolsScript")
-    private String devtoolsScript;
-
     Fields() {
     }
 
@@ -219,22 +193,18 @@ public class PluginConfig {
      */
     Fields(String daemonScript,
            String doctorScript,
-           String launchScript,
            String testScript,
            String runScript,
            String syncScript,
            String sdkHome,
-           String versionFile,
-           String devtoolsScript) {
+           String versionFile) {
       this.daemonScript = daemonScript;
       this.doctorScript = doctorScript;
-      this.launchScript = launchScript;
       this.testScript = testScript;
       this.runScript = runScript;
       this.syncScript = syncScript;
       this.sdkHome = sdkHome;
       this.versionFile = versionFile;
-      this.devtoolsScript = devtoolsScript;
     }
 
     @Override
@@ -243,18 +213,16 @@ public class PluginConfig {
       final Fields other = (Fields)obj;
       return Objects.equal(daemonScript, other.daemonScript)
              && Objects.equal(doctorScript, other.doctorScript)
-             && Objects.equal(launchScript, other.launchScript)
              && Objects.equal(testScript, other.testScript)
              && Objects.equal(runScript, other.runScript)
              && Objects.equal(syncScript, other.syncScript)
              && Objects.equal(sdkHome, other.sdkHome)
-             && Objects.equal(versionFile, other.versionFile)
-             && Objects.equal(devtoolsScript, other.devtoolsScript);
+             && Objects.equal(versionFile, other.versionFile);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(daemonScript, doctorScript, launchScript, testScript, runScript, syncScript, sdkHome, versionFile, devtoolsScript);
+      return Objects.hashCode(daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile);
     }
   }
 

@@ -45,7 +45,6 @@ public class Workspace {
   @Nullable private final String syncScript;
   @Nullable private final String sdkHome;
   @Nullable private final String versionFile;
-  @Nullable private final String devtoolsScript;
 
   private Workspace(@NotNull VirtualFile root,
                     @Nullable PluginConfig config,
@@ -55,8 +54,7 @@ public class Workspace {
                     @Nullable String runScript,
                     @Nullable String syncScript,
                     @Nullable String sdkHome,
-                    @Nullable String versionFile,
-                    @Nullable String devtoolsScript) {
+                    @Nullable String versionFile) {
     this.root = root;
     this.config = config;
     this.daemonScript = daemonScript;
@@ -66,7 +64,6 @@ public class Workspace {
     this.syncScript = syncScript;
     this.sdkHome = sdkHome;
     this.versionFile = versionFile;
-    this.devtoolsScript = devtoolsScript;
   }
 
   /**
@@ -135,14 +132,6 @@ public class Workspace {
   }
 
   /**
-   * Returns the script that runs the bazel target for a Flutter app, or null if not configured.
-   */
-  @Nullable
-  public String getLaunchScript() {
-    return (config == null) ? null : config.getLaunchScript();
-  }
-
-  /**
    * Returns the script that starts 'flutter test', or null if not configured.
    */
   @Nullable
@@ -180,14 +169,6 @@ public class Workspace {
   @Nullable
   public String getVersionFile() {
     return versionFile;
-  }
-
-  /**
-   * Returns the bazel target to be run with {@link Workspace#getLaunchScript} to launch DevTools.
-   */
-  @Nullable
-  public String getDevtoolsScript() {
-    return devtoolsScript;
   }
 
   /**
@@ -263,9 +244,7 @@ public class Workspace {
 
     final String versionFile = config == null ? null : getScriptFromPath(root, readonlyPath, config.getVersionFile());
 
-    final String devtoolsScript = config == null ? null : config.getDevtoolsScript();
-
-    return new Workspace(root, config, daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile, devtoolsScript);
+    return new Workspace(root, config, daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile);
   }
 
   @VisibleForTesting
@@ -279,8 +258,7 @@ public class Workspace {
       pluginConfig.getRunScript(),
       pluginConfig.getSyncScript(),
       pluginConfig.getSdkHome(),
-      pluginConfig.getVersionFile(),
-      pluginConfig.getDevtoolsScript());
+      pluginConfig.getVersionFile());
   }
 
   /**
