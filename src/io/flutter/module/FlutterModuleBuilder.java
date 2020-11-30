@@ -113,7 +113,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     final OutputListener listener = new OutputListener();
-    final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project, listener, getAdditionalSettings());
+    @NotNull FlutterCreateAdditionalSettings settings = getAdditionalSettings();
+    final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project, listener, settings);
     if (root == null) {
       final String stderr = listener.getOutput().getStderr();
       final String msg = stderr.isEmpty() ? "Flutter create command was unsuccessful" : stderr;
@@ -134,7 +135,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     FlutterModuleUtils.autoShowMain(project, root);
 
     if (!(AndroidUtils.isAndroidProject(getProject()) &&
-          (getAdditionalSettings().getType() == FlutterProjectType.MODULE))) {
+          (settings.getType() == FlutterProjectType.MODULE))) {
       addAndroidModule(project, model, basePath, flutter.getName());
     }
     return flutter;

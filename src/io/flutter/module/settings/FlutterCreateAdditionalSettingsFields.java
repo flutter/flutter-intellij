@@ -7,6 +7,7 @@ package io.flutter.module.settings;
 
 import static javax.accessibility.AccessibleRelation.LABELED_BY_PROPERTY;
 
+import com.intellij.ide.projectWizard.NewProjectWizard;
 import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.openapi.progress.PerformInBackgroundOption;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -14,6 +15,7 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.util.ProgressIndicatorBase;
 import com.intellij.openapi.progress.util.ProgressIndicatorUtils;
+import com.intellij.openapi.ui.DialogPanel;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
@@ -47,6 +49,7 @@ public class FlutterCreateAdditionalSettingsFields {
   private final PlatformsForm platformsForm;
   private final FlutterCreateParams createParams;
   private SettingsHelpForm helpForm;
+  private DialogPanel panel;
 
   public FlutterCreateAdditionalSettingsFields(FlutterCreateAdditionalSettings additionalSettings,
                                                Supplier<? extends FlutterSdk> getSdk) {
@@ -156,7 +159,7 @@ public class FlutterCreateAdditionalSettingsFields {
     if (projectTypeHasPlatforms()) {
       platformsForm.initChannel();
       if (platformsForm.shouldBeVisible()) {
-        JComponent panel = platformsForm.panel();
+        panel = platformsForm.panel();
         addBorder(panel, true);
         settingsStep.addSettingsField("Platforms:", panel);
       }
@@ -186,7 +189,7 @@ public class FlutterCreateAdditionalSettingsFields {
 
   public void updateProjectType(FlutterProjectType projectType) {
     if (FlutterUtils.isNewAndroidStudioProjectWizard()) {
-      getAdditionalSettings().setType(projectType);
+      settings.setType(projectType);
       if (projectTypeForm.getType() == projectType) {
         projectTypeForm.getProjectTypeCombo().setSelectedItem(FlutterProjectType.PLUGIN); // Set to something other than default.
       }
@@ -195,6 +198,13 @@ public class FlutterCreateAdditionalSettingsFields {
   }
 
   public FlutterCreateAdditionalSettings getAdditionalSettings() {
+    if (settings != null) {
+      panel.apply();
+      platformsForm.savePlatformSettings();
+      return settings;
+    }
+    panel.apply();
+    platformsForm.savePlatformSettings();
     return new FlutterCreateAdditionalSettings.Builder()
       .setDescription(!descriptionField.getText().trim().isEmpty() ? descriptionField.getText().trim() : null)
       .setType(projectTypeForm.getType())
@@ -203,12 +213,12 @@ public class FlutterCreateAdditionalSettingsFields {
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
       .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
       .setOffline(createParams.isOfflineSelected())
-      .setPlatformAndroid(platformsForm.getConfigAndroid())
-      .setPlatformIos(platformsForm.getConfigIos())
-      .setPlatformLinux(platformsForm.getConfigLinux())
-      .setPlatformMacos(platformsForm.getConfigMacos())
-      .setPlatformWeb(platformsForm.getConfigWeb())
-      .setPlatformWindows(platformsForm.getConfigWindows())
+      .setPlatformAndroid(platformsForm.getAndroidSelected().get())
+      .setPlatformIos(platformsForm.getIosSelected().get())
+      .setPlatformLinux(platformsForm.getLinuxSelected().get())
+      .setPlatformMacos(platformsForm.getMacosSelected().get())
+      .setPlatformWeb(platformsForm.getWebSelected().get())
+      .setPlatformWindows(platformsForm.getWindowsSelected().get())
       .build();
   }
 
