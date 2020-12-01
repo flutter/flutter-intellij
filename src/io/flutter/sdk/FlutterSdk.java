@@ -501,11 +501,13 @@ public class FlutterSdk {
         }
 
         final JsonObject obj = elem.getAsJsonObject();
-        final JsonPrimitive primitive = obj.getAsJsonPrimitive(key);
-        if (primitive != null) {
-          cachedConfigValues.put(key, stdout);
-          return cachedConfigValues.get(key);
+        for (String jsonKey : obj.keySet()) {
+          final JsonPrimitive primitive = obj.getAsJsonPrimitive(jsonKey);
+          if (primitive != null) {
+            cachedConfigValues.put(jsonKey, primitive.getAsString());
+          }
         }
+        return cachedConfigValues.get(key);
       }
       catch (JsonSyntaxException ignored) {
       }
