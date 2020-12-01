@@ -248,13 +248,15 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     final String browserUrl = app.getConnector().getBrowserUrl();
 
-    if (isEmbedded) {
-      DevToolsManager.getInstance(app.getProject()).openBrowserIntoPanel(app, browserUrl, contentManager, tabName, "inspector");
-    }
-    else {
-      DevToolsManager.getInstance(app.getProject()).openBrowserAndConnect(app, browserUrl, "inspector");
-      presentLabel(toolWindow, "DevTools inspector has been opened in the browser.");
-    }
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      if (isEmbedded) {
+        DevToolsManager.getInstance(app.getProject()).openBrowserIntoPanel(app, browserUrl, contentManager, tabName, "inspector");
+      }
+      else {
+        DevToolsManager.getInstance(app.getProject()).openBrowserAndConnect(app, browserUrl, "inspector");
+        presentLabel(toolWindow, "DevTools inspector has been opened in the browser.");
+      }
+    });
   }
 
   private void addInspectorViewContent(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
@@ -430,19 +432,21 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
     if (devToolsManager.hasInstalledDevTools()) {
-      addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded);
+      AsyncUtils.invokeLater(() -> addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded));
     }
     else {
       presentLabel(toolWindow, INSTALLING_DEVTOOLS_LABEL);
 
       final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-      result.thenAccept(succeeded -> {
+      AsyncUtils.whenCompleteUiThread(result, (succeeded, throwable) -> {
         if (succeeded) {
           addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded);
-        }
-        else {
+        } else {
           // TODO(helin24): Handle with alternative instructions if devtools fails.
           presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
+          if (throwable != null) {
+            LOG.error(throwable);
+          }
         }
       });
     }
