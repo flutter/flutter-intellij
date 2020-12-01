@@ -249,10 +249,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final String browserUrl = app.getConnector().getBrowserUrl();
 
     if (isEmbedded) {
-      DevToolsManager.getInstance(app.getProject()).openBrowserIntoPanel(browserUrl, contentManager, tabName, "inspector");
+      DevToolsManager.getInstance(app.getProject()).openBrowserIntoPanel(app, browserUrl, contentManager, tabName, "inspector");
     }
     else {
-      DevToolsManager.getInstance(app.getProject()).openBrowserAndConnect(browserUrl, "inspector");
+      DevToolsManager.getInstance(app.getProject()).openBrowserAndConnect(app, browserUrl, "inspector");
       presentLabel(toolWindow, "DevTools inspector has been opened in the browser.");
     }
   }
@@ -804,11 +804,11 @@ class FlutterViewDevToolsAction extends FlutterViewAction {
       final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
       if (devToolsManager.hasInstalledDevTools()) {
-        devToolsManager.openBrowserAndConnect(urlString);
+        devToolsManager.openBrowserAndConnect(app, urlString);
       }
       else {
         final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-        result.thenAccept(o -> devToolsManager.openBrowserAndConnect(urlString));
+        result.thenAccept(o -> devToolsManager.openBrowserAndConnect(app, urlString));
       }
     }
   }

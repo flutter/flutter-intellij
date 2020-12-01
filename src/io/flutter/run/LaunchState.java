@@ -234,7 +234,7 @@ public class LaunchState extends CommandLineState {
     final List<AnAction> actions = new ArrayList<>(Arrays.asList(
       super.createActions(console, app.getProcessHandler(), getEnvironment().getExecutor())));
     actions.add(new Separator());
-    actions.add(new OpenDevToolsAction(app.getConnector(), observatoryAvailable));
+    actions.add(new OpenDevToolsAction(app, observatoryAvailable));
 
     return new DefaultExecutionResult(console, app.getProcessHandler(), actions.toArray(new AnAction[0]));
   }
