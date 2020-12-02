@@ -248,15 +248,13 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     final String browserUrl = app.getConnector().getBrowserUrl();
 
-    ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      if (isEmbedded) {
-        DevToolsManager.getInstance(app.getProject()).openBrowserIntoPanel(app, browserUrl, contentManager, tabName, "inspector");
-      }
-      else {
-        DevToolsManager.getInstance(app.getProject()).openBrowserAndConnect(app, browserUrl, "inspector");
-        presentLabel(toolWindow, "DevTools inspector has been opened in the browser.");
-      }
-    });
+    if (isEmbedded) {
+      DevToolsManager.getInstance(app.getProject()).openBrowserIntoPanel(app, browserUrl, contentManager, tabName, "inspector");
+    }
+    else {
+      DevToolsManager.getInstance(app.getProject()).openBrowserAndConnect(app, browserUrl, "inspector");
+      presentLabel(toolWindow, "DevTools inspector has been opened in the browser.");
+    }
   }
 
   private void addInspectorViewContent(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
@@ -436,20 +434,23 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
     else {
       presentLabel(toolWindow, INSTALLING_DEVTOOLS_LABEL);
-
       final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-      AsyncUtils.whenCompleteUiThread(result, (succeeded, throwable) -> {
-        if (succeeded) {
-          addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded);
-        } else {
-          // TODO(helin24): Handle with alternative instructions if devtools fails.
-          presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
-          if (throwable != null) {
-            LOG.error(throwable);
-          }
-        }
-      });
+      awaitDevToolsInstall(app, inspectorService, toolWindow, isEmbedded, result);
     }
+  }
+
+  protected void awaitDevToolsInstall(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded, CompletableFuture<Boolean> installResult) {
+    AsyncUtils.whenCompleteUiThread(installResult, (succeeded, throwable) -> {
+      if (succeeded) {
+        addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded);
+      } else {
+        // TODO(helin24): Handle with alternative instructions if devtools fails.
+        presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
+        if (throwable != null) {
+          LOG.error(throwable);
+        }
+      }
+    });
   }
 
   private LabelInput openDevToolsLabel(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
