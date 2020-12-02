@@ -57,6 +57,7 @@ import io.flutter.utils.EventStream;
 import io.flutter.utils.JxBrowserUtils;
 import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.vmService.ServiceExtensions;
+import org.apache.commons.lang3.BooleanUtils;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
@@ -441,14 +442,15 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   protected void awaitDevToolsInstall(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded, CompletableFuture<Boolean> installResult) {
     AsyncUtils.whenCompleteUiThread(installResult, (succeeded, throwable) -> {
-      if (succeeded) {
+      if (throwable != null) {
+        LOG.error(throwable);
+        return;
+      }
+      if (BooleanUtils.isTrue(succeeded)) {
         addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded);
       } else {
         // TODO(helin24): Handle with alternative instructions if devtools fails.
         presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
-        if (throwable != null) {
-          LOG.error(throwable);
-        }
       }
     });
   }

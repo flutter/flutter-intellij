@@ -190,6 +190,10 @@ public class DevToolsManager {
 
   public void openBrowserIntoPanel(FlutterApp app, String uri, ContentManager contentManager, String tabName, String pageName) {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      if (!project.isOpen()) {
+        return;
+      }
+
       final String screen = null;
 
       if (devToolsInstance != null) {
@@ -231,6 +235,10 @@ public class DevToolsManager {
     }
 
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      if (!project.isOpen()) {
+        return;
+      }
+
       // For internal users, we can connect to the DevTools server started by flutter daemon. For external users, the flutter daemon has an
       // older version of DevTools, so we launch the server using `pub global run` instead.
       if (isBazel(project)) {
@@ -382,6 +390,10 @@ class DevToolsInstance {
   }
 
   public void openPanel(Project project, String serviceProtocolUri, ContentManager contentManager, String tabName, String pageName) {
+    if (!project.isOpen()) {
+      return;
+    }
+
     final String color = ColorUtil.toHex(UIUtil.getEditorPaneBackground());
     final String url = DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, pageName, true, color);
 
