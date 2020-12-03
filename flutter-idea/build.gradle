@@ -35,8 +35,13 @@ intellij {
   updateSinceUntilBuild = false
   downloadSources false
   localPath "${project.rootDir.absolutePath}/artifacts/$ide"
-  plugins "java", "Dart:$dartVersion", "properties", "junit", "Kotlin",
-          "gradle", "android", "Groovy", "smali", "IntelliLang"
+  if ("$buildSpec" == '2020.3') {
+    plugins "java", "Dart:$dartVersion", "properties", "junit", "Kotlin",
+            "gradle", "android", "Groovy", "smali", "IntelliLang", "gradle-dsl-impl"
+  } else {
+    plugins "java", "Dart:$dartVersion", "properties", "junit", "Kotlin",
+            "gradle", "android", "Groovy", "smali", "IntelliLang"
+  }
 }
 
 dependencies {

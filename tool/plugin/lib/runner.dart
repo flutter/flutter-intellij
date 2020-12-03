@@ -83,6 +83,7 @@ dartVersion=${spec.dartPluginVersion}
 flutterPluginVersion=${version}
 ide=${spec.ideaProduct}
 testing=$testing
+buildSpec=${spec.version}
 ''';
     final propertiesFile = File("$rootPath/gradle.properties");
     final source = propertiesFile.readAsStringSync();

@@ -8,6 +8,7 @@ package io.flutter.project;
 import com.android.tools.idea.projectsystem.AndroidModuleSystem;
 import com.android.tools.idea.projectsystem.AndroidProjectSystem;
 import com.android.tools.idea.projectsystem.LightResourceClassService;
+import com.android.tools.idea.projectsystem.ProjectSystemBuildManager;
 import com.android.tools.idea.projectsystem.ProjectSystemSyncManager;
 import com.android.tools.idea.projectsystem.SourceProvidersFactory;
 import com.android.tools.idea.projectsystem.gradle.GradleProjectSystem;
@@ -49,7 +50,6 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
     return gradleProjectSystem.getPathToAapt();
   }
 
-  @Override
   public void buildProject() {
     // flutter build ?
     FlutterUtils.warn(LOG, "FlutterProjectSystem.buildProject() called but not (properly) implemented.");
@@ -132,5 +132,10 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
                                                                   @NotNull String packageName,
                                                                   @NotNull GlobalSearchScope scope) {
     return gradleProjectSystem.getAndroidFacetsWithPackageName(project, packageName, scope);
+  }
+
+  @NotNull
+  public ProjectSystemBuildManager getBuildManager() {
+    return gradleProjectSystem.getBuildManager();
   }
 }

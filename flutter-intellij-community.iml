@@ -93,10 +93,18 @@
     <orderEntry type="library" name="com.android.tools.analytics-library:protos" level="project" />
     <orderEntry type="module" module-name="intellij.android.gradle.dsl" />
     <orderEntry type="module" module-name="intellij.android.projectSystem" />
+    <orderEntry type="library" name="Trove4j" level="project" />
+    <orderEntry type="module" module-name="intellij.gradle.dsl.impl" />
+    <orderEntry type="library" name="studio-sdk" level="project" />
+    <orderEntry type="library" name="studio-plugin-gradle" level="project" />
+    <orderEntry type="library" name="Dart Packages" level="project" />
+    <orderEntry type="library" name="studio-plugin-git4idea" level="project" />
+    <orderEntry type="module" module-name="intellij.android.observable" />
+    <orderEntry type="library" name="jxbrowser-7.12" level="project" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-7.10.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-7.12.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -105,7 +113,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-swing-7.10.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-swing-7.12.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

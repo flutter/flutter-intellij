@@ -77,9 +77,17 @@ class BuildSpec {
 
   void createArtifacts() {
     if (ideaProduct == 'android-studio') {
-      product = artifacts.add(Artifact(
-          '$ideaProduct-ide-$ideaVersion-linux.zip',
-          output: ideaProduct));
+      product = Artifact(
+          '$ideaProduct-ide-$ideaVersion-mac.zip',
+          bareArchive: true,
+          output: ideaProduct);
+      if (product.exists()) {
+        artifacts.add(product);
+      } else {
+        product = artifacts.add(Artifact(
+            '$ideaProduct-ide-$ideaVersion-linux.zip',
+            output: ideaProduct));
+      }
     } else {
       product = artifacts.add(
           Artifact('$ideaProduct-$ideaVersion.tar.gz', output: ideaProduct));

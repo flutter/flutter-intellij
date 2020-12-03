@@ -2,7 +2,7 @@
   "list": [
     {
       "channel": "stable",
-      "comments": "IntelliJ 2020.1.1, Android Studio 4.1 Beta 1",
+      "comments": "IntelliJ 2020.1.1, Android Studio 4.1",
       "name": "Android Studio 4.1",
       "version": "4.1",
       "ideaProduct": "android-studio",
@@ -17,26 +17,49 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2020.2, & Android Studio 4.2 Canary 8",
+      "comments": "IntelliJ 2020.2.3, Android Studio 4.2 Beta 1",
       "name": "Android Studio 4.2",
       "version": "4.2",
       "ideaProduct": "android-studio",
-      "ideaVersion": "202.6787931",
-      "dartPluginVersion": "202.6397.47",
-      "sinceBuild": "202.6397.94",
+      "ideaVersion": "202.6987402",
+      "dartPluginVersion": "202.8070",
+      "sinceBuild": "202.7660.26",
       "untilBuild": "202.7660.26",
       "filesToSkip": ["src/io/flutter/utils/AndroidLocationProvider.java"]
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2020.3 EAP",
+      "comments": "IntelliJ 2020.2.2, Android Studio 2020.3.1 Canary 1",
+      "name": "Arctic Fox 2020.3.1",
+      "version": "AF.3.1",
+      "ideaProduct": "android-studio",
+      "ideaVersion": "202.6983675",
+      "dartPluginVersion": "202.8070",
+      "sinceBuild": "202.7319.50",
+      "untilBuild": "202.7319.50",
+      "filesToSkip": ["src/io/flutter/utils/AndroidLocationProvider.java"]
+    },
+    {
+      "channel": "stable",
+      "comments": "IntelliJ 2020.2.4",
+      "name": "IntelliJ 2020.2.4",
+      "version": "2020.2",
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "202.8194.7",
+      "dartPluginVersion": "202.8070",
+      "sinceBuild": "202.8194.7",
+      "untilBuild": "202.8194.7"
+    },
+    {
+      "channel": "stable",
+      "comments": "IntelliJ 2020.3",
       "name": "IntelliJ 2020.3",
       "version": "2020.3",
       "isUnitTestTarget": "true",
       "ideaProduct": "ideaIC",
-      "ideaVersion": "203.3645.34",
-      "dartPluginVersion": "203.3645.34",
-      "sinceBuild": "203.3645.34",
+      "ideaVersion": "203.5981.155",
+      "dartPluginVersion": "203.5981.155",
+      "sinceBuild": "203.5981.155",
       "untilBuild": "203.*"
     }
   ]
