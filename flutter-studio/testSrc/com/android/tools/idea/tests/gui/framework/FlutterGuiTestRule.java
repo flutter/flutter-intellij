@@ -141,7 +141,7 @@ public class FlutterGuiTestRule implements TestRule {
       .around(new BazelUndeclaredOutputs())
       .around(myLeakCheck)
       .around(new FlutterGuiTestRule.IdeHandling())
-      .around(new ScreenshotOnFailure())
+      .around(new ScreenshotOnFailure(myRobotTestRule::getRobot))
       .around(myInnerTimeout);
 
     // Perf logging currently writes data to the Bazel-specific TEST_UNDECLARED_OUTPUTS_DIR. Skipp logging if running outside of Bazel.

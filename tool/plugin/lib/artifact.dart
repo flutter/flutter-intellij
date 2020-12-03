@@ -22,6 +22,12 @@ class Artifact {
 
   bool get isZip => file.endsWith('.zip');
 
+  bool exists() {
+    if (FileSystemEntity.isFileSync('artifacts/$file')) return true;
+    convertToTar();
+    return FileSystemEntity.isFileSync('artifacts/$file');
+  }
+
   String get outPath => p.join(rootPath, 'artifacts', output);
 
   // Historically, Android Studio has been distributed as a zip file.
@@ -130,6 +136,14 @@ class ArtifactManager {
           result = await exec(
               'unzip', ['-q', '-d', artifact.output, artifact.file],
               cwd: 'artifacts');
+          var files = Directory(artifact.outPath).listSync();
+          if (files.length == 1) {
+            // This is the Mac zip case.
+            Directory("${files.first.path}/Contents")
+                .renameSync("${artifact.outPath}Temp");
+            Directory(artifact.outPath).deleteSync(recursive: true);
+            Directory("${artifact.outPath}Temp").renameSync(artifact.outPath);
+          }
         } else {
           result = await exec('unzip', ['-q', artifact.file], cwd: 'artifacts');
         }

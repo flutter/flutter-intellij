@@ -58,7 +58,7 @@ List<EditCommand> editCommands = [
         'import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;',
     replacement:
         'import com.android.tools.idea.gradle.dsl.model.BuildModelContext;',
-    versions: ['4.1', '4.2'],
+    versions: ['4.1', '4.2', 'AF.3.1'],
   ),
   Subst(
     path: 'src/io/flutter/FlutterUtils.java',
@@ -89,6 +89,20 @@ List<EditCommand> editCommands = [
     initial: 'Predicate<T> predicate',
     replacement: 'Predicate<? super T> predicate',
     version: '2020.3',
+  ),
+  MultiSubst(
+    path: 'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java',
+    initials: [
+      'import com.android.tools.idea.projectsystem.ProjectSystemBuildManager;',
+      'ProjectSystemBuildManager',
+      'gradleProjectSystem.getBuildManager()',
+    ],
+    replacements: [
+      '',
+      'Object',
+      'null',
+    ],
+    versions: ['4.1', '4.2', '2020.2', '2020.3'],
   ),
 ];
 

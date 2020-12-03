@@ -1,3 +1,18 @@
+# 52.0
+- Move launching of Android Studio off EDT onto a background thread #5081
+- Unset and disable embedded browser option if MacOS Big Sur (#5065)
+- Send SIGINT for bazel test processes (#5064)
+- Update to jxbrowser v7.12 (#5060)
+- Use OFF_SCREEN render mode for windows (#5055)
+- Channel command: run 'flutter channel' (#5048)
+- Use runScript for bazel run (#5046)
+- Add instructions to run tests on command line (#5047)
+- Minor NPW clean up (#5045)
+- Simplify the new project wizard for AS 4.2+ (#5044)
+- Set user-data folder for embedded browser (#5035)
+- Fix copy/paste error in change log (#5021)
+- Mock inspector group manager to fix test (#5017)
+
 # 51.0
 - Fix bugs where widget indent behavior sometimes impacted non-dart files, stale indent guides were sometimes displayed, and filtered indent guides were unpredictably displayed (#5008)
 - Allow bazel projects to set up JxBrowser (#5007)
