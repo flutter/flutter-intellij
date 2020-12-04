@@ -23,6 +23,8 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.Key;
 import com.intellij.ui.ColorUtil;
 import com.intellij.ui.content.ContentManager;
@@ -342,6 +344,13 @@ class DevToolsInstance {
       @Override
       public void processTerminated(@NotNull ProcessEvent event) {
         onClose.run();
+      }
+    });
+
+    ProjectManager.getInstance().addProjectManagerListener(projectContext, new ProjectManagerListener() {
+      @Override
+      public void projectClosing(@NotNull Project project) {
+        processHandler.destroyProcess();
       }
     });
   }
