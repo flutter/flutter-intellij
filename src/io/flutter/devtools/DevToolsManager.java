@@ -191,55 +191,57 @@ public class DevToolsManager {
   public void openBrowserIntoPanel(FlutterApp app, String uri, ContentManager contentManager, String tabName, String pageName) {
     final String screen = null;
 
+    if (devToolsInstance != null) {
+      devToolsInstance.openPanel(project, uri, contentManager, tabName, pageName);
+      return;
+    }
+
     if (isBazel(project)) {
       try {
-        getDevToolsInstance(app).get(15, TimeUnit.SECONDS).openPanel(project, uri, contentManager, tabName, pageName);
+        devToolsInstance = getDevToolsInstance(app).get(15, TimeUnit.SECONDS);
+        devToolsInstance.openPanel(project, uri, contentManager, tabName, pageName);
       }
       catch (Exception e) {
         LOG.info("Failed to get existing devToolsInstance");
       }
     }
     else {
-      if (devToolsInstance != null) {
-        devToolsInstance.openPanel(project, uri, contentManager, tabName, pageName);
-      }
-      else {
-        @Nullable final OSProcessHandler handler = getProcessHandlerForPub();
+      @Nullable final OSProcessHandler handler = getProcessHandlerForPub();
 
-        if (handler != null) {
-          // start the server
-          DevToolsInstance.startServer(handler, instance -> {
-            devToolsInstance = instance;
+      if (handler != null) {
+        // start the server
+        DevToolsInstance.startServer(handler, instance -> {
+          devToolsInstance = instance;
 
-            devToolsInstance.openPanel(project, uri, contentManager, tabName, pageName);
-          }, () -> {
-            // Listen for closing; null out the devToolsInstance.
-            devToolsInstance = null;
-          }, project);
-        }
+          devToolsInstance.openPanel(project, uri, contentManager, tabName, pageName);
+        }, () -> {
+          // Listen for closing; null out the devToolsInstance.
+          devToolsInstance = null;
+        }, project);
       }
     }
   }
 
   private void openBrowserImpl(FlutterApp app, String uri, String screen) {
+    if (devToolsInstance != null) {
+      devToolsInstance.openBrowserAndConnect(uri, screen);
+      return;
+    }
+
     // For internal users, we can connect to the DevTools server started by flutter daemon. For external users, the flutter daemon has an
     // older version of DevTools, so we launch the server using `pub global run` instead.
     if (isBazel(project)) {
       try {
-        getDevToolsInstance(app).get(15, TimeUnit.SECONDS).openBrowserAndConnect(uri, screen);
+        devToolsInstance = getDevToolsInstance(app).get(15, TimeUnit.SECONDS);
+        devToolsInstance.openBrowserAndConnect(uri, screen);
       }
       catch (Exception e) {
         LOG.info("Failed to get existing devToolsInstance");
       }
     }
     else {
-      if (devToolsInstance != null) {
-        devToolsInstance.openBrowserAndConnect(uri, screen);
-      }
-      else {
-        @Nullable final OSProcessHandler handler = getProcessHandlerForPub();
-        startDevToolsServerAndConnect(handler, uri, screen);
-      }
+      @Nullable final OSProcessHandler handler = getProcessHandlerForPub();
+      startDevToolsServerAndConnect(handler, uri, screen);
     }
   }
 
