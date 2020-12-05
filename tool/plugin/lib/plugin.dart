@@ -130,7 +130,7 @@ void genPresubmitYaml(List<BuildSpec> specs) {
 }
 
 bool isTravisFileValid() {
-  var travisPath = p.join(rootPath, '.travis.yml');
+  var travisPath = p.join(rootPath, '.github/workflows/presubmit.yaml');
   var travisFile = File(travisPath);
   if (!travisFile.existsSync()) {
     return false;
