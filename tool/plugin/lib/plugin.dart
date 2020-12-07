@@ -602,10 +602,11 @@ class GenerateCommand extends ProductCommand {
 
   GenerateCommand(this.runner) : super('generate');
 
-  String get description => 'Generate plugin.xml, .travis.yml, and '
-      'resources/liveTemplates/flutter_miscellaneous.xml files for the Flutter '
-      'plugin.\nThe plugin.xml.template and product-matrix.json are used as '
-      'input.';
+  String get description =>
+      'Generate plugin.xml, .github/workflows/presubmit.yaml, '
+      'and resources/liveTemplates/flutter_miscellaneous.xml files for the '
+      'Flutter plugin.\nThe plugin.xml.template and product-matrix.json are '
+      'used as input.';
 
   Future<int> doit() async {
     var json = readProductMatrix();
@@ -659,7 +660,7 @@ class GenerateCommand extends ProductCommand {
       }
 
       // Replace the existing content in the xml live template file with the
-      // contwnt from the template $name.txt file.
+      // content from the template $name.txt file.
       final matchString = match.group(1);
       final matchStart = contents.indexOf(matchString);
       contents = contents.substring(0, matchStart) +
