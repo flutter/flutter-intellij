@@ -54,10 +54,9 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
   public boolean submit(@NotNull IdeaLoggingEvent[] events,
                         @Nullable String additionalInfo,
                         @NotNull Component parentComponent,
-                        @NotNull Consumer<SubmittedReportInfo> consumer) {
+                        @NotNull Consumer<? super SubmittedReportInfo> consumer) {
     if (events.length == 0) {
-      // Don't remove the cast until a later version of Android Studio.
-      fail(((Consumer<SubmittedReportInfo>)consumer));
+      fail(consumer);
       return false;
     }
 
@@ -97,8 +96,7 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     final DataContext dataContext = DataManager.getInstance().getDataContext(parentComponent);
     final Project project = PROJECT.getData(dataContext);
     if (project == null) {
-      // Don't remove the cast until a later version of Android Studio.
-      fail(((Consumer<SubmittedReportInfo>)consumer));
+      fail(consumer);
       return false;
     }
 
@@ -191,8 +189,7 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     final VirtualFile file = scratchRoot.createScratchFile(project, "bug-report.md", PlainTextLanguage.INSTANCE, text);
 
     if (file == null) {
-      // Don't remove the cast until a later version of Android Studio.
-      fail(((Consumer<SubmittedReportInfo>)consumer));
+      fail(consumer);
       return false;
     }
 
@@ -222,7 +219,7 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     }
   }
 
-  private static void fail(@NotNull Consumer<SubmittedReportInfo> consumer) {
+  private static void fail(@NotNull Consumer<? super SubmittedReportInfo> consumer) {
     consumer.consume(new SubmittedReportInfo(
       null,
       null,
