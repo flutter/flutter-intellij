@@ -59,6 +59,8 @@ intellij {
                     "Kotlin", "gradle", "android", "Groovy", "smali", "IntelliLang"]
   if (ide == 'android-studio') {
     pluginList.add(project(':flutter-studio'))
+  } else if ("$buildSpec" == '2020.3') {
+    pluginList.add("gradle-dsl-impl")
   }
   plugins = pluginList
 }
