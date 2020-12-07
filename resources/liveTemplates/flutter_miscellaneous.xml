@@ -18,7 +18,7 @@
       <option name="DART_TOPLEVEL" value="true" />
     </context>
   </template>
-  <template name="stanim" value="class $NAME$ extends StatefulWidget {&#10;  @override&#10;  _$NAME$State createState() =&gt; _$NAME$State();&#10;}&#10;&#10;class _$NAME$State extends State&lt;$NAME$&gt; with SingleTickerProviderStateMixin {&#10;  AnimationController _controller;&#10;&#10;  @override&#10;  void initState() {&#10;    _controller = AnimationController(vsync: this);&#10;    super.initState();&#10;  }&#10;&#10;  @override&#10;  void dispose() {&#10;    _controller.dispose();&#10;    super.dispose();&#10;  }&#10;  &#10;  @override&#10;  Widget build(BuildContext context) {&#10;    return Container($END$);&#10;  }&#10;}&#10;" description="New Stateful widget with AnimationController" toReformat="false" toShortenFQNames="true">
+  <template name="stanim" value="class $NAME$ extends StatefulWidget {&#10;  @override&#10;  _$NAME$State createState() =&gt; _$NAME$State();&#10;}&#10;&#10;class _$NAME$State extends State&lt;$NAME$&gt; with SingleTickerProviderStateMixin {&#10;  AnimationController _controller;&#10;&#10;  @override&#10;  void initState() {&#10;    super.initState();&#10;    _controller = AnimationController(vsync: this);&#10;  }&#10;&#10;  @override&#10;  void dispose() {&#10;    _controller.dispose();&#10;    super.dispose();&#10;  }&#10;  &#10;  @override&#10;  Widget build(BuildContext context) {&#10;    return Container($END$);&#10;  }&#10;}&#10;" description="New Stateful widget with AnimationController" toReformat="false" toShortenFQNames="true">
     <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
     <context>
       <option name="DART_TOPLEVEL" value="true" />
