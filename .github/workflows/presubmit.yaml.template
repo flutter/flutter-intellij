@@ -3,7 +3,13 @@
 # found in the LICENSE file.
 
 name: presubmit
-on: [push, pull_request_target, workflow_dispatch]
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
 jobs:
   presubmit:
     runs-on: ubuntu-latest
@@ -19,7 +25,7 @@ jobs:
         env:
           IDEA_VERSION: ${{ matrix.version }}
   checker:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     strategy:
       fail-fast: true
       matrix:
@@ -27,7 +33,7 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-      - name: linux ${{ matrix.bot }}
+      - name: MacOS ${{ matrix.bot }}
         run: ./tool/github.sh
         env:
           BOT: ${{ matrix.bot }}
