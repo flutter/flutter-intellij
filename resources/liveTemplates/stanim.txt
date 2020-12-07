@@ -1,0 +1,25 @@
+class $NAME$ extends StatefulWidget {
+  @override
+  _$NAME$State createState() => _$NAME$State();
+}
+
+class _$NAME$State extends State<$NAME$> with SingleTickerProviderStateMixin {
+  AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container($END$);
+  }
+}

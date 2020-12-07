@@ -85,8 +85,10 @@ List<String> findJavaFiles(String path) {
 Future<bool> genPluginFiles(BuildSpec spec, String destDir) async {
   var result = await genPluginXml(spec, destDir, 'META-INF/plugin.xml');
   if (result == null) return false;
+
   result = await genPluginXml(spec, destDir, 'META-INF/studio-contribs.xml');
   if (result == null) return false;
+
   return true;
 }
 
@@ -115,8 +117,8 @@ void genPresubmitYaml(List<BuildSpec> specs) {
     if (!spec.untilBuild.contains('SNAPSHOT')) versions.add('${spec.version}');
   }
 
-  var templateFile = File(
-      p.join(rootPath, '.github', 'workflows', 'presubmit.yaml.template'));
+  var templateFile =
+      File(p.join(rootPath, '.github', 'workflows', 'presubmit.yaml.template'));
   var templateContents = templateFile.readAsStringSync();
   // If we need to make many changes consider something like genPluginXml().
   templateContents =
@@ -589,21 +591,22 @@ https://plugins.jetbrains.com/plugin/uploadPlugin
   }
 }
 
-/// Generate the plugin.xml from the plugin.xml.template file.
-/// If the --release argument is given, create a git branch and
-/// commit the new file to it, assuming the release checks pass.
+/// Generate the plugin.xml from the plugin.xml.template file. If the --release
+/// argument is given, create a git branch and commit the new file to it,
+/// assuming the release checks pass.
 ///
-/// Note: The product-matrix.json file includes a build spec for the
-/// EAP version at the end. When the EAP version is released that needs
-/// to be updated.
+/// Note: The product-matrix.json file includes a build spec for the EAP version
+/// at the end. When the EAP version is released that needs to be updated.
 class GenerateCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
   GenerateCommand(this.runner) : super('generate');
 
   String get description =>
-      'Generate a valid plugin.xml and .travis.yml for the Flutter plugin.\n'
-      'The plugin.xml.template and product-matrix.json are used as input.';
+      'Generate plugin.xml, .github/workflows/presubmit.yaml, '
+      'and resources/liveTemplates/flutter_miscellaneous.xml files for the '
+      'Flutter plugin.\nThe plugin.xml.template and product-matrix.json are '
+      'used as input.';
 
   Future<int> doit() async {
     var json = readProductMatrix();
@@ -614,6 +617,7 @@ class GenerateCommand extends ProductCommand {
       genPresubmitYaml(specs);
       value = 0;
     }
+    generateLiveTemplates();
     if (isReleaseMode) {
       if (!await performReleaseChecks(this)) {
         return 1;
@@ -624,6 +628,48 @@ class GenerateCommand extends ProductCommand {
 
   SyntheticBuildSpec makeSyntheticSpec(List specs) =>
       SyntheticBuildSpec.fromJson(specs[0], release, specs[2]);
+
+  void generateLiveTemplates() {
+    // Find all the live templates.
+    final templateFragments = Directory(p.join('resources', 'liveTemplates'))
+        .listSync()
+        .where((entity) => entity is File)
+        .where((file) => p.extension(file.path) == 'txt')
+        .cast<File>()
+        .toList();
+    final templateFile =
+        File(p.join('resources', 'liveTemplates', 'flutter_miscellaneous.xml'));
+    var contents = templateFile.readAsStringSync();
+
+    log('writing ${p.relative(templateFile.path)}');
+
+    for (var file in templateFragments) {
+      final name = p.basenameWithoutExtension(file.path);
+
+      var replaceContents = file.readAsStringSync();
+      replaceContents = replaceContents
+          .replaceAll('\n', '&#10;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;');
+
+      // look for '<template name="$name" value="..."'
+      final regexp = RegExp('<template name="$name" value="([^"]+)"');
+      final match = regexp.firstMatch(contents);
+      if (match == null) {
+        throw 'No entry found for "$name" live template in ${templateFile.path}';
+      }
+
+      // Replace the existing content in the xml live template file with the
+      // content from the template $name.txt file.
+      final matchString = match.group(1);
+      final matchStart = contents.indexOf(matchString);
+      contents = contents.substring(0, matchStart) +
+          replaceContents +
+          contents.substring(matchStart + matchString.length);
+    }
+
+    templateFile.writeAsStringSync(contents);
+  }
 }
 
 abstract class ProductCommand extends Command {
