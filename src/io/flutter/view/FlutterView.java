@@ -428,15 +428,18 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private void presentDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
+    assert(SwingUtilities.isEventDispatchThread());
     final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
     if (devToolsManager.hasInstalledDevTools()) {
-      AsyncUtils.invokeLater(() -> addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded));
+      addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded);
     }
     else {
       presentLabel(toolWindow, INSTALLING_DEVTOOLS_LABEL);
-      final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-      awaitDevToolsInstall(app, inspectorService, toolWindow, isEmbedded, result);
+      ApplicationManager.getApplication().executeOnPooledThread(() -> {
+        final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
+        awaitDevToolsInstall(app, inspectorService, toolWindow, isEmbedded, result);
+      });
     }
   }
 
