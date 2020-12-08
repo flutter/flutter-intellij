@@ -189,37 +189,43 @@ public class DevToolsManager {
   }
 
   public void openBrowserIntoPanel(FlutterApp app, String uri, ContentManager contentManager, String tabName, String pageName) {
-    final String screen = null;
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      if (!project.isOpen()) {
+        return;
+      }
 
-    if (devToolsInstance != null) {
-      devToolsInstance.openPanel(project, uri, contentManager, tabName, pageName);
-      return;
-    }
+      final String screen = null;
 
-    if (isBazel(project)) {
-      try {
-        devToolsInstance = getDevToolsInstance(app).get(15, TimeUnit.SECONDS);
+      if (devToolsInstance != null) {
         devToolsInstance.openPanel(project, uri, contentManager, tabName, pageName);
+        return;
       }
-      catch (Exception e) {
-        LOG.info("Failed to get existing devToolsInstance");
-      }
-    }
-    else {
-      @Nullable final OSProcessHandler handler = getProcessHandlerForPub();
 
-      if (handler != null) {
-        // start the server
-        DevToolsInstance.startServer(handler, instance -> {
-          devToolsInstance = instance;
-
+      if (isBazel(project)) {
+        try {
+          devToolsInstance = getDevToolsInstance(app).get(15, TimeUnit.SECONDS);
           devToolsInstance.openPanel(project, uri, contentManager, tabName, pageName);
-        }, () -> {
-          // Listen for closing; null out the devToolsInstance.
-          devToolsInstance = null;
-        }, project);
+        }
+        catch (Exception e) {
+          LOG.info("Failed to get existing devToolsInstance");
+        }
       }
-    }
+      else {
+        @Nullable final OSProcessHandler handler = getProcessHandlerForPub();
+
+        if (handler != null) {
+          // start the server
+          DevToolsInstance.startServer(handler, instance -> {
+            devToolsInstance = instance;
+
+            devToolsInstance.openPanel(project, uri, contentManager, tabName, pageName);
+          }, () -> {
+            // Listen for closing; null out the devToolsInstance.
+            devToolsInstance = null;
+          }, project);
+        }
+      }
+    });
   }
 
   private void openBrowserImpl(FlutterApp app, String uri, String screen) {
@@ -228,21 +234,27 @@ public class DevToolsManager {
       return;
     }
 
-    // For internal users, we can connect to the DevTools server started by flutter daemon. For external users, the flutter daemon has an
-    // older version of DevTools, so we launch the server using `pub global run` instead.
-    if (isBazel(project)) {
-      try {
-        devToolsInstance = getDevToolsInstance(app).get(15, TimeUnit.SECONDS);
-        devToolsInstance.openBrowserAndConnect(uri, screen);
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      if (!project.isOpen()) {
+        return;
       }
-      catch (Exception e) {
-        LOG.info("Failed to get existing devToolsInstance");
+
+      // For internal users, we can connect to the DevTools server started by flutter daemon. For external users, the flutter daemon has an
+      // older version of DevTools, so we launch the server using `pub global run` instead.
+      if (isBazel(project)) {
+        try {
+          devToolsInstance = getDevToolsInstance(app).get(15, TimeUnit.SECONDS);
+          devToolsInstance.openBrowserAndConnect(uri, screen);
+        }
+        catch (Exception e) {
+          LOG.info("Failed to get existing devToolsInstance");
+        }
       }
-    }
-    else {
-      @Nullable final OSProcessHandler handler = getProcessHandlerForPub();
-      startDevToolsServerAndConnect(handler, uri, screen);
-    }
+      else {
+        @Nullable final OSProcessHandler handler = getProcessHandlerForPub();
+        startDevToolsServerAndConnect(handler, uri, screen);
+      }
+    });
   }
 
   private CompletableFuture<DevToolsInstance> getDevToolsInstance(FlutterApp app) {
@@ -373,6 +385,10 @@ class DevToolsInstance {
   }
 
   public void openPanel(Project project, String serviceProtocolUri, ContentManager contentManager, String tabName, String pageName) {
+    if (!project.isOpen()) {
+      return;
+    }
+
     final String color = ColorUtil.toHex(UIUtil.getEditorPaneBackground());
     final String url = DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, pageName, true, color);
 

@@ -57,6 +57,7 @@ import io.flutter.utils.EventStream;
 import io.flutter.utils.JxBrowserUtils;
 import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.vmService.ServiceExtensions;
+import org.apache.commons.lang3.BooleanUtils;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
@@ -427,6 +428,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private void presentDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
+    assert(SwingUtilities.isEventDispatchThread());
     final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
     if (devToolsManager.hasInstalledDevTools()) {
@@ -434,18 +436,28 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
     else {
       presentLabel(toolWindow, INSTALLING_DEVTOOLS_LABEL);
+      awaitDevToolsInstall(app, inspectorService, toolWindow, isEmbedded, devToolsManager);
+    }
+  }
 
+  protected void awaitDevToolsInstall(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded, DevToolsManager devToolsManager) {
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
       final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-      result.thenAccept(succeeded -> {
-        if (succeeded) {
-          addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded);
+
+      AsyncUtils.whenCompleteUiThread(result, (succeeded, throwable) -> {
+        if (throwable != null) {
+          LOG.error(throwable);
+          return;
         }
-        else {
+        if (BooleanUtils.isTrue(succeeded)) {
+          addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded);
+        } else {
           // TODO(helin24): Handle with alternative instructions if devtools fails.
           presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
         }
       });
-    }
+    });
+
   }
 
   private LabelInput openDevToolsLabel(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
