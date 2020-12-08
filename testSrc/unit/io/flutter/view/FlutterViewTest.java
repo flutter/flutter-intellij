@@ -25,6 +25,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import javax.swing.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 
@@ -34,7 +35,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({DevToolsManager.class, JxBrowserManager.class, ThreadUtil.class, FlutterInitializer.class, JxBrowserUtils.class,
-  InspectorGroupManagerService.class})
+  InspectorGroupManagerService.class, SwingUtilities.class})
 public class FlutterViewTest {
   @Mock Project mockProject;
   @Mock FlutterApp mockApp;
@@ -56,6 +57,9 @@ public class FlutterViewTest {
 
     PowerMockito.mockStatic(InspectorGroupManagerService.class);
     when(InspectorGroupManagerService.getInstance(mockProject)).thenReturn(mockInspectorGroupManagerService);
+
+    PowerMockito.mockStatic(SwingUtilities.class);
+    when(SwingUtilities.isEventDispatchThread()).thenReturn(true);
 
     final FlutterView flutterView = new FlutterView(mockProject);
 
@@ -81,6 +85,9 @@ public class FlutterViewTest {
     final FlutterView partialMockFlutterView = mock(FlutterView.class);
     doCallRealMethod().when(partialMockFlutterView).handleJxBrowserInstalled(mockApp, mockInspectorService, mockToolWindow);
 
+    PowerMockito.mockStatic(SwingUtilities.class);
+    when(SwingUtilities.isEventDispatchThread()).thenReturn(true);
+
     PowerMockito.mockStatic(DevToolsManager.class);
     when(DevToolsManager.getInstance(mockProject)).thenReturn(mockDevToolsManager);
     when(mockDevToolsManager.hasInstalledDevTools()).thenReturn(false);
@@ -92,7 +99,7 @@ public class FlutterViewTest {
 
     partialMockFlutterView.handleJxBrowserInstalled(mockApp, mockInspectorService, mockToolWindow);
     verify(partialMockFlutterView, times(1)).presentLabel(mockToolWindow, INSTALLING_DEVTOOLS_LABEL);
-    verify(partialMockFlutterView, times(1)).awaitDevToolsInstall(mockApp, mockInspectorService, mockToolWindow, true, result);
+    verify(partialMockFlutterView, times(1)).awaitDevToolsInstall(mockApp, mockInspectorService, mockToolWindow, true, mockDevToolsManager);
   }
 
   @Test

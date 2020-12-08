@@ -436,26 +436,28 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
     else {
       presentLabel(toolWindow, INSTALLING_DEVTOOLS_LABEL);
-      ApplicationManager.getApplication().executeOnPooledThread(() -> {
-        final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-        awaitDevToolsInstall(app, inspectorService, toolWindow, isEmbedded, result);
-      });
+      awaitDevToolsInstall(app, inspectorService, toolWindow, isEmbedded, devToolsManager);
     }
   }
 
-  protected void awaitDevToolsInstall(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded, CompletableFuture<Boolean> installResult) {
-    AsyncUtils.whenCompleteUiThread(installResult, (succeeded, throwable) -> {
-      if (throwable != null) {
-        LOG.error(throwable);
-        return;
-      }
-      if (BooleanUtils.isTrue(succeeded)) {
-        addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded);
-      } else {
-        // TODO(helin24): Handle with alternative instructions if devtools fails.
-        presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
-      }
+  protected void awaitDevToolsInstall(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded, DevToolsManager devToolsManager) {
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
+
+      AsyncUtils.whenCompleteUiThread(result, (succeeded, throwable) -> {
+        if (throwable != null) {
+          LOG.error(throwable);
+          return;
+        }
+        if (BooleanUtils.isTrue(succeeded)) {
+          addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded);
+        } else {
+          // TODO(helin24): Handle with alternative instructions if devtools fails.
+          presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
+        }
+      });
     });
+
   }
 
   private LabelInput openDevToolsLabel(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
