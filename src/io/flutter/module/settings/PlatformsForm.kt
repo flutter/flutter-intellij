@@ -5,7 +5,7 @@
  */
 package io.flutter.module.settings
 
-import com.android.tools.idea.observable.core.BoolValueProperty
+import io.com.android.tools.idea.observable.core.BoolValueProperty
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.ui.layout.Cell
 import com.intellij.ui.layout.panel
