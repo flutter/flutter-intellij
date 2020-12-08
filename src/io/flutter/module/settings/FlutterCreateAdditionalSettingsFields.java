@@ -50,6 +50,7 @@ public class FlutterCreateAdditionalSettingsFields {
   private final FlutterCreateParams createParams;
   private SettingsHelpForm helpForm;
   private DialogPanel panel;
+  private boolean hasBeenAdded = false;
 
   public FlutterCreateAdditionalSettingsFields(FlutterCreateAdditionalSettings additionalSettings,
                                                Supplier<? extends FlutterSdk> getSdk) {
@@ -144,6 +145,10 @@ public class FlutterCreateAdditionalSettingsFields {
   }
 
   public void addSettingsFields(@NotNull SettingsStep settingsStep) {
+    if (hasBeenAdded) {
+      // This gets called twice (initial display of second page and after Finish is clicked) but we only want to do this once.
+      return;
+    }
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.description.label"), descriptionField);
     if (!FlutterUtils.isNewAndroidStudioProjectWizard()) {
       settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.type.label"),
@@ -171,6 +176,7 @@ public class FlutterCreateAdditionalSettingsFields {
     }
 
     settingsStep.addSettingsComponent(createParams.setInitialValues().getComponent());
+    hasBeenAdded = true;
   }
 
   private void addBorder(JComponent c, boolean left) {
@@ -198,12 +204,6 @@ public class FlutterCreateAdditionalSettingsFields {
   }
 
   public FlutterCreateAdditionalSettings getAdditionalSettings() {
-    if (settings != null) {
-      panel.apply();
-      platformsForm.savePlatformSettings();
-      return settings;
-    }
-    panel.apply();
     platformsForm.savePlatformSettings();
     return new FlutterCreateAdditionalSettings.Builder()
       .setDescription(!descriptionField.getText().trim().isEmpty() ? descriptionField.getText().trim() : null)

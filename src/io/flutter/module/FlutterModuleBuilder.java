@@ -153,6 +153,9 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     if (StringUtils.endsWith(org, ".")) {
       return "Invalid organization name: '" + org + "' - cannot end in '.'.";
     }
+    if (!settings.isSomePlatformSelected()) {
+      return "At least one platform must be selected";
+    }
     // Invalid package names will cause issues down the line.
     return AndroidUtils.validateAndroidPackageName(org);
   }

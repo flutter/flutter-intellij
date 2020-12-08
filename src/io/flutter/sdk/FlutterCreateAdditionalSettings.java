@@ -154,10 +154,8 @@ public class FlutterCreateAdditionalSettings {
     if (lastComma > 0) {
       platforms.deleteCharAt(lastComma);
       String platformsArg = platforms.toString();
-      if (!platformsArg.equals("android,ios")) {
-        args.add("--platforms");
-        args.add(platformsArg);
-      }
+      args.add("--platforms");
+      args.add(platformsArg);
     }
 
     return args;
@@ -215,6 +213,19 @@ public class FlutterCreateAdditionalSettings {
   @Nullable
   public FlutterProjectType getType() {
     return type;
+  }
+
+  public boolean isSomePlatformSelected() {
+    // These will be null if platforms are not shown.
+    if (platformAndroid == null ||
+        platformIos == null ||
+        platformLinux == null ||
+        platformMacos == null ||
+        platformWeb == null ||
+        platformWindows == null) {
+      return true;
+    }
+    return platformAndroid || platformIos || platformLinux || platformMacos || platformWeb || platformWindows;
   }
 
   public static class Builder {

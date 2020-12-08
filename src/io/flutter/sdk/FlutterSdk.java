@@ -204,8 +204,10 @@ public class FlutterSdk {
       args.addAll(additionalSettings.getArgs());
       if (FlutterProjectType.PLUGIN.equals(additionalSettings.getType()) && getVersion().flutterCreateSupportsPlatforms()) {
         // TODO(messick): Remove this after the wizard UI is updated.
-        args.add("--platforms");
-        args.add("android,ios");
+        if (!args.contains("--platforms")) {
+          args.add("--platforms");
+          args.add("android,ios");
+        }
       }
     }
 

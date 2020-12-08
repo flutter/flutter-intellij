@@ -48,20 +48,36 @@ class PlatformsForm(getSdk: Supplier<out FlutterSdk>) {
     // We don't show platforms for the stable channel currently, but that will change.
     val ch = channel
     ch ?: return false
-    return ch.id > ID.STABLE
+    if (ch.id > ID.STABLE) {
+      return if (isSomeConfigEnabled()) {
+        true
+      } else {
+        // In case someone disables android and ios with 'flutter config' but does not enable any others,
+        // this ensures legacy behavior is preserved.
+        androidSelected.set(true)
+        iosSelected.set(true)
+        false
+      }
+    }
+    return false
   }
 
   fun panel() = panel {
     assert(channel != null)
+    loadPlatformSettings()
+    if (!isSomePlatformSelected()) {
+      androidSelected.set(true)
+      iosSelected.set(true)
+    }
     val ch = channel!!.id
     row {
       cell(isVerticalFlow = false) {
-        makeCheckBox(this, "Android", androidSelected, configAndroid, ch, ID.STABLE, PROPERTIES_ANDROID_KEY, true)
-        makeCheckBox(this, "iOS", iosSelected, configIos, ch, ID.STABLE, PROPERTIES_IOS_KEY, true)
-        makeCheckBox(this, "Linux", linuxSelected, configLinux, ch, ID.DEV, PROPERTIES_LINUX_KEY, false)
-        makeCheckBox(this, "MacOS", macosSelected, configMacos, ch, ID.DEV, PROPERTIES_MACOS_KEY, false)
-        makeCheckBox(this, "Web", webSelected, configWeb, ch, ID.BETA, PROPERTIES_WEB_KEY, false)
-        makeCheckBox(this, "Windows", windowsSelected, configWindows, ch, ID.DEV, PROPERTIES_WINDOWS_KEY, false)
+        makeCheckBox(this, "Android", androidSelected, configAndroid, ch, ID.STABLE)
+        makeCheckBox(this, "iOS", iosSelected, configIos, ch, ID.STABLE)
+        makeCheckBox(this, "Linux", linuxSelected, configLinux, ch, ID.DEV)
+        makeCheckBox(this, "MacOS", macosSelected, configMacos, ch, ID.DEV)
+        makeCheckBox(this, "Web", webSelected, configWeb, ch, ID.BETA)
+        makeCheckBox(this, "Windows", windowsSelected, configWindows, ch, ID.DEV)
       }
     }
     row {
@@ -69,31 +85,41 @@ class PlatformsForm(getSdk: Supplier<out FlutterSdk>) {
     }
   }
 
+  fun isSomeConfigEnabled(): Boolean =
+    configAndroid ?: false || configIos ?: false || configLinux ?: false || configMacos ?: false || configWeb ?: false || configWindows ?: false
+
+  fun isSomePlatformSelected(): Boolean =
+    androidSelected.get() || iosSelected.get() || linuxSelected.get() || macosSelected.get() || webSelected.get() || windowsSelected.get()
+
   private fun makeCheckBox(context: Cell,
                            name: String,
                            property: BoolValueProperty,
                            config: Boolean?,
                            chan: ID,
-                           min: ID,
-                           key: String,
-                           default: Boolean) {
+                           min: ID) {
     context.apply {
       val wasSelected = chan >= min && config == true
-      if (wasSelected) {
-        // If the check box is to be enabled then initialize the property before creating it so it shows the correct value.
-        property.set(fetchValue(key, default))
-      }
-      checkBox(name, { property.get() }, {
-        property.set(it)
-      }).apply {
+      if (!wasSelected) property.set(false)
+      checkBox(name,
+               property.get(),
+               actionListener = { _, checkBox ->
+                 property.set(checkBox.isSelected())
+               }).apply {
         enabled(wasSelected)
         applyIfEnabled()
       }
     }
   }
 
-  private fun fetchValue(key: String, default: Boolean): Boolean =
-    PropertiesComponent.getInstance().getBoolean(key, default)
+  fun loadPlatformSettings() {
+    val instance = PropertiesComponent.getInstance()
+    androidSelected.set(instance.getBoolean(PROPERTIES_ANDROID_KEY, true))
+    iosSelected.set(instance.getBoolean(PROPERTIES_IOS_KEY, true))
+    linuxSelected.set(instance.getBoolean(PROPERTIES_LINUX_KEY, false))
+    macosSelected.set(instance.getBoolean(PROPERTIES_MACOS_KEY, false))
+    webSelected.set(instance.getBoolean(PROPERTIES_WEB_KEY, false))
+    windowsSelected.set(instance.getBoolean(PROPERTIES_WINDOWS_KEY, false))
+  }
 
   fun savePlatformSettings() {
     val instance = PropertiesComponent.getInstance()
