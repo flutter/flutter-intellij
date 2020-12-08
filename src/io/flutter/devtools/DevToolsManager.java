@@ -251,13 +251,8 @@ public class DevToolsManager {
         }
       }
       else {
-        if (devToolsInstance != null) {
-          devToolsInstance.openBrowserAndConnect(uri, screen);
-        }
-        else {
-          @Nullable final OSProcessHandler handler = getProcessHandlerForPub();
-          startDevToolsServerAndConnect(handler, uri, screen);
-        }
+        @Nullable final OSProcessHandler handler = getProcessHandlerForPub();
+        startDevToolsServerAndConnect(handler, uri, screen);
       }
     });
   }
