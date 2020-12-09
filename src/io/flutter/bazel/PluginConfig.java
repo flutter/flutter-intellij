@@ -60,6 +60,11 @@ public class PluginConfig {
   }
 
   @Nullable
+  String getSyncScript() {
+    return fields.syncScript;
+  }
+
+  @Nullable
   String getSdkHome() {
     return fields.sdkHome;
   }
@@ -129,6 +134,7 @@ public class PluginConfig {
     @Nullable String launchScript,
     @Nullable String testScript,
     @Nullable String runScript,
+    @Nullable String syncScript,
     @Nullable String sdkHome,
     @Nullable String versionFile,
     @Nullable String devtoolsScript
@@ -139,6 +145,7 @@ public class PluginConfig {
       launchScript,
       testScript,
       runScript,
+      syncScript,
       sdkHome,
       versionFile,
       devtoolsScript
@@ -181,6 +188,12 @@ public class PluginConfig {
     private String runScript;
 
     /**
+     * The script to run to start 'flutter sync'
+     */
+    @SerializedName("syncScript")
+    private String syncScript;
+
+    /**
      * The directory containing the SDK tools.
      */
     @SerializedName("sdkHome")
@@ -209,6 +222,7 @@ public class PluginConfig {
            String launchScript,
            String testScript,
            String runScript,
+           String syncScript,
            String sdkHome,
            String versionFile,
            String devtoolsScript) {
@@ -217,6 +231,7 @@ public class PluginConfig {
       this.launchScript = launchScript;
       this.testScript = testScript;
       this.runScript = runScript;
+      this.syncScript = syncScript;
       this.sdkHome = sdkHome;
       this.versionFile = versionFile;
       this.devtoolsScript = devtoolsScript;
@@ -231,6 +246,7 @@ public class PluginConfig {
              && Objects.equal(launchScript, other.launchScript)
              && Objects.equal(testScript, other.testScript)
              && Objects.equal(runScript, other.runScript)
+             && Objects.equal(syncScript, other.syncScript)
              && Objects.equal(sdkHome, other.sdkHome)
              && Objects.equal(versionFile, other.versionFile)
              && Objects.equal(devtoolsScript, other.devtoolsScript);
@@ -238,7 +254,7 @@ public class PluginConfig {
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(daemonScript, doctorScript, launchScript, testScript, runScript, sdkHome, versionFile, devtoolsScript);
+      return Objects.hashCode(daemonScript, doctorScript, launchScript, testScript, runScript, syncScript, sdkHome, versionFile, devtoolsScript);
     }
   }
 

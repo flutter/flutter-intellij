@@ -182,6 +182,7 @@ public class LaunchCommandsTest {
       null,
       null,
       null,
+      null,
       null
     );
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
@@ -201,6 +202,7 @@ public class LaunchCommandsTest {
       "scripts/daemon.sh",
       "scripts/doctor.sh",
       "scripts/launch.sh",
+      null,
       null,
       null,
       null,
@@ -228,6 +230,7 @@ public class LaunchCommandsTest {
       null,
       null,
       null,
+      null,
       null
     );
     boolean didThrow = false;
@@ -250,6 +253,7 @@ public class LaunchCommandsTest {
       null,
       null,
       null,
+      null,
       null
     );
     boolean didThrow = false;
@@ -269,6 +273,7 @@ public class LaunchCommandsTest {
       "scripts/daemon.sh",
       "scripts/doctor.sh",
       "scripts/launch.sh",
+      null,
       null,
       null,
       null,
@@ -329,11 +334,12 @@ public class LaunchCommandsTest {
                         @Nullable String launchScript,
                         @Nullable String testScript,
                         @Nullable String runScript,
+                        @Nullable String syncScript,
                         @Nullable String sdkHome,
                         @Nullable String versionFile) {
       super(template);
       final Pair.NonNull<MockVirtualFileSystem, Workspace> pair = FakeWorkspaceFactory
-        .createWorkspaceAndFilesystem(daemonScript, doctorScript, launchScript, testScript, runScript, sdkHome, versionFile, null);
+        .createWorkspaceAndFilesystem(daemonScript, doctorScript, launchScript, testScript, runScript, syncScript, sdkHome, versionFile, null);
       fs = pair.first;
       fakeWorkspace = pair.second;
     }
