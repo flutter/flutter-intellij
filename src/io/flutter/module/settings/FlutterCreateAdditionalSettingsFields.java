@@ -50,7 +50,6 @@ public class FlutterCreateAdditionalSettingsFields {
   private final FlutterCreateParams createParams;
   private SettingsHelpForm helpForm;
   private DialogPanel panel;
-  private boolean hasBeenAdded = false;
 
   public FlutterCreateAdditionalSettingsFields(FlutterCreateAdditionalSettings additionalSettings,
                                                Supplier<? extends FlutterSdk> getSdk) {
@@ -144,8 +143,12 @@ public class FlutterCreateAdditionalSettingsFields {
     label.setVisible(areLanguageFeaturesVisible);
   }
 
+  private boolean hasBeenAdded() {
+    return projectTypeForm.getComponent().getParent() != null;
+  }
+
   public void addSettingsFields(@NotNull SettingsStep settingsStep) {
-    if (hasBeenAdded) {
+    if (hasBeenAdded()) {
       // This gets called twice (initial display of second page and after Finish is clicked) but we only want to do this once.
       return;
     }
@@ -176,7 +179,6 @@ public class FlutterCreateAdditionalSettingsFields {
     }
 
     settingsStep.addSettingsComponent(createParams.setInitialValues().getComponent());
-    hasBeenAdded = true;
   }
 
   private void addBorder(JComponent c, boolean left) {

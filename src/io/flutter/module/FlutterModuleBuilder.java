@@ -263,6 +263,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   @Override
   public ModuleWizardStep modifyProjectTypeStep(@NotNull SettingsStep settingsStep) {
+    settingsStep.getContext().getWizard().getPeer();
     // Don't allow super to add an SDK selection field (#2052).
     return null;
   }
