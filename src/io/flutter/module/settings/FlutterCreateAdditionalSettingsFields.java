@@ -213,12 +213,12 @@ public class FlutterCreateAdditionalSettingsFields {
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
       .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
       .setOffline(createParams.isOfflineSelected())
-      .setPlatformAndroid(platformsForm.getAndroidSelected().get())
-      .setPlatformIos(platformsForm.getIosSelected().get())
-      .setPlatformLinux(platformsForm.getLinuxSelected().get())
-      .setPlatformMacos(platformsForm.getMacosSelected().get())
-      .setPlatformWeb(platformsForm.getWebSelected().get())
-      .setPlatformWindows(platformsForm.getWindowsSelected().get())
+      .setPlatformAndroid(platformsForm.shouldBeVisible() ? platformsForm.getAndroidSelected().get() : null)
+      .setPlatformIos(platformsForm.shouldBeVisible() ? platformsForm.getIosSelected().get() : null)
+      .setPlatformLinux(platformsForm.shouldBeVisible() ? platformsForm.getLinuxSelected().get() : null)
+      .setPlatformMacos(platformsForm.shouldBeVisible() ? platformsForm.getMacosSelected().get() : null)
+      .setPlatformWeb(platformsForm.shouldBeVisible() ? platformsForm.getWebSelected().get() : null)
+      .setPlatformWindows(platformsForm.shouldBeVisible() ? platformsForm.getWindowsSelected().get() : null)
       .build();
   }
 
