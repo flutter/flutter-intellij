@@ -244,6 +244,8 @@
     <postStartupActivity implementation="io.flutter.FlutterInitializer"/>
     <projectService serviceInterface="io.flutter.run.daemon.DeviceService"
                     serviceImplementation="io.flutter.run.daemon.DeviceService"/>
+    <projectService serviceInterface="io.flutter.run.daemon.DevToolsService"
+                    serviceImplementation="io.flutter.run.daemon.DevToolsService"/>
     <projectService serviceInterface="io.flutter.dart.FlutterDartAnalysisServer"
                     serviceImplementation="io.flutter.dart.FlutterDartAnalysisServer"/>
     <projectService serviceInterface="io.flutter.bazel.WorkspaceCache"

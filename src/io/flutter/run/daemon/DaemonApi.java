@@ -73,6 +73,10 @@ public class DaemonApi {
     return send("daemon.getSupportedPlatforms", new DaemonGetSupportedPlatforms(projectRoot));
   }
 
+  CompletableFuture<Boolean> daemonShutdown() {
+    return send("daemon.shutdown", new DaemonShutdown());
+  }
+
   CompletableFuture<RestartResult> restartApp(@NotNull String appId, boolean fullRestart, boolean pause, @NotNull String reason) {
     return send("app.restart", new AppRestart(appId, fullRestart, pause, reason));
   }
@@ -401,6 +405,14 @@ public class DaemonApi {
     @Override
     RestartResult parseResult(JsonElement result) {
       return GSON.fromJson(result, RestartResult.class);
+    }
+  }
+
+  private static class DaemonShutdown extends Params<Boolean> {
+    @Nullable
+    @Override
+    Boolean parseResult(@Nullable JsonElement result) {
+      return true;
     }
   }
 
