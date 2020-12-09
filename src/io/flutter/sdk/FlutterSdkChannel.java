@@ -5,8 +5,10 @@
  */
 package io.flutter.sdk;
 
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
+@NonNls
 public class FlutterSdkChannel {
 
   public enum ID {

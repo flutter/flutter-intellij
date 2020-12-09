@@ -5,16 +5,7 @@
  */
 package io.flutter.module.settings;
 
-import static javax.accessibility.AccessibleRelation.LABELED_BY_PROPERTY;
-
-import com.intellij.ide.projectWizard.NewProjectWizard;
 import com.intellij.ide.util.projectWizard.SettingsStep;
-import com.intellij.openapi.progress.PerformInBackgroundOption;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressIndicatorProvider;
-import com.intellij.openapi.progress.Task;
-import com.intellij.openapi.progress.util.ProgressIndicatorBase;
-import com.intellij.openapi.progress.util.ProgressIndicatorUtils;
 import com.intellij.openapi.ui.DialogPanel;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.util.ui.JBUI;
@@ -27,16 +18,11 @@ import io.flutter.sdk.FlutterSdk;
 import java.awt.Component;
 import java.awt.Insets;
 import java.awt.event.ItemEvent;
-import java.util.Objects;
 import java.util.function.Supplier;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.border.AbstractBorder;
-import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
-import javax.swing.plaf.basic.BasicBorders;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterCreateAdditionalSettingsFields {
@@ -169,7 +155,7 @@ public class FlutterCreateAdditionalSettingsFields {
       if (platformsForm.shouldBeVisible()) {
         panel = platformsForm.panel();
         addBorder(panel, true);
-        settingsStep.addSettingsField("Platforms:", panel);
+        settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.platforms.label"), panel);
       }
     }
 

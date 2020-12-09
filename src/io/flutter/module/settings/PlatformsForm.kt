@@ -5,10 +5,11 @@
  */
 package io.flutter.module.settings
 
-import io.com.android.tools.idea.observable.core.BoolValueProperty
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.ui.layout.Cell
 import com.intellij.ui.layout.panel
+import io.com.android.tools.idea.observable.core.BoolValueProperty
+import io.flutter.FlutterBundle
 import io.flutter.sdk.FlutterSdk
 import io.flutter.sdk.FlutterSdkChannel
 import io.flutter.sdk.FlutterSdkChannel.ID
@@ -51,7 +52,8 @@ class PlatformsForm(getSdk: Supplier<out FlutterSdk>) {
     if (ch.id > ID.STABLE) {
       return if (isSomeConfigEnabled()) {
         true
-      } else {
+      }
+      else {
         // In case someone disables android and ios with 'flutter config' but does not enable any others,
         // this ensures legacy behavior is preserved.
         androidSelected.set(true)
@@ -72,16 +74,16 @@ class PlatformsForm(getSdk: Supplier<out FlutterSdk>) {
     val ch = channel!!.id
     row {
       cell(isVerticalFlow = false) {
-        makeCheckBox(this, "Android", androidSelected, configAndroid, ch, ID.STABLE)
-        makeCheckBox(this, "iOS", iosSelected, configIos, ch, ID.STABLE)
-        makeCheckBox(this, "Linux", linuxSelected, configLinux, ch, ID.DEV)
-        makeCheckBox(this, "MacOS", macosSelected, configMacos, ch, ID.DEV)
-        makeCheckBox(this, "Web", webSelected, configWeb, ch, ID.BETA)
-        makeCheckBox(this, "Windows", windowsSelected, configWindows, ch, ID.DEV)
+        makeCheckBox(this, FlutterBundle.message("npw_platform_android"), androidSelected, configAndroid, ch, ID.STABLE)
+        makeCheckBox(this, FlutterBundle.message("npw_platform_ios"), iosSelected, configIos, ch, ID.STABLE)
+        makeCheckBox(this, FlutterBundle.message("npw_platform_linux"), linuxSelected, configLinux, ch, ID.DEV)
+        makeCheckBox(this, FlutterBundle.message("npw_platform_macos"), macosSelected, configMacos, ch, ID.DEV)
+        makeCheckBox(this, FlutterBundle.message("npw_platform_web"), webSelected, configWeb, ch, ID.BETA)
+        makeCheckBox(this, FlutterBundle.message("npw_platform_windows"), windowsSelected, configWindows, ch, ID.DEV)
       }
     }
     row {
-      label("Platform availability depends on the Flutter SDK channel, and on 'flutter config'.")
+      label(FlutterBundle.message("npw_platform_availability_help"))
     }
   }
 

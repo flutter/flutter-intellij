@@ -35,6 +35,7 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.ui.EdtInvocationManager;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import git4idea.config.GitExecutableManager;
+import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.module.FlutterProjectType;
@@ -57,6 +58,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -198,6 +200,7 @@ public class FlutterSdk {
     return new FlutterCommand(this, getHome(), FlutterCommand.Type.DOCTOR);
   }
 
+  @NonNls
   public FlutterCommand flutterCreate(@NotNull VirtualFile appDir, @Nullable FlutterCreateAdditionalSettings additionalSettings) {
     final List<String> args = new ArrayList<>();
     if (additionalSettings != null) {
@@ -494,6 +497,7 @@ public class FlutterSdk {
   }
 
   @Nullable
+  @NonNls
   public FlutterSdkChannel queryFlutterChannel(boolean useCachedValue) {
     if (useCachedValue) {
       String channel = cachedConfigValues.get("channel");
@@ -517,10 +521,12 @@ public class FlutterSdk {
     return FlutterSdkChannel.fromText(branch);
   }
 
+  @NonNls
   private static final String[] PLATFORMS =
     new String[]{"enable-android", "enable-ios", "enable-web", "enable-linux-desktop", "enable-macos-desktop", "enable-windows-desktop"};
 
   @NotNull
+  @NonNls
   public Set<String> queryConfiguredPlatforms(boolean useCachedValue) {
     Set<String> platforms = new HashSet<>();
     // Someone could do: flutter config --no-enable-ios --no-enable-android
@@ -549,7 +555,7 @@ public class FlutterSdk {
     try {
       final JsonElement elem = JsonUtils.parseString(stdout.substring(stdout.indexOf('{')));
       if (elem.isJsonNull()) {
-        FlutterUtils.warn(LOG, "Invalid Json from flutter config");
+        FlutterUtils.warn(LOG, FlutterBundle.message("flutter.sdk.invalid.json.error"));
         return platforms;
       }
 
@@ -591,7 +597,7 @@ public class FlutterSdk {
     try {
       final JsonElement elem = JsonUtils.parseString(stdout.substring(stdout.indexOf('{')));
       if (elem.isJsonNull()) {
-        FlutterUtils.warn(LOG, "Invalid Json from flutter config");
+        FlutterUtils.warn(LOG, FlutterBundle.message("flutter.sdk.invalid.json.error"));
         return null;
       }
 
@@ -648,6 +654,7 @@ public class FlutterSdk {
   }
 
   @NotNull
+  @NonNls
   private static String userHomePath() {
     // See _userHomePath() in .../flutter/packages/flutter_tools/lib/src/base/config.dart
     String enKey = SystemInfo.isWindows ? "APPDATA" : "HOME";
@@ -655,19 +662,25 @@ public class FlutterSdk {
     return dir == null ? "." : dir;
   }
 
+  @NonNls private static final String K_FLUTTER = "flutter";
+  @NonNls private static final String K_SETTINGS = "settings";
+  @NonNls private static final String K_XDG_ENVAR = "XDG_CONFIG_HOME";
+  @NonNls private static final String K_CONFIG = ".config";
+  @NonNls private static final String K_FLUTTER_SETTINGS = "." + K_FLUTTER + "_" + K_SETTINGS;
+
   @NotNull
   private static String configPath() {
     // See _configPath() in .../flutter/packages/flutter_tools/lib/src/base/config.dart
-    Path homeDirFile = Paths.get(userHomePath(), ".flutter_settings");
+    Path homeDirFile = Paths.get(userHomePath(), K_FLUTTER_SETTINGS);
     if (SystemInfo.isLinux || SystemInfo.isMac) {
       if (homeDirFile.toFile().exists()) {
         return homeDirFile.toString();
       }
-      String configDir = System.getenv("XDG_CONFIG_HOME");
+      String configDir = System.getenv(K_XDG_ENVAR);
       if (configDir == null) {
-        return Paths.get(userHomePath(), ".config", "flutter", "settings").toString();
+        return Paths.get(userHomePath(), K_CONFIG, K_FLUTTER, K_SETTINGS).toString();
       }
-      return Paths.get(configDir, "settings").toString();
+      return Paths.get(configDir, K_SETTINGS).toString();
     }
     return homeDirFile.toString();
   }

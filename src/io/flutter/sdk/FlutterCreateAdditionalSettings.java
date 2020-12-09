@@ -9,6 +9,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.module.FlutterProjectType;
 import java.util.ArrayList;
 import java.util.List;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.Nullable;
 
 public class FlutterCreateAdditionalSettings {
@@ -94,6 +95,7 @@ public class FlutterCreateAdditionalSettings {
     kotlin = value;
   }
 
+  @NonNls
   public List<String> getArgs() {
     final List<String> args = new ArrayList<>();
 
