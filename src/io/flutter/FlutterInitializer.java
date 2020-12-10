@@ -32,6 +32,7 @@ import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.FlutterRunNotifications;
+import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.sdk.FlutterPluginsLibraryManager;
 import io.flutter.settings.FlutterSettings;
@@ -74,6 +75,9 @@ public class FlutterInitializer implements StartupActivity {
 
     // Start watching for devices.
     DeviceService.getInstance(project);
+
+    // Start a DevTools server
+    DevToolsService.getInstance(project);
 
     // Start watching for Flutter debug active events.
     FlutterViewFactory.init(project);
