@@ -215,7 +215,6 @@ public class FlutterReloadManager {
   }
 
   private void syncFiles() {
-    System.out.println("About to try workspace sync");
     final Workspace workspace = WorkspaceCache.getInstance(myProject).get();
     assert workspace != null;
 
