@@ -74,13 +74,7 @@ public class DaemonApi {
   }
 
   CompletableFuture<Boolean> daemonShutdown() {
-    return send("daemon.shutdown", new Params<Boolean>() {
-      @Nullable
-      @Override
-      Boolean parseResult(@Nullable JsonElement result) {
-        return true;
-      }
-    });
+    return send("daemon.shutdown", new DaemonShutdown());
   }
 
   CompletableFuture<RestartResult> restartApp(@NotNull String appId, boolean fullRestart, boolean pause, @NotNull String reason) {
