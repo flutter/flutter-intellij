@@ -47,7 +47,10 @@ public class DevToolsService {
     this.project = project;
     try {
       final GeneralCommandLine command = chooseCommand(project);
-      assert command != null;
+      if (command == null) {
+        LOG.error("Unable to find daemon command for project: " + project);
+        return;
+      }
       this.process = new MostlySilentOsProcessHandler(command);
       daemonApi = new DaemonApi(process);
       daemonApi.listen(process, new DevToolsServiceListener());
