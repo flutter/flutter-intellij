@@ -35,6 +35,7 @@ public class FlutterCreateAdditionalSettingsFields {
   private final PlatformsForm platformsForm;
   private final FlutterCreateParams createParams;
   private SettingsHelpForm helpForm;
+  @SuppressWarnings("FieldCanBeLocal")
   private DialogPanel panel;
 
   public FlutterCreateAdditionalSettingsFields(FlutterCreateAdditionalSettings additionalSettings,
@@ -129,15 +130,7 @@ public class FlutterCreateAdditionalSettingsFields {
     label.setVisible(areLanguageFeaturesVisible);
   }
 
-  private boolean hasBeenAdded() {
-    return projectTypeForm.getComponent().getParent() != null;
-  }
-
   public void addSettingsFields(@NotNull SettingsStep settingsStep) {
-    if (hasBeenAdded()) {
-      // This gets called twice (initial display of second page and after Finish is clicked) but we only want to do this once.
-      return;
-    }
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.description.label"), descriptionField);
     if (!FlutterUtils.isNewAndroidStudioProjectWizard()) {
       settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.type.label"),
@@ -153,7 +146,7 @@ public class FlutterCreateAdditionalSettingsFields {
     if (projectTypeHasPlatforms()) {
       platformsForm.initChannel();
       if (platformsForm.shouldBeVisible()) {
-        panel = platformsForm.panel();
+        panel = platformsForm.panel(settings);
         addBorder(panel, true);
         settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.platforms.label"), panel);
       }
@@ -192,7 +185,6 @@ public class FlutterCreateAdditionalSettingsFields {
   }
 
   public FlutterCreateAdditionalSettings getAdditionalSettings() {
-    platformsForm.savePlatformSettings();
     return new FlutterCreateAdditionalSettings.Builder()
       .setDescription(!descriptionField.getText().trim().isEmpty() ? descriptionField.getText().trim() : null)
       .setType(projectTypeForm.getType())
@@ -201,12 +193,12 @@ public class FlutterCreateAdditionalSettingsFields {
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
       .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
       .setOffline(createParams.isOfflineSelected())
-      .setPlatformAndroid(platformsForm.shouldBeVisible() ? platformsForm.getAndroidSelected().get() : null)
-      .setPlatformIos(platformsForm.shouldBeVisible() ? platformsForm.getIosSelected().get() : null)
-      .setPlatformLinux(platformsForm.shouldBeVisible() ? platformsForm.getLinuxSelected().get() : null)
-      .setPlatformMacos(platformsForm.shouldBeVisible() ? platformsForm.getMacosSelected().get() : null)
-      .setPlatformWeb(platformsForm.shouldBeVisible() ? platformsForm.getWebSelected().get() : null)
-      .setPlatformWindows(platformsForm.shouldBeVisible() ? platformsForm.getWindowsSelected().get() : null)
+      .setPlatformAndroid(platformsForm.shouldBeVisible() ? settings.getPlatformAndroid() : null)
+      .setPlatformIos(platformsForm.shouldBeVisible() ? settings.getPlatformIos() : null)
+      .setPlatformLinux(platformsForm.shouldBeVisible() ? settings.getPlatformLinux() : null)
+      .setPlatformMacos(platformsForm.shouldBeVisible() ? settings.getPlatformMacos() : null)
+      .setPlatformWeb(platformsForm.shouldBeVisible() ? settings.getPlatformWeb() : null)
+      .setPlatformWindows(platformsForm.shouldBeVisible() ? settings.getPlatformWindows() : null)
       .build();
   }
 

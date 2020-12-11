@@ -13,8 +13,8 @@ public class FlutterSdkChannel {
 
   public enum ID {
 
-    // Do not change this order.
-    UNKNOWN("unknown"), STABLE("stable"), BETA("beta"), DEV("dev"), MASTER("master");
+    // Do not change this order. An unknown branch is assymed to be off master.
+    STABLE("stable"), BETA("beta"), DEV("dev"), MASTER("master"), UNKNOWN("unknown");
 
     private final String name;
 

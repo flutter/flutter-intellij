@@ -120,5 +120,6 @@
     <orderEntry type="library" name="org.powermock:powermock-module-junit4:2.0.2" level="project" />
     <orderEntry type="library" name="org.powermock:powermock-api-mockito2:2.0.2" level="project" />
     <orderEntry type="library" name="com.google.protobuf:protobuf-java:3.5.1" level="project" />
+    <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
   </component>
 </module>

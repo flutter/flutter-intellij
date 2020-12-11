@@ -7,9 +7,11 @@ package io.flutter.sdk;
 
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.module.FlutterProjectType;
+import io.flutter.module.settings.InitializeOnceBoolValueProperty;
 import java.util.ArrayList;
 import java.util.List;
 import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FlutterCreateAdditionalSettings {
@@ -27,18 +29,14 @@ public class FlutterCreateAdditionalSettings {
   private Boolean kotlin;
   @Nullable
   private Boolean offlineMode;
-  @Nullable
-  private Boolean platformAndroid;
-  @Nullable
-  private Boolean platformIos;
-  @Nullable
-  private Boolean platformWeb;
-  @Nullable
-  private Boolean platformLinux;
-  @Nullable
-  private Boolean platformMacos;
-  @Nullable
-  private Boolean platformWindows;
+
+  // These objects get re-used each time the UI is rebuilt, including after the Finish button is clicked.
+  @NotNull final private InitializeOnceBoolValueProperty platformAndroid = new InitializeOnceBoolValueProperty();
+  @NotNull final private InitializeOnceBoolValueProperty platformIos = new InitializeOnceBoolValueProperty();
+  @NotNull final private InitializeOnceBoolValueProperty platformWeb = new InitializeOnceBoolValueProperty();
+  @NotNull final private InitializeOnceBoolValueProperty platformLinux = new InitializeOnceBoolValueProperty();
+  @NotNull final private InitializeOnceBoolValueProperty platformMacos = new InitializeOnceBoolValueProperty();
+  @NotNull final private InitializeOnceBoolValueProperty platformWindows = new InitializeOnceBoolValueProperty();
 
   public FlutterCreateAdditionalSettings() {
     type = FlutterProjectType.APP;
@@ -66,12 +64,12 @@ public class FlutterCreateAdditionalSettings {
     this.swift = swift;
     this.kotlin = kotlin;
     this.offlineMode = offlineMode;
-    this.platformAndroid = platformAndroid;
-    this.platformIos = platformIos;
-    this.platformWeb = platformWeb;
-    this.platformLinux = platformLinux;
-    this.platformMacos = platformMacos;
-    this.platformWindows = platformWindows;
+    this.platformAndroid.set(Boolean.TRUE.equals(platformAndroid));
+    this.platformIos.set(Boolean.TRUE.equals(platformIos));
+    this.platformWeb.set(Boolean.TRUE.equals(platformWeb));
+    this.platformLinux.set(Boolean.TRUE.equals(platformLinux));
+    this.platformMacos.set(Boolean.TRUE.equals(platformMacos));
+    this.platformWindows.set(Boolean.TRUE.equals(platformWindows));
   }
 
   public void setType(@Nullable FlutterProjectType value) {
@@ -133,22 +131,22 @@ public class FlutterCreateAdditionalSettings {
     }
 
     StringBuilder platforms = new StringBuilder();
-    if (Boolean.TRUE.equals(platformAndroid)) {
+    if (platformAndroid.get()) {
       platforms.append("android,");
     }
-    if (Boolean.TRUE.equals(platformIos)) {
+    if (platformIos.get()) {
       platforms.append("ios,");
     }
-    if (Boolean.TRUE.equals(platformWeb)) {
+    if (platformWeb.get()) {
       platforms.append("web,");
     }
-    if (Boolean.TRUE.equals(platformLinux)) {
+    if (platformLinux.get()) {
       platforms.append("linux,");
     }
-    if (Boolean.TRUE.equals(platformMacos)) {
+    if (platformMacos.get()) {
       platforms.append("macos,");
     }
-    if (Boolean.TRUE.equals(platformWindows)) {
+    if (platformWindows.get()) {
       platforms.append("windows,");
     }
 
@@ -184,32 +182,32 @@ public class FlutterCreateAdditionalSettings {
 
   @Nullable
   public Boolean getPlatformAndroid() {
-    return platformAndroid;
+    return platformAndroid.get();
   }
 
   @Nullable
   public Boolean getPlatformIos() {
-    return platformIos;
+    return platformIos.get();
   }
 
   @Nullable
   public Boolean getPlatformWeb() {
-    return platformWeb;
+    return platformWeb.get();
   }
 
   @Nullable
   public Boolean getPlatformLinux() {
-    return platformLinux;
+    return platformLinux.get();
   }
 
   @Nullable
   public Boolean getPlatformMacos() {
-    return platformMacos;
+    return platformMacos.get();
   }
 
   @Nullable
   public Boolean getPlatformWindows() {
-    return platformWindows;
+    return platformWindows.get();
   }
 
   @Nullable
@@ -218,16 +216,36 @@ public class FlutterCreateAdditionalSettings {
   }
 
   public boolean isSomePlatformSelected() {
-    // These will be null if platforms are not shown.
-    if (platformAndroid == null ||
-        platformIos == null ||
-        platformLinux == null ||
-        platformMacos == null ||
-        platformWeb == null ||
-        platformWindows == null) {
-      return true;
-    }
-    return platformAndroid || platformIos || platformLinux || platformMacos || platformWeb || platformWindows;
+    return platformAndroid.get() ||
+           platformIos.get() ||
+           platformLinux.get() ||
+           platformMacos.get() ||
+           platformWeb.get() ||
+           platformWindows.get();
+  }
+
+  public InitializeOnceBoolValueProperty getPlatformAndroidProperty() {
+    return platformAndroid;
+  }
+
+  public InitializeOnceBoolValueProperty getPlatformIosProperty() {
+    return platformIos;
+  }
+
+  public InitializeOnceBoolValueProperty getPlatformWebProperty() {
+    return platformWeb;
+  }
+
+  public InitializeOnceBoolValueProperty getPlatformLinuxProperty() {
+    return platformLinux;
+  }
+
+  public InitializeOnceBoolValueProperty getPlatformMacosProperty() {
+    return platformMacos;
+  }
+
+  public InitializeOnceBoolValueProperty getPlatformWindowsProperty() {
+    return platformWindows;
   }
 
   public static class Builder {

@@ -13,24 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.com.android.tools.idea.observable.core;
+package io.flutter.module.settings;
 
 import com.google.common.base.Objects;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * A boolean-backed AbstractProperty.
+ * A boolean-backed AbstractProperty derived from the Android Studio observable BoolValueProperty.
+ * This version can only be initialized once, making it useful to the FlutterCreateAdditionalSettings object.
  */
-public final class BoolValueProperty {
+public final class InitializeOnceBoolValueProperty {
 
   private Boolean myValue;
+  private boolean isSet = false;
 
-  public BoolValueProperty(@NotNull Boolean value) {
+  public InitializeOnceBoolValueProperty(@NotNull Boolean value) {
     myValue = value;
   }
 
-  public BoolValueProperty() {
+  public InitializeOnceBoolValueProperty() {
     this(false);
   }
 
@@ -41,6 +43,14 @@ public final class BoolValueProperty {
 
   protected void setDirectly(@NotNull Boolean value) {
     myValue = value;
+  }
+
+  public final void initialize(@NotNull Boolean value) {
+    if (isSet) {
+      return;
+    }
+    setDirectly(value);
+    isSet = true;
   }
 
   public final void set(@NotNull Boolean value) {

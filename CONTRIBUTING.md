@@ -23,6 +23,7 @@ file.
     - plugins/android/lib/android.jar
     - plugins/gradle/lib/gradle-common.jar
     - plugins/gradle-dsl-impl/lib/gradle-dsl-impl.jar
+    - plugins/git4idea/lib/git4idea.jar
 * One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin. Find `Plugins` (in Settings/Preferences) and install the Dart plugin, then restart the IDE
 * Open flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository). Build it using `Build` | `Build Project`
 * Try running the plugin; there is an existing launch config for "Flutter IntelliJ". This should open the "runtime workbench", a new intance of IntelliJ with the plugin installed.
