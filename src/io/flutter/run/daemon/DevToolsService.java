@@ -55,11 +55,13 @@ public class DevToolsService {
     this.project = project;
 
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      // TODO(helinx): Also use daemon method for later flutter versions where devtools.serve uses pub global run devtools
+      // TODO(helinx): Also use `setUpWithDaemon` for later flutter SDK versions where the daemon request `devtools.serve` has been changed
+      //  to use the latest DevTools server.
       if (WorkspaceCache.getInstance(project).isBazel()) {
         setUpWithDaemon();
       }
       else {
+        // For earlier flutter versions we need to use pub directly to run the latest DevTools server.
         setUpWithPub();
       }
     });
