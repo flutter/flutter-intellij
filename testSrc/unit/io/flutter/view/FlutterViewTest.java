@@ -26,7 +26,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import javax.swing.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 
 import static io.flutter.view.FlutterView.*;
@@ -48,58 +47,15 @@ public class FlutterViewTest {
 
   @Test
   public void testHandleJxBrowserInstalled() {
-    // If JxBrowser has been installed and DevTools is installed, then we should immediately open the embedded browser.
-    final String testUrl = "http://www.testUrl.com";
-    final String projectName = "Test Project Name";
-
-    PowerMockito.mockStatic(DevToolsManager.class);
-    when(DevToolsManager.getInstance(mockProject)).thenReturn(mockDevToolsManager);
-
-    PowerMockito.mockStatic(InspectorGroupManagerService.class);
-    when(InspectorGroupManagerService.getInstance(mockProject)).thenReturn(mockInspectorGroupManagerService);
-
+    // If JxBrowser has been installed, we should use the DevTools instance to open the embedded browser.
     PowerMockito.mockStatic(SwingUtilities.class);
     when(SwingUtilities.isEventDispatchThread()).thenReturn(true);
-
-    final FlutterView flutterView = new FlutterView(mockProject);
-
-    when(mockDevToolsManager.hasInstalledDevTools()).thenReturn(true);
-    when(mockApp.getConnector()).thenReturn(mockObservatoryConnector);
-    when(mockObservatoryConnector.getBrowserUrl()).thenReturn(testUrl);
-    when(mockToolWindow.getContentManager()).thenReturn(null);
-    when(mockApp.device()).thenReturn(null);
-    when(mockApp.getProject()).thenReturn(mockProject);
-    when(mockProject.getName()).thenReturn(projectName);
-
-    flutterView.handleJxBrowserInstalled(mockApp, mockInspectorService, mockToolWindow);
-    verify(mockDevToolsManager, times(1)).openBrowserIntoPanel(mockApp, testUrl, null, projectName, "inspector");
-  }
-
-  @Test
-  public void testHandleJxBrowserInstalledWithoutDevtools() {
-    // If JxBrowser has been installed but we have to wait for DevTools to install, we should show a message about DevTools and then open
-    // the embedded browser when DevTools is ready.
-    final String testUrl = "http://www.testUrl.com";
-    final String projectName = "Test Project Name";
 
     final FlutterView partialMockFlutterView = mock(FlutterView.class);
     doCallRealMethod().when(partialMockFlutterView).handleJxBrowserInstalled(mockApp, mockInspectorService, mockToolWindow);
 
-    PowerMockito.mockStatic(SwingUtilities.class);
-    when(SwingUtilities.isEventDispatchThread()).thenReturn(true);
-
-    PowerMockito.mockStatic(DevToolsManager.class);
-    when(DevToolsManager.getInstance(mockProject)).thenReturn(mockDevToolsManager);
-    when(mockDevToolsManager.hasInstalledDevTools()).thenReturn(false);
-    final CompletableFuture<Boolean> result = new CompletableFuture<>();
-    result.complete(true);
-    when(mockDevToolsManager.installDevTools()).thenReturn(result);
-
-    when(mockApp.getProject()).thenReturn(mockProject);
-
     partialMockFlutterView.handleJxBrowserInstalled(mockApp, mockInspectorService, mockToolWindow);
-    verify(partialMockFlutterView, times(1)).presentLabel(mockToolWindow, INSTALLING_DEVTOOLS_LABEL);
-    verify(partialMockFlutterView, times(1)).awaitDevToolsInstall(mockApp, mockInspectorService, mockToolWindow, true, mockDevToolsManager);
+    verify(partialMockFlutterView, times(1)).openInspectorWithDevTools(mockApp, mockInspectorService, mockToolWindow, true);
   }
 
   @Test

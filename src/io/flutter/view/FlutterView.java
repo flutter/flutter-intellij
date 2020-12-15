@@ -63,7 +63,6 @@ import io.flutter.utils.EventStream;
 import io.flutter.utils.JxBrowserUtils;
 import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.vmService.ServiceExtensions;
-import org.apache.commons.lang3.BooleanUtils;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
@@ -268,41 +267,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
   }
 
-  private void addBrowserInspectorViewContent(FlutterApp app,
-                                              @Nullable InspectorService inspectorService,
-                                              ToolWindow toolWindow,
-                                              boolean isEmbedded) {
-    final ContentManager contentManager = toolWindow.getContentManager();
-
-    final String tabName;
-    final FlutterDevice device = app.device();
-    if (device == null) {
-      tabName = app.getProject().getName();
-    }
-    else {
-      final List<FlutterDevice> existingDevices = new ArrayList<>();
-      for (FlutterApp otherApp : perAppViewState.keySet()) {
-        existingDevices.add(otherApp.device());
-      }
-      tabName = device.getUniqueName(existingDevices);
-    }
-
-    if (emptyContent != null) {
-      contentManager.removeContent(emptyContent, true);
-      emptyContent = null;
-    }
-
-    final String browserUrl = app.getConnector().getBrowserUrl();
-
-    if (isEmbedded) {
-      DevToolsManager.getInstance(app.getProject()).openBrowserIntoPanel(app, browserUrl, contentManager, tabName, "inspector");
-    }
-    else {
-      DevToolsManager.getInstance(app.getProject()).openBrowserAndConnect(app, browserUrl, "inspector");
-      presentLabel(toolWindow, "DevTools inspector has been opened in the browser.");
-    }
-  }
-
   private void addInspectorViewContent(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
     final ContentManager contentManager = toolWindow.getContentManager();
     final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true);
@@ -477,10 +441,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     presentLabel(toolWindow, INSTALLING_DEVTOOLS_LABEL);
 
+    openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded);
+  }
+
+  protected void openInspectorWithDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       final DevToolsInstance instance = DevToolsService.getInstance(myProject).getDevToolsInstance();
       if (instance == null) {
-        // Display no devtools message
+        presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
         return;
       }
 
@@ -488,26 +456,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded, instance);
       });
     });
-  }
-
-  protected void awaitDevToolsInstall(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded, DevToolsManager devToolsManager) {
-    ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-
-      AsyncUtils.whenCompleteUiThread(result, (succeeded, throwable) -> {
-        if (throwable != null) {
-          LOG.error(throwable);
-          return;
-        }
-        if (BooleanUtils.isTrue(succeeded)) {
-          addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded);
-        } else {
-          // TODO(helin24): Handle with alternative instructions if devtools fails.
-          presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
-        }
-      });
-    });
-
   }
 
   private LabelInput openDevToolsLabel(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
