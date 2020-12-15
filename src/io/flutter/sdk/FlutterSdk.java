@@ -25,7 +25,6 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -49,7 +48,6 @@ import io.flutter.utils.JsonUtils;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -545,11 +543,8 @@ public class FlutterSdk {
       return platforms;
     }
 
-    String stdout;
-    try {
-      stdout = new String(Files.readAllBytes(Paths.get(configPath())), StandardCharsets.UTF_8);
-    }
-    catch (IOException e) {
+    String stdout = returnOutputOfQuery(flutterConfig("--machine"));
+    if (stdout == null) {
       return platforms;
     }
     try {
@@ -587,30 +582,25 @@ public class FlutterSdk {
       return cachedConfigValues.get(key);
     }
 
-    String stdout;
-    try {
-      stdout = new String(Files.readAllBytes(Paths.get(configPath())), StandardCharsets.UTF_8);
-    }
-    catch (IOException e) {
-      return null;
-    }
-    try {
-      final JsonElement elem = JsonUtils.parseString(stdout.substring(stdout.indexOf('{')));
-      if (elem.isJsonNull()) {
-        FlutterUtils.warn(LOG, FlutterBundle.message("flutter.sdk.invalid.json.error"));
-        return null;
-      }
+    String stdout = returnOutputOfQuery(flutterConfig("--machine"));
+    if (stdout != null) {
+      try {
+        final JsonElement elem = JsonUtils.parseString(stdout.substring(stdout.indexOf('{')));
+        if (elem.isJsonNull()) {
+          FlutterUtils.warn(LOG, FlutterBundle.message("flutter.sdk.invalid.json.error"));
+          return null;
+        }
 
-      final JsonObject obj = elem.getAsJsonObject();
-      for (String jsonKey : obj.keySet()) {
-        final JsonPrimitive primitive = obj.getAsJsonPrimitive(jsonKey);
-        if (primitive != null) {
-          cachedConfigValues.put(jsonKey, primitive.getAsString());
+        final JsonObject obj = elem.getAsJsonObject();
+        for (String jsonKey : obj.keySet()) {
+          final JsonPrimitive primitive = obj.getAsJsonPrimitive(jsonKey);
+          if (primitive != null) {
+            cachedConfigValues.put(jsonKey, primitive.getAsString());
+          }
         }
       }
-      return cachedConfigValues.get(key);
-    }
-    catch (JsonSyntaxException ignored) {
+      catch (JsonSyntaxException ignored) {
+      }
     }
     return null;
   }
@@ -651,37 +641,5 @@ public class FlutterSdk {
       LOG.info("Timeout when calling " + command.getDisplayCommand());
     }
     return null;
-  }
-
-  @NotNull
-  @NonNls
-  private static String userHomePath() {
-    // See _userHomePath() in .../flutter/packages/flutter_tools/lib/src/base/config.dart
-    String enKey = SystemInfo.isWindows ? "APPDATA" : "HOME";
-    String dir = System.getenv(enKey);
-    return dir == null ? "." : dir;
-  }
-
-  @NonNls private static final String K_FLUTTER = "flutter";
-  @NonNls private static final String K_SETTINGS = "settings";
-  @NonNls private static final String K_XDG_ENVAR = "XDG_CONFIG_HOME";
-  @NonNls private static final String K_CONFIG = ".config";
-  @NonNls private static final String K_FLUTTER_SETTINGS = "." + K_FLUTTER + "_" + K_SETTINGS;
-
-  @NotNull
-  private static String configPath() {
-    // See _configPath() in .../flutter/packages/flutter_tools/lib/src/base/config.dart
-    Path homeDirFile = Paths.get(userHomePath(), K_FLUTTER_SETTINGS);
-    if (SystemInfo.isLinux || SystemInfo.isMac) {
-      if (homeDirFile.toFile().exists()) {
-        return homeDirFile.toString();
-      }
-      String configDir = System.getenv(K_XDG_ENVAR);
-      if (configDir == null) {
-        return Paths.get(userHomePath(), K_CONFIG, K_FLUTTER, K_SETTINGS).toString();
-      }
-      return Paths.get(configDir, K_SETTINGS).toString();
-    }
-    return homeDirFile.toString();
   }
 }
