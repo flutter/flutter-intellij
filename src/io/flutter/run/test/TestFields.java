@@ -36,7 +36,10 @@ public class TestFields {
   @Nullable
   private final String testDir;
 
-  private TestFields(@Nullable String testName, @Nullable String testFile, @Nullable String testDir) {
+  @Nullable
+  private String additionalArgs;
+
+  private TestFields(@Nullable String testName, @Nullable String testFile, @Nullable String testDir, @Nullable String additionalArgs) {
     if (testFile == null && testDir == null) {
       throw new IllegalArgumentException("either testFile or testDir must be non-null");
     }
@@ -49,27 +52,28 @@ public class TestFields {
     this.testName = testName;
     this.testFile = testFile;
     this.testDir = testDir;
+    this.additionalArgs = additionalArgs;
   }
 
   /**
    * Creates settings for running tests with the given name within a Dart file.
    */
   public static TestFields forTestName(String testName, String path) {
-    return new TestFields(testName, path, null);
+    return new TestFields(testName, path, null, null);
   }
 
   /**
    * Creates settings for running all the tests in a Dart file.
    */
   public static TestFields forFile(String path) {
-    return new TestFields(null, path, null);
+    return new TestFields(null, path, null, null);
   }
 
   /**
    * Creates settings for running all the tests in directory.
    */
   public static TestFields forDir(String path) {
-    return new TestFields(null, null, path);
+    return new TestFields(null, null, path, null);
   }
 
   /**
@@ -110,6 +114,18 @@ public class TestFields {
   @Nullable
   public String getTestDir() {
     return testDir;
+  }
+
+  /**
+   * The additional arguments to pass to the test runner.
+   */
+  @Nullable
+  public String getAdditionalArgs() {
+    return additionalArgs;
+  }
+
+  public void setAdditionalArgs(String args) {
+    additionalArgs = args;
   }
 
   /**
@@ -184,6 +200,7 @@ public class TestFields {
     ElementIO.addOption(elt, "testName", testName);
     ElementIO.addOption(elt, "testFile", testFile);
     ElementIO.addOption(elt, "testDir", testDir);
+    ElementIO.addOption(elt, "additionalArgs", additionalArgs);
   }
 
   /**
@@ -196,8 +213,9 @@ public class TestFields {
     final String testName = options.get("testName");
     final String testFile = options.get("testFile");
     final String testDir = options.get("testDir");
+    final String additionalArgs = options.get("additionalArgs");
     try {
-      return new TestFields(testName, testFile, testDir);
+      return new TestFields(testName, testFile, testDir, additionalArgs);
     }
     catch (IllegalArgumentException e) {
       throw new InvalidDataException(e.getMessage());
@@ -236,7 +254,7 @@ public class TestFields {
       throw new ExecutionException("Test file isn't within a Flutter pub root");
     }
 
-    return sdk.flutterTest(root, fileOrDir, testName, mode, getScope()).startProcess(project);
+    return sdk.flutterTest(root, fileOrDir, testName, mode, additionalArgs, getScope()).startProcess(project);
   }
 
   private void checkSdk(@NotNull Project project) throws RuntimeConfigurationError {

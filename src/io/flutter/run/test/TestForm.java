@@ -28,7 +28,6 @@ public class TestForm extends SettingsEditor<TestConfig> {
   private JPanel form;
 
   private JComboBox<Scope> scope;
-  private JLabel scopeLabelHint;
 
   private JLabel testDirLabel;
   private TextFieldWithBrowseButton testDir;
@@ -41,6 +40,8 @@ public class TestForm extends SettingsEditor<TestConfig> {
   private JLabel testNameLabel;
   private JTextField testName;
   private JLabel testNameHintLabel;
+
+  private JTextField additionalArgs;
 
   private Scope displayedScope;
 
@@ -89,6 +90,7 @@ public class TestForm extends SettingsEditor<TestConfig> {
         testDir.setText(fields.getTestDir());
         break;
     }
+    additionalArgs.setText(fields.getAdditionalArgs());
     render(next);
   }
 
@@ -108,6 +110,7 @@ public class TestForm extends SettingsEditor<TestConfig> {
       default:
         throw new ConfigurationException("unexpected scope: " + scope.getSelectedItem());
     }
+    fields.setAdditionalArgs(additionalArgs.getText().trim());
     config.setFields(fields);
   }
 
