@@ -8,6 +8,7 @@ package io.flutter.view;
 import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.execution.ui.layout.impl.JBRunnerTabs;
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
@@ -25,6 +26,7 @@ import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
+import com.intellij.ui.ColorUtil;
 import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.SideBorder;
 import com.intellij.ui.SimpleTextAttributes;
@@ -43,13 +45,17 @@ import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.devtools.DevToolsManager;
+import io.flutter.devtools.DevToolsUtils;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.InspectorGroupManagerService;
 import io.flutter.inspector.InspectorService;
 import io.flutter.inspector.InspectorSourceLocation;
+import io.flutter.jxbrowser.EmbeddedBrowser;
 import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.jxbrowser.JxBrowserStatus;
 import io.flutter.run.FlutterDevice;
+import io.flutter.run.daemon.DevToolsInstance;
+import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
@@ -221,6 +227,45 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   private PerAppState getOrCreateStateForApp(FlutterApp app) {
     return perAppViewState.computeIfAbsent(app, k -> new PerAppState());
+  }
+
+  private void addBrowserInspectorViewContent(FlutterApp app,
+                                              @Nullable InspectorService inspectorService,
+                                              ToolWindow toolWindow,
+                                              boolean isEmbedded, DevToolsInstance devToolsInstance) {
+    assert(SwingUtilities.isEventDispatchThread());
+
+    final ContentManager contentManager = toolWindow.getContentManager();
+
+    final FlutterDevice device = app.device();
+    final List<FlutterDevice> existingDevices = new ArrayList<>();
+    for (FlutterApp otherApp : perAppViewState.keySet()) {
+      existingDevices.add(otherApp.device());
+    }
+    final String tabName = device.getUniqueName(existingDevices);
+
+    if (emptyContent != null) {
+      contentManager.removeContent(emptyContent, true);
+      emptyContent = null;
+    }
+
+    final String browserUrl = app.getConnector().getBrowserUrl();
+
+    if (isEmbedded) {
+      final String color = ColorUtil.toHex(UIUtil.getEditorPaneBackground());
+      final String url = DevToolsUtils.generateDevToolsUrl(devToolsInstance.host, devToolsInstance.port, browserUrl, "inspector", true, color);
+
+      //noinspection CodeBlock2Expr
+      ApplicationManager.getApplication().invokeLater(() -> {
+        EmbeddedBrowser.getInstance(myProject).openPanel(contentManager, tabName, url);
+      });
+    } else {
+      BrowserLauncher.getInstance().browse(
+        DevToolsUtils.generateDevToolsUrl(devToolsInstance.host, devToolsInstance.port, browserUrl, "inspector", false),
+        null
+      );
+      presentLabel(toolWindow, "DevTools inspector has been opened in the browser.");
+    }
   }
 
   private void addBrowserInspectorViewContent(FlutterApp app,
@@ -429,15 +474,20 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   private void presentDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
     assert(SwingUtilities.isEventDispatchThread());
-    final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
-    if (devToolsManager.hasInstalledDevTools()) {
-      addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded);
-    }
-    else {
-      presentLabel(toolWindow, INSTALLING_DEVTOOLS_LABEL);
-      awaitDevToolsInstall(app, inspectorService, toolWindow, isEmbedded, devToolsManager);
-    }
+    presentLabel(toolWindow, INSTALLING_DEVTOOLS_LABEL);
+
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      final DevToolsInstance instance = DevToolsService.getInstance(myProject).getDevToolsInstance();
+      if (instance == null) {
+        // Display no devtools message
+        return;
+      }
+
+      AsyncUtils.invokeLater(() -> {
+        addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded, instance);
+      });
+    });
   }
 
   protected void awaitDevToolsInstall(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded, DevToolsManager devToolsManager) {

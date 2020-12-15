@@ -11,13 +11,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
-import com.intellij.execution.process.ProcessHandler;
-import com.intellij.execution.process.ProcessOutput;
+import com.intellij.execution.process.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
@@ -39,9 +36,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceWrapper.LOG;
-
 public class DevToolsService {
+  private static final Logger LOG = Logger.getInstance(DevToolsService.class);
+
   private static class DevToolsServiceListener implements DaemonEvent.Listener {
   }
 
@@ -69,6 +66,17 @@ public class DevToolsService {
         setUpWithPub();
       }
     });
+  }
+
+  public DevToolsInstance getDevToolsInstance() {
+    try {
+      return devToolsInstance.get(60, TimeUnit.SECONDS);
+    }
+    catch (InterruptedException | java.util.concurrent.ExecutionException | TimeoutException e) {
+      // TODO(helinx): Retry setup if server did not start up correctly.
+      LOG.error(e);
+    }
+    return null;
   }
 
   private void setUpWithDaemon() {
@@ -240,12 +248,3 @@ public class DevToolsService {
   }
 }
 
-class DevToolsInstance {
-  final String host;
-  final int port;
-
-  DevToolsInstance(String host, int port) {
-    this.host = host;
-    this.port = port;
-  }
-}
