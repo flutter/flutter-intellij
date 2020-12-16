@@ -88,10 +88,11 @@ public class DevToolsService {
           return;
         }
         if (address == null) {
-          LOG.error("DevTools address was null");
+          Exception error = new Exception("DevTools address was null");
+          LOG.error(error);
+          devToolsInstance.completeExceptionally(error);
         }
         else {
-          System.out.println("Finished getting devtools: " + address.port);
           devToolsInstance.complete(new DevToolsInstance(address.host, address.port));
         }
       });
