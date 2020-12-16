@@ -18,6 +18,7 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
@@ -39,9 +40,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceWrapper.LOG;
-
 public class DevToolsService {
+  private static final Logger LOG = Logger.getInstance(DevToolsService.class);
+
   private static class DevToolsServiceListener implements DaemonEvent.Listener {
   }
 
@@ -71,6 +72,10 @@ public class DevToolsService {
     });
   }
 
+  public CompletableFuture<DevToolsInstance> getDevToolsInstance() {
+    return devToolsInstance;
+  }
+
   private void setUpWithDaemon() {
     try {
       final GeneralCommandLine command = chooseCommand(project);
@@ -87,7 +92,9 @@ public class DevToolsService {
           return;
         }
         if (address == null) {
-          LOG.error("DevTools address was null");
+          Exception error = new Exception("DevTools address was null");
+          LOG.error(error);
+          devToolsInstance.completeExceptionally(error);
         }
         else {
           devToolsInstance.complete(new DevToolsInstance(address.host, address.port));
@@ -240,12 +247,3 @@ public class DevToolsService {
   }
 }
 
-class DevToolsInstance {
-  final String host;
-  final int port;
-
-  DevToolsInstance(String host, int port) {
-    this.host = host;
-    this.port = port;
-  }
-}
