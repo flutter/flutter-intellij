@@ -231,7 +231,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private void addBrowserInspectorViewContent(FlutterApp app,
                                               @Nullable InspectorService inspectorService,
                                               ToolWindow toolWindow,
-                                              boolean isEmbedded, DevToolsInstance devToolsInstance) {
+                                              boolean isEmbedded,
+                                              DevToolsInstance devToolsInstance) {
     assert(SwingUtilities.isEventDispatchThread());
 
     final ContentManager contentManager = toolWindow.getContentManager();
@@ -256,7 +257,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
       //noinspection CodeBlock2Expr
       ApplicationManager.getApplication().invokeLater(() -> {
-        EmbeddedBrowser.getInstance(myProject).openPanel(contentManager, tabName, url);
+        EmbeddedBrowser.getInstance(myProject).openPanel(contentManager, tabName, url, () -> {
+          // If the embedded browser doesn't work, offer a link to open in the regular browser.
+          final List<LabelInput> inputs = Arrays.asList(
+            new LabelInput("The embedded browser failed to load."),
+            openDevToolsLabel(app, inspectorService, toolWindow)
+          );
+          presentClickableLabel(toolWindow, inputs);
+        });
       });
     } else {
       BrowserLauncher.getInstance().browse(
