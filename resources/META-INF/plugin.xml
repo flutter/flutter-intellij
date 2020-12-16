@@ -37,6 +37,10 @@
 
   <change-notes>
     <![CDATA[
+<h1>52.1</h1>
+<ul>
+  <li>Add additional args field to test config (#5122)</li>
+</ul>
 <h1>52.0</h1>
 <ul>
   <li>Move launching of Android Studio off EDT onto a background thread #5081</li>

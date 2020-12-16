@@ -1,3 +1,6 @@
+# 52.1
+- Add additional args field to test config (#5122)
+
 # 52.0
 - Move launching of Android Studio off EDT onto a background thread #5081
 - Unset and disable embedded browser option if MacOS Big Sur (#5065)
