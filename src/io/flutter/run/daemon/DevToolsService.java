@@ -49,7 +49,7 @@ public class DevToolsService {
   @NotNull private final Project project;
   private DaemonApi daemonApi;
   private ProcessHandler process;
-  public CompletableFuture<DevToolsInstance> devToolsInstance = new CompletableFuture<>();
+  private CompletableFuture<DevToolsInstance> devToolsInstance = new CompletableFuture<>();
 
   @NotNull
   public static DevToolsService getInstance(@NotNull final Project project) {
@@ -70,6 +70,10 @@ public class DevToolsService {
         setUpWithPub();
       }
     });
+  }
+
+  public CompletableFuture<DevToolsInstance> getDevToolsInstance() {
+    return devToolsInstance;
   }
 
   private void setUpWithDaemon() {
