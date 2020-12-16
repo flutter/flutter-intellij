@@ -13,7 +13,7 @@ The tool needs to perform several functions. Building is the basic one, but othe
 *   `build`
 *   `test`
 *   `deploy`
-*   `gen`
+*   `generate`
 *   `lint`
 
 Each command has its own set of optional arguments. If the CLI tool is invoked without a command then it will print its help message.
@@ -23,7 +23,7 @@ There are two global options. On the command line these are given prior to the c
 
 
 *   `-r, --release=XX`
-Use "release mode." The `XX` value specifies the release identifier, like 18 or 19.1. It will be shown in the "version" field of the plugin manager's listing for the Flutter plugin. In this mode additional constraints must be satisfied. The current git branch must have no unsaved changes and must be named "release_XX". The `.travis.yml` file must be newer than the `product-matrix.json` file (see the `gen` command).
+Use "release mode." The `XX` value specifies the release identifier, like 18 or 19.1. It will be shown in the "version" field of the plugin manager's listing for the Flutter plugin. In this mode additional constraints must be satisfied. The current git branch must have no unsaved changes and must be named "release_XX". The `.github/workflows/presubmit.yaml` file must be newer than the `product-matrix.json` file (see the `generate` command).
 *   `-d, --cwd=<working-directory>`
 Set the root directory to the `working-directory` value. This should not be used when running the tool from the command line. It is only intended to be used when running tests from IntelliJ run configurations that have no way to specify the working directory.
 
@@ -68,7 +68,7 @@ TBD: We may need some mechanism to automatically upload testing artifacts, since
 Automatically upload all required artifacts to the JetBrains site. This function will print instructions to retrieve the password from valentine then prompt for the password to log into the JetBrains site. It has no options. Returns a success or failure code to play nice with shell commands.
 
 
-### Gen
+### Generate
 
 Generate a `plugin.xml` from `plugin.xml.template` to be used for launching a runtime workbench. This is different from the ones generated during building because it will have a version range that allows use in all targeted platforms.
 
