@@ -48,6 +48,7 @@ public class FlutterSdkUtil {
 
   private static final String FLUTTER_SDK_KNOWN_PATHS = "FLUTTER_SDK_KNOWN_PATHS";
   private static final Logger LOG = Logger.getInstance(FlutterSdkUtil.class);
+  private static final String FLUTTER_SNAP_SDK_PATH = System.getenv("HOME") + "/snap/flutter/common/flutter";
 
   private FlutterSdkUtil() {
   }
@@ -137,6 +138,12 @@ public class FlutterSdkUtil {
     final String fromUserPath = locateSdkFromPath();
     if (fromUserPath != null) {
       paths.add(fromUserPath);
+    }
+
+    // add the snap SDK path if it exists (standard on all Linux platforms)
+    final File snapSdkPath = new File(FLUTTER_SNAP_SDK_PATH);
+    if (snapSdkPath.exists()) {
+      paths.add(snapSdkPath.getAbsolutePath());
     }
 
     return paths.toArray(new String[0]);
