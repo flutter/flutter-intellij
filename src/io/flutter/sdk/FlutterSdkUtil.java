@@ -139,6 +139,12 @@ public class FlutterSdkUtil {
       paths.add(fromUserPath);
     }
 
+    // add the snap SDK path if it exists (standard on all Linux platforms)
+    final File snapSdkPath = new File(System.getenv("HOME") + "/snap/flutter/common/flutter");
+    if (snapSdkPath.exists()) {
+      paths.add(snapSdkPath.getAbsolutePath());
+    }
+
     return paths.toArray(new String[0]);
   }
 
