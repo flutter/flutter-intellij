@@ -445,16 +445,20 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   protected void openInspectorWithDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
-    ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      final DevToolsInstance instance = DevToolsService.getInstance(myProject).getDevToolsInstance();
+    AsyncUtils.whenCompleteUiThread(DevToolsService.getInstance(myProject).devToolsInstance, (instance, error) -> {
+      // TODO(helinx): Restart DevTools server if there's an error.
+      if (error != null) {
+        LOG.error(error);
+        presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
+        return;
+      }
+
       if (instance == null) {
         presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
         return;
       }
 
-      AsyncUtils.invokeLater(() -> {
-        addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded, instance);
-      });
+      addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded, instance);
     });
   }
 

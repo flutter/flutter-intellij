@@ -49,7 +49,7 @@ public class DevToolsService {
   @NotNull private final Project project;
   private DaemonApi daemonApi;
   private ProcessHandler process;
-  private CompletableFuture<DevToolsInstance> devToolsInstance = new CompletableFuture<>();
+  public CompletableFuture<DevToolsInstance> devToolsInstance = new CompletableFuture<>();
 
   @NotNull
   public static DevToolsService getInstance(@NotNull final Project project) {
@@ -72,17 +72,6 @@ public class DevToolsService {
     });
   }
 
-  public DevToolsInstance getDevToolsInstance() {
-    try {
-      return devToolsInstance.get(60, TimeUnit.SECONDS);
-    }
-    catch (InterruptedException | java.util.concurrent.ExecutionException | TimeoutException e) {
-      // TODO(helinx): Retry setup if server did not start up correctly.
-      LOG.error(e);
-    }
-    return null;
-  }
-
   private void setUpWithDaemon() {
     try {
       final GeneralCommandLine command = chooseCommand(project);
@@ -102,6 +91,7 @@ public class DevToolsService {
           LOG.error("DevTools address was null");
         }
         else {
+          System.out.println("Finished getting devtools: " + address.port);
           devToolsInstance.complete(new DevToolsInstance(address.host, address.port));
         }
       });
