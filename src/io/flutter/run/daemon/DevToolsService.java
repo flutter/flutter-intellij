@@ -49,7 +49,7 @@ public class DevToolsService {
   @NotNull private final Project project;
   private DaemonApi daemonApi;
   private ProcessHandler process;
-  private CompletableFuture<DevToolsInstance> devToolsInstance = new CompletableFuture<>();
+  private CompletableFuture<DevToolsInstance> devToolsInstance;
 
   @NotNull
   public static DevToolsService getInstance(@NotNull final Project project) {
@@ -58,7 +58,19 @@ public class DevToolsService {
 
   private DevToolsService(@NotNull final Project project) {
     this.project = project;
+  }
 
+  public CompletableFuture<DevToolsInstance> getDevToolsInstance() {
+    // Create instance if it doesn't exist yet, or if the previous attempt failed.
+    if (devToolsInstance == null || devToolsInstance.isCompletedExceptionally()) {
+      devToolsInstance = new CompletableFuture<>();
+      startServer();
+    }
+
+    return devToolsInstance;
+  }
+
+  private void startServer() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       // TODO(helinx): Also use `setUpWithDaemon` for later flutter SDK versions where the daemon request `devtools.serve` has been changed
       //  to use the latest DevTools server.
@@ -72,15 +84,11 @@ public class DevToolsService {
     });
   }
 
-  public CompletableFuture<DevToolsInstance> getDevToolsInstance() {
-    return devToolsInstance;
-  }
-
   private void setUpWithDaemon() {
     try {
       final GeneralCommandLine command = chooseCommand(project);
       if (command == null) {
-        LOG.info("Unable to find daemon command for project: " + project);
+        logExceptionAndComplete("Unable to find daemon command for project: " + project);
         return;
       }
       this.process = new MostlySilentOsProcessHandler(command);
@@ -92,9 +100,7 @@ public class DevToolsService {
           return;
         }
         if (address == null) {
-          Exception error = new Exception("DevTools address was null");
-          LOG.error(error);
-          devToolsInstance.completeExceptionally(error);
+          logExceptionAndComplete("DevTools address was null");
         }
         else {
           devToolsInstance.complete(new DevToolsInstance(address.host, address.port));
@@ -102,13 +108,13 @@ public class DevToolsService {
       });
     }
     catch (ExecutionException e) {
-      e.printStackTrace();
+      logExceptionAndComplete(e);
     }
 
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
       @Override
       public void projectClosing(@NotNull Project project) {
-        devToolsInstance = new CompletableFuture<>();
+        devToolsInstance = null;
 
         try {
           daemonApi.daemonShutdown().get(5, TimeUnit.SECONDS);
@@ -126,10 +132,17 @@ public class DevToolsService {
   private void setUpWithPub() {
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     if (sdk == null) {
+      logExceptionAndComplete("Flutter SDK is null");
       return;
     }
 
-    pubActivateDevTools(sdk).thenAccept(result -> pubRunDevTools(sdk));
+    pubActivateDevTools(sdk).thenAccept(success -> {
+      if (success) {
+        pubRunDevTools(sdk);
+      } else {
+        logExceptionAndComplete("pub activate of DevTools failed");
+      }
+    });
   }
 
   private void pubRunDevTools(FlutterSdk sdk) {
@@ -137,6 +150,7 @@ public class DevToolsService {
 
     final OSProcessHandler handler = command.startProcessOrShowError(project);
     if (handler == null) {
+      logExceptionAndComplete("Handler was null for command: " + command.toString());
       return;
     }
 
@@ -161,10 +175,12 @@ public class DevToolsService {
               devToolsInstance.complete(new DevToolsInstance(host, port));
             }
             else {
+              logExceptionAndComplete("DevTools port was invalid");
               handler.destroyProcess();
             }
           }
           catch (JsonSyntaxException e) {
+            logExceptionAndComplete(e);
             handler.destroyProcess();
           }
         }
@@ -205,6 +221,17 @@ public class DevToolsService {
     }
 
     return result;
+  }
+
+  private void logExceptionAndComplete(String message) {
+    logExceptionAndComplete(new Exception(message));
+  }
+
+  private void logExceptionAndComplete(Exception exception) {
+    LOG.error(exception);
+    if (devToolsInstance != null) {
+      devToolsInstance.completeExceptionally(exception);
+    }
   }
 
   private static GeneralCommandLine chooseCommand(@NotNull final Project project) {
