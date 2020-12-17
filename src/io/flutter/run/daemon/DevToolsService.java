@@ -39,6 +39,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DevToolsService {
   private static final Logger LOG = Logger.getInstance(DevToolsService.class);
@@ -49,7 +50,7 @@ public class DevToolsService {
   @NotNull private final Project project;
   private DaemonApi daemonApi;
   private ProcessHandler process;
-  private CompletableFuture<DevToolsInstance> devToolsInstanceFuture;
+  private AtomicReference<CompletableFuture<DevToolsInstance>> devToolsFutureRef = new AtomicReference<>(null);
 
   @NotNull
   public static DevToolsService getInstance(@NotNull final Project project) {
@@ -62,12 +63,22 @@ public class DevToolsService {
 
   public CompletableFuture<DevToolsInstance> getDevToolsInstance() {
     // Create instance if it doesn't exist yet, or if the previous attempt failed.
-    if (devToolsInstanceFuture == null || devToolsInstanceFuture.isCompletedExceptionally()) {
-      devToolsInstanceFuture = new CompletableFuture<>();
+    if (devToolsFutureRef.compareAndSet(null, new CompletableFuture<>())) {
       startServer();
     }
 
-    return devToolsInstanceFuture;
+    if (devToolsFutureRef.updateAndGet((future) -> {
+      if (future.isCompletedExceptionally()) {
+        return null;
+      } else {
+        return future;
+      }
+    }) == null) {
+      devToolsFutureRef.set(new CompletableFuture<>());
+      startServer();
+    }
+
+    return devToolsFutureRef.get();
   }
 
   private void startServer() {
@@ -103,7 +114,7 @@ public class DevToolsService {
           logExceptionAndComplete("DevTools address was null");
         }
         else {
-          devToolsInstanceFuture.complete(new DevToolsInstance(address.host, address.port));
+          devToolsFutureRef.get().complete(new DevToolsInstance(address.host, address.port));
         }
       });
     }
@@ -114,7 +125,7 @@ public class DevToolsService {
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
       @Override
       public void projectClosing(@NotNull Project project) {
-        devToolsInstanceFuture = null;
+        devToolsFutureRef.set(null);
 
         try {
           daemonApi.daemonShutdown().get(5, TimeUnit.SECONDS);
@@ -172,7 +183,7 @@ public class DevToolsService {
             final int port = JsonUtils.getIntMember(params, "port");
 
             if (port != -1) {
-              devToolsInstanceFuture.complete(new DevToolsInstance(host, port));
+              devToolsFutureRef.get().complete(new DevToolsInstance(host, port));
             }
             else {
               logExceptionAndComplete("DevTools port was invalid");
@@ -192,7 +203,7 @@ public class DevToolsService {
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
       @Override
       public void projectClosing(@NotNull Project project) {
-        devToolsInstanceFuture = new CompletableFuture<>();
+        devToolsFutureRef.set(null);
         handler.destroyProcess();
       }
     });
@@ -229,8 +240,9 @@ public class DevToolsService {
 
   private void logExceptionAndComplete(Exception exception) {
     LOG.error(exception);
-    if (devToolsInstanceFuture != null) {
-      devToolsInstanceFuture.completeExceptionally(exception);
+    final CompletableFuture<DevToolsInstance> future = devToolsFutureRef.get();
+    if (future != null) {
+      future.completeExceptionally(exception);
     }
   }
 
