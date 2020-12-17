@@ -5,14 +5,16 @@
  */
 package io.flutter.sdk;
 
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
+@NonNls
 public class FlutterSdkChannel {
 
   public enum ID {
 
-    // Do not change this order.
-    UNKNOWN("unknown"), STABLE("stable"), BETA("beta"), DEV("dev"), MASTER("master");
+    // Do not change this order. An unknown branch is assymed to be off master.
+    STABLE("stable"), BETA("beta"), DEV("dev"), MASTER("master"), UNKNOWN("unknown");
 
     private final String name;
 
@@ -46,7 +48,7 @@ public class FlutterSdkChannel {
 
   @NotNull
   public static FlutterSdkChannel fromText(@NotNull String text) {
-    return new FlutterSdkChannel(ID.fromText(parseChannel(text)));
+    return new FlutterSdkChannel(ID.fromText(text));
   }
 
   private FlutterSdkChannel(@NotNull ID channel) {
@@ -60,16 +62,5 @@ public class FlutterSdkChannel {
 
   public String toString() {
     return "channel " + channel.toString();
-  }
-
-  @NotNull
-  private static String parseChannel(@NotNull String text) {
-    String[] lines = text.split("\n");
-    for (String line : lines) {
-      if (line.startsWith("*")) {
-        return line.substring(2);
-      }
-    }
-    throw new IllegalArgumentException("No channel found in: " + text);
   }
 }

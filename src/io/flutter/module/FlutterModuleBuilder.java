@@ -5,6 +5,8 @@
  */
 package io.flutter.module;
 
+import static java.util.Arrays.asList;
+
 import com.intellij.execution.OutputListener;
 import com.intellij.execution.process.ProcessListener;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
@@ -14,8 +16,11 @@ import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.ModifiableModuleModel;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.*;
+import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleType;
+import com.intellij.openapi.module.ModuleWithNameAlreadyExists;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
@@ -39,15 +44,14 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.ComboBoxEditor;
+import javax.swing.Icon;
+import javax.swing.JComponent;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static java.util.Arrays.asList;
 
 public class FlutterModuleBuilder extends ModuleBuilder {
   private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
@@ -113,7 +117,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     final OutputListener listener = new OutputListener();
-    final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project, listener, getAdditionalSettings());
+    @NotNull FlutterCreateAdditionalSettings settings = getAdditionalSettings();
+    final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project, listener, settings);
     if (root == null) {
       final String stderr = listener.getOutput().getStderr();
       final String msg = stderr.isEmpty() ? "Flutter create command was unsuccessful" : stderr;
@@ -134,7 +139,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     FlutterModuleUtils.autoShowMain(project, root);
 
     if (!(AndroidUtils.isAndroidProject(getProject()) &&
-          (getAdditionalSettings().getType() == FlutterProjectType.MODULE))) {
+          (settings.getType() == FlutterProjectType.MODULE))) {
       addAndroidModule(project, model, basePath, flutter.getName());
     }
     return flutter;
@@ -143,14 +148,17 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   private static String validateSettings(FlutterCreateAdditionalSettings settings) {
     final String description = settings.getDescription();
     if (description != null && description.contains(": ")) {
-      return "Invalid package description: '" + description + "' - cannot contain the sequence ': '.";
+      return FlutterBundle.message("npw_invalid_desc_error");
     }
     final String org = settings.getOrg();
     if (org == null) {
       return null;
     }
     if (StringUtils.endsWith(org, ".")) {
-      return "Invalid organization name: '" + org + "' - cannot end in '.'.";
+      return FlutterBundle.message("npw_invalid_org_error");
+    }
+    if (!settings.isSomePlatformSelected()) {
+      return FlutterBundle.message("npw_none_selected_error");
     }
     // Invalid package names will cause issues down the line.
     return AndroidUtils.validateAndroidPackageName(org);

@@ -8,6 +8,7 @@ package io.flutter.module;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.newProjectWizard.AbstractProjectWizard;
 import com.intellij.ide.util.projectWizard.WizardContext;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
@@ -25,6 +26,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.InstallSdkAction;
 import io.flutter.module.settings.SettingsHelpForm;
+import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import java.awt.Cursor;
 import java.awt.Font;
@@ -51,7 +53,7 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
   private JLabel errorIcon;
   private JTextPane errorText;
   private JScrollPane errorPane;
-  private LinkLabel myInstallActionLink;
+  private LinkLabel<?> myInstallActionLink;
   private JProgressBar myProgressBar;
   private JTextPane myProgressText;
   private JScrollPane myProgressScrollPane;
@@ -89,6 +91,8 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
     mySdkPathComboWithBrowse.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
                                                      FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                                                      TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
+    mySdkPathComboWithBrowse.getComboBox().addActionListener(e -> fillSdkCache());
+    fillSdkCache();
 
     final JTextComponent editorComponent = (JTextComponent)getSdkEditor().getEditorComponent();
     editorComponent.getDocument().addDocumentListener(new DocumentAdapter() {
@@ -104,7 +108,6 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
 
     myInstallActionLink.setText(myInstallSdkAction.getLinkText());
 
-    //noinspection unchecked
     myInstallActionLink.setListener((label, linkUrl) -> myInstallSdkAction.actionPerformed(null), null);
 
     myProgressText.setFont(UIUtil.getLabelFont(UIUtil.FontSize.NORMAL).deriveFont(Font.ITALIC));
@@ -122,6 +125,19 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
 
     errorIcon.setVisible(false);
     errorPane.setVisible(false);
+  }
+
+  private void fillSdkCache() {
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      String path = (String)mySdkPathComboWithBrowse.getComboBox().getSelectedItem();
+      if (path != null) {
+        FlutterSdk sdk = FlutterSdk.forPath(path);
+        if (sdk != null) {
+          sdk.queryConfiguredPlatforms(false);
+          sdk.queryFlutterChannel(false);
+        }
+      }
+    });
   }
 
   @SuppressWarnings("EmptyMethod")
@@ -192,7 +208,7 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
   }
 
   @Override
-  public LinkLabel getInstallActionLink() {
+  public LinkLabel<?> getInstallActionLink() {
     return myInstallActionLink;
   }
 

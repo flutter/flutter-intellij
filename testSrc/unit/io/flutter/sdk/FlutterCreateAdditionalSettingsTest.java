@@ -5,13 +5,12 @@
  */
 package io.flutter.sdk;
 
-import io.flutter.module.FlutterProjectType;
-import org.junit.Test;
-
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+
+import io.flutter.module.FlutterProjectType;
+import java.util.List;
+import org.junit.Test;
 
 public class FlutterCreateAdditionalSettingsTest {
   @Test
@@ -124,6 +123,56 @@ public class FlutterCreateAdditionalSettingsTest {
     assertNotEquals("--android-language", args1.get(0));
 
     assertEquals(args2.size(), args3.size());
+  }
+
+  @Test
+  public void testPlatforms() {
+    // None of the non-platform tests set these properties so they all implicitly test the case where all are null.
+    final FlutterCreateAdditionalSettings additionalSettings = new FlutterCreateAdditionalSettings.Builder()
+      .setPlatformAndroid(true)
+      .setPlatformIos(true)
+      .setPlatformLinux(true)
+      .setPlatformMacos(true)
+      .setPlatformWeb(true)
+      .setPlatformWindows(true)
+      .build();
+    final List<String> args = additionalSettings.getArgs();
+    assertEquals(6, args.size());
+    assertEquals("--platforms", args.get(4));
+    assertEquals("android,ios,web,linux,macos,windows", args.get(5));
+  }
+
+  @Test
+  public void testPartialPlatforms() {
+    final FlutterCreateAdditionalSettings additionalSettings = new FlutterCreateAdditionalSettings.Builder()
+      .setPlatformIos(true)
+      .setPlatformMacos(true)
+      .setPlatformWindows(true)
+      .build();
+    final List<String> args = additionalSettings.getArgs();
+    assertEquals(6, args.size());
+    assertEquals("--platforms", args.get(4));
+    assertEquals("ios,macos,windows", args.get(5));
+  }
+
+  @Test
+  public void testSinglePlatforms() {
+    final FlutterCreateAdditionalSettings additionalSettings = new FlutterCreateAdditionalSettings.Builder()
+      .setPlatformAndroid(true)
+      .build();
+    final List<String> args = additionalSettings.getArgs();
+    assertEquals(6, args.size());
+    assertEquals("--platforms", args.get(4));
+    assertEquals("android", args.get(5));
+  }
+
+  @Test
+  public void testNoPlatforms() {
+    final FlutterCreateAdditionalSettings additionalSettings = new FlutterCreateAdditionalSettings.Builder()
+      .setPlatformAndroid(false)
+      .build();
+    final List<String> args = additionalSettings.getArgs();
+    assertEquals(4, args.size());
   }
 
   @Test
