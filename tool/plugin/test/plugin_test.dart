@@ -269,8 +269,8 @@ class TestMakeCommand extends GradleBuildCommand {
 }
 
 class TestDeployCommand extends DeployCommand {
-  List<String> paths = new List<String>();
-  List<String> plugins = new List<String>();
+  List<String> paths = <String>[];
+  List<String> plugins = <String>[];
 
   TestDeployCommand(runner) : super(runner);
 
