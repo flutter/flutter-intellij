@@ -10,6 +10,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
@@ -20,6 +21,7 @@ import com.teamdev.jxbrowser.engine.EngineOptions;
 import com.teamdev.jxbrowser.navigation.event.LoadFinished;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
 import icons.FlutterIcons;
+import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Dimension;
@@ -48,17 +50,30 @@ public class EmbeddedBrowser {
       EngineOptions.newBuilder(SystemInfo.isWindows ? OFF_SCREEN : HARDWARE_ACCELERATED)
         .userDataDir(Paths.get(dataPath))
         .build();
-    final Engine engine = Engine.newInstance(options);
-    this.browser = engine.newBrowser();
 
     try {
+      final Engine engine = Engine.newInstance(options);
+      this.browser = engine.newBrowser();
       browser.settings().enableTransparentBackground();
     } catch (UnsupportedRenderingModeException ex) {
       // Skip using a transparent background if an exception is thrown.
+    } catch (Exception ex) {
+      LOG.error(ex);
+      FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(ex), false);
     }
   }
 
   public void openPanel(ContentManager contentManager, String tabName, String url) {
+    openPanel(contentManager, tabName, url, () -> {});
+  }
+
+  public void openPanel(ContentManager contentManager, String tabName, String url, Runnable onBrowserUnavailable) {
+    // If the browser failed to start during setup, run unavailable callback.
+    if (browser == null) {
+      onBrowserUnavailable.run();
+      return;
+    }
+
     // Multiple LoadFinished events can occur, but we only need to add content the first time.
     final AtomicBoolean contentLoaded = new AtomicBoolean(false);
 
