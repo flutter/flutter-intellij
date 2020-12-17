@@ -49,7 +49,7 @@ public class DevToolsService {
   @NotNull private final Project project;
   private DaemonApi daemonApi;
   private ProcessHandler process;
-  private CompletableFuture<DevToolsInstance> devToolsInstance;
+  private CompletableFuture<DevToolsInstance> devToolsInstanceFuture;
 
   @NotNull
   public static DevToolsService getInstance(@NotNull final Project project) {
@@ -62,12 +62,12 @@ public class DevToolsService {
 
   public CompletableFuture<DevToolsInstance> getDevToolsInstance() {
     // Create instance if it doesn't exist yet, or if the previous attempt failed.
-    if (devToolsInstance == null || devToolsInstance.isCompletedExceptionally()) {
-      devToolsInstance = new CompletableFuture<>();
+    if (devToolsInstanceFuture == null || devToolsInstanceFuture.isCompletedExceptionally()) {
+      devToolsInstanceFuture = new CompletableFuture<>();
       startServer();
     }
 
-    return devToolsInstance;
+    return devToolsInstanceFuture;
   }
 
   private void startServer() {
@@ -103,7 +103,7 @@ public class DevToolsService {
           logExceptionAndComplete("DevTools address was null");
         }
         else {
-          devToolsInstance.complete(new DevToolsInstance(address.host, address.port));
+          devToolsInstanceFuture.complete(new DevToolsInstance(address.host, address.port));
         }
       });
     }
@@ -114,7 +114,7 @@ public class DevToolsService {
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
       @Override
       public void projectClosing(@NotNull Project project) {
-        devToolsInstance = null;
+        devToolsInstanceFuture = null;
 
         try {
           daemonApi.daemonShutdown().get(5, TimeUnit.SECONDS);
@@ -172,7 +172,7 @@ public class DevToolsService {
             final int port = JsonUtils.getIntMember(params, "port");
 
             if (port != -1) {
-              devToolsInstance.complete(new DevToolsInstance(host, port));
+              devToolsInstanceFuture.complete(new DevToolsInstance(host, port));
             }
             else {
               logExceptionAndComplete("DevTools port was invalid");
@@ -192,7 +192,7 @@ public class DevToolsService {
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
       @Override
       public void projectClosing(@NotNull Project project) {
-        devToolsInstance = new CompletableFuture<>();
+        devToolsInstanceFuture = new CompletableFuture<>();
         handler.destroyProcess();
       }
     });
@@ -229,8 +229,8 @@ public class DevToolsService {
 
   private void logExceptionAndComplete(Exception exception) {
     LOG.error(exception);
-    if (devToolsInstance != null) {
-      devToolsInstance.completeExceptionally(exception);
+    if (devToolsInstanceFuture != null) {
+      devToolsInstanceFuture.completeExceptionally(exception);
     }
   }
 
