@@ -6,37 +6,25 @@
 package io.flutter.module;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.util.newProjectWizard.AbstractProjectWizard;
 import com.intellij.ide.util.projectWizard.WizardContext;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBLabel;
-import com.intellij.ui.components.labels.LinkLabel;
-import com.intellij.util.ui.UIUtil;
 import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
-import io.flutter.actions.InstallSdkAction;
 import io.flutter.module.settings.SettingsHelpForm;
-import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
-import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import javax.swing.ComboBoxEditor;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.event.DocumentEvent;
@@ -54,7 +42,6 @@ public class FlutterGeneratorPeer {
   private JTextPane errorText;
   private JScrollPane errorPane;
   private SettingsHelpForm myHelpForm;
-
 
   public FlutterGeneratorPeer(WizardContext context) {
     myContext = context;
@@ -80,8 +67,6 @@ public class FlutterGeneratorPeer {
     mySdkPathComboWithBrowse.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
                                                      FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                                                      TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
-    mySdkPathComboWithBrowse.getComboBox().addActionListener(e -> fillSdkCache());
-    fillSdkCache();
 
     final JTextComponent editorComponent = (JTextComponent)getSdkEditor().getEditorComponent();
     editorComponent.getDocument().addDocumentListener(new DocumentAdapter() {
@@ -93,19 +78,6 @@ public class FlutterGeneratorPeer {
 
     errorIcon.setVisible(false);
     errorPane.setVisible(false);
-  }
-
-  private void fillSdkCache() {
-    ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      String path = (String)mySdkPathComboWithBrowse.getComboBox().getSelectedItem();
-      if (path != null) {
-        FlutterSdk sdk = FlutterSdk.forPath(path);
-        if (sdk != null) {
-          sdk.queryConfiguredPlatforms(false);
-          sdk.queryFlutterChannel(false);
-        }
-      }
-    });
   }
 
   @SuppressWarnings("EmptyMethod")

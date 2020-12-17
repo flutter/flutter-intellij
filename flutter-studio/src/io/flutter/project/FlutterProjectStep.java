@@ -22,8 +22,8 @@ import com.android.tools.idea.observable.ui.SelectedItemProperty;
 import com.android.tools.idea.observable.ui.SelectedProperty;
 import com.android.tools.idea.observable.ui.TextProperty;
 import com.android.tools.idea.ui.validation.validators.PathValidator;
-import com.android.tools.idea.ui.wizard.deprecated.StudioWizardStepPanel;
 import com.android.tools.idea.ui.wizard.WizardUtils;
+import com.android.tools.idea.ui.wizard.deprecated.StudioWizardStepPanel;
 import com.android.tools.idea.wizard.model.ModelWizard;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
@@ -35,28 +35,20 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ui.configuration.ProjectStructureConfigurable;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.ui.ColorUtil;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.ui.components.labels.LinkLabel;
-import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
-import io.flutter.actions.InstallSdkAction;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.module.settings.FlutterCreateParams;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
@@ -67,9 +59,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
 import org.jetbrains.annotations.NotNull;
@@ -86,8 +76,6 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   private boolean hasEntered = false;
   private OptionalValueProperty<FlutterProjectType> myProjectType;
   private StringValueProperty myDownloadErrorMessage = new StringValueProperty();
-  private InstallSdkAction.CancelActionListener myListener;
-  private String mySdkPathContent = "";
 
   private JPanel myPanel;
   private JTextField myProjectName;
@@ -288,7 +276,6 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     }
     myHeading.setText(heading);
     myDownloadErrorMessage.set("");
-    mySdkPathContent = (String)myFlutterSdkPath.getComboBox().getEditor().getItem();
 
     // Set default values for text fields, but only do so the first time the page is shown.
     String descrText = "";
@@ -366,6 +353,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     comboBox.setSelectedItem(currentItem); // to set focus on current item in combo popup
     comboBox.getEditor().setItem(currentItem); // to set current item in combo itself
   }
+
   /**
    * When creating a StudioWizardStepPanel which may be so tall as to require vertical scrolling,
    * using this helper method to automatically wrap it with an appropriate JScrollPane.
@@ -376,5 +364,4 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     sp.setBorder(BorderFactory.createEmptyBorder());
     return sp;
   }
-
 }
