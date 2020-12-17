@@ -59,6 +59,11 @@ public class DevToolsService {
 
   private DevToolsService(@NotNull final Project project) {
     this.project = project;
+
+    // Start the server earlier for bazel projects so the port is available at app runtime.
+    if (WorkspaceCache.getInstance(project).isBazel() && devToolsFutureRef.compareAndSet(null, new CompletableFuture<>())) {
+      startServer();
+    }
   }
 
   public CompletableFuture<DevToolsInstance> getDevToolsInstance() {
@@ -252,7 +257,7 @@ public class DevToolsService {
     if (workspace != null) {
       final String script = workspace.getDaemonScript();
       if (script != null) {
-        return createCommand(workspace.getRoot().getPath(), script, ImmutableList.of());
+        return createCommand(workspace.getRoot().getPath(), script, ImmutableList.of("--remote-allowed"));
       }
     }
 

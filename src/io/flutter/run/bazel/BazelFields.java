@@ -24,12 +24,15 @@ import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.common.RunMode;
+import io.flutter.run.daemon.DevToolsInstance;
+import io.flutter.run.daemon.DevToolsService;
 import io.flutter.utils.ElementIO;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import static io.flutter.run.common.RunMode.DEBUG;
 
@@ -254,6 +257,16 @@ public class BazelFields {
     if (device != null) {
       commandLine.addParameter("-d");
       commandLine.addParameter(device.deviceId());
+    }
+
+    final CompletableFuture<DevToolsInstance> devToolsFuture = DevToolsService.getInstance(project).getDevToolsInstance();
+    if (devToolsFuture.isDone() && !devToolsFuture.isCompletedExceptionally()) {
+      try {
+        commandLine.addParameter("--devtools-port=" + devToolsFuture.get().port);
+      }
+      catch (Exception e) {
+        e.printStackTrace();
+      }
     }
 
     commandLine.addParameter(target);
