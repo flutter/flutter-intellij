@@ -72,6 +72,19 @@ List<EditCommand> editCommands = [
     replacement: 'highlighter.getTextAttributes()',
     versions: ['4.1'],
   ),
+  MultiSubst(
+    path: 'src/io/flutter/sdk/FlutterSdk.java',
+    initials: [
+      'branch = git4idea.light.LightGitUtilKt.getLocation(dir, GitExecutableManager.getInstance().getExecutable((Project)null));',
+      'catch (VcsException e)'
+    ],
+    replacements: [
+      // This means we don't show platforms in IJ 2020.1, until stable channel supports them.
+      'return FlutterSdkChannel.fromText("stable");',
+      'catch (RuntimeException e)'
+    ],
+    versions: ['4.1'],
+  ),
   Subst(
     path: 'src/io/flutter/preview/PreviewView.java',
     initial: 'Arrays.asList(expandAllAction, collapseAllAction, showOnlyWidgetsAction)',

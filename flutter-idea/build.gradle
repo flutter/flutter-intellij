@@ -18,11 +18,18 @@ repositories {
   }
 }
 
+apply plugin: 'kotlin'
 apply plugin: 'java'
 apply plugin: "org.jetbrains.intellij"
 
 group 'io.flutter'
 version=flutterPluginVersion
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+  kotlinOptions {
+    jvmTarget = "1.8"
+  }
+}
 
 java {
   sourceCompatibility = JavaVersion.toVersion(javaVersion)
@@ -53,6 +60,15 @@ dependencies {
                          includes: ["**/*.jar"],
                          excludes: ["**/kotlin-compiler.jar", "**/kotlin-plugin.jar"])
     testRuntime fileTree(dir: "$project.rootDir/artifacts/android-studio/lib",
+                         includes: ["*.jar"])
+    compileOnly fileTree(dir: "$project.rootDir/artifacts/android-studio/plugins/git4idea/lib",
+                         includes: ["*.jar"])
+    testCompile fileTree(dir: "$project.rootDir/artifacts/android-studio/plugins/git4idea/lib",
+                         includes: ["*.jar"])
+  } else {
+    compileOnly fileTree(dir: "$project.rootDir/artifacts/ideaIC/plugins/git4idea/lib",
+                         includes: ["*.jar"])
+    testCompile fileTree(dir: "$project.rootDir/artifacts/ideaIC/plugins/git4idea/lib",
                          includes: ["*.jar"])
   }
   compileOnly fileTree(dir: "$project.rootDir/lib/jxbrowser",

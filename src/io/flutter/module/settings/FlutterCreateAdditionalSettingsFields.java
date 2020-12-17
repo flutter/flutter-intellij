@@ -6,7 +6,9 @@
 package io.flutter.module.settings;
 
 import com.intellij.ide.util.projectWizard.SettingsStep;
+import com.intellij.openapi.ui.DialogPanel;
 import com.intellij.ui.DocumentAdapter;
+import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
@@ -14,10 +16,12 @@ import io.flutter.module.FlutterProjectType;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
 import java.awt.Component;
+import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.util.function.Supplier;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
+import javax.swing.border.AbstractBorder;
 import javax.swing.event.DocumentEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,12 +32,11 @@ public class FlutterCreateAdditionalSettingsFields {
   private final RadiosForm androidLanguageRadios;
   private final RadiosForm iosLanguageRadios;
   private final ProjectType projectTypeForm;
+  private final PlatformsForm platformsForm;
   private final FlutterCreateParams createParams;
   private SettingsHelpForm helpForm;
-
-  public FlutterCreateAdditionalSettingsFields() {
-    this(new FlutterCreateAdditionalSettings(), null);
-  }
+  @SuppressWarnings("FieldCanBeLocal")
+  private DialogPanel panel;
 
   public FlutterCreateAdditionalSettingsFields(FlutterCreateAdditionalSettings additionalSettings,
                                                Supplier<? extends FlutterSdk> getSdk) {
@@ -42,8 +45,9 @@ public class FlutterCreateAdditionalSettingsFields {
     projectTypeForm = new ProjectType(getSdk);
     projectTypeForm.addListener(e -> {
       if (e.getStateChange() == ItemEvent.SELECTED) {
-        settings.setType(projectTypeForm.getType());
-        changeVisibility(projectTypeForm.getType());
+        FlutterProjectType type = projectTypeForm.getType();
+        settings.setType(type);
+        changeVisibility(type);
       }
     });
 
@@ -87,6 +91,7 @@ public class FlutterCreateAdditionalSettingsFields {
     );
     iosLanguageRadios.setToolTipText(FlutterBundle.message("flutter.module.create.settings.radios.ios.tip"));
 
+    platformsForm = new PlatformsForm(getSdk);
     createParams = new FlutterCreateParams();
   }
 
@@ -132,10 +137,21 @@ public class FlutterCreateAdditionalSettingsFields {
                                     projectTypeForm.getComponent());
     }
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.org.label"), orgField);
+    addBorder(androidLanguageRadios.getComponent(), false);
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.android.label"),
                                   androidLanguageRadios.getComponent());
+    addBorder(iosLanguageRadios.getComponent(), false);
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.ios.label"),
                                   iosLanguageRadios.getComponent());
+    if (projectTypeHasPlatforms()) {
+      platformsForm.initChannel();
+      if (platformsForm.shouldBeVisible()) {
+        panel = platformsForm.panel(settings);
+        addBorder(panel, true);
+        settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.platforms.label"), panel);
+      }
+    }
+
     if (!FlutterUtils.isAndroidStudio()) {
       // In IntelliJ the help form appears on the second page of the wizard, along with the project type selection drop-down.
       settingsStep.addSettingsComponent(new SettingsHelpForm().getComponent());
@@ -144,9 +160,23 @@ public class FlutterCreateAdditionalSettingsFields {
     settingsStep.addSettingsComponent(createParams.setInitialValues().getComponent());
   }
 
+  private void addBorder(JComponent c, boolean left) {
+    // #addSettingsField() moves the second item up by 5.
+    // We also add a bit to the left of the panel to make the check box line up with the radio button.
+    c.setBorder(new AbstractBorder() {
+      public Insets getBorderInsets(Component c, Insets insets) {
+        return JBUI.insets(5, left ? 3 : 0, 0, 0);
+      }
+    });
+  }
+
+  private boolean projectTypeHasPlatforms() {
+    return settings.getType() == FlutterProjectType.APP || settings.getType() == FlutterProjectType.PLUGIN;
+  }
+
   public void updateProjectType(FlutterProjectType projectType) {
     if (FlutterUtils.isNewAndroidStudioProjectWizard()) {
-      getAdditionalSettings().setType(projectType);
+      settings.setType(projectType);
       if (projectTypeForm.getType() == projectType) {
         projectTypeForm.getProjectTypeCombo().setSelectedItem(FlutterProjectType.PLUGIN); // Set to something other than default.
       }
@@ -163,6 +193,12 @@ public class FlutterCreateAdditionalSettingsFields {
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
       .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
       .setOffline(createParams.isOfflineSelected())
+      .setPlatformAndroid(platformsForm.shouldBeVisible() ? settings.getPlatformAndroid() : null)
+      .setPlatformIos(platformsForm.shouldBeVisible() ? settings.getPlatformIos() : null)
+      .setPlatformLinux(platformsForm.shouldBeVisible() ? settings.getPlatformLinux() : null)
+      .setPlatformMacos(platformsForm.shouldBeVisible() ? settings.getPlatformMacos() : null)
+      .setPlatformWeb(platformsForm.shouldBeVisible() ? settings.getPlatformWeb() : null)
+      .setPlatformWindows(platformsForm.shouldBeVisible() ? settings.getPlatformWindows() : null)
       .build();
   }
 

@@ -39,6 +39,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DevToolsService {
   private static final Logger LOG = Logger.getInstance(DevToolsService.class);
@@ -49,7 +50,7 @@ public class DevToolsService {
   @NotNull private final Project project;
   private DaemonApi daemonApi;
   private ProcessHandler process;
-  private CompletableFuture<DevToolsInstance> devToolsInstance = new CompletableFuture<>();
+  private AtomicReference<CompletableFuture<DevToolsInstance>> devToolsFutureRef = new AtomicReference<>(null);
 
   @NotNull
   public static DevToolsService getInstance(@NotNull final Project project) {
@@ -58,7 +59,29 @@ public class DevToolsService {
 
   private DevToolsService(@NotNull final Project project) {
     this.project = project;
+  }
 
+  public CompletableFuture<DevToolsInstance> getDevToolsInstance() {
+    // Create instance if it doesn't exist yet, or if the previous attempt failed.
+    if (devToolsFutureRef.compareAndSet(null, new CompletableFuture<>())) {
+      startServer();
+    }
+
+    if (devToolsFutureRef.updateAndGet((future) -> {
+      if (future.isCompletedExceptionally()) {
+        return null;
+      } else {
+        return future;
+      }
+    }) == null) {
+      devToolsFutureRef.set(new CompletableFuture<>());
+      startServer();
+    }
+
+    return devToolsFutureRef.get();
+  }
+
+  private void startServer() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       // TODO(helinx): Also use `setUpWithDaemon` for later flutter SDK versions where the daemon request `devtools.serve` has been changed
       //  to use the latest DevTools server.
@@ -72,15 +95,11 @@ public class DevToolsService {
     });
   }
 
-  public CompletableFuture<DevToolsInstance> getDevToolsInstance() {
-    return devToolsInstance;
-  }
-
   private void setUpWithDaemon() {
     try {
       final GeneralCommandLine command = chooseCommand(project);
       if (command == null) {
-        LOG.info("Unable to find daemon command for project: " + project);
+        logExceptionAndComplete("Unable to find daemon command for project: " + project);
         return;
       }
       this.process = new MostlySilentOsProcessHandler(command);
@@ -92,23 +111,21 @@ public class DevToolsService {
           return;
         }
         if (address == null) {
-          Exception error = new Exception("DevTools address was null");
-          LOG.error(error);
-          devToolsInstance.completeExceptionally(error);
+          logExceptionAndComplete("DevTools address was null");
         }
         else {
-          devToolsInstance.complete(new DevToolsInstance(address.host, address.port));
+          devToolsFutureRef.get().complete(new DevToolsInstance(address.host, address.port));
         }
       });
     }
     catch (ExecutionException e) {
-      e.printStackTrace();
+      logExceptionAndComplete(e);
     }
 
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
       @Override
       public void projectClosing(@NotNull Project project) {
-        devToolsInstance = new CompletableFuture<>();
+        devToolsFutureRef.set(null);
 
         try {
           daemonApi.daemonShutdown().get(5, TimeUnit.SECONDS);
@@ -126,10 +143,17 @@ public class DevToolsService {
   private void setUpWithPub() {
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     if (sdk == null) {
+      logExceptionAndComplete("Flutter SDK is null");
       return;
     }
 
-    pubActivateDevTools(sdk).thenAccept(result -> pubRunDevTools(sdk));
+    pubActivateDevTools(sdk).thenAccept(success -> {
+      if (success) {
+        pubRunDevTools(sdk);
+      } else {
+        logExceptionAndComplete("pub activate of DevTools failed");
+      }
+    });
   }
 
   private void pubRunDevTools(FlutterSdk sdk) {
@@ -137,6 +161,7 @@ public class DevToolsService {
 
     final OSProcessHandler handler = command.startProcessOrShowError(project);
     if (handler == null) {
+      logExceptionAndComplete("Handler was null for command: " + command.toString());
       return;
     }
 
@@ -158,13 +183,15 @@ public class DevToolsService {
             final int port = JsonUtils.getIntMember(params, "port");
 
             if (port != -1) {
-              devToolsInstance.complete(new DevToolsInstance(host, port));
+              devToolsFutureRef.get().complete(new DevToolsInstance(host, port));
             }
             else {
+              logExceptionAndComplete("DevTools port was invalid");
               handler.destroyProcess();
             }
           }
           catch (JsonSyntaxException e) {
+            logExceptionAndComplete(e);
             handler.destroyProcess();
           }
         }
@@ -176,7 +203,7 @@ public class DevToolsService {
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
       @Override
       public void projectClosing(@NotNull Project project) {
-        devToolsInstance = new CompletableFuture<>();
+        devToolsFutureRef.set(null);
         handler.destroyProcess();
       }
     });
@@ -205,6 +232,18 @@ public class DevToolsService {
     }
 
     return result;
+  }
+
+  private void logExceptionAndComplete(String message) {
+    logExceptionAndComplete(new Exception(message));
+  }
+
+  private void logExceptionAndComplete(Exception exception) {
+    LOG.error(exception);
+    final CompletableFuture<DevToolsInstance> future = devToolsFutureRef.get();
+    if (future != null) {
+      future.completeExceptionally(exception);
+    }
   }
 
   private static GeneralCommandLine chooseCommand(@NotNull final Project project) {

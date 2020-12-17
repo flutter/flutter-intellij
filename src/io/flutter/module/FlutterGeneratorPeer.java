@@ -7,6 +7,7 @@ package io.flutter.module;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.projectWizard.WizardContext;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
@@ -20,6 +21,7 @@ import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.module.settings.SettingsHelpForm;
+import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import javax.swing.ComboBoxEditor;
 import javax.swing.JComponent;
@@ -67,6 +69,8 @@ public class FlutterGeneratorPeer {
     mySdkPathComboWithBrowse.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
                                                      FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                                                      TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
+    mySdkPathComboWithBrowse.getComboBox().addActionListener(e -> fillSdkCache());
+    fillSdkCache();
 
     final JTextComponent editorComponent = (JTextComponent)getSdkEditor().getEditorComponent();
     editorComponent.getDocument().addDocumentListener(new DocumentAdapter() {
@@ -78,6 +82,19 @@ public class FlutterGeneratorPeer {
 
     errorIcon.setVisible(false);
     errorPane.setVisible(false);
+  }
+
+  private void fillSdkCache() {
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      String path = (String)mySdkPathComboWithBrowse.getComboBox().getSelectedItem();
+      if (path != null) {
+        FlutterSdk sdk = FlutterSdk.forPath(path);
+        if (sdk != null) {
+          sdk.queryConfiguredPlatforms(false);
+          sdk.queryFlutterChannel(false);
+        }
+      }
+    });
   }
 
   @SuppressWarnings("EmptyMethod")
