@@ -78,12 +78,11 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Configure Flutter project parameters that are common to all types.
  */
-public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel> implements InstallSdkAction.Model {
+public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel> {
   private final JBScrollPane myRootPanel;
   private final ValidatorPanel myValidatorPanel;
   private final BindingsManager myBindings = new BindingsManager();
   private final ListenerManager myListeners = new ListenerManager();
-  private final InstallSdkAction myInstallSdkAction;
   private boolean hasEntered = false;
   private OptionalValueProperty<FlutterProjectType> myProjectType;
   private StringValueProperty myDownloadErrorMessage = new StringValueProperty();
@@ -97,10 +96,6 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   private ComboboxWithBrowseButton myFlutterSdkPath;
   private JLabel myHeading;
   private JPanel myLocationPanel;
-  private LinkLabel myInstallActionLink;
-  private JProgressBar myProgressBar;
-  private JLabel myCancelProgressButton;
-  private JTextPane myProgressText;
   private FlutterCreateParams myCreateParams;
   private Color sdkBackgroundColor;
 
@@ -108,7 +103,6 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     super(model, title, icon);
     myProjectType = new OptionalValueProperty<>(type);
     myValidatorPanel = new ValidatorPanel(this, myPanel);
-    myInstallSdkAction = new InstallSdkAction(this);
     myRootPanel = wrappedWithVScroll(myValidatorPanel);
     FormScalingUtil.scaleComponentTree(this.getClass(), myRootPanel);
   }
@@ -169,33 +163,6 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     else {
       myCreateParams.getOfflineCheckbox().setText("Create module offline");
     }
-
-    // Initialization of the SDK install UI was copied from FlutterGeneratorPeer.
-
-    // Hide pending real content.
-    myProgressBar.setVisible(false);
-    myProgressText.setVisible(false);
-    myCancelProgressButton.setVisible(false);
-
-    myInstallActionLink.setIcon(myInstallSdkAction.getLinkIcon());
-    myInstallActionLink.setDisabledIcon(IconLoader.getDisabledIcon(myInstallSdkAction.getLinkIcon()));
-
-    myInstallActionLink.setText(myInstallSdkAction.getLinkText());
-
-    //noinspection unchecked
-    myInstallActionLink.setListener((label, linkUrl) ->
-                                      myInstallSdkAction.actionPerformed(null), null);
-
-    myProgressText.setFont(UIUtil.getLabelFont(UIUtil.FontSize.NORMAL).deriveFont(Font.ITALIC));
-
-    // Some feedback on hover.
-    myCancelProgressButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    myCancelProgressButton.addMouseListener(new MouseAdapter() {
-      @Override
-      public void mouseClicked(MouseEvent e) {
-        myListener.actionCanceled();
-      }
-    });
   }
 
   private void updateSdkField(JTextComponent sdkEditor) {
@@ -360,62 +327,6 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     }
     allSteps.add(new FlutterSettingsStep(getModel(), getTitle(), getIcon()));
     return allSteps;
-  }
-
-  @Override
-  public void setSdkPath(String path) {
-    mySdkPathContent = (String)myFlutterSdkPath.getComboBox().getEditor().getItem();
-    myFlutterSdkPath.getComboBox().getEditor().setItem(path);
-    myDownloadErrorMessage.set("");
-  }
-
-  @Override
-  public boolean validate() {
-    setSdkPath(mySdkPathContent);
-    ensureComboModelContainsCurrentItem(myFlutterSdkPath.getComboBox());
-    return false;
-  }
-
-  @Override
-  public void requestNextStep() {
-    // Called when the download process completes.
-    ensureComboModelContainsCurrentItem(myFlutterSdkPath.getComboBox());
-  }
-
-  @Override
-  public void setErrorDetails(String details) {
-    // Setting this doesn't do much since the first validation error encountered is displayed, not the most recent.
-    myDownloadErrorMessage.set(details == null ? "" : details);
-  }
-
-  @Override
-  public ComboboxWithBrowseButton getSdkComboBox() {
-    return myFlutterSdkPath;
-  }
-
-  @Override
-  public void addCancelActionListener(InstallSdkAction.CancelActionListener listener) {
-    myListener = listener;
-  }
-
-  @Override
-  public JProgressBar getProgressBar() {
-    return myProgressBar;
-  }
-
-  @Override
-  public LinkLabel getInstallActionLink() {
-    return myInstallActionLink;
-  }
-
-  @Override
-  public JTextPane getProgressText() {
-    return myProgressText;
-  }
-
-  @Override
-  public JLabel getCancelProgressButton() {
-    return myCancelProgressButton;
   }
 
   @NotNull
