@@ -22,8 +22,8 @@ import com.android.tools.idea.observable.ui.SelectedItemProperty;
 import com.android.tools.idea.observable.ui.SelectedProperty;
 import com.android.tools.idea.observable.ui.TextProperty;
 import com.android.tools.idea.ui.validation.validators.PathValidator;
-import com.android.tools.idea.ui.wizard.deprecated.StudioWizardStepPanel;
 import com.android.tools.idea.ui.wizard.WizardUtils;
+import com.android.tools.idea.ui.wizard.deprecated.StudioWizardStepPanel;
 import com.android.tools.idea.wizard.model.ModelWizard;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
@@ -35,28 +35,20 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ui.configuration.ProjectStructureConfigurable;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.ui.ColorUtil;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.ui.components.labels.LinkLabel;
-import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
-import io.flutter.actions.InstallSdkAction;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.module.settings.FlutterCreateParams;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
@@ -67,9 +59,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
 import org.jetbrains.annotations.NotNull;
@@ -78,17 +68,14 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Configure Flutter project parameters that are common to all types.
  */
-public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel> implements InstallSdkAction.Model {
+public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel> {
   private final JBScrollPane myRootPanel;
   private final ValidatorPanel myValidatorPanel;
   private final BindingsManager myBindings = new BindingsManager();
   private final ListenerManager myListeners = new ListenerManager();
-  private final InstallSdkAction myInstallSdkAction;
   private boolean hasEntered = false;
   private OptionalValueProperty<FlutterProjectType> myProjectType;
   private StringValueProperty myDownloadErrorMessage = new StringValueProperty();
-  private InstallSdkAction.CancelActionListener myListener;
-  private String mySdkPathContent = "";
 
   private JPanel myPanel;
   private JTextField myProjectName;
@@ -97,10 +84,6 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   private ComboboxWithBrowseButton myFlutterSdkPath;
   private JLabel myHeading;
   private JPanel myLocationPanel;
-  private LinkLabel myInstallActionLink;
-  private JProgressBar myProgressBar;
-  private JLabel myCancelProgressButton;
-  private JTextPane myProgressText;
   private FlutterCreateParams myCreateParams;
   private Color sdkBackgroundColor;
 
@@ -108,7 +91,6 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     super(model, title, icon);
     myProjectType = new OptionalValueProperty<>(type);
     myValidatorPanel = new ValidatorPanel(this, myPanel);
-    myInstallSdkAction = new InstallSdkAction(this);
     myRootPanel = wrappedWithVScroll(myValidatorPanel);
     FormScalingUtil.scaleComponentTree(this.getClass(), myRootPanel);
   }
@@ -169,33 +151,6 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     else {
       myCreateParams.getOfflineCheckbox().setText("Create module offline");
     }
-
-    // Initialization of the SDK install UI was copied from FlutterGeneratorPeer.
-
-    // Hide pending real content.
-    myProgressBar.setVisible(false);
-    myProgressText.setVisible(false);
-    myCancelProgressButton.setVisible(false);
-
-    myInstallActionLink.setIcon(myInstallSdkAction.getLinkIcon());
-    myInstallActionLink.setDisabledIcon(IconLoader.getDisabledIcon(myInstallSdkAction.getLinkIcon()));
-
-    myInstallActionLink.setText(myInstallSdkAction.getLinkText());
-
-    //noinspection unchecked
-    myInstallActionLink.setListener((label, linkUrl) ->
-                                      myInstallSdkAction.actionPerformed(null), null);
-
-    myProgressText.setFont(UIUtil.getLabelFont(UIUtil.FontSize.NORMAL).deriveFont(Font.ITALIC));
-
-    // Some feedback on hover.
-    myCancelProgressButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    myCancelProgressButton.addMouseListener(new MouseAdapter() {
-      @Override
-      public void mouseClicked(MouseEvent e) {
-        myListener.actionCanceled();
-      }
-    });
   }
 
   private void updateSdkField(JTextComponent sdkEditor) {
@@ -321,7 +276,6 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     }
     myHeading.setText(heading);
     myDownloadErrorMessage.set("");
-    mySdkPathContent = (String)myFlutterSdkPath.getComboBox().getEditor().getItem();
 
     // Set default values for text fields, but only do so the first time the page is shown.
     String descrText = "";
@@ -362,62 +316,6 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     return allSteps;
   }
 
-  @Override
-  public void setSdkPath(String path) {
-    mySdkPathContent = (String)myFlutterSdkPath.getComboBox().getEditor().getItem();
-    myFlutterSdkPath.getComboBox().getEditor().setItem(path);
-    myDownloadErrorMessage.set("");
-  }
-
-  @Override
-  public boolean validate() {
-    setSdkPath(mySdkPathContent);
-    ensureComboModelContainsCurrentItem(myFlutterSdkPath.getComboBox());
-    return false;
-  }
-
-  @Override
-  public void requestNextStep() {
-    // Called when the download process completes.
-    ensureComboModelContainsCurrentItem(myFlutterSdkPath.getComboBox());
-  }
-
-  @Override
-  public void setErrorDetails(String details) {
-    // Setting this doesn't do much since the first validation error encountered is displayed, not the most recent.
-    myDownloadErrorMessage.set(details == null ? "" : details);
-  }
-
-  @Override
-  public ComboboxWithBrowseButton getSdkComboBox() {
-    return myFlutterSdkPath;
-  }
-
-  @Override
-  public void addCancelActionListener(InstallSdkAction.CancelActionListener listener) {
-    myListener = listener;
-  }
-
-  @Override
-  public JProgressBar getProgressBar() {
-    return myProgressBar;
-  }
-
-  @Override
-  public LinkLabel getInstallActionLink() {
-    return myInstallActionLink;
-  }
-
-  @Override
-  public JTextPane getProgressText() {
-    return myProgressText;
-  }
-
-  @Override
-  public JLabel getCancelProgressButton() {
-    return myCancelProgressButton;
-  }
-
   @NotNull
   private static Validator.Result validateFlutterSdk(String sdkPath) {
     if (!sdkPath.isEmpty()) {
@@ -455,6 +353,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     comboBox.setSelectedItem(currentItem); // to set focus on current item in combo popup
     comboBox.getEditor().setItem(currentItem); // to set current item in combo itself
   }
+
   /**
    * When creating a StudioWizardStepPanel which may be so tall as to require vertical scrolling,
    * using this helper method to automatically wrap it with an appropriate JScrollPane.
@@ -465,5 +364,4 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     sp.setBorder(BorderFactory.createEmptyBorder());
     return sp;
   }
-
 }
