@@ -47,7 +47,7 @@ void copyResources({String from, String to}) {
 }
 
 List<BuildSpec> createBuildSpecs(ProductCommand command) {
-  var specs = List<BuildSpec>();
+  var specs = <BuildSpec>[];
   var input = readProductMatrix();
   input.forEach((json) {
     specs.add(BuildSpec.fromJson(json, command.release));
@@ -58,7 +58,7 @@ List<BuildSpec> createBuildSpecs(ProductCommand command) {
 Future<int> deleteBuildContents() async {
   final dir = Directory(p.join(rootPath, 'build'));
   if (!dir.existsSync()) throw 'No build directory found';
-  var args = List<String>();
+  var args = <String>[];
   args.add('-rf');
   args.add(p.join(rootPath, 'build', '*'));
   return await exec('rm', args);
@@ -158,7 +158,7 @@ Future<int> moveToArtifacts(ProductCommand cmd, BuildSpec spec) async {
   final dir = Directory(p.join(rootPath, 'artifacts'));
   if (!dir.existsSync()) throw 'No artifacts directory found';
   var file = pluginRegistryIds[spec.pluginId];
-  var args = List<String>();
+  var args = <String>[];
   args.add(p.join(rootPath, 'build', file));
   args.add(cmd.releasesFilePath(spec));
   return await exec('mv', args);

@@ -71,9 +71,13 @@ jxbrowser.license.key=${jxBrowserKey}
     return await runGradleCommand(['buildPlugin'], spec, version, 'false');
   }
 
-  Future<int> runGradleCommand(List<String> command, BuildSpec spec,
-      String version, String testing) async {
-    var javaVersion = ['4.0', '4.1'].contains(spec.version) ? '1.8' : '11';
+  Future<int> runGradleCommand(
+    List<String> command,
+    BuildSpec spec,
+    String version,
+    String testing,
+  ) async {
+    var javaVersion = ['4.1'].contains(spec.version) ? '1.8' : '11';
     final contents = '''
 name = "flutter-intellij"
 org.gradle.parallel=true
@@ -94,13 +98,13 @@ buildSpec=${spec.version}
     // During instrumentation of FlutterProjectStep.form, which is a UTF-8 file.
     try {
       if (Platform.isWindows) {
-        if (spec.version == '4.0' || spec.version == '4.1') {
+        if (spec.version == '4.1') {
           log('CANNOT BUILD ${spec.version} ON WINDOWS');
           return 0;
         }
         result = await exec('.\\gradlew.bat', command);
       } else {
-        if (spec.version == '4.0' || spec.version == '4.1') {
+        if (spec.version == '4.1') {
           return await runShellScript(command, spec);
         } else {
           result = await exec('./gradlew', command);
