@@ -9,6 +9,8 @@ import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.hint.HintManagerImpl;
 import com.intellij.codeInsight.hint.HintUtil;
 import com.intellij.concurrency.JobScheduler;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.ide.actions.SaveAllAction;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationGroup;
@@ -28,6 +30,8 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -46,9 +50,12 @@ import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterAppAction;
 import io.flutter.actions.ProjectActions;
 import io.flutter.actions.ReloadFlutterApp;
+import io.flutter.bazel.Workspace;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.MostlySilentOsProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -164,6 +171,10 @@ public class FlutterReloadManager {
     final FlutterApp.State previousAppState = app.transitionStartingHotReload();
 
     JobScheduler.getScheduler().schedule(() -> {
+      if (WorkspaceCache.getInstance(myProject).isBazel()) {
+        syncFiles();
+      }
+
       clearLastNotification();
 
       if (!app.isConnected()) {
@@ -201,6 +212,27 @@ public class FlutterReloadManager {
         }
       });
     }, 0, TimeUnit.MILLISECONDS);
+  }
+
+  private void syncFiles() {
+    final Workspace workspace = WorkspaceCache.getInstance(myProject).get();
+    assert workspace != null;
+
+    final String script = workspace.getRoot().getPath() + "/" + workspace.getSyncScript();
+    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workspace.getRoot().getPath());
+    commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
+    commandLine.setExePath(FileUtil.toSystemDependentName(script));
+
+    try {
+      final MostlySilentOsProcessHandler handler = new MostlySilentOsProcessHandler(commandLine, true);
+      handler.startNotify();
+      if (!handler.getProcess().waitFor(10, TimeUnit.SECONDS)) {
+        LOG.error("Syncing files timed out");
+      }
+    }
+    catch (ExecutionException | InterruptedException e) {
+      LOG.error("Unable to sync files: " + e);
+    }
   }
 
   private void reloadApp(@NotNull FlutterApp app, @NotNull String reason) {

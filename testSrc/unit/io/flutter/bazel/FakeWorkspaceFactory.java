@@ -21,6 +21,7 @@ public class FakeWorkspaceFactory {
     @Nullable String launchScript,
     @Nullable String testScript,
     @Nullable String runScript,
+    @Nullable String syncScript,
     @Nullable String sdkHome,
     @Nullable String versionFile,
     @Nullable String devtoolsScript
@@ -39,6 +40,12 @@ public class FakeWorkspaceFactory {
     if (testScript != null) {
       fs.file("/workspace/" + testScript, "");
     }
+    if (runScript != null) {
+      fs.file("/workspace/" + runScript, "");
+    }
+    if (syncScript != null) {
+      fs.file("/workspace/" + syncScript, "");
+    }
     if (sdkHome != null) {
       fs.file("/workspace/" + sdkHome, "");
     }
@@ -55,6 +62,7 @@ public class FakeWorkspaceFactory {
           launchScript,
           testScript,
           runScript,
+          syncScript,
           sdkHome,
           versionFile,
           devtoolsScript
@@ -76,6 +84,7 @@ public class FakeWorkspaceFactory {
       "scripts/bazel-run.sh",
       "scripts/flutter-test.sh",
       "scripts/flutter-run.sh",
+      "scripts/flutter-sync.sh",
       "scripts/",
       "flutter-version",
       "scripts/devtools:server"
