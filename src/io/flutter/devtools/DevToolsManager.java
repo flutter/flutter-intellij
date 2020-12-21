@@ -132,10 +132,6 @@ public class DevToolsManager {
     return result;
   }
 
-  public void openBrowserAndConnect(FlutterApp app, String uri) {
-    openBrowserAndConnect(app, uri, null);
-  }
-
   public void openBrowserAndConnect(FlutterApp app, String uri, String screen) {
     openBrowserImpl(app, uri, screen);
   }
