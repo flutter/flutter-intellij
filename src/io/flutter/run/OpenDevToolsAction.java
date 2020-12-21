@@ -5,21 +5,24 @@
  */
 package io.flutter.run;
 
+import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
 import io.flutter.ObservatoryConnector;
-import io.flutter.devtools.DevToolsManager;
+import io.flutter.devtools.DevToolsUtils;
+import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.concurrent.CompletableFuture;
-
 public class OpenDevToolsAction extends DumbAwareAction {
+  private static final Logger LOG = Logger.getInstance(OpenDevToolsAction.class);
   private final @Nullable ObservatoryConnector myConnector;
   private final Computable<Boolean> myIsApplicable;
   private final FlutterApp myApp;
@@ -57,30 +60,23 @@ public class OpenDevToolsAction extends DumbAwareAction {
       return;
     }
 
-    final DevToolsManager devToolsManager = DevToolsManager.getInstance(project);
 
-    if (myConnector == null) {
-      if (devToolsManager.hasInstalledDevTools()) {
-        devToolsManager.openBrowser(myApp);
-      }
-      else {
-        final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-        result.thenAccept(o -> devToolsManager.openBrowser(myApp));
-      }
-    }
-    else {
-      final String urlString = myConnector.getBrowserUrl();
-      if (urlString == null) {
+    AsyncUtils.whenCompleteUiThread(DevToolsService.getInstance(project).getDevToolsInstance(), (instance, ex) -> {
+      if (ex != null) {
+        LOG.error(ex);
         return;
       }
 
-      if (devToolsManager.hasInstalledDevTools()) {
-        devToolsManager.openBrowserAndConnect(myApp, urlString);
+      if (project.isDisposed()) {
+        return;
       }
-      else {
-        final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-        result.thenAccept(o -> devToolsManager.openBrowserAndConnect(myApp, urlString));
-      }
-    }
+
+      final String serviceUrl = myConnector != null && myConnector.getBrowserUrl() != null ? myConnector.getBrowserUrl() : null;
+
+      BrowserLauncher.getInstance().browse(
+        DevToolsUtils.generateDevToolsUrl(instance.host, instance.port, serviceUrl, null, false),
+        null
+      );
+    });
   }
 }
