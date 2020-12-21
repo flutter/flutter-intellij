@@ -9,6 +9,8 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.ToolWindow;
@@ -61,6 +63,16 @@ public class EmbeddedBrowser {
       LOG.error(ex);
       FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(ex), false);
     }
+
+    ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
+      @Override
+      public void projectClosing(@NotNull Project project) {
+        if (browser != null) {
+          browser.close();
+          browser = null;
+        }
+      }
+    });
   }
 
   public void openPanel(ContentManager contentManager, String tabName, String url) {
