@@ -816,6 +816,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 }
 
 class FlutterViewDevToolsAction extends FlutterViewAction {
+  private static final Logger LOG = Logger.getInstance(FlutterViewDevToolsAction.class);
   FlutterViewDevToolsAction(@NotNull FlutterApp app) {
     super(app, "Open DevTools", "Open Dart DevTools", FlutterIcons.Dart_16);
   }
@@ -828,15 +829,21 @@ class FlutterViewDevToolsAction extends FlutterViewAction {
         return;
       }
 
-      final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
+      AsyncUtils.whenCompleteUiThread(DevToolsService.getInstance(app.getProject()).getDevToolsInstance(), (instance, ex) -> {
+        if (app.getProject().isDisposed()) {
+          return;
+        }
 
-      if (devToolsManager.hasInstalledDevTools()) {
-        devToolsManager.openBrowserAndConnect(app, urlString);
-      }
-      else {
-        final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-        result.thenAccept(o -> devToolsManager.openBrowserAndConnect(app, urlString));
-      }
+        if (ex != null) {
+          LOG.error(ex);
+          return;
+        }
+
+        BrowserLauncher.getInstance().browse(
+          DevToolsUtils.generateDevToolsUrl(instance.host, instance.port, urlString, null, false),
+          null
+        );
+      });
     }
   }
 }
