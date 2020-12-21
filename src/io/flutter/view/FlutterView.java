@@ -44,7 +44,6 @@ import com.intellij.xdebugger.XSourcePosition;
 import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
-import io.flutter.devtools.DevToolsManager;
 import io.flutter.devtools.DevToolsUtils;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.InspectorGroupManagerService;
@@ -483,12 +482,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   protected void handleJxBrowserInstallationInProgress(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
     final JxBrowserManager jxBrowserManager = JxBrowserManager.getInstance();
-    final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
     presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_IN_PROGRESS_LABEL);
-
-    // Start devtools while waiting for JxBrowser download.
-    devToolsManager.installDevTools();
 
     if (jxBrowserManager.getStatus().equals(JxBrowserStatus.INSTALLED)) {
       handleJxBrowserInstalled(app, inspectorService, toolWindow);
