@@ -67,7 +67,7 @@ public class OpenDevToolsAction extends DumbAwareAction {
         return;
       }
 
-      if (project == null) {
+      if (project.isDisposed()) {
         return;
       }
 
