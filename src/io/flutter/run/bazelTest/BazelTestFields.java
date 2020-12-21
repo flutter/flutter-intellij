@@ -63,14 +63,10 @@ public class BazelTestFields {
 
   private String getTestScriptFromWorkspace(@NotNull Project project) {
     final Workspace workspace = getWorkspace(project);
+    assert workspace != null;
     String testScript = workspace.getTestScript();
-    // Fall back on the regular launch script if the test script is not available.
-    if (testScript == null) {
-      testScript = workspace.getLaunchScript();
-    }
-    if (testScript != null) {
-      testScript = workspace.getRoot().getPath() + "/" + testScript;
-    }
+    assert testScript != null;
+    testScript = workspace.getRoot().getPath() + "/" + testScript;
     return testScript;
   }
 

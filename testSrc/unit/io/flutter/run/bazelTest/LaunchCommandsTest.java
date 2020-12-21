@@ -171,62 +171,12 @@ public class LaunchCommandsTest {
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
 
-
-  @Test
-  public void producesCorrectCommandLineForBazelTargetWithoutTestScript() throws ExecutionException {
-    final BazelTestFields fields = new FakeBazelTestFields(
-      BazelTestFields.forTarget("//foo:test", null),
-      "scripts/daemon.sh",
-      "scripts/doctor.sh",
-      "scripts/launch.sh",
-      null,
-      null,
-      null,
-      null,
-      null
-    );
-    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
-
-    final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/launch.sh");
-    expectedCommandLine.add("--no-color");
-    expectedCommandLine.add("--machine");
-    expectedCommandLine.add("//foo:test");
-    assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
-  }
-
-  @Test
-  public void producesCorrectCommandLineForBazelTargetWithoutTestScriptInDebugMode() throws ExecutionException {
-    final BazelTestFields fields = new FakeBazelTestFields(
-      BazelTestFields.forTarget("//foo:test", null),
-      "scripts/daemon.sh",
-      "scripts/doctor.sh",
-      "scripts/launch.sh",
-      null,
-      null,
-      null,
-      null,
-      null
-    );
-    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.DEBUG);
-
-    final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/launch.sh");
-    expectedCommandLine.add("--no-color");
-    expectedCommandLine.add("--machine");
-    expectedCommandLine.add("//foo:test");
-    expectedCommandLine.add("--");
-    expectedCommandLine.add("--enable-debugging");
-    assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
-  }
-
   @Test
   public void failsForFileWithoutTestScript() {
     final BazelTestFields fields = new FakeBazelTestFields(
       BazelTestFields.forFile("/workspace/foo/test/foo_test.dart", null),
       "scripts/daemon.sh",
       "scripts/doctor.sh",
-      "scripts/launch.sh",
       null,
       null,
       null,
@@ -249,7 +199,6 @@ public class LaunchCommandsTest {
       BazelTestFields.forTestName("first test", "/workspace/foo/test/foo_test.dart", null),
       "scripts/daemon.sh",
       "scripts/doctor.sh",
-      "scripts/launch.sh",
       null,
       null,
       null,
@@ -272,7 +221,6 @@ public class LaunchCommandsTest {
       new BazelTestFields(null, "/workspace/foo/test/foo_test.dart", "//foo:test", "--ignored-args"),
       "scripts/daemon.sh",
       "scripts/doctor.sh",
-      "scripts/launch.sh",
       null,
       null,
       null,
@@ -331,7 +279,6 @@ public class LaunchCommandsTest {
     FakeBazelTestFields(@NotNull BazelTestFields template,
                         @Nullable String daemonScript,
                         @Nullable String doctorScript,
-                        @Nullable String launchScript,
                         @Nullable String testScript,
                         @Nullable String runScript,
                         @Nullable String syncScript,
@@ -339,7 +286,7 @@ public class LaunchCommandsTest {
                         @Nullable String versionFile) {
       super(template);
       final Pair.NonNull<MockVirtualFileSystem, Workspace> pair = FakeWorkspaceFactory
-        .createWorkspaceAndFilesystem(daemonScript, doctorScript, launchScript, testScript, runScript, syncScript, sdkHome, versionFile, null);
+        .createWorkspaceAndFilesystem(daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile);
       fs = pair.first;
       fakeWorkspace = pair.second;
     }
