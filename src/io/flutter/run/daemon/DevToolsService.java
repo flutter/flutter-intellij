@@ -101,7 +101,7 @@ public class DevToolsService {
     try {
       final GeneralCommandLine command = chooseCommand(project);
       if (command == null) {
-        logExceptionAndComplete("Unable to find daemon command for project: " + project);
+        logExceptionAndComplete("Unable to find daemon command for project");
         return;
       }
       this.process = new MostlySilentOsProcessHandler(command);
@@ -163,7 +163,7 @@ public class DevToolsService {
 
     final OSProcessHandler handler = command.startProcessOrShowError(project);
     if (handler == null) {
-      logExceptionAndComplete("Handler was null for command: " + command.toString());
+      logExceptionAndComplete("Handler was null for pub global run command");
       return;
     }
 
