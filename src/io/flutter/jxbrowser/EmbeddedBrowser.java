@@ -42,6 +42,7 @@ public class EmbeddedBrowser {
     return ServiceManager.getService(project, EmbeddedBrowser.class);
   }
 
+  private Engine engine;
   private Browser browser;
 
   private EmbeddedBrowser(Project project) {
@@ -54,7 +55,7 @@ public class EmbeddedBrowser {
         .build();
 
     try {
-      final Engine engine = Engine.newInstance(options);
+      this.engine = Engine.newInstance(options);
       this.browser = engine.newBrowser();
       browser.settings().enableTransparentBackground();
     } catch (UnsupportedRenderingModeException ex) {
@@ -69,7 +70,9 @@ public class EmbeddedBrowser {
       public void projectClosing(@NotNull Project project) {
         if (browser != null) {
           browser.close();
+          engine.close();
           browser = null;
+          engine = null;
         }
       }
     });
