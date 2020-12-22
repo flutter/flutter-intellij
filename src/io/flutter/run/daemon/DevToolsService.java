@@ -24,7 +24,9 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
+import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
@@ -99,7 +101,7 @@ public class DevToolsService {
     try {
       final GeneralCommandLine command = chooseCommand(project);
       if (command == null) {
-        logExceptionAndComplete("Unable to find daemon command for project: " + project);
+        logExceptionAndComplete("Unable to find daemon command for project");
         return;
       }
       this.process = new MostlySilentOsProcessHandler(command);
@@ -161,7 +163,7 @@ public class DevToolsService {
 
     final OSProcessHandler handler = command.startProcessOrShowError(project);
     if (handler == null) {
-      logExceptionAndComplete("Handler was null for command: " + command.toString());
+      logExceptionAndComplete("Handler was null for pub global run command");
       return;
     }
 
@@ -240,6 +242,7 @@ public class DevToolsService {
 
   private void logExceptionAndComplete(Exception exception) {
     LOG.error(exception);
+    FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(exception), false);
     final CompletableFuture<DevToolsInstance> future = devToolsFutureRef.get();
     if (future != null) {
       future.completeExceptionally(exception);
