@@ -21,6 +21,7 @@ import com.intellij.openapi.project.ProjectTypeService;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.ui.Messages;
 import icons.FlutterIcons;
+import io.flutter.analytics.TimeTracker;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.pub.PubRoot;
@@ -46,6 +47,8 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
 
   @Override
   public void runActivity(@NotNull Project project) {
+    project.getService(TimeTracker.class).setProjectOpenTime();
+
     // TODO(messick): Remove 'FlutterUtils.isAndroidStudio()' after Android Q sources are published.
     if (FlutterUtils.isAndroidStudio() && AndroidUtils.isAndroidProject(project)) {
       AndroidUtils.addGradleListeners(project);

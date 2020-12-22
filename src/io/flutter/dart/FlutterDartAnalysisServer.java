@@ -23,6 +23,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
+import io.flutter.analytics.TimeTracker;
 import io.flutter.utils.JsonUtils;
 import org.dartlang.analysis.server.protocol.*;
 import org.jetbrains.annotations.NotNull;
@@ -78,6 +79,7 @@ public class FlutterDartAnalysisServer implements Disposable {
         }
       }
     });
+    final Long time = project.getService(TimeTracker.class).millisSinceProjectOpen();
     Disposer.register(project, this);
   }
 
