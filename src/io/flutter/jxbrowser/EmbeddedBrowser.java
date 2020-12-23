@@ -5,14 +5,12 @@
  */
 package io.flutter.jxbrowser;
 
-import com.intellij.openapi.application.ApplicationListener;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
@@ -20,7 +18,6 @@ import com.intellij.ui.content.ContentManager;
 import com.teamdev.jxbrowser.browser.Browser;
 import com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException;
 import com.teamdev.jxbrowser.engine.Engine;
-import com.teamdev.jxbrowser.engine.EngineOptions;
 import com.teamdev.jxbrowser.navigation.event.LoadFinished;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
 import icons.FlutterIcons;
@@ -28,17 +25,10 @@ import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Dimension;
-import java.io.File;
-import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static com.teamdev.jxbrowser.engine.RenderingMode.HARDWARE_ACCELERATED;
-import static com.teamdev.jxbrowser.engine.RenderingMode.OFF_SCREEN;
 
 public class EmbeddedBrowser {
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
-  private static AtomicReference<Engine> engineRef = new AtomicReference<>(null);
 
   @NotNull
   public static EmbeddedBrowser getInstance(Project project) {
@@ -48,16 +38,12 @@ public class EmbeddedBrowser {
   private Browser browser;
 
   private EmbeddedBrowser(Project project) {
-    final String dataPath = JxBrowserManager.DOWNLOAD_PATH + File.separatorChar + "user-data" + File.separatorChar + project.getName();
-    LOG.info("JxBrowser user data path: " + dataPath);
-
-    final EngineOptions options =
-      EngineOptions.newBuilder(SystemInfo.isWindows ? OFF_SCREEN : HARDWARE_ACCELERATED)
-        .userDataDir(Paths.get(dataPath))
-        .build();
-
     try {
-      final Engine engine = getEngine();
+      final Engine engine = EmbeddedBrowserEngine.getInstance().getEngine();
+      if (engine == null) {
+        return;
+      }
+
       this.browser = engine.newBrowser();
       browser.settings().enableTransparentBackground();
     } catch (UnsupportedRenderingModeException ex) {
@@ -67,17 +53,6 @@ public class EmbeddedBrowser {
       FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(ex), false);
     }
 
-    ApplicationManager.getApplication().addApplicationListener(new ApplicationListener() {
-      @Override
-      public boolean canExitApplication() {
-        final Engine engine = engineRef.getAndSet(null);
-        if (engine != null) {
-          engine.close();
-        }
-        return true;
-      }
-    });
-
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
       @Override
       public void projectClosing(@NotNull Project project) {
@@ -86,24 +61,6 @@ public class EmbeddedBrowser {
           browser = null;
         }
       }
-    });
-  }
-
-  private Engine getEngine() {
-    return engineRef.updateAndGet((engine) -> {
-      if (engine != null) {
-        return engine;
-      }
-
-      final String dataPath = JxBrowserManager.DOWNLOAD_PATH + File.separatorChar + "user-data";
-      LOG.info("JxBrowser user data path: " + dataPath);
-
-      final EngineOptions options =
-        EngineOptions.newBuilder(SystemInfo.isWindows ? OFF_SCREEN : HARDWARE_ACCELERATED)
-          .userDataDir(Paths.get(dataPath))
-          .build();
-
-      return Engine.newInstance(options);
     });
   }
 
