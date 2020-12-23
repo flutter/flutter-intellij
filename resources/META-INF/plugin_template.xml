@@ -328,9 +328,6 @@
                     serviceImplementation="io.flutter.perf.FlutterWidgetPerfManager"
                     overrides="false"/>
 
-    <projectService serviceInterface="io.flutter.devtools.DevToolsManager"
-                    serviceImplementation="io.flutter.devtools.DevToolsManager"
-                    overrides="false"/>
     <projectService serviceInterface="io.flutter.editor.ActiveEditorsOutlineService"
                     serviceImplementation="io.flutter.editor.ActiveEditorsOutlineService"
                     overrides="false"/>

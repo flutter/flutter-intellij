@@ -7,6 +7,7 @@ package io.flutter.performance;
 
 import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
@@ -28,10 +29,12 @@ import com.intellij.ui.content.ContentManager;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
-import io.flutter.devtools.DevToolsManager;
+import io.flutter.devtools.DevToolsUtils;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
+import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.view.*;
 import org.jetbrains.annotations.NotNull;
@@ -201,8 +204,21 @@ public class FlutterPerformanceView implements Disposable {
 
     final LinkLabel<String> openDevtools = new LinkLabel<>("Open DevTools...", null);
     openDevtools.setListener((linkLabel, data) -> {
-      final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
-      devToolsManager.openToScreen(app, null);
+      AsyncUtils.whenCompleteUiThread(DevToolsService.getInstance(app.getProject()).getDevToolsInstance(), (instance, ex) -> {
+        if (app.getProject().isDisposed()) {
+          return;
+        }
+
+        if (ex != null) {
+          LOG.error(ex);
+          return;
+        }
+
+        BrowserLauncher.getInstance().browse(
+          DevToolsUtils.generateDevToolsUrl(instance.host, instance.port, app.getConnector().getBrowserUrl(), null, false),
+          null
+        );
+      });
     }, null);
 
     footer.add(runModeLabel, BorderLayout.WEST);
