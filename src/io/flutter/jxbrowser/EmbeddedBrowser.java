@@ -5,6 +5,7 @@
  */
 package io.flutter.jxbrowser;
 
+import com.intellij.openapi.application.ApplicationListener;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -30,19 +31,20 @@ import java.awt.Dimension;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.teamdev.jxbrowser.engine.RenderingMode.HARDWARE_ACCELERATED;
 import static com.teamdev.jxbrowser.engine.RenderingMode.OFF_SCREEN;
 
 public class EmbeddedBrowser {
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
+  private static AtomicReference<Engine> engineRef = new AtomicReference<>(null);
 
   @NotNull
   public static EmbeddedBrowser getInstance(Project project) {
     return ServiceManager.getService(project, EmbeddedBrowser.class);
   }
 
-  private Engine engine;
   private Browser browser;
 
   private EmbeddedBrowser(Project project) {
@@ -55,7 +57,7 @@ public class EmbeddedBrowser {
         .build();
 
     try {
-      this.engine = Engine.newInstance(options);
+      final Engine engine = getEngine();
       this.browser = engine.newBrowser();
       browser.settings().enableTransparentBackground();
     } catch (UnsupportedRenderingModeException ex) {
@@ -65,16 +67,43 @@ public class EmbeddedBrowser {
       FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(ex), false);
     }
 
+    ApplicationManager.getApplication().addApplicationListener(new ApplicationListener() {
+      @Override
+      public boolean canExitApplication() {
+        final Engine engine = engineRef.getAndSet(null);
+        if (engine != null) {
+          engine.close();
+        }
+        return true;
+      }
+    });
+
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
       @Override
       public void projectClosing(@NotNull Project project) {
         if (browser != null) {
           browser.close();
-          engine.close();
           browser = null;
-          engine = null;
         }
       }
+    });
+  }
+
+  private Engine getEngine() {
+    return engineRef.updateAndGet((engine) -> {
+      if (engine != null) {
+        return engine;
+      }
+
+      final String dataPath = JxBrowserManager.DOWNLOAD_PATH + File.separatorChar + "user-data";
+      LOG.info("JxBrowser user data path: " + dataPath);
+
+      final EngineOptions options =
+        EngineOptions.newBuilder(SystemInfo.isWindows ? OFF_SCREEN : HARDWARE_ACCELERATED)
+          .userDataDir(Paths.get(dataPath))
+          .build();
+
+      return Engine.newInstance(options);
     });
   }
 
