@@ -55,7 +55,7 @@ import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
-import io.flutter.utils.MostlySilentOsProcessHandler;
+import io.flutter.utils.MostlySilentColoredProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -224,7 +224,7 @@ public class FlutterReloadManager {
     commandLine.setExePath(FileUtil.toSystemDependentName(script));
 
     try {
-      final MostlySilentOsProcessHandler handler = new MostlySilentOsProcessHandler(commandLine, true);
+      final MostlySilentColoredProcessHandler handler = new MostlySilentColoredProcessHandler(commandLine, true);
       handler.startNotify();
       if (!handler.getProcess().waitFor(10, TimeUnit.SECONDS)) {
         LOG.error("Syncing files timed out");

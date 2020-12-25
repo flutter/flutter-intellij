@@ -39,7 +39,7 @@ import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.common.RunMode;
 import io.flutter.settings.FlutterSettings;
-import io.flutter.utils.MostlySilentOsProcessHandler;
+import io.flutter.utils.MostlySilentColoredProcessHandler;
 import io.flutter.utils.ProgressHelper;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
@@ -242,7 +242,7 @@ public class FlutterApp implements Disposable {
     LOG.info(analyticsStart + " " + project.getName() + " (" + mode.mode() + ")");
     LOG.info(command.toString());
 
-    final ProcessHandler process = new MostlySilentOsProcessHandler(command);
+    final ProcessHandler process = new MostlySilentColoredProcessHandler(command);
     Disposer.register(project, process::destroyProcess);
 
     // Send analytics for the start and stop events.

@@ -8,7 +8,7 @@ package io.flutter.utils;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.BaseOSProcessHandler;
-import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.process.UnixProcessManager;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.io.BaseOutputReader;
@@ -16,7 +16,7 @@ import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * An {@link OSProcessHandler} that uses {@code BaseOutputReader.Options.forMostlySilentProcess}
+ * An {@link ColoredProcessHandler} that uses {@code BaseOutputReader.Options.forMostlySilentProcess}
  * in order to reduce cpu usage of the process it runs.
  *
  * <p>
@@ -32,7 +32,7 @@ import org.jetbrains.annotations.NotNull;
  * in the IntelliJ log.  See {@link BaseOSProcessHandler}'s {@code SimpleOutputReader.beforeSleeping}
  * for more information.
  */
-public class MostlySilentOsProcessHandler extends OSProcessHandler {
+public class MostlySilentColoredProcessHandler extends ColoredProcessHandler {
   /*
   This determines whether a soft kill (SIGINT) is sent to the process on destroy, instead of the default SIGKILL. SIGKILL can't be routed
   to remote processes spawned from the original one.
@@ -40,12 +40,12 @@ public class MostlySilentOsProcessHandler extends OSProcessHandler {
   private boolean softKill;
   private GeneralCommandLine commandLine;
 
-  public MostlySilentOsProcessHandler(@NotNull GeneralCommandLine commandLine)
+  public MostlySilentColoredProcessHandler(@NotNull GeneralCommandLine commandLine)
     throws ExecutionException {
     this(commandLine, false);
   }
 
-  public MostlySilentOsProcessHandler(@NotNull GeneralCommandLine commandLine, boolean softKill)
+  public MostlySilentColoredProcessHandler(@NotNull GeneralCommandLine commandLine, boolean softKill)
     throws ExecutionException {
     super(commandLine);
     this.softKill = softKill;

@@ -24,7 +24,7 @@ import io.flutter.run.FlutterDevice;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.FlutterModuleUtils;
-import io.flutter.utils.MostlySilentOsProcessHandler;
+import io.flutter.utils.MostlySilentColoredProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -201,7 +201,7 @@ class DeviceDaemon {
       final int daemonId = nextDaemonId.incrementAndGet();
       LOG.info("starting Flutter device daemon #" + daemonId + ": " + toString());
       // The mostly silent process handler reduces CPU usage of the daemon process.
-      final ProcessHandler process = new MostlySilentOsProcessHandler(toCommandLine());
+      final ProcessHandler process = new MostlySilentColoredProcessHandler(toCommandLine());
 
       boolean succeeded = false;
       try {

@@ -12,7 +12,7 @@ import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.executors.DefaultRunExecutor;
-import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.GenericProgramRunner;
@@ -124,8 +124,8 @@ public class LaunchState extends CommandLineState {
     // process handler type, print the command line command to the console.
     if (runConfig instanceof BazelRunConfig &&
         app.getConsole() != null &&
-        app.getProcessHandler() instanceof OSProcessHandler) {
-      final String commandLineString = ((OSProcessHandler)app.getProcessHandler()).getCommandLine().trim();
+        app.getProcessHandler() instanceof ColoredProcessHandler) {
+      final String commandLineString = ((ColoredProcessHandler)app.getProcessHandler()).getCommandLine().trim();
       if (StringUtil.isNotEmpty(commandLineString)) {
         app.getConsole().print(commandLineString + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
       }

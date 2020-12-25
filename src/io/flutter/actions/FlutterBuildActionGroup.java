@@ -5,7 +5,7 @@
  */
 package io.flutter.actions;
 
-import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.openapi.actionSystem.*;
@@ -23,14 +23,14 @@ import org.jetbrains.annotations.NotNull;
 
 public class FlutterBuildActionGroup extends DefaultActionGroup {
 
-  public static OSProcessHandler build(@NotNull Project project,
+  public static ColoredProcessHandler build(@NotNull Project project,
                                        @NotNull PubRoot pubRoot,
                                        FlutterSdk sdk,
                                        BuildType buildType,
                                        String desc) {
     final ProgressHelper progressHelper = new ProgressHelper(project);
     progressHelper.start(desc);
-    final OSProcessHandler processHandler = sdk.flutterBuild(pubRoot, buildType.type).startInConsole(project);
+    final ColoredProcessHandler processHandler = sdk.flutterBuild(pubRoot, buildType.type).startInConsole(project);
     if (processHandler == null) {
       progressHelper.done();
     }
