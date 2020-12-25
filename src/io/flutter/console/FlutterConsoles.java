@@ -5,7 +5,7 @@
  */
 package io.flutter.console;
 
-import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
@@ -31,7 +31,7 @@ public class FlutterConsoles {
    *
    * @param module if not null, show in this module's console.
    */
-  public static void displayProcessLater(@NotNull OSProcessHandler process,
+  public static void displayProcessLater(@NotNull ColoredProcessHandler process,
                                          @NotNull Project project,
                                          @Nullable Module module,
                                          @NotNull Runnable onReady) {

@@ -7,7 +7,7 @@ package io.flutter.console;
 
 import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
-import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.ui.ConsoleView;
@@ -67,7 +67,7 @@ class FlutterConsole {
   /**
    * Starts displaying the output of a different process.
    */
-  void watchProcess(@NotNull OSProcessHandler process) {
+  void watchProcess(@NotNull ColoredProcessHandler process) {
     if (cancelProcessSubscription != null) {
       cancelProcessSubscription.run();
       cancelProcessSubscription = null;
