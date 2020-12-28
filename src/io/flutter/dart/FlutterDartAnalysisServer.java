@@ -88,7 +88,7 @@ public class FlutterDartAnalysisServer implements Disposable {
           FlutterInitializer.getAnalytics().sendEventMetric(
             "startup",
             "analysisComputedErrors",
-            project.getService(TimeTracker.class).millisSinceProjectOpen()
+            TimeTracker.getInstance(project).millisSinceProjectOpen()
           );
           hasComputedErrors = true;
         }
