@@ -84,22 +84,18 @@ public class FlutterDartAnalysisServer implements Disposable {
 
       @Override
       public void computedErrors(String file, List<AnalysisError> errors) {
-        if (!hasComputedErrors) {
-          final Long millisSinceProjectOpen = project.getService(TimeTracker.class).millisSinceProjectOpen();
-          if (millisSinceProjectOpen != null) {
-            FlutterInitializer.getAnalytics().sendEventMetric(
-              "startup",
-              "analysisComputedErrors",
-              millisSinceProjectOpen.intValue()
-            );
-          }
+        if (!hasComputedErrors && project.isOpen()) {
+          FlutterInitializer.getAnalytics().sendEventMetric(
+            "startup",
+            "analysisComputedErrors",
+            project.getService(TimeTracker.class).millisSinceProjectOpen()
+          );
           hasComputedErrors = true;
         }
 
         super.computedErrors(file, errors);
       }
     });
-    final Long time = project.getService(TimeTracker.class).millisSinceProjectOpen();
     Disposer.register(project, this);
   }
 

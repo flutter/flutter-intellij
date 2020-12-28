@@ -6,25 +6,32 @@
 package io.flutter.analytics;
 
 import com.intellij.openapi.components.Service;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
+import org.jetbrains.annotations.NotNull;
 
 @Service
 public final class TimeTracker {
   private final Project project;
   private Long projectOpenTime;
 
+  @NotNull
+  public static TimeTracker getInstance(@NotNull final Project project) {
+    return ServiceManager.getService(project, TimeTracker.class);
+  }
+
   public TimeTracker(Project project) {
     this.project = project;
   }
 
-  public void setProjectOpenTime() {
+  public void onProjectOpen() {
     this.projectOpenTime = System.currentTimeMillis();
   }
 
-  public Long millisSinceProjectOpen() {
+  public int millisSinceProjectOpen() {
     if (projectOpenTime == null) {
-      return null;
+      return 0;
     }
-    return System.currentTimeMillis() - projectOpenTime;
+    return (int) (System.currentTimeMillis() - projectOpenTime);
   }
 }

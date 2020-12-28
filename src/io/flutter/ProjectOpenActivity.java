@@ -42,14 +42,13 @@ import org.jetbrains.annotations.NotNull;
 public class ProjectOpenActivity implements StartupActivity, DumbAware {
   public static final ProjectType FLUTTER_PROJECT_TYPE = new ProjectType("io.flutter");
   private static final Logger LOG = Logger.getInstance(ProjectOpenActivity.class);
-  private boolean indexingFinished = false;
 
   public ProjectOpenActivity() {
   }
 
   @Override
   public void runActivity(@NotNull Project project) {
-    project.getService(TimeTracker.class).setProjectOpenTime();
+    TimeTracker.getInstance(project).onProjectOpen();
 
     // TODO(messick): Remove 'FlutterUtils.isAndroidStudio()' after Android Q sources are published.
     if (FlutterUtils.isAndroidStudio() && AndroidUtils.isAndroidProject(project)) {
@@ -78,17 +77,11 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
 
     // Report time when indexing finishes.
     DumbService.getInstance(project).runWhenSmart(() -> {
-      if (!indexingFinished) {
-        final Long millisSinceProjectOpen = project.getService(TimeTracker.class).millisSinceProjectOpen();
-        if (millisSinceProjectOpen != null) {
-          FlutterInitializer.getAnalytics().sendEventMetric(
-            "startup",
-            "indexingFinished",
-            millisSinceProjectOpen.intValue()
-          );
-        }
-        indexingFinished = true;
-      }
+      FlutterInitializer.getAnalytics().sendEventMetric(
+        "startup",
+        "indexingFinished",
+        project.getService(TimeTracker.class).millisSinceProjectOpen()
+      );
     });
 
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
