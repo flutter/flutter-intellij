@@ -23,6 +23,8 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
+import io.flutter.FlutterInitializer;
+import io.flutter.analytics.TimeTracker;
 import io.flutter.utils.JsonUtils;
 import org.dartlang.analysis.server.protocol.*;
 import org.jetbrains.annotations.NotNull;
@@ -69,6 +71,8 @@ public class FlutterDartAnalysisServer implements Disposable {
     analysisService = DartPlugin.getInstance().getAnalysisService(project);
     analysisService.addResponseListener(new CompatibleResponseListener());
     analysisService.addAnalysisServerListener(new AnalysisServerListenerAdapter() {
+      private boolean hasComputedErrors = false;
+
       @Override
       public void serverConnected(String s) {
         // If the server reconnected we need to let it know that we still care
@@ -76,6 +80,20 @@ public class FlutterDartAnalysisServer implements Disposable {
         if (!subscriptions.isEmpty()) {
           sendSubscriptions();
         }
+      }
+
+      @Override
+      public void computedErrors(String file, List<AnalysisError> errors) {
+        if (!hasComputedErrors && project.isOpen()) {
+          FlutterInitializer.getAnalytics().sendEventMetric(
+            "startup",
+            "analysisComputedErrors",
+            TimeTracker.getInstance(project).millisSinceProjectOpen()
+          );
+          hasComputedErrors = true;
+        }
+
+        super.computedErrors(file, errors);
       }
     });
     Disposer.register(project, this);
