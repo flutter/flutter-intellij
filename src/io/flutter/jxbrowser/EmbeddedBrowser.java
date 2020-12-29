@@ -22,6 +22,7 @@ import com.teamdev.jxbrowser.navigation.event.LoadFinished;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
 import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Dimension;
@@ -38,6 +39,10 @@ public class EmbeddedBrowser {
   private Browser browser;
 
   private EmbeddedBrowser(Project project) {
+    if (FlutterSettings.getInstance().isVerboseLogging()) {
+      System.setProperty("jxbrowser.logging.level", "ALL");
+    }
+
     try {
       final Engine engine = EmbeddedBrowserEngine.getInstance().getEngine();
       if (engine == null) {
