@@ -71,7 +71,7 @@ public class BazelFieldsTest {
   public void roundTripShouldPreserveFields() {
     final BazelFields before = new BazelFields(
       "bazel_target",
-      "",
+      "dart_target",
       "bazel_args --1 -2=3",
       "additional_args --1 --2=3",
       true,
@@ -84,15 +84,17 @@ public class BazelFieldsTest {
 
     // Verify that we no longer write workingDirectory.
     assertArrayEquals(
-      new String[]{"additionalArgs", "bazelArgs", "bazelTarget", "enableReleaseMode",},
+      new String[]{"additionalArgs", "bazelArgs", "bazelTarget", "dartTarget", "enableReleaseMode", "useDartTarget",},
       getOptionNames(elt).toArray());
 
     final BazelFields after = BazelFields.readFrom(elt, mockService);
 
     assertEquals("bazel_target", after.getBazelTarget());
+    assertEquals("dart_target", after.getDartTarget());
     assertEquals("bazel_args --1 -2=3", after.getBazelArgs());
     assertEquals("additional_args --1 --2=3", after.getAdditionalArgs());
     assertTrue(after.getEnableReleaseMode());
+    assertFalse(after.getUseDartTarget());
   }
 
   private void addOption(Element elt, String name, String value) {
