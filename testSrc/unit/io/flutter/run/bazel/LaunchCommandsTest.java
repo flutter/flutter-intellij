@@ -356,9 +356,11 @@ public class LaunchCommandsTest {
     boolean enableReleaseMode) {
     return new FakeBazelFields(new BazelFields(
       bazelTarget,
+      "",
       bazelArgs,
       additionalArgs,
       enableReleaseMode,
+      false,
       mockService
     ));
   }

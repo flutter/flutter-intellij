@@ -58,6 +58,10 @@ public class BazelFields {
   @Nullable
   private final String bazelTarget;
 
+  @Nullable
+  private final String dartTarget;
+
+  private final boolean useDartTarget;
   /**
    * Whether or not to run the app with --define flutter_build_mode=release.
    *
@@ -92,19 +96,23 @@ public class BazelFields {
   @Nullable
   private final String additionalArgs;
 
-  BazelFields(@Nullable String bazelTarget, @Nullable String bazelArgs, @Nullable String additionalArgs, boolean enableReleaseMode) {
-    this(bazelTarget, bazelArgs, additionalArgs, enableReleaseMode, null);
+  BazelFields(@Nullable String bazelTarget, @Nullable String dartTarget, @Nullable String bazelArgs, @Nullable String additionalArgs, boolean enableReleaseMode, boolean useDartTarget) {
+    this(bazelTarget, dartTarget, bazelArgs, additionalArgs, enableReleaseMode, useDartTarget, null);
   }
 
   BazelFields(@Nullable String bazelTarget,
+              @Nullable String dartTarget,
               @Nullable String bazelArgs,
               @Nullable String additionalArgs,
               boolean enableReleaseMode,
+              boolean useDartTarget,
               DevToolsService devToolsService) {
     this.bazelTarget = bazelTarget;
+    this.dartTarget = dartTarget;
     this.bazelArgs = bazelArgs;
     this.additionalArgs = additionalArgs;
     this.enableReleaseMode = enableReleaseMode;
+    this.useDartTarget = useDartTarget;
     this.devToolsService = devToolsService;
   }
 
@@ -113,7 +121,9 @@ public class BazelFields {
    */
   BazelFields(@NotNull BazelFields original) {
     bazelTarget = original.bazelTarget;
+    dartTarget = original.dartTarget;
     enableReleaseMode = original.enableReleaseMode;
+    useDartTarget = original.useDartTarget;
     bazelArgs = original.bazelArgs;
     additionalArgs = original.additionalArgs;
     devToolsService = original.devToolsService;
@@ -133,6 +143,15 @@ public class BazelFields {
   @Nullable
   public String getBazelTarget() {
     return bazelTarget;
+  }
+
+  @Nullable
+  public String getDartTarget() {
+    return dartTarget;
+  }
+
+  public boolean getUseDartTarget() {
+    return useDartTarget;
   }
 
   public boolean getEnableReleaseMode() {
@@ -329,9 +348,11 @@ public class BazelFields {
 
   public void writeTo(Element element) {
     ElementIO.addOption(element, "bazelTarget", bazelTarget);
+    ElementIO.addOption(element, "dartTarget", dartTarget);
     ElementIO.addOption(element, "bazelArgs", bazelArgs);
     ElementIO.addOption(element, "additionalArgs", additionalArgs);
     ElementIO.addOption(element, "enableReleaseMode", Boolean.toString(enableReleaseMode));
+    ElementIO.addOption(element, "useDartTarget", Boolean.toString(useDartTarget));
   }
 
   public static BazelFields readFrom(Element element) {
@@ -342,12 +363,14 @@ public class BazelFields {
     final Map<String, String> options = ElementIO.readOptions(element);
 
     final String bazelTarget = options.get("bazelTarget");
+    final String dartTarget = options.get("dartTarget");
     final String bazelArgs = options.get("bazelArgs");
     final String additionalArgs = options.get("additionalArgs");
     final String enableReleaseMode = options.get("enableReleaseMode");
+    final String useDartTarget = options.get("useDartTarget");
 
     try {
-      return new BazelFields(bazelTarget, bazelArgs, additionalArgs, Boolean.parseBoolean(enableReleaseMode));
+      return new BazelFields(bazelTarget, dartTarget, bazelArgs, additionalArgs, Boolean.parseBoolean(enableReleaseMode), Boolean.parseBoolean(useDartTarget));
     }
     catch (IllegalArgumentException e) {
       throw new InvalidDataException(e.getMessage());

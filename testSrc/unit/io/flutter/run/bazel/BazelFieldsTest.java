@@ -71,9 +71,11 @@ public class BazelFieldsTest {
   public void roundTripShouldPreserveFields() {
     final BazelFields before = new BazelFields(
       "bazel_target",
+      "",
       "bazel_args --1 -2=3",
       "additional_args --1 --2=3",
       true,
+      false,
       mockService
     );
 
