@@ -11,7 +11,7 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.execution.filters.OpenFileHyperlinkInfo;
-import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.openapi.module.Module;
@@ -48,7 +48,7 @@ public class FlutterConsoleFilter implements Filter {
     public void navigate(Project project) {
       try {
         final GeneralCommandLine cmd = new GeneralCommandLine().withExePath("open").withParameters(myPath);
-        final OSProcessHandler handler = new OSProcessHandler(cmd);
+        final ColoredProcessHandler handler = new ColoredProcessHandler(cmd);
         handler.addProcessListener(new ProcessAdapter() {
           @Override
           public void processTerminated(@NotNull final ProcessEvent event) {

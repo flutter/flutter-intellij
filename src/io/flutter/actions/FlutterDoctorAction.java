@@ -7,7 +7,7 @@ package io.flutter.actions;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -50,9 +50,9 @@ public class FlutterDoctorAction extends FlutterSdkAction {
     cmdLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     cmdLine.setExePath(FileUtil.toSystemDependentName(doctorScript));
 
-    final OSProcessHandler handler;
+    final ColoredProcessHandler handler;
     try {
-      handler = new OSProcessHandler(cmdLine);
+      handler = new ColoredProcessHandler(cmdLine);
       FlutterConsoles.displayProcessLater(handler, project, null, handler::startNotify);
     }
     catch (ExecutionException e) {

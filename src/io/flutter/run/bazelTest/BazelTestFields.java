@@ -28,7 +28,7 @@ import io.flutter.run.bazelTest.FlutterBazelTestConfigurationType.WatchFactory;
 import io.flutter.run.common.RunMode;
 import io.flutter.sdk.FlutterSettingsConfigurable;
 import io.flutter.utils.ElementIO;
-import io.flutter.utils.MostlySilentOsProcessHandler;
+import io.flutter.utils.MostlySilentColoredProcessHandler;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -166,7 +166,7 @@ public class BazelTestFields {
    */
   @NotNull
   ProcessHandler run(@NotNull final Project project, @NotNull final RunMode mode) throws ExecutionException {
-    return new MostlySilentOsProcessHandler(getLaunchCommand(project, mode), true);
+    return new MostlySilentColoredProcessHandler(getLaunchCommand(project, mode), true);
   }
 
   /**

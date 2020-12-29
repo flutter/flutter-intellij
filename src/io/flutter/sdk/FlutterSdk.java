@@ -11,7 +11,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
-import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessListener;
@@ -612,7 +612,7 @@ public class FlutterSdk {
   // Do not run this on EDT.
   @Nullable
   private String returnOutputOfQuery(@NotNull FlutterCommand command) {
-    final OSProcessHandler process = command.startProcess(false);
+    final ColoredProcessHandler process = command.startProcess(false);
     if (process == null) {
       return null;
     }

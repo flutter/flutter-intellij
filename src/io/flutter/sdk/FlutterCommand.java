@@ -21,7 +21,7 @@ import io.flutter.FlutterMessages;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.console.FlutterConsoles;
 import io.flutter.dart.DartPlugin;
-import io.flutter.utils.MostlySilentOsProcessHandler;
+import io.flutter.utils.MostlySilentColoredProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -81,7 +81,7 @@ public class FlutterCommand {
    */
   public Process start(@Nullable Consumer<ProcessOutput> onDone, @Nullable ProcessListener processListener) {
     // TODO(skybrian) add Project parameter if it turns out later that we need to set ANDROID_HOME.
-    final OSProcessHandler handler = startProcessOrShowError(null);
+    final ColoredProcessHandler handler = startProcessOrShowError(null);
     if (handler == null) {
       return null;
     }
@@ -116,8 +116,8 @@ public class FlutterCommand {
    * <p>
    * If unable to start (for example, if a command is already running), returns null.
    */
-  public OSProcessHandler startInConsole(@NotNull Project project) {
-    final OSProcessHandler handler = startProcessOrShowError(project);
+  public ColoredProcessHandler startInConsole(@NotNull Project project) {
+    final ColoredProcessHandler handler = startProcessOrShowError(project);
     if (handler != null) {
       FlutterConsoles.displayProcessLater(handler, project, null, handler::startNotify);
     }
@@ -133,7 +133,7 @@ public class FlutterCommand {
    * If unable to start (for example, if a command is already running), returns null.
    */
   public Process startInModuleConsole(@NotNull Module module, @Nullable Runnable onDone, @Nullable ProcessListener processListener) {
-    final OSProcessHandler handler = startProcessOrShowError(module.getProject());
+    final ColoredProcessHandler handler = startProcessOrShowError(module.getProject());
     if (handler == null) {
       return null;
     }
@@ -164,11 +164,11 @@ public class FlutterCommand {
    * Returns the handler if successfully started.
    */
   @Nullable
-  public OSProcessHandler startProcess(boolean sendAnalytics) {
+  public ColoredProcessHandler startProcess(boolean sendAnalytics) {
     try {
       final GeneralCommandLine commandLine = createGeneralCommandLine(null);
       LOG.info(commandLine.toString());
-      final OSProcessHandler handler = new OSProcessHandler(commandLine);
+      final ColoredProcessHandler handler = new ColoredProcessHandler(commandLine);
       if (sendAnalytics) {
         type.sendAnalyticsEvent();
       }
@@ -196,11 +196,11 @@ public class FlutterCommand {
       DartPlugin.setPubActionInProgress(true);
     }
 
-    final OSProcessHandler handler;
+    final ColoredProcessHandler handler;
     try {
       final GeneralCommandLine commandLine = createGeneralCommandLine(project);
       LOG.info(commandLine.toString());
-      handler = new MostlySilentOsProcessHandler(commandLine);
+      handler = new MostlySilentColoredProcessHandler(commandLine);
       handler.addProcessListener(new ProcessAdapter() {
         @Override
         public void processTerminated(@NotNull final ProcessEvent event) {
@@ -228,7 +228,7 @@ public class FlutterCommand {
    * Returns the handler if successfully started, or null if there was a problem.
    */
   @Nullable
-  public OSProcessHandler startProcessOrShowError(@Nullable Project project) {
+  public ColoredProcessHandler startProcessOrShowError(@Nullable Project project) {
     final FlutterCommandStartResult result = startProcess(project);
     if (result.status == FlutterCommandStartResultStatus.EXCEPTION && result.exception != null) {
       FlutterMessages.showError(

@@ -11,7 +11,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
@@ -35,7 +35,7 @@ import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.JsonUtils;
-import io.flutter.utils.MostlySilentOsProcessHandler;
+import io.flutter.utils.MostlySilentColoredProcessHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
@@ -104,7 +104,7 @@ public class DevToolsService {
         logExceptionAndComplete("Unable to find daemon command for project");
         return;
       }
-      this.process = new MostlySilentOsProcessHandler(command);
+      this.process = new MostlySilentColoredProcessHandler(command);
       daemonApi = new DaemonApi(process);
       daemonApi.listen(process, new DevToolsServiceListener());
       daemonApi.devToolsServe().thenAccept((DaemonApi.DevToolsAddress address) -> {
@@ -161,7 +161,7 @@ public class DevToolsService {
   private void pubRunDevTools(FlutterSdk sdk) {
     final FlutterCommand command = sdk.flutterPub(null, "global", "run", "devtools", "--machine", "--port=0");
 
-    final OSProcessHandler handler = command.startProcessOrShowError(project);
+    final ColoredProcessHandler handler = command.startProcessOrShowError(project);
     if (handler == null) {
       logExceptionAndComplete("Handler was null for pub global run command");
       return;

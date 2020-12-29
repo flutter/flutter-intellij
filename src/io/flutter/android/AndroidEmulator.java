@@ -7,7 +7,7 @@ package io.flutter.android;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
@@ -15,7 +15,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterMessages;
-import io.flutter.utils.MostlySilentOsProcessHandler;
+import io.flutter.utils.MostlySilentColoredProcessHandler;
 import org.jetbrains.annotations.NotNull;
 
 public class AndroidEmulator {
@@ -54,7 +54,7 @@ public class AndroidEmulator {
 
     try {
       final StringBuilder stdout = new StringBuilder();
-      final OSProcessHandler process = new MostlySilentOsProcessHandler(cmd);
+      final ColoredProcessHandler process = new MostlySilentColoredProcessHandler(cmd);
       process.addProcessListener(new ProcessAdapter() {
         @Override
         public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
