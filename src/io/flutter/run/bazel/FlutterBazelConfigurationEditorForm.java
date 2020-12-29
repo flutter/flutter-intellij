@@ -43,6 +43,9 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
       }
     });
     installWatcher(useDartFile);
+
+    // Disable option to use a Dart file entrypoint until bazel run code is completed.
+    useDartFile.setVisible(false);
   }
 
   @Override
