@@ -208,13 +208,20 @@ public class BazelFields {
         FlutterBundle.message("flutter.run.bazel.launchingScriptNotFound", FileUtil.toSystemDependentName(runScript)));
     }
 
-    // check that bazel target is not empty
-    if (StringUtil.isEmptyOrSpaces(bazelTarget)) {
-      throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noTargetSet"));
-    }
-    // check that the bazel target starts with "//"
-    else if (!bazelTarget.startsWith("//")) {
-      throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.startWithSlashSlash"));
+    if (useDartTarget) {
+      // Check for entrypoint file.
+      if (StringUtil.isEmptyOrSpaces(dartTarget)) {
+        throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noDartEntrypointSet"));
+      }
+    } else {
+      // check that bazel target is not empty.
+      if (StringUtil.isEmptyOrSpaces(bazelTarget)) {
+        throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noTargetSet"));
+      }
+      // check that the bazel target starts with "//".
+      else if (!bazelTarget.startsWith("//")) {
+        throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.startWithSlashSlash"));
+      }
     }
   }
 
@@ -238,7 +245,7 @@ public class BazelFields {
     assert launchingScript != null; // already checked
     assert workspace != null; // if the workspace is null, then so is the launching script, therefore this was already checked.
 
-    final String target = getBazelTarget();
+    final String target = getUseDartTarget() ? getDartTarget() : getBazelTarget();
     assert target != null; // already checked
 
     final String additionalArgs = getAdditionalArgs();
