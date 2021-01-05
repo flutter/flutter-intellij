@@ -334,6 +334,9 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     public FlutterModuleWizardStep(@NotNull WizardContext context) {
       //TODO(pq): find a way to listen to wizard cancelation and propagate to peer.
       myPeer = new FlutterGeneratorPeer(context);
+      if (!FlutterUtils.isAndroidStudio()) {
+        myPeer.getHelpForm().showGettingStarted();
+      }
     }
 
     public SettingsHelpForm getHelpForm() {
