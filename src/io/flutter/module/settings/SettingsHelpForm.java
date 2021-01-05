@@ -59,6 +59,15 @@ public class SettingsHelpForm {
       .setListener((label, linkUrl) -> BrowserLauncher.getInstance().browse(FlutterConstants.URL_GETTING_STARTED, null), null);
   }
 
+  public void showGettingStarted() {
+    projectTypeLabel.setVisible(false);
+    projectTypeDescriptionForApp.setVisible(false);
+    projectTypeDescriptionForModule.setVisible(false);
+    projectTypeDescriptionForPlugin.setVisible(false);
+    projectTypeDescriptionForPackage.setVisible(false);
+    mainPanel.setVisible(true);
+    gettingStartedUrl.setVisible(true);
+  }
 
   @NotNull
   public JComponent getComponent() {
