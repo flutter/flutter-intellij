@@ -17,6 +17,7 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.teamdev.jxbrowser.browser.Browser;
 import com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException;
+import com.teamdev.jxbrowser.browser.callback.ConfirmCallback;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.navigation.event.LoadFinished;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
@@ -25,7 +26,13 @@ import io.flutter.FlutterInitializer;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EmbeddedBrowser {
@@ -80,6 +87,9 @@ public class EmbeddedBrowser {
       return;
     }
 
+    // DevTools may show a confirm dialog to use a fallback version.
+    handleDialogs(contentManager);
+
     // Multiple LoadFinished events can occur, but we only need to add content the first time.
     final AtomicBoolean contentLoaded = new AtomicBoolean(false);
 
@@ -107,6 +117,47 @@ public class EmbeddedBrowser {
         content.setIcon(FlutterIcons.Phone);
         contentManager.addContent(content);
       });
+    });
+  }
+
+  private void handleDialogs(ContentManager contentManager) {
+    browser.set(ConfirmCallback.class, (params, action) -> {
+      final JOptionPane optionPane = new JOptionPane(
+        params.message(),
+        JOptionPane.QUESTION_MESSAGE,
+        JOptionPane.OK_CANCEL_OPTION
+      );
+
+      final JFrame frame = new JFrame("confirm");
+      final JDialog dialog = new JDialog(frame, params.message(), true);
+      dialog.setContentPane(optionPane);
+      dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+
+      optionPane.addPropertyChangeListener(
+        new PropertyChangeListener() {
+          @Override
+          public void propertyChange(PropertyChangeEvent e) {
+            final String prop = e.getPropertyName();
+
+            if (dialog.isVisible()
+                && (e.getSource() == optionPane)
+                && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
+              if (e.getNewValue().equals(JOptionPane.OK_OPTION)) {
+                action.ok();
+              } else {
+                action.cancel();
+              }
+              dialog.setVisible(false);
+            }
+          }
+        });
+      dialog.pack();
+      final JComponent component = contentManager.getComponent();
+      dialog.setLocation(
+        component.getLocationOnScreen().x + (component.getWidth() - dialog.getWidth()) / 2,
+        component.getLocationOnScreen().y + (component.getHeight() - dialog.getHeight()) / 2
+      );
+      dialog.setVisible(true);
     });
   }
 }
