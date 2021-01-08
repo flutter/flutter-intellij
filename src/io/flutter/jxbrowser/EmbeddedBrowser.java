@@ -17,9 +17,13 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.teamdev.jxbrowser.browser.Browser;
 import com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException;
+import com.teamdev.jxbrowser.browser.callback.AlertCallback;
+import com.teamdev.jxbrowser.browser.callback.ConfirmCallback;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.navigation.event.LoadFinished;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
+import com.teamdev.jxbrowser.view.swing.callback.DefaultAlertCallback;
+import com.teamdev.jxbrowser.view.swing.callback.DefaultConfirmCallback;
 import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
 import io.flutter.settings.FlutterSettings;
@@ -79,6 +83,10 @@ public class EmbeddedBrowser {
       onBrowserUnavailable.run();
       return;
     }
+
+    // DevTools may show a confirm dialog to use a fallback version.
+    browser.set(ConfirmCallback.class, new DefaultConfirmCallback(contentManager.getComponent()));
+    browser.set(AlertCallback.class, new DefaultAlertCallback(contentManager.getComponent()));
 
     // Multiple LoadFinished events can occur, but we only need to add content the first time.
     final AtomicBoolean contentLoaded = new AtomicBoolean(false);
