@@ -1,3 +1,7 @@
+# 52.2
+- Fix an issue with leaking subscriptions (#5115)
+- Fix an error caused by an API change in AS canary 4 (#5165)
+
 # 52.1
 - Add additional args field to test config (#5122)
 
