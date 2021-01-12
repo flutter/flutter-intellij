@@ -38,6 +38,11 @@
 
   <change-notes>
     <![CDATA[
+<h1>52.2</h1>
+<ul>
+  <li>Fix an issue with leaking subscriptions (#5115)</li>
+  <li>Fix an error caused by an API change in AS canary 4 (#5165)</li>
+</ul>
 <h1>52.1</h1>
 <ul>
   <li>Add additional args field to test config (#5122)</li>

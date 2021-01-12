@@ -5,7 +5,7 @@
  */
 package io.flutter.utils;
 
-import static com.android.tools.idea.gradle.project.importing.GradleProjectImporter.ANDROID_PROJECT_TYPE;
+//import static com.android.tools.idea.gradle.project.importing.GradleProjectImporter.ANDROID_PROJECT_TYPE;
 import static com.intellij.util.ReflectionUtil.findAssignableField;
 import static io.flutter.actions.AttachDebuggerAction.ATTACH_IS_ACTIVE;
 import static io.flutter.actions.AttachDebuggerAction.findRunConfig;
@@ -24,6 +24,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectType;
 import com.intellij.openapi.project.ProjectTypeService;
 import com.intellij.util.ThreeState;
 import com.intellij.util.concurrency.AppExecutorUtil;
@@ -71,7 +72,8 @@ public class AddToAppUtils {
       return false;
     }
     else {
-      if (ANDROID_PROJECT_TYPE.equals(ProjectTypeService.getProjectType(project))) {
+      @Nullable ProjectType projectType = ProjectTypeService.getProjectType(project);
+      if (projectType != null && "Android".equals(projectType.getId())) {
         // This is an add-to-app project.
         connection.subscribe(DebuggerManagerListener.TOPIC, makeAddToAppAttachListener(project));
       }
