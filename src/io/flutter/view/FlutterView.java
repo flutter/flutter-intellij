@@ -33,10 +33,7 @@ import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.ui.components.labels.LinkListener;
-import com.intellij.ui.content.Content;
-import com.intellij.ui.content.ContentManager;
-import com.intellij.ui.content.ContentManagerAdapter;
-import com.intellij.ui.content.ContentManagerEvent;
+import com.intellij.ui.content.*;
 import com.intellij.ui.tabs.TabInfo;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
@@ -57,6 +54,7 @@ import io.flutter.run.daemon.DevToolsInstance;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.toolwindow.FlutterViewToolWindowManagerListener;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.JxBrowserUtils;
@@ -118,6 +116,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private final Map<FlutterApp, PerAppState> perAppViewState = new HashMap<>();
 
   private Content emptyContent;
+
+  private FlutterViewToolWindowManagerListener toolWindowListener;
 
   public FlutterView(@NotNull Project project) {
     myProject = project;
@@ -454,6 +454,13 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     presentLabel(toolWindow, INSTALLING_DEVTOOLS_LABEL);
 
     openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded);
+
+    if (this.toolWindowListener == null) {
+      this.toolWindowListener = new FlutterViewToolWindowManagerListener(myProject);
+    }
+    this.toolWindowListener.update(() -> {
+      openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded);
+    });
   }
 
   protected void openInspectorWithDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
