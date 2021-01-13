@@ -113,9 +113,13 @@ Sometimes browsing the source code of IntelliJ is helpful for understanding plat
 
 ## Working with Embedded DevTools (JxBrowser)
 
-We use [JxBrowser](https://www.teamdev.com/jxbrowser) to embed DevTools within IntelliJ. A license key is required to use this feature in development, but it is not required for developing unrelated (most) features. 
+We use [JxBrowser](https://www.teamdev.com/jxbrowser), a commercial product, to embed DevTools within IntelliJ. A license key is required to use this feature in development, but it is not required for developing unrelated (most) features.
+
+Getting a key to develop JxBrowser features:
+- Internal contributors: Ask another internal contributor to give you access to the key.
+- External contributors: Our license key cannot be transferred externally, but you can acquire your own trial or regular license from [TeamDev](https://www.teamdev.com/jxbrowser) to use here.
 
 To set up the license key:
-1. Ask an internal contributor to give you access to the key.
-2. Copy the template at resources/jxbrowser/jxbrowser.properties.template and save it as resources/jxbrowser/jxbrowser.properties.
-3. Replace `<KEY>` with the actual key.
+1. Copy the template at resources/jxbrowser/jxbrowser.properties.template and save it as resources/jxbrowser/jxbrowser.properties.
+2. Replace `<KEY>` with the actual key.
+
