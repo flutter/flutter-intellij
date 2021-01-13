@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class OpenDevToolsAction extends DumbAwareAction {
   private static final Logger LOG = Logger.getInstance(OpenDevToolsAction.class);
+  private static final String title = "Open Flutter DevTools";
   private final @Nullable ObservatoryConnector myConnector;
   private final Computable<Boolean> myIsApplicable;
   private final FlutterApp myApp;
@@ -34,7 +35,7 @@ public class OpenDevToolsAction extends DumbAwareAction {
   }
 
   public OpenDevToolsAction(@NotNull final FlutterApp app, @NotNull final Computable<Boolean> isApplicable) {
-    super("Open DevTools", "Open Dart DevTools", FlutterIcons.Dart_16);
+    super(title, title, FlutterIcons.Dart_16);
 
     myApp = app;
     myConnector = app.getConnector();
