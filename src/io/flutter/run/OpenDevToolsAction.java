@@ -18,12 +18,12 @@ import io.flutter.devtools.DevToolsUtils;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AsyncUtils;
-import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class OpenDevToolsAction extends DumbAwareAction {
   private static final Logger LOG = Logger.getInstance(OpenDevToolsAction.class);
+  private static final String title = "Open Flutter DevTools";
   private final @Nullable ObservatoryConnector myConnector;
   private final Computable<Boolean> myIsApplicable;
   private final FlutterApp myApp;
@@ -35,11 +35,7 @@ public class OpenDevToolsAction extends DumbAwareAction {
   }
 
   public OpenDevToolsAction(@NotNull final FlutterApp app, @NotNull final Computable<Boolean> isApplicable) {
-    super(
-      "Open DevTools",
-      "Open " + (FlutterModuleUtils.declaresFlutter(app.getProject()) ? "Flutter" : "Dart") + " DevTools",
-      FlutterIcons.Dart_16
-    );
+    super(title, title, FlutterIcons.Dart_16);
 
     myApp = app;
     myConnector = app.getConnector();
