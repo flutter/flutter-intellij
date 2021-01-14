@@ -8,7 +8,9 @@ package io.flutter.editor;
 import com.intellij.codeInsight.daemon.GutterName;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProviderDescriptor;
+import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.impl.source.tree.AstBufferUtil;
 import com.jetbrains.lang.dart.DartTokenTypes;
 import com.jetbrains.lang.dart.psi.*;
 import com.jetbrains.lang.dart.util.DartPsiImplUtil;
@@ -16,7 +18,9 @@ import io.flutter.FlutterBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import javax.swing.*;
+
+import static io.flutter.dart.DartPsiUtil.*;
 
 public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor {
   @Nullable("null means disabled")
@@ -32,7 +36,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     final String name = element.getText();
     if (!(name.equals("Icons") || name.equals("CupertinoIcons") || name.equals("IconData"))) return null;
 
-    final PsiElement refExpr = FlutterColorProvider.topmostReferenceExpression(element);
+    final PsiElement refExpr = topmostReferenceExpression(element);
     if (refExpr == null) return null;
     PsiElement parent = refExpr.getParent();
     if (parent == null) return null;
@@ -41,28 +45,64 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
       // Check font family and package
       final DartArguments arguments = DartPsiImplUtil.getArguments((DartCallExpression)parent);
       if (arguments == null) return null;
-      final PsiElement family = getNamedArgumentExpression(arguments, "fontFamily");
-      if (family != null && family.getNode().getElementType() == DartTokenTypes.STRING_LITERAL_EXPRESSION) {
-        final String text = DartPsiImplUtil.getUnquotedDartStringAndItsRange(family.getText()).first;
-        if ("MaterialIcons".equals(text)) return null; // TODO https://github.com/flutter/flutter-intellij/issues/2334
+      final String family = getValueOfNamedArgument(arguments, "fontFamily");
+      if (family != null) {
+        // TODO https://github.com/flutter/flutter-intellij/issues/2334
+        if (!"MaterialIcons".equals(family)) return null;
+      }
+      final PsiElement fontPackage = getNamedArgumentExpression(arguments, "fontPackage");
+      if (fontPackage != null) return null; // See previous TODO
+      final String argument = getValueOfPositionalArgument(arguments, 0);
+      if (argument == null) return null;
+      final Icon icon = getIconFromCode(argument);
+      if (icon != null) {
+        return createLineMarker(element, icon);
+      }
+    } else if (parent.getNode().getElementType() == DartTokenTypes.SIMPLE_TYPE) {
+      parent = getNewExprFromType(parent);
+      if (parent == null) return null;
+      final DartArguments arguments = DartPsiImplUtil.getArguments((DartNewExpression)parent);
+      if (arguments == null) return null;
+      final String argument = getValueOfPositionalArgument(arguments, 0);
+      if (argument == null) return null;
+      final Icon icon = getIconFromCode(argument);
+      if (icon != null) {
+        return createLineMarker(element, icon);
+      }
+    } else {
+      final PsiElement idNode = refExpr.getFirstChild();
+      if (idNode == null) return null;
+      if (name.equals(idNode.getText())) {
+        final PsiElement selectorNode = refExpr.getLastChild();
+        if (selectorNode == null) return null;
+        final String selector = AstBufferUtil.getTextSkippingWhitespaceComments(selectorNode.getNode());
+        final Icon icon;
+        if (name.equals("Icons")) {
+          icon = FlutterMaterialIcons.getIconForName(selector);
+        } else {
+          icon = FlutterCupertinoIcons.getIconForName(selector);
+        }
+        if (icon != null) {
+          return createLineMarker(element, icon);
+        }
       }
     }
     return null;
   }
 
-  @Nullable
-  public static PsiElement getNamedArgumentExpression(@NotNull DartArguments arguments, @NotNull String name) {
-    final DartArgumentList list = arguments.getArgumentList();
-    if (list == null) return null;
-    final List<DartNamedArgument> namedArgumentList = list.getNamedArgumentList();
-    for (DartNamedArgument namedArgument : namedArgumentList) {
-      final DartExpression nameExpression = namedArgument.getParameterReferenceExpression();
-      final PsiElement childId = nameExpression.getFirstChild();
-      final PsiElement child = nameExpression.getFirstChild();
-      if (name.equals(child.getText())) {
-        return namedArgument.getExpression();
-      }
+  private Icon getIconFromCode(@NotNull String value) {
+    final int code = parseLiteralNumber(value);
+    final String hex = Long.toHexString(code);
+    // We look for the codepoint for material icons, and fall back on those for Cupertino.
+    Icon icon = FlutterMaterialIcons.getIconForHex(hex);
+    if (icon == null)  {
+      icon = FlutterCupertinoIcons.getIconForHex(hex);
     }
-    return null;
+    return icon;
+  }
+
+  private LineMarkerInfo<PsiElement> createLineMarker(@Nullable PsiElement element, @NotNull Icon icon) {
+    if (element == null) return null;
+    return new LineMarkerInfo<>(element, element.getTextRange(), icon, null, null, GutterIconRenderer.Alignment.LEFT);
   }
 }

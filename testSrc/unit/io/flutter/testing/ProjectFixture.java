@@ -9,7 +9,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 
-public class ProjectFixture<T extends IdeaProjectTestFixture> extends AdaptedFixture<T> {
+abstract public class ProjectFixture<T extends IdeaProjectTestFixture> extends AdaptedFixture<T> {
   ProjectFixture(Factory<T> factory, boolean setupOnDispatchThread) {
     super(factory, setupOnDispatchThread);
   }

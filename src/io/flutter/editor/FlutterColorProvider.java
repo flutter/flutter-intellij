@@ -14,6 +14,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 
+import static io.flutter.dart.DartPsiUtil.getNewExprFromType;
+import static io.flutter.dart.DartPsiUtil.topmostReferenceExpression;
+
 public class FlutterColorProvider implements ElementColorProvider {
   @Nullable
   @Override
@@ -41,11 +44,8 @@ public class FlutterColorProvider implements ElementColorProvider {
     else if (parent.getNode().getElementType() == DartTokenTypes.SIMPLE_TYPE) {
       // const Color.fromARGB(100, 255, 0, 0)
       // parent.getParent().getParent() is a new expr
-      parent = parent.getParent();
+      parent = getNewExprFromType(parent);
       if (parent == null) return null;
-      parent = parent.getParent();
-      if (parent == null) return null;
-      if (parent.getNode().getElementType() != DartTokenTypes.NEW_EXPRESSION) return null;
 
       return parseColorElements(parent, refExpr);
     }
@@ -128,20 +128,5 @@ public class FlutterColorProvider implements ElementColorProvider {
     //};
     //CommandProcessor.getInstance()
     //  .executeCommand(element.getProject(), command, FlutterBundle.message("change.color.command.text"), null, document);
-  }
-
-  @Nullable
-  public static PsiElement topmostReferenceExpression(@NotNull PsiElement element) {
-    final PsiElement id = element.getParent();
-    if (id == null || id.getNode().getElementType() != DartTokenTypes.ID) return null;
-    PsiElement refExpr = id.getParent();
-    if (refExpr == null || refExpr.getNode().getElementType() != DartTokenTypes.REFERENCE_EXPRESSION) return null;
-
-    PsiElement parent = refExpr.getParent();
-    while (parent != null && parent.getNode().getElementType() == DartTokenTypes.REFERENCE_EXPRESSION) {
-      refExpr = parent;
-      parent = parent.getParent();
-    }
-    return refExpr;
   }
 }
