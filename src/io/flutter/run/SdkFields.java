@@ -19,11 +19,15 @@ import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRootCache;
 import io.flutter.run.common.RunMode;
+import io.flutter.run.daemon.DevToolsInstance;
+import io.flutter.run.daemon.DevToolsService;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Fields used when launching an app using the Flutter SDK (non-bazel).
@@ -149,6 +153,16 @@ public class SdkFields {
     }
     if (FlutterSettings.getInstance().isShowStructuredErrors() && flutterSdk.getVersion().isDartDefineSupported()) {
       args = ArrayUtil.append(args, "--dart-define=flutter.inspector.structuredErrors=true");
+    }
+
+    if (flutterSdk.getVersion().flutterRunSupportsDevToolsUrl()) {
+      try {
+        final DevToolsInstance instance = DevToolsService.getInstance(project).getDevToolsInstance().get(30, TimeUnit.SECONDS);
+        args = ArrayUtil.append(args, "--devtools-server-address=http://" + instance.host + ":" + instance.port);
+      }
+      catch (Exception e) {
+        e.printStackTrace();
+      }
     }
     command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
     return command.createGeneralCommandLine(project);
