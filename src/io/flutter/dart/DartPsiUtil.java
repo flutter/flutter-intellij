@@ -20,7 +20,7 @@ import java.util.List;
 public class DartPsiUtil {
 
   public static int parseLiteralNumber(@NotNull String val) {
-    return val.startsWith("0x")
+    return val.startsWith("0x") || val.startsWith("0X")
            ? Integer.parseUnsignedInt(val.substring(2), 16)
            : Integer.parseUnsignedInt(val);
   }

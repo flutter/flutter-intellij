@@ -59,7 +59,6 @@ public class FlutterColorProvider implements ElementColorProvider {
       // parent.getParent().getParent() is a new expr
       parent = getNewExprFromType(parent);
       if (parent == null) return null;
-
       return parseColorElements(parent, refExpr);
     }
     else {
