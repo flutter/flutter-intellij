@@ -85,6 +85,18 @@ List<EditCommand> editCommands = [
     ],
     versions: ['4.1'],
   ),
+  MultiSubst(
+    path: 'src/io/flutter/editor/FlutterIconLineMarkerProvider.java',
+    initials: [
+      'import com.intellij.codeInsight.daemon.GutterName;',
+      '@GutterName'
+    ],
+    replacements: [
+      '',
+      ''
+    ],
+    versions: ['4.1'],
+  ),
   Subst(
     path: 'src/io/flutter/preview/PreviewView.java',
     initial: 'Arrays.asList(expandAllAction, collapseAllAction, showOnlyWidgetsAction)',
