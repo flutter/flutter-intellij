@@ -22,7 +22,7 @@ public class FlutterMaterialIcons {
     icons = new Properties();
 
     try {
-      icons.load(FlutterEditorAnnotator.class.getResourceAsStream("/flutter/icons/material.properties"));
+      icons.load(FlutterMaterialIcons.class.getResourceAsStream("/flutter/icons/material.properties"));
     }
     catch (IOException e) {
       FlutterUtils.warn(LOG, e);

@@ -15,7 +15,7 @@ import org.junit.runners.model.Statement;
  *
  * <p>(That is, it can be used with the @Rule annotation.)
  */
-public class AdaptedFixture<T extends IdeaTestFixture> implements TestRule {
+abstract public class AdaptedFixture<T extends IdeaTestFixture> implements TestRule {
   public final Factory<T> factory;
   private final boolean runOnDispatchThread;
   private T inner;

@@ -22,7 +22,7 @@ public class FlutterCupertinoIcons {
     icons = new Properties();
 
     try {
-      icons.load(FlutterEditorAnnotator.class.getResourceAsStream("/flutter/icons/cupertino.properties"));
+      icons.load(FlutterCupertinoIcons.class.getResourceAsStream("/flutter/icons/cupertino.properties"));
     }
     catch (IOException e) {
       FlutterUtils.warn(LOG, e);

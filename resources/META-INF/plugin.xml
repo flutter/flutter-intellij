@@ -1435,7 +1435,8 @@
 
     <projectConfigurable groupId="language" instance="io.flutter.sdk.FlutterSettingsConfigurable"
                          id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle" nonDefaultProject="true"/>
-    <annotator language="Dart" implementationClass="io.flutter.editor.FlutterEditorAnnotator"/>
+    <colorProvider implementation="io.flutter.editor.FlutterColorProvider"/>
+    <codeInsight.lineMarkerProvider language="Dart" implementationClass="io.flutter.editor.FlutterIconLineMarkerProvider"/>
     <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
 
     <toolWindow id="Flutter Outline" anchor="right" icon="FlutterIcons.Flutter_13"
