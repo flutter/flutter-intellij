@@ -19,7 +19,9 @@ import com.teamdev.jxbrowser.browser.Browser;
 import com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException;
 import com.teamdev.jxbrowser.browser.callback.AlertCallback;
 import com.teamdev.jxbrowser.browser.callback.ConfirmCallback;
+import com.teamdev.jxbrowser.browser.event.ConsoleMessageReceived;
 import com.teamdev.jxbrowser.engine.Engine;
+import com.teamdev.jxbrowser.js.ConsoleMessage;
 import com.teamdev.jxbrowser.navigation.event.LoadFinished;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
 import com.teamdev.jxbrowser.view.swing.callback.DefaultAlertCallback;
@@ -55,6 +57,10 @@ public class EmbeddedBrowser {
 
       this.browser = engine.newBrowser();
       browser.settings().enableTransparentBackground();
+      browser.on(ConsoleMessageReceived.class, event -> {
+        final ConsoleMessage consoleMessage = event.consoleMessage();
+        LOG.info("Browser message(" + consoleMessage.level().name() + "): " + consoleMessage.message());
+      });
     } catch (UnsupportedRenderingModeException ex) {
       // Skip using a transparent background if an exception is thrown.
     } catch (Exception ex) {
