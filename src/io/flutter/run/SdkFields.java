@@ -11,6 +11,7 @@ import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
+import com.intellij.util.execution.ParametersListUtil;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
@@ -69,6 +70,19 @@ public class SdkFields {
     this.additionalArgs = additionalArgs;
   }
 
+  public boolean hasAdditionalArgs() {
+    return additionalArgs != null;
+  }
+
+  public String[] getAdditionalArgsParsed() {
+    if (hasAdditionalArgs()) {
+      assert additionalArgs != null;
+      return ParametersListUtil.parse(additionalArgs, false, true, true).toArray(new String[0]);
+    }
+
+    return new String[0];
+  }
+
   /**
    * Present only for deserializing old run configs.
    */
@@ -96,10 +110,12 @@ public class SdkFields {
   void checkRunnable(@NotNull Project project) throws RuntimeConfigurationError {
     // TODO(pq): consider validating additional args values
     checkSdk(project);
+
     final MainFile.Result main = MainFile.verify(filePath, project);
     if (!main.canLaunch()) {
       throw new RuntimeConfigurationError(main.getError());
     }
+
     if (PubRootCache.getInstance(project).getRoot(main.get().getAppDir()) == null) {
       throw new RuntimeConfigurationError("Entrypoint isn't within a Flutter pub root");
     }
@@ -108,10 +124,11 @@ public class SdkFields {
   /**
    * Create a command to run 'flutter run --machine'.
    */
-  public GeneralCommandLine createFlutterSdkRunCommand(@NotNull Project project,
-                                                       @NotNull RunMode runMode,
-                                                       @NotNull FlutterLaunchMode flutterLaunchMode,
-                                                       @NotNull FlutterDevice device
+  public GeneralCommandLine createFlutterSdkRunCommand(
+    @NotNull Project project,
+    @NotNull RunMode runMode,
+    @NotNull FlutterLaunchMode flutterLaunchMode,
+    @NotNull FlutterDevice device
   ) throws ExecutionException {
     final MainFile main = MainFile.verify(filePath, project).get();
 
@@ -126,7 +143,7 @@ public class SdkFields {
     }
 
     final FlutterCommand command;
-    String[] args = additionalArgs == null ? new String[]{ } : additionalArgs.split(" ");
+    String[] args = getAdditionalArgsParsed();
     if (buildFlavor != null) {
       args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
     }
@@ -155,7 +172,7 @@ public class SdkFields {
       throw new ExecutionException("Entrypoint isn't within a Flutter pub root");
     }
 
-    String[] args = additionalArgs == null ? new String[]{ } : additionalArgs.split(" ");
+    String[] args = getAdditionalArgsParsed();
     if (buildFlavor != null) {
       args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
     }
