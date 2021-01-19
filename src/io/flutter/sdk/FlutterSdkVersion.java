@@ -8,10 +8,11 @@ package io.flutter.sdk;
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.openapi.util.Version;
 import com.intellij.openapi.vfs.VirtualFile;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class FlutterSdkVersion {
   /**
@@ -46,11 +47,27 @@ public class FlutterSdkVersion {
   private final Version version;
   @Nullable
   private final String versionText;
+  @Nullable
+  private final Version betaVersion;
 
   @VisibleForTesting
   public FlutterSdkVersion(@Nullable String versionString) {
-    version = versionString == null ? null : Version.parseVersion(versionString);
     versionText = versionString;
+    if (versionString != null) {
+      final String[] split = versionString.split("-");
+      version = Version.parseVersion(split[0]);
+
+      if (split.length > 1) {
+        // Remove '.pre' from end of version.
+        final String betaVersionString = split[1].substring(0, split[1].length() - 4);
+        betaVersion = Version.parseVersion(betaVersionString);
+      } else {
+        betaVersion = null;
+      }
+    } else {
+      version = null;
+      betaVersion = null;
+    }
   }
 
   @NotNull
@@ -130,6 +147,33 @@ public class FlutterSdkVersion {
 
   public String fullVersion() {
     return version == null ? "unknown version" : version.toString();
+  }
+
+  /**
+   * This considers beta versions when comparing versions. See https://github.com/flutter/flutter/wiki/Flutter-build-release-channels.
+   */
+  public int compareToWithBetaVersion(FlutterSdkVersion otherVersion) {
+    assert(version != null);
+    assert(otherVersion.version != null);
+    final int standardComparisonResult = version.compareTo(otherVersion.version);
+    if (standardComparisonResult != 0) {
+      return standardComparisonResult;
+    }
+
+    // Check for beta version strings if standard versions are equivalent.
+    if (betaVersion == null && otherVersion.betaVersion == null) {
+      return 0;
+    }
+
+    if (betaVersion != null && otherVersion.betaVersion != null) {
+      return betaVersion.compareTo(otherVersion.betaVersion);
+    }
+
+    if (betaVersion == null) {
+      return 1;
+    }
+
+    return -1;
   }
 
   /**
