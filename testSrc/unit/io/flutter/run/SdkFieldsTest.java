@@ -27,7 +27,6 @@ public class SdkFieldsTest {
     addOption(elt, "filePath", "lib/main.dart");
     addOption(elt, "additionalArgs", "--trace-startup");
 
-
     final SdkFields fields = new SdkFields();
     XmlSerializer.deserializeInto(fields, elt);
     assertEquals("lib/main.dart", fields.getFilePath());
@@ -63,6 +62,17 @@ public class SdkFieldsTest {
     XmlSerializer.deserializeInto(after, elt);
     assertEquals("main.dart", before.getFilePath());
     assertEquals("--trace-startup", before.getAdditionalArgs());
+  }
+
+  @Test
+  public void supportsSpacesInAdditionalArgs() {
+    final SdkFields sdkFields = new SdkFields();
+    sdkFields.setAdditionalArgs("--dart-define='VALUE=foo bar' --other=baz");
+
+    assertArrayEquals(new String[]{
+      "--dart-define=VALUE=foo bar",
+      "--other=baz"
+    }, sdkFields.getAdditionalArgsParsed());
   }
 
   private void addOption(Element elt, String name, String value) {
