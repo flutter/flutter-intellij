@@ -611,6 +611,7 @@ public class FlutterApp implements Disposable {
       myProcessHandler.destroyProcess();
       myDaemonApi.cancelPending();
       done.run();
+      DevToolsService.getInstance(myProject).endAppDevToolsInstance();
     });
     return done;
   }

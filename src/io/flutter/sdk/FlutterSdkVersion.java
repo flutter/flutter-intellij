@@ -8,10 +8,11 @@ package io.flutter.sdk;
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.openapi.util.Version;
 import com.intellij.openapi.vfs.VirtualFile;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class FlutterSdkVersion {
   /**
@@ -41,6 +42,11 @@ public class FlutterSdkVersion {
    * The version that supports --platform in flutter create.
    */
   private static final FlutterSdkVersion MIN_CREATE_PLATFORMS_SDK = new FlutterSdkVersion("1.20.0");
+
+  /**
+   * The version that supports opening DevTools using the daemon API.
+   */
+  private static final FlutterSdkVersion MIN_DEVTOOLS_FROM_DAEMON = new FlutterSdkVersion("1.26.0-8.0.pre");
 
   @Nullable
   private final Version version;
@@ -122,6 +128,11 @@ public class FlutterSdkVersion {
   public boolean isPubOutdatedSupported() {
     //noinspection ConstantConditions
     return version != null && version.compareTo(MIN_PUB_OUTDATED_SDK.version) >= 0;
+  }
+
+  // TODO: Use beta version comparing function.
+  public boolean isDevToolsFromDaemon() {
+    return true;
   }
 
   public boolean isValid() {

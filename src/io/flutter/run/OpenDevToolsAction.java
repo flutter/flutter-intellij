@@ -62,7 +62,7 @@ public class OpenDevToolsAction extends DumbAwareAction {
     }
 
 
-    AsyncUtils.whenCompleteUiThread(DevToolsService.getInstance(project).getDevToolsInstance(), (instance, ex) -> {
+    AsyncUtils.whenCompleteUiThread(DevToolsService.getInstance(project).getDevToolsInstance(myApp), (instance, ex) -> {
       if (project.isDisposed()) {
         return;
       }

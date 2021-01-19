@@ -452,7 +452,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   protected void openInspectorWithDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
-    AsyncUtils.whenCompleteUiThread(DevToolsService.getInstance(myProject).getDevToolsInstance(), (instance, error) -> {
+    AsyncUtils.whenCompleteUiThread(DevToolsService.getInstance(myProject).getDevToolsInstance(app), (instance, error) -> {
       // Skip displaying if the project has been closed.
       if (!myProject.isOpen()) {
         return;
@@ -824,7 +824,7 @@ class FlutterViewDevToolsAction extends FlutterViewAction {
         return;
       }
 
-      AsyncUtils.whenCompleteUiThread(DevToolsService.getInstance(app.getProject()).getDevToolsInstance(), (instance, ex) -> {
+      AsyncUtils.whenCompleteUiThread(DevToolsService.getInstance(app.getProject()).getDevToolsInstance(app), (instance, ex) -> {
         if (app.getProject().isDisposed()) {
           return;
         }

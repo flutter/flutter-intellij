@@ -204,7 +204,7 @@ public class FlutterPerformanceView implements Disposable {
 
     final LinkLabel<String> openDevtools = new LinkLabel<>("Open DevTools...", null);
     openDevtools.setListener((linkLabel, data) -> {
-      AsyncUtils.whenCompleteUiThread(DevToolsService.getInstance(app.getProject()).getDevToolsInstance(), (instance, ex) -> {
+      AsyncUtils.whenCompleteUiThread(DevToolsService.getInstance(app.getProject()).getDevToolsInstance(app), (instance, ex) -> {
         if (app.getProject().isDisposed()) {
           return;
         }
