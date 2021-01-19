@@ -1,5 +1,6 @@
 package io.flutter.vmService.frame;
 
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.xdebugger.XSourcePosition;
 import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.element.Frame;
@@ -23,6 +24,15 @@ public class DartVmServiceEvaluatorInFrame extends DartVmServiceEvaluator {
   public void evaluate(@NotNull final String expression,
                        @NotNull final XEvaluationCallback callback,
                        @Nullable final XSourcePosition expressionPosition) {
-    myDebugProcess.getVmServiceWrapper().evaluateInFrame(myIsolateId, myFrame, expression, callback);
+    myDebugProcess.getVmServiceWrapper().evaluateInFrame(myIsolateId, myFrame, replaceNewlines(expression), callback);
+  }
+
+  private String replaceNewlines(String expr) {
+    if (SystemInfo.isWindows) {
+      // Doing separately in case we only have \n in this string.
+      return expr.replaceAll("\n", " ").replaceAll("\r", " ");
+    } else {
+      return expr.replaceAll("\n", " ");
+    }
   }
 }
