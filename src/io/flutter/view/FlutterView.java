@@ -135,7 +135,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           final InspectorSourceLocation location = selection.getCreationLocation();
           if (location != null) {
             final XSourcePosition sourcePosition = location.getXSourcePosition();
-            sourcePosition.createNavigatable(project).navigate(true);
+            if (sourcePosition != null) {
+              sourcePosition.createNavigatable(project).navigate(true);
+            }
           }
           if (selection.isCreatedByLocalProject()) {
             final XSourcePosition position = selection.getCreationLocation().getXSourcePosition();
