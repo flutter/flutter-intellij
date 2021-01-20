@@ -14,18 +14,23 @@ import com.intellij.execution.filters.OpenFileHyperlinkInfo;
 import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
+import com.intellij.openapi.editor.markup.EffectType;
+import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.JBColor;
+import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.awt.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -119,6 +124,10 @@ public class FlutterConsoleFilter implements Filter {
       return getFlutterDoctorResult(line, entireLength - line.length());
     }
 
+    if (line.startsWith("Lost connection to device")) {
+      TextAttributes attr = new TextAttributes(UIUtil.getErrorForeground(), null, null, EffectType.BOXED, Font.PLAIN);
+      return new Result(entireLength - line.length(), entireLength, null, attr);
+    }
     int lineNumber = 0;
     String pathPart = line.trim();
     VirtualFile file = null;
