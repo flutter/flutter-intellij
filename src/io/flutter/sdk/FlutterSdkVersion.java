@@ -8,12 +8,13 @@ package io.flutter.sdk;
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.openapi.util.Version;
 import com.intellij.openapi.vfs.VirtualFile;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class FlutterSdkVersion {
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   /**
    * The minimum version we suggest people use.
    */
@@ -46,11 +47,31 @@ public class FlutterSdkVersion {
   private final Version version;
   @Nullable
   private final String versionText;
+  @Nullable
+  private final Version betaVersion;
+  @Nullable
+  private final int masterVersion;
 
   @VisibleForTesting
   public FlutterSdkVersion(@Nullable String versionString) {
-    version = versionString == null ? null : Version.parseVersion(versionString);
     versionText = versionString;
+    if (versionString != null) {
+      final String[] split = versionString.split("-");
+      version = Version.parseVersion(split[0]);
+
+      if (split.length > 1) {
+        betaVersion = Version.parseVersion(split[1]);
+        final String[] parts = split[1].split("\\.");
+        masterVersion = parts.length > 3 ? Integer.parseInt(parts[3]) : 0;
+      } else {
+        betaVersion = null;
+        masterVersion = 0;
+      }
+    } else {
+      version = null;
+      betaVersion = null;
+      masterVersion = 0;
+    }
   }
 
   @NotNull
@@ -143,5 +164,49 @@ public class FlutterSdkVersion {
   @Override
   public String toString() {
     return version == null ? "unknown version" : version.toCompactString();
+  }
+
+  @Override
+  public int compareTo(@NotNull FlutterSdkVersion otherVersion) {
+    assert version != null;
+    assert otherVersion.version != null;
+    final int standardComparisonResult = version.compareTo(otherVersion.version);
+    if (standardComparisonResult != 0) {
+      return standardComparisonResult;
+    }
+
+    // If both versions are on master, we can compare with the beta version and the master version.
+    if (masterVersion > 0 && otherVersion.masterVersion > 0) {
+      assert betaVersion != null;
+      assert otherVersion.betaVersion != null;
+      final int betaComparisonResult = betaVersion.compareTo(otherVersion.betaVersion);
+      return betaComparisonResult == 0 ? Integer.compare(masterVersion, otherVersion.masterVersion) : betaComparisonResult;
+    }
+
+    // TODO(helin24): Implement more thorough/correct comparison for master versions against non-master beta versions.
+    // This recognizes all master versions as later than non-master beta versions if the standard version is equal, because a later master
+    // version can have smaller beta version numbers than a preceding beta/dev version.
+    if (masterVersion > 0 && otherVersion.masterVersion == 0) {
+      return 1;
+    }
+
+    if (masterVersion == 0 && otherVersion.masterVersion > 0) {
+      return -1;
+    }
+
+    // Check for beta version strings if standard versions are equivalent.
+    if (betaVersion == null && otherVersion.betaVersion == null) {
+      return 0;
+    }
+
+    if (betaVersion != null && otherVersion.betaVersion != null) {
+      return betaVersion.compareTo(otherVersion.betaVersion);
+    }
+
+    if (betaVersion == null) {
+      return 1;
+    }
+
+    return -1;
   }
 }
