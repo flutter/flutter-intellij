@@ -47,7 +47,7 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
    * The version that supports --devtools-server-address in flutter run.
    */
   // TODO:(helinx): Check in with Patrick about the final version number.
-  private static final FlutterSdkVersion MIN_PASS_DEVTOOLS_SDK = new FlutterSdkVersion("1.26.0");
+  private static final FlutterSdkVersion MIN_PASS_DEVTOOLS_SDK = new FlutterSdkVersion("1.26.0-11.0.pre");
 
   @Nullable
   private final Version version;
@@ -139,8 +139,7 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   }
 
   public boolean flutterRunSupportsDevToolsUrl() {
-    //noinspection ConstantConditions
-    return version != null && version.compareTo(MIN_PASS_DEVTOOLS_SDK.version) >= 0;
+    return this.compareTo(MIN_PASS_DEVTOOLS_SDK) >= 0;
   }
 
   public boolean flutterTestSupportsMachineMode() {

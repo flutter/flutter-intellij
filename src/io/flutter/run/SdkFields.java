@@ -8,6 +8,7 @@ package io.flutter.run;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
@@ -27,6 +28,7 @@ import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -157,7 +159,19 @@ public class SdkFields {
 
     if (flutterSdk.getVersion().flutterRunSupportsDevToolsUrl()) {
       try {
-        final DevToolsInstance instance = DevToolsService.getInstance(project).getDevToolsInstance().get(30, TimeUnit.SECONDS);
+        final ProgressManager progress = ProgressManager.getInstance();
+
+        final CompletableFuture<DevToolsInstance> devToolsFuture = new CompletableFuture<>();
+        progress.runProcessWithProgressSynchronously(() -> {
+          progress.getProgressIndicator().setIndeterminate(true);
+          try {
+            devToolsFuture.complete(DevToolsService.getInstance(project).getDevToolsInstance().get(30, TimeUnit.SECONDS));
+          }
+          catch (Exception e) {
+            e.printStackTrace();
+          }
+        }, "Starting DevTools", false, project);
+        final DevToolsInstance instance = devToolsFuture.get();
         args = ArrayUtil.append(args, "--devtools-server-address=http://" + instance.host + ":" + instance.port);
       }
       catch (Exception e) {
