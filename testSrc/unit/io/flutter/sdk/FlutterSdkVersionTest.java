@@ -39,44 +39,76 @@ public class FlutterSdkVersionTest {
   @Test
   public void comparesBetaVersions() {
     assertEquals(
-      new FlutterSdkVersion("1.0.0").compareToWithBetaVersion(new FlutterSdkVersion("1.0.1")),
+      new FlutterSdkVersion("1.0.0").compareTo(new FlutterSdkVersion("1.0.1")),
       -1
     );
     assertEquals(
-      new FlutterSdkVersion("1.0.0").compareToWithBetaVersion(new FlutterSdkVersion("1.0.0")),
+      new FlutterSdkVersion("1.0.0").compareTo(new FlutterSdkVersion("1.0.0")),
       0
     );
     assertEquals(
-      new FlutterSdkVersion("1.0.1").compareToWithBetaVersion(new FlutterSdkVersion("1.0.0")),
+      new FlutterSdkVersion("1.0.1").compareTo(new FlutterSdkVersion("1.0.0")),
       1
     );
     assertEquals(
-      new FlutterSdkVersion("1.0.0").compareToWithBetaVersion(new FlutterSdkVersion("1.0.0-1.0.pre")),
+      new FlutterSdkVersion("1.0.0").compareTo(new FlutterSdkVersion("1.0.0-1.0.pre")),
       1
     );
     assertEquals(
-      new FlutterSdkVersion("1.0.0-1.1.pre").compareToWithBetaVersion(new FlutterSdkVersion("1.0.0-1.0.pre")),
+      new FlutterSdkVersion("1.0.0-1.1.pre").compareTo(new FlutterSdkVersion("1.0.0-1.0.pre")),
       1
     );
     assertEquals(
-      new FlutterSdkVersion("1.0.0-2.0.pre").compareToWithBetaVersion(new FlutterSdkVersion("1.0.0-1.0.pre")),
+      new FlutterSdkVersion("1.0.0-2.0.pre").compareTo(new FlutterSdkVersion("1.0.0-1.0.pre")),
       1
     );
     assertEquals(
-      new FlutterSdkVersion("1.0.0-1.1.pre").compareToWithBetaVersion(new FlutterSdkVersion("1.0.0-1.2.pre")),
+      new FlutterSdkVersion("1.0.0-1.1.pre").compareTo(new FlutterSdkVersion("1.0.0-1.2.pre")),
       -1
     );
     assertEquals(
-      new FlutterSdkVersion("1.0.0-1.1.pre").compareToWithBetaVersion(new FlutterSdkVersion("1.0.0-2.1.pre")),
+      new FlutterSdkVersion("1.0.0-1.1.pre").compareTo(new FlutterSdkVersion("1.0.0-2.1.pre")),
       -1
     );
     assertEquals(
-      new FlutterSdkVersion("1.0.0-1.1.pre").compareToWithBetaVersion(new FlutterSdkVersion("1.0.0")),
+      new FlutterSdkVersion("1.0.0-1.1.pre").compareTo(new FlutterSdkVersion("1.0.0")),
       -1
     );
     assertEquals(
-      new FlutterSdkVersion("1.0.0-1.1.pre").compareToWithBetaVersion(new FlutterSdkVersion("1.0.0-1.1.pre")),
+      new FlutterSdkVersion("1.0.0-1.1.pre").compareTo(new FlutterSdkVersion("1.0.0-1.1.pre")),
       0
+    );
+
+    // TODO:(helin24): Update with correct comparisons involving the master branch.
+    assertEquals(
+      new FlutterSdkVersion("1.0.0-1.1.pre.123").compareTo(new FlutterSdkVersion("1.0.0-1.1.pre.123")),
+      0
+    );
+    assertEquals(
+      new FlutterSdkVersion("1.0.0-1.1.pre.123").compareTo(new FlutterSdkVersion("1.0.0-1.1.pre.124")),
+      -1
+    );
+    assertEquals(
+      new FlutterSdkVersion("1.0.0-1.1.pre.124").compareTo(new FlutterSdkVersion("1.0.0-1.1.pre.123")),
+      1
+    );
+
+    assertEquals(
+      new FlutterSdkVersion("1.0.0-1.1.pre.123").compareTo(new FlutterSdkVersion("1.0.0-1.1.pre")),
+      1
+    );
+    assertEquals(
+      new FlutterSdkVersion("1.0.0-1.0.pre.123").compareTo(new FlutterSdkVersion("1.0.0-2.0.pre")),
+      1
+    );
+
+    assertEquals(
+      new FlutterSdkVersion("1.0.0-1.1.pre").compareTo(new FlutterSdkVersion("1.0.0-1.1.pre.123")),
+      -1
+    );
+    assertEquals(
+      new FlutterSdkVersion("1.0.0-2.0.pre").compareTo(new FlutterSdkVersion("1.0.0-1.0.pre.123")),
+      -1
     );
   }
 }

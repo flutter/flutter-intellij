@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-public class FlutterSdkVersion {
+public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   /**
    * The minimum version we suggest people use.
    */
@@ -49,6 +49,8 @@ public class FlutterSdkVersion {
   private final String versionText;
   @Nullable
   private final Version betaVersion;
+  @Nullable
+  private final int masterVersion;
 
   @VisibleForTesting
   public FlutterSdkVersion(@Nullable String versionString) {
@@ -58,15 +60,17 @@ public class FlutterSdkVersion {
       version = Version.parseVersion(split[0]);
 
       if (split.length > 1) {
-        // Remove '.pre' from end of version.
-        final String betaVersionString = split[1].substring(0, split[1].length() - 4);
-        betaVersion = Version.parseVersion(betaVersionString);
+        betaVersion = Version.parseVersion(split[1]);
+        final String[] parts = split[1].split("\\.");
+        masterVersion = parts.length > 3 ? Integer.parseInt(parts[3]) : 0;
       } else {
         betaVersion = null;
+        masterVersion = 0;
       }
     } else {
       version = null;
       betaVersion = null;
+      masterVersion = 0;
     }
   }
 
@@ -150,14 +154,44 @@ public class FlutterSdkVersion {
   }
 
   /**
-   * This considers beta versions when comparing versions. See https://github.com/flutter/flutter/wiki/Flutter-build-release-channels.
+   * Return the raw version text from the version file.
    */
-  public int compareToWithBetaVersion(FlutterSdkVersion otherVersion) {
-    assert(version != null);
-    assert(otherVersion.version != null);
+  @Nullable
+  public String getVersionText() {
+    return versionText;
+  }
+
+  @Override
+  public String toString() {
+    return version == null ? "unknown version" : version.toCompactString();
+  }
+
+  @Override
+  public int compareTo(@NotNull FlutterSdkVersion otherVersion) {
+    assert version != null;
+    assert otherVersion.version != null;
     final int standardComparisonResult = version.compareTo(otherVersion.version);
     if (standardComparisonResult != 0) {
       return standardComparisonResult;
+    }
+
+    // If both versions are on master, we can compare with the beta version and the master version.
+    if (masterVersion > 0 && otherVersion.masterVersion > 0) {
+      assert betaVersion != null;
+      assert otherVersion.betaVersion != null;
+      final int betaComparisonResult = betaVersion.compareTo(otherVersion.betaVersion);
+      return betaComparisonResult == 0 ? Integer.compare(masterVersion, otherVersion.masterVersion) : betaComparisonResult;
+    }
+
+    // TODO(helin24): Implement more thorough/correct comparison for master versions against non-master beta versions.
+    // This recognizes all master versions as later than non-master beta versions if the standard version is equal, because a later master
+    // version can have smaller beta version numbers than a preceding beta/dev version.
+    if (masterVersion > 0 && otherVersion.masterVersion == 0) {
+      return 1;
+    }
+
+    if (masterVersion == 0 && otherVersion.masterVersion > 0) {
+      return -1;
     }
 
     // Check for beta version strings if standard versions are equivalent.
@@ -174,18 +208,5 @@ public class FlutterSdkVersion {
     }
 
     return -1;
-  }
-
-  /**
-   * Return the raw version text from the version file.
-   */
-  @Nullable
-  public String getVersionText() {
-    return versionText;
-  }
-
-  @Override
-  public String toString() {
-    return version == null ? "unknown version" : version.toCompactString();
   }
 }
