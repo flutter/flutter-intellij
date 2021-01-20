@@ -421,6 +421,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
    */
   public void debugActive(@NotNull FlutterViewMessages.FlutterDebugEvent event) {
     final FlutterApp app = event.app;
+    if (app.getFlutterDebugProcess() == null || app.getFlutterDebugProcess().getInspectorService() == null) {
+      return;
+    }
 
     if (app.getMode().isProfiling() || app.getLaunchMode().isProfiling()) {
       ApplicationManager.getApplication().invokeLater(() -> debugActiveHelper(app, null));
