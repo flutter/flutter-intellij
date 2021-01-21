@@ -8,6 +8,7 @@ package io.flutter.run;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -35,6 +36,7 @@ import java.util.concurrent.TimeUnit;
  * Fields used when launching an app using the Flutter SDK (non-bazel).
  */
 public class SdkFields {
+  private static final Logger LOG = Logger.getInstance(SdkFields.class);
   private @Nullable String filePath;
   private @Nullable String buildFlavor;
   private @Nullable String additionalArgs;
@@ -168,14 +170,14 @@ public class SdkFields {
             devToolsFuture.complete(DevToolsService.getInstance(project).getDevToolsInstance().get(30, TimeUnit.SECONDS));
           }
           catch (Exception e) {
-            e.printStackTrace();
+            LOG.error(e);
           }
         }, "Starting DevTools", false, project);
         final DevToolsInstance instance = devToolsFuture.get();
         args = ArrayUtil.append(args, "--devtools-server-address=http://" + instance.host + ":" + instance.port);
       }
       catch (Exception e) {
-        e.printStackTrace();
+        LOG.error(e);
       }
     }
     command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
