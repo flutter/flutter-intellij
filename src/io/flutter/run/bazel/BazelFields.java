@@ -76,16 +76,27 @@ public class BazelFields {
   private final String bazelArgs;
 
   /**
+   * This is to set a DevToolsService ahead of time, intended for testing.
+   */
+  @Nullable
+  private final DevToolsService devToolsService;
+
+  /**
    * Parameters to pass to Flutter, such as --start-paused.
    */
   @Nullable
   private final String additionalArgs;
 
   BazelFields(@Nullable String bazelTarget, @Nullable String bazelArgs, @Nullable String additionalArgs, boolean enableReleaseMode) {
+    this(bazelTarget, bazelArgs, additionalArgs, enableReleaseMode, null);
+  }
+
+  BazelFields(@Nullable String bazelTarget, @Nullable String bazelArgs, @Nullable String additionalArgs, boolean enableReleaseMode, DevToolsService devToolsService) {
     this.bazelTarget = bazelTarget;
     this.bazelArgs = bazelArgs;
     this.additionalArgs = additionalArgs;
     this.enableReleaseMode = enableReleaseMode;
+    this.devToolsService = devToolsService;
   }
 
   /**
@@ -96,6 +107,7 @@ public class BazelFields {
     enableReleaseMode = original.enableReleaseMode;
     bazelArgs = original.bazelArgs;
     additionalArgs = original.additionalArgs;
+    devToolsService = original.devToolsService;
   }
 
   @Nullable
@@ -270,7 +282,8 @@ public class BazelFields {
       progress.runProcessWithProgressSynchronously(() -> {
         progress.getProgressIndicator().setIndeterminate(true);
         try {
-          devToolsFuture.complete(DevToolsService.getInstance(project).getDevToolsInstance().get(30, TimeUnit.SECONDS));
+          final DevToolsService service = this.devToolsService == null ? DevToolsService.getInstance(project) : this.devToolsService;
+          devToolsFuture.complete(service.getDevToolsInstance().get(30, TimeUnit.SECONDS));
         }
         catch (Exception e) {
           LOG.error(e);
@@ -296,6 +309,10 @@ public class BazelFields {
   }
 
   public static BazelFields readFrom(Element element) {
+    return readFrom(element, null);
+  }
+
+  public static BazelFields readFrom(Element element, DevToolsService service) {
     final Map<String, String> options = ElementIO.readOptions(element);
 
     final String bazelTarget = options.get("bazelTarget");

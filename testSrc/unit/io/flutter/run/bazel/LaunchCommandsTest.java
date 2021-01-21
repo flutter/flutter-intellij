@@ -14,22 +14,38 @@ import io.flutter.bazel.FakeWorkspaceFactory;
 import io.flutter.bazel.Workspace;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.common.RunMode;
+import io.flutter.run.daemon.DevToolsInstance;
+import io.flutter.run.daemon.DevToolsService;
 import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.Testing;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 public class LaunchCommandsTest {
   @Rule
   public ProjectFixture projectFixture = Testing.makeCodeInsightModule();
+
+  DevToolsService mockService;
+
+  @Before
+  public void setUp() {
+    final CompletableFuture<DevToolsInstance> future = new CompletableFuture<>();
+    future.complete(new DevToolsInstance("http://localhost", 1234));
+    mockService = mock(DevToolsService.class);
+    when(mockService.getDevToolsInstance()).thenReturn(future);
+  }
 
   @Test
   public void producesCorrectCommandLineInReleaseMode() throws ExecutionException {
@@ -49,6 +65,7 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
+    expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
     expectedCommandLine.add("bazel_target");
     assertThat(launchCommand.getCommandLineString(), equalTo(String.join(" ", expectedCommandLine)));
 
@@ -74,6 +91,7 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
+    expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
     expectedCommandLine.add("bazel_target");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
@@ -96,6 +114,7 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
+    expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
     expectedCommandLine.add("bazel_target");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
@@ -118,6 +137,7 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
+    expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
     expectedCommandLine.add("bazel_target");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
 
@@ -137,6 +157,7 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
+    expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
     expectedCommandLine.add("bazel_target");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
 
@@ -156,6 +177,7 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
+    expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
     expectedCommandLine.add("bazel_target");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
@@ -179,6 +201,7 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("additional_args");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
+    expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
     expectedCommandLine.add("bazel_target");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
@@ -204,6 +227,7 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("value_of_arg2");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
+    expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
     expectedCommandLine.add("bazel_target");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
@@ -223,6 +247,7 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("--start-paused");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
+    expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
     expectedCommandLine.add("bazel_target");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
@@ -241,6 +266,7 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
+    expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
     expectedCommandLine.add("bazel_target");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
@@ -258,6 +284,7 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("android-tester");
+    expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
     expectedCommandLine.add("bazel_target");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
@@ -276,6 +303,7 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("android-tester");
+    expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
     expectedCommandLine.add("bazel_target");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
@@ -293,6 +321,7 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("ios-tester");
+    expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
     expectedCommandLine.add("bazel_target");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
@@ -310,6 +339,7 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("ios-tester");
+    expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
     expectedCommandLine.add("bazel_target");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
@@ -327,7 +357,8 @@ public class LaunchCommandsTest {
       bazelTarget,
       bazelArgs,
       additionalArgs,
-      enableReleaseMode
+      enableReleaseMode,
+      mockService
     ));
   }
 

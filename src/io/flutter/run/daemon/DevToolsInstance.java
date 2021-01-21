@@ -9,7 +9,7 @@ public class DevToolsInstance {
   final public String host;
   final public int port;
 
-  DevToolsInstance(String host, int port) {
+  public DevToolsInstance(String host, int port) {
     this.host = host;
     this.port = port;
   }
