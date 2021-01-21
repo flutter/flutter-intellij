@@ -9,6 +9,8 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.CommandLineTokenizer;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.io.FileUtil;
@@ -24,12 +26,16 @@ import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.common.RunMode;
+import io.flutter.run.daemon.DevToolsInstance;
+import io.flutter.run.daemon.DevToolsService;
 import io.flutter.utils.ElementIO;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import static io.flutter.run.common.RunMode.DEBUG;
 
@@ -39,6 +45,7 @@ import static io.flutter.run.common.RunMode.DEBUG;
  * This class is immutable.
  */
 public class BazelFields {
+  private static final Logger LOG = Logger.getInstance(BazelFields.class);
 
   /**
    * The Bazel target to invoke.
@@ -254,6 +261,26 @@ public class BazelFields {
     if (device != null) {
       commandLine.addParameter("-d");
       commandLine.addParameter(device.deviceId());
+    }
+
+    try {
+      final ProgressManager progress = ProgressManager.getInstance();
+
+      final CompletableFuture<DevToolsInstance> devToolsFuture = new CompletableFuture<>();
+      progress.runProcessWithProgressSynchronously(() -> {
+        progress.getProgressIndicator().setIndeterminate(true);
+        try {
+          devToolsFuture.complete(DevToolsService.getInstance(project).getDevToolsInstance().get(30, TimeUnit.SECONDS));
+        }
+        catch (Exception e) {
+          LOG.error(e);
+        }
+      }, "Starting DevTools", false, project);
+      final DevToolsInstance instance = devToolsFuture.get();
+      commandLine.addParameter("--devtools-server-address=http://" + instance.host + ":" + instance.port);
+    }
+    catch (Exception e) {
+      LOG.error(e);
     }
 
     commandLine.addParameter(target);
