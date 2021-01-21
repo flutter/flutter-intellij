@@ -8,6 +8,8 @@ package io.flutter.run;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
@@ -19,16 +21,22 @@ import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRootCache;
 import io.flutter.run.common.RunMode;
+import io.flutter.run.daemon.DevToolsInstance;
+import io.flutter.run.daemon.DevToolsService;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Fields used when launching an app using the Flutter SDK (non-bazel).
  */
 public class SdkFields {
+  private static final Logger LOG = Logger.getInstance(SdkFields.class);
   private @Nullable String filePath;
   private @Nullable String buildFlavor;
   private @Nullable String additionalArgs;
@@ -149,6 +157,28 @@ public class SdkFields {
     }
     if (FlutterSettings.getInstance().isShowStructuredErrors() && flutterSdk.getVersion().isDartDefineSupported()) {
       args = ArrayUtil.append(args, "--dart-define=flutter.inspector.structuredErrors=true");
+    }
+
+    if (flutterSdk.getVersion().flutterRunSupportsDevToolsUrl()) {
+      try {
+        final ProgressManager progress = ProgressManager.getInstance();
+
+        final CompletableFuture<DevToolsInstance> devToolsFuture = new CompletableFuture<>();
+        progress.runProcessWithProgressSynchronously(() -> {
+          progress.getProgressIndicator().setIndeterminate(true);
+          try {
+            devToolsFuture.complete(DevToolsService.getInstance(project).getDevToolsInstance().get(30, TimeUnit.SECONDS));
+          }
+          catch (Exception e) {
+            LOG.error(e);
+          }
+        }, "Starting DevTools", false, project);
+        final DevToolsInstance instance = devToolsFuture.get();
+        args = ArrayUtil.append(args, "--devtools-server-address=http://" + instance.host + ":" + instance.port);
+      }
+      catch (Exception e) {
+        LOG.error(e);
+      }
     }
     command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
     return command.createGeneralCommandLine(project);

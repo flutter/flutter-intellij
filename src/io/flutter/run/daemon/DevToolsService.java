@@ -85,9 +85,8 @@ public class DevToolsService {
 
   private void startServer() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      // TODO(helinx): Also use `setUpWithDaemon` for later flutter SDK versions where the daemon request `devtools.serve` has been changed
-      //  to use the latest DevTools server.
-      if (WorkspaceCache.getInstance(project).isBazel()) {
+      final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+      if (WorkspaceCache.getInstance(project).isBazel() || (sdk != null && sdk.getVersion().flutterRunSupportsDevToolsUrl())) {
         setUpWithDaemon();
       }
       else {
