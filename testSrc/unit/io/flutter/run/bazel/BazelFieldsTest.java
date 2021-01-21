@@ -6,18 +6,33 @@
 package io.flutter.run.bazel;
 
 import com.intellij.util.xmlb.XmlSerializer;
+import io.flutter.run.daemon.DevToolsInstance;
+import io.flutter.run.daemon.DevToolsService;
 import org.jdom.Element;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
  * Verifies run configuration persistence.
  */
 public class BazelFieldsTest {
+  DevToolsService mockService;
+
+  @Before
+  public void setUp() {
+    final CompletableFuture<DevToolsInstance> future = new CompletableFuture<>();
+    future.complete(new DevToolsInstance("http://localhost", 1234));
+    mockService = mock(DevToolsService.class);
+    when(mockService.getDevToolsInstance()).thenReturn(future);
+  }
 
   @Test
   public void shouldReadFieldsFromXml() {
@@ -27,7 +42,7 @@ public class BazelFieldsTest {
     addOption(elt, "additionalArgs", "--android_cpu=x86");
     addOption(elt, "bazelArgs", "--define=release_channel=beta3");
 
-    final BazelFields fields = BazelFields.readFrom(elt);
+    final BazelFields fields = BazelFields.readFrom(elt, mockService);
     XmlSerializer.deserializeInto(fields, elt);
     assertEquals("//path/to/flutter/app:hello", fields.getBazelTarget());
     assertEquals("--define=release_channel=beta3", fields.getBazelArgs());
@@ -44,7 +59,7 @@ public class BazelFieldsTest {
     addOption(elt, "enableReleaseMode", "true");
     addOption(elt, "additionalArgs", "--android_cpu=x86");
 
-    final BazelFields fields = BazelFields.readFrom(elt);
+    final BazelFields fields = BazelFields.readFrom(elt, mockService);
     XmlSerializer.deserializeInto(fields, elt);
     assertEquals("//path/to/flutter/app:hello", fields.getBazelTarget());
     assertNull(fields.getBazelArgs());
@@ -58,7 +73,8 @@ public class BazelFieldsTest {
       "bazel_target",
       "bazel_args --1 -2=3",
       "additional_args --1 --2=3",
-      true
+      true,
+      mockService
     );
 
     final Element elt = new Element("test");
@@ -69,7 +85,7 @@ public class BazelFieldsTest {
       new String[]{"additionalArgs", "bazelArgs", "bazelTarget", "enableReleaseMode",},
       getOptionNames(elt).toArray());
 
-    final BazelFields after = BazelFields.readFrom(elt);
+    final BazelFields after = BazelFields.readFrom(elt, mockService);
 
     assertEquals("bazel_target", after.getBazelTarget());
     assertEquals("bazel_args --1 -2=3", after.getBazelArgs());

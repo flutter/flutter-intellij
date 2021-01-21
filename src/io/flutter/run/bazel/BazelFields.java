@@ -9,6 +9,8 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.CommandLineTokenizer;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.io.FileUtil;
@@ -24,12 +26,16 @@ import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.common.RunMode;
+import io.flutter.run.daemon.DevToolsInstance;
+import io.flutter.run.daemon.DevToolsService;
 import io.flutter.utils.ElementIO;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import static io.flutter.run.common.RunMode.DEBUG;
 
@@ -39,6 +45,7 @@ import static io.flutter.run.common.RunMode.DEBUG;
  * This class is immutable.
  */
 public class BazelFields {
+  private static final Logger LOG = Logger.getInstance(BazelFields.class);
 
   /**
    * The Bazel target to invoke.
@@ -69,16 +76,27 @@ public class BazelFields {
   private final String bazelArgs;
 
   /**
+   * This is to set a DevToolsService ahead of time, intended for testing.
+   */
+  @Nullable
+  private final DevToolsService devToolsService;
+
+  /**
    * Parameters to pass to Flutter, such as --start-paused.
    */
   @Nullable
   private final String additionalArgs;
 
   BazelFields(@Nullable String bazelTarget, @Nullable String bazelArgs, @Nullable String additionalArgs, boolean enableReleaseMode) {
+    this(bazelTarget, bazelArgs, additionalArgs, enableReleaseMode, null);
+  }
+
+  BazelFields(@Nullable String bazelTarget, @Nullable String bazelArgs, @Nullable String additionalArgs, boolean enableReleaseMode, DevToolsService devToolsService) {
     this.bazelTarget = bazelTarget;
     this.bazelArgs = bazelArgs;
     this.additionalArgs = additionalArgs;
     this.enableReleaseMode = enableReleaseMode;
+    this.devToolsService = devToolsService;
   }
 
   /**
@@ -89,6 +107,7 @@ public class BazelFields {
     enableReleaseMode = original.enableReleaseMode;
     bazelArgs = original.bazelArgs;
     additionalArgs = original.additionalArgs;
+    devToolsService = original.devToolsService;
   }
 
   @Nullable
@@ -256,6 +275,27 @@ public class BazelFields {
       commandLine.addParameter(device.deviceId());
     }
 
+    try {
+      final ProgressManager progress = ProgressManager.getInstance();
+
+      final CompletableFuture<DevToolsInstance> devToolsFuture = new CompletableFuture<>();
+      progress.runProcessWithProgressSynchronously(() -> {
+        progress.getProgressIndicator().setIndeterminate(true);
+        try {
+          final DevToolsService service = this.devToolsService == null ? DevToolsService.getInstance(project) : this.devToolsService;
+          devToolsFuture.complete(service.getDevToolsInstance().get(30, TimeUnit.SECONDS));
+        }
+        catch (Exception e) {
+          LOG.error(e);
+        }
+      }, "Starting DevTools", false, project);
+      final DevToolsInstance instance = devToolsFuture.get();
+      commandLine.addParameter("--devtools-server-address=http://" + instance.host + ":" + instance.port);
+    }
+    catch (Exception e) {
+      LOG.error(e);
+    }
+
     commandLine.addParameter(target);
 
     return commandLine;
@@ -269,6 +309,10 @@ public class BazelFields {
   }
 
   public static BazelFields readFrom(Element element) {
+    return readFrom(element, null);
+  }
+
+  public static BazelFields readFrom(Element element, DevToolsService service) {
     final Map<String, String> options = ElementIO.readOptions(element);
 
     final String bazelTarget = options.get("bazelTarget");
