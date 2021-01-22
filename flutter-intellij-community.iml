@@ -100,11 +100,11 @@
     <orderEntry type="library" name="Dart Packages" level="project" />
     <orderEntry type="library" name="studio-plugin-git4idea" level="project" />
     <orderEntry type="module" module-name="intellij.android.observable" />
-    <orderEntry type="library" name="jxbrowser-7.12" level="project" />
+    <orderEntry type="library" name="jxbrowser-7.12.2" level="project" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-7.12.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-7.12.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -113,7 +113,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-swing-7.12.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-swing-7.12.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -126,6 +126,6 @@
     <orderEntry type="library" name="Dart Packages" level="project" />
     <orderEntry type="library" name="studio-plugin-git4idea" level="project" />
     <orderEntry type="module" module-name="intellij.android.observable" />
-    <orderEntry type="library" name="jxbrowser-7.12" level="project" />
+    <orderEntry type="library" name="jxbrowser-7.12.2" level="project" />
   </component>
 </module>
