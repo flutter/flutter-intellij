@@ -101,7 +101,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   protected static final String INSTALLATION_TIMED_OUT_LABEL =
     "Waiting for JxBrowser installation timed out. Restart your IDE to try again.";
   protected static final String INSTALLATION_WAIT_FAILED = "The JxBrowser installation failed unexpectedly. Restart your IDE to try again.";
-  protected static final String INSTALLING_DEVTOOLS_LABEL = "Installing DevTools...";
+  protected static final String INSTALLING_DEVTOOLS_LABEL = "<html><body style=\"text-align: center;\">Installing DevTools... <br><br>(If this takes more than 15 seconds, please run File > Invalidate Caches & Restart.)</body></html>";
   protected static final String DEVTOOLS_FAILED_LABEL = "Setting up DevTools failed.";
   protected static final int INSTALLATION_WAIT_LIMIT_SECONDS = 2000;
 
