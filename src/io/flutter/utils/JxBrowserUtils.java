@@ -13,7 +13,7 @@ import java.util.Properties;
 
 public class JxBrowserUtils {
   private static final String JXBROWSER_FILE_PREFIX = "jxbrowser";
-  private static final String JXBROWSER_FILE_VERSION = "7.12";
+  private static final String JXBROWSER_FILE_VERSION = "7.12.2";
   private static final String JXBROWSER_FILE_SUFFIX = "jar";
   public static final String LICENSE_PROPERTY_NAME = "jxbrowser.license.key";
 
