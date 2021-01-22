@@ -15,6 +15,8 @@ import static io.flutter.dart.DartPsiUtil.topmostReferenceExpression;
 import com.intellij.codeInsight.daemon.GutterName;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProviderDescriptor;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.newvfs.impl.VirtualDirectoryImpl;
@@ -63,22 +65,24 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     if (parent == null) return null;
 
     // Resolve the class reference and check that it is one of the known, cached classes.
-    final PsiElement symbol = "IconData".equals(name) ? refExpr : refExpr.getFirstChild();
-    final PsiElement result = ((DartReference)symbol).resolve();
-    if (result == null) return null;
-    final List<VirtualFile> library = DartResolveUtil.findLibrary(result.getContainingFile());
-    boolean found = false;
-    for (VirtualFile file : library) {
-      VirtualFile dir = file.getParent();
-      if (dir.isInLocalFileSystem()) {
-        final String path = dir.getPath();
-        if (path.endsWith(KnownPaths.get(name))) {
-          found = true;
-          break;
+    if (!ApplicationManager.getApplication().isUnitTestMode()) {
+      final PsiElement symbol = "IconData".equals(name) ? refExpr : refExpr.getFirstChild();
+      final PsiElement result = ((DartReference)symbol).resolve();
+      if (result == null) return null;
+      final List<VirtualFile> library = DartResolveUtil.findLibrary(result.getContainingFile());
+      boolean found = false;
+      for (VirtualFile file : library) {
+        VirtualFile dir = file.getParent();
+        if (dir.isInLocalFileSystem()) {
+          final String path = dir.getPath();
+          if (path.endsWith(KnownPaths.get(name))) {
+            found = true;
+            break;
+          }
         }
       }
+      if (!found) return null;
     }
-    if (!found) return null;
 
     if (parent.getNode().getElementType() == DartTokenTypes.CALL_EXPRESSION) {
       // Check font family and package
