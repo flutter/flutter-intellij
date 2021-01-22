@@ -23,10 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.function.Supplier;
 
 /**
@@ -89,8 +86,12 @@ public class EvalOnDartLibrary implements Disposable {
         response.complete(null);
         return;
       }
-      // No need to timeout until the request has actually started.
-      timeoutAfter(response, DEFAULT_REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS, requestName);
+      try {
+        // No need to timeout until the request has actually started.
+        timeoutAfter(response, DEFAULT_REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS, requestName);
+      } catch (CompletionException ex) {
+        response.completeExceptionally(ex);
+      }
       final CompletableFuture<T> future = request.get();
       future.whenCompleteAsync((v, t) -> {
         if (t != null) {
