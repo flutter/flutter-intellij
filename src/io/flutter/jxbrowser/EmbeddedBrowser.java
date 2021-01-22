@@ -45,6 +45,7 @@ public class EmbeddedBrowser {
   private Browser browser;
 
   private EmbeddedBrowser(Project project) {
+    System.setProperty("jxbrowser.force.dpi.awareness", "1.0");
     if (FlutterSettings.getInstance().isVerboseLogging()) {
       System.setProperty("jxbrowser.logging.level", "ALL");
     }
