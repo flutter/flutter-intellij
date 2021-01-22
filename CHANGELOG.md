@@ -123,7 +123,7 @@
 - Use the new, generated metadata from flutter/tools_metadata (#4724)
 - Remove the framework metadata generation code from this repo (#4721)
 - Suppress several UnstableApiUsage warnings (#4722)
-- Replace Whitelist terminology to Allow List (#4723)
+- Update terminology to Allow List (#4723)
 - Resolve the issue displaying color icons in IntelliJ Idea and Android studio [ISSUE-3347] (#4695)
 - Add handling and messaging for when JxBrowser is not installed (#4712)
 - Update our analytics text (#4711)
