@@ -22,13 +22,13 @@ import com.intellij.psi.impl.source.tree.LeafElement;
 import com.intellij.util.Function;
 import com.intellij.util.Time;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
+import com.jetbrains.lang.dart.psi.DartFunctionDeclarationWithBodyOrNative;
 import com.jetbrains.lang.dart.psi.DartId;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
 import java.util.Date;
 import java.util.Map;
+import javax.swing.Icon;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Utility for creating {@link RunLineMarkerContributor}s for tests.
@@ -57,14 +57,28 @@ public abstract class TestLineMarkerContributor extends RunLineMarkerContributor
     if (element instanceof LeafElement && element.getParent() instanceof DartId) {
       final DartId dartId = (DartId)element.getParent();
 
-      if (dartId.getParent() != null && dartId.getParent().getParent() instanceof DartCallExpression) {
-        final DartCallExpression dartCallExpression = (DartCallExpression)dartId.getParent().getParent();
-        final TestType testCall = testConfigUtils.asTestCall(dartCallExpression);
-        if (testCall != null) {
-          final Icon icon = getTestStateIcon(element, testCall.getIcon());
-          final Function<PsiElement, String> tooltipProvider =
-            psiElement -> testCall.getTooltip(psiElement, testConfigUtils);
-          return new RunLineMarkerContributor.Info(icon, tooltipProvider, ExecutorAction.getActions());
+      if (dartId.getParent() != null) {
+        if (dartId.getParent().getParent() instanceof DartCallExpression) {
+          final DartCallExpression dartCallExpression = (DartCallExpression)dartId.getParent().getParent();
+          final TestType testCall = testConfigUtils.asTestCall(dartCallExpression);
+          if (testCall != null) {
+            final Icon icon = getTestStateIcon(element, testCall.getIcon());
+            final Function<PsiElement, String> tooltipProvider =
+              psiElement -> testCall.getTooltip(psiElement, testConfigUtils);
+            return new RunLineMarkerContributor.Info(icon, tooltipProvider, ExecutorAction.getActions());
+          }
+        }
+        else if (dartId.getParent().getParent() instanceof DartFunctionDeclarationWithBodyOrNative) {
+          if ("main".equals(dartId.getText())) {
+            // There seems to be an intermittent timing issue that causes the first test call to not get marked.
+            // Priming the cache here solves it.
+            testConfigUtils.refreshOutline(element);
+            TestType testCall = TestType.MAIN;
+            final Icon icon = getTestStateIcon(element, testCall.getIcon());
+            final Function<PsiElement, String> tooltipProvider =
+              psiElement -> testCall.getTooltip(psiElement, testConfigUtils);
+            return new RunLineMarkerContributor.Info(icon, tooltipProvider, ExecutorAction.getActions());
+          }
         }
       }
     }

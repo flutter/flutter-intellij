@@ -5,6 +5,9 @@
  */
 package io.flutter.run.common;
 
+import static org.dartlang.analysis.server.protocol.ElementKind.UNIT_TEST_GROUP;
+import static org.dartlang.analysis.server.protocol.ElementKind.UNIT_TEST_TEST;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.openapi.application.ApplicationManager;
@@ -17,17 +20,13 @@ import com.jetbrains.lang.dart.psi.DartCallExpression;
 import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
 import io.flutter.dart.DartSyntax;
 import io.flutter.editor.ActiveEditorsOutlineService;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.dartlang.analysis.server.protocol.ElementKind;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.dartlang.analysis.server.protocol.ElementKind.UNIT_TEST_GROUP;
-import static org.dartlang.analysis.server.protocol.ElementKind.UNIT_TEST_TEST;
 
 /**
  * Common utilities for processing Flutter tests.
@@ -39,6 +38,10 @@ public abstract class CommonTestConfigUtils {
   public static String convertHttpServiceProtocolToWs(String url) {
     return StringUtil.trimTrailing(
       url.replaceFirst("http:", "ws:"), '/') + "/ws";
+  }
+
+  public void refreshOutline(@NotNull PsiElement element) {
+    getTestsFromOutline(element.getContainingFile());
   }
 
   /**
