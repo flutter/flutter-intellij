@@ -67,12 +67,18 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     final PsiElement result = ((DartReference)symbol).resolve();
     if (result == null) return null;
     final List<VirtualFile> library = DartResolveUtil.findLibrary(result.getContainingFile());
-    if (library.size() > 1) return null;
-    VirtualFile dir = library.get(0).getParent();
-    if (dir.isInLocalFileSystem()) {
-      final String path = dir.getPath();
-      if (!path.endsWith(KnownPaths.get(name))) return null;
+    boolean found = false;
+    for (VirtualFile file : library) {
+      VirtualFile dir = file.getParent();
+      if (dir.isInLocalFileSystem()) {
+        final String path = dir.getPath();
+        if (path.endsWith(KnownPaths.get(name))) {
+          found = true;
+          break;
+        }
+      }
     }
+    if (!found) return null;
 
     if (parent.getNode().getElementType() == DartTokenTypes.CALL_EXPRESSION) {
       // Check font family and package
