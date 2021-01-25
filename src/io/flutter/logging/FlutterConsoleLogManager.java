@@ -402,7 +402,7 @@ public class FlutterConsoleLogManager {
   private void showDeepLinkNotification(DiagnosticsNode property, String errorSummary) {
     final Notification notification = new Notification(
       FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
-      "Inspect widget",
+      "Inspect error-causing widget",
       errorSummary,
       NotificationType.INFORMATION);
     notification.setIcon(FlutterIcons.Flutter);
