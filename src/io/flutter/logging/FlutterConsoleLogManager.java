@@ -249,6 +249,7 @@ public class FlutterConsoleLogManager {
     }
     else {
       DiagnosticLevel lastLevel = null;
+      String errorSummary = null;
 
       for (DiagnosticsNode property : diagnosticsNode.getInlineProperties()) {
         // Add blank line between hint and non-hint properties.
@@ -259,6 +260,13 @@ public class FlutterConsoleLogManager {
         }
 
         lastLevel = property.getLevel();
+
+        if (StringUtil.equals("ErrorSummary", property.getType())) {
+          errorSummary = property.getDescription();
+        } else if (StringUtil.equals("DevToolsDeepLinkProperty", property.getType()) && FlutterSettings.getInstance().isEnableEmbeddedBrowsers()) {
+          showDeepLinkNotification(property, errorSummary);
+          continue;
+        }
 
         printDiagnosticsNodeProperty(console, "", property, null, false);
       }
@@ -331,11 +339,6 @@ public class FlutterConsoleLogManager {
       if (StringUtil.equals("ErrorSpacer", property.getType())) {
         return;
       }
-
-      if (StringUtil.equals("DevToolsDeepLinkProperty", property.getType()) && FlutterSettings.getInstance().isEnableEmbeddedBrowsers()) {
-        showDeepLinkNotification(property);
-        return;
-      }
     }
 
     if (contentType == null) {
@@ -396,14 +399,14 @@ public class FlutterConsoleLogManager {
     }
   }
 
-  private void showDeepLinkNotification(DiagnosticsNode property) {
+  private void showDeepLinkNotification(DiagnosticsNode property, String errorSummary) {
     final Notification notification = new Notification(
       FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
-      "Inspect this widget",
-      "Click below to inspect this exception-causing widget in Flutter DevTools",
+      "Inspect widget",
+      errorSummary,
       NotificationType.INFORMATION);
     notification.setIcon(FlutterIcons.Flutter);
-    notification.addAction(new AnAction("Inspect") {
+    notification.addAction(new AnAction("Inspect Widget") {
       @Override
       public void actionPerformed(@NotNull AnActionEvent event) {
         final String widgetId = DevToolsUtils.findWidgetId(property.getValue());
