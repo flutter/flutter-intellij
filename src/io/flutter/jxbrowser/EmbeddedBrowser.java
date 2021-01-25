@@ -23,6 +23,9 @@ import com.teamdev.jxbrowser.browser.event.ConsoleMessageReceived;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.js.ConsoleMessage;
 import com.teamdev.jxbrowser.navigation.event.LoadFinished;
+import com.teamdev.jxbrowser.navigation.event.LoadStarted;
+import com.teamdev.jxbrowser.navigation.event.NavigationFinished;
+import com.teamdev.jxbrowser.navigation.event.NavigationStarted;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
 import com.teamdev.jxbrowser.view.swing.callback.DefaultAlertCallback;
 import com.teamdev.jxbrowser.view.swing.callback.DefaultConfirmCallback;
@@ -43,6 +46,7 @@ public class EmbeddedBrowser {
   }
 
   private Browser browser;
+  private String mainUrl;
 
   private EmbeddedBrowser(Project project) {
     System.setProperty("jxbrowser.force.dpi.awareness", "1.0");
@@ -98,6 +102,7 @@ public class EmbeddedBrowser {
     // Multiple LoadFinished events can occur, but we only need to add content the first time.
     final AtomicBoolean contentLoaded = new AtomicBoolean(false);
 
+    this.mainUrl = url;
     browser.navigation().loadUrl(url);
     browser.navigation().on(LoadFinished.class, event -> {
       if (!contentLoaded.compareAndSet(false, true)) {
@@ -122,6 +127,22 @@ public class EmbeddedBrowser {
         content.setIcon(FlutterIcons.Phone);
         contentManager.addContent(content);
       });
+    });
+  }
+
+  public void updatePanelToWidget(String widgetId) {
+    browser.navigation().loadUrl(mainUrl + "&inspectorRef=" + widgetId);
+    browser.navigation().on(LoadStarted.class, event -> {
+      System.out.println("in load started");
+    });
+    browser.navigation().on(NavigationStarted.class, event -> {
+      System.out.println("in navigation started");
+    });
+    browser.navigation().on(LoadFinished.class, event -> {
+      System.out.println("in load finished");
+    });
+    browser.navigation().on(NavigationFinished.class, event -> {
+      System.out.println("in navigation finished");
     });
   }
 }

@@ -14,6 +14,11 @@ import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.ex.EditorSettingsExternalizable;
 import com.intellij.openapi.editor.impl.softwrap.SoftWrapAppliancePlaces;
@@ -21,11 +26,15 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.concurrency.QueueProcessor;
+import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterMessages;
+import io.flutter.devtools.DevToolsUtils;
 import io.flutter.inspector.DiagnosticLevel;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.DiagnosticsTreeStyle;
 import io.flutter.inspector.InspectorService;
+import io.flutter.jxbrowser.EmbeddedBrowser;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
@@ -320,6 +329,24 @@ public class FlutterConsoleLogManager {
     if (property.getDescription() != null && property.getLevel() == DiagnosticLevel.info) {
       // Elide framework blank styling lines.
       if (StringUtil.equals("ErrorSpacer", property.getType())) {
+        return;
+      }
+
+      if (StringUtil.equals("DevToolsDeepLinkProperty", property.getType()) && FlutterSettings.getInstance().isEnableEmbeddedBrowsers()) {
+        final Notification notification = new Notification(
+          FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
+          "Inspect this widget",
+          "Click below to inspect this exception-causing widget in Flutter DevTools",
+          NotificationType.INFORMATION);
+        notification.setIcon(FlutterIcons.Flutter);
+        notification.addAction(new AnAction("Inspect") {
+          @Override
+          public void actionPerformed(@NotNull AnActionEvent event) {
+            final String widgetId = DevToolsUtils.findWidgetId(property.getValue());
+            EmbeddedBrowser.getInstance(app.getProject()).updatePanelToWidget(widgetId);
+          }
+        });
+        Notifications.Bus.notify(notification, app.getProject());
         return;
       }
     }
