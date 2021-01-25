@@ -333,20 +333,7 @@ public class FlutterConsoleLogManager {
       }
 
       if (StringUtil.equals("DevToolsDeepLinkProperty", property.getType()) && FlutterSettings.getInstance().isEnableEmbeddedBrowsers()) {
-        final Notification notification = new Notification(
-          FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
-          "Inspect this widget",
-          "Click below to inspect this exception-causing widget in Flutter DevTools",
-          NotificationType.INFORMATION);
-        notification.setIcon(FlutterIcons.Flutter);
-        notification.addAction(new AnAction("Inspect") {
-          @Override
-          public void actionPerformed(@NotNull AnActionEvent event) {
-            final String widgetId = DevToolsUtils.findWidgetId(property.getValue());
-            EmbeddedBrowser.getInstance(app.getProject()).updatePanelToWidget(widgetId);
-          }
-        });
-        Notifications.Bus.notify(notification, app.getProject());
+        showDeepLinkNotification(property);
         return;
       }
     }
@@ -407,6 +394,23 @@ public class FlutterConsoleLogManager {
     if (property.getLevel() == DiagnosticLevel.summary) {
       console.print("\n", contentType);
     }
+  }
+
+  private void showDeepLinkNotification(DiagnosticsNode property) {
+    final Notification notification = new Notification(
+      FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
+      "Inspect this widget",
+      "Click below to inspect this exception-causing widget in Flutter DevTools",
+      NotificationType.INFORMATION);
+    notification.setIcon(FlutterIcons.Flutter);
+    notification.addAction(new AnAction("Inspect") {
+      @Override
+      public void actionPerformed(@NotNull AnActionEvent event) {
+        final String widgetId = DevToolsUtils.findWidgetId(property.getValue());
+        EmbeddedBrowser.getInstance(app.getProject()).updatePanelToWidget(widgetId);
+      }
+    });
+    Notifications.Bus.notify(notification, app.getProject());
   }
 
   private String getChildIndent(String indent, DiagnosticsNode property) {

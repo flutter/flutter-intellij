@@ -194,9 +194,13 @@ public class DiagnosticsNode {
     return getLevelMember("level", DiagnosticLevel.info);
   }
 
+  /**
+   * Returns a value associated with the node. This is a URL for DevToolsDeepLinkProperty nodes.
+   */
   public String getValue() {
     return getStringMember("value");
   }
+
   /**
    * Whether the name of the property should be shown when showing the default
    * view of the tree.
