@@ -14,6 +14,11 @@ import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.ex.EditorSettingsExternalizable;
 import com.intellij.openapi.editor.impl.softwrap.SoftWrapAppliancePlaces;
@@ -21,11 +26,15 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.concurrency.QueueProcessor;
+import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterMessages;
+import io.flutter.devtools.DevToolsUtils;
 import io.flutter.inspector.DiagnosticLevel;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.DiagnosticsTreeStyle;
 import io.flutter.inspector.InspectorService;
+import io.flutter.jxbrowser.EmbeddedBrowser;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
@@ -240,6 +249,7 @@ public class FlutterConsoleLogManager {
     }
     else {
       DiagnosticLevel lastLevel = null;
+      String errorSummary = null;
 
       for (DiagnosticsNode property : diagnosticsNode.getInlineProperties()) {
         // Add blank line between hint and non-hint properties.
@@ -250,6 +260,13 @@ public class FlutterConsoleLogManager {
         }
 
         lastLevel = property.getLevel();
+
+        if (StringUtil.equals("ErrorSummary", property.getType())) {
+          errorSummary = property.getDescription();
+        } else if (StringUtil.equals("DevToolsDeepLinkProperty", property.getType()) && FlutterSettings.getInstance().isEnableEmbeddedBrowsers()) {
+          showDeepLinkNotification(property, errorSummary);
+          continue;
+        }
 
         printDiagnosticsNodeProperty(console, "", property, null, false);
       }
@@ -380,6 +397,23 @@ public class FlutterConsoleLogManager {
     if (property.getLevel() == DiagnosticLevel.summary) {
       console.print("\n", contentType);
     }
+  }
+
+  private void showDeepLinkNotification(DiagnosticsNode property, String errorSummary) {
+    final Notification notification = new Notification(
+      FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
+      "Inspect error-causing widget",
+      errorSummary,
+      NotificationType.INFORMATION);
+    notification.setIcon(FlutterIcons.Flutter);
+    notification.addAction(new AnAction("Inspect Widget") {
+      @Override
+      public void actionPerformed(@NotNull AnActionEvent event) {
+        final String widgetId = DevToolsUtils.findWidgetId(property.getValue());
+        EmbeddedBrowser.getInstance(app.getProject()).updatePanelToWidget(widgetId);
+      }
+    });
+    Notifications.Bus.notify(notification, app.getProject());
   }
 
   private String getChildIndent(String indent, DiagnosticsNode property) {

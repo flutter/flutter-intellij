@@ -54,4 +54,15 @@ public class DevToolsUtils {
     }
     return "http://" + devtoolsHost + ":" + devtoolsPort + "/?" + String.join("&", params);
   }
+
+  public static String findWidgetId(String url) {
+    final String searchFor = "inspectorRef=";
+    final String[] split = url.split("&");
+    for (String part : split) {
+      if (part.startsWith(searchFor)) {
+        return part.substring(searchFor.length());
+      }
+    }
+    return null;
+  }
 }

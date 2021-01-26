@@ -31,7 +31,7 @@ import io.flutter.FlutterInitializer;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.Dimension;
+import java.awt.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EmbeddedBrowser {
@@ -43,6 +43,7 @@ public class EmbeddedBrowser {
   }
 
   private Browser browser;
+  private String mainUrl;
 
   private EmbeddedBrowser(Project project) {
     System.setProperty("jxbrowser.force.dpi.awareness", "1.0");
@@ -98,6 +99,7 @@ public class EmbeddedBrowser {
     // Multiple LoadFinished events can occur, but we only need to add content the first time.
     final AtomicBoolean contentLoaded = new AtomicBoolean(false);
 
+    this.mainUrl = url;
     browser.navigation().loadUrl(url);
     browser.navigation().on(LoadFinished.class, event -> {
       if (!contentLoaded.compareAndSet(false, true)) {
@@ -123,5 +125,9 @@ public class EmbeddedBrowser {
         contentManager.addContent(content);
       });
     });
+  }
+
+  public void updatePanelToWidget(String widgetId) {
+    browser.navigation().loadUrl(mainUrl + "&inspectorRef=" + widgetId);
   }
 }
