@@ -13,8 +13,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationDisplayType;
+import com.intellij.notification.NotificationGroup;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -29,9 +32,7 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.concurrency.QueueProcessor;
-import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
-import io.flutter.FlutterMessages;
 import io.flutter.devtools.DevToolsUtils;
 import io.flutter.inspector.DiagnosticLevel;
 import io.flutter.inspector.DiagnosticsNode;
@@ -54,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -65,6 +67,7 @@ public class FlutterConsoleLogManager {
   private static final Logger LOG = Logger.getInstance(FlutterConsoleLogManager.class);
 
   private static final String consolePreferencesSetKey = "io.flutter.console.preferencesSet";
+  private static final String DEEP_LINK_GROUP_ID = "deeplink";
 
   private static final ConsoleViewContentType TITLE_CONTENT_TYPE =
     new ConsoleViewContentType("title", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES.toTextAttributes());
@@ -404,12 +407,15 @@ public class FlutterConsoleLogManager {
   }
 
   private void showDeepLinkNotification(DiagnosticsNode property, String errorSummary) {
+    // TODO(helin24): We can register a notification group in plugin.xml for 2020.3
+    // (see https://plugins.jetbrains.com/docs/intellij/notifications.html?from=jetbrains.org#top-level-notifications)
+    final NotificationGroup notificationGroup = new NotificationGroup(DEEP_LINK_GROUP_ID, NotificationDisplayType.STICKY_BALLOON);
     final Notification notification = new Notification(
-      FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
-      "Inspect error-causing widget",
+      DEEP_LINK_GROUP_ID,
+      "",
       errorSummary,
       NotificationType.INFORMATION);
-    notification.setIcon(FlutterIcons.Flutter);
+    notification.setIcon(AllIcons.General.BalloonWarning);
     notification.addAction(new AnAction("Inspect Widget") {
       @Override
       public void actionPerformed(@NotNull AnActionEvent event) {
@@ -429,6 +435,7 @@ public class FlutterConsoleLogManager {
       }
     });
     Notifications.Bus.notify(notification, app.getProject());
+    Executors.newSingleThreadScheduledExecutor().schedule(notification::expire, 25, TimeUnit.SECONDS);
   }
 
   private String getChildIndent(String indent, DiagnosticsNode property) {
