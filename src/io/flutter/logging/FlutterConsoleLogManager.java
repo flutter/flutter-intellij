@@ -13,6 +13,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationDisplayType;
@@ -33,7 +34,6 @@ import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.concurrency.QueueProcessor;
 import io.flutter.FlutterInitializer;
 import io.flutter.devtools.DevToolsUtils;
-import io.flutter.editor.FlutterMaterialIcons;
 import io.flutter.inspector.DiagnosticLevel;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.DiagnosticsTreeStyle;
@@ -415,7 +415,7 @@ public class FlutterConsoleLogManager {
       "",
       errorSummary,
       NotificationType.INFORMATION);
-    notification.setIcon(FlutterMaterialIcons.getIconForName("error_outline"));
+    notification.setIcon(AllIcons.General.BalloonWarning);
     notification.addAction(new AnAction("Inspect Widget") {
       @Override
       public void actionPerformed(@NotNull AnActionEvent event) {
