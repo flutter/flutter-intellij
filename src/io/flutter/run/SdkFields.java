@@ -170,7 +170,7 @@ public class SdkFields {
             devToolsFuture.complete(DevToolsService.getInstance(project).getDevToolsInstance().get(30, TimeUnit.SECONDS));
           }
           catch (Exception e) {
-            LOG.error(e);
+            devToolsFuture.completeExceptionally(e);
           }
         }, "Starting DevTools", false, project);
         final DevToolsInstance instance = devToolsFuture.get();
