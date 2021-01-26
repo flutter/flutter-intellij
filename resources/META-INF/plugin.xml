@@ -38,6 +38,60 @@
 
   <change-notes>
     <![CDATA[
+<h1>53.0</h1>
+<ul>
+  <li>Show notification on error with deep link (#5207)</li>
+  <li>Refresh the channel cache when the SDK changes (#5208)</li>
+  <li>Update jxbrowser version and set DPI property (#5205)</li>
+  <li>Show icons only for known sets (#5201)</li>
+  <li>Handle time-out when getting Flutter SDK (#5191)</li>
+  <li>Add run icon to definition of main() (#5199)</li>
+  <li>Pass DevTools server URL to bazel run also (#5197)</li>
+  <li>Start DevTools server and pass address to run (#5176)</li>
+  <li>Add a null check before dereferencing sourcePosition (#5194)</li>
+  <li>Add compare function that works for beta versions (#5192)</li>
+  <li>Add null checks to debugActive() (#5190)</li>
+  <li>Show "Lost connection to device." in red (#5189)</li>
+  <li>Remove newlines prior to sending eval expr to VM (#5187)</li>
+  <li>Log console messages from embedded browser (#5180)</li>
+  <li>Fix args parsing in launch configurations (#5181)</li>
+  <li>Update color and icon previews (#5177)</li>
+  <li>Update JxBrowser contributing instructions (#5175)</li>
+  <li>Rename to "Flutter DevTools" (#5173)</li>
+  <li>Show custom dialog for embedded browser (#5163)</li>
+  <li>Add link to install docs to NPW (#5161)</li>
+  <li>Use ColoredProcessHandler for the console (#5151)</li>
+  <li>Add JxBrowser logs when verbose enabled (#5156)</li>
+  <li>Track time lapsed to start analysis server and finish indexing (#5153)</li>
+  <li>Close embedded browser engine on application close (#5142)</li>
+  <li>Use DevTools service in performance action and delete manager (#5144)</li>
+  <li>Send exception if DevTools server fails to start (#5148)</li>
+  <li>Use project-level DevTools server for overflow open (#5143)</li>
+  <li>Use DevTools service for open action (#5141)</li>
+  <li>Remove launch script and devtools script (#5087)</li>
+  <li>Sync before hot reload for bazel projects (#5114)</li>
+  <li>Remove install SDK button from NPW (#5131)</li>
+  <li>Some minor cleanups to the dart code (#5136)</li>
+  <li>Update the contributing docs (#5135)</li>
+  <li>Start DevTools server on first request and handle exceptions (#5130)</li>
+  <li>Add platforms to the new project wizard (#5070)</li>
+  <li>Add callback for if jxbrowser fails (#5129)</li>
+  <li>Minor tweaks to the snap sdk path code (#5124)</li>
+  <li>Update tool docs (#5126)</li>
+  <li>Use project DevTools server for embedded browser (#5121)</li>
+  <li>Add Flutter snap path to getKnownFlutterSdkPaths() (#5123)</li>
+  <li>Open DevTools directly using pub for external projects (#5116)</li>
+  <li>Add devtools service (#5112)</li>
+  <li>Run devtools panel actions on UI thread (#5085)</li>
+  <li>Update the live templates (#5101)</li>
+  <li>Slight change to github actions (#5105)</li>
+  <li>Revert to 2020.2.4 to run unit tests (#5097)</li>
+  <li>Save instance of devtools between bazel app runs (#5096)</li>
+  <li>Stop devtools process on closing (#5094)</li>
+  <li>Use existing devtools for bazel in panel and remove opening devtools for tests (#5066)</li>
+  <li>Fix json parsing (#5081)</li>
+  <li>Add dispatch events to run actions (#5068)</li>
+</ul>
 <h1>52.2</h1>
 <ul>
   <li>Fix an issue with leaking subscriptions (#5115)</li>
