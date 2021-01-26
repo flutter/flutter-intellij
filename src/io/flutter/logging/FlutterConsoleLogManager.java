@@ -24,6 +24,9 @@ import com.intellij.openapi.editor.ex.EditorSettingsExternalizable;
 import com.intellij.openapi.editor.impl.softwrap.SoftWrapAppliancePlaces;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.concurrency.QueueProcessor;
 import icons.FlutterIcons;
@@ -39,6 +42,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
+import io.flutter.view.FlutterView;
 import io.flutter.vmService.VmServiceConsumers;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
@@ -411,6 +415,17 @@ public class FlutterConsoleLogManager {
       public void actionPerformed(@NotNull AnActionEvent event) {
         final String widgetId = DevToolsUtils.findWidgetId(property.getValue());
         EmbeddedBrowser.getInstance(app.getProject()).updatePanelToWidget(widgetId);
+
+        // Show inspector window if it's not already visible.
+        final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(app.getProject());
+        if (!(toolWindowManager instanceof ToolWindowManagerEx)) {
+          return;
+        }
+
+        final ToolWindow toolWindow = toolWindowManager.getToolWindow(FlutterView.TOOL_WINDOW_ID);
+        if (toolWindow != null && !toolWindow.isVisible()) {
+          toolWindow.show();
+        }
       }
     });
     Notifications.Bus.notify(notification, app.getProject());
