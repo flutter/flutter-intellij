@@ -459,7 +459,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (this.toolWindowListener == null) {
       this.toolWindowListener = new FlutterViewToolWindowManagerListener(myProject);
     }
-    this.toolWindowListener.update(() -> {
+    this.toolWindowListener.updateOnWindowOpen(() -> {
       devToolsInstallCount += 1;
       presentLabel(toolWindow, getInstallingDevtoolsLabel());
       openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded, true);

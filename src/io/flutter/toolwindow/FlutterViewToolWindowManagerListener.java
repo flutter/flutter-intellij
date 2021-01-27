@@ -20,7 +20,7 @@ public class FlutterViewToolWindowManagerListener implements ToolWindowManagerLi
     project.getMessageBus().connect().subscribe(ToolWindowManagerListener.TOPIC, this);
   }
 
-  public void update(Runnable onWindowOpen) {
+  public void updateOnWindowOpen(Runnable onWindowOpen) {
     this.onWindowOpen = onWindowOpen;
   }
 
