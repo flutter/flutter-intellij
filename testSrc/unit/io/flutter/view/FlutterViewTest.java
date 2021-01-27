@@ -54,6 +54,7 @@ public class FlutterViewTest {
 
     partialMockFlutterView.handleJxBrowserInstalled(mockApp, mockInspectorService, mockToolWindow);
     verify(partialMockFlutterView, times(1)).openInspectorWithDevTools(mockApp, mockInspectorService, mockToolWindow, true);
+    verify(partialMockFlutterView, times(1)).setUpToolWindowListener(mockApp, mockInspectorService, mockToolWindow, true);
   }
 
   @Test

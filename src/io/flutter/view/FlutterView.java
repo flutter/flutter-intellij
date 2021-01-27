@@ -5,6 +5,7 @@
  */
 package io.flutter.view;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.execution.ui.layout.impl.JBRunnerTabs;
 import com.intellij.icons.AllIcons;
@@ -33,7 +34,10 @@ import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.ui.components.labels.LinkListener;
-import com.intellij.ui.content.*;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentManager;
+import com.intellij.ui.content.ContentManagerAdapter;
+import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.tabs.TabInfo;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
@@ -456,6 +460,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded);
 
+    setUpToolWindowListener(app, inspectorService, toolWindow, isEmbedded);
+  }
+
+  @VisibleForTesting
+  protected void setUpToolWindowListener(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
     if (this.toolWindowListener == null) {
       this.toolWindowListener = new FlutterViewToolWindowManagerListener(myProject);
     }
@@ -472,11 +481,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
            "Inspector<br><br>Attempts: " + devToolsInstallCount + "</body></html>";
   }
 
+  @VisibleForTesting
   protected void openInspectorWithDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
     openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded, false);
   }
 
-  protected void openInspectorWithDevTools(FlutterApp app,
+  private void openInspectorWithDevTools(FlutterApp app,
                                            InspectorService inspectorService,
                                            ToolWindow toolWindow,
                                            boolean isEmbedded,
