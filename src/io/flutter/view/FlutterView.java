@@ -43,6 +43,7 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import icons.FlutterIcons;
+import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.devtools.DevToolsUtils;
@@ -476,9 +477,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private String getInstallingDevtoolsLabel() {
-    return "<html><body style=\"text-align: center;\">Installing DevTools... <br><br>If this takes more than 15 seconds, you can restart " +
-           "with these steps:<br>1. Remove this window from the sidebar<br>2. Open it again from View -> Tool Windows -> Flutter " +
-           "Inspector<br><br>Attempts: " + devToolsInstallCount + "</body></html>";
+    return "<html><body style=\"text-align: center;\">" +
+           FlutterBundle.message("flutter.devtools.installing", devToolsInstallCount) + "</body></html>";
   }
 
   @VisibleForTesting
