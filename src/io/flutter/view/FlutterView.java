@@ -99,8 +99,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   protected static final String INSTALLATION_TIMED_OUT_LABEL =
     "Waiting for JxBrowser installation timed out. Restart your IDE to try again.";
   protected static final String INSTALLATION_WAIT_FAILED = "The JxBrowser installation failed unexpectedly. Restart your IDE to try again.";
-  protected static final String INSTALLING_DEVTOOLS_LABEL = "Installing DevTools...";
-  protected static final String RESTARTING_DEVTOOLS_LABEL = "Restarting DevTools...";
   protected static final String DEVTOOLS_FAILED_LABEL = "Setting up DevTools failed.";
   protected static final int INSTALLATION_WAIT_LIMIT_SECONDS = 2000;
 
@@ -119,6 +117,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private Content emptyContent;
 
   private FlutterViewToolWindowManagerListener toolWindowListener;
+  private int devToolsInstallCount = 0;
 
   public FlutterView(@NotNull Project project) {
     myProject = project;
@@ -452,7 +451,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private void presentDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
     assert(SwingUtilities.isEventDispatchThread());
 
-    presentLabel(toolWindow, INSTALLING_DEVTOOLS_LABEL);
+    devToolsInstallCount += 1;
+    presentLabel(toolWindow, getInstallingDevtoolsLabel());
 
     openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded);
 
@@ -460,9 +460,16 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       this.toolWindowListener = new FlutterViewToolWindowManagerListener(myProject);
     }
     this.toolWindowListener.update(() -> {
-      presentLabel(toolWindow, RESTARTING_DEVTOOLS_LABEL);
+      devToolsInstallCount += 1;
+      presentLabel(toolWindow, getInstallingDevtoolsLabel());
       openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded, true);
     });
+  }
+
+  private String getInstallingDevtoolsLabel() {
+    return "<html><body style=\"text-align: center;\">Installing DevTools... <br><br>If this takes more than 15 seconds, you can restart " +
+           "with these steps:<br>1. Remove this window from the sidebar<br>2. Open it again from View -> Tool Windows -> Flutter " +
+           "Inspector<br><br>Attempts: " + devToolsInstallCount + "</body></html>";
   }
 
   protected void openInspectorWithDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
