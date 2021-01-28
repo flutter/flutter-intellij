@@ -24,15 +24,6 @@ public class DartVmServiceEvaluatorInFrame extends DartVmServiceEvaluator {
   public void evaluate(@NotNull final String expression,
                        @NotNull final XEvaluationCallback callback,
                        @Nullable final XSourcePosition expressionPosition) {
-    myDebugProcess.getVmServiceWrapper().evaluateInFrame(myIsolateId, myFrame, replaceNewlines(expression), callback);
-  }
-
-  private String replaceNewlines(String expr) {
-    if (SystemInfo.isWindows) {
-      // Doing separately in case we only have \n in this string.
-      return expr.replaceAll("\n", " ").replaceAll("\r", " ");
-    } else {
-      return expr.replaceAll("\n", " ");
-    }
+    myDebugProcess.getVmServiceWrapper().evaluateInFrame(myIsolateId, myFrame, expression, callback);
   }
 }
