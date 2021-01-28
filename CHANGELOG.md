@@ -1,4 +1,5 @@
 # 53.0
+- Restart DevTools and browser on inspector window reopen (#5218)
 - Show notification on error with deep link (#5207)
 - Refresh the channel cache when the SDK changes (#5208)
 - Update jxbrowser version and set DPI property (#5205)

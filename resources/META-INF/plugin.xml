@@ -40,6 +40,7 @@
     <![CDATA[
 <h1>53.0</h1>
 <ul>
+  <li>Restart DevTools and browser on inspector window reopen (#5218)</li>
   <li>Show notification on error with deep link (#5207)</li>
   <li>Refresh the channel cache when the SDK changes (#5208)</li>
   <li>Update jxbrowser version and set DPI property (#5205)</li>
