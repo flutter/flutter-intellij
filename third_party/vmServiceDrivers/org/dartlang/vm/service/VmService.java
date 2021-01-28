@@ -20,6 +20,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import java.util.List;
 import java.util.Map;
+
+import com.intellij.openapi.util.SystemInfo;
 import org.dartlang.vm.service.consumer.*;
 import org.dartlang.vm.service.element.*;
 
@@ -169,7 +171,7 @@ public class VmService extends VmServiceBase {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("targetId", targetId);
-    params.addProperty("expression", expression);
+    params.addProperty("expression", replaceNewlines(expression));
     request("evaluate", params, consumer);
   }
 
@@ -182,7 +184,7 @@ public class VmService extends VmServiceBase {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("targetId", targetId);
-    params.addProperty("expression", expression);
+    params.addProperty("expression", replaceNewlines(expression));
     if (scope != null) params.add("scope", convertMapToJsonObject(scope));
     if (disableBreakpoints != null) params.addProperty("disableBreakpoints", disableBreakpoints);
     request("evaluate", params, consumer);
@@ -197,7 +199,7 @@ public class VmService extends VmServiceBase {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("frameIndex", frameIndex);
-    params.addProperty("expression", expression);
+    params.addProperty("expression", replaceNewlines(expression));
     request("evaluateInFrame", params, consumer);
   }
 
@@ -212,7 +214,7 @@ public class VmService extends VmServiceBase {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("frameIndex", frameIndex);
-    params.addProperty("expression", expression);
+    params.addProperty("expression", replaceNewlines(expression));
     if (scope != null) params.add("scope", convertMapToJsonObject(scope));
     if (disableBreakpoints != null) params.addProperty("disableBreakpoints", disableBreakpoints);
     request("evaluateInFrame", params, consumer);
@@ -1161,5 +1163,14 @@ public class VmService extends VmServiceBase {
       return;
     }
     logUnknownResponse(consumer, json);
+  }
+
+  private String replaceNewlines(String expr) {
+    if (SystemInfo.isWindows) {
+      // Doing separately in case we only have \n in this string.
+      return expr.replaceAll("\n", " ").replaceAll("\r", " ");
+    } else {
+      return expr.replaceAll("\n", " ");
+    }
   }
 }
