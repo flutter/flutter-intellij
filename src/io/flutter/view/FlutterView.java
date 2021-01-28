@@ -5,6 +5,7 @@
  */
 package io.flutter.view;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.execution.ui.layout.impl.JBRunnerTabs;
 import com.intellij.icons.AllIcons;
@@ -42,6 +43,7 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import icons.FlutterIcons;
+import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.devtools.DevToolsUtils;
@@ -57,6 +59,7 @@ import io.flutter.run.daemon.DevToolsInstance;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.toolwindow.FlutterViewToolWindowManagerListener;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.JxBrowserUtils;
@@ -101,7 +104,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   protected static final String INSTALLATION_TIMED_OUT_LABEL =
     "Waiting for JxBrowser installation timed out. Restart your IDE to try again.";
   protected static final String INSTALLATION_WAIT_FAILED = "The JxBrowser installation failed unexpectedly. Restart your IDE to try again.";
-  protected static final String INSTALLING_DEVTOOLS_LABEL = "Installing DevTools...";
   protected static final String DEVTOOLS_FAILED_LABEL = "Setting up DevTools failed.";
   protected static final int INSTALLATION_WAIT_LIMIT_SECONDS = 2000;
 
@@ -118,6 +120,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private final Map<FlutterApp, PerAppState> perAppViewState = new HashMap<>();
 
   private Content emptyContent;
+
+  private FlutterViewToolWindowManagerListener toolWindowListener;
+  private int devToolsInstallCount = 0;
 
   public FlutterView(@NotNull Project project) {
     myProject = project;
@@ -451,32 +456,66 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private void presentDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
     assert(SwingUtilities.isEventDispatchThread());
 
-    presentLabel(toolWindow, INSTALLING_DEVTOOLS_LABEL);
+    devToolsInstallCount += 1;
+    presentLabel(toolWindow, getInstallingDevtoolsLabel());
 
     openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded);
+
+    setUpToolWindowListener(app, inspectorService, toolWindow, isEmbedded);
   }
 
-  protected void openInspectorWithDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
-    AsyncUtils.whenCompleteUiThread(DevToolsService.getInstance(myProject).getDevToolsInstance(), (instance, error) -> {
-      // Skip displaying if the project has been closed.
-      if (!myProject.isOpen()) {
-        return;
-      }
-
-      // TODO(helinx): Restart DevTools server if there's an error.
-      if (error != null) {
-        LOG.error(error);
-        presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
-        return;
-      }
-
-      if (instance == null) {
-        presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
-        return;
-      }
-
-      addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded, instance);
+  @VisibleForTesting
+  protected void setUpToolWindowListener(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
+    if (this.toolWindowListener == null) {
+      this.toolWindowListener = new FlutterViewToolWindowManagerListener(myProject);
+    }
+    this.toolWindowListener.updateOnWindowOpen(() -> {
+      devToolsInstallCount += 1;
+      presentLabel(toolWindow, getInstallingDevtoolsLabel());
+      openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded, true);
     });
+  }
+
+  private String getInstallingDevtoolsLabel() {
+    return "<html><body style=\"text-align: center;\">" +
+           FlutterBundle.message("flutter.devtools.installing", devToolsInstallCount) + "</body></html>";
+  }
+
+  @VisibleForTesting
+  protected void openInspectorWithDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
+    openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded, false);
+  }
+
+  private void openInspectorWithDevTools(FlutterApp app,
+                                           InspectorService inspectorService,
+                                           ToolWindow toolWindow,
+                                           boolean isEmbedded,
+                                           boolean forceDevToolsRestart) {
+    AsyncUtils.whenCompleteUiThread(
+      forceDevToolsRestart
+      ? DevToolsService.getInstance(myProject).getDevToolsInstanceWithForcedRestart()
+      : DevToolsService.getInstance(myProject).getDevToolsInstance(),
+      (instance, error) -> {
+        // Skip displaying if the project has been closed.
+        if (!myProject.isOpen()) {
+          return;
+        }
+
+        // TODO(helinx): Restart DevTools server if there's an error.
+        if (error != null) {
+          LOG.error(error);
+          presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
+          return;
+        }
+
+        if (instance == null) {
+          presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
+          return;
+        }
+
+        addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded, instance);
+      }
+    );
   }
 
   private LabelInput openDevToolsLabel(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {

@@ -83,6 +83,28 @@ public class DevToolsService {
     return devToolsFutureRef.get();
   }
 
+  public CompletableFuture<DevToolsInstance> getDevToolsInstanceWithForcedRestart() {
+    final CompletableFuture<DevToolsInstance> futureInstance = devToolsFutureRef.updateAndGet((future) -> {
+      if (future.isCompletedExceptionally() || future.isCancelled()) {
+        return null;
+      }
+      else {
+        return future;
+      }
+    });
+
+    if (futureInstance == null) {
+      devToolsFutureRef.set(new CompletableFuture<>());
+      startServer();
+    } else if (!futureInstance.isDone()) {
+      futureInstance.cancel(true);
+      devToolsFutureRef.set(new CompletableFuture<>());
+      startServer();
+    }
+
+    return devToolsFutureRef.get();
+  }
+
   private void startServer() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
