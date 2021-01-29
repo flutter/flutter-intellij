@@ -138,7 +138,7 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   }
 
   public boolean flutterRunSupportsDevToolsUrl() {
-    return this.compareTo(MIN_PASS_DEVTOOLS_SDK) >= 0;
+    return version != null && this.compareTo(MIN_PASS_DEVTOOLS_SDK) >= 0;
   }
 
   public boolean flutterTestSupportsMachineMode() {
