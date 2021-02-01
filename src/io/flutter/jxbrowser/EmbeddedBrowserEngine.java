@@ -13,6 +13,7 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.engine.EngineOptions;
+import com.teamdev.jxbrowser.engine.PasswordStore;
 import io.flutter.FlutterInitializer;
 
 import java.io.File;
@@ -36,6 +37,7 @@ public class EmbeddedBrowserEngine {
     final EngineOptions options =
       EngineOptions.newBuilder(SystemInfo.isWindows ? OFF_SCREEN : HARDWARE_ACCELERATED)
         .userDataDir(Paths.get(dataPath))
+        .passwordStore(PasswordStore.BASIC)
         .build();
 
     Engine temp;
