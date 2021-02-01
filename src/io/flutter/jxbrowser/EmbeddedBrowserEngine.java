@@ -38,7 +38,6 @@ public class EmbeddedBrowserEngine {
       EngineOptions.newBuilder(SystemInfo.isWindows ? OFF_SCREEN : HARDWARE_ACCELERATED)
         .userDataDir(Paths.get(dataPath))
         .passwordStore(PasswordStore.BASIC)
-        .addSwitch("--use-mock-keychain")
         .build();
 
     Engine temp;
