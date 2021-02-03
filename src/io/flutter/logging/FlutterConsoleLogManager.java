@@ -421,6 +421,7 @@ public class FlutterConsoleLogManager {
       public void actionPerformed(@NotNull AnActionEvent event) {
         final String widgetId = DevToolsUtils.findWidgetId(property.getValue());
         EmbeddedBrowser.getInstance(app.getProject()).updatePanelToWidget(widgetId);
+        notification.expire();
 
         // Show inspector window if it's not already visible.
         final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(app.getProject());
