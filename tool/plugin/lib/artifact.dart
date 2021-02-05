@@ -112,6 +112,9 @@ class ArtifactManager {
                 artifacts.remove(artifact);
                 continue;
               }
+            } else {
+              artifacts.remove(artifact);
+              continue;
             }
           }
         }
