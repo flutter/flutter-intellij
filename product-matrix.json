@@ -29,19 +29,6 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2021.1 EQP",
-      "name": "IntelliJ 2021.1",
-      "isUnitTestTarget": "false",
-      "version": "2021.1",
-      "ideaProduct": "ideaIC",
-      "ideaVersion": "211.4961.33",
-      "dartPluginVersion": "211.4961.30",
-      "sinceBuild": "211.4961.33",
-      "untilBuild": "211.*",
-      "filesToSkip": ["src/io/flutter/utils/AndroidLocationProvider.java"]
-    },
-    {
-      "channel": "stable",
       "comments": "IntelliJ 2020.3, Android Studio 2020.3.1 Canary 5",
       "name": "Arctic Fox 2020.3.1, Canary 5",
       "isUnitTestTarget": "true",

@@ -393,14 +393,6 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
       boolean finished = false;
       try {
         registerComponents((List<IdeaPluginDescriptorImpl>)PluginManagerCore.getLoadedPlugins(), null);
-        //Method method = ReflectionUtil.getDeclaredMethod(ProjectImpl.class, "registerComponents");
-        //assert (method != null);
-        //try {
-        //  method.invoke(this);
-        //}
-        //catch (IllegalAccessException | InvocationTargetException e) {
-        //  throw new RuntimeException(e);
-        //}
         getStateStore().setPath(path, true, null);
         super.init(false, indicator);
         finished = true;
