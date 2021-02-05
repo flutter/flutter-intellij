@@ -88,8 +88,6 @@ class ArtifactManager {
           result = await curl('$base/${artifact.file}', to: path);
           if (result != 0) {
             log('download failed');
-            artifacts.remove(artifact);
-            continue;
           }
           var archiveFile = File(path);
           if (!_isValidDownloadArtifact(archiveFile)) {
@@ -104,14 +102,15 @@ class ArtifactManager {
               result = await curl('$base/${artifact.file}', to: path);
               if (result != 0) {
                 log('download failed');
-                break;
+                artifacts.remove(artifact);
+                continue;
               }
               var archiveFile = File(path);
               if (!_isValidDownloadArtifact(archiveFile)) {
                 log('archive file not found: $base/${artifact.file}');
                 archiveFile.deleteSync();
-                result = 1;
-                break;
+                artifacts.remove(artifact);
+                continue;
               }
             }
           }
