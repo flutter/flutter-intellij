@@ -21,7 +21,7 @@
 
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
-  <idea-version since-build="201.7223" until-build="202.8194.7"/>
+  <idea-version since-build="201.7223" until-build="203.*"/>
 
   <depends>Dart</depends>
   <depends>Git4Idea</depends>

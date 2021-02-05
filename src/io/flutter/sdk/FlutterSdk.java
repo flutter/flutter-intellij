@@ -596,7 +596,7 @@ public class FlutterSdk {
         }
 
         final JsonObject obj = elem.getAsJsonObject();
-        for (String jsonKey : obj.keySet()) {
+        for (String jsonKey : JsonUtils.getKeySet(obj)) {
           final JsonPrimitive primitive = obj.getAsJsonPrimitive(jsonKey);
           if (primitive != null) {
             cachedConfigValues.put(jsonKey, primitive.getAsString());

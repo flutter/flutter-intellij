@@ -195,7 +195,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
         if (isTravisFileValid()) {
           return result;
         } else {
-          log('the .travis.yml file needs updating: plugin generate');
+          log('the presubmit.yaml file needs updating: plugin generate');
         }
       } else {
         log('the current git branch must be named "$expectedName"');

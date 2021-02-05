@@ -26,39 +26,12 @@ void checkAndClearAppliedEditCommands() {
 List<EditCommand> editCommands = [
   EditAndroidModuleLibraryManager(),
   Subst(
-    path:
-        'flutter-studio/src/io/flutter/actions/FlutterShowStructureSettingsAction.java',
-    initial:
-        'import com.android.tools.idea.gradle.structure.actions.AndroidShowStructureSettingsAction;',
-    replacement:
-        'import com.android.tools.idea.gradle.actions.AndroidShowStructureSettingsAction;',
-    versions: ['2020.2'],
-  ),
-  MultiSubst(
-    path: 'flutter-studio/src/io/flutter/actions/OpenAndroidModule.java',
-    initials: [
-      'findGradleTarget',
-      'importAndOpenProjectCore(null, true, projectFile)',
-    ],
-    replacements: [
-      'findImportTarget',
-      'importProjectCore(projectFile)',
-    ],
-    versions: ['2020.2'],
-  ),
-  Subst(
-    path: 'flutter-studio/src/io/flutter/utils/AddToAppUtils.java',
-    initial: '.project.importing.GradleProjectImporter',
-    replacement: '.project.importing.NewProjectSetup',
-    versions: ['2020.2'],
-  ),
-  Subst(
     path: 'src/io/flutter/utils/AndroidUtils.java',
     initial:
         'import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;',
     replacement:
         'import com.android.tools.idea.gradle.dsl.model.BuildModelContext;',
-    versions: ['4.1', '4.2', 'AF.3.1'],
+    versions: ['4.1', '4.2'],
   ),
   Subst(
     path: 'src/io/flutter/FlutterUtils.java',
@@ -91,29 +64,27 @@ List<EditCommand> editCommands = [
       'import com.intellij.codeInsight.daemon.GutterName;',
       '@GutterName'
     ],
-    replacements: [
-      '',
-      ''
-    ],
+    replacements: ['', ''],
     versions: ['4.1'],
   ),
   Subst(
     path: 'src/io/flutter/preview/PreviewView.java',
-    initial: 'Arrays.asList(expandAllAction, collapseAllAction, showOnlyWidgetsAction)',
+    initial:
+        'Arrays.asList(expandAllAction, collapseAllAction, showOnlyWidgetsAction)',
     replacement: 'expandAllAction, collapseAllAction, showOnlyWidgetsAction',
     versions: ['4.1'],
   ),
   Subst(
     path: 'src/io/flutter/FlutterErrorReportSubmitter.java',
-    initial: 'Consumer<SubmittedReportInfo> consumer',
-    replacement: 'Consumer<? super SubmittedReportInfo> consumer',
-    version: '2020.3',
+    initial: 'Consumer<? super SubmittedReportInfo> consumer',
+    replacement: 'Consumer<SubmittedReportInfo> consumer',
+    versions: ['4.1', '4.2'],
   ),
   Subst(
     path: 'src/io/flutter/utils/CollectionUtils.java',
     initial: 'Predicate<T> predicate',
     replacement: 'Predicate<? super T> predicate',
-    version: '2020.3',
+    version: 'AF.3.1',
   ),
   MultiSubst(
     path: 'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java',
@@ -127,7 +98,13 @@ List<EditCommand> editCommands = [
       'Object',
       'null',
     ],
-    versions: ['4.1', '4.2', '2020.2', '2020.3'],
+    versions: ['4.1', '4.2'],
+  ),
+  Subst(
+    path: 'flutter-studio/src/io/flutter/project/FlutterProjectCreator.java',
+    initial: 'cannotWriteToFiles(List<Path> files)',
+    replacement: 'cannotWriteToFiles(List<? extends File> files)',
+    versions: ['4.1', '4.2'],
   ),
 ];
 
@@ -149,43 +126,42 @@ class EditAndroidModuleLibraryManager extends EditCommand {
 
   @override
   String convert(BuildSpec spec) {
-    if (spec.version.startsWith('3.6')) {
+    // Starting with 3.6 we need to call a simplified init().
+    // This is where the $PROJECT_FILE$ macro is defined, #registerComponents.
+    if (spec.version.startsWith("4.1") || spec.version.startsWith('4.2')) {
       var processedFile, source;
       processedFile = File(
           'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
       source = processedFile.readAsStringSync();
       var original = source;
-      source = source.replaceAll(
-        'super(filePath',
-        'super(filePath.toString()',
-      );
-      // Starting with 3.6 we need to call a simplified init().
-      // This is where the $PROJECT_FILE$ macro is defined, #registerComponents.
-      source = source.replaceAll(
-        'getStateStore().setPath(path',
-        'getStateStore().setPath(path.toString()',
-      );
-      source = source.replaceAll(
-          "androidProject.init41", "androidProject.initPre41");
       source = source.replaceAll("ProjectExImpl", "ProjectImpl");
       source = source.replaceAll(
+          "super.init(false, indicator);", "super.init(indicator);");
+      source = source.replaceAll(
           "import com.intellij.openapi.project.impl.ProjectExImpl;", "");
-      processedFile.writeAsStringSync(source);
-      return original;
-    } else if (spec.version.startsWith("4.0") ||
-        spec.version.startsWith("4.1")) {
-      var processedFile, source;
-      processedFile = File(
-          'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
-      source = processedFile.readAsStringSync();
-      var original = source;
-      if (spec.version.startsWith("4.0")) {
+      if (spec.version.startsWith("4.1")) {
+        source = source.replaceAll(
+            "import com.intellij.openapi.components.impl.stores.IProjectStore;",
+            "");
+        source = source.replaceAll("IProjectStore", "Object");
         source = source.replaceAll(
             "androidProject.init41", "androidProject.initPre41");
+        source = source.replaceAll("PluginManagerCore.getLoadedPlugins(), null",
+            "PluginManagerCore.getLoadedPlugins(), false");
       }
-      source = source.replaceAll("ProjectExImpl", "ProjectImpl");
-      source = source.replaceAll(
-          "import com.intellij.openapi.project.impl.ProjectExImpl;", "");
+      if (spec.version.startsWith('4.2')) {
+        source = source.replaceAll("PluginManagerCore.getLoadedPlugins(), null",
+            "PluginManagerCore.getLoadedPlugins()");
+        source = source.replaceAll("getStateStore1", "getStateStore");
+        source = source.replaceAll("getEarlyDisposable1", "getEarlyDisposable");
+        source = source.replaceAll("getWorkspaceFile1", "getWorkspaceFile");
+        source = source.replaceAll("getProjectFilePath1", "getProjectFilePath");
+        source = source.replaceAll("getProjectFile1", "getProjectFile");
+        source = source.replaceAll("getBasePath1", "getBasePath");
+        source = source.replaceAll("getBaseDir1", "getBaseDir");
+        source = source.replaceAll("super(filePath, TEMPLATE_PROJECT_NAME)",
+            "super((ProjectImpl)getProject())");
+      }
       processedFile.writeAsStringSync(source);
       return original;
     } else {

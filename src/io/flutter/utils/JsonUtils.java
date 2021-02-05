@@ -6,6 +6,9 @@
 package io.flutter.utils;
 
 import com.google.gson.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -47,6 +50,17 @@ public class JsonUtils {
     rawValues.forEach(element -> values.add(element.getAsString()));
 
     return values;
+  }
+
+  // JsonObject.keySet() is defined in 2.8.6 but not 2.7.
+  // The 2020.3 version of Android Studio includes both, and 2.7 is first on the class path.
+  public static Set<String> getKeySet(JsonObject obj) {
+    final Set<Map.Entry<String, JsonElement>> entries = obj.entrySet();
+    final HashSet<String> strings = new HashSet<>(entries.size());
+    for (Map.Entry<String, JsonElement> entry : entries) {
+      strings.add(entry.getKey());
+    }
+    return strings;
   }
 
   public static boolean hasJsonData(@Nullable String data) {

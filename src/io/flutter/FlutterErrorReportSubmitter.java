@@ -54,7 +54,7 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
   public boolean submit(@NotNull IdeaLoggingEvent[] events,
                         @Nullable String additionalInfo,
                         @NotNull Component parentComponent,
-                        @NotNull Consumer<SubmittedReportInfo> consumer) {
+                        @NotNull Consumer<? super SubmittedReportInfo> consumer) {
     if (events.length == 0) {
       // Don't remove the cast until a later version of Android Studio.
       fail(((Consumer<SubmittedReportInfo>)consumer));

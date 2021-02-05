@@ -478,7 +478,7 @@ public class InspectorService implements Disposable {
     // Workaround null values turning into the string "null" when using the VM Service extension protocol.
     final ArrayList<String> keysToRemove = new ArrayList<>();
 
-    for (String key : params.keySet()) {
+    for (String key : JsonUtils.getKeySet(params)) {
       if (params.get(key).isJsonNull()) {
         keysToRemove.add(key);
       }
