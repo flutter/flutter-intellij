@@ -99,9 +99,9 @@ class BuildSpec {
             } else {
               // We don't know which one we need, so add both.
               // We only put Linux versions in cloud storage.
-              artifacts.add(Artifact('$ideaProduct-$ideaVersion-linux.zip',
+              artifacts.add(Artifact('$ideaProduct-$ideaVersion-linux.tar.gz',
                   output: ideaProduct));
-              artifacts.add(Artifact('$ideaProduct-ide-$ideaVersion-linux.zip',
+              artifacts.add(Artifact('$ideaProduct-ide-$ideaVersion-linux.tar.gz',
                   output: ideaProduct));
             }
           }
