@@ -64,7 +64,7 @@ class ArtifactManager {
     createDir('artifacts');
 
     var result = 0;
-    for (var artifact in artifacts) {
+    for (var artifact in artifacts.sublist(0)) {
       var doDownload = true;
 
       void alreadyDownloaded(String path) {
@@ -88,7 +88,8 @@ class ArtifactManager {
           result = await curl('$base/${artifact.file}', to: path);
           if (result != 0) {
             log('download failed');
-            break;
+            artifacts.remove(artifact);
+            continue;
           }
           var archiveFile = File(path);
           if (!_isValidDownloadArtifact(archiveFile)) {

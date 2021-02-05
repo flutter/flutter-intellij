@@ -97,7 +97,12 @@ class BuildSpec {
             if (product.exists()) {
               artifacts.add(product);
             } else {
-              log('Cannot find the correct version of Android Studio for $ideaVersion');
+              // We don't know which one we need, so add both.
+              // We only put Linux versions in cloud storage.
+              artifacts.add(Artifact('$ideaProduct-$ideaVersion-linux.zip',
+                  output: ideaProduct));
+              artifacts.add(Artifact('$ideaProduct-ide-$ideaVersion-linux.zip',
+                  output: ideaProduct));
             }
           }
         }
