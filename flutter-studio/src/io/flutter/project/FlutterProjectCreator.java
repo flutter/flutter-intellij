@@ -53,6 +53,7 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
 import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.EnumSet;
 import java.util.List;
@@ -299,7 +300,7 @@ public class FlutterProjectCreator {
       myConversionNeeded = true;
     }
 
-    @Override
+    //@Override
     public void successfullyConverted(@NotNull File backupDir) {
       myConverted = true;
     }
@@ -308,17 +309,16 @@ public class FlutterProjectCreator {
     public void error(@NotNull String message) {
     }
 
-    //@Override
-    @SuppressWarnings("override")
-    public void cannotWriteToFiles(@NotNull List<? extends File> readonlyFiles) {
-    }
-
     public boolean isConversionNeeded() {
       return myConversionNeeded;
     }
 
     public boolean isConverted() {
       return myConverted;
+    }
+
+    public void cannotWriteToFiles(List<Path> files) {
+
     }
   }
 }

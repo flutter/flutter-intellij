@@ -307,8 +307,8 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
 
   @NotNull
   @Override
-  protected Collection<? extends ModelWizardStep> createDependentSteps() {
-    List<ModelWizardStep> allSteps = Lists.newArrayList();
+  protected Collection<? extends ModelWizardStep<?>> createDependentSteps() {
+    List<ModelWizardStep<?>> allSteps = Lists.newArrayList();
     if (myProjectType.getValue() == FlutterProjectType.PACKAGE) {
       return allSteps;
     }

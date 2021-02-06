@@ -93,8 +93,8 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
 
   @NotNull
   @Override
-  public Collection<? extends ModelWizardStep> createDependentSteps() {
-    List<ModelWizardStep> allSteps = Lists.newArrayList();
+  public Collection<? extends ModelWizardStep<?>> createDependentSteps() {
+    List<ModelWizardStep<?>> allSteps = Lists.newArrayList();
     myModuleDescriptionToStepMap = new HashMap<>();
     for (ModuleGalleryEntry moduleGalleryEntry : myModuleGalleryEntryList) {
       FlutterProjectStep step = ((FlutterGalleryEntry)moduleGalleryEntry).createFlutterStep(getModel());

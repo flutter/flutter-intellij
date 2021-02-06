@@ -5,7 +5,11 @@
  */
 package io.flutter.utils;
 
-import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;
+import static com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil.getChildren;
+import static com.intellij.openapi.util.text.StringUtil.isNotEmpty;
+import static java.util.Objects.requireNonNull;
+
+import com.android.tools.idea.gradle.dsl.model.BuildModelContext;
 import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslElement;
 import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslLiteral;
 import com.android.tools.idea.gradle.dsl.parser.files.GradleSettingsFile;

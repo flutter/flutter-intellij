@@ -13,21 +13,25 @@ import com.android.tools.idea.gradle.project.sync.GradleSyncInvoker;
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.intellij.ProjectTopics;
 import com.intellij.facet.FacetManager;
+import com.intellij.ide.plugins.IdeaPluginDescriptorImpl;
+import com.intellij.ide.plugins.PluginManagerCore;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.TransactionGuard;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.components.impl.stores.IProjectStore;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ex.ProjectEx;
 import com.intellij.openapi.project.impl.ProjectExImpl;
 import com.intellij.openapi.project.impl.ProjectImpl;
 import com.intellij.openapi.project.impl.ProjectManagerImpl;
+import com.intellij.openapi.project.impl.ProjectStoreFactory;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.DependencyScope;
 import com.intellij.openapi.roots.JavaProjectModelModifier;
@@ -324,6 +328,40 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
 
     static final String TEMPLATE_PROJECT_NAME = "_android";
 
+    private IProjectStore componentStore = ApplicationManager.getApplication().getService(ProjectStoreFactory.class).createStore(this);
+
+    protected IProjectStore getStateStore1() {
+      return componentStore;
+    }
+
+    public Disposable getEarlyDisposable1() {
+      return null;
+    }
+
+    public String getLocationHash() {
+      return "";
+    }
+
+    public VirtualFile getWorkspaceFile1() {
+      return null;
+    }
+
+    public String getProjectFilePath1() {
+      return null;
+    }
+
+    public VirtualFile getProjectFile1() {
+      return null;
+    }
+
+    public String getBasePath1() {
+      return null;
+    }
+
+    public VirtualFile getBaseDir1() {
+      return null;
+    }
+
     public void init41(@Nullable ProgressIndicator indicator) {
       boolean finished = false;
       try {
@@ -342,7 +380,11 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
       }
       finally {
         if (!finished) {
-          TransactionGuard.submitTransaction(this, () -> WriteAction.run(() -> Disposer.dispose(this)));
+          TransactionGuard.submitTransaction(this, () -> WriteAction.run(() -> {
+            if (isDisposed()) {
+              Disposer.dispose(this);
+            }
+          }));
         }
       }
     }
@@ -350,22 +392,18 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     public void initPre41(@Nullable ProgressIndicator indicator) {
       boolean finished = false;
       try {
-        //registerComponents();
-        Method method = ReflectionUtil.getDeclaredMethod(ProjectImpl.class, "registerComponents");
-        assert (method != null);
-        try {
-          method.invoke(this);
-        }
-        catch (IllegalAccessException | InvocationTargetException e) {
-          throw new RuntimeException(e);
-        }
+        registerComponents((List<IdeaPluginDescriptorImpl>)PluginManagerCore.getLoadedPlugins(), null);
         getStateStore().setPath(path, true, null);
-        super.init(indicator);
+        super.init(false, indicator);
         finished = true;
       }
       finally {
         if (!finished) {
-          TransactionGuard.submitTransaction(this, () -> WriteAction.run(() -> Disposer.dispose(this)));
+          TransactionGuard.submitTransaction(this, () -> WriteAction.run(() -> {
+            if (isDisposed()) {
+              Disposer.dispose(this);
+            }
+          }));
         }
       }
     }

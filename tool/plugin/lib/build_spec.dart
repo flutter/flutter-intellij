@@ -77,16 +77,35 @@ class BuildSpec {
 
   void createArtifacts() {
     if (ideaProduct == 'android-studio') {
-      product = Artifact(
-          '$ideaProduct-ide-$ideaVersion-mac.zip',
-          bareArchive: true,
-          output: ideaProduct);
+      product = Artifact('$ideaProduct-ide-$ideaVersion-mac.zip',
+          bareArchive: true, output: ideaProduct);
       if (product.exists()) {
         artifacts.add(product);
       } else {
-        product = artifacts.add(Artifact(
-            '$ideaProduct-ide-$ideaVersion-linux.zip',
-            output: ideaProduct));
+        product = Artifact('$ideaProduct-ide-$ideaVersion-linux.zip',
+            output: ideaProduct);
+        if (product.exists()) {
+          artifacts.add(product);
+        } else {
+          product = Artifact('$ideaProduct-$ideaVersion-mac.zip',
+              bareArchive: true, output: ideaProduct);
+          if (product.exists()) {
+            artifacts.add(product);
+          } else {
+            product = Artifact('$ideaProduct-$ideaVersion-linux.zip',
+                output: ideaProduct);
+            if (product.exists()) {
+              artifacts.add(product);
+            } else {
+              // We don't know which one we need, so add both.
+              // We only put Linux versions in cloud storage.
+              artifacts.add(Artifact('$ideaProduct-$ideaVersion-linux.tar.gz',
+                  output: ideaProduct));
+              artifacts.add(Artifact('$ideaProduct-ide-$ideaVersion-linux.tar.gz',
+                  output: ideaProduct));
+            }
+          }
+        }
       }
     } else {
       product = artifacts.add(
@@ -151,8 +170,13 @@ class SyntheticBuildSpec extends BuildSpec {
   SyntheticBuildSpec.fromJson(
       Map json, String releaseNum, List<BuildSpec> specs)
       : super.fromJson(json, releaseNum) {
-    // 'isUnitTestTarget' should always be in the spec for the latest IntelliJ (not AS).
-    alternate = specs.firstWhere((s) => s.isUnitTestTarget);
+    try {
+      // 'isUnitTestTarget' should always be in the spec for the latest IntelliJ (not AS).
+      alternate = specs.firstWhere((s) => s.isUnitTestTarget);
+    } catch (StateError) {
+      log('No build spec defines "isUnitTestTarget"');
+      exit(1);
+    }
   }
 
   String get untilBuild => alternate.untilBuild;

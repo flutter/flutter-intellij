@@ -95,10 +95,7 @@
     <orderEntry type="module" module-name="intellij.android.projectSystem" />
     <orderEntry type="library" name="Trove4j" level="project" />
     <orderEntry type="module" module-name="intellij.gradle.dsl.impl" />
-    <orderEntry type="library" name="studio-sdk" level="project" />
-    <orderEntry type="library" name="studio-plugin-gradle" level="project" />
     <orderEntry type="library" name="Dart Packages" level="project" />
-    <orderEntry type="library" name="studio-plugin-git4idea" level="project" />
     <orderEntry type="module" module-name="intellij.android.observable" />
     <orderEntry type="library" name="jxbrowser-7.12.2" level="project" />
     <orderEntry type="module-library">
@@ -121,11 +118,12 @@
     </orderEntry>
     <orderEntry type="library" name="Trove4j" level="project" />
     <orderEntry type="module" module-name="intellij.gradle.dsl.impl" />
-    <orderEntry type="library" name="studio-sdk" level="project" />
-    <orderEntry type="library" name="studio-plugin-gradle" level="project" />
     <orderEntry type="library" name="Dart Packages" level="project" />
-    <orderEntry type="library" name="studio-plugin-git4idea" level="project" />
     <orderEntry type="module" module-name="intellij.android.observable" />
     <orderEntry type="library" name="jxbrowser-7.12.2" level="project" />
+    <orderEntry type="library" name="studio-plugin-git4idea" level="project" />
+    <orderEntry type="library" name="studio-plugin-yaml" level="project" />
+    <orderEntry type="library" name="studio-plugin-gradle" level="project" />
+    <orderEntry type="library" name="studio-sdk" level="project" />
   </component>
 </module>
