@@ -50,9 +50,14 @@ public class FlutterSdkVersionTest {
       new FlutterSdkVersion("1.0.1").compareTo(new FlutterSdkVersion("1.0.0")),
       1
     );
+    // Stable version is ahead of all beta versions with the same major/minor/patch numbers.
     assertEquals(
       new FlutterSdkVersion("1.0.0").compareTo(new FlutterSdkVersion("1.0.0-1.0.pre")),
       1
+    );
+    assertEquals(
+      new FlutterSdkVersion("1.0.0-1.1.pre").compareTo(new FlutterSdkVersion("1.0.0")),
+      -1
     );
     assertEquals(
       new FlutterSdkVersion("1.0.0-1.1.pre").compareTo(new FlutterSdkVersion("1.0.0-1.0.pre")),
@@ -71,15 +76,9 @@ public class FlutterSdkVersionTest {
       -1
     );
     assertEquals(
-      new FlutterSdkVersion("1.0.0-1.1.pre").compareTo(new FlutterSdkVersion("1.0.0")),
-      -1
-    );
-    assertEquals(
       new FlutterSdkVersion("1.0.0-1.1.pre").compareTo(new FlutterSdkVersion("1.0.0-1.1.pre")),
       0
     );
-
-    // TODO:(helin24): Update with correct comparisons involving the master branch.
     assertEquals(
       new FlutterSdkVersion("1.0.0-1.1.pre.123").compareTo(new FlutterSdkVersion("1.0.0-1.1.pre.123")),
       0
@@ -92,23 +91,24 @@ public class FlutterSdkVersionTest {
       new FlutterSdkVersion("1.0.0-1.1.pre.124").compareTo(new FlutterSdkVersion("1.0.0-1.1.pre.123")),
       1
     );
-
+    // Master versions will be aware of the latest preceding dev version and have a version number higher than the preceding dev version.
+    // e.g. the next commit to master after cutting dev version 2.0.0-2.0.pre would be 2.0.0-3.0.pre.1, with the number 1 signifying 1
+    // commit after the previous version.
     assertEquals(
       new FlutterSdkVersion("1.0.0-1.1.pre.123").compareTo(new FlutterSdkVersion("1.0.0-1.1.pre")),
-      1
+      -1
     );
-    assertEquals(
-      new FlutterSdkVersion("1.0.0-1.0.pre.123").compareTo(new FlutterSdkVersion("1.0.0-2.0.pre")),
-      1
-    );
-
     assertEquals(
       new FlutterSdkVersion("1.0.0-1.1.pre").compareTo(new FlutterSdkVersion("1.0.0-1.1.pre.123")),
-      -1
+      1
+    );
+    assertEquals(
+      new FlutterSdkVersion("1.0.0-2.0.pre.123").compareTo(new FlutterSdkVersion("1.0.0-1.0.pre")),
+      1
     );
     assertEquals(
       new FlutterSdkVersion("1.0.0-2.0.pre").compareTo(new FlutterSdkVersion("1.0.0-1.0.pre.123")),
-      -1
+      1
     );
   }
 }
