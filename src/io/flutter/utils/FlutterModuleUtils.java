@@ -141,7 +141,7 @@ public class FlutterModuleUtils {
   public static VirtualFile findXcodeProjectFile(@NotNull Project project) {
     if (project.isDisposed()) return null;
 
-    // Look for XCode metadata file in `ios/`.
+    // Look for Xcode metadata file in `ios/`.
     for (PubRoot root : PubRoots.forProject(project)) {
       final VirtualFile dir = root.getiOsDir();
       final VirtualFile file = findPreferedXcodeMetadataFile(dir);
@@ -150,7 +150,7 @@ public class FlutterModuleUtils {
       }
     }
 
-    // Look for XCode metadata in `example/ios/`.
+    // Look for Xcode metadata in `example/ios/`.
     for (PubRoot root : PubRoots.forProject(project)) {
       final VirtualFile exampleDir = root.getExampleDir();
       if (exampleDir != null) {

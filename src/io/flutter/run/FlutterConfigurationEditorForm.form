@@ -38,7 +38,7 @@
         </constraints>
         <properties>
           <text value="Build flavor:"/>
-          <toolTipText value="The build flavor. This is either a gradle product flavor or an XCode custom scheme."/>
+          <toolTipText value="The build flavor. This is either a gradle product flavor or an Xcode custom scheme."/>
         </properties>
       </component>
       <component id="14837" class="javax.swing.JTextField" binding="myBuildFlavorField">
@@ -55,7 +55,7 @@
         </constraints>
         <properties>
           <enabled value="false"/>
-          <text value="An optional build flavor; either a Gradle product flavor or an XCode custom scheme."/>
+          <text value="An optional build flavor; either a Gradle product flavor or an Xcode custom scheme."/>
         </properties>
       </component>
       <component id="45360" class="javax.swing.JLabel">
