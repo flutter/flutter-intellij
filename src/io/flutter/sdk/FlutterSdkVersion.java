@@ -184,38 +184,31 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
       return standardComparisonResult;
     }
 
-    // If both versions are on master, we can compare with the beta version and the master version.
-    if (masterVersion > 0 && otherVersion.masterVersion > 0) {
-      assert betaVersion != null;
-      assert otherVersion.betaVersion != null;
-      final int betaComparisonResult = betaVersion.compareTo(otherVersion.betaVersion);
-      return betaComparisonResult == 0 ? Integer.compare(masterVersion, otherVersion.masterVersion) : betaComparisonResult;
-    }
-
-    // TODO(helin24): Implement more thorough/correct comparison for master versions against non-master beta versions.
-    // This recognizes all master versions as later than non-master beta versions if the standard version is equal, because a later master
-    // version can have smaller beta version numbers than a preceding beta/dev version.
-    if (masterVersion > 0 && otherVersion.masterVersion == 0) {
-      return 1;
-    }
-
-    if (masterVersion == 0 && otherVersion.masterVersion > 0) {
-      return -1;
-    }
-
     // Check for beta version strings if standard versions are equivalent.
     if (betaVersion == null && otherVersion.betaVersion == null) {
       return 0;
-    }
-
-    if (betaVersion != null && otherVersion.betaVersion != null) {
-      return betaVersion.compareTo(otherVersion.betaVersion);
-    }
-
-    if (betaVersion == null) {
+    } else if (betaVersion == null) {
       return 1;
+    } else if (otherVersion.betaVersion == null) {
+      return -1;
     }
 
-    return -1;
+    final int betaComparisonResult = betaVersion.compareTo(otherVersion.betaVersion);
+
+    if (betaComparisonResult != 0) {
+      return betaComparisonResult;
+    }
+
+    // Check master version ints if both have master version ints and versions are otherwise equivalent.
+    // Otherwise, the version without a master version is further ahead.
+    if (masterVersion != 0 && otherVersion.masterVersion != 0) {
+      return Integer.compare(masterVersion, otherVersion.masterVersion);
+    } else if (masterVersion != 0) {
+      return -1;
+    } else if (otherVersion.masterVersion != 0) {
+      return 1;
+    } else {
+      return 0;
+    }
   }
 }
