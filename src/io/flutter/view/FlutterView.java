@@ -668,17 +668,18 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
 
     if (FlutterSettings.getInstance().isEnableEmbeddedBrowsers()) {
-      final JxBrowserStatus jxBrowserStatus = JxBrowserManager.getInstance().getStatus();
+      if (toolWindow.isVisible()) {
+        displayEmbeddedBrowser(app, inspectorService, toolWindow);
+      } else {
+        if (toolWindowListener == null) {
+          toolWindowListener = new FlutterViewToolWindowManagerListener(myProject);
+        }
+        // If the window isn't visible yet, only executed embedded browser steps when it becomes visible.
+        toolWindowListener.updateOnWindowFirstVisible(() -> {
+          displayEmbeddedBrowser(app, inspectorService, toolWindow);
+        });
+      }
 
-      if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {
-        handleJxBrowserInstalled(app, inspectorService, toolWindow);
-      }
-      else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
-        handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
-      }
-      else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
-        handleJxBrowserInstallationFailed(app, inspectorService, toolWindow);
-      }
       return;
     }
 
@@ -742,6 +743,20 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         }
       }
     });
+  }
+
+  private void displayEmbeddedBrowser(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
+    final JxBrowserStatus jxBrowserStatus = JxBrowserManager.getInstance().getStatus();
+
+    if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {
+      handleJxBrowserInstalled(app, inspectorService, toolWindow);
+    }
+    else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
+      handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
+    }
+    else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
+      handleJxBrowserInstallationFailed(app, inspectorService, toolWindow);
+    }
   }
 
   private void updateForEmptyContent(ToolWindow toolWindow) {
