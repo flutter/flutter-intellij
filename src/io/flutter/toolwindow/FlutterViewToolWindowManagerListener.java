@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 public class FlutterViewToolWindowManagerListener implements ToolWindowManagerListener {
   private boolean inspectorIsOpen = false;
   private Runnable onWindowOpen;
+  private Runnable onWindowFirstVisible;
 
   public FlutterViewToolWindowManagerListener(Project project) {
     project.getMessageBus().connect().subscribe(ToolWindowManagerListener.TOPIC, this);
@@ -22,6 +23,10 @@ public class FlutterViewToolWindowManagerListener implements ToolWindowManagerLi
 
   public void updateOnWindowOpen(Runnable onWindowOpen) {
     this.onWindowOpen = onWindowOpen;
+  }
+
+  public void updateOnWindowFirstVisible(Runnable onWindowFirstVisible) {
+    this.onWindowFirstVisible = onWindowFirstVisible;
   }
 
   @Override
@@ -37,6 +42,11 @@ public class FlutterViewToolWindowManagerListener implements ToolWindowManagerLi
       if (newIsOpen && onWindowOpen != null) {
         onWindowOpen.run();
       }
+    }
+
+    if (inspectorWindow.isVisible() && onWindowFirstVisible != null) {
+      onWindowFirstVisible.run();
+      onWindowFirstVisible = null;
     }
   }
 }
