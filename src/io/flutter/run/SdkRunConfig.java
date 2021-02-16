@@ -58,6 +58,7 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
   implements LaunchState.RunConfig, RefactoringListenerProvider, RunConfigurationWithSuppressedDefaultRunAction {
 
   private static final Logger LOG = Logger.getInstance(SdkRunConfig.class);
+  private boolean firstRun = true;
 
   private @NotNull SdkFields fields = new SdkFields();
 
@@ -233,7 +234,9 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
     final SdkFields launchFields = fields.copy();
     final Project project = env.getProject();
     final RunMode mode = RunMode.fromEnv(env);
-    return fields.createFlutterSdkRunCommand(project, mode, FlutterLaunchMode.fromEnv(env), device);
+    final boolean initialFirstRun = firstRun;
+    firstRun = false;
+    return fields.createFlutterSdkRunCommand(project, mode, FlutterLaunchMode.fromEnv(env), device, initialFirstRun);
   }
 
   @Override

@@ -136,8 +136,8 @@ public class SdkFields {
     @NotNull Project project,
     @NotNull RunMode runMode,
     @NotNull FlutterLaunchMode flutterLaunchMode,
-    @NotNull FlutterDevice device
-  ) throws ExecutionException {
+    @NotNull FlutterDevice device,
+    boolean firstRun) throws ExecutionException {
     final MainFile main = MainFile.verify(filePath, project).get();
 
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
@@ -167,7 +167,19 @@ public class SdkFields {
         progress.runProcessWithProgressSynchronously(() -> {
           progress.getProgressIndicator().setIndeterminate(true);
           try {
-            devToolsFuture.complete(DevToolsService.getInstance(project).getDevToolsInstance().get(30, TimeUnit.SECONDS));
+            final CompletableFuture<DevToolsInstance> futureInstance = DevToolsService.getInstance(project).getDevToolsInstance();
+            if (firstRun) {
+              devToolsFuture.complete(futureInstance.get(30, TimeUnit.SECONDS));
+            } else {
+              // Skip waiting if this isn't the first time running this project. If DevTools isn't available by now, there's likely to be
+              // something wrong that won't be fixed by restarting, so we don't want to keep delaying run.
+              final DevToolsInstance instance = futureInstance.getNow(null);
+              if (instance == null) {
+                devToolsFuture.completeExceptionally(new Exception("DevTools instance not available after first run."));
+              } else {
+                devToolsFuture.complete(instance);
+              }
+            }
           }
           catch (Exception e) {
             devToolsFuture.completeExceptionally(e);
