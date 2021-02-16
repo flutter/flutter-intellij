@@ -630,6 +630,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private void replacePanelLabel(ToolWindow toolWindow, JComponent label) {
     ApplicationManager.getApplication().invokeLater(() -> {
       final ContentManager contentManager = toolWindow.getContentManager();
+      if (contentManager.isDisposed()) {
+        return;
+      }
       contentManager.removeAllContents(true);
 
       final JPanel panel = new JPanel(new BorderLayout());
