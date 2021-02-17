@@ -67,6 +67,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     // Resolve the class reference and check that it is one of the known, cached classes.
     if (!ApplicationManager.getApplication().isUnitTestMode()) {
       final PsiElement symbol = "IconData".equals(name) ? refExpr : refExpr.getFirstChild();
+      if (!(symbol instanceof DartReference)) return null;
       final PsiElement result = ((DartReference)symbol).resolve();
       if (result == null) return null;
       final List<VirtualFile> library = DartResolveUtil.findLibrary(result.getContainingFile());
