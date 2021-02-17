@@ -433,6 +433,12 @@ public class FlutterConsoleLogManager {
         if (toolWindow != null && !toolWindow.isVisible()) {
           toolWindow.show();
         }
+
+        FlutterInitializer.getAnalytics().sendEvent(
+          "notification",
+          "deep-link-clicked",
+          FlutterSdk.getFlutterSdk(app.getProject())
+        );
       }
     });
     Notifications.Bus.notify(notification, app.getProject());
