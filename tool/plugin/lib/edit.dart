@@ -28,10 +28,18 @@ List<EditCommand> editCommands = [
   Subst(
     path: 'src/io/flutter/utils/AndroidUtils.java',
     initial:
-        'import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;',
+    'import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;',
     replacement:
-        'import com.android.tools.idea.gradle.dsl.model.BuildModelContext;',
+    'import com.android.tools.idea.gradle.dsl.model.BuildModelContext;',
     versions: ['4.1', '4.2'],
+  ),
+  Subst(
+    path: 'src/io/flutter/utils/AndroidUtils.java',
+    initial:
+    'import com.android.tools.idea.gradle.dsl.model.BuildModelContext;',
+    replacement:
+    'import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;',
+    versions: ['2020.3'],
   ),
   Subst(
     path: 'src/io/flutter/FlutterUtils.java',
