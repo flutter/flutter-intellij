@@ -31,12 +31,24 @@
       "channel": "stable",
       "comments": "IntelliJ 2020.3, Android Studio 2020.3.1 Canary 5",
       "name": "Arctic Fox 2020.3.1, Canary 5",
-      "isUnitTestTarget": "true",
       "version": "AF.3.1",
       "ideaProduct": "android-studio",
       "ideaVersion": "2020.3.1.5",
       "dartPluginVersion": "203.6912",
       "sinceBuild": "203.6682.168",
+      "untilBuild": "203.*",
+      "filesToSkip": ["src/io/flutter/utils/AndroidLocationProvider.java"]
+    },
+    {
+      "channel": "stable",
+      "comments": "IntelliJ 2020.3",
+      "name": "2020.3",
+      "version": "2020.3",
+      "isUnitTestTarget": "true",
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "203.5981.155",
+      "dartPluginVersion": "203.6912",
+      "sinceBuild": "205.7148.57",
       "untilBuild": "203.*",
       "filesToSkip": ["src/io/flutter/utils/AndroidLocationProvider.java"]
     }
