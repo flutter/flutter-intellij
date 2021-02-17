@@ -515,8 +515,12 @@ public class FlutterSdk {
       branch = git4idea.light.LightGitUtilKt.getLocation(dir, GitExecutableManager.getInstance().getExecutable((Project)null));
     }
     catch (VcsException e) {
-      LOG.error(e);
-      branch = "unknown";
+      String stdout = returnOutputOfQuery(flutterChannel());
+      if (stdout == null) {
+        branch = "unknown";
+      } else {
+        branch = FlutterSdkChannel.parseChannel(stdout);
+      }
     }
 
     cachedConfigValues.put("channel", branch);

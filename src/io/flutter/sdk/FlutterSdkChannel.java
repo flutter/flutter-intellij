@@ -13,7 +13,7 @@ public class FlutterSdkChannel {
 
   public enum ID {
 
-    // Do not change this order. An unknown branch is assymed to be off master.
+    // Do not change this order. An unknown branch is assumed to be off master.
     STABLE("stable"), BETA("beta"), DEV("dev"), MASTER("master"), UNKNOWN("unknown");
 
     private final String name;
@@ -63,4 +63,16 @@ public class FlutterSdkChannel {
   public String toString() {
     return "channel " + channel.toString();
   }
+
+  @NotNull
+  public static String parseChannel(@NotNull String text) {
+    String[] lines = text.split("\n");
+    for (String line : lines) {
+      if (line.startsWith("*")) {
+        return line.substring(2);
+      }
+    }
+    return "unknown";
+  }
 }
+
