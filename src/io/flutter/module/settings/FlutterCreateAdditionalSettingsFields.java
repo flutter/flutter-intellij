@@ -110,6 +110,7 @@ public class FlutterCreateAdditionalSettingsFields {
       orgField.setEnabled(projectType != FlutterProjectType.PACKAGE);
       UIUtil.setEnabled(androidLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
       UIUtil.setEnabled(iosLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
+      UIUtil.setEnabled(platformsForm.getComponent(), areLanguageFeaturesVisible, true, true);
     }
   }
 
@@ -193,13 +194,21 @@ public class FlutterCreateAdditionalSettingsFields {
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
       .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
       .setOffline(createParams.isOfflineSelected())
-      .setPlatformAndroid(platformsForm.shouldBeVisible() ? settings.getPlatformAndroid() : Boolean.TRUE)
-      .setPlatformIos(platformsForm.shouldBeVisible() ? settings.getPlatformIos() : Boolean.TRUE)
-      .setPlatformLinux(platformsForm.shouldBeVisible() ? settings.getPlatformLinux() : null)
-      .setPlatformMacos(platformsForm.shouldBeVisible() ? settings.getPlatformMacos() : null)
-      .setPlatformWeb(platformsForm.shouldBeVisible() ? settings.getPlatformWeb() : null)
-      .setPlatformWindows(platformsForm.shouldBeVisible() ? settings.getPlatformWindows() : null)
+      .setPlatformAndroid(shouldIncludPlatforms() ? settings.getPlatformAndroid() : Boolean.TRUE)
+      .setPlatformIos(shouldIncludPlatforms() ? settings.getPlatformIos() : Boolean.TRUE)
+      .setPlatformLinux(shouldIncludPlatforms() ? settings.getPlatformLinux() : null)
+      .setPlatformMacos(shouldIncludPlatforms() ? settings.getPlatformMacos() : null)
+      .setPlatformWeb(shouldIncludPlatforms() ? settings.getPlatformWeb() : null)
+      .setPlatformWindows(shouldIncludPlatforms() ? settings.getPlatformWindows() : null)
       .build();
+  }
+
+  private boolean shouldIncludPlatforms() {
+    switch (projectTypeForm.getType()) {
+      case APP: // fall through
+      case PLUGIN: return platformsForm.shouldBeVisible();
+      default: return false;
+    }
   }
 
   public FlutterCreateAdditionalSettings getSettings() {
