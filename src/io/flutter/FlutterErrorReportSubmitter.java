@@ -50,11 +50,11 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     return "Create Flutter Bug Report";
   }
 
-  @Override
+  //@Override
   public boolean submit(@NotNull IdeaLoggingEvent[] events,
                         @Nullable String additionalInfo,
                         @NotNull Component parentComponent,
-                        @NotNull Consumer<? super SubmittedReportInfo> consumer) {
+                        @NotNull Consumer<SubmittedReportInfo> consumer) {
     if (events.length == 0) {
       // Don't remove the cast until a later version of Android Studio.
       fail(((Consumer<SubmittedReportInfo>)consumer));

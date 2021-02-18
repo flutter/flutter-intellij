@@ -66,7 +66,7 @@ public class FlutterSdkChannel {
 
   @NotNull
   public static String parseChannel(@NotNull String text) {
-    String[] lines = text.split("\n");
+    String[] lines = text.split("\n"); // TODO(messick) check windows
     for (String line : lines) {
       if (line.startsWith("*")) {
         return line.substring(2);
