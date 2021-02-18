@@ -194,16 +194,16 @@ public class FlutterCreateAdditionalSettingsFields {
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
       .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
       .setOffline(createParams.isOfflineSelected())
-      .setPlatformAndroid(shouldIncludPlatforms() ? settings.getPlatformAndroid() : Boolean.TRUE)
-      .setPlatformIos(shouldIncludPlatforms() ? settings.getPlatformIos() : Boolean.TRUE)
-      .setPlatformLinux(shouldIncludPlatforms() ? settings.getPlatformLinux() : null)
-      .setPlatformMacos(shouldIncludPlatforms() ? settings.getPlatformMacos() : null)
-      .setPlatformWeb(shouldIncludPlatforms() ? settings.getPlatformWeb() : null)
-      .setPlatformWindows(shouldIncludPlatforms() ? settings.getPlatformWindows() : null)
+      .setPlatformAndroid(shouldIncludePlatforms() ? settings.getPlatformAndroid() : Boolean.TRUE)
+      .setPlatformIos(shouldIncludePlatforms() ? settings.getPlatformIos() : Boolean.TRUE)
+      .setPlatformLinux(shouldIncludePlatforms() ? settings.getPlatformLinux() : null)
+      .setPlatformMacos(shouldIncludePlatforms() ? settings.getPlatformMacos() : null)
+      .setPlatformWeb(shouldIncludePlatforms() ? settings.getPlatformWeb() : null)
+      .setPlatformWindows(shouldIncludePlatforms() ? settings.getPlatformWindows() : null)
       .build();
   }
 
-  private boolean shouldIncludPlatforms() {
+  private boolean shouldIncludePlatforms() {
     switch (projectTypeForm.getType()) {
       case APP: // fall through
       case PLUGIN: return platformsForm.shouldBeVisible();
