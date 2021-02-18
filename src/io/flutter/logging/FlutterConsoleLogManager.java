@@ -435,8 +435,8 @@ public class FlutterConsoleLogManager {
         }
 
         FlutterInitializer.getAnalytics().sendEvent(
-          "notification",
           "deep-link-clicked",
+          errorSummary.contains("RenderFlex overflowed") ? "overflow" : "unknown",
           FlutterSdk.getFlutterSdk(app.getProject())
         );
       }
