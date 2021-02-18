@@ -433,6 +433,12 @@ public class FlutterConsoleLogManager {
         if (toolWindow != null && !toolWindow.isVisible()) {
           toolWindow.show();
         }
+
+        FlutterInitializer.getAnalytics().sendEvent(
+          "deep-link-clicked",
+          errorSummary.contains("RenderFlex overflowed") ? "overflow" : "unknown",
+          FlutterSdk.getFlutterSdk(app.getProject())
+        );
       }
     });
     Notifications.Bus.notify(notification, app.getProject());
