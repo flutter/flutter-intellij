@@ -31,15 +31,15 @@ List<EditCommand> editCommands = [
     'import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;',
     replacement:
     'import com.android.tools.idea.gradle.dsl.model.BuildModelContext;',
-    versions: ['4.1', '4.2'],
+    versions: ['4.1', '4.2', 'AF.3.1'],
   ),
   Subst(
-    path: 'src/io/flutter/utils/AndroidUtils.java',
+    path: 'src/io/flutter/utils/AndroidLocationProvider.java',
     initial:
-    'import com.android.tools.idea.gradle.dsl.model.BuildModelContext;',
-    replacement:
     'import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;',
-    versions: ['2020.3'],
+    replacement:
+    'import com.android.tools.idea.gradle.dsl.model.BuildModelContext;',
+    versions: ['4.1', '4.2', 'AF.3.1'],
   ),
   Subst(
     path: 'src/io/flutter/FlutterUtils.java',
@@ -84,9 +84,9 @@ List<EditCommand> editCommands = [
   ),
   Subst(
     path: 'src/io/flutter/FlutterErrorReportSubmitter.java',
-    initial: 'Consumer<? super SubmittedReportInfo> consumer',
-    replacement: 'Consumer<SubmittedReportInfo> consumer',
-    versions: ['4.1', '4.2'],
+    initial: 'Consumer<SubmittedReportInfo> consumer',
+    replacement: 'Consumer<? super SubmittedReportInfo> consumer',
+    versions: ['AF.3.1', '2020.3'],
   ),
   Subst(
     path: 'src/io/flutter/utils/CollectionUtils.java',
@@ -186,10 +186,12 @@ Future<int> applyEdits(BuildSpec spec, Function compileFn) async {
         FileSystemEntity.isFileSync(file) ? File(file) : Directory(file);
     if (entity.existsSync()) {
       await entity.rename('$file~');
+      log('renamed $file');
       if (entity is File) {
         var stubFile = File('${file}_stub');
         if (stubFile.existsSync()) {
           await stubFile.copy('$file');
+          log('copied ${file}_stub');
         }
       }
     }
@@ -264,6 +266,7 @@ class Subst extends EditCommand {
       var original = source;
       source = source.replaceAll(initial, replacement);
       processedFile.writeAsStringSync(source);
+      log ('edited $path');
       return original;
     } else {
       return null;

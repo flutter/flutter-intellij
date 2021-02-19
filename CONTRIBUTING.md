@@ -18,6 +18,7 @@ file.
 * Start IntelliJ
 * In the Project Structure dialog (`File | Project Structure`), select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure an IntelliJ Platform Plugin SDK
   - Point it to the directory of your downloaded IntelliJ Community Edition installation (e.g, `IntelliJ IDEA CE.app/Contents` or `~/idea-IC-183.4886.37`)
+    - **Currently, it must be using the 2020.2 version of IntelliJ as the base for the Platform Plugin SDK**
   - Change the name to `IntelliJ IDEA Community Edition`
   - Extend it with additional plugin libraries by adding to `Classpath`:
     - plugins/android/lib/android.jar
