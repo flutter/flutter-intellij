@@ -5,6 +5,7 @@
  */
 package io.flutter.module.settings
 
+import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.layout.Cell
 import com.intellij.ui.layout.panel
 import io.flutter.FlutterBundle
@@ -24,6 +25,7 @@ class PlatformsForm(getSdk: Supplier<out FlutterSdk>) {
   var configMacos: Boolean? = null
   var configWeb: Boolean? = null
   var configWindows: Boolean? = null
+  var component: DialogPanel? = null
 
   fun initChannel() {
     val sdk = sdkGetter.get()
@@ -46,28 +48,29 @@ class PlatformsForm(getSdk: Supplier<out FlutterSdk>) {
     return ch.id > ID.STABLE
   }
 
-  fun panel(settings: FlutterCreateAdditionalSettings) = panel {
-    assert(channel != null)
-    val ch = channel!!.id
-    row {
-      cell(isVerticalFlow = false) {
-        makeCheckBox(this, FlutterBundle.message("npw_platform_android"), settings.platformAndroidProperty, configAndroid, ch, ID.STABLE)
-        makeCheckBox(this, FlutterBundle.message("npw_platform_ios"), settings.platformIosProperty, configIos, ch, ID.STABLE)
-        makeCheckBox(this, FlutterBundle.message("npw_platform_linux"), settings.platformLinuxProperty, configLinux, ch, ID.DEV)
-        makeCheckBox(this, FlutterBundle.message("npw_platform_macos"), settings.platformMacosProperty, configMacos, ch, ID.DEV)
-        makeCheckBox(this, FlutterBundle.message("npw_platform_web"), settings.platformWebProperty, configWeb, ch, ID.BETA)
-        makeCheckBox(this, FlutterBundle.message("npw_platform_windows"), settings.platformWindowsProperty, configWindows, ch, ID.DEV)
-      }
-    }
-    row {
-      label(FlutterBundle.message("npw_platform_availability_help")).apply {
-        comment(FlutterBundle.message("npw_platform_availability_comment"))
-      }
-    }
-    row {
-      label(FlutterBundle.message("npw_platform_selection_help"))
-    }
-  }
+  fun panel(settings: FlutterCreateAdditionalSettings) =
+      panel {
+        assert(channel != null)
+        val ch = channel!!.id
+        row {
+          cell(isVerticalFlow = false) {
+            makeCheckBox(this, FlutterBundle.message("npw_platform_android"), settings.platformAndroidProperty, configAndroid, ch, ID.STABLE)
+            makeCheckBox(this, FlutterBundle.message("npw_platform_ios"), settings.platformIosProperty, configIos, ch, ID.STABLE)
+            makeCheckBox(this, FlutterBundle.message("npw_platform_linux"), settings.platformLinuxProperty, configLinux, ch, ID.DEV)
+            makeCheckBox(this, FlutterBundle.message("npw_platform_macos"), settings.platformMacosProperty, configMacos, ch, ID.DEV)
+            makeCheckBox(this, FlutterBundle.message("npw_platform_web"), settings.platformWebProperty, configWeb, ch, ID.BETA)
+            makeCheckBox(this, FlutterBundle.message("npw_platform_windows"), settings.platformWindowsProperty, configWindows, ch, ID.DEV)
+          }
+        }
+        row {
+          label(FlutterBundle.message("npw_platform_availability_help")).apply {
+            comment(FlutterBundle.message("npw_platform_availability_comment"))
+          }
+        }
+        row {
+          label(FlutterBundle.message("npw_platform_selection_help"))
+        }
+      }.apply { component = this }
 
   private fun makeCheckBox(context: Cell,
                            name: String,
@@ -79,14 +82,14 @@ class PlatformsForm(getSdk: Supplier<out FlutterSdk>) {
       val wasSelected = chan >= min && config == true
       property.initialize(wasSelected)
       checkBox(name,
-               property.get(),
-               actionListener = { _, checkBox ->
-                 property.set(checkBox.isSelected)
-               }).apply {
+          property.get(),
+          actionListener = { _, checkBox ->
+            property.set(checkBox.isSelected)
+          }).apply {
         val names: List<String> = listOf(
-          FlutterBundle.message("npw_platform_android"),
-          FlutterBundle.message("npw_platform_ios"),
-          FlutterBundle.message("npw_platform_web"))
+            FlutterBundle.message("npw_platform_android"),
+            FlutterBundle.message("npw_platform_ios"),
+            FlutterBundle.message("npw_platform_web"))
         enabled(names.contains(name) || wasSelected)
       }
     }

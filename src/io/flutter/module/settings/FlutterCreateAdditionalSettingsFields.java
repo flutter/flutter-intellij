@@ -110,6 +110,7 @@ public class FlutterCreateAdditionalSettingsFields {
       orgField.setEnabled(projectType != FlutterProjectType.PACKAGE);
       UIUtil.setEnabled(androidLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
       UIUtil.setEnabled(iosLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
+      UIUtil.setEnabled(platformsForm.getComponent(), areLanguageFeaturesVisible, true, true);
     }
   }
 
@@ -193,13 +194,21 @@ public class FlutterCreateAdditionalSettingsFields {
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
       .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
       .setOffline(createParams.isOfflineSelected())
-      .setPlatformAndroid(platformsForm.shouldBeVisible() ? settings.getPlatformAndroid() : Boolean.TRUE)
-      .setPlatformIos(platformsForm.shouldBeVisible() ? settings.getPlatformIos() : Boolean.TRUE)
-      .setPlatformLinux(platformsForm.shouldBeVisible() ? settings.getPlatformLinux() : null)
-      .setPlatformMacos(platformsForm.shouldBeVisible() ? settings.getPlatformMacos() : null)
-      .setPlatformWeb(platformsForm.shouldBeVisible() ? settings.getPlatformWeb() : null)
-      .setPlatformWindows(platformsForm.shouldBeVisible() ? settings.getPlatformWindows() : null)
+      .setPlatformAndroid(shouldIncludePlatforms() ? settings.getPlatformAndroid() : Boolean.TRUE)
+      .setPlatformIos(shouldIncludePlatforms() ? settings.getPlatformIos() : Boolean.TRUE)
+      .setPlatformLinux(shouldIncludePlatforms() ? settings.getPlatformLinux() : null)
+      .setPlatformMacos(shouldIncludePlatforms() ? settings.getPlatformMacos() : null)
+      .setPlatformWeb(shouldIncludePlatforms() ? settings.getPlatformWeb() : null)
+      .setPlatformWindows(shouldIncludePlatforms() ? settings.getPlatformWindows() : null)
       .build();
+  }
+
+  private boolean shouldIncludePlatforms() {
+    switch (projectTypeForm.getType()) {
+      case APP: // fall through
+      case PLUGIN: return platformsForm.shouldBeVisible();
+      default: return false;
+    }
   }
 
   public FlutterCreateAdditionalSettings getSettings() {
