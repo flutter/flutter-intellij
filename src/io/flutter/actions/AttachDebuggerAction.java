@@ -72,25 +72,6 @@ public class AttachDebuggerAction extends FlutterSdkAction {
     }
 
     final SdkAttachConfig sdkRunConfig = new SdkAttachConfig((SdkRunConfig)configuration);
-    final SdkFields fields = sdkRunConfig.getFields();
-    final String additionalArgs = fields.getAdditionalArgs();
-
-    String flavorArg = null;
-    if (fields.getBuildFlavor() != null) {
-      flavorArg = "--flavor=" + fields.getBuildFlavor();
-    }
-
-    final List<String> args = new ArrayList<>();
-    if (additionalArgs != null) {
-      args.add(additionalArgs);
-    }
-    if (flavorArg != null) {
-      args.add(flavorArg);
-    }
-    if (!args.isEmpty()) {
-      fields.setAdditionalArgs(Joiner.on(" ").join(args));
-    }
-
     final Executor executor = RunFlutterAction.getExecutor(ToolWindowId.DEBUG);
     if (executor == null) {
       return;

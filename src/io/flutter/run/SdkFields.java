@@ -40,6 +40,7 @@ public class SdkFields {
   private @Nullable String filePath;
   private @Nullable String buildFlavor;
   private @Nullable String additionalArgs;
+  private @Nullable String attachArgs;
 
   public SdkFields() {
   }
@@ -88,6 +89,26 @@ public class SdkFields {
       return ParametersListUtil.parse(additionalArgs, false, true, true).toArray(new String[0]);
     }
 
+    return new String[0];
+  }
+
+  public String getAttachArgs() {
+    return attachArgs;
+  }
+
+  public void setAttachArgs(@Nullable String attachArgs) {
+    this.attachArgs = attachArgs;
+  }
+
+  public boolean hasAttachArgs() {
+    return attachArgs != null;
+  }
+
+  public String[] getAttachArgsParsed() {
+    if (hasAttachArgs()) {
+      assert attachArgs != null;
+      return ParametersListUtil.parse(attachArgs, false, true, true).toArray(new String[0]);
+    }
     return new String[0];
   }
 
@@ -214,10 +235,7 @@ public class SdkFields {
       throw new ExecutionException("Entrypoint isn't within a Flutter pub root");
     }
 
-    String[] args = getAdditionalArgsParsed();
-    if (buildFlavor != null) {
-      args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
-    }
+    String[] args = getAttachArgsParsed();
     final FlutterCommand command = flutterSdk.flutterAttach(root, main.getFile(), device, flutterLaunchMode, args);
     return command.createGeneralCommandLine(project);
   }
