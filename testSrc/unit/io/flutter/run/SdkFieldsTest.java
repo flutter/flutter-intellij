@@ -75,6 +75,17 @@ public class SdkFieldsTest {
     }, sdkFields.getAdditionalArgsParsed());
   }
 
+  @Test
+  public void supportsSpacesInAttachArgs() {
+    final SdkFields sdkFields = new SdkFields();
+    sdkFields.setAttachArgs("--dart-define='VALUE=foo bar' --other=baz");
+
+    assertArrayEquals(new String[]{
+      "--dart-define=VALUE=foo bar",
+      "--other=baz"
+    }, sdkFields.getAttachArgsParsed());
+  }
+
   private void addOption(Element elt, String name, String value) {
     final Element child = new Element("option");
     child.setAttribute("name", name);

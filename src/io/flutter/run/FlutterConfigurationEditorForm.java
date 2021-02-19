@@ -23,6 +23,7 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig>
   private TextFieldWithBrowseButton myFileField;
   private JTextField myAdditionalArgumentsField;
   private JTextField myBuildFlavorField;
+  private JTextField myAttachArgsField;
 
   public FlutterConfigurationEditorForm(final Project project) {
     initDartFileTextWithBrowse(project, myFileField);
@@ -34,6 +35,7 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig>
     myFileField.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getFilePath())));
     myBuildFlavorField.setText(fields.getBuildFlavor());
     myAdditionalArgumentsField.setText(fields.getAdditionalArgs());
+    myAttachArgsField.setText(fields.getAttachArgs());
   }
 
   @Override
@@ -42,6 +44,7 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig>
     fields.setFilePath(StringUtil.nullize(FileUtil.toSystemIndependentName(myFileField.getText().trim()), true));
     fields.setBuildFlavor(StringUtil.nullize(myBuildFlavorField.getText().trim()));
     fields.setAdditionalArgs(StringUtil.nullize(myAdditionalArgumentsField.getText().trim()));
+    fields.setAttachArgs(StringUtil.nullize(myAttachArgsField.getText().trim()));
     config.setFields(fields);
   }
 
