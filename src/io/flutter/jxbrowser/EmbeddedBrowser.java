@@ -90,7 +90,7 @@ public class EmbeddedBrowser {
    */
   public void resetUrl() {
     if (mainUrlFuture != null && !mainUrlFuture.isDone()) {
-      mainUrlFuture.completeExceptionally(new Exception("Embedded browser URL has been reset before previous URL completed."));
+      mainUrlFuture.complete(null);
     }
     this.mainUrlFuture = new CompletableFuture<>();
   }
@@ -148,7 +148,7 @@ public class EmbeddedBrowser {
         return;
       }
       if (url == null) {
-        LOG.error("DevTools URL is null");
+        // This happens if URL has already been reset (e.g. new app has started). We no longer need to update to a widget for the old app.
         return;
       }
       browser.navigation().loadUrl(url + "&inspectorRef=" + widgetId);
