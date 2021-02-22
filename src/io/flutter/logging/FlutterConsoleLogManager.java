@@ -419,10 +419,6 @@ public class FlutterConsoleLogManager {
     notification.addAction(new AnAction("Inspect Widget") {
       @Override
       public void actionPerformed(@NotNull AnActionEvent event) {
-        final String widgetId = DevToolsUtils.findWidgetId(property.getValue());
-        EmbeddedBrowser.getInstance(app.getProject()).updatePanelToWidget(widgetId);
-        notification.expire();
-
         // Show inspector window if it's not already visible.
         final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(app.getProject());
         if (!(toolWindowManager instanceof ToolWindowManagerEx)) {
@@ -433,6 +429,10 @@ public class FlutterConsoleLogManager {
         if (toolWindow != null && !toolWindow.isVisible()) {
           toolWindow.show();
         }
+
+        final String widgetId = DevToolsUtils.findWidgetId(property.getValue());
+        EmbeddedBrowser.getInstance(app.getProject()).updatePanelToWidget(widgetId);
+        notification.expire();
 
         FlutterInitializer.getAnalytics().sendEvent(
           "deep-link-clicked",

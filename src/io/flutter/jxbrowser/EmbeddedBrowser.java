@@ -29,9 +29,11 @@ import com.teamdev.jxbrowser.view.swing.callback.DefaultConfirmCallback;
 import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.*;
+import java.awt.Dimension;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EmbeddedBrowser {
@@ -43,7 +45,7 @@ public class EmbeddedBrowser {
   }
 
   private Browser browser;
-  private String mainUrl;
+  private CompletableFuture<String> mainUrlFuture;
 
   private EmbeddedBrowser(Project project) {
     System.setProperty("jxbrowser.force.dpi.awareness", "1.0");
@@ -70,6 +72,8 @@ public class EmbeddedBrowser {
       FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(ex), false);
     }
 
+    resetUrl();
+
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
       @Override
       public void projectClosing(@NotNull Project project) {
@@ -79,6 +83,16 @@ public class EmbeddedBrowser {
         }
       }
     });
+  }
+
+  /**
+   * This is to clear out a potentially old URL, i.e. a URL from an app that's no longer running.
+   */
+  public void resetUrl() {
+    if (mainUrlFuture != null && !mainUrlFuture.isDone()) {
+      mainUrlFuture.complete(null);
+    }
+    this.mainUrlFuture = new CompletableFuture<>();
   }
 
   public void openPanel(ContentManager contentManager, String tabName, String url) {
@@ -99,8 +113,8 @@ public class EmbeddedBrowser {
     // Multiple LoadFinished events can occur, but we only need to add content the first time.
     final AtomicBoolean contentLoaded = new AtomicBoolean(false);
 
-    this.mainUrl = url;
     browser.navigation().loadUrl(url);
+    mainUrlFuture.complete(url);
     browser.navigation().on(LoadFinished.class, event -> {
       if (!contentLoaded.compareAndSet(false, true)) {
         return;
@@ -128,6 +142,16 @@ public class EmbeddedBrowser {
   }
 
   public void updatePanelToWidget(String widgetId) {
-    browser.navigation().loadUrl(mainUrl + "&inspectorRef=" + widgetId);
+    AsyncUtils.whenCompleteUiThread(mainUrlFuture, (url, ex) -> {
+      if (ex != null) {
+        LOG.error(ex);
+        return;
+      }
+      if (url == null) {
+        // This happens if URL has already been reset (e.g. new app has started). We no longer need to update to a widget for the old app.
+        return;
+      }
+      browser.navigation().loadUrl(url + "&inspectorRef=" + widgetId);
+    });
   }
 }
