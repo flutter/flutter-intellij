@@ -110,7 +110,9 @@ public class FlutterCreateAdditionalSettingsFields {
       orgField.setEnabled(projectType != FlutterProjectType.PACKAGE);
       UIUtil.setEnabled(androidLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
       UIUtil.setEnabled(iosLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
-      UIUtil.setEnabled(platformsForm.getComponent(), areLanguageFeaturesVisible, true, true);
+      if (isShowingPlatforms()) {
+        UIUtil.setEnabled(platformsForm.getComponent(), areLanguageFeaturesVisible, true, true);
+      }
     }
   }
 
@@ -194,8 +196,8 @@ public class FlutterCreateAdditionalSettingsFields {
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
       .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
       .setOffline(createParams.isOfflineSelected())
-      .setPlatformAndroid(shouldIncludePlatforms() ? settings.getPlatformAndroid() : Boolean.TRUE)
-      .setPlatformIos(shouldIncludePlatforms() ? settings.getPlatformIos() : Boolean.TRUE)
+      .setPlatformAndroid(shouldIncludePlatforms() ? settings.getPlatformAndroid() : null)
+      .setPlatformIos(shouldIncludePlatforms() ? settings.getPlatformIos() : null)
       .setPlatformLinux(shouldIncludePlatforms() ? settings.getPlatformLinux() : null)
       .setPlatformMacos(shouldIncludePlatforms() ? settings.getPlatformMacos() : null)
       .setPlatformWeb(shouldIncludePlatforms() ? settings.getPlatformWeb() : null)
@@ -219,5 +221,9 @@ public class FlutterCreateAdditionalSettingsFields {
   // The help form appears on the first page of the wizard.
   public void linkHelpForm(SettingsHelpForm form) {
     helpForm = form;
+  }
+
+  public boolean isShowingPlatforms() {
+    return projectTypeHasPlatforms() && platformsForm.shouldBeVisible();
   }
 }
