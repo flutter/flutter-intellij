@@ -39,6 +39,7 @@ public class BazelTestDebugProcess extends DartVmServiceDebugProcess {
                                         @NotNull DefaultActionGroup settings) {
     topToolbar.addSeparator();
     topToolbar.addAction(new FlutterPopFrameAction());
+    topToolbar.addAction(new OpenDevToolsAction(connector, this::isActive));
   }
 
   private boolean isActive() {

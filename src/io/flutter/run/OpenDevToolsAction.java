@@ -26,19 +26,20 @@ public class OpenDevToolsAction extends DumbAwareAction {
   private static final String title = "Open Flutter DevTools";
   private final @Nullable ObservatoryConnector myConnector;
   private final Computable<Boolean> myIsApplicable;
-  private final FlutterApp myApp;
 
   public OpenDevToolsAction() {
-    myApp = null;
     myConnector = null;
     myIsApplicable = null;
   }
 
   public OpenDevToolsAction(@NotNull final FlutterApp app, @NotNull final Computable<Boolean> isApplicable) {
+    this(app.getConnector(), isApplicable);
+  }
+
+  public OpenDevToolsAction(@NotNull final ObservatoryConnector connector, @NotNull final Computable<Boolean> isApplicable) {
     super(title, title, FlutterIcons.Dart_16);
 
-    myApp = app;
-    myConnector = app.getConnector();
+    myConnector = connector;
     myIsApplicable = isApplicable;
   }
 
