@@ -89,6 +89,9 @@ public class EmbeddedBrowser {
    * This is to clear out a potentially old URL, i.e. a URL from an app that's no longer running.
    */
   public void resetUrl() {
+    if (mainUrlFuture != null && !mainUrlFuture.isDone()) {
+      mainUrlFuture.completeExceptionally(new Exception("Embedded browser URL has been reset before previous URL completed."));
+    }
     this.mainUrlFuture = new CompletableFuture<>();
   }
 
@@ -142,6 +145,10 @@ public class EmbeddedBrowser {
     AsyncUtils.whenCompleteUiThread(mainUrlFuture, (url, ex) -> {
       if (ex != null) {
         LOG.error(ex);
+        return;
+      }
+      if (url == null) {
+        LOG.error("DevTools URL is null");
         return;
       }
       browser.navigation().loadUrl(url + "&inspectorRef=" + widgetId);

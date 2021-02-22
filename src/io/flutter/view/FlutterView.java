@@ -671,6 +671,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
 
     if (FlutterSettings.getInstance().isEnableEmbeddedBrowsers()) {
+      // Reset the URL since we may have an outdated one from a previous app run.
       EmbeddedBrowser.getInstance(myProject).resetUrl();
       if (toolWindow.isVisible()) {
         displayEmbeddedBrowser(app, inspectorService, toolWindow);
