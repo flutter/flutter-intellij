@@ -145,7 +145,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return flutter;
   }
 
-  private static String validateSettings(FlutterCreateAdditionalSettings settings) {
+  private String validateSettings(FlutterCreateAdditionalSettings settings) {
     final String description = settings.getDescription();
     if (description != null && description.contains(": ")) {
       return FlutterBundle.message("npw_invalid_desc_error");
@@ -157,7 +157,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     if (StringUtils.endsWith(org, ".")) {
       return FlutterBundle.message("npw_invalid_org_error");
     }
-    if (!settings.isSomePlatformSelected()) {
+    if (mySettingsFields.isShowingPlatforms() && !settings.isSomePlatformSelected()) {
       return FlutterBundle.message("npw_none_selected_error");
     }
     // Invalid package names will cause issues down the line.
