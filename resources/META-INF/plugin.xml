@@ -38,6 +38,28 @@
 
   <change-notes>
     <![CDATA[
+<h1>54.0</h1>
+<ul>
+  <li>Fix platform selector bug (#5280)</li>
+  <li>Permit deep link to open embedded browser (#5277)</li>
+  <li>Add attach args field to run config (#5276)</li>
+  <li>Build using 2020.2 platform SDK (#5270)</li>
+  <li>Stop adding --platforms for packages (#5273)</li>
+  <li>Add analytics for deep link clicked (#5269)</li>
+  <li>Run flutter channel if git is not available (#5268)</li>
+  <li>Fix unit tests (#5267)</li>
+  <li>Add a type check (#5266)</li>
+  <li>Restore stand-alone project file (#5265)</li>
+  <li>Skip waiting for DevTools after first run (#5263)</li>
+  <li>Check for content manager disposed before replacing panel (#5261)</li>
+  <li>Delay loading embedded browser until inspector visible (#5256)</li>
+  <li>Compare master versions with beta (#5254)</li>
+  <li>XCode -&gt; Xcode casing (#5251)</li>
+  <li>Fix build for AS canary 5 (#5250)</li>
+  <li>Expire deep link notification on click (#5239)</li>
+  <li>Modify password store to avoid keyring prompts (#5226)</li>
+  <li>Add version null check for DevTools URL support (#5227)</li>
+</ul>
 <h1>53.0</h1>
 <ul>
   <li>Restart DevTools and browser on inspector window reopen (#5218)</li>
