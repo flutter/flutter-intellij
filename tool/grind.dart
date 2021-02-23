@@ -58,7 +58,7 @@ void outlineIcons() async {
 void _createPng(
   File sourceSvg,
   String targetName, {
-  @required int size,
+  @required int? size,
   bool forLight: false,
 }) {
   File targetFile = joinFile(sourceSvg.parent, [targetName]);
