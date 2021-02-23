@@ -254,8 +254,8 @@ public class FlutterCreateAdditionalSettings {
   public static class Builder {
     @Nullable
     private Boolean includeDriverTest;
-    @Nullable
-    private FlutterProjectType type;
+    @NotNull
+    private FlutterProjectType type = FlutterProjectType.APP;
     @Nullable
     private String description;
     @Nullable
