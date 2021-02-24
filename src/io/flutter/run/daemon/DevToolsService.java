@@ -108,11 +108,12 @@ public class DevToolsService {
   private void startServer() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-      if (WorkspaceCache.getInstance(project).isBazel() || (sdk != null && sdk.getVersion().flutterRunSupportsDevToolsUrl())) {
+      if (WorkspaceCache.getInstance(project).isBazel()) {
         setUpWithDaemon();
       }
       else {
         // For earlier flutter versions we need to use pub directly to run the latest DevTools server.
+        // For test release set up with pub so we can specify version.
         setUpWithPub();
       }
     });
@@ -233,7 +234,7 @@ public class DevToolsService {
   }
 
   private CompletableFuture<Boolean> pubActivateDevTools(FlutterSdk sdk) {
-    final FlutterCommand command = sdk.flutterPub(null, "global", "activate", "devtools");
+    final FlutterCommand command = sdk.flutterPub(null, "global", "activate", "devtools", "2.0.0-dev.1");
 
     final CompletableFuture<Boolean> result = new CompletableFuture<>();
 
