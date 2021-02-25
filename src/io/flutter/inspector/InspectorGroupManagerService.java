@@ -13,6 +13,8 @@ import com.intellij.openapi.util.Disposer;
 import io.flutter.run.FlutterAppManager;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AsyncUtils;
+import io.flutter.utils.StreamSubscription;
+import io.flutter.vmService.ServiceExtensions;
 import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
 
@@ -136,6 +138,7 @@ public class InspectorGroupManagerService implements Disposable {
   private DiagnosticsNode selection;
   private InspectorService inspectorService;
   private InspectorObjectGroupManager selectionGroups;
+  private StreamSubscription<Boolean> onStructuredErrorsStream;
 
   public InspectorGroupManagerService(Project project) {
     FlutterAppManager.getInstance(project).getActiveAppAsStream().listen(
@@ -249,29 +252,39 @@ public class InspectorGroupManagerService implements Disposable {
           inspectorService = service;
           selection = null;
           selectionGroups = new InspectorObjectGroupManager(inspectorService, "selection");
-          loadSelection();
+          // TODO (helin24): The specific stream we're checking here doesn't matter; we need a frame to be available before running
+          //  loadSelection and other tasks.
+          if (onStructuredErrorsStream != null) {
+            Disposer.dispose(onStructuredErrorsStream);
+          }
+          onStructuredErrorsStream =
+            app.getVMServiceManager().hasServiceExtension(ServiceExtensions.toggleShowStructuredErrors.getExtension(), (hasData) -> {
+              if (hasData) {
+                loadSelection();
 
-          if (app != InspectorGroupManagerService.this.app) return;
+                if (app != InspectorGroupManagerService.this.app) return;
 
-          service.addClient(new InspectorService.InspectorServiceClient() {
-            @Override
-            public void onInspectorSelectionChanged(boolean uiAlreadyUpdated, boolean textEditorUpdated) {
-              loadSelection();
-            }
+                service.addClient(new InspectorService.InspectorServiceClient() {
+                  @Override
+                  public void onInspectorSelectionChanged(boolean uiAlreadyUpdated, boolean textEditorUpdated) {
+                    loadSelection();
+                  }
 
-            @Override
-            public void onFlutterFrame() {
-              invokeOnAllListeners(Listener::onFlutterFrame);
-            }
+                  @Override
+                  public void onFlutterFrame() {
+                    invokeOnAllListeners(Listener::onFlutterFrame);
+                  }
 
-            @Override
-            public CompletableFuture<?> onForceRefresh() {
-              requestRepaint(true);
-              // Return null instead of a CompletableFuture as the
-              // InspectorService should not wait for our client to be ready.
-              return null;
-            }
-          });
+                  @Override
+                  public CompletableFuture<?> onForceRefresh() {
+                    requestRepaint(true);
+                    // Return null instead of a CompletableFuture as the
+                    // InspectorService should not wait for our client to be ready.
+                    return null;
+                  }
+                });
+              }
+            });
         });
       }
     };
@@ -304,5 +317,9 @@ public class InspectorGroupManagerService implements Disposable {
     }
     this.app = null;
     appListener = null;
+    if (onStructuredErrorsStream != null) {
+      Disposer.dispose(onStructuredErrorsStream);
+      onStructuredErrorsStream = null;
+    }
   }
 }
