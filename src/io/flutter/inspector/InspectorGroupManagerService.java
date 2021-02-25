@@ -254,9 +254,9 @@ public class InspectorGroupManagerService implements Disposable {
           selectionGroups = new InspectorObjectGroupManager(inspectorService, "selection");
           // TODO (helin24): The specific stream we're checking here doesn't matter; we need a frame to be available before running
           //  loadSelection and other tasks.
-          //if (onStructuredErrorsStream != null) {
-          //  Disposer.dispose(onStructuredErrorsStream);
-          //}
+          if (onStructuredErrorsStream != null) {
+            Disposer.dispose(onStructuredErrorsStream);
+          }
           onStructuredErrorsStream =
             app.getVMServiceManager().hasServiceExtension(ServiceExtensions.toggleShowStructuredErrors.getExtension(), (hasData) -> {
               if (hasData) {
@@ -317,6 +317,9 @@ public class InspectorGroupManagerService implements Disposable {
     }
     this.app = null;
     appListener = null;
-    Disposer.dispose(onStructuredErrorsStream);
+    if (onStructuredErrorsStream != null) {
+      Disposer.dispose(onStructuredErrorsStream);
+      onStructuredErrorsStream = null;
+    }
   }
 }
