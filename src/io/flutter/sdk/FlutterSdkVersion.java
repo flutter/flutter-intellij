@@ -44,6 +44,11 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   private static final FlutterSdkVersion MIN_CREATE_PLATFORMS_SDK = new FlutterSdkVersion("1.20.0");
 
   /**
+   * The last version of stable that does not support --platform in flutter create.
+   */
+  private static final FlutterSdkVersion MAX_STABLE_NO_PLATFORMS_SDK = new FlutterSdkVersion("1.22.6");
+
+  /**
    * The version that supports --devtools-server-address in flutter run.
    */
   private static final FlutterSdkVersion MIN_PASS_DEVTOOLS_SDK = new FlutterSdkVersion("1.26.0-11.0.pre");
@@ -135,6 +140,11 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   public boolean flutterCreateSupportsPlatforms() {
     //noinspection ConstantConditions
     return version != null && version.compareTo(MIN_CREATE_PLATFORMS_SDK.version) >= 0;
+  }
+
+  public boolean stableChannelSupportsPlatforms() {
+    //noinspection ConstantConditions
+    return version != null && version.compareTo(MAX_STABLE_NO_PLATFORMS_SDK.version) > 0;
   }
 
   public boolean flutterRunSupportsDevToolsUrl() {

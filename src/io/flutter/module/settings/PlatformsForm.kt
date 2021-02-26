@@ -45,7 +45,7 @@ class PlatformsForm(getSdk: Supplier<out FlutterSdk>) {
     // We don't show platforms for the stable channel currently, but that will change.
     val ch = channel
     ch ?: return false
-    return ch.id > ID.STABLE
+    return ch.id > ID.STABLE || sdkGetter.get().version.stableChannelSupportsPlatforms();
   }
 
   fun panel(settings: FlutterCreateAdditionalSettings) =
