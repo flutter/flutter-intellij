@@ -64,7 +64,7 @@ public class AddToAppUtils {
               (FlutterUtils.flutterGradleModuleName(project)).equals(mod.getName())) {
             //connection.disconnect(); TODO(messick) Test this deletion!
             AppExecutorUtil.getAppExecutorService().execute(() -> {
-              AndroidUtils.enableCoeditIfAddToAppDetected(project);
+              GradleUtils.enableCoeditIfAddToAppDetected(project);
             });
           }
         }
@@ -104,17 +104,17 @@ public class AddToAppUtils {
     return new GradleSyncListener() {
       @Override
       public void syncSucceeded(@NotNull Project project) {
-        AndroidUtils.checkDartSupport(project);
+        GradleUtils.checkDartSupport(project);
       }
 
       @Override
       public void syncFailed(@NotNull Project project, @NotNull String errorMessage) {
-        AndroidUtils.checkDartSupport(project);
+        GradleUtils.checkDartSupport(project);
       }
 
       @Override
       public void syncSkipped(@NotNull Project project) {
-        AndroidUtils.checkDartSupport(project);
+        GradleUtils.checkDartSupport(project);
       }
 
       @SuppressWarnings("override")

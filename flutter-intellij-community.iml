@@ -94,7 +94,6 @@
     <orderEntry type="module" module-name="intellij.android.projectSystem" />
     <orderEntry type="library" name="Trove4j" level="project" />
     <orderEntry type="module" module-name="intellij.gradle.dsl.impl" />
-    <orderEntry type="library" name="Dart Packages" level="project" />
     <orderEntry type="module" module-name="intellij.android.observable" />
     <orderEntry type="library" name="jxbrowser-7.13" level="project" />
     <orderEntry type="module-library">
@@ -117,7 +116,6 @@
     </orderEntry>
     <orderEntry type="library" name="Trove4j" level="project" />
     <orderEntry type="module" module-name="intellij.gradle.dsl.impl" />
-    <orderEntry type="library" name="Dart Packages" level="project" />
     <orderEntry type="module" module-name="intellij.android.observable" />
     <orderEntry type="library" name="jxbrowser-7.13" level="project" />
     <orderEntry type="library" name="studio-plugin-git4idea" level="project" />
@@ -152,5 +150,6 @@
         <jarDirectory url="jar://$MODULE_DIR$/lib/dart-plugin/203.6912/resources_en.jar!/" recursive="false" />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="Dart Packages" level="project" />
   </component>
 </module>
