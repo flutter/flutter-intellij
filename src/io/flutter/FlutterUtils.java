@@ -25,7 +25,6 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ModuleSourceOrderEntry;
 import com.intellij.openapi.roots.OrderEntry;
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -565,10 +564,5 @@ public class FlutterUtils {
       }
     }
     return null;
-  }
-
-  // SystemInfo check for Big Sur is not available for earlier IntelliJ versions.
-  public static boolean isMacOsBigSur() {
-    return SystemInfo.isMac && (SystemInfo.isOsVersionAtLeast("11.0") || SystemInfo.isOsVersionAtLeast("10.16"));
   }
 }
