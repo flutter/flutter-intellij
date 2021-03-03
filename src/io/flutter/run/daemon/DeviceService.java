@@ -10,8 +10,10 @@ import com.google.common.collect.ImmutableSet;
 import com.intellij.concurrency.JobScheduler;
 import com.intellij.execution.ExecutionException;
 import com.intellij.openapi.application.ApplicationInfo;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ex.ProjectRootManagerEx;
 import com.intellij.openapi.util.Disposer;
@@ -162,8 +164,11 @@ public class DeviceService {
    * <p>This might mean starting it, stopping it, or restarting it.
    */
   private void refreshDeviceDaemon() {
-    if (project.isDisposed()) return;
-    deviceDaemon.refresh(this::chooseNextDaemon);
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      DumbService.getInstance(project).waitForSmartMode();
+      if (project.isDisposed()) return;
+      deviceDaemon.refresh(this::chooseNextDaemon);
+    });
   }
 
   private void daemonStopped(String details) {
