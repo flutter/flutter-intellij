@@ -40,6 +40,7 @@ pub get
 if [ "DART_BOT" = "$BOT" ] ; then
 
   # Analyze the Dart code in the repo.
+  chmod 000 flutter-idea # symlinks seem to be causing problems
   echo "dart analyze"
   dart analyze
 
