@@ -53,8 +53,12 @@ public class EmbeddedBrowserEngine {
     ApplicationManager.getApplication().addApplicationListener(new ApplicationListener() {
       @Override
       public boolean canExitApplication() {
-        if (engine != null) {
-          engine.close();
+        try {
+          if (engine != null && !engine.isClosed()) {
+            engine.close();
+          }
+        } catch (Exception ex) {
+          LOG.error(ex);
         }
         return true;
       }
