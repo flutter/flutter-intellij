@@ -43,6 +43,7 @@ if [ "DART_BOT" = "$BOT" ] ; then
   chmod 000 flutter-idea # symlinks seem to be causing problems
   echo "dart analyze"
   dart analyze
+  chmod 755 flutter-idea
 
   # Ensure that the edits have been applied to template files (and their target
   # files have been regenerated).
