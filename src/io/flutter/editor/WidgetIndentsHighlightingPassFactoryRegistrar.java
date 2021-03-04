@@ -9,6 +9,7 @@ package io.flutter.editor;
 import com.intellij.codeHighlighting.*;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -21,7 +22,9 @@ public class WidgetIndentsHighlightingPassFactoryRegistrar implements TextEditor
 
   @Override
   public void registerHighlightingPassFactory(@NotNull TextEditorHighlightingPassRegistrar registrar, @NotNull Project project) {
-    WidgetIndentsHighlightingPassFactory.getInstance(project).registerHighlightingPassFactory(registrar);
+    if (FlutterModuleUtils.hasFlutterModule(project)) {
+      WidgetIndentsHighlightingPassFactory.getInstance(project).registerHighlightingPassFactory(registrar);
+    }
   }
 }
 
