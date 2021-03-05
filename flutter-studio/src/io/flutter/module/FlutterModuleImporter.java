@@ -31,6 +31,7 @@ import io.flutter.project.FlutterProjectModel;
 import io.flutter.pub.PubRoot;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.GradleUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -119,7 +120,7 @@ public class FlutterModuleImporter {
       .requestProjectSync(androidProject, GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED, new GradleSyncListener() {
         @Override
         public void syncSucceeded(@NotNull Project project) {
-          AndroidUtils.enableCoeditIfAddToAppDetected(project);
+          GradleUtils.enableCoeditIfAddToAppDetected(project);
         }
       });
   }

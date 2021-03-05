@@ -13,6 +13,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.project.FlutterProjectCreator;
 import io.flutter.project.FlutterProjectModel;
 import io.flutter.utils.AndroidUtils;
+import io.flutter.utils.GradleUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -80,7 +81,7 @@ public class FlutterModuleModel extends FlutterProjectModel {
       addGradleToModule(flutterModuleDir);
 
       // Ensure Gradle sync runs to link in the new add-to-app module.
-      AndroidUtils.scheduleGradleSync(hostProject);
+      GradleUtils.scheduleGradleSync(hostProject);
       // TODO(messick) Generate run configs for release and debug. (If needed.)
     }
 

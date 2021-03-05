@@ -93,8 +93,6 @@
     <orderEntry type="module" module-name="intellij.android.gradle.dsl" />
     <orderEntry type="module" module-name="intellij.android.projectSystem" />
     <orderEntry type="library" name="Trove4j" level="project" />
-    <orderEntry type="module" module-name="intellij.gradle.dsl.impl" />
-    <orderEntry type="library" name="Dart Packages" level="project" />
     <orderEntry type="module" module-name="intellij.android.observable" />
     <orderEntry type="library" name="jxbrowser-7.13" level="project" />
     <orderEntry type="module-library">
@@ -116,8 +114,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="Trove4j" level="project" />
-    <orderEntry type="module" module-name="intellij.gradle.dsl.impl" />
-    <orderEntry type="library" name="Dart Packages" level="project" />
     <orderEntry type="module" module-name="intellij.android.observable" />
     <orderEntry type="library" name="jxbrowser-7.13" level="project" />
     <orderEntry type="library" name="studio-plugin-git4idea" level="project" />
@@ -152,5 +148,12 @@
         <jarDirectory url="jar://$MODULE_DIR$/lib/dart-plugin/203.6912/resources_en.jar!/" recursive="false" />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="Dart Packages" level="project" />
+    <orderEntry type="module" module-name="intellij.vcs.git.rt" />
+    <orderEntry type="module" module-name="intellij.platform.vcs" />
+    <orderEntry type="module" module-name="intellij.vcs.git" />
+    <orderEntry type="module" module-name="intellij.platform.ide.util.io" />
+    <orderEntry type="module" module-name="intellij.platform.core.ui" />
+    <orderEntry type="module" module-name="intellij.platform.util.classLoader" />
   </component>
 </module>

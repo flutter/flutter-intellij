@@ -16,6 +16,9 @@ repositories {
   maven {
     url 'https://jetbrains.bintray.com/intellij-third-party-dependencies'
   }
+  maven {
+    url 'https://www.jetbrains.com/intellij-repository/releases'
+  }
 }
 
 apply plugin: 'kotlin'
@@ -27,7 +30,7 @@ version=flutterPluginVersion
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
   kotlinOptions {
-    jvmTarget = "1.8"
+    jvmTarget = javaVersion
   }
 }
 

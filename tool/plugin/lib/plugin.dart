@@ -114,7 +114,8 @@ void genPresubmitYaml(List<BuildSpec> specs) {
   var file = File(p.join(rootPath, '.github', 'workflows', 'presubmit.yaml'));
   var versions = [];
   for (var spec in specs) {
-    if (!spec.untilBuild.contains('SNAPSHOT')) versions.add('${spec.version}');
+    if (spec.channel == 'stable' && !spec.untilBuild.contains('SNAPSHOT'))
+      versions.add('${spec.version}');
   }
 
   var templateFile =
@@ -460,8 +461,7 @@ abstract class BuildCommand extends ProductCommand {
 
     var result = 0;
     for (var spec in buildSpecs) {
-      pluginCount++;
-      if (spec.channel != channel && isReleaseMode) {
+      if (spec.channel != channel) {
         continue;
       }
       if (!(isForIntelliJ && isForAndroidStudio)) {
@@ -471,6 +471,7 @@ abstract class BuildCommand extends ProductCommand {
         if (isForIntelliJ && spec.isAndroidStudio) continue;
       }
 
+      pluginCount++;
       if (spec.isDevChannel && !isDevChannel) {
         spec.buildForMaster();
       }

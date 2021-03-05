@@ -18,7 +18,7 @@ public class FlutterExternalSystemTaskNotificationListener extends ExternalSyste
     if (id.getType() == ExternalSystemTaskType.RESOLVE_PROJECT && id.getProjectSystemId() == GradleConstants.SYSTEM_ID) {
       final Project project = id.findProject();
       if (project != null) {
-        AndroidUtils.checkDartSupport(project);
+        GradleUtils.checkDartSupport(project);
       }
     }
   }

@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.intellij.concurrency.JobScheduler;
 import com.intellij.execution.ExecutionException;
+import com.intellij.ide.ActivityTracker;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
@@ -168,6 +169,7 @@ public class DeviceService {
       DumbService.getInstance(project).waitForSmartMode();
       if (project.isDisposed()) return;
       deviceDaemon.refresh(this::chooseNextDaemon);
+      ActivityTracker.getInstance().inc();
     });
   }
 
