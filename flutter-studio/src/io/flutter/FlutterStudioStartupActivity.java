@@ -11,12 +11,17 @@ import io.flutter.android.AndroidModuleLibraryManager;
 import io.flutter.project.FlutterProjectCreator;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AddToAppUtils;
+import io.flutter.utils.AndroidUtils;
+import io.flutter.utils.GradleUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterStudioStartupActivity implements StartupActivity {
 
   @Override
   public void runActivity(@NotNull Project project) {
+    if (AndroidUtils.isAndroidProject(project)) {
+      GradleUtils.addGradleListeners(project);
+    }
     if (!AddToAppUtils.initializeAndDetectFlutter(project)) {
       return;
     }

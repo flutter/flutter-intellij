@@ -26,22 +26,6 @@ void checkAndClearAppliedEditCommands() {
 List<EditCommand> editCommands = [
   EditAndroidModuleLibraryManager(),
   Subst(
-    path: 'src/io/flutter/utils/AndroidUtils.java',
-    initial:
-    'import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;',
-    replacement:
-    'import com.android.tools.idea.gradle.dsl.model.BuildModelContext;',
-    versions: ['4.1', '4.2', 'AF.3.1'],
-  ),
-  Subst(
-    path: 'src/io/flutter/utils/AndroidLocationProvider.java',
-    initial:
-    'import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;',
-    replacement:
-    'import com.android.tools.idea.gradle.dsl.model.BuildModelContext;',
-    versions: ['4.1', '4.2', 'AF.3.1'],
-  ),
-  Subst(
     path: 'src/io/flutter/FlutterUtils.java',
     initial: 'ProjectUtil.isSameProject(Paths.get(path), project)',
     replacement: 'ProjectUtil.isSameProject(path, project)',
@@ -84,9 +68,9 @@ List<EditCommand> editCommands = [
   ),
   Subst(
     path: 'src/io/flutter/FlutterErrorReportSubmitter.java',
-    initial: 'Consumer<SubmittedReportInfo> consumer',
-    replacement: 'Consumer<? super SubmittedReportInfo> consumer',
-    versions: ['AF.3.1', '2020.3'],
+    initial: 'Consumer<? super SubmittedReportInfo> consumer',
+    replacement: 'Consumer<SubmittedReportInfo> consumer',
+    versions: ['4.1', '4.2'],
   ),
   Subst(
     path: 'src/io/flutter/utils/CollectionUtils.java',

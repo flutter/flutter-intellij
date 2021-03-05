@@ -50,11 +50,6 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
   public void runActivity(@NotNull Project project) {
     TimeTracker.getInstance(project).onProjectOpen();
 
-    // TODO(messick): Remove 'FlutterUtils.isAndroidStudio()' after Android Q sources are published.
-    if (FlutterUtils.isAndroidStudio() && AndroidUtils.isAndroidProject(project)) {
-      AndroidUtils.addGradleListeners(project);
-    }
-
     // TODO(helinx): We don't have a good way to check whether a Bazel project is using Flutter. Look into whether we can
     // build a better Flutter Bazel check into `declaresFlutter` so we don't need the second condition.
     if (!FlutterModuleUtils.declaresFlutter(project) && !WorkspaceCache.getInstance(project).isBazel()) {

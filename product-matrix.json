@@ -50,6 +50,18 @@
       "dartPluginVersion": "203.6912",
       "sinceBuild": "203.7148.57",
       "untilBuild": "203.*"
+    },
+    {
+      "channel": "dev",
+      "comments": "IntelliJ 2021.1 EAP",
+      "name": "IntelliJ 2021.1",
+      "isUnitTestTarget": "true",
+      "version": "2021.1",
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "211.6222.4",
+      "dartPluginVersion": "211.6222.2",
+      "sinceBuild": "211.6222.4",
+      "untilBuild": "211.6222.4"
     }
   ]
 }
