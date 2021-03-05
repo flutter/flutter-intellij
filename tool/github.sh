@@ -74,6 +74,6 @@ elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
 else
 
   # Run the build.
-  ./bin/plugin make --only-version=$IDEA_VERSION
+  ./bin/plugin make --channel=dev --only-version=$IDEA_VERSION
 
 fi

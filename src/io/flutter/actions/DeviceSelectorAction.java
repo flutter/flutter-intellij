@@ -5,6 +5,7 @@
  */
 package io.flutter.actions;
 
+import com.intellij.ide.ActivityTracker;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.project.DumbAware;
@@ -66,6 +67,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     super.update(e);
 
+    Presentation presentation = e.getPresentation();
     if (!knownProjects.contains(project)) {
       knownProjects.add(project);
       Disposer.register(project, () -> knownProjects.remove(project));
@@ -74,9 +76,31 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
       // Listen for android device changes, and rebuild the menu if necessary.
       AndroidEmulatorManager.getInstance(project).addListener(() -> update(project, e.getPresentation()));
+      update(project, presentation);
     }
 
-    update(project, e.getPresentation());
+    final DeviceService deviceService = DeviceService.getInstance(project);
+
+    final FlutterDevice selectedDevice = deviceService.getSelectedDevice();
+    final Collection<FlutterDevice> devices = deviceService.getConnectedDevices();
+
+    if (devices.isEmpty()) {
+      final boolean isLoading = deviceService.getStatus() == DeviceService.State.LOADING;
+      if (isLoading) {
+        presentation.setText(FlutterBundle.message("devicelist.loading"));
+      }
+      else {
+        presentation.setText("<no devices>");
+      }
+    }
+    else if (selectedDevice == null) {
+      presentation.setText("<no device selected>");
+    } else if(selectedDeviceAction != null) {
+      final Presentation template = selectedDeviceAction.getTemplatePresentation();
+      presentation.setIcon(template.getIcon());
+      presentation.setText(selectedDevice.presentationName());
+      presentation.setEnabled(true);
+    }
   }
 
   private void update(Project project, Presentation presentation) {
@@ -125,7 +149,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
         final Presentation template = deviceAction.getTemplatePresentation();
         presentation.setIcon(template.getIcon());
-        presentation.setText(deviceAction.presentationName());
+        //presentation.setText(deviceAction.presentationName());
         presentation.setEnabled(true);
       }
     }
@@ -153,21 +177,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       actions.add(new Separator());
       actions.addAll(emulatorActions);
     }
-
-    if (devices.isEmpty()) {
-      final boolean isLoading = deviceService.getStatus() == DeviceService.State.LOADING;
-      if (isLoading) {
-        presentation.setText(FlutterBundle.message("devicelist.loading"));
-      }
-      else {
-        //noinspection DialogTitleCapitalization
-        presentation.setText("<no devices>");
-      }
-    }
-    else if (selectedDevice == null) {
-      //noinspection DialogTitleCapitalization
-      presentation.setText("<no device selected>");
-    }
+    ActivityTracker.getInstance().inc();
   }
 
   // Show the current device as selected when the combo box menu opens.
