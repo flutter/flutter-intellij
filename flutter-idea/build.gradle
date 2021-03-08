@@ -6,6 +6,10 @@
 
 repositories {
   mavenLocal()
+  maven {
+      url "https://www.jetbrains.com/intellij-repository/snapshots/"
+    }
+
   mavenCentral()
   maven {
     url "https://oss.sonatype.org/content/repositories/snapshots/"
@@ -45,7 +49,7 @@ intellij {
   updateSinceUntilBuild = false
   downloadSources false
   localPath "${project.rootDir.absolutePath}/artifacts/$ide"
-  plugins "java", "Dart:$dartVersion", "properties", "junit", "Kotlin",
+  plugins "java", "Dart:$dartVersion", "properties", "junit", "Kotlin", "Git4Idea",
           "gradle", "android", "Groovy", "smali", "IntelliLang"
 }
 
