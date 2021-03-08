@@ -8,6 +8,9 @@ buildscript {
   repositories {
     mavenCentral()
     maven {
+      url "https://www.jetbrains.com/intellij-repository/snapshots/"
+    }
+    maven {
       url "https://oss.sonatype.org/content/repositories/snapshots/"
     }
     maven {
@@ -59,7 +62,7 @@ intellij {
   updateSinceUntilBuild = false
   localPath "${project.rootDir.absolutePath}/artifacts/$ide"
   downloadSources false
-  def pluginList = [project(':flutter-idea'), "java", "Dart:$dartVersion", "properties", "junit",
+  def pluginList = [project(':flutter-idea'), "java", "Dart:$dartVersion", "properties", "junit", "Git4Idea",
                     "Kotlin", "gradle", "android", "Groovy", "smali", "IntelliLang"]
   if (ide == 'android-studio') {
     pluginList.add(project(':flutter-studio'))
