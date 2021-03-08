@@ -26,6 +26,18 @@ void checkAndClearAppliedEditCommands() {
 List<EditCommand> editCommands = [
   EditAndroidModuleLibraryManager(),
   Subst(
+    path: 'build.gradle',
+    initial: 'localPath "\${project.rootDir.absolutePath}/artifacts/\$ide"',
+    replacement: 'type = "IC"\n  version = "211.6222.4-EAP-SNAPSHOT"',
+    version: '2021.1',
+  ),
+  Subst(
+    path: 'flutter-idea/build.gradle',
+    initial: 'localPath "\${project.rootDir.absolutePath}/artifacts/\$ide"',
+    replacement: 'type = "IC"\n  version = "211.6222.4-EAP-SNAPSHOT"',
+    version: '2021.1',
+  ),
+  Subst(
     path: 'src/io/flutter/FlutterUtils.java',
     initial: 'ProjectUtil.isSameProject(Paths.get(path), project)',
     replacement: 'ProjectUtil.isSameProject(path, project)',
