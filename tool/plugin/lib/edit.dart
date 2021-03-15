@@ -28,13 +28,13 @@ List<EditCommand> editCommands = [
   Subst(
     path: 'build.gradle',
     initial: 'localPath "\${project.rootDir.absolutePath}/artifacts/\$ide"',
-    replacement: 'type = "IC"\n  version = "211.6222.4-EAP-SNAPSHOT"',
+    replacement: 'type = "IC"\n  version = "211.6432-EAP-CANDIDATE-SNAPSHOT"',
     version: '2021.1',
   ),
   Subst(
     path: 'flutter-idea/build.gradle',
     initial: 'localPath "\${project.rootDir.absolutePath}/artifacts/\$ide"',
-    replacement: 'type = "IC"\n  version = "211.6222.4-EAP-SNAPSHOT"',
+    replacement: 'type = "IC"\n  version = "211.6432-EAP-CANDIDATE-SNAPSHOT"',
     version: '2021.1',
   ),
   Subst(
