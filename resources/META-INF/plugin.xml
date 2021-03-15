@@ -38,6 +38,11 @@
 
   <change-notes>
     <![CDATA[
+<h1>54.1</h1>
+<ul>
+  <li>Support 2021.1 Beta</li>
+  <li>Simplify platform selection code (#5314)</li>
+</ul>
 <h1>54.0</h1>
 <ul>
   <li>Fix platform selector bug (#5280)</li>

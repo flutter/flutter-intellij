@@ -33,6 +33,21 @@ plugins {
 repositories {
   mavenLocal()
   mavenCentral()
+  maven {
+    url "https://www.jetbrains.com/intellij-repository/snapshots/"
+  }
+  maven {
+    url "https://oss.sonatype.org/content/repositories/snapshots/"
+  }
+  maven {
+    url 'https://jetbrains.bintray.com/intellij-plugin-service'
+  }
+  maven {
+    url 'https://jetbrains.bintray.com/intellij-third-party-dependencies'
+  }
+  maven {
+    url 'https://www.jetbrains.com/intellij-repository/releases'
+  }
 }
 
 // Specify UTF-8 for all compilations so we avoid Windows-1252.
