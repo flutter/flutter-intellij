@@ -1,3 +1,7 @@
+# 54.1
+- Support 2021.1 Beta
+- Simplify platform selection code (#5314)
+
 # 54.0
 - Fix platform selector bug (#5280)
 - Permit deep link to open embedded browser (#5277)
