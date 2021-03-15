@@ -52,16 +52,16 @@
       "untilBuild": "203.*"
     },
     {
-      "channel": "dev",
-      "comments": "IntelliJ 2021.1 EAP",
+      "channel": "stable",
+      "comments": "IntelliJ 2021.1 Beta",
       "name": "IntelliJ 2021.1",
       "isUnitTestTarget": "true",
       "version": "2021.1",
       "ideaProduct": "ideaIC",
-      "ideaVersion": "211.6222.4",
-      "dartPluginVersion": "211.6222.2",
-      "sinceBuild": "211.6222.4",
-      "untilBuild": "211.6305.21"
+      "ideaVersion": "211.6432.7",
+      "dartPluginVersion": "211.6432.7",
+      "sinceBuild": "211.6432.7",
+      "untilBuild": "211.*"
     }
   ]
 }
