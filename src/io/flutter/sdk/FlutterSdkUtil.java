@@ -19,8 +19,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -28,7 +26,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.Url;
 import com.intellij.util.Urls;
-import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkUpdateOption;
 import io.flutter.FlutterBundle;
 import io.flutter.dart.DartPlugin;
@@ -47,9 +44,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
-
-import static com.jetbrains.lang.dart.sdk.DartSdkLibUtil.isDartSdkOrderEntry;
-import com.intellij.openapi.roots.*;
 
 public class FlutterSdkUtil {
   /**
