@@ -169,6 +169,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     // analysis server updates not IntelliJ's default assumptions about how a
     // text highlighting pass should work. See runWidgetIndentsPass for the
     // logic that handles the actual widget indent guide pass.
+    if (file.getVirtualFile() == null) return null;
     if (!FlutterUtils.isDartFile(file.getVirtualFile())) {
       return null;
     }
