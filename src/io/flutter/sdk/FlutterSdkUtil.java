@@ -376,15 +376,4 @@ public class FlutterSdkUtil {
     final File flutterBinFile = new File(flutterBinPath);
     return flutterBinFile.getParentFile().getParentFile().getPath();
   }
-
-  public static boolean flutterSdkEnabled(Module module) {
-    DartSdk.getDartSdk(module.getProject());
-    for (final OrderEntry orderEntry : ModuleRootManager.getInstance(module).getOrderEntries()) {
-      if (isDartSdkOrderEntry(orderEntry)) {
-        ((LibraryOrderEntry)orderEntry).getFiles(OrderRootType.DOCUMENTATION);
-        return true;
-      }
-    }
-    return false;
-  }
 }
