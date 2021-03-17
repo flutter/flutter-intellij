@@ -6,6 +6,10 @@
 package io.flutter.sdk;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.intellij.execution.ExecutionException;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -28,6 +32,7 @@ import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.JsonUtils;
 import io.flutter.utils.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -254,12 +259,50 @@ public class FlutterSdkUtil {
    */
   @Nullable
   public static String guessFlutterSdkFromPackagesFile(@NotNull Module module) {
+    // First, look for .dart_tool/package_config.json
+    for (PubRoot pubRoot : PubRoots.forModule(module)) {
+      final VirtualFile packagesFile = pubRoot.getPackageConfigFile();
+      if (packagesFile == null) {
+        continue;
+      }
+      // parse it
+      try {
+        final String contents = new String(packagesFile.contentsToByteArray(true /* cache contents */));
+        final JsonElement element = new JsonParser().parse(contents);
+        if (element == null) {
+          continue;
+        }
+        final JsonObject json = element.getAsJsonObject();
+        if (JsonUtils.getIntMember(json, "configVersion") < 2) continue;
+        final JsonArray packages = json.getAsJsonArray("packages");
+        if (packages == null || packages.size() == 0) {
+          continue;
+        }
+        for (int i = 0; i < packages.size(); i++) {
+          final JsonObject pack = packages.get(i).getAsJsonObject();
+          if ("flutter".equals(JsonUtils.getStringMember(pack, "name"))) {
+            final String uri = JsonUtils.getStringMember(pack, "rootUri");
+            if (uri == null) {
+              continue;
+            }
+            final String path = extractSdkPathFromUri(uri, false);
+            if (path == null) {
+              continue;
+            }
+            return path;
+          }
+        }
+      }
+      catch (IOException ignored) {
+      }
+    }
+
+    // Next, try the obsolete .packages
     for (PubRoot pubRoot : PubRoots.forModule(module)) {
       final VirtualFile packagesFile = pubRoot.getPackagesFile();
       if (packagesFile == null) {
         continue;
       }
-
       // parse it
       try {
         final String contents = new String(packagesFile.contentsToByteArray(true /* cache contents */));
@@ -285,20 +328,32 @@ public class FlutterSdkUtil {
       final String flutterPrefix = "flutter:";
       if (line.startsWith(flutterPrefix)) {
         final String urlString = line.substring(flutterPrefix.length());
-
-        if (urlString.startsWith("file:")) {
-          final Url url = Urls.parseEncoded(urlString);
-          if (url == null) {
-            continue;
-          }
-          final String path = url.getPath();
-          // go up three levels
-          final File file = new File(url.getPath());
-          return file.getParentFile().getParentFile().getParentFile().getPath();
+        final String path = extractSdkPathFromUri(urlString, true);
+        if (path == null) {
+          continue;
         }
+        return path;
       }
     }
 
+    return null;
+  }
+
+  private static String extractSdkPathFromUri(String urlString, boolean isLibIncluded) {
+    if (urlString.startsWith("file:")) {
+      final Url url = Urls.parseEncoded(urlString);
+      if (url == null) {
+        return null;
+      }
+      final String path = url.getPath();
+      // go up three levels for .packages or two for .dart_tool/package_config.json
+      File file = new File(url.getPath());
+      file = file.getParentFile().getParentFile();
+      if (isLibIncluded) {
+        file = file.getParentFile();
+      }
+      return file.getPath();
+    }
     return null;
   }
 

@@ -256,7 +256,21 @@ public class PubRoot {
   }
 
   @Nullable
+  public VirtualFile getPackageConfigFile() {
+    final VirtualFile tools = root.findChild(".dart_tool");
+    if (tools == null || !tools.isDirectory()) {
+      return null;
+    }
+    final VirtualFile config = tools.findChild("package_config.json");
+    if (config != null && !config.isDirectory()) {
+      return config;
+    }
+    return null;
+  }
+
+  @Nullable
   public VirtualFile getPackagesFile() {
+    // Obsolete by Flutter 2.0
     final VirtualFile packages = root.findChild(".packages");
     if (packages != null && !packages.isDirectory()) {
       return packages;

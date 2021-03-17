@@ -361,11 +361,10 @@ public class FlutterModuleUtils {
   }
 
   public static void enableDartSDK(@NotNull Module module) {
-    if (DartPlugin.isDartSdkEnabled(module)) {
+    if (FlutterSdk.getFlutterSdk(module.getProject()) != null) {
       return;
     }
-
-    // parse the .packages file
+    // parse the .dart_tool/flutter_config.json or .packages file
     String sdkPath = FlutterSdkUtil.guessFlutterSdkFromPackagesFile(module);
     if (sdkPath != null) {
       FlutterSdkUtil.updateKnownSdkPaths(sdkPath);
