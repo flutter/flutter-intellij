@@ -148,12 +148,12 @@
         <jarDirectory url="jar://$MODULE_DIR$/lib/dart-plugin/203.6912/resources_en.jar!/" recursive="false" />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="Dart Packages" level="project" />
     <orderEntry type="module" module-name="intellij.vcs.git.rt" />
     <orderEntry type="module" module-name="intellij.platform.vcs" />
     <orderEntry type="module" module-name="intellij.vcs.git" />
     <orderEntry type="module" module-name="intellij.platform.ide.util.io" />
     <orderEntry type="module" module-name="intellij.platform.core.ui" />
     <orderEntry type="module" module-name="intellij.platform.util.classLoader" />
+    <orderEntry type="library" name="Dart Packages" level="project" />
   </component>
 </module>
