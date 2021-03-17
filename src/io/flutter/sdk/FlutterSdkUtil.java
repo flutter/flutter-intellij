@@ -268,7 +268,7 @@ public class FlutterSdkUtil {
       // parse it
       try {
         final String contents = new String(packagesFile.contentsToByteArray(true /* cache contents */));
-        final JsonElement element = JsonParser.parseString(contents);
+        final JsonElement element = new JsonParser().parse(contents);
         if (element == null) {
           continue;
         }
@@ -285,7 +285,7 @@ public class FlutterSdkUtil {
             if (uri == null) {
               continue;
             }
-            final String path = extractSdkPathFromUri(uri);
+            final String path = extractSdkPathFromUri(uri, false);
             if (path == null) {
               continue;
             }
@@ -328,7 +328,7 @@ public class FlutterSdkUtil {
       final String flutterPrefix = "flutter:";
       if (line.startsWith(flutterPrefix)) {
         final String urlString = line.substring(flutterPrefix.length());
-        final String path = extractSdkPathFromUri(urlString);
+        final String path = extractSdkPathFromUri(urlString, true);
         if (path == null) {
           continue;
         }
@@ -339,7 +339,7 @@ public class FlutterSdkUtil {
     return null;
   }
 
-  private static String extractSdkPathFromUri(String urlString) {
+  private static String extractSdkPathFromUri(String urlString, boolean isLibIncluded) {
     if (urlString.startsWith("file:")) {
       final Url url = Urls.parseEncoded(urlString);
       if (url == null) {
@@ -349,7 +349,7 @@ public class FlutterSdkUtil {
       // go up three levels for .packages or two for .dart_tool/package_config.json
       File file = new File(url.getPath());
       file = file.getParentFile().getParentFile();
-      if (path.endsWith("lib/") || path.endsWith("lib")) {
+      if (isLibIncluded) {
         file = file.getParentFile();
       }
       return file.getPath();

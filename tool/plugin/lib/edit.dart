@@ -110,6 +110,12 @@ List<EditCommand> editCommands = [
     replacement: 'cannotWriteToFiles(List<? extends File> files)',
     versions: ['4.1', '4.2'],
   ),
+  Subst(
+    path: 'src/io/flutter/sdk/FlutterSdkUtil.java',
+    initial: 'JsonParser.parseString(contents)',
+    replacement: 'new JsonParser().parse(contents)',
+    version: 'AF.3.1',
+  ),
 ];
 
 // Used to test checkAndClearAppliedEditCommands()
