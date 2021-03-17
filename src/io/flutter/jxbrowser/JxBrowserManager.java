@@ -253,12 +253,13 @@ public class JxBrowserManager {
 
   private void loadClasses(String[] fileNames) {
     for (String fileName : fileNames) {
-      final boolean success = FileUtils.getInstance().loadClass(this.getClass().getClassLoader(), getFilePath(fileName));
+      final String fullPath = getFilePath(fileName);
+      final boolean success = FileUtils.getInstance().loadClass(this.getClass().getClassLoader(), fullPath);
       if (success) {
-        LOG.info("Loaded JxBrowser file successfully: " + fileName);
+        LOG.info("Loaded JxBrowser file successfully: " + fullPath);
       }
       else {
-        LOG.info("Failed to load JxBrowser file: " + fileName);
+        LOG.info("Failed to load JxBrowser file: " + fullPath);
         setStatusFailed("classLoadFailed");
         return;
       }

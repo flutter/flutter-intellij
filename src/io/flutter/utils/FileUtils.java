@@ -62,7 +62,12 @@ public class FileUtils {
     catch (MalformedURLException e) {
       return false;
     }
-    urlClassLoader.addURL(url);
+    try {
+      urlClassLoader.addURL(url);
+    }
+    catch (Exception e) {
+      return false;
+    }
     return true;
   }
 }
