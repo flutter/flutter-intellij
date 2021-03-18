@@ -182,8 +182,10 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       actions.add(new Separator());
       actions.addAll(emulatorActions);
     }
-    actions.add(new Separator());
-    actions.add(new RestartFlutterDaemonAction());
+    if (!FlutterModuleUtils.hasInternalDartSdkPath(project)) {
+      actions.add(new Separator());
+      actions.add(new RestartFlutterDaemonAction());
+    }
     ActivityTracker.getInstance().inc();
   }
 
