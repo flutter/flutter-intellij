@@ -8,8 +8,12 @@ package io.flutter.actions;
 import com.intellij.ide.ActivityTracker;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
@@ -67,11 +71,16 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     super.update(e);
 
-    Presentation presentation = e.getPresentation();
+    final Presentation presentation = e.getPresentation();
     if (!knownProjects.contains(project)) {
       knownProjects.add(project);
-      Disposer.register(project, () -> knownProjects.remove(project));
-
+      final Application application = ApplicationManager.getApplication();
+      application.getMessageBus().connect().subscribe(ProjectManager.TOPIC, new ProjectManagerListener() {
+        @Override
+        public void projectClosed(@NotNull Project closedProject) {
+          knownProjects.remove(closedProject);
+        }
+      });
       DeviceService.getInstance(project).addListener(() -> update(project, e.getPresentation()));
 
       // Listen for android device changes, and rebuild the menu if necessary.
@@ -95,7 +104,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     }
     else if (selectedDevice == null) {
       presentation.setText("<no device selected>");
-    } else if(selectedDeviceAction != null) {
+    }
+    else if (selectedDeviceAction != null) {
       final Presentation template = selectedDeviceAction.getTemplatePresentation();
       presentation.setIcon(template.getIcon());
       presentation.setText(selectedDevice.presentationName());
@@ -125,9 +135,11 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   }
 
   private static boolean isSelectorVisible(@Nullable Project project) {
-    return project != null &&
-           DeviceService.getInstance(project).getStatus() != DeviceService.State.INACTIVE &&
-           FlutterModuleUtils.hasFlutterModule(project);
+    if (project == null || !FlutterModuleUtils.hasFlutterModule(project)) {
+      return false;
+    }
+    final DeviceService deviceService = DeviceService.getInstance(project);
+    return deviceService.isRefreshInProgress() || deviceService.getStatus() != DeviceService.State.INACTIVE;
   }
 
   private void updateActions(@NotNull Project project, Presentation presentation) {
@@ -176,6 +188,10 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     if (!emulatorActions.isEmpty()) {
       actions.add(new Separator());
       actions.addAll(emulatorActions);
+    }
+    if (!FlutterModuleUtils.hasInternalDartSdkPath(project)) {
+      actions.add(new Separator());
+      actions.add(new RestartFlutterDaemonAction());
     }
     ActivityTracker.getInstance().inc();
   }

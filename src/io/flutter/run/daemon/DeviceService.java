@@ -53,6 +53,8 @@ public class DeviceService {
 
   private final AtomicLong lastRestartTime = new AtomicLong(0);
 
+  private boolean refreshInProgress = false;
+
   @NotNull
   public static DeviceService getInstance(@NotNull final Project project) {
     return ServiceManager.getService(project, DeviceService.class);
@@ -96,6 +98,10 @@ public class DeviceService {
       changed.add(callback);
       return ImmutableSet.copyOf(changed);
     });
+  }
+
+  public boolean isRefreshInProgress() {
+    return refreshInProgress;
   }
 
   /**
@@ -169,6 +175,7 @@ public class DeviceService {
       DumbService.getInstance(project).waitForSmartMode();
       if (project.isDisposed()) return;
       deviceDaemon.refresh(this::chooseNextDaemon);
+      refreshInProgress = false;
       ActivityTracker.getInstance().inc();
     });
   }
@@ -246,7 +253,7 @@ public class DeviceService {
 
   public void restart() {
     if (project.isDisposed()) return;
-
+    refreshInProgress = true;
     JobScheduler.getScheduler().schedule(this::shutDown, 0, TimeUnit.SECONDS);
     JobScheduler.getScheduler().schedule(this::refreshDeviceDaemon, 4, TimeUnit.SECONDS);
   }

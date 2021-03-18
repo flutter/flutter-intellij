@@ -12,6 +12,10 @@ import io.flutter.FlutterInitializer;
 import io.flutter.run.daemon.DeviceService;
 
 public class RestartFlutterDaemonAction extends AnAction {
+  public RestartFlutterDaemonAction() {
+    super("Refresh");
+  }
+
   @Override
   public void actionPerformed(AnActionEvent event) {
     FlutterInitializer.sendAnalyticsAction(this);
