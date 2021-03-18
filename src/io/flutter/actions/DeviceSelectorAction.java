@@ -8,8 +8,12 @@ package io.flutter.actions;
 import com.intellij.ide.ActivityTracker;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
@@ -70,10 +74,13 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     final Presentation presentation = e.getPresentation();
     if (!knownProjects.contains(project)) {
       knownProjects.add(project);
-      // TODO https://plugins.jetbrains.com/docs/intellij/disposers.html?from=jetbrains.org#choosing-a-disposable-parent
-      // Find a proper parent disposable. Projects and modules are never disposed.
-      Disposer.register(project, () -> knownProjects.remove(project));
-
+      final Application application = ApplicationManager.getApplication();
+      application.getMessageBus().connect().subscribe(ProjectManager.TOPIC, new ProjectManagerListener() {
+        @Override
+        public void projectClosed(@NotNull Project closedProject) {
+          knownProjects.remove(closedProject);
+        }
+      });
       DeviceService.getInstance(project).addListener(() -> update(project, e.getPresentation()));
 
       // Listen for android device changes, and rebuild the menu if necessary.
