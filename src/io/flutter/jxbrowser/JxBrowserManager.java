@@ -254,15 +254,16 @@ public class JxBrowserManager {
   private void loadClasses(String[] fileNames) {
     for (String fileName : fileNames) {
       final String fullPath = getFilePath(fileName);
-      final boolean success = FileUtils.getInstance().loadClass(this.getClass().getClassLoader(), fullPath);
-      if (success) {
-        LOG.info("Loaded JxBrowser file successfully: " + fullPath);
-      }
-      else {
-        LOG.info("Failed to load JxBrowser file: " + fullPath);
+
+      try {
+        FileUtils.getInstance().loadClass(this.getClass().getClassLoader(), fullPath);
+      } catch (Exception ex) {
+        LOG.info("Failed to load JxBrowser file", ex);
         setStatusFailed("classLoadFailed");
         return;
+
       }
+      LOG.info("Loaded JxBrowser file successfully: " + fullPath);
     }
     FlutterInitializer.getAnalytics().sendEvent(ANALYTICS_CATEGORY, "installed");
     status.set(JxBrowserStatus.INSTALLED);

@@ -8,7 +8,6 @@ package io.flutter.utils;
 import com.intellij.util.lang.UrlClassLoader;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 public class FileUtils {
@@ -52,22 +51,15 @@ public class FileUtils {
     return true;
   }
 
-  public boolean loadClass(ClassLoader classLoader, String path) {
+  public void loadClass(ClassLoader classLoader, String path) throws Exception {
     final UrlClassLoader urlClassLoader = (UrlClassLoader) classLoader;
+
     final File file = new File(path);
-    final URL url;
-    try {
-      url = file.toURI().toURL();
+    if (!file.exists()) {
+      throw new Exception("File does not exist: " + file.getAbsolutePath());
     }
-    catch (MalformedURLException e) {
-      return false;
-    }
-    try {
-      urlClassLoader.addURL(url);
-    }
-    catch (Exception e) {
-      return false;
-    }
-    return true;
+
+    final URL url = file.toURI().toURL();
+    urlClassLoader.addURL(url);
   }
 }
