@@ -67,9 +67,11 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     super.update(e);
 
-    Presentation presentation = e.getPresentation();
+    final Presentation presentation = e.getPresentation();
     if (!knownProjects.contains(project)) {
       knownProjects.add(project);
+      // TODO https://plugins.jetbrains.com/docs/intellij/disposers.html?from=jetbrains.org#choosing-a-disposable-parent
+      // Find a proper parent disposable. Projects and modules are never disposed.
       Disposer.register(project, () -> knownProjects.remove(project));
 
       DeviceService.getInstance(project).addListener(() -> update(project, e.getPresentation()));
@@ -95,7 +97,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     }
     else if (selectedDevice == null) {
       presentation.setText("<no device selected>");
-    } else if(selectedDeviceAction != null) {
+    }
+    else if (selectedDeviceAction != null) {
       final Presentation template = selectedDeviceAction.getTemplatePresentation();
       presentation.setIcon(template.getIcon());
       presentation.setText(selectedDevice.presentationName());
@@ -110,7 +113,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     });
   }
 
-  private static void updateVisibility(final Project project, final Presentation presentation) {
+  private void updateVisibility(final Project project, final Presentation presentation) {
     final boolean visible = isSelectorVisible(project);
     presentation.setVisible(visible);
 
@@ -124,10 +127,12 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     }
   }
 
-  private static boolean isSelectorVisible(@Nullable Project project) {
-    return project != null &&
-           DeviceService.getInstance(project).getStatus() != DeviceService.State.INACTIVE &&
-           FlutterModuleUtils.hasFlutterModule(project);
+  private boolean isSelectorVisible(@Nullable Project project) {
+    if (project == null || !FlutterModuleUtils.hasFlutterModule(project)) {
+      return false;
+    }
+    final DeviceService deviceService = DeviceService.getInstance(project);
+    return deviceService.isRefreshInProgress() || deviceService.getStatus() != DeviceService.State.INACTIVE;
   }
 
   private void updateActions(@NotNull Project project, Presentation presentation) {
@@ -177,6 +182,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       actions.add(new Separator());
       actions.addAll(emulatorActions);
     }
+    actions.add(new Separator());
+    actions.add(new RestartFlutterDaemonAction());
     ActivityTracker.getInstance().inc();
   }
 
