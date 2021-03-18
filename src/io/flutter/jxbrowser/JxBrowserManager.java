@@ -258,7 +258,7 @@ public class JxBrowserManager {
       try {
         FileUtils.getInstance().loadClass(this.getClass().getClassLoader(), fullPath);
       } catch (Exception ex) {
-        LOG.error("Failed to load JxBrowser file", ex);
+        LOG.info("Failed to load JxBrowser file", ex);
         setStatusFailed("classLoadFailed");
         return;
 
