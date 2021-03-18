@@ -113,7 +113,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     });
   }
 
-  private void updateVisibility(final Project project, final Presentation presentation) {
+  private static void updateVisibility(final Project project, final Presentation presentation) {
     final boolean visible = isSelectorVisible(project);
     presentation.setVisible(visible);
 
@@ -127,7 +127,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     }
   }
 
-  private boolean isSelectorVisible(@Nullable Project project) {
+  private static boolean isSelectorVisible(@Nullable Project project) {
     if (project == null || !FlutterModuleUtils.hasFlutterModule(project)) {
       return false;
     }
