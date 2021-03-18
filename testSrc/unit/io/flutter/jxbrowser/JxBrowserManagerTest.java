@@ -101,9 +101,6 @@ public class JxBrowserManagerTest {
     when(FileUtils.getInstance()).thenReturn(mockFileUtils);
     when(mockFileUtils.makeDirectory(DOWNLOAD_PATH)).thenReturn(true);
     when(mockFileUtils.fileExists(anyString())).thenReturn(true);
-    when(mockFileUtils.loadClass(any(ClassLoader.class), endsWith(PLATFORM_FILE_NAME))).thenReturn(true);
-    when(mockFileUtils.loadClass(any(ClassLoader.class), endsWith(API_FILE_NAME))).thenReturn(true);
-    when(mockFileUtils.loadClass(any(ClassLoader.class), endsWith(SWING_FILE_NAME))).thenReturn(true);
 
     PowerMockito.mockStatic(JxBrowserUtils.class);
     when(JxBrowserUtils.getJxBrowserKey()).thenReturn("KEY");
