@@ -38,7 +38,7 @@ intellij {
   downloadSources false
   localPath "${project.rootDir.absolutePath}/artifacts/$ide"
   plugins "java", "Dart:$dartVersion", "properties", "junit",
-          "gradle", "android", "Groovy", "smali", "IntelliLang", "android"//"org.jetbrains.android"
+          "gradle", "Groovy", "smali", "IntelliLang", "org.jetbrains.android"
 }
 
 sourceSets {
