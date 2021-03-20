@@ -21,6 +21,10 @@
   @VERSION@
   <idea-version since-build="@SINCE@" until-build="@UNTIL@"/>
 
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.lang</depends>
+  <depends>com.intellij.modules.xdebugger</depends>
+  <depends>org.jetbrains.android</depends>
   <depends>Dart</depends>
   <depends>Git4Idea</depends>
 

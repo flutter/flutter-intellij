@@ -61,14 +61,14 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     if (FlutterSettings.getInstance().isEnableEmbeddedBrowsers()) {
       JxBrowserManager.getInstance().setUp(project);
     }
+    excludeAndroidFrameworkDetector(project);
 
     final FlutterSdk sdk = FlutterSdk.getIncomplete(project);
     if (sdk == null) {
       // We can't do anything without a Flutter SDK.
+      // Note: this branch is taken when opening a project immediately after creating it -- not sure that is expected.
       return;
     }
-    // TODO(messick) Re-enable this after dropping support for 2020.2.
-    //excludeAndroidFrameworkDetector(project);
 
     // Report time when indexing finishes.
     DumbService.getInstance(project).runWhenSmart(() -> {
@@ -101,10 +101,14 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
   }
 
   private static void excludeAndroidFrameworkDetector(@NotNull Project project) {
-    DetectionExcludesConfiguration excludesConfiguration = DetectionExcludesConfiguration.getInstance(project);
-    FrameworkType type = new AndroidFrameworkDetector().getFrameworkType();
-    if (!excludesConfiguration.isExcludedFromDetection(type)) {
-      excludesConfiguration.addExcludedFramework(type);
+    try {
+      final DetectionExcludesConfiguration excludesConfiguration = DetectionExcludesConfiguration.getInstance(project);
+      final FrameworkType type = new AndroidFrameworkDetector().getFrameworkType();
+      if (!excludesConfiguration.isExcludedFromDetection(type)) {
+        excludesConfiguration.addExcludedFramework(type);
+      }
+    } catch (NoClassDefFoundError ignored) {
+      // This should never happen. But just in case ...
     }
   }
 
@@ -121,6 +125,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       myProject = project;
       myRoot = root;
 
+      //noinspection DialogTitleCapitalization
       addAction(new AnAction("Run 'flutter pub get'") {
         @Override
         public void actionPerformed(@NotNull AnActionEvent event) {
