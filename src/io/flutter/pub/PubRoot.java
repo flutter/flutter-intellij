@@ -280,9 +280,13 @@ public class PubRoot {
   }
 
   /**
-   * Returns true if the packages file is up to date.
+   * Returns true if the packages are up to date wrt pubspec.yaml.
    */
   public boolean hasUpToDatePackages() {
+    final VirtualFile configFile = getPackageConfigFile();
+    if (configFile != null) {
+      return pubspec.getTimeStamp() < configFile.getTimeStamp();
+    }
     final VirtualFile packagesFile = getPackagesFile();
     if (packagesFile == null) {
       return false;

@@ -261,13 +261,13 @@ public class FlutterSdkUtil {
   public static String guessFlutterSdkFromPackagesFile(@NotNull Module module) {
     // First, look for .dart_tool/package_config.json
     for (PubRoot pubRoot : PubRoots.forModule(module)) {
-      final VirtualFile packagesFile = pubRoot.getPackageConfigFile();
-      if (packagesFile == null) {
+      final VirtualFile configFile = pubRoot.getPackageConfigFile();
+      if (configFile == null) {
         continue;
       }
       // parse it
       try {
-        final String contents = new String(packagesFile.contentsToByteArray(true /* cache contents */));
+        final String contents = new String(configFile.contentsToByteArray(true /* cache contents */));
         final JsonElement element = new JsonParser().parse(contents);
         if (element == null) {
           continue;
