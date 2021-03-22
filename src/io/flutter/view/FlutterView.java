@@ -671,8 +671,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
 
     if (FlutterSettings.getInstance().isEnableEmbeddedBrowsers()) {
-      // Reset the URL since we may have an outdated one from a previous app run.
-      EmbeddedBrowser.getInstance(myProject).resetUrl();
+      if (JxBrowserManager.getInstance().getStatus().equals(JxBrowserStatus.INSTALLED)) {
+        // Reset the URL since we may have an outdated one from a previous app run.
+        EmbeddedBrowser.getInstance(myProject).resetUrl();
+      }
       if (toolWindow.isVisible()) {
         displayEmbeddedBrowser(app, inspectorService, toolWindow);
       } else {
@@ -751,7 +753,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private void displayEmbeddedBrowser(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
-    final JxBrowserStatus jxBrowserStatus = JxBrowserManager.getInstance().getStatus();
+    final JxBrowserManager manager = JxBrowserManager.getInstance();
+    final JxBrowserStatus jxBrowserStatus = manager.getStatus();
 
     if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {
       handleJxBrowserInstalled(app, inspectorService, toolWindow);
@@ -761,6 +764,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
     else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
       handleJxBrowserInstallationFailed(app, inspectorService, toolWindow);
+    } else if (jxBrowserStatus.equals(JxBrowserStatus.NOT_INSTALLED)) {
+      manager.setUp(myProject);
+      handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
     }
   }
 
