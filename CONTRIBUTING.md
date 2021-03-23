@@ -31,7 +31,7 @@ file.
 * Open flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository). 
   Build it using `Build` | `Build Project`
 * Try running the plugin; there is an existing launch config for "Flutter IntelliJ". This should open the "runtime workbench", 
-  a new intance of IntelliJ with the plugin installed.
+  a new instance of IntelliJ with the plugin installed.
 * If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install"
 * If libraries are deleted from .iml files, you can try running `flutter pub get` to get them back. However, random changes 
   to the .iml files are common and generally it's okay to remove these changes before making commits.
@@ -58,7 +58,7 @@ The repository contains two pre-defined test run configurations. One is for 'uni
 currently defined as tests that do not rely on the IntelliJ APIs. The other is for 'integration'
 tests - tests that do use the IntelliJ APIs. In the future we would like for the unit tests to be
 able to access IntelliJ APIs, and for the integration tests to be larger, long-running tests that
-excercise app use cases.
+exercise app use cases.
 
 In order to be able to run a single test class or test method you need to do the following:
 
