@@ -348,6 +348,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
         }
       }
 
+      testError.addAttribute("error", "true");
       testError.addAttribute("message", appendLineBreakIfNeeded(failureMessage));
 
       result &= finishMessage(testError, test.getId(), test.getValidParentId());
