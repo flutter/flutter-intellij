@@ -155,11 +155,13 @@ class EditAndroidModuleLibraryManager extends EditCommand {
             "");
         source = source.replaceAll("IProjectStore", "Object");
         source = source.replaceAll(
-            "androidProject.init41", "androidProject.initPre41");
+            "androidProject.init42", "androidProject.initPre41");
         source = source.replaceAll("PluginManagerCore.getLoadedPlugins(), null",
             "PluginManagerCore.getLoadedPlugins(), false");
       }
       if (spec.version.startsWith('4.2')) {
+        source = source.replaceAll(
+            "androidProject.init42", "androidProject.init41");
         source = source.replaceAll("PluginManagerCore.getLoadedPlugins(), null",
             "PluginManagerCore.getLoadedPlugins()");
         source = source.replaceAll("getStateStore1", "getStateStore");
