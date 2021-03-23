@@ -11,12 +11,14 @@ import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.execution.ParametersListUtil;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterInitializer;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRootCache;
@@ -208,9 +210,13 @@ public class SdkFields {
         }, "Starting DevTools", false, project);
         final DevToolsInstance instance = devToolsFuture.get();
         args = ArrayUtil.append(args, "--devtools-server-address=http://" + instance.host + ":" + instance.port);
+        if (firstRun) {
+          FlutterInitializer.getAnalytics().sendEvent("devtools", "first-run-success");
+        }
       }
       catch (Exception e) {
-        LOG.error(e);
+        LOG.info(e);
+        FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(e), false);
       }
     }
     command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
