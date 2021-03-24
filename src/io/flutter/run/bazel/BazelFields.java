@@ -28,6 +28,7 @@ import io.flutter.run.FlutterDevice;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.DevToolsInstance;
 import io.flutter.run.daemon.DevToolsService;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.ElementIO;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -91,7 +92,11 @@ public class BazelFields {
     this(bazelTarget, bazelArgs, additionalArgs, enableReleaseMode, null);
   }
 
-  BazelFields(@Nullable String bazelTarget, @Nullable String bazelArgs, @Nullable String additionalArgs, boolean enableReleaseMode, DevToolsService devToolsService) {
+  BazelFields(@Nullable String bazelTarget,
+              @Nullable String bazelArgs,
+              @Nullable String additionalArgs,
+              boolean enableReleaseMode,
+              DevToolsService devToolsService) {
     this.bazelTarget = bazelTarget;
     this.bazelArgs = bazelArgs;
     this.additionalArgs = additionalArgs;
@@ -267,6 +272,12 @@ public class BazelFields {
       StringUtil.notNullize(additionalArgs));
     while (additionalArgsTokenizer.hasMoreTokens()) {
       commandLine.addParameter(additionalArgsTokenizer.nextToken());
+    }
+
+    final String disableBazelHotRestartParam = "--no-enable-google3-hot-reload";
+    if (!FlutterSettings.getInstance().isEnableBazelHotRestart() &&
+        !StringUtil.notNullize(additionalArgs).contains(disableBazelHotRestartParam)) {
+      commandLine.addParameter(disableBazelHotRestartParam);
     }
 
     // Send in the deviceId.

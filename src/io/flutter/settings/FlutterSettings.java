@@ -30,6 +30,7 @@ public class FlutterSettings {
   private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
   private static final String enableHotUiKey = "io.flutter.editor.enableHotUi";
   private static final String enableEmbeddedBrowsersKey = "io.flutter.editor.enableEmbeddedBrowsers";
+  private static final String enableBazelHotRestart = "io.flutter.editor.enableBazelHotRestart";
 
   /**
    * Registry key to suggest all run configurations instead of just one.
@@ -274,6 +275,15 @@ public class FlutterSettings {
 
   public void setEnableEmbeddedBrowsers(boolean value) {
     getPropertiesComponent().setValue(enableEmbeddedBrowsersKey, value, true);
+    fireEvent();
+  }
+
+  public boolean isEnableBazelHotRestart() {
+    return getPropertiesComponent().getBoolean(enableBazelHotRestart, false);
+  }
+
+  public void setEnableBazelHotRestart(boolean value) {
+    getPropertiesComponent().setValue(enableBazelHotRestart, value, false);
     fireEvent();
   }
 
