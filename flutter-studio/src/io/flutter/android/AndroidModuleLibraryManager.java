@@ -5,6 +5,7 @@
  */
 package io.flutter.android;
 
+import static com.android.tools.idea.gradle.util.GradleUtil.GRADLE_SYSTEM_ID;
 import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED;
 import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_KIND;
 import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_NAME;
@@ -15,6 +16,9 @@ import com.intellij.ProjectTopics;
 import com.intellij.facet.FacetManager;
 import com.intellij.ide.plugins.IdeaPluginDescriptorImpl;
 import com.intellij.ide.plugins.PluginManagerCore;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -55,6 +59,7 @@ import com.intellij.util.ReflectionUtil;
 import com.intellij.util.modules.CircularModuleDependenciesDetector;
 import io.flutter.sdk.AbstractLibraryManager;
 import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -90,6 +95,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   private static final Logger LOG = Logger.getInstance(AndroidModuleLibraryManager.class);
   private static final String BUILD_FILE_NAME = "build.gradle";
   private final AtomicBoolean isUpdating = new AtomicBoolean(false);
+  private final AtomicBoolean isDisabled = new AtomicBoolean(false);
 
   public AndroidModuleLibraryManager(@NotNull Project project) {
     super(project);
@@ -198,7 +204,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   }
 
   private void scheduleUpdate() {
-    if (isUpdating.get()) {
+    if (isUpdating.get() || isDisabled.get()) {
       return;
     }
 
@@ -219,7 +225,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     if (dir == null) dir = flutterProject.getBaseDir().findChild(".android"); // For modules.
     if (dir == null) return;
     EmbeddedAndroidProject androidProject = new EmbeddedAndroidProject(Paths.get(FileUtilRt.toSystemIndependentName(dir.getPath())));
-    androidProject.init41(null);
+    androidProject.init42(null);
     Disposer.register(flutterProject, androidProject);
 
     GradleSyncListener listener = new GradleSyncListener() {
@@ -362,6 +368,34 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
       return null;
     }
 
+    public void init42(@Nullable ProgressIndicator indicator) {
+      boolean finished = false;
+      try {
+        //ProjectManagerImpl.initProject(path, this, true, true, null, null);
+        Method method = ReflectionUtil
+          .getDeclaredMethod(ProjectManagerImpl.class, "initProject", Path.class, ProjectImpl.class, boolean.class, boolean.class,
+                             Project.class, ProgressIndicator.class);
+        assert (method != null);
+        try {
+          method.invoke(null, path, this, true, true, null, null);
+        }
+        catch (IllegalAccessException | InvocationTargetException e) {
+          disableGradleSyncAndNotifyUser();
+          return;
+        }
+        finished = true;
+      }
+      finally {
+        if (!finished) {
+          TransactionGuard.submitTransaction(this, () -> WriteAction.run(() -> {
+            if (isDisposed() && !isDisabled.get()) {
+              Disposer.dispose(this);
+            }
+          }));
+        }
+      }
+    }
+
     public void init41(@Nullable ProgressIndicator indicator) {
       boolean finished = false;
       try {
@@ -374,14 +408,15 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
           method.invoke(null, path, this, true, null, null);
         }
         catch (IllegalAccessException | InvocationTargetException e) {
-          throw new RuntimeException(e);
+          disableGradleSyncAndNotifyUser();
+          return;
         }
         finished = true;
       }
       finally {
         if (!finished) {
           TransactionGuard.submitTransaction(this, () -> WriteAction.run(() -> {
-            if (isDisposed()) {
+            if (isDisposed() && !isDisabled.get()) {
               Disposer.dispose(this);
             }
           }));
@@ -400,12 +435,25 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
       finally {
         if (!finished) {
           TransactionGuard.submitTransaction(this, () -> WriteAction.run(() -> {
-            if (isDisposed()) {
+            if (isDisposed() && !isDisabled.get()) {
               Disposer.dispose(this);
             }
           }));
         }
       }
+    }
+
+    private void disableGradleSyncAndNotifyUser() {
+      final FlutterSettings instance = FlutterSettings.getInstance();
+      instance.setSyncingAndroidLibraries(false);
+      isDisabled.set(true);
+      final Notification notification = new Notification(
+        GRADLE_SYSTEM_ID.getReadableName() + " sync",
+        "Gradle sync disabled",
+        "An internal error prevents Gradle from analyzing the Android module at " + path,
+        NotificationType.WARNING,
+        null);
+      Notifications.Bus.notify(notification, this);
     }
   }
 }
