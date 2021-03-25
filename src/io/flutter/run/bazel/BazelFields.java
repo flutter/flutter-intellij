@@ -9,6 +9,9 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.CommandLineTokenizer;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
@@ -21,6 +24,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterMessages;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
@@ -274,10 +278,19 @@ public class BazelFields {
       commandLine.addParameter(additionalArgsTokenizer.nextToken());
     }
 
+    final String enableBazelHotRestartParam = "--enable-google3-hot-reload";
     final String disableBazelHotRestartParam = "--no-enable-google3-hot-reload";
-    if (!FlutterSettings.getInstance().isEnableBazelHotRestart() &&
-        !StringUtil.notNullize(additionalArgs).contains(disableBazelHotRestartParam)) {
-      commandLine.addParameter(disableBazelHotRestartParam);
+    final boolean hasEnabledArg = StringUtil.notNullize(additionalArgs).contains(enableBazelHotRestartParam);
+    final boolean hasDisabledArg = StringUtil.notNullize(additionalArgs).contains(disableBazelHotRestartParam);
+    if (!FlutterSettings.getInstance().isEnableBazelHotRestart() && hasDisabledArg) {
+      final Notification notification = new Notification(
+        FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
+        "Google3 hot restart is disabled by default",
+        "You can now remove this flag from your configuration's additional args: " + disableBazelHotRestartParam,
+        NotificationType.INFORMATION);
+      Notifications.Bus.notify(notification, project);
+    } else if (FlutterSettings.getInstance().isEnableBazelHotRestart() && !hasEnabledArg && !hasDisabledArg) {
+      commandLine.addParameter(enableBazelHotRestartParam);
     }
 
     // Send in the deviceId.

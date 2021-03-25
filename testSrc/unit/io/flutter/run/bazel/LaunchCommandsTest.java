@@ -63,7 +63,6 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=release");
     expectedCommandLine.add("--machine");
-    expectedCommandLine.add("--no-enable-google3-hot-reload");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
     expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
@@ -90,7 +89,6 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
-    expectedCommandLine.add("--no-enable-google3-hot-reload");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
     expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
@@ -114,7 +112,6 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
     expectedCommandLine.add("--bazel-options=--define=bazel_args --define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
-    expectedCommandLine.add("--no-enable-google3-hot-reload");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
     expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
@@ -138,7 +135,6 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=release");
     expectedCommandLine.add("--machine");
-    expectedCommandLine.add("--no-enable-google3-hot-reload");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
     expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
@@ -159,7 +155,6 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
     expectedCommandLine.add("--bazel-options=--define flutter_build_mode=profile");
     expectedCommandLine.add("--machine");
-    expectedCommandLine.add("--no-enable-google3-hot-reload");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
     expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
@@ -180,7 +175,6 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
     expectedCommandLine.add("--bazel-options=--define param1=2 --define=param2=2 --define=flutter_build_mode=profile");
     expectedCommandLine.add("--machine");
-    expectedCommandLine.add("--no-enable-google3-hot-reload");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
     expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
@@ -205,7 +199,6 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("additional_args");
-    expectedCommandLine.add("--no-enable-google3-hot-reload");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
     expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
@@ -253,7 +246,6 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("--start-paused");
-    expectedCommandLine.add("--no-enable-google3-hot-reload");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
     expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
@@ -273,7 +265,6 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=profile");
     expectedCommandLine.add("--machine");
-    expectedCommandLine.add("--no-enable-google3-hot-reload");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
     expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
@@ -292,7 +283,6 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
-    expectedCommandLine.add("--no-enable-google3-hot-reload");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("android-tester");
     expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
@@ -312,7 +302,6 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
-    expectedCommandLine.add("--no-enable-google3-hot-reload");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("android-tester");
     expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
@@ -331,7 +320,6 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
-    expectedCommandLine.add("--no-enable-google3-hot-reload");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("ios-tester");
     expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
@@ -350,7 +338,6 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
-    expectedCommandLine.add("--no-enable-google3-hot-reload");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("ios-tester");
     expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");
