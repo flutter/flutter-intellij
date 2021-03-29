@@ -12,6 +12,8 @@ import static java.util.Objects.requireNonNull;
 
 import com.android.tools.idea.gradle.dsl.model.BuildModelContext;
 import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslElement;
+import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslExpression;
+import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslExpressionList;
 import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslLiteral;
 import com.android.tools.idea.gradle.dsl.parser.files.GradleSettingsFile;
 import com.android.tools.idea.gradle.project.sync.GradleSyncState;
@@ -326,16 +328,30 @@ public class GradleUtils {
       return null;
     }
     for (GradleDslElement include : includes.getChildren()) {
-      PsiElement expr = ((GradleDslLiteral)include).getExpression();
-      if (expr == null) {
-        continue;
+      if (include instanceof GradleDslExpressionList) {
+        for (GradleDslExpression expr : ((GradleDslExpressionList)include).getExpressions()) {
+          if (expr instanceof GradleDslLiteral) {
+            PsiElement lit = expr.getExpression();
+            if (matchesName(lit, name)) {
+              return lit;
+            }
+          }
+        }
       }
-      String text = expr.getText();
-      if (name.equals(text.substring(2, text.length() - 1))) {
-        return expr;
+      if (include instanceof GradleDslLiteral) {
+        PsiElement expr = ((GradleDslLiteral)include).getExpression();
+        if (matchesName(expr, name)) {
+          return expr;
+        }
       }
     }
     return null;
+  }
+
+  private static boolean matchesName(PsiElement expr, String name) {
+    if (expr == null) return false;
+    String text = expr.getText();
+    return name.equals(text.substring(2, text.length() - 1));
   }
 
   private static class CoEditHelper {
