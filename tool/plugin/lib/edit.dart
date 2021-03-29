@@ -90,6 +90,12 @@ List<EditCommand> editCommands = [
     replacement: 'Predicate<? super T> predicate',
     version: 'AF.3.1',
   ),
+  Subst(
+    path: 'resources/META-INF/studio-contribs.xml',
+    initial: 'JavaNewProjectOrModuleGroup',
+    replacement: 'NewProjectOrModuleGroup',
+    version: 'AF.3.1',
+  ),
   MultiSubst(
     path: 'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java',
     initials: [
