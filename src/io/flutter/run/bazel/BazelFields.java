@@ -293,6 +293,8 @@ public class BazelFields {
       commandLine.addParameter(enableBazelHotRestartParam);
     }
 
+
+
     // Send in the deviceId.
     if (device != null) {
       commandLine.addParameter("-d");

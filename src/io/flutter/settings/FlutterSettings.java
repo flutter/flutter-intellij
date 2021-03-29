@@ -31,6 +31,7 @@ public class FlutterSettings {
   private static final String enableHotUiKey = "io.flutter.editor.enableHotUi";
   private static final String enableEmbeddedBrowsersKey = "io.flutter.editor.enableEmbeddedBrowsers";
   private static final String enableBazelHotRestart = "io.flutter.editor.enableBazelHotRestart";
+  private static final String showBazelHotRestartWarning = "io.flutter.showBazelHotRestartWarning";
 
   /**
    * Registry key to suggest all run configurations instead of just one.
@@ -119,6 +120,10 @@ public class FlutterSettings {
 
     if (isEnableHotUi()) {
       analytics.sendEvent("settings", afterLastPeriod(enableHotUiKey));
+    }
+
+    if (isShowBazelHotRestartWarning()) {
+      analytics.sendEvent("settings", afterLastPeriod(showBazelHotRestartWarning));
     }
   }
 
@@ -284,6 +289,15 @@ public class FlutterSettings {
 
   public void setEnableBazelHotRestart(boolean value) {
     getPropertiesComponent().setValue(enableBazelHotRestart, value, false);
+    fireEvent();
+  }
+
+  public boolean isShowBazelHotRestartWarning() {
+    return getPropertiesComponent().getBoolean(showBazelHotRestartWarning, true);
+  }
+
+  public void setShowBazelHotRestartWarning(boolean value) {
+    getPropertiesComponent().setValue(showBazelHotRestartWarning, value, true);
     fireEvent();
   }
 
