@@ -211,7 +211,7 @@ public class LaunchCommandsTest {
     final BazelFields fields = setupBazelFields(
       "bazel_target",
       "--define=bazel_args0 --define bazel_args1=value",
-      "--additional_args1 --additional_args2 value_of_arg2",
+      "--additional_args1 --additional_args2 value_of_arg2 --no-enable-google3-hot-reload",
       false
     );
 
@@ -225,6 +225,7 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("--additional_args1");
     expectedCommandLine.add("--additional_args2");
     expectedCommandLine.add("value_of_arg2");
+    expectedCommandLine.add("--no-enable-google3-hot-reload");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
     expectedCommandLine.add("--devtools-server-address=http://http://localhost:1234");

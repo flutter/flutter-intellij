@@ -68,6 +68,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox mySyncAndroidLibrariesCheckBox;
   private JCheckBox myEnableHotUiCheckBox;
   private JCheckBox myEnableEmbeddedBrowsersCheckBox;
+  private JCheckBox myEnableBazelHotRestartCheckBox;
 
   private JCheckBox myShowAllRunConfigurationsInContextCheckBox;
 
@@ -137,6 +138,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
 
     myEnableEmbeddedBrowsersCheckBox.setVisible(true);
+
+    myEnableBazelHotRestartCheckBox.setVisible(WorkspaceCache.getInstance(myProject).isBazel());
   }
 
   private void createUIComponents() {
@@ -220,6 +223,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isEnableBazelHotRestart() != myEnableBazelHotRestartCheckBox.isSelected()) {
+      return true;
+    }
+
     //noinspection RedundantIfStatement
     if (settings.showAllRunConfigurationsInContext() != myShowAllRunConfigurationsInContextCheckBox.isSelected()) {
       return true;
@@ -268,6 +275,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
     settings.setEnableHotUi(myEnableHotUiCheckBox.isSelected());
     settings.setEnableEmbeddedBrowsers(myEnableEmbeddedBrowsersCheckBox.isSelected());
+    settings.setEnableBazelHotRestart(myEnableBazelHotRestartCheckBox.isSelected());
     settings.setShowAllRunConfigurationsInContext(myShowAllRunConfigurationsInContextCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
@@ -310,6 +318,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myEnableHotUiCheckBox.setSelected(settings.isEnableHotUi());
 
     myEnableEmbeddedBrowsersCheckBox.setSelected(settings.isEnableEmbeddedBrowsers());
+    myEnableBazelHotRestartCheckBox.setSelected(settings.isEnableBazelHotRestart());
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
 
