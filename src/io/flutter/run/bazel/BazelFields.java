@@ -285,7 +285,7 @@ public class BazelFields {
     if (!FlutterSettings.getInstance().isEnableBazelHotRestart() && hasDisabledArg) {
       final Notification notification = new Notification(
         FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
-        "Google3 hot restart is disabled by default",
+        "Google3-specific hot restart is disabled by default",
         "You can now remove this flag from your configuration's additional args: " + disableBazelHotRestartParam,
         NotificationType.INFORMATION);
       Notifications.Bus.notify(notification, project);
