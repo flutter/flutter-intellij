@@ -42,6 +42,27 @@
 
   <change-notes>
     <![CDATA[
+<h1>55.0</h1>
+<ul>
+  <li>Disable bazel hot restart by default (#5349)</li>
+  <li>Change action group name for canary (#5362)</li>
+  <li>Handle include lists in settings.gradle (#5353)</li>
+  <li>Fix typo in CONTRIBUTING.md (#5344)</li>
+  <li>Add a parameter to Project.initProject() for canary (#5346)</li>
+  <li>Report DevTools timeout but remove from console log (#5343)</li>
+  <li>Skip URL reset if JxBrowser not installed (#5341)</li>
+  <li>Use proper package file (#5340)</li>
+  <li>Disable Android framework detection for Flutter projects (#5336)</li>
+  <li>Refresh devices (#5333)</li>
+  <li>Check that files exist during class load (#5334)</li>
+  <li>Catch class loading exceptions and log full path (#5332)</li>
+  <li>Fix the lost SDK on start up problem (#5325)</li>
+  <li>Update dev install instructions (#5330)</li>
+  <li>Log any exceptions on jxbrowser close and check closed status (#5303)</li>
+  <li>Register highlighting for Flutter projects only (#5300)</li>
+  <li>Get device list after indexing finishes (#5296)</li>
+  <li>Update to JxBrowser v7.13 and remove Big Sur checks (#5295)</li>
+</ul>
 <h1>54.1</h1>
 <ul>
   <li>Support 2021.1 Beta</li>
