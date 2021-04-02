@@ -6,7 +6,6 @@ import 'dart:io';
 
 import 'package:grinder/grinder.dart';
 import 'package:http/http.dart' as http;
-import 'package:meta/meta.dart';
 
 void main(List<String> args) => grind(args);
 
@@ -58,7 +57,7 @@ void outlineIcons() async {
 void _createPng(
   File sourceSvg,
   String targetName, {
-  @required int? size,
+  required int? size,
   bool forLight: false,
 }) {
   File targetFile = joinFile(sourceSvg.parent, [targetName]);
