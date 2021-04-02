@@ -31,28 +31,8 @@ public class DevToolsUtils {
     boolean embed,
     String colorHexCode
   ) {
-    final List<String> params = new ArrayList<>();
-
-    params.add("ide=" + FlutterSdkUtil.getFlutterHostEnvValue());
-    if (page != null) {
-      params.add("page=" + page);
-    }
-    if (colorHexCode != null) {
-      params.add("backgroundColor=" + colorHexCode);
-    }
-    if (embed) {
-      params.add("embed=true");
-    }
-
-    if (serviceProtocolUri != null) {
-      try {
-        final String urlParam = URLEncoder.encode(serviceProtocolUri, "UTF-8");
-        params.add("uri=" + urlParam);
-      }
-      catch (UnsupportedEncodingException ignored) {
-      }
-    }
-    return "http://" + devtoolsHost + ":" + devtoolsPort + "/?" + String.join("&", params);
+    final DevToolsUrl devToolsUrl = new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, embed, colorHexCode);
+    return devToolsUrl.getUrlString();
   }
 
   public static String findWidgetId(String url) {
