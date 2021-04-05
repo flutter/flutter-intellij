@@ -16,6 +16,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.ui.VerticalFlowLayout;
@@ -39,6 +40,7 @@ import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerAdapter;
 import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.tabs.TabInfo;
+import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.xdebugger.XSourcePosition;
@@ -46,6 +48,7 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
+import io.flutter.devtools.DevToolsUrl;
 import io.flutter.devtools.DevToolsUtils;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.InspectorGroupManagerService;
@@ -259,11 +262,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     if (isEmbedded) {
       final String color = ColorUtil.toHex(UIUtil.getEditorPaneBackground());
-      final String url = DevToolsUtils.generateDevToolsUrl(devToolsInstance.host, devToolsInstance.port, browserUrl, "inspector", true, color);
+      final DevToolsUrl devToolsUrl = new DevToolsUrl(devToolsInstance.host, devToolsInstance.port, browserUrl, "inspector", true, color);
 
       //noinspection CodeBlock2Expr
       ApplicationManager.getApplication().invokeLater(() -> {
-        EmbeddedBrowser.getInstance(myProject).openPanel(contentManager, tabName, url, () -> {
+        EmbeddedBrowser.getInstance(myProject).openPanel(contentManager, tabName, devToolsUrl, () -> {
           // If the embedded browser doesn't work, offer a link to open in the regular browser.
           final List<LabelInput> inputs = Arrays.asList(
             new LabelInput("The embedded browser failed to load."),
@@ -272,6 +275,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           presentClickableLabel(toolWindow, inputs);
         });
       });
+
+      final MessageBusConnection busConnection = ApplicationManager.getApplication().getMessageBus().connect();
+      busConnection.subscribe(EditorColorsManager.TOPIC, scheme ->
+        EmbeddedBrowser.getInstance(myProject).updateColor(ColorUtil.toHex(UIUtil.getEditorPaneBackground()))
+      );
     } else {
       BrowserLauncher.getInstance().browse(
         DevToolsUtils.generateDevToolsUrl(devToolsInstance.host, devToolsInstance.port, browserUrl, "inspector", false),

@@ -28,6 +28,7 @@ import com.teamdev.jxbrowser.view.swing.callback.DefaultAlertCallback;
 import com.teamdev.jxbrowser.view.swing.callback.DefaultConfirmCallback;
 import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
+import io.flutter.devtools.DevToolsUrl;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
@@ -35,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.Dimension;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 public class EmbeddedBrowser {
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
@@ -45,7 +47,7 @@ public class EmbeddedBrowser {
   }
 
   private Browser browser;
-  private CompletableFuture<String> mainUrlFuture;
+  private CompletableFuture<DevToolsUrl> devToolsUrlFuture;
 
   private EmbeddedBrowser(Project project) {
     System.setProperty("jxbrowser.force.dpi.awareness", "1.0");
@@ -89,17 +91,13 @@ public class EmbeddedBrowser {
    * This is to clear out a potentially old URL, i.e. a URL from an app that's no longer running.
    */
   public void resetUrl() {
-    if (mainUrlFuture != null && !mainUrlFuture.isDone()) {
-      mainUrlFuture.complete(null);
+    if (devToolsUrlFuture != null && !devToolsUrlFuture.isDone()) {
+      devToolsUrlFuture.complete(null);
     }
-    this.mainUrlFuture = new CompletableFuture<>();
+    this.devToolsUrlFuture = new CompletableFuture<>();
   }
 
-  public void openPanel(ContentManager contentManager, String tabName, String url) {
-    openPanel(contentManager, tabName, url, () -> {});
-  }
-
-  public void openPanel(ContentManager contentManager, String tabName, String url, Runnable onBrowserUnavailable) {
+  public void openPanel(ContentManager contentManager, String tabName, DevToolsUrl devToolsUrl, Runnable onBrowserUnavailable) {
     // If the browser failed to start during setup, run unavailable callback.
     if (browser == null) {
       onBrowserUnavailable.run();
@@ -113,8 +111,8 @@ public class EmbeddedBrowser {
     // Multiple LoadFinished events can occur, but we only need to add content the first time.
     final AtomicBoolean contentLoaded = new AtomicBoolean(false);
 
-    browser.navigation().loadUrl(url);
-    mainUrlFuture.complete(url);
+    browser.navigation().loadUrl(devToolsUrl.getUrlString());
+    devToolsUrlFuture.complete(devToolsUrl);
     browser.navigation().on(LoadFinished.class, event -> {
       if (!contentLoaded.compareAndSet(false, true)) {
         return;
@@ -142,16 +140,42 @@ public class EmbeddedBrowser {
   }
 
   public void updatePanelToWidget(String widgetId) {
-    AsyncUtils.whenCompleteUiThread(mainUrlFuture, (url, ex) -> {
+    updateUrlAndReload(devToolsUrl -> {
+      devToolsUrl.widgetId = widgetId;
+      return devToolsUrl;
+    });
+  }
+
+  public void updateColor(String newColor) {
+    updateUrlAndReload(devToolsUrl -> {
+      if (devToolsUrl.colorHexCode.equals(newColor)) {
+        return null;
+      }
+      devToolsUrl.colorHexCode = newColor;
+      return devToolsUrl;
+    });
+  }
+
+  private void updateUrlAndReload(Function<DevToolsUrl, DevToolsUrl> newDevToolsUrlFn) {
+    final CompletableFuture<DevToolsUrl> updatedUrlFuture = devToolsUrlFuture.thenApply(devToolsUrl -> {
+      if (devToolsUrl == null) {
+        // This happens if URL has already been reset (e.g. new app has started). In this case [openPanel] should be called again instead of
+        // modifying the URL.
+        return null;
+      }
+      return newDevToolsUrlFn.apply(devToolsUrl);
+    });
+
+    AsyncUtils.whenCompleteUiThread(updatedUrlFuture, (devToolsUrl, ex) -> {
       if (ex != null) {
         LOG.error(ex);
         return;
       }
-      if (url == null) {
-        // This happens if URL has already been reset (e.g. new app has started). We no longer need to update to a widget for the old app.
+      if (devToolsUrl == null) {
+        // Reload is no longer needed - either URL has been reset or there has been no change.
         return;
       }
-      browser.navigation().loadUrl(url + "&inspectorRef=" + widgetId);
+      browser.navigation().loadUrl(devToolsUrl.getUrlString());
     });
   }
 }
