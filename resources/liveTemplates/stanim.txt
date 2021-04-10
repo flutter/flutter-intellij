@@ -4,7 +4,7 @@ class $NAME$ extends StatefulWidget {
 }
 
 class _$NAME$State extends State<$NAME$> with SingleTickerProviderStateMixin {
-  AnimationController _controller;
+  late AnimationController _controller;
 
   @override
   void initState() {
