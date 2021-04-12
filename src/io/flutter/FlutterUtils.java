@@ -11,6 +11,8 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.util.ExecUtil;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.ide.impl.ProjectUtil;
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
@@ -329,6 +331,19 @@ public class FlutterUtils {
     final PluginId pluginId = PluginId.findId("io.flutter");
     assert pluginId != null;
     return pluginId;
+  }
+
+  /**
+   * Given some plugin id, this method returns the {@link IdeaPluginDescriptor}, or null if the plugin is not installed.
+   */
+  @Nullable
+  public static IdeaPluginDescriptor getPluginDescriptor(@NotNull String pluginId) {
+    for (IdeaPluginDescriptor descriptor : PluginManagerCore.getPlugins()) {
+      if (descriptor.getPluginId().getIdString().equals(pluginId)) {
+        return descriptor;
+      }
+    }
+    return null;
   }
 
   /**
