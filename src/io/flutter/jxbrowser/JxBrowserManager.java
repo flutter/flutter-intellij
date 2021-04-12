@@ -19,6 +19,9 @@ import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.download.DownloadableFileDescription;
 import com.intellij.util.download.DownloadableFileService;
 import com.intellij.util.download.FileDownloader;
+import com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException;
+import com.teamdev.jxbrowser.callback.Callback;
+import com.teamdev.jxbrowser.engine.RenderingMode;
 import io.flutter.FlutterInitializer;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FileUtils;
@@ -264,6 +267,13 @@ public class JxBrowserManager {
 
       }
       LOG.info("Loaded JxBrowser file successfully: " + fullPath);
+    }
+    try {
+      final UnsupportedRenderingModeException test = new UnsupportedRenderingModeException(RenderingMode.HARDWARE_ACCELERATED);
+    } catch (NoClassDefFoundError e) {
+      LOG.info("Failed to find JxBrowser class");
+      setStatusFailed("NoClassDefFoundError");
+      return;
     }
     FlutterInitializer.getAnalytics().sendEvent(ANALYTICS_CATEGORY, "installed");
     status.set(JxBrowserStatus.INSTALLED);
