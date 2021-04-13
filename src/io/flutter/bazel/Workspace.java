@@ -45,6 +45,8 @@ public class Workspace {
   @Nullable private final String syncScript;
   @Nullable private final String sdkHome;
   @Nullable private final String versionFile;
+  @Nullable private final String requiredIJPluginID;
+  @Nullable private final String requiredIJPluginMessage;
 
   private Workspace(@NotNull VirtualFile root,
                     @Nullable PluginConfig config,
@@ -54,7 +56,9 @@ public class Workspace {
                     @Nullable String runScript,
                     @Nullable String syncScript,
                     @Nullable String sdkHome,
-                    @Nullable String versionFile) {
+                    @Nullable String versionFile,
+                    @Nullable String requiredIJPluginID,
+                    @Nullable String requiredIJPluginMessage) {
     this.root = root;
     this.config = config;
     this.daemonScript = daemonScript;
@@ -64,6 +68,8 @@ public class Workspace {
     this.syncScript = syncScript;
     this.sdkHome = sdkHome;
     this.versionFile = versionFile;
+    this.requiredIJPluginID = requiredIJPluginID;
+    this.requiredIJPluginMessage = requiredIJPluginMessage;
   }
 
   /**
@@ -172,6 +178,22 @@ public class Workspace {
   }
 
   /**
+   * Returns the required IJ plugin ID, or null if not configured.
+   */
+  @Nullable
+  public String getRequiredIJPluginID() {
+    return requiredIJPluginID;
+  }
+
+  /**
+   * Returns the required IJ plugin message, if the plugin id is not installed, or null if not configured.
+   */
+  @Nullable
+  public String getRequiredIJPluginMessage() {
+    return requiredIJPluginMessage;
+  }
+
+  /**
    * Returns true if the plugin config was loaded.
    */
   public boolean hasPluginConfig() {
@@ -244,7 +266,11 @@ public class Workspace {
 
     final String versionFile = config == null ? null : getScriptFromPath(root, readonlyPath, config.getVersionFile());
 
-    return new Workspace(root, config, daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile);
+    final String requiredIJPluginID = config == null ? null : getScriptFromPath(root, readonlyPath, config.getRequiredIJPluginID());
+
+    final String requiredIJPluginMessage = config == null ? null : getScriptFromPath(root, readonlyPath, config.getRequiredIJPluginMessage());
+
+    return new Workspace(root, config, daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile, requiredIJPluginID, requiredIJPluginMessage);
   }
 
   @VisibleForTesting
@@ -258,7 +284,9 @@ public class Workspace {
       pluginConfig.getRunScript(),
       pluginConfig.getSyncScript(),
       pluginConfig.getSdkHome(),
-      pluginConfig.getVersionFile());
+      pluginConfig.getVersionFile(),
+      pluginConfig.getRequiredIJPluginID(),
+      pluginConfig.getRequiredIJPluginMessage());
   }
 
   /**

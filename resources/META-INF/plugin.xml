@@ -1564,6 +1564,7 @@
                      groupName="Flutter" enabledByDefault="true" level="WARNING" language="Dart"
                      implementationClass="io.flutter.inspections.FlutterDependencyInspection"/>
 
+    <editorNotificationProvider implementation="io.flutter.editor.FlutterBazelSettingsNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.editor.FlutterPubspecNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.inspections.SdkConfigurationNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.editor.NativeEditorNotificationProvider"/>
