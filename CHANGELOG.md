@@ -1,3 +1,6 @@
+# 55.1
+- Check for NoClassDefFoundError before setting JxBrowser enabled (#5402)
+
 # 55.0
 - Disable bazel hot restart by default (#5349)
 - Change action group name for canary (#5362)
