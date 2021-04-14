@@ -42,6 +42,10 @@
 
   <change-notes>
     <![CDATA[
+<h1>55.1</h1>
+<ul>
+  <li>Check for NoClassDefFoundError before setting JxBrowser enabled (#5402)</li>
+</ul>
 <h1>55.0</h1>
 <ul>
   <li>Disable bazel hot restart by default (#5349)</li>
