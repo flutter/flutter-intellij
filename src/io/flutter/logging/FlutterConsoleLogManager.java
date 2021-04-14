@@ -39,6 +39,8 @@ import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.DiagnosticsTreeStyle;
 import io.flutter.inspector.InspectorService;
 import io.flutter.jxbrowser.EmbeddedBrowser;
+import io.flutter.jxbrowser.JxBrowserManager;
+import io.flutter.jxbrowser.JxBrowserStatus;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
@@ -270,7 +272,9 @@ public class FlutterConsoleLogManager {
 
         if (StringUtil.equals("ErrorSummary", property.getType())) {
           errorSummary = property.getDescription();
-        } else if (StringUtil.equals("DevToolsDeepLinkProperty", property.getType()) && FlutterSettings.getInstance().isEnableEmbeddedBrowsers()) {
+        } else if (StringUtil.equals("DevToolsDeepLinkProperty", property.getType()) &&
+                FlutterSettings.getInstance().isEnableEmbeddedBrowsers() &&
+                JxBrowserManager.getInstance().getStatus().equals(JxBrowserStatus.INSTALLED)) {
           showDeepLinkNotification(property, errorSummary);
           continue;
         }
