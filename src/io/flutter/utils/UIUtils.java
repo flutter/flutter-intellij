@@ -7,6 +7,8 @@ package io.flutter.utils;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.editor.colors.ColorKey;
+import com.intellij.openapi.editor.colors.EditorColors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,5 +24,14 @@ public class UIUtils {
       component = (JComponent)e.getInputEvent().getSource();
     }
     return component;
+  }
+
+  /**
+   * All editor notifications in the Flutter plugin should get and set the background color from this method, which will ensure if any are
+   * changed, they are all changed.
+   */
+  @NotNull
+  public static ColorKey getEditorNotificationBackgroundColor() {
+    return EditorColors.GUTTER_BACKGROUND;
   }
 }

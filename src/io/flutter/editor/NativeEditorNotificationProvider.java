@@ -6,7 +6,6 @@
 package io.flutter.editor;
 
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.editor.colors.EditorColors;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -17,6 +16,7 @@ import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.utils.UIUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -108,7 +108,7 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     final boolean isVisible;
 
     NativeEditorActionsPanel(VirtualFile file, VirtualFile root, String actionName) {
-      super(EditorColors.GUTTER_BACKGROUND);
+      super(UIUtils.getEditorNotificationBackgroundColor());
       myFile = file;
       myRoot = root;
       myAction = ActionManager.getInstance().getAction(actionName);
