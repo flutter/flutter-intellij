@@ -35,6 +35,7 @@ import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
+import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
 import io.flutter.run.FlutterPositionMapper;
@@ -43,6 +44,7 @@ import io.flutter.run.test.FlutterTestRunner;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
 import io.flutter.utils.StdoutJsonParser;
+import io.flutter.utils.UrlUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -139,6 +141,12 @@ public class BazelTestRunner extends GenericProgramRunner {
 
               final String json = line.substring(1, line.length() - 1);
               dispatchJson(json);
+            } else if (line.startsWith(FlutterMessages.BAZEL_CONFIG_WARN_PREFIX)) {
+              FlutterMessages.showWarning(
+                      "Configuration warning",
+                      UrlUtils.addUrlTags(line.substring(FlutterMessages.BAZEL_CONFIG_WARN_PREFIX.length())),
+                      null
+              );
             }
           }
         }
