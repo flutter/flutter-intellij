@@ -45,7 +45,7 @@ public class EmbeddedBrowserEngine {
       temp = Engine.newInstance(options);
     } catch (Exception ex) {
       temp = null;
-      LOG.error(ex);
+      LOG.info(ex);
       FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(ex), false);
     }
     engine = temp;
@@ -58,7 +58,8 @@ public class EmbeddedBrowserEngine {
             engine.close();
           }
         } catch (Exception ex) {
-          LOG.error(ex);
+          LOG.info(ex);
+          FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(ex), false);
         }
         return true;
       }
