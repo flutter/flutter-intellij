@@ -69,6 +69,16 @@ public class PluginConfig {
     return fields.versionFile;
   }
 
+  @Nullable
+  String getRequiredIJPluginID() {
+    return fields.requiredIJPluginID;
+  }
+
+  @Nullable
+  String getRequiredIJPluginMessage() {
+    return fields.requiredIJPluginMessage;
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof PluginConfig)) return false;
@@ -125,7 +135,9 @@ public class PluginConfig {
     @Nullable String runScript,
     @Nullable String syncScript,
     @Nullable String sdkHome,
-    @Nullable String versionFile
+    @Nullable String versionFile,
+    @Nullable String requiredIJPluginID,
+    @Nullable String requiredIJPluginMessage
   ) {
     final Fields fields = new Fields(
       daemonScript,
@@ -134,7 +146,9 @@ public class PluginConfig {
       runScript,
       syncScript,
       sdkHome,
-      versionFile
+      versionFile,
+      requiredIJPluginID,
+      requiredIJPluginMessage
     );
     return new PluginConfig(fields);
   }
@@ -185,6 +199,18 @@ public class PluginConfig {
     @SerializedName("versionFile")
     private String versionFile;
 
+    /**
+     * The file containing the Flutter version.
+     */
+    @SerializedName("requiredIJPluginID")
+    private String requiredIJPluginID;
+
+    /**
+     * The file containing the message to install the required IJ Plugin.
+     */
+    @SerializedName("requiredIJPluginMessage")
+    private String requiredIJPluginMessage;
+
     Fields() {
     }
 
@@ -197,7 +223,9 @@ public class PluginConfig {
            String runScript,
            String syncScript,
            String sdkHome,
-           String versionFile) {
+           String versionFile,
+           String requiredIJPluginID,
+           String requiredIJPluginMessage) {
       this.daemonScript = daemonScript;
       this.doctorScript = doctorScript;
       this.testScript = testScript;
@@ -205,6 +233,8 @@ public class PluginConfig {
       this.syncScript = syncScript;
       this.sdkHome = sdkHome;
       this.versionFile = versionFile;
+      this.requiredIJPluginID = requiredIJPluginID;
+      this.requiredIJPluginMessage = requiredIJPluginMessage;
     }
 
     @Override
@@ -217,12 +247,15 @@ public class PluginConfig {
              && Objects.equal(runScript, other.runScript)
              && Objects.equal(syncScript, other.syncScript)
              && Objects.equal(sdkHome, other.sdkHome)
-             && Objects.equal(versionFile, other.versionFile);
+             && Objects.equal(versionFile, other.versionFile)
+             && Objects.equal(requiredIJPluginID, other.requiredIJPluginID)
+             && Objects.equal(requiredIJPluginMessage, other.requiredIJPluginMessage);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile);
+      return Objects.hashCode(daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile, requiredIJPluginID,
+                              requiredIJPluginMessage);
     }
   }
 

@@ -22,7 +22,9 @@ public class FakeWorkspaceFactory {
     @Nullable String runScript,
     @Nullable String syncScript,
     @Nullable String sdkHome,
-    @Nullable String versionFile
+    @Nullable String versionFile,
+    @Nullable String requiredIJPluginID,
+    @Nullable String requiredIJPluginMessage
   ) {
     final MockVirtualFileSystem fs = new MockVirtualFileSystem();
     fs.file("/workspace/WORKSPACE", "");
@@ -47,6 +49,12 @@ public class FakeWorkspaceFactory {
     if (versionFile != null) {
       fs.file("/workspace/" + versionFile, "");
     }
+    if (requiredIJPluginID != null) {
+      fs.file("/workspace/" + requiredIJPluginID, "");
+    }
+    if (requiredIJPluginMessage != null) {
+      fs.file("/workspace/" + requiredIJPluginMessage, "");
+    }
     return Pair.createNonNull(
       fs,
       Workspace.forTest(
@@ -58,7 +66,9 @@ public class FakeWorkspaceFactory {
           runScript,
           syncScript,
           sdkHome,
-          versionFile
+          versionFile,
+          requiredIJPluginID,
+          requiredIJPluginMessage
         )
       )
     );
@@ -78,7 +88,9 @@ public class FakeWorkspaceFactory {
       "scripts/flutter-run.sh",
       "scripts/flutter-sync.sh",
       "scripts/",
-      "flutter-version"
+      "flutter-version",
+      "some.ij.plugin.id",
+      "Some IJ Plugin ID Message"
     );
   }
 }
