@@ -107,8 +107,7 @@ public class EmbeddedBrowser {
     // Multiple LoadFinished events can occur, but we only need to add content the first time.
     final AtomicBoolean contentLoaded = new AtomicBoolean(false);
 
-//    browser.navigation().loadUrl(devToolsUrl.getUrlString());
-    browser.navigation().loadUrl("http://htmlpreview.github.io/?https://gist.githubusercontent.com/DanTup/ebe22b664252ac6affca27c5ee52fcc7/raw/1fa864acc5c07856b156f271d596ac92aee14672/test.html");
+    browser.navigation().loadUrl(devToolsUrl.getUrlString());
     devToolsUrlFuture.complete(devToolsUrl);
     browser.navigation().on(LoadFinished.class, event -> {
       if (!contentLoaded.compareAndSet(false, true)) {
