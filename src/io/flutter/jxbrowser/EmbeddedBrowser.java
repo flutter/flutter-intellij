@@ -104,10 +104,6 @@ public class EmbeddedBrowser {
       return;
     }
 
-    // DevTools may show a confirm dialog to use a fallback version.
-    browser.set(ConfirmCallback.class, new DefaultConfirmCallback(contentManager.getComponent()));
-    browser.set(AlertCallback.class, new DefaultAlertCallback(contentManager.getComponent()));
-
     // Multiple LoadFinished events can occur, but we only need to add content the first time.
     final AtomicBoolean contentLoaded = new AtomicBoolean(false);
 
@@ -129,6 +125,10 @@ public class EmbeddedBrowser {
         // loaded in the given Browser instance.
         final BrowserView view = BrowserView.newInstance(browser);
         view.setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
+
+        // DevTools may show a confirm dialog to use a fallback version.
+        browser.set(ConfirmCallback.class, new DefaultConfirmCallback(view));
+        browser.set(AlertCallback.class, new DefaultAlertCallback(view));
 
         content.setComponent(view);
         content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
