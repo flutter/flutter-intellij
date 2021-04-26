@@ -15,21 +15,30 @@ file.
 * Download and install the latest stable version of IntelliJ (2020.3 or later)
   - [IntelliJ Downloads](https://www.jetbrains.com/idea/download/)
   - Either the community edition (free) or Ultimate will work.
+  - Determine the directory of your downloaded IntelliJ Community Edition installation 
+    (e.g, `IntelliJ IDEA CE.app`, `~/idea-IC-183.4886.37` or 
+    `~/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-0/211.6693.111/IntelliJ IDEA.app`)
 * Start IntelliJ
-* In the Project Structure dialog (`File | Project Structure`), select "Platform Settings > SDKs" click the "+" sign at the 
-  top "Add New SDK (Alt+Insert)" to configure an IntelliJ Platform Plugin SDK
-  - Point it to the directory of your downloaded IntelliJ Community Edition installation 
-    (e.g, `IntelliJ IDEA CE.app/Contents` or `~/idea-IC-183.4886.37`)
-  - Change the name to `IntelliJ IDEA Community Edition`
-  - Extend it with additional plugin libraries by adding to `Classpath`:
-    - plugins/android/lib/android.jar
-    - plugins/git4idea/lib/git4idea.jar
-* In the 'Java Compiler' preference page, make sure that the 'Project bytecode version' is set to `11` or `Same as language level`
-* In the 'Kotlin Compiler' preference page, make sure that the 'Target JVM Version' is set to `11` or `Same as language level`
+* In the "Project Structure" dialog (`File | Project Structure`):
+  - Select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure the JDK
+    - Point it to the directory of the jbr which is under the IDEA's content (e.g. `IntelliJ IDEA CE.app/Contents/jbr`)
+    - Change the name to `IntelliJ IDEA jbr 11`
+  - Select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure an IntelliJ Platform Plugin SDK
+    - Point it to the directory of the content which is under the IDEA's installation 
+      (e.g, `IntelliJ IDEA CE.app/Contents`)
+    - Change the name to `IntelliJ IDEA Community Edition`
+    - Change the "Internal Java Platform" to `IntelliJ IDEA jbr 11`
+    - Extend it with additional plugin libraries by adding to `Classpath`:
+      - plugins/android/lib/android.jar
+      - plugins/git4idea/lib/git4idea.jar
+* In the "Java Compiler" preference page, make sure that the "Project bytecode version" is set to `11` or `Same as language level`
+* In the "Kotlin Compiler" preference page, make sure that the "Target JVM Version" is set to `11` or `Same as language level`
 * One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin. 
   Find `Plugins` (in Settings/Preferences) and install the Dart plugin, then restart the IDE
 * Open flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository). 
   Build it using `Build` | `Build Project`
+  - If you found a popup with "Gradle build scripts found", 
+    please "Skip" or ignore it since the project doesn't need to be imported as a gradle project
 * Try running the plugin; there is an existing launch config for "Flutter IntelliJ". This should open the "runtime workbench", 
   a new instance of IntelliJ with the plugin installed.
 * If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install"
@@ -54,21 +63,21 @@ file.
 
 ### Using test run configurations in IntelliJ
 
-The repository contains two pre-defined test run configurations. One is for 'unit' tests; that is
-currently defined as tests that do not rely on the IntelliJ APIs. The other is for 'integration'
+The repository contains two pre-defined test run configurations. One is for "unit" tests; that is
+currently defined as tests that do not rely on the IntelliJ APIs. The other is for "integration"
 tests - tests that do use the IntelliJ APIs. In the future we would like for the unit tests to be
 able to access IntelliJ APIs, and for the integration tests to be larger, long-running tests that
 exercise app use cases.
 
 In order to be able to run a single test class or test method you need to do the following:
 
-* Open Run | Edit Configurations, select 'Flutter tests' run configuration, copy its VM Options
+* Open Run | Edit Configurations, select "Flutter tests" run configuration, copy its VM Options
   to clipboard
 * In the same dialog (Run/Debug Configurations) expand Defaults node, find JUnit under it and paste
   VM Options to the corresponding field
 * Repeat the same with Working directory field - it must point to intellij-community/bin
 
-If running the full unit test suite fails, check the run configuration and verify that 'Use classpath of module' is 
+If running the full unit test suite fails, check the run configuration and verify that "Use classpath of module" is 
 set to `flutter-intellij.test`.
 
 The test configuration can be tricky due to IntelliJ platform versioning. The plugin tool (below) can be a more 
@@ -101,7 +110,7 @@ Sometimes browsing the source code of IntelliJ is helpful for understanding plat
 
   - In order to have the platform sources handy, clone the IntelliJ IDEA Community Edition repo
 (`git clone https://github.com/JetBrains/intellij-community`)
-  - Sync it to the same version of IDEA that you are using (`git checkout idea/171.3780.107`). It will be in 'detached HEAD' mode.
+  - Sync it to the same version of IDEA that you are using (`git checkout idea/171.3780.107`). It will be in "detached HEAD" mode.
   - Open the Project Structure dialog (`File > Project Structure`). In the `IntelliJ IDEA Community Edition` sdk, go to 
     the `Sourcepaths` tab and add the path to `intellij-community`. Accept all the root folders found by the IDE after scanning.
   - Do the same for the intellij-plugins repo to get Dart plugin sources. Sync to the same version as in lib/dart-plugin. 
