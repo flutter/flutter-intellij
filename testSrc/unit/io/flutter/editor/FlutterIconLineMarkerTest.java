@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 public class FlutterIconLineMarkerTest extends AbstractDartElementTest {
 
@@ -103,4 +104,16 @@ public class FlutterIconLineMarkerTest extends AbstractDartElementTest {
     });
   }
 
+  @Test
+  public void allowsNullIconData() throws Exception {
+    run(() -> {
+      final PsiElement testIdentifier =
+        setUpDartElement("main() { final x = IconData(null); }", "IconData", LeafPsiElement.class);
+      try {
+        final LineMarkerInfo<?> marker = new FlutterIconLineMarkerProvider().getLineMarkerInfo(testIdentifier);
+      } catch (NumberFormatException ex) {
+        fail(ex.getMessage());
+      }
+    });
+  }
 }
