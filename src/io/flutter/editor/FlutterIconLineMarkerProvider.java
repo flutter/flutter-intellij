@@ -138,7 +138,12 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
   }
 
   private Icon getIconFromCode(@NotNull String value) {
-    final int code = parseLiteralNumber(value);
+    final int code;
+    try {
+      code = parseLiteralNumber(value);
+    } catch (NumberFormatException ignored) {
+      return null;
+    }
     final String hex = Long.toHexString(code);
     // We look for the codepoint for material icons, and fall back on those for Cupertino.
     Icon icon = FlutterMaterialIcons.getIconForHex(hex);
