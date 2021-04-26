@@ -20,12 +20,12 @@ file.
   - Select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure the JDK
     - Point it to the directory of the jbr which is under the IDEA's content (e.g. `IntelliJ IDEA.app/Contents/jbr`)
     - Change the name to `IntelliJ IDEA jbr 11`
-    - Select the `IntelliJ IDEA Community Edition`, change the "Internal Java Platform" to `IntelliJ IDEA jbr 11`
   - Select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure an IntelliJ Platform Plugin SDK
     - Point it to the directory of your downloaded IntelliJ Community Edition installation 
       (e.g, `IntelliJ IDEA CE.app/Contents`, `~/idea-IC-183.4886.37` or
       `~/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-0/211.6693.111/IntelliJ IDEA.app/Contents`)
     - Change the name to `IntelliJ IDEA Community Edition`
+    - Change the "Internal Java Platform" to `IntelliJ IDEA jbr 11`
     - Extend it with additional plugin libraries by adding to `Classpath`:
       - plugins/android/lib/android.jar
       - plugins/git4idea/lib/git4idea.jar
