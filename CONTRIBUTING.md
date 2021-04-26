@@ -37,8 +37,8 @@ file.
   Find `Plugins` (in Settings/Preferences) and install the Dart plugin, then restart the IDE
 * Open flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository). 
   Build it using `Build` | `Build Project`
-  - If you found a popup with "Gradle build scripts found", please "Skip" or ignore it, 
-    since the project doesn't need to import as a gradle project
+  - If you found a popup with "Gradle build scripts found", 
+    please "Skip" or ignore it since the project doesn't need to be imported as a gradle project
 * Try running the plugin; there is an existing launch config for "Flutter IntelliJ". This should open the "runtime workbench", 
   a new instance of IntelliJ with the plugin installed.
 * If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install"
