@@ -17,6 +17,10 @@ file.
   - Either the community edition (free) or Ultimate will work.
 * Start IntelliJ
 * In the "Project Structure" dialog (`File | Project Structure`):
+  - Select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure the JDK
+    - Point it to the directory of the jbr which is under the IDEA's content (e.g. `IntelliJ IDEA.app/Contents/jbr`)
+    - Change the name to `IntelliJ IDEA jbr 11`
+    - Select the `IntelliJ IDEA Community Edition`, change the "Internal Java Platform" to `IntelliJ IDEA jbr 11`
   - Select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure an IntelliJ Platform Plugin SDK
     - Point it to the directory of your downloaded IntelliJ Community Edition installation 
       (e.g, `IntelliJ IDEA CE.app/Contents`, `~/idea-IC-183.4886.37` or
@@ -25,10 +29,6 @@ file.
     - Extend it with additional plugin libraries by adding to `Classpath`:
       - plugins/android/lib/android.jar
       - plugins/git4idea/lib/git4idea.jar
-  - Select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure the JDK
-    - Point it to the directory of the jbr which is under the IDEA's content (e.g. `IntelliJ IDEA.app/Contents/jbr`)
-    - Change the name to `IntelliJ IDEA jbr 11`
-    - Select the `IntelliJ IDEA Community Edition`, change the "Internal Java Platform" to `IntelliJ IDEA jbr 11`
 * In the "Java Compiler" preference page, make sure that the "Project bytecode version" is set to `11` or `Same as language level`
 * In the "Kotlin Compiler" preference page, make sure that the "Target JVM Version" is set to `11` or `Same as language level`
 * One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin. 
