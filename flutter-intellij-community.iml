@@ -54,7 +54,7 @@
     <orderEntry type="module" module-name="intellij.xml.impl" />
     <orderEntry type="module" module-name="intellij.java.ui" />
     <orderEntry type="module" module-name="intellij.java.psi.impl" />
-    <orderEntry type="module-library" scope="PROVIDED">
+    <orderEntry type="module-library">
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/dart-plugin/deps/weberknecht-0.1.5.jar!/" />
@@ -120,7 +120,7 @@
     <orderEntry type="library" name="studio-plugin-yaml" level="project" />
     <orderEntry type="library" name="studio-plugin-gradle" level="project" />
     <orderEntry type="library" name="studio-sdk" level="project" />
-    <orderEntry type="module-library" scope="PROVIDED">
+    <orderEntry type="module-library">
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/dart-plugin/deps/json.jar!/" />
@@ -129,23 +129,13 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library" scope="PROVIDED">
+    <orderEntry type="module-library">
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/dart-plugin/203.6912/Dart.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" scope="PROVIDED">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/dart-plugin/203.6912/resources_en.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-        <jarDirectory url="jar://$MODULE_DIR$/lib/dart-plugin/203.6912/resources_en.jar!/" recursive="false" />
       </library>
     </orderEntry>
     <orderEntry type="module" module-name="intellij.vcs.git.rt" />
@@ -155,5 +145,18 @@
     <orderEntry type="module" module-name="intellij.platform.core.ui" />
     <orderEntry type="module" module-name="intellij.platform.util.classLoader" />
     <orderEntry type="library" name="Dart Packages" level="project" />
+    <orderEntry type="module" module-name="intellij.platform.coverage" />
+    <orderEntry type="module" module-name="intellij.android.common" />
+    <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
+    <orderEntry type="module-library" scope="RUNTIME">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/dart-plugin/203.6912/resources_en.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+        <jarDirectory url="jar://$MODULE_DIR$/lib/dart-plugin/203.6912/resources_en.jar!/" recursive="false" />
+      </library>
+    </orderEntry>
   </component>
 </module>
