@@ -6,7 +6,6 @@
 package io.flutter.editor;
 
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.openapi.editor.colors.EditorColors;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -18,6 +17,7 @@ import com.intellij.ui.EditorNotifications;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.utils.UIUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -67,8 +67,7 @@ public class FlutterBazelSettingsNotificationProvider extends EditorNotification
 
   static class MissingSuggestedPluginActionsPanel extends EditorNotificationPanel {
     MissingSuggestedPluginActionsPanel(@NotNull String fixMessage) {
-      // Matching the gutter background keeps this notification provider consistent with other providers.
-      super(EditorColors.GUTTER_BACKGROUND);
+      super(UIUtils.getEditorNotificationBackgroundColor());
 
       // This action panel simply displays the message provided by the workspace.
       text(fixMessage);

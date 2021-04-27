@@ -5,7 +5,6 @@
  */
 package io.flutter.editor;
 
-import com.intellij.openapi.editor.colors.EditorColors;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -19,6 +18,7 @@ import io.flutter.FlutterUtils;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.utils.UIUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,7 +28,6 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
   private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.pubspec");
 
   public FlutterPubspecNotificationProvider(@NotNull Project project) {
-
   }
 
   @NotNull
@@ -42,18 +41,14 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
   public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file,
                                                          @NotNull FileEditor fileEditor,
                                                          @NotNull Project project) {
-    if (!file.isInLocalFileSystem()) {
+    // We only show this notification inside of local pubspec files.
+    if (!PubRoot.isPubspec(file) || !file.isInLocalFileSystem()) {
       return null;
     }
 
     // If the user has opted out of using pub in a project with both bazel rules and pub rules,
     // then we will default to bazel instead of pub.
     if (WorkspaceCache.getInstance(project).isBazel()) {
-      return null;
-    }
-
-    // We only show this notification inside pubspec files.
-    if (!PubRoot.isPubspec(file)) {
       return null;
     }
 
@@ -74,7 +69,7 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
     @NotNull final VirtualFile myFile;
 
     FlutterPubspecActionsPanel(@NotNull Project project, @NotNull VirtualFile file) {
-      super(EditorColors.GUTTER_BACKGROUND);
+      super(UIUtils.getEditorNotificationBackgroundColor());
 
       this.project = project;
       myFile = file;
