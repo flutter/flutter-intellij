@@ -65,6 +65,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myFormatCodeOnSaveCheckBox;
   private JCheckBox myOrganizeImportsOnSaveCheckBox;
   private JCheckBox myShowStructuredErrors;
+  private JCheckBox myIncludeAllStackTraces;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
   private JCheckBox myEnableHotUiCheckBox;
   private JCheckBox myEnableEmbeddedBrowsersCheckBox;
@@ -129,6 +130,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myFormatCodeOnSaveCheckBox.addChangeListener(
       (e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
+    myShowStructuredErrors.addChangeListener(
+      (e) -> myIncludeAllStackTraces.setEnabled(myShowStructuredErrors.isSelected()));
 
     // There are other experiments so it is alright to show the experiments
     // panel even if the syncAndroidLibraries experiment is hidden.
@@ -203,6 +206,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isIncludeAllStackTraces() != myIncludeAllStackTraces.isSelected()) {
+      return true;
+    }
+
     if (settings.isOpenInspectorOnAppLaunch() != myOpenInspectorOnAppLaunchCheckBox.isSelected()) {
       return true;
     }
@@ -270,6 +277,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setShowBuildMethodGuides(myShowBuildMethodGuides.isSelected());
     settings.setShowClosingLabels(myShowClosingLabels.isSelected());
     settings.setShowStructuredErrors(myShowStructuredErrors.isSelected());
+    settings.setIncludeAllStackTraces(myIncludeAllStackTraces.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
@@ -311,6 +319,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myShowClosingLabels.setSelected(settings.isShowClosingLabels());
 
     myShowStructuredErrors.setSelected(settings.isShowStructuredErrors());
+    myIncludeAllStackTraces.setSelected(settings.isIncludeAllStackTraces());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
@@ -321,6 +330,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myEnableBazelHotRestartCheckBox.setSelected(settings.isEnableBazelHotRestart());
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
+    myIncludeAllStackTraces.setEnabled(myShowStructuredErrors.isSelected());
 
     myShowAllRunConfigurationsInContextCheckBox.setSelected(settings.showAllRunConfigurationsInContext());
   }

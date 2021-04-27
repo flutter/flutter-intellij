@@ -232,7 +232,7 @@ public class FlutterConsoleLogManager {
   private void processFlutterErrorEvent(@NotNull DiagnosticsNode diagnosticsNode) {
     final String description = " " + diagnosticsNode.toString() + " ";
 
-    final boolean terseError = !isFirstErrorForFrame();
+    final boolean terseError = !isFirstErrorForFrame() && !FlutterSettings.getInstance().isIncludeAllStackTraces();
 
     frameErrorCount++;
 

@@ -27,6 +27,7 @@ public class FlutterSettings {
   private static final String showOnlyWidgetsKey = "io.flutter.showOnlyWidgets";
   private static final String syncAndroidLibrariesKey = "io.flutter.syncAndroidLibraries";
   private static final String showStructuredErrors = "io.flutter.showStructuredErrors";
+  private static final String includeAllStackTraces = "io.flutter.ncludeAllStackTraces";
   private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
   private static final String enableHotUiKey = "io.flutter.editor.enableHotUi";
   private static final String enableEmbeddedBrowsersKey = "io.flutter.editor.enableEmbeddedBrowsers";
@@ -108,6 +109,10 @@ public class FlutterSettings {
 
     if (isShowStructuredErrors()) {
       analytics.sendEvent("settings", afterLastPeriod(showStructuredErrors));
+
+      if (isIncludeAllStackTraces()) {
+        analytics.sendEvent("settings", afterLastPeriod(includeAllStackTraces));
+      }
     }
 
     if (showAllRunConfigurationsInContext()) {
@@ -191,6 +196,16 @@ public class FlutterSettings {
 
   public void setShowStructuredErrors(boolean value) {
     getPropertiesComponent().setValue(showStructuredErrors, value, true);
+
+    fireEvent();
+  }
+
+  public boolean isIncludeAllStackTraces() {
+    return getPropertiesComponent().getBoolean(includeAllStackTraces, true);
+  }
+
+  public void setIncludeAllStackTraces(boolean value) {
+    getPropertiesComponent().setValue(includeAllStackTraces, value, true);
 
     fireEvent();
   }
