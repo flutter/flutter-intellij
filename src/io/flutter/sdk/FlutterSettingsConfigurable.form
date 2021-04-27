@@ -98,7 +98,7 @@
           </component>
         </children>
       </grid>
-      <grid id="919ec" layout-manager="GridLayoutManager" row-count="4" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="919ec" layout-manager="GridLayoutManager" row-count="5" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -108,7 +108,7 @@
         <children>
           <component id="356a" class="javax.swing.JCheckBox" binding="myOpenInspectorOnAppLaunchCheckBox">
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.open.inspector.on.launch"/>
@@ -133,10 +133,19 @@
           </component>
           <component id="475be" class="javax.swing.JCheckBox" binding="myEnableBazelHotRestartCheckBox">
             <constraints>
-              <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="4" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.enable.bazel.hot.restart"/>
+            </properties>
+          </component>
+          <component id="6cf1f" class="javax.swing.JCheckBox" binding="myIncludeAllStackTraces">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="3" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Include all stack traces"/>
+              <toolTipText value="If checked, only the first exception will include a stack trace."/>
             </properties>
           </component>
         </children>

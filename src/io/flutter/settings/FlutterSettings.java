@@ -26,12 +26,13 @@ public class FlutterSettings {
   private static final String organizeImportsOnSaveKey = "io.flutter.organizeImportsOnSave";
   private static final String showOnlyWidgetsKey = "io.flutter.showOnlyWidgets";
   private static final String syncAndroidLibrariesKey = "io.flutter.syncAndroidLibraries";
-  private static final String showStructuredErrors = "io.flutter.showStructuredErrors";
+  private static final String showStructuredErrorsKey = "io.flutter.showStructuredErrors";
+  private static final String includeAllStackTracesKey = "io.flutter.includeAllStackTraces";
   private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
   private static final String enableHotUiKey = "io.flutter.editor.enableHotUi";
   private static final String enableEmbeddedBrowsersKey = "io.flutter.editor.enableEmbeddedBrowsers";
-  private static final String enableBazelHotRestart = "io.flutter.editor.enableBazelHotRestart";
-  private static final String showBazelHotRestartWarning = "io.flutter.showBazelHotRestartWarning";
+  private static final String enableBazelHotRestartKey = "io.flutter.editor.enableBazelHotRestart";
+  private static final String showBazelHotRestartWarningKey = "io.flutter.showBazelHotRestartWarning";
 
   /**
    * Registry key to suggest all run configurations instead of just one.
@@ -107,7 +108,11 @@ public class FlutterSettings {
     }
 
     if (isShowStructuredErrors()) {
-      analytics.sendEvent("settings", afterLastPeriod(showStructuredErrors));
+      analytics.sendEvent("settings", afterLastPeriod(showStructuredErrorsKey));
+
+      if (isIncludeAllStackTraces()) {
+        analytics.sendEvent("settings", afterLastPeriod(includeAllStackTracesKey));
+      }
     }
 
     if (showAllRunConfigurationsInContext()) {
@@ -123,7 +128,7 @@ public class FlutterSettings {
     }
 
     if (isShowBazelHotRestartWarning()) {
-      analytics.sendEvent("settings", afterLastPeriod(showBazelHotRestartWarning));
+      analytics.sendEvent("settings", afterLastPeriod(showBazelHotRestartWarningKey));
     }
   }
 
@@ -186,11 +191,21 @@ public class FlutterSettings {
   }
 
   public boolean isShowStructuredErrors() {
-    return getPropertiesComponent().getBoolean(showStructuredErrors, true);
+    return getPropertiesComponent().getBoolean(showStructuredErrorsKey, true);
   }
 
   public void setShowStructuredErrors(boolean value) {
-    getPropertiesComponent().setValue(showStructuredErrors, value, true);
+    getPropertiesComponent().setValue(showStructuredErrorsKey, value, true);
+
+    fireEvent();
+  }
+
+  public boolean isIncludeAllStackTraces() {
+    return getPropertiesComponent().getBoolean(includeAllStackTracesKey, true);
+  }
+
+  public void setIncludeAllStackTraces(boolean value) {
+    getPropertiesComponent().setValue(includeAllStackTracesKey, value, true);
 
     fireEvent();
   }
@@ -284,20 +299,20 @@ public class FlutterSettings {
   }
 
   public boolean isEnableBazelHotRestart() {
-    return getPropertiesComponent().getBoolean(enableBazelHotRestart, false);
+    return getPropertiesComponent().getBoolean(enableBazelHotRestartKey, false);
   }
 
   public void setEnableBazelHotRestart(boolean value) {
-    getPropertiesComponent().setValue(enableBazelHotRestart, value, false);
+    getPropertiesComponent().setValue(enableBazelHotRestartKey, value, false);
     fireEvent();
   }
 
   public boolean isShowBazelHotRestartWarning() {
-    return getPropertiesComponent().getBoolean(showBazelHotRestartWarning, true);
+    return getPropertiesComponent().getBoolean(showBazelHotRestartWarningKey, true);
   }
 
   public void setShowBazelHotRestartWarning(boolean value) {
-    getPropertiesComponent().setValue(showBazelHotRestartWarning, value, true);
+    getPropertiesComponent().setValue(showBazelHotRestartWarningKey, value, true);
     fireEvent();
   }
 
