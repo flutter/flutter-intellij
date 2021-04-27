@@ -4,7 +4,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class UrlUtils {
-    public static String addUrlTags(String input) {
+    public static String generateHtmlFragmentWithHrefTags(String input) {
         StringBuilder builder = new StringBuilder();
         for (String token : input.split(" ")) {
             if (builder.length() > 0) {

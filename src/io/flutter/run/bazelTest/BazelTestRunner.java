@@ -144,7 +144,7 @@ public class BazelTestRunner extends GenericProgramRunner {
             } else if (line.startsWith(FlutterMessages.BAZEL_CONFIG_WARN_PREFIX)) {
               FlutterMessages.showWarning(
                       "Configuration warning",
-                      UrlUtils.addUrlTags(line.substring(FlutterMessages.BAZEL_CONFIG_WARN_PREFIX.length())),
+                      UrlUtils.generateHtmlFragmentWithHrefTags(line.substring(FlutterMessages.BAZEL_CONFIG_WARN_PREFIX.length())),
                       null
               );
             }

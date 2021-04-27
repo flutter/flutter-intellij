@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class FlutterMessages {
   public static final String FLUTTER_NOTIFICATION_GROUP_ID = "Flutter Messages";
+  // TODO(helinx): We may want to set this string in flutter.json or move this check to the g3 dart plugin.
   public static final String BAZEL_CONFIG_WARN_PREFIX = "Configuration warning: ";
 
   private FlutterMessages() {
