@@ -75,11 +75,21 @@ public class PerfWidgetRebuildsPanel extends JBPanel<PerfWidgetRebuildsPanel> {
     final JPanel perfViewSettings = new JPanel(new VerticalLayout(5, 4));
     trackRebuildsCheckbox = new JCheckBox("Track widget rebuilds");
     trackRebuildsCheckbox.setHorizontalAlignment(JLabel.RIGHT);
-    trackRebuildsCheckbox.setToolTipText(
-      "<html><body><p><b>This profiler identifies widgets that are rebuilt when the UI changes.</b></p>" +
-      "<br>" +
-      "<p>Look for the indicators on the left margin of the code editor<br>and a list of the top rebuilt widgets in this window.</p>" +
-      "</body></html>");
+    final boolean isInProfileMode = app.getMode().isProfiling() || app.getLaunchMode().isProfiling();
+    if (isInProfileMode){
+      trackRebuildsCheckbox.setToolTipText(
+        "<html><body><p><b>This profiler identifies widgets that are rebuilt when the UI changes.</b></p>" +
+        "<br>" +
+        "<p>To enable 'Track widget rebuilds', start the app in debug mode.</p>" +
+        "</body></html>");
+    }
+    else {
+      trackRebuildsCheckbox.setToolTipText(
+        "<html><body><p><b>This profiler identifies widgets that are rebuilt when the UI changes.</b></p>" +
+        "<br>" +
+        "<p>Look for the indicators on the left margin of the code editor<br>and a list of the top rebuilt widgets in this window.</p>" +
+        "</body></html>");
+    }
     perfViewSettings.add(trackRebuildsCheckbox);
     if (ENABLE_TRACK_REPAINTS) {
       trackRepaintsCheckbox = new JCheckBox("Show widget repaint information");
