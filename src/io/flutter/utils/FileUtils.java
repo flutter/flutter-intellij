@@ -9,6 +9,8 @@ import com.intellij.util.lang.UrlClassLoader;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
+import java.util.List;
 
 public class FileUtils {
   private static FileUtils fileUtils;
@@ -61,5 +63,17 @@ public class FileUtils {
 
     final URL url = file.toURI().toURL();
     urlClassLoader.addURL(url);
+  }
+
+  /**
+   * Loads a list of file paths with a class loader.
+   *
+   * This is only available for versions 211.4961.30 and later.
+   * @param classLoader classloader that can be used as a UrlClassLoader to load the files.
+   * @param paths list of file paths to load.
+   */
+  public void loadPaths(ClassLoader classLoader, List<Path> paths) {
+    final UrlClassLoader urlClassLoader = (UrlClassLoader) classLoader;
+    //urlClassLoader.addFiles(paths);
   }
 }

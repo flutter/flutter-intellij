@@ -20,7 +20,6 @@ import com.intellij.util.download.DownloadableFileDescription;
 import com.intellij.util.download.DownloadableFileService;
 import com.intellij.util.download.FileDownloader;
 import com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException;
-import com.teamdev.jxbrowser.callback.Callback;
 import com.teamdev.jxbrowser.engine.RenderingMode;
 import io.flutter.FlutterInitializer;
 import io.flutter.settings.FlutterSettings;
@@ -31,6 +30,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -268,6 +269,32 @@ public class JxBrowserManager {
       }
       LOG.info("Loaded JxBrowser file successfully: " + fullPath);
     }
+    try {
+      final UnsupportedRenderingModeException test = new UnsupportedRenderingModeException(RenderingMode.HARDWARE_ACCELERATED);
+    } catch (NoClassDefFoundError e) {
+      LOG.info("Failed to find JxBrowser class");
+      setStatusFailed("NoClassDefFoundError");
+      return;
+    }
+    FlutterInitializer.getAnalytics().sendEvent(ANALYTICS_CATEGORY, "installed");
+    status.set(JxBrowserStatus.INSTALLED);
+    installation.complete(JxBrowserStatus.INSTALLED);
+  }
+
+  private void loadClasses2021(String[] fileNames) {
+    List<Path> paths = new ArrayList<>();
+
+    try {
+      for (String fileName: fileNames) {
+        paths.add(Paths.get(getFilePath(fileName)));
+      }
+      FileUtils.getInstance().loadPaths(this.getClass().getClassLoader(), paths);
+    } catch (Exception ex) {
+      LOG.info("Failed to load JxBrowser file", ex);
+      setStatusFailed("classLoadFailed");
+      return;
+    }
+
     try {
       final UnsupportedRenderingModeException test = new UnsupportedRenderingModeException(RenderingMode.HARDWARE_ACCELERATED);
     } catch (NoClassDefFoundError e) {
