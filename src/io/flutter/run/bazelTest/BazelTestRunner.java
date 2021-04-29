@@ -35,14 +35,18 @@ import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
+import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
+import io.flutter.bazel.Workspace;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.FlutterPositionMapper;
 import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.run.test.FlutterTestRunner;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
 import io.flutter.utils.StdoutJsonParser;
+import io.flutter.utils.UrlUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -81,7 +85,7 @@ public class BazelTestRunner extends GenericProgramRunner {
     throws ExecutionException {
     // Start process and create console.
     final ExecutionResult executionResult = launcher.execute(env.getExecutor(), this);
-    final Connector connector = new Connector(executionResult.getProcessHandler());
+    final Connector connector = new Connector(executionResult.getProcessHandler(), env.getProject());
 
     // Set up source file mapping.
     final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), launcher.getTestFile());
@@ -118,15 +122,26 @@ public class BazelTestRunner extends GenericProgramRunner {
     private static final String RUNFILES_DIR_KEY = "runfilesDir";
     private static final String WORKSPACE_DIR_NAME_KEY = "workspaceDirName";
 
-    public Connector(ProcessHandler handler) {
+    public Connector(ProcessHandler handler, Project project) {
+      Workspace workspace = WorkspaceCache.getInstance(project).get();
+      assert(workspace != null);
+      String configWarningPrefix = workspace.getConfigWarningPrefix();
       listener = new ProcessAdapter() {
         @Override
         public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
+          final String text = event.getText();
+          if (configWarningPrefix != null && text.startsWith(configWarningPrefix)) {
+            FlutterMessages.showWarning(
+                    "Configuration warning",
+                    UrlUtils.generateHtmlFragmentWithHrefTags(text.substring(configWarningPrefix.length())),
+                    null
+            );
+          }
+
           if (!outputType.equals(ProcessOutputTypes.STDOUT)) {
             return;
           }
 
-          final String text = event.getText();
           if (FlutterSettings.getInstance().isVerboseLogging()) {
             LOG.info("[<-- " + text.trim() + "]");
           }

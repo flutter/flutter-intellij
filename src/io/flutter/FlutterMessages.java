@@ -6,6 +6,7 @@
 package io.flutter;
 
 import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.project.Project;
@@ -37,7 +38,7 @@ public class FlutterMessages {
         FLUTTER_NOTIFICATION_GROUP_ID,
         title,
         message,
-        NotificationType.WARNING), project);
+        NotificationType.WARNING, NotificationListener.URL_OPENING_LISTENER), project);
   }
 
   public static void showInfo(String title, String message, @Nullable Project project) {

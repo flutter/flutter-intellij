@@ -29,8 +29,11 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
+import io.flutter.bazel.Workspace;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.logging.FlutterConsoleLogManager;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -42,6 +45,7 @@ import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import io.flutter.utils.ProgressHelper;
 import io.flutter.utils.StreamSubscription;
+import io.flutter.utils.UrlUtils;
 import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.vmService.DisplayRefreshRateManager;
 import io.flutter.vmService.ServiceExtensions;
@@ -242,7 +246,26 @@ public class FlutterApp implements Disposable {
     LOG.info(analyticsStart + " " + project.getName() + " (" + mode.mode() + ")");
     LOG.info(command.toString());
 
-    final ProcessHandler process = new MostlySilentColoredProcessHandler(command);
+    Consumer<String> onTextAvailable = null;
+
+    if (WorkspaceCache.getInstance(project).isBazel()) {
+      Workspace workspace = WorkspaceCache.getInstance(project).get();
+      assert(workspace != null);
+      String configWarningPrefix = workspace.getConfigWarningPrefix();
+      if (configWarningPrefix != null) {
+        onTextAvailable = text -> {
+          if (text.startsWith(configWarningPrefix)) {
+            FlutterMessages.showWarning(
+                    "Configuration warning",
+                    UrlUtils.generateHtmlFragmentWithHrefTags(text.substring(configWarningPrefix.length())),
+                    null
+            );
+          }
+        };
+      }
+    }
+
+    final ProcessHandler process = new MostlySilentColoredProcessHandler(command, false, onTextAvailable);
     Disposer.register(project, process::destroyProcess);
 
     // Send analytics for the start and stop events.

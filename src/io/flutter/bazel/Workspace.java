@@ -47,6 +47,7 @@ public class Workspace {
   @Nullable private final String versionFile;
   @Nullable private final String requiredIJPluginID;
   @Nullable private final String requiredIJPluginMessage;
+  @Nullable private final String configWarningPrefix;
 
   private Workspace(@NotNull VirtualFile root,
                     @Nullable PluginConfig config,
@@ -58,7 +59,8 @@ public class Workspace {
                     @Nullable String sdkHome,
                     @Nullable String versionFile,
                     @Nullable String requiredIJPluginID,
-                    @Nullable String requiredIJPluginMessage) {
+                    @Nullable String requiredIJPluginMessage,
+                    @Nullable String configWarningPrefix) {
     this.root = root;
     this.config = config;
     this.daemonScript = daemonScript;
@@ -70,6 +72,7 @@ public class Workspace {
     this.versionFile = versionFile;
     this.requiredIJPluginID = requiredIJPluginID;
     this.requiredIJPluginMessage = requiredIJPluginMessage;
+    this.configWarningPrefix = configWarningPrefix;
   }
 
   /**
@@ -194,6 +197,14 @@ public class Workspace {
   }
 
   /**
+   * Returns the prefix associated with configuration warnings.
+   */
+  @Nullable
+  public String getConfigWarningPrefix() {
+    return configWarningPrefix;
+  }
+
+  /**
    * Returns true if the plugin config was loaded.
    */
   public boolean hasPluginConfig() {
@@ -270,7 +281,9 @@ public class Workspace {
 
     final String requiredIJPluginMessage = config == null ? null : getScriptFromPath(root, readonlyPath, config.getRequiredIJPluginMessage());
 
-    return new Workspace(root, config, daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile, requiredIJPluginID, requiredIJPluginMessage);
+    final String configWarningPrefix = config == null ? null : config.getConfigWarningPrefix();
+
+    return new Workspace(root, config, daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile, requiredIJPluginID, requiredIJPluginMessage, configWarningPrefix);
   }
 
   @VisibleForTesting
@@ -286,7 +299,8 @@ public class Workspace {
       pluginConfig.getSdkHome(),
       pluginConfig.getVersionFile(),
       pluginConfig.getRequiredIJPluginID(),
-      pluginConfig.getRequiredIJPluginMessage());
+      pluginConfig.getRequiredIJPluginMessage(),
+      pluginConfig.getConfigWarningPrefix());
   }
 
   /**

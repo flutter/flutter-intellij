@@ -10,10 +10,13 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.BaseOSProcessHandler;
 import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.process.UnixProcessManager;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.io.BaseOutputReader;
 import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Consumer;
 
 /**
  * An {@link ColoredProcessHandler} that uses {@code BaseOutputReader.Options.forMostlySilentProcess}
@@ -39,6 +42,7 @@ public class MostlySilentColoredProcessHandler extends ColoredProcessHandler {
    */
   private boolean softKill;
   private GeneralCommandLine commandLine;
+  private Consumer<String> onTextAvailable;
 
   public MostlySilentColoredProcessHandler(@NotNull GeneralCommandLine commandLine)
     throws ExecutionException {
@@ -47,9 +51,15 @@ public class MostlySilentColoredProcessHandler extends ColoredProcessHandler {
 
   public MostlySilentColoredProcessHandler(@NotNull GeneralCommandLine commandLine, boolean softKill)
     throws ExecutionException {
+    this(commandLine, softKill, null);
+  }
+
+  public MostlySilentColoredProcessHandler(@NotNull GeneralCommandLine commandLine, boolean softKill, Consumer<String> onTextAvailable)
+          throws ExecutionException {
     super(commandLine);
     this.softKill = softKill;
     this.commandLine = commandLine;
+    this.onTextAvailable = onTextAvailable;
   }
 
   @NotNull
@@ -70,6 +80,15 @@ public class MostlySilentColoredProcessHandler extends ColoredProcessHandler {
     }
     else {
       super.doDestroyProcess();
+    }
+  }
+
+  @Override
+  public void coloredTextAvailable(@NotNull String text, @NotNull Key outputType) {
+    super.coloredTextAvailable(text, outputType);
+
+    if (onTextAvailable != null) {
+      onTextAvailable.accept(text);
     }
   }
 }
