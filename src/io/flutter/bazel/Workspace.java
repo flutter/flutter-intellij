@@ -281,7 +281,7 @@ public class Workspace {
 
     final String requiredIJPluginMessage = config == null ? null : getScriptFromPath(root, readonlyPath, config.getRequiredIJPluginMessage());
 
-    final String configWarningPrefix = config == null ? null : getScriptFromPath(root, readonlyPath, config.getConfigWarningPrefix());
+    final String configWarningPrefix = config == null ? null : config.getConfigWarningPrefix();
 
     return new Workspace(root, config, daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile, requiredIJPluginID, requiredIJPluginMessage, configWarningPrefix);
   }

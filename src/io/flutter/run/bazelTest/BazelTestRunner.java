@@ -129,11 +129,19 @@ public class BazelTestRunner extends GenericProgramRunner {
       listener = new ProcessAdapter() {
         @Override
         public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
+          final String text = event.getText();
+          if (configWarningPrefix != null && text.startsWith(configWarningPrefix)) {
+            FlutterMessages.showWarning(
+                    "Configuration warning",
+                    UrlUtils.generateHtmlFragmentWithHrefTags(text.substring(configWarningPrefix.length())),
+                    null
+            );
+          }
+
           if (!outputType.equals(ProcessOutputTypes.STDOUT)) {
             return;
           }
 
-          final String text = event.getText();
           if (FlutterSettings.getInstance().isVerboseLogging()) {
             LOG.info("[<-- " + text.trim() + "]");
           }
@@ -146,12 +154,6 @@ public class BazelTestRunner extends GenericProgramRunner {
 
               final String json = line.substring(1, line.length() - 1);
               dispatchJson(json);
-            } else if (configWarningPrefix != null && line.startsWith(configWarningPrefix)) {
-              FlutterMessages.showWarning(
-                      "Configuration warning",
-                      UrlUtils.generateHtmlFragmentWithHrefTags(line.substring(configWarningPrefix.length())),
-                      null
-              );
             }
           }
         }
