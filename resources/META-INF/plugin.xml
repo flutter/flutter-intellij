@@ -42,6 +42,24 @@
 
   <change-notes>
     <![CDATA[
+<h1>56.0</h1>
+<ul>
+  <li>Add option to display all stack traces in debugger log (#5443)</li>
+  <li>Cleanup and refactoring in editor notification providers (#5425)</li>
+  <li>Allow IconData(null) (#5440)</li>
+  <li>Report VM service connection problems (#5426)</li>
+  <li>Add more proper configuration step in the contributing doc (#5438)</li>
+  <li>Update to JxBrowser 7.14 (#5434)</li>
+  <li>Log JxBrowser exceptions as info (#5432)</li>
+  <li>Add constructor in widget live templates (#5405)</li>
+  <li>Update change log for 55.1 (#5413)</li>
+  <li>Check for NoClassDefFoundError before setting JxBrowser enabled (#5402)</li>
+  <li>Add the ability of the Flutter plugin to check for the installation of an IJ plugin as specified by the Bazel workspace (#5401)</li>
+  <li>Listen for theme color changes to update embedded browser (#5372)</li>
+  <li>Fix null-safety error (#5371)</li>
+  <li>Follow up on the isFailure json attribute change, removal of the error attribute to match the Dart IJ Plugin (#5369)</li>
+  <li>Remove the isFailure option in the Dart test event framework (#5345)</li>
+</ul>
 <h1>55.1</h1>
 <ul>
   <li>Check for NoClassDefFoundError before setting JxBrowser enabled (#5402)</li>
