@@ -196,7 +196,7 @@ public class JxBrowserManager {
 
     if (allDownloaded) {
       LOG.info(project.getName() + ": JxBrowser platform files already exist, skipping download");
-      loadClasses2021(fileNames);
+      loadClasses(fileNames);
       return;
     }
 
@@ -241,7 +241,7 @@ public class JxBrowserManager {
           }
 
           FlutterInitializer.getAnalytics().sendEvent(ANALYTICS_CATEGORY, "filesDownloaded");
-          loadClasses2021(fileNames);
+          loadClasses(fileNames);
         }
         catch (IOException e) {
           final long elapsedTime = System.currentTimeMillis() - startTime;
@@ -282,12 +282,11 @@ public class JxBrowserManager {
   }
 
   private void loadClasses2021(String[] fileNames) {
-    System.out.println("Using loadClasses2021");
     List<Path> paths = new ArrayList<>();
 
     try {
       for (String fileName: fileNames) {
-        paths.add(Paths.get(fileName));
+        paths.add(Paths.get(getFilePath(fileName)));
       }
       FileUtils.getInstance().loadPaths(this.getClass().getClassLoader(), paths);
     } catch (Exception ex) {

@@ -122,6 +122,12 @@ List<EditCommand> editCommands = [
     replacement: 'new JsonParser().parse(contents)',
     version: 'AF.3.1',
   ),
+  Subst(
+    path: 'src/io/flutter/jxbrowser/JxbrowserManager.java',
+    initial: 'loadClasses(fileNames)',
+    replacement: 'loadClasses2021(fileNames)',
+    versions: ['2021.1'],
+  )
 ];
 
 // Used to test checkAndClearAppliedEditCommands()
