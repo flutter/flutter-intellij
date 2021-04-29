@@ -383,11 +383,12 @@ public class LaunchCommandsTest {
                     @Nullable String sdkHome,
                     @Nullable String versionFile,
                     @Nullable String requiredIJPluginID,
-                    @Nullable String requiredIJPluginMessage) {
+                    @Nullable String requiredIJPluginMessage,
+                    @Nullable String configWarningMessage) {
       super(template);
       final Pair.NonNull<MockVirtualFileSystem, Workspace> pair = FakeWorkspaceFactory
         .createWorkspaceAndFilesystem(daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile,
-                                      requiredIJPluginID, requiredIJPluginMessage);
+                                      requiredIJPluginID, requiredIJPluginMessage, configWarningMessage);
       fs = pair.first;
       fakeWorkspace = pair.second;
     }

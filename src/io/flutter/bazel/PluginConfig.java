@@ -79,6 +79,11 @@ public class PluginConfig {
     return fields.requiredIJPluginMessage;
   }
 
+  @Nullable
+  String getConfigWarningPrefix() {
+    return fields.configWarningPrefix;
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof PluginConfig)) return false;
@@ -137,7 +142,8 @@ public class PluginConfig {
     @Nullable String sdkHome,
     @Nullable String versionFile,
     @Nullable String requiredIJPluginID,
-    @Nullable String requiredIJPluginMessage
+    @Nullable String requiredIJPluginMessage,
+    @Nullable String configWarningPrefix
   ) {
     final Fields fields = new Fields(
       daemonScript,
@@ -148,7 +154,8 @@ public class PluginConfig {
       sdkHome,
       versionFile,
       requiredIJPluginID,
-      requiredIJPluginMessage
+      requiredIJPluginMessage,
+      configWarningPrefix
     );
     return new PluginConfig(fields);
   }
@@ -211,6 +218,12 @@ public class PluginConfig {
     @SerializedName("requiredIJPluginMessage")
     private String requiredIJPluginMessage;
 
+    /**
+     * The prefix that indicates a configuration warning message.
+     */
+    @SerializedName("configWarningPrefix")
+    private String configWarningPrefix;
+
     Fields() {
     }
 
@@ -225,7 +238,8 @@ public class PluginConfig {
            String sdkHome,
            String versionFile,
            String requiredIJPluginID,
-           String requiredIJPluginMessage) {
+           String requiredIJPluginMessage,
+           String configWarningPrefix) {
       this.daemonScript = daemonScript;
       this.doctorScript = doctorScript;
       this.testScript = testScript;
@@ -235,6 +249,7 @@ public class PluginConfig {
       this.versionFile = versionFile;
       this.requiredIJPluginID = requiredIJPluginID;
       this.requiredIJPluginMessage = requiredIJPluginMessage;
+      this.configWarningPrefix = configWarningPrefix;
     }
 
     @Override
@@ -249,13 +264,14 @@ public class PluginConfig {
              && Objects.equal(sdkHome, other.sdkHome)
              && Objects.equal(versionFile, other.versionFile)
              && Objects.equal(requiredIJPluginID, other.requiredIJPluginID)
-             && Objects.equal(requiredIJPluginMessage, other.requiredIJPluginMessage);
+             && Objects.equal(requiredIJPluginMessage, other.requiredIJPluginMessage)
+             && Objects.equal(configWarningPrefix, other.configWarningPrefix);
     }
 
     @Override
     public int hashCode() {
       return Objects.hashCode(daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile, requiredIJPluginID,
-                              requiredIJPluginMessage);
+                              requiredIJPluginMessage, configWarningPrefix);
     }
   }
 

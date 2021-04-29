@@ -32,6 +32,7 @@ import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
+import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.logging.FlutterConsoleLogManager;
 import io.flutter.pub.PubRoot;
@@ -245,15 +246,24 @@ public class FlutterApp implements Disposable {
     LOG.info(analyticsStart + " " + project.getName() + " (" + mode.mode() + ")");
     LOG.info(command.toString());
 
-    Consumer<String> onTextAvailable = WorkspaceCache.getInstance(project).isBazel() ? text -> {
-      if (text.startsWith(FlutterMessages.BAZEL_CONFIG_WARN_PREFIX)) {
-        FlutterMessages.showWarning(
-                "Configuration warning",
-                UrlUtils.generateHtmlFragmentWithHrefTags(text.substring(FlutterMessages.BAZEL_CONFIG_WARN_PREFIX.length())),
-                null
-        );
+    Consumer<String> onTextAvailable = null;
+
+    if (WorkspaceCache.getInstance(project).isBazel()) {
+      Workspace workspace = WorkspaceCache.getInstance(project).get();
+      assert(workspace != null);
+      String configWarningPrefix = workspace.getConfigWarningPrefix();
+      if (configWarningPrefix != null) {
+        onTextAvailable = text -> {
+          if (text.startsWith(configWarningPrefix)) {
+            FlutterMessages.showWarning(
+                    "Configuration warning",
+                    UrlUtils.generateHtmlFragmentWithHrefTags(text.substring(configWarningPrefix.length())),
+                    null
+            );
+          }
+        };
       }
-    } : null;
+    }
 
     final ProcessHandler process = new MostlySilentColoredProcessHandler(command, false, onTextAvailable);
     Disposer.register(project, process::destroyProcess);

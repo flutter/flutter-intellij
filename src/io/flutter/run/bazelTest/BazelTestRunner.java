@@ -38,6 +38,8 @@ import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
+import io.flutter.bazel.Workspace;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.FlutterPositionMapper;
 import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.run.test.FlutterTestRunner;
@@ -83,7 +85,7 @@ public class BazelTestRunner extends GenericProgramRunner {
     throws ExecutionException {
     // Start process and create console.
     final ExecutionResult executionResult = launcher.execute(env.getExecutor(), this);
-    final Connector connector = new Connector(executionResult.getProcessHandler());
+    final Connector connector = new Connector(executionResult.getProcessHandler(), env.getProject());
 
     // Set up source file mapping.
     final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), launcher.getTestFile());
@@ -120,7 +122,10 @@ public class BazelTestRunner extends GenericProgramRunner {
     private static final String RUNFILES_DIR_KEY = "runfilesDir";
     private static final String WORKSPACE_DIR_NAME_KEY = "workspaceDirName";
 
-    public Connector(ProcessHandler handler) {
+    public Connector(ProcessHandler handler, Project project) {
+      Workspace workspace = WorkspaceCache.getInstance(project).get();
+      assert(workspace != null);
+      String configWarningPrefix = workspace.getConfigWarningPrefix();
       listener = new ProcessAdapter() {
         @Override
         public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
@@ -141,10 +146,10 @@ public class BazelTestRunner extends GenericProgramRunner {
 
               final String json = line.substring(1, line.length() - 1);
               dispatchJson(json);
-            } else if (line.startsWith(FlutterMessages.BAZEL_CONFIG_WARN_PREFIX)) {
+            } else if (configWarningPrefix != null && line.startsWith(configWarningPrefix)) {
               FlutterMessages.showWarning(
                       "Configuration warning",
-                      UrlUtils.generateHtmlFragmentWithHrefTags(line.substring(FlutterMessages.BAZEL_CONFIG_WARN_PREFIX.length())),
+                      UrlUtils.generateHtmlFragmentWithHrefTags(line.substring(configWarningPrefix.length())),
                       null
               );
             }
