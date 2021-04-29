@@ -197,7 +197,7 @@ public class Workspace {
   }
 
   /**
-   * Returns the required IJ plugin message, if the plugin id is not installed, or null if not configured.
+   * Returns the prefix associated with configuration warnings.
    */
   @Nullable
   public String getConfigWarningPrefix() {
