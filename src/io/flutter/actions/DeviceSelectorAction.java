@@ -15,7 +15,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.Condition;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
@@ -135,7 +134,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   }
 
   private static boolean isSelectorVisible(@Nullable Project project) {
-    if (project == null || !FlutterModuleUtils.hasFlutterModule(project)) {
+    if (project == null || (!FlutterModuleUtils.hasFlutterModule(project) && !FlutterModuleUtils.isFlutterBazelProject(project))) {
       return false;
     }
     final DeviceService deviceService = DeviceService.getInstance(project);
