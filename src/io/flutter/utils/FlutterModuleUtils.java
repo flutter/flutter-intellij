@@ -90,6 +90,7 @@ public class FlutterModuleUtils {
     return path != null &&
            (path.endsWith(FlutterSdk.DART_SDK_SUFFIX) ||
             path.endsWith(FlutterSdk.LINUX_DART_SUFFIX) ||
+            path.endsWith(FlutterSdk.LOCAL_DART_SUFFIX) ||
             path.endsWith(FlutterSdk.MAC_DART_SUFFIX));
   }
 
