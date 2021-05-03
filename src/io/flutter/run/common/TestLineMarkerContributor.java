@@ -27,6 +27,8 @@ import com.jetbrains.lang.dart.psi.DartId;
 import java.util.Date;
 import java.util.Map;
 import javax.swing.Icon;
+
+import io.flutter.run.test.TestConfigUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -69,6 +71,12 @@ public abstract class TestLineMarkerContributor extends RunLineMarkerContributor
           }
         }
         else if (dartId.getParent().getParent() instanceof DartFunctionDeclarationWithBodyOrNative) {
+          if (testConfigUtils instanceof TestConfigUtils) {
+            // TODO(messick) Find a better way to eliminate duplicate pop-up menu entries.
+            // The issue is that there are two contributors, one for normal Flutter, one for Bazel,
+            // and they should not both produce contributions at the same time.
+            return null;
+          }
           if ("main".equals(dartId.getText())) {
             // There seems to be an intermittent timing issue that causes the first test call to not get marked.
             // Priming the cache here solves it.

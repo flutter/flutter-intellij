@@ -10,10 +10,14 @@ import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.execution.ParametersListUtil;
 import io.flutter.pub.PubRoot;
+import io.flutter.run.FlutterDevice;
 import io.flutter.run.MainFile;
 import io.flutter.run.common.RunMode;
+import io.flutter.run.daemon.DeviceService;
 import io.flutter.sdk.FlutterCommandStartResult;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.ElementIO;
@@ -21,7 +25,7 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
+import java.util.*;
 
 /**
  * Settings for running a Flutter test.
@@ -254,7 +258,30 @@ public class TestFields {
       throw new ExecutionException("Test file isn't within a Flutter pub root");
     }
 
-    return sdk.flutterTest(root, fileOrDir, testName, mode, additionalArgs, getScope()).startProcess(project);
+    final String args = adjustArgs(root, fileOrDir, project);
+    return sdk.flutterTest(root, fileOrDir, testName, mode, args, getScope()).startProcess(project);
+  }
+
+  @Nullable
+  private String adjustArgs(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir, @NotNull Project project) {
+    final VirtualFile testDir = root.getIntegrationTestDir();
+    if (!VfsUtilCore.isAncestor(Objects.requireNonNull(testDir), fileOrDir, false)) {
+      return additionalArgs;
+    }
+
+    final List<String> args = additionalArgs == null
+                              ? new ArrayList<>()
+                              : ParametersListUtil.parse(additionalArgs);
+    if (args.contains("-d") || args.contains("--device-id")) {
+      return additionalArgs;
+    }
+    final FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
+    if (device == null) {
+      return additionalArgs;
+    }
+    args.add(0, "-d");
+    args.add(1, device.deviceId());
+    return String.join(" ", args);
   }
 
   private void checkSdk(@NotNull Project project) throws RuntimeConfigurationError {

@@ -204,7 +204,7 @@ public class FlutterUtils {
 
     // Check that we're in a project path that starts with 'test/'.
     final String relativePath = root.getRelativePath(file.getVirtualFile());
-    if (relativePath == null || !relativePath.startsWith("test/")) {
+    if (relativePath == null || !(relativePath.startsWith("test/") || relativePath.startsWith("integration_test/"))) {
       return false;
     }
 
