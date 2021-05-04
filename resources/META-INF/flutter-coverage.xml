@@ -1,8 +1,8 @@
 <idea-plugin>
   <extensions defaultExtensionNs="com.intellij">
-    <programRunner implementation="io.flutter.coverage.FlutterCoverageProgramRunner"/>
-    <coverageEngine implementation="io.flutter.coverage.FlutterCoverageEngine"/>
-    <coverageRunner implementation="io.flutter.coverage.FlutterCoverageRunner"/>
-    <projectService serviceImplementation="io.flutter.coverage.FlutterCoverageAnnotator"/>
+    <programRunner implementation="io.flutter.run.coverage.FlutterCoverageProgramRunner"/>
+    <coverageEngine implementation="io.flutter.run.coverage.FlutterCoverageEngine"/>
+    <coverageRunner implementation="io.flutter.run.coverage.FlutterCoverageRunner"/>
+    <projectService serviceImplementation="io.flutter.run.coverage.FlutterCoverageAnnotator"/>
   </extensions>
 </idea-plugin>

@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.coverage;
+package io.flutter.run.coverage;
 
 import com.intellij.coverage.CoverageEngine;
 import com.intellij.coverage.CoverageRunner;

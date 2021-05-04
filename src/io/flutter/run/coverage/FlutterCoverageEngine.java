@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.coverage;
+package io.flutter.run.coverage;
 
 import com.intellij.coverage.CoverageAnnotator;
 import com.intellij.coverage.CoverageEngine;
@@ -109,7 +109,6 @@ public class FlutterCoverageEngine extends CoverageEngine {
     if (file == null) return false;
     final String path = root.getRelativePath(file);
     if (path == null) return false;
-    // TODO https://github.com/flutter/flutter-intellij/issues/5291
     return path.startsWith("lib") && FlutterUtils.isDartFile(file);
   }
 

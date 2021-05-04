@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.coverage;
+package io.flutter.run.coverage;
 
 import com.intellij.coverage.CoverageDataManager;
 import com.intellij.coverage.CoverageRunner;
@@ -15,7 +15,6 @@ import io.flutter.pub.PubRoots;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.file.InvalidPathException;
 import java.util.List;
 
 public class FlutterCoverageEnabledConfiguration extends CoverageEnabledConfiguration {

@@ -3,12 +3,13 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.coverage;
+package io.flutter.run.coverage;
 
 import com.intellij.coverage.CoverageDataManager;
 import com.intellij.coverage.CoverageExecutor;
 import com.intellij.coverage.CoverageRunnerData;
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.ExecutionManager;
 import com.intellij.execution.configurations.ConfigurationInfoProvider;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
@@ -19,7 +20,7 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.runners.DefaultProgramRunnerKt;
 import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.execution.runners.GenericProgramRunner;
+import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -35,7 +36,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSettings> {
+public class FlutterCoverageProgramRunner implements ProgramRunner<RunnerSettings> {
   private static final Logger LOG = Logger.getInstance(FlutterCoverageProgramRunner.class.getName());
 
   private static final String ID = "FlutterCoverageProgramRunner";
@@ -57,24 +58,28 @@ public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSet
     return new CoverageRunnerData();
   }
 
-  @Nullable
   @Override
+  public void execute(@NotNull ExecutionEnvironment env) throws ExecutionException {
+    final ExecutionEnvironment environment = copyEnvironmentWithCoverageParam(env);
+    if (environment == null) {
+      return;
+    }
+    ExecutionManager.getInstance(environment.getProject()).startRunProfile(environment, state -> {
+      return doExecute(state, environment);
+    });
+  }
+
+  @Nullable
   protected RunContentDescriptor doExecute(final @NotNull RunProfileState state,
                                            final @NotNull ExecutionEnvironment env) throws ExecutionException {
-    final ExecutionEnvironment covEnv = copyEnvironmentWithCoverageParam(env);
-    if (covEnv == null) {
-      return null;
-    }
-    //final RunProfileState newState = covEnv.getRunProfile().getState(env.getExecutor(), covEnv);
-    //assert newState != null;
-    final RunContentDescriptor result = DefaultProgramRunnerKt.executeState(state, covEnv, this);
+    final RunContentDescriptor result = DefaultProgramRunnerKt.executeState(state, env, this);
     if (result == null) {
       return null;
     }
     if (result.getProcessHandler() != null) {
       result.getProcessHandler().addProcessListener(new ProcessAdapter() {
         public void processTerminated(@NotNull ProcessEvent event) {
-          ApplicationManager.getApplication().invokeLater(() -> processCoverage(covEnv));
+          ApplicationManager.getApplication().invokeLater(() -> processCoverage(env));
         }
       });
     }
@@ -103,7 +108,7 @@ public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSet
     newFields.setAdditionalArgs(args);
 
     final ExecutionEnvironment newEnv =
-      new ExecutionEnvironment(new DefaultRunExecutor(), env.getRunner(), env.getRunnerAndConfigurationSettings(), env.getProject());
+      new ExecutionEnvironment(env.getExecutor(), env.getRunner(), env.getRunnerAndConfigurationSettings(), env.getProject());
     final TestConfig oldConfig = (TestConfig)newEnv.getRunProfile();
     final TestConfig newConfig = (TestConfig)oldConfig.clone();
     newConfig.setFields(newFields);

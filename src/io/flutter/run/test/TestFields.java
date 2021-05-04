@@ -128,7 +128,7 @@ public class TestFields {
     return additionalArgs;
   }
 
-  public void setAdditionalArgs(String args) {
+  public void setAdditionalArgs(@Nullable String args) {
     additionalArgs = args;
   }
 
