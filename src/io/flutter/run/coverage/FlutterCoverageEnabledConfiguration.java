@@ -9,6 +9,8 @@ import com.intellij.coverage.CoverageDataManager;
 import com.intellij.coverage.CoverageRunner;
 import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.coverage.CoverageEnabledConfiguration;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.ui.GuiUtils;
 import io.flutter.FlutterBundle;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -27,7 +29,9 @@ public class FlutterCoverageEnabledConfiguration extends CoverageEnabledConfigur
       throw new RuntimeException(FlutterBundle.message("project.root.not.found"));
     }
     myCoverageFilePath = roots.get(0).getRoot().getCanonicalPath() + "/coverage/lcov.info";
-    setCurrentCoverageSuite(CoverageDataManager.getInstance(configuration.getProject()).addCoverageSuite(this));
+    GuiUtils.invokeLaterIfNeeded(
+      () -> setCurrentCoverageSuite(CoverageDataManager.getInstance(configuration.getProject()).addCoverageSuite(this)),
+      ModalityState.any());
   }
 
   public void setCoverageRunner(@Nullable final CoverageRunner coverageRunner) {

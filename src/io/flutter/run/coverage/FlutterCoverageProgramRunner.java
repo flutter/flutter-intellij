@@ -9,25 +9,21 @@ import com.intellij.coverage.CoverageDataManager;
 import com.intellij.coverage.CoverageExecutor;
 import com.intellij.coverage.CoverageRunnerData;
 import com.intellij.execution.ExecutionException;
-import com.intellij.execution.ExecutionManager;
 import com.intellij.execution.configurations.ConfigurationInfoProvider;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.configurations.RunnerSettings;
 import com.intellij.execution.configurations.coverage.CoverageEnabledConfiguration;
-import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.runners.DefaultProgramRunnerKt;
 import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.execution.runners.ProgramRunner;
+import com.intellij.execution.runners.GenericProgramRunner;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.util.ReflectionUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.run.test.TestConfig;
-import io.flutter.run.test.TestFields;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,7 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class FlutterCoverageProgramRunner implements ProgramRunner<RunnerSettings> {
+public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSettings> {
   private static final Logger LOG = Logger.getInstance(FlutterCoverageProgramRunner.class.getName());
 
   private static final String ID = "FlutterCoverageProgramRunner";
@@ -59,16 +55,6 @@ public class FlutterCoverageProgramRunner implements ProgramRunner<RunnerSetting
   }
 
   @Override
-  public void execute(@NotNull ExecutionEnvironment env) throws ExecutionException {
-    final ExecutionEnvironment environment = copyEnvironmentWithCoverageParam(env);
-    if (environment == null) {
-      return;
-    }
-    ExecutionManager.getInstance(environment.getProject()).startRunProfile(environment, state -> {
-      return doExecute(state, environment);
-    });
-  }
-
   @Nullable
   protected RunContentDescriptor doExecute(final @NotNull RunProfileState state,
                                            final @NotNull ExecutionEnvironment env) throws ExecutionException {
@@ -84,36 +70,6 @@ public class FlutterCoverageProgramRunner implements ProgramRunner<RunnerSetting
       });
     }
     return result;
-  }
-
-  @Nullable
-  private static ExecutionEnvironment copyEnvironmentWithCoverageParam(@NotNull ExecutionEnvironment env) {
-    if (env.getRunnerAndConfigurationSettings() == null) return env;
-    final RunProfile profile = env.getRunProfile();
-    if (!(profile instanceof TestConfig)) return null;
-    final TestConfig config = (TestConfig)profile;
-    final TestFields fields = config.getFields();
-
-    @Nullable String args = fields.getAdditionalArgs();
-    if (args == null) {
-      args = "--coverage";
-    }
-    else if (!args.contains("--coverage")) {
-      args += " --coverage";
-    }
-    else {
-      return env;
-    }
-    final TestFields newFields = fields.copy();
-    newFields.setAdditionalArgs(args);
-
-    final ExecutionEnvironment newEnv =
-      new ExecutionEnvironment(env.getExecutor(), env.getRunner(), env.getRunnerAndConfigurationSettings(), env.getProject());
-    final TestConfig oldConfig = (TestConfig)newEnv.getRunProfile();
-    final TestConfig newConfig = (TestConfig)oldConfig.clone();
-    newConfig.setFields(newFields);
-    ReflectionUtil.setField(ExecutionEnvironment.class, newEnv, RunProfile.class, "myRunProfile", newConfig);
-    return newEnv;
   }
 
   private static void processCoverage(ExecutionEnvironment env) {

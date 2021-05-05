@@ -18,9 +18,6 @@ public class FlutterCoverageSuite extends BaseCoverageSuite {
   @NotNull
   final private FlutterCoverageEngine coverageEngine;
 
-  @Nullable // TODO Delete this
-  private String contextFilePath;
-
   public FlutterCoverageSuite(@NotNull FlutterCoverageEngine coverageEngine) {
     this.coverageEngine = coverageEngine;
   }
@@ -29,22 +26,15 @@ public class FlutterCoverageSuite extends BaseCoverageSuite {
                               String name,
                               CoverageFileProvider coverageDataFileProvider,
                               Project project,
-                              @NotNull FlutterCoverageEngine coverageEngine,
-                              @Nullable String contextFilePath
+                              @NotNull FlutterCoverageEngine coverageEngine
   ) {
     super(name, coverageDataFileProvider, System.currentTimeMillis(), false, false,
           false, runner, project);
     this.coverageEngine = coverageEngine;
-    this.contextFilePath = contextFilePath;
   }
 
   @Override
   public @NotNull CoverageEngine getCoverageEngine() {
     return coverageEngine;
-  }
-
-  // TODO Delete this
-  public @Nullable String getContextFilePath() {
-    return contextFilePath;
   }
 }

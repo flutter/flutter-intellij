@@ -47,7 +47,7 @@ public class FlutterCoverageEngine extends CoverageEngine {
 
   @Override
   public boolean canHavePerTestCoverage(@NotNull RunConfigurationBase<?> conf) {
-    return false;
+    return true;
   }
 
   @Override
@@ -75,18 +75,8 @@ public class FlutterCoverageEngine extends CoverageEngine {
                                                      @NotNull CoverageFileProvider coverageDataFileProvider,
                                                      @NotNull CoverageEnabledConfiguration config) {
     if (config instanceof FlutterCoverageEnabledConfiguration) {
-      final FlutterCoverageEnabledConfiguration flutterConfig = (FlutterCoverageEnabledConfiguration)config;
-      String path = null;
-      final RunConfigurationBase<?> configuration = flutterConfig.getConfiguration();
-      if (configuration instanceof TestConfig) {
-        final TestConfig testConfig = (TestConfig)configuration;
-        path = testConfig.getFields().getTestFile();
-        if (path == null) {
-          path = testConfig.getFields().getTestDir();
-        }
-      }
       return new FlutterCoverageSuite(covRunner, name, coverageDataFileProvider,
-                                      config.getConfiguration().getProject(), this, path);
+                                      config.getConfiguration().getProject(), this);
     }
     return null;
   }
