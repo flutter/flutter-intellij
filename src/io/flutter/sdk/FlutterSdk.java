@@ -5,8 +5,6 @@
  */
 package io.flutter.sdk;
 
-import static java.util.Arrays.asList;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -45,10 +43,10 @@ import io.flutter.run.common.RunMode;
 import io.flutter.run.test.TestFields;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -56,15 +54,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.jetbrains.annotations.NonNls;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import static java.util.Arrays.asList;
 
 public class FlutterSdk {
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
 
   public static final String DART_SDK_SUFFIX = "/bin/cache/dart-sdk";
   public static final String LINUX_DART_SUFFIX = "/google-dartlang";
+  public static final String LOCAL_DART_SUFFIX = "/google-dartlang-local";
   public static final String MAC_DART_SUFFIX = "/dart_lang/macos_sdk";
 
   private static final String DART_CORE_SUFFIX = DART_SDK_SUFFIX + "/lib/core";
