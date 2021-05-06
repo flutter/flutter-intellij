@@ -12,12 +12,12 @@ import com.intellij.coverage.CoverageRunner;
 import com.intellij.coverage.CoverageSuite;
 import com.intellij.coverage.CoverageSuitesBundle;
 import com.intellij.execution.configurations.RunConfigurationBase;
+import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.WrappingRunConfiguration;
 import com.intellij.execution.configurations.coverage.CoverageEnabledConfiguration;
 import com.intellij.execution.testframework.AbstractTestProxy;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.NlsActions;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -41,17 +41,17 @@ public class FlutterCoverageEngine extends CoverageEngine {
   }
 
   @Override
-  public boolean isApplicableTo(@NotNull RunConfigurationBase<?> conf) {
-    return WrappingRunConfiguration.unwrapRunProfile(conf) instanceof TestConfig;
+  public boolean isApplicableTo(@NotNull RunConfigurationBase conf) {
+    return unwrapRunProfile(conf) instanceof TestConfig;
   }
 
   @Override
-  public boolean canHavePerTestCoverage(@NotNull RunConfigurationBase<?> conf) {
+  public boolean canHavePerTestCoverage(@NotNull RunConfigurationBase conf) {
     return true;
   }
 
   @Override
-  public @NotNull CoverageEnabledConfiguration createCoverageEnabledConfiguration(@NotNull RunConfigurationBase<?> conf) {
+  public @NotNull CoverageEnabledConfiguration createCoverageEnabledConfiguration(@NotNull RunConfigurationBase conf) {
     return new FlutterCoverageEnabledConfiguration(conf);
   }
 
@@ -143,12 +143,19 @@ public class FlutterCoverageEngine extends CoverageEngine {
   }
 
   @Override
-  public @NlsActions.ActionText String getPresentableText() {
+  public String getPresentableText() {
     return FlutterBundle.message("flutter.coverage.presentable.text");
   }
 
   @NotNull
   private static String getQName(@NotNull PsiFile sourceFile) {
     return sourceFile.getVirtualFile().getPath();
+  }
+
+  static @NotNull RunProfile unwrapRunProfile(@NotNull RunProfile runProfile) {
+    if (runProfile instanceof WrappingRunConfiguration) {
+      return ((WrappingRunConfiguration<?>)runProfile).getPeer();
+    }
+    return runProfile;
   }
 }
