@@ -354,6 +354,11 @@ public class PubRoot {
   }
 
   @Nullable
+  public VirtualFile getIntegrationTestDir() {
+    return root.findChild("integration_test");
+  }
+
+  @Nullable
   public VirtualFile getExampleDir() {
     return root.findChild("example");
   }

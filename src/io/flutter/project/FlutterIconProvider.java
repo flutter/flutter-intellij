@@ -55,6 +55,7 @@ public class FlutterIconProvider extends IconProvider {
 
       if (Objects.equals(dir, root.getAndroidDir())) return AllIcons.Nodes.KeymapTools;
       if (Objects.equals(dir, root.getiOsDir())) return AllIcons.Nodes.KeymapTools;
+      if (Objects.equals(dir, root.getIntegrationTestDir())) return AllIcons.Nodes.TestSourceFolder;
 
       if (dir.isDirectory() && dir.getName().equals(".idea")) return AllIcons.Modules.GeneratedFolder;
     }
