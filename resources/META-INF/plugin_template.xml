@@ -24,7 +24,7 @@
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.lang</depends>
   <depends>com.intellij.modules.xdebugger</depends>
-  <depends>org.jetbrains.android</depends>
+  <depends>com.intellij.modules.coverage</depends>
   <depends>Dart</depends>
   <depends>Git4Idea</depends>
 
@@ -33,10 +33,12 @@
 
   <!-- Contributes IDEA-specific features and implementations. -->
   <depends optional="true" config-file="idea-contribs.xml">com.intellij.modules.java</depends>
+  <depends optional="true" config-file="flutter-coverage.xml">com.intellij.modules.coverage</depends>
 
   <!-- Contributes Android Studio-specific features and implementations. -->
   <!--suppress PluginXmlValidity -->
   <depends optional="true" config-file="studio-contribs.xml">@DEPEND@</depends>
+
 
   <change-notes>
     <![CDATA[

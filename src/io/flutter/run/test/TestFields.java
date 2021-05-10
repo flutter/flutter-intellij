@@ -59,6 +59,10 @@ public class TestFields {
     this.additionalArgs = additionalArgs;
   }
 
+  public TestFields copy() {
+    return new TestFields(testName, testFile, testDir, additionalArgs);
+  }
+
   /**
    * Creates settings for running tests with the given name within a Dart file.
    */
@@ -128,7 +132,7 @@ public class TestFields {
     return additionalArgs;
   }
 
-  public void setAdditionalArgs(String args) {
+  public void setAdditionalArgs(@Nullable String args) {
     additionalArgs = args;
   }
 

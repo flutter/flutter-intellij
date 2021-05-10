@@ -5,6 +5,8 @@
  */
 package io.flutter.sdk;
 
+import static java.util.Arrays.asList;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -43,10 +45,6 @@ import io.flutter.run.common.RunMode;
 import io.flutter.run.test.TestFields;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
-import org.jetbrains.annotations.NonNls;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -54,8 +52,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static java.util.Arrays.asList;
+import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FlutterSdk {
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
@@ -369,6 +368,12 @@ public class FlutterSdk {
       args.addAll(Arrays.asList(additionalArgs.trim().split(" ")));
     }
 
+    if (mode == RunMode.COVERAGE) {
+      if (!args.contains("--coverage")) {
+        args.add("--coverage");
+      }
+    }
+
     if (!root.getRoot().equals(fileOrDir)) {
       // Make the path to main relative (to make the command line prettier).
       final String mainPath = root.getRelativePath(fileOrDir);
@@ -516,7 +521,8 @@ public class FlutterSdk {
       String stdout = returnOutputOfQuery(flutterChannel());
       if (stdout == null) {
         branch = "unknown";
-      } else {
+      }
+      else {
         branch = FlutterSdkChannel.parseChannel(stdout);
       }
     }

@@ -24,6 +24,9 @@ public enum RunMode {
   RUN(DefaultRunExecutor.EXECUTOR_ID, true),
 
   @NonNls
+  COVERAGE("Coverage", false),
+
+  @NonNls
   PROFILE("PROFILE", false);
 
   private final String myModeString;
@@ -55,6 +58,9 @@ public enum RunMode {
     }
     else if (DefaultDebugExecutor.EXECUTOR_ID.equals(mode)) {
       return DEBUG;
+    }
+    else if (COVERAGE.myModeString.equals(mode)) {
+      return COVERAGE;
     }
     else if (LaunchState.ANDROID_PROFILER_EXECUTOR_ID.equals(mode)) {
       return PROFILE;

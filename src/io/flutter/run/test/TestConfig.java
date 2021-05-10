@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * A configuration for running Flutter tests.
  */
-public class TestConfig extends LocatableConfigurationBase {
+public class TestConfig extends LocatableConfigurationBase<CommandLineState> {
   @NotNull
   private TestFields fields = TestFields.forFile("");
 
@@ -31,11 +31,11 @@ public class TestConfig extends LocatableConfigurationBase {
   }
 
   @NotNull
-  TestFields getFields() {
+  public TestFields getFields() {
     return fields;
   }
 
-  void setFields(@NotNull TestFields fields) {
+  public void setFields(@NotNull TestFields fields) {
     this.fields = fields;
   }
 
