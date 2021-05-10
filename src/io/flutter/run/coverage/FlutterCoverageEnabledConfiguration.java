@@ -23,7 +23,7 @@ public class FlutterCoverageEnabledConfiguration extends CoverageEnabledConfigur
 
   public FlutterCoverageEnabledConfiguration(@NotNull RunConfigurationBase<?> configuration) {
     super(configuration);
-    setCoverageRunner(CoverageRunner.getInstance(FlutterCoverageRunner.class));
+    super.setCoverageRunner(CoverageRunner.getInstance(FlutterCoverageRunner.class));
     final List<PubRoot> roots = PubRoots.forProject(configuration.getProject());
     if (roots.isEmpty()) {
       throw new RuntimeException(FlutterBundle.message("project.root.not.found"));
@@ -35,6 +35,7 @@ public class FlutterCoverageEnabledConfiguration extends CoverageEnabledConfigur
   }
 
   public void setCoverageRunner(@Nullable final CoverageRunner coverageRunner) {
+    // Save and restore myCoverageFilePath because the super method clears it.
     final String path = myCoverageFilePath;
     super.setCoverageRunner(coverageRunner);
     myCoverageFilePath = path;
