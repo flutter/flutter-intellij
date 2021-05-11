@@ -556,21 +556,37 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     try {
       final JxBrowserStatus newStatus = jxBrowserManager.waitForInstallation(INSTALLATION_WAIT_LIMIT_SECONDS);
 
-      if (newStatus.equals(JxBrowserStatus.INSTALLED)) {
-        handleJxBrowserInstalled(app, inspectorService, toolWindow);
-      }
-      else if (newStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
-        handleJxBrowserInstallationFailed(app, inspectorService, toolWindow);
-      }
-      else {
-        // newStatus can be null if installation is interrupted or stopped for another reason.
-        presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_WAIT_FAILED);
-      }
+      handleUpdatedJxBrowserStatusOnEventThread(app, inspectorService, toolWindow, newStatus);
     }
     catch (TimeoutException e) {
       presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_TIMED_OUT_LABEL);
 
       FlutterInitializer.getAnalytics().sendEvent(JxBrowserManager.ANALYTICS_CATEGORY, "timedOut");
+    }
+  }
+
+  protected void handleUpdatedJxBrowserStatusOnEventThread(
+          FlutterApp app,
+          InspectorService inspectorService,
+          ToolWindow toolWindow,
+          JxBrowserStatus jxBrowserStatus
+  ) {
+    AsyncUtils.invokeLater(() -> handleUpdatedJxBrowserStatus(app, inspectorService, toolWindow, jxBrowserStatus));
+  }
+
+  protected void handleUpdatedJxBrowserStatus(
+          FlutterApp app,
+          InspectorService inspectorService,
+          ToolWindow toolWindow,
+          JxBrowserStatus jxBrowserStatus
+  ) {
+    if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {
+      handleJxBrowserInstalled(app, inspectorService, toolWindow);
+    } else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
+      handleJxBrowserInstallationFailed(app, inspectorService, toolWindow);
+    } else {
+      // newStatus can be null if installation is interrupted or stopped for another reason.
+      presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_WAIT_FAILED);
     }
   }
 
