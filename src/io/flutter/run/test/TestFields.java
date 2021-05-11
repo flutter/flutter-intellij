@@ -269,7 +269,7 @@ public class TestFields {
   @Nullable
   private String adjustArgs(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir, @NotNull Project project) {
     final VirtualFile testDir = root.getIntegrationTestDir();
-    if (!VfsUtilCore.isAncestor(Objects.requireNonNull(testDir), fileOrDir, false)) {
+    if (testDir == null || !VfsUtilCore.isAncestor(testDir, fileOrDir, false)) {
       return additionalArgs;
     }
 
