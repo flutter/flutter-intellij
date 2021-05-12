@@ -18,6 +18,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.serviceContainer.AlreadyDisposedException;
 import com.intellij.ui.EditorNotifications;
 import com.intellij.util.PlatformUtils;
 import com.jetbrains.lang.dart.sdk.DartSdk;
@@ -283,15 +284,19 @@ public class FlutterModuleUtils {
    * True is returned if any of the PubRoots associated with the {@link Module} have a pubspec that declares flutter.
    */
   public static boolean declaresFlutter(@NotNull Module module) {
-    final PubRootCache cache = PubRootCache.getInstance(module.getProject());
+    try {
+      final PubRootCache cache = PubRootCache.getInstance(module.getProject());
 
-    for (PubRoot root : cache.getRoots(module)) {
-      if (root.declaresFlutter()) {
-        return true;
+      for (PubRoot root : cache.getRoots(module)) {
+        if (root.declaresFlutter()) {
+          return true;
+        }
       }
-    }
 
-    return false;
+      return false;
+    } catch (AlreadyDisposedException ignored) {
+      return false;
+    }
   }
 
   /**
