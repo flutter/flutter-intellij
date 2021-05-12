@@ -10,13 +10,14 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.Condition;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.ui.GuiUtils;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
@@ -81,10 +82,10 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
           knownProjects.remove(closedProject);
         }
       });
-      DeviceService.getInstance(project).addListener(() -> update(project, e.getPresentation()));
+      DeviceService.getInstance(project).addListener(() -> queueUpdate(project, e.getPresentation()));
 
       // Listen for android device changes, and rebuild the menu if necessary.
-      AndroidEmulatorManager.getInstance(project).addListener(() -> update(project, e.getPresentation()));
+      AndroidEmulatorManager.getInstance(project).addListener(() -> queueUpdate(project, e.getPresentation()));
       update(project, presentation);
     }
 
@@ -111,6 +112,12 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       presentation.setText(selectedDevice.presentationName());
       presentation.setEnabled(true);
     }
+  }
+
+  private void queueUpdate(Project project, Presentation presentation) {
+    GuiUtils.invokeLaterIfNeeded(
+      () -> update(project, presentation),
+      ModalityState.defaultModalityState());
   }
 
   private void update(Project project, Presentation presentation) {
