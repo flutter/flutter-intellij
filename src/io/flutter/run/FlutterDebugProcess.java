@@ -10,11 +10,14 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunnerLayoutUi;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.util.Computable;
 import com.intellij.ui.GuiUtils;
 import com.intellij.ui.content.Content;
 import com.intellij.xdebugger.XDebugSession;
+import com.intellij.xdebugger.XDebuggerBundle;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.ReloadAllFlutterApps;
@@ -146,12 +149,13 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
       return;
     }
 
+    final String name = XDebuggerBundle.message("debugger.session.tab.console.content.name");
     for (Content c : ui.getContents()) {
-      if (!Objects.equals(c.getTabName(), "Console")) {
+      if (!Objects.equals(c.getTabName(), name)) {
         try {
-          GuiUtils.runOrInvokeAndWait(() -> ui.removeContent(c, false /* dispose? */));
+          ApplicationManager.getApplication().invokeAndWait(() -> ui.removeContent(c, false /* dispose? */));
         }
-        catch (InvocationTargetException | InterruptedException e) {
+        catch (ProcessCanceledException e) {
           FlutterUtils.warn(LOG, e);
         }
       }
