@@ -71,6 +71,9 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
   private static final String JSON_LINE = "line";
   private static final String JSON_COLUMN = "column";
   private static final String JSON_URL = "url";
+  private static final String JSON_ROOT_LINE = "root_line";
+  private static final String JSON_ROOT_COLUMN = "root_column";
+  private static final String JSON_ROOT_URL = "root_url";
 
   private static final String RESULT_SUCCESS = "success";
   private static final String RESULT_FAILURE = "failure";
@@ -746,10 +749,14 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
         parent = groups.get(groupIds[groupIds.length - 1]);
       }
       Suite suite = lookupSuite(obj, suites);
-      final int line = extractInt(obj, JSON_LINE);
-      final int column = extractInt(obj, JSON_COLUMN);
+      int line = extractInt(obj, JSON_ROOT_LINE);
+      if (line < 0) line = extractInt(obj, JSON_LINE);
+      int column = extractInt(obj, JSON_ROOT_COLUMN);
+      if (column < 0) column = extractInt(obj, JSON_COLUMN);
+      String url = extractString(obj, JSON_ROOT_URL, null);
+      if (url == null) url = extractString(obj, JSON_URL, null);
       return new Test(extractInt(obj, JSON_ID), extractString(obj, JSON_NAME, NO_NAME), parent, suite, extractMetadata(obj),
-                      line < 0 ? -1 : line - 1, column < 0 ? -1 : column - 1, extractString(obj, JSON_URL, null));
+                      line < 0 ? -1 : line - 1, column < 0 ? -1 : column - 1, url);
     }
 
     Test(int id, String name, Group parent, Suite suite, Metadata metadata, int line, int column, String url) {
