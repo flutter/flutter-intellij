@@ -137,9 +137,9 @@ List<EditCommand> editCommands = [
     versions: ['2021.1'],
   ),
   Subst(
-    path: 'src/io/flutter/jxbrowser/JxBrowserManager.java',
-    initial: 'JxBrowserUtils.isM1MacLegacy',
-    replacement: 'JxBrowserUtils.isM1Mac',
+    path: 'src/io/flutter/utils/JxBrowserUtils.java',
+    initial: 'return false; // return SystemInfo.isMac && CpuArch.isArm64();',
+    replacement: 'return SystemInfo.isMac && CpuArch.isArm64();',
     versions: ['2021.1'],
   ),
 ];

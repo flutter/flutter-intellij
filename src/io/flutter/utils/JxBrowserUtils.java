@@ -6,7 +6,6 @@
 package io.flutter.utils;
 
 import com.intellij.openapi.util.SystemInfo;
-import com.intellij.util.system.CpuArch;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -77,14 +76,9 @@ public class JxBrowserUtils {
   }
 
   public static boolean isM1Mac() {
-    //noinspection MissingRecentApi
-    return SystemInfo.isMac && CpuArch.isArm64();
-  }
-
-  // Return default false value for earlier IntelliJ versions that do not have the CpuArch method (211.4961.30).
-  // It's possible a user could be using an earlier IntelliJ version with an M1 mac, but for that case we can't detect
-  // that the system is the problem and will serve a more generic error message.
-  public static boolean isM1MacLegacy() {
-    return false;
+    // Return default false value for earlier IntelliJ versions that do not have the CpuArch method (211.4961.30).
+    // It's possible a user could be using an earlier IntelliJ version with an M1 mac, but for that case we can't detect
+    // that the system is the problem and will serve a more generic error message.
+    return false; // return SystemInfo.isMac && CpuArch.isArm64();
   }
 }

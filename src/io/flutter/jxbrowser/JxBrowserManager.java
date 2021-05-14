@@ -174,7 +174,7 @@ public class JxBrowserManager {
     }
 
     // Check that user is not on M1 mac.
-    if (JxBrowserUtils.isM1MacLegacy()) {
+    if (JxBrowserUtils.isM1Mac()) {
       LOG.info(project.getName() + ": Skipping downloads due to M1");
       setStatusFailed(new InstallationFailedReason(
               FailureType.SYSTEM_INCOMPATIBLE,
