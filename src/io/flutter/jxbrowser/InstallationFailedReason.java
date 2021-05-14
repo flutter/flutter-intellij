@@ -4,7 +4,7 @@ public class InstallationFailedReason {
     public FailureType failureType;
     public String detail;
 
-    InstallationFailedReason(FailureType failureType) {
+    public InstallationFailedReason(FailureType failureType) {
         this(failureType, null);
     }
 

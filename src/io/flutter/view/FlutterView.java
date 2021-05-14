@@ -598,7 +598,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       // If the license isn't available, allow the user to open the equivalent page in a non-embedded browser window.
       inputs.add(new LabelInput("The JxBrowser license could not be found."));
       inputs.add(openDevToolsLabel);
-    } else if (latestFailureReason.failureType.equals(FailureType.SYSTEM_INCOMPATIBLE)) {
+    } else if (latestFailureReason != null && latestFailureReason.failureType.equals(FailureType.SYSTEM_INCOMPATIBLE)) {
       // If we know the system is incompatible, skip retry link and offer to open in browser.
       inputs.add(new LabelInput(latestFailureReason.detail));
       inputs.add(openDevToolsLabel);
