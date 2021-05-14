@@ -69,7 +69,7 @@ public class EmbeddedBrowser {
       });
     } catch (UnsupportedRenderingModeException ex) {
       // Skip using a transparent background if an exception is thrown.
-    } catch (Exception ex) {
+    } catch (Exception | Error ex) {
       LOG.info(ex);
       FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(ex), false);
     }
