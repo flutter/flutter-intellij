@@ -136,6 +136,12 @@ List<EditCommand> editCommands = [
     replacement: 'urlClassLoader.addFiles(paths)',
     versions: ['2021.1'],
   ),
+  Subst(
+    path: 'src/io/flutter/jxbrowser/JxBrowserManager.java',
+    initial: 'JxBrowserUtils.isM1MacLegacy',
+    replacement: 'JxBrowserUtils.isM1Mac',
+    versions: ['2021.1'],
+  ),
 ];
 
 // Used to test checkAndClearAppliedEditCommands()
