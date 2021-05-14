@@ -56,6 +56,7 @@ public class JxBrowserManager {
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
   private static CompletableFuture<JxBrowserStatus> installation = new CompletableFuture<>();
   public static final String ANALYTICS_CATEGORY = "jxbrowser";
+  public static InstallationFailedReason latestFailureReason;
 
   private JxBrowserManager() {
   }
@@ -116,16 +117,26 @@ public class JxBrowserManager {
     }
   }
 
-  private void setStatusFailed(String failureReason) {
-    setStatusFailed(failureReason, null);
+  private void setStatusFailed(InstallationFailedReason reason) {
+    setStatusFailed(reason, null);
   }
 
-  private void setStatusFailed(String failureReason, Long time) {
-    if (time != null) {
-      FlutterInitializer.getAnalytics().sendEventMetric(ANALYTICS_CATEGORY, "installationFailed-" + failureReason, time.intValue());
-    } else {
-      FlutterInitializer.getAnalytics().sendEvent(ANALYTICS_CATEGORY, "installationFailed-" + failureReason);
+  private void setStatusFailed(InstallationFailedReason reason, Long time) {
+    StringBuilder eventName = new StringBuilder();
+    eventName.append("installationFailed-");
+    eventName.append(reason.failureType);
+    if (reason.detail != null) {
+      eventName.append("-");
+      eventName.append(reason.detail);
     }
+
+    if (time != null) {
+      FlutterInitializer.getAnalytics().sendEventMetric(ANALYTICS_CATEGORY, eventName.toString(), time.intValue());
+    } else {
+      FlutterInitializer.getAnalytics().sendEvent(ANALYTICS_CATEGORY, eventName.toString());
+    }
+
+    latestFailureReason = reason;
     status.set(JxBrowserStatus.INSTALLATION_FAILED);
     installation.complete(JxBrowserStatus.INSTALLATION_FAILED);
   }
@@ -154,7 +165,7 @@ public class JxBrowserManager {
     }
     catch (FileNotFoundException e) {
       LOG.info(project.getName() + ": Unable to find JxBrowser license key file", e);
-      setStatusFailed("missingKey");
+      setStatusFailed(new InstallationFailedReason(FailureType.MISSING_KEY));
       return;
     }
 
@@ -170,7 +181,7 @@ public class JxBrowserManager {
     final boolean directoryExists = FileUtils.getInstance().makeDirectory(DOWNLOAD_PATH);
     if (!directoryExists) {
       LOG.info(project.getName() + ": Unable to create directory for JxBrowser files");
-      setStatusFailed("directoryCreationFailed");
+      setStatusFailed(new InstallationFailedReason(FailureType.DIRECTORY_CREATION_FAILED));
       return;
     }
 
@@ -180,7 +191,7 @@ public class JxBrowserManager {
     }
     catch (FileNotFoundException e) {
       LOG.info(project.getName() + ": Unable to find JxBrowser platform file for " + SystemInfo.getOsNameAndVersion());
-      setStatusFailed("missingPlatformFiles-" + SystemInfo.getOsNameAndVersion());
+      setStatusFailed(new InstallationFailedReason(FailureType.MISSING_PLATFORM_FILES, SystemInfo.getOsNameAndVersion()));
       return;
     }
 
@@ -246,7 +257,7 @@ public class JxBrowserManager {
         catch (IOException e) {
           final long elapsedTime = System.currentTimeMillis() - startTime;
           LOG.info(project.getName() + ": JxBrowser file downloaded failed: " + currentFileName);
-          setStatusFailed("fileDownloadFailed-" + currentFileName + ":" + e.getMessage(), elapsedTime);
+          setStatusFailed(new InstallationFailedReason(FailureType.FILE_DOWNLOAD_FAILED, currentFileName + ":" + e.getMessage()), elapsedTime);
         }
       }
     };
@@ -263,7 +274,7 @@ public class JxBrowserManager {
         FileUtils.getInstance().loadClass(this.getClass().getClassLoader(), fullPath);
       } catch (Exception ex) {
         LOG.info("Failed to load JxBrowser file", ex);
-        setStatusFailed("classLoadFailed");
+        setStatusFailed(new InstallationFailedReason(FailureType.CLASS_LOAD_FAILED));
         return;
 
       }
@@ -273,7 +284,7 @@ public class JxBrowserManager {
       final UnsupportedRenderingModeException test = new UnsupportedRenderingModeException(RenderingMode.HARDWARE_ACCELERATED);
     } catch (NoClassDefFoundError e) {
       LOG.info("Failed to find JxBrowser class");
-      setStatusFailed("NoClassDefFoundError");
+      setStatusFailed(new InstallationFailedReason(FailureType.CLASS_NOT_FOUND));
       return;
     }
     FlutterInitializer.getAnalytics().sendEvent(ANALYTICS_CATEGORY, "installed");
@@ -291,7 +302,7 @@ public class JxBrowserManager {
       FileUtils.getInstance().loadPaths(this.getClass().getClassLoader(), paths);
     } catch (Exception ex) {
       LOG.info("Failed to load JxBrowser file", ex);
-      setStatusFailed("classLoadFailed");
+      setStatusFailed(new InstallationFailedReason(FailureType.CLASS_LOAD_FAILED));
       return;
     }
 
@@ -299,7 +310,7 @@ public class JxBrowserManager {
       final UnsupportedRenderingModeException test = new UnsupportedRenderingModeException(RenderingMode.HARDWARE_ACCELERATED);
     } catch (NoClassDefFoundError e) {
       LOG.info("Failed to find JxBrowser class");
-      setStatusFailed("NoClassDefFoundError");
+      setStatusFailed(new InstallationFailedReason(FailureType.CLASS_NOT_FOUND));
       return;
     }
     FlutterInitializer.getAnalytics().sendEvent(ANALYTICS_CATEGORY, "installed");
@@ -309,5 +320,29 @@ public class JxBrowserManager {
 
   private String getFilePath(String fileName) {
     return DOWNLOAD_PATH + File.separatorChar + fileName;
+  }
+}
+
+enum FailureType {
+  SYSTEM_INCOMPATIBLE,
+  FILE_DOWNLOAD_FAILED,
+  MISSING_KEY,
+  DIRECTORY_CREATION_FAILED,
+  MISSING_PLATFORM_FILES,
+  CLASS_LOAD_FAILED,
+  CLASS_NOT_FOUND,
+}
+
+class InstallationFailedReason {
+  FailureType failureType;
+  String detail;
+
+  InstallationFailedReason(FailureType failureType) {
+    this(failureType, null);
+  }
+
+  InstallationFailedReason(FailureType failureType, String detail) {
+    this.failureType = failureType;
+    this.detail = detail;
   }
 }
