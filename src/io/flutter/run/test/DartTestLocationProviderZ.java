@@ -88,6 +88,7 @@ public class DartTestLocationProviderZ implements SMTestLocator, DumbAware {
   protected Location<PsiElement> getLocationByLineAndColumn(@NotNull final PsiFile file, final int line, final int column) {
     final Document document = PsiDocumentManager.getInstance(file.getProject()).getDocument(file);
     if (document == null) return null;
+    if (line >= document.getLineCount()) return null;
 
     final int offset = document.getLineStartOffset(line) + column;
     final PsiElement element = file.findElementAt(offset);
