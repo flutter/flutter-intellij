@@ -627,12 +627,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     for (LabelInput input : labels) {
       if (input.listener == null) {
-        final JLabel descriptionLabel = new JLabel(input.text);
+        final JLabel descriptionLabel = new JLabel("<html>" + input.text + "</html>");
         descriptionLabel.setBorder(JBUI.Borders.empty(5));
         descriptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(descriptionLabel, BorderLayout.NORTH);
       } else {
-        final LinkLabel<String> linkLabel = new LinkLabel<>(input.text, null);
+        final LinkLabel<String> linkLabel = new LinkLabel<>("<html>" + input.text + "</html>", null);
         linkLabel.setBorder(JBUI.Borders.empty(5));
         linkLabel.setListener(input.listener, null);
         linkLabel.setHorizontalAlignment(SwingConstants.CENTER);
