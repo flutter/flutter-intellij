@@ -56,7 +56,7 @@ public class JxBrowserManager {
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
   private static CompletableFuture<JxBrowserStatus> installation = new CompletableFuture<>();
   public static final String ANALYTICS_CATEGORY = "jxbrowser";
-  public static InstallationFailedReason latestFailureReason;
+  private static InstallationFailedReason latestFailureReason;
 
   private JxBrowserManager() {
   }
@@ -76,6 +76,10 @@ public class JxBrowserManager {
 
   public JxBrowserStatus getStatus() {
     return status.get();
+  }
+
+  public InstallationFailedReason getLatestFailureReason() {
+    return latestFailureReason;
   }
 
   /**
@@ -166,6 +170,16 @@ public class JxBrowserManager {
     catch (FileNotFoundException e) {
       LOG.info(project.getName() + ": Unable to find JxBrowser license key file", e);
       setStatusFailed(new InstallationFailedReason(FailureType.MISSING_KEY));
+      return;
+    }
+
+    // Check that user is not on M1 mac.
+    if (JxBrowserUtils.isM1MacLegacy()) {
+      LOG.info(project.getName() + ": Skipping downloads due to M1");
+      setStatusFailed(new InstallationFailedReason(
+              FailureType.SYSTEM_INCOMPATIBLE,
+              "The embedded browser is not yet supported for Macs using the M1 chip."
+      ));
       return;
     }
 
@@ -323,26 +337,3 @@ public class JxBrowserManager {
   }
 }
 
-enum FailureType {
-  SYSTEM_INCOMPATIBLE,
-  FILE_DOWNLOAD_FAILED,
-  MISSING_KEY,
-  DIRECTORY_CREATION_FAILED,
-  MISSING_PLATFORM_FILES,
-  CLASS_LOAD_FAILED,
-  CLASS_NOT_FOUND,
-}
-
-class InstallationFailedReason {
-  FailureType failureType;
-  String detail;
-
-  InstallationFailedReason(FailureType failureType) {
-    this(failureType, null);
-  }
-
-  InstallationFailedReason(FailureType failureType, String detail) {
-    this.failureType = failureType;
-    this.detail = detail;
-  }
-}

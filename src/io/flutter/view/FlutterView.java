@@ -54,9 +54,7 @@ import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.InspectorGroupManagerService;
 import io.flutter.inspector.InspectorService;
 import io.flutter.inspector.InspectorSourceLocation;
-import io.flutter.jxbrowser.EmbeddedBrowser;
-import io.flutter.jxbrowser.JxBrowserManager;
-import io.flutter.jxbrowser.JxBrowserStatus;
+import io.flutter.jxbrowser.*;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.daemon.DevToolsInstance;
 import io.flutter.run.daemon.DevToolsService;
@@ -594,9 +592,15 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final List<LabelInput> inputs = new ArrayList<>();
     final LabelInput openDevToolsLabel = openDevToolsLabel(app, inspectorService, toolWindow);
 
+    final InstallationFailedReason latestFailureReason = JxBrowserManager.getInstance().getLatestFailureReason();
+
     if (!JxBrowserUtils.licenseIsSet()) {
       // If the license isn't available, allow the user to open the equivalent page in a non-embedded browser window.
       inputs.add(new LabelInput("The JxBrowser license could not be found."));
+      inputs.add(openDevToolsLabel);
+    } else if (latestFailureReason.failureType.equals(FailureType.SYSTEM_INCOMPATIBLE)) {
+      // If we know the system is incompatible, skip retry link and offer to open in browser.
+      inputs.add(new LabelInput(latestFailureReason.detail));
       inputs.add(openDevToolsLabel);
     }
     else {

@@ -6,6 +6,7 @@
 package io.flutter.utils;
 
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.util.system.CpuArch;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -73,5 +74,15 @@ public class JxBrowserUtils {
 
   public static boolean licenseIsSet() {
     return System.getProperty(JxBrowserUtils.LICENSE_PROPERTY_NAME) != null;
+  }
+
+  public static boolean isM1Mac() {
+    //noinspection MissingRecentApi
+    return SystemInfo.isMac && CpuArch.isArm64();
+  }
+
+  // Return default false value for earlier IntelliJ versions that do not have the CpuArch method (211.4961.30).
+  public static boolean isM1MacLegacy() {
+    return false;
   }
 }
