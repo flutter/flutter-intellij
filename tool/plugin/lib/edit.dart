@@ -142,6 +142,12 @@ List<EditCommand> editCommands = [
     replacement: 'return SystemInfo.isMac && CpuArch.isArm64();',
     versions: ['2021.1'],
   ),
+  Subst(
+    path: 'src/io/flutter/utils/JxBrowserUtils.java',
+    initial: '// import com.intellij.util.system.CpuArch;',
+    replacement: 'import com.intellij.util.system.CpuArch;',
+    versions: ['2021.1'],
+  ),
 ];
 
 // Used to test checkAndClearAppliedEditCommands()

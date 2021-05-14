@@ -6,6 +6,7 @@
 package io.flutter.utils;
 
 import com.intellij.openapi.util.SystemInfo;
+// import com.intellij.util.system.CpuArch;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
