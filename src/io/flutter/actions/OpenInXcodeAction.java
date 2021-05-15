@@ -22,13 +22,10 @@ import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.ProgressHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.IOException;
 
 public class OpenInXcodeAction extends AnAction {
   @Nullable
@@ -74,17 +71,13 @@ public class OpenInXcodeAction extends AnAction {
     }
 
     // Trigger an iOS build if necessary.
-    if (!hasBeenBuilt(pubRoot, sdk.getVersion())) {
+    if (!hasBeenBuilt(pubRoot)) {
       final ProgressHelper progressHelper = new ProgressHelper(project);
       progressHelper.start("Building for iOS");
 
-      String buildArg = "--config-only";
-      if (!sdk.getVersion().isXcodeConfigOnlySupported()) {
-        buildArg = "--simulator";
-      }
       // TODO(pq): consider a popup explaining why we're doing a build.
       // Note: we build only for the simulator to bypass device provisioning issues.
-      final ColoredProcessHandler processHandler = sdk.flutterBuild(pubRoot, "ios", buildArg).startInConsole(project);
+      final ColoredProcessHandler processHandler = sdk.flutterBuild(pubRoot, "ios", "--simulator").startInConsole(project);
       if (processHandler == null) {
         progressHelper.done();
         FlutterMessages.showError("Error Opening Xcode", "unable to run `flutter build`", project);
@@ -111,25 +104,9 @@ public class OpenInXcodeAction extends AnAction {
     }
   }
 
-  private static boolean hasBeenBuilt(@NotNull PubRoot pubRoot, @NotNull FlutterSdkVersion version) {
-    if (version.isXcodeConfigOnlySupported()) {
-      // Derived from packages/flutter_tools/test/integration.shard/build_ios_config_only_test.dart
-      final VirtualFile ios = pubRoot.getRoot().findChild("ios");
-      if (ios == null || !ios.isDirectory()) return false;
-      final VirtualFile flutter = ios.findChild("Flutter");
-      if (flutter == null || !flutter.isDirectory()) return false;
-      final VirtualFile gen = flutter.findChild("Generated.xcconfig");
-      if (gen == null || gen.isDirectory()) return false;
-      try {
-        final String contents = new String(gen.contentsToByteArray());
-        return contents.contains("DART_OBFUSCATION=true");
-      } catch (IOException ignored) {
-        return false;
-      }
-    } else {
-      final VirtualFile buildDir = pubRoot.getRoot().findChild("build");
-      return buildDir != null && buildDir.isDirectory() && buildDir.findChild("ios") != null;
-    }
+  private static boolean hasBeenBuilt(@NotNull PubRoot pubRoot) {
+    final VirtualFile buildDir = pubRoot.getRoot().findChild("build");
+    return buildDir != null && buildDir.isDirectory() && buildDir.findChild("ios") != null;
   }
 
   private static void openWithXcode(@Nullable Project project, String path) {

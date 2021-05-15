@@ -44,11 +44,6 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   private static final FlutterSdkVersion MIN_CREATE_PLATFORMS_SDK = new FlutterSdkVersion("1.20.0");
 
   /**
-   * The version that supports --config-only when configuring Xcode for opening a project.
-   */
-  private static final FlutterSdkVersion MIN_XCODE_CONFIG_ONLY = new FlutterSdkVersion("1.22.0-12.0.pre");
-
-  /**
    * The last version of stable that does not support --platform in flutter create.
    */
   private static final FlutterSdkVersion MAX_STABLE_NO_PLATFORMS_SDK = new FlutterSdkVersion("1.22.6");
@@ -64,6 +59,7 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   private final String versionText;
   @Nullable
   private final Version betaVersion;
+  @Nullable
   private final int masterVersion;
 
   @VisibleForTesting
@@ -139,11 +135,6 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   public boolean isDartDefineSupported() {
     //noinspection ConstantConditions
     return version != null && version.compareTo(MIN_DART_DEFINE_SDK.version) >= 0;
-  }
-
-  public boolean isXcodeConfigOnlySupported() {
-    //noinspection ConstantConditions
-    return version != null && version.compareTo(MIN_XCODE_CONFIG_ONLY.version) >= 0;
   }
 
   public boolean flutterCreateSupportsPlatforms() {
