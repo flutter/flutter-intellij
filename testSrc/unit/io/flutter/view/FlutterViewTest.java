@@ -12,6 +12,8 @@ import io.flutter.ObservatoryConnector;
 import io.flutter.analytics.Analytics;
 import io.flutter.inspector.InspectorGroupManagerService;
 import io.flutter.inspector.InspectorService;
+import io.flutter.jxbrowser.FailureType;
+import io.flutter.jxbrowser.InstallationFailedReason;
 import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.jxbrowser.JxBrowserStatus;
 import io.flutter.run.daemon.FlutterApp;
@@ -61,6 +63,10 @@ public class FlutterViewTest {
   public void testHandleJxBrowserInstallationFailed() {
     PowerMockito.mockStatic(JxBrowserUtils.class);
     when(JxBrowserUtils.licenseIsSet()).thenReturn(true);
+
+    PowerMockito.mockStatic(JxBrowserManager.class);
+    when(JxBrowserManager.getInstance()).thenReturn(mockJxBrowserManager);
+    when(mockJxBrowserManager.getLatestFailureReason()).thenReturn(new InstallationFailedReason(FailureType.FILE_DOWNLOAD_FAILED));
 
     // If JxBrowser failed to install, we should show a failure message that allows the user to manually retry.
     final FlutterView partialMockFlutterView = mock(FlutterView.class);
