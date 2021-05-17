@@ -45,13 +45,13 @@ import io.flutter.run.common.RunMode;
 import io.flutter.run.test.TestFields;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
+import java.util.*;
+
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -77,6 +77,22 @@ public class FlutterSdk {
   private FlutterSdk(@NotNull final VirtualFile home, @NotNull final FlutterSdkVersion version) {
     myHome = home;
     myVersion = version;
+  }
+
+  public boolean isOlderThanToolsStamp(@NotNull VirtualFile gen) {
+    final VirtualFile bin = myHome.findChild("bin");
+    if (bin == null) return false;
+    final VirtualFile cache = bin.findChild("cache");
+    if (cache == null) return false;
+    final VirtualFile stamp = cache.findChild("flutter_tools.stamp");
+    if (stamp == null) return false;
+    try {
+      final FileTime genFile = Files.getLastModifiedTime(Paths.get(gen.getPath()));
+      final FileTime stampFile = Files.getLastModifiedTime(Paths.get(stamp.getPath()));
+      return genFile.compareTo(stampFile) > 0;
+    } catch (IOException ignored) {
+      return false;
+    }
   }
 
   /**

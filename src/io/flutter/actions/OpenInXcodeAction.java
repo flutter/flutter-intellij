@@ -22,18 +22,15 @@ import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.ProgressHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-
 public class OpenInXcodeAction extends AnAction {
   @Nullable
   private static VirtualFile findProjectFile(@NotNull AnActionEvent event) {
-    final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(event.getDataContext());
+    final VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
     if (file != null && file.exists()) {
       if (FlutterUtils.isXcodeFileName(file.getName())) {
         return file;
@@ -74,7 +71,7 @@ public class OpenInXcodeAction extends AnAction {
     }
 
     // Trigger an iOS build if necessary.
-    if (!hasBeenBuilt(pubRoot, sdk.getVersion())) {
+    if (!hasBeenBuilt(pubRoot, sdk)) {
       final ProgressHelper progressHelper = new ProgressHelper(project);
       progressHelper.start("Building for iOS");
 
@@ -111,8 +108,8 @@ public class OpenInXcodeAction extends AnAction {
     }
   }
 
-  private static boolean hasBeenBuilt(@NotNull PubRoot pubRoot, @NotNull FlutterSdkVersion version) {
-    if (version.isXcodeConfigOnlySupported()) {
+  private static boolean hasBeenBuilt(@NotNull PubRoot pubRoot, @NotNull FlutterSdk sdk) {
+    if (sdk.getVersion().isXcodeConfigOnlySupported()) {
       // Derived from packages/flutter_tools/test/integration.shard/build_ios_config_only_test.dart
       final VirtualFile ios = pubRoot.getRoot().findChild("ios");
       if (ios == null || !ios.isDirectory()) return false;
@@ -120,12 +117,7 @@ public class OpenInXcodeAction extends AnAction {
       if (flutter == null || !flutter.isDirectory()) return false;
       final VirtualFile gen = flutter.findChild("Generated.xcconfig");
       if (gen == null || gen.isDirectory()) return false;
-      try {
-        final String contents = new String(gen.contentsToByteArray());
-        return contents.contains("DART_OBFUSCATION=true");
-      } catch (IOException ignored) {
-        return false;
-      }
+      return sdk.isOlderThanToolsStamp(gen);
     } else {
       final VirtualFile buildDir = pubRoot.getRoot().findChild("build");
       return buildDir != null && buildDir.isDirectory() && buildDir.findChild("ios") != null;
@@ -163,8 +155,7 @@ public class OpenInXcodeAction extends AnAction {
     else {
       final Presentation presentation = event.getPresentation();
       final boolean enabled = findProjectFile(event) != null;
-      presentation.setEnabled(enabled);
-      presentation.setVisible(enabled);
+      presentation.setEnabledAndVisible(enabled);
     }
   }
 
