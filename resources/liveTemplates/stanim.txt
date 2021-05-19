@@ -1,12 +1,12 @@
 class $NAME$ extends StatefulWidget {
-  const $NAME$({Key key}) : super(key: key);
+  const $NAME$({Key? key}) : super(key: key);
 
   @override
   _$NAME$State createState() => _$NAME$State();
 }
 
 class _$NAME$State extends State<$NAME$> with SingleTickerProviderStateMixin {
-  AnimationController _controller;
+  late AnimationController _controller;
 
   @override
   void initState() {
