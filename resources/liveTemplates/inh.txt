@@ -1,12 +1,13 @@
 class $NAME$ extends InheritedWidget {
   const $NAME$({
-    Key key,
-    @required Widget child,
-  }) : assert(child != null),
-       super(key: key, child: child);
+    Key? key,
+    required Widget child,
+  }) : super(key: key, child: child);
 
   static $NAME$ of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<$NAME$>();
+    final $NAME$? result = context.dependOnInheritedWidgetOfExactType<$NAME$>();
+    assert(result != null, 'No $NAME$ found in context');
+    return result!;
   }
 
   @override
