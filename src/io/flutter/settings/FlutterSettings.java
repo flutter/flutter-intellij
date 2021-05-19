@@ -14,6 +14,7 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
+import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.analytics.Analytics;
 
@@ -303,6 +304,12 @@ public class FlutterSettings {
     if (SystemInfo.isMac && (SystemInfo.isOsVersionAtLeast("11.0") || SystemInfo.isOsVersionAtLeast("10.16")) &&
             !getPropertiesComponent().getBoolean(enableEmbeddedBrowsersKey, true) &&
             isChangeBigSurToTrue()) {
+      FlutterMessages.showInfo(
+              "Embedded DevTools Inspector",
+              "The embedded inspector is now supported for MacOS Big Sur and is enabled by default. To disable, go to Preferences > Flutter.",
+              null
+      );
+
       // We do not want to set it back to true again in the future (e.g. if a user decides to set to false).
       setChangeBigSurToTrue(false);
       return true;
