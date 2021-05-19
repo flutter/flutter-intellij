@@ -1,5 +1,5 @@
 <templateSet group="Flutter">
-  <template name="stless" value="class $NAME$ extends StatelessWidget {&#10;  const $NAME$({Key key}) : super(key: key);&#10;&#10;  @override&#10;  Widget build(BuildContext context) {&#10;    return Container($END$);&#10;  }&#10;}&#10;" description="New Stateless widget" toReformat="false" toShortenFQNames="true">
+  <template name="stless" value="class $NAME$ extends StatelessWidget {&#10;  const $NAME$({Key? key}) : super(key: key);&#10;&#10;  @override&#10;  Widget build(BuildContext context) {&#10;    return Container($END$);&#10;  }&#10;}&#10;" description="New Stateless widget" toReformat="false" toShortenFQNames="true">
     <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
     <context>
       <option name="DART_TOPLEVEL" value="true" />
