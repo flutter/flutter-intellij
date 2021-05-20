@@ -6,13 +6,7 @@ class $NAME$ extends StatefulWidget {
 }
 
 class _$NAME$State extends State<$NAME$> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(vsync: this);
-  }
+  late final AnimationController _controller = AnimationController(vsync: this);
 
   @override
   void dispose() {
