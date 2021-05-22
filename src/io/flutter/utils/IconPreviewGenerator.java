@@ -20,8 +20,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 @SuppressWarnings("UseJBColor")
@@ -136,56 +134,5 @@ public class IconPreviewGenerator {
     graphics.setComposite(AlphaComposite.Src);
     graphics.setColor(fontColor);
     graphics.drawString(codepoint, x0, y0);
-  }
-
-  // TODO Delete everything from here to the end.
-  public static Color hex2Rgb(String colorStr) {
-    // "#RRGGBBAA
-    return new Color(
-      Integer.valueOf(colorStr.substring(1, 3), 16),
-      Integer.valueOf(colorStr.substring(3, 5), 16),
-      Integer.valueOf(colorStr.substring(5, 7), 16),
-      Integer.valueOf(colorStr.substring(7, 9), 16));
-  }
-
-  public static void main(String[] args) {
-    Map<String, String> params = new HashMap<>();
-    for (String s : args) {
-      String arg = s;
-      String value = null;
-      if (arg.startsWith("--")) {
-        arg = arg.substring(2);
-        int n = arg.indexOf("=");
-        if (n > -1) {
-          value = arg.substring(n + 1);
-          arg = arg.substring(0, n);
-        }
-        if (value != null && !value.isEmpty()) {
-          params.put(arg, value);
-        }
-      }
-    }
-    if (!params.containsKey("font") || !params.containsKey("output") || !params.containsKey("list")) {
-      return;
-    }
-
-    int iconSize = 16;
-    int fontSize = 16;
-    Color fontColor = Color.gray;
-    String suffix = "";
-    if (params.containsKey("color")) {
-      fontColor = hex2Rgb(params.get("color"));
-    }
-    if (params.containsKey("iconsize")) {
-      iconSize = Integer.parseInt(params.get("iconsize"));
-    }
-    if (params.containsKey("fontsize")) {
-      fontSize = Integer.parseInt(params.get("fontsize"));
-    }
-    if (params.containsKey("suffix")) {
-      suffix = params.get("suffix");
-    }
-    IconPreviewGenerator font = new IconPreviewGenerator(params.get("font"), iconSize, fontSize, fontColor);
-    font.batchConvert(params.get("output"), params.get("list"), suffix);
   }
 }
