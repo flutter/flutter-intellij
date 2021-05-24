@@ -96,7 +96,10 @@ public abstract class CommonTestConfigUtils {
     // If the outline is outdated, then request a new pass to generate line markers.
     if (outline == null || outlineOutdated) {
       clearCachedInfo(path);
-      outlineService.addListener(getListenerForFile(file));
+      final LineMarkerUpdatingListener listener = getListenerForFile(file);
+      if (listener != null) {
+        outlineService.addListener(listener);
+      }
       return new HashMap<>();
     }
 
