@@ -107,7 +107,16 @@ public class EmbeddedBrowser {
     // Multiple LoadFinished events can occur, but we only need to add content the first time.
     final AtomicBoolean contentLoaded = new AtomicBoolean(false);
 
-    browser.navigation().loadUrl(devToolsUrl.getUrlString());
+    try {
+      browser.navigation().loadUrl(devToolsUrl.getUrlString());
+    } catch (Exception ex) {
+      devToolsUrlFuture.completeExceptionally(ex);
+      onBrowserUnavailable.run();
+      LOG.info(ex);
+      FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(ex), false);
+      return;
+    }
+
     devToolsUrlFuture.complete(devToolsUrl);
     browser.navigation().on(LoadFinished.class, event -> {
       if (!contentLoaded.compareAndSet(false, true)) {
