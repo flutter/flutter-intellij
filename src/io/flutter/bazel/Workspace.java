@@ -16,6 +16,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.vfs.InvalidVirtualFileAccessException;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -359,11 +360,16 @@ public class Workspace {
   @Nullable
   private static VirtualFile findContainingWorkspaceFile(@NotNull VirtualFile dir) {
     while (dir != null) {
-      final VirtualFile child = dir.findChild("WORKSPACE");
-      if (child != null && child.exists() && !child.isDirectory()) {
-        return child;
+      try {
+        final VirtualFile child = dir.findChild("WORKSPACE");
+        if (child != null && child.exists() && !child.isDirectory()) {
+          return child;
+        }
+        dir = dir.getParent();
+      } catch (InvalidVirtualFileAccessException ex) {
+        // The VFS is out of sync.
+        return null;
       }
-      dir = dir.getParent();
     }
 
     // not found
