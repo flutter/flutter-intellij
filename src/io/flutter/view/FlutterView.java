@@ -10,6 +10,7 @@ import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.execution.ui.layout.impl.JBRunnerTabs;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.browsers.BrowserLauncher;
+import com.intellij.ide.ui.UISettingsListener;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
@@ -119,6 +120,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private final Project myProject;
 
   private final Map<FlutterApp, PerAppState> perAppViewState = new HashMap<>();
+  private final MessageBusConnection busConnection = ApplicationManager.getApplication().getMessageBus().connect();
+  private boolean busSubscribed = false;
 
   private Content emptyContent;
 
@@ -158,6 +161,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   @Override
   public void dispose() {
+    busConnection.disconnect();
     Disposer.dispose(this);
   }
 
@@ -260,7 +264,15 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     if (isEmbedded) {
       final String color = ColorUtil.toHex(UIUtil.getEditorPaneBackground());
-      final DevToolsUrl devToolsUrl = new DevToolsUrl(devToolsInstance.host, devToolsInstance.port, browserUrl, "inspector", true, color);
+      final DevToolsUrl devToolsUrl = new DevToolsUrl(
+              devToolsInstance.host,
+              devToolsInstance.port,
+              browserUrl,
+              "inspector",
+              true,
+              color,
+              UIUtil.getFontSize(UIUtil.FontSize.NORMAL)
+      );
 
       //noinspection CodeBlock2Expr
       ApplicationManager.getApplication().invokeLater(() -> {
@@ -274,10 +286,15 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         });
       });
 
-      final MessageBusConnection busConnection = ApplicationManager.getApplication().getMessageBus().connect();
-      busConnection.subscribe(EditorColorsManager.TOPIC, scheme ->
-        EmbeddedBrowser.getInstance(myProject).updateColor(ColorUtil.toHex(UIUtil.getEditorPaneBackground()))
-      );
+      if (!busSubscribed) {
+        busConnection.subscribe(EditorColorsManager.TOPIC, scheme ->
+                EmbeddedBrowser.getInstance(myProject).updateColor(ColorUtil.toHex(UIUtil.getEditorPaneBackground()))
+        );
+        busConnection.subscribe(UISettingsListener.TOPIC, scheme ->
+                EmbeddedBrowser.getInstance(myProject).updateFontSize(UIUtil.getFontSize(UIUtil.FontSize.NORMAL))
+        );
+        busSubscribed = true;
+      }
     } else {
       BrowserLauncher.getInstance().browse(
         DevToolsUtils.generateDevToolsUrl(devToolsInstance.host, devToolsInstance.port, browserUrl, "inspector", false),

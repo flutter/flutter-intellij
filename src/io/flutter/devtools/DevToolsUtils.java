@@ -5,13 +5,6 @@
  */
 package io.flutter.devtools;
 
-import io.flutter.sdk.FlutterSdkUtil;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
-
 public class DevToolsUtils {
   public static String generateDevToolsUrl(
     String devtoolsHost,
@@ -31,7 +24,7 @@ public class DevToolsUtils {
     boolean embed,
     String colorHexCode
   ) {
-    final DevToolsUrl devToolsUrl = new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, embed, colorHexCode);
+    final DevToolsUrl devToolsUrl = new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, embed, colorHexCode, null);
     return devToolsUrl.getUrlString();
   }
 
