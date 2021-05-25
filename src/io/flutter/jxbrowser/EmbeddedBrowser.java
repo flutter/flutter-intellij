@@ -165,6 +165,16 @@ public class EmbeddedBrowser {
     });
   }
 
+  public void updateFontSize(float newFontSize) {
+    updateUrlAndReload(devToolsUrl -> {
+      if (devToolsUrl.fontSize.equals(newFontSize)) {
+        return null;
+      }
+      devToolsUrl.fontSize = newFontSize;
+      return devToolsUrl;
+    });
+  }
+
   private void updateUrlAndReload(Function<DevToolsUrl, DevToolsUrl> newDevToolsUrlFn) {
     final CompletableFuture<DevToolsUrl> updatedUrlFuture = devToolsUrlFuture.thenApply(devToolsUrl -> {
       if (devToolsUrl == null) {
