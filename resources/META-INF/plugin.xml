@@ -44,6 +44,28 @@
 
   <change-notes>
     <![CDATA[
+<h1>57.0</h1>
+<ul>
+  <li>Update to JxBrowser v7.15 (#5511)</li>
+  <li>Catch InvalidVirtualFileAccessException thrown by VFS in a readAction (#5510)</li>
+  <li>Handle if embedded browser load fails (#5509)</li>
+  <li>Add null-check for listener (#5508)</li>
+  <li>Enable embedded browser (once) for Big Sur users (#5490)</li>
+  <li>Update live templates to assume null-safety (#5494)</li>
+  <li>Detect M1 mac and skip JxBrowser (#5487)</li>
+  <li>Use --config-only to set up Xcode (#5489)</li>
+  <li>Fix jump-to-source for testWidgets() (#5486)</li>
+  <li>Use i18n version of "Console" (#5483)</li>
+  <li>Fix step-over async call (#5476)</li>
+  <li>Update device selector on EDT (#5480)</li>
+  <li>Catch an already disposed exception (#5479)</li>
+  <li>Make sure presentDevTools runs on event thread (#5471)</li>
+  <li>Fix NPE when no integration test folder exists (#5473)</li>
+  <li>Run tests with coverage (#5463)</li>
+  <li>Add support for integration tests to the UI (#5459)</li>
+  <li>Check for new local Dart SDK (#5456)</li>
+  <li>Improve hover message of "Track Widget Rebuilds" (#5451)</li>
+</ul>
 <h1>56.0</h1>
 <ul>
   <li>Add option to display all stack traces in debugger log (#5443)</li>
