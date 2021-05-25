@@ -138,14 +138,8 @@ List<EditCommand> editCommands = [
   ),
   Subst(
     path: 'src/io/flutter/utils/JxBrowserUtils.java',
-    initial: 'return false; // return SystemInfo.isMac && CpuArch.isArm64();',
+    initial: 'return false; // return SystemInfo.isMac && com.intellij.util.system.CpuArch.isArm64();',
     replacement: 'return SystemInfo.isMac && CpuArch.isArm64();',
-    versions: ['2021.1'],
-  ),
-  Subst(
-    path: 'src/io/flutter/utils/JxBrowserUtils.java',
-    initial: '// import com.intellij.util.system.CpuArch;',
-    replacement: 'import com.intellij.util.system.CpuArch;',
     versions: ['2021.1'],
   ),
 ];
