@@ -6,28 +6,6 @@
 package io.flutter.devtools;
 
 public class DevToolsUtils {
-  public static String generateDevToolsUrl(
-    String devtoolsHost,
-    int devtoolsPort,
-    String serviceProtocolUri,
-    String page,
-    boolean embed
-  ) {
-    return generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, embed, null);
-  }
-
-  public static String generateDevToolsUrl(
-    String devtoolsHost,
-    int devtoolsPort,
-    String serviceProtocolUri,
-    String page,
-    boolean embed,
-    String colorHexCode
-  ) {
-    final DevToolsUrl devToolsUrl = new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, embed, colorHexCode, null);
-    return devToolsUrl.getUrlString();
-  }
-
   public static String findWidgetId(String url) {
     final String searchFor = "inspectorRef=";
     final String[] split = url.split("&");

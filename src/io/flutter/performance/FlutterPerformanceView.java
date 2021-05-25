@@ -29,7 +29,7 @@ import com.intellij.ui.content.ContentManager;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
-import io.flutter.devtools.DevToolsUtils;
+import io.flutter.devtools.DevToolsUrl;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.DevToolsService;
@@ -215,8 +215,8 @@ public class FlutterPerformanceView implements Disposable {
         }
 
         BrowserLauncher.getInstance().browse(
-          DevToolsUtils.generateDevToolsUrl(instance.host, instance.port, app.getConnector().getBrowserUrl(), null, false),
-          null
+                (new DevToolsUrl(instance.host, instance.port, app.getConnector().getBrowserUrl(), null, false, null, null)).getUrlString(),
+                null
         );
       });
     }, null);
