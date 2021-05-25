@@ -20,14 +20,16 @@ public class DevToolsUrl {
   private boolean embed;
   public String colorHexCode;
   public String widgetId;
+  public Float fontSize;
 
-  public DevToolsUrl(String devtoolsHost, int devtoolsPort, String vmServiceUri, String page, boolean embed, String colorHexCode) {
+  public DevToolsUrl(String devtoolsHost, int devtoolsPort, String vmServiceUri, String page, boolean embed, String colorHexCode, Float fontSize) {
     this.devtoolsHost = devtoolsHost;
     this.devtoolsPort = devtoolsPort;
     this.vmServiceUri = vmServiceUri;
     this.page = page;
     this.embed = embed;
     this.colorHexCode = colorHexCode;
+    this.fontSize = fontSize;
   }
 
   public String getUrlString() {
@@ -42,6 +44,9 @@ public class DevToolsUrl {
     }
     if (embed) {
       params.add("embed=true");
+    }
+    if (fontSize != null) {
+      params.add("fontSize=" + fontSize);
     }
 
     if (vmServiceUri != null) {

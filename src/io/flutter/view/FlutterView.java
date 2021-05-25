@@ -260,7 +260,15 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     if (isEmbedded) {
       final String color = ColorUtil.toHex(UIUtil.getEditorPaneBackground());
-      final DevToolsUrl devToolsUrl = new DevToolsUrl(devToolsInstance.host, devToolsInstance.port, browserUrl, "inspector", true, color);
+      final DevToolsUrl devToolsUrl = new DevToolsUrl(
+              devToolsInstance.host,
+              devToolsInstance.port,
+              browserUrl,
+              "inspector",
+              true,
+              color,
+              UIUtil.getFontSize(UIUtil.FontSize.NORMAL)
+      );
 
       //noinspection CodeBlock2Expr
       ApplicationManager.getApplication().invokeLater(() -> {
