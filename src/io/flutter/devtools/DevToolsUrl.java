@@ -22,7 +22,13 @@ public class DevToolsUrl {
   public String widgetId;
   public Float fontSize;
 
-  public DevToolsUrl(String devtoolsHost, int devtoolsPort, String vmServiceUri, String page, boolean embed, String colorHexCode, Float fontSize) {
+  public DevToolsUrl(String devtoolsHost,
+                     int devtoolsPort,
+                     String vmServiceUri,
+                     String page,
+                     boolean embed,
+                     String colorHexCode,
+                     Float fontSize) {
     this.devtoolsHost = devtoolsHost;
     this.devtoolsPort = devtoolsPort;
     this.vmServiceUri = vmServiceUri;
