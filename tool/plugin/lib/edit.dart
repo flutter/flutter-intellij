@@ -40,51 +40,10 @@ List<EditCommand> editCommands = [
     version: '2021.1',
   ),
   Subst(
-    path: 'src/io/flutter/FlutterUtils.java',
-    initial: 'ProjectUtil.isSameProject(Paths.get(path), project)',
-    replacement: 'ProjectUtil.isSameProject(path, project)',
-    versions: ['4.1'],
-  ),
-  Subst(
-    path: 'src/io/flutter/perf/EditorPerfDecorations.java',
-    initial: 'highlighter.getTextAttributes(null)',
-    replacement: 'highlighter.getTextAttributes()',
-    versions: ['4.1'],
-  ),
-  MultiSubst(
-    path: 'src/io/flutter/sdk/FlutterSdk.java',
-    initials: [
-      'branch = git4idea.light.LightGitUtilKt.getLocation(dir, GitExecutableManager.getInstance().getExecutable((Project)null));',
-      'catch (VcsException e)'
-    ],
-    replacements: [
-      // This means we don't show platforms in IJ 2020.1, until stable channel supports them.
-      'return FlutterSdkChannel.fromText("stable");',
-      'catch (RuntimeException e)'
-    ],
-    versions: ['4.1'],
-  ),
-  MultiSubst(
-    path: 'src/io/flutter/editor/FlutterIconLineMarkerProvider.java',
-    initials: [
-      'import com.intellij.codeInsight.daemon.GutterName;',
-      '@GutterName'
-    ],
-    replacements: ['', ''],
-    versions: ['4.1'],
-  ),
-  Subst(
-    path: 'src/io/flutter/preview/PreviewView.java',
-    initial:
-        'Arrays.asList(expandAllAction, collapseAllAction, showOnlyWidgetsAction)',
-    replacement: 'expandAllAction, collapseAllAction, showOnlyWidgetsAction',
-    versions: ['4.1'],
-  ),
-  Subst(
     path: 'src/io/flutter/FlutterErrorReportSubmitter.java',
     initial: 'Consumer<? super SubmittedReportInfo> consumer',
     replacement: 'Consumer<SubmittedReportInfo> consumer',
-    versions: ['4.1', '4.2'],
+    versions: ['4.2'],
   ),
   Subst(
     path: 'src/io/flutter/utils/CollectionUtils.java',
@@ -110,13 +69,13 @@ List<EditCommand> editCommands = [
       'Object',
       'null',
     ],
-    versions: ['4.1', '4.2'],
+    versions: ['4.2'],
   ),
   Subst(
     path: 'flutter-studio/src/io/flutter/project/FlutterProjectCreator.java',
     initial: 'cannotWriteToFiles(List<Path> files)',
     replacement: 'cannotWriteToFiles(List<? extends File> files)',
-    versions: ['4.1', '4.2'],
+    versions: ['4.2'],
   ),
   Subst(
     path: 'src/io/flutter/sdk/FlutterSdkUtil.java',
@@ -138,7 +97,8 @@ List<EditCommand> editCommands = [
   ),
   Subst(
     path: 'src/io/flutter/utils/JxBrowserUtils.java',
-    initial: 'return false; // return SystemInfo.isMac && com.intellij.util.system.CpuArch.isArm64();',
+    initial:
+        'return false; // return SystemInfo.isMac && com.intellij.util.system.CpuArch.isArm64();',
     replacement: 'return SystemInfo.isMac && CpuArch.isArm64();',
     versions: ['2021.1'],
   ),
@@ -164,7 +124,7 @@ class EditAndroidModuleLibraryManager extends EditCommand {
   String convert(BuildSpec spec) {
     // Starting with 3.6 we need to call a simplified init().
     // This is where the $PROJECT_FILE$ macro is defined, #registerComponents.
-    if (spec.version.startsWith("4.1") || spec.version.startsWith('4.2')) {
+    if (spec.version.startsWith('4.2')) {
       var processedFile, source;
       processedFile = File(
           'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
@@ -175,19 +135,9 @@ class EditAndroidModuleLibraryManager extends EditCommand {
           "super.init(false, indicator);", "super.init(indicator);");
       source = source.replaceAll(
           "import com.intellij.openapi.project.impl.ProjectExImpl;", "");
-      if (spec.version.startsWith("4.1")) {
-        source = source.replaceAll(
-            "import com.intellij.openapi.components.impl.stores.IProjectStore;",
-            "");
-        source = source.replaceAll("IProjectStore", "Object");
-        source = source.replaceAll(
-            "androidProject.init42", "androidProject.initPre41");
-        source = source.replaceAll("PluginManagerCore.getLoadedPlugins(), null",
-            "PluginManagerCore.getLoadedPlugins(), false");
-      }
       if (spec.version.startsWith('4.2')) {
-        source = source.replaceAll(
-            "androidProject.init42", "androidProject.init41");
+        source =
+            source.replaceAll("androidProject.init42", "androidProject.init41");
         source = source.replaceAll("PluginManagerCore.getLoadedPlugins(), null",
             "PluginManagerCore.getLoadedPlugins()");
         source = source.replaceAll("getStateStore1", "getStateStore");
@@ -275,9 +225,16 @@ class Subst extends EditCommand {
   String path;
   String initial;
   String replacement;
+
+  /// The list of platform versions to perform the substitution for.
   List<String> versions;
 
-  Subst({this.versions, this.initial, this.replacement, this.path, version})
+  Subst(
+      {this.versions,
+      this.initial,
+      this.replacement,
+      this.path,
+      String version})
       : assert(initial != null),
         assert(replacement != null),
         assert(path != null) {
@@ -296,7 +253,7 @@ class Subst extends EditCommand {
       var original = source;
       source = source.replaceAll(initial, replacement);
       processedFile.writeAsStringSync(source);
-      log ('edited $path');
+      log('edited $path');
       return original;
     } else {
       return null;
