@@ -22,6 +22,8 @@ import com.intellij.execution.runners.GenericProgramRunner;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.run.test.TestConfig;
 import org.jetbrains.annotations.NonNls;
@@ -79,6 +81,9 @@ public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSet
     if (configuration.getCoverageFilePath() == null) return;
 
     final Path path = Paths.get(configuration.getCoverageFilePath());
+    final Path cov = path.getParent();
+    VfsUtil.markDirtyAndRefresh(false, false, true, LocalFileSystem.getInstance().findFileByPath(cov.getParent().toString()));
+    VfsUtil.markDirtyAndRefresh(false, true, true, LocalFileSystem.getInstance().findFileByPath(cov.toString()));
     if (Files.exists(path)) {
       @Nullable final RunnerSettings settings = env.getRunnerSettings();
       if (settings != null) {
