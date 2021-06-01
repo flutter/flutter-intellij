@@ -5,6 +5,8 @@
  */
 package io.flutter.run.coverage;
 
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.rt.coverage.data.ClassData;
 import com.intellij.rt.coverage.data.LineData;
 import com.intellij.rt.coverage.data.ProjectData;
@@ -22,6 +24,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 public class LcovInfo {
+  private static final Logger LOG = Logger.getInstance(LcovInfo.class.getName());
 
   private static final String FILE_LABEL = "SF:";
   private static final String DATA_LABEL = "DA:";
@@ -58,7 +61,7 @@ public class LcovInfo {
         final LineData lineData = new LineData(line.lineNum, null);
         lineData.setHits(line.execCount);
         lines[line.lineNum] = lineData;
-        //classData.registerMethodSignature(lineData);
+        classData.registerMethodSignature(lineData);
       }
       classData.setLines(lines);
     }
@@ -96,7 +99,8 @@ public class LcovInfo {
   private static int safelyParse(String val) {
     try {
       return Integer.parseInt(val);
-    } catch (NumberFormatException ex) {
+    }
+    catch (NumberFormatException ex) {
       return 0;
     }
   }
@@ -107,7 +111,11 @@ public class LcovInfo {
   }
 
   private static String fullPath(String path) {
-    return new File(path).getAbsolutePath();
+    String absPath = new File(path).getAbsolutePath();
+    if (SystemInfo.isWindows) {
+      absPath = absPath.replaceAll("\\\\", "/");
+    }
+    return absPath;
   }
 
   private static class LineCount {

@@ -1,5 +1,5 @@
 <idea-plugin>
-  <extensions defaultExtensionNs="com.intellij">
+  <extensions defaultExtensionNs="disable.com.intellij">
     <programRunner implementation="io.flutter.run.coverage.FlutterCoverageProgramRunner"/>
     <coverageEngine implementation="io.flutter.run.coverage.FlutterCoverageEngine"/>
     <coverageRunner implementation="io.flutter.run.coverage.FlutterCoverageRunner"/>
