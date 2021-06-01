@@ -2,21 +2,6 @@
   "list": [
     {
       "channel": "stable",
-      "comments": "IntelliJ 2020.1.1, Android Studio 4.1",
-      "name": "Android Studio 4.1",
-      "version": "4.1",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "201.6565218",
-      "dartPluginVersion": "201.7223.99",
-      "sinceBuild": "201.7223",
-      "untilBuild": "201.*",
-      "filesToSkip": [
-        "src/io/flutter/utils/AndroidLocationProvider.java",
-        "flutter-studio/src/io/flutter/actions/FlutterNewProjectAction.java"
-      ]
-    },
-    {
-      "channel": "stable",
       "comments": "IntelliJ 2020.2.3, Android Studio 4.2 RC 1",
       "name": "Android Studio 4.2",
       "version": "4.2",
