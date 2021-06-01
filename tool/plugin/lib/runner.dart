@@ -50,7 +50,7 @@ compile
             indent: false);
         exit(x.errorCode);
       } else {
-        throw x;
+        rethrow;
       }
     }
   }
@@ -62,7 +62,7 @@ compile
         File("$rootPath/resources/jxbrowser/jxbrowser.properties");
     if (jxBrowserKey.isNotEmpty) {
       final contents = '''
-jxbrowser.license.key=${jxBrowserKey}
+jxbrowser.license.key=$jxBrowserKey
 ''';
       propertiesFile.writeAsStringSync(contents);
     }
@@ -86,7 +86,7 @@ org.gradle.parallel=true
 org.gradle.jvmargs=-Xms128m -Xmx1024m -XX:+CMSClassUnloadingEnabled
 javaVersion=$javaVersion
 dartVersion=${spec.dartPluginVersion}
-flutterPluginVersion=${version}
+flutterPluginVersion=$version
 ide=${spec.ideaProduct}
 testing=$testing
 buildSpec=${spec.version}
@@ -94,7 +94,7 @@ buildSpec=${spec.version}
     final propertiesFile = File("$rootPath/gradle.properties");
     final source = propertiesFile.readAsStringSync();
     propertiesFile.writeAsStringSync(contents);
-    var result;
+    int result;
     // Using the Gradle daemon causes a strange problem.
     // --daemon => Invalid byte 1 of 1-byte UTF-8 sequence, which is nonsense.
     // During instrumentation of FlutterProjectStep.form, which is a UTF-8 file.
@@ -130,7 +130,7 @@ export JAVA_HOME=\$JAVA_HOME_OLD
     file.createSync();
     file.writeAsStringSync(script);
     try {
-      return await exec('bash', ['${file.absolute.path}']);
+      return await exec('bash', [(file.absolute.path)]);
     } finally {
       dir.deleteSync(recursive: true);
     }

@@ -16,10 +16,8 @@ class Artifact {
   final bool bareArchive;
   String output;
 
-  Artifact(this.file, {this.bareArchive: false, this.output}) {
-    if (output == null) {
-      output = file.substring(0, file.lastIndexOf('-'));
-    }
+  Artifact(this.file, {this.bareArchive = false, this.output}) {
+    output ??= file.substring(0, file.lastIndexOf('-'));
   }
 
   bool get isZip => file.endsWith('.zip');

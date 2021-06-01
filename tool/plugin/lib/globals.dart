@@ -4,7 +4,7 @@
 // @dart = 2.10
 
 // Map plugin ID to JetBrains registry ID.
-const Map<String, String> pluginRegistryIds = const {
+const Map<String, String> pluginRegistryIds = {
   'io.flutter': '9212',
   'io.flutter.as': '10139', // Currently unused.
 };

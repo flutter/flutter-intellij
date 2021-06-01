@@ -31,8 +31,9 @@ Future<int> exec(String cmd, List<String> args, {String cwd}) async {
 }
 
 Future<String> makeDevLog(BuildSpec spec) async {
-  if (lastReleaseName == null)
-    return ''; // The shallow on travis causes problems.
+  if (lastReleaseName == null) {
+    return '';
+  } // The shallow on travis causes problems.
   _checkGitDir();
   var gitDir = await GitDir.fromExisting(rootPath);
   var since = lastReleaseName;
@@ -42,9 +43,9 @@ Future<String> makeDevLog(BuildSpec spec) async {
   var messages = out.trim().split('\n');
   var devLog = StringBuffer();
   devLog.writeln('## Changes since ${since.replaceAll('_', ' ')}');
-  messages.forEach((m) {
+  for (var m in messages) {
     devLog.writeln(m.replaceFirst(RegExp(r'^[A-Fa-f\d]+\s+'), '- '));
-  });
+  }
   devLog.writeln();
   return devLog.toString();
 }
@@ -73,7 +74,7 @@ Future<String> lastRelease() async {
       await gitDir.runCommand(['branch', '--list', 'release_*']);
   String out = processResult.stdout;
   var release = out.trim().split('\n').last.trim();
-  if (!release.isEmpty) return release;
+  if (release.isNotEmpty) return release;
   processResult =
       await gitDir.runCommand(['branch', '--list', '-a', '*release_*']);
   out = processResult.stdout;
@@ -91,7 +92,7 @@ void separator(String name) {
   log('${ansi.red}${ansi.bold}$name${ansi.none}', indent: false);
 }
 
-void log(String s, {bool indent: true}) {
+void log(String s, {bool indent = true}) {
   indent ? print('  $s') : print(s);
 }
 
@@ -171,7 +172,7 @@ String buildVersionNumber(BuildSpec spec) {
   if (releaseNo == null) {
     releaseNo = 'SNAPSHOT';
   } else {
-    releaseNo = '$releaseNo.${pluginCount}';
+    releaseNo = '$releaseNo.$pluginCount';
     if (spec.isDevChannel) {
       releaseNo += '-dev.$devBuildNumber';
     }

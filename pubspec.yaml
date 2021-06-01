@@ -11,4 +11,5 @@ dependencies:
 dev_dependencies:
   grinder: ^0.9.0
   http: ^0.13.0
+  lints: ^1.0.0
   meta: any

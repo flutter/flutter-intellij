@@ -20,14 +20,14 @@ import 'runner.dart';
 import 'util.dart';
 
 Future<int> main(List<String> args) async {
-  var runner = new BuildCommandRunner();
+  var runner = BuildCommandRunner();
 
-  runner.addCommand(new LintCommand(runner));
-  runner.addCommand(new AntBuildCommand(runner));
-  runner.addCommand(new GradleBuildCommand(runner));
-  runner.addCommand(new TestCommand(runner));
-  runner.addCommand(new DeployCommand(runner));
-  runner.addCommand(new GenerateCommand(runner));
+  runner.addCommand(LintCommand(runner));
+  runner.addCommand(AntBuildCommand(runner));
+  runner.addCommand(GradleBuildCommand(runner));
+  runner.addCommand(TestCommand(runner));
+  runner.addCommand(DeployCommand(runner));
+  runner.addCommand(GenerateCommand(runner));
 
   try {
     return await runner.run(args) ?? 0;
@@ -51,9 +51,9 @@ void copyResources({String from, String to}) {
 List<BuildSpec> createBuildSpecs(ProductCommand command) {
   var specs = <BuildSpec>[];
   var input = readProductMatrix();
-  input.forEach((json) {
+  for (var json in input) {
     specs.add(BuildSpec.fromJson(json, command.release));
-  });
+  }
   return specs;
 }
 
@@ -116,8 +116,9 @@ void genPresubmitYaml(List<BuildSpec> specs) {
   var file = File(p.join(rootPath, '.github', 'workflows', 'presubmit.yaml'));
   var versions = [];
   for (var spec in specs) {
-    if (spec.channel == 'stable' && !spec.untilBuild.contains('SNAPSHOT'))
-      versions.add('${spec.version}');
+    if (spec.channel == 'stable' && !spec.untilBuild.contains('SNAPSHOT')) {
+      versions.add(spec.version);
+    }
   }
 
   var templateFile =
@@ -191,9 +192,10 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
       var expectedName =
           cmd.isDevChannel ? 'master' : "release_${cmd.releaseMajor}";
       var result = name == expectedName;
-      if (!result)
+      if (!result) {
         result = name.startsWith("release_${cmd.releaseMajor}") &&
-            name.lastIndexOf(RegExp("\.[0-9]")) == name.length - 2;
+            name.lastIndexOf(RegExp(r"\.[0-9]")) == name.length - 2;
+      }
       if (result) {
         if (isTravisFileValid()) {
           return result;
@@ -300,6 +302,7 @@ void _copyResources(Directory from, Directory to) {
 class AntBuildCommand extends BuildCommand {
   AntBuildCommand(BuildCommandRunner runner) : super(runner, 'build');
 
+  @override
   Future<int> externalBuildCommand(BuildSpec spec) async {
     var r = await runner.javac2(spec);
     if (r == 0) {
@@ -312,6 +315,7 @@ class AntBuildCommand extends BuildCommand {
     return r;
   }
 
+  @override
   Future<int> savePluginArtifact(BuildSpec spec) async {
     int result;
 
@@ -363,6 +367,7 @@ class AntBuildCommand extends BuildCommand {
 class GradleBuildCommand extends BuildCommand {
   GradleBuildCommand(BuildCommandRunner runner) : super(runner, 'make');
 
+  @override
   Future<int> externalBuildCommand(BuildSpec spec) async {
     var pluginFile = File('resources/META-INF/plugin.xml');
     var studioFile = File('resources/META-INF/studio-contribs.xml');
@@ -377,16 +382,16 @@ class GradleBuildCommand extends BuildCommand {
     }
   }
 
+  @override
   Future<int> savePluginArtifact(BuildSpec spec) async {
     final file = File(releasesFilePath(spec));
     final version = buildVersionNumber(spec);
-    var source = File('build/distributions/flutter-intellij-${version}.zip');
+    var source = File('build/distributions/flutter-intellij-$version.zip');
     if (!source.existsSync()) {
       // Setting the plugin name in Gradle should eliminate the need for this,
       // but it does not.
       // TODO(messick) Find a way to make the Kokoro file name: flutter-intellij-DEV.zip
-      source =
-          File('build/distributions/flutter-intellij-kokoro-${version}.zip');
+      source = File('build/distributions/flutter-intellij-kokoro-$version.zip');
     }
     _copyFile(
       source,
@@ -410,6 +415,7 @@ class GradleBuildCommand extends BuildCommand {
 /// then perform additional checks to verify that the release environment
 /// is in good order.
 abstract class BuildCommand extends ProductCommand {
+  @override
   final BuildCommandRunner runner;
 
   BuildCommand(this.runner, String commandName) : super(commandName) {
@@ -427,6 +433,7 @@ abstract class BuildCommand extends ProductCommand {
         abbr: 'm', help: 'Set the minor version number.');
   }
 
+  @override
   String get description => 'Build a deployable version of the Flutter plugin, '
       'compiled against the specified artifacts.';
 
@@ -434,6 +441,7 @@ abstract class BuildCommand extends ProductCommand {
 
   Future<int> savePluginArtifact(BuildSpec spec);
 
+  @override
   Future<int> doit() async {
     if (isReleaseMode) {
       if (argResults['unpack']) {
@@ -491,11 +499,9 @@ abstract class BuildCommand extends ProductCommand {
 
       log('spec.version: ${spec.version}');
 
-      final compileFn = () async {
+      result = await applyEdits(spec, () async {
         return await externalBuildCommand(spec);
-      };
-
-      result = await applyEdits(spec, compileFn);
+      });
       if (result != 0) {
         log('applyEdits() returned ${result.toString()}');
         return result;
@@ -512,7 +518,7 @@ abstract class BuildCommand extends ProductCommand {
       }
 
       separator('Built artifact');
-      log('${releasesFilePath(spec)}');
+      log(releasesFilePath(spec));
     }
     if (argResults['only-version'] == null) {
       checkAndClearAppliedEditCommands();
@@ -525,12 +531,15 @@ abstract class BuildCommand extends ProductCommand {
 /// Either the --release or --channel options must be provided.
 /// The permanent token is read from the file specified by Kokoro.
 class DeployCommand extends ProductCommand {
+  @override
   final BuildCommandRunner runner;
 
   DeployCommand(this.runner) : super('deploy');
 
+  @override
   String get description => 'Upload the Flutter plugin to the JetBrains site.';
 
+  @override
   Future<int> doit() async {
     if (isReleaseMode) {
       if (!await performReleaseChecks(this)) {
@@ -601,16 +610,19 @@ https://plugins.jetbrains.com/plugin/uploadPlugin
 /// Note: The product-matrix.json file includes a build spec for the EAP version
 /// at the end. When the EAP version is released that needs to be updated.
 class GenerateCommand extends ProductCommand {
+  @override
   final BuildCommandRunner runner;
 
   GenerateCommand(this.runner) : super('generate');
 
+  @override
   String get description =>
       'Generate plugin.xml, .github/workflows/presubmit.yaml, '
       'and resources/liveTemplates/flutter_miscellaneous.xml files for the '
       'Flutter plugin.\nThe plugin.xml.template and product-matrix.json are '
       'used as input.';
 
+  @override
   Future<int> doit() async {
     var json = readProductMatrix();
     var spec = SyntheticBuildSpec.fromJson(json.first, release, specs);
@@ -636,7 +648,7 @@ class GenerateCommand extends ProductCommand {
     // Find all the live templates.
     final templateFragments = Directory(p.join('resources', 'liveTemplates'))
         .listSync()
-        .where((entity) => entity is File)
+        .whereType<File>()
         .where((file) => p.extension(file.path) == 'txt')
         .cast<File>()
         .toList();
@@ -676,6 +688,7 @@ class GenerateCommand extends ProductCommand {
 }
 
 abstract class ProductCommand extends Command {
+  @override
   final String name;
   List<BuildSpec> specs;
 
@@ -762,6 +775,7 @@ abstract class ProductCommand extends Command {
 
   Future<int> doit();
 
+  @override
   Future<int> run() async {
     await _initGlobals();
     await _initSpecs();
@@ -806,6 +820,7 @@ abstract class ProductCommand extends Command {
 /// It would be easy to do forms but it isn't worth the trouble. Only one
 /// had to be edited.
 class RenamePackageCommand extends ProductCommand {
+  @override
   final BuildCommandRunner runner;
   String baseDir = Directory.current.path; // Run from flutter-intellij dir.
   String oldName, newName;
@@ -821,8 +836,10 @@ class RenamePackageCommand extends ProductCommand {
         negatable: true, help: 'The package is in the flutter-studio module');
   }
 
+  @override
   String get description => 'Rename a package in the plugin sources';
 
+  @override
   Future<int> doit() async {
     if (argResults['studio']) baseDir = p.join(baseDir, 'flutter-studio/src');
     oldName = argResults['package'];
@@ -897,6 +914,7 @@ class RenamePackageCommand extends ProductCommand {
 
 /// Build the tests if necessary then run them and return any failure code.
 class TestCommand extends ProductCommand {
+  @override
   final BuildCommandRunner runner;
 
   TestCommand(this.runner) : super('test') {
@@ -905,8 +923,10 @@ class TestCommand extends ProductCommand {
         negatable: false, help: 'Run integration tests');
   }
 
+  @override
   String get description => 'Run the tests for the Flutter plugin.';
 
+  @override
   Future<int> doit() async {
     final javaHome = Platform.environment['JAVA_HOME'];
     if (javaHome == null) {
@@ -927,10 +947,9 @@ class TestCommand extends ProductCommand {
 
   Future<int> _runUnitTests(BuildSpec spec) async {
     // run './gradlew test'
-    final compileFn = () async {
+    return await applyEdits(spec, () async {
       return await runner.runGradleCommand(['test'], spec, '1', 'true');
-    };
-    return await applyEdits(spec, compileFn);
+    });
   }
 
   Future<int> _runIntegrationTests() async {

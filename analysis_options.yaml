@@ -1,3 +1,5 @@
+include: package:lints/recommended.yaml
+
 analyzer:
   strong-mode:
     implicit-casts: false
@@ -7,6 +9,5 @@ analyzer:
 
 linter:
   rules:
-    - prefer_single_quotes
-    - type_annotate_public_apis
+    - directives_ordering
     - unawaited_futures

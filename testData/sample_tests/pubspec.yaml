@@ -6,5 +6,6 @@ environment:
   sdk: '>=2.0.0-dev <3.0.0'
 
 dev_dependencies:
+  lints: ^1.0.0
   meta: any
   test: ^1.16.0

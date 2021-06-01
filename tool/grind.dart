@@ -13,7 +13,7 @@ void main(List<String> args) => grind(args);
 void checkUrls() async {
   log('checking URLs in FlutterBundle.properties...');
   var lines =
-      await new File('src/io/flutter/FlutterBundle.properties').readAsLines();
+      await File('src/io/flutter/FlutterBundle.properties').readAsLines();
   for (var line in lines) {
     var split = line.split('=');
     if (split.length == 2) {
@@ -40,7 +40,7 @@ void outlineIcons() async {
 
   for (File file in previewIconsDir
       .listSync()
-      .where((entity) => entity is File)
+      .whereType<File>()
       .cast<File>()
       .where((file) => file.path.endsWith('.svg'))) {
     log('processing ${file.path}...');
@@ -58,7 +58,7 @@ void _createPng(
   File sourceSvg,
   String targetName, {
   required int? size,
-  bool forLight: false,
+  bool forLight = false,
 }) {
   File targetFile = joinFile(sourceSvg.parent, [targetName]);
 
