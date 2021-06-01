@@ -50,7 +50,6 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.devtools.DevToolsUrl;
-import io.flutter.devtools.DevToolsUtils;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.InspectorGroupManagerService;
 import io.flutter.inspector.InspectorService;
@@ -297,7 +296,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
     } else {
       BrowserLauncher.getInstance().browse(
-        DevToolsUtils.generateDevToolsUrl(devToolsInstance.host, devToolsInstance.port, browserUrl, "inspector", false),
+        (new DevToolsUrl(devToolsInstance.host, devToolsInstance.port, browserUrl, "inspector", false, null, null).getUrlString()),
         null
       );
       presentLabel(toolWindow, "DevTools inspector has been opened in the browser.");
@@ -950,7 +949,7 @@ class FlutterViewDevToolsAction extends FlutterViewAction {
         }
 
         BrowserLauncher.getInstance().browse(
-          DevToolsUtils.generateDevToolsUrl(instance.host, instance.port, urlString, null, false),
+          (new DevToolsUrl(instance.host, instance.port, urlString, null, false, null, null).getUrlString()),
           null
         );
       });
