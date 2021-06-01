@@ -166,7 +166,7 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
       fs.file("/workspace/WORKSPACE", "");
       fakeWorkspace = Workspace.forTest(
         fs.findFileByPath("/workspace/"),
-        PluginConfig.forTest("", "", "", "", "", "", "", "", "", "")
+        PluginConfig.forTest("", "", "", "", "", "", "", "", "")
       );
       this.hasWorkspace = hasWorkspace;
       this.hasValidTestFile = hasValidTestFile;

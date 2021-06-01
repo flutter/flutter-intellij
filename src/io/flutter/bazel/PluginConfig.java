@@ -65,11 +65,6 @@ public class PluginConfig {
   }
 
   @Nullable
-  String getVersionFile() {
-    return fields.versionFile;
-  }
-
-  @Nullable
   String getRequiredIJPluginID() {
     return fields.requiredIJPluginID;
   }
@@ -140,7 +135,6 @@ public class PluginConfig {
     @Nullable String runScript,
     @Nullable String syncScript,
     @Nullable String sdkHome,
-    @Nullable String versionFile,
     @Nullable String requiredIJPluginID,
     @Nullable String requiredIJPluginMessage,
     @Nullable String configWarningPrefix
@@ -152,7 +146,6 @@ public class PluginConfig {
       runScript,
       syncScript,
       sdkHome,
-      versionFile,
       requiredIJPluginID,
       requiredIJPluginMessage,
       configWarningPrefix
@@ -203,12 +196,6 @@ public class PluginConfig {
     /**
      * The file containing the Flutter version.
      */
-    @SerializedName("versionFile")
-    private String versionFile;
-
-    /**
-     * The file containing the Flutter version.
-     */
     @SerializedName("requiredIJPluginID")
     private String requiredIJPluginID;
 
@@ -236,7 +223,6 @@ public class PluginConfig {
            String runScript,
            String syncScript,
            String sdkHome,
-           String versionFile,
            String requiredIJPluginID,
            String requiredIJPluginMessage,
            String configWarningPrefix) {
@@ -246,7 +232,6 @@ public class PluginConfig {
       this.runScript = runScript;
       this.syncScript = syncScript;
       this.sdkHome = sdkHome;
-      this.versionFile = versionFile;
       this.requiredIJPluginID = requiredIJPluginID;
       this.requiredIJPluginMessage = requiredIJPluginMessage;
       this.configWarningPrefix = configWarningPrefix;
@@ -262,7 +247,6 @@ public class PluginConfig {
              && Objects.equal(runScript, other.runScript)
              && Objects.equal(syncScript, other.syncScript)
              && Objects.equal(sdkHome, other.sdkHome)
-             && Objects.equal(versionFile, other.versionFile)
              && Objects.equal(requiredIJPluginID, other.requiredIJPluginID)
              && Objects.equal(requiredIJPluginMessage, other.requiredIJPluginMessage)
              && Objects.equal(configWarningPrefix, other.configWarningPrefix);
@@ -270,7 +254,7 @@ public class PluginConfig {
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile, requiredIJPluginID,
+      return Objects.hashCode(daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, requiredIJPluginID,
                               requiredIJPluginMessage, configWarningPrefix);
     }
   }
