@@ -9,6 +9,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:meta/meta.dart';
+
 import 'build_spec.dart';
 import 'util.dart';
 
@@ -20,7 +22,9 @@ void checkAndClearAppliedEditCommands() {
     commands.addAll(editCommands);
     commands.removeAll(appliedEditCommands);
     separator("UNUSED EditCommand");
-    commands.forEach((cmd) => log(cmd.toString()));
+    for (var cmd in commands) {
+      log(cmd.toString());
+    }
   }
   appliedEditCommands.clear();
 }
@@ -125,10 +129,9 @@ class EditAndroidModuleLibraryManager extends EditCommand {
     // Starting with 3.6 we need to call a simplified init().
     // This is where the $PROJECT_FILE$ macro is defined, #registerComponents.
     if (spec.version.startsWith('4.2')) {
-      var processedFile, source;
-      processedFile = File(
+      var processedFile = File(
           'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
-      source = processedFile.readAsStringSync();
+      var source = processedFile.readAsStringSync();
       var original = source;
       source = source.replaceAll("ProjectExImpl", "ProjectImpl");
       source = source.replaceAll(
@@ -170,7 +173,7 @@ Future<int> applyEdits(BuildSpec spec, Function compileFn) async {
       if (entity is File) {
         var stubFile = File('${file}_stub');
         if (stubFile.existsSync()) {
-          await stubFile.copy('$file');
+          await stubFile.copy(file);
           log('copied ${file}_stub');
         }
       }
@@ -179,13 +182,13 @@ Future<int> applyEdits(BuildSpec spec, Function compileFn) async {
 
   var edited = <EditCommand, String>{};
   try {
-    editCommands.forEach((edit) {
+    for (var edit in editCommands) {
       var source = edit.convert(spec);
       if (source != null) {
         edited[edit] = source;
         appliedEditCommands.add(edit);
       }
-    });
+    }
 
     return await compileFn.call();
   } finally {
@@ -231,9 +234,9 @@ class Subst extends EditCommand {
 
   Subst(
       {this.versions,
-      this.initial,
-      this.replacement,
-      this.path,
+      @required this.initial,
+      @required this.replacement,
+      @required this.path,
       String version})
       : assert(initial != null),
         assert(replacement != null),
@@ -260,6 +263,7 @@ class Subst extends EditCommand {
     }
   }
 
+  @override
   String toString() => "Subst(path: $path, versions: $versions)";
 
   bool versionMatches(BuildSpec spec) {
@@ -279,7 +283,7 @@ class MultiSubst extends EditCommand {
     this.versions,
     this.initials,
     this.replacements,
-    this.path,
+    @required this.path,
   }) {
     assert(initials.length == replacements.length);
     assert(path != null);
@@ -303,6 +307,7 @@ class MultiSubst extends EditCommand {
     }
   }
 
+  @override
   String toString() => "Subst(path: $path, versions: $versions)";
 
   bool versionMatches(BuildSpec spec) {

@@ -12,15 +12,19 @@ import 'runner.dart';
 import 'util.dart';
 
 class LintCommand extends Command {
+  @override
   final BuildCommandRunner runner;
 
   LintCommand(this.runner);
 
+  @override
   String get name => 'lint';
 
+  @override
   String get description =>
       'Perform simple validations on the flutter-intellij repo code.';
 
+  @override
   Future<int> run() async {
     // Check for unintentionally imported annotations.
     if (checkForBadImports()) {
@@ -70,7 +74,9 @@ class LintCommand extends Command {
     for (var import in keys) {
       print('$import:');
       var places = usages[import];
-      places.forEach((String place) => print('  $place'));
+      for (var place in places) {
+        print('  $place');
+      }
       print('');
     }
   }

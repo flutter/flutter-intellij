@@ -36,12 +36,11 @@ class BuildSpec {
   Artifact product;
   Artifact dartPlugin;
 
-  BuildSpec.fromJson(Map json, String releaseNum)
-      : release = releaseNum,
-        name = json['name'],
+  BuildSpec.fromJson(Map json, this.release)
+      : name = json['name'],
         channel = json['channel'],
         version = json['version'],
-        ijVersion = json['ijVersion'] ?? null,
+        ijVersion = json['ijVersion'],
         ideaProduct = json['ideaProduct'],
         ideaVersion = json['ideaVersion'],
         dartPluginVersion = json['dartPluginVersion'],
@@ -103,7 +102,8 @@ class BuildSpec {
               // We only put Linux versions in cloud storage.
               artifacts.add(Artifact('$ideaProduct-$ideaVersion-linux.tar.gz',
                   output: ideaProduct));
-              artifacts.add(Artifact('$ideaProduct-ide-$ideaVersion-linux.tar.gz',
+              artifacts.add(Artifact(
+                  '$ideaProduct-ide-$ideaVersion-linux.tar.gz',
                   output: ideaProduct));
             }
           }
@@ -137,6 +137,7 @@ class BuildSpec {
         .replaceAll('</p>', '');
   }
 
+  @override
   String toString() {
     return 'BuildSpec($ideaProduct $ideaVersion $dartPluginVersion $sinceBuild '
         '$untilBuild version: "$release")';
@@ -175,13 +176,15 @@ class SyntheticBuildSpec extends BuildSpec {
     try {
       // 'isUnitTestTarget' should always be in the spec for the latest IntelliJ (not AS).
       alternate = specs.firstWhere((s) => s.isUnitTestTarget);
-    } catch (StateError) {
+    } on StateError catch (_) {
       log('No build spec defines "isUnitTestTarget"');
       exit(1);
     }
   }
 
+  @override
   String get untilBuild => alternate.untilBuild;
 
+  @override
   bool get isSynthetic => true;
 }

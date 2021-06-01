@@ -14,23 +14,23 @@ import 'package:test/test.dart';
 void main() {
   group("create", () {
     test('build', () {
-      expect(new AntBuildCommand(new BuildCommandRunner()).name, "build");
+      expect(AntBuildCommand(BuildCommandRunner()).name, "build");
     });
 
     test('make', () {
-      expect(new GradleBuildCommand(new BuildCommandRunner()).name, "make");
+      expect(GradleBuildCommand(BuildCommandRunner()).name, "make");
     });
 
     test('test', () {
-      expect(new TestCommand(new BuildCommandRunner()).name, "test");
+      expect(TestCommand(BuildCommandRunner()).name, "test");
     });
 
     test('deploy', () {
-      expect(new DeployCommand(new BuildCommandRunner()).name, "deploy");
+      expect(DeployCommand(BuildCommandRunner()).name, "deploy");
     });
 
     test('generate', () {
-      expect(new GenerateCommand(new BuildCommandRunner()).name, "generate");
+      expect(GenerateCommand(BuildCommandRunner()).name, "generate");
     });
   });
 
@@ -170,7 +170,7 @@ void main() {
       var spec = cmd.specs[0];
       await removeAll('../../build/classes');
       await genPluginFiles(spec, 'build/classes');
-      var file = new File("../../build/classes/META-INF/plugin.xml");
+      var file = File("../../build/classes/META-INF/plugin.xml");
       expect(file.existsSync(), isTrue);
       var content = file.readAsStringSync();
       expect(content.length, greaterThan(10000));
@@ -245,29 +245,33 @@ void main() {
 }
 
 BuildCommandRunner makeTestRunner() {
-  var runner = new BuildCommandRunner();
-  runner.addCommand(new TestBuildCommand(runner));
-  runner.addCommand(new TestMakeCommand(runner));
-  runner.addCommand(new TestTestCommand(runner));
-  runner.addCommand(new TestDeployCommand(runner));
-  runner.addCommand(new TestGenCommand(runner));
+  var runner = BuildCommandRunner();
+  runner.addCommand(TestBuildCommand(runner));
+  runner.addCommand(TestMakeCommand(runner));
+  runner.addCommand(TestTestCommand(runner));
+  runner.addCommand(TestDeployCommand(runner));
+  runner.addCommand(TestGenCommand(runner));
   return runner;
 }
 
 class TestBuildCommand extends AntBuildCommand {
   TestBuildCommand(runner) : super(runner);
 
+  @override
   bool get isTesting => true;
 
-  Future<int> doit() async => new Future(() => 0);
+  @override
+  Future<int> doit() async => Future(() => 0);
 }
 
 class TestMakeCommand extends GradleBuildCommand {
   TestMakeCommand(runner) : super(runner);
 
+  @override
   bool get isTesting => true;
 
-  Future<int> doit() async => new Future(() => 0);
+  @override
+  Future<int> doit() async => Future(() => 0);
 }
 
 class TestDeployCommand extends DeployCommand {
@@ -276,34 +280,41 @@ class TestDeployCommand extends DeployCommand {
 
   TestDeployCommand(runner) : super(runner);
 
+  @override
   bool get isTesting => true;
 
   String readTokenFile() {
     return "token";
   }
 
+  @override
   void changeDirectory(Directory dir) {}
 
+  @override
   Future<int> upload(
       String filePath, String pluginNumber, String token, String channel) {
     paths.add(filePath);
     plugins.add(pluginNumber);
-    return new Future(() => 0);
+    return Future(() => 0);
   }
 }
 
 class TestGenCommand extends GenerateCommand {
   TestGenCommand(runner) : super(runner);
 
+  @override
   bool get isTesting => true;
 
-  Future<int> doit() async => new Future(() => 0);
+  @override
+  Future<int> doit() async => Future(() => 0);
 }
 
 class TestTestCommand extends TestCommand {
   TestTestCommand(runner) : super(runner);
 
+  @override
   bool get isTesting => true;
 
-  Future<int> doit() async => new Future(() => 0);
+  @override
+  Future<int> doit() async => Future(() => 0);
 }
