@@ -47,9 +47,6 @@ public class FakeWorkspaceFactory {
     if (sdkHome != null) {
       fs.file("/workspace/" + sdkHome, "");
     }
-    if (versionFile != null) {
-      fs.file("/workspace/" + versionFile, "");
-    }
     if (requiredIJPluginID != null) {
       fs.file("/workspace/" + requiredIJPluginID, "");
     }
@@ -70,7 +67,6 @@ public class FakeWorkspaceFactory {
           runScript,
           syncScript,
           sdkHome,
-          versionFile,
           requiredIJPluginID,
           requiredIJPluginMessage,
           configWarningMessage

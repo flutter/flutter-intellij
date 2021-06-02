@@ -45,7 +45,6 @@ public class Workspace {
   @Nullable private final String runScript;
   @Nullable private final String syncScript;
   @Nullable private final String sdkHome;
-  @Nullable private final String versionFile;
   @Nullable private final String requiredIJPluginID;
   @Nullable private final String requiredIJPluginMessage;
   @Nullable private final String configWarningPrefix;
@@ -58,7 +57,6 @@ public class Workspace {
                     @Nullable String runScript,
                     @Nullable String syncScript,
                     @Nullable String sdkHome,
-                    @Nullable String versionFile,
                     @Nullable String requiredIJPluginID,
                     @Nullable String requiredIJPluginMessage,
                     @Nullable String configWarningPrefix) {
@@ -70,7 +68,6 @@ public class Workspace {
     this.runScript = runScript;
     this.syncScript = syncScript;
     this.sdkHome = sdkHome;
-    this.versionFile = versionFile;
     this.requiredIJPluginID = requiredIJPluginID;
     this.requiredIJPluginMessage = requiredIJPluginMessage;
     this.configWarningPrefix = configWarningPrefix;
@@ -174,14 +171,6 @@ public class Workspace {
   }
 
   /**
-   * Returns the file for the in-use version of Flutter, or null if not configured.
-   */
-  @Nullable
-  public String getVersionFile() {
-    return versionFile;
-  }
-
-  /**
    * Returns the required IJ plugin ID, or null if not configured.
    */
   @Nullable
@@ -276,15 +265,13 @@ public class Workspace {
 
     final String sdkHome = config == null ? null : getScriptFromPath(root, readonlyPath, config.getSdkHome());
 
-    final String versionFile = config == null ? null : getScriptFromPath(root, readonlyPath, config.getVersionFile());
-
     final String requiredIJPluginID = config == null ? null : getScriptFromPath(root, readonlyPath, config.getRequiredIJPluginID());
 
     final String requiredIJPluginMessage = config == null ? null : getScriptFromPath(root, readonlyPath, config.getRequiredIJPluginMessage());
 
     final String configWarningPrefix = config == null ? null : config.getConfigWarningPrefix();
 
-    return new Workspace(root, config, daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile, requiredIJPluginID, requiredIJPluginMessage, configWarningPrefix);
+    return new Workspace(root, config, daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, requiredIJPluginID, requiredIJPluginMessage, configWarningPrefix);
   }
 
   @VisibleForTesting
@@ -298,7 +285,6 @@ public class Workspace {
       pluginConfig.getRunScript(),
       pluginConfig.getSyncScript(),
       pluginConfig.getSdkHome(),
-      pluginConfig.getVersionFile(),
       pluginConfig.getRequiredIJPluginID(),
       pluginConfig.getRequiredIJPluginMessage(),
       pluginConfig.getConfigWarningPrefix());
