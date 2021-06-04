@@ -14,10 +14,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.utils.FlutterModuleUtils;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterCoverageAnnotator extends SimpleCoverageAnnotator {
@@ -48,7 +50,7 @@ public class FlutterCoverageAnnotator extends SimpleCoverageAnnotator {
       final List<VirtualFile> roots = new ArrayList<>();
       for (Module module : FlutterModuleUtils.findModulesWithFlutterContents(project)) {
         final ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
-        roots.addAll(Arrays.asList(rootManager.getSourceRoots()));
+        roots.addAll(Arrays.asList(rootManager.getContentRoots()));
       }
       return roots.toArray(VirtualFile.EMPTY_ARRAY);
     });

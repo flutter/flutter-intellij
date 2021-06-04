@@ -16,6 +16,7 @@ import com.intellij.execution.configurations.RunnerSettings;
 import com.intellij.execution.configurations.coverage.CoverageEnabledConfiguration;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.DefaultProgramRunnerKt;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.GenericProgramRunner;
@@ -38,6 +39,8 @@ public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSet
   private static final Logger LOG = Logger.getInstance(FlutterCoverageProgramRunner.class.getName());
 
   private static final String ID = "FlutterCoverageProgramRunner";
+  private ProcessHandler handler;
+  private ProcessAdapter listener;
 
   @Override
   public @NotNull
@@ -64,17 +67,20 @@ public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSet
     if (result == null) {
       return null;
     }
-    if (result.getProcessHandler() != null) {
-      result.getProcessHandler().addProcessListener(new ProcessAdapter() {
+    handler = result.getProcessHandler();
+    if (handler != null) {
+      listener = new ProcessAdapter() {
+        @Override
         public void processTerminated(@NotNull ProcessEvent event) {
           ApplicationManager.getApplication().invokeLater(() -> processCoverage(env));
         }
-      });
+      };
+      handler.addProcessListener(listener);
     }
     return result;
   }
 
-  private static void processCoverage(ExecutionEnvironment env) {
+  private void processCoverage(ExecutionEnvironment env) {
     if (!(env.getRunProfile() instanceof TestConfig)) return;
     final TestConfig runConfig = (TestConfig)env.getRunProfile();
     final CoverageEnabledConfiguration configuration = CoverageEnabledConfiguration.getOrCreate(runConfig);
@@ -88,6 +94,9 @@ public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSet
       @Nullable final RunnerSettings settings = env.getRunnerSettings();
       if (settings != null) {
         CoverageDataManager.getInstance(env.getProject()).processGatheredCoverage(runConfig, settings);
+        handler.removeProcessListener(listener);
+        handler = null;
+        listener = null;
       }
     }
     else {

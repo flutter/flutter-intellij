@@ -106,7 +106,7 @@ public class LcovInfo {
   }
 
   private void storeLineCounts() {
-    final String path = currentFile.toString();
+    final String path = fullPath(currentFile.toString());
     counts.put(path, lineCounts);
   }
 
