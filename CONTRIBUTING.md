@@ -10,7 +10,7 @@ You can do this online, and it only takes a minute. If you've never submitted co
 you must add your (or your organization's) name and contact info to the [AUTHORS](AUTHORS)
 file.
 
-## Flutter plugin development
+## Flutter plugin development on MacOS and Linux
 
 * Download and install the latest stable version of IntelliJ (2020.3 or later)
   - [IntelliJ Downloads](https://www.jetbrains.com/idea/download/)
@@ -57,6 +57,54 @@ file.
   - Choose Edit Configuration in the Run Configuration drop-down list.
   - Expand Defaults and verify that Flutter is present.
   - Click [+] and verify that Flutter is present.
+
+## Flutter plugin development on Windows
+
+These are notes taken while making a Windows dev env for the Flutter plugin.
+It assumes familiarity with the section about set-up on MacOS.
+However, this configuration includes IntelliJ source code.
+```bash
+Launch command-line tool: git-bash (may need to install -- don't remember)
+$ mkdir intellij
+$ cd intellij
+$ git clone https://github.com/JetBrains/intellij-plugins.git --branch 211.7442 --depth 1
+$ git clone https://github.com/JetBrains/intellij-community.git --branch 211.7442 --depth 1
+$ cd intellij-community
+$ git clone https://github.com/JetBrains/android.git android --branch 211.7442 --depth 1
+$ cd ..
+$ git clone https://github.com/flutter/flutter-intellij.git
+
+Copy the org_powermock* files from flutter-intellij/.idea/libraries
+to intellij-community/.idea/libraries
+```
+- Launch IntelliJ 211.7442
+- Open `intellij-community` as described in its docs
+- Add `Dart-community` as described in its docs
+- Open Project Structure on `Dart-community`
+- Add dependencies
+    - modules
+      - intllij.platform.ide.util.io
+      - intllij.platform.core.ui
+      - intellij.platform.codeStyle.ui
+    - libraries
+      - fastutil-min
+      - caffeine
+
+- Save and close Project Structure
+- Open the Gradle tool window
+- Expand the tree: `dependencies > Tasks > other`
+- Scroll down and double-click: `setupBundeledMaven`
+- Select the run config: IDEA
+- Click the Debug button. If this is the first build, be prepared to wait a half hour.
+- The IDE should launch. Dart should be listed in the list of project types when
+creating a project.
+- Shut it down.
+
+- In Project Structure, import the module `flutter-intellij/flutter-intellij-community.iml`
+  - *Do not import it as a Gradle module.*
+- Add a dependency to it to `intellij.idea.community.main`
+- Move it above Dart-community. This sets the class path to use the Flutter plugin
+version of some duplicated code from the Dart plugin.
 
 ## Running plugin tests
 
