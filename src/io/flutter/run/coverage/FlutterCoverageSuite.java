@@ -15,8 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class FlutterCoverageSuite extends BaseCoverageSuite {
 
-  @NotNull
-  final private FlutterCoverageEngine coverageEngine;
+  @NotNull final private FlutterCoverageEngine coverageEngine;
 
   public FlutterCoverageSuite(@NotNull FlutterCoverageEngine coverageEngine) {
     this.coverageEngine = coverageEngine;

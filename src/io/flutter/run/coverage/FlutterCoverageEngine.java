@@ -27,10 +27,12 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.test.TestConfig;
+
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -59,7 +61,7 @@ public class FlutterCoverageEngine extends CoverageEngine {
   public @Nullable CoverageSuite createCoverageSuite(@NotNull CoverageRunner covRunner,
                                                      @NotNull String name,
                                                      @NotNull CoverageFileProvider coverageDataFileProvider,
-                                                     @Nullable String [] filters,
+                                                     @Nullable String[] filters,
                                                      long lastCoverageTimeStamp,
                                                      @Nullable String suiteToMerge,
                                                      boolean coverageByTestEnabled,
@@ -133,7 +135,7 @@ public class FlutterCoverageEngine extends CoverageEngine {
   }
 
   @Override
-  public List<PsiElement> findTestsByNames(@NotNull String [] testNames, @NotNull Project project) {
+  public List<PsiElement> findTestsByNames(@NotNull String[] testNames, @NotNull Project project) {
     return null;
   }
 
