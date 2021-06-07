@@ -62,7 +62,10 @@ file.
 
 These are notes taken while making a Windows dev env for the Flutter plugin.
 It assumes familiarity with the section about set-up on MacOS.
-However, this configuration includes IntelliJ source code.
+However, this configuration includes IntelliJ source code. Before starting,
+ensure that `git` is installed. If needed, download from https://gitforwindows.org/.
+Also, Set the configuration property `core.longpaths` to true; see the Git for Windows
+FAQ for more info about that.
 ```bash
 Launch command-line tool: git-bash (may need to install -- don't remember)
 $ mkdir intellij
@@ -73,22 +76,21 @@ $ cd intellij-community
 $ git clone https://github.com/JetBrains/android.git android --branch 211.7442 --depth 1
 $ cd ..
 $ git clone https://github.com/flutter/flutter-intellij.git
-
-Copy the org_powermock* files from flutter-intellij/.idea/libraries
-to intellij-community/.idea/libraries
 ```
-- Launch IntelliJ 211.7442
+- Copy the `org_powermock*` files from `flutter-intellij/.idea/libraries`
+to `intellij-community/.idea/libraries`
+- Launch IntelliJ 211.7442 or later
 - Open `intellij-community` as described in its docs
 - Add `Dart-community` as described in its docs
 - Open Project Structure on `Dart-community`
-- Add dependencies
+- Add dependencies, if needed
     - modules
-      - intllij.platform.ide.util.io
-      - intllij.platform.core.ui
-      - intellij.platform.codeStyle.ui
+      - `intellij.platform.ide.util.io`
+      - `intellij.platform.core.ui`
+      - `intellij.platform.codeStyle.ui`
     - libraries
-      - fastutil-min
-      - caffeine
+      - `fastutil-min`
+      - `caffeine`
 
 - Save and close Project Structure
 - Open the Gradle tool window
@@ -102,9 +104,9 @@ creating a project.
 
 - In Project Structure, import the module `flutter-intellij/flutter-intellij-community.iml`
   - *Do not import it as a Gradle module.*
-- Add a dependency to it to `intellij.idea.community.main`
+- Add a dependency to it to `intellij.idea.community.main` using Project Structure
 - Move it above Dart-community. This sets the class path to use the Flutter plugin
-version of some duplicated code from the Dart plugin.
+version of some code duplicated from the Dart plugin.
 
 ## Running plugin tests
 
