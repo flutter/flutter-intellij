@@ -11,6 +11,7 @@ import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.mock.MockVirtualFileSystem;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.SystemInfo;
 import io.flutter.bazel.FakeWorkspaceFactory;
 import io.flutter.bazel.Workspace;
 import io.flutter.run.common.RunMode;
@@ -38,7 +39,7 @@ public class LaunchCommandsTest {
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-test.sh"));
     expectedCommandLine.add("--no-color");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("//foo:test");
@@ -54,7 +55,7 @@ public class LaunchCommandsTest {
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-test.sh"));
     expectedCommandLine.add("--no-machine");
     expectedCommandLine.add("--no-color");
     expectedCommandLine.add("//foo:test");
@@ -67,7 +68,7 @@ public class LaunchCommandsTest {
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.DEBUG);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-test.sh"));
     expectedCommandLine.add("--no-color");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("//foo:test");
@@ -83,7 +84,7 @@ public class LaunchCommandsTest {
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-test.sh"));
     expectedCommandLine.add("--no-color");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("foo/test/foo_test.dart");
@@ -98,7 +99,7 @@ public class LaunchCommandsTest {
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-test.sh"));
     expectedCommandLine.add("--no-machine");
     expectedCommandLine.add("--no-color");
     expectedCommandLine.add("foo/test/foo_test.dart");
@@ -112,7 +113,7 @@ public class LaunchCommandsTest {
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.DEBUG);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-test.sh"));
     expectedCommandLine.add("--no-color");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("foo/test/foo_test.dart");
@@ -127,7 +128,7 @@ public class LaunchCommandsTest {
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-test.sh"));
     expectedCommandLine.add("--no-color");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("--name");
@@ -144,7 +145,7 @@ public class LaunchCommandsTest {
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-test.sh"));
     expectedCommandLine.add("--no-machine");
     expectedCommandLine.add("--no-color");
     expectedCommandLine.add("--name");
@@ -153,14 +154,13 @@ public class LaunchCommandsTest {
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
 
-
   @Test
   public void producesCorrectCommandLineForTestNameInDebugMode() throws ExecutionException {
     final BazelTestFields fields = forTestName("first test", "/workspace/foo/test/foo_test.dart");
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.DEBUG);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-test.sh"));
     expectedCommandLine.add("--no-color");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("--name");
@@ -255,7 +255,7 @@ public class LaunchCommandsTest {
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-test.sh"));
     expectedCommandLine.add("--arg1");
     expectedCommandLine.add("--arg2");
     expectedCommandLine.add("3");
@@ -275,6 +275,10 @@ public class LaunchCommandsTest {
 
   private FakeBazelTestFields forTarget(String target) {
     return new FakeBazelTestFields(BazelTestFields.forTarget(target, null));
+  }
+
+  private String platformize(String s) {
+    return SystemInfo.isWindows ? s.replaceAll("/", "\\\\") : s;
   }
 
   /**

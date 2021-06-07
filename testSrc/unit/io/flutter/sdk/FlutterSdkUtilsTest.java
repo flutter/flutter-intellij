@@ -5,6 +5,7 @@
  */
 package io.flutter.sdk;
 
+import com.intellij.openapi.util.SystemInfo;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -30,7 +31,10 @@ public class FlutterSdkUtilsTest {
                            "vector_math:file:///Users/devoncarew/.pub-cache/hosted/pub.dartlang.org/vector_math-2.0.5/lib/\n" +
                            "flutter_sunflower:lib/\n";
 
-    final String result = FlutterSdkUtil.parseFlutterSdkPath(content);
+    String result = FlutterSdkUtil.parseFlutterSdkPath(content);
+    if (result != null && SystemInfo.isWindows) {
+      result = result.replaceAll("\\\\", "/");
+    }
     assertEquals("/Users/devoncarew/projects/flutter/flutter", result);
   }
 }
