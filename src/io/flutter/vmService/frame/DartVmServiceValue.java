@@ -443,16 +443,21 @@ public class DartVmServiceValue extends XNamedValue {
     node.addChildren(childrenList, true);
   }
 
-  private void addFields(@NotNull final XCompositeNode node, @NotNull final ElementList<BoundField> fields) {
-    final XValueChildrenList childrenList = new XValueChildrenList(fields.size());
-    for (BoundField field : fields) {
-      final InstanceRef value = field.getValue();
-      if (value != null) {
-        childrenList
-          .add(new DartVmServiceValue(myDebugProcess, myIsolateId, field.getDecl().getName(), value, null, field.getDecl(), false));
-      }
+  private void addFields(@NotNull final XCompositeNode node, @Nullable final ElementList<BoundField> fields) {
+    if (fields == null) {
+      node.addChildren(new XValueChildrenList(0), true);
     }
-    node.addChildren(childrenList, true);
+    else {
+      final XValueChildrenList childrenList = new XValueChildrenList(fields.size());
+      for (BoundField field : fields) {
+        final InstanceRef value = field.getValue();
+        if (value != null) {
+          childrenList
+            .add(new DartVmServiceValue(myDebugProcess, myIsolateId, field.getDecl().getName(), value, null, field.getDecl(), false));
+        }
+      }
+      node.addChildren(childrenList, true);
+    }
   }
 
   @NotNull
