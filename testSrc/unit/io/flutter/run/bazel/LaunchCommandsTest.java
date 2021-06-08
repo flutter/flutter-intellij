@@ -10,6 +10,7 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.mock.MockVirtualFileSystem;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.SystemInfo;
 import io.flutter.bazel.FakeWorkspaceFactory;
 import io.flutter.bazel.Workspace;
 import io.flutter.run.FlutterDevice;
@@ -60,7 +61,7 @@ public class LaunchCommandsTest {
     GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=release");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
@@ -86,7 +87,7 @@ public class LaunchCommandsTest {
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
@@ -109,7 +110,7 @@ public class LaunchCommandsTest {
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
     expectedCommandLine.add("--bazel-options=--define=bazel_args --define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
@@ -132,7 +133,7 @@ public class LaunchCommandsTest {
     GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=release");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
@@ -152,7 +153,7 @@ public class LaunchCommandsTest {
     launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
     expectedCommandLine.add("--bazel-options=--define flutter_build_mode=profile");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
@@ -172,7 +173,7 @@ public class LaunchCommandsTest {
     launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
     expectedCommandLine.add("--bazel-options=--define param1=2 --define=param2=2 --define=flutter_build_mode=profile");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
@@ -195,7 +196,7 @@ public class LaunchCommandsTest {
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("additional_args");
@@ -219,7 +220,7 @@ public class LaunchCommandsTest {
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
     expectedCommandLine.add("--bazel-options=--define=bazel_args0 --define bazel_args1=value --define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("--additional_args1");
@@ -242,7 +243,7 @@ public class LaunchCommandsTest {
       fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.DEBUG);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("--start-paused");
@@ -262,7 +263,7 @@ public class LaunchCommandsTest {
       fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.PROFILE);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=profile");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
@@ -280,7 +281,7 @@ public class LaunchCommandsTest {
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
@@ -299,7 +300,7 @@ public class LaunchCommandsTest {
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
@@ -317,7 +318,7 @@ public class LaunchCommandsTest {
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
@@ -335,7 +336,7 @@ public class LaunchCommandsTest {
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/flutter-run.sh");
+    expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
     expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
@@ -365,6 +366,10 @@ public class LaunchCommandsTest {
 
   private BazelFields setupBazelFields() {
     return setupBazelFields("bazel_target", null, null, false);
+  }
+
+  private String platformize(String s) {
+    return SystemInfo.isWindows ? s.replaceAll("/", "\\\\") : s;
   }
 
   /**
