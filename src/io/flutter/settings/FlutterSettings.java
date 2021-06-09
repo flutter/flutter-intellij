@@ -38,7 +38,7 @@ public class FlutterSettings {
 
   // TODO(helin24): This is to change the embedded browser setting back to true only once for Big Sur users. If we
   // switch to enabling the embedded browser for everyone, then delete this key.
-  private static final String changeBigSurToTrueKey = "io.flutter.setBigSurToTrueKey";
+  private static final String changeBigSurToTrueKey = "io.flutter.setBigSurToTrueKey2";
 
   /**
    * Registry key to suggest all run configurations instead of just one.
@@ -312,6 +312,7 @@ public class FlutterSettings {
 
       // We do not want to set it back to true again in the future (e.g. if a user decides to set to false).
       setChangeBigSurToTrue(false);
+      setEnableEmbeddedBrowsers(true);
       return true;
     }
 
