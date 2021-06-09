@@ -33,7 +33,7 @@ public class BazelRunConfig extends RunConfigurationBase<LaunchState>
 
   BazelRunConfig(final @NotNull Project project, final @NotNull ConfigurationFactory factory, @NotNull final String name) {
     super(project, factory, name);
-    fields = new BazelFields(null, null, null, null, false, false);
+    fields = new BazelFields(null, null, null, false);
   }
 
   @NotNull

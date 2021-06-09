@@ -23,59 +23,35 @@ import static com.jetbrains.lang.dart.ide.runner.server.ui.DartCommandLineConfig
 public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRunConfig> {
   private JPanel myMainPanel;
 
-  private JTextField myBazelTarget;
   private JTextField myBazelArgs;
   private JTextField myAdditionalArgs;
   private JCheckBox myEnableReleaseModeCheckBox;
-  private JCheckBox useDartFile;
-  private TextFieldWithBrowseButton myDartTarget;
-  private JLabel myBazelTargetText;
+  private TextFieldWithBrowseButton myBazelOrDartTarget;
   private JLabel myDartTargetText;
   private JLabel myDartTargetLabel;
-  private JLabel myBazelTargetLabel;
 
   public FlutterBazelConfigurationEditorForm(final Project project) {
     final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
-    initDartFileTextWithBrowse(project, myDartTarget);
-    addSettingsEditorListener(editor -> {
-      if (myDartTarget.isVisible() != useDartFile.isSelected()) {
-        chooseVisibleFields(useDartFile.isSelected());
-      }
-    });
-    installWatcher(useDartFile);
+    initDartFileTextWithBrowse(project, myBazelOrDartTarget);
   }
 
   @Override
   protected void resetEditorFrom(@NotNull final BazelRunConfig configuration) {
     final BazelFields fields = configuration.getFields();
-    myBazelTarget.setText(StringUtil.notNullize(fields.getBazelTarget()));
-    myDartTarget.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getDartTarget())));
+    myBazelOrDartTarget.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getBazelOrDartTarget())));
     myEnableReleaseModeCheckBox.setSelected(fields.getEnableReleaseMode());
     myBazelArgs.setText(StringUtil.notNullize(fields.getBazelArgs()));
     myAdditionalArgs.setText(StringUtil.notNullize(fields.getAdditionalArgs()));
-    useDartFile.setSelected(fields.getUseDartTarget());
-    chooseVisibleFields(fields.getUseDartTarget());
-  }
-
-  private void chooseVisibleFields(boolean useDartFile) {
-    myDartTarget.setVisible(useDartFile);
-    myDartTargetText.setVisible(useDartFile);
-    myDartTargetLabel.setVisible(useDartFile);
-
-    myBazelTarget.setVisible(!useDartFile);
-    myBazelTargetText.setVisible(!useDartFile);
-    myBazelTargetLabel.setVisible(!useDartFile);
   }
 
   @Override
   protected void applyEditorTo(@NotNull final BazelRunConfig configuration) throws ConfigurationException {
+    String target = myBazelOrDartTarget.getText().trim();
     final BazelFields fields = new BazelFields(
-      getTextValue(myBazelTarget),
-      StringUtil.nullize(FileUtil.toSystemIndependentName(myDartTarget.getText().trim()), true),
+      StringUtil.nullize(target.endsWith("dart") ? FileUtil.toSystemIndependentName(target) : target, true),
       getTextValue(myBazelArgs),
       getTextValue(myAdditionalArgs),
-      myEnableReleaseModeCheckBox.isSelected(),
-      useDartFile.isSelected()
+      myEnableReleaseModeCheckBox.isSelected()
     );
     configuration.setFields(fields);
   }

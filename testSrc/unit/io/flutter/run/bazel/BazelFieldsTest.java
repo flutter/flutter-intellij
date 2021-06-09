@@ -24,27 +24,23 @@ import static org.powermock.api.mockito.PowerMockito.when;
  * Verifies run configuration persistence.
  */
 public class BazelFieldsTest {
-  DevToolsService mockService;
-
   @Before
   public void setUp() {
     final CompletableFuture<DevToolsInstance> future = new CompletableFuture<>();
     future.complete(new DevToolsInstance("http://localhost", 1234));
-    mockService = mock(DevToolsService.class);
-    when(mockService.getDevToolsInstance()).thenReturn(future);
   }
 
   @Test
   public void shouldReadFieldsFromXml() {
     final Element elt = new Element("test");
-    addOption(elt, "bazelTarget", "//path/to/flutter/app:hello");
+    addOption(elt, "bazelOrDartTarget", "//path/to/flutter/app:hello");
     addOption(elt, "enableReleaseMode", "false");
     addOption(elt, "additionalArgs", "--android_cpu=x86");
     addOption(elt, "bazelArgs", "--define=release_channel=beta3");
 
-    final BazelFields fields = BazelFields.readFrom(elt, mockService);
+    final BazelFields fields = BazelFields.readFrom(elt);
     XmlSerializer.deserializeInto(fields, elt);
-    assertEquals("//path/to/flutter/app:hello", fields.getBazelTarget());
+    assertEquals("//path/to/flutter/app:hello", fields.getBazelOrDartTarget());
     assertEquals("--define=release_channel=beta3", fields.getBazelArgs());
     assertEquals("--android_cpu=x86", fields.getAdditionalArgs());
     assertFalse(fields.getEnableReleaseMode());
@@ -55,13 +51,13 @@ public class BazelFieldsTest {
     final Element elt = new Element("test");
     addOption(elt, "entryFile", "/tmp/test/dir/lib/main.dart"); // obsolete
     addOption(elt, "launchingScript", "path/to/bazel-run.sh"); // obsolete
-    addOption(elt, "bazelTarget", "//path/to/flutter/app:hello");
+    addOption(elt, "bazelTarget", "//path/to/flutter/app:hello"); // obsolete
     addOption(elt, "enableReleaseMode", "true");
     addOption(elt, "additionalArgs", "--android_cpu=x86");
 
-    final BazelFields fields = BazelFields.readFrom(elt, mockService);
+    final BazelFields fields = BazelFields.readFrom(elt);
     XmlSerializer.deserializeInto(fields, elt);
-    assertEquals("//path/to/flutter/app:hello", fields.getBazelTarget());
+    assertEquals("//path/to/flutter/app:hello", fields.getBazelOrDartTarget());
     assertNull(fields.getBazelArgs());
     assertEquals("--android_cpu=x86", fields.getAdditionalArgs());
     assertTrue(fields.getEnableReleaseMode());
@@ -70,13 +66,10 @@ public class BazelFieldsTest {
   @Test
   public void roundTripShouldPreserveFields() {
     final BazelFields before = new BazelFields(
-      "bazel_target",
-      "dart_target",
+      "bazel_or_dart_target",
       "bazel_args --1 -2=3",
       "additional_args --1 --2=3",
-      true,
-      false,
-      mockService
+      true
     );
 
     final Element elt = new Element("test");
@@ -87,14 +80,12 @@ public class BazelFieldsTest {
       new String[]{"additionalArgs", "bazelArgs", "bazelTarget", "dartTarget", "enableReleaseMode", "useDartTarget",},
       getOptionNames(elt).toArray());
 
-    final BazelFields after = BazelFields.readFrom(elt, mockService);
+    final BazelFields after = BazelFields.readFrom(elt);
 
-    assertEquals("bazel_target", after.getBazelTarget());
-    assertEquals("dart_target", after.getDartTarget());
+    assertEquals("bazel_or_dart_target", after.getBazelOrDartTarget());
     assertEquals("bazel_args --1 -2=3", after.getBazelArgs());
     assertEquals("additional_args --1 --2=3", after.getAdditionalArgs());
     assertTrue(after.getEnableReleaseMode());
-    assertFalse(after.getUseDartTarget());
   }
 
   private void addOption(Element elt, String name, String value) {
