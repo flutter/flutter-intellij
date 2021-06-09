@@ -5,17 +5,11 @@
  */
 package io.flutter.sdk;
 
-import static java.util.Arrays.asList;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
-import com.intellij.execution.process.ColoredProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
-import com.intellij.execution.process.ProcessListener;
-import com.intellij.execution.process.ProcessOutputTypes;
+import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
@@ -45,6 +39,9 @@ import io.flutter.run.common.RunMode;
 import io.flutter.run.test.TestFields;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
+import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -52,9 +49,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
 
-import org.jetbrains.annotations.NonNls;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import static java.util.Arrays.asList;
 
 public class FlutterSdk {
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
@@ -90,7 +85,8 @@ public class FlutterSdk {
       final FileTime genFile = Files.getLastModifiedTime(Paths.get(gen.getPath()));
       final FileTime stampFile = Files.getLastModifiedTime(Paths.get(stamp.getPath()));
       return genFile.compareTo(stampFile) > 0;
-    } catch (IOException ignored) {
+    }
+    catch (IOException ignored) {
       return false;
     }
   }
@@ -150,7 +146,7 @@ public class FlutterSdk {
 
   @NotNull
   private static FlutterSdk saveSdkInCache(VirtualFile home) {
-    String cacheKey = home.getCanonicalPath();
+    final String cacheKey = home.getCanonicalPath();
     synchronized (projectSdkCache) {
       if (!projectSdkCache.containsKey(cacheKey)) {
         projectSdkCache.put(cacheKey, new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home)));
@@ -307,7 +303,7 @@ public class FlutterSdk {
     }
     args.add(FileUtil.toSystemDependentName(mainPath));
 
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{ }));
   }
 
   public FlutterCommand flutterAttach(@NotNull PubRoot root, @NotNull VirtualFile main, @Nullable FlutterDevice device,
@@ -340,7 +336,7 @@ public class FlutterSdk {
     }
     args.add(FileUtil.toSystemDependentName(mainPath));
 
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.ATTACH, args.toArray(new String[]{}));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.ATTACH, args.toArray(new String[]{ }));
   }
 
   public FlutterCommand flutterRunOnTester(@NotNull PubRoot root, @NotNull String mainPath) {
@@ -348,7 +344,7 @@ public class FlutterSdk {
     args.add("--machine");
     args.add("--device-id=flutter-tester");
     args.add(mainPath);
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{ }));
   }
 
   public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir, @Nullable String testNameSubstring,
@@ -399,7 +395,7 @@ public class FlutterSdk {
       args.add(FileUtil.toSystemDependentName(mainPath));
     }
 
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.TEST, args.toArray(new String[]{}));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.TEST, args.toArray(new String[]{ }));
   }
 
   /**
@@ -521,20 +517,20 @@ public class FlutterSdk {
   @NonNls
   public FlutterSdkChannel queryFlutterChannel(boolean useCachedValue) {
     if (useCachedValue) {
-      String channel = cachedConfigValues.get("channel");
+      final String channel = cachedConfigValues.get("channel");
       if (channel != null) {
         return FlutterSdkChannel.fromText(channel);
       }
     }
 
-    VirtualFile dir = LocalFileSystem.getInstance().findFileByPath(getHomePath());
+    final VirtualFile dir = LocalFileSystem.getInstance().findFileByPath(getHomePath());
     assert dir != null;
     String branch;
     try {
       branch = git4idea.light.LightGitUtilKt.getLocation(dir, GitExecutableManager.getInstance().getExecutable((Project)null));
     }
     catch (VcsException e) {
-      String stdout = returnOutputOfQuery(flutterChannel());
+      final String stdout = returnOutputOfQuery(flutterChannel());
       if (stdout == null) {
         branch = "unknown";
       }
@@ -554,13 +550,13 @@ public class FlutterSdk {
   @NotNull
   @NonNls
   public Set<String> queryConfiguredPlatforms(boolean useCachedValue) {
-    Set<String> platforms = new HashSet<>();
+    final Set<String> platforms = new HashSet<>();
     // Someone could do: flutter config --no-enable-ios --no-enable-android
     platforms.add("enable-android");
     platforms.add("enable-ios");
     if (useCachedValue) {
       for (String key : PLATFORMS) {
-        String value = cachedConfigValues.get(key);
+        final String value = cachedConfigValues.get(key);
         if ("true".equals(value)) {
           platforms.add(key);
         }
@@ -571,12 +567,16 @@ public class FlutterSdk {
       return platforms;
     }
 
-    String stdout = returnOutputOfQuery(flutterConfig("--machine"));
+    final String stdout = returnOutputOfQuery(flutterConfig("--machine"));
     if (stdout == null) {
       return platforms;
     }
+    final int startJsonIndex = stdout.indexOf('{');
+    if (startJsonIndex == -1) {
+      return platforms;
+    }
     try {
-      final JsonElement elem = JsonUtils.parseString(stdout.substring(stdout.indexOf('{')));
+      final JsonElement elem = JsonUtils.parseString(stdout.substring(startJsonIndex));
       if (elem.isJsonNull()) {
         FlutterUtils.warn(LOG, FlutterBundle.message("flutter.sdk.invalid.json.error"));
         return platforms;
@@ -610,7 +610,7 @@ public class FlutterSdk {
       return cachedConfigValues.get(key);
     }
 
-    String stdout = returnOutputOfQuery(flutterConfig("--machine"));
+    final String stdout = returnOutputOfQuery(flutterConfig("--machine"));
     if (stdout != null) {
       try {
         final JsonElement elem = JsonUtils.parseString(stdout.substring(stdout.indexOf('{')));
