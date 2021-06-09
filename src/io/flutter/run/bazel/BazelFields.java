@@ -192,9 +192,9 @@ public class BazelFields {
     if (StringUtil.isEmptyOrSpaces(bazelOrDartTarget)) {
       throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noDartEntrypointSet"));
     }
-    //else if (!bazelTarget.startsWith("//")) {
-    //  throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.startWithSlashSlash"));
-    //}
+    else if (!bazelOrDartTarget.endsWith("dart") && !bazelOrDartTarget.startsWith("//")) {
+      throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.startWithSlashSlash"));
+    }
   }
 
   /**
