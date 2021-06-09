@@ -7,7 +7,6 @@ package io.flutter.run.bazel;
 
 import com.intellij.util.xmlb.XmlSerializer;
 import io.flutter.run.daemon.DevToolsInstance;
-import io.flutter.run.daemon.DevToolsService;
 import org.jdom.Element;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,8 +16,6 @@ import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
  * Verifies run configuration persistence.
@@ -77,7 +74,7 @@ public class BazelFieldsTest {
 
     // Verify that we no longer write workingDirectory.
     assertArrayEquals(
-      new String[]{"additionalArgs", "bazelArgs", "bazelTarget", "dartTarget", "enableReleaseMode", "useDartTarget",},
+      new String[]{"additionalArgs", "bazelArgs", "bazelOrDartTarget", "enableReleaseMode",},
       getOptionNames(elt).toArray());
 
     final BazelFields after = BazelFields.readFrom(elt);
