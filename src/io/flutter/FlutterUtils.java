@@ -328,7 +328,7 @@ public class FlutterUtils {
 
   @NotNull
   public static PluginId getPluginId() {
-    final PluginId pluginId = PluginId.findId("io.flutter");
+    final PluginId pluginId = PluginId.findId("io.flutter", "");
     assert pluginId != null;
     return pluginId;
   }
