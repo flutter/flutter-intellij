@@ -19,6 +19,7 @@ import io.flutter.jxbrowser.JxBrowserStatus;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.JxBrowserUtils;
 import io.flutter.utils.ThreadUtil;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -33,6 +34,7 @@ import static io.flutter.view.FlutterView.*;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.when;
 
+@Ignore
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({JxBrowserManager.class, ThreadUtil.class, FlutterInitializer.class, JxBrowserUtils.class,
   InspectorGroupManagerService.class, SwingUtilities.class})

@@ -77,41 +77,43 @@ class BuildSpec {
   }
 
   void createArtifacts() {
-    if (ideaProduct == 'android-studio') {
-      product = Artifact('$ideaProduct-ide-$ideaVersion-mac.zip',
-          bareArchive: true, output: ideaProduct);
-      if (product.exists()) {
-        artifacts.add(product);
-      } else {
-        product = Artifact('$ideaProduct-ide-$ideaVersion-linux.zip',
-            output: ideaProduct);
+    if (ideaVersion != 'LATEST-EAP-SNAPSHOT') {
+      if (ideaProduct == 'android-studio') {
+        product = Artifact('$ideaProduct-ide-$ideaVersion-mac.zip',
+            bareArchive: true, output: ideaProduct);
         if (product.exists()) {
           artifacts.add(product);
         } else {
-          product = Artifact('$ideaProduct-$ideaVersion-mac.zip',
-              bareArchive: true, output: ideaProduct);
+          product = Artifact('$ideaProduct-ide-$ideaVersion-linux.zip',
+              output: ideaProduct);
           if (product.exists()) {
             artifacts.add(product);
           } else {
-            product = Artifact('$ideaProduct-$ideaVersion-linux.zip',
-                output: ideaProduct);
+            product = Artifact('$ideaProduct-$ideaVersion-mac.zip',
+                bareArchive: true, output: ideaProduct);
             if (product.exists()) {
               artifacts.add(product);
             } else {
-              // We don't know which one we need, so add both.
-              // We only put Linux versions in cloud storage.
-              artifacts.add(Artifact('$ideaProduct-$ideaVersion-linux.tar.gz',
-                  output: ideaProduct));
-              artifacts.add(Artifact(
-                  '$ideaProduct-ide-$ideaVersion-linux.tar.gz',
-                  output: ideaProduct));
+              product = Artifact('$ideaProduct-$ideaVersion-linux.zip',
+                  output: ideaProduct);
+              if (product.exists()) {
+                artifacts.add(product);
+              } else {
+                // We don't know which one we need, so add both.
+                // We only put Linux versions in cloud storage.
+                artifacts.add(Artifact('$ideaProduct-$ideaVersion-linux.tar.gz',
+                    output: ideaProduct));
+                artifacts.add(Artifact(
+                    '$ideaProduct-ide-$ideaVersion-linux.tar.gz',
+                    output: ideaProduct));
+              }
             }
           }
         }
+      } else {
+        product = artifacts.add(
+            Artifact('$ideaProduct-$ideaVersion.tar.gz', output: ideaProduct));
       }
-    } else {
-      product = artifacts.add(
-          Artifact('$ideaProduct-$ideaVersion.tar.gz', output: ideaProduct));
     }
     dartPlugin = artifacts.add(Artifact('Dart-$dartPluginVersion.zip'));
   }

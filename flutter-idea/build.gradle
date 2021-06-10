@@ -54,10 +54,10 @@ intellij {
 }
 
 dependencies {
-  testCompile "org.powermock:powermock-api-mockito2:2.0.0"
-  testCompile "org.powermock:powermock-module-junit4:2.0.0"
+  testImplementation "org.powermock:powermock-api-mockito2:2.0.0"
+  testImplementation "org.powermock:powermock-module-junit4:2.0.0"
   if ("$ide" == 'android-studio') {
-    testCompile project(':flutter-studio')
+    testImplementation project(':flutter-studio')
     testRuntime fileTree(dir: "$project.rootDir/artifacts/android-studio/plugins",
                          includes: ["**/*.jar"],
                          excludes: ["**/kotlin-compiler.jar", "**/kotlin-plugin.jar"])
@@ -65,17 +65,17 @@ dependencies {
                          includes: ["*.jar"])
     compileOnly fileTree(dir: "$project.rootDir/artifacts/android-studio/plugins/git4idea/lib",
                          includes: ["*.jar"])
-    testCompile fileTree(dir: "$project.rootDir/artifacts/android-studio/plugins/git4idea/lib",
+    testImplementation fileTree(dir: "$project.rootDir/artifacts/android-studio/plugins/git4idea/lib",
                          includes: ["*.jar"])
   } else {
     compileOnly fileTree(dir: "$project.rootDir/artifacts/ideaIC/plugins/git4idea/lib",
                          includes: ["*.jar"])
-    testCompile fileTree(dir: "$project.rootDir/artifacts/ideaIC/plugins/git4idea/lib",
+    testImplementation fileTree(dir: "$project.rootDir/artifacts/ideaIC/plugins/git4idea/lib",
                          includes: ["*.jar"])
   }
   compileOnly fileTree(dir: "$project.rootDir/lib/jxbrowser",
                        includes: ["*.jar"])
-  testCompile fileTree(dir: "$project.rootDir/lib/jxbrowser",
+  testImplementation fileTree(dir: "$project.rootDir/lib/jxbrowser",
                        includes: ["*.jar"])
   testImplementation 'junit:junit:4.13'
 }

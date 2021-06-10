@@ -12,6 +12,7 @@ import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -27,6 +28,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.when;
 
+@Ignore
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({FileUtils.class, JxBrowserUtils.class, FlutterInitializer.class})
 public class JxBrowserManagerTest {

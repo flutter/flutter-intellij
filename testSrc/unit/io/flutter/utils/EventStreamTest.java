@@ -7,6 +7,7 @@ package io.flutter.utils;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.swing.*;
@@ -84,6 +85,7 @@ public class EventStreamTest {
     checkLog("42");
   }
 
+  @Ignore
   @Test
   public void duplicateValues() throws Exception {
     expectedEvents = 6;
@@ -98,6 +100,7 @@ public class EventStreamTest {
     checkLog("42", "200");
   }
 
+  @Ignore
   @Test
   public void nullInitialValue() throws Exception {
     expectedEvents = 3;
