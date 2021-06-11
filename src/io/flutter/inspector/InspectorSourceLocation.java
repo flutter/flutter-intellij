@@ -5,7 +5,6 @@
  */
 package io.flutter.inspector;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -13,8 +12,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.impl.XSourcePositionImpl;
 import io.flutter.utils.JsonUtils;
-
-import java.util.ArrayList;
 
 public class InspectorSourceLocation {
   private final JsonObject json;
@@ -27,14 +24,14 @@ public class InspectorSourceLocation {
     this.project = project;
   }
 
-  public String getPath() {
+  public String getFile() {
     return JsonUtils.getStringMember(json, "file");
   }
 
-  public VirtualFile getFile() {
-    String fileName = getPath();
+  public VirtualFile getVirtualFile() {
+    String fileName = getFile();
     if (fileName == null) {
-      return parent != null ? parent.getFile() : null;
+      return parent != null ? parent.getVirtualFile() : null;
     }
 
     fileName = InspectorService.fromSourceLocationUri(fileName, project);
@@ -59,7 +56,7 @@ public class InspectorSourceLocation {
   }
 
   public XSourcePosition getXSourcePosition() {
-    final VirtualFile file = getFile();
+    final VirtualFile file = getVirtualFile();
     if (file == null) {
       return null;
     }
@@ -71,19 +68,7 @@ public class InspectorSourceLocation {
     return XSourcePositionImpl.create(file, line - 1, column - 1);
   }
 
-  ArrayList<InspectorSourceLocation> getParameterLocations() {
-    if (json.has("parameterLocations")) {
-      final JsonArray parametersJson = json.getAsJsonArray("parameterLocations");
-      final ArrayList<InspectorSourceLocation> ret = new ArrayList<>();
-      for (int i = 0; i < parametersJson.size(); ++i) {
-        ret.add(new InspectorSourceLocation(parametersJson.get(i).getAsJsonObject(), this, project));
-      }
-      return ret;
-    }
-    return null;
-  }
-
   public InspectorService.Location getLocation() {
-    return new InspectorService.Location(getFile(), getLine(), getColumn(), getXSourcePosition().getOffset());
+    return new InspectorService.Location(getVirtualFile(), getLine(), getColumn(), getXSourcePosition().getOffset());
   }
 }

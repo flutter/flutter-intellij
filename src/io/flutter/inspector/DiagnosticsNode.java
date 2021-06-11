@@ -26,7 +26,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 
@@ -722,43 +725,13 @@ public class DiagnosticsNode {
         for (JsonElement element : jsonArray) {
           cachedProperties.add(new DiagnosticsNode(element.getAsJsonObject(), inspectorService, app, true, parent));
         }
-        trackPropertiesMatchingParameters(cachedProperties);
       }
     }
     return cachedProperties;
   }
 
   public CompletableFuture<ArrayList<DiagnosticsNode>> getProperties(InspectorService.ObjectGroup objectGroup) {
-    final CompletableFuture<ArrayList<DiagnosticsNode>> properties = objectGroup.getProperties(getDartDiagnosticRef());
-    return properties.thenApplyAsync(this::trackPropertiesMatchingParameters);
-  }
-
-  ArrayList<DiagnosticsNode> trackPropertiesMatchingParameters(ArrayList<DiagnosticsNode> nodes) {
-    // Map locations to property nodes where available.
-    final InspectorSourceLocation creationLocation = getCreationLocation();
-    if (creationLocation != null) {
-      final ArrayList<InspectorSourceLocation> parameterLocations = creationLocation.getParameterLocations();
-      if (parameterLocations != null) {
-        final Map<String, InspectorSourceLocation> names = new HashMap<>();
-        for (InspectorSourceLocation location : parameterLocations) {
-          final String name = location.getName();
-          if (name != null) {
-            names.put(name, location);
-          }
-        }
-        for (DiagnosticsNode node : nodes) {
-          node.setParent(this);
-          final String name = node.getName();
-          if (name != null) {
-            final InspectorSourceLocation parameterLocation = names.get(name);
-            if (parameterLocation != null) {
-              node.setCreationLocation(parameterLocation);
-            }
-          }
-        }
-      }
-    }
-    return nodes;
+    return objectGroup.getProperties(getDartDiagnosticRef());
   }
 
   @NotNull

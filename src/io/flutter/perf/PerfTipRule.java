@@ -161,7 +161,7 @@ public class PerfTipRule {
       return minProblemLocationsInSubtree <= 1 || minProblemLocationsInSubtree <= countSubtreeMatches(candidate, statsInFile);
     }
     parent = parent.getParent();
-    if (parent != null && Objects.equal(parent.getCreationLocation().getPath(), candidate.getCreationLocation().getPath())) {
+    if (parent != null && Objects.equal(parent.getCreationLocation().getFile(), candidate.getCreationLocation().getFile())) {
       // Keep walking up the tree until we hit a different file.
       // TODO(jacobr): this is a bit of an ugly heuristic. Think of a cleaner
       // way of expressing this concept. In reality we could probably force the
