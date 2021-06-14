@@ -94,11 +94,11 @@
     <orderEntry type="module" module-name="intellij.android.projectSystem" />
     <orderEntry type="library" name="Trove4j" level="project" />
     <orderEntry type="module" module-name="intellij.android.observable" />
-    <orderEntry type="library" name="jxbrowser-7.15" level="project" />
+    <orderEntry type="library" name="jxbrowser-7.16" level="project" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-7.15.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-7.16.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -107,7 +107,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-swing-7.15.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-swing-7.16.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -115,7 +115,7 @@
     </orderEntry>
     <orderEntry type="library" name="Trove4j" level="project" />
     <orderEntry type="module" module-name="intellij.android.observable" />
-    <orderEntry type="library" name="jxbrowser-7.15" level="project" />
+    <orderEntry type="library" name="jxbrowser-7.16" level="project" />
     <orderEntry type="library" name="studio-plugin-git4idea" level="project" />
     <orderEntry type="library" name="studio-plugin-yaml" level="project" />
     <orderEntry type="library" name="studio-plugin-gradle" level="project" />
