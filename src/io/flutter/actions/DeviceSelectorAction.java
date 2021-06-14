@@ -129,7 +129,6 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
   private static void updateVisibility(final Project project, final Presentation presentation) {
     final boolean visible = isSelectorVisible(project);
-    presentation.setVisible(visible);
 
     final JComponent component = (JComponent)presentation.getClientProperty("customComponent");
     if (component != null) {
