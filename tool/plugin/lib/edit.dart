@@ -32,6 +32,18 @@ void checkAndClearAppliedEditCommands() {
 List<EditCommand> editCommands = [
   EditAndroidModuleLibraryManager(),
   Subst(
+    path: 'flutter-studio/src/io/flutter/project/FlutterProjectCreator.java',
+    initial: 'void cannotWriteToFiles(List<Path>',
+    replacement: 'void cannotWriteToFiles(List<? extends Path>',
+    version: '2012.2'
+  ),
+  Subst(
+    path: 'flutter-studio/src/io/flutter/android/GradleDependencyFetcher.java',
+    initial: '.getEmbeddedJdkPath().getAbsolutePath()',
+    replacement: '.getEmbeddedJdkPath().toAbsolutePath().toString()',
+    version: '2012.2',
+  ),
+  Subst(
     path: 'build.gradle',
     initial: 'localPath "\${project.rootDir.absolutePath}/artifacts/\$ide"',
     replacement: 'type = "IC"\n  version = "LATEST-EAP-SNAPSHOT"',
@@ -72,20 +84,6 @@ List<EditCommand> editCommands = [
     initial: 'JavaNewProjectOrModuleGroup',
     replacement: 'NewProjectOrModuleGroup',
     version: 'AF.3.1',
-  ),
-  MultiSubst(
-    path: 'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java',
-    initials: [
-      'import com.android.tools.idea.projectsystem.ProjectSystemBuildManager;',
-      'ProjectSystemBuildManager',
-      'gradleProjectSystem.getBuildManager()',
-    ],
-    replacements: [
-      '',
-      'Object',
-      'null',
-    ],
-    versions: ['4.2'],
   ),
   Subst(
     path: 'flutter-studio/src/io/flutter/project/FlutterProjectCreator.java',
@@ -168,7 +166,19 @@ class EditAndroidModuleLibraryManager extends EditCommand {
       processedFile.writeAsStringSync(source);
       return original;
     } else {
-      return null;
+      if (spec.version.startsWith('2021.2')) {
+        var processedFile = File(
+            'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
+        var source = processedFile.readAsStringSync();
+        var original = source;
+        source = source.replaceAll(
+            "PluginManagerCore.getLoadedPlugins(), null);",
+            "PluginManagerCore.getLoadedPlugins(), null, null, null);");
+        processedFile.writeAsStringSync(source);
+        return original;
+      } else {
+        return null;
+      }
     }
   }
 }
