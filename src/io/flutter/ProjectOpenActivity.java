@@ -103,9 +103,13 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
   private static void excludeAndroidFrameworkDetector(@NotNull Project project) {
     try {
       final DetectionExcludesConfiguration excludesConfiguration = DetectionExcludesConfiguration.getInstance(project);
-      final FrameworkType type = new AndroidFrameworkDetector().getFrameworkType();
-      if (!excludesConfiguration.isExcludedFromDetection(type)) {
-        excludesConfiguration.addExcludedFramework(type);
+      try {
+        final FrameworkType type = new AndroidFrameworkDetector().getFrameworkType();
+        if (!excludesConfiguration.isExcludedFromDetection(type)) {
+          excludesConfiguration.addExcludedFramework(type);
+        }
+      } catch (NullPointerException ignored) {
+        // If the Android facet has not been configured then getFrameworkType() throws a NPE.
       }
     } catch (NoClassDefFoundError ignored) {
       // This should never happen. But just in case ...

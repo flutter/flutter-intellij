@@ -8,10 +8,6 @@
     <moduleDescriptionProvider implementation="io.flutter.module.FlutterDescriptionProvider"/>
   </extensions>
 
-  <extensions defaultExtensionNs="com.android.project">
-    <projectsystem implementation="io.flutter.project.FlutterProjectSystemProvider"/>
-  </extensions>
-
   <extensions defaultExtensionNs="io.flutter">
     <gradleSyncProvider implementation="io.flutter.android.AndroidStudioGradleSyncProvider" order="first"/>
     <colorPickerProvider implementation="io.flutter.editor.AndroidStudioColorPickerProvider" order="first"/>

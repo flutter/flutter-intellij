@@ -127,7 +127,7 @@ public class FlutterUtils {
       ApplicationInfo info = ApplicationInfo.getInstance();
       int major = Integer.parseInt(info.getMajorVersion());
       int minor = Integer.parseInt(info.getMinorVersion());
-      return major >= 4 && minor >= 2;
+      return true; //major >= 4 && minor >= 2;
     }
     return false;
   }
