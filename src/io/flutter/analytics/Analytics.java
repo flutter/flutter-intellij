@@ -112,6 +112,10 @@ public class Analytics {
     sendPayload("timing", args, null);
   }
 
+  public void sendCaughtException(String text) {
+    sendEvent("caught-exception", text);
+  }
+
   public void sendException(String throwableText, boolean isFatal) {
     String description = throwableText;
     description = description.replaceAll("com.intellij.openapi.", "c.i.o.");
