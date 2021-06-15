@@ -70,7 +70,7 @@ public class EmbeddedBrowser {
       // Skip using a transparent background if an exception is thrown.
     } catch (Exception | Error ex) {
       LOG.info(ex);
-      FlutterInitializer.getAnalytics().sendCaughtException("embedded-browser-setup: " + ex);
+      FlutterInitializer.getAnalytics().sendCaughtException("jxbrowser-setup: " + ex);
     }
 
     resetUrl();
@@ -112,7 +112,7 @@ public class EmbeddedBrowser {
       devToolsUrlFuture.completeExceptionally(ex);
       onBrowserUnavailable.run();
       LOG.info(ex);
-      FlutterInitializer.getAnalytics().sendCaughtException("embedded-browser-load: " + ex);
+      FlutterInitializer.getAnalytics().sendCaughtException("jxbrowser-load: " + ex);
       return;
     }
 
@@ -187,7 +187,7 @@ public class EmbeddedBrowser {
     AsyncUtils.whenCompleteUiThread(updatedUrlFuture, (devToolsUrl, ex) -> {
       if (ex != null) {
         LOG.info(ex);
-        FlutterInitializer.getAnalytics().sendCaughtException("embedded-browser-update: " + ex);
+        FlutterInitializer.getAnalytics().sendCaughtException("jxbrowser-update: " + ex);
         return;
       }
       if (devToolsUrl == null) {
