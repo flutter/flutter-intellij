@@ -193,7 +193,7 @@ public class BazelFields {
 
     // Check that target field is populated.
     if (StringUtil.isEmptyOrSpaces(target)) {
-      throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noDartEntrypointSet"));
+      throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noBazelOrDartTargetSet"));
     }
     else if (!target.endsWith("dart") && !target.startsWith("//")) {
       throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.startWithSlashSlash"));
