@@ -11,7 +11,6 @@ import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.execution.ParametersListUtil;
@@ -216,7 +215,7 @@ public class SdkFields {
       }
       catch (Exception e) {
         LOG.info(e);
-        FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(e), false);
+        FlutterInitializer.getAnalytics().sendExpectedException("devtools", e);
       }
     }
     command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);

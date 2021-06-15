@@ -112,6 +112,10 @@ public class Analytics {
     sendPayload("timing", args, null);
   }
 
+  public void sendExpectedException(String location, Throwable throwable) {
+    sendEvent("expected-exception", location + ":" + throwable.getClass().getName());
+  }
+
   public void sendException(String throwableText, boolean isFatal) {
     String description = throwableText;
     description = description.replaceAll("com.intellij.openapi.", "c.i.o.");

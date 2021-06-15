@@ -10,7 +10,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.SystemInfo;
-import com.intellij.openapi.util.text.StringUtil;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.engine.EngineOptions;
 import com.teamdev.jxbrowser.engine.PasswordStore;
@@ -47,7 +46,7 @@ public class EmbeddedBrowserEngine {
     } catch (Exception ex) {
       temp = null;
       LOG.info(ex);
-      FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(ex), false);
+      FlutterInitializer.getAnalytics().sendExpectedException("jxbrowser-engine", ex);
     }
     engine = temp;
 
@@ -60,7 +59,7 @@ public class EmbeddedBrowserEngine {
           }
         } catch (Exception ex) {
           LOG.info(ex);
-          FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(ex), false);
+          FlutterInitializer.getAnalytics().sendExpectedException("jxbrowswer-engine-close", ex);
         }
         return true;
       }

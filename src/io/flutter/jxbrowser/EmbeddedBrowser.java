@@ -11,7 +11,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
@@ -71,7 +70,7 @@ public class EmbeddedBrowser {
       // Skip using a transparent background if an exception is thrown.
     } catch (Exception | Error ex) {
       LOG.info(ex);
-      FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(ex), false);
+      FlutterInitializer.getAnalytics().sendExpectedException("jxbrowser-setup", ex);
     }
 
     resetUrl();
@@ -113,7 +112,7 @@ public class EmbeddedBrowser {
       devToolsUrlFuture.completeExceptionally(ex);
       onBrowserUnavailable.run();
       LOG.info(ex);
-      FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(ex), false);
+      FlutterInitializer.getAnalytics().sendExpectedException("jxbrowser-load", ex);
       return;
     }
 
@@ -188,7 +187,7 @@ public class EmbeddedBrowser {
     AsyncUtils.whenCompleteUiThread(updatedUrlFuture, (devToolsUrl, ex) -> {
       if (ex != null) {
         LOG.info(ex);
-        FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(ex), false);
+        FlutterInitializer.getAnalytics().sendExpectedException("jxbrowser-update", ex);
         return;
       }
       if (devToolsUrl == null) {

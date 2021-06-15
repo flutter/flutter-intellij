@@ -24,7 +24,6 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
@@ -262,8 +261,8 @@ public class DevToolsService {
   }
 
   private void logExceptionAndComplete(Exception exception) {
-    LOG.error(exception);
-    FlutterInitializer.getAnalytics().sendException(StringUtil.getThrowableText(exception), false);
+    LOG.info(exception);
+    FlutterInitializer.getAnalytics().sendExpectedException("devtools-service", exception);
     final CompletableFuture<DevToolsInstance> future = devToolsFutureRef.get();
     if (future != null) {
       future.completeExceptionally(exception);
