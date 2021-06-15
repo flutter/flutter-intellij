@@ -74,7 +74,7 @@ public class BazelFieldsTest {
 
     // Verify that we no longer write workingDirectory.
     assertArrayEquals(
-      new String[]{"additionalArgs", "bazelArgs", "target", "enableReleaseMode",},
+      new String[]{"additionalArgs", "bazelArgs", "enableReleaseMode", "target"},
       getOptionNames(elt).toArray());
 
     final BazelFields after = BazelFields.readFrom(elt);
