@@ -328,7 +328,7 @@ public class BazelFields {
   }
 
   public void writeTo(Element element) {
-    ElementIO.addOption(element, "bazelOrDartTarget", target);
+    ElementIO.addOption(element, "target", target);
     ElementIO.addOption(element, "bazelArgs", bazelArgs);
     ElementIO.addOption(element, "additionalArgs", additionalArgs);
     ElementIO.addOption(element, "enableReleaseMode", Boolean.toString(enableReleaseMode));
@@ -339,7 +339,7 @@ public class BazelFields {
 
     // Use old field name of bazelTarget if the newer one has not been set.
     final String bazelOrDartTarget =
-      options.get("bazelOrDartTarget") != null ? options.get("bazelOrDartTarget") : options.get("bazelTarget");
+      options.get("target") != null ? options.get("target") : options.get("bazelTarget");
     final String bazelArgs = options.get("bazelArgs");
     final String additionalArgs = options.get("additionalArgs");
     final String enableReleaseMode = options.get("enableReleaseMode");

@@ -26,19 +26,17 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
   private JTextField myBazelArgs;
   private JTextField myAdditionalArgs;
   private JCheckBox myEnableReleaseModeCheckBox;
-  private TextFieldWithBrowseButton myBazelOrDartTarget;
-  private JLabel myDartTargetText;
-  private JLabel myDartTargetLabel;
+  private TextFieldWithBrowseButton myTarget;
 
   public FlutterBazelConfigurationEditorForm(final Project project) {
     final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
-    initDartFileTextWithBrowse(project, myBazelOrDartTarget);
+    initDartFileTextWithBrowse(project, myTarget);
   }
 
   @Override
   protected void resetEditorFrom(@NotNull final BazelRunConfig configuration) {
     final BazelFields fields = configuration.getFields();
-    myBazelOrDartTarget.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getTarget())));
+    myTarget.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getTarget())));
     myEnableReleaseModeCheckBox.setSelected(fields.getEnableReleaseMode());
     myBazelArgs.setText(StringUtil.notNullize(fields.getBazelArgs()));
     myAdditionalArgs.setText(StringUtil.notNullize(fields.getAdditionalArgs()));
@@ -46,7 +44,7 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
 
   @Override
   protected void applyEditorTo(@NotNull final BazelRunConfig configuration) throws ConfigurationException {
-    String target = myBazelOrDartTarget.getText().trim();
+    String target = myTarget.getText().trim();
     final BazelFields fields = new BazelFields(
       StringUtil.nullize(target.endsWith("dart") ? FileUtil.toSystemIndependentName(target) : target, true),
       getTextValue(myBazelArgs),

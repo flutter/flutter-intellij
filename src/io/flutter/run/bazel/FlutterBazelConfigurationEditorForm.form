@@ -88,7 +88,7 @@
         </constraints>
         <properties/>
       </component>
-      <component id="1b4c4" class="javax.swing.JLabel" binding="myDartTargetText">
+      <component id="1b4c4" class="javax.swing.JLabel">
         <constraints>
           <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -97,7 +97,7 @@
           <text value="The Bazel target (e.g. //a/b/c:name) or entrypoint for the application (e.g. main.dart)"/>
         </properties>
       </component>
-      <component id="bda6b" class="javax.swing.JLabel" binding="myDartTargetLabel">
+      <component id="bda6b" class="javax.swing.JLabel">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -106,7 +106,7 @@
           <verifyInputWhenFocusTarget value="false"/>
         </properties>
       </component>
-      <component id="1b95c" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myBazelOrDartTarget">
+      <component id="1b95c" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myTarget">
         <constraints>
           <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>

@@ -30,7 +30,7 @@ public class BazelFieldsTest {
   @Test
   public void shouldReadFieldsFromXml() {
     final Element elt = new Element("test");
-    addOption(elt, "bazelOrDartTarget", "//path/to/flutter/app:hello");
+    addOption(elt, "target", "//path/to/flutter/app:hello");
     addOption(elt, "enableReleaseMode", "false");
     addOption(elt, "additionalArgs", "--android_cpu=x86");
     addOption(elt, "bazelArgs", "--define=release_channel=beta3");
@@ -74,7 +74,7 @@ public class BazelFieldsTest {
 
     // Verify that we no longer write workingDirectory.
     assertArrayEquals(
-      new String[]{"additionalArgs", "bazelArgs", "bazelOrDartTarget", "enableReleaseMode",},
+      new String[]{"additionalArgs", "bazelArgs", "target", "enableReleaseMode",},
       getOptionNames(elt).toArray());
 
     final BazelFields after = BazelFields.readFrom(elt);
