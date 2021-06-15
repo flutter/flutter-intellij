@@ -38,7 +38,7 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
   @Override
   protected void resetEditorFrom(@NotNull final BazelRunConfig configuration) {
     final BazelFields fields = configuration.getFields();
-    myBazelOrDartTarget.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getBazelOrDartTarget())));
+    myBazelOrDartTarget.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getTarget())));
     myEnableReleaseModeCheckBox.setSelected(fields.getEnableReleaseMode());
     myBazelArgs.setText(StringUtil.notNullize(fields.getBazelArgs()));
     myAdditionalArgs.setText(StringUtil.notNullize(fields.getAdditionalArgs()));

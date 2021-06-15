@@ -37,7 +37,7 @@ public class BazelFieldsTest {
 
     final BazelFields fields = BazelFields.readFrom(elt);
     XmlSerializer.deserializeInto(fields, elt);
-    assertEquals("//path/to/flutter/app:hello", fields.getBazelOrDartTarget());
+    assertEquals("//path/to/flutter/app:hello", fields.getTarget());
     assertEquals("--define=release_channel=beta3", fields.getBazelArgs());
     assertEquals("--android_cpu=x86", fields.getAdditionalArgs());
     assertFalse(fields.getEnableReleaseMode());
@@ -54,7 +54,7 @@ public class BazelFieldsTest {
 
     final BazelFields fields = BazelFields.readFrom(elt);
     XmlSerializer.deserializeInto(fields, elt);
-    assertEquals("//path/to/flutter/app:hello", fields.getBazelOrDartTarget());
+    assertEquals("//path/to/flutter/app:hello", fields.getTarget());
     assertNull(fields.getBazelArgs());
     assertEquals("--android_cpu=x86", fields.getAdditionalArgs());
     assertTrue(fields.getEnableReleaseMode());
@@ -79,7 +79,7 @@ public class BazelFieldsTest {
 
     final BazelFields after = BazelFields.readFrom(elt);
 
-    assertEquals("bazel_or_dart_target", after.getBazelOrDartTarget());
+    assertEquals("bazel_or_dart_target", after.getTarget());
     assertEquals("bazel_args --1 -2=3", after.getBazelArgs());
     assertEquals("additional_args --1 --2=3", after.getAdditionalArgs());
     assertTrue(after.getEnableReleaseMode());

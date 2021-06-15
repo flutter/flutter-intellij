@@ -56,7 +56,7 @@ public class BazelFields {
    * The Bazel target or Dart file to invoke.
    */
   @Nullable
-  private final String bazelOrDartTarget;
+  private final String target;
 
   /**
    * Whether or not to run the app with --define flutter_build_mode=release.
@@ -92,16 +92,16 @@ public class BazelFields {
   @Nullable
   private final String additionalArgs;
 
-  BazelFields(@Nullable String bazelOrDartTarget, @Nullable String bazelArgs, @Nullable String additionalArgs, boolean enableReleaseMode) {
-    this(bazelOrDartTarget, bazelArgs, additionalArgs, enableReleaseMode, null);
+  BazelFields(@Nullable String target, @Nullable String bazelArgs, @Nullable String additionalArgs, boolean enableReleaseMode) {
+    this(target, bazelArgs, additionalArgs, enableReleaseMode, null);
   }
 
-  BazelFields(@Nullable String bazelOrDartTarget,
+  BazelFields(@Nullable String target,
               @Nullable String bazelArgs,
               @Nullable String additionalArgs,
               boolean enableReleaseMode,
               DevToolsService devToolsService) {
-    this.bazelOrDartTarget = bazelOrDartTarget;
+    this.target = target;
     this.bazelArgs = bazelArgs;
     this.additionalArgs = additionalArgs;
     this.enableReleaseMode = enableReleaseMode;
@@ -112,7 +112,7 @@ public class BazelFields {
    * Copy constructor
    */
   BazelFields(@NotNull BazelFields original) {
-    bazelOrDartTarget = original.bazelOrDartTarget;
+    target = original.target;
     enableReleaseMode = original.enableReleaseMode;
     bazelArgs = original.bazelArgs;
     additionalArgs = original.additionalArgs;
@@ -129,9 +129,12 @@ public class BazelFields {
     return additionalArgs;
   }
 
+  /**
+   * This can be either a bazel or a dart target.
+   */
   @Nullable
-  public String getBazelOrDartTarget() {
-    return bazelOrDartTarget;
+  public String getTarget() {
+    return target;
   }
 
   public boolean getEnableReleaseMode() {
@@ -189,10 +192,10 @@ public class BazelFields {
     }
 
     // Check that target field is populated.
-    if (StringUtil.isEmptyOrSpaces(bazelOrDartTarget)) {
+    if (StringUtil.isEmptyOrSpaces(target)) {
       throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noDartEntrypointSet"));
     }
-    else if (!bazelOrDartTarget.endsWith("dart") && !bazelOrDartTarget.startsWith("//")) {
+    else if (!target.endsWith("dart") && !target.startsWith("//")) {
       throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.startWithSlashSlash"));
     }
   }
@@ -217,7 +220,7 @@ public class BazelFields {
     assert launchingScript != null; // already checked
     assert workspace != null; // if the workspace is null, then so is the launching script, therefore this was already checked.
 
-    final String target = getBazelOrDartTarget();
+    final String target = getTarget();
     assert target != null; // already checked
 
     final String additionalArgs = getAdditionalArgs();
@@ -325,7 +328,7 @@ public class BazelFields {
   }
 
   public void writeTo(Element element) {
-    ElementIO.addOption(element, "bazelOrDartTarget", bazelOrDartTarget);
+    ElementIO.addOption(element, "bazelOrDartTarget", target);
     ElementIO.addOption(element, "bazelArgs", bazelArgs);
     ElementIO.addOption(element, "additionalArgs", additionalArgs);
     ElementIO.addOption(element, "enableReleaseMode", Boolean.toString(enableReleaseMode));
