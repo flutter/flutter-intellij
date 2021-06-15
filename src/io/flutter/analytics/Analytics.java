@@ -32,6 +32,7 @@ import java.util.Map;
  */
 public class Analytics {
   public static final String GROUP_DISPLAY_ID = "Flutter Usage Statistics";
+  private static final String EXPECTED_EXCEPTION_CATEGORY = "expected-exception";
 
   private static final String analyticsUrl = "https://www.google-analytics.com/collect";
   private static final String applicationName = "Flutter IntelliJ Plugin";
@@ -112,8 +113,8 @@ public class Analytics {
     sendPayload("timing", args, null);
   }
 
-  public void sendCaughtException(String text) {
-    sendEvent("caught-exception", text);
+  public void sendExpectedException(String location, Throwable throwable) {
+    sendEvent(EXPECTED_EXCEPTION_CATEGORY, location + ":" + throwable.getClass().getName());
   }
 
   public void sendException(String throwableText, boolean isFatal) {

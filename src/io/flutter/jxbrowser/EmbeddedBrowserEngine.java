@@ -46,7 +46,7 @@ public class EmbeddedBrowserEngine {
     } catch (Exception ex) {
       temp = null;
       LOG.info(ex);
-      FlutterInitializer.getAnalytics().sendCaughtException("jxbrowser-engine: " + ex);
+      FlutterInitializer.getAnalytics().sendExpectedException("jxbrowser-engine", ex);
     }
     engine = temp;
 
@@ -59,7 +59,7 @@ public class EmbeddedBrowserEngine {
           }
         } catch (Exception ex) {
           LOG.info(ex);
-          FlutterInitializer.getAnalytics().sendCaughtException("jxbrowswer-engine-close: " + ex);
+          FlutterInitializer.getAnalytics().sendExpectedException("jxbrowswer-engine-close", ex);
         }
         return true;
       }

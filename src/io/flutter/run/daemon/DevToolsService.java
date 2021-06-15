@@ -262,7 +262,7 @@ public class DevToolsService {
 
   private void logExceptionAndComplete(Exception exception) {
     LOG.info(exception);
-    FlutterInitializer.getAnalytics().sendCaughtException("devtools-service: " + exception);
+    FlutterInitializer.getAnalytics().sendExpectedException("devtools-service", exception);
     final CompletableFuture<DevToolsInstance> future = devToolsFutureRef.get();
     if (future != null) {
       future.completeExceptionally(exception);

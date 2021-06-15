@@ -215,7 +215,7 @@ public class SdkFields {
       }
       catch (Exception e) {
         LOG.info(e);
-        FlutterInitializer.getAnalytics().sendCaughtException("devtools: " + e);
+        FlutterInitializer.getAnalytics().sendExpectedException("devtools", e);
       }
     }
     command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
