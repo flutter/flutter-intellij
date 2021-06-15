@@ -13,12 +13,14 @@ import io.flutter.view.FlutterView;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterViewToolWindowManagerListener implements ToolWindowManagerListener {
-  private boolean inspectorIsOpen = false;
+  private boolean inspectorIsOpen;
   private Runnable onWindowOpen;
   private Runnable onWindowFirstVisible;
 
-  public FlutterViewToolWindowManagerListener(Project project) {
+  public FlutterViewToolWindowManagerListener(Project project, ToolWindow toolWindow) {
     project.getMessageBus().connect().subscribe(ToolWindowManagerListener.TOPIC, this);
+
+    inspectorIsOpen = toolWindow.isShowStripeButton();
   }
 
   public void updateOnWindowOpen(Runnable onWindowOpen) {

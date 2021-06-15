@@ -489,7 +489,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   @VisibleForTesting
   protected void setUpToolWindowListener(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
     if (this.toolWindowListener == null) {
-      this.toolWindowListener = new FlutterViewToolWindowManagerListener(myProject);
+      this.toolWindowListener = new FlutterViewToolWindowManagerListener(myProject, toolWindow);
     }
     this.toolWindowListener.updateOnWindowOpen(() -> {
       devToolsInstallCount += 1;
@@ -723,7 +723,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         displayEmbeddedBrowser(app, inspectorService, toolWindow);
       } else {
         if (toolWindowListener == null) {
-          toolWindowListener = new FlutterViewToolWindowManagerListener(myProject);
+          toolWindowListener = new FlutterViewToolWindowManagerListener(myProject, toolWindow);
         }
         // If the window isn't visible yet, only executed embedded browser steps when it becomes visible.
         toolWindowListener.updateOnWindowFirstVisible(() -> {
