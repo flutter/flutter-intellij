@@ -53,10 +53,10 @@ public class BazelFields {
   private static final Logger LOG = Logger.getInstance(BazelFields.class);
 
   /**
-   * The Bazel target to invoke.
+   * The Bazel target or Dart file to invoke.
    */
   @Nullable
-  private final String bazelTarget;
+  private final String target;
 
   /**
    * Whether or not to run the app with --define flutter_build_mode=release.
@@ -92,16 +92,16 @@ public class BazelFields {
   @Nullable
   private final String additionalArgs;
 
-  BazelFields(@Nullable String bazelTarget, @Nullable String bazelArgs, @Nullable String additionalArgs, boolean enableReleaseMode) {
-    this(bazelTarget, bazelArgs, additionalArgs, enableReleaseMode, null);
+  BazelFields(@Nullable String target, @Nullable String bazelArgs, @Nullable String additionalArgs, boolean enableReleaseMode) {
+    this(target, bazelArgs, additionalArgs, enableReleaseMode, null);
   }
 
-  BazelFields(@Nullable String bazelTarget,
+  BazelFields(@Nullable String target,
               @Nullable String bazelArgs,
               @Nullable String additionalArgs,
               boolean enableReleaseMode,
               DevToolsService devToolsService) {
-    this.bazelTarget = bazelTarget;
+    this.target = target;
     this.bazelArgs = bazelArgs;
     this.additionalArgs = additionalArgs;
     this.enableReleaseMode = enableReleaseMode;
@@ -112,7 +112,7 @@ public class BazelFields {
    * Copy constructor
    */
   BazelFields(@NotNull BazelFields original) {
-    bazelTarget = original.bazelTarget;
+    target = original.target;
     enableReleaseMode = original.enableReleaseMode;
     bazelArgs = original.bazelArgs;
     additionalArgs = original.additionalArgs;
@@ -129,10 +129,12 @@ public class BazelFields {
     return additionalArgs;
   }
 
-
+  /**
+   * This can be either a bazel or a dart target.
+   */
   @Nullable
-  public String getBazelTarget() {
-    return bazelTarget;
+  public String getTarget() {
+    return target;
   }
 
   public boolean getEnableReleaseMode() {
@@ -189,12 +191,11 @@ public class BazelFields {
         FlutterBundle.message("flutter.run.bazel.launchingScriptNotFound", FileUtil.toSystemDependentName(runScript)));
     }
 
-    // check that bazel target is not empty
-    if (StringUtil.isEmptyOrSpaces(bazelTarget)) {
-      throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noTargetSet"));
+    // Check that target field is populated.
+    if (StringUtil.isEmptyOrSpaces(target)) {
+      throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noBazelOrDartTargetSet"));
     }
-    // check that the bazel target starts with "//"
-    else if (!bazelTarget.startsWith("//")) {
+    else if (!target.endsWith("dart") && !target.startsWith("//")) {
       throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.startWithSlashSlash"));
     }
   }
@@ -219,7 +220,7 @@ public class BazelFields {
     assert launchingScript != null; // already checked
     assert workspace != null; // if the workspace is null, then so is the launching script, therefore this was already checked.
 
-    final String target = getBazelTarget();
+    final String target = getTarget();
     assert target != null; // already checked
 
     final String additionalArgs = getAdditionalArgs();
@@ -289,11 +290,10 @@ public class BazelFields {
         "You can now remove this flag from your configuration's additional args: " + disableBazelHotRestartParam,
         NotificationType.INFORMATION);
       Notifications.Bus.notify(notification, project);
-    } else if (FlutterSettings.getInstance().isEnableBazelHotRestart() && !hasEnabledArg && !hasDisabledArg) {
+    }
+    else if (FlutterSettings.getInstance().isEnableBazelHotRestart() && !hasEnabledArg && !hasDisabledArg) {
       commandLine.addParameter(enableBazelHotRestartParam);
     }
-
-
 
     // Send in the deviceId.
     if (device != null) {
@@ -328,26 +328,24 @@ public class BazelFields {
   }
 
   public void writeTo(Element element) {
-    ElementIO.addOption(element, "bazelTarget", bazelTarget);
+    ElementIO.addOption(element, "target", target);
     ElementIO.addOption(element, "bazelArgs", bazelArgs);
     ElementIO.addOption(element, "additionalArgs", additionalArgs);
     ElementIO.addOption(element, "enableReleaseMode", Boolean.toString(enableReleaseMode));
   }
 
   public static BazelFields readFrom(Element element) {
-    return readFrom(element, null);
-  }
-
-  public static BazelFields readFrom(Element element, DevToolsService service) {
     final Map<String, String> options = ElementIO.readOptions(element);
 
-    final String bazelTarget = options.get("bazelTarget");
+    // Use old field name of bazelTarget if the newer one has not been set.
+    final String bazelOrDartTarget =
+      options.get("target") != null ? options.get("target") : options.get("bazelTarget");
     final String bazelArgs = options.get("bazelArgs");
     final String additionalArgs = options.get("additionalArgs");
     final String enableReleaseMode = options.get("enableReleaseMode");
 
     try {
-      return new BazelFields(bazelTarget, bazelArgs, additionalArgs, Boolean.parseBoolean(enableReleaseMode));
+      return new BazelFields(bazelOrDartTarget, bazelArgs, additionalArgs, Boolean.parseBoolean(enableReleaseMode));
     }
     catch (IllegalArgumentException e) {
       throw new InvalidDataException(e.getMessage());
