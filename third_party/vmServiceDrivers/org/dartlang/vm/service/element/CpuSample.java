@@ -29,6 +29,27 @@ public class CpuSample extends Element {
   }
 
   /**
+   * Matches the index of a class in HeapSnapshot.classes. Provided for CpuSample instances
+   * returned from a getAllocationTraces().
+   *
+   * Can return <code>null</code>.
+   */
+  public int getClassId() {
+    return getAsInt("classId");
+  }
+
+  /**
+   * The identityHashCode assigned to the allocated object. This hash code is the same as the hash
+   * code provided in HeapSnapshot. Provided for CpuSample instances returned from a
+   * getAllocationTraces().
+   *
+   * Can return <code>null</code>.
+   */
+  public int getIdentityHashCode() {
+    return getAsInt("identityHashCode");
+  }
+
+  /**
    * The call stack at the time this sample was collected. The stack is to be interpreted as top to
    * bottom. Each element in this array is a key into the `functions` array in `CpuSamples`.
    *

@@ -16,6 +16,7 @@ package org.dartlang.vm.service.element;
 // This is a generated file.
 
 import com.google.gson.JsonObject;
+import java.util.List;
 
 /**
  * A {@link LibraryDependency} provides information about an import or export.
@@ -25,6 +26,15 @@ public class LibraryDependency extends Element {
 
   public LibraryDependency(JsonObject json) {
     super(json);
+  }
+
+  /**
+   * The list of symbols hidden from this dependency.
+   *
+   * Can return <code>null</code>.
+   */
+  public List<String> getHides() {
+    return json.get("hides") == null ? null : getListString("hides");
   }
 
   /**
@@ -46,6 +56,15 @@ public class LibraryDependency extends Element {
    */
   public String getPrefix() {
     return getAsString("prefix");
+  }
+
+  /**
+   * The list of symbols made visible from this dependency.
+   *
+   * Can return <code>null</code>.
+   */
+  public List<String> getShows() {
+    return json.get("shows") == null ? null : getListString("shows");
   }
 
   /**

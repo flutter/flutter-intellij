@@ -101,6 +101,11 @@ public enum InstanceKind {
   PlainInstance,
 
   /**
+   * An instance of the Dart class ReceivePort.
+   */
+  ReceivePort,
+
+  /**
    * An instance of the Dart class RegExp.
    */
   RegExp,

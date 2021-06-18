@@ -30,6 +30,20 @@ public class Instance extends Obj {
   }
 
   /**
+   * The stack trace associated with the allocation of a ReceivePort.
+   *
+   * Provided for instance kinds:
+   *  - ReceivePort
+   *
+   * Can return <code>null</code>.
+   */
+  public InstanceRef getAllocationLocation() {
+    JsonObject obj = (JsonObject) json.get("allocationLocation");
+    if (obj == null) return null;
+    return new InstanceRef(obj);
+  }
+
+  /**
    * The elements of a Map instance.
    *
    * Provided for instance kinds:
@@ -168,6 +182,18 @@ public class Instance extends Obj {
   }
 
   /**
+   * A name associated with a ReceivePort used for debugging purposes.
+   *
+   * Provided for instance kinds:
+   *  - ReceivePort
+   *
+   * Can return <code>null</code>.
+   */
+  public String getDebugName() {
+    return getAsString("debugName");
+  }
+
+  /**
    * The elements of a List instance.
    *
    * Provided for instance kinds:
@@ -202,6 +228,14 @@ public class Instance extends Obj {
         return new BoundField(array.get(index).getAsJsonObject());
       }
     };
+  }
+
+  /**
+   * The identityHashCode assigned to the allocated object. This hash code is the same as the hash
+   * code provided in HeapSnapshot and CpuSample's returned by getAllocationTraces().
+   */
+  public int getIdentityHashCode() {
+    return getAsInt("identityHashCode");
   }
 
   /**
@@ -370,6 +404,18 @@ public class Instance extends Obj {
   }
 
   /**
+   * The port ID for a ReceivePort.
+   *
+   * Provided for instance kinds:
+   *  - ReceivePort
+   *
+   * Can return <code>null</code>.
+   */
+  public int getPortId() {
+    return getAsInt("portId");
+  }
+
+  /**
    * The key for a WeakProperty instance.
    *
    * Provided for instance kinds:
@@ -460,6 +506,7 @@ public class Instance extends Obj {
    *  - Double (suitable for passing to Double.parse())
    *  - Int (suitable for passing to int.parse())
    *  - String (value may be truncated)
+   *  - StackTrace
    *
    * Can return <code>null</code>.
    */

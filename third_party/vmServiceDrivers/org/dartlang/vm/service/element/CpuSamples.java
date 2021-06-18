@@ -97,7 +97,9 @@ public class CpuSamples extends Response {
   }
 
   /**
-   * The timespan the set of returned samples covers, in microseconds.
+   * The timespan the set of returned samples covers, in microseconds (deprecated).
+   *
+   * Note: this property is deprecated and will always return -1. Use `timeExtentMicros` instead.
    */
   public int getTimeSpan() {
     return getAsInt("timeSpan");

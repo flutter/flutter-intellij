@@ -64,6 +64,7 @@ public class Event extends Response {
    *  - BreakpointAdded
    *  - BreakpointRemoved
    *  - BreakpointResolved
+   *  - BreakpointUpdated
    *
    * Can return <code>null</code>.
    */

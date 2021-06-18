@@ -18,36 +18,21 @@ package org.dartlang.vm.service.element;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+/**
+ * A {@link PortList} contains a list of ports associated with some isolate.
+ */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class Timeline extends Response {
+public class PortList extends Response {
 
-  public Timeline(JsonObject json) {
+  public PortList(JsonObject json) {
     super(json);
   }
 
-  /**
-   * The duration of time covered by the timeline.
-   */
-  public int getTimeExtentMicros() {
-    return getAsInt("timeExtentMicros");
-  }
-
-  /**
-   * The start of the period of time in which traceEvents were collected.
-   */
-  public int getTimeOriginMicros() {
-    return getAsInt("timeOriginMicros");
-  }
-
-  /**
-   * A list of timeline events. No order is guaranteed for these events; in particular, these
-   * events may be unordered with respect to their timestamps.
-   */
-  public ElementList<TimelineEvent> getTraceEvents() {
-    return new ElementList<TimelineEvent>(json.get("traceEvents").getAsJsonArray()) {
+  public ElementList<InstanceRef> getPorts() {
+    return new ElementList<InstanceRef>(json.get("ports").getAsJsonArray()) {
       @Override
-      protected TimelineEvent basicGet(JsonArray array, int index) {
-        return new TimelineEvent(array.get(index).getAsJsonObject());
+      protected InstanceRef basicGet(JsonArray array, int index) {
+        return new InstanceRef(array.get(index).getAsJsonObject());
       }
     };
   }
