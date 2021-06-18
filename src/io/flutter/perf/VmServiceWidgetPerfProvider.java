@@ -111,10 +111,9 @@ public class VmServiceWidgetPerfProvider implements WidgetPerfProvider {
     isDisposed = true;
     connected = false;
 
-    // TODO(devoncarew): This method will be available in a future version of the service protocol library.
-    //if (vmServiceListener != null) {
-    //  app.getVmService().removeEventListener(vmServiceListener);
-    //}
+    if (vmServiceListener != null && app.getVmService() != null) {
+      app.getVmService().removeVmServiceListener(vmServiceListener);
+    }
   }
 
   private void setupConnection(@NotNull VmService vmService) {
