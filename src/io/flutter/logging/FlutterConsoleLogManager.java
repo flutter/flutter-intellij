@@ -25,6 +25,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.ex.EditorSettingsExternalizable;
 import com.intellij.openapi.editor.impl.softwrap.SoftWrapAppliancePlaces;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.ToolWindow;
@@ -435,7 +436,12 @@ public class FlutterConsoleLogManager {
         }
 
         final String widgetId = DevToolsUtils.findWidgetId(property.getValue());
-        EmbeddedBrowser.getInstance(app.getProject()).updatePanelToWidget(widgetId);
+
+        Project project = app.getProject();
+        if (!project.isDisposed()) {
+          EmbeddedBrowser.getInstance(project).updatePanelToWidget(widgetId);
+        }
+
         notification.expire();
 
         FlutterInitializer.getAnalytics().sendEvent(
