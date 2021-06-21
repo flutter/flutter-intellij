@@ -29,6 +29,20 @@ public class InstanceRef extends ObjRef {
   }
 
   /**
+   * The stack trace associated with the allocation of a ReceivePort.
+   *
+   * Provided for instance kinds:
+   *  - ReceivePort
+   *
+   * Can return <code>null</code>.
+   */
+  public InstanceRef getAllocationLocation() {
+    JsonObject obj = (JsonObject) json.get("allocationLocation");
+    if (obj == null) return null;
+    return new InstanceRef(obj);
+  }
+
+  /**
    * Instance references always include their class.
    */
   public ClassRef getClassRef() {
@@ -71,6 +85,26 @@ public class InstanceRef extends ObjRef {
       if ("Null".equals(kind)) return null;
     }
     return new FuncRef(obj);
+  }
+
+  /**
+   * A name associated with a ReceivePort used for debugging purposes.
+   *
+   * Provided for instance kinds:
+   *  - ReceivePort
+   *
+   * Can return <code>null</code>.
+   */
+  public String getDebugName() {
+    return getAsString("debugName");
+  }
+
+  /**
+   * The identityHashCode assigned to the allocated object. This hash code is the same as the hash
+   * code provided in HeapSnapshot and CpuSample's returned by getAllocationTraces().
+   */
+  public int getIdentityHashCode() {
+    return getAsInt("identityHashCode");
   }
 
   /**
@@ -159,6 +193,18 @@ public class InstanceRef extends ObjRef {
     JsonObject obj = (JsonObject) json.get("pattern");
     if (obj == null) return null;
     return new InstanceRef(obj);
+  }
+
+  /**
+   * The port ID for a ReceivePort.
+   *
+   * Provided for instance kinds:
+   *  - ReceivePort
+   *
+   * Can return <code>null</code>.
+   */
+  public int getPortId() {
+    return getAsInt("portId");
   }
 
   /**

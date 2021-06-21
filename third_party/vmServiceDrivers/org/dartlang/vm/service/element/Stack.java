@@ -18,6 +18,10 @@ package org.dartlang.vm.service.element;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+/**
+ * The {@link Stack} class represents the various components of a Dart stack trace for a given
+ * isolate.
+ */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class Stack extends Response {
 
@@ -26,6 +30,9 @@ public class Stack extends Response {
   }
 
   /**
+   * A list of frames representing the asynchronous path. Comparable to `awaiterFrames`, if
+   * provided, although some frames may be different.
+   *
    * Can return <code>null</code>.
    */
   public ElementList<Frame> getAsyncCausalFrames() {
@@ -40,6 +47,9 @@ public class Stack extends Response {
   }
 
   /**
+   * A list of frames representing the asynchronous path. Comparable to `asyncCausalFrames`, if
+   * provided, although some frames may be different.
+   *
    * Can return <code>null</code>.
    */
   public ElementList<Frame> getAwaiterFrames() {
@@ -53,6 +63,10 @@ public class Stack extends Response {
     };
   }
 
+  /**
+   * A list of frames that make up the synchronous stack, rooted at the message loop (i.e., the
+   * frames since the last asynchronous gap or the isolate's entrypoint).
+   */
   public ElementList<Frame> getFrames() {
     return new ElementList<Frame>(json.get("frames").getAsJsonArray()) {
       @Override
@@ -62,6 +76,9 @@ public class Stack extends Response {
     };
   }
 
+  /**
+   * A list of messages in the isolate's message queue.
+   */
   public ElementList<Message> getMessages() {
     return new ElementList<Message>(json.get("messages").getAsJsonArray()) {
       @Override
@@ -69,5 +86,12 @@ public class Stack extends Response {
         return new Message(array.get(index).getAsJsonObject());
       }
     };
+  }
+
+  /**
+   * Specifies whether or not this stack is complete or has been artificially truncated.
+   */
+  public boolean getTruncated() {
+    return getAsBoolean("truncated");
   }
 }

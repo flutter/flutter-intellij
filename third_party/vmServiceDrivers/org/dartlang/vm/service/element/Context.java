@@ -40,7 +40,7 @@ public class Context extends Obj {
    *
    * Can return <code>null</code>.
    */
-  public Context getParent() {
+  public ContextRef getParent() {
     JsonObject obj = (JsonObject) json.get("parent");
     if (obj == null) return null;
     final String type = json.get("type").getAsString();
@@ -48,7 +48,7 @@ public class Context extends Obj {
       final String kind = json.get("kind").getAsString();
       if ("Null".equals(kind)) return null;
     }
-    return new Context(obj);
+    return new ContextRef(obj);
   }
 
   /**

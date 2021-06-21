@@ -38,6 +38,11 @@ public enum EventKind {
   BreakpointResolved,
 
   /**
+   * A breakpoint has been updated.
+   */
+  BreakpointUpdated,
+
+  /**
    * Event from dart:developer.postEvent.
    */
   Extension,

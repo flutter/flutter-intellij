@@ -35,6 +35,13 @@ public class Breakpoint extends Obj {
   }
 
   /**
+   * Is this breakpoint enabled?
+   */
+  public boolean getEnabled() {
+    return getAsBoolean("enabled");
+  }
+
+  /**
    * Is this a breakpoint that was added synthetically as part of a step OverAsyncSuspension resume
    * command?
    *

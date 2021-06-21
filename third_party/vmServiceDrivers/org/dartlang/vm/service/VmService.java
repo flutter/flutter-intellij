@@ -20,8 +20,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import java.util.List;
 import java.util.Map;
-
-import com.intellij.openapi.util.SystemInfo;
 import org.dartlang.vm.service.consumer.*;
 import org.dartlang.vm.service.element.*;
 
@@ -83,7 +81,7 @@ public class VmService extends VmServiceBase {
   /**
    * The minor version number of the protocol supported by this client.
    */
-  public static final int versionMinor = 39;
+  public static final int versionMinor = 47;
 
   /**
    * The [addBreakpoint] RPC is used to add a breakpoint at a specific line of some script.
@@ -171,7 +169,7 @@ public class VmService extends VmServiceBase {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("targetId", targetId);
-    params.addProperty("expression", replaceNewlines(expression));
+    params.addProperty("expression", removeNewLines(expression));
     request("evaluate", params, consumer);
   }
 
@@ -184,7 +182,7 @@ public class VmService extends VmServiceBase {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("targetId", targetId);
-    params.addProperty("expression", replaceNewlines(expression));
+    params.addProperty("expression", removeNewLines(expression));
     if (scope != null) params.add("scope", convertMapToJsonObject(scope));
     if (disableBreakpoints != null) params.addProperty("disableBreakpoints", disableBreakpoints);
     request("evaluate", params, consumer);
@@ -199,7 +197,7 @@ public class VmService extends VmServiceBase {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("frameIndex", frameIndex);
-    params.addProperty("expression", replaceNewlines(expression));
+    params.addProperty("expression", removeNewLines(expression));
     request("evaluateInFrame", params, consumer);
   }
 
@@ -214,7 +212,7 @@ public class VmService extends VmServiceBase {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("frameIndex", frameIndex);
-    params.addProperty("expression", replaceNewlines(expression));
+    params.addProperty("expression", removeNewLines(expression));
     if (scope != null) params.add("scope", convertMapToJsonObject(scope));
     if (disableBreakpoints != null) params.addProperty("disableBreakpoints", disableBreakpoints);
     request("evaluateInFrame", params, consumer);
@@ -240,6 +238,36 @@ public class VmService extends VmServiceBase {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("getAllocationProfile", params, consumer);
+  }
+
+  /**
+   * The [getAllocationTraces] RPC allows for the retrieval of allocation traces for objects of a
+   * specific set of types (see setTraceClassAllocation). Only samples collected in the time range
+   * <code>[timeOriginMicros, timeOriginMicros + timeExtentMicros]</code>[timeOriginMicros,
+   * timeOriginMicros + timeExtentMicros] will be reported.
+   */
+  public void getAllocationTraces(String isolateId, CpuSamplesConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    request("getAllocationTraces", params, consumer);
+  }
+
+  /**
+   * The [getAllocationTraces] RPC allows for the retrieval of allocation traces for objects of a
+   * specific set of types (see setTraceClassAllocation). Only samples collected in the time range
+   * <code>[timeOriginMicros, timeOriginMicros + timeExtentMicros]</code>[timeOriginMicros,
+   * timeOriginMicros + timeExtentMicros] will be reported.
+   * @param timeOriginMicros This parameter is optional and may be null.
+   * @param timeExtentMicros This parameter is optional and may be null.
+   * @param classId This parameter is optional and may be null.
+   */
+  public void getAllocationTraces(String isolateId, Integer timeOriginMicros, Integer timeExtentMicros, String classId, CpuSamplesConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    if (timeOriginMicros != null) params.addProperty("timeOriginMicros", timeOriginMicros);
+    if (timeExtentMicros != null) params.addProperty("timeExtentMicros", timeExtentMicros);
+    if (classId != null) params.addProperty("classId", classId);
+    request("getAllocationTraces", params, consumer);
   }
 
   /**
@@ -361,6 +389,16 @@ public class VmService extends VmServiceBase {
   }
 
   /**
+   * The [getPorts] RPC is used to retrieve the list of <code>ReceivePort</code>ReceivePort
+   * instances for a given isolate.
+   */
+  public void getPorts(String isolateId, PortListConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    request("getPorts", params, consumer);
+  }
+
+  /**
    * Returns a description of major uses of memory known to the VM.
    */
   public void getProcessMemoryUsage(ProcessMemoryUsageConsumer consumer) {
@@ -427,6 +465,18 @@ public class VmService extends VmServiceBase {
   public void getStack(String isolateId, GetStackConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
+    request("getStack", params, consumer);
+  }
+
+  /**
+   * The [getStack] RPC is used to retrieve the current execution stack and message queue for an
+   * isolate. The isolate does not need to be paused.
+   * @param limit This parameter is optional and may be null.
+   */
+  public void getStack(String isolateId, Integer limit, GetStackConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    if (limit != null) params.addProperty("limit", limit);
     request("getStack", params, consumer);
   }
 
@@ -626,6 +676,18 @@ public class VmService extends VmServiceBase {
   }
 
   /**
+   * The [setBreakpointState] RPC allows for breakpoints to be enabled or disabled, without
+   * requiring for the breakpoint to be completely removed.
+   */
+  public void setBreakpointState(String isolateId, String breakpointId, boolean enable, BreakpointConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    params.addProperty("breakpointId", breakpointId);
+    params.addProperty("enable", enable);
+    request("setBreakpointState", params, consumer);
+  }
+
+  /**
    * The [setExceptionPauseMode] RPC is used to control if an isolate pauses when an exception is
    * thrown.
    * @param mode An [ExceptionPauseMode] indicates how the isolate pauses when an exception is
@@ -669,6 +731,19 @@ public class VmService extends VmServiceBase {
     params.addProperty("isolateId", isolateId);
     params.addProperty("name", name);
     request("setName", params, consumer);
+  }
+
+  /**
+   * The [setTraceClassAllocation] RPC allows for enabling or disabling allocation tracing for a
+   * specific type of object. Allocation traces can be retrieved with the [getAllocationTraces]
+   * RPC.
+   */
+  public void setTraceClassAllocation(String isolateId, String classId, boolean enable, SetTraceClassAllocationConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    params.addProperty("classId", classId);
+    params.addProperty("enable", enable);
+    request("setTraceClassAllocation", params, consumer);
   }
 
   /**
@@ -756,6 +831,12 @@ public class VmService extends VmServiceBase {
         return;
       }
     }
+    if (consumer instanceof BreakpointConsumer) {
+      if (responseType.equals("Breakpoint")) {
+        ((BreakpointConsumer) consumer).received(new Breakpoint(json));
+        return;
+      }
+    }
     if (consumer instanceof ClearCpuSamplesConsumer) {
       if (responseType.equals("Sentinel")) {
         ((ClearCpuSamplesConsumer) consumer).received(new Sentinel(json));
@@ -763,6 +844,12 @@ public class VmService extends VmServiceBase {
       }
       if (responseType.equals("Success")) {
         ((ClearCpuSamplesConsumer) consumer).received(new Success(json));
+        return;
+      }
+    }
+    if (consumer instanceof CpuSamplesConsumer) {
+      if (responseType.equals("CpuSamples")) {
+        ((CpuSamplesConsumer) consumer).received(new CpuSamples(json));
         return;
       }
     }
@@ -1030,6 +1117,12 @@ public class VmService extends VmServiceBase {
         return;
       }
     }
+    if (consumer instanceof PortListConsumer) {
+      if (responseType.equals("PortList")) {
+        ((PortListConsumer) consumer).received(new PortList(json));
+        return;
+      }
+    }
     if (consumer instanceof ProcessMemoryUsageConsumer) {
       if (responseType.equals("ProcessMemoryUsage")) {
         ((ProcessMemoryUsageConsumer) consumer).received(new ProcessMemoryUsage(json));
@@ -1122,6 +1215,16 @@ public class VmService extends VmServiceBase {
         return;
       }
     }
+    if (consumer instanceof SetTraceClassAllocationConsumer) {
+      if (responseType.equals("Sentinel")) {
+        ((SetTraceClassAllocationConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+      if (responseType.equals("Success")) {
+        ((SetTraceClassAllocationConsumer) consumer).received(new Success(json));
+        return;
+      }
+    }
     if (consumer instanceof SuccessConsumer) {
       if (responseType.equals("Success")) {
         ((SuccessConsumer) consumer).received(new Success(json));
@@ -1163,14 +1266,5 @@ public class VmService extends VmServiceBase {
       return;
     }
     logUnknownResponse(consumer, json);
-  }
-
-  private String replaceNewlines(String expr) {
-    if (SystemInfo.isWindows) {
-      // Doing separately in case we only have \n in this string.
-      return expr.replaceAll("\n", " ").replaceAll("\r", " ");
-    } else {
-      return expr.replaceAll("\n", " ");
-    }
   }
 }

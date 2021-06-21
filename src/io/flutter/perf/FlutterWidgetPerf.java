@@ -24,6 +24,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.EdtInvocationManager;
 import gnu.trove.TIntObjectHashMap;
 import io.flutter.utils.AsyncUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.Timer;
 import java.awt.event.ActionEvent;
@@ -76,14 +77,15 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
   final Set<TextEditor> currentEditors = new HashSet<>();
   private boolean profilingEnabled;
   final Timer uiAnimationTimer;
-  private final WidgetPerfProvider perfProvider;
+  @NotNull private final WidgetPerfProvider perfProvider;
   private boolean isDisposed = false;
   private final FilePerfModelFactory perfModelFactory;
   private final FileLocationMapperFactory fileLocationMapperFactory;
   private volatile long lastLocalPerfEventTime;
   private final WidgetPerfLinter perfLinter;
 
-  FlutterWidgetPerf(boolean profilingEnabled, WidgetPerfProvider perfProvider,
+  FlutterWidgetPerf(boolean profilingEnabled,
+                    @NotNull WidgetPerfProvider perfProvider,
                     FilePerfModelFactory perfModelFactory,
                     FileLocationMapperFactory fileLocationMapperFactory) {
     this.profilingEnabled = profilingEnabled;

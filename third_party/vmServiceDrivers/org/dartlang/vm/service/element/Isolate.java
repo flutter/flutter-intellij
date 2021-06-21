@@ -95,6 +95,19 @@ public class Isolate extends Response {
   }
 
   /**
+   * The list of isolate flags provided to this isolate. See Dart_IsolateFlags in dart_api.h for
+   * the list of accepted isolate flags.
+   */
+  public ElementList<IsolateFlag> getIsolateFlags() {
+    return new ElementList<IsolateFlag>(json.get("isolateFlags").getAsJsonArray()) {
+      @Override
+      protected IsolateFlag basicGet(JsonArray array, int index) {
+        return new IsolateFlag(array.get(index).getAsJsonObject());
+      }
+    };
+  }
+
+  /**
    * A list of all libraries for this isolate.
    *
    * Guaranteed to be initialized when the IsolateRunnable event fires.

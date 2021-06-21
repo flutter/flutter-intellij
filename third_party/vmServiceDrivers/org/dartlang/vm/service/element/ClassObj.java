@@ -167,6 +167,13 @@ public class ClassObj extends Obj {
   }
 
   /**
+   * Are allocations of this class being traced?
+   */
+  public boolean getTraceAllocations() {
+    return getAsBoolean("traceAllocations");
+  }
+
+  /**
    * Is this an abstract class?
    */
   public boolean isAbstract() {
