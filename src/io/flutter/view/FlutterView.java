@@ -275,22 +275,24 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
       //noinspection CodeBlock2Expr
       ApplicationManager.getApplication().invokeLater(() -> {
-        EmbeddedBrowser.getInstance(myProject).openPanel(contentManager, tabName, devToolsUrl, () -> {
+        embeddedBrowserOptional().ifPresent(embeddedBrowser -> embeddedBrowser.openPanel(contentManager, tabName, devToolsUrl, () -> {
           // If the embedded browser doesn't work, offer a link to open in the regular browser.
           final List<LabelInput> inputs = Arrays.asList(
             new LabelInput("The embedded browser failed to load."),
             openDevToolsLabel(app, inspectorService, toolWindow)
           );
           presentClickableLabel(toolWindow, inputs);
-        });
+        }));
       });
 
       if (!busSubscribed) {
         busConnection.subscribe(EditorColorsManager.TOPIC, scheme ->
-                EmbeddedBrowser.getInstance(myProject).updateColor(ColorUtil.toHex(UIUtil.getEditorPaneBackground()))
+          embeddedBrowserOptional()
+            .ifPresent(embeddedBrowser -> embeddedBrowser.updateColor(ColorUtil.toHex(UIUtil.getEditorPaneBackground())))
         );
         busConnection.subscribe(UISettingsListener.TOPIC, scheme ->
-                EmbeddedBrowser.getInstance(myProject).updateFontSize(UIUtil.getFontSize(UIUtil.FontSize.NORMAL))
+          embeddedBrowserOptional()
+            .ifPresent(embeddedBrowser -> embeddedBrowser.updateFontSize(UIUtil.getFontSize(UIUtil.FontSize.NORMAL)))
         );
         busSubscribed = true;
       }
@@ -301,6 +303,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       );
       presentLabel(toolWindow, "DevTools inspector has been opened in the browser.");
     }
+  }
+
+  private Optional<EmbeddedBrowser> embeddedBrowserOptional() {
+    return myProject.isDisposed() ? Optional.empty() : Optional.of(EmbeddedBrowser.getInstance(myProject));
   }
 
   private void addInspectorViewContent(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
@@ -717,11 +723,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (FlutterSettings.getInstance().isEnableEmbeddedBrowsers()) {
       if (JxBrowserManager.getInstance().getStatus().equals(JxBrowserStatus.INSTALLED)) {
         // Reset the URL since we may have an outdated one from a previous app run.
-        EmbeddedBrowser.getInstance(myProject).resetUrl();
+        embeddedBrowserOptional().ifPresent(EmbeddedBrowser::resetUrl);
       }
       if (toolWindow.isVisible()) {
         displayEmbeddedBrowser(app, inspectorService, toolWindow);
-      } else {
+      }
+      else {
         if (toolWindowListener == null) {
           toolWindowListener = new FlutterViewToolWindowManagerListener(myProject, toolWindow);
         }
