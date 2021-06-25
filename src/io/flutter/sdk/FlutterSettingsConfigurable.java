@@ -11,7 +11,6 @@ import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.options.ConfigurationException;
@@ -49,7 +48,6 @@ import java.net.URISyntaxException;
 // Note: when updating the settings here, update FlutterSearchableOptionContributor as well.
 
 public class FlutterSettingsConfigurable implements SearchableConfigurable {
-  private static final Logger LOG = Logger.getInstance(FlutterSettingsConfigurable.class);
 
   public static final String FLUTTER_SETTINGS_PAGE_NAME = FlutterBundle.message("flutter.title");
   private static final String FLUTTER_SETTINGS_HELP_TOPIC = "flutter.settings.help";
@@ -76,7 +74,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myShowBuildMethodGuides;
   private JCheckBox myShowClosingLabels;
   private FixedSizeButton myCopyButton;
-  private JPanel experimentsPanel;
+  private JTextArea myFontPackagesTextArea; // This should be changed to a structured list some day.
 
   private final @NotNull Project myProject;
   private final WorkspaceCache workspaceCache;
@@ -169,6 +167,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Override
   public boolean isModified() {
+
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myProject);
     final FlutterSettings settings = FlutterSettings.getInstance();
     final String sdkPathInModel = sdk == null ? "" : sdk.getHomePath();
@@ -234,6 +233,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (!settings.getFontPackages().equals(myFontPackagesTextArea.getText())) {
+      return true;
+    }
+
     //noinspection RedundantIfStatement
     if (settings.showAllRunConfigurationsInContext() != myShowAllRunConfigurationsInContextCheckBox.isSelected()) {
       return true;
@@ -285,6 +288,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setEnableEmbeddedBrowsers(myEnableEmbeddedBrowsersCheckBox.isSelected());
     settings.setEnableBazelHotRestart(myEnableBazelHotRestartCheckBox.isSelected());
     settings.setShowAllRunConfigurationsInContext(myShowAllRunConfigurationsInContextCheckBox.isSelected());
+    settings.setFontPackages(myFontPackagesTextArea.getText());
 
     reset(); // because we rely on remembering initial state
   }
@@ -333,6 +337,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myIncludeAllStackTraces.setEnabled(myShowStructuredErrors.isSelected());
 
     myShowAllRunConfigurationsInContextCheckBox.setSelected(settings.showAllRunConfigurationsInContext());
+    myFontPackagesTextArea.setText(settings.getFontPackages());
   }
 
   private void onVersionChanged() {
