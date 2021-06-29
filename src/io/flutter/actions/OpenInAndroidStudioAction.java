@@ -181,6 +181,9 @@ public class OpenInAndroidStudioAction extends AnAction {
         if (SystemInfo.isWindows) {
           androidStudioPath += "\\bin\\studio.bat";
         }
+        else {
+          androidStudioPath += "/bin/studio.sh";
+        }
         cmd = new GeneralCommandLine().withExePath(androidStudioPath).withParameters(projectFile.getPath());
       }
       final ColoredProcessHandler handler = new ColoredProcessHandler(cmd);

@@ -30,6 +30,7 @@ file.
     - Change the "Internal Java Platform" to `IntelliJ IDEA jbr 11`
     - Extend it with additional plugin libraries by adding to `Classpath`:
       - plugins/git4idea/lib/git4idea.jar
+      - plugins/android/lib/android.jar
 * In the "Java Compiler" preference page, make sure that the "Project bytecode version" is set to `11` or `Same as language level`
 * In the "Kotlin Compiler" preference page, make sure that the "Target JVM Version" is set to `11` or `Same as language level`
 * One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin. 
