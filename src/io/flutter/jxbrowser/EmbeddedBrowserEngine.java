@@ -33,12 +33,17 @@ public class EmbeddedBrowserEngine {
     final String dataPath = JxBrowserManager.DOWNLOAD_PATH + File.separatorChar + "user-data";
     LOG.info("JxBrowser user data path: " + dataPath);
 
-    final EngineOptions options =
+    final EngineOptions.Builder optionsBuilder =
       EngineOptions.newBuilder(SystemInfo.isWindows ? OFF_SCREEN : HARDWARE_ACCELERATED)
         .userDataDir(Paths.get(dataPath))
         .passwordStore(PasswordStore.BASIC)
-        .addSwitch("--disable-features=NativeNotifications")
-        .build();
+        .addSwitch("--disable-features=NativeNotifications");
+
+    if (SystemInfo.isLinux) {
+      optionsBuilder.addSwitch("--force-device-scale-factor=1");
+    }
+
+    final EngineOptions options = optionsBuilder.build();
 
     Engine temp;
     try {
