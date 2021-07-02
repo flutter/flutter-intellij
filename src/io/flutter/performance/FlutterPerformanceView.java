@@ -65,6 +65,7 @@ public class FlutterPerformanceView implements Disposable {
   }
 
   void initToolWindow(ToolWindow window) {
+    //window.setAvailable(false);
     if (window.isDisposed()) return;
 
     updateForEmptyContent(window);

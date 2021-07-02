@@ -24,10 +24,12 @@ import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.android.IntelliJAndroidSdk;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.editor.FlutterSaveActionsManager;
 import io.flutter.logging.FlutterConsoleLogManager;
 import io.flutter.perf.FlutterWidgetPerfManager;
 import io.flutter.performance.FlutterPerformanceViewFactory;
+import io.flutter.preview.PreviewViewFactory;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterReloadManager;
@@ -79,11 +81,6 @@ public class FlutterInitializer implements StartupActivity {
     // Start a DevTools server
     DevToolsService.getInstance(project);
 
-    // Start watching for Flutter debug active events.
-    FlutterViewFactory.init(project);
-
-    FlutterPerformanceViewFactory.init(project);
-
     // If the project declares a Flutter dependency, do some extra initialization.
     boolean hasFlutterModule = false;
 
@@ -113,6 +110,13 @@ public class FlutterInitializer implements StartupActivity {
           FlutterModuleUtils.autoShowMain(project, root);
         }
       }
+    }
+
+    if (hasFlutterModule || WorkspaceCache.getInstance(project).isBazel()) {
+      // Start watching for Flutter debug active events.
+      FlutterViewFactory.init(project);
+      FlutterPerformanceViewFactory.init(project);
+      PreviewViewFactory.init(project);
     }
 
     if (hasFlutterModule) {
