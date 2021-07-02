@@ -11,11 +11,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.ColoredProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
-import com.intellij.execution.process.ProcessHandler;
-import com.intellij.execution.process.ProcessOutput;
+import com.intellij.execution.process.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -24,7 +20,6 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.vfs.CharsetToolkit;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
@@ -37,6 +32,7 @@ import io.flutter.utils.JsonUtils;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -71,7 +67,8 @@ public class DevToolsService {
     if (devToolsFutureRef.updateAndGet((future) -> {
       if (future.isCompletedExceptionally()) {
         return null;
-      } else {
+      }
+      else {
         return future;
       }
     }) == null) {
@@ -95,7 +92,8 @@ public class DevToolsService {
     if (futureInstance == null) {
       devToolsFutureRef.set(new CompletableFuture<>());
       startServer();
-    } else if (!futureInstance.isDone()) {
+    }
+    else if (!futureInstance.isDone()) {
       futureInstance.cancel(true);
       devToolsFutureRef.set(new CompletableFuture<>());
       startServer();
@@ -172,7 +170,8 @@ public class DevToolsService {
     pubActivateDevTools(sdk).thenAccept(success -> {
       if (success) {
         pubRunDevTools(sdk);
-      } else {
+      }
+      else {
         logExceptionAndComplete("pub activate of DevTools failed");
       }
     });
@@ -297,7 +296,7 @@ public class DevToolsService {
 
   private static GeneralCommandLine createCommand(String workDir, String command, ImmutableList<String> arguments) {
     final GeneralCommandLine result = new GeneralCommandLine().withWorkDirectory(workDir);
-    result.setCharset(CharsetToolkit.UTF8_CHARSET);
+    result.setCharset(StandardCharsets.UTF_8);
     result.setExePath(FileUtil.toSystemDependentName(command));
     result.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
 
