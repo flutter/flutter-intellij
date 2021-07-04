@@ -6,6 +6,7 @@
 package io.flutter;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.intellij.ProjectTopics;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
@@ -18,6 +19,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupActivity;
@@ -59,6 +61,8 @@ public class FlutterInitializer implements StartupActivity {
   private static final String analyticsToastShown = "io.flutter.analytics.toastShown";
 
   private static Analytics analytics;
+
+  private boolean toolWindowsInitialized = false;
 
   @Override
   public void runActivity(@NotNull Project project) {
@@ -113,10 +117,17 @@ public class FlutterInitializer implements StartupActivity {
     }
 
     if (hasFlutterModule || WorkspaceCache.getInstance(project).isBazel()) {
-      // Start watching for Flutter debug active events.
-      FlutterViewFactory.init(project);
-      FlutterPerformanceViewFactory.init(project);
-      PreviewViewFactory.init(project);
+      initializeToolWindows(project);
+      toolWindowsInitialized = true;
+    } else {
+      project.getMessageBus().connect().subscribe(ProjectTopics.MODULES, new ModuleListener() {
+        @Override
+        public void moduleAdded(@NotNull Project project, @NotNull Module module) {
+          if (!toolWindowsInitialized) {
+            initializeToolWindows(project);
+          }
+        }
+      });
     }
 
     if (hasFlutterModule) {
@@ -201,6 +212,13 @@ public class FlutterInitializer implements StartupActivity {
         ToolWindowTracker.track(project, getAnalytics());
       }
     }
+  }
+
+  private void initializeToolWindows(@NotNull Project project) {
+    // Start watching for Flutter debug active events.
+    FlutterViewFactory.init(project);
+    FlutterPerformanceViewFactory.init(project);
+    PreviewViewFactory.init(project);
   }
 
   /**
