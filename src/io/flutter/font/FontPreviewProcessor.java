@@ -5,12 +5,14 @@
  */
 package io.flutter.font;
 
+import com.intellij.openapi.module.impl.scopes.LibraryRuntimeClasspathScope;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.search.ProjectAndLibrariesScope;
+import com.intellij.psi.search.*;
+import com.jetbrains.lang.dart.DartFileType;
+import com.jetbrains.lang.dart.ide.index.DartComponentIndex;
 import com.jetbrains.lang.dart.ide.index.DartLibraryIndex;
 import com.jetbrains.lang.dart.psi.DartComponentName;
 import com.jetbrains.lang.dart.resolve.ClassNameScopeProcessor;
@@ -34,9 +36,14 @@ public class FontPreviewProcessor {
   }
 
   private void findFontClasses(@NotNull Project project, @NotNull String packageName) {
-    final GlobalSearchScope scope = new ProjectAndLibrariesScope(project);
-    final Collection<VirtualFile> files = DartLibraryIndex.getFilesByLibName(scope, packageName);
-    Set<DartComponentName> classNames = new THashSet<>();
+    GlobalSearchScope scope = new ProjectAndLibrariesScope(project);
+    Collection<VirtualFile> files = DartLibraryIndex.getFilesByLibName(scope, packageName);
+    if (files.isEmpty()) {
+      scope = GlobalSearchScope.everythingScope(project);
+      scope = GlobalSearchScope.allScope(project);
+      files = FileTypeIndex.getFiles(DartFileType.INSTANCE, scope);
+    }
+    final Set<DartComponentName> classNames = new THashSet<>();
 
     for (VirtualFile file : files) {
       final PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
@@ -44,11 +51,19 @@ public class FontPreviewProcessor {
         continue;
       }
       final String path = file.getPath();
+      if (path.contains("flutter/packages/flutter/lib") || path.contains("flutter/bin/cache/dart-sdk")) {
+        continue;
+      }
       final int packageIndex = path.indexOf(packageName);
       if (packageIndex < 0) continue;
-      DartPsiScopeProcessor processor = new ClassNameScopeProcessor(classNames);
+      final DartPsiScopeProcessor processor = new ClassNameScopeProcessor(classNames);
       DartResolveUtil.processTopLevelDeclarations(psiFile, processor, file, null);
       for (DartComponentName name : classNames) {
+        final String declPath = name.getContainingFile().getVirtualFile().getPath();
+        if (declPath.contains("flutter/packages/flutter/lib") || declPath.contains("flutter/bin/cache/dart-sdk")) {
+          continue;
+        }
+        System.out.println(declPath);
         if (name.getContainingFile().equals(psiFile)) {
           FlutterIconLineMarkerProvider.KnownPaths.put(name.getName(), path);
         }
