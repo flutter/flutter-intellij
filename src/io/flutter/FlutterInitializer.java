@@ -118,7 +118,6 @@ public class FlutterInitializer implements StartupActivity {
 
     if (hasFlutterModule || WorkspaceCache.getInstance(project).isBazel()) {
       initializeToolWindows(project);
-      toolWindowsInitialized = true;
     } else {
       project.getMessageBus().connect().subscribe(ProjectTopics.MODULES, new ModuleListener() {
         @Override
@@ -219,6 +218,7 @@ public class FlutterInitializer implements StartupActivity {
     FlutterViewFactory.init(project);
     FlutterPerformanceViewFactory.init(project);
     PreviewViewFactory.init(project);
+    toolWindowsInitialized = true;
   }
 
   /**
