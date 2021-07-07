@@ -3,15 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/flutter-intellij.iml" filepath="$PROJECT_DIR$/flutter-intellij.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flutter-idea/flutter-intellij.flutter-idea.iml" filepath="$PROJECT_DIR$/.idea/modules/flutter-idea/flutter-intellij.flutter-idea.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flutter-idea/flutter-intellij.flutter-idea.main.iml" filepath="$PROJECT_DIR$/.idea/modules/flutter-idea/flutter-intellij.flutter-idea.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flutter-idea/flutter-intellij.flutter-idea.test.iml" filepath="$PROJECT_DIR$/.idea/modules/flutter-idea/flutter-intellij.flutter-idea.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flutter-studio/flutter-intellij.flutter-studio.iml" filepath="$PROJECT_DIR$/.idea/modules/flutter-studio/flutter-intellij.flutter-studio.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flutter-studio/flutter-intellij.flutter-studio.main.iml" filepath="$PROJECT_DIR$/.idea/modules/flutter-studio/flutter-intellij.flutter-studio.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flutter-studio/flutter-intellij.flutter-studio.test.iml" filepath="$PROJECT_DIR$/.idea/modules/flutter-studio/flutter-intellij.flutter-studio.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flutter-intellij.main.iml" filepath="$PROJECT_DIR$/.idea/modules/flutter-intellij.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flutter-intellij.test.iml" filepath="$PROJECT_DIR$/.idea/modules/flutter-intellij.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/tool/plugin/plugin.iml" filepath="$PROJECT_DIR$/tool/plugin/plugin.iml" />
     </modules>
   </component>
 </project>
