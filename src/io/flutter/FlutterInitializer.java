@@ -122,7 +122,7 @@ public class FlutterInitializer implements StartupActivity {
       project.getMessageBus().connect().subscribe(ProjectTopics.MODULES, new ModuleListener() {
         @Override
         public void moduleAdded(@NotNull Project project, @NotNull Module module) {
-          if (!toolWindowsInitialized) {
+          if (!toolWindowsInitialized && FlutterModuleUtils.isFlutterModule(module)) {
             initializeToolWindows(project);
           }
         }
