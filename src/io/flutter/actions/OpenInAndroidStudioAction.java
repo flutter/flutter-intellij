@@ -17,6 +17,11 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.CaretModel;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
@@ -76,11 +81,38 @@ public class OpenInAndroidStudioAction extends AnAction {
       return;
     }
 
-    final VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
-    final String sourceFile = file == null ? null : file.isDirectory() ? null : file.getPath();
+    final VirtualFile sourceFile = event.getData(CommonDataKeys.VIRTUAL_FILE);
+    final String sourceFilePath = sourceFile == null ? null : sourceFile.isDirectory() ? null : sourceFile.getPath();
+
+    final Integer line;
+    final Integer column;
+    final Editor editor = getCurrentEditor(project, sourceFile);
+    if (editor != null) {
+      final CaretModel caretModel = editor.getCaretModel();
+      line = caretModel.getLogicalPosition().line + 1;
+      column = caretModel.getLogicalPosition().column;
+    }
+    else {
+      line = column = null;
+    }
+
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      openFileInStudio(project, projectFile, androidStudioPath, sourceFile);
+      openFileInStudio(androidStudioPath, project, projectFile.getPath(), sourceFilePath, line, column);
     });
+  }
+
+  @Nullable
+  private static Editor getCurrentEditor(@NotNull Project project, @Nullable VirtualFile file) {
+    if (file == null) return null;
+    final FileEditor fileEditor = FileEditorManager.getInstance(project).getSelectedEditor(file);
+    if (fileEditor instanceof TextEditor) {
+      final TextEditor textEditor = (TextEditor)fileEditor;
+      final Editor editor = textEditor.getEditor();
+      if (!editor.isDisposed()) {
+        return editor;
+      }
+    }
+    return null;
   }
 
   private static void updatePresentation(AnActionEvent event, Presentation state) {
@@ -164,24 +196,36 @@ public class OpenInAndroidStudioAction extends AnAction {
     return null;
   }
 
-  private static void openFileInStudio(@Nullable Project project,
-                                       @NotNull VirtualFile projectFile,
-                                       @NotNull String androidStudioPath,
-                                       @Nullable String sourceFile) {
+  private static void openFileInStudio(@NotNull String androidStudioPath,
+                                       @NotNull Project project,
+                                       @NotNull String projectPath,
+                                       @Nullable String sourceFile,
+                                       @Nullable Integer line,
+                                       @Nullable Integer column) {
     try {
       final GeneralCommandLine cmd;
       if (SystemInfo.isMac) {
-        cmd = new GeneralCommandLine().withExePath("open").withParameters("-a", androidStudioPath, "--args", projectFile.getPath());
-        if (sourceFile != null) {
-          cmd.addParameter(sourceFile);
-        }
+        cmd = new GeneralCommandLine().withExePath("open")
+          .withParameters("-a", androidStudioPath, "--args", projectPath);
       }
       else {
-        // TODO Open editor on sourceFile for Linux, Windows
         if (SystemInfo.isWindows) {
           androidStudioPath += "\\bin\\studio.bat";
         }
-        cmd = new GeneralCommandLine().withExePath(androidStudioPath).withParameters(projectFile.getPath());
+        else {
+          androidStudioPath += "/bin/studio.sh";
+        }
+        cmd = new GeneralCommandLine().withExePath(androidStudioPath)
+          .withParameters(projectPath);
+      }
+      if (sourceFile != null) {
+        if (line != null) {
+          cmd.addParameters("--line", line.toString());
+          if (column != null) {
+            cmd.addParameters("--column", column.toString());
+          }
+        }
+        cmd.addParameter(sourceFile);
       }
       final ColoredProcessHandler handler = new ColoredProcessHandler(cmd);
       handler.addProcessListener(new ProcessAdapter() {
@@ -191,10 +235,11 @@ public class OpenInAndroidStudioAction extends AnAction {
             LOG.error(event.getText());
           }
         }
+
         @Override
         public void processTerminated(@NotNull final ProcessEvent event) {
           if (event.getExitCode() != 0) {
-            FlutterMessages.showError("Error Opening", projectFile.getPath(), project);
+            FlutterMessages.showError("Error Opening", projectPath, project);
           }
         }
       });
