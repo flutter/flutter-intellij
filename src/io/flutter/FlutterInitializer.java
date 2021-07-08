@@ -6,6 +6,7 @@
 package io.flutter;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.intellij.ProjectTopics;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
@@ -18,16 +19,19 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.android.IntelliJAndroidSdk;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.editor.FlutterSaveActionsManager;
 import io.flutter.logging.FlutterConsoleLogManager;
 import io.flutter.perf.FlutterWidgetPerfManager;
 import io.flutter.performance.FlutterPerformanceViewFactory;
+import io.flutter.preview.PreviewViewFactory;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterReloadManager;
@@ -58,6 +62,8 @@ public class FlutterInitializer implements StartupActivity {
 
   private static Analytics analytics;
 
+  private boolean toolWindowsInitialized = false;
+
   @Override
   public void runActivity(@NotNull Project project) {
     // Convert all modules of deprecated type FlutterModuleType.
@@ -78,11 +84,6 @@ public class FlutterInitializer implements StartupActivity {
 
     // Start a DevTools server
     DevToolsService.getInstance(project);
-
-    // Start watching for Flutter debug active events.
-    FlutterViewFactory.init(project);
-
-    FlutterPerformanceViewFactory.init(project);
 
     // If the project declares a Flutter dependency, do some extra initialization.
     boolean hasFlutterModule = false;
@@ -113,6 +114,19 @@ public class FlutterInitializer implements StartupActivity {
           FlutterModuleUtils.autoShowMain(project, root);
         }
       }
+    }
+
+    if (hasFlutterModule || WorkspaceCache.getInstance(project).isBazel()) {
+      initializeToolWindows(project);
+    } else {
+      project.getMessageBus().connect().subscribe(ProjectTopics.MODULES, new ModuleListener() {
+        @Override
+        public void moduleAdded(@NotNull Project project, @NotNull Module module) {
+          if (!toolWindowsInitialized && FlutterModuleUtils.isFlutterModule(module)) {
+            initializeToolWindows(project);
+          }
+        }
+      });
     }
 
     if (hasFlutterModule) {
@@ -197,6 +211,14 @@ public class FlutterInitializer implements StartupActivity {
         ToolWindowTracker.track(project, getAnalytics());
       }
     }
+  }
+
+  private void initializeToolWindows(@NotNull Project project) {
+    // Start watching for Flutter debug active events.
+    FlutterViewFactory.init(project);
+    FlutterPerformanceViewFactory.init(project);
+    PreviewViewFactory.init(project);
+    toolWindowsInitialized = true;
   }
 
   /**

@@ -12,6 +12,7 @@ import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
+import com.intellij.openapi.wm.ToolWindowManager;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterViewFactory implements ToolWindowFactory, DumbAware {
@@ -19,11 +20,16 @@ public class FlutterViewFactory implements ToolWindowFactory, DumbAware {
     project.getMessageBus().connect().subscribe(
       FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (event) -> initFlutterView(project, event)
     );
+
+    final ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(FlutterView.TOOL_WINDOW_ID);
+    if (window != null) {
+      window.setAvailable(true);
+    }
   }
 
   @Override
-  public void init(ToolWindow window) {
-    window.setAvailable(true, null);
+  public boolean shouldBeAvailable(@NotNull Project project) {
+    return false;
   }
 
   private static void initFlutterView(@NotNull Project project, FlutterViewMessages.FlutterDebugEvent event) {
