@@ -127,30 +127,32 @@ public class FlutterSaveActionsManager {
     final String filePath = file.getPath();
     final SourceFileEdit fileEdit = DartAnalysisServerService.getInstance(myProject).edit_organizeDirectives(filePath);
 
-    if (myProject.isDisposed()) {
-      return;
-    }
-
     if (fileEdit != null) {
-      ApplicationManager.getApplication().invokeLater(() -> new WriteCommandAction.Simple(myProject) {
-        @Override
-        protected void run() {
-          if (myProject.isDisposed()) {
-            return;
-          }
-
-          AssistUtils.applySourceEdits(myProject, file, document, fileEdit.getEdits(), Collections.emptySet());
-
-          // Committing a document here is required in order to guarantee that DartPostFormatProcessor.processText() is called afterwards.
-          PsiDocumentManager.getInstance(myProject).commitDocument(document);
-
-          // Run this in an invoke later so that we don't exeucte the initial part of performFormat in a write action.
-          //noinspection CodeBlock2Expr
-          ApplicationManager.getApplication().invokeLater(() -> {
-            performFormat(document, file, true);
-          });
+      ApplicationManager.getApplication().invokeLater(() -> {
+        if (myProject.isDisposed()) {
+          return;
         }
-      }.execute());
+
+        new WriteCommandAction.Simple(myProject) {
+          @Override
+          protected void run() {
+            if (myProject.isDisposed()) {
+              return;
+            }
+
+            AssistUtils.applySourceEdits(myProject, file, document, fileEdit.getEdits(), Collections.emptySet());
+
+            // Committing a document here is required in order to guarantee that DartPostFormatProcessor.processText() is called afterwards.
+            PsiDocumentManager.getInstance(myProject).commitDocument(document);
+
+            // Run this in an invoke later so that we don't exeucte the initial part of performFormat in a write action.
+            //noinspection CodeBlock2Expr
+            ApplicationManager.getApplication().invokeLater(() -> {
+              performFormat(document, file, true);
+            });
+          }
+        }.execute();
+      });
     }
   }
 
