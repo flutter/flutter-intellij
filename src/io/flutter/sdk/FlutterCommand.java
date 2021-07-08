@@ -13,7 +13,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
@@ -25,6 +24,7 @@ import io.flutter.utils.MostlySilentColoredProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -248,7 +248,7 @@ public class FlutterCommand {
   @NotNull
   public GeneralCommandLine createGeneralCommandLine(@Nullable Project project) {
     final GeneralCommandLine line = new GeneralCommandLine();
-    line.setCharset(CharsetToolkit.UTF8_CHARSET);
+    line.setCharset(StandardCharsets.UTF_8);
     line.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
     final String androidHome = IntelliJAndroidSdk.chooseAndroidHome(project, false);
     if (androidHome != null) {

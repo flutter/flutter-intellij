@@ -12,7 +12,6 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.vfs.CharsetToolkit;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.console.FlutterConsoles;
@@ -20,6 +19,8 @@ import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.nio.charset.StandardCharsets;
 
 public class FlutterDoctorAction extends FlutterSdkAction {
 
@@ -47,7 +48,7 @@ public class FlutterDoctorAction extends FlutterSdkAction {
 
   private void runWorkspaceFlutterDoctorScript(@NotNull Project project, @NotNull String workDir, @NotNull String doctorScript) {
     final GeneralCommandLine cmdLine = new GeneralCommandLine().withWorkDirectory(workDir);
-    cmdLine.setCharset(CharsetToolkit.UTF8_CHARSET);
+    cmdLine.setCharset(StandardCharsets.UTF_8);
     cmdLine.setExePath(FileUtil.toSystemDependentName(doctorScript));
 
     final ColoredProcessHandler handler;
