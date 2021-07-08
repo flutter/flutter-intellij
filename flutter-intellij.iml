@@ -32,6 +32,9 @@
       <excludeFolder url="file://$MODULE_DIR$/testData/sample_tests/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/testData/sample_tests/build" />
       <excludeFolder url="file://$MODULE_DIR$/tool/icon_generator" />
+      <excludeFolder url="file://$MODULE_DIR$/tool/plugin/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/tool/plugin/build" />
+      <excludeFolder url="file://$MODULE_DIR$/tool/plugin/.dart_tool" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -74,14 +77,12 @@
     </orderEntry>
     <orderEntry type="module-library">
       <library name="org.apache.commons:commons-lang3:3.9" type="repository">
-        <properties maven-id="org.apache.commons:commons-lang3:3.9" />
+        <properties maven-id="org.apache.commons:commons-lang3:RELEASE" />
         <CLASSES>
-          <root url="jar://$MAVEN_REPOSITORY$/org/apache/commons/commons-lang3/3.9/commons-lang3-3.9.jar!/" />
+          <root url="jar://$USER_HOME$/.m2/repository/org/apache/commons/commons-lang3/3.12.0/commons-lang3-3.12.0.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES>
-          <root url="jar://$MAVEN_REPOSITORY$/org/apache/commons/commons-lang3/3.9/commons-lang3-3.9-sources.jar!/" />
-        </SOURCES>
+        <SOURCES />
       </library>
     </orderEntry>
     <orderEntry type="module-library">
