@@ -28,8 +28,8 @@
       "name": "IntelliJ 2021.1",
       "version": "2021.1",
       "ideaProduct": "ideaIC",
-      "ideaVersion": "211.6432.7",
-      "dartPluginVersion": "211.6693.108",
+      "ideaVersion": "211.7628.21",
+      "dartPluginVersion": "211.7628.1",
       "sinceBuild": "211.6432.7",
       "untilBuild": "211.*"
     },
