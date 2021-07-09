@@ -50,7 +50,7 @@ intellij {
   downloadSources false
   localPath "${project.rootDir.absolutePath}/artifacts/$ide"
   plugins "java", "Dart:$dartVersion", "properties", "junit", "Kotlin", "Git4Idea",
-          "gradle", "Groovy", "smali", "IntelliLang", "org.jetbrains.android"
+          "gradle", "Groovy", "smali", "IntelliLang", "org.jetbrains.android", "yaml"
 }
 
 dependencies {
