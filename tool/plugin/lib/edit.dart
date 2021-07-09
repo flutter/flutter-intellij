@@ -56,18 +56,6 @@ List<EditCommand> editCommands = [
     version: '2021.2',
   ),
   Subst(
-    path: 'build.gradle',
-    initial: 'localPath "\${project.rootDir.absolutePath}/artifacts/\$ide"',
-    replacement: 'type = "IC"\n  version = "211.6693.111"',
-    version: '2021.1',
-  ),
-  Subst(
-    path: 'flutter-idea/build.gradle',
-    initial: 'localPath "\${project.rootDir.absolutePath}/artifacts/\$ide"',
-    replacement: 'type = "IC"\n  version = "211.6693.111"',
-    version: '2021.1',
-  ),
-  Subst(
     path: 'src/io/flutter/FlutterErrorReportSubmitter.java',
     initial: 'Consumer<? super SubmittedReportInfo> consumer',
     replacement: 'Consumer<SubmittedReportInfo> consumer',
