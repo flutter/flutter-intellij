@@ -9,8 +9,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.ex.temp.TempFileSystem;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.FileTypeIndex;
@@ -65,7 +63,8 @@ public class FontPreviewProcessor {
       if (delta.toEpochMilli() < 60) {
         return true;
       }
-    } catch (DateTimeException ex) {
+    }
+    catch (DateTimeException ex) {
       // ignored
     }
     LAST_RUN = current;
@@ -73,6 +72,9 @@ public class FontPreviewProcessor {
   }
 
   private void findFontClasses(@NotNull Project project, @NotNull String packageName) {
+    if (packageName.isEmpty()) {
+      return;
+    }
     GlobalSearchScope scope = new ProjectAndLibrariesScope(project);
     Collection<VirtualFile> files = DartLibraryIndex.getFilesByLibName(scope, packageName);
     if (files.isEmpty()) {
@@ -86,6 +88,8 @@ public class FontPreviewProcessor {
     while (index < fileList.size()) {
       final VirtualFile file = fileList.get(index++);
       final String path = file.getPath();
+      final int packageIndex = path.indexOf(packageName);
+      if (packageIndex < 0) continue;
       if (ANALYZED_FILES.contains(path)) {
         continue;
       }
@@ -93,8 +97,6 @@ public class FontPreviewProcessor {
       if (isInSdk(path)) {
         continue;
       }
-      final int packageIndex = path.indexOf(packageName);
-      if (packageIndex < 0) continue;
       final VirtualFile filteredFile = filterImports(file);
       if (filteredFile == null) {
         continue;
@@ -117,8 +119,9 @@ public class FontPreviewProcessor {
           final Set<String> knownPaths = FlutterIconLineMarkerProvider.KnownPaths.get(name.getName());
           if (knownPaths == null) {
             FlutterIconLineMarkerProvider.KnownPaths.put(name.getName(), new THashSet<String>(Collections.singleton(path)));
-          } else {
-            knownPaths.add(name.getName());
+          }
+          else {
+            knownPaths.add(path);
           }
         }
       }
@@ -129,9 +132,6 @@ public class FontPreviewProcessor {
         // ignored
       }
       if (size == FlutterIconLineMarkerProvider.KnownPaths.size()) {
-        if (!file.getPath().equals("/Users/messick/.pub-cache/hosted/pub.dartlang.org/flutter_icons-1.1.0/lib/flutter_icons.dart")) {
-          continue;
-        }
         try {
           final String source = new String(file.contentsToByteArray());
           final BufferedReader reader = new BufferedReader(new StringReader(source));

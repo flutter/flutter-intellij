@@ -41,6 +41,7 @@ import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
 import com.jetbrains.lang.dart.psi.DartType;
 import com.jetbrains.lang.dart.psi.DartVarAccessDeclaration;
 import com.jetbrains.lang.dart.psi.DartVarInit;
+import com.jetbrains.lang.dart.psi.impl.DartCallExpressionImpl;
 import com.jetbrains.lang.dart.util.DartPsiImplUtil;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import gnu.trove.THashSet;
@@ -97,14 +98,21 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
         final VirtualFile dir = file.getParent();
         if (dir.isInLocalFileSystem()) {
           final String path = dir.getPath();
+          String trimmedPath = path;
+          if (!path.endsWith("lib")) {
+            final int index = path.indexOf("lib");
+            if (index >= 0) {
+              trimmedPath = path.substring(0, index + 3);
+            }
+          }
           final Set<String> knownPaths = KnownPaths.get(name);
-          if (knownPaths.contains(path)) {
-            knownPath = path;
+          if (knownPaths.contains(path) || knownPaths.contains(trimmedPath)) {
+            knownPath = file.getPath();
             break;
           }
           for (String aPath : knownPaths) {
-            if (path.endsWith(aPath) || aPath.contains(path)) {
-              knownPath = aPath;
+            if (path.endsWith(aPath) || aPath.contains(path) || trimmedPath.endsWith(aPath) || aPath.contains(trimmedPath)) {
+              knownPath = file.getPath();
               break;
             }
           }
@@ -118,17 +126,24 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
       final DartArguments arguments = DartPsiImplUtil.getArguments((DartCallExpression)parent);
       if (arguments == null) return null;
       final String family = getValueOfNamedArgument(arguments, "fontFamily");
-      if (family != null) {
-        // TODO https://github.com/flutter/flutter-intellij/issues/2334
-        if (!"MaterialIcons".equals(family)) return null;
-      }
+      //if (family != null) {
+      //  // TODO https://github.com/flutter/flutter-intellij/issues/2334
+      //  if (!"MaterialIcons".equals(family)) return null;
+      //}
       final PsiElement fontPackage = getNamedArgumentExpression(arguments, "fontPackage");
-      if (fontPackage != null) return null; // See previous TODO
+      //if (fontPackage != null) return null; // See previous TODO
       final String argument = getValueOfPositionalArgument(arguments, 0);
       if (argument == null) return null;
-      final Icon icon = getIconFromCode(argument);
-      if (icon != null) {
-        return createLineMarker(element, icon);
+      if (family == null || "MaterialIcons".equals(family)) {
+        final Icon icon = getIconFromCode(argument);
+        if (icon != null) {
+          return createLineMarker(element, icon);
+        }
+      } else {
+        final Icon icon = getIconFromPackage(fontPackage, family, argument);
+        if (icon != null) {
+          return createLineMarker(element, icon);
+        }
       }
     }
     else if (parent.getNode().getElementType() == DartTokenTypes.SIMPLE_TYPE) {
@@ -188,6 +203,20 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     return null;
   }
 
+  private Icon getIconFromPackage(PsiElement aPackage, String family, String argument) {
+    if (aPackage == null || family == null || argument == null) {
+      return null;
+    }
+    final int code;
+    try {
+      code = parseLiteralNumber(argument);
+    }
+    catch (NumberFormatException ignored) {
+      return null;
+    }
+    return null;
+  }
+
   private Icon getIconFromCode(@NotNull String value) {
     final int code;
     try {
@@ -227,7 +256,14 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
   private Icon findIconFromDef(@NotNull String iconClassName, @NotNull IconInfo iconDef, @NotNull String path) {
     final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
     if (virtualFile == null) return null;
-    final VirtualFile parent = virtualFile.getParent();
+    VirtualFile parent = virtualFile;
+    while (parent != null && !parent.getName().equals("lib")) {
+      parent = parent.getParent();
+    }
+    if (parent != null) parent = parent.getParent(); // We have to search the entire project.
+    if (parent == null) {
+      return null;
+    }
     final List<VirtualFile> ttfFiles = new ArrayList<>();
     VfsUtilCore.visitChildrenRecursively(parent, new VirtualFileVisitor<Object>() {
       @Override
@@ -242,14 +278,15 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
       }
     });
     double match = -1;
-    String family = iconDef.familyName;
+    final String family = iconDef.familyName;
     VirtualFile bestFileMatch = null;
-    if (family == null) family = "FontAwesomeSolid";
-    for (VirtualFile file : ttfFiles) {
-      final double n = findPattern(file.getNameWithoutExtension(), family);
-      if (n > match) {
-        match = n;
-        bestFileMatch = file;
+    if (family != null) {
+      for (VirtualFile file : ttfFiles) {
+        final double n = findPattern(file.getNameWithoutExtension(), family);
+        if (n > match) {
+          match = n;
+          bestFileMatch = file;
+        }
       }
     }
     if (bestFileMatch != null) {
@@ -294,8 +331,8 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
       this.iconName = iconName;
     }
 
-    private String findFamilyName(@Nullable PsiElement expression, @NotNull DartType type) {
-      if (expression == null) {
+    private String findFamilyName(@Nullable PsiElement expression, @Nullable DartType type) {
+      if (expression == null && type != null) {
         LOG.info("Check superclass constructor for font family: " + type.getName());
         return null; // TODO Check superclass of <type> for a constructor that includes the family.
       }
@@ -303,7 +340,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
         final Pair<String, TextRange> pair = DartPsiImplUtil.getUnquotedDartStringAndItsRange(expression.getText().trim());
         return pair.first;
       }
-      else if (expression.getNode().getElementType() == DartTokenTypes.REFERENCE_EXPRESSION) {
+      else if (expression != null && expression.getNode().getElementType() == DartTokenTypes.REFERENCE_EXPRESSION) {
         final Pair<String, TextRange> pair = DartPsiImplUtil.getUnquotedDartStringAndItsRange(expression.getText().trim());
         final String varName = pair.first;
         return staticVars.get(varName);
@@ -316,24 +353,31 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
       if (o.getComponentName().getText().trim().equals(iconName)) {
         final DartVarInit init = (DartVarInit)o.getParent().getLastChild();
         final DartExpression expression = init.getExpression();
+        String className = null;
+        DartArguments arguments = null;
+        DartType type = null;
         if (expression instanceof DartNewExpression) {
           final DartNewExpression newExpr = (DartNewExpression)expression;
-          final DartType type = newExpr.getType();
+          type = newExpr.getType();
           if (type != null) {
-            final String className = type.getText();
-            if (KnownPaths.containsKey(className)) {
-              final DartArguments arguments = newExpr.getArguments();
-              if (arguments != null) {
-                final DartArgumentList argumentList = arguments.getArgumentList();
-                if (argumentList != null) {
-                  final List<DartExpression> list = argumentList.getExpressionList();
-                  if (!list.isEmpty()) {
-                    final String codepoint = list.get(0).getText();
-                    final PsiElement family = getNamedArgumentExpression(arguments, "fontFamily");
-                    final String familyName = findFamilyName(family, type);
-                    info = new IconInfo(className, iconName, familyName, codepoint);
-                  }
-                }
+            className = type.getText();
+            arguments = newExpr.getArguments();
+          }
+        } else if (expression instanceof DartCallExpression) {
+          final DartCallExpressionImpl callExpr = (DartCallExpressionImpl)expression;
+          arguments = callExpr.getArguments();
+          className = callExpr.getExpression().getText();
+        }
+        if (KnownPaths.containsKey(className)) {
+          if (arguments != null) {
+            final DartArgumentList argumentList = arguments.getArgumentList();
+            if (argumentList != null) {
+              final List<DartExpression> list = argumentList.getExpressionList();
+              if (!list.isEmpty()) {
+                final String codepoint = list.get(0).getText();
+                final PsiElement family = getNamedArgumentExpression(arguments, "fontFamily");
+                final String familyName = findFamilyName(family, type);
+                info = new IconInfo(className, iconName, familyName, codepoint);
               }
             }
           }
