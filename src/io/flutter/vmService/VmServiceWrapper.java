@@ -16,6 +16,8 @@ import com.intellij.xdebugger.frame.XExecutionStack;
 import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import com.jetbrains.lang.dart.DartFileType;
+import io.flutter.FlutterInitializer;
+import io.flutter.analytics.Analytics;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.vmService.frame.DartAsyncMarkerFrame;
 import io.flutter.vmService.frame.DartVmServiceEvaluator;
@@ -343,6 +345,52 @@ public class VmServiceWrapper implements Disposable {
         private void checkDone() {
           if (counter.decrementAndGet() == 0 && onFinished != null) {
             onFinished.run();
+
+            myVmService.getIsolate(isolateId, new GetIsolateConsumer() {
+              @Override
+              public void received(Isolate response) {
+                final Set<String> libraryUris = new HashSet<>();
+                for (LibraryRef library : response.getLibraries()) {
+                  libraryUris.add(library.getUri());
+                }
+
+                final ElementList<Breakpoint> breakpoints = response.getBreakpoints();
+                if (breakpoints.isEmpty()) {
+                  return;
+                }
+
+                final Analytics analytics = FlutterInitializer.getAnalytics();
+                final String category = "breakpoint";
+                boolean scriptFound = false;
+                for (Breakpoint breakpoint : breakpoints) {
+                  Object location = breakpoint.getLocation();
+                  if (location instanceof UnresolvedSourceLocation) {
+                    final ScriptRef script = ((UnresolvedSourceLocation)location).getScript();
+                    if (script != null) {
+                      if (libraryUris.contains(script.getUri())) {
+                        // Record to analytics that at least one breakpoint has been mapped to a library.
+                        analytics.sendEvent(category, "mapping-found");
+                        return;
+                      }
+                      scriptFound = true;
+                    }
+                  }
+                }
+
+                // Record to analytics that no breakpoints have been mapped to library files (likely debugging will not work).
+                analytics.sendEvent(category, scriptFound ? "mapping-not-found" : "script-not-found");
+              }
+
+              @Override
+              public void received(Sentinel response) {
+
+              }
+
+              @Override
+              public void onError(RPCError error) {
+
+              }
+            });
           }
         }
       });
