@@ -8,7 +8,11 @@ package io.flutter.sdk;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.ide.browsers.BrowserLauncher;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.ActionToolbar;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -27,12 +31,11 @@ import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.util.PlatformIcons;
-import io.flutter.FlutterBundle;
-import io.flutter.FlutterConstants;
-import io.flutter.FlutterInitializer;
-import io.flutter.FlutterUtils;
+import icons.FlutterIcons;
+import io.flutter.*;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.font.FontPreviewProcessor;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -291,6 +294,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setFontPackages(myFontPackagesTextArea.getText());
 
     reset(); // because we rely on remembering initial state
+    checkFontPackages(settings.getFontPackages());
   }
 
   @Override
@@ -412,6 +416,36 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   @NotNull
   private String getSdkPathText() {
     return FileUtilRt.toSystemIndependentName(mySdkCombo.getComboBox().getEditor().getItem().toString().trim());
+  }
+
+  private void checkFontPackages(String value) {
+    if (value != null) {
+      final String[] packages = value.split(FontPreviewProcessor.PACKAGE_SEPARATORS);
+      for (String name : packages) {
+        final String message = FontPreviewProcessor.UNSUPPORTED_PACKAGES.get(name.trim());
+        if (message != null) {
+          displayNotification(message);
+        }
+      }
+      final Application app = ApplicationManager.getApplication();
+      app.executeOnPooledThread(() -> {
+        app.invokeLater(() -> {
+          app.runWriteAction(() -> {
+            FontPreviewProcessor.reanalyze(myProject);
+          });
+        });
+      });
+    }
+  }
+
+  private void displayNotification(String message) {
+    final Notification notification = new Notification(
+      FlutterMessages.FLUTTER_LOGGING_NOTIFICATION_GROUP_ID,
+      FlutterBundle.message("icon.preview.disallow.package.title"),
+      message,
+      NotificationType.INFORMATION);
+    notification.setIcon(FlutterIcons.Flutter);
+    Notifications.Bus.notify(notification, myProject);
   }
 
   public static void openFlutterSettings(@NotNull final Project project) {

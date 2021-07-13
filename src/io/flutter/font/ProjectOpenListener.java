@@ -20,14 +20,7 @@ public class ProjectOpenListener implements ProjectManagerListener {
       return;
     }
 
-    MessageBusConnection connection = project.getMessageBus().connect();
     final FontPreviewProcessor service = ApplicationManager.getApplication().getService(FontPreviewProcessor.class);
-
-    connection.subscribe(DumbService.DUMB_MODE, new DumbService.DumbModeListener() {
-      @Override
-      public void exitDumbMode() {
-        service.generate(project);
-      }
-    });
+    DumbService.getInstance(project).smartInvokeLater(() -> service.generate(project));
   }
 }

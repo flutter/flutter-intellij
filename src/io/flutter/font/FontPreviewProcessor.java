@@ -5,7 +5,11 @@
  */
 package io.flutter.font;
 
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -20,8 +24,9 @@ import com.jetbrains.lang.dart.psi.DartComponentName;
 import com.jetbrains.lang.dart.resolve.ClassNameScopeProcessor;
 import com.jetbrains.lang.dart.resolve.DartPsiScopeProcessor;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
+import gnu.trove.THashMap;
 import gnu.trove.THashSet;
-import io.flutter.editor.FlutterIconLineMarkerProvider;
+import io.flutter.FlutterBundle;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,72 +36,87 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.time.DateTimeException;
-import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static io.flutter.editor.FlutterIconLineMarkerProvider.KnownPaths;
+
 public class FontPreviewProcessor {
 
-  // If there are triple quotes around a file name they won't be recognized.
+  public static final String PACKAGE_SEPARATORS = "[,\r\n]";
+  public static final Map<String, String> UNSUPPORTED_PACKAGES = new THashMap<>();
+
+  // If there are triple quotes around a package URL they won't be recognized.
   private static final Pattern EXPORT_STATEMENT_PATTERN = Pattern.compile("^\\s*export\\s+[\"']([-_. $A-Za-z0-9/]+\\.dart)[\"'].*");
   private static final Pattern IMPORT_STATEMENT_PATTERN = Pattern.compile("^\\s*import\\s+[\"']([-_. $A-Za-z0-9/]+\\.dart)[\"'].*");
-  private static final Set<String> ANALYZED_FILES = new THashSet<>();
-  private static Instant LAST_RUN = Instant.MIN;
+  private static final Map<String, Set<String>> ANALYZED_PROJECT_FILES = new THashMap<>();
+
+  static {
+    UNSUPPORTED_PACKAGES.put("flutter_icons", FlutterBundle.message("icon.preview.disallow.flutter_icons"));
+    UNSUPPORTED_PACKAGES.put("flutter_vector_icons", FlutterBundle.message("icon.preview.disallow.flutter_vector_icons"));
+    UNSUPPORTED_PACKAGES.put("material_design_icons_flutter", FlutterBundle.message("icon.preview.disallow.material_design_icons_flutter"));
+  }
+
+  public static void reanalyze(@NotNull Project project) {
+    final FontPreviewProcessor service = ApplicationManager.getApplication().getService(FontPreviewProcessor.class);
+    service.clearProjectCaches(project);
+    service.generate(project);
+  }
 
   public void generate(@NotNull Project project) {
-    if (wasRunRecently()) {
+    if (ANALYZED_PROJECT_FILES.containsKey(project.getBasePath())) {
       return;
     }
+    ANALYZED_PROJECT_FILES.put(project.getBasePath(), new THashSet<>());
+    ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
+      @Override
+      public void projectClosed(@NotNull Project project) {
+        clearProjectCaches(project);
+        ProjectManagerListener.super.projectClosed(project);
+      }
+    });
     final String packagesText = FlutterSettings.getInstance().getFontPackages();
-    final String[] packages = packagesText.split("[,\r\n]"); // or invert the set of allowed package name characters
+    final String[] packages = packagesText.split(PACKAGE_SEPARATORS);
     for (String pack : packages) {
       findFontClasses(project, pack.trim());
     }
   }
 
-  private boolean wasRunRecently() {
-    final Instant current = Instant.now();
-    try {
-      final Instant delta = current.minusSeconds(LAST_RUN.getEpochSecond());
-      if (delta.toEpochMilli() < 60) {
-        return true;
-      }
-    }
-    catch (DateTimeException ex) {
-      // ignored
-    }
-    LAST_RUN = current;
-    return false;
+  private void clearProjectCaches(@NotNull Project project) {
+    ANALYZED_PROJECT_FILES.remove(project.getBasePath());
+    // TODO Find a way to clean up KnownPaths.
   }
 
+  // Look for classes in a package that define static variables with named icons.
+  // We may have to analyze exports to get to them, as is done by some icon aggregator packages.
   private void findFontClasses(@NotNull Project project, @NotNull String packageName) {
-    if (packageName.isEmpty()) {
+    if (packageName.isEmpty() || FontPreviewProcessor.UNSUPPORTED_PACKAGES.get(packageName) != null) {
       return;
     }
     GlobalSearchScope scope = new ProjectAndLibrariesScope(project);
     Collection<VirtualFile> files = DartLibraryIndex.getFilesByLibName(scope, packageName);
     if (files.isEmpty()) {
-      //scope = GlobalSearchScope.everythingScope(project);
       scope = GlobalSearchScope.allScope(project);
       files = FileTypeIndex.getFiles(DartFileType.INSTANCE, scope);
     }
 
+    final Set<String> analyzedProjectFiles = ANALYZED_PROJECT_FILES.get(project.getBasePath());
+    final Application application = ApplicationManager.getApplication();
     final List<VirtualFile> fileList = new ArrayList<>(files);
     int index = 0;
     while (index < fileList.size()) {
       final VirtualFile file = fileList.get(index++);
       final String path = file.getPath();
       final int packageIndex = path.indexOf(packageName);
-      if (packageIndex < 0) continue;
-      if (ANALYZED_FILES.contains(path)) {
+      if (packageIndex < 0 || isInSdk(path)) {
         continue;
       }
-      ANALYZED_FILES.add(path);
-      if (isInSdk(path)) {
+      if (analyzedProjectFiles.contains(path)) {
         continue;
       }
+      analyzedProjectFiles.add(path);
+      // Remove import statements in an attempt to minimize extraneous analysis.
       final VirtualFile filteredFile = filterImports(file);
       if (filteredFile == null) {
         continue;
@@ -108,7 +128,7 @@ public class FontPreviewProcessor {
       final Set<DartComponentName> classNames = new THashSet<>();
       final DartPsiScopeProcessor processor = new ClassNameScopeProcessor(classNames);
       DartResolveUtil.processTopLevelDeclarations(psiFile, processor, file, null);
-      final int size = FlutterIconLineMarkerProvider.KnownPaths.size();
+      final int size = KnownPaths.size();
       for (DartComponentName name : classNames) {
         final String declPath = name.getContainingFile().getVirtualFile().getPath();
         if (isInSdk(declPath)) {
@@ -116,22 +136,25 @@ public class FontPreviewProcessor {
         }
         System.out.println(declPath);
         if (declPath.contains(packageName)) {
-          final Set<String> knownPaths = FlutterIconLineMarkerProvider.KnownPaths.get(name.getName());
+          final Set<String> knownPaths = KnownPaths.get(name.getName());
           if (knownPaths == null) {
-            FlutterIconLineMarkerProvider.KnownPaths.put(name.getName(), new THashSet<String>(Collections.singleton(path)));
+            KnownPaths.put(name.getName(), new THashSet<>(Collections.singleton(path)));
           }
           else {
             knownPaths.add(path);
           }
         }
       }
-      try {
-        filteredFile.delete(this);
-      }
-      catch (IOException e) {
-        // ignored
-      }
-      if (size == FlutterIconLineMarkerProvider.KnownPaths.size()) {
+      application.runWriteAction(() -> {
+        try {
+          filteredFile.delete(this); // need write access
+        }
+        catch (IOException e) {
+          // ignored
+        }
+      });
+      if (size == KnownPaths.size()) {
+        // If no classes were found then the file may be a list of export statements that refer to files that do define icons.
         try {
           final String source = new String(file.contentsToByteArray());
           final BufferedReader reader = new BufferedReader(new StringReader(source));
@@ -148,10 +171,10 @@ public class FontPreviewProcessor {
               if (next == null || isInSdk(nextPath = next.getPath())) {
                 continue;
               }
-              if (ANALYZED_FILES.contains(nextPath)) {
+              if (analyzedProjectFiles.contains(nextPath)) {
                 continue;
               }
-              if (!files.contains(next)) {
+              if (!fileList.contains(next)) {
                 fileList.add(next);
               }
             }
@@ -184,8 +207,14 @@ public class FontPreviewProcessor {
       if (newFile == null) {
         return null;
       }
-      newFile.setBinaryContent(newSource.toString().getBytes(StandardCharsets.UTF_8));
-      newFile.setCharset(StandardCharsets.UTF_8);
+      ApplicationManager.getApplication().runWriteAction(() -> {
+        try {
+          newFile.setBinaryContent(newSource.toString().getBytes(StandardCharsets.UTF_8));
+          newFile.setCharset(StandardCharsets.UTF_8);
+        } catch (IOException ex) {
+          // ignored
+        }
+      });
       return newFile;
     }
     catch (IOException e) {
