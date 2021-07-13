@@ -43,18 +43,18 @@ List<EditCommand> editCommands = [
     replacement: '.getEmbeddedJdkPath().toAbsolutePath().toString()',
     version: '2012.2',
   ),
-  Subst(
-    path: 'build.gradle',
-    initial: 'localPath "\${project.rootDir.absolutePath}/artifacts/\$ide"',
-    replacement: 'type = "IC"\n  version = "LATEST-EAP-SNAPSHOT"',
-    version: '2021.2',
-  ),
-  Subst(
-    path: 'flutter-idea/build.gradle',
-    initial: 'localPath "\${project.rootDir.absolutePath}/artifacts/\$ide"',
-    replacement: 'type = "IC"\n  version = "LATEST-EAP-SNAPSHOT"',
-    version: '2021.2',
-  ),
+  // Subst(
+  //   path: 'build.gradle',
+  //   initial: 'localPath "\${project.rootDir.absolutePath}/artifacts/\$ide"',
+  //   replacement: 'type = "IC"\n  version = "LATEST-EAP-SNAPSHOT"',
+  //   version: '2021.2',
+  // ),
+  // Subst(
+  //   path: 'flutter-idea/build.gradle',
+  //   initial: 'localPath "\${project.rootDir.absolutePath}/artifacts/\$ide"',
+  //   replacement: 'type = "IC"\n  version = "LATEST-EAP-SNAPSHOT"',
+  //   version: '2021.2',
+  // ),
   Subst(
     path: 'src/io/flutter/FlutterErrorReportSubmitter.java',
     initial: 'Consumer<? super SubmittedReportInfo> consumer',
