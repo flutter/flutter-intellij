@@ -1,6 +1,7 @@
 package io.flutter.vmService;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
@@ -45,6 +46,8 @@ public class VmServiceWrapper implements Disposable {
   private final IsolatesInfo myIsolatesInfo;
   private final DartVmServiceBreakpointHandler myBreakpointHandler;
   private final Alarm myRequestsScheduler;
+  private final Map<Integer, String> breakpointNumbersToCanonicalMap;
+  private final Set<String> canonicalBreakpoints;
 
   private long myVmServiceReceiverThreadId;
 
@@ -61,6 +64,8 @@ public class VmServiceWrapper implements Disposable {
     myIsolatesInfo = isolatesInfo;
     myBreakpointHandler = breakpointHandler;
     myRequestsScheduler = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, this);
+    breakpointNumbersToCanonicalMap = new HashMap<>();
+    canonicalBreakpoints = new HashSet<>();
   }
 
   @NotNull
@@ -359,26 +364,22 @@ public class VmServiceWrapper implements Disposable {
                   return;
                 }
 
-                final Analytics analytics = FlutterInitializer.getAnalytics();
-                final String category = "breakpoint";
-                boolean scriptFound = false;
+                final Set<String> mappedCanonicalBreakpoints = new HashSet<>();
                 for (Breakpoint breakpoint : breakpoints) {
                   Object location = breakpoint.getLocation();
-                  if (location instanceof UnresolvedSourceLocation) {
+                  if (location instanceof  UnresolvedSourceLocation) {
                     final ScriptRef script = ((UnresolvedSourceLocation)location).getScript();
-                    if (script != null) {
-                      if (libraryUris.contains(script.getUri())) {
-                        // Record to analytics that at least one breakpoint has been mapped to a library.
-                        analytics.sendEvent(category, "mapping-found");
-                        return;
-                      }
-                      scriptFound = true;
+                    if (script != null && libraryUris.contains(script.getUri())) {
+                      mappedCanonicalBreakpoints.add(breakpointNumbersToCanonicalMap.get(breakpoint.getBreakpointNumber()));
                     }
                   }
                 }
 
-                // Record to analytics that no breakpoints have been mapped to library files (likely debugging will not work).
-                analytics.sendEvent(category, scriptFound ? "mapping-not-found" : "script-not-found");
+                final Analytics analytics = FlutterInitializer.getAnalytics();
+                final String category = "breakpoint";
+
+                final Sets.SetView<String> difference = Sets.difference(canonicalBreakpoints, mappedCanonicalBreakpoints);
+                analytics.sendEventMetric(category, "unmapped-count", difference.size());
               }
 
               @Override
@@ -409,6 +410,8 @@ public class VmServiceWrapper implements Disposable {
       final int line = position.getLine() + 1;
 
       final Collection<String> scriptUris = myDebugProcess.getUrisForFile(position.getFile());
+      final String canonicalBreakpoint = position.getFile() + "_" + line;
+      canonicalBreakpoints.add(canonicalBreakpoint);
       final List<Breakpoint> breakpointResponses = new ArrayList<>();
       final List<RPCError> errorResponses = new ArrayList<>();
 
@@ -417,6 +420,7 @@ public class VmServiceWrapper implements Disposable {
           @Override
           public void received(Breakpoint response) {
             breakpointResponses.add(response);
+            breakpointNumbersToCanonicalMap.put(response.getBreakpointNumber(), canonicalBreakpoint);
 
             checkDone();
           }
