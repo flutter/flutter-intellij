@@ -23,7 +23,9 @@ import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashMap;
+import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.element.LibraryRef;
@@ -195,6 +197,10 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
     else {
       results.add(uriByIde);
       results.add(threeSlashize(new File(file.getPath()).toURI().toString()));
+    }
+
+    if (WorkspaceCache.getInstance(project).isBazel()) {
+      FlutterInitializer.getAnalytics().sendEvent("breakpoint", analyzer == null ? "analyzer-found" : "analyzer-null");
     }
 
     // package: (if applicable)

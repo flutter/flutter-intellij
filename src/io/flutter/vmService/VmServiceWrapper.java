@@ -1,6 +1,7 @@
 package io.flutter.vmService;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
@@ -16,6 +17,8 @@ import com.intellij.xdebugger.frame.XExecutionStack;
 import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import com.jetbrains.lang.dart.DartFileType;
+import io.flutter.FlutterInitializer;
+import io.flutter.analytics.Analytics;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.vmService.frame.DartAsyncMarkerFrame;
 import io.flutter.vmService.frame.DartVmServiceEvaluator;
@@ -43,6 +46,8 @@ public class VmServiceWrapper implements Disposable {
   private final IsolatesInfo myIsolatesInfo;
   private final DartVmServiceBreakpointHandler myBreakpointHandler;
   private final Alarm myRequestsScheduler;
+  private final Map<Integer, String> breakpointNumbersToCanonicalMap;
+  private final Set<String> canonicalBreakpoints;
 
   private long myVmServiceReceiverThreadId;
 
@@ -59,6 +64,8 @@ public class VmServiceWrapper implements Disposable {
     myIsolatesInfo = isolatesInfo;
     myBreakpointHandler = breakpointHandler;
     myRequestsScheduler = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, this);
+    breakpointNumbersToCanonicalMap = new HashMap<>();
+    canonicalBreakpoints = new HashSet<>();
   }
 
   @NotNull
@@ -343,6 +350,48 @@ public class VmServiceWrapper implements Disposable {
         private void checkDone() {
           if (counter.decrementAndGet() == 0 && onFinished != null) {
             onFinished.run();
+
+            myVmService.getIsolate(isolateId, new GetIsolateConsumer() {
+              @Override
+              public void received(Isolate response) {
+                final Set<String> libraryUris = new HashSet<>();
+                for (LibraryRef library : response.getLibraries()) {
+                  libraryUris.add(library.getUri());
+                }
+
+                final ElementList<Breakpoint> breakpoints = response.getBreakpoints();
+                if (breakpoints.isEmpty()) {
+                  return;
+                }
+
+                final Set<String> mappedCanonicalBreakpoints = new HashSet<>();
+                for (Breakpoint breakpoint : breakpoints) {
+                  Object location = breakpoint.getLocation();
+                  if (location instanceof  UnresolvedSourceLocation) {
+                    final ScriptRef script = ((UnresolvedSourceLocation)location).getScript();
+                    if (script != null && libraryUris.contains(script.getUri())) {
+                      mappedCanonicalBreakpoints.add(breakpointNumbersToCanonicalMap.get(breakpoint.getBreakpointNumber()));
+                    }
+                  }
+                }
+
+                final Analytics analytics = FlutterInitializer.getAnalytics();
+                final String category = "breakpoint";
+
+                final Sets.SetView<String> difference = Sets.difference(canonicalBreakpoints, mappedCanonicalBreakpoints);
+                analytics.sendEventMetric(category, "unmapped-count", difference.size());
+              }
+
+              @Override
+              public void received(Sentinel response) {
+
+              }
+
+              @Override
+              public void onError(RPCError error) {
+
+              }
+            });
           }
         }
       });
@@ -361,6 +410,8 @@ public class VmServiceWrapper implements Disposable {
       final int line = position.getLine() + 1;
 
       final Collection<String> scriptUris = myDebugProcess.getUrisForFile(position.getFile());
+      final String canonicalBreakpoint = position.getFile() + "_" + line;
+      canonicalBreakpoints.add(canonicalBreakpoint);
       final List<Breakpoint> breakpointResponses = new ArrayList<>();
       final List<RPCError> errorResponses = new ArrayList<>();
 
@@ -369,6 +420,7 @@ public class VmServiceWrapper implements Disposable {
           @Override
           public void received(Breakpoint response) {
             breakpointResponses.add(response);
+            breakpointNumbersToCanonicalMap.put(response.getBreakpointNumber(), canonicalBreakpoint);
 
             checkDone();
           }
