@@ -8,6 +8,7 @@ package io.flutter.editor;
 import com.intellij.codeInsight.daemon.GutterName;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProviderDescriptor;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.project.Project;
@@ -74,37 +75,39 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     if (parent == null) return null;
     String knownPath = null;
 
-    // Resolve the class reference and check that it is one of the known, cached classes.
-    final PsiElement symbol = "IconData".equals(name) ? refExpr : refExpr.getFirstChild();
-    if (!(symbol instanceof DartReference)) return null;
-    final PsiElement result = ((DartReference)symbol).resolve();
-    if (result == null) return null;
-    final List<VirtualFile> library = DartResolveUtil.findLibrary(result.getContainingFile());
-    for (VirtualFile file : library) {
-      final VirtualFile dir = file.getParent();
-      if (dir.isInLocalFileSystem()) {
-        final String path = dir.getPath();
-        String trimmedPath = path;
-        if (!path.endsWith("lib")) {
-          final int index = path.indexOf("lib");
-          if (index >= 0) {
-            trimmedPath = path.substring(0, index + 3);
+    if (!ApplicationManager.getApplication().isUnitTestMode()) {
+      // Resolve the class reference and check that it is one of the known, cached classes.
+      final PsiElement symbol = "IconData".equals(name) ? refExpr : refExpr.getFirstChild();
+      if (!(symbol instanceof DartReference)) return null;
+      final PsiElement result = ((DartReference)symbol).resolve();
+      if (result == null) return null;
+      final List<VirtualFile> library = DartResolveUtil.findLibrary(result.getContainingFile());
+      for (VirtualFile file : library) {
+        final VirtualFile dir = file.getParent();
+        if (dir.isInLocalFileSystem()) {
+          final String path = dir.getPath();
+          String trimmedPath = path;
+          if (!path.endsWith("lib")) {
+            final int index = path.indexOf("lib");
+            if (index >= 0) {
+              trimmedPath = path.substring(0, index + 3);
+            }
           }
-        }
-        final Set<String> knownPaths = KnownPaths.get(name);
-        if (knownPaths.contains(path) || knownPaths.contains(trimmedPath)) {
-          knownPath = file.getPath();
-          break;
-        }
-        for (String aPath : knownPaths) {
-          if (path.endsWith(aPath) || aPath.contains(path) || trimmedPath.endsWith(aPath) || aPath.contains(trimmedPath)) {
+          final Set<String> knownPaths = KnownPaths.get(name);
+          if (knownPaths.contains(path) || knownPaths.contains(trimmedPath)) {
             knownPath = file.getPath();
             break;
           }
+          for (String aPath : knownPaths) {
+            if (path.endsWith(aPath) || aPath.contains(path) || trimmedPath.endsWith(aPath) || aPath.contains(trimmedPath)) {
+              knownPath = file.getPath();
+              break;
+            }
+          }
         }
       }
+      if (knownPath == null) return null;
     }
-    if (knownPath == null) return null;
 
     if (parent.getNode().getElementType() == DartTokenTypes.CALL_EXPRESSION) {
       // Check font family and package
