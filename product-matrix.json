@@ -41,7 +41,7 @@
       "isUnitTestTarget": "true",
       "ideaProduct": "ideaIC",
       "ideaVersion": "LATEST-EAP-SNAPSHOT",
-      "dartPluginVersion": "212.4638.10",
+      "dartPluginVersion": "212.4746.2",
       "sinceBuild": "212.3724.25",
       "untilBuild": "212.*",
       "filesToSkip": ["flutter-studio/src/io/flutter/actions/FlutterNewProjectAction.java_stub"]
