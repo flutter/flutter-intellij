@@ -123,5 +123,6 @@
     <orderEntry type="library" name="com.google.protobuf:protobuf-java:3.5.1" level="project" />
     <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
     <orderEntry type="library" name="Dart Packages" level="project" />
+    <orderEntry type="library" name="java-string-similarity-2.0.0" level="project" />
   </component>
 </module>

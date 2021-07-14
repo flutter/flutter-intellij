@@ -27,6 +27,10 @@ public class FlutterRunNotifications {
       FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
       NotificationDisplayType.BALLOON,
       false);
+    NotificationsConfiguration.getNotificationsConfiguration().register(
+      FlutterMessages.FLUTTER_LOGGING_NOTIFICATION_GROUP_ID,
+      NotificationDisplayType.BALLOON,
+      true);
 
     final FlutterRunNotifications notifications = new FlutterRunNotifications(project);
 

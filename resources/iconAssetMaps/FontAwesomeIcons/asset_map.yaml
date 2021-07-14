@@ -1,0 +1,14 @@
+fonts:
+  - icons: FontAwesomeIcons
+  - family: FontAwesomeBrands
+    fonts:
+      - asset: fonts/fa-brands-400.ttf
+        class: IconDataBrands
+  - family: FontAwesomeRegular
+    fonts:
+      - asset: fonts/fa-icon-400.ttf
+        class: IconDataRegular
+  - family: FontAwesomeSolid
+    fonts:
+      - asset: fonts/fa-solid-900.ttf
+        class: IconDataSolid

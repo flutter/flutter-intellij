@@ -17,6 +17,7 @@ lib/*.jar
 lib/jxbrowser/*
 !lib/jxbrowser/jxbrowser-7.16.jar
 !lib/jxbrowser/jxbrowser-swing-7.16.jar
+!lib/java-string-similarity-2.0.0.jar
 material-design-icons/
 out/
 packages

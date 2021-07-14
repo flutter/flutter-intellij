@@ -144,7 +144,6 @@
     <orderEntry type="module" module-name="intellij.platform.ide.util.io" />
     <orderEntry type="module" module-name="intellij.platform.core.ui" />
     <orderEntry type="module" module-name="intellij.platform.util.classLoader" />
-    <orderEntry type="library" name="Dart Packages" level="project" />
     <orderEntry type="module" module-name="intellij.platform.coverage" />
     <orderEntry type="module" module-name="intellij.android.common" />
     <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
@@ -158,5 +157,6 @@
         <jarDirectory url="jar://$MODULE_DIR$/lib/dart-plugin/203.6912/resources_en.jar!/" recursive="false" />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="Dart Packages" level="project" />
   </component>
 </module>

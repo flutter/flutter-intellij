@@ -35,6 +35,7 @@ public class FlutterSettings {
   private static final String enableEmbeddedBrowsersKey = "io.flutter.editor.enableEmbeddedBrowsers";
   private static final String enableBazelHotRestartKey = "io.flutter.editor.enableBazelHotRestart";
   private static final String showBazelHotRestartWarningKey = "io.flutter.showBazelHotRestartWarning";
+  private static final String fontPackagesKey = "io.flutter.fontPackages";
 
   // TODO(helin24): This is to change the embedded browser setting back to true only once for Big Sur users. If we
   // switch to enabling the embedded browser for everyone, then delete this key.
@@ -80,7 +81,6 @@ public class FlutterSettings {
   }
 
   public void sendSettingsToAnalytics(Analytics analytics) {
-    final PropertiesComponent properties = getPropertiesComponent();
 
     // Send data on the number of experimental features enabled by users.
     analytics.sendEvent("settings", "ping");
@@ -139,6 +139,10 @@ public class FlutterSettings {
 
     if (isChangeBigSurToTrue()) {
       analytics.sendEvent("settings", afterLastPeriod(changeBigSurToTrueKey));
+    }
+
+    if (!getFontPackages().isEmpty()) {
+      analytics.sendEvent("settings", afterLastPeriod(fontPackagesKey));
     }
   }
 
@@ -274,6 +278,14 @@ public class FlutterSettings {
     DartClosingLabelManager.getInstance().setShowClosingLabels(value);
   }
 
+  public String getFontPackages() {
+    return getPropertiesComponent().getValue(fontPackagesKey, "");
+  }
+
+  public void setFontPackages(String value) {
+    getPropertiesComponent().setValue(fontPackagesKey, value == null ? "" : value);
+  }
+
   protected void fireEvent() {
     dispatcher.getMulticaster().settingsChanged();
   }
@@ -349,11 +361,5 @@ public class FlutterSettings {
   public void setChangeBigSurToTrue(boolean value) {
     getPropertiesComponent().setValue(changeBigSurToTrueKey, value, true);
     fireEvent();
-  }
-
-  private static boolean isPluginVersionDev() {
-    final IdeaPluginDescriptor descriptor = PluginManagerCore.getPlugin(FlutterUtils.getPluginId());
-    assert descriptor != null;
-    return descriptor.getVersion().contains("dev") || descriptor.getVersion().contains("SNAPSHOT");
   }
 }

@@ -31,6 +31,8 @@ public class PubRoots {
   @NotNull
   public static List<PubRoot> forModule(@NotNull Module module) {
     final List<PubRoot> result = new ArrayList<>();
+    if (module.isDisposed()) return result;
+
     for (VirtualFile dir : ModuleRootManager.getInstance(module).getContentRoots()) {
       final PubRoot root = PubRoot.forDirectory(dir);
       if (root != null) {
@@ -48,6 +50,8 @@ public class PubRoots {
   @NotNull
   public static List<PubRoot> forProject(@NotNull Project project) {
     final List<PubRoot> result = new ArrayList<>();
+    if (project.isDisposed()) return result;
+
     for (Module module : ModuleManager.getInstance(project).getModules()) {
       result.addAll(forModule(module));
     }

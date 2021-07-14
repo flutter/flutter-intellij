@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class FlutterMessages {
   public static final String FLUTTER_NOTIFICATION_GROUP_ID = "Flutter Messages";
+  public static final String FLUTTER_LOGGING_NOTIFICATION_GROUP_ID = "Flutter Notifications";
 
   private FlutterMessages() {
   }

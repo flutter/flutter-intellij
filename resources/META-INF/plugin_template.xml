@@ -25,6 +25,7 @@
   <depends>com.intellij.modules.lang</depends>
   <depends>com.intellij.modules.xdebugger</depends>
   <depends>com.intellij.modules.coverage</depends>
+  <depends>org.jetbrains.plugins.yaml</depends>
   <depends>Dart</depends>
   <depends>Git4Idea</depends>
 
@@ -235,11 +236,15 @@
 
   </actions>
 
+  <applicationListeners>
+    <listener class="io.flutter.font.ProjectOpenListener"
+              topic="com.intellij.openapi.project.ProjectManagerListener"/>
+  </applicationListeners>
+
   <extensionPoints>
     <extensionPoint name="gradleSyncProvider" interface="io.flutter.android.GradleSyncProvider"/>
     <extensionPoint name="colorPickerProvider" interface="io.flutter.editor.ColorPickerProvider"/>
   </extensionPoints>
-
 
   <extensions defaultExtensionNs="io.flutter">
     <gradleSyncProvider implementation="io.flutter.android.IntellijGradleSyncProvider" order="last"/>
@@ -291,6 +296,7 @@
                         overrides="false"/>
 
     <applicationService serviceImplementation="io.flutter.jxbrowser.EmbeddedBrowserEngine" overrides="false" />
+    <applicationService serviceImplementation="io.flutter.font.FontPreviewProcessor"/>
     <console.folding implementation="io.flutter.console.FlutterConsoleFolding"/>
     <console.folding implementation="io.flutter.logging.FlutterConsoleLogFolding"/>
 

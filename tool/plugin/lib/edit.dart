@@ -32,10 +32,19 @@ void checkAndClearAppliedEditCommands() {
 List<EditCommand> editCommands = [
   EditAndroidModuleLibraryManager(),
   Subst(
+    path: 'src/io/flutter/editor/FlutterIconLineMarkerProvider.java',
+    initial: '''
+LineMarkerInfo<>(element, element.getTextRange(), icon, null, null,
+                                GutterIconRenderer.Alignment.LEFT, () -> "");''',
+    replacement:
+        'LineMarkerInfo<>(element, element.getTextRange(), icon, null, null, GutterIconRenderer.Alignment.LEFT);',
+    versions: ['4.2'],
+  ),
+  Subst(
     path: 'flutter-studio/src/io/flutter/project/FlutterProjectCreator.java',
     initial: 'void cannotWriteToFiles(List<Path>',
     replacement: 'void cannotWriteToFiles(List<? extends Path>',
-    version: '2012.2'
+    version: '2012.2',
   ),
   Subst(
     path: 'flutter-studio/src/io/flutter/android/GradleDependencyFetcher.java',
