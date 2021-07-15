@@ -126,9 +126,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   private FlutterViewToolWindowManagerListener toolWindowListener;
   private int devToolsInstallCount = 0;
+  private final JxBrowserUtils jxBrowserUtils;
 
   public FlutterView(@NotNull Project project) {
     myProject = project;
+    this.jxBrowserUtils = new JxBrowserUtils();
 
     shouldAutoHorizontalScroll.listen(state::setShouldAutoScroll);
     highlightNodesShownInBothTrees.listen(state::setHighlightNodesShownInBothTrees);
@@ -616,7 +618,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     final InstallationFailedReason latestFailureReason = JxBrowserManager.getInstance().getLatestFailureReason();
 
-    if (!JxBrowserUtils.licenseIsSet()) {
+    if (!jxBrowserUtils.licenseIsSet()) {
       // If the license isn't available, allow the user to open the equivalent page in a non-embedded browser window.
       inputs.add(new LabelInput("The JxBrowser license could not be found."));
       inputs.add(openDevToolsLabel);

@@ -36,7 +36,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 
 @Ignore
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({JxBrowserManager.class, ThreadUtil.class, FlutterInitializer.class, JxBrowserUtils.class,
+@PrepareForTest({ThreadUtil.class, FlutterInitializer.class, JxBrowserUtils.class,
   InspectorGroupManagerService.class, SwingUtilities.class})
 public class FlutterViewTest {
   @Mock Project mockProject;
@@ -63,8 +63,8 @@ public class FlutterViewTest {
 
   @Test
   public void testHandleJxBrowserInstallationFailed() {
-    PowerMockito.mockStatic(JxBrowserUtils.class);
-    when(JxBrowserUtils.licenseIsSet()).thenReturn(true);
+    final JxBrowserUtils mockJxBrowserUtils = mock(JxBrowserUtils.class);
+    when(mockJxBrowserUtils.licenseIsSet()).thenReturn(true);
 
     PowerMockito.mockStatic(JxBrowserManager.class);
     when(JxBrowserManager.getInstance()).thenReturn(mockJxBrowserManager);
