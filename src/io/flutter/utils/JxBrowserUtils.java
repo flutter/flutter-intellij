@@ -18,7 +18,7 @@ public class JxBrowserUtils {
   private static final String JXBROWSER_FILE_SUFFIX = "jar";
   public static final String LICENSE_PROPERTY_NAME = "jxbrowser.license.key";
 
-  public static String getPlatformFileName() throws FileNotFoundException {
+  public String getPlatformFileName() throws FileNotFoundException {
     String name = "";
     if (SystemInfo.isMac) {
       name = "mac";
@@ -39,19 +39,19 @@ public class JxBrowserUtils {
     return String.format("%s-%s-%s.%s", JXBROWSER_FILE_PREFIX, name, JXBROWSER_FILE_VERSION, JXBROWSER_FILE_SUFFIX);
   }
 
-  public static String getApiFileName() {
+  public String getApiFileName() {
     return String.format("%s-%s.%s", JXBROWSER_FILE_PREFIX, JXBROWSER_FILE_VERSION, JXBROWSER_FILE_SUFFIX);
   }
 
-  public static String getSwingFileName() {
+  public String getSwingFileName() {
     return String.format("%s-swing-%s.%s", JXBROWSER_FILE_PREFIX, JXBROWSER_FILE_VERSION, JXBROWSER_FILE_SUFFIX);
   }
 
-  public static String getDistributionLink(String fileName) {
+  public String getDistributionLink(String fileName) {
     return "https://storage.googleapis.com/flutter_infra/flutter/intellij/jxbrowser/" + fileName;
   }
 
-  public static String getJxBrowserKey() throws FileNotFoundException {
+  public String getJxBrowserKey() throws FileNotFoundException {
     if (JxBrowserUtils.class.getResource("/jxbrowser/jxbrowser.properties") == null) {
       throw new FileNotFoundException("jxbrowser.properties file does not exist");
     }
@@ -72,11 +72,11 @@ public class JxBrowserUtils {
     return value;
   }
 
-  public static boolean licenseIsSet() {
+  public boolean licenseIsSet() {
     return System.getProperty(JxBrowserUtils.LICENSE_PROPERTY_NAME) != null;
   }
 
-  public static boolean isM1Mac() {
+  public boolean isM1Mac() {
     // Return default false value for earlier IntelliJ versions that do not have the CpuArch method (211.4961.30).
     // It's possible a user could be using an earlier IntelliJ version with an M1 mac, but for that case we can't detect
     // that the system is the problem and will serve a more generic error message.

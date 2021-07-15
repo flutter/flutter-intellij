@@ -1,18 +1,12 @@
 package io.flutter.devtools;
 
 import io.flutter.sdk.FlutterSdkUtil;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-@Ignore
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(FlutterSdkUtil.class)
 public class DevToolsUrlTest {
   @Test
   public void testGetUrlString() {
@@ -21,44 +15,44 @@ public class DevToolsUrlTest {
     final String serviceProtocolUri = "http://127.0.0.1:50224/WTFTYus3IPU=/";
     final String page = "timeline";
 
-    PowerMockito.mockStatic(FlutterSdkUtil.class);
-    PowerMockito.when(FlutterSdkUtil.getFlutterHostEnvValue()).thenReturn("IntelliJ-IDEA");
+    final FlutterSdkUtil mockSdkUtil = mock(FlutterSdkUtil.class);
+    when(mockSdkUtil.getFlutterHostEnvValue()).thenReturn("IntelliJ-IDEA");
 
     assertEquals(
       "http://127.0.0.1:9100/?ide=IntelliJ-IDEA&page=timeline&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
-      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, null)).getUrlString()
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, null, mockSdkUtil)).getUrlString()
     );
 
     assertEquals(
       "http://127.0.0.1:9100/?ide=IntelliJ-IDEA&page=timeline&embed=true&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
-      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, true, null, null)).getUrlString()
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, true, null, null, mockSdkUtil)).getUrlString()
     );
 
     assertEquals(
       "http://127.0.0.1:9100/?ide=IntelliJ-IDEA",
-      (new DevToolsUrl(devtoolsHost, devtoolsPort, null, null, false, null, null).getUrlString())
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, null, null, false, null, null, mockSdkUtil).getUrlString())
     );
 
     assertEquals(
       "http://127.0.0.1:9100/?ide=IntelliJ-IDEA&page=timeline&backgroundColor=ffffff&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
-      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, "ffffff", null).getUrlString())
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, "ffffff", null, mockSdkUtil).getUrlString())
     );
 
     assertEquals(
       "http://127.0.0.1:9100/?ide=IntelliJ-IDEA&page=timeline&backgroundColor=ffffff&fontSize=12.0&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
-      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, "ffffff", 12.0f).getUrlString())
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, "ffffff", 12.0f, mockSdkUtil).getUrlString())
     );
 
-    PowerMockito.when(FlutterSdkUtil.getFlutterHostEnvValue()).thenReturn("Android-Studio");
+    when(mockSdkUtil.getFlutterHostEnvValue()).thenReturn("Android-Studio");
 
     assertEquals(
       "http://127.0.0.1:9100/?ide=Android-Studio&page=timeline&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
-      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, null).getUrlString())
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, null, mockSdkUtil).getUrlString())
     );
 
     assertEquals(
       "http://127.0.0.1:9100/?ide=Android-Studio&page=timeline&backgroundColor=3c3f41&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
-      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, "3c3f41", null).getUrlString())
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, "3c3f41", null, mockSdkUtil).getUrlString())
     );
   }
 }
