@@ -154,7 +154,7 @@ class DeviceDaemon {
         list = ImmutableList.of("--show-test-device", "daemon");
       }
       else {
-        list = ImmutableList.of("damon");
+        list = ImmutableList.of("daemon");
       }
       return new Command(sdk.getHomePath(), path, list, androidHome);
     }
