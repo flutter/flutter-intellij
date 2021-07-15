@@ -11,8 +11,13 @@ import com.google.common.collect.ImmutableList;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessHandler;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
@@ -27,6 +32,7 @@ import io.flutter.utils.MostlySilentColoredProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -48,7 +54,7 @@ class DeviceDaemon {
   /**
    * Attempt to start the daemon this many times before showing the user a warning that the daemon is having trouble starting up.
    */
-  private static final int RESTART_ATTEMPTS_BEFORE_WARNING = 100;
+  private static final int RESTART_ATTEMPTS_BEFORE_WARNING = 1;
 
   /**
    * A unique id used to log device daemon actions.
@@ -107,7 +113,7 @@ class DeviceDaemon {
    */
   void shutdown() {
     if (!process.isProcessTerminated()) {
-      LOG.info("shutting down Flutter device daemon #" + id + ": " + command.toString());
+      LOG.info("shutting down Flutter device daemon #" + id + ": " + command);
     }
     listener.running.set(false);
     process.destroyProcess();
@@ -199,6 +205,7 @@ class DeviceDaemon {
                        Runnable deviceChanged,
                        Consumer<String> processStopped) throws ExecutionException {
       final int daemonId = nextDaemonId.incrementAndGet();
+      //noinspection UnnecessaryToStringCall
       LOG.info("starting Flutter device daemon #" + daemonId + ": " + toString());
       // The mostly silent process handler reduces CPU usage of the daemon process.
       final ProcessHandler process = new MostlySilentColoredProcessHandler(toCommandLine());
@@ -226,7 +233,7 @@ class DeviceDaemon {
               failureMessage += ", stderr: " + api.getStderrTail();
             }
             attempts++;
-            if (attempts < DeviceDaemon.RESTART_ATTEMPTS_BEFORE_WARNING) {
+            if (attempts <= DeviceDaemon.RESTART_ATTEMPTS_BEFORE_WARNING) {
               LOG.warn(failureMessage);
             }
             else {
@@ -238,12 +245,16 @@ class DeviceDaemon {
                 // Show a message in the UI when we reach the warning threshold.
                 FlutterMessages.showError("Flutter device daemon", failureMessage, null);
               }
+              else if (attempts == DeviceDaemon.RESTART_ATTEMPTS_BEFORE_WARNING + 4) {
+                ApplicationManager.getApplication().invokeLater(() -> new DaemonCrashReporter().show(), ModalityState.NON_MODAL);
+                return null;
+              }
             }
           }
 
           try {
             // Retry with a longer delay if we are encountering repeated failures of the daemon.
-            ready.get(attempts < DeviceDaemon.RESTART_ATTEMPTS_BEFORE_WARNING ? 100 : 10000, TimeUnit.MILLISECONDS);
+            ready.get(attempts <= DeviceDaemon.RESTART_ATTEMPTS_BEFORE_WARNING ? 100L : 10000L * attempts, TimeUnit.MILLISECONDS);
 
             succeeded = true;
             return new DeviceDaemon(daemonId, this, process, listener, devices);
@@ -411,4 +422,41 @@ class DeviceDaemon {
   }
 
   private static final Logger LOG = Logger.getInstance(DeviceDaemon.class);
+
+  // If the daemon cannot be started, display a modal dialog with hopefully helpful
+  // instructions on how to fix the problem. This is a big problem; we really do
+  // need to interupt the user.
+  // https://github.com/flutter/flutter-intellij/issues/5521
+  private static class DaemonCrashReporter extends DialogWrapper {
+    private JPanel myPanel;
+    private JTextPane myTextPane;
+
+    DaemonCrashReporter() {
+      super(null, false, false);
+      setTitle("Flutter Device Daemon Crash");
+      myPanel = new JPanel();
+      myTextPane = new JTextPane();
+      final String os = SystemInfo.getOsNameAndVersion();
+      final String link = "https://www.google.com/search?q=increase maximum file handles " + os;
+      Messages.installHyperlinkSupport(myTextPane);
+      final String message =
+      "<html><body><p>The Flutter device daemon cannot be started. " +
+      "<br>Please check your configuration and restart the IDE. " +
+      "<br><br>You may need to <a href=\"" + link +
+      "\">increase the maximum number of file handles</a>" +
+      "<br>available globally.</body></html>";
+
+      myTextPane.setText(message);
+      myPanel.add(myTextPane);
+      init();
+      //noinspection ConstantConditions
+      getButton(getCancelAction()).setVisible(false);
+    }
+
+    @Nullable
+    @Override
+    protected JComponent createCenterPanel() {
+      return myPanel;
+    }
+  }
 }
