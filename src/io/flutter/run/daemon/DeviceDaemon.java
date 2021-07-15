@@ -424,7 +424,7 @@ class DeviceDaemon {
   private static final Logger LOG = Logger.getInstance(DeviceDaemon.class);
 
   // If the daemon cannot be started, display a modal dialog with hopefully helpful
-  // instructions on how to fix the problem. This is q big problem; we really do
+  // instructions on how to fix the problem. This is a big problem; we really do
   // need to interupt the user.
   // https://github.com/flutter/flutter-intellij/issues/5521
   private static class DaemonCrashReporter extends DialogWrapper {
