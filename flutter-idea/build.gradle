@@ -78,6 +78,7 @@ dependencies {
   testImplementation fileTree(dir: "$project.rootDir/lib/jxbrowser",
                        includes: ["*.jar"])
   testImplementation 'junit:junit:4.13'
+  testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.2.2' // 3.11.2 is latest
 }
 
 /* Need to swizzle source and resource paths to match standard or buildPlugin does nothing. */
