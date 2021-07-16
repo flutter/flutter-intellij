@@ -32,7 +32,7 @@ import java.util.concurrent.CompletableFuture;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.when;
 
 public class LaunchCommandsTest {
   @Rule
