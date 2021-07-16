@@ -26,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.powermock.api.mockito.PowerMockito;
 
 import javax.swing.*;
 import java.io.InputStreamReader;
@@ -35,6 +34,8 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class FlutterConsoleLogManagerTest {
   private Analytics analytics;
@@ -99,8 +100,8 @@ public class FlutterConsoleLogManagerTest {
     final Event event = new Event(JsonUtils.parseReader(
       new InputStreamReader(FlutterConsoleLogManagerTest.class.getResourceAsStream("flutter_error.json"))).getAsJsonObject());
 
-    final FlutterSettings settings = PowerMockito.mock(FlutterSettings.class);
-    PowerMockito.when(settings.isShowStructuredErrors()).thenReturn(true);
+    final FlutterSettings settings = mock(FlutterSettings.class);
+    when(settings.isShowStructuredErrors()).thenReturn(true);
     FlutterSettings.setInstance(settings);
 
     logManager.handleFlutterErrorEvent(event);
@@ -116,8 +117,8 @@ public class FlutterConsoleLogManagerTest {
     final Event event = new Event(JsonUtils.parseReader(
       new InputStreamReader(FlutterConsoleLogManagerTest.class.getResourceAsStream("flutter_error.json"))).getAsJsonObject());
 
-    final FlutterSettings settings = PowerMockito.mock(FlutterSettings.class);
-    PowerMockito.when(settings.isShowStructuredErrors()).thenReturn(true);
+    final FlutterSettings settings = mock(FlutterSettings.class);
+    when(settings.isShowStructuredErrors()).thenReturn(true);
     FlutterSettings.setInstance(settings);
 
     logManager.handleFlutterErrorEvent(event);
@@ -170,11 +171,11 @@ public class FlutterConsoleLogManagerTest {
   }
 
   private FlutterApp createFlutterApp() {
-    final FlutterApp app = PowerMockito.mock(FlutterApp.class);
+    final FlutterApp app = mock(FlutterApp.class);
 
-    PowerMockito.when(app.getVmService()).thenAnswer(mock -> PowerMockito.mock(VmService.class));
-    PowerMockito.when(app.getFlutterDebugProcess()).thenAnswer(mock -> PowerMockito.mock(FlutterDebugProcess.class));
-    PowerMockito.when(app.getVMServiceManager()).thenAnswer(mock -> PowerMockito.mock(VMServiceManager.class));
+    when(app.getVmService()).thenAnswer(mock -> mock(VmService.class));
+    when(app.getFlutterDebugProcess()).thenAnswer(mock -> mock(FlutterDebugProcess.class));
+    when(app.getVMServiceManager()).thenAnswer(mock -> mock(VMServiceManager.class));
 
     return app;
   }
