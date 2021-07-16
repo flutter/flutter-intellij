@@ -367,6 +367,7 @@ public class VmServiceWrapper implements Disposable {
                 final Set<String> mappedCanonicalBreakpoints = new HashSet<>();
                 for (Breakpoint breakpoint : breakpoints) {
                   Object location = breakpoint.getLocation();
+                  // In JIT mode, locations will be unresolved at this time since files aren't compiled until they are used.
                   if (location instanceof  UnresolvedSourceLocation) {
                     final ScriptRef script = ((UnresolvedSourceLocation)location).getScript();
                     if (script != null && libraryUris.contains(script.getUri())) {
