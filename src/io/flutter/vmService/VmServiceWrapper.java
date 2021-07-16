@@ -19,6 +19,7 @@ import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import com.jetbrains.lang.dart.DartFileType;
 import io.flutter.FlutterInitializer;
 import io.flutter.analytics.Analytics;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.vmService.frame.DartAsyncMarkerFrame;
 import io.flutter.vmService.frame.DartVmServiceEvaluator;
@@ -46,8 +47,8 @@ public class VmServiceWrapper implements Disposable {
   private final IsolatesInfo myIsolatesInfo;
   private final DartVmServiceBreakpointHandler myBreakpointHandler;
   private final Alarm myRequestsScheduler;
-  private final Map<Integer, String> breakpointNumbersToCanonicalMap;
-  private final Set<String> canonicalBreakpoints;
+  private final Map<Integer, CanonicalBreakpoint> breakpointNumbersToCanonicalMap;
+  private final Set<CanonicalBreakpoint> canonicalBreakpoints;
 
   private long myVmServiceReceiverThreadId;
 
@@ -364,11 +365,11 @@ public class VmServiceWrapper implements Disposable {
                   return;
                 }
 
-                final Set<String> mappedCanonicalBreakpoints = new HashSet<>();
+                final Set<CanonicalBreakpoint> mappedCanonicalBreakpoints = new HashSet<>();
                 for (Breakpoint breakpoint : breakpoints) {
                   Object location = breakpoint.getLocation();
                   // In JIT mode, locations will be unresolved at this time since files aren't compiled until they are used.
-                  if (location instanceof  UnresolvedSourceLocation) {
+                  if (location instanceof UnresolvedSourceLocation) {
                     final ScriptRef script = ((UnresolvedSourceLocation)location).getScript();
                     if (script != null && libraryUris.contains(script.getUri())) {
                       mappedCanonicalBreakpoints.add(breakpointNumbersToCanonicalMap.get(breakpoint.getBreakpointNumber()));
@@ -379,8 +380,17 @@ public class VmServiceWrapper implements Disposable {
                 final Analytics analytics = FlutterInitializer.getAnalytics();
                 final String category = "breakpoint";
 
-                final Sets.SetView<String> difference = Sets.difference(canonicalBreakpoints, mappedCanonicalBreakpoints);
+                final Sets.SetView<CanonicalBreakpoint> difference = Sets.difference(canonicalBreakpoints, mappedCanonicalBreakpoints);
                 analytics.sendEventMetric(category, "unmapped-count", difference.size());
+
+                // For internal bazel projects, report files where mapping failed.
+                if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
+                  for (CanonicalBreakpoint canonicalBreakpoint : difference) {
+                    if (canonicalBreakpoint.fileName.contains("google3")) {
+                      analytics.sendEvent(category, "unmapped-file_" + canonicalBreakpoint.fileName);
+                    }
+                  }
+                }
               }
 
               @Override
@@ -411,7 +421,7 @@ public class VmServiceWrapper implements Disposable {
       final int line = position.getLine() + 1;
 
       final Collection<String> scriptUris = myDebugProcess.getUrisForFile(position.getFile());
-      final String canonicalBreakpoint = position.getFile() + "_" + line;
+      final CanonicalBreakpoint canonicalBreakpoint = new CanonicalBreakpoint(position.getFile().getCanonicalPath(), line);
       canonicalBreakpoints.add(canonicalBreakpoint);
       final List<Breakpoint> breakpointResponses = new ArrayList<>();
       final List<RPCError> errorResponses = new ArrayList<>();
@@ -740,5 +750,15 @@ public class VmServiceWrapper implements Disposable {
                            @NotNull final String targetId,
                            @NotNull final InvokeConsumer callback) {
     addRequest(() -> myVmService.invoke(isolateId, targetId, "toString", Collections.emptyList(), true, callback));
+  }
+}
+
+class CanonicalBreakpoint {
+  final String fileName;
+  final int line;
+
+  CanonicalBreakpoint(String name, int line) {
+    this.fileName = name;
+    this.line = line;
   }
 }
