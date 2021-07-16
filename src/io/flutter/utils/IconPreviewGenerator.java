@@ -5,22 +5,43 @@
  */
 package io.flutter.utils;
 
+import com.intellij.lang.ASTNode;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.impl.source.tree.AstBufferUtil;
 import com.intellij.util.TripleFunction;
+import com.jetbrains.lang.dart.DartTokenTypes;
+import com.jetbrains.lang.dart.psi.DartComponent;
+import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.FlutterUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.util.Properties;
+import javax.imageio.ImageIO;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("UseJBColor")
 public class IconPreviewGenerator {
@@ -44,11 +65,16 @@ public class IconPreviewGenerator {
     }
   }
 
-  public Icon convert(String hexString) {
-    if (hexString.startsWith("0x") || hexString.startsWith("0X")) {
-      hexString = hexString.substring(2);
+  public Icon convert(String number) {
+    int codepoint;
+    if (number.startsWith("0x") || number.startsWith("0X")) {
+      number = number.substring(2);
+      codepoint = Integer.parseInt(number, 16);
     }
-    return convert(Integer.parseInt(hexString, 16));
+    else {
+      codepoint = Integer.parseInt(number, 10);
+    }
+    return convert(codepoint);
   }
 
   public Icon convert(int code) {
@@ -101,7 +127,7 @@ public class IconPreviewGenerator {
     Graphics2D graphics = null;
     //noinspection UndesirableClassUsage
     BufferedImage image = new BufferedImage(iconSize, iconSize, BufferedImage.TYPE_4BYTE_ABGR);
-    try (InputStream inputStream = new FileInputStream(new File(fontFilePath))) {
+    try (InputStream inputStream = new FileInputStream(fontFilePath)) {
       Font font = Font.createFont(Font.TRUETYPE_FONT, inputStream).deriveFont(Font.PLAIN, fontSize);
       graphics = image.createGraphics();
       graphics.setFont(font);
@@ -134,5 +160,58 @@ public class IconPreviewGenerator {
     graphics.setComposite(AlphaComposite.Src);
     graphics.setColor(fontColor);
     graphics.drawString(codepoint, x0, y0);
+  }
+
+  @Nullable
+  public static VirtualFile findAssetMapFor(@NotNull DartComponent dartClass) {
+    final ASTNode node = dartClass.getNode();
+    if (DartTokenTypes.CLASS_DEFINITION != node.getElementType()) {
+      return null;
+    }
+    final DartFile psiElement = (DartFile)node.getPsi().getParent();
+    final VirtualFile file = psiElement.getVirtualFile();
+    VirtualFile map = findAssetMapIn(file.getParent());
+    if (map != null) {
+      return map;
+    }
+    final PsiElement identifier = dartClass.getNameIdentifier();
+    if (identifier == null) {
+      return null;
+    }
+    final String className = AstBufferUtil.getTextSkippingWhitespaceComments(identifier.getNode());
+    final URL resource = IconPreviewGenerator.class.getResource("/iconAssetMaps/" + className + "/asset_map.yaml");
+    if (resource == null) {
+      return null;
+    }
+    try {
+      final URI uri = resource.toURI();
+      return LocalFileSystem.getInstance().findFileByNioFile(Paths.get(uri));
+    }
+    catch (URISyntaxException e) {
+      return null;
+    }
+  }
+
+  @Nullable
+  public static VirtualFile findAssetMapIn(@NotNull VirtualFile dartClass) {
+    VirtualFile dir = dartClass.getParent();
+    VirtualFile preview = null;
+    while (dir != null && !dir.getName().equals("lib")) {
+      preview = dir.findChild("ide_preview");
+      if (preview == null) {
+        dir = dir.getParent();
+      }
+      else {
+        dir = null;
+      }
+    }
+    if (preview == null && dir != null && dir.getName().equals("lib")) {
+      dir = dir.getParent();
+      preview = dir.findChild("ide_preview");
+      if (preview == null) {
+        return null;
+      }
+    }
+    return preview == null ? null : preview.findChild("asset_map.yaml");
   }
 }
