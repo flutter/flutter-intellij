@@ -298,7 +298,7 @@ public class DevToolsService {
     final GeneralCommandLine result = new GeneralCommandLine().withWorkDirectory(workDir);
     result.setCharset(StandardCharsets.UTF_8);
     result.setExePath(FileUtil.toSystemDependentName(command));
-    result.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
+    result.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, (new FlutterSdkUtil()).getFlutterHostEnvValue());
 
     for (String argument : arguments) {
       result.addParameter(argument);

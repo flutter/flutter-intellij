@@ -21,6 +21,7 @@ public class DevToolsUrl {
   public String colorHexCode;
   public String widgetId;
   public Float fontSize;
+  private final FlutterSdkUtil sdkUtil;
 
   public DevToolsUrl(String devtoolsHost,
                      int devtoolsPort,
@@ -29,6 +30,17 @@ public class DevToolsUrl {
                      boolean embed,
                      String colorHexCode,
                      Float fontSize) {
+    this(devtoolsHost, devtoolsPort, vmServiceUri, page, embed, colorHexCode, fontSize, new FlutterSdkUtil());
+  }
+
+  public DevToolsUrl(String devtoolsHost,
+                     int devtoolsPort,
+                     String vmServiceUri,
+                     String page,
+                     boolean embed,
+                     String colorHexCode,
+                     Float fontSize,
+                     FlutterSdkUtil flutterSdkUtil) {
     this.devtoolsHost = devtoolsHost;
     this.devtoolsPort = devtoolsPort;
     this.vmServiceUri = vmServiceUri;
@@ -36,12 +48,13 @@ public class DevToolsUrl {
     this.embed = embed;
     this.colorHexCode = colorHexCode;
     this.fontSize = fontSize;
+    this.sdkUtil = flutterSdkUtil;
   }
 
   public String getUrlString() {
     final List<String> params = new ArrayList<>();
 
-    params.add("ide=" + FlutterSdkUtil.getFlutterHostEnvValue());
+    params.add("ide=" + sdkUtil.getFlutterHostEnvValue());
     if (page != null) {
       params.add("page=" + page);
     }

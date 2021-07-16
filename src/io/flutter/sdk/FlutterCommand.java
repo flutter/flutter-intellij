@@ -249,7 +249,7 @@ public class FlutterCommand {
   public GeneralCommandLine createGeneralCommandLine(@Nullable Project project) {
     final GeneralCommandLine line = new GeneralCommandLine();
     line.setCharset(StandardCharsets.UTF_8);
-    line.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
+    line.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, (new FlutterSdkUtil()).getFlutterHostEnvValue());
     final String androidHome = IntelliJAndroidSdk.chooseAndroidHome(project, false);
     if (androidHome != null) {
       line.withEnvironment("ANDROID_HOME", androidHome);

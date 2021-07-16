@@ -55,13 +55,13 @@ public class FlutterSdkUtil {
   private static final Logger LOG = Logger.getInstance(FlutterSdkUtil.class);
   private static final String FLUTTER_SNAP_SDK_PATH = "/snap/flutter/common/flutter";
 
-  private FlutterSdkUtil() {
+  public FlutterSdkUtil() {
   }
 
   /**
    * Return the environment variable value to use when shelling out to the Flutter command-line tool.
    */
-  public static String getFlutterHostEnvValue() {
+  public String getFlutterHostEnvValue() {
     final String clientId = ApplicationNamesInfo.getInstance().getFullProductName().replaceAll(" ", "-");
     final String existingVar = java.lang.System.getenv(FLUTTER_HOST_ENV);
     return existingVar == null ? clientId : (existingVar + ":" + clientId);

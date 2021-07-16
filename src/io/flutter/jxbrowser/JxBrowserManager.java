@@ -22,6 +22,7 @@ import com.intellij.util.download.FileDownloader;
 import com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException;
 import com.teamdev.jxbrowser.engine.RenderingMode;
 import io.flutter.FlutterInitializer;
+import io.flutter.analytics.Analytics;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
@@ -57,14 +58,21 @@ public class JxBrowserManager {
   private static CompletableFuture<JxBrowserStatus> installation = new CompletableFuture<>();
   public static final String ANALYTICS_CATEGORY = "jxbrowser";
   private static InstallationFailedReason latestFailureReason;
+  private final JxBrowserUtils jxBrowserUtils;
+  private final Analytics analytics;
+  private final FileUtils fileUtils;
 
-  private JxBrowserManager() {
+  @VisibleForTesting
+  protected JxBrowserManager(JxBrowserUtils jxBrowserUtils, Analytics analytics, FileUtils fileUtils) {
+    this.jxBrowserUtils = jxBrowserUtils;
+    this.analytics = analytics;
+    this.fileUtils = fileUtils;
   }
 
   @NotNull
   public static JxBrowserManager getInstance() {
     if (manager == null) {
-      manager = new JxBrowserManager();
+      manager = new JxBrowserManager(new JxBrowserUtils(), FlutterInitializer.getAnalytics(), FileUtils.getInstance());
     }
     return manager;
   }
@@ -135,9 +143,9 @@ public class JxBrowserManager {
     }
 
     if (time != null) {
-      FlutterInitializer.getAnalytics().sendEventMetric(ANALYTICS_CATEGORY, eventName.toString(), time.intValue());
+      analytics.sendEventMetric(ANALYTICS_CATEGORY, eventName.toString(), time.intValue());
     } else {
-      FlutterInitializer.getAnalytics().sendEvent(ANALYTICS_CATEGORY, eventName.toString());
+      analytics.sendEvent(ANALYTICS_CATEGORY, eventName.toString());
     }
 
     latestFailureReason = reason;
@@ -164,7 +172,7 @@ public class JxBrowserManager {
 
     // Retrieve key
     try {
-      final String key = JxBrowserUtils.getJxBrowserKey();
+      final String key = jxBrowserUtils.getJxBrowserKey();
       System.setProperty(JxBrowserUtils.LICENSE_PROPERTY_NAME, key);
     }
     catch (FileNotFoundException e) {
@@ -174,7 +182,7 @@ public class JxBrowserManager {
     }
 
     // Check that user is not on M1 mac.
-    if (JxBrowserUtils.isM1Mac()) {
+    if (jxBrowserUtils.isM1Mac()) {
       LOG.info(project.getName() + ": Skipping downloads due to M1");
       setStatusFailed(new InstallationFailedReason(
               FailureType.SYSTEM_INCOMPATIBLE,
@@ -192,7 +200,7 @@ public class JxBrowserManager {
 
     LOG.info(project.getName() + ": Installing JxBrowser");
 
-    final boolean directoryExists = FileUtils.getInstance().makeDirectory(DOWNLOAD_PATH);
+    final boolean directoryExists = fileUtils.makeDirectory(DOWNLOAD_PATH);
     if (!directoryExists) {
       LOG.info(project.getName() + ": Unable to create directory for JxBrowser files");
       setStatusFailed(new InstallationFailedReason(FailureType.DIRECTORY_CREATION_FAILED));
@@ -201,7 +209,7 @@ public class JxBrowserManager {
 
     final String platformFileName;
     try {
-      platformFileName = JxBrowserUtils.getPlatformFileName();
+      platformFileName = jxBrowserUtils.getPlatformFileName();
     }
     catch (FileNotFoundException e) {
       LOG.info(project.getName() + ": Unable to find JxBrowser platform file for " + SystemInfo.getOsNameAndVersion());
@@ -210,10 +218,10 @@ public class JxBrowserManager {
     }
 
     // Check whether the files already exist.
-    final String[] fileNames = {platformFileName, JxBrowserUtils.getApiFileName(), JxBrowserUtils.getSwingFileName()};
+    final String[] fileNames = {platformFileName, jxBrowserUtils.getApiFileName(), jxBrowserUtils.getSwingFileName()};
     boolean allDownloaded = true;
     for (String fileName : fileNames) {
-      if (!FileUtils.getInstance().fileExists(getFilePath(fileName))) {
+      if (!fileUtils.fileExists(getFilePath(fileName))) {
         allDownloaded = false;
         break;
       }
@@ -229,7 +237,7 @@ public class JxBrowserManager {
     // TODO(helin24): Handle if files cannot be deleted.
     for (String fileName : fileNames) {
       final String filePath = getFilePath(fileName);
-      if (!FileUtils.getInstance().deleteFile(filePath)) {
+      if (!fileUtils.deleteFile(filePath)) {
         LOG.info(project.getName() + ": Existing file could not be deleted - " + filePath);
       }
     }
@@ -244,7 +252,7 @@ public class JxBrowserManager {
     final DownloadableFileService service = DownloadableFileService.getInstance();
     for (String fileName : fileNames) {
       final DownloadableFileDescription
-        description = service.createFileDescription(JxBrowserUtils.getDistributionLink(fileName), fileName);
+        description = service.createFileDescription(jxBrowserUtils.getDistributionLink(fileName), fileName);
       fileDownloaders.add(service.createDownloader(Collections.singletonList(description), fileName));
     }
 
@@ -265,7 +273,7 @@ public class JxBrowserManager {
             }
           }
 
-          FlutterInitializer.getAnalytics().sendEvent(ANALYTICS_CATEGORY, "filesDownloaded");
+          analytics.sendEvent(ANALYTICS_CATEGORY, "filesDownloaded");
           loadClasses(fileNames);
         }
         catch (IOException e) {
@@ -285,7 +293,7 @@ public class JxBrowserManager {
       final String fullPath = getFilePath(fileName);
 
       try {
-        FileUtils.getInstance().loadClass(this.getClass().getClassLoader(), fullPath);
+        fileUtils.loadClass(this.getClass().getClassLoader(), fullPath);
       } catch (Exception ex) {
         LOG.info("Failed to load JxBrowser file", ex);
         setStatusFailed(new InstallationFailedReason(FailureType.CLASS_LOAD_FAILED));
@@ -301,7 +309,7 @@ public class JxBrowserManager {
       setStatusFailed(new InstallationFailedReason(FailureType.CLASS_NOT_FOUND));
       return;
     }
-    FlutterInitializer.getAnalytics().sendEvent(ANALYTICS_CATEGORY, "installed");
+    analytics.sendEvent(ANALYTICS_CATEGORY, "installed");
     status.set(JxBrowserStatus.INSTALLED);
     installation.complete(JxBrowserStatus.INSTALLED);
   }
@@ -313,7 +321,7 @@ public class JxBrowserManager {
       for (String fileName: fileNames) {
         paths.add(Paths.get(getFilePath(fileName)));
       }
-      FileUtils.getInstance().loadPaths(this.getClass().getClassLoader(), paths);
+      fileUtils.loadPaths(this.getClass().getClassLoader(), paths);
     } catch (Exception ex) {
       LOG.info("Failed to load JxBrowser file", ex);
       setStatusFailed(new InstallationFailedReason(FailureType.CLASS_LOAD_FAILED));
@@ -327,7 +335,7 @@ public class JxBrowserManager {
       setStatusFailed(new InstallationFailedReason(FailureType.CLASS_NOT_FOUND));
       return;
     }
-    FlutterInitializer.getAnalytics().sendEvent(ANALYTICS_CATEGORY, "installed");
+    analytics.sendEvent(ANALYTICS_CATEGORY, "installed");
     status.set(JxBrowserStatus.INSTALLED);
     installation.complete(JxBrowserStatus.INSTALLED);
   }
