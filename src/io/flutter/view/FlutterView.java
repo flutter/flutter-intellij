@@ -29,6 +29,7 @@ import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
+import com.intellij.serviceContainer.NonInjectable;
 import com.intellij.ui.ColorUtil;
 import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.SideBorder;
@@ -119,7 +120,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private final Project myProject;
 
   private final Map<FlutterApp, PerAppState> perAppViewState = new HashMap<>();
-  private final MessageBusConnection busConnection = ApplicationManager.getApplication().getMessageBus().connect();
+  private final MessageBusConnection busConnection;
   private boolean busSubscribed = false;
 
   private Content emptyContent;
@@ -127,15 +128,24 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private FlutterViewToolWindowManagerListener toolWindowListener;
   private int devToolsInstallCount = 0;
   private final JxBrowserUtils jxBrowserUtils;
+  private final JxBrowserManager jxBrowserManager;
 
   public FlutterView(@NotNull Project project) {
+    this(project, JxBrowserManager.getInstance(), new JxBrowserUtils(), InspectorGroupManagerService.getInstance(project), ApplicationManager.getApplication().getMessageBus().connect());
+  }
+
+  @VisibleForTesting
+  @NonInjectable
+  protected FlutterView(@NotNull Project project, JxBrowserManager jxBrowserManager, JxBrowserUtils jxBrowserUtils, InspectorGroupManagerService inspectorGroupManagerService, MessageBusConnection messageBusConnection) {
     myProject = project;
-    this.jxBrowserUtils = new JxBrowserUtils();
+    this.jxBrowserUtils = jxBrowserUtils;
+    this.jxBrowserManager = jxBrowserManager;
+    this.busConnection = messageBusConnection;
 
     shouldAutoHorizontalScroll.listen(state::setShouldAutoScroll);
     highlightNodesShownInBothTrees.listen(state::setHighlightNodesShownInBothTrees);
 
-    InspectorGroupManagerService.getInstance(project).addListener(new InspectorGroupManagerService.Listener() {
+    inspectorGroupManagerService.addListener(new InspectorGroupManagerService.Listener() {
       @Override
       public void onInspectorAvailable(InspectorService service) { }
 
@@ -484,7 +494,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private void presentDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
-    assert(SwingUtilities.isEventDispatchThread());
+    verifyEventDispatchThread();
 
     devToolsInstallCount += 1;
     presentLabel(toolWindow, getInstallingDevtoolsLabel());
@@ -492,6 +502,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded);
 
     setUpToolWindowListener(app, inspectorService, toolWindow, isEmbedded);
+  }
+
+  @VisibleForTesting
+  protected void verifyEventDispatchThread() {
+    assert(SwingUtilities.isEventDispatchThread());
   }
 
   @VisibleForTesting
@@ -555,8 +570,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   protected void handleJxBrowserInstallationInProgress(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
-    final JxBrowserManager jxBrowserManager = JxBrowserManager.getInstance();
-
     presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_IN_PROGRESS_LABEL);
 
     if (jxBrowserManager.getStatus().equals(JxBrowserStatus.INSTALLED)) {
@@ -574,7 +587,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   protected void waitForJxBrowserInstallation(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
-    final JxBrowserManager jxBrowserManager = JxBrowserManager.getInstance();
     try {
       final JxBrowserStatus newStatus = jxBrowserManager.waitForInstallation(INSTALLATION_WAIT_LIMIT_SECONDS);
 
@@ -616,7 +628,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final List<LabelInput> inputs = new ArrayList<>();
     final LabelInput openDevToolsLabel = openDevToolsLabel(app, inspectorService, toolWindow);
 
-    final InstallationFailedReason latestFailureReason = JxBrowserManager.getInstance().getLatestFailureReason();
+    final InstallationFailedReason latestFailureReason = jxBrowserManager.getLatestFailureReason();
 
     if (!jxBrowserUtils.licenseIsSet()) {
       // If the license isn't available, allow the user to open the equivalent page in a non-embedded browser window.
@@ -631,7 +643,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       // Allow the user to manually restart or open the equivalent page in a non-embedded browser window.
       inputs.add(new LabelInput("JxBrowser installation failed."));
       inputs.add(new LabelInput("Retry installation?", (linkLabel, data) -> {
-        JxBrowserManager.getInstance().retryFromFailed(app.getProject());
+        jxBrowserManager.retryFromFailed(app.getProject());
         handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
       }));
       inputs.add(openDevToolsLabel);
@@ -723,7 +735,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
 
     if (FlutterSettings.getInstance().isEnableEmbeddedBrowsers()) {
-      if (JxBrowserManager.getInstance().getStatus().equals(JxBrowserStatus.INSTALLED)) {
+      if (jxBrowserManager.getStatus().equals(JxBrowserStatus.INSTALLED)) {
         // Reset the URL since we may have an outdated one from a previous app run.
         embeddedBrowserOptional().ifPresent(EmbeddedBrowser::resetUrl);
       }
@@ -806,7 +818,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private void displayEmbeddedBrowser(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
-    final JxBrowserManager manager = JxBrowserManager.getInstance();
+    final JxBrowserManager manager = jxBrowserManager;
     final JxBrowserStatus jxBrowserStatus = manager.getStatus();
 
     if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {
