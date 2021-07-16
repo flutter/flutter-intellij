@@ -36,4 +36,8 @@ public class FlutterCoverageSuite extends BaseCoverageSuite {
   public @NotNull CoverageEngine getCoverageEngine() {
     return coverageEngine;
   }
+
+  @Override
+  public void deleteCachedCoverageData() {
+  }
 }
