@@ -358,8 +358,10 @@ public class VmServiceWrapper implements Disposable {
                 final Set<String> libraryUris = new HashSet<>();
                 final Set<String> fileNames = new HashSet<>();
                 for (LibraryRef library : response.getLibraries()) {
-                  libraryUris.add(library.getUri());
-                  fileNames.add(library.getName());
+                  final String uri = library.getUri();
+                  libraryUris.add(uri);
+                  final String[] split = uri.split("/");
+                  fileNames.add(split[split.length - 1]);
                 }
 
                 final ElementList<Breakpoint> breakpoints = response.getBreakpoints();
@@ -401,7 +403,7 @@ public class VmServiceWrapper implements Disposable {
                   for (CanonicalBreakpoint canonicalBreakpoint : finalDifference) {
                     if (canonicalBreakpoint.path.contains("google3")) {
                       analytics.sendEvent(category,
-                                          String.format("unmapped-file_%s_%s", response.getRootLib().getUri(), canonicalBreakpoint.path));
+                                          String.format("unmapped-file|%s|%s", response.getRootLib().getUri(), canonicalBreakpoint.path));
                     }
                   }
                 }
