@@ -58,7 +58,6 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig>
     myAdditionalArgumentsField.setText(fields.getAdditionalArgs());
     myAttachArgsField.setText(fields.getAttachArgs());
     myEnvironmentVariables.setEnvs(fields.getEnvs());
-    myEnvironmentVariables.setPassParentEnvs(fields.isIncludeParentEnvs());
   }
 
   @Override
@@ -69,7 +68,6 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig>
     fields.setAdditionalArgs(StringUtil.nullize(myAdditionalArgumentsField.getText().trim()));
     fields.setAttachArgs(StringUtil.nullize(myAttachArgsField.getText().trim()));
     fields.setEnvs(myEnvironmentVariables.getEnvs());
-    fields.setIncludeParentEnvs(myEnvironmentVariables.isPassParentEnvs());
     config.setFields(fields);
   }
 

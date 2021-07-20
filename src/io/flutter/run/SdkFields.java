@@ -47,7 +47,6 @@ public class SdkFields {
   private @Nullable String additionalArgs;
   private @Nullable String attachArgs;
   private @NotNull Map<String, String> envs = new LinkedHashMap<>();
-  private boolean includeParentEnvs = true;
 
   public SdkFields() {
   }
@@ -99,6 +98,7 @@ public class SdkFields {
     return new String[0];
   }
 
+  @Nullable
   public String getAttachArgs() {
     return attachArgs;
   }
@@ -148,14 +148,6 @@ public class SdkFields {
     if (envs != null) { // null comes from old projects or if storage corrupted
       this.envs = envs;
     }
-  }
-
-  public boolean isIncludeParentEnvs() {
-    return includeParentEnvs;
-  }
-
-  public void setIncludeParentEnvs(final boolean includeParentEnvs) {
-    this.includeParentEnvs = includeParentEnvs;
   }
 
   /**
@@ -249,11 +241,8 @@ public class SdkFields {
     }
     command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
     final GeneralCommandLine commandLine = command.createGeneralCommandLine(project);
-    // TODO add "--dart-define key=value" for each to program args
     commandLine.getEnvironment().putAll(getEnvs());
-    commandLine.withParentEnvironmentType(isIncludeParentEnvs()
-                                          ? GeneralCommandLine.ParentEnvironmentType.CONSOLE
-                                          : GeneralCommandLine.ParentEnvironmentType.NONE);
+    commandLine.withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE);
     return commandLine;
   }
 
@@ -275,7 +264,7 @@ public class SdkFields {
       throw new ExecutionException("Entrypoint isn't within a Flutter pub root");
     }
 
-    String[] args = getAttachArgsParsed();
+    final String[] args = getAttachArgsParsed();
     final FlutterCommand command = flutterSdk.flutterAttach(root, main.getFile(), device, flutterLaunchMode, args);
     return command.createGeneralCommandLine(project);
   }
