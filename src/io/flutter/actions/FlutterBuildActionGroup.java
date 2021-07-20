@@ -13,6 +13,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterMessages;
 import io.flutter.pub.PubRoot;
@@ -152,6 +153,12 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
     @Override
     protected BuildType buildType() {
       return BuildType.IOS;
+    }
+
+    @Override
+    public void update(AnActionEvent event) {
+      final Presentation presentation = event.getPresentation();
+      presentation.setEnabled(SystemInfo.isMac);
     }
   }
 }
