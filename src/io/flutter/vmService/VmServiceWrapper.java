@@ -356,8 +356,10 @@ public class VmServiceWrapper implements Disposable {
               @Override
               public void received(Isolate response) {
                 final Set<String> libraryUris = new HashSet<>();
+                final Set<String> fileNames = new HashSet<>();
                 for (LibraryRef library : response.getLibraries()) {
                   libraryUris.add(library.getUri());
+                  fileNames.add(library.getName());
                 }
 
                 final ElementList<Breakpoint> breakpoints = response.getBreakpoints();
@@ -380,14 +382,26 @@ public class VmServiceWrapper implements Disposable {
                 final Analytics analytics = FlutterInitializer.getAnalytics();
                 final String category = "breakpoint";
 
-                final Sets.SetView<CanonicalBreakpoint> difference = Sets.difference(canonicalBreakpoints, mappedCanonicalBreakpoints);
-                analytics.sendEventMetric(category, "unmapped-count", difference.size());
+                final Sets.SetView<CanonicalBreakpoint> initialDifference =
+                  Sets.difference(canonicalBreakpoints, mappedCanonicalBreakpoints);
+                final Set<CanonicalBreakpoint> finalDifference = new HashSet<>();
+
+                for (CanonicalBreakpoint missingBreakpoint : initialDifference) {
+                  // If the file name doesn't exist in loaded library files, then most likely it's not part of the dependencies of what was
+                  // built. So it's okay to ignore these breakpoints in our count.
+                  if (fileNames.contains(missingBreakpoint.fileName)) {
+                    finalDifference.add(missingBreakpoint);
+                  }
+                }
+
+                analytics.sendEventMetric(category, "unmapped-count", finalDifference.size());
 
                 // For internal bazel projects, report files where mapping failed.
                 if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
-                  for (CanonicalBreakpoint canonicalBreakpoint : difference) {
-                    if (canonicalBreakpoint.fileName.contains("google3")) {
-                      analytics.sendEvent(category, "unmapped-file_" + canonicalBreakpoint.fileName);
+                  for (CanonicalBreakpoint canonicalBreakpoint : finalDifference) {
+                    if (canonicalBreakpoint.path.contains("google3")) {
+                      analytics.sendEvent(category,
+                                          String.format("unmapped-file_%s_%s", response.getRootLib().getUri(), canonicalBreakpoint.path));
                     }
                   }
                 }
@@ -421,7 +435,7 @@ public class VmServiceWrapper implements Disposable {
       final int line = position.getLine() + 1;
 
       final Collection<String> scriptUris = myDebugProcess.getUrisForFile(position.getFile());
-      final CanonicalBreakpoint canonicalBreakpoint = new CanonicalBreakpoint(position.getFile().getCanonicalPath(), line);
+      final CanonicalBreakpoint canonicalBreakpoint = new CanonicalBreakpoint(position.getFile().getName(), position.getFile().getCanonicalPath(), line);
       canonicalBreakpoints.add(canonicalBreakpoint);
       final List<Breakpoint> breakpointResponses = new ArrayList<>();
       final List<RPCError> errorResponses = new ArrayList<>();
@@ -755,10 +769,12 @@ public class VmServiceWrapper implements Disposable {
 
 class CanonicalBreakpoint {
   final String fileName;
+  final String path;
   final int line;
 
-  CanonicalBreakpoint(String name, int line) {
+  CanonicalBreakpoint(String name, String path, int line) {
     this.fileName = name;
+    this.path = path;
     this.line = line;
   }
 }
