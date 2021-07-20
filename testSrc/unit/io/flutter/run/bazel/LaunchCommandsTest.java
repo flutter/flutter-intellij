@@ -62,7 +62,7 @@ public class LaunchCommandsTest {
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
-    expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=release");
+    expectedCommandLine.add("--release");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
@@ -88,7 +88,6 @@ public class LaunchCommandsTest {
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
-    expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
@@ -111,7 +110,7 @@ public class LaunchCommandsTest {
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
-    expectedCommandLine.add("--bazel-options=--define=bazel_args --define=flutter_build_mode=debug");
+    expectedCommandLine.add("--bazel-options=--define=bazel_args");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
@@ -197,7 +196,6 @@ public class LaunchCommandsTest {
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
-    expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("additional_args");
     expectedCommandLine.add("-d");
@@ -221,7 +219,7 @@ public class LaunchCommandsTest {
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
-    expectedCommandLine.add("--bazel-options=--define=bazel_args0 --define bazel_args1=value --define=flutter_build_mode=debug");
+    expectedCommandLine.add("--bazel-options=--define=bazel_args0 --define bazel_args1=value");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("--additional_args1");
     expectedCommandLine.add("--additional_args2");
@@ -244,7 +242,6 @@ public class LaunchCommandsTest {
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
-    expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("--start-paused");
     expectedCommandLine.add("-d");
@@ -264,7 +261,7 @@ public class LaunchCommandsTest {
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
-    expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=profile");
+    expectedCommandLine.add("--profile");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
@@ -282,7 +279,6 @@ public class LaunchCommandsTest {
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
-    expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("android-tester");
@@ -301,7 +297,6 @@ public class LaunchCommandsTest {
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
-    expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("android-tester");
@@ -319,7 +314,6 @@ public class LaunchCommandsTest {
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
-    expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("ios-tester");
@@ -337,7 +331,6 @@ public class LaunchCommandsTest {
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add(platformize("/workspace/scripts/flutter-run.sh"));
-    expectedCommandLine.add("--bazel-options=--define=flutter_build_mode=debug");
     expectedCommandLine.add("--machine");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("ios-tester");
