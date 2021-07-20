@@ -14,6 +14,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.execution.ParametersListUtil;
+import com.intellij.util.xmlb.annotations.OptionTag;
+import com.intellij.util.xmlb.annotations.XMap;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
@@ -30,6 +32,8 @@ import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -42,6 +46,7 @@ public class SdkFields {
   private @Nullable String buildFlavor;
   private @Nullable String additionalArgs;
   private @Nullable String attachArgs;
+  private @NotNull Map<String, String> envs = new LinkedHashMap<>();
 
   public SdkFields() {
   }
@@ -93,6 +98,7 @@ public class SdkFields {
     return new String[0];
   }
 
+  @Nullable
   public String getAttachArgs() {
     return attachArgs;
   }
@@ -129,6 +135,19 @@ public class SdkFields {
   @SuppressWarnings("EmptyMethod")
   @Deprecated
   public void setWorkingDirectory(final @Nullable String dir) {
+  }
+
+  @NotNull
+  @OptionTag
+  @XMap
+  public Map<String, String> getEnvs() {
+    return envs;
+  }
+
+  public void setEnvs(final Map<String, String> envs) {
+    if (envs != null) { // null comes from old projects or if storage corrupted
+      this.envs = envs;
+    }
   }
 
   /**
@@ -192,13 +211,15 @@ public class SdkFields {
             final CompletableFuture<DevToolsInstance> futureInstance = DevToolsService.getInstance(project).getDevToolsInstance();
             if (firstRun) {
               devToolsFuture.complete(futureInstance.get(30, TimeUnit.SECONDS));
-            } else {
+            }
+            else {
               // Skip waiting if this isn't the first time running this project. If DevTools isn't available by now, there's likely to be
               // something wrong that won't be fixed by restarting, so we don't want to keep delaying run.
               final DevToolsInstance instance = futureInstance.getNow(null);
               if (instance == null) {
                 devToolsFuture.completeExceptionally(new Exception("DevTools instance not available after first run."));
-              } else {
+              }
+              else {
                 devToolsFuture.complete(instance);
               }
             }
@@ -219,7 +240,10 @@ public class SdkFields {
       }
     }
     command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
-    return command.createGeneralCommandLine(project);
+    final GeneralCommandLine commandLine = command.createGeneralCommandLine(project);
+    commandLine.getEnvironment().putAll(getEnvs());
+    commandLine.withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE);
+    return commandLine;
   }
 
   /**
@@ -240,7 +264,7 @@ public class SdkFields {
       throw new ExecutionException("Entrypoint isn't within a Flutter pub root");
     }
 
-    String[] args = getAttachArgsParsed();
+    final String[] args = getAttachArgsParsed();
     final FlutterCommand command = flutterSdk.flutterAttach(root, main.getFile(), device, flutterLaunchMode, args);
     return command.createGeneralCommandLine(project);
   }
@@ -250,6 +274,7 @@ public class SdkFields {
     copy.setFilePath(filePath);
     copy.setAdditionalArgs(additionalArgs);
     copy.setBuildFlavor(buildFlavor);
+    copy.envs.putAll(envs);
     return copy;
   }
 
