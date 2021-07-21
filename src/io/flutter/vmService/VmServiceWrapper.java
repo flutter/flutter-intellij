@@ -1,6 +1,7 @@
 package io.flutter.vmService;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
@@ -16,6 +17,9 @@ import com.intellij.xdebugger.frame.XExecutionStack;
 import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import com.jetbrains.lang.dart.DartFileType;
+import io.flutter.FlutterInitializer;
+import io.flutter.analytics.Analytics;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.vmService.frame.DartAsyncMarkerFrame;
 import io.flutter.vmService.frame.DartVmServiceEvaluator;
@@ -43,6 +47,8 @@ public class VmServiceWrapper implements Disposable {
   private final IsolatesInfo myIsolatesInfo;
   private final DartVmServiceBreakpointHandler myBreakpointHandler;
   private final Alarm myRequestsScheduler;
+  private final Map<Integer, CanonicalBreakpoint> breakpointNumbersToCanonicalMap;
+  private final Set<CanonicalBreakpoint> canonicalBreakpoints;
 
   private long myVmServiceReceiverThreadId;
 
@@ -59,6 +65,8 @@ public class VmServiceWrapper implements Disposable {
     myIsolatesInfo = isolatesInfo;
     myBreakpointHandler = breakpointHandler;
     myRequestsScheduler = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, this);
+    breakpointNumbersToCanonicalMap = new HashMap<>();
+    canonicalBreakpoints = new HashSet<>();
   }
 
   @NotNull
@@ -343,6 +351,74 @@ public class VmServiceWrapper implements Disposable {
         private void checkDone() {
           if (counter.decrementAndGet() == 0 && onFinished != null) {
             onFinished.run();
+
+            myVmService.getIsolate(isolateId, new GetIsolateConsumer() {
+              @Override
+              public void received(Isolate response) {
+                final Set<String> libraryUris = new HashSet<>();
+                final Set<String> fileNames = new HashSet<>();
+                for (LibraryRef library : response.getLibraries()) {
+                  final String uri = library.getUri();
+                  libraryUris.add(uri);
+                  final String[] split = uri.split("/");
+                  fileNames.add(split[split.length - 1]);
+                }
+
+                final ElementList<Breakpoint> breakpoints = response.getBreakpoints();
+                if (breakpoints.isEmpty()) {
+                  return;
+                }
+
+                final Set<CanonicalBreakpoint> mappedCanonicalBreakpoints = new HashSet<>();
+                for (Breakpoint breakpoint : breakpoints) {
+                  Object location = breakpoint.getLocation();
+                  // In JIT mode, locations will be unresolved at this time since files aren't compiled until they are used.
+                  if (location instanceof UnresolvedSourceLocation) {
+                    final ScriptRef script = ((UnresolvedSourceLocation)location).getScript();
+                    if (script != null && libraryUris.contains(script.getUri())) {
+                      mappedCanonicalBreakpoints.add(breakpointNumbersToCanonicalMap.get(breakpoint.getBreakpointNumber()));
+                    }
+                  }
+                }
+
+                final Analytics analytics = FlutterInitializer.getAnalytics();
+                final String category = "breakpoint";
+
+                final Sets.SetView<CanonicalBreakpoint> initialDifference =
+                  Sets.difference(canonicalBreakpoints, mappedCanonicalBreakpoints);
+                final Set<CanonicalBreakpoint> finalDifference = new HashSet<>();
+
+                for (CanonicalBreakpoint missingBreakpoint : initialDifference) {
+                  // If the file name doesn't exist in loaded library files, then most likely it's not part of the dependencies of what was
+                  // built. So it's okay to ignore these breakpoints in our count.
+                  if (fileNames.contains(missingBreakpoint.fileName)) {
+                    finalDifference.add(missingBreakpoint);
+                  }
+                }
+
+                analytics.sendEventMetric(category, "unmapped-count", finalDifference.size());
+
+                // For internal bazel projects, report files where mapping failed.
+                if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
+                  for (CanonicalBreakpoint canonicalBreakpoint : finalDifference) {
+                    if (canonicalBreakpoint.path.contains("google3")) {
+                      analytics.sendEvent(category,
+                                          String.format("unmapped-file|%s|%s", response.getRootLib().getUri(), canonicalBreakpoint.path));
+                    }
+                  }
+                }
+              }
+
+              @Override
+              public void received(Sentinel response) {
+
+              }
+
+              @Override
+              public void onError(RPCError error) {
+
+              }
+            });
           }
         }
       });
@@ -361,6 +437,8 @@ public class VmServiceWrapper implements Disposable {
       final int line = position.getLine() + 1;
 
       final Collection<String> scriptUris = myDebugProcess.getUrisForFile(position.getFile());
+      final CanonicalBreakpoint canonicalBreakpoint = new CanonicalBreakpoint(position.getFile().getName(), position.getFile().getCanonicalPath(), line);
+      canonicalBreakpoints.add(canonicalBreakpoint);
       final List<Breakpoint> breakpointResponses = new ArrayList<>();
       final List<RPCError> errorResponses = new ArrayList<>();
 
@@ -369,6 +447,7 @@ public class VmServiceWrapper implements Disposable {
           @Override
           public void received(Breakpoint response) {
             breakpointResponses.add(response);
+            breakpointNumbersToCanonicalMap.put(response.getBreakpointNumber(), canonicalBreakpoint);
 
             checkDone();
           }
@@ -687,5 +766,17 @@ public class VmServiceWrapper implements Disposable {
                            @NotNull final String targetId,
                            @NotNull final InvokeConsumer callback) {
     addRequest(() -> myVmService.invoke(isolateId, targetId, "toString", Collections.emptyList(), true, callback));
+  }
+}
+
+class CanonicalBreakpoint {
+  final String fileName;
+  final String path;
+  final int line;
+
+  CanonicalBreakpoint(String name, String path, int line) {
+    this.fileName = name;
+    this.path = path;
+    this.line = line;
   }
 }
