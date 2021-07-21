@@ -28,15 +28,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class OpenInXcodeAction extends AnAction {
+
   @Nullable
-  private static VirtualFile findProjectFile(@NotNull AnActionEvent event) {
+  static VirtualFile findProjectFile(@NotNull AnActionEvent event) {
     final VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
+    final Project project = event.getProject();
     if (file != null && file.exists()) {
       if (FlutterUtils.isXcodeFileName(file.getName())) {
         return file;
       }
 
-      final Project project = event.getProject();
       if (project == null) {
         return null;
       }
@@ -48,7 +49,6 @@ public class OpenInXcodeAction extends AnAction {
       }
     }
 
-    final Project project = event.getProject();
     if (project != null) {
       return FlutterModuleUtils.findXcodeProjectFile(project);
     }

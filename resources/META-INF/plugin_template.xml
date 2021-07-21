@@ -110,6 +110,9 @@
       <action id="flutter.xcode.open" class="io.flutter.actions.OpenInXcodeAction"
               text="Open iOS module in Xcode"
               description="Launch Xcode to edit the iOS module as a top-level project"/>
+      <action id="flutter.appcode.open" class="io.flutter.actions.OpenInAppCodeAction"
+              text="Open iOS module in AppCode"
+              description="Launch AppCode to edit the iOS module as a top-level project"/>
       <separator/>
       <action id="flutter.submitFeedback" class="io.flutter.actions.FlutterSubmitFeedback"
               text="Submit Feedback..."
@@ -126,6 +129,7 @@
         <separator/>
         <reference ref="flutter.androidstudio.open"/>
         <reference ref="flutter.xcode.open"/>
+        <reference ref="flutter.appcode.open"/>
         <separator/>
         <reference ref="flutter.upgrade"/>
         <reference ref="flutter.doctor"/>
@@ -138,6 +142,7 @@
       <group text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">
         <reference ref="flutter.androidstudio.open"/>
         <reference ref="flutter.xcode.open"/>
+        <reference ref="flutter.appcode.open"/>
       </group>
       <separator/>
       <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="AddToFavorites" anchor="before"/>
