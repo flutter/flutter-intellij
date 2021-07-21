@@ -36,24 +36,26 @@ public class OpenInAppCodeAction extends AnAction {
   }
 
   private static void initialize() {
-    try {
-      // AppCode is installed if this shell command produces any output:
-      // mdfind "kMDItemContentType == 'com.apple.application-bundle'" | grep AppCode.app
-      final GeneralCommandLine cmd = new GeneralCommandLine().withExePath("/bin/bash")
-        .withParameters("-c", "mdfind \"kMDItemContentType == 'com.apple.application-bundle'\" | grep AppCode.app");
-      final ColoredProcessHandler handler = new ColoredProcessHandler(cmd);
-      handler.addProcessListener(new ProcessAdapter() {
-        @Override
-        public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
-          if (outputType == ProcessOutputTypes.STDOUT) {
-            IS_APPCODE_INSTALLED = true;
+    if (SystemInfo.isMac) {
+      try {
+        // AppCode is installed if this shell command produces any output:
+        // mdfind "kMDItemContentType == 'com.apple.application-bundle'" | grep AppCode.app
+        final GeneralCommandLine cmd = new GeneralCommandLine().withExePath("/bin/bash")
+          .withParameters("-c", "mdfind \"kMDItemContentType == 'com.apple.application-bundle'\" | grep AppCode.app");
+        final ColoredProcessHandler handler = new ColoredProcessHandler(cmd);
+        handler.addProcessListener(new ProcessAdapter() {
+          @Override
+          public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
+            if (outputType == ProcessOutputTypes.STDOUT) {
+              IS_APPCODE_INSTALLED = true;
+            }
           }
-        }
-      });
-      handler.startNotify();
-    }
-    catch (ExecutionException ex) {
-      // ignored
+        });
+        handler.startNotify();
+      }
+      catch (ExecutionException ex) {
+        // ignored
+      }
     }
     IS_INITIALIZED = true;
   }
@@ -90,7 +92,7 @@ public class OpenInAppCodeAction extends AnAction {
       FlutterSdkAction.showMissingSdkDialog(project);
       return;
     }
-    openInAppCode(project, file.getPath());
+    openInAppCode(project, file.getParent().getPath());
   }
 
   private static void openInAppCode(@Nullable Project project, @NotNull String path) {
