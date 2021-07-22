@@ -1565,6 +1565,14 @@
               topic="com.intellij.openapi.project.ProjectManagerListener"/>
   </applicationListeners>
 
+  <projectListeners>
+    <listener class="io.flutter.view.FlutterViewFactory$FlutterViewListener" topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
+    <listener class="io.flutter.performance.FlutterPerformanceViewFactory$FlutterPerformanceViewListener"
+              topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
+    <listener class="io.flutter.preview.PreviewViewFactory$PreviewViewListener"
+              topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
+  </projectListeners>
+
   <extensionPoints>
     <extensionPoint name="gradleSyncProvider" interface="io.flutter.android.GradleSyncProvider"/>
     <extensionPoint name="colorPickerProvider" interface="io.flutter.editor.ColorPickerProvider"/>
