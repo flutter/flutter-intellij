@@ -100,6 +100,13 @@ public class DeviceService {
     });
   }
 
+  public void removeListener(@NotNull Runnable callback) {
+    listeners.updateAndGet((old) -> {
+      final List<Runnable> changed = new ArrayList<>(old);
+      changed.remove(callback);
+      return ImmutableSet.copyOf(changed);
+    });
+  }
   public boolean isRefreshInProgress() {
     return refreshInProgress;
   }
