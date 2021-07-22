@@ -36,6 +36,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   private final List<Project> knownProjects = Collections.synchronizedList(new ArrayList<>());
 
   private SelectDeviceAction selectedDeviceAction;
+  private Runnable deviceListener;
+  private Runnable emulatorListener;
 
   DeviceSelectorAction() {
     setSmallVariant(true);
@@ -82,10 +84,18 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
           knownProjects.remove(closedProject);
         }
       });
-      DeviceService.getInstance(project).addListener(() -> queueUpdate(project, e.getPresentation()));
+      deviceListener = () -> queueUpdate(project, e.getPresentation());
+      DeviceService.getInstance(project).addListener(deviceListener);
 
       // Listen for android device changes, and rebuild the menu if necessary.
-      AndroidEmulatorManager.getInstance(project).addListener(() -> queueUpdate(project, e.getPresentation()));
+      emulatorListener = () -> queueUpdate(project, e.getPresentation());
+      AndroidEmulatorManager.getInstance(project).addListener(emulatorListener);
+      ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
+        public void projectClosing(@NotNull Project project) {
+          DeviceService.getInstance(project).removeListener(deviceListener);
+          AndroidEmulatorManager.getInstance(project).removeListener(emulatorListener);
+        }
+      });
       update(project, presentation);
     }
 
@@ -121,6 +131,9 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   }
 
   private void update(Project project, Presentation presentation) {
+    if (project.isDisposed()) {
+      return; // This check is probably unnecessary, but safe.
+    }
     FlutterUtils.invokeAndWait(() -> {
       updateActions(project, presentation);
       updateVisibility(project, presentation);
