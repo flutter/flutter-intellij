@@ -33,8 +33,9 @@ public class EmbeddedBrowserEngine {
     final String dataPath = JxBrowserManager.DOWNLOAD_PATH + File.separatorChar + "user-data";
     LOG.info("JxBrowser user data path: " + dataPath);
 
+    // TODO(helin24): HiDPI environments is not currently supported for Linux, but once it is we can change to HARDWARE_ACCELERATED there.
     final EngineOptions.Builder optionsBuilder =
-      EngineOptions.newBuilder(SystemInfo.isWindows ? OFF_SCREEN : HARDWARE_ACCELERATED)
+      EngineOptions.newBuilder(SystemInfo.isMac ? HARDWARE_ACCELERATED : OFF_SCREEN)
         .userDataDir(Paths.get(dataPath))
         .passwordStore(PasswordStore.BASIC)
         .addSwitch("--disable-features=NativeNotifications");
