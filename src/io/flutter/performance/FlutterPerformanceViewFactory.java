@@ -5,6 +5,7 @@
  */
 package io.flutter.performance;
 
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.DumbAware;
@@ -13,10 +14,13 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
+import io.flutter.utils.ViewListener;
 import io.flutter.view.FlutterViewMessages;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterPerformanceViewFactory implements ToolWindowFactory, DumbAware {
+  private static final String TOOL_WINDOW_VISIBLE_PROPERTY = "flutter.performance.tool.window.visible";
+
   public static void init(@NotNull Project project) {
     project.getMessageBus().connect().subscribe(
       FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (event) -> initPerfView(project, event)
@@ -24,6 +28,10 @@ public class FlutterPerformanceViewFactory implements ToolWindowFactory, DumbAwa
     final ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(FlutterPerformanceView.TOOL_WINDOW_ID);
     if (window != null) {
       window.setAvailable(true);
+
+      if (PropertiesComponent.getInstance(project).getBoolean(TOOL_WINDOW_VISIBLE_PROPERTY, false)) {
+        window.activate(null, false);
+      }
     }
   }
 
@@ -46,5 +54,11 @@ public class FlutterPerformanceViewFactory implements ToolWindowFactory, DumbAwa
   @Override
   public boolean shouldBeAvailable(@NotNull Project project) {
     return false;
+  }
+
+  public static class FlutterPerformanceViewListener extends ViewListener {
+    public FlutterPerformanceViewListener(@NotNull Project project) {
+      super(project, FlutterPerformanceView.TOOL_WINDOW_ID, TOOL_WINDOW_VISIBLE_PROPERTY);
+    }
   }
 }
