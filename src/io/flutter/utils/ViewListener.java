@@ -24,6 +24,7 @@ public abstract class ViewListener implements ToolWindowManagerListener {
   @Override
   public void stateChanged(@NotNull ToolWindowManager toolWindowManager) {
     ToolWindow toolWindow = toolWindowManager.getToolWindow(toolWindowId);
+    // We only make tool windows available once we've found a Flutter project, so we want to avoid setting the visible property until then.
     if (toolWindow != null && toolWindow.isAvailable()) {
       PropertiesComponent.getInstance(project).setValue(toolWindowVisibleProperty, toolWindow.isVisible(), false);
     }
