@@ -14,7 +14,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.openapi.wm.ex.ToolWindowManagerListener;
+import io.flutter.utils.ViewListener;
 import io.flutter.view.FlutterViewMessages;
 import org.jetbrains.annotations.NotNull;
 
@@ -56,22 +56,9 @@ public class FlutterPerformanceViewFactory implements ToolWindowFactory, DumbAwa
     return false;
   }
 
-  /**
-   * Helps to initialize tool window with the same visibility state as it was when the project was previously closed.
-   */
-  public static class FlutterPerformanceViewListener implements ToolWindowManagerListener {
-    private final @NotNull Project myProject;
-
+  public static class FlutterPerformanceViewListener extends ViewListener {
     public FlutterPerformanceViewListener(@NotNull Project project) {
-      myProject = project;
-    }
-
-    @Override
-    public void stateChanged(@NotNull ToolWindowManager toolWindowManager) {
-      ToolWindow toolWindow = toolWindowManager.getToolWindow(FlutterPerformanceView.TOOL_WINDOW_ID);
-      if (toolWindow != null && toolWindow.isAvailable()) {
-        PropertiesComponent.getInstance(myProject).setValue(TOOL_WINDOW_VISIBLE_PROPERTY, toolWindow.isVisible(), false);
-      }
+      super(project, FlutterPerformanceView.TOOL_WINDOW_ID, TOOL_WINDOW_VISIBLE_PROPERTY);
     }
   }
 }
