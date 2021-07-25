@@ -187,6 +187,7 @@ public class VmServiceWidgetPerfProvider implements WidgetPerfProvider {
           break;
         case "Flutter.Navigation":
           onNavigation();
+          break;
       }
     }
   }
