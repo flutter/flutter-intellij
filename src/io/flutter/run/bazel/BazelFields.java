@@ -43,6 +43,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static io.flutter.run.common.RunMode.DEBUG;
+import static io.flutter.run.common.RunMode.PROFILE;
 
 /**
  * The fields in a Bazel run configuration.
@@ -230,39 +231,18 @@ public class BazelFields {
     commandLine.setCharset(StandardCharsets.UTF_8);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
 
-    // Potentially add build mode to user-specified bazel arguments.
     final String inputBazelArgs = StringUtil.notNullize(bazelArgs);
-    final StringBuilder fullBazelArgs = new StringBuilder(inputBazelArgs);
-
-    // TODO(helinx): Have run script handle this bazel arg instead.
-    // If the user hasn't overridden the flutter_build_mode, then
-    if (!StringUtil.notNullize(bazelArgs).matches(".*--define[ =]flutter_build_mode.*")) {
-      if (!inputBazelArgs.isEmpty()) {
-        fullBazelArgs.append(" ");
-      }
-
-      // Set the mode. This section needs to match the bazel versions of the flutter_build_mode parameters.
-      if (enableReleaseMode) {
-        fullBazelArgs.append("--define=flutter_build_mode=release");
-      }
-      else {
-        switch (mode) {
-          case PROFILE:
-            fullBazelArgs.append("--define=flutter_build_mode=profile");
-            break;
-          case RUN:
-          case DEBUG:
-          default:
-            // The default mode of a flutter app is debug mode. This is the mode that supports hot reloading.
-            // So far as flutter is concerned, there is no difference between debug mode and run mode;
-            // the only difference is that a debug mode app will --start-paused.
-            fullBazelArgs.append("--define=flutter_build_mode=debug");
-            break;
-        }
-      }
+    if (!inputBazelArgs.isEmpty()) {
+      commandLine.addParameter(String.format("--bazel-options=%s", inputBazelArgs));
     }
 
-    commandLine.addParameter(String.format("--bazel-options=%s", fullBazelArgs.toString()));
+    // Potentially add the flag related to build mode.
+    if (enableReleaseMode) {
+      commandLine.addParameter("--release");
+    }
+    else if (mode.equals(PROFILE)) {
+      commandLine.addParameter("--profile");
+    }
 
     // Tell the flutter command-line tools that we want a machine interface on stdio.
     commandLine.addParameter("--machine");
