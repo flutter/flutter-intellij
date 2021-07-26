@@ -1,3 +1,27 @@
+# 59.0
+- Update to jxbrowser 7.17 (#5675)
+- Remove creating flutter_build_mode flag (#5654)
+- Remove custom listeners before a project is closed
+- Persist tool window open states during project open/close (#5664)
+- Use off screen render mode for linux (#5663)
+- Add analytics for null analyzer during add breakpoint (#5626)
+- Add menu item to Open in AppCode (#5660)
+- Disallow iOS builds if not on Mac (#5657)
+- Add a field for environment variables to the run config editor (#5656)
+- Add mockito to build.gradle (#5645)
+- Remove powermock from FlutterView tests and remove non-stack uses (#5644)
+- Update docs for yaml plugin (#5642)
+- Add mockito library (#5641)
+- Stop asking to delete coverage data (#5640)
+- Dynamic icon preview of non-standard icon packages (#5595)
+- Detect repeated daemon crashes and provide recovery hint (#5638)
+- Update live templates to not use double underscores (#5619)
+- Fix Android Studio path on Linux (#5605)
+- Open source file in Android Studio at exact cursor (#5606)
+- Check for project disposal right before organize executes (#5624)
+- Skip Flutter tool windows for non-Flutter projects (WIP) (#5622)
+- Add force scale option for linux (#5618)
+
 # 58.0
 - Add some NotNull annotations in the FlutterWidgetPerf classes; rev to the latest VM service protocol lib (#5588)
 - Check for disposed project before getting embedded browser (#5590)
