@@ -1,4 +1,6 @@
 # 59.0
+- Optimize icon preview processing for multiple analyses
+- Handle the new event format for widget recount info (#5671)
 - Update to jxbrowser 7.17 (#5675)
 - Remove creating flutter_build_mode flag (#5654)
 - Remove custom listeners before a project is closed
