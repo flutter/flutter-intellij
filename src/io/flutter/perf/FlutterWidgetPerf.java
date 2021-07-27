@@ -176,7 +176,56 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
         }
         statsForReportKind.lastStartTime = startTimeMilis;
 
-        if (json.has("newLocations")) {
+        // Prefer the new 'locations' format if it exists; else read from 'newLocations'.
+        if (json.has("locations")) {
+          final JsonObject fileLocationsMap = json.getAsJsonObject("locations");
+
+          for (Map.Entry<String, JsonElement> entry : fileLocationsMap.entrySet()) {
+            final String path = entry.getKey();
+            final FileLocationMapper locationMapper = fileLocationMapperFactory.create(path);
+
+            final JsonObject locations = entry.getValue().getAsJsonObject();
+
+            final JsonArray ids = locations.getAsJsonArray("ids");
+            final JsonArray lines = locations.getAsJsonArray("lines");
+            final JsonArray columns = locations.getAsJsonArray("columns");
+            final JsonArray names = locations.getAsJsonArray("names");
+
+            for (int i = 0; i < ids.size(); i++) {
+              final int id = ids.get(i).getAsInt();
+              final int line = lines.get(i).getAsInt();
+              final int column = columns.get(i).getAsInt();
+
+              final TextRange textRange = locationMapper.getIdentifierRange(line, column);
+
+              final Location location = new Location(
+                locationMapper.getPath(),
+                line,
+                column,
+                id,
+                textRange,
+                names.get(i).getAsString()
+              );
+
+              final Location existingLocation = knownLocationIds.get(id);
+              if (existingLocation == null) {
+                addNewLocation(id, location);
+              }
+              else {
+                if (!location.equals(existingLocation)) {
+                  // Cleanup all references to the old location as it is stale.
+                  // This occurs if there is a hot restart or reload that we weren't aware of.
+                  locationsPerFile.remove(existingLocation.path, existingLocation);
+                  for (StatsForReportKind statsForKind : stats.values()) {
+                    statsForKind.data.remove(id);
+                  }
+                  addNewLocation(id, location);
+                }
+              }
+            }
+          }
+        }
+        else if (json.has("newLocations")) {
           final JsonObject newLocations = json.getAsJsonObject("newLocations");
           for (Map.Entry<String, JsonElement> entry : newLocations.entrySet()) {
             final String path = entry.getKey();
@@ -212,6 +261,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
             }
           }
         }
+
         final StatsForReportKind statsForKind = getStatsForKind(kind);
         final PerfSourceReport report = new PerfSourceReport(json.getAsJsonArray("events"), kind, startTimeMicros);
         if (report.getEntries().size() > 0) {

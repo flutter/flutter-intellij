@@ -353,15 +353,18 @@ public class FlutterWidgetPerfTest {
       },
       FakeFileLocationMapper::new
     );
-    widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild,
-                                               "{\"startTime\":1000,\"events\":[1,1,2,1,3,1,4,1,6,1,10,4,11,4,12,4,13,1,14,1,95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1],\"newLocations\":{\"/sample/project/main.dart\":[1,11,14,2,18,16,3,23,17,4,40,16,6,46,16,10,69,9,11,70,9,12,71,18,13,41,19,14,42,20,95,51,58],\"/sample/project/clock.dart\":[96,33,12,97,52,12,100,53,16,102,54,14,104,55,17,105,34,15,106,35,16]}}");
+    widgetPerfProvider.simulateWidgetPerfEvent(
+      PerfReportKind.rebuild,
+      "{\"startTime\":1000,\"events\":[1,1,2,1,3,1,4,1,6,1,10,4,11,4,12,4,13,1,14,1,95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1],\"newLocations\":{\"/sample/project/main.dart\":[1,11,14,2,18,16,3,23,17,4,40,16,6,46,16,10,69,9,11,70,9,12,71,18,13,41,19,14,42,20,95,51,58],\"/sample/project/clock.dart\":[96,33,12,97,52,12,100,53,16,102,54,14,104,55,17,105,34,15,106,35,16]}}"
+    );
 
     // Simulate 60fps for 2 seconds.
     for (int frame = 1; frame <= 120; frame++) {
       final long startTime = 1000 + frame * 1000 * 1000 / 60;
-      widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild, "{\"startTime\":" +
-                                                                         startTime +
-                                                                         ",\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
+      widgetPerfProvider.simulateWidgetPerfEvent(
+        PerfReportKind.rebuild, "{\"startTime\":" +
+                                startTime +
+                                ",\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
     }
     final Set<TextEditor> textEditors = new HashSet<>();
     final TextEditor clockTextEditor = new MockTextEditor("/sample/project/clock.dart");
@@ -477,7 +480,7 @@ public class FlutterWidgetPerfTest {
   }
 
   @Test
-  public void testOverallStatsCalculation() throws InterruptedException {
+  public void testOverallStatsCalculation_oldFormat() throws InterruptedException {
     final MockWidgetPerfProvider widgetPerfProvider = new MockWidgetPerfProvider();
 
     final FlutterWidgetPerf flutterWidgetPerf = new FlutterWidgetPerf(
@@ -489,15 +492,92 @@ public class FlutterWidgetPerfTest {
     final MockPerfModel perfModel = new MockPerfModel();
     flutterWidgetPerf.addPerfListener(perfModel);
 
-    widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild,
-                                               "{\"startTime\":1000,\"events\":[1,1,2,1,3,1,4,1,6,1,10,4,11,4,12,4,13,1,14,1,95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1],\"newLocations\":{\"/sample/project/main.dart\":[1,11,14,2,18,16,3,23,17,4,40,16,6,46,16,10,69,9,11,70,9,12,71,18,13,41,19,14,42,20,95,51,58],\"/sample/project/clock.dart\":[96,33,12,97,52,12,100,53,16,102,54,14,104,55,17,105,34,15,106,35,16]}}");
+    widgetPerfProvider.simulateWidgetPerfEvent(
+      PerfReportKind.rebuild,
+      "{\"startTime\":1000,\"events\":[1,1,2,1,3,1,4,1,6,1,10,4,11,4,12,4,13,1,14,1,95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1],\"newLocations\":{\"/sample/project/main.dart\":[1,11,14,2,18,16,3,23,17,4,40,16,6,46,16,10,69,9,11,70,9,12,71,18,13,41,19,14,42,20,95,51,58],\"/sample/project/clock.dart\":[96,33,12,97,52,12,100,53,16,102,54,14,104,55,17,105,34,15,106,35,16]}}");
 
     // Simulate 60fps for 2 seconds.
     for (int frame = 1; frame <= 120; frame++) {
       final long startTime = 1000 + frame * 1000 * 1000 / 60;
-      widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild, "{\"startTime\":" +
-                                                                         startTime +
-                                                                         ",\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
+      widgetPerfProvider.simulateWidgetPerfEvent(
+        PerfReportKind.rebuild, "{\"startTime\":" +
+                                startTime +
+                                ",\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
+    }
+    final ArrayList<PerfMetric> lastFrameOnly = new ArrayList<>();
+    lastFrameOnly.add(PerfMetric.lastFrame);
+    final ArrayList<PerfMetric> metrics = new ArrayList<>();
+    metrics.add(PerfMetric.lastFrame);
+    metrics.add(PerfMetric.totalSinceEnteringCurrentScreen);
+
+    ArrayList<SlidingWindowStatsSummary> stats = flutterWidgetPerf.getStatsForMetric(lastFrameOnly, PerfReportKind.repaint);
+    // No repaint stats are provided.
+    assertTrue(stats.isEmpty());
+
+    stats = flutterWidgetPerf.getStatsForMetric(lastFrameOnly, PerfReportKind.rebuild);
+    assertEquals(8, stats.size());
+
+    for (SlidingWindowStatsSummary stat : stats) {
+      assertTrue(stat.getValue(PerfMetric.lastFrame) > 0);
+    }
+
+    stats = flutterWidgetPerf.getStatsForMetric(metrics, PerfReportKind.rebuild);
+    assertEquals(18, stats.size());
+    for (SlidingWindowStatsSummary stat : stats) {
+      assertTrue(stat.getValue(PerfMetric.lastFrame) > 0 ||
+                 stat.getValue(PerfMetric.totalSinceEnteringCurrentScreen) > 0);
+    }
+
+    /// Test that the perfModel gets notified correctly when there are
+    // events to draw a frame of the ui.
+    assertEquals(perfModel.frameCount, 0);
+    SwingUtilities.invokeLater(() -> {
+      flutterWidgetPerf.requestRepaint(When.now);
+    });
+
+    while (perfModel.frameCount == 0) {
+      try {
+        //noinspection BusyWait
+        Thread.sleep(1);
+      }
+      catch (InterruptedException e) {
+        fail(e.toString());
+      }
+    }
+    assertEquals(1, perfModel.frameCount);
+    assertEquals(0, perfModel.idleCount);
+    // Verify that an idle event occurs once we wait the idle time delay.
+    Thread.sleep(IDLE_DELAY_MILISECONDS);
+    assertEquals(1, perfModel.idleCount);
+
+    flutterWidgetPerf.removePerfListener(perfModel);
+    flutterWidgetPerf.dispose();
+  }
+
+  @Test
+  public void testOverallStatsCalculation_newFormat() throws InterruptedException {
+    final MockWidgetPerfProvider widgetPerfProvider = new MockWidgetPerfProvider();
+
+    final FlutterWidgetPerf flutterWidgetPerf = new FlutterWidgetPerf(
+      true,
+      widgetPerfProvider,
+      textEditor -> null,
+      FakeFileLocationMapper::new
+    );
+    final MockPerfModel perfModel = new MockPerfModel();
+    flutterWidgetPerf.addPerfListener(perfModel);
+
+    widgetPerfProvider.simulateWidgetPerfEvent(
+      PerfReportKind.rebuild,
+      "{\"startTime\":1000,\"events\":[1,1,2,1,3,1,4,1,6,1,10,4,11,4,12,4,13,1,14,1,95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1],\"locations\":{\"/sample/project/main.dart\":{\t\"ids\":[1, 2, 3, 4, 6, 10, 11, 12, 13, 14, 95],\"lines\":[11, 18, 23, 40, 46, 69, 70, 71, 41, 42, 51],\"columns\":[14, 16, 17, 16, 16, 9, 9, 18, 19, 20, 58],\"names\":[\"One\", \"Two\", \"Three\", \"Four\", \"Five\", \"Six\", \"Seven\", \"Eight\", \"Nine\", \"Ten\", \"Eleven\"]},\"/sample/project/clock.dart\":{\"ids\":[96, 97, 100, 102, 104, 105, 106],\"lines\":[33, 52, 53, 54, 55, 34, 35],\"columns\":[12, 12, 16, 14, 17, 15, 16],\"names\":[\"Twelve\", \"Thirteen\", \"Fourteen\", \"Fifteen\", \"Sixteen\", \"Seventeen\", \"Eighteen\"]}}}");
+
+    // Simulate 60fps for 2 seconds.
+    for (int frame = 1; frame <= 120; frame++) {
+      final long startTime = 1000 + frame * 1000 * 1000 / 60;
+      widgetPerfProvider.simulateWidgetPerfEvent(
+        PerfReportKind.rebuild, "{\"startTime\":" +
+                                startTime +
+                                ",\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
     }
     final ArrayList<PerfMetric> lastFrameOnly = new ArrayList<>();
     lastFrameOnly.add(PerfMetric.lastFrame);

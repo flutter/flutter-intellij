@@ -1454,7 +1454,7 @@ public class InspectorService implements Disposable {
     }
 
     final String filePrefix = getFileUriPrefix();
-    return (path.startsWith(filePrefix)) ? path.substring(filePrefix.length()) : path;
+    return path.startsWith(filePrefix) ? path.substring(filePrefix.length()) : path;
   }
 
   public enum FlutterTreeType {
