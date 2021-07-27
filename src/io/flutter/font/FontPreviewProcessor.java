@@ -128,13 +128,12 @@ public class FontPreviewProcessor {
       final Set<DartComponentName> classNames = new THashSet<>();
       final DartPsiScopeProcessor processor = new ClassNameScopeProcessor(classNames);
       DartResolveUtil.processTopLevelDeclarations(psiFile, processor, file, null);
-      final int size = KnownPaths.size();
+      boolean wasModified = false;
       for (DartComponentName name : classNames) {
         final String declPath = name.getContainingFile().getVirtualFile().getPath();
         if (isInSdk(declPath)) {
           continue;
         }
-        System.out.println(declPath);
         if (declPath.contains(packageName)) {
           final Set<String> knownPaths = KnownPaths.get(name.getName());
           if (knownPaths == null) {
@@ -143,6 +142,7 @@ public class FontPreviewProcessor {
           else {
             knownPaths.add(path);
           }
+          wasModified = true;
         }
       }
       application.runWriteAction(() -> {
@@ -153,7 +153,7 @@ public class FontPreviewProcessor {
           // ignored
         }
       });
-      if (size == KnownPaths.size()) {
+      if (!wasModified) {
         // If no classes were found then the file may be a list of export statements that refer to files that do define icons.
         try {
           final String source = new String(file.contentsToByteArray());

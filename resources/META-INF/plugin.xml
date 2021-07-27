@@ -47,6 +47,8 @@
     <![CDATA[
 <h1>59.0</h1>
 <ul>
+  <li>Optimize icon preview processing for multiple analyses</li>
+  <li>Handle the new event format for widget recount info (#5671)</li>
   <li>Update to jxbrowser 7.17 (#5675)</li>
   <li>Remove creating flutter_build_mode flag (#5654)</li>
   <li>Remove custom listeners before a project is closed</li>
