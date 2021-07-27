@@ -30,6 +30,7 @@ import io.flutter.FlutterInitializer;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
+import io.flutter.view.EmbeddedBrowser;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Dimension;
@@ -37,18 +38,18 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
-public class EmbeddedBrowser {
+public class EmbeddedJxBrowser implements EmbeddedBrowser {
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
 
   @NotNull
-  public static EmbeddedBrowser getInstance(Project project) {
-    return ServiceManager.getService(project, EmbeddedBrowser.class);
+  public static EmbeddedJxBrowser getInstance(Project project) {
+    return ServiceManager.getService(project, EmbeddedJxBrowser.class);
   }
 
   private Browser browser;
   private CompletableFuture<DevToolsUrl> devToolsUrlFuture;
 
-  private EmbeddedBrowser(Project project) {
+  private EmbeddedJxBrowser(Project project) {
     System.setProperty("jxbrowser.force.dpi.awareness", "1.0");
     if (FlutterSettings.getInstance().isVerboseLogging()) {
       System.setProperty("jxbrowser.logging.level", "ALL");
@@ -89,6 +90,7 @@ public class EmbeddedBrowser {
   /**
    * This is to clear out a potentially old URL, i.e. a URL from an app that's no longer running.
    */
+  @Override
   public void resetUrl() {
     if (devToolsUrlFuture != null && !devToolsUrlFuture.isDone()) {
       devToolsUrlFuture.complete(null);
@@ -96,6 +98,7 @@ public class EmbeddedBrowser {
     this.devToolsUrlFuture = new CompletableFuture<>();
   }
 
+  @Override
   public void openPanel(ContentManager contentManager, String tabName, DevToolsUrl devToolsUrl, Runnable onBrowserUnavailable) {
     // If the browser failed to start during setup, run unavailable callback.
     if (browser == null) {
@@ -147,6 +150,7 @@ public class EmbeddedBrowser {
     });
   }
 
+  @Override
   public void updatePanelToWidget(String widgetId) {
     updateUrlAndReload(devToolsUrl -> {
       devToolsUrl.widgetId = widgetId;
@@ -154,6 +158,7 @@ public class EmbeddedBrowser {
     });
   }
 
+  @Override
   public void updateColor(String newColor) {
     updateUrlAndReload(devToolsUrl -> {
       if (devToolsUrl.colorHexCode.equals(newColor)) {
@@ -164,6 +169,7 @@ public class EmbeddedBrowser {
     });
   }
 
+  @Override
   public void updateFontSize(float newFontSize) {
     updateUrlAndReload(devToolsUrl -> {
       if (devToolsUrl.fontSize.equals(newFontSize)) {

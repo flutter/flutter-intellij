@@ -16,6 +16,8 @@ import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.ui.jcef.JBCefApp;
+import com.intellij.ui.jcef.JBCefBrowser;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.download.DownloadableFileDescription;
 import com.intellij.util.download.DownloadableFileService;
@@ -203,6 +205,11 @@ public class JxBrowserManager {
   }
 
   public void setUp(@NotNull Project project) {
+    if (JBCefApp.isSupported()) {
+      status.set(JxBrowserStatus.INSTALLATION_SKIPPED);
+      return;
+    }
+
     if (!status.compareAndSet(JxBrowserStatus.NOT_INSTALLED, JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
       // This check ensures that an IDE only downloads and installs JxBrowser once, even if multiple projects are open.
       // If already in progress, let calling point wait until success or failure (it may make sense to call setUp but proceed).
