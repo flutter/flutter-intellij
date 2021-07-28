@@ -51,6 +51,11 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
   private static final Logger LOG = Logger.getInstance(FlutterIconLineMarkerProvider.class);
 
   static {
+    initialize();
+  }
+
+  public static void initialize() {
+    KnownPaths.clear();
     KnownPaths.put("Icons", new THashSet<>(Collections.singleton("packages/flutter/lib/src/material")));
     KnownPaths.put("IconData", new THashSet<>(Collections.singleton("packages/flutter/lib/src/widgets")));
     KnownPaths.put("CupertinoIcons", new THashSet<>(Collections.singleton("packages/flutter/lib/src/cupertino")));

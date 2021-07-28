@@ -7,6 +7,7 @@ package io.flutter.font;
 
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
@@ -27,6 +28,7 @@ import com.jetbrains.lang.dart.util.DartResolveUtil;
 import gnu.trove.THashMap;
 import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
+import io.flutter.editor.FlutterIconLineMarkerProvider;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
@@ -51,6 +53,7 @@ public class FontPreviewProcessor {
   private static final Pattern EXPORT_STATEMENT_PATTERN = Pattern.compile("^\\s*export\\s+[\"']([-_. $A-Za-z0-9/]+\\.dart)[\"'].*");
   private static final Pattern IMPORT_STATEMENT_PATTERN = Pattern.compile("^\\s*import\\s+[\"']([-_. $A-Za-z0-9/]+\\.dart)[\"'].*");
   private static final Map<String, Set<String>> ANALYZED_PROJECT_FILES = new THashMap<>();
+  private static final Logger LOG = Logger.getInstance(FontPreviewProcessor.class);
 
   static {
     UNSUPPORTED_PACKAGES.put("flutter_icons", FlutterBundle.message("icon.preview.disallow.flutter_icons"));
@@ -68,6 +71,7 @@ public class FontPreviewProcessor {
     if (ANALYZED_PROJECT_FILES.containsKey(project.getBasePath())) {
       return;
     }
+    LOG.info("Analyzing project " + project.getName());
     ANALYZED_PROJECT_FILES.put(project.getBasePath(), new THashSet<>());
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
       @Override
@@ -85,7 +89,7 @@ public class FontPreviewProcessor {
 
   private void clearProjectCaches(@NotNull Project project) {
     ANALYZED_PROJECT_FILES.remove(project.getBasePath());
-    // TODO Find a way to clean up KnownPaths.
+    FlutterIconLineMarkerProvider.initialize();
   }
 
   // Look for classes in a package that define static variables with named icons.
@@ -94,6 +98,7 @@ public class FontPreviewProcessor {
     if (packageName.isEmpty() || FontPreviewProcessor.UNSUPPORTED_PACKAGES.get(packageName) != null) {
       return;
     }
+    LOG.info("Analysing package " + packageName);
     GlobalSearchScope scope = new ProjectAndLibrariesScope(project);
     Collection<VirtualFile> files = DartLibraryIndex.getFilesByLibName(scope, packageName);
     if (files.isEmpty()) {
@@ -115,20 +120,24 @@ public class FontPreviewProcessor {
       if (analyzedProjectFiles.contains(path)) {
         continue;
       }
+      LOG.info("Analyzing file " + file.getName());
       analyzedProjectFiles.add(path);
       // Remove import statements in an attempt to minimize extraneous analysis.
       final VirtualFile filteredFile = filterImports(file);
       if (filteredFile == null) {
+        LOG.info("Cannot filter imports in " + file.getName());
         continue;
       }
       final PsiFile psiFile = PsiManager.getInstance(project).findFile(filteredFile);
       if (psiFile == null) {
+        LOG.info("Cannot get PSI file for " + file.getName());
         continue;
       }
       final Set<DartComponentName> classNames = new THashSet<>();
       final DartPsiScopeProcessor processor = new ClassNameScopeProcessor(classNames);
       DartResolveUtil.processTopLevelDeclarations(psiFile, processor, file, null);
       boolean wasModified = false;
+      LOG.info("Checking classes: " + classNames.size());
       for (DartComponentName name : classNames) {
         final String declPath = name.getContainingFile().getVirtualFile().getPath();
         if (isInSdk(declPath)) {
@@ -154,6 +163,7 @@ public class FontPreviewProcessor {
         }
       });
       if (!wasModified) {
+        LOG.info("Checking for imports in " + file.getName());
         // If no classes were found then the file may be a list of export statements that refer to files that do define icons.
         try {
           final String source = new String(file.contentsToByteArray());
@@ -182,6 +192,7 @@ public class FontPreviewProcessor {
         }
         catch (IOException e) {
           // ignored
+          LOG.info("IOException", e);
         }
       }
     }
