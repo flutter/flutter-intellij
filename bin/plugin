@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # TODO(devoncarew): Warn if tool/plugin/.packages does not exist.
 
 dart tool/plugin/bin/main.dart "$@"
