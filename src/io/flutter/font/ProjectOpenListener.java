@@ -19,8 +19,6 @@ public class ProjectOpenListener implements ProjectManagerListener {
     if (ApplicationManager.getApplication().isUnitTestMode()) {
       return;
     }
-
-    final FontPreviewProcessor service = ApplicationManager.getApplication().getService(FontPreviewProcessor.class);
-    DumbService.getInstance(project).smartInvokeLater(() -> service.generate(project));
+    FontPreviewProcessor.analyze(project);
   }
 }

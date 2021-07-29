@@ -427,14 +427,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
           displayNotification(message);
         }
       }
-      final Application app = ApplicationManager.getApplication();
-      app.executeOnPooledThread(() -> {
-        app.invokeLater(() -> {
-          app.runWriteAction(() -> {
-            FontPreviewProcessor.reanalyze(myProject);
-          });
-        });
-      });
+      FontPreviewProcessor.reanalyze(myProject);
     }
   }
 
