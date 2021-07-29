@@ -77,9 +77,9 @@ $ git clone https://github.com/JetBrains/intellij-community.git --branch 211.744
 $ cd intellij-community
 $ git clone https://github.com/JetBrains/android.git android --branch 211.7442 --depth 1
 $ cd ..
-$ git clone https://github.com/flutter/flutter-intellij.git
+$ git clone -c core.symlinks=true git@github.com:flutter/flutter-intellij.git
 ```
-- Copy the `org_powermock*` files from `flutter-intellij/.idea/libraries`
+- Copy the `org_mockito*` files from `flutter-intellij/.idea/libraries`
 to `intellij-community/.idea/libraries`
 - Launch IntelliJ 211.7442 or later
 - Open `intellij-community` as described in its docs
@@ -90,9 +90,11 @@ to `intellij-community/.idea/libraries`
       - `intellij.platform.ide.util.io`
       - `intellij.platform.core.ui`
       - `intellij.platform.codeStyle.ui`
+      - `intellij.yaml`
     - libraries
       - `fastutil-min`
       - `caffeine`
+      - `javstringsimilarity` (the jar file is in the lib directory)
 
 - Save and close Project Structure
 - Open the Gradle tool window

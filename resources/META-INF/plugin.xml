@@ -47,7 +47,9 @@
     <![CDATA[
 <h1>59.0</h1>
 <ul>
-  <li>Optimize icon preview processing for multiple analyses</li>
+  <li>Update installation instructions for Windows</li>
+  <li>Make reanalyze() work after packages are removed from icon package list (#5678)</li>
+  <li>Optimize icon preview processing for multiple analyses (#5677)</li>
   <li>Handle the new event format for widget recount info (#5671)</li>
   <li>Update to jxbrowser 7.17 (#5675)</li>
   <li>Remove creating flutter_build_mode flag (#5654)</li>

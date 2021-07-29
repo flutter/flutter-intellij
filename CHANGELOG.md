@@ -1,5 +1,7 @@
 # 59.0
-- Optimize icon preview processing for multiple analyses
+- Update installation instructions for Windows
+- Make reanalyze() work after packages are removed from icon package list (#5678)
+- Optimize icon preview processing for multiple analyses (#5677)
 - Handle the new event format for widget recount info (#5671)
 - Update to jxbrowser 7.17 (#5675)
 - Remove creating flutter_build_mode flag (#5654)

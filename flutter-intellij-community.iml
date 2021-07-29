@@ -158,5 +158,7 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="Dart Packages" level="project" />
+    <orderEntry type="library" name="java-string-similarity-2.0.0" level="project" />
+    <orderEntry type="module" module-name="intellij.yaml" />
   </component>
 </module>
