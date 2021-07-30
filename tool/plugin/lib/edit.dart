@@ -92,20 +92,20 @@ LineMarkerInfo<>(element, element.getTextRange(), icon, null, null,
     path: 'src/io/flutter/jxbrowser/JxBrowserManager.java',
     initial: 'loadClasses(fileNames)',
     replacement: 'loadClasses2021(fileNames)',
-    versions: ['2021.1'],
+    versions: ['2021.1', '2021.2'],
   ),
   Subst(
     path: 'src/io/flutter/utils/FileUtils.java',
     initial: '//urlClassLoader.addFiles(paths)',
     replacement: 'urlClassLoader.addFiles(paths)',
-    versions: ['2021.1'],
+    versions: ['2021.1', '2021.2'],
   ),
   Subst(
     path: 'src/io/flutter/utils/JxBrowserUtils.java',
     initial:
         'return false; // return SystemInfo.isMac && com.intellij.util.system.CpuArch.isArm64();',
     replacement: 'return SystemInfo.isMac && CpuArch.isArm64();',
-    versions: ['2021.1'],
+    versions: ['2021.1', '2021.2'],
   ),
 ];
 
