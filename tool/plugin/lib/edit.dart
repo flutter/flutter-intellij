@@ -31,6 +31,18 @@ void checkAndClearAppliedEditCommands() {
 
 List<EditCommand> editCommands = [
   EditAndroidModuleLibraryManager(),
+  MultiSubst(
+    path: 'src/io/flutter/font/FontPreviewProcessor.java',
+    initials: [
+      '//com.intellij.util.SlowOperations.allowSlowOperations(() -> { // 2021.2',
+      '//}); //2021.2'
+    ],
+    replacements: [
+      'com.intellij.util.SlowOperations.allowSlowOperations(() -> { // 2021.2',
+      '}); //2021.2'
+    ],
+    versions: ['2021.2'],
+  ),
   Subst(
     path: 'src/io/flutter/editor/FlutterIconLineMarkerProvider.java',
     initial: '''

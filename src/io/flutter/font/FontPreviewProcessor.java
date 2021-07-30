@@ -7,7 +7,6 @@ package io.flutter.font;
 
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
@@ -80,9 +79,11 @@ public class FontPreviewProcessor {
     });
     final String packagesText = FlutterSettings.getInstance().getFontPackages();
     final String[] packages = packagesText.split(PACKAGE_SEPARATORS);
-    for (String pack : packages) {
-      findFontClasses(project, pack.trim());
-    }
+    //com.intellij.util.SlowOperations.allowSlowOperations(() -> { // 2021.2
+      for (String pack : packages) {
+        findFontClasses(project, pack.trim());
+      }
+    //}); //2021.2
   }
 
   private void clearProjectCaches(@NotNull Project project) {
