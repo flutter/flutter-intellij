@@ -36,4 +36,9 @@
       <option name="DART_STATEMENT" value="true"/>
     </context>
   </template>
+  <template name="mdof" value="MediaQuery.of(context)" description="Create MediaQueryData from build context" toReformat="false" toShortenFQNames="true">
+    <context>
+      <option name="DART_STATEMENT" value="true"/>
+    </context>
+  </template>
 </templateSet>
