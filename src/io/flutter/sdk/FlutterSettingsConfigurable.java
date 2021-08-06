@@ -12,7 +12,6 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.ActionToolbar;
-import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -276,6 +275,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     FlutterInitializer.setCanReportAnalytics(myReportUsageInformationCheckBox.isSelected());
 
     final FlutterSettings settings = FlutterSettings.getInstance();
+    final String oldFontPackages = settings.getFontPackages();
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
     settings.setFormatCodeOnSave(myFormatCodeOnSaveCheckBox.isSelected());
     settings.setOrganizeImportsOnSave(myOrganizeImportsOnSaveCheckBox.isSelected());
@@ -294,7 +294,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setFontPackages(myFontPackagesTextArea.getText());
 
     reset(); // because we rely on remembering initial state
-    checkFontPackages(settings.getFontPackages());
+    checkFontPackages(settings.getFontPackages(), oldFontPackages);
   }
 
   @Override
@@ -418,7 +418,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     return FileUtilRt.toSystemIndependentName(mySdkCombo.getComboBox().getEditor().getItem().toString().trim());
   }
 
-  private void checkFontPackages(String value) {
+  private void checkFontPackages(String value, String previous) {
     if (value != null) {
       final String[] packages = value.split(FontPreviewProcessor.PACKAGE_SEPARATORS);
       for (String name : packages) {
@@ -427,14 +427,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
           displayNotification(message);
         }
       }
-      final Application app = ApplicationManager.getApplication();
-      app.executeOnPooledThread(() -> {
-        app.invokeLater(() -> {
-          app.runWriteAction(() -> {
-            FontPreviewProcessor.reanalyze(myProject);
-          });
-        });
-      });
+      if (!value.equals(previous)) {
+        FontPreviewProcessor.reanalyze(myProject);
+      }
     }
   }
 
