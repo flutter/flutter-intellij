@@ -254,7 +254,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
       return null;
     }
     final List<VirtualFile> ttfFiles = new ArrayList<>();
-    VfsUtilCore.visitChildrenRecursively(parent, new VirtualFileVisitor<>() {
+    VfsUtilCore.visitChildrenRecursively(parent, new VirtualFileVisitor<Void>() {
       @Override
       public boolean visitFile(@NotNull VirtualFile file) {
         if ("ttf".equals(file.getExtension())) {
