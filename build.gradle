@@ -90,6 +90,9 @@ tasks {
   instrumentCode {
     compilerVersion = "$baseVersion"
   }
+  instrumentTestCode {
+    compilerVersion = "$baseVersion"
+  }
 }
 
 test {
