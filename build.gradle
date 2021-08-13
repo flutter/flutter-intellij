@@ -14,19 +14,13 @@ buildscript {
       url "https://oss.sonatype.org/content/repositories/snapshots/"
     }
     maven {
-      url 'https://jetbrains.bintray.com/intellij-plugin-service'
-    }
-    maven {
-      url 'https://jetbrains.bintray.com/intellij-third-party-dependencies'
-    }
-    maven {
       url 'https://www.jetbrains.com/intellij-repository/releases'
     }
   }
 }
 
 plugins {
-  id "org.jetbrains.intellij" version "0.7.2"
+  id "org.jetbrains.intellij" version "1.1.4"
   id "org.jetbrains.kotlin.jvm" version "1.4.31"
 }
 
@@ -38,12 +32,6 @@ repositories {
   }
   maven {
     url "https://oss.sonatype.org/content/repositories/snapshots/"
-  }
-  maven {
-    url 'https://jetbrains.bintray.com/intellij-plugin-service'
-  }
-  maven {
-    url 'https://jetbrains.bintray.com/intellij-third-party-dependencies'
   }
   maven {
     url 'https://www.jetbrains.com/intellij-repository/releases'
@@ -62,8 +50,8 @@ allprojects {
 
 apply plugin: "org.jetbrains.intellij"
 
-group 'io.flutter'
-version flutterPluginVersion
+group = 'io.flutter'
+version = flutterPluginVersion
 
 java {
   sourceCompatibility = JavaVersion.toVersion(javaVersion)
@@ -71,12 +59,12 @@ java {
 }
 
 intellij {
-  pluginName name
+  pluginName = name
   // This adds nullability assertions, but also compiles forms.
   instrumentCode = true
   updateSinceUntilBuild = false
-  localPath "${project.rootDir.absolutePath}/artifacts/$ide"
-  downloadSources false
+  localPath = "${project.rootDir.absolutePath}/artifacts/$ide"
+  downloadSources = false
   def pluginList = [project(':flutter-idea'), "java", "Dart:$dartVersion", "properties", "junit", "Git4Idea",
                     "Kotlin", "gradle", "org.jetbrains.android", "Groovy", "smali", "IntelliLang"]
   if (ide == 'android-studio') {
@@ -95,6 +83,16 @@ dependencies {
 }
 
 sourceSets {
+}
+
+//noinspection GroovyAssignabilityCheck
+tasks {
+  instrumentCode {
+    compilerVersion = "$baseVersion"
+  }
+  instrumentTestCode {
+    compilerVersion = "$baseVersion"
+  }
 }
 
 test {

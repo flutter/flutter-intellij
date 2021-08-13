@@ -15,12 +15,6 @@ repositories {
     url "https://oss.sonatype.org/content/repositories/snapshots/"
   }
   maven {
-    url 'https://jetbrains.bintray.com/intellij-plugin-service'
-  }
-  maven {
-    url 'https://jetbrains.bintray.com/intellij-third-party-dependencies'
-  }
-  maven {
     url 'https://www.jetbrains.com/intellij-repository/releases'
   }
 }
@@ -29,7 +23,7 @@ apply plugin: 'kotlin'
 apply plugin: 'java'
 apply plugin: "org.jetbrains.intellij"
 
-group 'io.flutter'
+group = 'io.flutter'
 version=flutterPluginVersion
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
@@ -47,10 +41,10 @@ intellij {
   // This adds nullability assertions, but also compiles forms.
   instrumentCode = true
   updateSinceUntilBuild = false
-  downloadSources false
-  localPath "${project.rootDir.absolutePath}/artifacts/$ide"
-  plugins "java", "Dart:$dartVersion", "properties", "junit", "Kotlin", "Git4Idea",
-          "gradle", "Groovy", "smali", "IntelliLang", "org.jetbrains.android", "yaml"
+  downloadSources = false
+  localPath = "${project.rootDir.absolutePath}/artifacts/$ide"
+  plugins = ["java", "Dart:$dartVersion", "properties", "junit", "Kotlin", "Git4Idea",
+             "gradle", "Groovy", "smali", "IntelliLang", "org.jetbrains.android", "yaml"]
 }
 
 dependencies {
@@ -105,6 +99,16 @@ sourceSets {
     "testData/unit",
     "testSrc/unit"
   ]
+}
+
+//noinspection GroovyAssignabilityCheck
+tasks {
+  instrumentCode {
+    compilerVersion = "$baseVersion"
+  }
+  instrumentTestCode {
+    compilerVersion = "$baseVersion"
+  }
 }
 
 buildSearchableOptions.enabled = false

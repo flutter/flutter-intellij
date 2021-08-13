@@ -21,6 +21,7 @@ class BuildSpec {
   final String ideaProduct;
   final String ideaVersion;
   final String dartPluginVersion;
+  final String baseVersion;
 
   // plugin.xml variables
   final String sinceBuild;
@@ -43,6 +44,7 @@ class BuildSpec {
         ijVersion = json['ijVersion'],
         ideaProduct = json['ideaProduct'],
         ideaVersion = json['ideaVersion'],
+        baseVersion = json['baseVersion'] ?? json['ideaVersion'],
         dartPluginVersion = json['dartPluginVersion'],
         sinceBuild = json['sinceBuild'],
         untilBuild = json['untilBuild'],

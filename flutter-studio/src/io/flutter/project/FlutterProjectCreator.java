@@ -317,7 +317,7 @@ public class FlutterProjectCreator {
       return myConverted;
     }
 
-    public void cannotWriteToFiles(List<Path> files) {
+    public void cannotWriteToFiles(List<? extends Path> files) {
 
     }
   }

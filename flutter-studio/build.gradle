@@ -5,24 +5,17 @@
  */
 
 repositories {
-  jcenter()
   mavenCentral()
   maven {
     url "https://oss.sonatype.org/content/repositories/snapshots/"
-  }
-  maven {
-    url 'https://jetbrains.bintray.com/intellij-plugin-service'
-  }
-  maven {
-    url 'https://jetbrains.bintray.com/intellij-third-party-dependencies'
   }
 }
 
 apply plugin: 'java'
 apply plugin: "org.jetbrains.intellij"
 
-group 'io.flutter'
-version flutterPluginVersion
+group = 'io.flutter'
+version = flutterPluginVersion
 
 java {
   sourceCompatibility = JavaVersion.toVersion(javaVersion)
@@ -35,10 +28,10 @@ intellij {
     instrumentCode = true
   }
   updateSinceUntilBuild = false
-  downloadSources false
-  localPath "${project.rootDir.absolutePath}/artifacts/$ide"
-  plugins "java", "Dart:$dartVersion", "properties", "junit",
-          "gradle", "Groovy", "smali", "IntelliLang", "org.jetbrains.android"
+  downloadSources = false
+  localPath = "${project.rootDir.absolutePath}/artifacts/$ide"
+  plugins = ["java", "Dart:$dartVersion", "properties", "junit",
+             "gradle", "Groovy", "smali", "IntelliLang", "org.jetbrains.android"]
 }
 
 sourceSets {
@@ -63,6 +56,16 @@ dependencies {
                        excludes: ["**/kotlin-compiler.jar", "**/kotlin-plugin.jar"])
 }
 
+//noinspection GroovyAssignabilityCheck
+tasks {
+  instrumentCode {
+    compilerVersion = "$baseVersion"
+  }
+  instrumentTestCode {
+    compilerVersion = "$baseVersion"
+  }
+}
+
 verifyPlugin {
-  ignoreFailures true
+  ignoreFailures = true
 }

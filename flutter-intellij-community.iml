@@ -87,8 +87,6 @@
     <orderEntry type="library" name="com.android.tools:common" level="project" />
     <orderEntry type="library" name="studio-analytics-proto" level="project" />
     <orderEntry type="library" name="protobuf" level="project" />
-    <orderEntry type="library" name="org.powermock:powermock-api-mockito2:2.0.2" level="project" />
-    <orderEntry type="library" name="org.powermock:powermock-module-junit4:2.0.2" level="project" />
     <orderEntry type="library" name="com.android.tools.analytics-library:protos" level="project" />
     <orderEntry type="module" module-name="intellij.android.gradle.dsl" />
     <orderEntry type="module" module-name="intellij.android.projectSystem" />
@@ -160,5 +158,6 @@
     <orderEntry type="library" name="Dart Packages" level="project" />
     <orderEntry type="library" name="java-string-similarity-2.0.0" level="project" />
     <orderEntry type="module" module-name="intellij.yaml" />
+    <orderEntry type="library" name="mockito" level="project" />
   </component>
 </module>
