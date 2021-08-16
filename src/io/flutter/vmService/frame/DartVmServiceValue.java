@@ -381,8 +381,8 @@ public class DartVmServiceValue extends XNamedValue {
         }
 
         if (offset + count < instanceRef.getLength()) {
-          node.tooManyChildren(instanceRef.getLength() - offset - count,
-                               () -> computeCollectionChildren(instanceRef, offset + count, node));
+          node.tooManyChildren(instanceRef.getLength() - offset - count
+                               ,() -> computeCollectionChildren(instanceRef, offset + count, node));
         }
       }
 
