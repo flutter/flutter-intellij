@@ -43,6 +43,7 @@ public class ProjectWatchTest {
       final ProjectWatch listen = ProjectWatch.subscribe(fixture.getProject(), callCount::incrementAndGet);
 
       ModuleRootModificationUtil.addContentRoot(fixture.getModule(), "testDir");
+      // The number of events fired is an implementation detail of the project manager. We just need at least one.
       assertNotEquals(0, callCount.get());
     });
   }
