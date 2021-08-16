@@ -5,7 +5,9 @@
  */
 package io.flutter.testing;
 
+import com.intellij.testFramework.PlatformTestUtil;
 import com.intellij.testFramework.fixtures.IdeaTestFixture;
+import javax.swing.SwingUtilities;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -35,6 +37,8 @@ abstract public class AdaptedFixture<T extends IdeaTestFixture> implements TestR
       public void evaluate() throws Throwable {
         inner = factory.create(description.getClassName());
         if (runOnDispatchThread) {
+          // IDE initialization may not be complete. If not, then we can't use standard IntelliJ EDT APIs.
+          SwingUtilities.invokeAndWait(PlatformTestUtil::dispatchAllEventsInIdeEventQueue);
           Testing.runOnDispatchThread(inner::setUp);
         }
         else {

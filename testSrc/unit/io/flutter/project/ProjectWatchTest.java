@@ -43,7 +43,7 @@ public class ProjectWatchTest {
       final ProjectWatch listen = ProjectWatch.subscribe(fixture.getProject(), callCount::incrementAndGet);
 
       ModuleRootModificationUtil.addContentRoot(fixture.getModule(), "testDir");
-      assertEquals(1, callCount.get());
+      assertNotEquals(0, callCount.get());
     });
   }
 

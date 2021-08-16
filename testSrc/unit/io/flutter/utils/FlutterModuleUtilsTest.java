@@ -5,7 +5,7 @@
  */
 package io.flutter.utils;
 
-import com.intellij.openapi.module.Module;
+import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.Testing;
 import org.junit.Rule;
@@ -19,24 +19,7 @@ import static org.junit.Assert.*;
 public class FlutterModuleUtilsTest {
 
   @Rule
-  public final ProjectFixture fixture = Testing.makeEmptyModule();
-
-  @Test
-  public void isDeprecatedFlutterModuleType_true() {
-    fixture.getModule().setOption(Module.ELEMENT_TYPE, "WEB_MODULE");
-    assertEquals(FlutterModuleUtils.DEPRECATED_FLUTTER_MODULE_TYPE_ID, fixture.getModule().getOptionValue("type"));
-    // We would like to use this assert but the pub roots are not setup so
-    // this assert fails.
-    // TODO(jacobr): configure the pub roots correctly so this test can run
-    // as intended or remove this test as it is validating obsolete behavior.
-    // assertTrue(FlutterModuleUtils.isDeprecatedFlutterModuleType(fixture.getModule()));
-  }
-
-  @Test
-  public void isDeprecatedFlutterModuleType_false_JAVA_MODULE() {
-    fixture.getModule().setOption(Module.ELEMENT_TYPE, FlutterModuleUtils.getModuleTypeIDForFlutter());
-    assertFalse(FlutterModuleUtils.isDeprecatedFlutterModuleType(fixture.getModule()));
-  }
+  public final ProjectFixture<IdeaProjectTestFixture> fixture = Testing.makeEmptyModule();
 
   @Test
   public void isDeprecatedFlutterModuleType_false_empty_module() {
