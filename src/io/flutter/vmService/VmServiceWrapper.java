@@ -25,16 +25,53 @@ import io.flutter.vmService.frame.DartAsyncMarkerFrame;
 import io.flutter.vmService.frame.DartVmServiceEvaluator;
 import io.flutter.vmService.frame.DartVmServiceStackFrame;
 import io.flutter.vmService.frame.DartVmServiceValue;
-import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.consumer.*;
-import org.dartlang.vm.service.element.Stack;
-import org.dartlang.vm.service.element.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.dartlang.vm.service.VmService;
+import org.dartlang.vm.service.consumer.AddBreakpointWithScriptUriConsumer;
+import org.dartlang.vm.service.consumer.EvaluateConsumer;
+import org.dartlang.vm.service.consumer.EvaluateInFrameConsumer;
+import org.dartlang.vm.service.consumer.GetIsolateConsumer;
+import org.dartlang.vm.service.consumer.GetObjectConsumer;
+import org.dartlang.vm.service.consumer.GetStackConsumer;
+import org.dartlang.vm.service.consumer.InvokeConsumer;
+import org.dartlang.vm.service.consumer.PauseConsumer;
+import org.dartlang.vm.service.consumer.RemoveBreakpointConsumer;
+import org.dartlang.vm.service.consumer.SetExceptionPauseModeConsumer;
+import org.dartlang.vm.service.consumer.SuccessConsumer;
+import org.dartlang.vm.service.consumer.VMConsumer;
+import org.dartlang.vm.service.element.Breakpoint;
+import org.dartlang.vm.service.element.ElementList;
+import org.dartlang.vm.service.element.ErrorRef;
+import org.dartlang.vm.service.element.Event;
+import org.dartlang.vm.service.element.EventKind;
+import org.dartlang.vm.service.element.ExceptionPauseMode;
+import org.dartlang.vm.service.element.Frame;
+import org.dartlang.vm.service.element.FrameKind;
+import org.dartlang.vm.service.element.InstanceRef;
+import org.dartlang.vm.service.element.Isolate;
+import org.dartlang.vm.service.element.IsolateRef;
+import org.dartlang.vm.service.element.LibraryRef;
+import org.dartlang.vm.service.element.Obj;
+import org.dartlang.vm.service.element.RPCError;
+import org.dartlang.vm.service.element.Script;
+import org.dartlang.vm.service.element.ScriptRef;
+import org.dartlang.vm.service.element.Sentinel;
+import org.dartlang.vm.service.element.Stack;
+import org.dartlang.vm.service.element.StepOption;
+import org.dartlang.vm.service.element.Success;
+import org.dartlang.vm.service.element.UnresolvedSourceLocation;
+import org.dartlang.vm.service.element.VM;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class VmServiceWrapper implements Disposable {
   private static final Logger LOG = Logger.getInstance(VmServiceWrapper.class.getName());
@@ -437,7 +474,8 @@ public class VmServiceWrapper implements Disposable {
       final int line = position.getLine() + 1;
 
       final Collection<String> scriptUris = myDebugProcess.getUrisForFile(position.getFile());
-      final CanonicalBreakpoint canonicalBreakpoint = new CanonicalBreakpoint(position.getFile().getName(), position.getFile().getCanonicalPath(), line);
+      final CanonicalBreakpoint canonicalBreakpoint =
+        new CanonicalBreakpoint(position.getFile().getName(), position.getFile().getCanonicalPath(), line);
       canonicalBreakpoints.add(canonicalBreakpoint);
       final List<Breakpoint> breakpointResponses = new ArrayList<>();
       final List<RPCError> errorResponses = new ArrayList<>();
@@ -762,10 +800,19 @@ public class VmServiceWrapper implements Disposable {
     });
   }
 
-  public void callToString(@NotNull final String isolateId,
-                           @NotNull final String targetId,
-                           @NotNull final InvokeConsumer callback) {
-    addRequest(() -> myVmService.invoke(isolateId, targetId, "toString", Collections.emptyList(), true, callback));
+  public void callToString(@NotNull String isolateId, @NotNull String targetId, @NotNull InvokeConsumer callback) {
+    callMethodOnTarget(isolateId, targetId, "toString", callback);
+  }
+
+  public void callToList(@NotNull String isolateId, @NotNull String targetId, @NotNull InvokeConsumer callback) {
+    callMethodOnTarget(isolateId, targetId, "toList", callback);
+  }
+
+  public void callMethodOnTarget(@NotNull final String isolateId,
+                                 @NotNull final String targetId,
+                                 @NotNull String methodName,
+                                 @NotNull final InvokeConsumer callback) {
+    addRequest(() -> myVmService.invoke(isolateId, targetId, methodName, Collections.emptyList(), true, callback));
   }
 }
 
