@@ -37,8 +37,6 @@ public class DartVmServiceValue extends XNamedValue {
   @Nullable private final FieldRef myFieldRef;
   private final boolean myIsException;
 
-  private final Ref<Integer> myCollectionChildrenAlreadyShown = new Ref<>(0);
-
   public DartVmServiceValue(@NotNull final DartVmServiceDebugProcess debugProcess,
                             @NotNull final String isolateId,
                             @NotNull final String name,
@@ -207,9 +205,6 @@ public class DartVmServiceValue extends XNamedValue {
           addFullStringValueEvaluator(node, myInstanceRef);
         }
         break;
-      case Float32x4:
-      case Float64x2:
-      case Int32x4:
       case StackTrace:
         node.setFullValueEvaluator(new ImmediateFullValueEvaluator("Click to see stack trace...", myInstanceRef.getValueAsString()));
         node.setPresentation(getIcon(), myInstanceRef.getClassRef().getName(), "", true);
@@ -291,9 +286,13 @@ public class DartVmServiceValue extends XNamedValue {
   private void computeDefaultPresentation(@NotNull final XValueNode node) {
     final String typeName = myInstanceRef.getClassRef().getName();
 
+    InstanceKind kind = myInstanceRef.getKind();
+    // other InstanceKinds that can't have children don't reach this method.
+    boolean canHaveChildren = kind != InstanceKind.Int32x4 && kind != InstanceKind.Float32x4 && kind != InstanceKind.Float64x2;
+
     // Check if the string value is populated.
     if (myInstanceRef.getValueAsString() != null && !myInstanceRef.getValueAsStringIsTruncated()) {
-      node.setPresentation(getIcon(), typeName, myInstanceRef.getValueAsString(), true);
+      node.setPresentation(getIcon(), typeName, myInstanceRef.getValueAsString(), canHaveChildren);
       return;
     }
 
@@ -304,10 +303,10 @@ public class DartVmServiceValue extends XNamedValue {
           final String value = toStringInstanceRef.getValueAsString();
           // We don't need to show the default implementation of toString() ("Instance of ...").
           if (value.startsWith("Instance of ")) {
-            node.setPresentation(getIcon(), typeName, "", true);
+            node.setPresentation(getIcon(), typeName, "", canHaveChildren);
           }
           else {
-            node.setPresentation(getIcon(), typeName, value, true);
+            node.setPresentation(getIcon(), typeName, value, canHaveChildren);
           }
         }
         else {
@@ -343,7 +342,7 @@ public class DartVmServiceValue extends XNamedValue {
     }
 
     if ((isListKind(myInstanceRef.getKind()) || myInstanceRef.getKind() == InstanceKind.Map)) {
-      computeCollectionChildren(node);
+      computeCollectionChildren(myInstanceRef, 0, node);
     }
     else {
       myDebugProcess.getVmServiceWrapper().getObject(myIsolateId, myInstanceRef.getId(), new GetObjectConsumer() {
@@ -365,27 +364,25 @@ public class DartVmServiceValue extends XNamedValue {
     }
   }
 
-  private void computeCollectionChildren(@NotNull final XCompositeNode node) {
-    final int offset = myCollectionChildrenAlreadyShown.get();
-    final int count = Math.min(myInstanceRef.getLength() - offset, XCompositeNode.MAX_CHILDREN_TO_SHOW);
+  private void computeCollectionChildren(@NotNull InstanceRef instanceRef, int offset, @NotNull final XCompositeNode node) {
+    final int count = Math.min(instanceRef.getLength() - offset, XCompositeNode.MAX_CHILDREN_TO_SHOW);
 
     myDebugProcess.getVmServiceWrapper().getCollectionObject(myIsolateId, myInstanceRef.getId(), offset, count, new GetObjectConsumer() {
       @Override
       public void received(Obj instance) {
-        if (isListKind(myInstanceRef.getKind())) {
-          addListChildren(node, ((Instance)instance).getElements());
+        if (isListKind(instanceRef.getKind())) {
+          addListChildren(offset, node, (Instance)instance);
         }
-        else if (myInstanceRef.getKind() == InstanceKind.Map) {
-          addMapChildren(node, ((Instance)instance).getAssociations());
+        else if (instanceRef.getKind() == InstanceKind.Map) {
+          addMapChildren(offset, node, ((Instance)instance).getAssociations());
         }
         else {
-          assert false : myInstanceRef.getKind();
+          assert false : instanceRef.getKind();
         }
 
-        myCollectionChildrenAlreadyShown.set(myCollectionChildrenAlreadyShown.get() + count);
-
-        if (offset + count < myInstanceRef.getLength()) {
-          node.tooManyChildren(myInstanceRef.getLength() - offset - count);
+        if (offset + count < instanceRef.getLength()) {
+          node.tooManyChildren(instanceRef.getLength() - offset - count
+                               ,() -> computeCollectionChildren(instanceRef, offset + count, node));
         }
       }
 
@@ -401,23 +398,45 @@ public class DartVmServiceValue extends XNamedValue {
     });
   }
 
-  private void addListChildren(@NotNull final XCompositeNode node, @Nullable final ElementList<InstanceRef> listElements) {
-    if (listElements == null) {
+  private void addListChildren(int offset, @NotNull XCompositeNode node, @NotNull Instance instance) {
+    ElementList<InstanceRef> listElementsRef = instance.getElements();
+    if (listElementsRef != null) {
+      final XValueChildrenList childrenList = new XValueChildrenList(listElementsRef.size());
+      int index = offset;
+      for (InstanceRef listElement : listElementsRef) {
+        childrenList.add(new DartVmServiceValue(myDebugProcess, myIsolateId, String.valueOf(index++), listElement, null, null, false));
+      }
+      node.addChildren(childrenList, true);
+      return;
+    }
+
+    if (instance.getKind() == InstanceKind.List) {
       node.addChildren(XValueChildrenList.EMPTY, true);
       return;
     }
 
-    final XValueChildrenList childrenList = new XValueChildrenList(listElements.size());
-    int index = myCollectionChildrenAlreadyShown.get();
-    for (InstanceRef listElement : listElements) {
-      childrenList.add(new DartVmServiceValue(myDebugProcess, myIsolateId, String.valueOf(index++), listElement, null, null, false));
-    }
-    node.addChildren(childrenList, true);
+    // Show contents of special lists using toList() method
+    myDebugProcess.getVmServiceWrapper().callToList(myIsolateId, instance.getId(), new VmServiceConsumers.InvokeConsumerWrapper() {
+      @Override
+      public void received(InstanceRef toListInstanceRef) {
+        if (toListInstanceRef.getKind() == InstanceKind.List) {
+          computeCollectionChildren(toListInstanceRef, offset, node);
+        }
+        else {
+          node.addChildren(XValueChildrenList.EMPTY, true);
+        }
+      }
+
+      @Override
+      public void noGoodResult() {
+        node.addChildren(XValueChildrenList.EMPTY, true);
+      }
+    });
   }
 
-  private void addMapChildren(@NotNull final XCompositeNode node, @NotNull final ElementList<MapAssociation> mapAssociations) {
+  private void addMapChildren(int offset, @NotNull final XCompositeNode node, @NotNull final ElementList<MapAssociation> mapAssociations) {
     final XValueChildrenList childrenList = new XValueChildrenList(mapAssociations.size());
-    int index = myCollectionChildrenAlreadyShown.get();
+    int index = offset;
     for (MapAssociation mapAssociation : mapAssociations) {
       final InstanceRef keyInstanceRef = mapAssociation.getKey();
       final InstanceRef valueInstanceRef = mapAssociation.getValue();

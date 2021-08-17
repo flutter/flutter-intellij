@@ -32,6 +32,12 @@ void checkAndClearAppliedEditCommands() {
 List<EditCommand> editCommands = [
   EditAndroidModuleLibraryManager(),
   Subst(
+    path: 'src/io/flutter/vmService/frame/DartVmServiceValue.java',
+    initial: ',() -> computeCollectionChildren(instanceRef, offset + count, node)',
+    replacement: '',
+    version: '4.2',
+  ),
+  Subst(
     path: 'src/io/flutter/editor/FlutterIconLineMarkerProvider.java',
     initial: '''
 LineMarkerInfo<>(element, element.getTextRange(), icon, null, null,
