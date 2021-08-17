@@ -84,12 +84,18 @@ public class Testing {
       final AtomicReference<Exception> ex = new AtomicReference<>();
       assert (!SwingUtilities.isEventDispatchThread());
 
-      TransactionGuard.getInstance().submitTransactionAndWait(() -> {
+      ApplicationManager.getApplication().invokeAndWait(() -> {
         try {
           callback.run();
         }
         catch (Exception e) {
           ex.set(e);
+        }
+        catch (AssertionError e) {
+          // Sometimes, the SDK leak detector fires, but we do not care since we do not use Android or Java SDKs.
+          if (!e.getMessage().startsWith("Leaked SDKs")) {
+            throw e;
+          }
         }
       });
       if (ex.get() != null) {
