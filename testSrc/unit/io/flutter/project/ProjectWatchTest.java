@@ -7,6 +7,8 @@ package io.flutter.project;
 
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
+import com.intellij.testFramework.PlatformTestUtil;
+import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.Testing;
 import org.junit.Ignore;
@@ -21,7 +23,7 @@ import static org.junit.Assert.assertNotEquals;
 public class ProjectWatchTest {
 
   @Rule
-  public final ProjectFixture fixture = Testing.makeEmptyModule();
+  public final ProjectFixture<IdeaProjectTestFixture> fixture = Testing.makeEmptyModule();
 
   @Test
   @Ignore
@@ -43,7 +45,9 @@ public class ProjectWatchTest {
       final ProjectWatch listen = ProjectWatch.subscribe(fixture.getProject(), callCount::incrementAndGet);
 
       ModuleRootModificationUtil.addContentRoot(fixture.getModule(), "testDir");
-      assertEquals(1, callCount.get());
+      PlatformTestUtil.dispatchAllEventsInIdeEventQueue();
+      // The number of events fired is an implementation detail of the project manager. We just need at least one.
+      assertNotEquals(0, callCount.get());
     });
   }
 
