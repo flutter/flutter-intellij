@@ -12,9 +12,9 @@ file.
 
 ## Flutter plugin development on MacOS and Linux
 
-* Download and install the latest stable version of IntelliJ (2020.3 or later)
+* Download and install the latest stable version of IntelliJ (2021.1 or later)
   - [IntelliJ Downloads](https://www.jetbrains.com/idea/download/)
-  - Either the community edition (free) or Ultimate will work.
+  - Either the community edition (free) or Ultimate will work
   - Determine the directory of your downloaded IntelliJ Community Edition installation 
     (e.g, `IntelliJ IDEA CE.app`, `~/idea-IC-183.4886.37` or 
     `~/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-0/211.6693.111/IntelliJ IDEA.app`)
@@ -36,15 +36,12 @@ file.
 * In the "Kotlin Compiler" preference page, make sure that the "Target JVM Version" is set to `11` or `Same as language level`
 * One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin. 
   Find `Plugins` (in Settings/Preferences) and install the Dart plugin, then restart the IDE
-* Open flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository). 
+* Open flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository).
+  Note that as of version 60 the project must be opened as a Gradle project. Wait for Gradle sync to complete.
   Build it using `Build` | `Build Project`
-  - If you found a popup with "Gradle build scripts found", 
-    please "Skip" or ignore it since the project doesn't need to be imported as a gradle project
 * Try running the plugin; there is an existing launch config for "Flutter IntelliJ". This should open the "runtime workbench", 
   a new instance of IntelliJ with the plugin installed.
 * If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install"
-* If libraries are deleted from .iml files, you can try running `flutter pub get` to get them back. However, random changes 
-  to the .iml files are common and generally it's okay to remove these changes before making commits.
 * Install Flutter SDK from [Flutter SDK download](https://flutter.dev/docs/get-started/install) or 
   [github](https://github.com/flutter/flutter) and set it up according to its instructions.
 * Verify installation from the command line:
@@ -53,12 +50,15 @@ file.
   - `flutter doctor`
   - `flutter run`
 * Verify installation of the Flutter plugin:
-  - Select IDEA in the Run Configuration drop-down list.
+  - Select `Flutter Plugin` in the Run Configuration drop-down list.
   - Click Debug button (to the right of that drop-down).
   - In the new IntelliJ process that spawns, open the hello_world example.
   - Choose Edit Configuration in the Run Configuration drop-down list.
   - Expand Defaults and verify that Flutter is present.
   - Click [+] and verify that Flutter is present.
+* Note that as of version 60 the old `src` and `testSrc` trees in the root directory are no longer usable.
+  Edit code using the files in the `flutter-idea` and `flutter-studio` modules instead.
+  This change had to be made to allow debugging of tests in the IDE.
 
 ## Flutter plugin development on Windows
 
@@ -106,8 +106,8 @@ to `intellij-community/.idea/libraries`
 creating a project.
 - Shut it down.
 
-- In Project Structure, import the module `flutter-intellij/flutter-intellij-community.iml`
-  - *Do not import it as a Gradle module.*
+- In Project Structure, import the module `flutter-intellij`
+  - *It must be imported as a Gradle module.*
 - Add a dependency to it to `intellij.idea.community.main` using Project Structure
 - Move it above Dart-community. This sets the class path to use the Flutter plugin
 version of some code duplicated from the Dart plugin.
@@ -117,21 +117,17 @@ version of some code duplicated from the Dart plugin.
 ### Using test run configurations in IntelliJ
 
 The repository contains two pre-defined test run configurations. One is for "unit" tests; that is
-currently defined as tests that do not rely on the IntelliJ APIs. The other is for "integration"
-tests - tests that do use the IntelliJ APIs. In the future we would like for the unit tests to be
-able to access IntelliJ APIs, and for the integration tests to be larger, long-running tests that
+currently defined as tests that do not rely on the IntelliJ UI APIs. The other is for "integration"
+tests - tests that do use the IntelliJ UI APIs. The integration tests are larger, long-running tests that
 exercise app use cases.
 
-In order to be able to run a single test class or test method you need to do the following:
+In order to be able to debug a single test class or test method you need to do the following:
 
-* Open Run | Edit Configurations, select "Flutter tests" run configuration, copy its VM Options
-  to clipboard
-* In the same dialog (Run/Debug Configurations) expand Defaults node, find JUnit under it and paste
-  VM Options to the corresponding field
-* Repeat the same with Working directory field - it must point to intellij-community/bin
-
-If running the full unit test suite fails, check the run configuration and verify that "Use classpath of module" is 
-set to `flutter-intellij.test`.
+* Open the test source file in the editor. Navigate to `flutter-idea/testSrc/unit/...` to open it. Do *not*
+  use `testSrc` in the root directory. Tests must run using Gradle, so be sure to open the source from the Gradle module.
+  The reason `testSrc` exists in the root is historic; we lost the ability to run tests outside of Gradle.
+  
+* Find the test you want to run. Right-click the green triangle next to the test name and choose `Debug <test-name>`.
 
 The test configuration can be tricky due to IntelliJ platform versioning. The plugin tool (below) can be a more 
 reliable way to run tests.
@@ -146,8 +142,7 @@ bin/plugin test
 
 See `TestCommand` in `tool/plugin/lib/plugin.dart` for more options.
 
-The plugin tool unpacks the dependencies required to run tests, including the correct version of IntelliJ. Once that's 
-been done it is possible to run tests directly with Gradle:
+It is also possible to run tests directly with Gradle, which would allow passing more command-line arguments:
 
 ```
 ./gradlew test
@@ -155,8 +150,6 @@ been done it is possible to run tests directly with Gradle:
 
 If you wanted to run a subset of the tests you could do so this way. See the 
 [Gradle docs](https://docs.gradle.org/current/userguide/java_testing.html) for more info about testing.
-
-Note that the tests do not currently run on Windows.
 
 ## Adding platform sources
 Sometimes browsing the source code of IntelliJ is helpful for understanding platform details that aren't documented.
@@ -178,12 +171,12 @@ Sometimes browsing the source code of IntelliJ is helpful for understanding plat
     - you do not need to clone the intellij-community repo
     - open studio-master-dev/tools/idea in IntelliJ
     - possibly skip running intellij-community/getPlugins.sh
-4. Checkout Dart plugin sources, branch 171.
+4. Checkout Dart plugin sources.
 5. Using the Project Structure editor, import
     - intellij-plugins/Dart/Dart-community.iml
-    - flutter-intellij/flutter-intellij-community.iml
-6. Select the `community-main` module and add a module dependency to
-   `flutter-intellij-community`.
+    - flutter-intellij -- Select the directory and choose `Import module from external model` and select `Gradle`
+6. In the Gradle tool window, click the refresh icon (top left) to ensure all Gradle modules are loaded properly
+7. Using the Project Structure editor, select the `studio` module and add a module dependency to all modules that begin with `flutter`
 
 ## Working with Embedded DevTools (JxBrowser)
 
