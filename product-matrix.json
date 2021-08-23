@@ -28,6 +28,7 @@
       "channel": "stable",
       "comments": "IntelliJ 2021.1, Android Studio 2021.1.1 Canary 8",
       "name": "Bumblebee",
+      "isUnitTestTarget": "true",
       "version": "AS.211",
       "ideaProduct": "android-studio",
       "ideaVersion": "2021.1.1.8",
@@ -45,7 +46,6 @@
       "ideaVersion": "212.3724.25",
       "baseVersion": "212.4746.92",
       "dartPluginVersion": "212.3724.2",
-      "isUnitTestTarget": "true",
       "sinceBuild": "212.3724.25",
       "untilBuild": "212.*",
       "filesToSkip": ["flutter-studio/src/io/flutter/actions/FlutterNewProjectAction.java_stub"]
