@@ -230,13 +230,6 @@ public class OpenInAndroidStudioAction extends AnAction {
       final ColoredProcessHandler handler = new ColoredProcessHandler(cmd);
       handler.addProcessListener(new ProcessAdapter() {
         @Override
-        public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
-          if (ProcessOutputType.isStderr(outputType)) {
-            LOG.error(event.getText());
-          }
-        }
-
-        @Override
         public void processTerminated(@NotNull final ProcessEvent event) {
           if (event.getExitCode() != 0) {
             FlutterMessages.showError("Error Opening", projectPath, project);
