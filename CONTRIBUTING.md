@@ -133,6 +133,7 @@ creating a project.
 - Add a dependency to it to `intellij.idea.community.main` using Project Structure
 - Move it above Dart-community. This sets the class path to use the Flutter plugin
 version of some code duplicated from the Dart plugin.
+- Create an external tool named Provision. See the section above named `Provision Tool`.
 
 ## Running plugin tests
 
