@@ -39,6 +39,8 @@ file.
 * Open flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository).
   Note that as of version 60 the project must be opened as a Gradle project. Wait for Gradle sync to complete.
   Build it using `Build` | `Build Project`
+* Run the tests from the command line: `bin/plugin test`. This ensures the dependencies are downloaded and
+  unpacked into the `artifacts` directory. They are needed to run the plugin.
 * Try running the plugin; there is an existing launch config for "Flutter IntelliJ". This should open the "runtime workbench", 
   a new instance of IntelliJ with the plugin installed.
 * If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install"
@@ -50,6 +52,7 @@ file.
   - `flutter doctor`
   - `flutter run`
 * Verify installation of the Flutter plugin:
+  - Make sure you have unpacked the dependencies into `artifacts` by previously running `bin/plugin test`
   - Select `Flutter Plugin` in the Run Configuration drop-down list.
   - Click Debug button (to the right of that drop-down).
   - In the new IntelliJ process that spawns, open the hello_world example.
@@ -115,6 +118,10 @@ version of some code duplicated from the Dart plugin.
 ## Running plugin tests
 
 ### Using test run configurations in IntelliJ
+
+IMPORTANT: Before running the tests in IntelliJ, first ensure all dependents have been downloaded
+and unpacked into the `artifacts` directory. The easiest way to do that is to first run the tests
+using the `plugin` tool. See the next section for details.
 
 The repository contains two pre-defined test run configurations. One is for "unit" tests; that is
 currently defined as tests that do not rely on the IntelliJ UI APIs. The other is for "integration"
