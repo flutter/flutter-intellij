@@ -39,6 +39,8 @@ file.
 * Open flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository).
   Note that as of version 60 the project must be opened as a Gradle project. Wait for Gradle sync to complete.
   Build it using `Build` | `Build Project`
+* Run the tests from the command line: `bin/plugin test`. This ensures the dependencies are downloaded and
+  unpacked into the `artifacts` directory. They are needed to run the plugin.
 * Try running the plugin; there is an existing launch config for "Flutter IntelliJ". This should open the "runtime workbench", 
   a new instance of IntelliJ with the plugin installed.
 * If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install"
@@ -50,6 +52,7 @@ file.
   - `flutter doctor`
   - `flutter run`
 * Verify installation of the Flutter plugin:
+  - Make sure you have unpacked the dependencies into `artifacts` by previously running `bin/plugin test`
   - Select `Flutter Plugin` in the Run Configuration drop-down list.
   - Click Debug button (to the right of that drop-down).
   - In the new IntelliJ process that spawns, open the hello_world example.
