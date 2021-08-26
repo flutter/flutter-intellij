@@ -5,6 +5,7 @@
     <option name="PROGRAM_PARAMETERS" value="" />
     <predefined_log_file enabled="true" id="idea.log" />
     <method v="2">
+      <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_Provision" />
       <option name="Make" enabled="true" />
     </method>
   </configuration>
