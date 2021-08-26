@@ -38,7 +38,8 @@ file.
   Find `Plugins` (in Settings/Preferences) and install the Dart plugin, then restart the IDE
 * Open flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository).
   Note that as of version 60 the project must be opened as a Gradle project. Wait for Gradle sync to complete.
-  Build it using `Build` | `Build Project`
+  - Create an external tool named Provision. See the section below named `Provision Tool`.
+  - Build the project using `Build` | `Build Project`
 * Run the tests from the command line: `bin/plugin test`.
 * Try running the plugin; there is an existing launch config for "Flutter IntelliJ". This should open the "runtime workbench", 
   a new instance of IntelliJ with the plugin installed.
@@ -60,6 +61,26 @@ file.
 * Note that as of version 60 the old `src` and `testSrc` trees in the root directory are no longer usable.
   Edit code using the files in the `flutter-idea` and `flutter-studio` modules instead.
   This change had to be made to allow debugging of tests in the IDE.
+
+## Provision Tool
+
+The Gradle build script currently assumes that some dependencies are present in the `artifacts` directory.
+This project uses an External Tool in IntelliJ to ensure the dependencies are present. It appears that
+external tools are not shareable. To make one, open the "Run Configuration" dialog and select "Flutter Plugin".
+Look at the "Before launch" panel. It probably displays an Unknown External Tool. Double-click that, then click
+edit icon in the new panel (pencil). Set the name to "Provision". Set the values:
+- Program: /bin/bash
+- Arguments: /bin/plugin test -s
+- Working directory: $ProjectFileDir$
+  - You can select that from a list by clicking the "+" symbol in the field
+
+There is a screenshot of this dialog in `resources/intellij/Provision.png'.
+`
+Save, close, and re-open the "Run Configuration" dialog. Confirm that the External Tool is named "Provision".
+
+If you know where the Application Support files are located for your version of IntelliJ,
+you can drop the definition into its `tools` directory before starting IntelliJ.
+The definition is in `resources/intellij/External Tools.xml`.
 
 ## Flutter plugin development on Windows
 
