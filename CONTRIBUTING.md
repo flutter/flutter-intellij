@@ -116,6 +116,10 @@ version of some code duplicated from the Dart plugin.
 
 ### Using test run configurations in IntelliJ
 
+IMPORTANT: Before running the tests in IntelliJ, first ensure all dependents have been downloaded
+and unpacked into the `artifacts` directory. The easiest way to do that is to first run the tests
+using the `plugin` tool. See the next section for details.
+
 The repository contains two pre-defined test run configurations. One is for "unit" tests; that is
 currently defined as tests that do not rely on the IntelliJ UI APIs. The other is for "integration"
 tests - tests that do use the IntelliJ UI APIs. The integration tests are larger, long-running tests that
