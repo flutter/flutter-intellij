@@ -10,6 +10,15 @@ You can do this online, and it only takes a minute. If you've never submitted co
 you must add your (or your organization's) name and contact info to the [AUTHORS](AUTHORS)
 file.
 
+* Install Flutter SDK from [Flutter SDK download](https://flutter.dev/docs/get-started/install) or
+  [github](https://github.com/flutter/flutter) and set it up according to its instructions.
+* Verify installation from the command line:
+    - Connect an android device with USB debugging.
+    - `cd path/to/flutter/examples/hello_world`
+    - `flutter pub get`
+    - `flutter doctor`
+    - `flutter run`
+
 ## Flutter plugin development on MacOS and Linux
 
 * Download and install the latest stable version of IntelliJ (2021.1 or later)
@@ -38,23 +47,23 @@ file.
   Find `Plugins` (in Settings/Preferences) and install the Dart plugin, then restart the IDE
 * Open flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository).
   Note that as of version 60 the project must be opened as a Gradle project. Wait for Gradle sync to complete.
-  - Create an external tool named Provision. See the section below named `Provision Tool`.
+  - Create an external tool named Provision. See the section below named `Provision Tool`
   - Build the project using `Build` | `Build Project`
-* Run the tests from the command line: `bin/plugin test`.
+* Download Dart dependencies from the command line:
+  - `cd path/to/flutter-intellij`
+  - `flutter pub get`
+  - `cd tool/plugin`
+  - `flutter pub get`
+* Run the tests from the command line:
+  - `cd path/to/flutter-intellij`
+  - `bin/plugin test`
 * Try running the plugin; there is an existing launch config for "Flutter IntelliJ". This should open the "runtime workbench", 
   a new instance of IntelliJ with the plugin installed.
 * If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install"
-* Install Flutter SDK from [Flutter SDK download](https://flutter.dev/docs/get-started/install) or 
-  [github](https://github.com/flutter/flutter) and set it up according to its instructions.
-* Verify installation from the command line:
-  - Connect an android device with USB debugging.
-  - `cd <flutter>/examples/hello_world`
-  - `flutter doctor`
-  - `flutter run`
 * Verify installation of the Flutter plugin:
   - Select `Flutter Plugin` in the Run Configuration drop-down list.
   - Click Debug button (to the right of that drop-down).
-  - In the new IntelliJ process that spawns, open the hello_world example.
+  - In the new IntelliJ process that spawns, open the `path/to/flutter/examples/hello_world` project.
   - Choose Edit Configuration in the Run Configuration drop-down list.
   - Expand Defaults and verify that Flutter is present.
   - Click [+] and verify that Flutter is present.
@@ -134,6 +143,11 @@ creating a project.
 - Move it above Dart-community. This sets the class path to use the Flutter plugin
 version of some code duplicated from the Dart plugin.
 - Create an external tool named Provision. See the section above named `Provision Tool`.
+* Download Dart dependencies from the command line:
+    - `cd path/to/flutter-intellij`
+    - `flutter pub get`
+    - `cd tool/plugin`
+    - `flutter pub get`
 
 ## Running plugin tests
 

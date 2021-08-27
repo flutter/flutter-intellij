@@ -45,6 +45,18 @@
 
   <change-notes>
     <![CDATA[
+<h1>60.0</h1>
+<ul>
+  <li>Modify run configs to ensure proper artifacts have been provisioned (#5729)</li>
+  <li>Update test setup instructions (#5728)</li>
+  <li>Ignore errors reported when Android Studio is launched (#5726)</li>
+  <li>Convert repo to a Gradle-based project (#5720)</li>
+  <li>Delete two obsolete tests and attempt to de-flake others (#5715)</li>
+  <li>Port over support for special list display in the debugger (#5713)</li>
+  <li>Update build script for AS canary (#5709)</li>
+  <li>Refactor icon preview processing to be incremental (#5704)</li>
+  <li>Add "mdof" live template for MediaQuery.of(context) (#5698)</li>
+</ul>
 <h1>59.0</h1>
 <ul>
   <li>Update installation instructions for Windows</li>
