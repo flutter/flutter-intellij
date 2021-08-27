@@ -921,6 +921,10 @@ class TestCommand extends ProductCommand {
     argParser.addFlag('unit', negatable: false, help: 'Run unit tests');
     argParser.addFlag('integration',
         negatable: false, help: 'Run integration tests');
+    argParser.addFlag('skip',
+        negatable: false,
+        help: 'Do not run tests, just unpack artifaccts',
+        abbr: 's');
   }
 
   @override
@@ -938,10 +942,12 @@ class TestCommand extends ProductCommand {
 
     final spec = specs.firstWhere((s) => s.isUnitTestTarget);
     await spec.artifacts.provision(rebuildCache: true);
-    if (argResults['integration']) {
-      return _runIntegrationTests();
-    } else {
-      return _runUnitTests(spec);
+    if (!argResults['skip']) {
+      if (argResults['integration']) {
+        return _runIntegrationTests();
+      } else {
+        return _runUnitTests(spec);
+      }
     }
   }
 

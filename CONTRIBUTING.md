@@ -38,9 +38,9 @@ file.
   Find `Plugins` (in Settings/Preferences) and install the Dart plugin, then restart the IDE
 * Open flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository).
   Note that as of version 60 the project must be opened as a Gradle project. Wait for Gradle sync to complete.
-  Build it using `Build` | `Build Project`
-* Run the tests from the command line: `bin/plugin test`. This ensures the dependencies are downloaded and
-  unpacked into the `artifacts` directory. They are needed to run the plugin.
+  - Create an external tool named Provision. See the section below named `Provision Tool`.
+  - Build the project using `Build` | `Build Project`
+* Run the tests from the command line: `bin/plugin test`.
 * Try running the plugin; there is an existing launch config for "Flutter IntelliJ". This should open the "runtime workbench", 
   a new instance of IntelliJ with the plugin installed.
 * If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install"
@@ -52,7 +52,6 @@ file.
   - `flutter doctor`
   - `flutter run`
 * Verify installation of the Flutter plugin:
-  - Make sure you have unpacked the dependencies into `artifacts` by previously running `bin/plugin test`
   - Select `Flutter Plugin` in the Run Configuration drop-down list.
   - Click Debug button (to the right of that drop-down).
   - In the new IntelliJ process that spawns, open the hello_world example.
@@ -62,6 +61,26 @@ file.
 * Note that as of version 60 the old `src` and `testSrc` trees in the root directory are no longer usable.
   Edit code using the files in the `flutter-idea` and `flutter-studio` modules instead.
   This change had to be made to allow debugging of tests in the IDE.
+
+## Provision Tool
+
+The Gradle build script currently assumes that some dependencies are present in the `artifacts` directory.
+This project uses an External Tool in IntelliJ to ensure the dependencies are present. It appears that
+external tools are not shareable. To make one, open the "Run Configuration" dialog and select "Flutter Plugin".
+Look at the "Before launch" panel. It probably displays an Unknown External Tool. Double-click that, then click
+edit icon in the new panel (pencil). Set the name to "Provision". Set the values:
+- Program: /bin/bash
+- Arguments: /bin/plugin test -s
+- Working directory: $ProjectFileDir$
+  - You can select that from a list by clicking the "+" symbol in the field
+
+There is a screenshot of this dialog in `resources/intellij/Provision.png'.
+`
+Save, close, and re-open the "Run Configuration" dialog. Confirm that the External Tool is named "Provision".
+
+If you know where the Application Support files are located for your version of IntelliJ,
+you can drop the definition into its `tools` directory before starting IntelliJ.
+The definition is in `resources/intellij/External Tools.xml`.
 
 ## Flutter plugin development on Windows
 
@@ -114,14 +133,11 @@ creating a project.
 - Add a dependency to it to `intellij.idea.community.main` using Project Structure
 - Move it above Dart-community. This sets the class path to use the Flutter plugin
 version of some code duplicated from the Dart plugin.
+- Create an external tool named Provision. See the section above named `Provision Tool`.
 
 ## Running plugin tests
 
 ### Using test run configurations in IntelliJ
-
-IMPORTANT: Before running the tests in IntelliJ, first ensure all dependents have been downloaded
-and unpacked into the `artifacts` directory. The easiest way to do that is to first run the tests
-using the `plugin` tool. See the next section for details.
 
 The repository contains two pre-defined test run configurations. One is for "unit" tests; that is
 currently defined as tests that do not rely on the IntelliJ UI APIs. The other is for "integration"
