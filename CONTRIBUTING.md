@@ -193,7 +193,7 @@ Sometimes browsing the source code of IntelliJ is helpful for understanding plat
 
   - In order to have the platform sources handy, clone the IntelliJ IDEA Community Edition repo
 (`git clone https://github.com/JetBrains/intellij-community`)
-  - Sync it to the same version of IntelliJ as given by `baseVersion` in gradle.properties (`git checkout git checkout 211.7628`). It will be in "detached HEAD" mode.
+  - Sync it to the same version of IntelliJ as given by `baseVersion` in gradle.properties (`git checkout 211.7628`). It will be in "detached HEAD" mode.
   - Open the Project Structure dialog (`File > Project Structure`). In the `IntelliJ IDEA Community Edition` sdk, go to 
     the `Sourcepaths` tab and add the path to `intellij-community`. Accept all the root folders found by the IDE after scanning.
   - Do the same for the intellij-plugins repo to get Dart plugin sources. Sync to the same version as before.
