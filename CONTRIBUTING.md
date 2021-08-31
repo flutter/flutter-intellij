@@ -27,6 +27,11 @@ file.
   - Determine the directory of your downloaded IntelliJ Community Edition installation 
     (e.g, `IntelliJ IDEA CE.app`, `~/idea-IC-183.4886.37` or 
     `~/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-0/211.6693.111/IntelliJ IDEA.app`)
+* Download Dart dependencies from the command line:
+    - `cd path/to/flutter-intellij`
+    - `flutter pub get`
+    - `cd tool/plugin`
+    - `flutter pub get`
 * Start IntelliJ
 * In the "Project Structure" dialog (`File | Project Structure`):
   - Select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure the JDK
@@ -49,11 +54,6 @@ file.
   Note that as of version 60 the project must be opened as a Gradle project. Wait for Gradle sync to complete.
   - Create an external tool named Provision. See the section below named `Provision Tool`
   - Build the project using `Build` | `Build Project`
-* Download Dart dependencies from the command line:
-  - `cd path/to/flutter-intellij`
-  - `flutter pub get`
-  - `cd tool/plugin`
-  - `flutter pub get`
 * Run the tests from the command line:
   - `cd path/to/flutter-intellij`
   - `bin/plugin test`
@@ -79,7 +79,7 @@ external tools are not shareable. To make one, open the "Run Configuration" dial
 Look at the "Before launch" panel. It probably displays an Unknown External Tool. Double-click that, then click
 edit icon in the new panel (pencil). Set the name to "Provision". Set the values:
 - Program: /bin/bash
-- Arguments: /bin/plugin test -s
+- Arguments: bin/plugin test -s
 - Working directory: $ProjectFileDir$
   - You can select that from a list by clicking the "+" symbol in the field
 
@@ -193,11 +193,10 @@ Sometimes browsing the source code of IntelliJ is helpful for understanding plat
 
   - In order to have the platform sources handy, clone the IntelliJ IDEA Community Edition repo
 (`git clone https://github.com/JetBrains/intellij-community`)
-  - Sync it to the same version of IDEA that you are using (`git checkout idea/171.3780.107`). It will be in "detached HEAD" mode.
+  - Sync it to the same version of IntelliJ as given by `baseVersion` in gradle.properties (`git checkout 211.7628`). It will be in "detached HEAD" mode.
   - Open the Project Structure dialog (`File > Project Structure`). In the `IntelliJ IDEA Community Edition` sdk, go to 
     the `Sourcepaths` tab and add the path to `intellij-community`. Accept all the root folders found by the IDE after scanning.
-  - Do the same for the intellij-plugins repo to get Dart plugin sources. Sync to the same version as in lib/dart-plugin. 
-    (`git checkout webstorm/171.4006`)
+  - Do the same for the intellij-plugins repo to get Dart plugin sources. Sync to the same version as before.
 
 ## Working with Android Studio
 
