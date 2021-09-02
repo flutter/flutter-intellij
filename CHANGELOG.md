@@ -1,3 +1,6 @@
+# 60.1
+- Add project type selection to new project wizard for Android Studio
+
 # 60.0
 - Modify run configs to ensure proper artifacts have been provisioned (#5729)
 - Update test setup instructions (#5728)

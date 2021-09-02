@@ -45,6 +45,10 @@
 
   <change-notes>
     <![CDATA[
+<h1>60.1</h1>
+<ul>
+  <li>Add project type selection to new project wizard for Android Studio</li>
+</ul>
 <h1>60.0</h1>
 <ul>
   <li>Modify run configs to ensure proper artifacts have been provisioned (#5729)</li>
