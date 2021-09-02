@@ -101,18 +101,11 @@ public class FlutterCreateAdditionalSettingsFields {
       // Only in Android Studio.
       helpForm.adjustContrast(projectType);
     }
-    if (FlutterUtils.isNewAndroidStudioProjectWizard()) {
-      changeSettingsItemVisibility(orgField, projectType != FlutterProjectType.PACKAGE);
-      changeSettingsItemVisibility(androidLanguageRadios.getComponent(), areLanguageFeaturesVisible);
-      changeSettingsItemVisibility(iosLanguageRadios.getComponent(), areLanguageFeaturesVisible);
-    }
-    else {
-      orgField.setEnabled(projectType != FlutterProjectType.PACKAGE);
-      UIUtil.setEnabled(androidLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
-      UIUtil.setEnabled(iosLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
-      if (isShowingPlatforms()) {
-        UIUtil.setEnabled(platformsForm.getComponent(), areLanguageFeaturesVisible, true, true);
-      }
+    orgField.setEnabled(projectType != FlutterProjectType.PACKAGE);
+    UIUtil.setEnabled(androidLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
+    UIUtil.setEnabled(iosLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
+    if (isShowingPlatforms()) {
+      UIUtil.setEnabled(platformsForm.getComponent(), areLanguageFeaturesVisible, true, true);
     }
   }
 
@@ -135,10 +128,8 @@ public class FlutterCreateAdditionalSettingsFields {
 
   public void addSettingsFields(@NotNull SettingsStep settingsStep) {
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.description.label"), descriptionField);
-    if (!FlutterUtils.isNewAndroidStudioProjectWizard()) {
-      settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.type.label"),
-                                    projectTypeForm.getComponent());
-    }
+    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.type.label"),
+                                  projectTypeForm.getComponent());
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.org.label"), orgField);
     addBorder(androidLanguageRadios.getComponent(), false);
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.android.label"),
@@ -178,13 +169,7 @@ public class FlutterCreateAdditionalSettingsFields {
   }
 
   public void updateProjectType(FlutterProjectType projectType) {
-    if (FlutterUtils.isNewAndroidStudioProjectWizard()) {
-      settings.setType(projectType);
-      if (projectTypeForm.getType() == projectType) {
-        projectTypeForm.getProjectTypeCombo().setSelectedItem(FlutterProjectType.PLUGIN); // Set to something other than default.
-      }
-      projectTypeForm.getProjectTypeCombo().setSelectedItem(projectType); // Force listeners to fire.
-    }
+    // TODO(messick) Remove this method and its caller, which is in the flutter-studio module.
   }
 
   public FlutterCreateAdditionalSettings getAdditionalSettings() {
