@@ -18,6 +18,14 @@ file.
     - `flutter pub get`
     - `flutter doctor`
     - `flutter run`
+* Fork `https://github.com/flutter/flutter-intellij` into your own GitHub account. 
+  If you already have a fork, and are now installing a development environment on a new machine,
+  make sure you've updated your fork so that you don't use stale configuration options from long ago.
+* `git clone git@github.com:<your_name_here>/flutter-intellij.git`
+* `cd flutter-intellij`
+* `git remote add origin git@github.com:flutter/flutter-intellij.git`
+  (So that you fetch from the master repository, not your clone, when running git fetch et al.)
+  The name `origin` can be whatever you want
 
 ## Flutter plugin development on MacOS and Linux
 
@@ -48,30 +56,29 @@ file.
       - plugins/yaml/lib/yaml.jar
 * In the "Java Compiler" preference page, make sure that the "Project bytecode version" is set to `11` or `Same as language level`
 * In the "Kotlin Compiler" preference page, make sure that the "Target JVM Version" is set to `11` or `Same as language level`
-* One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin. 
-  Find `Plugins` (in Settings/Preferences) and install the Dart plugin, then restart the IDE
-* Open flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository).
-  Note that as of version 60 the project must be opened as a Gradle project. Wait for Gradle sync to complete.
-  - Create an external tool named Provision. See the section below named `Provision Tool`
+* One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin
+  - Find `Plugins` (in Settings/Preferences) and install the Dart plugin, then restart the IDE
+* Open the flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository).
+  - If you see a popup with "Gradle build scripts found", please "Skip" or ignore it since the project cannot be imported as a gradle project
   - Build the project using `Build` | `Build Project`
 * Run the tests from the command line:
   - `cd path/to/flutter-intellij`
   - `bin/plugin test`
-* Try running the plugin; there is an existing launch config for "Flutter IntelliJ". This should open the "runtime workbench", 
+* Try running the plugin; there is an existing launch config for "Flutter Plugin". This should open the "runtime workbench", 
   a new instance of IntelliJ with the plugin installed.
 * If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install"
+  - Install the Dart plugin, exit, and launch again
 * Verify installation of the Flutter plugin:
-  - Select `Flutter Plugin` in the Run Configuration drop-down list.
-  - Click Debug button (to the right of that drop-down).
-  - In the new IntelliJ process that spawns, open the `path/to/flutter/examples/hello_world` project.
-  - Choose Edit Configuration in the Run Configuration drop-down list.
-  - Expand Defaults and verify that Flutter is present.
-  - Click [+] and verify that Flutter is present.
-* Note that as of version 60 the old `src` and `testSrc` trees in the root directory are no longer usable.
-  Edit code using the files in the `flutter-idea` and `flutter-studio` modules instead.
-  This change had to be made to allow debugging of tests in the IDE.
+  - Select `Flutter Plugin` in the Run Configuration drop-down list
+  - Click Debug button (to the right of that drop-down)
+  - In the new IntelliJ process that spawns, open the `path/to/flutter/examples/hello_world` project
+  - Choose `Edit Configurations...` in the Run Configuration drop-down list
+  - Expand `Edit configuration templates...` and verify that Flutter is present
+  - Click [+] and verify that Flutter is present
 
 ## Provision Tool
+
+This is not currently required. However, for debugging unit tests it may be handy; please ignore for now.
 
 The Gradle build script currently assumes that some dependencies are present in the `artifacts` directory.
 This project uses an External Tool in IntelliJ to ensure the dependencies are present. It appears that
@@ -138,7 +145,7 @@ creating a project.
 - Shut it down.
 
 - In Project Structure, import the module `flutter-intellij`
-  - *It must be imported as a Gradle module.*
+  - *Do not import it as a Gradle module.*
 - Add a dependency to it to `intellij.idea.community.main` using Project Structure
 - Move it above Dart-community. This sets the class path to use the Flutter plugin
 version of some code duplicated from the Dart plugin.
@@ -152,6 +159,10 @@ version of some code duplicated from the Dart plugin.
 ## Running plugin tests
 
 ### Using test run configurations in IntelliJ
+
+The IntelliJ test framework now requires unit tests to be run in a Gradle project. It is possible to
+import `flutter-intellij` as a Gradle project, but it is difficult, and not covered here. Instead,
+run tests using the plugin tool, as described below.
 
 The repository contains two pre-defined test run configurations. One is for "unit" tests; that is
 currently defined as tests that do not rely on the IntelliJ UI APIs. The other is for "integration"
@@ -187,6 +198,8 @@ It is also possible to run tests directly with Gradle, which would allow passing
 
 If you wanted to run a subset of the tests you could do so this way. See the 
 [Gradle docs](https://docs.gradle.org/current/userguide/java_testing.html) for more info about testing.
+*However*, you must have run the tests once using the plugin tool, to ensure all the dependencies have
+been configured.
 
 ## Adding platform sources
 Sometimes browsing the source code of IntelliJ is helpful for understanding platform details that aren't documented.
@@ -210,9 +223,9 @@ Sometimes browsing the source code of IntelliJ is helpful for understanding plat
 4. Checkout Dart plugin sources.
 5. Using the Project Structure editor, import
     - intellij-plugins/Dart/Dart-community.iml
-    - flutter-intellij -- Select the directory and choose `Import module from external model` and select `Gradle`
-6. In the Gradle tool window, click the refresh icon (top left) to ensure all Gradle modules are loaded properly
-7. Using the Project Structure editor, select the `studio` module and add a module dependency to all modules that begin with `flutter`
+    - flutter-intellij
+6. Using the Project Structure editor, select the `studio` module and add a module dependency to all modules
+   that begin with `flutter`, plus `Dart` (make sure `Dart` is at the bottom of the list)
 
 ## Working with Embedded DevTools (JxBrowser)
 
