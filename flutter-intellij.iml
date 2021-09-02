@@ -15,6 +15,7 @@
       <sourceFolder url="file://$MODULE_DIR$/testData" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/tool/icon_generator" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tool/icon_generator/lib" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tool/plugin/lib" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/.sandbox" />
@@ -35,6 +36,8 @@
       <excludeFolder url="file://$MODULE_DIR$/tool/plugin/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/tool/plugin/build" />
       <excludeFolder url="file://$MODULE_DIR$/tool/plugin/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/.gradle" />
+      <excludeFolder url="file://$MODULE_DIR$/flutter-studio/src/main" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
