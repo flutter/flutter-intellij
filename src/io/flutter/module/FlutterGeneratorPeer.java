@@ -55,9 +55,8 @@ public class FlutterGeneratorPeer {
     // Hide pending real content.
     myVersionContent.setVisible(false);
 
-    if (!FlutterUtils.isNewAndroidStudioProjectWizard()) {
-      myHelpForm.getComponent().setVisible(false);
-    }
+    // TODO(messick) Remove this field.
+    myHelpForm.getComponent().setVisible(false);
 
     init();
   }
