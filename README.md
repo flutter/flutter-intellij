@@ -1,4 +1,4 @@
-# <img src="https://flutter.dev/images/favicon.png" alt="Flutter" width="26" height="26" /> Flutter Plugin for IntelliJ
+# <img src="https://github.com/dart-lang/site-shared/blob/master/src/_assets/image/flutter/icon/64.png?raw=1" alt="Flutter" width="26" height="26"/> Flutter Plugin for IntelliJ
 
 [![Build Status](https://travis-ci.org/flutter/flutter-intellij.svg)](https://travis-ci.org/flutter/flutter-intellij)
 
