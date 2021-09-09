@@ -119,7 +119,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     final OutputListener listener = new OutputListener();
-    @NotNull FlutterCreateAdditionalSettings settings = getAdditionalSettings();
+    @NotNull final FlutterCreateAdditionalSettings settings = getAdditionalSettings();
+    settings.setProjectName(super.getName());
     final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project, listener, settings);
     if (root == null) {
       final String stderr = listener.getOutput().getStderr();
