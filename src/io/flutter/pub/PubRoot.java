@@ -69,7 +69,9 @@ public class PubRoot {
     final PsiFile psiFile = CommonDataKeys.PSI_FILE.getData(event.getDataContext());
     if (psiFile != null) {
       final PubRoot root = forPsiFile(psiFile);
-      return root == null ? null : root.refresh();
+      if (root != null) {
+        return root.refresh();
+      }
     }
 
     final Module module = LangDataKeys.MODULE.getData(event.getDataContext());
