@@ -45,6 +45,8 @@ import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.ComboBoxEditor;
 import javax.swing.Icon;
@@ -215,6 +217,12 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     final String settingsValidation = validateSettings(getAdditionalSettings());
     if (settingsValidation != null) {
       Messages.showErrorDialog(settingsValidation, "Error");
+      try {
+        Files.deleteIfExists(Path.of(dest.getBasePath()));
+      }
+      catch (IOException e) {
+        // ignore it
+      }
       return false;
     }
 
