@@ -72,19 +72,11 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
   }
 
   private static boolean isInFlutterModule(@NotNull AnActionEvent event) {
-    return findFlutterModule(event) != null;
-  }
-
-  private static Module findFlutterModule(@NotNull AnActionEvent event) {
     final Project project = event.getProject();
     if (project == null) {
-      return null;
+      return false;
     }
-    final VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
-    if (file == null) {
-      return null;
-    }
-    return findFlutterModule(project, file);
+    return FlutterModuleUtils.hasFlutterModule(project);
   }
 
   public static Module findFlutterModule(@NotNull Project project, @NotNull VirtualFile file) {
