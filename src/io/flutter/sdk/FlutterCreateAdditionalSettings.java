@@ -30,6 +30,9 @@ public class FlutterCreateAdditionalSettings {
   @Nullable
   private Boolean offlineMode;
 
+  @Nullable
+  private String projectName;
+
   // These objects get re-used each time the UI is rebuilt, including after the Finish button is clicked.
   @NotNull final private InitializeOnceBoolValueProperty platformAndroid = new InitializeOnceBoolValueProperty();
   @NotNull final private InitializeOnceBoolValueProperty platformIos = new InitializeOnceBoolValueProperty();
@@ -70,6 +73,15 @@ public class FlutterCreateAdditionalSettings {
     this.platformLinux.set(Boolean.TRUE.equals(platformLinux));
     this.platformMacos.set(Boolean.TRUE.equals(platformMacos));
     this.platformWindows.set(Boolean.TRUE.equals(platformWindows));
+  }
+
+  @Nullable
+  public String getProjectName() {
+    return projectName;
+  }
+
+  public void setProjectName(@Nullable String projectName) {
+    this.projectName = projectName;
   }
 
   public void setType(@Nullable FlutterProjectType value) {

@@ -219,6 +219,14 @@ public class FlutterSdk {
           args.add("android,ios");
         }
       }
+      if (getVersion().stableChannelSupportsPlatforms()) {
+        // The --project-name arg was actually introduced before --platforms but everyone should be on 2.0 by now anyway.
+        final String projectName = additionalSettings.getProjectName();
+        if (projectName != null) {
+          args.add("--project-name");
+          args.add(projectName);
+        }
+      }
     }
 
     // keep as the last argument
