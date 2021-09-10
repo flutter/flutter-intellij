@@ -257,7 +257,7 @@ public class FlutterModuleUtils {
     fields.setFilePath(main.getPath());
     config.setFields(fields);
 
-    runManager.addConfiguration(settings, false);
+    settings.storeInDotIdeaFolder();
     runManager.setSelectedConfiguration(settings);
   }
 
@@ -352,7 +352,7 @@ public class FlutterModuleUtils {
    * Set the passed module to the module type used by Flutter, defined by {@link #getModuleTypeIDForFlutter()}.
    */
   public static void setFlutterModuleType(@NotNull Module module) {
-    module.setOption(Module.ELEMENT_TYPE, getModuleTypeIDForFlutter());
+    module.setModuleType(getModuleTypeIDForFlutter());
   }
 
   public static void setFlutterModuleAndReload(@NotNull Module module, @NotNull Project project) {
