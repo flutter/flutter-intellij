@@ -9,8 +9,7 @@ import io.flutter.run.test.TestFields.Scope;
 import org.jdom.Element;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  * Verifies that we can read and write test configurations.
@@ -61,6 +60,19 @@ public class TestFieldsTest {
     assertEquals(Scope.NAME, after.getScope());
     assertEquals("should work", after.getTestName());
     assertEquals("hello_test.dart", after.getTestFile());
+    assertNull(after.getTestDir());
+  }
+
+  @Test
+  public void roundTripShouldPreserveRegexpSettings() {
+    final Element elt = new Element("test");
+    TestFields.forTestName("should *", "hello_test.dart").useRegexp(true).writeTo(elt);
+
+    final TestFields after = TestFields.readFrom(elt);
+    assertEquals(Scope.NAME, after.getScope());
+    assertEquals("should *", after.getTestName());
+    assertEquals("hello_test.dart", after.getTestFile());
+    assertTrue(after.getUseRegexp());
     assertNull(after.getTestDir());
   }
 

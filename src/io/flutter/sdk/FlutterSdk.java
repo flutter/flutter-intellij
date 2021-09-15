@@ -20,6 +20,7 @@ import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -356,7 +357,7 @@ public class FlutterSdk {
   }
 
   public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir, @Nullable String testNameSubstring,
-                                    @NotNull RunMode mode, @Nullable String additionalArgs, TestFields.Scope scope) {
+                                    @NotNull RunMode mode, @Nullable String additionalArgs, TestFields.Scope scope, boolean useRegexp) {
 
     final List<String> args = new ArrayList<>();
     if (myVersion.flutterTestSupportsMachineMode()) {
@@ -380,8 +381,14 @@ public class FlutterSdk {
       if (!myVersion.flutterTestSupportsFiltering()) {
         throw new IllegalStateException("Flutter SDK is too old to select tests by name");
       }
-      args.add("--plain-name");
-      args.add(testNameSubstring);
+      if (useRegexp) {
+        args.add("--name");
+        args.add("^" + StringUtil.escapeToRegexp(testNameSubstring) + "( \\(variant: .*\\))?$");
+      }
+      else {
+        args.add("--plain-name");
+        args.add(testNameSubstring);
+      }
     }
 
     if (additionalArgs != null && !additionalArgs.trim().isEmpty()) {
