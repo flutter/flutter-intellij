@@ -61,12 +61,12 @@ public class TestFields {
     this.additionalArgs = additionalArgs;
   }
 
-  @VisibleForTesting
   public TestFields useRegexp(boolean useRegexp) {
     this.useRegexp = useRegexp;
     return this;
   }
 
+  @VisibleForTesting
   public boolean getUseRegexp() {
     return useRegexp;
   }
