@@ -257,7 +257,7 @@ public class FlutterModuleUtils {
     fields.setFilePath(main.getPath());
     config.setFields(fields);
 
-    settings.storeInDotIdeaFolder();
+    runManager.addConfiguration(settings);
     runManager.setSelectedConfiguration(settings);
   }
 

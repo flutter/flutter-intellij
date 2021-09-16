@@ -15,15 +15,14 @@ import io.flutter.FlutterUtils;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
-import java.awt.Component;
-import java.awt.Insets;
-import java.awt.event.ItemEvent;
-import java.util.function.Supplier;
-import javax.swing.JComponent;
-import javax.swing.JTextField;
+import org.jetbrains.annotations.NotNull;
+
+import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 import javax.swing.event.DocumentEvent;
-import org.jetbrains.annotations.NotNull;
+import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.util.function.Supplier;
 
 public class FlutterCreateAdditionalSettingsFields {
   private final FlutterCreateAdditionalSettings settings;
@@ -165,7 +164,18 @@ public class FlutterCreateAdditionalSettingsFields {
   }
 
   private boolean projectTypeHasPlatforms() {
-    return settings.getType() == FlutterProjectType.APP || settings.getType() == FlutterProjectType.PLUGIN;
+    final FlutterProjectType type = settings.getType();
+    if (type != null) {
+      switch (type) {
+        case APP:
+        case PLUGIN:
+        case SKELETON:
+          return true;
+        default:
+          return false;
+      }
+    }
+    return false;
   }
 
   public void updateProjectType(FlutterProjectType projectType) {
@@ -193,8 +203,11 @@ public class FlutterCreateAdditionalSettingsFields {
   private boolean shouldIncludePlatforms() {
     switch (projectTypeForm.getType()) {
       case APP: // fall through
-      case PLUGIN: return platformsForm.shouldBeVisible();
-      default: return false;
+      case SKELETON:
+      case PLUGIN:
+        return platformsForm.shouldBeVisible();
+      default:
+        return false;
     }
   }
 
@@ -210,5 +223,9 @@ public class FlutterCreateAdditionalSettingsFields {
 
   public boolean isShowingPlatforms() {
     return projectTypeHasPlatforms() && platformsForm.shouldBeVisible();
+  }
+
+  public void updateProjectTypes() {
+    projectTypeForm.updateProjectTypes();
   }
 }
