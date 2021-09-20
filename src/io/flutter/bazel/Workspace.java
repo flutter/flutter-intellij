@@ -265,9 +265,9 @@ public class Workspace {
 
     final String sdkHome = config == null ? null : getScriptFromPath(root, readonlyPath, config.getSdkHome());
 
-    final String requiredIJPluginID = config == null ? null : getScriptFromPath(root, readonlyPath, config.getRequiredIJPluginID());
+    final String requiredIJPluginID = config == null ? null : config.getRequiredIJPluginID();
 
-    final String requiredIJPluginMessage = config == null ? null : getScriptFromPath(root, readonlyPath, config.getRequiredIJPluginMessage());
+    final String requiredIJPluginMessage = config == null ? null : config.getRequiredIJPluginMessage();
 
     final String configWarningPrefix = config == null ? null : config.getConfigWarningPrefix();
 
