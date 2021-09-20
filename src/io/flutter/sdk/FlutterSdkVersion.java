@@ -58,6 +58,11 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
    */
   private static final FlutterSdkVersion MIN_PASS_DEVTOOLS_SDK = new FlutterSdkVersion("1.26.0-11.0.pre");
 
+  /**
+   * The version that includes the skeleton template.
+   */
+  private static final FlutterSdkVersion MIN_SKELETON_TEMPLATE = new FlutterSdkVersion("2.5.0");
+
   @Nullable
   private final Version version;
   @Nullable
@@ -77,11 +82,13 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
         betaVersion = Version.parseVersion(split[1]);
         final String[] parts = split[1].split("\\.");
         masterVersion = parts.length > 3 ? Integer.parseInt(parts[3]) : 0;
-      } else {
+      }
+      else {
         betaVersion = null;
         masterVersion = 0;
       }
-    } else {
+    }
+    else {
       version = null;
       betaVersion = null;
       masterVersion = 0;
@@ -173,6 +180,10 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
     return version != null && version.compareTo(MIN_PUB_OUTDATED_SDK.version) >= 0;
   }
 
+  public boolean isSkeletonTemplateAvailable() {
+    return version != null && version.compareTo(MIN_SKELETON_TEMPLATE.version) >= 0;
+  }
+
   public boolean isValid() {
     return version != null;
   }
@@ -206,9 +217,11 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
     // Check for beta version strings if standard versions are equivalent.
     if (betaVersion == null && otherVersion.betaVersion == null) {
       return 0;
-    } else if (betaVersion == null) {
+    }
+    else if (betaVersion == null) {
       return 1;
-    } else if (otherVersion.betaVersion == null) {
+    }
+    else if (otherVersion.betaVersion == null) {
       return -1;
     }
 
@@ -222,11 +235,14 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
     // Otherwise, the version without a master version is further ahead.
     if (masterVersion != 0 && otherVersion.masterVersion != 0) {
       return Integer.compare(masterVersion, otherVersion.masterVersion);
-    } else if (masterVersion != 0) {
+    }
+    else if (masterVersion != 0) {
       return -1;
-    } else if (otherVersion.masterVersion != 0) {
+    }
+    else if (otherVersion.masterVersion != 0) {
       return 1;
-    } else {
+    }
+    else {
       return 0;
     }
   }

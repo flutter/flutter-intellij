@@ -12,6 +12,7 @@ public enum FlutterProjectType {
   PLUGIN(FlutterBundle.message("flutter.module.create.settings.type.plugin"), "plugin", true),
   PACKAGE(FlutterBundle.message("flutter.module.create.settings.type.package"), "package", false),
   MODULE(FlutterBundle.message("flutter.module.create.settings.type.module"), "module", false),
+  SKELETON("Skeleton", "skeleton", false),
   IMPORT(FlutterBundle.message("flutter.module.create.settings.type.import_module"), "module", false);
 
   final public String title;

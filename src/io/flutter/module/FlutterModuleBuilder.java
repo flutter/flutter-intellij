@@ -5,8 +5,6 @@
  */
 package io.flutter.module;
 
-import static java.util.Arrays.asList;
-
 import com.intellij.execution.OutputListener;
 import com.intellij.execution.process.ProcessListener;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
@@ -16,11 +14,8 @@ import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.module.ModifiableModuleModel;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.module.ModuleType;
-import com.intellij.openapi.module.ModuleWithNameAlreadyExists;
+import com.intellij.openapi.module.*;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
@@ -44,16 +39,17 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
+import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.ComboBoxEditor;
-import javax.swing.Icon;
-import javax.swing.JComponent;
-import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import static java.util.Arrays.asList;
 
 public class FlutterModuleBuilder extends ModuleBuilder {
   private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
@@ -337,7 +333,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return mySettingsFields;
   }
 
-  public static class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
+  public class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
     private final FlutterGeneratorPeer myPeer;
 
     public FlutterModuleWizardStep(@NotNull WizardContext context) {
@@ -359,6 +355,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
     @Override
     public void updateDataModel() {
+      mySettingsFields.updateProjectTypes();
     }
 
     @Override

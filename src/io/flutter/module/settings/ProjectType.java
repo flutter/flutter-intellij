@@ -10,17 +10,15 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.sdk.FlutterSdk;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Supplier;
-import javax.swing.AbstractListModel;
-import javax.swing.ComboBoxModel;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class ProjectType {
   private static final class ProjectTypeComboBoxModel extends AbstractListModel<FlutterProjectType>
@@ -62,6 +60,16 @@ public class ProjectType {
       mySelected = item;
       fireContentsChanged(this, 0, getSize());
     }
+
+    void addSkeleton() {
+      if (!myList.contains(FlutterProjectType.SKELETON)) {
+        myList.add(FlutterProjectType.SKELETON);
+      }
+    }
+
+    void removeSkeleton() {
+      myList.remove(FlutterProjectType.SKELETON);
+    }
   }
 
   private Supplier<? extends FlutterSdk> getSdk;
@@ -80,7 +88,6 @@ public class ProjectType {
 
   private void createUIComponents() {
     projectTypeCombo = new ComboBox<>();
-    //noinspection unchecked
     projectTypeCombo.setModel(new ProjectTypeComboBoxModel());
     projectTypeCombo.setToolTipText(FlutterBundle.message("flutter.module.create.settings.type.tip"));
   }
@@ -104,5 +111,14 @@ public class ProjectType {
 
   public void addListener(ItemListener listener) {
     projectTypeCombo.addItemListener(listener);
+  }
+
+  public void updateProjectTypes() {
+    if (getSdk.get().getVersion().isSkeletonTemplateAvailable()) {
+      ((ProjectTypeComboBoxModel)projectTypeCombo.getModel()).addSkeleton();
+    }
+    else {
+      ((ProjectTypeComboBoxModel)projectTypeCombo.getModel()).removeSkeleton();
+    }
   }
 }
