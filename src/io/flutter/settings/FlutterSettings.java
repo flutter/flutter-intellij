@@ -369,11 +369,11 @@ public class FlutterSettings {
   }
 
   public boolean isAllowTestsInSourcesRoot() {
-    return getPropertiesComponent().getBoolean(allowTestsInSourcesRootKey, true);
+    return getPropertiesComponent().getBoolean(allowTestsInSourcesRootKey, false);
   }
 
   public void setAllowTestsInSourcesRoot(boolean value) {
-    getPropertiesComponent().setValue(allowTestsInSourcesRootKey, value, true);
+    getPropertiesComponent().setValue(allowTestsInSourcesRootKey, value, false);
     fireEvent();
   }
 }
