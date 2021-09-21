@@ -77,6 +77,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myShowClosingLabels;
   private FixedSizeButton myCopyButton;
   private JTextArea myFontPackagesTextArea; // This should be changed to a structured list some day.
+  private JCheckBox myAllowTestsInSourcesRoot;
 
   private final @NotNull Project myProject;
   private final WorkspaceCache workspaceCache;
@@ -235,6 +236,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isAllowTestsInSourcesRoot() != myAllowTestsInSourcesRoot.isSelected()) {
+      return true;
+    }
+
     if (!settings.getFontPackages().equals(myFontPackagesTextArea.getText())) {
       return true;
     }
@@ -290,6 +295,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setEnableHotUi(myEnableHotUiCheckBox.isSelected());
     settings.setEnableEmbeddedBrowsers(myEnableEmbeddedBrowsersCheckBox.isSelected());
     settings.setEnableBazelHotRestart(myEnableBazelHotRestartCheckBox.isSelected());
+    settings.setAllowTestsInSourcesRoot(myAllowTestsInSourcesRoot.isSelected());
     settings.setShowAllRunConfigurationsInContext(myShowAllRunConfigurationsInContextCheckBox.isSelected());
     settings.setFontPackages(myFontPackagesTextArea.getText());
 
@@ -336,6 +342,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myEnableEmbeddedBrowsersCheckBox.setSelected(settings.isEnableEmbeddedBrowsers());
     myEnableBazelHotRestartCheckBox.setSelected(settings.isEnableBazelHotRestart());
+    myAllowTestsInSourcesRoot.setSelected(settings.isAllowTestsInSourcesRoot());
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
     myIncludeAllStackTraces.setEnabled(myShowStructuredErrors.isSelected());

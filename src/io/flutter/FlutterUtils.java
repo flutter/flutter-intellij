@@ -24,11 +24,10 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.roots.ModuleSourceOrderEntry;
-import com.intellij.openapi.roots.OrderEntry;
+import com.intellij.openapi.roots.*;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -38,6 +37,7 @@ import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRootCache;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
@@ -204,12 +204,48 @@ public class FlutterUtils {
 
     // Check that we're in a project path that starts with 'test/'.
     final String relativePath = root.getRelativePath(file.getVirtualFile());
-    if (relativePath == null || !(relativePath.startsWith("test/") || relativePath.startsWith("integration_test/"))) {
+    if (relativePath == null) {
       return false;
+    }
+    final Module module = root.getModule(file.getProject());
+    if (!(relativePath.startsWith("test/") || relativePath.startsWith("integration_test/"))) {
+      if (!isInTestOrSourceRoot(module, file)) {
+        return false;
+      }
     }
 
     // Check that we're in a Flutter module.
-    return FlutterModuleUtils.isFlutterModule(root.getModule(file.getProject()));
+    return FlutterModuleUtils.isFlutterModule(module);
+  }
+
+  private static boolean isInTestOrSourceRoot(Module module, @NotNull DartFile file) {
+    final ContentEntry[] entries = ModuleRootManager.getInstance(module).getContentEntries();
+    final VirtualFile virtualFile = file.getContainingFile().getVirtualFile();
+    boolean foundSourceRoot = false;
+    for (ContentEntry entry : entries) {
+      for (SourceFolder folder : entry.getSourceFolders()) {
+        final VirtualFile folderFile = folder.getFile();
+        if (folderFile == null) {
+          continue;
+        }
+        if (folderFile.equals(VfsUtil.getCommonAncestor(folderFile, virtualFile))) {
+          if (folder.getRootType().isForTests()) {
+            return true; // Test file is in a directory marked as a test source root, but not named 'test'.
+          }
+          else {
+            foundSourceRoot = true;
+            break;
+          }
+        }
+      }
+    }
+    if (foundSourceRoot) {
+      // The file is in a sources root but not marked as tests.
+      if (file.getName().endsWith(("_test.dart")) && FlutterSettings.getInstance().isAllowTestsInSourcesRoot()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public static boolean isIntegrationTestingMode() {
