@@ -35,6 +35,8 @@ import io.flutter.*;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.font.FontPreviewProcessor;
+import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRoots;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -46,6 +48,8 @@ import javax.swing.text.JTextComponent;
 import java.awt.datatransfer.StringSelection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.concurrent.Semaphore;
 
 // Note: when updating the settings here, update FlutterSearchableOptionContributor as well.
 
@@ -85,6 +89,13 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private boolean ignoringSdkChanges = false;
 
   private String fullVersionString;
+  private FlutterSdkVersion previousSdkVersion;
+
+  /**
+   * Semaphore used to synchronize flutter commands so we don't try to do two at once.
+   */
+  private final Semaphore lock = new Semaphore(1, true);
+  private Process updater;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
     this.myProject = project;
@@ -95,6 +106,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   }
 
   private void init() {
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myProject);
+    if (sdk != null) {
+      previousSdkVersion = sdk.getVersion();
+    }
     mySdkCombo.getComboBox().setEditable(true);
 
     myCopyButton.setSize(ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE);
@@ -264,13 +279,22 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
       final String sdkHomePath = getSdkPathText();
       if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
+
         ApplicationManager.getApplication().runWriteAction(() -> {
           FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath);
           FlutterSdkUtil.enableDartSdk(myProject);
+
           ApplicationManager.getApplication().executeOnPooledThread(() -> {
             final FlutterSdk sdk = FlutterSdk.forPath(sdkHomePath);
             if (sdk != null) {
-              sdk.queryFlutterChannel(false);
+              try {
+                lock.acquire();
+                sdk.queryFlutterChannel(false);
+                lock.release();
+              }
+              catch (InterruptedException e) {
+                // do nothing
+              }
             }
           });
         });
@@ -320,6 +344,27 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     }
 
     onVersionChanged();
+    if (sdk != null) {
+      if (previousSdkVersion != null) {
+        if (previousSdkVersion.compareTo(sdk.getVersion()) != 0) {
+          final List<PubRoot> roots = PubRoots.forProject(myProject);
+          try {
+            lock.acquire();
+            for (PubRoot root : roots) {
+              sdk.startPubGet(root, myProject);
+            }
+            lock.release();
+          }
+          catch (InterruptedException e) {
+            // do nothing
+          }
+          previousSdkVersion = sdk.getVersion();
+        }
+      }
+    }
+    else {
+      previousSdkVersion = null;
+    }
 
     myReportUsageInformationCheckBox.setSelected(FlutterInitializer.getCanReportAnalytics());
 
@@ -375,17 +420,40 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return;
     }
 
+    // Moved launching the version updater to a background thread to avoid deadlock
+    // when the semaphone was locked for a long time on the EDT.
     final ModalityState modalityState = ModalityState.current();
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      try {
+        if (updater != null) {
+          // If we get back here before the previous one finished then just kill it.
+          // This isn't perfect, but does help avoid printing this message most times:
+          // Waiting for another flutter command to release the startup lock...
+          updater.destroy();
+          lock.release();
+        }
+        Thread.sleep(100L);
+        lock.acquire();
 
-    // TODO(devoncarew): Switch this to expecting json output.
-    sdk.flutterVersion().start((ProcessOutput output) -> {
-      final String fullVersionText = output.getStdout();
-      fullVersionString = fullVersionText;
+        ApplicationManager.getApplication().invokeLater(() -> {
+          // "flutter --version" can take a long time on a slow network.
+          updater = sdk.flutterVersion().start((ProcessOutput output) -> {
+            fullVersionString = output.getStdout();
+            final String[] lines = StringUtil.splitByLines(fullVersionString);
+            final String singleLineVersion = lines.length > 0 ? lines[0] : "";
 
-      final String[] lines = StringUtil.splitByLines(fullVersionText);
-      final String singleLineVersion = lines.length > 0 ? lines[0] : "";
-      ApplicationManager.getApplication().invokeLater(() -> updateVersionTextIfCurrent(sdk, singleLineVersion), modalityState);
-    }, null);
+            ApplicationManager.getApplication().invokeLater(() -> {
+              updater = null;
+              lock.release();
+              updateVersionTextIfCurrent(sdk, singleLineVersion);
+            }, modalityState);
+          }, null);
+        }, modalityState);
+      }
+      catch (InterruptedException e) {
+        // do nothing
+      }
+    });
   }
 
   /***
