@@ -36,6 +36,7 @@ public class FlutterSettings {
   private static final String enableBazelHotRestartKey = "io.flutter.editor.enableBazelHotRestart";
   private static final String showBazelHotRestartWarningKey = "io.flutter.showBazelHotRestartWarning";
   private static final String fontPackagesKey = "io.flutter.fontPackages";
+  private static final String allowTestsInSourcesRootKey = "io.flutter.allowTestsInSources";
 
   // TODO(helin24): This is to change the embedded browser setting back to true only once for Big Sur users. If we
   // switch to enabling the embedded browser for everyone, then delete this key.
@@ -139,6 +140,10 @@ public class FlutterSettings {
 
     if (isChangeBigSurToTrue()) {
       analytics.sendEvent("settings", afterLastPeriod(changeBigSurToTrueKey));
+    }
+
+    if (isAllowTestsInSourcesRoot()) {
+      analytics.sendEvent("settings", afterLastPeriod(allowTestsInSourcesRootKey));
     }
 
     if (!getFontPackages().isEmpty()) {
@@ -360,6 +365,15 @@ public class FlutterSettings {
 
   public void setChangeBigSurToTrue(boolean value) {
     getPropertiesComponent().setValue(changeBigSurToTrueKey, value, true);
+    fireEvent();
+  }
+
+  public boolean isAllowTestsInSourcesRoot() {
+    return getPropertiesComponent().getBoolean(allowTestsInSourcesRootKey, false);
+  }
+
+  public void setAllowTestsInSourcesRoot(boolean value) {
+    getPropertiesComponent().setValue(allowTestsInSourcesRootKey, value, false);
     fireEvent();
   }
 }
