@@ -5,6 +5,7 @@
  */
 package io.flutter.run;
 
+import com.intellij.AppTopics;
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.hint.HintManagerImpl;
 import com.intellij.codeInsight.hint.HintUtil;
@@ -22,11 +23,16 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.ex.AnActionListener;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.fileEditor.FileDocumentManagerListener;
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.util.Computable;
@@ -54,6 +60,7 @@ import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -85,7 +92,6 @@ public class FlutterReloadManager {
   }
 
   private final @NotNull Project myProject;
-  private final FlutterSettings mySettings;
 
   private Notification lastNotification;
 
@@ -103,7 +109,6 @@ public class FlutterReloadManager {
 
   private FlutterReloadManager(@NotNull Project project) {
     this.myProject = project;
-    this.mySettings = FlutterSettings.getInstance();
 
     final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect(project);
     connection.subscribe(AnActionListener.TOPIC, new AnActionListener() {
@@ -146,10 +151,48 @@ public class FlutterReloadManager {
         }
       }
     });
+    connection.subscribe(AppTopics.FILE_DOCUMENT_SYNC, new FileDocumentManagerListener() {
+      @Override
+      public void beforeAllDocumentsSaving() {
+        if (!FlutterSettings.getInstance().isReloadOnSave()) return;
+        if (myProject.isDisposed()) return;
+        if (!FlutterModuleUtils.hasFlutterModule(myProject)) return;
+        // The "Save files if the IDE is idle ..." option runs whether there are any changes or not.
+        boolean isModified = false;
+        for (FileEditor fileEditor : FileEditorManager.getInstance(myProject).getAllEditors()) {
+          if (fileEditor.isModified()) {
+            isModified = true;
+            break;
+          }
+        }
+        if (!isModified) return;
+
+        ApplicationManager.getApplication().invokeLater(() -> {
+          // Find a Dart editor to trigger the reload.
+          final Editor anEditor = ApplicationManager.getApplication().runReadAction((Computable<Editor>)() -> {
+            Editor someEditor = null;
+            for (Editor editor : EditorFactory.getInstance().getAllEditors()) {
+              if (editor.isDisposed()) continue;
+              if (editor.getProject() != myProject) continue;
+              final PsiFile psiFile = PsiDocumentManager.getInstance(myProject).getPsiFile(editor.getDocument());
+              if (psiFile instanceof DartFile && someEditor == null) {
+                someEditor = editor;
+              }
+              if (null != PsiTreeUtil.findChildOfType(psiFile, PsiErrorElement.class, false)) {
+                // If there are analysis errors we want to silently exit, without showing a notification.
+                return null;
+              }
+            }
+            return someEditor;
+          });
+          handleSaveAllNotification(anEditor);
+        }, ModalityState.any());
+      }
+    });
   }
 
   private void handleSaveAllNotification(@Nullable Editor editor) {
-    if (!mySettings.isReloadOnSave() || editor == null) {
+    if (!FlutterSettings.getInstance().isReloadOnSave() || editor == null) {
       return;
     }
 
