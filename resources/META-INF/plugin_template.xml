@@ -310,8 +310,9 @@
 
     <applicationService serviceImplementation="io.flutter.jxbrowser.EmbeddedBrowserEngine" overrides="false" />
     <applicationService serviceImplementation="io.flutter.font.FontPreviewProcessor"/>
-    <console.folding implementation="io.flutter.console.FlutterConsoleFolding"/>
-    <console.folding implementation="io.flutter.logging.FlutterConsoleLogFolding"/>
+    <console.folding implementation="io.flutter.console.FlutterConsoleFolding" id="1"/>
+    <console.folding implementation="io.flutter.console.FlutterConsoleExceptionFolding" order="after 1"/>
+    <console.folding implementation="io.flutter.logging.FlutterConsoleLogFolding" order="last"/>
 
     <projectConfigurable groupId="language" instance="io.flutter.sdk.FlutterSettingsConfigurable"
                          id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle" nonDefaultProject="true"/>
