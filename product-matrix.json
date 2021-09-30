@@ -26,7 +26,7 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2021.1, Android Studio 2021.1.1 Canary 10",
+      "comments": "IntelliJ 2021.1, Android Studio 2021.1.1 Canary 13",
       "name": "Bumblebee",
       "isUnitTestTarget": "true",
       "version": "AS.211",

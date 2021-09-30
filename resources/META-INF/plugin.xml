@@ -45,6 +45,26 @@
 
   <change-notes>
     <![CDATA[
+<h1>61.0</h1>
+<ul>
+  <li>Make console stack traces expandable (#5777)</li>
+  <li>Do hot reload on auto-save (#5774)</li>
+  <li>Run flutter pub get after changing SDK in preferences (#5773)</li>
+  <li>Allow tests in any marked test dir and optionally in sources (#5770)</li>
+  <li>Add the new skeleton template to the New Project Wizard (#5765)</li>
+  <li>Bug fix in Workspace.java: parsing of contents out of the json file. (#5768)</li>
+  <li>Make unit test name matching more strict (#5763)</li>
+  <li>Stop running an external tool before launching (#5759)</li>
+  <li>Change some deprecated API usage (#5755)</li>
+  <li>Try harder to find pub root (#5753)</li>
+  <li>Add --project-name arg to flutter create (#5752)</li>
+  <li>Delete the project directory if project validation fails (#5751)</li>
+  <li>Build menu should be visible even if no file is selected (#5750)</li>
+  <li>Fix broken image resorce link (#5745)</li>
+  <li>Convert back to iml-based project (#5741)</li>
+  <li>Remove old code from NPW (#5739)</li>
+  <li>Fix some problems in the set up docs (#5734)</li>
+</ul>
 <h1>60.1</h1>
 <ul>
   <li>Add project type selection to new project wizard for Android Studio</li>
@@ -60,62 +80,6 @@
   <li>Update build script for AS canary (#5709)</li>
   <li>Refactor icon preview processing to be incremental (#5704)</li>
   <li>Add "mdof" live template for MediaQuery.of(context) (#5698)</li>
-</ul>
-<h1>59.0</h1>
-<ul>
-  <li>Update installation instructions for Windows</li>
-  <li>Make reanalyze() work after packages are removed from icon package list (#5678)</li>
-  <li>Optimize icon preview processing for multiple analyses (#5677)</li>
-  <li>Handle the new event format for widget recount info (#5671)</li>
-  <li>Update to jxbrowser 7.17 (#5675)</li>
-  <li>Remove creating flutter_build_mode flag (#5654)</li>
-  <li>Remove custom listeners before a project is closed</li>
-  <li>Persist tool window open states during project open/close (#5664)</li>
-  <li>Use off screen render mode for linux (#5663)</li>
-  <li>Add analytics for null analyzer during add breakpoint (#5626)</li>
-  <li>Add menu item to Open in AppCode (#5660)</li>
-  <li>Disallow iOS builds if not on Mac (#5657)</li>
-  <li>Add a field for environment variables to the run config editor (#5656)</li>
-  <li>Add mockito to build.gradle (#5645)</li>
-  <li>Remove powermock from FlutterView tests and remove non-stack uses (#5644)</li>
-  <li>Update docs for yaml plugin (#5642)</li>
-  <li>Add mockito library (#5641)</li>
-  <li>Stop asking to delete coverage data (#5640)</li>
-  <li>Dynamic icon preview of non-standard icon packages (#5595)</li>
-  <li>Detect repeated daemon crashes and provide recovery hint (#5638)</li>
-  <li>Update live templates to not use double underscores (#5619)</li>
-  <li>Fix Android Studio path on Linux (#5605)</li>
-  <li>Open source file in Android Studio at exact cursor (#5606)</li>
-  <li>Check for project disposal right before organize executes (#5624)</li>
-  <li>Skip Flutter tool windows for non-Flutter projects (WIP) (#5622)</li>
-  <li>Add force scale option for linux (#5618)</li>
-</ul>
-<h1>58.0</h1>
-<ul>
-  <li>Add some NotNull annotations in the FlutterWidgetPerf classes; rev to the latest VM service protocol lib (#5588)</li>
-  <li>Check for disposed project before getting embedded browser (#5590)</li>
-  <li>Allow open DevTools from tests (#5279)</li>
-  <li>Add field for Dart entrypoint in bazel configuration form (#5155)</li>
-  <li>Check for initial open state of embedded browser (#5580)</li>
-  <li>Send caught exceptions as events (#5576)</li>
-  <li>Fix custom component in a presentation update issue (#5577)</li>
-  <li>Update build for AS canary (#5575)</li>
-  <li>Update jxbrowser to v7.16 (#5574)</li>
-  <li>Update the Inspector to prep for changes to the widget transformer (#5570)</li>
-  <li>Adapt to breaking API change in 212 (#5567)</li>
-  <li>Use 2021.2 for unit tests (#5565)</li>
-  <li>Change embedded browser setting (#5561)</li>
-  <li>Fix an index out of bounds in FlutterSdk.java (#5559)</li>
-  <li>Allow Instance fields to be nullable (#5554)</li>
-  <li>Fix a bunch of test failures on Windows (#5553)</li>
-  <li>Add a section on configuring a Windows dev env (#5545)</li>
-  <li>Display test coverage in the editor (#5544)</li>
-  <li>Generate icons from a font file (#5504)</li>
-  <li>Add switch to disable notifications (#5539)</li>
-  <li>Clean up unused version for bazel (#5535)</li>
-  <li>Switch the repo's analysis options to using package:lints (#5534)</li>
-  <li>Stop using DevTools URL util method, reorg tests (#5517)</li>
-  <li>Update the set of supported IntelliJ versions (#5520)</li>
 </ul>
 ]]>
   </change-notes>
