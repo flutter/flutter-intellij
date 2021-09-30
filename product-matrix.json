@@ -2,18 +2,6 @@
   "list": [
     {
       "channel": "stable",
-      "comments": "IntelliJ 2020.2.3, Android Studio 4.2",
-      "name": "Android Studio 4.2",
-      "version": "4.2",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "202.6987402",
-      "baseVersion": "202.7660.26",
-      "dartPluginVersion": "202.8070",
-      "sinceBuild": "202.7660.26",
-      "untilBuild": "202.*"
-    },
-    {
-      "channel": "stable",
       "comments": "IntelliJ 2020.3.4, Android Studio 2020.3.1",
       "name": "Arctic Fox 2020.3.1, Beta",
       "version": "AF.3.1",
@@ -26,7 +14,7 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2021.1, Android Studio 2021.1.1 Canary 10",
+      "comments": "IntelliJ 2021.1, Android Studio 2021.1.1 Canary 13",
       "name": "Bumblebee",
       "isUnitTestTarget": "true",
       "version": "AS.211",

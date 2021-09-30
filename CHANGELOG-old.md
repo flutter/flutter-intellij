@@ -1,3 +1,17 @@
+# 60.1
+- Add project type selection to new project wizard for Android Studio
+
+# 60.0
+- Modify run configs to ensure proper artifacts have been provisioned (#5729)
+- Update test setup instructions (#5728)
+- Ignore errors reported when Android Studio is launched (#5726)
+- Convert repo to a Gradle-based project (#5720)
+- Delete two obsolete tests and attempt to de-flake others (#5715)
+- Port over support for special list display in the debugger (#5713)
+- Update build script for AS canary (#5709)
+- Refactor icon preview processing to be incremental (#5704)
+- Add "mdof" live template for MediaQuery.of(context) (#5698)
+
 # 59.0
 - Update installation instructions for Windows
 - Make reanalyze() work after packages are removed from icon package list (#5678)
