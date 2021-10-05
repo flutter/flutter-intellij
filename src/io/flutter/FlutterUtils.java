@@ -221,7 +221,7 @@ public class FlutterUtils {
   private static boolean isInTestOrSourceRoot(Module module, @NotNull DartFile file) {
     final ModuleRootManager manager = ModuleRootManager.getInstance(module);
     if (manager == null) {
-      return false;
+      return false; // This does happen.
     }
     final ContentEntry[] entries = manager.getContentEntries();
     final VirtualFile virtualFile = file.getContainingFile().getVirtualFile();
