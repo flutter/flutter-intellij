@@ -1,3 +1,6 @@
+# 61.1
+- Add null check for manager (#5799)
+
 # 61.0
 - Make console stack traces expandable (#5777)
 - Do hot reload on auto-save (#5774)
