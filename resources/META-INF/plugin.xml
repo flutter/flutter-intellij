@@ -45,6 +45,10 @@
 
   <change-notes>
     <![CDATA[
+<h1>61.1</h1>
+<ul>
+  <li>Add null check for manager (#5799)</li>
+</ul>
 <h1>61.0</h1>
 <ul>
   <li>Make console stack traces expandable (#5777)</li>
