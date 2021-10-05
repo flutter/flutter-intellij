@@ -219,7 +219,11 @@ public class FlutterUtils {
   }
 
   private static boolean isInTestOrSourceRoot(Module module, @NotNull DartFile file) {
-    final ContentEntry[] entries = ModuleRootManager.getInstance(module).getContentEntries();
+    final ModuleRootManager manager = ModuleRootManager.getInstance(module);
+    if (manager == null) {
+      return false;
+    }
+    final ContentEntry[] entries = manager.getContentEntries();
     final VirtualFile virtualFile = file.getContainingFile().getVirtualFile();
     boolean foundSourceRoot = false;
     for (ContentEntry entry : entries) {
