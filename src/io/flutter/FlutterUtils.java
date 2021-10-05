@@ -218,7 +218,10 @@ public class FlutterUtils {
     return FlutterModuleUtils.isFlutterModule(module);
   }
 
-  private static boolean isInTestOrSourceRoot(Module module, @NotNull DartFile file) {
+  private static boolean isInTestOrSourceRoot(@Nullable Module module, @NotNull DartFile file) {
+    if (module == null) {
+      return false;
+    }
     final ModuleRootManager manager = ModuleRootManager.getInstance(module);
     if (manager == null) {
       return false;
