@@ -6,6 +6,7 @@
 package io.flutter.dart;
 
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.tree.IElementType;
 import com.jetbrains.lang.dart.DartTokenTypes;
 import com.jetbrains.lang.dart.psi.DartArgumentList;
 import com.jetbrains.lang.dart.psi.DartArguments;
@@ -35,6 +36,17 @@ public class DartPsiUtil {
     if (parent.getNode().getElementType() != DartTokenTypes.NEW_EXPRESSION) return null;
     return parent;
   }
+
+  @Nullable
+  public static PsiElement getSurroundingNewOrCallExpression(PsiElement element) {
+    while (element != null) {
+      IElementType type = element.getNode().getElementType();
+      if (type == DartTokenTypes.NEW_EXPRESSION || type == DartTokenTypes.CALL_EXPRESSION) return element;
+      element = element.getParent();
+    }
+    return null;
+  }
+
 
   @Nullable
   public static String getValueOfPositionalArgument(@NotNull DartArguments arguments, int index) {
@@ -80,8 +92,13 @@ public class DartPsiUtil {
   @Nullable
   public static PsiElement topmostReferenceExpression(@NotNull PsiElement element) {
     final PsiElement id = element.getParent();
-    if (id == null || id.getNode().getElementType() != DartTokenTypes.ID) return null;
-    PsiElement refExpr = id.getParent();
+    if (id == null) return null;
+    PsiElement refExpr = null;
+    if (id.getNode().getElementType() == DartTokenTypes.ID) {
+      refExpr = id.getParent();
+    } else if (id.getNode().getElementType() == DartTokenTypes.REFERENCE_EXPRESSION) {
+      refExpr = id;
+    }
     if (refExpr == null || refExpr.getNode().getElementType() != DartTokenTypes.REFERENCE_EXPRESSION) return null;
 
     PsiElement parent = refExpr.getParent();

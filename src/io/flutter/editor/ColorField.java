@@ -109,17 +109,7 @@ class ColorField extends ExtendableTextField {
     if (color == null) {
       return "";
     }
-
-    final String flutterColorName = FlutterColors.getColorName(color);
-    if (flutterColorName != null) {
-      // TODO(jacobr): only apply this conversion if the material library is already imported in the
-      // library being edited. We also need to be able to handle cases where the material library is
-      // imported with a prefix.
-      return "Colors." + flutterColorName;
-    }
-
-    return String.format(
-      "Color(0x%02x%02x%02x%02x)", color.getAlpha(), color.getRed(), color.getGreen(), color.getBlue());
+    return FlutterColors.buildColorExpression(color);
   }
 
   public void addTextFieldListeners(String name, JBTextField field) {
