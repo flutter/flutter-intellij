@@ -93,7 +93,7 @@ public class FlutterColors {
   }
 
   /**
-   * Returns the the shortest material color name matching a color if one exists.
+   * Returns the shortest material color name matching a color if one exists.
    */
   @Nullable
   public static String getColorName(@Nullable Color color) {
@@ -132,5 +132,18 @@ public class FlutterColors {
   private static Color getColorValue(String name) {
     final String hexValue = colors.getProperty(name);
     return parseColor(hexValue);
+  }
+
+  public static String buildColorExpression(Color color) {
+    final String flutterColorName = FlutterColors.getColorName(color);
+    if (flutterColorName != null) {
+      // TODO(jacobr): only apply this conversion if the material library is already imported in the
+      // library being edited. We also need to be able to handle cases where the material library is
+      // imported with a prefix.
+      return "Colors." + flutterColorName;
+    }
+
+    return String.format(
+      "Color(0x%02x%02x%02x%02x)", color.getAlpha(), color.getRed(), color.getGreen(), color.getBlue());
   }
 }
