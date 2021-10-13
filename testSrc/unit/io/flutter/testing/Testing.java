@@ -7,21 +7,22 @@ package io.flutter.testing;
 
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.TransactionGuard;
 import com.intellij.openapi.util.ThrowableComputable;
-import com.intellij.testFramework.PlatformTestUtil;
 import com.intellij.testFramework.builders.EmptyModuleFixtureBuilder;
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
 import com.intellij.testFramework.fixtures.TestFixtureBuilder;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Test utilities.
  */
+@SuppressWarnings("ConstantConditions")
 public class Testing {
 
   private Testing() {
@@ -79,7 +80,7 @@ public class Testing {
     return result.get();
   }
 
-  public static void runOnDispatchThread(RunnableThatThrows callback) throws Exception {
+  public static void runOnDispatchThread(@NotNull RunnableThatThrows callback) throws Exception {
     try {
       final AtomicReference<Exception> ex = new AtomicReference<>();
       assert (!SwingUtilities.isEventDispatchThread());
@@ -93,18 +94,19 @@ public class Testing {
         }
         catch (AssertionError e) {
           // Sometimes, the SDK leak detector fires, but we do not care since we do not use Android or Java SDKs.
-          if (!e.getMessage().startsWith("Leaked SDKs")) {
+          final String msg = e.getMessage();
+          if (msg == null || !msg.startsWith("Leaked SDKs")) {
             throw e;
           }
         }
       });
       if (ex.get() != null) {
-        throw ex.get();
+        throw Objects.requireNonNull(ex.get());
       }
     }
     catch (InvocationTargetException e) {
       if (e.getCause() instanceof AssertionError) {
-        throw (AssertionError)e.getCause();
+        throw (AssertionError)Objects.requireNonNull(e.getCause());
       }
     }
   }
