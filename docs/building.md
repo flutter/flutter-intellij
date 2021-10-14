@@ -28,3 +28,17 @@ $ gsutil cp <path-to-archive> gs://flutter_infra/flutter/intellij/
 
 Building is done by the `plugin` tool.
 See [tool/plugin/README.md](../tool/plugin/README.md) for details.
+
+## Gradle vs IntelliJ projects
+
+To debug unit tests the project needs to be opened as a Gradle project. Close the
+project in IntelliJ, then delete .idea/modules.xml. You may need to delete other
+files in ~/Library/Application Support/Caches/JetBrains/<IDE>/. Look in `conversion`
+and `external_build_systrm`. It may take some experimentation. When the project
+is opened in IntelliJ, ensure that there are `flutter-idea` and `flutter-studio`
+modules in the project structure.
+
+To re-open the project as an IntelliJ (not Gradle) project, close it in IntelliJ,
+then restore .idea/modules.xml and delete .idea/gradle.xml. Again, you may need to
+remove some cached files from ~/Library/... as above. When the project is opened
+in IntelliJ there should only be one module, `flutter-intellij`.
