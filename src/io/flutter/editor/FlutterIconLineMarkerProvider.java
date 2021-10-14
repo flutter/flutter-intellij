@@ -258,6 +258,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     if (aPackage == null) {
       // Looking for IconData with no package -- package specification not currently supported.
       final String relativeAssetPath = family.equals("MaterialIcons") ? MaterialRelativeAssetPath : CupertinoRelativeAssetPath;
+      // TODO Base path is wrong for cupertino -- is there a test for this branch (IconData with cupertino family)?
       final IconPreviewGenerator generator = new IconPreviewGenerator(sdk.getHomePath() + relativeAssetPath);
       return generator.convert(code);
     }
