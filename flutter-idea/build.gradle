@@ -96,7 +96,7 @@ sourceSets {
   ]
   test.resources.srcDirs = [
     "src/main/resources",
-    "testData/unit",
+    "testData",
     "testSrc/unit"
   ]
 }
@@ -117,4 +117,10 @@ check.dependsOn verifyPlugin
 
 test {
   useJUnit()
+  testLogging {
+    events "failed"
+    exceptionFormat "full"
+    showCauses true
+    showStackTraces true
+  }
 }

@@ -40,10 +40,9 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
 
 public class FlutterSdkUtil {
   /**
@@ -260,40 +259,19 @@ public class FlutterSdkUtil {
   @Nullable
   public static String guessFlutterSdkFromPackagesFile(@NotNull Module module) {
     // First, look for .dart_tool/package_config.json
-    for (PubRoot pubRoot : PubRoots.forModule(module)) {
-      final VirtualFile configFile = pubRoot.getPackageConfigFile();
-      if (configFile == null) {
-        continue;
-      }
-      // parse it
-      try {
-        final String contents = new String(configFile.contentsToByteArray(true /* cache contents */));
-        final JsonElement element = new JsonParser().parse(contents);
-        if (element == null) {
+    final JsonArray packages = getPackagesFromPackageConfig(PubRoots.forModule(module));
+    for (int i = 0; i < packages.size(); i++) {
+      final JsonObject pack = packages.get(i).getAsJsonObject();
+      if ("flutter".equals(JsonUtils.getStringMember(pack, "name"))) {
+        final String uri = JsonUtils.getStringMember(pack, "rootUri");
+        if (uri == null) {
           continue;
         }
-        final JsonObject json = element.getAsJsonObject();
-        if (JsonUtils.getIntMember(json, "configVersion") < 2) continue;
-        final JsonArray packages = json.getAsJsonArray("packages");
-        if (packages == null || packages.size() == 0) {
+        final String path = extractSdkPathFromUri(uri, false);
+        if (path == null) {
           continue;
         }
-        for (int i = 0; i < packages.size(); i++) {
-          final JsonObject pack = packages.get(i).getAsJsonObject();
-          if ("flutter".equals(JsonUtils.getStringMember(pack, "name"))) {
-            final String uri = JsonUtils.getStringMember(pack, "rootUri");
-            if (uri == null) {
-              continue;
-            }
-            final String path = extractSdkPathFromUri(uri, false);
-            if (path == null) {
-              continue;
-            }
-            return path;
-          }
-        }
-      }
-      catch (IOException ignored) {
+        return path;
       }
     }
 
@@ -313,6 +291,54 @@ public class FlutterSdkUtil {
     }
 
     return null;
+  }
+
+  @Nullable
+  public static String getPathToCupertinoIconsPackage(@NotNull Project project) {
+    final JsonArray packages = getPackagesFromPackageConfig(PubRoots.forProject(project));
+    for (int i = 0; i < packages.size(); i++) {
+      final JsonObject pack = packages.get(i).getAsJsonObject();
+      if ("cupertino_icons".equals(JsonUtils.getStringMember(pack, "name"))) {
+        final String uri = JsonUtils.getStringMember(pack, "rootUri");
+        if (uri == null) {
+          continue;
+        }
+        try {
+          return new URI(uri).getPath();
+        }
+        catch (URISyntaxException ignored) {
+        }
+      }
+    }
+    return null;
+  }
+
+  private static JsonArray getPackagesFromPackageConfig(@NotNull List<PubRoot> pubRoots) {
+    final JsonArray entries = new JsonArray();
+    for (PubRoot pubRoot : pubRoots) {
+      final VirtualFile configFile = pubRoot.getPackageConfigFile();
+      if (configFile == null) {
+        continue;
+      }
+      // parse it
+      try {
+        final String contents = new String(configFile.contentsToByteArray(true /* cache contents */));
+        final JsonElement element = new JsonParser().parse(contents);
+        if (element == null) {
+          continue;
+        }
+        final JsonObject json = element.getAsJsonObject();
+        if (JsonUtils.getIntMember(json, "configVersion") < 2) continue;
+        final JsonArray packages = json.getAsJsonArray("packages");
+        if (packages == null || packages.size() == 0) {
+          continue;
+        }
+        entries.addAll(packages);
+      }
+      catch (IOException ignored) {
+      }
+    }
+    return entries;
   }
 
   @VisibleForTesting

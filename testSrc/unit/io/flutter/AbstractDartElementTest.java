@@ -7,19 +7,20 @@ package io.flutter;
 
 
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiFileFactory;
-import com.jetbrains.lang.dart.DartLanguage;
+import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
+import io.flutter.ide.DartTestUtils;
 import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.Testing;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Rule;
 
+import java.util.Objects;
+
 public class AbstractDartElementTest {
   @Rule
-  public final ProjectFixture fixture = Testing.makeCodeInsightModule();
+  public final ProjectFixture<CodeInsightTestFixture> fixture = Testing.makeCodeInsightModule();
 
-  protected void run(Testing.RunnableThatThrows callback) throws Exception {
+  protected void run(@NotNull Testing.RunnableThatThrows callback) throws Exception {
     Testing.runOnDispatchThread(callback);
   }
 
@@ -28,25 +29,8 @@ public class AbstractDartElementTest {
    */
   @NotNull
   protected <E extends PsiElement> E setUpDartElement(String filePath, String fileText, String elementText, Class<E> expectedClass) {
-    final int offset = fileText.indexOf(elementText);
-    if (offset < 0) {
-      throw new IllegalArgumentException("'" + elementText + "' not found in '" + fileText + "'");
-    }
-
-    final PsiFileFactory factory = PsiFileFactory.getInstance(fixture.getProject());
-    final PsiFile file = filePath != null
-                         ? factory.createFileFromText(filePath, DartLanguage.INSTANCE, fileText)
-                         : factory.createFileFromText(DartLanguage.INSTANCE, fileText);
-
-    PsiElement elt = file.findElementAt(offset);
-    while (elt != null) {
-      if (elementText.equals(elt.getText())) {
-        return expectedClass.cast(elt);
-      }
-      elt = elt.getParent();
-    }
-
-    throw new RuntimeException("unable to find element with text: " + elementText);
+    assert fileText != null && elementText != null && expectedClass != null && fixture.getProject() != null;
+    return DartTestUtils.setUpDartElement(filePath, fileText, elementText, expectedClass, Objects.requireNonNull(fixture.getProject()));
   }
 
   /**
@@ -54,6 +38,7 @@ public class AbstractDartElementTest {
    */
   @NotNull
   protected <E extends PsiElement> E setUpDartElement(String fileText, String elementText, Class<E> expectedClass) {
-    return setUpDartElement(null, fileText, elementText, expectedClass);
+    assert fileText != null && elementText != null && expectedClass != null && fixture.getProject() != null;
+    return DartTestUtils.setUpDartElement(null, fileText, elementText, expectedClass, Objects.requireNonNull(fixture.getProject()));
   }
 }
