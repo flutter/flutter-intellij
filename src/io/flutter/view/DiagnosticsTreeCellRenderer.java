@@ -12,10 +12,11 @@ import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.speedSearch.SpeedSearchSupply;
 import com.intellij.util.ui.UIUtil;
-import io.flutter.editor.FlutterMaterialIcons;
+import io.flutter.editor.FlutterIconLineMarkerProvider;
 import io.flutter.inspector.DiagnosticLevel;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.utils.ColorIconMaker;
+import io.flutter.utils.UIUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -154,7 +155,7 @@ class DiagnosticsTreeCellRenderer extends InspectorColoredTreeCellRenderer {
           case "IconData": {
             final int codePoint = getIntMember(properties, "codePoint");
             if (codePoint > 0) {
-              final Icon icon = FlutterMaterialIcons.getIconForHex(String.format("%1$04x", codePoint));
+              final Icon icon = FlutterIconLineMarkerProvider.getMaterialIconFromCodepoint(UIUtils.findVisibleProject(), codePoint);
               if (icon != null) {
                 this.addIcon(icon);
                 this.setIconOpaque(false);

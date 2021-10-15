@@ -74,6 +74,40 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     BuiltInPaths.put("CupertinoIcons", CupertinoRelativeIconsPath);
   }
 
+  @Nullable
+  public static Icon getCupertinoIconByName(@Nullable Project project, @NotNull String iconName) {
+    if (project == null) return null;
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+    if (sdk == null) return null;
+    final IconInfo iconDef =
+      findStandardDefinition("CupertinoIcons", iconName, project, sdk.getHomePath() + BuiltInPaths.get("CupertinoIcons"), sdk);
+    if (iconDef == null) return null;
+    final String path = FlutterSdkUtil.getPathToCupertinoIconsPackage(project);
+    // <pub_cache>/hosted/pub.dartlang.org/cupertino_icons-v.m.n/assets/CupertinoIcons.ttf
+    return findStandardIconFromDef(iconName, iconDef, path + CupertinoRelativeAssetPath);
+  }
+
+  @Nullable
+  public static Icon getMaterialIconByName(@Nullable Project project, @NotNull String iconName) {
+    if (project == null) return null;
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+    if (sdk == null) return null;
+    final IconInfo iconDef =
+      findStandardDefinition("Icons", iconName, project, sdk.getHomePath() + BuiltInPaths.get("Icons"), sdk);
+    if (iconDef == null) return null;
+    // <flutter-sdk>/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf
+    return findStandardIconFromDef(iconName, iconDef, sdk.getHomePath() + MaterialRelativeAssetPath);
+  }
+
+  @Nullable
+  public static Icon getMaterialIconFromCodepoint(@Nullable Project project, int codepoint) {
+    if (project == null) return null;
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+    if (sdk == null) return null;
+    final IconPreviewGenerator generator = new IconPreviewGenerator(sdk.getHomePath() + MaterialRelativeAssetPath);
+    return generator.convert(codepoint);
+  }
+
   @Nullable("null means disabled")
   @Override
   public @GutterName String getName() {
@@ -87,9 +121,10 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     return sdk == null ? null : getLineMarkerInfo(element, sdk);
   }
 
+  @SuppressWarnings("MissingRecentApi")
   @VisibleForTesting
   @Nullable
-  LineMarkerInfo<?> getLineMarkerInfo(@NotNull PsiElement element, @NotNull FlutterSdk sdk) {
+  static LineMarkerInfo<?> getLineMarkerInfo(@NotNull PsiElement element, @NotNull FlutterSdk sdk) {
     if ((element.getNode() != null ? element.getNode().getElementType() : null) != DartTokenTypes.IDENTIFIER) return null;
 
     final String name = element.getText();
@@ -146,30 +181,12 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     assert parentNode != null;
     if (parentNode.getElementType() == DartTokenTypes.CALL_EXPRESSION) {
       // Check font family and package
-      final DartArguments arguments = DartPsiImplUtil.getArguments((DartCallExpression)parent);
-      if (arguments == null) return null;
-      final String family = getValueOfNamedArgument(arguments, "fontFamily");
-      final PsiElement fontPackage = getNamedArgumentExpression(arguments, "fontPackage");
-      final String argument = getValueOfPositionalArgument(arguments, 0);
-      if (argument == null) return null;
-      final Icon icon = getIconFromPackage(fontPackage, family, argument, element.getProject(), sdk);
-      if (icon != null) {
-        return createLineMarker(element, icon);
-      }
+      return getIconFromArguments(DartPsiImplUtil.getArguments((DartCallExpression)parent), element, sdk);
     }
     else if (parentNode.getElementType() == DartTokenTypes.SIMPLE_TYPE) {
       parent = getNewExprFromType(parent);
       if (parent == null) return null;
-      final DartArguments arguments = DartPsiImplUtil.getArguments((DartNewExpression)parent);
-      if (arguments == null) return null;
-      final String family = getValueOfNamedArgument(arguments, "fontFamily");
-      final PsiElement fontPackage = getNamedArgumentExpression(arguments, "fontPackage");
-      final String argument = getValueOfPositionalArgument(arguments, 0);
-      if (argument == null) return null;
-      final Icon icon = getIconFromPackage(fontPackage, family, argument, element.getProject(), sdk);
-      if (icon != null) {
-        return createLineMarker(element, icon);
-      }
+      return getIconFromArguments(DartPsiImplUtil.getArguments((DartNewExpression)parent), element, sdk);
     }
     else {
       final PsiElement idNode = refExpr.getFirstChild();
@@ -181,17 +198,10 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
         final String selector = AstBufferUtil.getTextSkippingWhitespaceComments(selectorNode.getNode());
         final Icon icon;
         if (name.equals("Icons")) {
-          final IconInfo iconDef = findStandardDefinition(name, selector, element.getProject(), knownPath, sdk);
-          if (iconDef == null) return null;
-          // <flutter-sdk>/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf
-          icon = findStandardIconFromDef(name, iconDef, sdk.getHomePath() + MaterialRelativeAssetPath);
+          icon = getMaterialIconByName(element.getProject(), selector);
         }
         else if (name.equals("CupertinoIcons")) {
-          final IconInfo iconDef = findStandardDefinition(name, selector, element.getProject(), knownPath, sdk);
-          if (iconDef == null) return null;
-          final String path = FlutterSdkUtil.getPathToCupertinoIconsPackage(element.getProject());
-          // <pub_cache>/hosted/pub.dartlang.org/cupertino_icons-v.m.n/assets/CupertinoIcons.ttf
-          icon = findStandardIconFromDef(name, iconDef, path + CupertinoRelativeAssetPath);
+          icon = getCupertinoIconByName(element.getProject(), selector);
         }
         else {
           // Note: I want to keep this code until I'm sure we won't use pubspec.yaml.
@@ -227,7 +237,24 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
   }
 
   @Nullable
-  private IconInfo findStandardDefinition(@NotNull String className, @NotNull String iconName, @NotNull Project project, @Nullable String path, @NotNull FlutterSdk sdk) {
+  private static LineMarkerInfo<PsiElement> getIconFromArguments(@Nullable DartArguments arguments,
+                                                                 @NotNull PsiElement element,
+                                                                 @NotNull FlutterSdk sdk) {
+    if (arguments == null) return null;
+    final String family = getValueOfNamedArgument(arguments, "fontFamily");
+    final PsiElement fontPackage = getNamedArgumentExpression(arguments, "fontPackage");
+    final String argument = getValueOfPositionalArgument(arguments, 0);
+    if (argument == null) return null;
+    final Icon icon = getIconFromPackage(fontPackage, family, argument, element.getProject(), sdk);
+    return icon == null ? null : createLineMarker(element, icon);
+  }
+
+  @Nullable
+  private static IconInfo findStandardDefinition(@NotNull String className,
+                                                 @NotNull String iconName,
+                                                 @NotNull Project project,
+                                                 @Nullable String path,
+                                                 @NotNull FlutterSdk sdk) {
     if (path != null) {
       return findDefinition(className, iconName, project, path);
     }
@@ -236,7 +263,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
   }
 
   @Nullable
-  private Icon findStandardIconFromDef(@NotNull String name, @NotNull IconInfo iconDef, @NotNull String path) {
+  private static Icon findStandardIconFromDef(@NotNull String name, @NotNull IconInfo iconDef, @NotNull String path) {
     assert LocalFileSystem.getInstance() != null;
     final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
     if (virtualFile == null) return null;
@@ -246,7 +273,11 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
 
   // Note: package flutter_icons is not currently supported because it takes forever to analyze it.
   @Nullable
-  private Icon getIconFromPackage(@Nullable PsiElement aPackage, @Nullable String family, @NotNull String argument, @NotNull Project project, @NotNull FlutterSdk sdk) {
+  private static Icon getIconFromPackage(@Nullable PsiElement aPackage,
+                                         @Nullable String family,
+                                         @NotNull String argument,
+                                         @NotNull Project project,
+                                         @NotNull FlutterSdk sdk) {
     final int code;
     try {
       code = parseLiteralNumber(argument);
@@ -257,16 +288,17 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     family = family == null ? "MaterialIcons" : family;
     if (aPackage == null) {
       // Looking for IconData with no package -- package specification not currently supported.
-      final String relativeAssetPath = family.equals("MaterialIcons") ? MaterialRelativeAssetPath : CupertinoRelativeAssetPath;
-      // TODO Base path is wrong for cupertino -- is there a test for this branch (IconData with cupertino family)?
-      final IconPreviewGenerator generator = new IconPreviewGenerator(sdk.getHomePath() + relativeAssetPath);
+      final String assetPath = family.equals("MaterialIcons")
+                               ? sdk.getHomePath() + MaterialRelativeAssetPath
+                               : FlutterSdkUtil.getPathToCupertinoIconsPackage(project) + CupertinoRelativeAssetPath;
+      final IconPreviewGenerator generator = new IconPreviewGenerator(assetPath);
       return generator.convert(code);
     }
     return null;
   }
 
   @Nullable
-  private LineMarkerInfo<PsiElement> createLineMarker(@Nullable PsiElement element, @NotNull Icon icon) {
+  private static LineMarkerInfo<PsiElement> createLineMarker(@Nullable PsiElement element, @NotNull Icon icon) {
     if (element == null) return null;
     assert element.getTextRange() != null;
     //noinspection MissingRecentApi
@@ -275,7 +307,10 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
   }
 
   @Nullable
-  private IconInfo findDefinition(@NotNull String className, @NotNull String iconName, @NotNull Project project, @NotNull String path) {
+  private static IconInfo findDefinition(@NotNull String className,
+                                         @NotNull String iconName,
+                                         @NotNull Project project,
+                                         @NotNull String path) {
     assert LocalFileSystem.getInstance() != null;
     final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
     if (virtualFile == null) return null;
@@ -289,7 +324,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
   }
 
   @Nullable
-  private Icon findIconFromDef(@NotNull String iconClassName, @NotNull IconInfo iconDef, @NotNull String path) {
+  private static Icon findIconFromDef(@NotNull String iconClassName, @NotNull IconInfo iconDef, @NotNull String path) {
     assert LocalFileSystem.getInstance() != null;
     final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
     if (virtualFile == null) return null;
@@ -342,7 +377,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     return null;
   }
 
-  public double findPattern(@NotNull String t, @NotNull String p) {
+  public static double findPattern(@NotNull String t, @NotNull String p) {
     // This is from https://github.com/tdebatty/java-string-similarity
     // It's MIT license file is: https://github.com/tdebatty/java-string-similarity/blob/master/LICENSE.md
     final JaroWinkler jw = new JaroWinkler();

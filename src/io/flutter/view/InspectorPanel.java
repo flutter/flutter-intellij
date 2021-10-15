@@ -24,6 +24,7 @@ import com.intellij.util.ui.tree.TreeUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
+import io.flutter.editor.FlutterIconLineMarkerProvider;
 import io.flutter.editor.FlutterMaterialIcons;
 import io.flutter.inspector.*;
 import io.flutter.run.daemon.FlutterApp;
@@ -51,6 +52,8 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+
+import static io.flutter.utils.UIUtils.findVisibleProject;
 
 public class InspectorPanel extends JPanel implements Disposable, InspectorService.InspectorServiceClient, InspectorTabPanel {
   /**
@@ -1345,7 +1348,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
               // IconData(U+0E88F)
               final int codePoint = getIntProperty(properties, "codePoint");
               if (codePoint > 0) {
-                final Icon icon = FlutterMaterialIcons.getIconForHex(String.format("%1$04x", codePoint));
+                final Icon icon = FlutterIconLineMarkerProvider.getMaterialIconFromCodepoint(UIUtils.findVisibleProject(), codePoint);
                 if (icon != null) {
                   this.setIcon(icon);
                   this.setIconOpaque(false);
