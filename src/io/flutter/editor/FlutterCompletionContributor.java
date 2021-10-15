@@ -27,7 +27,7 @@ public class FlutterCompletionContributor extends DartCompletionExtension {
   @Override
   @Nullable
   public LookupElementBuilder createLookupElement(@NotNull final Project project, @NotNull final CompletionSuggestion suggestion) {
-    final Icon icon = findIcon(suggestion);
+    final Icon icon = findIcon(suggestion, project);
     if (icon != null) {
       final LookupElementBuilder lookup =
         DartServerCompletionContributor.createLookupElement(project, suggestion).withTypeText("", icon, false);
@@ -38,7 +38,8 @@ public class FlutterCompletionContributor extends DartCompletionExtension {
     return null;
   }
 
-  private static Icon findIcon(@NotNull final CompletionSuggestion suggestion) {
+  @Nullable
+  private static Icon findIcon(@NotNull final CompletionSuggestion suggestion, @NotNull Project project) {
     final Element element = suggestion.getElement();
     if (element != null) {
       final String returnType = element.getReturnType();
@@ -59,12 +60,12 @@ public class FlutterCompletionContributor extends DartCompletionExtension {
             }
           }
           else if (Objects.equals(declaringType, "Icons")) {
-            final Icon icon = FlutterMaterialIcons.getIconForName(name);
+            final Icon icon = FlutterIconLineMarkerProvider.getMaterialIconByName(project, name);
             // If we have no icon, show an empty node (which is preferable to the default "IconData" text).
             return icon != null ? icon : EMPTY_ICON;
           }
           else if (Objects.equals(declaringType, "CupertinoIcons")) {
-            final Icon icon = FlutterCupertinoIcons.getIconForName(name);
+            final Icon icon = FlutterIconLineMarkerProvider.getCupertinoIconByName(project, name);
             // If we have no icon, show an empty node (which is preferable to the default "IconData" text).
             return icon != null ? icon : EMPTY_ICON;
           }

@@ -9,6 +9,9 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.editor.colors.ColorKey;
 import com.intellij.openapi.editor.colors.EditorColors;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.IdeFrame;
+import com.intellij.openapi.wm.WindowManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,5 +36,19 @@ public class UIUtils {
   @NotNull
   public static ColorKey getEditorNotificationBackgroundColor() {
     return EditorColors.GUTTER_BACKGROUND;
+  }
+
+  @Nullable
+  public static Project findVisibleProject() {
+    final WindowManager wm = WindowManager.getInstance();
+    if (wm == null) return null;
+    final JFrame jframe = wm.findVisibleFrame();
+    if (jframe == null) return null;
+    for (IdeFrame frame : wm.getAllProjectFrames()) {
+      if (frame.getComponent() == jframe.getRootPane()) {
+        return frame.getProject();
+      }
+    }
+    return null;
   }
 }

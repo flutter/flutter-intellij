@@ -27,8 +27,8 @@ public class FlutterIconLineMarkerTest extends io.flutter.ide.FlutterCodeInsight
     return mockSdk;
   }
 
-  //@Test
-  public void xtestLocatesIconsReference() throws Exception {
+  @Test
+  public void testLocatesIconsReference() throws Exception {
     final PsiElement testIdentifier = setUpDartElement("main() { Icons.access_alarm; }", "Icons", LeafPsiElement.class);
     final LineMarkerInfo<?> marker = new FlutterIconLineMarkerProvider().getLineMarkerInfo(testIdentifier, getSdk());
     assertNotNull(marker);
