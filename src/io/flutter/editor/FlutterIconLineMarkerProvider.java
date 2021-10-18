@@ -42,6 +42,7 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YamlRecursivePsiElementVisitor;
 
 import javax.swing.*;
+import java.io.FileNotFoundException;
 import java.util.*;
 
 import static io.flutter.dart.DartPsiUtil.*;
@@ -309,7 +310,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
                                          @NotNull String path) {
     assert LocalFileSystem.getInstance() != null;
     final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
-    if (virtualFile == null) return null;
+    if (virtualFile == null) throw new Error("FILE NOT FOUND: " + path);//return null;
     final PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
     if (psiFile == null) {
       return null;
