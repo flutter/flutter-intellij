@@ -23,7 +23,7 @@ public class FlutterIconLineMarkerTest extends io.flutter.ide.FlutterCodeInsight
 
   private FlutterSdk getSdk() {
     final FlutterSdk mockSdk = mock(FlutterSdk.class);
-    when(mockSdk.getHomePath()).thenReturn(new java.io.File("..").getAbsolutePath() + "/testData/sdk");
+    when(mockSdk.getHomePath()).thenReturn(new java.io.File("../../flutter-idea").getAbsolutePath() + "/testData/sdk");
     return mockSdk;
   }
 
