@@ -9,10 +9,6 @@ export JAVA_HOME=`pwd`/../jdk-11.0.2.jdk/Contents/Home
 export PATH=$PATH:$JAVA_HOME/bin
 echo "JAVA_HOME=$JAVA_HOME"
 
-echo "ls -lR"
-ls -lR > dir-list.txt
-cat dir-list.txt
-
 (cd testData/sample_tests; echo "pub get `pwd`"; pub get --no-precompile)
 
 echo "kokoro test start"
