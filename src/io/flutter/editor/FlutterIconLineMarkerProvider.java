@@ -313,7 +313,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     if (virtualFile == null) throw new Error("FILE NOT FOUND: " + path);//return null;
     final PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
     if (psiFile == null) {
-      return null;
+      throw new Error("CANNOT CREATE PSI FILE");//return null;
     }
     final IconInfoVisitor visitor = new IconInfoVisitor(iconName);
     psiFile.accept(visitor);
