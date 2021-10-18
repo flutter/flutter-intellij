@@ -96,7 +96,7 @@ sourceSets {
   ]
   test.resources.srcDirs = [
     "src/main/resources",
-    "testData",
+    //"testData",
     "testSrc/unit",
     "../testData"
   ]
