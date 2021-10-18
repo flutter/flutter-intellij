@@ -38,6 +38,10 @@ public class UIUtils {
     return EditorColors.GUTTER_BACKGROUND;
   }
 
+  /**
+   * Unstable API warning: only use this in the deprecated inspector.
+   * @return best-guess for the current project based on the top-most window.
+   */
   @Nullable
   public static Project findVisibleProject() {
     final WindowManager wm = WindowManager.getInstance();
