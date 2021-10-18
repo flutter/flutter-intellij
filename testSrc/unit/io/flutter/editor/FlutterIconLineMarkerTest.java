@@ -15,6 +15,8 @@ import io.flutter.dart.DartSyntax;
 import io.flutter.sdk.FlutterSdk;
 import org.junit.Test;
 
+import java.io.IOException;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -23,7 +25,16 @@ public class FlutterIconLineMarkerTest extends io.flutter.ide.FlutterCodeInsight
 
   private FlutterSdk getSdk() {
     final FlutterSdk mockSdk = mock(FlutterSdk.class);
-    when(mockSdk.getHomePath()).thenReturn(new java.io.File("../../flutter-idea").getAbsolutePath() + "/testData/sdk");
+    try {
+      String base = new java.io.File(".").getAbsolutePath();
+      // trim "flutter-idea/."
+      base = base.substring(0, base.length() - "flutter-idea/.".length());
+      new java.io.File(base + "testData/sdk").getCanonicalFile();
+      when(mockSdk.getHomePath()).thenReturn(base + "testData/sdk");
+    }
+    catch (IOException e) {
+      throw new Error(e);
+    }
     return mockSdk;
   }
 
