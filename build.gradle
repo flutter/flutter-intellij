@@ -83,11 +83,6 @@ dependencies {
 }
 
 sourceSets {
-  test.resources.srcDirs = [
-    "src/main/resources",
-    "testData",
-    "testSrc/unit"
-  ]
 }
 
 //noinspection GroovyAssignabilityCheck
