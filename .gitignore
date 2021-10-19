@@ -20,7 +20,6 @@ lib/jxbrowser/*
 !lib/java-string-similarity-2.0.0.jar
 material-design-icons/
 out/
-packages
 pubspec.lock
 releases/
 resources/jxbrowser/jxbrowser.properties
