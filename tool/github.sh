@@ -44,11 +44,6 @@ if [ "DART_BOT" = "$BOT" ] ; then
   (cd src; dart analyze)
   (cd tool/plugin; dart analyze)
 
-echo `pwd`
-echo "ls -lR"
-ls -lR > dir-list.txt
-cat dir-list.txt
-
   # Ensure that the edits have been applied to template files (and their target
   # files have been regenerated).
   ./bin/plugin generate
@@ -71,6 +66,11 @@ elif [ "CHECK_BOT" = "$BOT" ] ; then
   dart tool/grind.dart check-urls
 
 elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
+
+echo `pwd`
+echo "ls -lR"
+ls -lR > dir-list.txt
+cat dir-list.txt
 
   # Run unit tests.
   ./bin/plugin test
