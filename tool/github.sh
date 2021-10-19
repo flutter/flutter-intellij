@@ -44,6 +44,11 @@ if [ "DART_BOT" = "$BOT" ] ; then
   (cd src; dart analyze)
   (cd tool/plugin; dart analyze)
 
+echo `pwd`
+echo "ls -lR"
+ls -lR > dir-list.txt
+cat dir-list.txt
+
   # Ensure that the edits have been applied to template files (and their target
   # files have been regenerated).
   ./bin/plugin generate
