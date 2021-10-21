@@ -40,7 +40,7 @@ class Artifact {
 
 class ArtifactManager {
   final String base =
-      'https://storage.googleapis.com/flutter_infra/flutter/intellij';
+      'https://storage.googleapis.com/flutter_infra_release/flutter/intellij';
 
   final List<Artifact> artifacts = [];
 
