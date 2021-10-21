@@ -396,53 +396,6 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
       }
     }
 
-    public void init41(@Nullable ProgressIndicator indicator) {
-      boolean finished = false;
-      try {
-        //ProjectManagerImpl.initProject(path, this, true, null, null);
-        Method method = ReflectionUtil
-          .getDeclaredMethod(ProjectManagerImpl.class, "initProject", Path.class, ProjectImpl.class, boolean.class, Project.class,
-                             ProgressIndicator.class);
-        assert (method != null);
-        try {
-          method.invoke(null, path, this, true, null, null);
-        }
-        catch (IllegalAccessException | InvocationTargetException e) {
-          disableGradleSyncAndNotifyUser();
-          return;
-        }
-        finished = true;
-      }
-      finally {
-        if (!finished) {
-          TransactionGuard.submitTransaction(this, () -> WriteAction.run(() -> {
-            if (isDisposed() && !isDisabled.get()) {
-              Disposer.dispose(this);
-            }
-          }));
-        }
-      }
-    }
-
-    public void initPre41(@Nullable ProgressIndicator indicator) {
-      boolean finished = false;
-      try {
-        registerComponents((List<IdeaPluginDescriptorImpl>)PluginManagerCore.getLoadedPlugins(), null);
-        getStateStore().setPath(path, true, null);
-        super.init(false, indicator);
-        finished = true;
-      }
-      finally {
-        if (!finished) {
-          TransactionGuard.submitTransaction(this, () -> WriteAction.run(() -> {
-            if (isDisposed() && !isDisabled.get()) {
-              Disposer.dispose(this);
-            }
-          }));
-        }
-      }
-    }
-
     private void disableGradleSyncAndNotifyUser() {
       final FlutterSettings instance = FlutterSettings.getInstance();
       instance.setSyncingAndroidLibraries(false);

@@ -29,6 +29,7 @@ void checkAndClearAppliedEditCommands() {
   appliedEditCommands.clear();
 }
 
+// TODO(messick): Remove edits for AS 4.2 when confident they won't be needed again.
 List<EditCommand> editCommands = [
   EditAndroidModuleLibraryManager(),
   Subst(

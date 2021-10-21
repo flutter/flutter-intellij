@@ -2,18 +2,6 @@
   "list": [
     {
       "channel": "stable",
-      "comments": "IntelliJ 2020.2.3, Android Studio 4.2",
-      "name": "Android Studio 4.2",
-      "version": "4.2",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "202.6987402",
-      "baseVersion": "202.7660.26",
-      "dartPluginVersion": "202.8070",
-      "sinceBuild": "202.7660.26",
-      "untilBuild": "202.*"
-    },
-    {
-      "channel": "stable",
       "comments": "IntelliJ 2020.3.4, Android Studio 2020.3.1",
       "name": "Arctic Fox 2020.3.1, Beta",
       "version": "AF.3.1",
@@ -26,7 +14,7 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2021.1, Android Studio 2021.1.1 Canary 13",
+      "comments": "IntelliJ 2021.1, Android Studio 2021.1.1 Beta",
       "name": "Bumblebee",
       "isUnitTestTarget": "true",
       "version": "AS.211",
@@ -46,9 +34,21 @@
       "ideaVersion": "212.3724.25",
       "baseVersion": "212.4746.92",
       "dartPluginVersion": "212.3724.2",
-      "sinceBuild": "212.3724.25",
+      "sinceBuild": "212.5457.6",
       "untilBuild": "212.*",
       "filesToSkip": ["flutter-studio/src/io/flutter/actions/FlutterNewProjectAction.java_stub"]
+    },
+    {
+      "channel": "dev",
+      "comments": "Android Studio 2021.2 Canary",
+      "name": "Chipmunk",
+      "version": "AS.212",
+      "ideaProduct": "android-studio",
+      "ideaVersion": "2021.2.1.2",
+      "baseVersion": "212.5284.40",
+      "dartPluginVersion": "212.5486",
+      "sinceBuild": "212.5284.40",
+      "untilBuild": "212.5284.40"
     }
   ]
 }
