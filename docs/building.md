@@ -14,7 +14,7 @@ If necessary, install the gs_util command-line utility from
 To see a list of all current IntelliJ build pre-reqs:
 
 ```shell
-$ gsutil ls gs://flutter_infra/flutter/intellij/
+$ gsutil ls gs://flutter_infra_release/flutter/intellij/
 ```
 
 ### uploading new artifacts
@@ -22,7 +22,7 @@ $ gsutil ls gs://flutter_infra/flutter/intellij/
 In order to update or add a new pre-req:
 
 ```shell
-$ gsutil cp <path-to-archive> gs://flutter_infra/flutter/intellij/
+$ gsutil cp <path-to-archive> gs://flutter_infra_release/flutter/intellij/
 ```
 ## The plugin tool
 

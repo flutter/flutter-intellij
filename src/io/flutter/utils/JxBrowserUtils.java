@@ -48,7 +48,7 @@ public class JxBrowserUtils {
   }
 
   public String getDistributionLink(String fileName) {
-    return "https://storage.googleapis.com/flutter_infra/flutter/intellij/jxbrowser/" + fileName;
+    return "https://storage.googleapis.com/flutter_infra_release/flutter/intellij/jxbrowser/" + fileName;
   }
 
   public String getJxBrowserKey() throws FileNotFoundException {
