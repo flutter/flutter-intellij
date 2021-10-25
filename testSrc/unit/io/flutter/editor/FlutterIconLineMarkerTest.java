@@ -48,8 +48,8 @@ public class FlutterIconLineMarkerTest extends io.flutter.ide.FlutterCodeInsight
     assertNotNull(element);
   }
 
-  //@Test
-  public void xtestLocatesCupertinoIconCtor() throws Exception {
+  @Test
+  public void testLocatesCupertinoIconCtor() throws Exception {
     final PsiElement testIdentifier =
       setUpDartElement("main() { IconData(0xe190, fontFamily: 'CupertinoIcons'); }", "IconData", LeafPsiElement.class);
     final LineMarkerInfo<?> marker = new FlutterIconLineMarkerProvider().getLineMarkerInfo(testIdentifier, getSdk());
