@@ -83,6 +83,9 @@ dependencies {
 }
 
 sourceSets {
+  test.resources.srcDirs = [
+    "flutter-idea/testData"
+  ]
 }
 
 //noinspection GroovyAssignabilityCheck
