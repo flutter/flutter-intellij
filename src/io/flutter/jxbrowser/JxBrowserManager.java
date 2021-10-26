@@ -27,6 +27,7 @@ import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -50,12 +51,18 @@ import java.util.concurrent.atomic.AtomicReference;
 public class JxBrowserManager {
   private static JxBrowserManager manager;
 
+  @NotNull
   protected static final String DOWNLOAD_PATH =
     PathManager.getPluginsPath() + File.separatorChar + "flutter-intellij" + File.separatorChar + "jxbrowser";
+  @NotNull
   private static final AtomicReference<JxBrowserStatus> status = new AtomicReference<>(JxBrowserStatus.NOT_INSTALLED);
+  @NotNull
   private static final AtomicBoolean listeningForSetting = new AtomicBoolean(false);
+  @NotNull
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
+  @NotNull
   private static CompletableFuture<JxBrowserStatus> installation = new CompletableFuture<>();
+  @NotNull
   public static final String ANALYTICS_CATEGORY = "jxbrowser";
   private static InstallationFailedReason latestFailureReason;
   private final JxBrowserUtils jxBrowserUtils;
@@ -63,7 +70,7 @@ public class JxBrowserManager {
   private final FileUtils fileUtils;
 
   @VisibleForTesting
-  protected JxBrowserManager(JxBrowserUtils jxBrowserUtils, Analytics analytics, FileUtils fileUtils) {
+  protected JxBrowserManager(@NotNull JxBrowserUtils jxBrowserUtils, @NotNull Analytics analytics, @NotNull FileUtils fileUtils) {
     this.jxBrowserUtils = jxBrowserUtils;
     this.analytics = analytics;
     this.fileUtils = fileUtils;
@@ -72,6 +79,7 @@ public class JxBrowserManager {
   @NotNull
   public static JxBrowserManager getInstance() {
     if (manager == null) {
+      //noinspection ConstantConditions
       manager = new JxBrowserManager(new JxBrowserUtils(), FlutterInitializer.getAnalytics(), FileUtils.getInstance());
     }
     return manager;
@@ -82,10 +90,13 @@ public class JxBrowserManager {
     status.set(JxBrowserStatus.NOT_INSTALLED);
   }
 
+  @NotNull
   public JxBrowserStatus getStatus() {
+    //noinspection ConstantConditions
     return status.get();
   }
 
+  @Nullable
   public InstallationFailedReason getLatestFailureReason() {
     return latestFailureReason;
   }
@@ -93,6 +104,7 @@ public class JxBrowserManager {
   /**
    * Call {@link #setUp} before this function to ensure that an installation has started.
    */
+  @Nullable
   public JxBrowserStatus waitForInstallation(int seconds) throws TimeoutException {
     try {
       return installation.get(seconds, TimeUnit.SECONDS);
@@ -114,7 +126,7 @@ public class JxBrowserManager {
   private class SettingsListener implements FlutterSettings.Listener {
     final Project project;
 
-    public SettingsListener(Project project) {
+    public SettingsListener(@NotNull Project project) {
       this.project = project;
     }
 
@@ -123,18 +135,19 @@ public class JxBrowserManager {
       final FlutterSettings settings = FlutterSettings.getInstance();
 
       // Set up JxBrowser files if the embedded inspector option has been turned on and the files aren't already loaded.
+      //noinspection ConstantConditions
       if (settings.isEnableEmbeddedBrowsers() && getStatus().equals(JxBrowserStatus.NOT_INSTALLED)) {
         setUp(project);
       }
     }
   }
 
-  private void setStatusFailed(InstallationFailedReason reason) {
+  private void setStatusFailed(@NotNull InstallationFailedReason reason) {
     setStatusFailed(reason, null);
   }
 
-  private void setStatusFailed(InstallationFailedReason reason, Long time) {
-    StringBuilder eventName = new StringBuilder();
+  private void setStatusFailed(@NotNull InstallationFailedReason reason, @Nullable Long time) {
+    final StringBuilder eventName = new StringBuilder();
     eventName.append("installationFailed-");
     eventName.append(reason.failureType);
     if (reason.detail != null) {
@@ -159,6 +172,7 @@ public class JxBrowserManager {
       return;
     }
 
+    //noinspection ConstantConditions
     FlutterSettings.getInstance().addListener(new SettingsListener(project));
   }
 
@@ -221,6 +235,7 @@ public class JxBrowserManager {
     final String[] fileNames = {platformFileName, jxBrowserUtils.getApiFileName(), jxBrowserUtils.getSwingFileName()};
     boolean allDownloaded = true;
     for (String fileName : fileNames) {
+      assert fileName != null;
       if (!fileUtils.fileExists(getFilePath(fileName))) {
         allDownloaded = false;
         break;
@@ -236,6 +251,7 @@ public class JxBrowserManager {
     // Delete any already existing files.
     // TODO(helin24): Handle if files cannot be deleted.
     for (String fileName : fileNames) {
+      assert fileName != null;
       final String filePath = getFilePath(fileName);
       if (!fileUtils.deleteFile(filePath)) {
         LOG.info(project.getName() + ": Existing file could not be deleted - " + filePath);
@@ -245,12 +261,14 @@ public class JxBrowserManager {
     downloadJxBrowser(project, fileNames);
   }
 
-  protected void downloadJxBrowser(Project project, String[] fileNames) {
+  protected void downloadJxBrowser(@NotNull Project project, @NotNull String[] fileNames) {
     // The FileDownloader API is used by other plugins - e.g.
     // https://github.com/JetBrains/intellij-community/blob/b09f8151e0d189d70363266c3bb6edb5f6bfeca4/plugins/markdown/src/org/intellij/plugins/markdown/ui/preview/javafx/JavaFXInstallator.java#L48
     final List<FileDownloader> fileDownloaders = new ArrayList<>();
     final DownloadableFileService service = DownloadableFileService.getInstance();
+    assert service != null;
     for (String fileName : fileNames) {
+      assert fileName != null;
       final DownloadableFileDescription
         description = service.createFileDescription(jxBrowserUtils.getDistributionLink(fileName), fileName);
       fileDownloaders.add(service.createDownloader(Collections.singletonList(description), fileName));
@@ -264,6 +282,7 @@ public class JxBrowserManager {
         try {
           for (int i = 0; i < fileDownloaders.size(); i++) {
             final FileDownloader downloader = fileDownloaders.get(i);
+            assert downloader != null;
             currentFileName = fileNames[i];
             final Pair<File, DownloadableFileDescription> download =
               ContainerUtil.getFirstItem(downloader.download(new File(DOWNLOAD_PATH)));
@@ -288,11 +307,13 @@ public class JxBrowserManager {
     ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, processIndicator);
   }
 
-  private void loadClasses(String[] fileNames) {
+  private void loadClasses(@NotNull String[] fileNames) {
     for (String fileName : fileNames) {
+      assert fileName != null;
       final String fullPath = getFilePath(fileName);
 
       try {
+        //noinspection ConstantConditions
         fileUtils.loadClass(this.getClass().getClassLoader(), fullPath);
       } catch (Exception ex) {
         LOG.info("Failed to load JxBrowser file", ex);
@@ -303,6 +324,7 @@ public class JxBrowserManager {
       LOG.info("Loaded JxBrowser file successfully: " + fullPath);
     }
     try {
+      //noinspection ThrowableNotThrown
       final UnsupportedRenderingModeException test = new UnsupportedRenderingModeException(RenderingMode.HARDWARE_ACCELERATED);
     } catch (NoClassDefFoundError e) {
       LOG.info("Failed to find JxBrowser class");
@@ -314,13 +336,15 @@ public class JxBrowserManager {
     installation.complete(JxBrowserStatus.INSTALLED);
   }
 
-  private void loadClasses2021(String[] fileNames) {
-    List<Path> paths = new ArrayList<>();
+  private void loadClasses2021(@NotNull String[] fileNames) {
+    final List<Path> paths = new ArrayList<>();
 
     try {
       for (String fileName: fileNames) {
+        assert fileName != null;
         paths.add(Paths.get(getFilePath(fileName)));
       }
+      //noinspection ConstantConditions
       fileUtils.loadPaths(this.getClass().getClassLoader(), paths);
     } catch (Exception ex) {
       LOG.info("Failed to load JxBrowser file", ex);
@@ -329,6 +353,7 @@ public class JxBrowserManager {
     }
 
     try {
+      //noinspection ThrowableNotThrown
       final UnsupportedRenderingModeException test = new UnsupportedRenderingModeException(RenderingMode.HARDWARE_ACCELERATED);
     } catch (NoClassDefFoundError e) {
       LOG.info("Failed to find JxBrowser class");
@@ -340,7 +365,8 @@ public class JxBrowserManager {
     installation.complete(JxBrowserStatus.INSTALLED);
   }
 
-  private String getFilePath(String fileName) {
+  @NotNull
+  private String getFilePath(@NotNull String fileName) {
     return DOWNLOAD_PATH + File.separatorChar + fileName;
   }
 }
