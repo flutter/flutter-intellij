@@ -6,6 +6,7 @@
 package io.flutter.utils;
 
 import com.intellij.openapi.util.SystemInfo;
+import org.jetbrains.annotations.NotNull;
 // import com.intellij.util.system.CpuArch;
 
 import java.io.FileNotFoundException;
@@ -47,10 +48,12 @@ public class JxBrowserUtils {
     return String.format("%s-swing-%s.%s", JXBROWSER_FILE_PREFIX, JXBROWSER_FILE_VERSION, JXBROWSER_FILE_SUFFIX);
   }
 
-  public String getDistributionLink(String fileName) {
+  @NotNull
+  public String getDistributionLink(@NotNull String fileName) {
     return "https://storage.googleapis.com/flutter_infra_release/flutter/intellij/jxbrowser/" + fileName;
   }
 
+  @NotNull
   public String getJxBrowserKey() throws FileNotFoundException {
     if (JxBrowserUtils.class.getResource("/jxbrowser/jxbrowser.properties") == null) {
       throw new FileNotFoundException("jxbrowser.properties file does not exist");
