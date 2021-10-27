@@ -32,6 +32,20 @@ void checkAndClearAppliedEditCommands() {
 // TODO(messick): Remove edits for AS 4.2 when confident they won't be needed again.
 List<EditCommand> editCommands = [
   EditAndroidModuleLibraryManager(),
+
+  Subst(
+    path: 'build.gradle',
+    initial: 'localPath "\${project.rootDir.absolutePath}/artifacts/\$ide"',
+    replacement: 'type = "IC"\n  version = "213.5281-EAP-CANDIDATE-SNAPSHOT"',
+    version: '2021.3',
+  ),
+  Subst(
+    path: 'flutter-idea/build.gradle',
+    initial: 'localPath "\${project.rootDir.absolutePath}/artifacts/\$ide"',
+    replacement: 'type = "IC"\n  version = "213.5281-EAP-CANDIDATE-SNAPSHOT"',
+    version: '2021.3',
+  ),
+
   Subst(
     path: 'src/io/flutter/vmService/frame/DartVmServiceValue.java',
     initial: ',() -> computeCollectionChildren(instanceRef, offset + count, node)',
