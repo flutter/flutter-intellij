@@ -47,7 +47,6 @@
     <![CDATA[
 <h1>62.0</h1>
 <ul>
-  <li>Build 2021.3 EAP (3584)</li>
   <li>Restore ignored tests (#5826)</li>
   <li>Use Java 11 everywhere (#5836)</li>
   <li>Add AS Canary to dev channel (#5830)</li>
