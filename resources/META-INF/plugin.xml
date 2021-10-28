@@ -45,6 +45,17 @@
 
   <change-notes>
     <![CDATA[
+<h1>62.0</h1>
+<ul>
+  <li>Update jxbrowser to 7.19 (#5783)</li>
+  <li>Restore ignored tests (#5826)</li>
+  <li>Use Java 11 everywhere (#5836)</li>
+  <li>Add AS Canary to dev channel (#5830)</li>
+  <li>Remove dependencies on built-in Flutter icons (#5824)</li>
+  <li>Add instructions for converting to/from Gradle project (#5822)</li>
+  <li>Derive icon previews from font files for built-in icons (#5820)</li>
+  <li>Enable more compile-time nulllability checking (#5804)</li>
+</ul>
 <h1>61.1</h1>
 <ul>
   <li>Add null check for manager (#5799)</li>

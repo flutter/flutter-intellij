@@ -1,3 +1,13 @@
+# 62.0
+- Update jxbrowser to 7.19 (#5783)
+- Restore ignored tests (#5826)
+- Use Java 11 everywhere (#5836)
+- Add AS Canary to dev channel (#5830)
+- Remove dependencies on built-in Flutter icons (#5824)
+- Add instructions for converting to/from Gradle project (#5822)
+- Derive icon previews from font files for built-in icons (#5820)
+- Enable more compile-time nulllability checking (#5804)
+
 # 61.1
 - Add null check for manager (#5799)
 
