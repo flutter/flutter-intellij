@@ -15,6 +15,8 @@ import io.flutter.dart.DartSyntax;
 import io.flutter.sdk.FlutterSdk;
 import org.junit.Test;
 
+import java.io.IOException;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -27,8 +29,8 @@ public class FlutterIconLineMarkerTest extends io.flutter.ide.FlutterCodeInsight
     return mockSdk;
   }
 
-  //@Test
-  public void xtestLocatesIconsReference() throws Exception {
+  @Test
+  public void testLocatesIconsReference() throws Exception {
     final PsiElement testIdentifier = setUpDartElement("main() { Icons.access_alarm; }", "Icons", LeafPsiElement.class);
     final LineMarkerInfo<?> marker = new FlutterIconLineMarkerProvider().getLineMarkerInfo(testIdentifier, getSdk());
     assertNotNull(marker);
@@ -36,8 +38,8 @@ public class FlutterIconLineMarkerTest extends io.flutter.ide.FlutterCodeInsight
     assertNotNull(element);
   }
 
-  //@Test
-  public void xtestLocatesIconCtor() throws Exception {
+  @Test
+  public void testLocatesIconCtor() throws Exception {
     final PsiElement testIdentifier =
       setUpDartElement("main() { IconData(0xe190, fontFamily: 'MaterialIcons'); }", "IconData", LeafPsiElement.class);
     final LineMarkerInfo<?> marker = new FlutterIconLineMarkerProvider().getLineMarkerInfo(testIdentifier, getSdk());
@@ -46,8 +48,8 @@ public class FlutterIconLineMarkerTest extends io.flutter.ide.FlutterCodeInsight
     assertNotNull(element);
   }
 
-  //@Test
-  public void xtestLocatesCupertinoIconCtor() throws Exception {
+  @Test
+  public void testLocatesCupertinoIconCtor() throws Exception {
     final PsiElement testIdentifier =
       setUpDartElement("main() { IconData(0xe190, fontFamily: 'CupertinoIcons'); }", "IconData", LeafPsiElement.class);
     final LineMarkerInfo<?> marker = new FlutterIconLineMarkerProvider().getLineMarkerInfo(testIdentifier, getSdk());
@@ -56,8 +58,8 @@ public class FlutterIconLineMarkerTest extends io.flutter.ide.FlutterCodeInsight
     assertNotNull(element);
   }
 
-  //@Test
-  public void xtestLocatesConstIconCtor() throws Exception {
+  @Test
+  public void testLocatesConstIconCtor() throws Exception {
     final PsiElement testIdentifier =
       setUpDartElement("main() { const IconData(0xe190, fontFamily: 'MaterialIcons'); }", "IconData", LeafPsiElement.class);
     final LineMarkerInfo<?> marker = new FlutterIconLineMarkerProvider().getLineMarkerInfo(testIdentifier, getSdk());
@@ -66,8 +68,8 @@ public class FlutterIconLineMarkerTest extends io.flutter.ide.FlutterCodeInsight
     assertNotNull(element);
   }
 
-  //@Test
-  public void xtestLocatesCupertinoIconsReference() throws Exception {
+  @Test
+  public void testLocatesCupertinoIconsReference() throws Exception {
     final PsiElement testIdentifier = setUpDartElement("main() { CupertinoIcons.book; }", "CupertinoIcons", LeafPsiElement.class);
     final LineMarkerInfo<?> marker = new FlutterIconLineMarkerProvider().getLineMarkerInfo(testIdentifier, getSdk());
     assertNotNull(marker);
@@ -75,8 +77,8 @@ public class FlutterIconLineMarkerTest extends io.flutter.ide.FlutterCodeInsight
     assertNotNull(element);
   }
 
-  //@Test
-  public void xtestLocatesCupertinoIconsReferenceWithComment() throws Exception {
+  @Test
+  public void testLocatesCupertinoIconsReferenceWithComment() throws Exception {
     final PsiElement testIdentifier =
       setUpDartElement("main() { CupertinoIcons . /* a book */ book; }", "CupertinoIcons", LeafPsiElement.class);
     final LineMarkerInfo<?> marker = new FlutterIconLineMarkerProvider().getLineMarkerInfo(testIdentifier, getSdk());

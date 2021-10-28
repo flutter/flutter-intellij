@@ -36,7 +36,8 @@ project in IntelliJ, then delete .idea/modules.xml. You may need to delete other
 files in ~/Library/Application Support/Caches/JetBrains/<IDE>/. Look in `conversion`
 and `external_build_systrm`. It may take some experimentation. When the project
 is opened in IntelliJ, ensure that there are `flutter-idea` and `flutter-studio`
-modules in the project structure.
+modules in the project structure. Also make sure the project sdk is set to a
+JDK-equivalent, not a JRE-equivalent.
 
 To re-open the project as an IntelliJ (not Gradle) project, close it in IntelliJ,
 then restore .idea/modules.xml and delete .idea/gradle.xml. Again, you may need to

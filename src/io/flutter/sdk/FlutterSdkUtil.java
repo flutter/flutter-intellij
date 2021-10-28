@@ -295,6 +295,11 @@ public class FlutterSdkUtil {
 
   @Nullable
   public static String getPathToCupertinoIconsPackage(@NotNull Project project) {
+    //noinspection ConstantConditions
+    if (ApplicationManager.getApplication().isUnitTestMode()) {
+      // TODO(messick): Configure the test framework to have proper pub data so we don't need this.
+      return "testData/sdk";
+    }
     final JsonArray packages = getPackagesFromPackageConfig(PubRoots.forProject(project));
     for (int i = 0; i < packages.size(); i++) {
       final JsonObject pack = packages.get(i).getAsJsonObject();
