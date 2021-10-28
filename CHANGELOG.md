@@ -1,4 +1,5 @@
 # 62.0
+- Update jxbrowser to 7.19 (#5783)
 - Restore ignored tests (#5826)
 - Use Java 11 everywhere (#5836)
 - Add AS Canary to dev channel (#5830)
