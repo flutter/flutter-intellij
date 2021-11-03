@@ -56,7 +56,10 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   /**
    * The version that supports --devtools-server-address in flutter run.
    */
+  @NotNull
   private static final FlutterSdkVersion MIN_PASS_DEVTOOLS_SDK = new FlutterSdkVersion("1.26.0-11.0.pre");
+  @NotNull
+  private static final FlutterSdkVersion MIN_OPTIONAL_PASS_DEVTOOLS_SDK = new FlutterSdkVersion("2.7.0-3.0.pre");
 
   /**
    * The version that includes the skeleton template.
@@ -164,7 +167,7 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   }
 
   public boolean flutterRunSupportsDevToolsUrl() {
-    return version != null && this.compareTo(MIN_PASS_DEVTOOLS_SDK) >= 0;
+    return version != null && this.compareTo(MIN_PASS_DEVTOOLS_SDK) >= 0 && this.compareTo(MIN_OPTIONAL_PASS_DEVTOOLS_SDK) < 0;
   }
 
   public boolean flutterTestSupportsMachineMode() {
