@@ -383,7 +383,7 @@ public class FlutterSdk {
       }
       if (useRegexp) {
         args.add("--name");
-        args.add("^" + StringUtil.escapeToRegexp(testNameSubstring) + "( \\(variant: .*\\))?$");
+        args.add(StringUtil.escapeToRegexp(testNameSubstring) + "(\\s*\\(variant: .*\\))?$");
       }
       else {
         args.add("--plain-name");
