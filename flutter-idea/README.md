@@ -1,3 +1,5 @@
+NEEDS TO BE UPDATED a/o 9 NOV 21
+
 # Gradle Module Structure
 
 This module is a mirror of flutter-intellij (the non-Gradle version) that has sources structured

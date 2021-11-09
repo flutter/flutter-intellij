@@ -78,24 +78,22 @@ dependencies {
 /* Need to swizzle source and resource paths to match standard or buildPlugin does nothing. */
 sourceSets {
   main.java.srcDirs = [
-    "src/main/java",
-    "gen",
+    "src",
     "third_party/vmServiceDrivers",
-    "src/main/resources"
+    "resources"
   ]
   // Add main.kotlin.srcDirs if we start using Kotlin in the main plugin.
   main.resources.srcDirs = [
-    "src/main/java",
-    "src/main/resources",
+    "src",
+    "resources",
   ]
   test.java.srcDirs = [
-    "gen",
-    "src/main/java",
+    "src",
     "testSrc/unit",
     "third_party/vmServiceDrivers"
   ]
   test.resources.srcDirs = [
-    "src/main/resources",
+    "resources",
     "testData",
     "testSrc/unit"
   ]

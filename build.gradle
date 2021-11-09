@@ -44,7 +44,7 @@ allprojects {
     options.encoding = 'UTF-8'
   }
   tasks.withType(Test) {
-    systemProperty "file.encoding", "UTF-8"
+    systemProperty("file.encoding", "UTF-8")
   }
 }
 
@@ -76,9 +76,9 @@ intellij {
 }
 
 dependencies {
-  implementation project('flutter-idea')
+  implementation(project('flutter-idea'))
   if (ide == 'android-studio') {
-    implementation project('flutter-studio')
+    implementation(project('flutter-studio'))
   }
 }
 
@@ -102,12 +102,3 @@ test {
   // Uncomment this line to disable tests on the bots.
   //ignoreFailures true
 }
-
-buildSearchableOptions.enabled = false
-
-// See https://github.com/gradle/gradle/issues/9202
-// This does not clean sub-projects.
-buildPlugin.dependsOn clean
-
-// Need to delete cache so sub-project tests get run.
-test.dependsOn clean
