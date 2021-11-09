@@ -36,7 +36,7 @@ intellij {
 
 sourceSets {
   main.java.srcDirs = ['src']
-  test.java.srcDirs = ['testSrc']
+  //test.java.srcDirs = ['testSrc']
 }
 
 buildSearchableOptions.enabled = false
