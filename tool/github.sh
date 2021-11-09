@@ -32,7 +32,7 @@ echo "pub get `pwd`"
 pub get
 
 # Get packages for the test data.
-(cd testData/sample_tests; echo "pub get `pwd`"; pub get)
+(cd flutter-idea/testData/sample_tests; echo "pub get `pwd`"; pub get)
 
 # Set up the plugin tool.
 (cd tool/plugin; echo "pub get `pwd`"; pub get)
