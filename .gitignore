@@ -27,6 +27,7 @@ resources/jxbrowser/jxbrowser.properties
 **/.idea/gradle.xml
 .idea/jarRepositories.xml
 .idea/kotlinc.xml
+.idea/runConfigurations.xml
 **/.idea/modules/
 .idea/libraries/Gradle_*.xml
 **/.idea/modules.xml

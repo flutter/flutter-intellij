@@ -96,7 +96,7 @@ sourceSets {
     resources.srcDirs(listOf(
       //"src",
       "resources",
-  ))
+    ))
   }
   test {
     java.srcDirs(listOf(
