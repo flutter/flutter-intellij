@@ -4,7 +4,9 @@
  * found in the LICENSE file.
  */
 
-include 'flutter-idea'
-if ("$ide" == 'android-studio') {
-  include 'flutter-studio'
+val ide: String by settings
+
+include("flutter-idea")
+if ("$ide" == "android-studio") {
+  include("flutter-studio")
 }
