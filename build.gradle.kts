@@ -48,8 +48,6 @@ allprojects {
   }
 }
 
-//apply(plugin = "org.jetbrains.intellij")
-
 val ide: String by project
 val flutterPluginVersion: String by project
 val javaVersion: String by project
@@ -73,8 +71,10 @@ intellij {
   updateSinceUntilBuild.set(false)
   localPath.set("${project.rootDir.absolutePath}/artifacts/$ide")
   downloadSources.set(false)
-  val pluginList = mutableListOf(project(":flutter-idea"), "java", "Dart:$dartVersion", "properties", "junit", "Git4Idea",
-                    "Kotlin", "gradle", "org.jetbrains.android", "Groovy", "smali", "IntelliLang")
+  val pluginList = mutableListOf(
+    project(":flutter-idea"), "java", "Dart:$dartVersion", "properties",
+    "junit", "Git4Idea", "Kotlin", "gradle", "org.jetbrains.android",
+    "Groovy", "smali", "IntelliLang")
   if (ide == "android-studio") {
     pluginList += listOf(project(":flutter-studio"))
   } else if ("$buildSpec" == "2020.3") {
@@ -93,12 +93,6 @@ dependencies {
   implementation(project("flutter-idea"))
   if (ide == "android-studio") {
     implementation(project("flutter-studio"))
-  }
-}
-
-sourceSets {
-  test {
-    resources.srcDirs("flutter-idea/testData")
   }
 }
 

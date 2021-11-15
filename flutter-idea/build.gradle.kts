@@ -90,11 +90,10 @@ sourceSets {
     java.srcDirs(listOf(
       "src",
       "third_party/vmServiceDrivers",
-      //"resources"
     ))
     // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
     resources.srcDirs(listOf(
-      //"src",
+      "src",
       "resources",
     ))
   }
@@ -127,7 +126,7 @@ tasks {
   }
 
   test {
-    useJUnitPlatform()
+    useJUnit()
     testLogging {
       showCauses = true
       showStackTraces = true
