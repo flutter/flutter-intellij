@@ -1,5 +1,7 @@
 This module customizes the Flutter plugin for Android Studio.
 
+NEEDS TO BE UPDATED a/o 9 NOV 21
+
 To set up a development environment using sources for Android Studio:
 
 1. Initialize Android Studio sources.

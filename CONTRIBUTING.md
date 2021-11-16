@@ -10,6 +10,8 @@ You can do this online, and it only takes a minute. If you've never submitted co
 you must add your (or your organization's) name and contact info to the [AUTHORS](AUTHORS)
 file.
 
+NEEDS UPDATING a/o 9 NOV 21
+
 * Install Flutter SDK from [Flutter SDK download](https://flutter.dev/docs/get-started/install) or
   [github](https://github.com/flutter/flutter) and set it up according to its instructions.
 * Verify installation from the command line:
