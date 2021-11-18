@@ -22,7 +22,11 @@ public class JxBrowserUtils {
   public String getPlatformFileName() throws FileNotFoundException {
     String name = "";
     if (SystemInfo.isMac) {
-      name = "mac";
+      if (SystemInfo.OS_ARCH.equals("aarch64")) {
+        name = "mac-arm";
+      } else {
+        name = "mac";
+      }
     } else if (SystemInfo.isWindows) {
       if (SystemInfo.is32Bit) {
         name = "win32";
