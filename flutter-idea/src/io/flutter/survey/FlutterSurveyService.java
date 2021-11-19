@@ -20,11 +20,10 @@ import java.util.concurrent.TimeUnit;
 public class FlutterSurveyService {
   private static final String FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY = "FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY";
   private static final long CHECK_INTERVAL_IN_MS = TimeUnit.HOURS.toMillis(40);
-  private static final String CONTENT_URL = "https://flutter.dev/f/flutter-survey-metadata.json";
+  private static final String CONTENT_URL = "https://docs.flutter.dev/f/flutter-survey-metadata.json";
   private static final PropertiesComponent properties = PropertiesComponent.getInstance();
   private static final Logger LOG = Logger.getInstance(FlutterSurveyService.class);
   private static FlutterSurvey cachedSurvey;
-
 
   private static boolean timeToUpdateCachedContent() {
     // Don't check more often than daily.
