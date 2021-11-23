@@ -4,7 +4,8 @@
  * found in the LICENSE file.
  */
 package io.flutter.actions;
-
+public class FlutterShowStructureSettingsAction {}
+/*
 import com.android.tools.idea.gradle.structure.actions.AndroidShowStructureSettingsAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
@@ -58,4 +59,4 @@ public class FlutterShowStructureSettingsAction extends AndroidShowStructureSett
   //  }
   //  AndroidProjectStructureConfigurable.getInstance(project).showDialog();
   //}
-}
+}*/

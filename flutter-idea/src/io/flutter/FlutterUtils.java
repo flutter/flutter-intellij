@@ -121,17 +121,6 @@ public class FlutterUtils {
     return StringUtil.equals(PlatformUtils.getPlatformPrefix(), "AndroidStudio");
   }
 
-  public static boolean isNewAndroidStudioProjectWizard() {
-    // TODO (messick) Remove this and its references when Android Studio 4.2 is stable.
-    if (isAndroidStudio()) {
-      ApplicationInfo info = ApplicationInfo.getInstance();
-      int major = Integer.parseInt(info.getMajorVersion());
-      int minor = Integer.parseInt(info.getMinorVersion());
-      return true; //major >= 4 && minor >= 2;
-    }
-    return false;
-  }
-
   /**
    * Write a warning message to the IntelliJ log.
    * <p>

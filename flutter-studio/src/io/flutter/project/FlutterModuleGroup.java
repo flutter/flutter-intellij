@@ -1,10 +1,12 @@
-package io.flutter.module;
+package io.flutter.project;
 
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
 import io.flutter.FlutterBundle;
+import io.flutter.module.FlutterModuleBuilder;
+import io.flutter.module.FlutterProjectType;
 import org.jetbrains.annotations.NotNull;
 
 // Define a group of Flutter project types for use in Android Studio 4.2 and later.

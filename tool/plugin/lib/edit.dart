@@ -33,21 +33,6 @@ void checkAndClearAppliedEditCommands() {
 List<EditCommand> editCommands = [
   EditAndroidModuleLibraryManager(),
   Subst(
-    path: 'flutter-idea/src/io/flutter/vmService/frame/DartVmServiceValue.java',
-    initial: ',() -> computeCollectionChildren(instanceRef, offset + count, node)',
-    replacement: '',
-    version: '4.2',
-  ),
-  Subst(
-    path: 'flutter-idea/src/io/flutter/editor/FlutterIconLineMarkerProvider.java',
-    initial: '''
-LineMarkerInfo<>(element, element.getTextRange(), icon, null, null,
-                                GutterIconRenderer.Alignment.LEFT, () -> "");''',
-    replacement:
-        'LineMarkerInfo<>(element, element.getTextRange(), icon, null, null, GutterIconRenderer.Alignment.LEFT);',
-    versions: ['4.2'],
-  ),
-  Subst(
     path: 'build.gradle.kts',
     initial: 'localPath "\${project.rootDir.absolutePath}/artifacts/\$ide"',
     replacement: 'type.set("IC")\n  version.set("LATEST-EAP-SNAPSHOT")',
@@ -60,12 +45,6 @@ LineMarkerInfo<>(element, element.getTextRange(), icon, null, null,
     version: '2021.2.xyz',
   ),
   Subst(
-    path: 'flutter-idea/src/io/flutter/FlutterErrorReportSubmitter.java',
-    initial: 'Consumer<? super SubmittedReportInfo> consumer',
-    replacement: 'Consumer<SubmittedReportInfo> consumer',
-    versions: ['4.2'],
-  ),
-  Subst(
     path: 'flutter-idea/src/io/flutter/utils/CollectionUtils.java',
     initial: 'Predicate<T> predicate',
     replacement: 'Predicate<? super T> predicate',
@@ -76,18 +55,6 @@ LineMarkerInfo<>(element, element.getTextRange(), icon, null, null,
     initial: 'JavaNewProjectOrModuleGroup',
     replacement: 'NewProjectOrModuleGroup',
     version: 'AF.3.1',
-  ),
-  Subst(
-    path: 'flutter-studio/src/io/flutter/project/FlutterProjectCreator.java',
-    initial: 'cannotWriteToFiles(List<? extends Path> files)',
-    replacement: 'cannotWriteToFiles(List<? extends File> files)',
-    versions: ['4.2'],
-  ),
-  Subst(
-    path: 'flutter-studio/src/io/flutter/project/FlutterProjectCreator.java',
-    initial: 'cannotWriteToFiles(List<? extends Path> files)',
-    replacement: 'cannotWriteToFiles(List<Path> files)',
-    versions: ['AF.3.1'],
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/sdk/FlutterSdkUtil.java',

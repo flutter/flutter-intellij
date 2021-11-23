@@ -329,7 +329,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     combo.setItem(s);
   }
 
-  FlutterCreateAdditionalSettingsFields getSettingsField() {
+  public FlutterCreateAdditionalSettingsFields getSettingsField() {
     return mySettingsFields;
   }
 
