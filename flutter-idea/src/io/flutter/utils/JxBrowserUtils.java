@@ -82,11 +82,4 @@ public class JxBrowserUtils {
   public boolean licenseIsSet() {
     return System.getProperty(JxBrowserUtils.LICENSE_PROPERTY_NAME) != null;
   }
-
-  public boolean isM1Mac() {
-    // Return default false value for earlier IntelliJ versions that do not have the CpuArch method (211.4961.30).
-    // It's possible a user could be using an earlier IntelliJ version with an M1 mac, but for that case we can't detect
-    // that the system is the problem and will serve a more generic error message.
-    return false; // return SystemInfo.isMac && CpuArch.isArm64();
-  }
 }
