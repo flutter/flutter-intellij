@@ -254,6 +254,10 @@ public class FlutterSdk {
     return new FlutterCommand(this, root == null ? null : root.getRoot(), FlutterCommand.Type.PUB, args);
   }
 
+  public FlutterCommand dartDevtools(@Nullable PubRoot root, String... args) {
+    return new FlutterCommand(this, root == null ? null : root.getRoot(), FlutterCommand.Type.DART_DEVTOOLS, args);
+  }
+
   public FlutterCommand flutterBuild(@NotNull PubRoot root, String... additionalArgs) {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.BUILD, additionalArgs);
   }

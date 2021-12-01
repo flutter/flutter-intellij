@@ -57,6 +57,10 @@ public class FlutterSdkUtil {
   public FlutterSdkUtil() {
   }
 
+  public static String dartScriptName() {
+    return SystemInfo.isWindows ? "dart.bat" : "dart";
+  }
+
   /**
    * Return the environment variable value to use when shelling out to the Flutter command-line tool.
    */

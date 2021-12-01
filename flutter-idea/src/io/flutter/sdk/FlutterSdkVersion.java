@@ -59,7 +59,7 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   @NotNull
   private static final FlutterSdkVersion MIN_PASS_DEVTOOLS_SDK = new FlutterSdkVersion("1.26.0-11.0.pre");
   @NotNull
-  private static final FlutterSdkVersion MIN_OPTIONAL_PASS_DEVTOOLS_SDK = new FlutterSdkVersion("2.7.0-3.0.pre");
+  private static final FlutterSdkVersion MIN_OPTIONAL_PASS_DEVTOOLS_SDK = new FlutterSdkVersion("2.6.0-12.0.pre.854");
 
   /**
    * The version that includes the skeleton template.
@@ -168,6 +168,10 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   public boolean flutterRunSupportsDevToolsUrl() {
     return version != null && this.compareTo(MIN_PASS_DEVTOOLS_SDK) >= 0 && this.compareTo(MIN_OPTIONAL_PASS_DEVTOOLS_SDK) < 0;
+  }
+
+  public boolean supportsDartDevTools() {
+    return this.compareTo(MIN_OPTIONAL_PASS_DEVTOOLS_SDK) >= 0;
   }
 
   public boolean flutterTestSupportsMachineMode() {

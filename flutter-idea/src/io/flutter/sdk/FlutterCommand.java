@@ -254,11 +254,12 @@ public class FlutterCommand {
     if (androidHome != null) {
       line.withEnvironment("ANDROID_HOME", androidHome);
     }
-    line.setExePath(FileUtil.toSystemDependentName(sdk.getHomePath() + "/bin/" + FlutterSdkUtil.flutterScriptName()));
+    String scriptName = type.isDart() ? FlutterSdkUtil.dartScriptName() : FlutterSdkUtil.flutterScriptName();
+    line.setExePath(FileUtil.toSystemDependentName(sdk.getHomePath() + "/bin/" + scriptName));
     if (workDir != null) {
       line.setWorkDirectory(workDir.getPath());
     }
-    if (!isDoctorCommand()) {
+    if (!isDoctorCommand() && ! type.isDart()) {
       line.addParameter("--no-color");
     }
     line.addParameters(type.subCommand);
@@ -285,7 +286,8 @@ public class FlutterCommand {
     RUN("Flutter run", "run"),
     UPGRADE("Flutter upgrade", "upgrade"),
     VERSION("Flutter version", "--version"),
-    TEST("Flutter test", "test");
+    TEST("Flutter test", "test"),
+    DART_DEVTOOLS("Dart devtools", "devtools");
 
     final public String title;
     final ImmutableList<String> subCommand;
@@ -295,9 +297,13 @@ public class FlutterCommand {
       this.subCommand = ImmutableList.copyOf(subCommand);
     }
 
+    boolean isDart() {
+      return title.startsWith("Dart");
+    }
+
     void sendAnalyticsEvent() {
       final String action = String.join("_", subCommand).replaceAll("-", "");
-      FlutterInitializer.getAnalytics().sendEvent("flutter", action);
+      FlutterInitializer.getAnalytics().sendEvent(isDart() ? "dart" : "flutter", action);
     }
   }
 }

@@ -167,19 +167,32 @@ public class DevToolsService {
       return;
     }
 
-    pubActivateDevTools(sdk).thenAccept(success -> {
-      if (success) {
-        pubRunDevTools(sdk);
-      }
-      else {
-        logExceptionAndComplete("pub activate of DevTools failed");
-      }
-    });
+    if (sdk.getVersion().supportsDartDevTools()) {
+      dartRunDevTools(sdk);
+    }
+    else {
+      pubActivateDevTools(sdk).thenAccept(success -> {
+        if (success) {
+          pubRunDevTools(sdk);
+        }
+        else {
+          logExceptionAndComplete("pub activate of DevTools failed");
+        }
+      });
+    }
+  }
+
+  private void dartRunDevTools(FlutterSdk sdk) {
+    final FlutterCommand command = sdk.dartDevtools(null, "--machine", "--port=0");
+    runCommand(command);
   }
 
   private void pubRunDevTools(FlutterSdk sdk) {
     final FlutterCommand command = sdk.flutterPub(null, "global", "run", "devtools", "--machine", "--port=0");
+    runCommand(command);
+  }
 
+  private void runCommand(FlutterCommand command) {
     final ColoredProcessHandler handler = command.startProcessOrShowError(project);
     if (handler == null) {
       logExceptionAndComplete("Handler was null for pub global run command");
