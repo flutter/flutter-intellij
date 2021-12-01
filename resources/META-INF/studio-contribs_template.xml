@@ -1,11 +1,6 @@
 <!-- Defines Android Studio IDE-specific contributions and implementations. -->
 <idea-plugin>
 
-  <extensions defaultExtensionNs="com.android">
-    <!-- Add Flutter module types to the New Module wizard -->
-    <moduleDescriptionProvider implementation="io.flutter.module.FlutterDescriptionProvider"/>
-  </extensions>
-
   <extensions defaultExtensionNs="io.flutter">
     <gradleSyncProvider implementation="io.flutter.android.AndroidStudioGradleSyncProvider" order="first"/>
     <colorPickerProvider implementation="io.flutter.editor.AndroidStudioColorPickerProvider" order="first"/>
@@ -15,7 +10,7 @@
     <externalSystemTaskNotificationListener implementation="io.flutter.utils.FlutterExternalSystemTaskNotificationListener"/>
     <androidStudioInitializer implementation="io.flutter.FlutterStudioInitializer"/>
     <postStartupActivity implementation="io.flutter.FlutterStudioStartupActivity"/>
-    <projectOpenProcessor implementation="io.flutter.project.FlutterStudioProjectOpenProcessor" order="after flutter"/>
+    <projectOpenProcessor implementation="io.flutter.editor.FlutterStudioProjectOpenProcessor" order="after flutter"/>
     <library.type implementation="io.flutter.android.AndroidModuleLibraryType"/>
     <projectService serviceInterface="io.flutter.android.AndroidModuleLibraryManager"
                     serviceImplementation="io.flutter.android.AndroidModuleLibraryManager"/>
@@ -36,13 +31,8 @@
             text="Create New Flutter Project"
             icon="FlutterIcons.Flutter"
             description="Create a new Flutter project">
-      <add-to-group group-id="WelcomeScreen.QuickStart.IDEA" anchor="after" relative-to-action="WelcomeScreen.CreateNewProject"/>
+      <add-to-group group-id="WelcomeScreen.QuickStart" anchor="first"/>
     </action>
-
-    <action id="ShowProjectStructureSettings"
-            class="io.flutter.actions.FlutterShowStructureSettingsAction"
-            project-type="io.flutter"
-            icon="AllIcons.General.ProjectStructure"/>
 
     <!-- action
       id="DeveloperServices.FlutterNewsAssistant"

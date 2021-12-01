@@ -10,8 +10,6 @@ You can do this online, and it only takes a minute. If you've never submitted co
 you must add your (or your organization's) name and contact info to the [AUTHORS](AUTHORS)
 file.
 
-NEEDS UPDATING a/o 9 NOV 21
-
 * Install Flutter SDK from [Flutter SDK download](https://flutter.dev/docs/get-started/install) or
   [github](https://github.com/flutter/flutter) and set it up according to its instructions.
 * Verify installation from the command line:
@@ -213,19 +211,26 @@ Sometimes browsing the source code of IntelliJ is helpful for understanding plat
 
 ## Working with Android Studio
 
+Android Studio cannot use the Gradle-based project definition, so it still needs the `flutter-intellij-community.iml`
+file. Obviously, unit tests can only be run from the command line.
+
 1. Initialize Android Studio sources.
 2. Checkout Flutter plugin sources, tip of tree.
 3. Follow the directions for setting up the Dart plugin sources in
    intellij-plugins/Dart/README.md with these changes:
     - you do not need to clone the intellij-community repo
-    - open studio-master-dev/tools/idea in IntelliJ
+    - open studio-main/tools/adt/idea in IntelliJ
     - possibly skip running intellij-community/getPlugins.sh
 4. Checkout Dart plugin sources.
 5. Using the Project Structure editor, import
-    - intellij-plugins/Dart/Dart-community.iml
-    - flutter-intellij
-6. Using the Project Structure editor, select the `studio` module and add a module dependency to all modules
-   that begin with `flutter`, plus `Dart` (make sure `Dart` is at the bottom of the list)
+    - intellij-plugins/Dart/Dart-community.iml (if there are lots of errors, see step 7)
+    - flutter-intellij/flutter-intellij-community.iml
+6. Using the Project Structure editor, expand the tree to show `intellij > android > adt > ui`. Select the `ui` 
+   module then add a module dependency from it to `flutter-intellij-community`. Also add a dependency on the Dart
+   module unless using step 7.
+7. (Optional, when Dart sources are not usable.) Make sure the `flutter-intellij-community` module has a dependency on a library named
+   `Dart`. It should be pre-defined, but if it is out-of-date then adjust it to point to `flutter-intellij/lib/dart-plugin/xxx.yyyy/Dart.jar`.
+   Delete the Dart module from the Project Structure modules list.
 
 ## Working with Embedded DevTools (JxBrowser)
 

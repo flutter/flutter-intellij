@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.project;
+package io.flutter.editor;
 
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -11,6 +11,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.projectImport.ProjectOpenProcessor;
 import com.intellij.ui.EditorNotifications;
 import io.flutter.FlutterUtils;
+//import io.flutter.project.FlutterProjectCreator;
+import io.flutter.project.FlutterProjectOpenProcessor;
 import io.flutter.pub.PubRoot;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
@@ -50,7 +52,7 @@ public class FlutterStudioProjectOpenProcessor extends FlutterProjectOpenProcess
     project.save();
     EditorNotifications.getInstance(project).updateAllNotifications();
 
-    FlutterProjectCreator.disableUserConfig(project);
+    //FlutterProjectCreator.disableUserConfig(project);
     return project;
   }
 }

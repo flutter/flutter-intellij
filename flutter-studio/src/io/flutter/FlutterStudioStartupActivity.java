@@ -8,7 +8,7 @@ package io.flutter;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.android.AndroidModuleLibraryManager;
-import io.flutter.project.FlutterProjectCreator;
+//import io.flutter.project.FlutterProjectCreator;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AddToAppUtils;
 import io.flutter.utils.AndroidUtils;
@@ -28,7 +28,7 @@ public class FlutterStudioStartupActivity implements StartupActivity {
 
     // Unset this flag for all projects, mainly to ease the upgrade from 3.0.1 to 3.1.
     // TODO(messick) Delete once 3.0.x has 0 7DA's.
-    FlutterProjectCreator.disableUserConfig(project);
+    //FlutterProjectCreator.disableUserConfig(project);
     // Monitor Android dependencies.
     if (FlutterSettings.getInstance().isSyncingAndroidLibraries() ||
         System.getProperty("flutter.android.library.sync", null) != null) {
