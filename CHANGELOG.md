@@ -1,3 +1,8 @@
+# 63.0
+- Build for IntelliJ 2021.3 and Android Studio canary (#5868)
+- Enable downloading Mac M1 version of JxBrowser (#5871)
+- Convert to Gradle project with Kotlin DSL (#5858)
+
 # 62.0
 - Update jxbrowser to 7.19 (#5783)
 - Restore ignored tests (#5826)
