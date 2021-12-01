@@ -21,7 +21,7 @@
 
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
-  <idea-version since-build="203.6682.168" until-build="211.7727"/>
+  <idea-version since-build="203.6682.168" until-build="212.*"/>
 
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.lang</depends>
@@ -45,6 +45,12 @@
 
   <change-notes>
     <![CDATA[
+<h1>63.0</h1>
+<ul>
+  <li>Build for IntelliJ 2021.3 and Android Studio canary (#5868)</li>
+  <li>Enable downloading Mac M1 version of JxBrowser (#5871)</li>
+  <li>Convert to Gradle project with Kotlin DSL (#5858)</li>
+</ul>
 <h1>62.0</h1>
 <ul>
   <li>Update jxbrowser to 7.19 (#5783)</li>
