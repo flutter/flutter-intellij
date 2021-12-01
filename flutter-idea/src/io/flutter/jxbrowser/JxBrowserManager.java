@@ -195,16 +195,6 @@ public class JxBrowserManager {
       return;
     }
 
-    // Check that user is not on M1 mac.
-    if (jxBrowserUtils.isM1Mac()) {
-      LOG.info(project.getName() + ": Skipping downloads due to M1");
-      setStatusFailed(new InstallationFailedReason(
-              FailureType.SYSTEM_INCOMPATIBLE,
-              "The embedded browser is not yet supported for Macs using the M1 chip."
-      ));
-      return;
-    }
-
     // If installation future has not finished, we don't want to overwrite it. There could be other code listening for the previous attempt
     // to succeed or fail.
     // We expect to create a new CompletableFuture only if the previous installation attempt failed.

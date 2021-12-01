@@ -74,13 +74,6 @@ List<EditCommand> editCommands = [
     replacement: 'urlClassLoader.addFiles(paths)',
     versions: ['2021.1', '2021.2'],
   ),
-  Subst(
-    path: 'flutter-idea/src/io/flutter/utils/JxBrowserUtils.java',
-    initial:
-        'return false; // return SystemInfo.isMac && com.intellij.util.system.CpuArch.isArm64();',
-    replacement: 'return SystemInfo.isMac && CpuArch.isArm64();',
-    versions: ['2021.1', '2021.2'],
-  ),
 ];
 
 // Used to test checkAndClearAppliedEditCommands()
