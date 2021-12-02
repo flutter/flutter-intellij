@@ -26,29 +26,16 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2021.2",
-      "name": "IntelliJ 2021.2",
-      "version": "2021.2",
-      "isUnitTestTarget": "true",
-      "ideaProduct": "ideaIC",
-      "ideaVersion": "212.3724.25",
-      "baseVersion": "212.4746.92",
-      "dartPluginVersion": "212.3724.2",
-      "sinceBuild": "212.5457.6",
-      "untilBuild": "212.*",
-      "filesToSkip": ["flutter-studio/src/io/flutter/actions/FlutterNewProjectAction.java_stub"]
-    },
-    {
-      "channel": "stable",
       "comments": "Android Studio 2021.2 Canary",
       "name": "Chipmunk",
       "version": "AS.212",
+      "isUnitTestTarget": "true",
       "ideaProduct": "android-studio",
       "ideaVersion": "2021.2.1.2",
       "baseVersion": "212.5284.40",
       "dartPluginVersion": "212.5486",
-      "sinceBuild": "AI-212.5284.40",
-      "untilBuild": "AI-212.5457.46"
+      "sinceBuild": "212.5284.40",
+      "untilBuild": "212.5457.46"
     },
     {
       "channel": "stable",
