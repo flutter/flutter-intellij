@@ -71,10 +71,11 @@ sourceSets {
       //"resources"
     ))
     // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
-    resources.srcDirs(listOf(
+    //resources.srcDirs(listOf(
       //"src",
-      "resources",
-  ))
+      //project(":flutter-idea").sourceSets.main.get().resources
+      //"resources",
+    //))
   }
 }
 
