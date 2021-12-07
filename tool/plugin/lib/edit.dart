@@ -36,13 +36,13 @@ List<EditCommand> editCommands = [
     path: 'build.gradle.kts',
     initial: 'localPath "\${project.rootDir.absolutePath}/artifacts/\$ide"',
     replacement: 'type.set("IC")\n  version.set("LATEST-EAP-SNAPSHOT")',
-    version: '2021.2.xyz',
+    version: '2022.1.futureEAP',
   ),
   Subst(
     path: 'flutter-idea/build.gradle',
     initial: 'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide")',
     replacement: 'type = "IC"\n  version = "LATEST-EAP-SNAPSHOT"',
-    version: '2021.2.xyz',
+    version: '2022.1.futureEAP',
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/utils/CollectionUtils.java',
@@ -64,15 +64,15 @@ List<EditCommand> editCommands = [
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/jxbrowser/JxBrowserManager.java',
-    initial: 'loadClasses(fileNames)',
-    replacement: 'loadClasses2021(fileNames)',
-    versions: ['2021.1', '2021.2'],
+    initial: 'loadClasses2021(fileNames)',
+    replacement: 'loadClasses(fileNames)',
+    versions: ['AF.3.1'],
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/utils/FileUtils.java',
-    initial: '//urlClassLoader.addFiles(paths)',
-    replacement: 'urlClassLoader.addFiles(paths)',
-    versions: ['2021.1', '2021.2'],
+    initial: 'urlClassLoader.addFiles(paths)',
+    replacement: '//urlClassLoader.addFiles(paths)',
+    versions: ['AF.3.1'],
   ),
 ];
 

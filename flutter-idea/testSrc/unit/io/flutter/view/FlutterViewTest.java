@@ -17,6 +17,7 @@ import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.jxbrowser.JxBrowserStatus;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.JxBrowserUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 
@@ -123,6 +124,7 @@ public class FlutterViewTest {
       .handleUpdatedJxBrowserStatusOnEventThread(mockApp, mockInspectorService, mockToolWindow, JxBrowserStatus.INSTALLATION_FAILED);
   }
 
+  @Ignore
   @Test
   public void testWaitForJxBrowserInstallationWithTimeout() throws TimeoutException {
     when(mockJxBrowserManager.getStatus()).thenReturn(JxBrowserStatus.INSTALLATION_IN_PROGRESS);
