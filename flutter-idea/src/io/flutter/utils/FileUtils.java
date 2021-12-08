@@ -74,6 +74,6 @@ public class FileUtils {
    */
   public void loadPaths(ClassLoader classLoader, List<Path> paths) {
     final UrlClassLoader urlClassLoader = (UrlClassLoader) classLoader;
-    //urlClassLoader.addFiles(paths);
+    urlClassLoader.addFiles(paths);
   }
 }

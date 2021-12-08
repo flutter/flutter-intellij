@@ -20,7 +20,7 @@ buildscript {
 }
 
 plugins {
-  id("org.jetbrains.intellij") version "1.1.4"
+  id("org.jetbrains.intellij") version "1.2.0" // Latest is 1.4.0 but does not work: Unresolved reference testRuntime
   id("org.jetbrains.kotlin.jvm") version "1.4.31"
 }
 

@@ -6,6 +6,7 @@
 package io.flutter.jxbrowser;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -32,11 +33,14 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -51,9 +55,30 @@ import java.util.concurrent.atomic.AtomicReference;
 public class JxBrowserManager {
   private static JxBrowserManager manager;
 
+  private static String getPluginLoaderDir() {
+    try {
+      final ApplicationInfo info = ApplicationInfo.getInstance();
+      assert info != null;
+      if (Objects.equals(info.getMajorVersion(), "2021")) {
+        if (Objects.equals(info.getMinorVersion(), "3")) {
+          return "flutter-idea";
+        }
+        else {
+          return "flutter-intellij";
+        }
+      }
+      else if (Objects.equals(info.getMajorVersion(), "2020")) {
+        return "flutter-intellij";
+      }
+    } catch (NullPointerException ex) {
+      // ignored; unit tests
+    }
+    return "flutter-idea";
+  }
+
   @NotNull
   protected static final String DOWNLOAD_PATH =
-    PathManager.getPluginsPath() + File.separatorChar + "flutter-intellij" + File.separatorChar + "jxbrowser";
+    PathManager.getPluginsPath() + File.separatorChar + getPluginLoaderDir() + File.separatorChar + "jxbrowser";
   @NotNull
   private static final AtomicReference<JxBrowserStatus> status = new AtomicReference<>(JxBrowserStatus.NOT_INSTALLED);
   @NotNull
@@ -157,7 +182,8 @@ public class JxBrowserManager {
 
     if (time != null) {
       analytics.sendEventMetric(ANALYTICS_CATEGORY, eventName.toString(), time.intValue());
-    } else {
+    }
+    else {
       analytics.sendEvent(ANALYTICS_CATEGORY, eventName.toString());
     }
 
@@ -283,12 +309,13 @@ public class JxBrowserManager {
           }
 
           analytics.sendEvent(ANALYTICS_CATEGORY, "filesDownloaded");
-          loadClasses(fileNames);
+          loadClasses2021(fileNames);
         }
         catch (IOException e) {
           final long elapsedTime = System.currentTimeMillis() - startTime;
           LOG.info(project.getName() + ": JxBrowser file downloaded failed: " + currentFileName);
-          setStatusFailed(new InstallationFailedReason(FailureType.FILE_DOWNLOAD_FAILED, currentFileName + ":" + e.getMessage()), elapsedTime);
+          setStatusFailed(new InstallationFailedReason(FailureType.FILE_DOWNLOAD_FAILED, currentFileName + ":" + e.getMessage()),
+                          elapsedTime);
         }
       }
     };
@@ -298,28 +325,37 @@ public class JxBrowserManager {
   }
 
   private void loadClasses(@NotNull String[] fileNames) {
-    for (String fileName : fileNames) {
-      assert fileName != null;
-      final String fullPath = getFilePath(fileName);
-
-      try {
-        //noinspection ConstantConditions
-        fileUtils.loadClass(this.getClass().getClassLoader(), fullPath);
-      } catch (Exception ex) {
-        LOG.info("Failed to load JxBrowser file", ex);
-        setStatusFailed(new InstallationFailedReason(FailureType.CLASS_LOAD_FAILED));
-        return;
-
-      }
-      LOG.info("Loaded JxBrowser file successfully: " + fullPath);
-    }
+    final ClassLoader current = Thread.currentThread().getContextClassLoader();
     try {
-      //noinspection ThrowableNotThrown
-      final UnsupportedRenderingModeException test = new UnsupportedRenderingModeException(RenderingMode.HARDWARE_ACCELERATED);
-    } catch (NoClassDefFoundError e) {
-      LOG.info("Failed to find JxBrowser class");
-      setStatusFailed(new InstallationFailedReason(FailureType.CLASS_NOT_FOUND));
-      return;
+      //noinspection ConstantConditions
+      Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+      //noinspection ConstantConditions
+      for (String fileName : fileNames) {
+        final String fullPath = getFilePath(fileName);
+        try {
+          //noinspection ConstantConditions
+          fileUtils.loadClass(this.getClass().getClassLoader(), fullPath);
+        }
+        catch (Exception ex) {
+          LOG.info("Failed to load JxBrowser file", ex);
+          setStatusFailed(new InstallationFailedReason(FailureType.CLASS_LOAD_FAILED));
+          return;
+        }
+        LOG.info("Loaded JxBrowser file successfully: " + fullPath);
+      }
+      try {
+        final Class<?> clazz = Class.forName("com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException");
+        final Constructor<?> constructor = clazz.getConstructor(RenderingMode.class);
+        constructor.newInstance(RenderingMode.HARDWARE_ACCELERATED);
+      }
+      catch (NoClassDefFoundError | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+        LOG.info("Failed to find JxBrowser class: " + e.getMessage());
+        setStatusFailed(new InstallationFailedReason(FailureType.CLASS_NOT_FOUND));
+        return;
+      }
+    }
+    finally {
+      Thread.currentThread().setContextClassLoader(current);
     }
     analytics.sendEvent(ANALYTICS_CATEGORY, "installed");
     status.set(JxBrowserStatus.INSTALLED);
@@ -328,27 +364,38 @@ public class JxBrowserManager {
 
   private void loadClasses2021(@NotNull String[] fileNames) {
     final List<Path> paths = new ArrayList<>();
-
+    final ClassLoader current = Thread.currentThread().getContextClassLoader();
     try {
-      for (String fileName: fileNames) {
-        assert fileName != null;
-        paths.add(Paths.get(getFilePath(fileName)));
+      Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+      try {
+        for (String fileName : fileNames) {
+          assert fileName != null;
+          paths.add(Paths.get(getFilePath(fileName)));
+        }
+        //noinspection ConstantConditions
+        fileUtils.loadPaths(this.getClass().getClassLoader(), paths);
       }
-      //noinspection ConstantConditions
-      fileUtils.loadPaths(this.getClass().getClassLoader(), paths);
-    } catch (Exception ex) {
-      LOG.info("Failed to load JxBrowser file", ex);
-      setStatusFailed(new InstallationFailedReason(FailureType.CLASS_LOAD_FAILED));
-      return;
-    }
+      catch (Exception ex) {
+        LOG.info("Failed to load JxBrowser file", ex);
+        setStatusFailed(new InstallationFailedReason(FailureType.CLASS_LOAD_FAILED));
+        return;
+      }
+      LOG.info("Loaded JxBrowser files successfully: " + paths);
 
-    try {
-      //noinspection ThrowableNotThrown
-      final UnsupportedRenderingModeException test = new UnsupportedRenderingModeException(RenderingMode.HARDWARE_ACCELERATED);
-    } catch (NoClassDefFoundError e) {
-      LOG.info("Failed to find JxBrowser class");
-      setStatusFailed(new InstallationFailedReason(FailureType.CLASS_NOT_FOUND));
-      return;
+      try {
+        final Class<?> clazz = Class.forName("com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException");
+        final Constructor<?> constructor = clazz.getConstructor(RenderingMode.class);
+        constructor.newInstance(RenderingMode.HARDWARE_ACCELERATED);
+        //noinspection ThrowableNotThrown
+        final UnsupportedRenderingModeException test = new UnsupportedRenderingModeException(RenderingMode.HARDWARE_ACCELERATED);
+      }
+      catch (NoClassDefFoundError | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+        LOG.info("Failed to find JxBrowser class: ", e);
+        setStatusFailed(new InstallationFailedReason(FailureType.CLASS_NOT_FOUND));
+        return;
+      }
+    } finally {
+      Thread.currentThread().setContextClassLoader(current);
     }
     analytics.sendEvent(ANALYTICS_CATEGORY, "installed");
     status.set(JxBrowserStatus.INSTALLED);
