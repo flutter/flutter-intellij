@@ -309,7 +309,7 @@ public class JxBrowserManager {
           }
 
           analytics.sendEvent(ANALYTICS_CATEGORY, "filesDownloaded");
-          loadClasses2021(fileNames);
+          loadClasses(fileNames);
         }
         catch (IOException e) {
           final long elapsedTime = System.currentTimeMillis() - startTime;
@@ -324,7 +324,7 @@ public class JxBrowserManager {
     ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, processIndicator);
   }
 
-  private void loadClasses(@NotNull String[] fileNames) {
+  private void loadClasses2020(@NotNull String[] fileNames) {
     final ClassLoader current = Thread.currentThread().getContextClassLoader();
     try {
       //noinspection ConstantConditions
@@ -362,7 +362,7 @@ public class JxBrowserManager {
     installation.complete(JxBrowserStatus.INSTALLED);
   }
 
-  private void loadClasses2021(@NotNull String[] fileNames) {
+  private void loadClasses(@NotNull String[] fileNames) {
     final List<Path> paths = new ArrayList<>();
     final ClassLoader current = Thread.currentThread().getContextClassLoader();
     try {

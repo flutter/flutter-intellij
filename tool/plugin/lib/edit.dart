@@ -64,8 +64,8 @@ List<EditCommand> editCommands = [
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/jxbrowser/JxBrowserManager.java',
-    initial: 'loadClasses2021(fileNames)',
-    replacement: 'loadClasses(fileNames)',
+    initial: 'loadClasses(fileNames)',
+    replacement: 'loadClasses2020(fileNames)',
     versions: ['AF.3.1'],
   ),
   Subst(
