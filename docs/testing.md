@@ -186,9 +186,9 @@ directory once and put it outside the app another time.
 
 ### Create an Android app
 
-Start Android Studio and use the File > New > New Project menu to fire 
-up the new project wizard. Choose the template that includes a Basic
-Activity. One the next page, use Kotlin and minimum API level 16.
+Start Android Studio and use the File > New > New Project menu to open 
+the new project wizard. Choose the template that includes a Basic
+Activity. On the next page, use Kotlin and minimum API level 16.
 Let the system stabilize (Gradle sync).
 
 Switch the Project view to
