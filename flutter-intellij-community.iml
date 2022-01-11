@@ -15,7 +15,6 @@
       <sourceFolder url="file://$MODULE_DIR$/flutter-idea/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/flutter-idea/testSrc/unit" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/flutter-idea/third_party/vmServiceDrivers" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/flutter-studio/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/artifacts" />
@@ -54,6 +53,7 @@
       <excludeFolder url="file://$MODULE_DIR$/flutter-idea/testSrc/integration" />
       <excludeFolder url="file://$MODULE_DIR$/flutter-studio/testSrc" />
       <excludeFolder url="file://$MODULE_DIR$/flutter-studio/src/io/flutter/module" />
+      <excludeFolder url="file://$MODULE_DIR$/flutter-studio/src" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -123,5 +123,9 @@
     <orderEntry type="library" name="Dart" level="project" />
     <orderEntry type="module" module-name="intellij.android.wizard" />
     <orderEntry type="module" module-name="intellij.android.wizard.model" />
+    <orderEntry type="library" name="json" level="project" />
+    <orderEntry type="library" name="weberknecht-0.1.5" level="project" />
+    <orderEntry type="library" name="jxbrowser-7.19" level="project" />
+    <orderEntry type="library" name="jxbrowser-swing-7.19" level="project" />
   </component>
 </module>
