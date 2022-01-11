@@ -118,6 +118,7 @@ public class FlutterSurveyNotifications {
           final String clientId = FlutterInitializer.getAnalytics().getClientId();
           url += ("&ClientID=" + clientId);
         }
+        FlutterInitializer.getAnalytics().sendEvent("intellij", "SurveyPromptAccepted");
 
         BrowserUtil.browse(url);
       }
@@ -127,6 +128,7 @@ public class FlutterSurveyNotifications {
     notification.addAction(new AnAction(SURVEY_DISMISSAL_TEXT) {
       @Override
       public void actionPerformed(@NotNull AnActionEvent event) {
+        FlutterInitializer.getAnalytics().sendEvent("intellij", "SurveyPromptDismissed");
         properties.setValue(survey.uniqueId, true);
         notification.expire();
       }
@@ -136,6 +138,7 @@ public class FlutterSurveyNotifications {
     final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     scheduler.schedule(() -> {
       if (!myProject.isDisposed()) {
+        FlutterInitializer.getAnalytics().sendEvent("intellij", "SurveyPromptShown");
         Notifications.Bus.notify(notification, myProject);
       }
     }, NOTIFICATION_DELAY_IN_SECS, TimeUnit.SECONDS);
