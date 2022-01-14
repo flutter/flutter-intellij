@@ -44,5 +44,7 @@
     <orderEntry type="library" name="studio-sdk" level="project" />
     <orderEntry type="library" name="studio-plugin-gradle" level="project" />
     <orderEntry type="library" name="Dart" level="project" />
+    <orderEntry type="module" module-name="intellij.android.newProjectWizard" />
+    <orderEntry type="module" module-name="intellij.android.wizardTemplate.plugin" />
   </component>
 </module>

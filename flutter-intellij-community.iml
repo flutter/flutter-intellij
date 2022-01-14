@@ -53,7 +53,6 @@
       <excludeFolder url="file://$MODULE_DIR$/flutter-idea/testSrc/integration" />
       <excludeFolder url="file://$MODULE_DIR$/flutter-studio/testSrc" />
       <excludeFolder url="file://$MODULE_DIR$/flutter-studio/src/io/flutter/module" />
-      <excludeFolder url="file://$MODULE_DIR$/flutter-studio/src" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -127,5 +126,6 @@
     <orderEntry type="library" name="weberknecht-0.1.5" level="project" />
     <orderEntry type="library" name="jxbrowser-7.19" level="project" />
     <orderEntry type="library" name="jxbrowser-swing-7.19" level="project" />
+    <orderEntry type="module" module-name="fest-swing" />
   </component>
 </module>

@@ -5,17 +5,27 @@
  */
 package io.flutter.module;
 
+import static java.util.Arrays.asList;
+import static org.fest.swing.core.matcher.DialogMatcher.withTitle;
+import static org.fest.swing.finder.WindowFinder.findDialog;
+
 import com.intellij.execution.OutputListener;
 import com.intellij.execution.process.ProcessListener;
+import com.intellij.ide.util.newProjectWizard.TemplatesGroup;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.ModifiableModuleModel;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.*;
+import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleType;
+import com.intellij.openapi.module.ModuleWithNameAlreadyExists;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
@@ -25,6 +35,7 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.CollectionListModel;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
@@ -39,17 +50,23 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
-import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static java.util.Arrays.asList;
+import javax.swing.ComboBoxEditor;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import org.apache.commons.lang.StringUtils;
+import org.fest.swing.core.BasicRobot;
+import org.fest.swing.core.Robot;
+import org.fest.swing.exception.WaitTimedOutError;
+import org.fest.swing.fixture.DialogFixture;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FlutterModuleBuilder extends ModuleBuilder {
   private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
@@ -335,6 +352,40 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   public class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
     private final FlutterGeneratorPeer myPeer;
+
+    @Override
+    public void updateStep() {
+      if (FlutterUtils.isAndroidStudio()) {
+        scheduleUiUpdate();
+      }
+    }
+
+    private void scheduleUiUpdate() {
+      final ModalityState state = ModalityState.any();
+      ApplicationManager.getApplication().executeOnPooledThread(() -> {
+        ApplicationManager.getApplication().invokeAndWait(() -> {
+          Robot baseRobot = BasicRobot.robotWithCurrentAwtHierarchy();
+          try {
+            DialogFixture dialog = findDialog(withTitle("New Project")).using(baseRobot);
+            CollectionListModel<TemplatesGroup> model = (CollectionListModel<TemplatesGroup>)dialog.list().target().getModel();
+            List<TemplatesGroup> items = model.getItems();
+            Optional<TemplatesGroup> flutter = items.stream().filter(each -> each.getName().equals("Flutter")).findFirst();
+            if (flutter.isPresent()) {
+              List<TemplatesGroup> replacement = new ArrayList<>();
+              replacement.add(flutter.get());
+              model.replaceAll(replacement);
+            }
+            System.out.println("hi " + this.getName() + " " + flutter.toString());
+          }
+          catch (WaitTimedOutError ex) {
+            return;
+          }
+          finally {
+            baseRobot.cleanUpWithoutDisposingWindows();
+          }
+        }, state);
+      });
+    }
 
     public FlutterModuleWizardStep(@NotNull WizardContext context) {
       //TODO(pq): find a way to listen to wizard cancelation and propagate to peer.
