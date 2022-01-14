@@ -363,27 +363,34 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     private void scheduleUiUpdate() {
       final ModalityState state = ModalityState.any();
       ApplicationManager.getApplication().executeOnPooledThread(() -> {
-        ApplicationManager.getApplication().invokeAndWait(() -> {
-          Robot baseRobot = BasicRobot.robotWithCurrentAwtHierarchy();
-          try {
-            DialogFixture dialog = findDialog(withTitle("New Project")).using(baseRobot);
-            CollectionListModel<TemplatesGroup> model = (CollectionListModel<TemplatesGroup>)dialog.list().target().getModel();
-            List<TemplatesGroup> items = model.getItems();
-            Optional<TemplatesGroup> flutter = items.stream().filter(each -> each.getName().equals("Flutter")).findFirst();
-            if (flutter.isPresent()) {
-              List<TemplatesGroup> replacement = new ArrayList<>();
-              replacement.add(flutter.get());
-              model.replaceAll(replacement);
+        try {
+          // We need to wait for the dialog to appear before starting to look for it.
+          // This causes the list to flash when items are removed. Not ideal ...
+          Thread.sleep(1000);
+          ApplicationManager.getApplication().invokeAndWait(() -> {
+            Robot baseRobot = BasicRobot.robotWithCurrentAwtHierarchy();
+            try {
+              DialogFixture dialog = findDialog(withTitle("New Project")).withTimeout(500).using(baseRobot);
+              CollectionListModel<TemplatesGroup> model = (CollectionListModel<TemplatesGroup>)dialog.list().target().getModel();
+              List<TemplatesGroup> items = model.getItems();
+              Optional<TemplatesGroup> flutter = items.stream().filter(each -> each.getName().equals("Flutter")).findFirst();
+              if (flutter.isPresent()) {
+                List<TemplatesGroup> replacement = new ArrayList<>();
+                replacement.add(flutter.get());
+                model.replaceAll(replacement);
+              }
             }
-            System.out.println("hi " + this.getName() + " " + flutter.toString());
-          }
-          catch (WaitTimedOutError ex) {
-            return;
-          }
-          finally {
-            baseRobot.cleanUpWithoutDisposingWindows();
-          }
-        }, state);
+            catch (WaitTimedOutError ex) {
+              return;
+            }
+            finally {
+              baseRobot.cleanUpWithoutDisposingWindows();
+            }
+          }, state);
+        }
+        catch (InterruptedException e) {
+          // ignored
+        }
       });
     }
 
