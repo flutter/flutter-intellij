@@ -13,6 +13,10 @@
       <excludeFolder url="file://$MODULE_DIR$/testSrc/system" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
     </content>
+    <content url="file://$MODULE_DIR$/resources" />
+    <content url="file://$MODULE_DIR$/src" />
+    <content url="file://$MODULE_DIR$/testData" />
+    <content url="file://$MODULE_DIR$/testSrc" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="intellij.android.core" />
