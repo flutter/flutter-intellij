@@ -1,3 +1,13 @@
+# 64.0
+- Fix modules for working with AS sources (#5913)
+- Add analytics to survey notifications (#5912)
+- Update AS modules for 212 (#5905)
+- Build for 212.5712 (#5894)
+- Improve icon preview and completion performance (#5887)
+- Rename old load classes (#5884)
+- Use IJ 213 for unit tests (#5882)
+- Share resources with both modules (#5877)
+
 # 63.0
 - Build for IntelliJ 2021.3 and Android Studio canary (#5868)
 - Enable downloading Mac M1 version of JxBrowser (#5871)
@@ -34,17 +44,3 @@
 - Convert back to iml-based project (#5741)
 - Remove old code from NPW (#5739)
 - Fix some problems in the set up docs (#5734)
-
-# 60.1
-- Add project type selection to new project wizard for Android Studio
-
-# 60.0
-- Modify run configs to ensure proper artifacts have been provisioned (#5729)
-- Update test setup instructions (#5728)
-- Ignore errors reported when Android Studio is launched (#5726)
-- Convert repo to a Gradle-based project (#5720)
-- Delete two obsolete tests and attempt to de-flake others (#5715)
-- Port over support for special list display in the debugger (#5713)
-- Update build script for AS canary (#5709)
-- Refactor icon preview processing to be incremental (#5704)
-- Add "mdof" live template for MediaQuery.of(context) (#5698)

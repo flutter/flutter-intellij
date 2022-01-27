@@ -126,5 +126,7 @@
     <orderEntry type="library" name="weberknecht-0.1.5" level="project" />
     <orderEntry type="library" name="jxbrowser-7.19" level="project" />
     <orderEntry type="library" name="jxbrowser-swing-7.19" level="project" />
+    <orderEntry type="library" name="Dart SDK" level="project" />
+    <orderEntry type="library" name="Dart Packages" level="project" />
   </component>
 </module>

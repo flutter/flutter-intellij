@@ -45,6 +45,17 @@
 
   <change-notes>
     <![CDATA[
+<h1>64.0</h1>
+<ul>
+  <li>Fix modules for working with AS sources (#5913)</li>
+  <li>Add analytics to survey notifications (#5912)</li>
+  <li>Update AS modules for 212 (#5905)</li>
+  <li>Build for 212.5712 (#5894)</li>
+  <li>Improve icon preview and completion performance (#5887)</li>
+  <li>Rename old load classes (#5884)</li>
+  <li>Use IJ 213 for unit tests (#5882)</li>
+  <li>Share resources with both modules (#5877)</li>
+</ul>
 <h1>63.0</h1>
 <ul>
   <li>Build for IntelliJ 2021.3 and Android Studio canary (#5868)</li>
@@ -85,22 +96,6 @@
   <li>Convert back to iml-based project (#5741)</li>
   <li>Remove old code from NPW (#5739)</li>
   <li>Fix some problems in the set up docs (#5734)</li>
-</ul>
-<h1>60.1</h1>
-<ul>
-  <li>Add project type selection to new project wizard for Android Studio</li>
-</ul>
-<h1>60.0</h1>
-<ul>
-  <li>Modify run configs to ensure proper artifacts have been provisioned (#5729)</li>
-  <li>Update test setup instructions (#5728)</li>
-  <li>Ignore errors reported when Android Studio is launched (#5726)</li>
-  <li>Convert repo to a Gradle-based project (#5720)</li>
-  <li>Delete two obsolete tests and attempt to de-flake others (#5715)</li>
-  <li>Port over support for special list display in the debugger (#5713)</li>
-  <li>Update build script for AS canary (#5709)</li>
-  <li>Refactor icon preview processing to be incremental (#5704)</li>
-  <li>Add "mdof" live template for MediaQuery.of(context) (#5698)</li>
 </ul>
 ]]>
   </change-notes>
