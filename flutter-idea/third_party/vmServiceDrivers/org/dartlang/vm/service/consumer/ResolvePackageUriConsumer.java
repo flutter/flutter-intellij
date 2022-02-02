@@ -11,30 +11,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.dartlang.vm.service.element;
+package org.dartlang.vm.service.consumer;
 
 // This is a generated file.
 
+import org.dartlang.vm.service.element.ResolvedPackageUri;
+import org.dartlang.vm.service.element.Sentinel;
+
 @SuppressWarnings({"WeakerAccess", "unused"})
-public enum SourceReportKind {
+public interface ResolvePackageUriConsumer extends Consumer {
+    void received(ResolvedPackageUri response);
 
-  /**
-   * Used to request branch coverage information.
-   */
-  BranchCoverage,
-
-  /**
-   * Used to request a code coverage information.
-   */
-  Coverage,
-
-  /**
-   * Used to request a list of token positions of possible breakpoints.
-   */
-  PossibleBreakpoints,
-
-  /**
-   * Represents a value returned by the VM but unknown to this client.
-   */
-  Unknown
+    void received(Sentinel response);
 }

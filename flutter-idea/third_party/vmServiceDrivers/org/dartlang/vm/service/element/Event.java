@@ -91,6 +91,22 @@ public class Event extends Response {
   }
 
   /**
+   * A CPU profile containing recent samples.
+   *
+   * Can return <code>null</code>.
+   */
+  public CpuSamplesEvent getCpuSamples() {
+    JsonObject obj = (JsonObject) json.get("cpuSamples");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new CpuSamplesEvent(obj);
+  }
+
+  /**
    * The exception associated with this event, if this is a PauseException event.
    *
    * Can return <code>null</code>.
@@ -278,6 +294,15 @@ public class Event extends Response {
   }
 
   /**
+   * The previous UserTag label.
+   *
+   * Can return <code>null</code>.
+   */
+  public String getPreviousTag() {
+    return getAsString("previousTag");
+  }
+
+  /**
    * The service identifier.
    *
    * This is provided for the event kinds:
@@ -363,6 +388,15 @@ public class Event extends Response {
    */
   public List<String> getUpdatedStreams() {
     return json.get("updatedStreams") == null ? null : getListString("updatedStreams");
+  }
+
+  /**
+   * The current UserTag label.
+   *
+   * Can return <code>null</code>.
+   */
+  public String getUpdatedTag() {
+    return getAsString("updatedTag");
   }
 
   /**

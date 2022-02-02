@@ -15,26 +15,38 @@ package org.dartlang.vm.service.element;
 
 // This is a generated file.
 
+import com.google.gson.JsonObject;
+import java.util.List;
+
+/**
+ * A {@link TypeParameters} object represents the type argument vector for some uninstantiated
+ * generic type.
+ */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public enum SourceReportKind {
+public class TypeParameters extends Element {
+
+  public TypeParameters(JsonObject json) {
+    super(json);
+  }
 
   /**
-   * Used to request branch coverage information.
+   * The bounds set on each type parameter.
    */
-  BranchCoverage,
+  public TypeArgumentsRef getBounds() {
+    return new TypeArgumentsRef((JsonObject) json.get("bounds"));
+  }
 
   /**
-   * Used to request a code coverage information.
+   * The default types for each type parameter.
    */
-  Coverage,
+  public TypeArgumentsRef getDefaults() {
+    return new TypeArgumentsRef((JsonObject) json.get("defaults"));
+  }
 
   /**
-   * Used to request a list of token positions of possible breakpoints.
+   * The names of the type parameters.
    */
-  PossibleBreakpoints,
-
-  /**
-   * Represents a value returned by the VM but unknown to this client.
-   */
-  Unknown
+  public List<String> getNames() {
+    return getListString("names");
+  }
 }

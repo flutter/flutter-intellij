@@ -19,7 +19,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 /**
- * An {@link Isolate} object provides information about one isolate in the VM.
+ * An {@link IsolateGroup} object provides information about an isolate group in the VM.
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class IsolateGroup extends Response {
@@ -29,7 +29,7 @@ public class IsolateGroup extends Response {
   }
 
   /**
-   * The id which is passed to the getIsolate RPC to reload this isolate.
+   * The id which is passed to the getIsolateGroup RPC to reload this isolate.
    */
   public String getId() {
     return getAsString("id");
@@ -56,7 +56,7 @@ public class IsolateGroup extends Response {
   }
 
   /**
-   * A name identifying this isolate. Not guaranteed to be unique.
+   * A name identifying this isolate group. Not guaranteed to be unique.
    */
   public String getName() {
     return getAsString("name");

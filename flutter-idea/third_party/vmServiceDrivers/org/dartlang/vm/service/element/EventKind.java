@@ -43,6 +43,11 @@ public enum EventKind {
   BreakpointUpdated,
 
   /**
+   * A block of recently collected CPU samples.
+   */
+  CpuSamples,
+
+  /**
    * Event from dart:developer.postEvent.
    */
   Extension,
@@ -157,6 +162,11 @@ public enum EventKind {
    * The set of active timeline streams was changed via `setVMTimelineFlags`.
    */
   TimelineStreamSubscriptionsUpdate,
+
+  /**
+   * Notification that the UserTag for an isolate has been changed.
+   */
+  UserTagChanged,
 
   /**
    * Notification that a VM flag has been changed via the service protocol.
