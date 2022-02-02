@@ -59,6 +59,11 @@ public enum InstanceKind {
   Float64x2List,
 
   /**
+   * An instance of the Dart class FunctionType.
+   */
+  FunctionType,
+
+  /**
    * An instance of the Dart class int.
    */
   Int,

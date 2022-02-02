@@ -15,26 +15,20 @@ package org.dartlang.vm.service.element;
 
 // This is a generated file.
 
+import com.google.gson.JsonObject;
+import java.util.List;
+
 @SuppressWarnings({"WeakerAccess", "unused"})
-public enum SourceReportKind {
+public class UriList extends Response {
+
+  public UriList(JsonObject json) {
+    super(json);
+  }
 
   /**
-   * Used to request branch coverage information.
+   * A list of URIs.
    */
-  BranchCoverage,
-
-  /**
-   * Used to request a code coverage information.
-   */
-  Coverage,
-
-  /**
-   * Used to request a list of token positions of possible breakpoints.
-   */
-  PossibleBreakpoints,
-
-  /**
-   * Represents a value returned by the VM but unknown to this client.
-   */
-  Unknown
+  public List<String> getUris() {
+    return getListString("uris");
+  }
 }

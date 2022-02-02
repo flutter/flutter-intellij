@@ -28,6 +28,13 @@ public class FuncRef extends ObjRef {
   }
 
   /**
+   * Is this function implicitly defined (e.g., implicit getter/setter)?
+   */
+  public boolean getImplicit() {
+    return getAsBoolean("implicit");
+  }
+
+  /**
    * The location of this function in the source code.
    *
    * Can return <code>null</code>.

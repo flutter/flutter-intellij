@@ -15,26 +15,18 @@ package org.dartlang.vm.service.element;
 
 // This is a generated file.
 
+import com.google.gson.JsonObject;
+
 @SuppressWarnings({"WeakerAccess", "unused"})
-public enum SourceReportKind {
+public class ResolvedPackageUri extends Response {
+    public ResolvedPackageUri(JsonObject json) {
+        super(json);
+    }
 
-  /**
-   * Used to request branch coverage information.
+    /**
+   * The file URI for a given package.
    */
-  BranchCoverage,
-
-  /**
-   * Used to request a code coverage information.
-   */
-  Coverage,
-
-  /**
-   * Used to request a list of token positions of possible breakpoints.
-   */
-  PossibleBreakpoints,
-
-  /**
-   * Represents a value returned by the VM but unknown to this client.
-   */
-  Unknown
+    public String getResolvedUri() {
+        return getAsString("resolvedUri");
+    }
 }

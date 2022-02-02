@@ -28,12 +28,30 @@ public class SourceLocation extends Response {
   }
 
   /**
+   * The column associated with this location. Only provided for non-synthetic token positions.
+   *
+   * Can return <code>null</code>.
+   */
+  public int getColumn() {
+    return getAsInt("column");
+  }
+
+  /**
    * The last token of the location if this is a range.
    *
    * Can return <code>null</code>.
    */
   public int getEndTokenPos() {
     return getAsInt("endTokenPos");
+  }
+
+  /**
+   * The line associated with this location. Only provided for non-synthetic token positions.
+   *
+   * Can return <code>null</code>.
+   */
+  public int getLine() {
+    return getAsInt("line");
   }
 
   /**

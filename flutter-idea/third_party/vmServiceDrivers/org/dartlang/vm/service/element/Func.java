@@ -44,6 +44,13 @@ public class Func extends Obj {
   }
 
   /**
+   * Is this function implicitly defined (e.g., implicit getter/setter)?
+   */
+  public boolean getImplicit() {
+    return getAsBoolean("implicit");
+  }
+
+  /**
    * The location of this function in the source code.
    *
    * Can return <code>null</code>.
@@ -79,6 +86,13 @@ public class Func extends Obj {
     if (elem.get("type").getAsString().equals("@Class")) return new ClassRef(elem);
     if (elem.get("type").getAsString().equals("@Func")) return new FuncRef(elem);
     return null;
+  }
+
+  /**
+   * The signature of the function.
+   */
+  public InstanceRef getSignature() {
+    return new InstanceRef((JsonObject) json.get("signature"));
   }
 
   /**

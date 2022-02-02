@@ -174,6 +174,24 @@ public class ClassObj extends Obj {
   }
 
   /**
+   * The type parameters for the class.
+   *
+   * Provided if the class is generic.
+   *
+   * Can return <code>null</code>.
+   */
+  public ElementList<InstanceRef> getTypeParameters() {
+    if (json.get("typeParameters") == null) return null;
+    
+    return new ElementList<InstanceRef>(json.get("typeParameters").getAsJsonArray()) {
+      @Override
+      protected InstanceRef basicGet(JsonArray array, int index) {
+        return new InstanceRef(array.get(index).getAsJsonObject());
+      }
+    };
+  }
+
+  /**
    * Is this an abstract class?
    */
   public boolean isAbstract() {

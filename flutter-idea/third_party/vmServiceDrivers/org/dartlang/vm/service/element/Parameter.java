@@ -16,32 +16,46 @@ package org.dartlang.vm.service.element;
 // This is a generated file.
 
 import com.google.gson.JsonObject;
-import java.util.List;
 
 /**
- * The {@link SourceReportCoverage} class represents coverage information for one
- * SourceReportRange.
+ * A {@link Parameter} is a representation of a function parameter.
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class SourceReportCoverage extends Element {
+public class Parameter extends Element {
 
-  public SourceReportCoverage(JsonObject json) {
+  public Parameter(JsonObject json) {
     super(json);
   }
 
   /**
-   * A list of token positions (or line numbers if reportLines was enabled) in a SourceReportRange
-   * which have been executed.  The list is sorted.
+   * Represents whether or not this parameter is fixed or optional.
    */
-  public List<Integer> getHits() {
-    return getListInt("hits");
+  public boolean getFixed() {
+    return getAsBoolean("fixed");
   }
 
   /**
-   * A list of token positions (or line numbers if reportLines was enabled) in a SourceReportRange
-   * which have not been executed.  The list is sorted.
+   * The name of a named optional parameter.
+   *
+   * Can return <code>null</code>.
    */
-  public List<Integer> getMisses() {
-    return getListInt("misses");
+  public String getName() {
+    return getAsString("name");
+  }
+
+  /**
+   * The type of the parameter.
+   */
+  public InstanceRef getParameterType() {
+    return new InstanceRef((JsonObject) json.get("parameterType"));
+  }
+
+  /**
+   * Whether or not this named optional parameter is marked as required.
+   *
+   * Can return <code>null</code>.
+   */
+  public boolean getRequired() {
+    return getAsBoolean("required");
   }
 }

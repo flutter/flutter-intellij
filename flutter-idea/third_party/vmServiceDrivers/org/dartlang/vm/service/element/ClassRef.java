@@ -15,6 +15,7 @@ package org.dartlang.vm.service.element;
 
 // This is a generated file.
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 /**
@@ -55,5 +56,23 @@ public class ClassRef extends ObjRef {
    */
   public String getName() {
     return getAsString("name");
+  }
+
+  /**
+   * The type parameters for the class.
+   *
+   * Provided if the class is generic.
+   *
+   * Can return <code>null</code>.
+   */
+  public ElementList<InstanceRef> getTypeParameters() {
+    if (json.get("typeParameters") == null) return null;
+    
+    return new ElementList<InstanceRef>(json.get("typeParameters").getAsJsonArray()) {
+      @Override
+      protected InstanceRef basicGet(JsonArray array, int index) {
+        return new InstanceRef(array.get(index).getAsJsonObject());
+      }
+    };
   }
 }
