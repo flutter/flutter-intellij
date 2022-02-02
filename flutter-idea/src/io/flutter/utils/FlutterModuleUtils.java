@@ -327,6 +327,20 @@ public class FlutterModuleUtils {
     return modulesConverted;
   }
 
+  public static boolean hasAndroidModule(@NotNull Project project) {
+    String moduleName = project.getName() + "_android";
+    for (Module module : FlutterModuleUtils.getModules(project)) {
+      if (moduleName.equals(module.getName())) {
+        for (Facet<?> facet : FacetManager.getInstance(module).getAllFacets()) {
+          if ("Android".equals(facet.getName())) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
   public static boolean isDeprecatedFlutterModuleType(@NotNull Module module) {
     if (!DEPRECATED_FLUTTER_MODULE_TYPE_ID.equals(module.getOptionValue("type"))) {
       return false;
