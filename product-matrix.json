@@ -46,8 +46,20 @@
       "ideaVersion": "213.5744.223",
       "baseVersion": "213.5744.223",
       "dartPluginVersion": "213.5744.122",
-      "sinceBuild": "213.5744.223",
+      "sinceBuild": "213.6461.79",
       "untilBuild": "213.*"
+    },
+    {
+      "channel": "dev",
+      "comments": "IntelliJ 2022.1",
+      "name": "2022.1",
+      "version": "2022.1",
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "221.3427.89",
+      "baseVersion": "221.3427.89",
+      "dartPluginVersion": "221.3427.93",
+      "sinceBuild": "221.3427.89",
+      "untilBuild": "221.*"
     }
   ]
 }

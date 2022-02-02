@@ -52,8 +52,8 @@ intellij {
   updateSinceUntilBuild.set(false)
   downloadSources.set(false)
   localPath.set("${project.rootDir.absolutePath}/artifacts/$ide")
-  val pluginList = mutableListOf("java", "Dart:$dartVersion", "properties", "junit", "Kotlin", "Git4Idea",
-             "gradle", "Groovy", "smali", "IntelliLang", "org.jetbrains.android", "yaml")
+  val pluginList = mutableListOf("java", "properties", "junit", "Kotlin", "Git4Idea",
+             "gradle", "Groovy", "smali", "IntelliLang", "org.jetbrains.android", "yaml", "Dart:$dartVersion")
   plugins.set(pluginList)
 }
 
@@ -62,10 +62,10 @@ dependencies {
   testImplementation("org.powermock:powermock-module-junit4:2.0.0")
   if (ide == "android-studio") {
     testImplementation(project(":flutter-studio"))
-    testRuntime(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins",
+    testRuntimeOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins",
                          "include" to listOf("**/*.jar"),
-                         "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar", "**/kotlin-stdlib-jdk8.jar"))))
-    testRuntime(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/lib",
+                         "exclude" to listOf("**/android-ndk.jar", "**/kotlin-compiler.jar", "**/kotlin-plugin.jar", "**/kotlin-stdlib-jdk8.jar"))))
+    testRuntimeOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/lib",
                          "include" to listOf("*.jar"))))
     compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins/git4idea/lib",
                          "include" to listOf("*.jar"))))
@@ -89,12 +89,12 @@ sourceSets {
   main {
     java.srcDirs(listOf(
       "src",
-      "third_party/vmServiceDrivers",
+      "third_party/vmServiceDrivers"
     ))
     // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
     resources.srcDirs(listOf(
       "src",
-      "resources",
+      "resources"
     ))
   }
   test {

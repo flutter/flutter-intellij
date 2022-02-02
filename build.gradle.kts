@@ -20,8 +20,8 @@ buildscript {
 }
 
 plugins {
-  id("org.jetbrains.intellij") version "1.2.0" // Latest is 1.4.0 but does not work: Unresolved reference testRuntime
-  id("org.jetbrains.kotlin.jvm") version "1.4.31"
+  id("org.jetbrains.intellij") version "1.2.0" // Do not upgrade until AF 3.1 has been dropped
+  id("org.jetbrains.kotlin.jvm") version "1.6.10"
 }
 
 repositories {
@@ -72,9 +72,9 @@ intellij {
   localPath.set("${project.rootDir.absolutePath}/artifacts/$ide")
   downloadSources.set(false)
   val pluginList = mutableListOf(
-    project(":flutter-idea"), "java", "Dart:$dartVersion", "properties",
+    project(":flutter-idea"), "java", "properties",
     "junit", "Git4Idea", "Kotlin", "gradle", "org.jetbrains.android",
-    "Groovy", "smali", "IntelliLang")
+    "Groovy", "smali", "IntelliLang", "Dart:$dartVersion")
   if (ide == "android-studio") {
     pluginList += listOf(project(":flutter-studio"))
   } else if ("$buildSpec" == "2020.3") {

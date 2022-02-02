@@ -137,10 +137,10 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
     FlutterModuleUtils.autoShowMain(project, root);
 
-    if (!(AndroidUtils.isAndroidProject(getProject()) &&
-          (settings.getType() == FlutterProjectType.MODULE))) {
-      addAndroidModule(project, model, basePath, flutter.getName());
-    }
+    //if (!(AndroidUtils.isAndroidProject(getProject()) &&
+    //      (settings.getType() == FlutterProjectType.MODULE))) {
+      addAndroidModule(project, model, basePath, flutter.getName(), settings.getType() == FlutterProjectType.MODULE);
+    //}
     return flutter;
   }
 
@@ -166,13 +166,16 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   private static void addAndroidModule(@NotNull Project project,
                                        @Nullable ModifiableModuleModel model,
                                        @NotNull String baseDirPath,
-                                       @NotNull String flutterModuleName) {
+                                       @NotNull String flutterModuleName,
+                                       boolean isTopLevel) {
     final VirtualFile baseDir = LocalFileSystem.getInstance().refreshAndFindFileByPath(baseDirPath);
     if (baseDir == null) {
       return;
     }
 
-    final VirtualFile androidFile = findAndroidModuleFile(baseDir, flutterModuleName);
+    final VirtualFile androidFile = isTopLevel
+                                    ? findAndroidModuleFile(baseDir, flutterModuleName)
+                                    : findEmbeddedModuleFile(baseDir, flutterModuleName);
     if (androidFile == null) return;
 
     try {
@@ -207,6 +210,21 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       }
     }
     return null;
+  }
+
+  @Nullable
+  private static VirtualFile findEmbeddedModuleFile(@NotNull VirtualFile baseDir, String flutterModuleName) {
+    baseDir.refresh(false, false);
+    for (String name : asList("android", ".android")) {
+      VirtualFile dir = baseDir.findChild(name);
+      if (dir != null && dir.exists()) {
+        VirtualFile candidate = dir.findChild(flutterModuleName + "_android.iml");
+        if (candidate != null && candidate.exists()) {
+          return candidate;
+        }
+      }
+    }
+    return null; // TODO
   }
 
   @Override

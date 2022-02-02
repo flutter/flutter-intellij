@@ -140,7 +140,7 @@ class ArtifactManager {
               'unzip', ['-q', '-d', artifact.output, artifact.file],
               cwd: 'artifacts');
           var files = Directory(artifact.outPath).listSync();
-          if (files.length == 1) {
+          if (files.length < 3) /* Might have .DS_Store */ {
             // This is the Mac zip case.
             Directory("${files.first.path}/Contents")
                 .renameSync("${artifact.outPath}Temp");
