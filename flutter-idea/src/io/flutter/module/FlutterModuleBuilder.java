@@ -5,8 +5,12 @@
  */
 package io.flutter.module;
 
+import static java.util.Arrays.asList;
+
 import com.intellij.execution.OutputListener;
 import com.intellij.execution.process.ProcessListener;
+import com.intellij.facet.Facet;
+import com.intellij.facet.FacetManager;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.SettingsStep;
@@ -14,8 +18,11 @@ import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.ModifiableModuleModel;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.*;
+import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleType;
+import com.intellij.openapi.module.ModuleWithNameAlreadyExists;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
@@ -39,17 +46,16 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
-import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static java.util.Arrays.asList;
+import javax.swing.ComboBoxEditor;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FlutterModuleBuilder extends ModuleBuilder {
   private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
@@ -137,9 +143,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
     FlutterModuleUtils.autoShowMain(project, root);
 
-    if (!(AndroidUtils.isAndroidProject(getProject()) &&
-          (settings.getType() == FlutterProjectType.MODULE))) {
-      addAndroidModule(project, model, basePath, flutter.getName());
+    if (!FlutterModuleUtils.hasAndroidModule(project)) {
+      addAndroidModule(project, model, basePath, flutter.getName(), settings.getType() == FlutterProjectType.MODULE);
     }
     return flutter;
   }
@@ -166,13 +171,16 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   private static void addAndroidModule(@NotNull Project project,
                                        @Nullable ModifiableModuleModel model,
                                        @NotNull String baseDirPath,
-                                       @NotNull String flutterModuleName) {
+                                       @NotNull String flutterModuleName,
+                                       boolean isTopLevel) {
     final VirtualFile baseDir = LocalFileSystem.getInstance().refreshAndFindFileByPath(baseDirPath);
     if (baseDir == null) {
       return;
     }
 
-    final VirtualFile androidFile = findAndroidModuleFile(baseDir, flutterModuleName);
+    final VirtualFile androidFile = isTopLevel
+                                    ? findAndroidModuleFile(baseDir, flutterModuleName)
+                                    : findEmbeddedModuleFile(baseDir, flutterModuleName);
     if (androidFile == null) return;
 
     try {
@@ -204,6 +212,21 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       final VirtualFile candidate = baseDir.findChild(name);
       if (candidate != null && candidate.exists()) {
         return candidate;
+      }
+    }
+    return null;
+  }
+
+  @Nullable
+  private static VirtualFile findEmbeddedModuleFile(@NotNull VirtualFile baseDir, String flutterModuleName) {
+    baseDir.refresh(false, false);
+    for (String name : asList("android", ".android")) {
+      VirtualFile dir = baseDir.findChild(name);
+      if (dir != null && dir.exists()) {
+        VirtualFile candidate = dir.findChild(flutterModuleName + "_android.iml");
+        if (candidate != null && candidate.exists()) {
+          return candidate;
+        }
       }
     }
     return null;
@@ -245,7 +268,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     if (FlutterConstants.FLUTTER_PACKAGE_DEPENDENCIES.contains(moduleName)) {
-      throw new ConfigurationException("Invalid module name: '" + moduleName + "' - this will conflict with Flutter package dependencies.");
+      throw new ConfigurationException(
+        "Invalid module name: '" + moduleName + "' - this will conflict with Flutter package dependencies.");
     }
 
     if (moduleName.length() > FlutterConstants.MAX_MODULE_NAME_LENGTH) {

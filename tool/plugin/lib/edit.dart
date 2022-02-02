@@ -34,15 +34,17 @@ List<EditCommand> editCommands = [
   EditAndroidModuleLibraryManager(),
   Subst(
     path: 'build.gradle.kts',
-    initial: 'localPath "\${project.rootDir.absolutePath}/artifacts/\$ide"',
-    replacement: 'type.set("IC")\n  version.set("LATEST-EAP-SNAPSHOT")',
-    version: '2022.1.futureEAP',
+    initial:
+        'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide")',
+    replacement: 'type.set("IC")\n  version.set("221.3427.89-EAP-SNAPSHOT")',
+    version: '2022.1',
   ),
   Subst(
-    path: 'flutter-idea/build.gradle',
-    initial: 'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide")',
-    replacement: 'type = "IC"\n  version = "LATEST-EAP-SNAPSHOT"',
-    version: '2022.1.futureEAP',
+    path: 'flutter-idea/build.gradle.kts',
+    initial:
+        'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide")',
+    replacement: 'type.set("IC")\n  version.set("221.3427.89-EAP-SNAPSHOT")',
+    version: '2022.1',
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/utils/CollectionUtils.java',
