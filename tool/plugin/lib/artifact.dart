@@ -142,7 +142,11 @@ class ArtifactManager {
           var files = Directory(artifact.outPath).listSync();
           if (files.length < 3) /* Might have .DS_Store */ {
             // This is the Mac zip case.
-            Directory("${files.first.path}/Contents")
+            var entity = files.first;
+            if (entity.statSync().type == FileSystemEntityType.file) {
+              entity = files.last;
+            }
+            Directory("${entity.path}/Contents")
                 .renameSync("${artifact.outPath}Temp");
             Directory(artifact.outPath).deleteSync(recursive: true);
             Directory("${artifact.outPath}Temp").renameSync(artifact.outPath);
