@@ -30,10 +30,10 @@
       "name": "Chipmunk",
       "version": "AS.212",
       "ideaProduct": "android-studio",
-      "ideaVersion": "2021.2.1.2",
-      "baseVersion": "212.5284.40",
+      "ideaVersion": "2021.2.1.8",
+      "baseVersion": "212.5457.46",
       "dartPluginVersion": "212.5486",
-      "sinceBuild": "212.5284.40",
+      "sinceBuild": "212.5457.46",
       "untilBuild": "212.5712.43"
     },
     {
