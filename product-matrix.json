@@ -50,6 +50,7 @@
       "untilBuild": "213.*"
     },
     {
+      "channel": "dev",
       "comments": "Android Studio 2021.3 Canary",
       "name": "Dolphin",
       "version": "AS.213",
