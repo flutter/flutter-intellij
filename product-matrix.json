@@ -51,6 +51,7 @@
     },
     {
       "channel": "dev",
+<<<<<<< Updated upstream
       "comments": "IntelliJ 2022.1",
       "name": "2022.1",
       "version": "2022.1",
@@ -60,6 +61,18 @@
       "dartPluginVersion": "221.3427.93",
       "sinceBuild": "221.3427.89",
       "untilBuild": "221.*"
+=======
+      "comments": "Android Studio 2021.3 Canary",
+      "name": "Dolphin",
+      "version": "AS.213",
+      "isUnitTestTarget": "true",
+      "ideaProduct": "android-studio",
+      "ideaVersion": "2021.3.1.1",
+      "baseVersion": "213.5744.223",
+      "dartPluginVersion": "213.5744.122",
+      "sinceBuild": "213.5744.223",
+      "untilBuild": "213.5744.223"
+>>>>>>> Stashed changes
     }
   ]
 }
