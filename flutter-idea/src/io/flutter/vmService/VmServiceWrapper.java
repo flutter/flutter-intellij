@@ -47,6 +47,7 @@ import org.dartlang.vm.service.consumer.PauseConsumer;
 import org.dartlang.vm.service.consumer.RemoveBreakpointConsumer;
 import org.dartlang.vm.service.consumer.SetExceptionPauseModeConsumer;
 import org.dartlang.vm.service.consumer.SuccessConsumer;
+import org.dartlang.vm.service.consumer.UriListConsumer;
 import org.dartlang.vm.service.consumer.VMConsumer;
 import org.dartlang.vm.service.element.Breakpoint;
 import org.dartlang.vm.service.element.ElementList;
@@ -69,6 +70,7 @@ import org.dartlang.vm.service.element.Stack;
 import org.dartlang.vm.service.element.StepOption;
 import org.dartlang.vm.service.element.Success;
 import org.dartlang.vm.service.element.UnresolvedSourceLocation;
+import org.dartlang.vm.service.element.UriList;
 import org.dartlang.vm.service.element.VM;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -473,42 +475,63 @@ public class VmServiceWrapper implements Disposable {
     addRequest(() -> {
       final int line = position.getLine() + 1;
 
-      final Collection<String> scriptUris = myDebugProcess.getUrisForFile(position.getFile());
+      final List<String> urls = List.of(position.getFile().getUrl());
+      System.out.println(urls);
+
+      // if bazel do more processing
+
       final CanonicalBreakpoint canonicalBreakpoint =
         new CanonicalBreakpoint(position.getFile().getName(), position.getFile().getCanonicalPath(), line);
       canonicalBreakpoints.add(canonicalBreakpoint);
       final List<Breakpoint> breakpointResponses = new ArrayList<>();
       final List<RPCError> errorResponses = new ArrayList<>();
 
-      for (String uri : scriptUris) {
-        myVmService.addBreakpointWithScriptUri(isolateId, uri, line, new AddBreakpointWithScriptUriConsumer() {
-          @Override
-          public void received(Breakpoint response) {
-            breakpointResponses.add(response);
-            breakpointNumbersToCanonicalMap.put(response.getBreakpointNumber(), canonicalBreakpoint);
+      myVmService.lookupPackageUris(isolateId, urls, new UriListConsumer() {
+        @Override
+        public void received(UriList response) {
+          final List<String> uris = response.getUris();
+          System.out.println(uris);
 
-            checkDone();
+          if (uris == null || uris.get(0) == null) {
+            // error message, analytics
+            return;
           }
 
-          @Override
-          public void received(Sentinel response) {
-            checkDone();
-          }
+          final String scriptUri = uris.get(0);
 
-          @Override
-          public void onError(RPCError error) {
-            errorResponses.add(error);
+          myVmService.addBreakpointWithScriptUri(isolateId, scriptUri, line, new AddBreakpointWithScriptUriConsumer() {
+            @Override
+            public void received(Breakpoint response) {
+              breakpointResponses.add(response);
+              breakpointNumbersToCanonicalMap.put(response.getBreakpointNumber(), canonicalBreakpoint);
+              System.out.println("received response");
 
-            checkDone();
-          }
+              checkDone();
+            }
 
-          private void checkDone() {
-            if (scriptUris.size() == breakpointResponses.size() + errorResponses.size()) {
+            @Override
+            public void received(Sentinel response) {
+              checkDone();
+            }
+
+            @Override
+            public void onError(RPCError error) {
+              errorResponses.add(error);
+
+              checkDone();
+            }
+
+            private void checkDone() {
               consumer.received(breakpointResponses, errorResponses);
             }
-          }
-        });
-      }
+          });
+        }
+
+        @Override
+        public void onError(RPCError error) {
+
+        }
+      });
     });
   }
 
