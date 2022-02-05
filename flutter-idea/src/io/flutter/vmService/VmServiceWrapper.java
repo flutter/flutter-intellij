@@ -2,6 +2,7 @@ package io.flutter.vmService;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gson.JsonObject;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
@@ -355,6 +356,7 @@ public class VmServiceWrapper implements Disposable {
   private void doSetBreakpointsForIsolate(@NotNull final Set<XLineBreakpoint<XBreakpointProperties>> xBreakpoints,
                                           @NotNull final String isolateId,
                                           @Nullable final Runnable onFinished) {
+    System.out.println("in doSetBreakpointsForIsolate");
     if (xBreakpoints.isEmpty()) {
       if (onFinished != null) {
         onFinished.run();
@@ -388,12 +390,14 @@ public class VmServiceWrapper implements Disposable {
         }
 
         private void checkDone() {
+          System.out.println("In breakpoints consumer checkDone");
           if (counter.decrementAndGet() == 0 && onFinished != null) {
             onFinished.run();
 
             myVmService.getIsolate(isolateId, new GetIsolateConsumer() {
               @Override
               public void received(Isolate response) {
+                System.out.println("In getIsolateConsumer received");
                 final Set<String> libraryUris = new HashSet<>();
                 final Set<String> fileNames = new HashSet<>();
                 for (LibraryRef library : response.getLibraries()) {
@@ -404,11 +408,12 @@ public class VmServiceWrapper implements Disposable {
                 }
 
                 final ElementList<Breakpoint> breakpoints = response.getBreakpoints();
-                if (breakpoints.isEmpty()) {
-                  return;
-                }
+                //if (breakpoints.isEmpty()) {
+                //  return;
+                //}
 
                 final Set<CanonicalBreakpoint> mappedCanonicalBreakpoints = new HashSet<>();
+                assert breakpoints != null;
                 for (Breakpoint breakpoint : breakpoints) {
                   Object location = breakpoint.getLocation();
                   // In JIT mode, locations will be unresolved at this time since files aren't compiled until they are used.
@@ -435,12 +440,16 @@ public class VmServiceWrapper implements Disposable {
                   }
                 }
 
+                System.out.println(String.format("Unmapped count is %s", finalDifference.size()));
                 analytics.sendEventMetric(category, "unmapped-count", finalDifference.size());
 
+                // TODO(helin24): Get rid of this and move below?
                 // For internal bazel projects, report files where mapping failed.
                 if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
                   for (CanonicalBreakpoint canonicalBreakpoint : finalDifference) {
+                    System.out.println(String.format("unmapped canonical file %s", canonicalBreakpoint.path));
                     if (canonicalBreakpoint.path.contains("google3")) {
+                      System.out.println(String.format("unmapped-file|%s|%s", response.getRootLib().getUri(), canonicalBreakpoint.path));
                       analytics.sendEvent(category,
                                           String.format("unmapped-file|%s|%s", response.getRootLib().getUri(), canonicalBreakpoint.path));
                     }
@@ -475,10 +484,9 @@ public class VmServiceWrapper implements Disposable {
     addRequest(() -> {
       final int line = position.getLine() + 1;
 
-      final List<String> urls = List.of(position.getFile().getUrl());
+      final String resolvedUri = getResolvedUri(position);
+      final List<String> urls = List.of(resolvedUri);
       System.out.println(urls);
-
-      // if bazel do more processing
 
       final CanonicalBreakpoint canonicalBreakpoint =
         new CanonicalBreakpoint(position.getFile().getName(), position.getFile().getCanonicalPath(), line);
@@ -493,7 +501,23 @@ public class VmServiceWrapper implements Disposable {
           System.out.println(uris);
 
           if (uris == null || uris.get(0) == null) {
-            // error message, analytics
+            // TODO(helin24): Should an error be added to errorResponses here?
+            final JsonObject error = new JsonObject();
+            error.addProperty("error", "Breakpoint could not be mapped to package URI");
+            errorResponses.add(new RPCError(error));
+
+            final Analytics analytics = FlutterInitializer.getAnalytics();
+            final String category = "breakpoint";
+
+            // For internal bazel projects, report files where mapping failed.
+            if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
+              if (resolvedUri.contains("google3")) {
+                System.out.println(String.format("no-package-uri|%s", resolvedUri));
+                analytics.sendEvent(category, String.format("no-package-uri|%s", resolvedUri));
+              }
+            }
+
+            consumer.received(breakpointResponses, errorResponses);
             return;
           }
 
@@ -529,10 +553,27 @@ public class VmServiceWrapper implements Disposable {
 
         @Override
         public void onError(RPCError error) {
-
+          // TODO(helin24): Test that this works.
+          errorResponses.add(error);
+          consumer.received(breakpointResponses, errorResponses);
         }
       });
     });
+  }
+
+  private String getResolvedUri(XSourcePosition position) {
+    final String url = position.getFile().getUrl();
+
+    if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
+      // TODO(helin24): Improve this conversion?
+      final String root = "google3";
+      final int rootIdx = url.indexOf(root);
+      if (rootIdx > 0) {
+        return root + ":///" + url.substring(rootIdx + root.length() + 1);
+      }
+    }
+
+    return url;
   }
 
   public void addBreakpointForIsolates(@NotNull final XLineBreakpoint<XBreakpointProperties> xBreakpoint,
