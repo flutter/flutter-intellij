@@ -393,14 +393,12 @@ public class VmServiceWrapper implements Disposable {
         }
 
         private void checkDone() {
-          System.out.println("In breakpoints consumer checkDone");
           if (counter.decrementAndGet() == 0 && onFinished != null) {
             onFinished.run();
 
             myVmService.getIsolate(isolateId, new GetIsolateConsumer() {
               @Override
               public void received(Isolate response) {
-                System.out.println("In getIsolateConsumer received");
                 final Set<String> libraryUris = new HashSet<>();
                 final Set<String> fileNames = new HashSet<>();
                 for (LibraryRef library : response.getLibraries()) {
@@ -411,9 +409,9 @@ public class VmServiceWrapper implements Disposable {
                 }
 
                 final ElementList<Breakpoint> breakpoints = response.getBreakpoints();
-                //if (breakpoints.isEmpty()) {
-                //  return;
-                //}
+                if (breakpoints.isEmpty() && canonicalBreakpoints.isEmpty()) {
+                  return;
+                }
 
                 final Set<CanonicalBreakpoint> mappedCanonicalBreakpoints = new HashSet<>();
                 assert breakpoints != null;
@@ -446,7 +444,7 @@ public class VmServiceWrapper implements Disposable {
                 System.out.println(String.format("Unmapped count is %s", finalDifference.size()));
                 analytics.sendEventMetric(category, "unmapped-count", finalDifference.size());
 
-                // TODO(helin24): Get rid of this and move below?
+                // TODO(helin24): Get rid of this and instead track unmapped files in addBreakpoint?
                 // For internal bazel projects, report files where mapping failed.
                 if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
                   for (CanonicalBreakpoint canonicalBreakpoint : finalDifference) {
@@ -488,8 +486,8 @@ public class VmServiceWrapper implements Disposable {
       final int line = position.getLine() + 1;
 
       final String resolvedUri = getResolvedUri(position);
-      final List<String> urls = List.of(resolvedUri);
-      System.out.println(urls);
+      final List<String> resolvedUriList = List.of(resolvedUri);
+      System.out.println(resolvedUriList);
 
       final CanonicalBreakpoint canonicalBreakpoint =
         new CanonicalBreakpoint(position.getFile().getName(), position.getFile().getCanonicalPath(), line);
@@ -497,14 +495,13 @@ public class VmServiceWrapper implements Disposable {
       final List<Breakpoint> breakpointResponses = new ArrayList<>();
       final List<RPCError> errorResponses = new ArrayList<>();
 
-      myVmService.lookupPackageUris(isolateId, urls, new UriListConsumer() {
+      myVmService.lookupPackageUris(isolateId, resolvedUriList, new UriListConsumer() {
         @Override
         public void received(UriList response) {
           final List<String> uris = response.getUris();
           System.out.println(uris);
 
           if (uris == null || uris.get(0) == null) {
-            // TODO(helin24): Should an error be added to errorResponses here?
             final JsonObject error = new JsonObject();
             error.addProperty("error", "Breakpoint could not be mapped to package URI");
             errorResponses.add(new RPCError(error));
@@ -531,7 +528,6 @@ public class VmServiceWrapper implements Disposable {
             public void received(Breakpoint response) {
               breakpointResponses.add(response);
               breakpointNumbersToCanonicalMap.put(response.getBreakpointNumber(), canonicalBreakpoint);
-              System.out.println("received response");
 
               checkDone();
             }
@@ -556,7 +552,6 @@ public class VmServiceWrapper implements Disposable {
 
         @Override
         public void onError(RPCError error) {
-          // TODO(helin24): Test that this works.
           errorResponses.add(error);
           consumer.received(breakpointResponses, errorResponses);
         }
@@ -568,17 +563,14 @@ public class VmServiceWrapper implements Disposable {
     final String url = position.getFile().getUrl();
 
     if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
-      // TODO(helin24): Improve this conversion?
-
       final String root = "google3";
 
       // Look for a generated file path.
-      final String genFilePattern = root + "/(blaze-.*?)/(.*)";
-      final Pattern p = Pattern.compile(genFilePattern);
-      final Matcher matcher = p.matcher(url);
+      final String genFilePattern = root + "/blaze-.*?/(.*)";
+      final Pattern pattern = Pattern.compile(genFilePattern);
+      final Matcher matcher = pattern.matcher(url);
       if (matcher.find()) {
-        System.out.println("found");
-        final String path = matcher.group(2);
+        final String path = matcher.group(1);
         return root + ":///" + path;
       }
 
