@@ -1059,6 +1059,10 @@ public class VmService extends VmServiceBase {
         ((GetObjectConsumer) consumer).received(new ClassObj(json));
         return;
       }
+      if (responseType.equals("Code")) {
+        ((GetObjectConsumer) consumer).received(new Code(json));
+        return;
+      }
       if (responseType.equals("Context")) {
         ((GetObjectConsumer) consumer).received(new Context(json));
         return;
