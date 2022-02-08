@@ -22,7 +22,7 @@ import com.google.gson.JsonObject;
  * A {@link Code} object represents compiled code in the Dart VM.
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class Code extends ObjRef {
+public class Code extends Obj {
 
   public Code(JsonObject json) {
     super(json);

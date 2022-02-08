@@ -36,6 +36,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.AddBreakpointWithScriptUriConsumer;
 import org.dartlang.vm.service.consumer.EvaluateConsumer;
@@ -356,7 +360,6 @@ public class VmServiceWrapper implements Disposable {
   private void doSetBreakpointsForIsolate(@NotNull final Set<XLineBreakpoint<XBreakpointProperties>> xBreakpoints,
                                           @NotNull final String isolateId,
                                           @Nullable final Runnable onFinished) {
-    System.out.println("in doSetBreakpointsForIsolate");
     if (xBreakpoints.isEmpty()) {
       if (onFinished != null) {
         onFinished.run();
@@ -566,7 +569,20 @@ public class VmServiceWrapper implements Disposable {
 
     if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
       // TODO(helin24): Improve this conversion?
+
       final String root = "google3";
+
+      // Look for a generated file path.
+      final String genFilePattern = root + "/(blaze-.*?)/(.*)";
+      final Pattern p = Pattern.compile(genFilePattern);
+      final Matcher matcher = p.matcher(url);
+      if (matcher.find()) {
+        System.out.println("found");
+        final String path = matcher.group(2);
+        return root + ":///" + path;
+      }
+
+      // Look for root.
       final int rootIdx = url.indexOf(root);
       if (rootIdx > 0) {
         return root + ":///" + url.substring(rootIdx + root.length() + 1);
