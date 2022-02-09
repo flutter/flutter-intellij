@@ -72,13 +72,17 @@ public class MostlySilentColoredProcessHandler extends ColoredProcessHandler {
   protected void doDestroyProcess() {
     final Process process = getProcess();
     if (softKill && SystemInfo.isUnix && shouldDestroyProcessRecursively() && processCanBeKilledByOS(process)) {
+      System.out.println("helinx: sending softkill");
       final boolean result = UnixProcessManager.sendSigIntToProcessTree(process);
       if (!result) {
+        System.out.println("helinx: sent softkill but didn't work");
         FlutterInitializer.getAnalytics().sendEvent("process", "process kill failed");
         super.doDestroyProcess();
       }
     }
     else {
+      // this sends sigkill?
+      System.out.println("helinx: sent sigkill");
       super.doDestroyProcess();
     }
   }
