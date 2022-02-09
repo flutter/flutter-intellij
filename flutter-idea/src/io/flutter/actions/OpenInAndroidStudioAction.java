@@ -278,7 +278,7 @@ public class OpenInAndroidStudioAction extends AnAction {
         androidSdkLocation = flutterSdk.queryFlutterConfig("android-studio-dir", false);
       }
       if (androidSdkLocation != null) {
-        if (androidSdkLocation.contains("/Android Studio 2")) {
+        if (androidSdkLocation.contains("/Android Studio 2.")) {
           Messages.showErrorDialog(FlutterBundle.message("old.android.studio.message", File.separator),
                                    FlutterBundle.message("old.android.studio.title"));
           return null;
