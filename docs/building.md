@@ -29,6 +29,22 @@ $ gsutil cp <path-to-archive> gs://flutter_infra_release/flutter/intellij/
 Building is done by the `plugin` tool.
 See [tool/plugin/README.md](../tool/plugin/README.md) for details.
 
+## Releasing the plugin
+
+Update the changelog, then generate plugin.xml changes using `bin/plugin generate`. Commit and submit these changes.
+
+For major releases:
+- Name the branch `release_<release number>` and push to github
+- Run `bin/plugin make -r<release number>` to build the plugin for all supported versions
+
+For minor releases:
+- Fetch the branch `release_<release number>` from github for the latest release (e.g. pull `release_64` if about to release 64.1)
+- Run `bin/plugin make -r<release number>.<minor number>` (e.g. `-r64.1`) to build the plugin for all supported versions
+- Push the updated branch `release_<release number>` to github
+
+Once plugins files are generated, upload release files to Drive for testing
+
+
 ## Gradle vs IntelliJ projects
 
 To debug unit tests the project needs to be opened as a Gradle project. Close the
