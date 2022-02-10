@@ -44,6 +44,7 @@ For minor releases:
 
 Once plugins files are generated, upload release files to Drive for testing
 
+When ready to release to the public, go to the [Flutter plugin site](https://plugins.jetbrains.com/plugin/9212-flutter). You will need to be invited to the organization to upload plugin files.
 
 ## Gradle vs IntelliJ projects
 
