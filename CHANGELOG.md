@@ -1,3 +1,6 @@
+# 64.1
+- Try SIGINT before SIGKILL for processes (#5950)
+
 # 64.0
 - Fix modules for working with AS sources (#5913)
 - Add analytics to survey notifications (#5912)
