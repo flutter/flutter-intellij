@@ -498,6 +498,10 @@ public class VmServiceWrapper implements Disposable {
       myVmService.lookupPackageUris(isolateId, resolvedUriList, new UriListConsumer() {
         @Override
         public void received(UriList response) {
+          if (myDebugProcess.getSession().getProject().isDisposed()) {
+            return;
+          }
+
           final List<String> uris = response.getUris();
           System.out.println(uris);
 
@@ -562,8 +566,10 @@ public class VmServiceWrapper implements Disposable {
   private String getResolvedUri(XSourcePosition position) {
     final String url = position.getFile().getUrl();
 
+
     if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
-      final String root = "google3";
+      final String root = WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).get().getRoot().getPath();
+      final String resolvedUriRoot = "google3:///";
 
       // Look for a generated file path.
       final String genFilePattern = root + "/blaze-.*?/(.*)";
@@ -571,13 +577,13 @@ public class VmServiceWrapper implements Disposable {
       final Matcher matcher = pattern.matcher(url);
       if (matcher.find()) {
         final String path = matcher.group(1);
-        return root + ":///" + path;
+        return resolvedUriRoot + path;
       }
 
       // Look for root.
       final int rootIdx = url.indexOf(root);
-      if (rootIdx > 0) {
-        return root + ":///" + url.substring(rootIdx + root.length() + 1);
+      if (rootIdx >= 0) {
+        return resolvedUriRoot + url.substring(rootIdx + root.length() + 1);
       }
     }
 
