@@ -45,6 +45,10 @@
 
   <change-notes>
     <![CDATA[
+<h1>64.1</h1>
+<ul>
+  <li>Try SIGINT before SIGKILL for processes (#5950)</li>
+</ul>
 <h1>64.0</h1>
 <ul>
   <li>Fix modules for working with AS sources (#5913)</li>
