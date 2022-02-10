@@ -36,28 +36,17 @@ import java.util.function.Consumer;
  * for more information.
  */
 public class MostlySilentColoredProcessHandler extends ColoredProcessHandler {
-  /*
-  This determines whether a soft kill (SIGINT) is sent to the process on destroy, instead of the default SIGKILL. SIGKILL can't be routed
-  to remote processes spawned from the original one.
-   */
-  private boolean softKill;
   private GeneralCommandLine commandLine;
   private Consumer<String> onTextAvailable;
 
   public MostlySilentColoredProcessHandler(@NotNull GeneralCommandLine commandLine)
     throws ExecutionException {
-    this(commandLine, false);
+    this(commandLine, null);
   }
 
-  public MostlySilentColoredProcessHandler(@NotNull GeneralCommandLine commandLine, boolean softKill)
-    throws ExecutionException {
-    this(commandLine, softKill, null);
-  }
-
-  public MostlySilentColoredProcessHandler(@NotNull GeneralCommandLine commandLine, boolean softKill, Consumer<String> onTextAvailable)
+  public MostlySilentColoredProcessHandler(@NotNull GeneralCommandLine commandLine, Consumer<String> onTextAvailable)
           throws ExecutionException {
     super(commandLine);
-    this.softKill = softKill;
     this.commandLine = commandLine;
     this.onTextAvailable = onTextAvailable;
   }
@@ -71,7 +60,7 @@ public class MostlySilentColoredProcessHandler extends ColoredProcessHandler {
   @Override
   protected void doDestroyProcess() {
     final Process process = getProcess();
-    if (softKill && SystemInfo.isUnix && shouldDestroyProcessRecursively() && processCanBeKilledByOS(process)) {
+    if (SystemInfo.isUnix && shouldDestroyProcessRecursively() && processCanBeKilledByOS(process)) {
       final boolean result = UnixProcessManager.sendSigIntToProcessTree(process);
       if (!result) {
         FlutterInitializer.getAnalytics().sendEvent("process", "process kill failed");

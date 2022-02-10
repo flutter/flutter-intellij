@@ -265,7 +265,7 @@ public class FlutterApp implements Disposable {
       }
     }
 
-    final ProcessHandler process = new MostlySilentColoredProcessHandler(command, false, onTextAvailable);
+    final ProcessHandler process = new MostlySilentColoredProcessHandler(command, onTextAvailable);
     Disposer.register(project, process::destroyProcess);
 
     // Send analytics for the start and stop events.

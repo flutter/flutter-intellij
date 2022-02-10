@@ -267,7 +267,7 @@ public class FlutterReloadManager {
     commandLine.setExePath(FileUtil.toSystemDependentName(script));
 
     try {
-      final MostlySilentColoredProcessHandler handler = new MostlySilentColoredProcessHandler(commandLine, true);
+      final MostlySilentColoredProcessHandler handler = new MostlySilentColoredProcessHandler(commandLine);
       handler.startNotify();
       if (!handler.getProcess().waitFor(10, TimeUnit.SECONDS)) {
         LOG.error("Syncing files timed out");
