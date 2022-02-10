@@ -38,7 +38,7 @@ For major releases:
 - Run `bin/plugin make -r<release number>` to build the plugin for all supported versions
 
 For minor releases:
-- Fetch the branch `release_<release number>` from github for the latest release (e.g. pull `release_64` if about to release 64.1)
+- Fetch and checkout the branch `release_<release number>` from github for the latest release (e.g. pull `release_64` if about to release 64.1)
 - Run `bin/plugin make -r<release number>.<minor number>` (e.g. `-r64.1`) to build the plugin for all supported versions
 - Push the updated branch `release_<release number>` to github
 
