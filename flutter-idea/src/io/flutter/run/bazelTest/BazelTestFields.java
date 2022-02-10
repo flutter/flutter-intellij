@@ -166,7 +166,7 @@ public class BazelTestFields {
    */
   @NotNull
   ProcessHandler run(@NotNull final Project project, @NotNull final RunMode mode) throws ExecutionException {
-    return new MostlySilentColoredProcessHandler(getLaunchCommand(project, mode), true);
+    return new MostlySilentColoredProcessHandler(getLaunchCommand(project, mode));
   }
 
   /**
