@@ -441,16 +441,13 @@ public class VmServiceWrapper implements Disposable {
                   }
                 }
 
-                System.out.println(String.format("Unmapped count is %s", finalDifference.size()));
                 analytics.sendEventMetric(category, "unmapped-count", finalDifference.size());
 
                 // TODO(helin24): Get rid of this and instead track unmapped files in addBreakpoint?
                 // For internal bazel projects, report files where mapping failed.
                 if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
                   for (CanonicalBreakpoint canonicalBreakpoint : finalDifference) {
-                    System.out.println(String.format("unmapped canonical file %s", canonicalBreakpoint.path));
                     if (canonicalBreakpoint.path.contains("google3")) {
-                      System.out.println(String.format("unmapped-file|%s|%s", response.getRootLib().getUri(), canonicalBreakpoint.path));
                       analytics.sendEvent(category,
                                           String.format("unmapped-file|%s|%s", response.getRootLib().getUri(), canonicalBreakpoint.path));
                     }
@@ -487,7 +484,6 @@ public class VmServiceWrapper implements Disposable {
 
       final String resolvedUri = getResolvedUri(position);
       final List<String> resolvedUriList = List.of(resolvedUri);
-      System.out.println(resolvedUriList);
 
       final CanonicalBreakpoint canonicalBreakpoint =
         new CanonicalBreakpoint(position.getFile().getName(), position.getFile().getCanonicalPath(), line);
@@ -503,7 +499,6 @@ public class VmServiceWrapper implements Disposable {
           }
 
           final List<String> uris = response.getUris();
-          System.out.println(uris);
 
           if (uris == null || uris.get(0) == null) {
             final JsonObject error = new JsonObject();
@@ -516,7 +511,6 @@ public class VmServiceWrapper implements Disposable {
             // For internal bazel projects, report files where mapping failed.
             if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
               if (resolvedUri.contains("google3")) {
-                System.out.println(String.format("no-package-uri|%s", resolvedUri));
                 analytics.sendEvent(category, String.format("no-package-uri|%s", resolvedUri));
               }
             }
