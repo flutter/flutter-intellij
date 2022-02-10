@@ -8,9 +8,7 @@ The previous builder for the Flutter plugin was written in Ant. An expert in Ant
 
 The tool needs to perform several functions. Building is the basic one, but others are important too. Implementation note: these will be implemented as compound commands in the CLI tool (similar to `flutter doctor` or `flutter run` in the Flutter CLI tool).
 
-
-
-*   `build`
+*   `make`
 *   `test`
 *   `deploy`
 *   `generate`
@@ -28,7 +26,7 @@ Use "release mode." The `XX` value specifies the release identifier, like 18 or 
 Set the root directory to the `working-directory` value. This should not be used when running the tool from the command line. It is only intended to be used when running tests from IntelliJ run configurations that have no way to specify the working directory.
 
 
-### Build
+### Make
 
 Builds may be targeted for local development or distribution.
 
@@ -44,7 +42,7 @@ Only build the specified IntelliJ version. `ID` is one of the "version" strings 
 Normally the archive files are not unpacked if the corresponding directory exists. This flag forces the archive files to be unpacked.
 
 
-The build function must generate the correct `plugin.xml` for each platform and generate the correct artifacts for each. In release mode the archive files are always unpacked (--unpack is implied). The plugin files are saved in the `artifacts` directory. In release mode a subdirectory of `artifacts` is created which has the name of the release and they are put there. During a local dev/test run the subdirectory is not created and the created files are children of `artifacts`.
+The make function must generate the correct `plugin.xml` for each platform and generate the correct artifacts for each. In release mode the archive files are always unpacked (--unpack is implied). The plugin files are saved in the `artifacts` directory. In release mode a subdirectory of `artifacts` is created which has the name of the release and they are put there. During a local dev/test run the subdirectory is not created and the created files are children of `artifacts`.
 
 Returns a success or failure code to play nice with shell commands.
 
@@ -66,7 +64,7 @@ TBD: We may need some mechanism to automatically upload testing artifacts, since
 ### Deploy
 
 Automatically upload all required artifacts to the JetBrains site. This function will print instructions to retrieve the password from valentine then prompt for the password to log into the JetBrains site. It has no options. Returns a success or failure code to play nice with shell commands.
-
+(Used primarily by the dev channel Kokoro job. Not sure if it works for uploading to the stable channel.)
 
 ### Generate
 
@@ -82,11 +80,11 @@ Run the lint tool. It checks for bad imports and prints a report of the Dart plu
 
 Build the Flutter plugin for IntelliJ and Android Studio, in distribution mode.
 
-	`plugin -r19.2 build`
+	`plugin -r19.2 make`
 
 Build a local version of the IntelliJ version of the plugin, not for distribution.
 
-	`plugin build --no-as`
+	`plugin make --no-as`
 
 Run integration tests without doing a build, assuming an edit-build-test cycle during development.
 
@@ -94,12 +92,12 @@ Run integration tests without doing a build, assuming an edit-build-test cycle d
 
 Build everything then run all tests. The big question here is: Can we get integration tests to run using the newly-built plugin rather than sources?
 
-	`plugin build && plugin test`
+	`plugin make && plugin test`
 
 ## Debugging
 
 It can be difficult to debug issues that only occur with a deployable
-plugin built by `plugin build`. Here's how to set up remote
+plugin built by `plugin make`. Here's how to set up remote
 debugging with IntelliJ:
 
 In IntelliJ create a "Remote" type of run configuration. It 
