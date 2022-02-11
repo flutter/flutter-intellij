@@ -649,7 +649,7 @@ class GenerateCommand extends ProductCommand {
     final templateFragments = Directory(p.join('resources', 'liveTemplates'))
         .listSync()
         .whereType<File>()
-        .where((file) => p.extension(file.path) == 'txt')
+        .where((file) => p.extension(file.path) == '.txt')
         .cast<File>()
         .toList();
     final templateFile =
