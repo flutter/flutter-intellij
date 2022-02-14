@@ -37,9 +37,6 @@ import io.flutter.utils.IconPreviewGenerator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
-import org.jetbrains.yaml.psi.YAMLCompoundValue;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
-import org.jetbrains.yaml.psi.YamlRecursivePsiElementVisitor;
 
 import javax.swing.*;
 import java.util.*;
@@ -463,36 +460,36 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     }
   }
 
-  @Deprecated // This might be useful if we eliminate the preference pane that defines packages to analyze.
-  static class YamlAssetMapVisitor extends YamlRecursivePsiElementVisitor {
-    final HashMap<String, String> assetMap = new HashMap<>();
-    final List<String> iconClassNames = new ArrayList<>();
-
-    @Override
-    public void visitCompoundValue(@NotNull YAMLCompoundValue compoundValue) {
-      final PsiElement[] children = compoundValue.getChildren();
-      if (children.length == 2 && Objects.requireNonNull(children[0].getFirstChild()).textMatches("asset")) {
-        assert children[0].getLastChild() != null;
-        final String fontFilePath = children[0].getLastChild().getText();
-        assert children[1] != null;
-        assert children[1].getLastChild() != null;
-        final String className = children[1].getLastChild().getText();
-        iconClassNames.add(className);
-        assetMap.put(className, fontFilePath);
-      }
-      else {
-        super.visitCompoundValue(compoundValue);
-      }
-    }
-
-    @Override
-    public void visitKeyValue(@NotNull YAMLKeyValue keyValue) {
-      if (keyValue.getKeyText().equals("icons")) {
-        iconClassNames.add(keyValue.getValueText());
-      }
-      else {
-        super.visitKeyValue(keyValue);
-      }
-    }
-  }
+  //@Deprecated // This might be useful if we eliminate the preference pane that defines packages to analyze.
+  //static class YamlAssetMapVisitor extends YamlRecursivePsiElementVisitor {
+  //  final HashMap<String, String> assetMap = new HashMap<>();
+  //  final List<String> iconClassNames = new ArrayList<>();
+  //
+  //  @Override
+  //  public void visitCompoundValue(@NotNull YAMLCompoundValue compoundValue) {
+  //    final PsiElement[] children = compoundValue.getChildren();
+  //    if (children.length == 2 && Objects.requireNonNull(children[0].getFirstChild()).textMatches("asset")) {
+  //      assert children[0].getLastChild() != null;
+  //      final String fontFilePath = children[0].getLastChild().getText();
+  //      assert children[1] != null;
+  //      assert children[1].getLastChild() != null;
+  //      final String className = children[1].getLastChild().getText();
+  //      iconClassNames.add(className);
+  //      assetMap.put(className, fontFilePath);
+  //    }
+  //    else {
+  //      super.visitCompoundValue(compoundValue);
+  //    }
+  //  }
+  //
+  //  @Override
+  //  public void visitKeyValue(@NotNull YAMLKeyValue keyValue) {
+  //    if (keyValue.getKeyText().equals("icons")) {
+  //      iconClassNames.add(keyValue.getValueText());
+  //    }
+  //    else {
+  //      super.visitKeyValue(keyValue);
+  //    }
+  //  }
+  //}
 }
