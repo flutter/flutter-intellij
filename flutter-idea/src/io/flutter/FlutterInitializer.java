@@ -76,11 +76,6 @@ public class FlutterInitializer implements StartupActivity {
         project);
     }
 
-    System.out.println("get path of project root");
-    if (WorkspaceCache.getInstance(project).isBazel()) {
-      System.out.println(WorkspaceCache.getInstance(project).get().getRoot().getPath());
-    }
-
     // Disable the 'Migrate Project to Gradle' notification.
     FlutterUtils.disableGradleProjectMigrationNotification(project);
 
