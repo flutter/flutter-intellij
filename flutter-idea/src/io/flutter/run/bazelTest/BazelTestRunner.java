@@ -270,26 +270,6 @@ public class BazelTestRunner extends GenericProgramRunner {
       this.connector = connector;
     }
 
-    @NotNull
-    public Collection<String> getBreakpointUris(@NotNull final VirtualFile file) {
-      // Get the results from superclass
-      final Collection<String> results = super.getBreakpointUris(file);
-
-      // Get the workspace directory name provided by the test harness.
-      final String workspaceDirName = connector.getWorkspaceDirName();
-
-      // Verify the returned workspace directory name
-      if (StringUtils.isEmpty(workspaceDirName)) return results;
-
-      final String filePath = file.getPath();
-      int workspaceEndOffset = filePath.lastIndexOf(workspaceDirName + "/");
-      if (workspaceEndOffset != -1) {
-        workspaceEndOffset += workspaceDirName.length();
-        results.add(workspaceDirName + "://" + filePath.substring(workspaceEndOffset));
-      }
-      return results;
-    }
-
     /**
      * Attempt to find a local Dart file corresponding to a script in Observatory.
      */
