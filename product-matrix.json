@@ -68,10 +68,10 @@
       "name": "2022.1",
       "version": "2022.1",
       "ideaProduct": "ideaIC",
-      "ideaVersion": "221.3427.89",
-      "baseVersion": "221.3427.89",
-      "dartPluginVersion": "221.3427.93",
-      "sinceBuild": "221.3427.89",
+      "ideaVersion": "221.4165.146",
+      "baseVersion": "LATEST-EAP-SNAPSHOT",
+      "dartPluginVersion": "221.4165.146",
+      "sinceBuild": "221.4165.146",
       "untilBuild": "221.*"
     }
   ]
