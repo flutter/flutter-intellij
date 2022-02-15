@@ -36,14 +36,20 @@ List<EditCommand> editCommands = [
     path: 'build.gradle.kts',
     initial:
         'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide")',
-    replacement: 'type.set("IC")\n  version.set("221.3427.89-EAP-SNAPSHOT")',
+    replacement: 'type.set("IC")\n  version.set("LATEST-EAP-SNAPSHOT")',
     version: '2022.1',
   ),
   Subst(
     path: 'flutter-idea/build.gradle.kts',
     initial:
         'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide")',
-    replacement: 'type.set("IC")\n  version.set("221.3427.89-EAP-SNAPSHOT")',
+    replacement: 'type.set("IC")\n  version.set("LATEST-EAP-SNAPSHOT")',
+    version: '2022.1',
+  ),
+  Subst(
+    path: 'flutter-idea/testSrc/unit/io/flutter/testing/Testing.java',
+    initial: '.createLightFixtureBuilder()',
+    replacement: '.createLightFixtureBuilder("test")',
     version: '2022.1',
   ),
   Subst(
