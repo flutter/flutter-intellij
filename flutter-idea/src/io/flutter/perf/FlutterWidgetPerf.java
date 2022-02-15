@@ -24,7 +24,6 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.EdtInvocationManager;
 import gnu.trove.TIntObjectHashMap;
-import io.flutter.module.FlutterModuleBuilder;
 import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 
