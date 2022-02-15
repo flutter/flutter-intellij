@@ -2,10 +2,10 @@ class $NAME$ extends StatefulWidget {
   const $NAME$({Key? key}) : super(key: key);
 
   @override
-  _$NAME$State createState() => _$NAME$State();
+  State<$NAME$> createState() => $SNAME$();
 }
 
-class _$NAME$State extends State<$NAME$> {
+class $SNAME$ extends State<$NAME$> {
   @override
   Widget build(BuildContext context) {
     return Container($END$);
