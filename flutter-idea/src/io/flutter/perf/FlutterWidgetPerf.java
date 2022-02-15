@@ -17,12 +17,14 @@ import com.intellij.concurrency.JobScheduler;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.EdtInvocationManager;
 import gnu.trove.TIntObjectHashMap;
+import io.flutter.module.FlutterModuleBuilder;
 import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,6 +47,8 @@ import java.util.concurrent.TimeUnit;
  * production application.
  */
 public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
+
+  private static final Logger LOG = Logger.getInstance(FlutterWidgetPerf.class);
 
   public static final long IDLE_DELAY_MILISECONDS = 400;
 
@@ -510,7 +514,12 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     if (uiAnimationTimer.isRunning()) {
       uiAnimationTimer.stop();
     }
-    Disposer.dispose(perfProvider);
+    try {
+      // We've had a number of NPEs reported from this line, and it is not obvious what's wrong.
+      Disposer.dispose(perfProvider);
+    } catch (NullPointerException ex) {
+      LOG.info("NPE during dispose of " + perfProvider + "/" + perfProvider.isStarted() + "/" + perfProvider.isConnected(), ex);
+    }
 
     AsyncUtils.invokeLater(() -> {
       clearModels();
