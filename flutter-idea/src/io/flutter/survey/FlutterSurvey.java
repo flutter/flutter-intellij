@@ -9,12 +9,13 @@ import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class FlutterSurvey {
   final String uniqueId;
-  final LocalDate startDate;
-  final LocalDate endDate;
+  final ZonedDateTime startDate;
+  final ZonedDateTime endDate;
 
   final String title;
   final String urlPrefix;
@@ -27,8 +28,8 @@ public class FlutterSurvey {
     this.urlPrefix = urlPrefix;
   }
 
-  private static LocalDate parseDate(String date) {
-    return LocalDate.from(DateTimeFormatter.ISO_DATE_TIME.parse(date));
+  private static ZonedDateTime parseDate(String date) {
+    return ZonedDateTime.from(DateTimeFormatter.ISO_ZONED_DATE_TIME.parse(date));
   }
 
   public static FlutterSurvey fromJson(@NotNull JsonObject json) {
@@ -41,7 +42,7 @@ public class FlutterSurvey {
   }
 
   boolean isSurveyOpen() {
-    final LocalDate now = LocalDate.now();
+    final ZonedDateTime now = ZonedDateTime.now();
     return (now.isEqual(startDate) || now.isAfter(startDate)) && now.isBefore(endDate);
   }
 }
