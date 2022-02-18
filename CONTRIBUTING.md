@@ -64,6 +64,7 @@ file.
   - Build the project using `Build` | `Build Project`
 * Try running the plugin; elect the `flutter-intellij [runIde]` run config then click the Debug icon. This should open the "runtime workbench", 
   a new instance of IntelliJ with the plugin installed.
+  - If this causes an error message `Specified localPath '/.../flutter-intellij/artifacts/ideaIC' doesn't exist or is not a directory`, you may need to first build the plugin on the command line with `bin/plugin make`.
 * If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install"
   - Install the Dart plugin, exit
 * Verify installation of the Flutter plugin:
@@ -264,6 +265,10 @@ We require that all commits to the repository are signed with gpg. [Github's doc
   sudo make install
   ```
 - You may need to install pinentry (`brew install pinentry`)
+- If pinentry continues to not work, check its path (`which pinentry`) and add it to the file `~/.gnupg/gpg-agent.conf`, i.e.:
+  ```bash
+  pinentry-program /path/to/pinentry
+  ```
 - You may need to set the tty `export GPG_TTY=$(tty)` if you get this error when trying to commit:
   ```bash
   error: gpg failed to sign the data
