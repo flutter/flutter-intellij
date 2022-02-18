@@ -70,7 +70,7 @@
       "ideaProduct": "ideaIC",
       "ideaVersion": "221.4165.146",
       "baseVersion": "LATEST-EAP-SNAPSHOT",
-      "dartPluginVersion": "221.4165.146",
+      "dartPluginVersion": "221.4501.155",
       "sinceBuild": "221.4165.146",
       "untilBuild": "221.*"
     }
