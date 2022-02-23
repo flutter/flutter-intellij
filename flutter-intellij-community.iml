@@ -85,7 +85,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-7.19.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-7.22.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -94,7 +94,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-swing-7.19.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-swing-7.22.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -124,8 +124,8 @@
     <orderEntry type="module" module-name="intellij.android.wizard.model" />
     <orderEntry type="library" name="json" level="project" />
     <orderEntry type="library" name="weberknecht-0.1.5" level="project" />
-    <orderEntry type="library" name="jxbrowser-7.19" level="project" />
-    <orderEntry type="library" name="jxbrowser-swing-7.19" level="project" />
+    <orderEntry type="library" name="jxbrowser-7.22" level="project" />
+    <orderEntry type="library" name="jxbrowser-swing-7.22" level="project" />
     <orderEntry type="library" name="Dart SDK" level="project" />
     <orderEntry type="library" name="Dart Packages" level="project" />
     <orderEntry type="module" module-name="intellij.platform.ide" />
