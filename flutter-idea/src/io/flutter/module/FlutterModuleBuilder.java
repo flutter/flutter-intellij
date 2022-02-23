@@ -16,6 +16,7 @@ import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.ModifiableModuleModel;
@@ -143,8 +144,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
     FlutterModuleUtils.autoShowMain(project, root);
 
-    if (!FlutterModuleUtils.hasAndroidModule(project)) {
-      addAndroidModule(project, model, basePath, flutter.getName(), settings.getType() == FlutterProjectType.MODULE);
+    if (!FlutterModuleUtils.hasAndroidModule(project)) { // TODO
+      //addAndroidModule(project, model, basePath, flutter.getName(), settings.getType() == FlutterProjectType.MODULE);
     }
     return flutter;
   }
@@ -168,7 +169,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return AndroidUtils.validateAndroidPackageName(org);
   }
 
-  private static void addAndroidModule(@NotNull Project project,
+  public static void addAndroidModule(@NotNull Project project,
                                        @Nullable ModifiableModuleModel model,
                                        @NotNull String baseDirPath,
                                        @NotNull String flutterModuleName,
@@ -197,7 +198,9 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       model.loadModule(androidFile.getPath());
 
       if (toCommit != null) {
-        WriteAction.run(toCommit::commit);
+        ApplicationManager.getApplication().invokeLater(() -> {
+          WriteAction.run(toCommit::commit);
+        });
       }
     }
     catch (ModuleWithNameAlreadyExists | IOException e) {
