@@ -25,6 +25,7 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import com.intellij.util.ui.EdtInvocationManager;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
@@ -188,8 +189,13 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     // If we are showing build method guides we can never show the regular
     // IntelliJ indent guides for a file because they will overlap with the
     // widget indent guides in distracting ways.
-    e.getSettings().setIndentGuidesShown(false);
-
+    if (EdtInvocationManager.getInstance().isEventDispatchThread()) {
+      e.getSettings().setIndentGuidesShown(false);
+    } else {
+      ApplicationManager.getApplication().invokeLater(() -> {
+        e.getSettings().setIndentGuidesShown(false);
+      });
+    }
     // If regular indent guides should be shown we need to show the filtered
     // indents guides which look like the regular indent guides except that
     // guides that intersect with the widget guides are filtered out.
