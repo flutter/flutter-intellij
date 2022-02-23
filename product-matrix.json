@@ -50,6 +50,7 @@
       "untilBuild": "213.*"
     },
     {
+      "channel": "stable",
       "comments": "IntelliJ 2022.1",
       "name": "2022.1",
       "version": "2022.1",
