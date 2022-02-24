@@ -71,13 +71,13 @@ public class JsonUtils {
    * Parses the specified JSON string into a JsonElement.
    */
   public static JsonElement parseString(String json) throws JsonSyntaxException {
-    return JsonParser.parseString(json);
+    return new JsonParser().parse(json);
   }
 
   /**
    * Parses the specified JSON string into a JsonElement.
    */
   public static JsonElement parseReader(Reader reader) throws JsonIOException, JsonSyntaxException {
-    return JsonParser.parseReader(reader);
+    return new JsonParser().parse(reader);
   }
 }
