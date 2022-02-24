@@ -142,6 +142,9 @@ public class FlutterInitializer implements StartupActivity {
             VirtualFile moduleFile = module.getModuleFile();
             if (moduleFile == null) continue;
             VirtualFile baseDir = moduleFile.getParent();
+            if (baseDir.getName().equals(".idea")) {
+              baseDir = baseDir.getParent();
+            }
             boolean isModule = false;
             FlutterModuleBuilder.addAndroidModule(project, null, baseDir.getPath(), module.getName(), isModule);
           }
