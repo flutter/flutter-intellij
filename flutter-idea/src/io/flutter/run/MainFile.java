@@ -58,7 +58,7 @@ public class MainFile {
   }
 
   /**
-   * Returns the closest ancestor directory containing a pubspec.yaml, BUILD, or .packages file.
+   * Returns the closest ancestor directory containing a pubspec.yaml, BUILD, or packages meta-data file.
    */
   @NotNull
   public VirtualFile getAppDir() {
@@ -137,6 +137,7 @@ public class MainFile {
     assert(!WorkspaceCache.getInstance(project).isBazel());
     return dir.isDirectory() && (
       dir.findChild("pubspec.yaml") != null ||
+      dir.findChild(".dart_tool") != null ||
       dir.findChild(".packages") != null
     );
   }
