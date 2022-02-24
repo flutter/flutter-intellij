@@ -122,7 +122,8 @@ public class FlutterInitializer implements StartupActivity {
 
     if (hasFlutterModule || WorkspaceCache.getInstance(project).isBazel()) {
       initializeToolWindows(project);
-    } else {
+    }
+    else {
       project.getMessageBus().connect().subscribe(ProjectTopics.MODULES, new ModuleListener() {
         @Override
         public void moduleAdded(@NotNull Project project, @NotNull Module module) {
@@ -133,22 +134,20 @@ public class FlutterInitializer implements StartupActivity {
       });
     }
 
-    if (hasFlutterModule) {
-      if (PluginManagerCore.getPlugin(PluginId.getId("org.jetbrains.android")) != null) {
-        if (!FlutterModuleUtils.hasAndroidModule(project)) {
-          List<Module> modules = FlutterModuleUtils.findModulesWithFlutterContents(project);
-          for (Module module : modules) {
-            if (module.isDisposed() || !FlutterModuleUtils.isFlutterModule(module)) continue;
-            VirtualFile moduleFile = module.getModuleFile();
-            if (moduleFile == null) continue;
-            VirtualFile baseDir = moduleFile.getParent();
-            if (baseDir.getName().equals(".idea")) {
-              baseDir = baseDir.getParent();
-            }
-            boolean isModule = false;
-            FlutterModuleBuilder.addAndroidModule(project, null, baseDir.getPath(), module.getName(), isModule);
-          }
+    if (hasFlutterModule
+        && PluginManagerCore.getPlugin(PluginId.getId("org.jetbrains.android")) != null
+        && !FlutterModuleUtils.hasAndroidModule(project)) {
+      List<Module> modules = FlutterModuleUtils.findModulesWithFlutterContents(project);
+      for (Module module : modules) {
+        if (module.isDisposed() || !FlutterModuleUtils.isFlutterModule(module)) continue;
+        VirtualFile moduleFile = module.getModuleFile();
+        if (moduleFile == null) continue;
+        VirtualFile baseDir = moduleFile.getParent();
+        if (baseDir.getName().equals(".idea")) {
+          baseDir = baseDir.getParent();
         }
+        boolean isModule = false;
+        FlutterModuleBuilder.addAndroidModule(project, null, baseDir.getPath(), module.getName(), isModule);
       }
 
       // Ensure a run config is selected and ready to go.
