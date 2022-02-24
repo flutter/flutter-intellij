@@ -5,6 +5,9 @@
  */
 package io.flutter.sdk;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.intellij.ProjectTopics;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -13,16 +16,21 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
 import com.intellij.openapi.roots.libraries.PersistentLibraryKind;
+import com.intellij.openapi.util.SystemInfo;
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.*;
+import com.intellij.util.io.URLUtil;
 import com.jetbrains.lang.dart.util.DotPackagesFileUtil;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
+import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.jetbrains.lang.dart.util.PubspecYamlUtil.PUBSPEC_YAML;
@@ -123,15 +131,23 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
     final Set<String> paths = new HashSet<>();
 
     for (PubRoot pubRoot : roots) {
+
+      final Map<String, String> map;
       if (pubRoot.getPackagesFile() == null) {
-        continue;
+        @Nullable VirtualFile configFile = pubRoot.getPackageConfigFile();
+        if (configFile == null) {
+          continue;
+        }
+        // TODO(messick) Use the code in the Dart plugin when available.
+        // This is just a backup in case we need it. It does not have a proper cache, but the Dart plugin does.
+        map = loadPackagesMap(configFile);
       }
-
-      final Map<String, String> map = DotPackagesFileUtil.getPackagesMap(pubRoot.getPackagesFile());
-      if (map == null) {
-        continue;
+      else {
+        map = DotPackagesFileUtil.getPackagesMap(pubRoot.getPackagesFile());
+        if (map == null) {
+          continue;
+        }
       }
-
       for (String packagePath : map.values()) {
         final VirtualFile libFolder = LocalFileSystem.getInstance().findFileByPath(packagePath);
         if (libFolder == null) {
@@ -149,5 +165,54 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
     }
 
     return paths;
+  }
+
+  private static Map<String, String> loadPackagesMap(@NotNull VirtualFile root) {
+    Map<String, String> result = new HashMap<>();
+    try {
+      JsonElement element = JsonUtils.parseString(new String(root.contentsToByteArray(), StandardCharsets.UTF_8));
+      if (element != null) {
+        JsonElement packages = element.getAsJsonObject().get("packages");
+        if (packages != null) {
+          JsonArray array = packages.getAsJsonArray();
+          for (int i = 0; i < array.size(); i++) {
+            JsonObject pkg = array.get(i).getAsJsonObject();
+            String name = pkg.get("name").getAsString();
+            String rootUri = pkg.get("rootUri").getAsString();
+            if (name != null && rootUri != null) {
+              // need to protect '+' chars because URLDecoder.decode replaces '+' with space
+              final String encodedUriWithoutPluses = StringUtil.replace(rootUri, "+", "%2B");
+              final String uri = URLUtil.decode(encodedUriWithoutPluses);
+              final String packageUri = getAbsolutePackageRootPath(root.getParent().getParent(), uri);
+              result.put(name, packageUri);
+            }
+          }
+        }
+      }
+    }
+    catch (IOException ignored) {
+    }
+    return result;
+  }
+
+  @Nullable
+  private static String getAbsolutePackageRootPath(@NotNull final VirtualFile baseDir, @NotNull final String uri) {
+    // Copied from the Dart plugin.
+    if (uri.startsWith("file:/")) {
+      final String pathAfterSlashes = StringUtil.trimEnd(StringUtil.trimLeading(StringUtil.trimStart(uri, "file:/"), '/'), "/");
+      if (SystemInfo.isWindows && !ApplicationManager.getApplication().isUnitTestMode()) {
+        if (pathAfterSlashes.length() > 2 && Character.isLetter(pathAfterSlashes.charAt(0)) && ':' == pathAfterSlashes.charAt(1)) {
+          return pathAfterSlashes;
+        }
+      }
+      else {
+        return "/" + pathAfterSlashes;
+      }
+    }
+    else {
+      return FileUtil.toCanonicalPath(baseDir.getPath() + "/" + uri);
+    }
+
+    return null;
   }
 }

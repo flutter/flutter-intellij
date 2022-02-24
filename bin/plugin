@@ -1,5 +1,5 @@
 #!/bin/bash
 
-# TODO(devoncarew): Warn if tool/plugin/.packages does not exist.
+# TODO: Warn if 'pub get' needs to be done.
 
 dart tool/plugin/bin/main.dart "$@"

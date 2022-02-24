@@ -173,7 +173,7 @@ public class FlutterInitializer implements StartupActivity {
     // Watch save actions for format on save.
     FlutterSaveActionsManager.init(project);
 
-    // Start watching for project structure and .packages file changes.
+    // Start watching for project structure changes.
     final FlutterPluginsLibraryManager libraryManager = new FlutterPluginsLibraryManager(project);
     libraryManager.startWatching();
 

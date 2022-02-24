@@ -467,7 +467,7 @@ public class FlutterSdk {
     if (module == null) return null;
     // Ensure pubspec is saved.
     FileDocumentManager.getInstance().saveAllDocuments();
-    // Refresh afterwards to ensure Dart Plugin sees .packages and doesn't mistakenly nag to run pub.
+    // Refresh afterwards to ensure Dart Plugin doesn't mistakenly nag to run pub.
     return flutterPackagesGet(root).startInModuleConsole(module, root::refresh, null);
   }
 

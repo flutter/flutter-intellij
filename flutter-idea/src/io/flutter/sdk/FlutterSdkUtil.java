@@ -254,7 +254,7 @@ public class FlutterSdkUtil {
   }
 
   /**
-   * Parse any .packages file and infer the location of the Flutter SDK from that.
+   * Parse packages meta-data file and infer the location of the Flutter SDK from that.
    */
   @Nullable
   public static String guessFlutterSdkFromPackagesFile(@NotNull Module module) {
