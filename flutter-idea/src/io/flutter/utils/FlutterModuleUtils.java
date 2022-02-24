@@ -10,6 +10,7 @@ import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.facet.Facet;
 import com.intellij.facet.FacetManager;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.*;
@@ -21,6 +22,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.serviceContainer.AlreadyDisposedException;
 import com.intellij.ui.EditorNotifications;
 import com.intellij.util.PlatformUtils;
+import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterBuildActionGroup;
@@ -262,7 +264,7 @@ public class FlutterModuleUtils {
   }
 
   /**
-   * If no files are open, show lib/main.dart for the given PubRoot.
+   * If no files are open, or just the readme, show lib/main.dart for the given PubRoot.
    */
   public static void autoShowMain(@NotNull Project project, @NotNull PubRoot root) {
     if (project.isDisposed()) return;
@@ -272,9 +274,20 @@ public class FlutterModuleUtils {
 
     DumbService.getInstance(project).runWhenSmart(() -> {
       final FileEditorManager manager = FileEditorManager.getInstance(project);
-      if (manager.getAllEditors().length == 0) {
-        manager.openFile(main, true);
+      FileEditor[] editors = manager.getAllEditors();
+      if (editors.length > 1) {
+        return;
       }
+      for (FileEditor editor : editors) {
+        VirtualFile file = editor.getFile();
+        if (file.equals(main)) {
+          return;
+        }
+        if (file.getFileType().equals(DartFileType.INSTANCE)) {
+          return;
+        }
+      }
+      manager.openFile(main, editors.length == 0);
     });
   }
 

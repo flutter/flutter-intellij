@@ -11,11 +11,14 @@ import com.intellij.execution.OutputListener;
 import com.intellij.execution.process.ProcessListener;
 import com.intellij.facet.Facet;
 import com.intellij.facet.FacetManager;
+import com.intellij.ide.projectView.ProjectView;
+import com.intellij.ide.projectView.impl.ProjectViewPane;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.ModifiableModuleModel;
@@ -25,6 +28,7 @@ import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.module.ModuleWithNameAlreadyExists;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.ui.Messages;
@@ -32,6 +36,7 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.ToolWindowId;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
@@ -142,11 +147,20 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     FlutterModuleUtils.autoShowMain(project, root);
-
-    if (!FlutterModuleUtils.hasAndroidModule(project)) {
-      addAndroidModule(project, model, basePath, flutter.getName(), settings.getType() == FlutterProjectType.MODULE);
-    }
+    showProjectInProjectWindow(project);
     return flutter;
+  }
+
+  private void showProjectInProjectWindow(@NotNull Project project) {
+    ApplicationManager.getApplication().invokeLater(() -> {
+      DumbService.getInstance(project).runWhenSmart(() -> {
+        ApplicationManager.getApplication().invokeLater(() -> {
+          ProjectView view = ProjectView.getInstance(project);
+          if (view == null) return;
+          view.changeView(ProjectViewPane.ID);
+        });
+      });
+    });
   }
 
   private String validateSettings(FlutterCreateAdditionalSettings settings) {
@@ -168,7 +182,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return AndroidUtils.validateAndroidPackageName(org);
   }
 
-  private static void addAndroidModule(@NotNull Project project,
+  public static void addAndroidModule(@NotNull Project project,
                                        @Nullable ModifiableModuleModel model,
                                        @NotNull String baseDirPath,
                                        @NotNull String flutterModuleName,
@@ -197,7 +211,9 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       model.loadModule(androidFile.getPath());
 
       if (toCommit != null) {
-        WriteAction.run(toCommit::commit);
+        ApplicationManager.getApplication().invokeLater(() -> {
+          WriteAction.run(toCommit::commit);
+        });
       }
     }
     catch (ModuleWithNameAlreadyExists | IOException e) {

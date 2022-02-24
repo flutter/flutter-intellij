@@ -16,6 +16,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -23,12 +24,14 @@ import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupActivity;
+import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.editor.FlutterSaveActionsManager;
 import io.flutter.logging.FlutterConsoleLogManager;
+import io.flutter.module.FlutterModuleBuilder;
 import io.flutter.perf.FlutterWidgetPerfManager;
 import io.flutter.performance.FlutterPerformanceViewFactory;
 import io.flutter.preview.PreviewViewFactory;
@@ -46,6 +49,7 @@ import io.flutter.view.FlutterViewFactory;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.event.HyperlinkEvent;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -118,7 +122,8 @@ public class FlutterInitializer implements StartupActivity {
 
     if (hasFlutterModule || WorkspaceCache.getInstance(project).isBazel()) {
       initializeToolWindows(project);
-    } else {
+    }
+    else {
       project.getMessageBus().connect().subscribe(ProjectTopics.MODULES, new ModuleListener() {
         @Override
         public void moduleAdded(@NotNull Project project, @NotNull Module module) {
@@ -129,7 +134,22 @@ public class FlutterInitializer implements StartupActivity {
       });
     }
 
-    if (hasFlutterModule) {
+    if (hasFlutterModule
+        && PluginManagerCore.getPlugin(PluginId.getId("org.jetbrains.android")) != null
+        && !FlutterModuleUtils.hasAndroidModule(project)) {
+      List<Module> modules = FlutterModuleUtils.findModulesWithFlutterContents(project);
+      for (Module module : modules) {
+        if (module.isDisposed() || !FlutterModuleUtils.isFlutterModule(module)) continue;
+        VirtualFile moduleFile = module.getModuleFile();
+        if (moduleFile == null) continue;
+        VirtualFile baseDir = moduleFile.getParent();
+        if (baseDir.getName().equals(".idea")) {
+          baseDir = baseDir.getParent();
+        }
+        boolean isModule = false;
+        FlutterModuleBuilder.addAndroidModule(project, null, baseDir.getPath(), module.getName(), isModule);
+      }
+
       // Ensure a run config is selected and ready to go.
       FlutterModuleUtils.ensureRunConfigSelected(project);
     }
