@@ -43,9 +43,9 @@ public class FlutterViewTest {
   public void testHandleJxBrowserInstalled() {
     // If JxBrowser has been installed, we should use the DevTools instance to open the embedded browser.
     final FlutterView partialMockFlutterView = mock(FlutterView.class);
-    doCallRealMethod().when(partialMockFlutterView).handleJxBrowserInstalledOrSkipped(mockApp, mockInspectorService, mockToolWindow);
+    doCallRealMethod().when(partialMockFlutterView).handleJxBrowserAvailable(mockApp, mockInspectorService, mockToolWindow);
 
-    partialMockFlutterView.handleJxBrowserInstalledOrSkipped(mockApp, mockInspectorService, mockToolWindow);
+    partialMockFlutterView.handleJxBrowserAvailable(mockApp, mockInspectorService, mockToolWindow);
     verify(partialMockFlutterView, times(1)).openInspectorWithDevTools(mockApp, mockInspectorService, mockToolWindow, true);
     verify(partialMockFlutterView, times(1)).setUpToolWindowListener(mockApp, mockInspectorService, mockToolWindow, true);
   }
@@ -82,12 +82,12 @@ public class FlutterViewTest {
     final FlutterView spy = spy(flutterView);
 
     doNothing().when(spy).presentOpenDevToolsOptionWithMessage(any(), any(), any(), any());
-    doNothing().when(spy).handleJxBrowserInstalledOrSkipped(any(), any(), any());
+    doNothing().when(spy).handleJxBrowserAvailable(any(), any(), any());
 
     spy.handleJxBrowserInstallationInProgress(mockApp, mockInspectorService, mockToolWindow);
     verify(spy, times(1))
       .presentOpenDevToolsOptionWithMessage(mockApp, mockInspectorService, mockToolWindow, INSTALLATION_IN_PROGRESS_LABEL);
-    verify(spy, times(1)).handleJxBrowserInstalledOrSkipped(mockApp, mockInspectorService, mockToolWindow);
+    verify(spy, times(1)).handleJxBrowserAvailable(mockApp, mockInspectorService, mockToolWindow);
   }
 
   @Test
@@ -158,7 +158,7 @@ public class FlutterViewTest {
     doCallRealMethod().when(partialMockFlutterView)
       .handleUpdatedJxBrowserStatus(mockApp, mockInspectorService, mockToolWindow, JxBrowserStatus.INSTALLED);
     partialMockFlutterView.handleUpdatedJxBrowserStatus(mockApp, mockInspectorService, mockToolWindow, JxBrowserStatus.INSTALLED);
-    verify(partialMockFlutterView, times(1)).handleJxBrowserInstalledOrSkipped(mockApp, mockInspectorService, mockToolWindow);
+    verify(partialMockFlutterView, times(1)).handleJxBrowserAvailable(mockApp, mockInspectorService, mockToolWindow);
   }
 
   @Test

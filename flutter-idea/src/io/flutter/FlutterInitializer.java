@@ -87,7 +87,6 @@ public class FlutterInitializer implements StartupActivity {
     DeviceService.getInstance(project);
 
     // Start a DevTools server
-    System.out.println(" Start a DevTools server");
     DevToolsService.getInstance(project);
 
     // If the project declares a Flutter dependency, do some extra initialization.

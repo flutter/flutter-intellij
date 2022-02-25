@@ -205,7 +205,7 @@ public class JxBrowserManager {
   }
 
   public void setUp(@NotNull Project project) {
-    if (JBCefApp.isSupported()) {
+    if (jxBrowserUtils.skipInstallation()) {
       status.set(JxBrowserStatus.INSTALLATION_SKIPPED);
       return;
     }

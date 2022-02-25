@@ -6,6 +6,7 @@
 package io.flutter.utils;
 
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.ui.jcef.JBCefApp;
 import org.jetbrains.annotations.NotNull;
 // import com.intellij.util.system.CpuArch;
 
@@ -81,5 +82,9 @@ public class JxBrowserUtils {
 
   public boolean licenseIsSet() {
     return System.getProperty(JxBrowserUtils.LICENSE_PROPERTY_NAME) != null;
+  }
+
+  public boolean skipInstallation() {
+    return JBCefApp.isSupported();
   }
 }

@@ -35,6 +35,7 @@ public class JxBrowserManagerTest {
   @Test
   public void testSetUpIfKeyNotFound() throws FileNotFoundException {
     final JxBrowserUtils mockUtils = mock(JxBrowserUtils.class);
+    when(mockUtils.skipInstallation()).thenReturn(false);
     when(mockUtils.getJxBrowserKey()).thenThrow(new FileNotFoundException("Key not found"));
 
     // If the directory for JxBrowser files cannot be created, the installation should fail.
@@ -47,6 +48,7 @@ public class JxBrowserManagerTest {
   @Test
   public void testSetUpIfDirectoryFails() throws FileNotFoundException {
     final JxBrowserUtils mockUtils = mock(JxBrowserUtils.class);
+    when(mockUtils.skipInstallation()).thenReturn(false);
     when(mockUtils.getJxBrowserKey()).thenReturn("KEY");
 
     final FileUtils mockFileUtils = mock(FileUtils.class);
@@ -62,6 +64,7 @@ public class JxBrowserManagerTest {
   @Test
   public void testSetUpIfPlatformFileNotFound() throws FileNotFoundException {
     final JxBrowserUtils mockUtils = mock(JxBrowserUtils.class);
+    when(mockUtils.skipInstallation()).thenReturn(false);
     when(mockUtils.getJxBrowserKey()).thenReturn("KEY");
     when(mockUtils.getPlatformFileName()).thenThrow(new FileNotFoundException());
 
@@ -78,6 +81,7 @@ public class JxBrowserManagerTest {
   @Test
   public void testSetUpIfAllFilesExist() throws FileNotFoundException {
     final JxBrowserUtils mockUtils = mock(JxBrowserUtils.class);
+    when(mockUtils.skipInstallation()).thenReturn(false);
     when(mockUtils.getJxBrowserKey()).thenReturn("KEY");
     when(mockUtils.getPlatformFileName()).thenReturn(PLATFORM_FILE_NAME);
     when(mockUtils.getApiFileName()).thenReturn(API_FILE_NAME);
@@ -99,6 +103,7 @@ public class JxBrowserManagerTest {
   public void testSetUpIfFilesMissing() throws FileNotFoundException {
     System.out.println("in testSetUpIfFilesMissing");
     final JxBrowserUtils mockUtils = mock(JxBrowserUtils.class);
+    when(mockUtils.skipInstallation()).thenReturn(false);
     when(mockUtils.getJxBrowserKey()).thenReturn("KEY");
     when(mockUtils.getPlatformFileName()).thenReturn(PLATFORM_FILE_NAME);
     when(mockUtils.getApiFileName()).thenReturn(API_FILE_NAME);
