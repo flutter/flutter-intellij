@@ -1,3 +1,18 @@
+# 65.0
+- Change .packages file use to package config file (#5993)
+- Add Android module when opening any project (#5991)
+- Update JxBrowser to 7.22 (#5990)
+- Use time zone in survey calculation (#5976)
+- Fix return type of createState in macros (#5963)
+- Log perf dispose NPEs (#5975)
+- Build for 2022.1 EAP (#5973)
+- Remove old bazel test file mapping code (#5974)
+- Use VM for mapping breakpoint files during app run (#5947)
+- Update for 64.1 (#5958)
+- Try SIGINT first for all processes (#5950)
+- Open AS 2021.x (#5951)
+- Build for canary (Dolphin) (#5937)
+
 # 64.1
 - Try SIGINT before SIGKILL for processes (#5950)
 
