@@ -45,6 +45,22 @@
 
   <change-notes>
     <![CDATA[
+<h1>65.0</h1>
+<ul>
+  <li>Change .packages file use to package config file (#5993)</li>
+  <li>Add Android module when opening any project (#5991)</li>
+  <li>Update JxBrowser to 7.22 (#5990)</li>
+  <li>Use time zone in survey calculation (#5976)</li>
+  <li>Fix return type of createState in macros (#5963)</li>
+  <li>Log perf dispose NPEs (#5975)</li>
+  <li>Build for 2022.1 EAP (#5973)</li>
+  <li>Remove old bazel test file mapping code (#5974)</li>
+  <li>Use VM for mapping breakpoint files during app run (#5947)</li>
+  <li>Update for 64.1 (#5958)</li>
+  <li>Try SIGINT first for all processes (#5950)</li>
+  <li>Open AS 2021.x (#5951)</li>
+  <li>Build for canary (Dolphin) (#5937)</li>
+</ul>
 <h1>64.1</h1>
 <ul>
   <li>Try SIGINT before SIGKILL for processes (#5950)</li>
