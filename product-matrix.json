@@ -42,7 +42,7 @@
       "name": "2021.3",
       "version": "2021.3",
       "isUnitTestTarget": "true",
-      "ideaProduct": "ideaIC",
+      "ideaProduct": "android-studio",
       "ideaVersion": "2021.3.1.1",
       "baseVersion": "213.5744.223",
       "dartPluginVersion": "213.5744.122",
