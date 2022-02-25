@@ -22,11 +22,10 @@ import java.awt.Dimension;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class EmbeddedJcefBrowser implements EmbeddedBrowser {
+public class EmbeddedJcefBrowser extends EmbeddedBrowser {
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
 
   private JBCefBrowser browser;
-  private CompletableFuture<DevToolsUrl> devToolsUrlFuture;
 
   @NotNull
   public static EmbeddedJcefBrowser getInstance(Project project) {
@@ -38,7 +37,10 @@ public class EmbeddedJcefBrowser implements EmbeddedBrowser {
     resetUrl();
   }
 
-  @Override
+  public Logger logger() {
+    return LOG;
+  }
+
   public void resetUrl() {
     if (devToolsUrlFuture != null && !devToolsUrlFuture.isDone()) {
       devToolsUrlFuture.complete(null);
@@ -47,7 +49,6 @@ public class EmbeddedJcefBrowser implements EmbeddedBrowser {
 
   }
 
-  @Override
   public void openPanel(ContentManager contentManager, String tabName, DevToolsUrl devToolsUrl, Runnable onBrowserUnavailable) {
     // If the browser failed to start during setup, run unavailable callback.
     if (browser == null) {
@@ -85,18 +86,8 @@ public class EmbeddedJcefBrowser implements EmbeddedBrowser {
     contentManager.addContent(content);
   }
 
-  @Override
-  public void updatePanelToWidget(String widgetId) {
-
+  public void navigateToUrl(String url) {
+    browser.loadURL(url);
   }
 
-  @Override
-  public void updateColor(String newColor) {
-
-  }
-
-  @Override
-  public void updateFontSize(float newFontSize) {
-
-  }
 }

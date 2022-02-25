@@ -325,7 +325,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       return Optional.empty();
     }
 
-    return Optional.of(JBCefApp.isSupported() ? EmbeddedJcefBrowser.getInstance(myProject) : EmbeddedJxBrowser.getInstance(myProject));
+    return Optional.ofNullable(FlutterUtils.embeddedBrowser(myProject));
   }
 
   private void addInspectorViewContent(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
@@ -708,7 +708,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
       final JPanel panel = new JPanel(new BorderLayout());
       panel.add(label, BorderLayout.CENTER);
-      panel.setBackground(Color.CYAN);
       final Content content = contentManager.getFactory().createContent(panel, null, false);
       contentManager.addContent(content);
     });

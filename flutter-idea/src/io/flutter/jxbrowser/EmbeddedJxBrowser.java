@@ -29,16 +29,14 @@ import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.settings.FlutterSettings;
-import io.flutter.utils.AsyncUtils;
 import io.flutter.view.EmbeddedBrowser;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Dimension;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
-public class EmbeddedJxBrowser implements EmbeddedBrowser {
+public class EmbeddedJxBrowser extends EmbeddedBrowser {
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
 
   @NotNull
@@ -47,7 +45,6 @@ public class EmbeddedJxBrowser implements EmbeddedBrowser {
   }
 
   private Browser browser;
-  private CompletableFuture<DevToolsUrl> devToolsUrlFuture;
 
   private EmbeddedJxBrowser(Project project) {
     System.setProperty("jxbrowser.force.dpi.awareness", "1.0");
@@ -87,10 +84,13 @@ public class EmbeddedJxBrowser implements EmbeddedBrowser {
     });
   }
 
+  public Logger logger() {
+    return LOG;
+  }
+
   /**
    * This is to clear out a potentially old URL, i.e. a URL from an app that's no longer running.
    */
-  @Override
   public void resetUrl() {
     if (devToolsUrlFuture != null && !devToolsUrlFuture.isDone()) {
       devToolsUrlFuture.complete(null);
@@ -98,7 +98,6 @@ public class EmbeddedJxBrowser implements EmbeddedBrowser {
     this.devToolsUrlFuture = new CompletableFuture<>();
   }
 
-  @Override
   public void openPanel(ContentManager contentManager, String tabName, DevToolsUrl devToolsUrl, Runnable onBrowserUnavailable) {
     // If the browser failed to start during setup, run unavailable callback.
     if (browser == null) {
@@ -150,57 +149,7 @@ public class EmbeddedJxBrowser implements EmbeddedBrowser {
     });
   }
 
-  @Override
-  public void updatePanelToWidget(String widgetId) {
-    updateUrlAndReload(devToolsUrl -> {
-      devToolsUrl.widgetId = widgetId;
-      return devToolsUrl;
-    });
-  }
-
-  @Override
-  public void updateColor(String newColor) {
-    updateUrlAndReload(devToolsUrl -> {
-      if (devToolsUrl.colorHexCode.equals(newColor)) {
-        return null;
-      }
-      devToolsUrl.colorHexCode = newColor;
-      return devToolsUrl;
-    });
-  }
-
-  @Override
-  public void updateFontSize(float newFontSize) {
-    updateUrlAndReload(devToolsUrl -> {
-      if (devToolsUrl.fontSize.equals(newFontSize)) {
-        return null;
-      }
-      devToolsUrl.fontSize = newFontSize;
-      return devToolsUrl;
-    });
-  }
-
-  private void updateUrlAndReload(Function<DevToolsUrl, DevToolsUrl> newDevToolsUrlFn) {
-    final CompletableFuture<DevToolsUrl> updatedUrlFuture = devToolsUrlFuture.thenApply(devToolsUrl -> {
-      if (devToolsUrl == null) {
-        // This happens if URL has already been reset (e.g. new app has started). In this case [openPanel] should be called again instead of
-        // modifying the URL.
-        return null;
-      }
-      return newDevToolsUrlFn.apply(devToolsUrl);
-    });
-
-    AsyncUtils.whenCompleteUiThread(updatedUrlFuture, (devToolsUrl, ex) -> {
-      if (ex != null) {
-        LOG.info(ex);
-        FlutterInitializer.getAnalytics().sendExpectedException("jxbrowser-update", ex);
-        return;
-      }
-      if (devToolsUrl == null) {
-        // Reload is no longer needed - either URL has been reset or there has been no change.
-        return;
-      }
-      browser.navigation().loadUrl(devToolsUrl.getUrlString());
-    });
+  public void navigateToUrl(String url) {
+    browser.navigation().loadUrl(url);
   }
 }
