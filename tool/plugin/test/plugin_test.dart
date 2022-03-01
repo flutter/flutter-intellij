@@ -48,6 +48,7 @@ void main() {
               'android-studio',
               'android-studio',
               'ideaIC',
+              'ideaIC',
             ]));
       });
     });
@@ -65,6 +66,7 @@ void main() {
               'android-studio',
               'android-studio',
               'ideaIC',
+              'ideaIC',
             ]));
       });
     });
@@ -81,6 +83,7 @@ void main() {
               'android-studio',
               'android-studio',
               'android-studio',
+              'ideaIC',
               'ideaIC',
             ]));
       });
@@ -155,7 +158,7 @@ void main() {
       await runner.run(["--release=19", "-d../..", "deploy"]).whenComplete(() {
         cmd = (runner.commands['deploy'] as TestDeployCommand);
       });
-      var specs = cmd.specs.where((s) => !s.isDevChannel).toList();
+      var specs = cmd.specs.where((s) => s.isStableChannel).toList();
       expect(cmd.paths.length, specs.length);
     });
   });

@@ -60,6 +60,8 @@ class BuildSpec {
 
   bool get isDevChannel => channel == 'dev';
 
+  bool get isStableChannel => channel == 'stable';
+
   bool get isReleaseMode => release != null;
 
   bool get isSynthetic => false;
