@@ -40,6 +40,7 @@ file.
     - `flutter pub get`
     - `(cd tool/plugin; flutter pub get)`
     - `bin/plugin test`
+    - `bin/plugin make -csetup -osetup -u` # configures the IDE used to launch the debugger
 * Start IntelliJ
 * In the "Project Structure" dialog (`File | Project Structure`):
   - Select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure the JDK
