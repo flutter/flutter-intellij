@@ -303,6 +303,13 @@ class AntBuildCommand extends BuildCommand {
   AntBuildCommand(BuildCommandRunner runner) : super(runner, 'build');
 
   @override
+  Future<int> doit() async {
+    // TODO Convert this to a synonym of 'make'
+    log('Use "make" not "build"');
+    return 1;
+  }
+
+  @override
   Future<int> externalBuildCommand(BuildSpec spec) async {
     var r = await runner.javac2(spec);
     if (r == 0) {
@@ -443,6 +450,9 @@ abstract class BuildCommand extends ProductCommand {
 
   @override
   Future<int> doit() async {
+    if (channel == 'setup') {
+      return 0;
+    }
     if (isReleaseMode) {
       if (argResults['unpack']) {
         separator('Release mode (--release) implies --unpack');
