@@ -887,6 +887,9 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
   @Override
   public void onAppStarted(DaemonEvent.AppStarted started) {
     app.changeState(FlutterApp.State.STARTED);
+    if (app.getConsole() instanceof DaemonConsoleView) {
+      ((DaemonConsoleView)app.getConsole()).maybeSendErrorsToAnalytics();
+    }
   }
 
   @Override

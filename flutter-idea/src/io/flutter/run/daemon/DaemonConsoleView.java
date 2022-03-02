@@ -18,6 +18,9 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.GlobalSearchScopes;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
+import io.flutter.FlutterInitializer;
+import io.flutter.analytics.Analytics;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
 import org.jetbrains.annotations.NotNull;
@@ -27,6 +30,8 @@ import org.jetbrains.annotations.NotNull;
  */
 public class DaemonConsoleView extends ConsoleViewImpl {
   private static final Logger LOG = Logger.getInstance(DaemonConsoleView.class);
+  private boolean sendErrorsToAnalytics = false;
+  private final Analytics analytics = FlutterInitializer.getAnalytics();
 
   /**
    * Sets up a launcher to use a DaemonConsoleView.
@@ -67,12 +72,19 @@ public class DaemonConsoleView extends ConsoleViewImpl {
     if (contentType != ConsoleViewContentType.NORMAL_OUTPUT) {
       writeAvailableLines();
 
+      if (sendErrorsToAnalytics && text.length() > 0) {
+        analytics.sendEvent("potential-disconnect", text);
+      }
       super.print(text, contentType);
     }
     else {
       stdoutParser.appendOutput(text);
       writeAvailableLines();
     }
+  }
+
+  public void maybeSendErrorsToAnalytics() {
+    this.sendErrorsToAnalytics = WorkspaceCache.getInstance(getProject()).isBazel();
   }
 
   private void writeAvailableLines() {
