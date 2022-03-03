@@ -92,8 +92,7 @@ public class Element {
     int size = array.size();
     List<String> result = new ArrayList<>();
     for (int index = 0; index < size; ++index) {
-      final JsonElement elem = array.get(index);
-      result.add(elem == JsonNull.INSTANCE ? null : elem.getAsString());
+      result.add(array.get(index).getAsString());
     }
     return result;
   }
