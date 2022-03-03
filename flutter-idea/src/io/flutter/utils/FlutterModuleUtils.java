@@ -344,11 +344,7 @@ public class FlutterModuleUtils {
     String moduleName = project.getName() + "_android";
     for (Module module : FlutterModuleUtils.getModules(project)) {
       if (moduleName.equals(module.getName())) {
-        for (Facet<?> facet : FacetManager.getInstance(module).getAllFacets()) {
-          if ("Android".equals(facet.getName())) {
-            return true;
-          }
-        }
+        return true;
       }
     }
     return false;
