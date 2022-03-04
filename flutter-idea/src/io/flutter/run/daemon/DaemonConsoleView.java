@@ -30,7 +30,6 @@ import org.jetbrains.annotations.NotNull;
  */
 public class DaemonConsoleView extends ConsoleViewImpl {
   private static final Logger LOG = Logger.getInstance(DaemonConsoleView.class);
-  private boolean sendErrorsToAnalytics = false;
   private final Analytics analytics = FlutterInitializer.getAnalytics();
 
   /**
@@ -72,7 +71,9 @@ public class DaemonConsoleView extends ConsoleViewImpl {
     if (contentType != ConsoleViewContentType.NORMAL_OUTPUT) {
       writeAvailableLines();
 
-      if (sendErrorsToAnalytics && text.length() > 0) {
+      // TODO(helin24): We want to log only disconnection messages, but we aren't sure what those are yet.
+      // Until then, only log error messages for internal users.
+      if (WorkspaceCache.getInstance(getProject()).isBazel() && contentType.equals(ConsoleViewContentType.ERROR_OUTPUT) && text.length() > 0) {
         analytics.sendEvent("potential-disconnect", text);
       }
       super.print(text, contentType);
@@ -81,10 +82,6 @@ public class DaemonConsoleView extends ConsoleViewImpl {
       stdoutParser.appendOutput(text);
       writeAvailableLines();
     }
-  }
-
-  public void maybeSendErrorsToAnalytics() {
-    this.sendErrorsToAnalytics = WorkspaceCache.getInstance(getProject()).isBazel();
   }
 
   private void writeAvailableLines() {
