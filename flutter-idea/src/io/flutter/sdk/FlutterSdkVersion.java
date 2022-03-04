@@ -62,6 +62,12 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   private static final FlutterSdkVersion MIN_OPTIONAL_PASS_DEVTOOLS_SDK = new FlutterSdkVersion("2.7.0-3.0.pre");
 
   /**
+   * Past this version we want to use the daemon to start DevTools.
+   */
+  @NotNull
+  private static final FlutterSdkVersion MIN_USE_DAEMON_FOR_DEVTOOLS = new FlutterSdkVersion("1.26.0-11.0.pre");
+
+  /**
    * The version that includes the skeleton template.
    */
   private static final FlutterSdkVersion MIN_SKELETON_TEMPLATE = new FlutterSdkVersion("2.5.0");
@@ -168,6 +174,10 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   public boolean flutterRunSupportsDevToolsUrl() {
     return version != null && this.compareTo(MIN_PASS_DEVTOOLS_SDK) >= 0 && this.compareTo(MIN_OPTIONAL_PASS_DEVTOOLS_SDK) < 0;
+  }
+
+  public boolean useDaemonForDevTools() {
+    return version != null && this.compareTo(MIN_PASS_DEVTOOLS_SDK) >= 0;
   }
 
   public boolean flutterTestSupportsMachineMode() {

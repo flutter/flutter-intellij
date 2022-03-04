@@ -105,7 +105,7 @@ public class DevToolsService {
   private void startServer() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-      if (WorkspaceCache.getInstance(project).isBazel() || (sdk != null && sdk.getVersion().flutterRunSupportsDevToolsUrl())) {
+      if (WorkspaceCache.getInstance(project).isBazel() || (sdk != null && sdk.getVersion().useDaemonForDevTools())) {
         setUpWithDaemon();
       }
       else {
