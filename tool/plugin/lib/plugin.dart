@@ -450,9 +450,6 @@ abstract class BuildCommand extends ProductCommand {
 
   @override
   Future<int> doit() async {
-    if (channel == 'setup') {
-      return 0;
-    }
     if (isReleaseMode) {
       if (argResults['unpack']) {
         separator('Release mode (--release) implies --unpack');
@@ -502,6 +499,9 @@ abstract class BuildCommand extends ProductCommand {
       );
       if (result != 0) {
         return result;
+      }
+      if (channel == 'setup') {
+        return 0;
       }
 
       separator('Building flutter-intellij.jar');
