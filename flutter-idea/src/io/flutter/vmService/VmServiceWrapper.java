@@ -2,6 +2,7 @@ package io.flutter.vmService;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gson.JsonObject;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
@@ -35,6 +36,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.AddBreakpointWithScriptUriConsumer;
 import org.dartlang.vm.service.consumer.EvaluateConsumer;
@@ -47,6 +52,7 @@ import org.dartlang.vm.service.consumer.PauseConsumer;
 import org.dartlang.vm.service.consumer.RemoveBreakpointConsumer;
 import org.dartlang.vm.service.consumer.SetExceptionPauseModeConsumer;
 import org.dartlang.vm.service.consumer.SuccessConsumer;
+import org.dartlang.vm.service.consumer.UriListConsumer;
 import org.dartlang.vm.service.consumer.VMConsumer;
 import org.dartlang.vm.service.element.Breakpoint;
 import org.dartlang.vm.service.element.ElementList;
@@ -69,6 +75,7 @@ import org.dartlang.vm.service.element.Stack;
 import org.dartlang.vm.service.element.StepOption;
 import org.dartlang.vm.service.element.Success;
 import org.dartlang.vm.service.element.UnresolvedSourceLocation;
+import org.dartlang.vm.service.element.UriList;
 import org.dartlang.vm.service.element.VM;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -402,11 +409,12 @@ public class VmServiceWrapper implements Disposable {
                 }
 
                 final ElementList<Breakpoint> breakpoints = response.getBreakpoints();
-                if (breakpoints.isEmpty()) {
+                if (breakpoints.isEmpty() && canonicalBreakpoints.isEmpty()) {
                   return;
                 }
 
                 final Set<CanonicalBreakpoint> mappedCanonicalBreakpoints = new HashSet<>();
+                assert breakpoints != null;
                 for (Breakpoint breakpoint : breakpoints) {
                   Object location = breakpoint.getLocation();
                   // In JIT mode, locations will be unresolved at this time since files aren't compiled until they are used.
@@ -435,6 +443,7 @@ public class VmServiceWrapper implements Disposable {
 
                 analytics.sendEventMetric(category, "unmapped-count", finalDifference.size());
 
+                // TODO(helin24): Get rid of this and instead track unmapped files in addBreakpoint?
                 // For internal bazel projects, report files where mapping failed.
                 if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
                   for (CanonicalBreakpoint canonicalBreakpoint : finalDifference) {
@@ -473,43 +482,106 @@ public class VmServiceWrapper implements Disposable {
     addRequest(() -> {
       final int line = position.getLine() + 1;
 
-      final Collection<String> scriptUris = myDebugProcess.getUrisForFile(position.getFile());
+      final String resolvedUri = getResolvedUri(position);
+      final List<String> resolvedUriList = List.of(resolvedUri);
+
       final CanonicalBreakpoint canonicalBreakpoint =
         new CanonicalBreakpoint(position.getFile().getName(), position.getFile().getCanonicalPath(), line);
       canonicalBreakpoints.add(canonicalBreakpoint);
       final List<Breakpoint> breakpointResponses = new ArrayList<>();
       final List<RPCError> errorResponses = new ArrayList<>();
 
-      for (String uri : scriptUris) {
-        myVmService.addBreakpointWithScriptUri(isolateId, uri, line, new AddBreakpointWithScriptUriConsumer() {
-          @Override
-          public void received(Breakpoint response) {
-            breakpointResponses.add(response);
-            breakpointNumbersToCanonicalMap.put(response.getBreakpointNumber(), canonicalBreakpoint);
-
-            checkDone();
+      myVmService.lookupPackageUris(isolateId, resolvedUriList, new UriListConsumer() {
+        @Override
+        public void received(UriList response) {
+          if (myDebugProcess.getSession().getProject().isDisposed()) {
+            return;
           }
 
-          @Override
-          public void received(Sentinel response) {
-            checkDone();
+          final List<String> uris = response.getUris();
+
+          if (uris == null || uris.get(0) == null) {
+            final JsonObject error = new JsonObject();
+            error.addProperty("error", "Breakpoint could not be mapped to package URI");
+            errorResponses.add(new RPCError(error));
+
+            final Analytics analytics = FlutterInitializer.getAnalytics();
+            final String category = "breakpoint";
+
+            // For internal bazel projects, report files where mapping failed.
+            if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
+              if (resolvedUri.contains("google3")) {
+                analytics.sendEvent(category, String.format("no-package-uri|%s", resolvedUri));
+              }
+            }
+
+            consumer.received(breakpointResponses, errorResponses);
+            return;
           }
 
-          @Override
-          public void onError(RPCError error) {
-            errorResponses.add(error);
+          final String scriptUri = uris.get(0);
 
-            checkDone();
-          }
+          myVmService.addBreakpointWithScriptUri(isolateId, scriptUri, line, new AddBreakpointWithScriptUriConsumer() {
+            @Override
+            public void received(Breakpoint response) {
+              breakpointResponses.add(response);
+              breakpointNumbersToCanonicalMap.put(response.getBreakpointNumber(), canonicalBreakpoint);
 
-          private void checkDone() {
-            if (scriptUris.size() == breakpointResponses.size() + errorResponses.size()) {
+              checkDone();
+            }
+
+            @Override
+            public void received(Sentinel response) {
+              checkDone();
+            }
+
+            @Override
+            public void onError(RPCError error) {
+              errorResponses.add(error);
+
+              checkDone();
+            }
+
+            private void checkDone() {
               consumer.received(breakpointResponses, errorResponses);
             }
-          }
-        });
-      }
+          });
+        }
+
+        @Override
+        public void onError(RPCError error) {
+          errorResponses.add(error);
+          consumer.received(breakpointResponses, errorResponses);
+        }
+      });
     });
+  }
+
+  private String getResolvedUri(XSourcePosition position) {
+    final String url = position.getFile().getUrl();
+
+
+    if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
+      final String root = WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).get().getRoot().getPath();
+      final String resolvedUriRoot = "google3:///";
+
+      // Look for a generated file path.
+      final String genFilePattern = root + "/blaze-.*?/(.*)";
+      final Pattern pattern = Pattern.compile(genFilePattern);
+      final Matcher matcher = pattern.matcher(url);
+      if (matcher.find()) {
+        final String path = matcher.group(1);
+        return resolvedUriRoot + path;
+      }
+
+      // Look for root.
+      final int rootIdx = url.indexOf(root);
+      if (rootIdx >= 0) {
+        return resolvedUriRoot + url.substring(rootIdx + root.length() + 1);
+      }
+    }
+
+    return url;
   }
 
   public void addBreakpointForIsolates(@NotNull final XLineBreakpoint<XBreakpointProperties> xBreakpoint,
