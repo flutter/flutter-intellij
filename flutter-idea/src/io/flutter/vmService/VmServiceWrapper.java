@@ -494,6 +494,7 @@ public class VmServiceWrapper implements Disposable {
       myVmService.lookupPackageUris(isolateId, resolvedUriList, new UriListConsumer() {
         @Override
         public void received(UriList response) {
+          LOG.info("in received of lookupPackageUris");
           if (myDebugProcess.getSession().getProject().isDisposed()) {
             return;
           }
@@ -520,10 +521,11 @@ public class VmServiceWrapper implements Disposable {
           }
 
           final String scriptUri = uris.get(0);
-
+          LOG.info("in received of lookupPackageUris. scriptUri: " + scriptUri);
           myVmService.addBreakpointWithScriptUri(isolateId, scriptUri, line, new AddBreakpointWithScriptUriConsumer() {
             @Override
             public void received(Breakpoint response) {
+              LOG.info("in received of addBreakpointWithScriptUri");
               breakpointResponses.add(response);
               breakpointNumbersToCanonicalMap.put(response.getBreakpointNumber(), canonicalBreakpoint);
 
@@ -559,7 +561,7 @@ public class VmServiceWrapper implements Disposable {
 
   private String getResolvedUri(XSourcePosition position) {
     final String url = position.getFile().getUrl();
-
+    LOG.info("in getResolvedUri. url: " + url);
 
     if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
       final String root = WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).get().getRoot().getPath();
