@@ -280,8 +280,7 @@ public class BazelFields {
       commandLine.addParameter("-d");
       commandLine.addParameter(device.deviceId());
 
-      //final String message = workspace.getUpdatedIosRunMessage();
-      final String message = "test message";
+      final String message = workspace.getUpdatedIosRunMessage();
       if (message != null && FlutterSettings.getInstance().isShowBazelIosRunNotification()) {
         final String title = device.isIOS() ? "Running iOS apps has improved!" : "Try running an iOS app!";
         final Notification notification = new Notification(
