@@ -552,6 +552,10 @@ public class VmServiceWrapper implements Disposable {
 
         @Override
         public void onError(RPCError error) {
+          LOG.error(error);
+          LOG.error(error.getMessage());
+          LOG.error(error.getRequest());
+          LOG.error(error.getDetails());
           errorResponses.add(error);
           consumer.received(breakpointResponses, errorResponses);
         }
