@@ -24,6 +24,7 @@ This might require a reboot. Start from the Welcome screen at least once.
 
 * Create a **simple project** (`File > New > Project...`, pick `Flutter`; on Android Studio, `File > New > New Flutter Project...`).
   * (select an `Application` type project)
+  * use a project name that contains a space -- project location must be lowercase_with_underscores
 * Confirm that:
   * Project contents are created.
     * Verify that a run configuration (`main.dart`) is enabled in the run/debug selector.
