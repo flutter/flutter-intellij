@@ -147,7 +147,10 @@ public class FlutterInitializer implements StartupActivity {
           baseDir = baseDir.getParent();
         }
         boolean isModule = false;
-        FlutterModuleBuilder.addAndroidModule(project, null, baseDir.getPath(), module.getName(), isModule);
+        try { // TODO(messick) Rewrite this loop to eliminate the need for this try-catch
+          FlutterModuleBuilder.addAndroidModule(project, null, baseDir.getPath(), module.getName(), isModule);
+        } catch (IllegalStateException ignored) {
+        }
       }
 
       // Ensure a run config is selected and ready to go.

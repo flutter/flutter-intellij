@@ -24,6 +24,7 @@ import com.intellij.ui.EditorNotifications;
 import com.intellij.util.PlatformUtils;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.sdk.DartSdk;
+import com.jetbrains.lang.dart.util.PubspecYamlUtil;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterBuildActionGroup;
 import io.flutter.bazel.Workspace;
@@ -341,13 +342,20 @@ public class FlutterModuleUtils {
   }
 
   public static boolean hasAndroidModule(@NotNull Project project) {
-    String moduleName = project.getName() + "_android";
-    for (Module module : FlutterModuleUtils.getModules(project)) {
-      if (moduleName.equals(module.getName())) {
-        return true;
+    boolean isAllMatch = true;
+    for (PubRoot root : PubRoots.forProject(project)) {
+      assert root != null;
+      String name = PubspecYamlUtil.getDartProjectName(root.getPubspec());
+      String moduleName = name + "_android";
+      boolean isMatch = false;
+      for (Module module : FlutterModuleUtils.getModules(project)) {
+        if (moduleName.equals(module.getName())) {
+          isMatch = true;
+        }
       }
+      isAllMatch = isAllMatch && isMatch;
     }
-    return false;
+    return isAllMatch;
   }
 
   public static boolean isDeprecatedFlutterModuleType(@NotNull Module module) {
