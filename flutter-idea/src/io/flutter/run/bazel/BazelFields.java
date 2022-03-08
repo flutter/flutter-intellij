@@ -282,7 +282,7 @@ public class BazelFields {
 
       //final String message = workspace.getUpdatedIosRunMessage();
       final String message = "test message";
-      if (message != null) {
+      if (message != null && FlutterSettings.getInstance().isShowBazelIosRunNotification()) {
         final String title = device.isIOS() ? "Running iOS apps has improved!" : "Try running an iOS app!";
         final Notification notification = new Notification(
           FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
@@ -290,6 +290,7 @@ public class BazelFields {
           message,
           NotificationType.INFORMATION);
         Notifications.Bus.notify(notification, project);
+        FlutterSettings.getInstance().setShowBazelIosRunNotification(false);
       }
     }
 
