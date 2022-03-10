@@ -500,8 +500,12 @@ public class VmServiceWrapper implements Disposable {
           }
 
           final List<String> uris = response.getUris();
+          if (uris != null) {
+            LOG.info("Number of uris: " + uris.size());
+          }
 
           if (uris == null || uris.get(0) == null) {
+            LOG.info("Uri may be null: "  + uris.get(0));
             final JsonObject error = new JsonObject();
             error.addProperty("error", "Breakpoint could not be mapped to package URI");
             errorResponses.add(new RPCError(error));
