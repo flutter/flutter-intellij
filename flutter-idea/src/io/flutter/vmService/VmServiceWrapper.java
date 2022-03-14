@@ -8,6 +8,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Ref;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.Alarm;
 import com.intellij.util.concurrency.Semaphore;
 import com.intellij.xdebugger.XSourcePosition;
@@ -483,6 +484,7 @@ public class VmServiceWrapper implements Disposable {
       final int line = position.getLine() + 1;
 
       final String resolvedUri = getResolvedUri(position);
+      LOG.info("Computed resolvedUri: " + resolvedUri);
       final List<String> resolvedUriList = List.of(resolvedUri);
 
       final CanonicalBreakpoint canonicalBreakpoint =
@@ -526,6 +528,25 @@ public class VmServiceWrapper implements Disposable {
 
           final String scriptUri = uris.get(0);
           LOG.info("in received of lookupPackageUris. scriptUri: " + scriptUri);
+          myVmService.lookupResolvedPackageUris(isolateId, List.of(scriptUri), new UriListConsumer() {
+            @Override
+            public void received(UriList response) {
+              LOG.info("in received of lookupResolvedPackageUris");
+              final List<String> uris = response.getUris();
+
+              if (uris == null || uris.get(0) == null) {
+                return;
+              }
+
+              LOG.info("ResolvedPackageUri: " + uris.get(0));
+            }
+
+            @Override
+            public void onError(RPCError error) {
+
+            }
+          });
+
           myVmService.addBreakpointWithScriptUri(isolateId, scriptUri, line, new AddBreakpointWithScriptUriConsumer() {
             @Override
             public void received(Breakpoint response) {
@@ -589,6 +610,10 @@ public class VmServiceWrapper implements Disposable {
       if (rootIdx >= 0) {
         return resolvedUriRoot + url.substring(rootIdx + root.length() + 1);
       }
+    }
+
+    if (SystemInfo.isWindows) {
+      return "file://" + url.substring(url.indexOf("C:") + 2);
     }
 
     return url;
