@@ -613,7 +613,8 @@ public class VmServiceWrapper implements Disposable {
     }
 
     if (SystemInfo.isWindows) {
-      return "file://" + url.substring(url.indexOf("C:") + 2);
+      // Dart and the VM service use three /'s in file URIs: https://api.dart.dev/stable/2.16.1/dart-core/Uri-class.html.
+      return url.replace("file://", "file:///");
     }
 
     return url;
