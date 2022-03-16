@@ -2,11 +2,14 @@ package io.flutter.vmService;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gson.JsonObject;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Ref;
+import com.intellij.openapi.util.SystemInfo;
+import com.intellij.openapi.util.Version;
 import com.intellij.util.Alarm;
 import com.intellij.util.concurrency.Semaphore;
 import com.intellij.xdebugger.XSourcePosition;
@@ -21,6 +24,7 @@ import io.flutter.FlutterInitializer;
 import io.flutter.analytics.Analytics;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.sdk.FlutterSdk;
 import io.flutter.vmService.frame.DartAsyncMarkerFrame;
 import io.flutter.vmService.frame.DartVmServiceEvaluator;
 import io.flutter.vmService.frame.DartVmServiceStackFrame;
@@ -35,6 +39,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.AddBreakpointWithScriptUriConsumer;
 import org.dartlang.vm.service.consumer.EvaluateConsumer;
@@ -47,7 +54,9 @@ import org.dartlang.vm.service.consumer.PauseConsumer;
 import org.dartlang.vm.service.consumer.RemoveBreakpointConsumer;
 import org.dartlang.vm.service.consumer.SetExceptionPauseModeConsumer;
 import org.dartlang.vm.service.consumer.SuccessConsumer;
+import org.dartlang.vm.service.consumer.UriListConsumer;
 import org.dartlang.vm.service.consumer.VMConsumer;
+import org.dartlang.vm.service.consumer.VersionConsumer;
 import org.dartlang.vm.service.element.Breakpoint;
 import org.dartlang.vm.service.element.ElementList;
 import org.dartlang.vm.service.element.ErrorRef;
@@ -69,6 +78,7 @@ import org.dartlang.vm.service.element.Stack;
 import org.dartlang.vm.service.element.StepOption;
 import org.dartlang.vm.service.element.Success;
 import org.dartlang.vm.service.element.UnresolvedSourceLocation;
+import org.dartlang.vm.service.element.UriList;
 import org.dartlang.vm.service.element.VM;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -402,11 +412,12 @@ public class VmServiceWrapper implements Disposable {
                 }
 
                 final ElementList<Breakpoint> breakpoints = response.getBreakpoints();
-                if (breakpoints.isEmpty()) {
+                if (breakpoints.isEmpty() && canonicalBreakpoints.isEmpty()) {
                   return;
                 }
 
                 final Set<CanonicalBreakpoint> mappedCanonicalBreakpoints = new HashSet<>();
+                assert breakpoints != null;
                 for (Breakpoint breakpoint : breakpoints) {
                   Object location = breakpoint.getLocation();
                   // In JIT mode, locations will be unresolved at this time since files aren't compiled until they are used.
@@ -435,6 +446,7 @@ public class VmServiceWrapper implements Disposable {
 
                 analytics.sendEventMetric(category, "unmapped-count", finalDifference.size());
 
+                // TODO(helin24): Get rid of this and instead track unmapped files in addBreakpoint?
                 // For internal bazel projects, report files where mapping failed.
                 if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
                   for (CanonicalBreakpoint canonicalBreakpoint : finalDifference) {
@@ -465,6 +477,29 @@ public class VmServiceWrapper implements Disposable {
   public void addBreakpoint(@NotNull final String isolateId,
                             @Nullable final XSourcePosition position,
                             @NotNull final VmServiceConsumers.BreakpointsConsumer consumer) {
+    myVmService.getVersion(new VersionConsumer() {
+      @Override
+      public void received(org.dartlang.vm.service.element.Version response) {
+        assert response != null;
+        final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myDebugProcess.getSession().getProject());
+        if (VmServiceVersion.hasMapping(response) && sdk.getVersion().isUriMappingSupportedForWeb()) {
+          addBreakpointWithVmService(isolateId, position, consumer);
+        } else {
+          addBreakpointWithMapper(isolateId, position, consumer);
+        }
+      }
+
+      @Override
+      public void onError(RPCError error) {
+        addBreakpointWithMapper(isolateId, position, consumer);
+      }
+    });
+  }
+
+  // This is the old way of mapping breakpoints, which uses analyzer.
+  public void addBreakpointWithMapper(@NotNull final String isolateId,
+                                      @Nullable final XSourcePosition position,
+                                      @NotNull final VmServiceConsumers.BreakpointsConsumer consumer) {
     if (position == null || position.getFile().getFileType() != DartFileType.INSTANCE) {
       consumer.sourcePositionNotApplicable();
       return;
@@ -510,6 +545,131 @@ public class VmServiceWrapper implements Disposable {
         });
       }
     });
+  }
+
+  public void addBreakpointWithVmService(@NotNull final String isolateId,
+                                         @Nullable final XSourcePosition position,
+                                         @NotNull final VmServiceConsumers.BreakpointsConsumer consumer) {
+    if (position == null || position.getFile().getFileType() != DartFileType.INSTANCE) {
+      consumer.sourcePositionNotApplicable();
+      return;
+    }
+
+    addRequest(() -> {
+      final int line = position.getLine() + 1;
+
+      final String resolvedUri = getResolvedUri(position);
+      LOG.info("Computed resolvedUri: " + resolvedUri);
+      final List<String> resolvedUriList = List.of(resolvedUri);
+
+      final CanonicalBreakpoint canonicalBreakpoint =
+        new CanonicalBreakpoint(position.getFile().getName(), position.getFile().getCanonicalPath(), line);
+      canonicalBreakpoints.add(canonicalBreakpoint);
+      final List<Breakpoint> breakpointResponses = new ArrayList<>();
+      final List<RPCError> errorResponses = new ArrayList<>();
+
+      myVmService.lookupPackageUris(isolateId, resolvedUriList, new UriListConsumer() {
+        @Override
+        public void received(UriList response) {
+          LOG.info("in received of lookupPackageUris");
+          if (myDebugProcess.getSession().getProject().isDisposed()) {
+            return;
+          }
+
+          final List<String> uris = response.getUris();
+
+          if (uris == null || uris.get(0) == null) {
+            LOG.info("Uri was not found");
+            final JsonObject error = new JsonObject();
+            error.addProperty("error", "Breakpoint could not be mapped to package URI");
+            errorResponses.add(new RPCError(error));
+
+            final Analytics analytics = FlutterInitializer.getAnalytics();
+            final String category = "breakpoint";
+
+            // For internal bazel projects, report files where mapping failed.
+            if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
+              if (resolvedUri.contains("google3")) {
+                analytics.sendEvent(category, String.format("no-package-uri|%s", resolvedUri));
+              }
+            }
+
+            consumer.received(breakpointResponses, errorResponses);
+            return;
+          }
+
+          final String scriptUri = uris.get(0);
+          LOG.info("in received of lookupPackageUris. scriptUri: " + scriptUri);
+          myVmService.addBreakpointWithScriptUri(isolateId, scriptUri, line, new AddBreakpointWithScriptUriConsumer() {
+            @Override
+            public void received(Breakpoint response) {
+              breakpointResponses.add(response);
+              breakpointNumbersToCanonicalMap.put(response.getBreakpointNumber(), canonicalBreakpoint);
+
+              checkDone();
+            }
+
+            @Override
+            public void received(Sentinel response) {
+              checkDone();
+            }
+
+            @Override
+            public void onError(RPCError error) {
+              errorResponses.add(error);
+
+              checkDone();
+            }
+
+            private void checkDone() {
+              consumer.received(breakpointResponses, errorResponses);
+            }
+          });
+        }
+
+        @Override
+        public void onError(RPCError error) {
+          LOG.error(error);
+          LOG.error(error.getMessage());
+          LOG.error(error.getRequest());
+          LOG.error(error.getDetails());
+          errorResponses.add(error);
+          consumer.received(breakpointResponses, errorResponses);
+        }
+      });
+    });
+  }
+
+  private String getResolvedUri(XSourcePosition position) {
+    final String url = position.getFile().getUrl();
+    LOG.info("in getResolvedUri. url: " + url);
+
+    if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
+      final String root = WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).get().getRoot().getPath();
+      final String resolvedUriRoot = "google3:///";
+
+      // Look for a generated file path.
+      final String genFilePattern = root + "/blaze-.*?/(.*)";
+      final Pattern pattern = Pattern.compile(genFilePattern);
+      final Matcher matcher = pattern.matcher(url);
+      if (matcher.find()) {
+        final String path = matcher.group(1);
+        return resolvedUriRoot + path;
+      }
+
+      // Look for root.
+      final int rootIdx = url.indexOf(root);
+      if (rootIdx >= 0) {
+        return resolvedUriRoot + url.substring(rootIdx + root.length() + 1);
+      }
+    }
+
+    if (SystemInfo.isWindows) {
+      // Dart and the VM service use three /'s in file URIs: https://api.dart.dev/stable/2.16.1/dart-core/Uri-class.html.
+      return url.replace("file://", "file:///");
+    }
+
+    return url;
   }
 
   public void addBreakpointForIsolates(@NotNull final XLineBreakpoint<XBreakpointProperties> xBreakpoint,
@@ -825,5 +985,15 @@ class CanonicalBreakpoint {
     this.fileName = name;
     this.path = path;
     this.line = line;
+  }
+}
+
+class VmServiceVersion {
+  // VM service protocol versions: https://github.com/dart-lang/sdk/blob/master/runtime/vm/service/service.md#revision-history.
+  private static Version URI_MAPPING_VERSION = new Version(3, 52, 0);
+
+  public static boolean hasMapping(org.dartlang.vm.service.element.Version version) {
+    assert version != null;
+    return (new Version(version.getMajor(), version.getMinor(), 0)).isOrGreaterThan(URI_MAPPING_VERSION.major, URI_MAPPING_VERSION.minor);
   }
 }
