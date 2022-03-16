@@ -72,6 +72,13 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
    */
   private static final FlutterSdkVersion MIN_SKELETON_TEMPLATE = new FlutterSdkVersion("2.5.0");
 
+  /**
+   * The version that implements URI mapping for web.
+   * TODO(helin24): Find correct version.
+   */
+  @NotNull
+  private static final FlutterSdkVersion MIN_URI_MAPPING_FOR_WEB = new FlutterSdkVersion("2.5.0");
+
   @Nullable
   private final Version version;
   @Nullable
@@ -195,6 +202,10 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   public boolean isSkeletonTemplateAvailable() {
     return version != null && version.compareTo(MIN_SKELETON_TEMPLATE.version) >= 0;
+  }
+
+  public boolean isUriMappingSupportedForWeb() {
+    return version != null && this.compareTo(MIN_URI_MAPPING_FOR_WEB) >= 0;
   }
 
   public boolean isValid() {
