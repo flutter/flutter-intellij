@@ -475,8 +475,8 @@ public class VmServiceWrapper implements Disposable {
   }
 
   public void addBreakpoint(@NotNull final String isolateId,
-                               @Nullable final XSourcePosition position,
-                               @NotNull final VmServiceConsumers.BreakpointsConsumer consumer) {
+                            @Nullable final XSourcePosition position,
+                            @NotNull final VmServiceConsumers.BreakpointsConsumer consumer) {
     myVmService.getVersion(new VersionConsumer() {
       @Override
       public void received(org.dartlang.vm.service.element.Version response) {
