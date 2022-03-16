@@ -577,12 +577,9 @@ public class VmServiceWrapper implements Disposable {
           }
 
           final List<String> uris = response.getUris();
-          if (uris != null) {
-            LOG.info("Number of uris: " + uris.size());
-          }
 
           if (uris == null || uris.get(0) == null) {
-            LOG.info("Uri may be null: "  + uris.get(0));
+            LOG.info("Uri was not found");
             final JsonObject error = new JsonObject();
             error.addProperty("error", "Breakpoint could not be mapped to package URI");
             errorResponses.add(new RPCError(error));
@@ -603,29 +600,9 @@ public class VmServiceWrapper implements Disposable {
 
           final String scriptUri = uris.get(0);
           LOG.info("in received of lookupPackageUris. scriptUri: " + scriptUri);
-          myVmService.lookupResolvedPackageUris(isolateId, List.of(scriptUri), new UriListConsumer() {
-            @Override
-            public void received(UriList response) {
-              LOG.info("in received of lookupResolvedPackageUris");
-              final List<String> uris = response.getUris();
-
-              if (uris == null || uris.get(0) == null) {
-                return;
-              }
-
-              LOG.info("ResolvedPackageUri: " + uris.get(0));
-            }
-
-            @Override
-            public void onError(RPCError error) {
-
-            }
-          });
-
           myVmService.addBreakpointWithScriptUri(isolateId, scriptUri, line, new AddBreakpointWithScriptUriConsumer() {
             @Override
             public void received(Breakpoint response) {
-              LOG.info("in received of addBreakpointWithScriptUri");
               breakpointResponses.add(response);
               breakpointNumbersToCanonicalMap.put(response.getBreakpointNumber(), canonicalBreakpoint);
 
