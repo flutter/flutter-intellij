@@ -6,8 +6,6 @@
 package io.flutter.settings;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.util.SystemInfo;
@@ -15,7 +13,6 @@ import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
 import io.flutter.FlutterMessages;
-import io.flutter.FlutterUtils;
 import io.flutter.analytics.Analytics;
 
 import java.util.EventListener;
@@ -37,6 +34,7 @@ public class FlutterSettings {
   private static final String showBazelHotRestartWarningKey = "io.flutter.showBazelHotRestartWarning";
   private static final String fontPackagesKey = "io.flutter.fontPackages";
   private static final String allowTestsInSourcesRootKey = "io.flutter.allowTestsInSources";
+  private static final String showBazelIosRunNotificationKey = "io.flutter.hideBazelIosRunNotification";
 
   // TODO(helin24): This is to change the embedded browser setting back to true only once for Big Sur users. If we
   // switch to enabling the embedded browser for everyone, then delete this key.
@@ -148,6 +146,10 @@ public class FlutterSettings {
 
     if (!getFontPackages().isEmpty()) {
       analytics.sendEvent("settings", afterLastPeriod(fontPackagesKey));
+    }
+
+    if (isShowBazelIosRunNotification()) {
+      analytics.sendEvent("settings", afterLastPeriod(showBazelIosRunNotificationKey));
     }
   }
 
@@ -374,6 +376,15 @@ public class FlutterSettings {
 
   public void setAllowTestsInSourcesRoot(boolean value) {
     getPropertiesComponent().setValue(allowTestsInSourcesRootKey, value, false);
+    fireEvent();
+  }
+
+  public boolean isShowBazelIosRunNotification() {
+    return getPropertiesComponent().getBoolean(showBazelIosRunNotificationKey, true);
+  }
+
+  public void setShowBazelIosRunNotification(boolean value) {
+    getPropertiesComponent().setValue(showBazelIosRunNotificationKey, value, true);
     fireEvent();
   }
 }

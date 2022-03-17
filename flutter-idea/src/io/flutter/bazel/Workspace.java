@@ -48,6 +48,7 @@ public class Workspace {
   @Nullable private final String requiredIJPluginID;
   @Nullable private final String requiredIJPluginMessage;
   @Nullable private final String configWarningPrefix;
+  @Nullable private final String updatedIosRunMessage;
 
   private Workspace(@NotNull VirtualFile root,
                     @Nullable PluginConfig config,
@@ -59,7 +60,8 @@ public class Workspace {
                     @Nullable String sdkHome,
                     @Nullable String requiredIJPluginID,
                     @Nullable String requiredIJPluginMessage,
-                    @Nullable String configWarningPrefix) {
+                    @Nullable String configWarningPrefix,
+                    @Nullable String updatedIosRunMessage) {
     this.root = root;
     this.config = config;
     this.daemonScript = daemonScript;
@@ -71,6 +73,7 @@ public class Workspace {
     this.requiredIJPluginID = requiredIJPluginID;
     this.requiredIJPluginMessage = requiredIJPluginMessage;
     this.configWarningPrefix = configWarningPrefix;
+    this.updatedIosRunMessage = updatedIosRunMessage;
   }
 
   /**
@@ -195,6 +198,15 @@ public class Workspace {
   }
 
   /**
+   * Returns the message notifying users that running iOS apps has improved.
+   */
+  @Nullable
+  public String getUpdatedIosRunMessage() {
+    return updatedIosRunMessage;
+  }
+
+
+  /**
    * Returns true if the plugin config was loaded.
    */
   public boolean hasPluginConfig() {
@@ -271,7 +283,9 @@ public class Workspace {
 
     final String configWarningPrefix = config == null ? null : config.getConfigWarningPrefix();
 
-    return new Workspace(root, config, daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, requiredIJPluginID, requiredIJPluginMessage, configWarningPrefix);
+    final String updatedIosRunMessage = config == null ? null : config.getUpdatedIosRunMessage();
+
+    return new Workspace(root, config, daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, requiredIJPluginID, requiredIJPluginMessage, configWarningPrefix, updatedIosRunMessage);
   }
 
   @VisibleForTesting
@@ -287,7 +301,8 @@ public class Workspace {
       pluginConfig.getSdkHome(),
       pluginConfig.getRequiredIJPluginID(),
       pluginConfig.getRequiredIJPluginMessage(),
-      pluginConfig.getConfigWarningPrefix());
+      pluginConfig.getConfigWarningPrefix(),
+      pluginConfig.getUpdatedIosRunMessage());
   }
 
   /**

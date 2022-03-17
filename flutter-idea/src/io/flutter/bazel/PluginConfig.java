@@ -79,6 +79,11 @@ public class PluginConfig {
     return fields.configWarningPrefix;
   }
 
+  @Nullable
+  String getUpdatedIosRunMessage() {
+    return fields.updatedIosRunMessage;
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof PluginConfig)) return false;
@@ -137,7 +142,8 @@ public class PluginConfig {
     @Nullable String sdkHome,
     @Nullable String requiredIJPluginID,
     @Nullable String requiredIJPluginMessage,
-    @Nullable String configWarningPrefix
+    @Nullable String configWarningPrefix,
+    @Nullable String updatedIosRunMessage
   ) {
     final Fields fields = new Fields(
       daemonScript,
@@ -148,7 +154,8 @@ public class PluginConfig {
       sdkHome,
       requiredIJPluginID,
       requiredIJPluginMessage,
-      configWarningPrefix
+      configWarningPrefix,
+      updatedIosRunMessage
     );
     return new PluginConfig(fields);
   }
@@ -211,6 +218,12 @@ public class PluginConfig {
     @SerializedName("configWarningPrefix")
     private String configWarningPrefix;
 
+    /**
+     * The prefix that indicates a message about iOS run being updated.
+     */
+    @SerializedName("updatedIosRunMessage")
+    private String updatedIosRunMessage;
+
     Fields() {
     }
 
@@ -225,7 +238,8 @@ public class PluginConfig {
            String sdkHome,
            String requiredIJPluginID,
            String requiredIJPluginMessage,
-           String configWarningPrefix) {
+           String configWarningPrefix,
+           String updatedIosRunMessage) {
       this.daemonScript = daemonScript;
       this.doctorScript = doctorScript;
       this.testScript = testScript;
@@ -235,6 +249,7 @@ public class PluginConfig {
       this.requiredIJPluginID = requiredIJPluginID;
       this.requiredIJPluginMessage = requiredIJPluginMessage;
       this.configWarningPrefix = configWarningPrefix;
+      this.updatedIosRunMessage = updatedIosRunMessage;
     }
 
     @Override
@@ -249,13 +264,14 @@ public class PluginConfig {
              && Objects.equal(sdkHome, other.sdkHome)
              && Objects.equal(requiredIJPluginID, other.requiredIJPluginID)
              && Objects.equal(requiredIJPluginMessage, other.requiredIJPluginMessage)
-             && Objects.equal(configWarningPrefix, other.configWarningPrefix);
+             && Objects.equal(configWarningPrefix, other.configWarningPrefix)
+             && Objects.equal(updatedIosRunMessage, other.updatedIosRunMessage);
     }
 
     @Override
     public int hashCode() {
       return Objects.hashCode(daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, requiredIJPluginID,
-                              requiredIJPluginMessage, configWarningPrefix);
+                              requiredIJPluginMessage, configWarningPrefix, updatedIosRunMessage);
     }
   }
 
