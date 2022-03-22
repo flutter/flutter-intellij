@@ -6,6 +6,7 @@
 package io.flutter.jxbrowser;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -33,6 +34,7 @@ import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Dimension;
+import java.io.File;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
@@ -50,6 +52,8 @@ public class EmbeddedBrowser {
 
   private EmbeddedBrowser(Project project) {
     System.setProperty("jxbrowser.force.dpi.awareness", "1.0");
+    System.setProperty("jxbrowser.logging.level", "DEBUG");
+    System.setProperty("jxbrowser.logging.file", PathManager.getLogPath() + File.separatorChar + "jxbrowser.log");
     if (FlutterSettings.getInstance().isVerboseLogging()) {
       System.setProperty("jxbrowser.logging.level", "ALL");
     }
