@@ -109,9 +109,26 @@ Future<int> curl(String url, {String to}) async {
   return await exec('curl', ['-o', to, url]);
 }
 
-Future<int> removeAll(String dir) async {
-  var args = ['-rf', dir];
-  return await exec('rm', args);
+int removeAll(String dir) {
+  var targetDirectory = Directory(dir);
+
+  log('Removing Directory $dir');
+
+  if (targetDirectory.existsSync()) {
+    try {
+      targetDirectory.deleteSync(recursive: true);
+    } on FileSystemException catch (e) {
+      log(e.osError.message);
+      return -1;
+    } catch (e) {
+      log("An error occurred while deleteing $dir");
+      log(e);
+
+      return -1;
+    }
+  }
+
+  return 0;
 }
 
 bool isCacheDirectoryValid(Artifact artifact) {

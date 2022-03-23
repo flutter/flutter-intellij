@@ -122,7 +122,7 @@ class ArtifactManager {
 
       // clear unpacked cache
       if (rebuildCache || !FileSystemEntity.isDirectorySync(artifact.outPath)) {
-        await removeAll(artifact.outPath);
+        removeAll(artifact.outPath);
       }
       if (isCacheDirectoryValid(artifact)) {
         continue;
@@ -156,7 +156,7 @@ class ArtifactManager {
       }
       if (result != 0) {
         log('unpacking failed');
-        await removeAll(artifact.output);
+        removeAll(artifact.output);
         break;
       }
 
