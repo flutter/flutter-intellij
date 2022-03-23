@@ -186,3 +186,19 @@ String _nextRelease() {
   var val = int.parse(current) + 1;
   return '$val.0';
 }
+
+/// Replicates `tar` --strip-components=N behaviour
+///
+/// Returns [filePath] with the first [i] components removed.
+/// e.g. ('a/b/c/', 1) returns 'b/c'
+String stripComponents(String filePath, int i) {
+  List<String> components = p.split(filePath);
+
+  if (i < components.length - 1) {
+    components.removeRange(0, i);
+  } else {
+    components.removeRange(0, components.length - 1);
+  }
+
+  return p.joinAll(components);
+}
