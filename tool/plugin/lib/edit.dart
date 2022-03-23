@@ -97,10 +97,8 @@ class Unused extends EditCommand {
 }
 
 class EditAndroidModuleLibraryManager extends EditCommand {
-
-  final _moduleManagerPath = p.join(
-      'flutter-studio', 'src', 'io', 'flutter', 'android', 'AndroidModuleLibraryManager.java'
-  );
+  final _moduleManagerPath = p.join('flutter-studio', 'src', 'io', 'flutter',
+      'android', 'AndroidModuleLibraryManager.java');
 
   @override
   String get path => _moduleManagerPath;
