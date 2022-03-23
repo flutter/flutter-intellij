@@ -156,17 +156,9 @@ class ArtifactManager {
           result = extractZip(artifact.file, cwd: 'artifacts');
         }
       } else {
-        result = await exec(
-          'tar',
-          [
-            '--strip-components=1',
-            '-zxf',
-            artifact.file,
-            '-C',
-            artifact.output
-          ],
-          cwd: p.join(rootPath, 'artifacts'),
-        );
+        result = extractTar(artifact,
+            cwd: 'artifacts',
+            targetDirectory: artifact.output);
       }
       if (result != 0) {
         log('unpacking failed');
