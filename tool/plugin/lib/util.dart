@@ -244,7 +244,7 @@ int extractTar(Artifact artifact, {targetDirectory = '', cwd = ''}) {
         ..writeAsBytesSync(tarFile.content);
     }
   } on FileSystemException catch (e) {
-    log(e.osError.message);
+    log(e.osError?.message ?? e.message);
     return -1;
   } catch (e) {
     log('An unknown error occurred: $e');
