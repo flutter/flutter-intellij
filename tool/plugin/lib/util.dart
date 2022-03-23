@@ -25,7 +25,7 @@ Future<int> exec(String cmd, List<String> args, {String cwd}) async {
     log(_shorten('$cmd ${args.join(' ')}'));
   }
 
-  var codec = Platform.isWindows ? latin1: utf8;
+  var codec = Platform.isWindows ? latin1 : utf8;
   final process = await Process.start(cmd, args, workingDirectory: cwd);
   _toLineStream(process.stderr, codec).listen(log);
   _toLineStream(process.stdout, codec).listen(log);
@@ -237,7 +237,6 @@ String readTokenFromKeystore(String keyName) {
   return file.existsSync() ? file.readAsStringSync() : '';
 }
 
-
 int get devBuildNumber {
   // The dev channel is automatically refreshed weekly, so the build number
   // is just the number of weeks since the last stable release.
@@ -262,7 +261,7 @@ String buildVersionNumber(BuildSpec spec) {
 
 String _nextRelease() {
   var current =
-  RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName).group(1);
+      RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName).group(1);
   var val = int.parse(current) + 1;
   return '$val.0';
 }
@@ -302,21 +301,19 @@ File getFileOrThrow(String filePath) {
 /// An int is returned to match existing patterns of checking for an error ala
 /// the CLI
 int extractTar(Artifact artifact, {targetDirectory = '', cwd = ''}) {
-
   var artifactPath = p.join(cwd, artifact.file);
   var outputDir = p.join(cwd, targetDirectory, artifact.output);
 
   log('Extracting $artifactPath to $outputDir');
 
   try {
-
     var file = getFileOrThrow(artifactPath);
     var decodedGZipContent = GZipCodec().decode(file.readAsBytesSync());
     var iStream = InputStream(decodedGZipContent);
     var decodedArchive = TarDecoder().decodeBuffer(iStream);
 
     for (var tarFile in decodedArchive.files) {
-      if (!tarFile.isFile) continue;  // Don't need to create empty directories
+      if (!tarFile.isFile) continue; // Don't need to create empty directories
 
       File(p.join(outputDir, stripComponents(tarFile.name, 1)))
         ..createSync(recursive: true)
@@ -332,7 +329,6 @@ int extractTar(Artifact artifact, {targetDirectory = '', cwd = ''}) {
 
   return 0;
 }
-
 
 /// Extract files from a zipped [artifactPath]
 ///

@@ -158,10 +158,11 @@ Future<int> jar(String directory, String outFile) async {
   try {
     return await exec('jar', args, cwd: directory);
   } on ProcessException catch (e) {
-    if (e.message == 'No such file or directory'){
+    if (e.message == 'No such file or directory') {
       log(
-        '\nThe build command requires `java` to be installed.'
-        '\nPlease ensure `jar` is on your \$PATH.', indent: false);
+          '\nThe build command requires `java` to be installed.'
+          '\nPlease ensure `jar` is on your \$PATH.',
+          indent: false);
       exit(e.errorCode);
     } else {
       rethrow;
@@ -864,7 +865,8 @@ class RenamePackageCommand extends ProductCommand {
 
   @override
   Future<int> doit() async {
-    if (argResults['studio']) baseDir = p.join(baseDir, 'flutter-studio', 'src');
+    if (argResults['studio'])
+      baseDir = p.join(baseDir, 'flutter-studio', 'src');
     oldName = argResults['package'];
     newName = argResults.wasParsed('new-name')
         ? argResults['new-name']
