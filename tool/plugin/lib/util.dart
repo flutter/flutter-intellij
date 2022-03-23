@@ -255,15 +255,15 @@ int extractTar(Artifact artifact, {targetDirectory = '', cwd = ''}) {
 }
 
 
-/// Extract files from a zipped [artifact.file] to [artifact.output]
+/// Extract files from a zipped [artifactPath]
 ///
 /// The [artifact] file location can be specified using [cwd] and
 /// [targetDirectory] can be used to set a directory for the extracted files.
 ///
 /// An int is returned to match existing patterns of checking for an error ala
 /// the CLI
-int extractZip(Artifact artifact, {targetDirectory = '', cwd = ''}) {
-  var filePath = p.join(cwd, artifact.file);
+int extractZip(String artifactPath, {targetDirectory = '', cwd = ''}) {
+  var filePath = p.join(cwd, artifactPath);
   var outputPath = p.join(cwd, targetDirectory);
 
   try {
