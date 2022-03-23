@@ -289,3 +289,12 @@ int extractZip(Artifact artifact, {targetDirectory = '', cwd = ''}) {
 
   return 0;
 }
+
+/// Calls the platform specific gradle wrapper with the provided arguments
+Future<int> execGradleCommand(List<String> args) async {
+  if (Platform.isWindows) {
+    return await exec('.\\gradlew.bat', args);
+  } else {
+    return await exec('./gradlew', args);
+  }
+}
