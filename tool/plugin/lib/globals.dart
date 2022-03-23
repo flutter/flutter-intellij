@@ -14,7 +14,7 @@ const int cloudErrorFileMaxSize = 1000; // In bytes.
 // Globals are initialized early in ProductCommand. These are used in various
 // top-level functions. This is not ideal, but the "proper" solution would be
 // to move nearly all the top-level functions to methods in ProductCommand.
-String rootPath;
+String rootPath = '';
 String lastReleaseName;
 DateTime lastReleaseDate;
 int pluginCount = 0;

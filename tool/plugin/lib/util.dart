@@ -229,9 +229,9 @@ Stream<String> _toLineStream(Stream<List<int>> s, Encoding encoding) =>
 
 String readTokenFromKeystore(String keyName) {
   var env = Platform.environment;
-  var base = env['KOKORO_KEYSTORE_DIR'];
-  var id = env['FLUTTER_KEYSTORE_ID'];
-  var name = env[keyName];
+  var base = env['KOKORO_KEYSTORE_DIR'] ?? '';
+  var id = env['FLUTTER_KEYSTORE_ID'] ?? '';
+  var name = env[keyName] ?? '';
 
   var file = File(p.join(base, '${id}_$name'));
   return file.existsSync() ? file.readAsStringSync() : '';
