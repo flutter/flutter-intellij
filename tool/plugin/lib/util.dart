@@ -253,3 +253,39 @@ int extractTar(Artifact artifact, {targetDirectory = '', cwd = ''}) {
 
   return 0;
 }
+
+
+/// Extract files from a zipped [artifact.file] to [artifact.output]
+///
+/// The [artifact] file location can be specified using [cwd] and
+/// [targetDirectory] can be used to set a directory for the extracted files.
+///
+/// An int is returned to match existing patterns of checking for an error ala
+/// the CLI
+int extractZip(Artifact artifact, {targetDirectory = '', cwd = ''}) {
+  var filePath = p.join(cwd, artifact.file);
+  var outputPath = p.join(cwd, targetDirectory);
+
+  try {
+    File file = getFileOrThrow(filePath);
+
+    Archive zipArchive = ZipDecoder().decodeBytes(file.readAsBytesSync());
+
+    for (ArchiveFile archiveItem in zipArchive.files) {
+      // Don't need to create empty directories
+      if (!archiveItem.isFile) continue;
+
+      File(p.join(outputPath, archiveItem.name))
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(archiveItem.content);
+    }
+  } on FileSystemException catch (e) {
+    log(e.osError?.message ?? e.message);
+    return -1;
+  } catch (e) {
+    log('An unknown error occurred: $e');
+    return -1;
+  }
+
+  return 0;
+}
