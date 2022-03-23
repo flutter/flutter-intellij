@@ -208,7 +208,9 @@ String stripComponents(String filePath, int i) {
 File getFileOrThrow(String filePath) {
   var file = File(filePath);
 
-  if (!file.existsSync()) throw "Unable to locate file '${file.path}'";
+  if (!file.existsSync()) {
+    throw FileSystemException("Unable to locate file '${file.path}'");
+  }
 
   return file;
 }
