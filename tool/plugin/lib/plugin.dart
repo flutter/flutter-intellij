@@ -879,19 +879,19 @@ class RenamePackageCommand extends ProductCommand {
   }
 
   void moveFiles() {
-    final srcDir = Directory(p.join(baseDir, oldName.replaceAll('.', '/')));
-    final destDir = Directory(p.join(baseDir, newName.replaceAll('.', '/')));
+    final srcDir = Directory(p.joinAll([baseDir] + oldName.split('.')));
+    final destDir = Directory(p.joinAll([baseDir] + newName.split('.')));
     _editAndMoveAll(srcDir, destDir);
   }
 
   void editReferences() {
-    final srcDir = Directory(p.join(baseDir, oldName.replaceAll('.', '/')));
-    final destDir = Directory(p.join(baseDir, newName.replaceAll('.', '/')));
+    final srcDir = Directory(p.joinAll([baseDir] + oldName.split('.')));
+    final destDir = Directory(p.joinAll([baseDir] + newName.split('.')));
     _editAll(Directory(baseDir), skipOld: srcDir, skipNew: destDir);
   }
 
   Future<int> deleteDir() async {
-    final dir = Directory(p.join(baseDir, oldName.replaceAll('.', '/')));
+    final dir = Directory(p.joinAll([baseDir] + oldName.split('.')));
     await dir.delete(recursive: true);
     return 0;
   }
