@@ -102,7 +102,7 @@ void log(String s, {bool indent = true}) {
 void createDir(String name) {
   final dir = Directory(name);
   if (!dir.existsSync()) {
-    log('creating $name/');
+    log('creating $name');
     dir.createSync(recursive: true);
   }
 }
@@ -233,7 +233,7 @@ String readTokenFromKeystore(String keyName) {
   var id = env['FLUTTER_KEYSTORE_ID'];
   var name = env[keyName];
 
-  var file = File('$base/${id}_$name');
+  var file = File(p.join(base, '${id}_$name'));
   return file.existsSync() ? file.readAsStringSync() : '';
 }
 

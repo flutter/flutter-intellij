@@ -7,6 +7,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:path/path.dart' as p;
 
 import 'build_spec.dart';
 import 'globals.dart';
@@ -59,7 +60,7 @@ compile
     final jxBrowserKey =
         readTokenFromKeystore('FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME');
     final propertiesFile =
-        File("$rootPath/resources/jxbrowser/jxbrowser.properties");
+        File(p.join(rootPath, 'resources', 'jxbrowser', 'jxbrowser.properties'));
     if (jxBrowserKey.isNotEmpty) {
       final contents = '''
 jxbrowser.license.key=$jxBrowserKey
@@ -92,7 +93,7 @@ testing=$testing
 buildSpec=${spec.version}
 baseVersion=${spec.baseVersion}
 ''';
-    final propertiesFile = File("$rootPath/gradle.properties");
+    final propertiesFile = File(p.join(rootPath, 'gradle.properties'));
     final source = propertiesFile.readAsStringSync();
     propertiesFile.writeAsStringSync(contents);
     int result;
