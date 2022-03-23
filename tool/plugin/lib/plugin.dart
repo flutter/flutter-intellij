@@ -155,7 +155,18 @@ Future<int> jar(String directory, String outFile) async {
       .listSync(followLinks: false)
       .map((f) => p.basename(f.path)));
   args.remove('.DS_Store');
-  return await exec('jar', args, cwd: directory);
+  try {
+    return await exec('jar', args, cwd: directory);
+  } on ProcessException catch (e) {
+    if (e.message == 'No such file or directory'){
+      log(
+        '\nThe build command requires `java` to be installed.'
+        '\nPlease ensure `jar` is on your \$PATH.', indent: false);
+      exit(e.errorCode);
+    } else {
+      rethrow;
+    }
+  }
 }
 
 Future<int> moveToArtifacts(ProductCommand cmd, BuildSpec spec) async {
