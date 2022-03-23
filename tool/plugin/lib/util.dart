@@ -107,7 +107,7 @@ void createDir(String name) {
   }
 }
 
-Future<int> curl(String url, {String to}) async {
+Future<int> download(String url, {String to}) async {
   final File tmpFile = File('$to.tmp');
   final httpClient = Client();
   final request = Request('GET', Uri.parse(url));
