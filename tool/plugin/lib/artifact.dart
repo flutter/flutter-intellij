@@ -85,7 +85,7 @@ class ArtifactManager {
         }
         if (doDownload) {
           log('downloading $path...');
-          result = await curl('$base/${artifact.file}', to: path);
+          result = await download('$base/${artifact.file}', to: path);
           if (result != 0) {
             log('download failed');
           }
@@ -99,7 +99,7 @@ class ArtifactManager {
             if (artifact.isZip) {
               artifact.convertToTar();
               path = 'artifacts/${artifact.file}';
-              result = await curl('$base/${artifact.file}', to: path);
+              result = await download('$base/${artifact.file}', to: path);
               if (result != 0) {
                 log('download failed');
                 artifacts.remove(artifact);
