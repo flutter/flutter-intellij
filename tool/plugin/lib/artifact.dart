@@ -23,9 +23,10 @@ class Artifact {
   bool get isZip => file.endsWith('.zip');
 
   bool exists() {
-    if (FileSystemEntity.isFileSync('artifacts/$file')) return true;
+    var artifactFilePath = p.join('artifacts', file);
+    if (FileSystemEntity.isFileSync(artifactFilePath)) return true;
     convertToTar();
-    return FileSystemEntity.isFileSync('artifacts/$file');
+    return FileSystemEntity.isFileSync(artifactFilePath);
   }
 
   String get outPath => p.join(rootPath, 'artifacts', output);
@@ -39,7 +40,7 @@ class Artifact {
 }
 
 class ArtifactManager {
-  final String base =
+  final String baseUri =
       'https://storage.googleapis.com/flutter_infra_release/flutter/intellij';
 
   final List<Artifact> artifacts = [];
@@ -72,42 +73,44 @@ class ArtifactManager {
         doDownload = false;
       }
 
-      var path = 'artifacts/${artifact.file}';
-      if (FileSystemEntity.isFileSync(path)) {
-        alreadyDownloaded(path);
+      var artifactFilePath = p.join('artifacts', artifact.file);
+      if (FileSystemEntity.isFileSync(artifactFilePath)) {
+        alreadyDownloaded(artifactFilePath);
       } else {
         if (artifact.isZip) {
-          var tarPath = _convertToTar(path);
+          var tarPath = _convertToTar(artifactFilePath);
           if (FileSystemEntity.isFileSync(tarPath)) {
             artifact.convertToTar();
             alreadyDownloaded(tarPath);
           }
         }
         if (doDownload) {
-          log('downloading $path...');
-          result = await download('$base/${artifact.file}', to: path);
+          log('downloading $artifactFilePath...');
+          var artifactUri = p.join(baseUri, artifact.file);
+
+          result = await download(artifactUri, to: artifactFilePath);
           if (result != 0) {
             log('download failed');
           }
-          var archiveFile = File(path);
+          var archiveFile = File(artifactFilePath);
           if (!_isValidDownloadArtifact(archiveFile)) {
             // If the file is missing the server returns a small file containing
             // an error message. Delete it and try again. The smallest file we
             // store in the cloud is over 700K.
-            log('archive file not found: $base/${artifact.file}');
+            log('archive file not found: $artifactUri');
             archiveFile.deleteSync();
             if (artifact.isZip) {
               artifact.convertToTar();
-              path = 'artifacts/${artifact.file}';
-              result = await download('$base/${artifact.file}', to: path);
+
+              result = await download(artifactUri, to: artifactFilePath);
               if (result != 0) {
                 log('download failed');
                 artifacts.remove(artifact);
                 continue;
               }
-              var archiveFile = File(path);
+              var archiveFile = File(artifactFilePath);
               if (!_isValidDownloadArtifact(archiveFile)) {
-                log('archive file not found: $base/${artifact.file}');
+                log('archive file not found: $artifactUri');
                 archiveFile.deleteSync();
                 artifacts.remove(artifact);
                 continue;

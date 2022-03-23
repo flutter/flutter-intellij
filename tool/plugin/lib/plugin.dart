@@ -136,7 +136,7 @@ void genPresubmitYaml(List<BuildSpec> specs) {
 }
 
 bool isTravisFileValid() {
-  var travisPath = p.join(rootPath, '.github/workflows/presubmit.yaml');
+  var travisPath = p.join(rootPath, '.github', 'workflows', 'presubmit.yaml');
   var travisFile = File(travisPath);
   if (!travisFile.existsSync()) {
     return false;
@@ -329,10 +329,11 @@ class AntBuildCommand extends BuildCommand {
     var r = await runner.javac2(spec);
     if (r == 0) {
       // copy resources
-      copyResources(from: 'src', to: 'build/classes');
-      copyResources(from: 'resources', to: 'build/classes');
-      copyResources(from: 'gen', to: 'build/classes');
-      await genPluginFiles(spec, 'build/classes');
+      var classPath = p.join('build', 'classes');
+      copyResources(from: 'src', to: classPath);
+      copyResources(from: 'resources', to: classPath);
+      copyResources(from: 'gen', to: classPath);
+      await genPluginFiles(spec, classPath);
     }
     return r;
   }
@@ -342,27 +343,26 @@ class AntBuildCommand extends BuildCommand {
     int result;
 
     // create the jars
-    createDir('build/flutter-intellij/lib');
-    result = await jar(
-      'build/classes',
-      'build/flutter-intellij/lib/flutter-intellij.jar',
-    );
+    var fijPath = p.join('build', 'flutter-intellij', 'lib');
+    var fijarPath = p.join(fijPath, 'flutter-intellij.jar');
+    var classPath = p.join('build', 'classes');
+
+    createDir(fijPath);
+    result = await jar(classPath, fijarPath);
     if (result != 0) {
       log('jar failed: ${result.toString()}');
       return result;
     }
     if (spec.isTestTarget && !isReleaseMode && !isDevChannel) {
       _copyFile(
-        File('build/flutter-intellij/lib/flutter-intellij.jar'),
+        File(fijarPath),
         Directory(testTargetPath(spec)),
         filename: 'io.flutter.jar',
       );
     }
     if (spec.isAndroidStudio) {
-      result = await jar(
-        'build/studio',
-        'build/flutter-intellij/lib/flutter-studio.jar',
-      );
+      var studioPath = p.join('build', 'studio');
+      result = await jar(studioPath, fijarPath);
       if (result != 0) {
         log('jar failed: ${result.toString()}');
         return result;
@@ -370,7 +370,7 @@ class AntBuildCommand extends BuildCommand {
     }
 
     // zip it up
-    result = await zip('build/flutter-intellij', releasesFilePath(spec));
+    result = await zip(fijPath, releasesFilePath(spec));
     if (result != 0) {
       log('zip failed: ${result.toString()}');
       return result;
@@ -391,8 +391,9 @@ class GradleBuildCommand extends BuildCommand {
 
   @override
   Future<int> externalBuildCommand(BuildSpec spec) async {
-    var pluginFile = File('resources/META-INF/plugin.xml');
-    var studioFile = File('resources/META-INF/studio-contribs.xml');
+    var metaInfPath = p.join('resources', 'META-INF');
+    var pluginFile = File(p.join(metaInfPath, 'plugin.xml'));
+    var studioFile = File(p.join(metaInfPath, 'studio-contribs.xml'));
     var pluginSrc = pluginFile.readAsStringSync();
     var studioSrc = studioFile.readAsStringSync();
     try {
@@ -408,12 +409,13 @@ class GradleBuildCommand extends BuildCommand {
   Future<int> savePluginArtifact(BuildSpec spec) async {
     final file = File(releasesFilePath(spec));
     final version = buildVersionNumber(spec);
-    var source = File('build/distributions/flutter-intellij-$version.zip');
+    var distPath = p.join('build', 'distributions');
+    var source = File(p.join(distPath, 'flutter-intellij-$version.zip'));
     if (!source.existsSync()) {
       // Setting the plugin name in Gradle should eliminate the need for this,
       // but it does not.
       // TODO(messick) Find a way to make the Kokoro file name: flutter-intellij-DEV.zip
-      source = File('build/distributions/flutter-intellij-kokoro-$version.zip');
+      source = File(p.join(distPath, 'flutter-intellij-kokoro-$version.zip'));
     }
     _copyFile(
       source,
@@ -862,7 +864,7 @@ class RenamePackageCommand extends ProductCommand {
 
   @override
   Future<int> doit() async {
-    if (argResults['studio']) baseDir = p.join(baseDir, 'flutter-studio/src');
+    if (argResults['studio']) baseDir = p.join(baseDir, 'flutter-studio', 'src');
     oldName = argResults['package'];
     newName = argResults.wasParsed('new-name')
         ? argResults['new-name']

@@ -10,6 +10,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:meta/meta.dart';
+import 'package:path/path.dart' as p;
 
 import 'build_spec.dart';
 import 'util.dart';
@@ -96,17 +97,22 @@ class Unused extends EditCommand {
 }
 
 class EditAndroidModuleLibraryManager extends EditCommand {
+
+  final _moduleManagerPath = p.join(
+      'flutter-studio', 'src', 'io', 'flutter', 'android', 'AndroidModuleLibraryManager.java'
+  );
+
   @override
-  String get path =>
-      'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java';
+  String get path => _moduleManagerPath;
 
   @override
   String convert(BuildSpec spec) {
     // Starting with 3.6 we need to call a simplified init().
     // This is where the $PROJECT_FILE$ macro is defined, #registerComponents.
+
+    var libMgrPath = _moduleManagerPath;
     if (spec.version.startsWith('4.2')) {
-      var processedFile = File(
-          'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
+      var processedFile = File(libMgrPath);
       var source = processedFile.readAsStringSync();
       var original = source;
       source = source.replaceAll("ProjectExImpl", "ProjectImpl");
@@ -133,8 +139,7 @@ class EditAndroidModuleLibraryManager extends EditCommand {
       return original;
     } else {
       if (spec.version.startsWith('2021.2')) {
-        var processedFile = File(
-            'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
+        var processedFile = File(libMgrPath);
         var source = processedFile.readAsStringSync();
         var original = source;
         source = source.replaceAll(
