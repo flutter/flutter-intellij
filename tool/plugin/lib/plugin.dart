@@ -161,11 +161,15 @@ Future<int> jar(String directory, String outFile) async {
 Future<int> moveToArtifacts(ProductCommand cmd, BuildSpec spec) async {
   final dir = Directory(p.join(rootPath, 'artifacts'));
   if (!dir.existsSync()) throw 'No artifacts directory found';
-  var file = pluginRegistryIds[spec.pluginId];
-  var args = <String>[];
-  args.add(p.join(rootPath, 'build', file));
-  args.add(cmd.releasesFilePath(spec));
-  return await exec('mv', args);
+
+  var targetFile =
+      File(p.join(rootPath, 'build', pluginRegistryIds[spec.pluginId]));
+  var newPath = cmd.releasesFilePath(spec);
+
+  log('Moving ${targetFile.path} to $newPath');
+  targetFile.renameSync(newPath);
+
+  return 0;
 }
 
 Future<bool> performReleaseChecks(ProductCommand cmd) async {
