@@ -128,12 +128,6 @@ class ArtifactManager {
         continue;
       }
 
-      // expand
-      if (Directory(artifact.outPath).existsSync()) {
-        await removeAll(artifact.outPath);
-      }
-      createDir(artifact.outPath);
-
       if (artifact.isZip) {
         if (artifact.bareArchive) {
           result = extractZip(artifact.file,
