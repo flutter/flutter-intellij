@@ -60,10 +60,10 @@ List<BuildSpec> createBuildSpecs(ProductCommand command) {
 Future<int> deleteBuildContents() async {
   final dir = Directory(p.join(rootPath, 'build'));
   if (!dir.existsSync()) throw 'No build directory found';
-  var args = <String>[];
-  args.add('-rf');
-  args.add(p.join(rootPath, 'build', '*'));
-  return await exec('rm', args);
+  log('Deleting build contents from ${dir.path}');
+  dir.deleteSync(recursive: true);
+
+  return 0;
 }
 
 List<File> findJars(String path) {
