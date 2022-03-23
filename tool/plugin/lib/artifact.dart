@@ -136,9 +136,10 @@ class ArtifactManager {
 
       if (artifact.isZip) {
         if (artifact.bareArchive) {
-          result = await exec(
-              'unzip', ['-q', '-d', artifact.output, artifact.file],
-              cwd: 'artifacts');
+          result = extractZip(artifact.file,
+              cwd: 'artifacts',
+              targetDirectory: artifact.output);
+
           var files = Directory(artifact.outPath).listSync();
           if (files.length < 3) /* Might have .DS_Store */ {
             // This is the Mac zip case.
@@ -152,7 +153,7 @@ class ArtifactManager {
             Directory("${artifact.outPath}Temp").renameSync(artifact.outPath);
           }
         } else {
-          result = await exec('unzip', ['-q', artifact.file], cwd: 'artifacts');
+          result = extractZip(artifact.file, cwd: 'artifacts');
         }
       } else {
         result = await exec(
