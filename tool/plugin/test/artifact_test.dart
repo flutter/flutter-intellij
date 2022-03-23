@@ -24,5 +24,4 @@ void main() {
       expect(stripComponents(testPath, 5), p.join('d'));
     });
   });
-
 }

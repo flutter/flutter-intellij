@@ -134,8 +134,7 @@ class ArtifactManager {
       if (artifact.isZip) {
         if (artifact.bareArchive) {
           result = extractZip(artifact.file,
-              cwd: 'artifacts',
-              targetDirectory: artifact.output);
+              cwd: 'artifacts', targetDirectory: artifact.output);
 
           var files = Directory(artifact.outPath).listSync();
           if (files.length < 3) /* Might have .DS_Store */ {
@@ -154,8 +153,7 @@ class ArtifactManager {
         }
       } else {
         result = extractTar(artifact,
-            cwd: 'artifacts',
-            targetDirectory: artifact.output);
+            cwd: 'artifacts', targetDirectory: artifact.output);
       }
       if (result != 0) {
         log('unpacking failed');

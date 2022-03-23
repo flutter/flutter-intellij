@@ -59,8 +59,8 @@ compile
   void writeJxBrowserKeyToFile() {
     final jxBrowserKey =
         readTokenFromKeystore('FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME');
-    final propertiesFile =
-        File(p.join(rootPath, 'resources', 'jxbrowser', 'jxbrowser.properties'));
+    final propertiesFile = File(
+        p.join(rootPath, 'resources', 'jxbrowser', 'jxbrowser.properties'));
     if (jxBrowserKey.isNotEmpty) {
       final contents = '''
 jxbrowser.license.key=$jxBrowserKey
