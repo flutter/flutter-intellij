@@ -100,19 +100,15 @@ baseVersion=${spec.baseVersion}
     // --daemon => Invalid byte 1 of 1-byte UTF-8 sequence, which is nonsense.
     // During instrumentation of FlutterProjectStep.form, which is a UTF-8 file.
     try {
-      if (Platform.isWindows) {
-        if (spec.version == '4.1') {
+      if (spec.version == '4.1') {
+        if (Platform.isWindows) {
           log('CANNOT BUILD ${spec.version} ON WINDOWS');
           return 0;
-        }
-        result = await exec('.\\gradlew.bat', command);
-      } else {
-        if (spec.version == '4.1') {
-          return await runShellScript(command, spec);
         } else {
-          result = await exec('./gradlew', command);
+          return await runShellScript(command, spec);
         }
       }
+      result = await execGradleCommand(command);
     } finally {
       propertiesFile.writeAsStringSync(source);
     }
