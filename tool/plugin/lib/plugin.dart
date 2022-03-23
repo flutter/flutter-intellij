@@ -505,7 +505,7 @@ abstract class BuildCommand extends ProductCommand {
       }
 
       separator('Building flutter-intellij.jar');
-      await removeAll('build');
+      removeAll('build');
 
       log('spec.version: ${spec.version}');
 
