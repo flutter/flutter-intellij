@@ -12,6 +12,7 @@ dependencies:
   markdown: ^4.0.0
   path: ^1.7.0
   archive: ^3.2.2
+  http: ^0.13.4
 
 dev_dependencies:
   lints: ^1.0.0
