@@ -410,11 +410,7 @@ class GradleBuildCommand extends BuildCommand {
   }
 
   Future<int> _stopDaemon() async {
-    if (Platform.isWindows) {
-      return await exec('.\\gradlew.bat', ['--stop']);
-    } else {
-      return await exec('./gradlew', ['--stop']);
-    }
+    return execGradleCommand(['--stop']);
   }
 }
 
