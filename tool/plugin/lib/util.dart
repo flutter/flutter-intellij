@@ -6,10 +6,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:archive/archive.dart';
 import 'package:cli_util/cli_logging.dart';
 import 'package:git/git.dart';
+import 'package:http/http.dart';
 import 'package:path/path.dart' as p;
 
 import 'artifact.dart';
@@ -106,7 +108,67 @@ void createDir(String name) {
 }
 
 Future<int> curl(String url, {String to}) async {
-  return await exec('curl', ['-o', to, url]);
+  final File tmpFile = File('$to.tmp');
+  final httpClient = Client();
+  final request = Request('GET', Uri.parse(url));
+
+  List<List<int>> blocks = [];
+  int blocksDownloaded = 0;
+  int totalDownloaded = 0;
+
+  log('\n% Done\tReceived');
+
+  try {
+    StreamedResponse response = await httpClient.send(request);
+
+    final flushSize = (response.contentLength / 100).floor(); //arbitrary value
+    final fmtDownloadSize = formatBytes(response.contentLength);
+
+    // helper function to write blocks to tmpFile and log output
+    _flushToFile(int totalDownloaded, List<List<int>> blocks) {
+      var pctComplete =
+          (totalDownloaded / response.contentLength * 100).floor();
+
+      log('$pctComplete\t${formatBytes(totalDownloaded)} of $fmtDownloadSize');
+
+      for (var block in blocks) {
+        tmpFile.writeAsBytesSync(block, mode: FileMode.append);
+      }
+    }
+
+    await for (final List<int> block in response.stream) {
+      blocks.add(block);
+      blocksDownloaded += block.length;
+      totalDownloaded += block.length;
+
+      if (blocksDownloaded > flushSize) {
+        _flushToFile(totalDownloaded, blocks);
+
+        blocks = [];
+        blocksDownloaded = 0;
+      }
+    }
+
+    _flushToFile(totalDownloaded, blocks);
+
+    tmpFile.renameSync(to);
+  } catch (e) {
+    log(e);
+    return -1;
+  }
+
+  return 0;
+}
+
+String formatBytes(int bytes) {
+  if (bytes <= 0) return '0';
+  const suffixes = ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+
+  var i = (math.log(bytes) / math.log(1024)).floor();
+  var size = ((bytes / math.pow(1024, i)).toStringAsFixed(0));
+  var suffix = suffixes[i];
+
+  return '$size$suffix';
 }
 
 int removeAll(String dir) {
