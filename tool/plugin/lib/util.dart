@@ -7,6 +7,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:cli_util/cli_logging.dart';
 import 'package:git/git.dart';
 import 'package:path/path.dart' as p;
@@ -201,4 +202,52 @@ String stripComponents(String filePath, int i) {
   }
 
   return p.joinAll(components);
+}
+
+/// Returns a File from  [filePath], throw an error if it doesn't exist
+File getFileOrThrow(String filePath) {
+  var file = File(filePath);
+
+  if (!file.existsSync()) throw "Unable to locate file '${file.path}'";
+
+  return file;
+}
+
+/// Extract files from a tar'd [artifact.file] to [artifact.output]
+///
+/// The [artifact] file location can be specified using [cwd] and
+/// [targetDirectory] can be used to set a directory for the extracted files.
+///
+/// An int is returned to match existing patterns of checking for an error ala
+/// the CLI
+int extractTar(Artifact artifact, {targetDirectory = '', cwd = ''}) {
+
+  var artifactPath = p.join(cwd, artifact.file);
+  var outputDir = p.join(cwd, targetDirectory, artifact.output);
+
+  log('Extracting $artifactPath to $outputDir');
+
+  try {
+
+    var file = getFileOrThrow(artifactPath);
+    var decodedGZipContent = GZipCodec().decode(file.readAsBytesSync());
+    var iStream = InputStream(decodedGZipContent);
+    var decodedArchive = TarDecoder().decodeBuffer(iStream);
+
+    for (var tarFile in decodedArchive.files) {
+      if (!tarFile.isFile) continue;  // Don't need to create empty directories
+
+      File(p.join(outputDir, stripComponents(tarFile.name, 1)))
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(tarFile.content);
+    }
+  } on FileSystemException catch (e) {
+    log(e.osError.message);
+    return -1;
+  } catch (e) {
+    log('An unknown error occurred: $e');
+    return -1;
+  }
+
+  return 0;
 }
