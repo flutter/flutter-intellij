@@ -125,7 +125,7 @@ Future<int> download(String url, {String to}) async {
     final fmtDownloadSize = formatBytes(response.contentLength);
 
     // helper function to write blocks to tmpFile and log output
-    _flushToFile(int totalDownloaded, List<List<int>> blocks) {
+    _flushToFile(List<List<int>> blocks) {
       var pctComplete =
           (totalDownloaded / response.contentLength * 100).floor();
 
@@ -142,14 +142,14 @@ Future<int> download(String url, {String to}) async {
       totalDownloaded += block.length;
 
       if (blocksDownloaded > flushSize) {
-        _flushToFile(totalDownloaded, blocks);
+        _flushToFile(blocks);
 
         blocks = [];
         blocksDownloaded = 0;
       }
     }
 
-    _flushToFile(totalDownloaded, blocks);
+    _flushToFile(blocks);
 
     tmpFile.renameSync(to);
   } catch (e) {
