@@ -480,9 +480,7 @@ public class VmServiceWrapper implements Disposable {
     myVmService.getVersion(new VersionConsumer() {
       @Override
       public void received(org.dartlang.vm.service.element.Version response) {
-        assert response != null;
-        final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myDebugProcess.getSession().getProject());
-        if (VmServiceVersion.hasMapping(response) && sdk.getVersion().isUriMappingSupportedForWeb()) {
+        if (isVmServiceMappingSupported(response)) {
           addBreakpointWithVmService(isolateId, position, consumer);
         } else {
           addBreakpointWithMapper(isolateId, position, consumer);
@@ -494,6 +492,17 @@ public class VmServiceWrapper implements Disposable {
         addBreakpointWithMapper(isolateId, position, consumer);
       }
     });
+  }
+
+  private boolean isVmServiceMappingSupported(org.dartlang.vm.service.element.Version version) {
+    assert version != null;
+
+    if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
+      return true;
+    }
+
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myDebugProcess.getSession().getProject());
+    return VmServiceVersion.hasMapping(version) && sdk.getVersion().isUriMappingSupportedForWeb();
   }
 
   // This is the old way of mapping breakpoints, which uses analyzer.
