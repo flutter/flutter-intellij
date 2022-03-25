@@ -199,13 +199,13 @@ public class FlutterUtils {
     final PubRoot root = PubRootCache.getInstance(file.getProject()).getRoot(file.getVirtualFile().getParent());
     if (root == null) return false;
 
-    // Check that we're in a project path that starts with 'test/'.
-    final String relativePath = root.getRelativePath(file.getVirtualFile());
-    if (relativePath == null) {
+    //noinspection ConstantConditions
+    VirtualFile dir = file.getVirtualFile().getParent();
+    if (dir == null) {
       return false;
     }
     final Module module = root.getModule(file.getProject());
-    if (!(relativePath.startsWith("test/") || relativePath.startsWith("integration_test/"))) {
+    if (!root.hasTests(dir)) {
       if (!isInTestOrSourceRoot(module, file)) {
         return false;
       }
