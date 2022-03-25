@@ -7,7 +7,6 @@ package io.flutter;
 
 import com.google.common.base.Charsets;
 import com.intellij.execution.ExecutionException;
-import com.intellij.execution.PsiLocation;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.util.ExecUtil;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
@@ -180,10 +179,12 @@ public class FlutterUtils {
     if (file == null) {
       if (element instanceof PsiDirectory) {
         pubRoot = PubRootCache.getInstance(project).getRoot(((PsiDirectory)element).getVirtualFile());
-      } else {
+      }
+      else {
         return false;
       }
-    } else {
+    }
+    else {
       pubRoot = PubRootCache.getInstance(project).getRoot(file);
     }
     if (pubRoot == null) {
