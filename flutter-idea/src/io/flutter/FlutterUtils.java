@@ -7,6 +7,7 @@ package io.flutter;
 
 import com.google.common.base.Charsets;
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.PsiLocation;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.util.ExecUtil;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
@@ -29,6 +30,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.LightVirtualFile;
@@ -174,10 +176,16 @@ public class FlutterUtils {
    */
   public static boolean isInFlutterProject(@NotNull Project project, @NotNull PsiElement element) {
     final PsiFile file = element.getContainingFile();
+    final PubRoot pubRoot;
     if (file == null) {
-      return false;
+      if (element instanceof PsiDirectory) {
+        pubRoot = PubRootCache.getInstance(project).getRoot(((PsiDirectory)element).getVirtualFile());
+      } else {
+        return false;
+      }
+    } else {
+      pubRoot = PubRootCache.getInstance(project).getRoot(file);
     }
-    final PubRoot pubRoot = PubRootCache.getInstance(project).getRoot(file);
     if (pubRoot == null) {
       return false;
     }
