@@ -6,6 +6,7 @@
 package io.flutter.editor;
 
 import com.intellij.AppTopics;
+import com.intellij.application.options.CodeStyle;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.components.ServiceManager;
@@ -115,15 +116,15 @@ public class FlutterSaveActionsManager {
 
     if (DartAnalysisServerService.getInstance(myProject).serverReadyForRequest()) {
       if (settings.isOrganizeImportsOnSave()) {
-        performOrganizeThenFormat(document, file);
+        performOrganizeThenFormat(document, file, psiFile);
       }
       else {
-        performFormat(document, file, false);
+        performFormat(document, file, false, psiFile);
       }
     }
   }
 
-  private void performOrganizeThenFormat(@NotNull Document document, @NotNull VirtualFile file) {
+  private void performOrganizeThenFormat(@NotNull Document document, @NotNull VirtualFile file, @NotNull PsiFile psiFile) {
     final String filePath = file.getPath();
     final SourceFileEdit fileEdit = DartAnalysisServerService.getInstance(myProject).edit_organizeDirectives(filePath);
 
@@ -148,7 +149,7 @@ public class FlutterSaveActionsManager {
             // Run this in an invoke later so that we don't exeucte the initial part of performFormat in a write action.
             //noinspection CodeBlock2Expr
             ApplicationManager.getApplication().invokeLater(() -> {
-              performFormat(document, file, true);
+              performFormat(document, file, true, psiFile);
             });
           }
         }.execute();
@@ -156,8 +157,8 @@ public class FlutterSaveActionsManager {
     }
   }
 
-  private void performFormat(@NotNull Document document, @NotNull VirtualFile file, boolean reSave) {
-    final int lineLength = getRightMargin(myProject);
+  private void performFormat(@NotNull Document document, @NotNull VirtualFile file, boolean reSave, @NotNull PsiFile psiFile) {
+    final int lineLength = getRightMargin(psiFile);
     final DartAnalysisServerService das = DartAnalysisServerService.getInstance(myProject);
 
     das.updateFilesContent();
@@ -206,7 +207,7 @@ public class FlutterSaveActionsManager {
     });
   }
 
-  private static int getRightMargin(@NotNull Project project) {
-    return CodeStyleSettingsManager.getSettings(project).getCommonSettings(DartLanguage.INSTANCE).RIGHT_MARGIN;
+  private static int getRightMargin(@NotNull PsiFile psiFile) {
+    return CodeStyle.getLanguageSettings(psiFile, DartLanguage.INSTANCE).RIGHT_MARGIN;
   }
 }
