@@ -28,14 +28,14 @@ fi
 java -version
 
 # Get packages for the top-level grind script utilities.
-echo "pub get `pwd`"
-pub get
+echo "dart pub get `pwd`"
+dart pub get
 
 # Get packages for the test data.
-(cd flutter-idea/testData/sample_tests; echo "pub get `pwd`"; pub get)
+(cd flutter-idea/testData/sample_tests; echo "dart pub get `pwd`"; dart pub get)
 
 # Set up the plugin tool.
-(cd tool/plugin; echo "pub get `pwd`"; pub get)
+(cd tool/plugin; echo "dart pub get `pwd`"; dart pub get)
 
 if [ "DART_BOT" = "$BOT" ] ; then
 

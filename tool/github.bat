@@ -15,9 +15,9 @@ echo "dart version"
 dart --version
 
 cd tool\plugin
-echo "pub get"
+echo "dart pub get"
 rem Use "call" to run the script otherwise this job ends when the script exits.
-call pub get --no-precompile
+call dart pub get --no-precompile
 cd ..\..
 
 echo "run tests"
