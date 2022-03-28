@@ -46,7 +46,6 @@ void main() {
               'android-studio',
               'android-studio',
               'android-studio',
-              'android-studio',
               'ideaIC',
               'ideaIC',
             ]));
@@ -64,7 +63,6 @@ void main() {
               'android-studio',
               'android-studio',
               'android-studio',
-              'android-studio',
               'ideaIC',
               'ideaIC',
             ]));
@@ -79,7 +77,6 @@ void main() {
         expect(
             specs.map((spec) => spec.ideaProduct).toList(),
             orderedEquals([
-              'android-studio',
               'android-studio',
               'android-studio',
               'android-studio',

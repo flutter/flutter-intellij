@@ -30,6 +30,6 @@ setup() {
   export FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME=flutter-intellij-plugin-jxbrowser-license-key
   export NO_FS_ROOTS_ACCESS_CHECK=true
 
-  (cd tool/plugin; echo "pub get `pwd`"; pub get --no-precompile)
+  (cd tool/plugin; echo "dart pub get `pwd`"; dart pub get --no-precompile)
   ./gradlew --version
 }
