@@ -69,7 +69,8 @@ public class FakeWorkspaceFactory {
           sdkHome,
           requiredIJPluginID,
           requiredIJPluginMessage,
-          configWarningMessage
+          configWarningMessage,
+          ""
         )
       )
     );
