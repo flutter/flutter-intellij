@@ -53,34 +53,10 @@ List<EditCommand> editCommands = [
     version: '2022.1',
   ),
   Subst(
-    path: 'flutter-idea/src/io/flutter/utils/CollectionUtils.java',
-    initial: 'Predicate<T> predicate',
-    replacement: 'Predicate<? super T> predicate',
-    version: 'AF.3.1',
-  ),
-  Subst(
-    path: 'resources/META-INF/studio-contribs.xml',
-    initial: 'JavaNewProjectOrModuleGroup',
-    replacement: 'NewProjectOrModuleGroup',
-    version: 'AF.3.1',
-  ),
-  Subst(
-    path: 'flutter-idea/src/io/flutter/sdk/FlutterSdkUtil.java',
-    initial: 'JsonParser.parseString(contents)',
-    replacement: 'new JsonParser().parse(contents)',
-    version: 'AF.3.1',
-  ),
-  Subst(
-    path: 'flutter-idea/src/io/flutter/jxbrowser/JxBrowserManager.java',
-    initial: 'loadClasses(fileNames)',
-    replacement: 'loadClasses2020(fileNames)',
-    versions: ['AF.3.1'],
-  ),
-  Subst(
-    path: 'flutter-idea/src/io/flutter/utils/FileUtils.java',
-    initial: 'urlClassLoader.addFiles(paths)',
-    replacement: '//urlClassLoader.addFiles(paths)',
-    versions: ['AF.3.1'],
+    path: 'flutter-idea/src/io/flutter/pub/PubRoot.java',
+    initial: 'String @NotNull [] TEST_DIRS',
+    replacement: 'String [] TEST_DIRS',
+    versions: ['AS.211', 'AS.212', '2021.3'],
   ),
 ];
 

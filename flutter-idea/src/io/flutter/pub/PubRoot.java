@@ -175,6 +175,13 @@ public class PubRoot {
     return path.substring(root.length() + 1);
   }
 
+  private static final String @NotNull [] TEST_DIRS = new String[] {
+    "/test/",
+    "/integration_test/",
+    "/test_driver/",
+    "/testing/"
+  };
+
   /**
    * Returns true if the given file is a directory that contains tests.
    */
@@ -184,13 +191,12 @@ public class PubRoot {
     // We can run tests in the pub root. (It will look in the test dir.)
     if (getRoot().equals(dir)) return true;
 
-    // Any directory in the test dir or below is also okay.
-    final VirtualFile wanted = getTestDir();
-    if (wanted == null) return false;
-
-    while (dir != null) {
-      if (wanted.equals(dir)) return true;
-      dir = dir.getParent();
+    String path = dir.getPath() + "/";
+    // Any directory in a test dir or below is also okay.
+    for (String testDir : TEST_DIRS) {
+      if (path.contains(testDir)) {
+        return true;
+      }
     }
     return false;
   }
@@ -348,11 +354,6 @@ public class PubRoot {
       }
     }
     return null;
-  }
-
-  @Nullable
-  public VirtualFile getTestDir() {
-    return root.findChild("test");
   }
 
   @Nullable

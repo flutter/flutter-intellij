@@ -29,6 +29,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.LightVirtualFile;
@@ -174,10 +175,18 @@ public class FlutterUtils {
    */
   public static boolean isInFlutterProject(@NotNull Project project, @NotNull PsiElement element) {
     final PsiFile file = element.getContainingFile();
+    final PubRoot pubRoot;
     if (file == null) {
-      return false;
+      if (element instanceof PsiDirectory) {
+        pubRoot = PubRootCache.getInstance(project).getRoot(((PsiDirectory)element).getVirtualFile());
+      }
+      else {
+        return false;
+      }
     }
-    final PubRoot pubRoot = PubRootCache.getInstance(project).getRoot(file);
+    else {
+      pubRoot = PubRootCache.getInstance(project).getRoot(file);
+    }
     if (pubRoot == null) {
       return false;
     }
@@ -191,13 +200,13 @@ public class FlutterUtils {
     final PubRoot root = PubRootCache.getInstance(file.getProject()).getRoot(file.getVirtualFile().getParent());
     if (root == null) return false;
 
-    // Check that we're in a project path that starts with 'test/'.
-    final String relativePath = root.getRelativePath(file.getVirtualFile());
-    if (relativePath == null) {
+    //noinspection ConstantConditions
+    VirtualFile dir = file.getVirtualFile().getParent();
+    if (dir == null) {
       return false;
     }
     final Module module = root.getModule(file.getProject());
-    if (!(relativePath.startsWith("test/") || relativePath.startsWith("integration_test/"))) {
+    if (!root.hasTests(dir)) {
       if (!isInTestOrSourceRoot(module, file)) {
         return false;
       }
