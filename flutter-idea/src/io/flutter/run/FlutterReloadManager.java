@@ -24,6 +24,7 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.ex.AnActionListener;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
@@ -37,6 +38,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -68,6 +70,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -194,6 +197,15 @@ public class FlutterReloadManager {
   private void handleSaveAllNotification(@Nullable Editor editor) {
     if (!FlutterSettings.getInstance().isReloadOnSave() || editor == null) {
       return;
+    }
+
+    @NotNull Path configPath = PathManager.getConfigDir();
+    @Nullable VirtualFile file = FileDocumentManager.getInstance().getFile(editor.getDocument());
+    if (file == null) {
+      return;
+    }
+    if (file.getPath().startsWith(configPath.toString())) {
+      return; // Ignore changes to scratch files.
     }
 
     final AnAction reloadAction = ProjectActions.getAction(myProject, ReloadFlutterApp.ID);
