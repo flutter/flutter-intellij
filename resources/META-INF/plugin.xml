@@ -45,6 +45,18 @@
 
   <change-notes>
     <![CDATA[
+<h1>66.0</h1>
+<ul>
+  <li>Ignore scratch files during hot reload on save (#6064)</li>
+  <li>Stop using some deprecated methods (#5994)</li>
+  <li>Allow directories to be recognized as part of a Flutter project (#6057)</li>
+  <li>Drop 2020.3, update Dart plugin for latest EAP (#6059)</li>
+  <li>Check for bazel workspace when using VM mapping (#6055)</li>
+  <li>Add jxbrowser log file for easier debugging (#6051)</li>
+  <li>Notify bazel users to try running iOS apps (#6028)</li>
+  <li>Use VM service for mapping breakpoint URIs (#6044)</li>
+  <li>Send internal errors to analytics for disconnections (#6005)</li>
+</ul>
 <h1>65.0</h1>
 <ul>
   <li>Change .packages file use to package config file (#5993)</li>
