@@ -184,6 +184,7 @@ public class LaunchCommandsTest {
       null,
       null,
       null,
+      null,
       null
     );
     boolean didThrow = false;
@@ -209,6 +210,7 @@ public class LaunchCommandsTest {
       null,
       null,
       null,
+      null,
       null
     );
     boolean didThrow = false;
@@ -227,6 +229,7 @@ public class LaunchCommandsTest {
       new BazelTestFields(null, "/workspace/foo/test/foo_test.dart", "//foo:test", "--ignored-args"),
       "scripts/daemon.sh",
       "scripts/doctor.sh",
+      null,
       null,
       null,
       null,
@@ -299,10 +302,11 @@ public class LaunchCommandsTest {
                         @Nullable String versionFile,
                         @Nullable String requiredIJPluginID,
                         @Nullable String requiredIJPluginMessage,
-                        @Nullable String configWarningMessage) {
+                        @Nullable String configWarningMessage,
+                        @Nullable String updatedIosRunMessage) {
       super(template);
       final Pair.NonNull<MockVirtualFileSystem, Workspace> pair = FakeWorkspaceFactory
-        .createWorkspaceAndFilesystem(daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile, requiredIJPluginID, requiredIJPluginMessage, configWarningMessage);
+        .createWorkspaceAndFilesystem(daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile, requiredIJPluginID, requiredIJPluginMessage, configWarningMessage, updatedIosRunMessage);
       fs = pair.first;
       fakeWorkspace = pair.second;
     }
