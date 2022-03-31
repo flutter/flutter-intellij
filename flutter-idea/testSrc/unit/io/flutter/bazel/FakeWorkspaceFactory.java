@@ -7,6 +7,7 @@ package io.flutter.bazel;
 
 import com.intellij.mock.MockVirtualFileSystem;
 import com.intellij.openapi.util.Pair;
+import org.dartlang.vm.service.element.Null;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,7 +26,8 @@ public class FakeWorkspaceFactory {
     @Nullable String versionFile,
     @Nullable String requiredIJPluginID,
     @Nullable String requiredIJPluginMessage,
-    @Nullable String configWarningMessage
+    @Nullable String configWarningMessage,
+    @Nullable String updatedIosRunMessage
   ) {
     final MockVirtualFileSystem fs = new MockVirtualFileSystem();
     fs.file("/workspace/WORKSPACE", "");
@@ -70,7 +72,7 @@ public class FakeWorkspaceFactory {
           requiredIJPluginID,
           requiredIJPluginMessage,
           configWarningMessage,
-          ""
+          updatedIosRunMessage
         )
       )
     );
@@ -93,7 +95,8 @@ public class FakeWorkspaceFactory {
       "flutter-version",
       "some.ij.plugin.id",
       "Some IJ Plugin ID Message",
-      "Config warning message"
+      "Config warning message",
+      "Updated iOS run message"
     );
   }
 }
