@@ -60,18 +60,21 @@
           <text value="The entry-point for the application (e.g. lib/main.dart)."/>
         </properties>
       </component>
-      <component id="e7876" class="javax.swing.JTextField" binding="myAdditionalArgumentsField">
+      <component id="4882d" class="com.intellij.ui.components.fields.ExpandableTextField" binding="myAdditionalArgumentsField">
         <constraints>
           <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties/>
+        <properties>
+          <margin top="1" left="6" bottom="1" right="27"/>
+          <text value=""/>
+        </properties>
       </component>
       <component id="7656f" class="javax.swing.JLabel">
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <labelFor value="e7876"/>
+          <labelFor value="4882d"/>
           <text value="Additional run &amp;args:"/>
           <toolTipText value="Additional command-line arguments to pass into 'flutter run'."/>
         </properties>
@@ -85,18 +88,20 @@
           <text value="Additional arguments to 'flutter run'."/>
         </properties>
       </component>
-      <component id="7a4a6" class="javax.swing.JTextField" binding="myAttachArgsField">
+      <component id="c681d" class="com.intellij.ui.components.fields.ExpandableTextField" binding="myAttachArgsField">
         <constraints>
           <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties/>
+        <properties>
+          <margin top="1" left="6" bottom="1" right="27"/>
+        </properties>
       </component>
       <component id="42996" class="javax.swing.JLabel">
         <constraints>
           <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <labelFor value="e7876"/>
+          <labelFor value="4882d"/>
           <text value="Additional a&amp;ttach args:"/>
           <toolTipText value="Additional command-line arguments to pass into 'flutter attach'."/>
         </properties>

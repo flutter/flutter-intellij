@@ -13,6 +13,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.ui.components.fields.ExtendableTextField;
+import com.intellij.util.ui.UIUtil;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,9 +28,9 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig>
   private JPanel myMainPanel;
   private JLabel myDartFileLabel;
   private TextFieldWithBrowseButton myFileField;
-  private JTextField myAdditionalArgumentsField;
+  private com.intellij.ui.components.fields.ExpandableTextField myAdditionalArgumentsField;
   private JTextField myBuildFlavorField;
-  private JTextField myAttachArgsField;
+  private com.intellij.ui.components.fields.ExpandableTextField myAttachArgsField;
   private EnvironmentVariablesTextFieldWithBrowseButton myEnvironmentVariables;
   private JLabel myEnvvarLabel;
 
