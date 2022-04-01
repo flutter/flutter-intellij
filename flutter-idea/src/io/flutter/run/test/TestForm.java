@@ -41,7 +41,7 @@ public class TestForm extends SettingsEditor<TestConfig> {
   private JTextField testName;
   private JLabel testNameHintLabel;
 
-  private com.intellij.ui.components.fields.ExtendableTextField additionalArgs;
+  private com.intellij.ui.components.fields.ExpandableTextField additionalArgs;
 
   private Scope displayedScope;
 

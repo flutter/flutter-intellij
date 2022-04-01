@@ -28,9 +28,9 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig>
   private JPanel myMainPanel;
   private JLabel myDartFileLabel;
   private TextFieldWithBrowseButton myFileField;
-  private ExtendableTextField myAdditionalArgumentsField;
+  private com.intellij.ui.components.fields.ExpandableTextField myAdditionalArgumentsField;
   private JTextField myBuildFlavorField;
-  private ExtendableTextField myAttachArgsField;
+  private com.intellij.ui.components.fields.ExpandableTextField myAttachArgsField;
   private EnvironmentVariablesTextFieldWithBrowseButton myEnvironmentVariables;
   private JLabel myEnvvarLabel;
 
