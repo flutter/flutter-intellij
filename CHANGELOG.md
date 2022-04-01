@@ -1,4 +1,5 @@
 # 66.0
+- Use expandable test field for run args (#6065)
 - Ignore scratch files during hot reload on save (#6064)
 - Stop using some deprecated methods (#5994)
 - Allow directories to be recognized as part of a Flutter project (#6057)

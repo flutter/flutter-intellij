@@ -47,6 +47,7 @@
     <![CDATA[
 <h1>66.0</h1>
 <ul>
+  <li>Use expandable test field for run args (#6065)</li>
   <li>Ignore scratch files during hot reload on save (#6064)</li>
   <li>Stop using some deprecated methods (#5994)</li>
   <li>Allow directories to be recognized as part of a Flutter project (#6057)</li>
