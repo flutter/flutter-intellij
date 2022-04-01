@@ -37,6 +37,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.util.NlsSafe;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
@@ -69,6 +70,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -206,6 +208,12 @@ public class FlutterReloadManager {
     }
     if (file.getPath().startsWith(configPath.toString())) {
       return; // Ignore changes to scratch files.
+    }
+    if (System.currentTimeMillis() - file.getTimeStamp() > 500) {
+      // If the file was saved in the last half-second, assume it should trigger hot reload
+      // because it was probably just saved before this notification was generated.
+      // Files saved a long time ago should not trigger hot reload.
+      return;
     }
 
     final AnAction reloadAction = ProjectActions.getAction(myProject, ReloadFlutterApp.ID);
