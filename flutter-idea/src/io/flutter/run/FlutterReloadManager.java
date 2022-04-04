@@ -38,6 +38,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.NlsSafe;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
@@ -201,7 +202,10 @@ public class FlutterReloadManager {
       return;
     }
 
-    @NotNull Path configPath = PathManager.getConfigDir();
+    @NotNull String configPath = PathManager.getConfigDir().toString();
+    if (SystemInfo.isWindows) {
+      configPath = configPath.replace('\\', '/');
+    }
     @Nullable VirtualFile file = FileDocumentManager.getInstance().getFile(editor.getDocument());
     if (file == null) {
       return;
