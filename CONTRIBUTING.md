@@ -35,6 +35,17 @@ file.
   - Determine the directory of your downloaded IntelliJ Community Edition installation 
     (e.g, `IntelliJ IDEA CE.app`, `~/idea-IC-183.4886.37` or 
     `~/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-0/211.6693.111/IntelliJ IDEA.app`)
+* Set your JAVA_HOME directory.
+    - On Mac, the following works:
+      Check what version of java you have:
+      ```
+      /usr/libexec/java_home -V
+      ```
+      Set your JAVA_HOME env variable to match that version. In this example, my Java version was `11.0.14.1`
+
+      ```
+      export JAVA_HOME=`/usr/libexec/java_home -v 11.0.14.1`
+      ```
 * Download Dart and other dependencies from the command line:
     - `cd path/to/flutter-intellij`
     - `flutter pub get`
