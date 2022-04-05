@@ -36,3 +36,4 @@ flutter-studio/.gradle/
 flutter-idea/build/
 flutter-idea/.gradle/
 tool/plugin/.idea
+**/gradle-wrapper.jar
