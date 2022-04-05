@@ -1,4 +1,4 @@
-# This project requires several binary artifacts
+# This project requires several binary artifacts.
 #
 # The Gradle wrapper is part of the Gradle distribution.
 # The Gradle wrappers are used by the plugin tool to maintain the repo:
@@ -15,7 +15,7 @@
 # They are used to embed Dart DevTools in Android Studio.
 #
 # The Java string similarity library is used to find partial or close
-# matches of file names when locating icoon libraries. It is obtained
+# matches of file names when locating icon libraries. It is obtained
 # from https://github.com/tdebatty/java-string-similarity
 #
 optConfig:
