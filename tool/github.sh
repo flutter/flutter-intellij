@@ -28,7 +28,7 @@ fi
 java -version
 
 # Get packages for the top-level grind script utilities.
-echo "dart pub get `pwd`"
+echo "pub get `pwd`"
 dart pub get
 
 # Get packages for the test data.
