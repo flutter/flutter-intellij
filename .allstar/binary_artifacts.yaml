@@ -1,4 +1,5 @@
 # This project requires several binary artifacts.
+# Exemption timeframe: permanent.
 #
 # The Gradle wrapper is part of the Gradle distribution.
 # The Gradle wrappers are used by the plugin tool to maintain the repo:
