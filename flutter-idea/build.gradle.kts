@@ -77,9 +77,9 @@ dependencies {
     testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/ideaIC/plugins/git4idea/lib",
                          "include" to listOf("*.jar"))))
   }
-  compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/lib/jxbrowser",
+  compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/third_party/lib/jxbrowser",
                        "include" to listOf("*.jar"))))
-  testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/lib/jxbrowser",
+  testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/third_party/lib/jxbrowser",
                        "include" to listOf("*.jar"))))
   testImplementation("junit:junit:4.13.2")
   testImplementation(mapOf("group" to "org.mockito", "name" to "mockito-core", "version" to "2.2.2")) // 3.11.2 is latest

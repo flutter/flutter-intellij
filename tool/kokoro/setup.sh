@@ -31,5 +31,5 @@ setup() {
   export NO_FS_ROOTS_ACCESS_CHECK=true
 
   (cd tool/plugin; echo "dart pub get `pwd`"; dart pub get --no-precompile)
-  ./gradlew --version
+  ./third_party/gradlew --version
 }

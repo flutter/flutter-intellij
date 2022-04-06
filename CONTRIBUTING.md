@@ -111,8 +111,6 @@ The definition is in `resources/intellij/External Tools.xml`.
 
 ## Flutter plugin development on Windows
 
-THIS SECTION IS OUT-OF-DATE SINCE THE CONVERSION TO GRADLE
-
 These are notes taken while making a Windows dev env for the Flutter plugin.
 It assumes familiarity with the section about set-up on MacOS.
 However, this configuration includes IntelliJ source code. Before starting,
@@ -172,6 +170,8 @@ version of some code duplicated from the Dart plugin.
 ## Running plugin tests
 
 ### Using test run configurations in IntelliJ
+
+THIS SECTION IS OUT OF DATE SINCE THE CONVERSION TO GRADLE
 
 The IntelliJ test framework now requires unit tests to be run in a Gradle project. It is possible to
 import `flutter-intellij` as a Gradle project, but it is difficult, and not covered here. Instead,
@@ -242,7 +242,7 @@ file. Obviously, unit tests can only be run from the command line.
    module then add a module dependency from it to `flutter-intellij-community`. Also add a dependency on the Dart
    module unless using step 7.
 7. (Optional, when Dart sources are not usable.) Make sure the `flutter-intellij-community` module has a dependency on a library named
-   `Dart`. It should be pre-defined, but if it is out-of-date then adjust it to point to `flutter-intellij/lib/dart-plugin/xxx.yyyy/Dart.jar`.
+   `Dart`. It should be pre-defined, but if it is out-of-date then adjust it to point to `flutter-intellij/third_party/lib/dart-plugin/xxx.yyyy/Dart.jar`.
    Delete the Dart module from the Project Structure modules list.
 
 ## Working with Embedded DevTools (JxBrowser)

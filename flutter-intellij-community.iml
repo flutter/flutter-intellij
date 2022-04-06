@@ -59,7 +59,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/dart-plugin/deps/weberknecht-0.1.5.jar!/" />
+          <root url="jar://$MODULE_DIR$/thid_party/lib/dart-plugin/deps/weberknecht-0.1.5.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -85,7 +85,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-7.22.jar!/" />
+          <root url="jar://$MODULE_DIR$/thid_party/lib/jxbrowser/jxbrowser-7.22.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -94,7 +94,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jxbrowser/jxbrowser-swing-7.22.jar!/" />
+          <root url="jar://$MODULE_DIR$/thid_party/lib/jxbrowser/jxbrowser-swing-7.22.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -108,7 +108,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/dart-plugin/deps/json.jar!/" />
+          <root url="jar://$MODULE_DIR$/thid_party/lib/dart-plugin/deps/json.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

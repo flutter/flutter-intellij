@@ -1,0 +1,5 @@
+Gradle uses the Apache license. See
+https://github.com/gradle/gradle/blob/master/LICENSE
+
+(This file is separate from the gradle directory to
+minimize issues with automatic updates.)
