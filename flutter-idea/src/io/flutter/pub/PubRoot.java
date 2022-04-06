@@ -175,7 +175,7 @@ public class PubRoot {
     return path.substring(root.length() + 1);
   }
 
-  private static final String @NotNull [] TEST_DIRS = new String[] {
+  private static final String /*@NotNull*/ [] TEST_DIRS = new String[] { // TODO 2022.1
     "/test/",
     "/integration_test/",
     "/test_driver/",
