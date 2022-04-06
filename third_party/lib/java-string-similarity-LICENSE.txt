@@ -1,0 +1,2 @@
+The Java String Similarity library uses the MIT license. See
+https://github.com/tdebatty/java-string-similarity/blob/master/LICENSE.md

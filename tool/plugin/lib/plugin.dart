@@ -411,9 +411,9 @@ class GradleBuildCommand extends BuildCommand {
 
   Future<int> _stopDaemon() async {
     if (Platform.isWindows) {
-      return await exec('.\\gradlew.bat', ['--stop']);
+      return await exec('.\\third_party\\gradlew.bat', ['--stop']);
     } else {
-      return await exec('./gradlew', ['--stop']);
+      return await exec('./third_party/gradlew', ['--stop']);
     }
   }
 }
@@ -959,6 +959,7 @@ class TestCommand extends ProductCommand {
         return _runUnitTests(spec);
       }
     }
+    return 0;
   }
 
   Future<int> _runUnitTests(BuildSpec spec) async {

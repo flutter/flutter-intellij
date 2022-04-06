@@ -105,12 +105,12 @@ baseVersion=${spec.baseVersion}
           log('CANNOT BUILD ${spec.version} ON WINDOWS');
           return 0;
         }
-        result = await exec('.\\gradlew.bat', command);
+        result = await exec('.\\third_party\\gradlew.bat', command);
       } else {
         if (spec.version == '4.1') {
           return await runShellScript(command, spec);
         } else {
-          result = await exec('./gradlew', command);
+          result = await exec('./third_party/gradlew', command);
         }
       }
     } finally {
@@ -123,7 +123,7 @@ baseVersion=${spec.baseVersion}
     var script = '''
 #!/bin/bash
 export JAVA_HOME=\$JAVA_HOME_OLD
-./gradlew ${command.join(' ')}
+./third_party/gradlew ${command.join(' ')}
 ''';
     var systemTempDir = Directory.systemTemp;
     var dir = systemTempDir.createTempSync();

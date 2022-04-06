@@ -1,0 +1,2 @@
+The Dart plugin uses the Apache license. See
+https://github.com/JetBrains/intellij-plugins/blob/master/Dart/LICENSE.TXT

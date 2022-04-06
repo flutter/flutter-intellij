@@ -13,11 +13,11 @@ flutter-gui-tests/.gradle/
 flutter-gui-tests/guitest.log
 flutter-intellij.jar
 flutter-intellij.zip
-lib/*.jar
-lib/jxbrowser/*
-!lib/jxbrowser/jxbrowser-7.22.jar
-!lib/jxbrowser/jxbrowser-swing-7.22.jar
-!lib/java-string-similarity-2.0.0.jar
+third_party/lib/*.jar
+third_party/lib/jxbrowser/*
+!third_party/lib/jxbrowser/jxbrowser-7.22.jar
+!third_party/lib/jxbrowser/jxbrowser-swing-7.22.jar
+!third_party/lib/java-string-similarity-2.0.0.jar
 material-design-icons/
 out/
 pubspec.lock
@@ -36,3 +36,4 @@ flutter-studio/.gradle/
 flutter-idea/build/
 flutter-idea/.gradle/
 tool/plugin/.idea
+lib/kotlin*
