@@ -25,7 +25,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.analytics.Analytics;
+import io.flutter.analytics.FlutterAnalysisServerListener;
 import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.bazel.WorkspaceCache;
@@ -206,15 +208,15 @@ public class FlutterInitializer implements StartupActivity {
             }
           }
         });
+      boolean finalHasFlutterModule = hasFlutterModule;
       //noinspection DialogTitleCapitalization
       notification.addAction(new AnAction("Sounds good!") {
         @Override
         public void actionPerformed(@NotNull AnActionEvent event) {
           notification.expire();
-          final Analytics analytics = getAnalytics();
           // We only track for flutter projects.
-          if (FlutterModuleUtils.declaresFlutter(project)) {
-            ToolWindowTracker.track(project, analytics);
+          if (finalHasFlutterModule) {
+            enableAnalytics(project);
           }
         }
       });
@@ -230,10 +232,15 @@ public class FlutterInitializer implements StartupActivity {
     }
     else {
       // We only track for flutter projects.
-      if (FlutterModuleUtils.declaresFlutter(project)) {
-        ToolWindowTracker.track(project, getAnalytics());
+      if (hasFlutterModule) {
+        enableAnalytics(project);
       }
     }
+  }
+
+  private static void enableAnalytics(@NotNull Project project) {
+    ToolWindowTracker.track(project, getAnalytics());
+    DartAnalysisServerService.getInstance(project).addAnalysisServerListener(FlutterAnalysisServerListener.getInstance(project));
   }
 
   private void initializeToolWindows(@NotNull Project project) {

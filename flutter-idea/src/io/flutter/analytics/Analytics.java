@@ -75,7 +75,7 @@ public class Analytics {
   /**
    * Public for testing.
    */
-  public void setTransport(Transport transport) {
+  public void setTransport(@NotNull Transport transport) {
     this.transport = transport;
   }
 
@@ -85,18 +85,25 @@ public class Analytics {
     sendPayload("screenview", args, null);
   }
 
-  public void sendEvent(String category, String action) {
+  public void sendEvent(@NotNull String category, @NotNull String action) {
     sendEvent(category, action, null);
   }
 
-  public void sendEvent(String category, String action, @Nullable FlutterSdk flutterSdk) {
+  public void sendEvent(@NotNull String category, @NotNull String action, @Nullable FlutterSdk flutterSdk) {
     final Map<String, String> args = new HashMap<>();
     args.put("ec", category);
     args.put("ea", action);
     sendPayload("event", args, flutterSdk);
   }
 
-  public void sendEventMetric(String category, String action, int value) {
+  public void sendEventWithSdk(@NotNull String category, @NotNull String action, @NotNull String sdkVersion) {
+    final Map<String, String> args = new HashMap<>();
+    args.put("ec", category);
+    args.put("ea", action);
+    sendPayload("event", args, null, sdkVersion);
+  }
+
+  public void sendEventMetric(@NotNull String category, @NotNull String action, int value) {
     final Map<String, String> args = new HashMap<>();
     args.put("ec", category);
     args.put("ea", action);
@@ -104,7 +111,18 @@ public class Analytics {
     sendPayload("event", args, null);
   }
 
-  public void sendTiming(String category, String variable, long timeMillis) {
+  public void sendEvent(@NotNull String category, @NotNull String action, @NotNull String label, @NotNull String value) {
+    final Map<String, String> args = new HashMap<>();
+    args.put("ec", category);
+    args.put("ea", action);
+    if (!label.isEmpty()) {
+      args.put("el", label);
+    }
+    args.put("ev", value);
+    sendPayload("event", args, null);
+  }
+
+  public void sendTiming(@NotNull String category, @NotNull String variable, long timeMillis) {
     final Map<String, String> args = new HashMap<>();
     args.put("utc", category);
     args.put("utv", variable);
@@ -112,11 +130,11 @@ public class Analytics {
     sendPayload("timing", args, null);
   }
 
-  public void sendExpectedException(String location, Throwable throwable) {
+  public void sendExpectedException(@NotNull String location, @NotNull Throwable throwable) {
     sendEvent("expected-exception", location + ":" + throwable.getClass().getName());
   }
 
-  public void sendException(String throwableText, boolean isFatal) {
+  public void sendException(@NotNull String throwableText, boolean isFatal) {
     String description = throwableText;
     description = description.replaceAll("com.intellij.openapi.", "c.i.o.");
     description = description.replaceAll("com.intellij.", "c.i.");
@@ -133,6 +151,10 @@ public class Analytics {
   }
 
   private void sendPayload(@NotNull String hitType, @NotNull Map<String, String> args, @Nullable FlutterSdk flutterSdk) {
+    sendPayload(hitType, args, flutterSdk, null);
+  }
+
+  private void sendPayload(@NotNull String hitType, @NotNull Map<String, String> args, @Nullable FlutterSdk flutterSdk, @Nullable String sdkVersion) {
     if (!canSend()) {
       return;
     }
@@ -156,6 +178,8 @@ public class Analytics {
       if (flutterVersion.getVersionText() != null) {
         args.put("cd2", flutterVersion.getVersionText());
       }
+    } else if (sdkVersion != null) {
+      args.put("cd2", sdkVersion);
     }
 
     // Record whether this client uses bazel.

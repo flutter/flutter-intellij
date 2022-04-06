@@ -5,7 +5,10 @@
  */
 package io.flutter.utils;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.lang.UrlClassLoader;
+import com.jetbrains.lang.dart.DartFileType;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.net.URL;
@@ -76,4 +79,10 @@ public class FileUtils {
     final UrlClassLoader urlClassLoader = (UrlClassLoader) classLoader;
     urlClassLoader.addFiles(paths);
   }
+
+  public static boolean isDartFile(@NotNull VirtualFile file) {
+    return file.getFileType().equals(DartFileType.INSTANCE);
+  }}
+
+
 }
