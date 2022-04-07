@@ -82,7 +82,5 @@ public class FileUtils {
 
   public static boolean isDartFile(@NotNull VirtualFile file) {
     return file.getFileType().equals(DartFileType.INSTANCE);
-  }}
-
-
+  }
 }
