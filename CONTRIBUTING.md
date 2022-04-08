@@ -2,7 +2,11 @@
 
 ![GitHub contributors](https://img.shields.io/github/contributors/flutter/flutter-intellij.svg)
 
-We gladly accept contributions via GitHub pull requests!
+We gladly accept contributions via GitHub pull requests! If you are new to codiing IntelliJ
+plugins, here are a couple links to get started:
+
+- [INTRODUCTION TO CREATING INTELLIJ IDEA PLUGINS](https://developerlife.com/2020/11/21/idea-plugin-example-intro/)
+- [ADVANCED GUIDE TO CREATING INTELLIJ IDEA PLUGINS](https://developerlife.com/2021/03/13/ij-idea-plugin-advanced/)
 
 You must complete the
 [Contributor License Agreement](https://cla.developers.google.com/clas).
