@@ -24,7 +24,6 @@ import org.dartlang.analysis.server.protocol.AnalysisStatus;
 import org.dartlang.analysis.server.protocol.PubStatus;
 import org.dartlang.analysis.server.protocol.RequestError;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -115,7 +114,7 @@ public class FlutterAnalysisServerListenerTest {
     Editor editor = editor();
     Testing.runOnDispatchThread(() -> {
       editor.getSelectionModel().setSelection(18, 18);
-      fasl.lookupSelectionHandler = new FlutterAnalysisServerListener.LookupSelectionHandler();
+      fasl.setLookupSelectionHandler();
       LookupImpl lookup = new LookupImpl(project, editor, new LookupArranger.DefaultArranger());
       LookupItem item = new LookupItem(LookupItem.TYPE_TEXT_ATTR, "gr");
       lookup.addItem(item, PrefixMatcher.ALWAYS_TRUE);
@@ -135,7 +134,7 @@ public class FlutterAnalysisServerListenerTest {
     Editor editor = editor();
     Testing.runOnDispatchThread(() -> {
       editor.getSelectionModel().setSelection(18, 18);
-      fasl.lookupSelectionHandler = new FlutterAnalysisServerListener.LookupSelectionHandler();
+      fasl.setLookupSelectionHandler();
       LookupImpl lookup = new LookupImpl(project, editor, new LookupArranger.DefaultArranger());
       LookupItem item = new LookupItem(LookupItem.TYPE_TEXT_ATTR, "gr");
       lookup.addItem(item, PrefixMatcher.ALWAYS_TRUE);
@@ -168,10 +167,10 @@ public class FlutterAnalysisServerListenerTest {
   public void serverStatus() throws Exception {
     fasl.serverStatus(new AnalysisStatus(false, null), new PubStatus(false));
     assertEquals(4, transport.sentValues.size());
-    checkStatus(transport.sentValues.get(0), ERRORS, "0");
-    checkStatus(transport.sentValues.get(1), WARNINGS, "0");
-    checkStatus(transport.sentValues.get(2), HINTS, "0");
-    checkStatus(transport.sentValues.get(3), LINTS, "0");
+    checkStatus(transport.sentValues.get(0), ERRORS, "1");
+    checkStatus(transport.sentValues.get(1), WARNINGS, "1");
+    checkStatus(transport.sentValues.get(2), HINTS, "1");
+    checkStatus(transport.sentValues.get(3), LINTS, "1");
   }
 
   private void checkStatus(@NotNull Map<String, String> map, String label, String value) {
