@@ -63,7 +63,7 @@ List<EditCommand> editCommands = [
     path: 'flutter-idea/src/io/flutter/analytics/FlutterAnalysisServerListener.java',
     initial: '<@NotNull Analytics>',
     replacement: '<Analytics>',
-    versions: ['AF.3.1', 'AS.211', 'AS.212'],
+    versions: [AS.211', 'AS.212', '2021.3'],
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/analytics/DartCompletionTimerListener.java',
