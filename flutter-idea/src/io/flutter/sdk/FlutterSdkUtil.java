@@ -244,12 +244,14 @@ public class FlutterSdkUtil {
   // TODO(devoncarew): The Dart plugin supports specifying individual modules in the settings page.
 
   /**
-   * Do a best-effort basis to enable Dart support for the given project.
+   * Enable Dart support for the given project.
    */
   public static void enableDartSdk(@NotNull final Project project) {
-    final Module[] modules = ModuleManager.getInstance(project).getModules();
-    if (modules.length == 1) {
-      DartPlugin.enableDartSdk(modules[0]);
+    //noinspection ConstantConditions
+    for (Module module : ModuleManager.getInstance(project).getModules()) {
+      if (module != null && !PubRoots.forModule(module).isEmpty()) {
+        DartPlugin.enableDartSdk(module);
+      }
     }
   }
 
