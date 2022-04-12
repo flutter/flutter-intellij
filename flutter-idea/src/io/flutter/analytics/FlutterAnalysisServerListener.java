@@ -140,7 +140,7 @@ public final class FlutterAnalysisServerListener extends AnalysisServerListenerA
     messageBusConnection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, fileEditorManagerListener);
     messageBusConnection.subscribe(ProjectManager.TOPIC, new ProjectManagerListener() {
       public void projectClosing(@NotNull Project project) {
-        messageBusConnection.disconnect(); // Do this first tvoid memory leaks when switching pojects.
+        messageBusConnection.disconnect(); // Do this first to void memory leaks when switching pojects.
         errorsTimestamp = 0L; // Ensure we always report error counts on shutdown.
         maybeReportErrorCounts(); // The ShutdownTracker only allows three seconds, so this might not always complete.
       }
