@@ -33,7 +33,7 @@ file.
 
 ## Flutter plugin development on MacOS and Linux
 
-* Download and install the latest stable version of IntelliJ (2021.1 or later)
+* Download and install the latest stable version of IntelliJ (2022.1 or later)
   - [IntelliJ Downloads](https://www.jetbrains.com/idea/download/)
   - Either the community edition (free) or Ultimate will work
   - Determine the directory of your downloaded IntelliJ Community Edition installation 
@@ -77,8 +77,13 @@ file.
 * Open the flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository).
   - If you see a popup with "Gradle build scripts found", confirm loading the Gradle project and confirm that you trust it
   - Ignore suggestion for protobuf-java plugin, unless you want it
-  - Build the project using `Build` | `Build Project`
-* Try running the plugin; elect the `flutter-intellij [runIde]` run config then click the Debug icon. This should open the "runtime workbench", 
+* Open `File > Project Structure`
+  - Select `Modules`
+  - Select the `Paths` tab
+  - For each module in the Modules list, select it and make sure it uses the inherited compile output path
+  - NOTE: Every time IntelliJ opens the project it resets the output path, so you need to repeat this
+* Build the project using `Build` | `Build Project`
+* Try running the plugin; select the `flutter-intellij [runIde]` run config then click the Debug icon. This should open the "runtime workbench", 
   a new instance of IntelliJ with the plugin installed.
   - If this causes an error message `Specified localPath '/.../flutter-intellij/artifacts/ideaIC' doesn't exist or is not a directory`, you may need to first build the plugin on the command line with `bin/plugin make`.
 * If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install"
