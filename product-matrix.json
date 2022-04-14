@@ -8,7 +8,7 @@
       "ideaProduct": "android-studio",
       "ideaVersion": "2021.1.1.8",
       "baseVersion": "211.7628.21",
-      "dartPluginVersion": "211.7727",
+      "dartPluginVersion": "211.7811",
       "sinceBuild": "211.6432.7",
       "untilBuild": "211.7727"
     },
@@ -20,7 +20,7 @@
       "ideaProduct": "android-studio",
       "ideaVersion": "2021.2.1.8",
       "baseVersion": "212.5457.46",
-      "dartPluginVersion": "212.5486",
+      "dartPluginVersion": "212.5742",
       "sinceBuild": "212.5457.46",
       "untilBuild": "212.5712.43"
     },
@@ -28,25 +28,25 @@
       "channel": "stable",
       "comments": "IntelliJ 2021.3, Android Studio 2021.3 Canary",
       "name": "2021.3",
-      "version": "2021.3",
+      "version": "AS.213",
       "ideaProduct": "android-studio",
-      "ideaVersion": "2021.3.1.1",
-      "baseVersion": "213.5744.223",
-      "dartPluginVersion": "213.5744.122",
+      "ideaVersion": "2021.3.1.8",
+      "baseVersion": "213.7172.25",
+      "dartPluginVersion": "213.7306",
       "sinceBuild": "213.6461.79",
       "untilBuild": "213.*"
     },
     {
       "channel": "setup",
-      "comments": "IntelliJ 2021.3",
+      "comments": "IntelliJ 2022.1",
       "name": "setup",
       "version": "setup",
       "ideaProduct": "ideaIC",
-      "ideaVersion": "2021.3.1.1",
-      "baseVersion": "213.5744.223",
-      "dartPluginVersion": "213.5744.122",
-      "sinceBuild": "213.5744.223",
-      "untilBuild": "213.*"
+      "ideaVersion": "2022.1",
+      "baseVersion": "221.5080.210",
+      "dartPluginVersion": "221.5177",
+      "sinceBuild": "221.5080.210",
+      "untilBuild": "221.*"
     },
     {
       "channel": "stable",
@@ -55,10 +55,10 @@
       "version": "2022.1",
       "isUnitTestTarget": "true",
       "ideaProduct": "ideaIC",
-      "ideaVersion": "221.4165.146",
-      "baseVersion": "LATEST-EAP-SNAPSHOT",
+      "ideaVersion": "2022.1",
+      "baseVersion": "221.5080.210",
       "dartPluginVersion": "221.5177",
-      "sinceBuild": "221.4906.8",
+      "sinceBuild": "221.5080.210",
       "untilBuild": "221.*"
     }
   ]
