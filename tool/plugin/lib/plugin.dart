@@ -28,6 +28,7 @@ Future<int> main(List<String> args) async {
   runner.addCommand(TestCommand(runner));
   runner.addCommand(DeployCommand(runner));
   runner.addCommand(GenerateCommand(runner));
+  runner.addCommand(SetupCommand(runner));
 
   try {
     return await runner.run(args) ?? 0;
@@ -304,70 +305,19 @@ class AntBuildCommand extends BuildCommand {
 
   @override
   Future<int> doit() async {
-    // TODO Convert this to a synonym of 'make'
-    log('Use "make" not "build"');
-    return 1;
+    return GradleBuildCommand(runner).doit();
   }
 
   @override
   Future<int> externalBuildCommand(BuildSpec spec) async {
-    var r = await runner.javac2(spec);
-    if (r == 0) {
-      // copy resources
-      copyResources(from: 'src', to: 'build/classes');
-      copyResources(from: 'resources', to: 'build/classes');
-      copyResources(from: 'gen', to: 'build/classes');
-      await genPluginFiles(spec, 'build/classes');
-    }
-    return r;
+    // Not used
+    return 0;
   }
 
   @override
   Future<int> savePluginArtifact(BuildSpec spec) async {
-    int result;
-
-    // create the jars
-    createDir('build/flutter-intellij/lib');
-    result = await jar(
-      'build/classes',
-      'build/flutter-intellij/lib/flutter-intellij.jar',
-    );
-    if (result != 0) {
-      log('jar failed: ${result.toString()}');
-      return result;
-    }
-    if (spec.isTestTarget && !isReleaseMode && !isDevChannel) {
-      _copyFile(
-        File('build/flutter-intellij/lib/flutter-intellij.jar'),
-        Directory(testTargetPath(spec)),
-        filename: 'io.flutter.jar',
-      );
-    }
-    if (spec.isAndroidStudio) {
-      result = await jar(
-        'build/studio',
-        'build/flutter-intellij/lib/flutter-studio.jar',
-      );
-      if (result != 0) {
-        log('jar failed: ${result.toString()}');
-        return result;
-      }
-    }
-
-    // zip it up
-    result = await zip('build/flutter-intellij', releasesFilePath(spec));
-    if (result != 0) {
-      log('zip failed: ${result.toString()}');
-      return result;
-    }
-    if (spec.copyIjVersion && !isReleaseMode && !isDevChannel) {
-      _copyFile(
-        File(releasesFilePath(spec)),
-        Directory(ijVersionPath(spec)),
-        filename: 'flutter-intellij.zip',
-      );
-    }
-    return result;
+    // Not used
+    return 0;
   }
 }
 
@@ -438,6 +388,7 @@ abstract class BuildCommand extends ProductCommand {
         defaultsTo: false);
     argParser.addOption('minor',
         abbr: 'm', help: 'Set the minor version number.');
+    argParser.addFlag('setup', abbr: 's', defaultsTo: true);
   }
 
   @override
@@ -450,91 +401,98 @@ abstract class BuildCommand extends ProductCommand {
 
   @override
   Future<int> doit() async {
-    if (isReleaseMode) {
-      if (argResults['unpack']) {
-        separator('Release mode (--release) implies --unpack');
-      }
-      if (!await performReleaseChecks(this)) {
-        return 1;
-      }
-    }
-
-    // Check to see if we should only be building a specific version.
-    String onlyVersion = argResults['only-version'];
-
-    var buildSpecs = specs;
-    if (onlyVersion != null && onlyVersion.isNotEmpty) {
-      buildSpecs = specs.where((spec) => spec.version == onlyVersion).toList();
-      if (buildSpecs.isEmpty) {
-        log("No spec found for version '$onlyVersion'");
-        return 1;
-      }
-    }
-
-    String minorNumber = argResults['minor'];
-    if (minorNumber != null) {
-      pluginCount = int.parse(minorNumber) - 1;
-    }
-
-    var result = 0;
-    for (var spec in buildSpecs) {
-      if (spec.channel != channel) {
-        continue;
-      }
-      if (!(isForIntelliJ && isForAndroidStudio)) {
-        // This is a little more complicated than I'd like because the default
-        // is to always do both.
-        if (isForAndroidStudio && !spec.isAndroidStudio) continue;
-        if (isForIntelliJ && spec.isAndroidStudio) continue;
+    try {
+      if (isReleaseMode) {
+        if (argResults['unpack']) {
+          separator('Release mode (--release) implies --unpack');
+        }
+        if (!await performReleaseChecks(this)) {
+          return 1;
+        }
       }
 
-      pluginCount++;
-      if (spec.isDevChannel && !isDevChannel) {
-        spec.buildForMaster();
+      // Check to see if we should only be building a specific version.
+      String onlyVersion = argResults['only-version'];
+
+      var buildSpecs = specs;
+      if (onlyVersion != null && onlyVersion.isNotEmpty) {
+        buildSpecs =
+            specs.where((spec) => spec.version == onlyVersion).toList();
+        if (buildSpecs.isEmpty) {
+          log("No spec found for version '$onlyVersion'");
+          return 1;
+        }
       }
 
-      result = await spec.artifacts.provision(
-        rebuildCache:
-            isReleaseMode || argResults['unpack'] || buildSpecs.length > 1,
-      );
-      if (result != 0) {
-        return result;
-      }
-      if (channel == 'setup') {
-        return 0;
+      String minorNumber = argResults['minor'];
+      if (minorNumber != null) {
+        pluginCount = int.parse(minorNumber) - 1;
       }
 
-      separator('Building flutter-intellij.jar');
-      await removeAll('build');
+      var result = 0;
+      for (var spec in buildSpecs) {
+        if (spec.channel != channel) {
+          continue;
+        }
+        if (!(isForIntelliJ && isForAndroidStudio)) {
+          // This is a little more complicated than I'd like because the default
+          // is to always do both.
+          if (isForAndroidStudio && !spec.isAndroidStudio) continue;
+          if (isForIntelliJ && spec.isAndroidStudio) continue;
+        }
 
-      log('spec.version: ${spec.version}');
+        pluginCount++;
+        if (spec.isDevChannel && !isDevChannel) {
+          spec.buildForMaster();
+        }
 
-      result = await applyEdits(spec, () async {
-        return await externalBuildCommand(spec);
-      });
-      if (result != 0) {
-        log('applyEdits() returned ${result.toString()}');
-        return result;
-      }
-
-      try {
-        result = await savePluginArtifact(spec);
+        result = await spec.artifacts.provision(
+          rebuildCache:
+          isReleaseMode || argResults['unpack'] || buildSpecs.length > 1,
+        );
         if (result != 0) {
           return result;
         }
-      } catch (ex) {
-        log("$ex");
-        return 1;
+        if (channel == 'setup') {
+          return 0;
+        }
+
+        separator('Building flutter-intellij.jar');
+        await removeAll('build');
+
+        log('spec.version: ${spec.version}');
+
+        result = await applyEdits(spec, () async {
+          return await externalBuildCommand(spec);
+        });
+        if (result != 0) {
+          log('applyEdits() returned ${result.toString()}');
+          return result;
+        }
+
+        try {
+          result = await savePluginArtifact(spec);
+          if (result != 0) {
+            return result;
+          }
+        } catch (ex) {
+          log("$ex");
+          return 1;
+        }
+
+        separator('Built artifact');
+        log(releasesFilePath(spec));
+      }
+      if (argResults['only-version'] == null) {
+        checkAndClearAppliedEditCommands();
       }
 
-      separator('Built artifact');
-      log(releasesFilePath(spec));
+      return 0;
+    } finally {
+      if (argResults['setup']) {
+        await SetupCommand(runner).run();
+      }
     }
-    if (argResults['only-version'] == null) {
-      checkAndClearAppliedEditCommands();
-    }
-
-    return 0;
   }
 }
 
@@ -922,6 +880,24 @@ class RenamePackageCommand extends ProductCommand {
   }
 }
 
+class SetupCommand extends Command {
+  @override
+  BuildCommandRunner runner;
+
+  SetupCommand(this.runner) : super();
+
+  @override
+  Future<int> run() async {
+    return await runner.run(['make', '-osetup', '-csetup', '-u', '--no-setup']);
+  }
+
+  @override
+  String get description => 'Unpack the artifacts required to debug the plugin in IntelliJ';
+
+  @override
+  String get name => 'setup';
+}
+
 /// Build the tests if necessary then run them and return any failure code.
 class TestCommand extends ProductCommand {
   @override
@@ -942,24 +918,29 @@ class TestCommand extends ProductCommand {
 
   @override
   Future<int> doit() async {
-    final javaHome = Platform.environment['JAVA_HOME'];
-    if (javaHome == null) {
-      log('JAVA_HOME environment variable not set - this is needed by gradle.');
-      return 1;
-    }
-
-    log('JAVA_HOME=$javaHome');
-
-    final spec = specs.firstWhere((s) => s.isUnitTestTarget);
-    await spec.artifacts.provision(rebuildCache: true);
-    if (!argResults['skip']) {
-      if (argResults['integration']) {
-        return _runIntegrationTests();
-      } else {
-        return _runUnitTests(spec);
+    try {
+      final javaHome = Platform.environment['JAVA_HOME'];
+      if (javaHome == null) {
+        log(
+            'JAVA_HOME environment variable not set - this is needed by gradle.');
+        return 1;
       }
+
+      log('JAVA_HOME=$javaHome');
+
+      final spec = specs.firstWhere((s) => s.isUnitTestTarget);
+      await spec.artifacts.provision(rebuildCache: true);
+      if (!argResults['skip']) {
+        if (argResults['integration']) {
+          return _runIntegrationTests();
+        } else {
+          return _runUnitTests(spec);
+        }
+      }
+      return 0;
+    } finally {
+      await SetupCommand(runner).run();
     }
-    return 0;
   }
 
   Future<int> _runUnitTests(BuildSpec spec) async {

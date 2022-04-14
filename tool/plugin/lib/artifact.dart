@@ -44,16 +44,6 @@ class ArtifactManager {
 
   final List<Artifact> artifacts = [];
 
-  Artifact javac;
-
-  ArtifactManager() {
-    javac = add(Artifact(
-      'intellij-javac2.zip',
-      output: 'javac2',
-      bareArchive: true,
-    ));
-  }
-
   Artifact add(Artifact artifact) {
     artifacts.add(artifact);
     return artifact;

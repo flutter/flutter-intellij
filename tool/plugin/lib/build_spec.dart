@@ -158,12 +158,12 @@ class BuildSpec {
 
   void buildForDev() {
     // Build everything. For release builds we do not build specs on the dev channel.
-    channel = 'dev';
+    if (channel == 'stable') channel = 'dev';
   }
 
   void buildForMaster() {
     // Ensure the dev-channel-only files are stored in release_master.
-    channel = 'stable';
+    if (channel == 'dev' )channel = 'stable';
   }
 }
 
