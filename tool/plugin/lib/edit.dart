@@ -29,22 +29,20 @@ void checkAndClearAppliedEditCommands() {
   appliedEditCommands.clear();
 }
 
-// TODO(messick): Remove edits for AS 4.2 when confident they won't be needed again.
 List<EditCommand> editCommands = [
-  EditAndroidModuleLibraryManager(),
   Subst(
     path: 'build.gradle.kts',
     initial:
         'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide")',
     replacement: 'type.set("IC")\n  version.set("LATEST-EAP-SNAPSHOT")',
-    version: '2022.1',
+    version: '2022.2',
   ),
   Subst(
     path: 'flutter-idea/build.gradle.kts',
     initial:
         'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide")',
     replacement: 'type.set("IC")\n  version.set("LATEST-EAP-SNAPSHOT")',
-    version: '2022.1',
+    version: '2022.2',
   ),
   Subst(
     path: 'flutter-idea/testSrc/unit/io/flutter/testing/Testing.java',
@@ -56,32 +54,32 @@ List<EditCommand> editCommands = [
     path: 'flutter-idea/src/io/flutter/pub/PubRoot.java',
     initial: 'String @NotNull [] TEST_DIRS',
     replacement: 'String [] TEST_DIRS',
-    versions: ['AS.211', 'AS.212', '2021.3'],
+    versions: ['AS.211', 'AS.212'],
   ),
   // Improved analytics will not be available to current stable or beta Android Studio and stable IntelliJ.
   Subst(
     path: 'flutter-idea/src/io/flutter/analytics/FlutterAnalysisServerListener.java',
     initial: '<@NotNull Analytics>',
     replacement: '<Analytics>',
-    versions: ['AS.211', 'AS.212', '2021.3'],
+    versions: ['AS.211', 'AS.212', 'AS.213'],
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/analytics/DartCompletionTimerListener.java',
     initial: 'import com.jetbrains.lang.dart.ide.completion.DartCompletionTimerExtension;',
     replacement: '',
-    versions: ['AF.3.1', 'AS.211', 'AS.212'],
+    versions: ['AS.211', 'AS.212', 'AS.213'],
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/analytics/DartCompletionTimerListener.java',
     initial: 'extends DartCompletionTimerExtension',
     replacement: '',
-    versions: ['AF.3.1', 'AS.211', 'AS.212'],
+    versions: ['AS.211', 'AS.212', 'AS.213'],
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/analytics/DartCompletionTimerListener.java',
     initial: '@Override',
     replacement: '',
-    versions: ['AF.3.1', 'AS.211', 'AS.212', '2021.3'],
+    versions: ['AS.211', 'AS.212', 'AS.213'],
   ),
 ];
 
@@ -93,60 +91,6 @@ class Unused extends EditCommand {
   @override
   String convert(BuildSpec spec) {
     return null;
-  }
-}
-
-class EditAndroidModuleLibraryManager extends EditCommand {
-  @override
-  String get path =>
-      'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java';
-
-  @override
-  String convert(BuildSpec spec) {
-    // Starting with 3.6 we need to call a simplified init().
-    // This is where the $PROJECT_FILE$ macro is defined, #registerComponents.
-    if (spec.version.startsWith('4.2')) {
-      var processedFile = File(
-          'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
-      var source = processedFile.readAsStringSync();
-      var original = source;
-      source = source.replaceAll("ProjectExImpl", "ProjectImpl");
-      source = source.replaceAll(
-          "super.init(false, indicator);", "super.init(indicator);");
-      source = source.replaceAll(
-          "import com.intellij.openapi.project.impl.ProjectExImpl;", "");
-      if (spec.version.startsWith('4.2')) {
-        source =
-            source.replaceAll("androidProject.init42", "androidProject.init41");
-        source = source.replaceAll("PluginManagerCore.getLoadedPlugins(), null",
-            "PluginManagerCore.getLoadedPlugins()");
-        source = source.replaceAll("getStateStore1", "getStateStore");
-        source = source.replaceAll("getEarlyDisposable1", "getEarlyDisposable");
-        source = source.replaceAll("getWorkspaceFile1", "getWorkspaceFile");
-        source = source.replaceAll("getProjectFilePath1", "getProjectFilePath");
-        source = source.replaceAll("getProjectFile1", "getProjectFile");
-        source = source.replaceAll("getBasePath1", "getBasePath");
-        source = source.replaceAll("getBaseDir1", "getBaseDir");
-        source = source.replaceAll("super(filePath, TEMPLATE_PROJECT_NAME)",
-            "super((ProjectImpl)getProject())");
-      }
-      processedFile.writeAsStringSync(source);
-      return original;
-    } else {
-      if (spec.version.startsWith('2021.2')) {
-        var processedFile = File(
-            'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
-        var source = processedFile.readAsStringSync();
-        var original = source;
-        source = source.replaceAll(
-            "PluginManagerCore.getLoadedPlugins(), null);",
-            "PluginManagerCore.getLoadedPlugins(), null, null, null);");
-        processedFile.writeAsStringSync(source);
-        return original;
-      } else {
-        return null;
-      }
-    }
   }
 }
 
