@@ -25,7 +25,7 @@
             <properties>
               <font style="1"/>
               <opaque value="false"/>
-              <text value="Help:"/>
+              <text value="Help: "/>
             </properties>
           </component>
           <vspacer id="d2ba8">
