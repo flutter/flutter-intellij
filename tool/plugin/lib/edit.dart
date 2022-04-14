@@ -67,19 +67,19 @@ List<EditCommand> editCommands = [
     path: 'flutter-idea/src/io/flutter/analytics/DartCompletionTimerListener.java',
     initial: 'import com.jetbrains.lang.dart.ide.completion.DartCompletionTimerExtension;',
     replacement: '',
-    versions: ['AS.211', 'AS.212'],
+    versions: ['AS.211', 'AS.212', 'AS.213'],
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/analytics/DartCompletionTimerListener.java',
     initial: 'extends DartCompletionTimerExtension',
     replacement: '',
-    versions: ['AS.211', 'AS.212'],
+    versions: ['AS.211', 'AS.212', 'AS.213'],
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/analytics/DartCompletionTimerListener.java',
     initial: '@Override',
     replacement: '',
-    versions: ['AS.211', 'AS.212'],
+    versions: ['AS.211', 'AS.212', 'AS.213'],
   ),
 ];
 
