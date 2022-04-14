@@ -58,6 +58,31 @@ List<EditCommand> editCommands = [
     replacement: 'String [] TEST_DIRS',
     versions: ['AS.211', 'AS.212', '2021.3'],
   ),
+  // Improved analytics will not be available to current stable or beta Android Studio and stable IntelliJ.
+  Subst(
+    path: 'flutter-idea/src/io/flutter/analytics/FlutterAnalysisServerListener.java',
+    initial: '<@NotNull Analytics>',
+    replacement: '<Analytics>',
+    versions: ['AS.211', 'AS.212', '2021.3'],
+  ),
+  Subst(
+    path: 'flutter-idea/src/io/flutter/analytics/DartCompletionTimerListener.java',
+    initial: 'import com.jetbrains.lang.dart.ide.completion.DartCompletionTimerExtension;',
+    replacement: '',
+    versions: ['AF.3.1', 'AS.211', 'AS.212'],
+  ),
+  Subst(
+    path: 'flutter-idea/src/io/flutter/analytics/DartCompletionTimerListener.java',
+    initial: 'extends DartCompletionTimerExtension',
+    replacement: '',
+    versions: ['AF.3.1', 'AS.211', 'AS.212'],
+  ),
+  Subst(
+    path: 'flutter-idea/src/io/flutter/analytics/DartCompletionTimerListener.java',
+    initial: '@Override',
+    replacement: '',
+    versions: ['AF.3.1', 'AS.211', 'AS.212', '2021.3'],
+  ),
 ];
 
 // Used to test checkAndClearAppliedEditCommands()

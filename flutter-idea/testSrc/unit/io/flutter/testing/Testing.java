@@ -35,7 +35,7 @@ public class Testing {
    */
   public static IdeaProjectFixture makeEmptyProject() {
     return new IdeaProjectFixture(
-      (x) -> IdeaTestFixtureFactory.getFixtureFactory().createLightFixtureBuilder().getFixture(), true);
+      (x) -> IdeaTestFixtureFactory.getFixtureFactory().createLightFixtureBuilder("test").getFixture(), true);
   }
 
   /**
@@ -53,7 +53,7 @@ public class Testing {
   public static CodeInsightProjectFixture makeCodeInsightModule() {
     return new CodeInsightProjectFixture((x) -> {
       final IdeaTestFixtureFactory factory = IdeaTestFixtureFactory.getFixtureFactory();
-      final IdeaProjectTestFixture light = factory.createLightFixtureBuilder().getFixture();
+      final IdeaProjectTestFixture light = factory.createLightFixtureBuilder("test").getFixture();
       return factory.createCodeInsightFixture(light);
     }, false);
   }
