@@ -30,31 +30,6 @@ class BuildCommandRunner extends CommandRunner {
     );
   }
 
-  // Use this to compile plugin sources using ant to get forms processed.
-  Future<int> javac2(BuildSpec spec) async {
-    var args = '''
--f tool/plugin/compile.xml
--Didea.product=${spec.ideaProduct}
--Didea.version=${spec.ideaVersion}
--Dbasedir=$rootPath
-compile
-''';
-    writeJxBrowserKeyToFile();
-    try {
-      return await exec('ant', args.split(RegExp(r'\s')));
-    } on ProcessException catch (x) {
-      if (x.message == 'No such file or directory') {
-        log(
-            '\nThe build command requires ant to be installed. '
-            '\nPlease ensure ant is on your \$PATH.',
-            indent: false);
-        exit(x.errorCode);
-      } else {
-        rethrow;
-      }
-    }
-  }
-
   void writeJxBrowserKeyToFile() {
     final jxBrowserKey =
         readTokenFromKeystore('FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME');
