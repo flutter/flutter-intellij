@@ -163,7 +163,7 @@ class BuildSpec {
 
   void buildForMaster() {
     // Ensure the dev-channel-only files are stored in release_master.
-    if (channel == 'de' )channel = 'stable';
+    if (channel == 'dev' )channel = 'stable';
   }
 }
 
