@@ -341,21 +341,19 @@ public class FlutterModuleUtils {
     return modulesConverted;
   }
 
+  // Return true if there is a module with the same name as the project plus the Android suffix.
   public static boolean hasAndroidModule(@NotNull Project project) {
-    boolean isAllMatch = true;
     for (PubRoot root : PubRoots.forProject(project)) {
       assert root != null;
       String name = PubspecYamlUtil.getDartProjectName(root.getPubspec());
       String moduleName = name + "_android";
-      boolean isMatch = false;
       for (Module module : FlutterModuleUtils.getModules(project)) {
         if (moduleName.equals(module.getName())) {
-          isMatch = true;
+          return true;
         }
       }
-      isAllMatch = isAllMatch && isMatch;
     }
-    return isAllMatch;
+    return false;
   }
 
   public static boolean isDeprecatedFlutterModuleType(@NotNull Module module) {
