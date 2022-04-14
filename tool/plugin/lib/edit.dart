@@ -45,41 +45,36 @@ List<EditCommand> editCommands = [
     version: '2022.2',
   ),
   Subst(
-    path: 'flutter-idea/testSrc/unit/io/flutter/testing/Testing.java',
-    initial: '.createLightFixtureBuilder()',
-    replacement: '.createLightFixtureBuilder("test")',
-    version: '2022.1',
-  ),
-  Subst(
     path: 'flutter-idea/src/io/flutter/pub/PubRoot.java',
     initial: 'String @NotNull [] TEST_DIRS',
     replacement: 'String [] TEST_DIRS',
     versions: ['AS.211', 'AS.212'],
   ),
-  // Improved analytics will not be available to current stable or beta Android Studio and stable IntelliJ.
   Subst(
     path: 'flutter-idea/src/io/flutter/analytics/FlutterAnalysisServerListener.java',
     initial: '<@NotNull Analytics>',
     replacement: '<Analytics>',
     versions: ['AS.211', 'AS.212', 'AS.213'],
   ),
+  // There is a puzzling problem with the Dart plugin used by the Kokoro run.
+  // These changes do not have to be made when running locally.
   Subst(
     path: 'flutter-idea/src/io/flutter/analytics/DartCompletionTimerListener.java',
     initial: 'import com.jetbrains.lang.dart.ide.completion.DartCompletionTimerExtension;',
     replacement: '',
-    versions: ['AS.211', 'AS.212', 'AS.213'],
+    versions: ['AS.211', 'AS.212', 'AS.213', '2022.1'],
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/analytics/DartCompletionTimerListener.java',
     initial: 'extends DartCompletionTimerExtension',
     replacement: '',
-    versions: ['AS.211', 'AS.212', 'AS.213'],
+    versions: ['AS.211', 'AS.212', 'AS.213', '2022.1'],
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/analytics/DartCompletionTimerListener.java',
     initial: '@Override',
     replacement: '',
-    versions: ['AS.211', 'AS.212', 'AS.213'],
+    versions: ['AS.211', 'AS.212', 'AS.213', '2022.1'],
   ),
 ];
 
