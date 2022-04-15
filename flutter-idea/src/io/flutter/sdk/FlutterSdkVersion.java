@@ -74,10 +74,9 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   /**
    * The version that implements URI mapping for web.
-   * TODO(helin24): Find correct version when https://github.com/flutter/flutter/commit/1880066dd3a092703e8985e188b8774e40a181b8 is tagged.
    */
   @NotNull
-  private static final FlutterSdkVersion MIN_URI_MAPPING_FOR_WEB = new FlutterSdkVersion("2.13.0");
+  private static final FlutterSdkVersion MIN_URI_MAPPING_FOR_WEB = new FlutterSdkVersion("2.13.0-0.1.pre");
 
   @Nullable
   private final Version version;
