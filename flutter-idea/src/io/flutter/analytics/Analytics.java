@@ -104,11 +104,15 @@ public class Analytics {
   }
 
   public void sendEventMetric(@NotNull String category, @NotNull String action, int value) {
+    sendEventMetric(category, action, value, null);
+  }
+
+  public void sendEventMetric(@NotNull String category, @NotNull String action, int value, @Nullable FlutterSdk flutterSdk) {
     final Map<String, String> args = new HashMap<>();
     args.put("ec", category);
     args.put("ea", action);
     args.put("ev", Integer.toString(value));
-    sendPayload("event", args, null);
+    sendPayload("event", args, flutterSdk);
   }
 
   public void sendEvent(@NotNull String category, @NotNull String action, @NotNull String label, @NotNull String value) {
