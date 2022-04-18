@@ -84,7 +84,8 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       FlutterInitializer.getAnalytics().sendEventMetric(
         "startup",
         "indexingFinished",
-        project.getService(TimeTracker.class).millisSinceProjectOpen()
+        project.getService(TimeTracker.class).millisSinceProjectOpen(),
+        FlutterSdk.getFlutterSdk(project)
       );
     });
 
