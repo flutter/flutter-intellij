@@ -19,7 +19,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.Version;
 import com.intellij.openapi.util.io.FileUtil;
+import com.jetbrains.lang.dart.sdk.DartSdk;
+import com.jetbrains.lang.dart.sdk.DartSdkUtil;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
@@ -105,7 +108,19 @@ public class DevToolsService {
   private void startServer() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-      if (WorkspaceCache.getInstance(project).isBazel() || (sdk != null && sdk.getVersion().useDaemonForDevTools())) {
+
+      boolean dartDevToolsSupported = false;
+      final DartSdk dartSdk = DartSdk.getDartSdk(project);
+      if (dartSdk != null) {
+        final Version version = Version.parseVersion(dartSdk.getVersion());
+        assert version != null;
+        dartDevToolsSupported = version.compareTo(2, 15, 0) >= 0;
+      }
+
+      if (dartDevToolsSupported) {
+        setUpWithDart();
+      }
+      else if (WorkspaceCache.getInstance(project).isBazel() || (sdk != null && sdk.getVersion().useDaemonForDevTools())) {
         setUpWithDaemon();
       }
       else {
@@ -113,6 +128,58 @@ public class DevToolsService {
         setUpWithPub();
       }
     });
+  }
+
+  private void setUpWithDart() {
+    final GeneralCommandLine command =
+      createCommand(DartSdk.getDartSdk(project).getHomePath(), "dart", ImmutableList.of("devtools", "--machine"));
+    try {
+      this.process = new MostlySilentColoredProcessHandler(command);
+      this.process.addProcessListener(new ProcessAdapter() {
+        @Override
+        public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
+          final String text = event.getText().trim();
+
+          if (text.startsWith("{") && text.endsWith("}")) {
+            // {"event":"server.started","params":{"host":"127.0.0.1","port":9100}}
+
+            try {
+              final JsonElement element = JsonUtils.parseString(text);
+
+              final JsonObject obj = element.getAsJsonObject();
+
+              if (JsonUtils.getStringMember(obj, "event").equals("server.started")) {
+                final JsonObject params = obj.getAsJsonObject("params");
+                final String host = JsonUtils.getStringMember(params, "host");
+                final int port = JsonUtils.getIntMember(params, "port");
+
+                if (port != -1) {
+                  devToolsFutureRef.get().complete(new DevToolsInstance(host, port));
+                }
+                else {
+                  logExceptionAndComplete("DevTools port was invalid");
+                }
+              }
+            }
+            catch (JsonSyntaxException e) {
+              logExceptionAndComplete(e);
+            }
+          }
+        }
+      });
+      process.startNotify();
+
+      ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
+        @Override
+        public void projectClosing(@NotNull Project project) {
+          devToolsFutureRef.set(null);
+          process.destroyProcess();
+        }
+      });
+    }
+    catch (ExecutionException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private void setUpWithDaemon() {
