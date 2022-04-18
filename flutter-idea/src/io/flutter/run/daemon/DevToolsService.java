@@ -146,17 +146,19 @@ public class DevToolsService {
             try {
               final JsonElement element = JsonUtils.parseString(text);
 
-              // params.port
               final JsonObject obj = element.getAsJsonObject();
-              final JsonObject params = obj.getAsJsonObject("params");
-              final String host = JsonUtils.getStringMember(params, "host");
-              final int port = JsonUtils.getIntMember(params, "port");
 
-              if (port != -1) {
-                devToolsFutureRef.get().complete(new DevToolsInstance(host, port));
-              }
-              else {
-                logExceptionAndComplete("DevTools port was invalid");
+              if (JsonUtils.getStringMember(obj, "event").equals("server.started")) {
+                final JsonObject params = obj.getAsJsonObject("params");
+                final String host = JsonUtils.getStringMember(params, "host");
+                final int port = JsonUtils.getIntMember(params, "port");
+
+                if (port != -1) {
+                  devToolsFutureRef.get().complete(new DevToolsInstance(host, port));
+                }
+                else {
+                  logExceptionAndComplete("DevTools port was invalid");
+                }
               }
             }
             catch (JsonSyntaxException e) {
