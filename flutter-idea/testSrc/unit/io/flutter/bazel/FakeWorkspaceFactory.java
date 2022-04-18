@@ -18,6 +18,7 @@ public class FakeWorkspaceFactory {
   @NotNull
   public static Pair.NonNull<MockVirtualFileSystem, Workspace> createWorkspaceAndFilesystem(
     @Nullable String daemonScript,
+    @Nullable String devToolsScript,
     @Nullable String doctorScript,
     @Nullable String testScript,
     @Nullable String runScript,
@@ -33,6 +34,9 @@ public class FakeWorkspaceFactory {
     fs.file("/workspace/WORKSPACE", "");
     if (daemonScript != null) {
       fs.file("/workspace/" + daemonScript, "");
+    }
+    if (devToolsScript != null) {
+      fs.file("/workspace/" + devToolsScript, "");
     }
     if (doctorScript != null) {
       fs.file("/workspace/" + doctorScript, "");
@@ -64,6 +68,7 @@ public class FakeWorkspaceFactory {
         fs.findFileByPath("/workspace/"),
         PluginConfig.forTest(
           daemonScript,
+          devToolsScript,
           doctorScript,
           testScript,
           runScript,
@@ -87,6 +92,7 @@ public class FakeWorkspaceFactory {
   public static Pair.NonNull<MockVirtualFileSystem, Workspace> createWorkspaceAndFilesystem() {
     return createWorkspaceAndFilesystem(
       "scripts/flutter-daemon.sh",
+      "scripts/flutter-devtools.sh",
       "scripts/flutter-doctor.sh",
       "scripts/flutter-test.sh",
       "scripts/flutter-run.sh",

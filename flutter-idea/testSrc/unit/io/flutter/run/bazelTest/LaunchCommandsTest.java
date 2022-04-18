@@ -176,6 +176,7 @@ public class LaunchCommandsTest {
     final BazelTestFields fields = new FakeBazelTestFields(
       BazelTestFields.forFile("/workspace/foo/test/foo_test.dart", null),
       "scripts/daemon.sh",
+      "scripts/devtools.sh",
       "scripts/doctor.sh",
       null,
       null,
@@ -202,6 +203,7 @@ public class LaunchCommandsTest {
     final BazelTestFields fields = new FakeBazelTestFields(
       BazelTestFields.forTestName("first test", "/workspace/foo/test/foo_test.dart", null),
       "scripts/daemon.sh",
+      "scripts/devtools.sh",
       "scripts/doctor.sh",
       null,
       null,
@@ -228,6 +230,7 @@ public class LaunchCommandsTest {
     final BazelTestFields fields = new FakeBazelTestFields(
       new BazelTestFields(null, "/workspace/foo/test/foo_test.dart", "//foo:test", "--ignored-args"),
       "scripts/daemon.sh",
+      "scripts/devtools.sh",
       "scripts/doctor.sh",
       null,
       null,
@@ -294,6 +297,7 @@ public class LaunchCommandsTest {
 
     FakeBazelTestFields(@NotNull BazelTestFields template,
                         @Nullable String daemonScript,
+                        @Nullable String devToolsScript,
                         @Nullable String doctorScript,
                         @Nullable String testScript,
                         @Nullable String runScript,
@@ -306,7 +310,8 @@ public class LaunchCommandsTest {
                         @Nullable String updatedIosRunMessage) {
       super(template);
       final Pair.NonNull<MockVirtualFileSystem, Workspace> pair = FakeWorkspaceFactory
-        .createWorkspaceAndFilesystem(daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile, requiredIJPluginID, requiredIJPluginMessage, configWarningMessage, updatedIosRunMessage);
+        .createWorkspaceAndFilesystem(daemonScript, devToolsScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile,
+                                      requiredIJPluginID, requiredIJPluginMessage, configWarningMessage, updatedIosRunMessage);
       fs = pair.first;
       fakeWorkspace = pair.second;
     }

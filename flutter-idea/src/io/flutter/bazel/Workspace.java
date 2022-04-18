@@ -40,6 +40,7 @@ public class Workspace {
   @NotNull private final VirtualFile root;
   @Nullable private final PluginConfig config;
   @Nullable private final String daemonScript;
+  @Nullable private final String devToolsScript;
   @Nullable private final String doctorScript;
   @Nullable private final String testScript;
   @Nullable private final String runScript;
@@ -53,6 +54,7 @@ public class Workspace {
   private Workspace(@NotNull VirtualFile root,
                     @Nullable PluginConfig config,
                     @Nullable String daemonScript,
+                    @Nullable String devToolsScript,
                     @Nullable String doctorScript,
                     @Nullable String testScript,
                     @Nullable String runScript,
@@ -65,6 +67,7 @@ public class Workspace {
     this.root = root;
     this.config = config;
     this.daemonScript = daemonScript;
+    this.devToolsScript = devToolsScript;
     this.doctorScript = doctorScript;
     this.testScript = testScript;
     this.runScript = runScript;
@@ -131,6 +134,14 @@ public class Workspace {
   @Nullable
   public String getDaemonScript() {
     return daemonScript;
+  }
+
+  /**
+   * Returns the script that starts DevTools, or null if not configured.
+   */
+  @Nullable
+  public String getDevToolsScript() {
+    return devToolsScript;
   }
 
   /**
@@ -267,6 +278,8 @@ public class Workspace {
 
     final String daemonScript = config == null ? null : getScriptFromPath(root, readonlyPath, config.getDaemonScript());
 
+    final String devToolsScript = config == null ? null : getScriptFromPath(root, readonlyPath, config.getDevToolsScript());
+
     final String doctorScript = config == null ? null : getScriptFromPath(root, readonlyPath, config.getDoctorScript());
 
     final String testScript = config == null ? null : getScriptFromPath(root, readonlyPath, config.getTestScript());
@@ -285,7 +298,7 @@ public class Workspace {
 
     final String updatedIosRunMessage = config == null ? null : config.getUpdatedIosRunMessage();
 
-    return new Workspace(root, config, daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, requiredIJPluginID, requiredIJPluginMessage, configWarningPrefix, updatedIosRunMessage);
+    return new Workspace(root, config, daemonScript, devToolsScript, doctorScript, testScript, runScript, syncScript, sdkHome, requiredIJPluginID, requiredIJPluginMessage, configWarningPrefix, updatedIosRunMessage);
   }
 
   @VisibleForTesting
@@ -294,6 +307,7 @@ public class Workspace {
       workspaceRoot,
       pluginConfig,
       pluginConfig.getDaemonScript(),
+      pluginConfig.getDevToolsScript(),
       pluginConfig.getDoctorScript(),
       pluginConfig.getTestScript(),
       pluginConfig.getRunScript(),

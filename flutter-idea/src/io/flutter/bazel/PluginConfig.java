@@ -40,6 +40,10 @@ public class PluginConfig {
   }
 
   @Nullable
+  String getDevToolsScript() {
+    return fields.devToolsScript;
+  }
+  @Nullable
   String getDoctorScript() {
     return fields.doctorScript;
   }
@@ -135,6 +139,7 @@ public class PluginConfig {
   @VisibleForTesting
   public static PluginConfig forTest(
     @Nullable String daemonScript,
+    @Nullable String devToolsScript,
     @Nullable String doctorScript,
     @Nullable String testScript,
     @Nullable String runScript,
@@ -147,6 +152,7 @@ public class PluginConfig {
   ) {
     final Fields fields = new Fields(
       daemonScript,
+      devToolsScript,
       doctorScript,
       testScript,
       runScript,
@@ -169,6 +175,9 @@ public class PluginConfig {
      */
     @SerializedName("daemonScript")
     private String daemonScript;
+
+    @SerializedName("devToolsScript")
+    private String devToolsScript;
 
     /**
      * The script to run to start 'flutter doctor'.
@@ -231,6 +240,7 @@ public class PluginConfig {
      * Convenience constructor that takes all parameters.
      */
     Fields(String daemonScript,
+           String devToolsScript,
            String doctorScript,
            String testScript,
            String runScript,
@@ -241,6 +251,7 @@ public class PluginConfig {
            String configWarningPrefix,
            String updatedIosRunMessage) {
       this.daemonScript = daemonScript;
+      this.devToolsScript = devToolsScript;
       this.doctorScript = doctorScript;
       this.testScript = testScript;
       this.runScript = runScript;
@@ -257,6 +268,7 @@ public class PluginConfig {
       if (!(obj instanceof Fields)) return false;
       final Fields other = (Fields)obj;
       return Objects.equal(daemonScript, other.daemonScript)
+             && Objects.equal(devToolsScript, other.devToolsScript)
              && Objects.equal(doctorScript, other.doctorScript)
              && Objects.equal(testScript, other.testScript)
              && Objects.equal(runScript, other.runScript)
@@ -270,7 +282,7 @@ public class PluginConfig {
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, requiredIJPluginID,
+      return Objects.hashCode(daemonScript, devToolsScript, doctorScript, testScript, runScript, syncScript, sdkHome, requiredIJPluginID,
                               requiredIJPluginMessage, configWarningPrefix, updatedIosRunMessage);
     }
   }

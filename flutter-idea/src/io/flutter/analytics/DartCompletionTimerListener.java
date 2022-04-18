@@ -3,7 +3,7 @@ package io.flutter.analytics;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 
-import com.jetbrains.lang.dart.ide.completion.DartCompletionTimerExtension;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,7 +13,7 @@ import java.time.Instant;
  * Implementation of the {@link DartCompletionTimerExtension} which allows the Flutter plugin to
  * measure the total time to present a code completion to the user.
  */
-public class DartCompletionTimerListener extends DartCompletionTimerExtension {
+public class DartCompletionTimerListener  {
   @Nullable FlutterAnalysisServerListener dasListener;
   @Nullable Long startTimeMS;
 
