@@ -182,7 +182,7 @@ public class DevToolsService {
       });
     }
     catch (ExecutionException e) {
-      throw new RuntimeException(e);
+      logExceptionAndComplete(e);
     }
   }
 
