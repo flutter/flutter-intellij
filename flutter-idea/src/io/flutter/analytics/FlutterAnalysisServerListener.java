@@ -308,7 +308,6 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
 
   @Override
   public void computedLaunchData(String s, String s1, String[] strings) {
-    int length = strings.length;
   }
 
   @Override
@@ -351,7 +350,7 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
     maybeReport(true, (analytics) -> {
       String method = details.method();
       long duration = generalTimestamp - details.startTime().toEpochMilli();
-      LOG.info(ROUND_TRIP_TIME + " " + method + " " + duration);
+      LOG.debug(ROUND_TRIP_TIME + " " + method + " " + duration);
       analytics.sendTiming(ROUND_TRIP_TIME, method, duration); // test: computedSearchResults()
     });
   }
@@ -371,7 +370,7 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
       }
       String stack = requestError.getStackTrace();
       String exception = composeException(ERROR_TYPE_REQUEST, code, stack);
-      LOG.info(exception);
+      LOG.debug(exception);
       analytics.sendException(exception, false); // test: requestError()
     });
   }
@@ -412,7 +411,7 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
   public void serverError(boolean isFatal, String message, String stackTraceString) {
     maybeReport(true, (analytics) -> {
       String exception = composeException(ERROR_TYPE_SERVER, message, stackTraceString);
-      LOG.info(exception + " fatal");
+      LOG.debug(exception + " fatal");
       analytics.sendException(exception, isFatal); // test: serverError()
     });
   }
@@ -460,7 +459,7 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
     if (errorsTimestamp == 0L || currentTimestamp - errorsTimestamp > ERROR_REPORT_INTERVAL || IS_TESTING) {
       errorsTimestamp = currentTimestamp;
       Analytics analytics = FlutterInitializer.getAnalytics();
-      LOG.info(DAS_STATUS_EVENT_TYPE + " " + errorCount + " " + warningCount + " " + hintCount + " " + lintCount);
+      LOG.debug(DAS_STATUS_EVENT_TYPE + " " + errorCount + " " + warningCount + " " + hintCount + " " + lintCount);
       if (errorCount > 0) {
         analytics.sendEventMetric(DAS_STATUS_EVENT_TYPE, ERRORS, errorCount); // test: serverStatus()
       }
@@ -489,21 +488,21 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
 
   private void logCompletion(@NotNull String selection, int prefixLength, @NotNull String eventType) {
     maybeReport(true, (analytics) -> {
-      LOG.info(eventType + " " + selection + " " + prefixLength);
+      LOG.debug(eventType + " " + selection + " " + prefixLength);
       analytics.sendEventMetric(eventType, selection, prefixLength); // test: acceptedCompletion(), lookupCanceled()
     });
   }
 
   void logE2ECompletionSuccessMS(long e2eCompletionMS) {
     maybeReport(true, (analytics) -> {
-      LOG.info(E2E_IJ_COMPLETION_TIME + " " + SUCCESS + " " + e2eCompletionMS);
+      LOG.debug(E2E_IJ_COMPLETION_TIME + " " + SUCCESS + " " + e2eCompletionMS);
       analytics.sendTiming(E2E_IJ_COMPLETION_TIME, SUCCESS, e2eCompletionMS); // test: logE2ECompletionSuccessMS()
     });
   }
 
   void logE2ECompletionErrorMS(long e2eCompletionMS) {
     maybeReport(true, (analytics) -> {
-      LOG.info(E2E_IJ_COMPLETION_TIME + " " + FAILURE + " " + e2eCompletionMS);
+      LOG.debug(E2E_IJ_COMPLETION_TIME + " " + FAILURE + " " + e2eCompletionMS);
       analytics.sendTiming(E2E_IJ_COMPLETION_TIME, FAILURE, e2eCompletionMS); // test: logE2ECompletionErrorMS()
     });
   }
@@ -520,7 +519,7 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
 
   private void logFileAnalysisTime(@NotNull String kind, String path, long analysisTime) {
     maybeReport(false, (analytics) -> {
-      LOG.info(kind + " " + DURATION + " " + analysisTime);
+      LOG.debug(kind + " " + DURATION + " " + analysisTime);
       analytics.sendEvent(kind, DURATION, "", Long.toString(analysisTime)); // test: computedErrors()
     });
   }
@@ -591,7 +590,7 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
         List<String> errorsOnLine =
           pathToErrors.containsKey(path) ? pathToErrors.get(path).stream().filter(error -> error.getLocation().getStartLine() == lineNumber)
             .map(AnalysisError::getCode).collect(Collectors.toList()) : ImmutableList.of();
-        LOG.info(QUICK_FIX + " " + intention.getText() + " " + errorsOnLine.size());
+        LOG.debug(QUICK_FIX + " " + intention.getText() + " " + errorsOnLine.size());
         analytics.sendEventMetric(QUICK_FIX, intention.getText(), errorsOnLine.size()); // test: quickFix()
       });
     }
@@ -629,7 +628,7 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
                             LOG_ENTRY_KIND, serverLogEntry.get(LOG_ENTRY_KIND).getAsString(), LOG_ENTRY_DATA,
                             serverLogEntry.get(LOG_ENTRY_DATA).getAsString());
             assert logEntry != null;
-            LOG.info(ANALYSIS_SERVER_LOG + " " + logEntry);
+            LOG.debug(ANALYSIS_SERVER_LOG + " " + logEntry);
             // Log the "sdkVersion" only if it was provided in the event
             if (StringUtil.isEmpty(sdkVersionValue)) {
               FlutterInitializer.getAnalytics().sendEvent(ANALYSIS_SERVER_LOG, logEntry); // test: dasListenerLogging()
@@ -655,7 +654,7 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
         // Throttle to one report per interval for each distinct details.method().
         if (timestamp == null || currentTimestamp - timestamp > GENERAL_REPORT_INTERVAL) {
           methodTimestamps.put(details.method(), currentTimestamp);
-          LOG.info(ROUND_TRIP_TIME + " " + details.method() + " " + Duration.between(details.startTime(), Instant.now()).toMillis());
+          LOG.debug(ROUND_TRIP_TIME + " " + details.method() + " " + Duration.between(details.startTime(), Instant.now()).toMillis());
           FlutterInitializer.getAnalytics()
             .sendTiming(ROUND_TRIP_TIME, details.method(), // test: dasListenerTiming()
                         Objects.requireNonNull(Duration.between(details.startTime(), Instant.now())).toMillis());
