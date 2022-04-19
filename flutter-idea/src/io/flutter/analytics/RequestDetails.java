@@ -22,4 +22,9 @@ public class RequestDetails {
   public Instant startTime() {
     return startTime;
   }
+
+  @NotNull
+  public String toString() {
+    return method + ": " + startTime.toEpochMilli();
+  }
 }
