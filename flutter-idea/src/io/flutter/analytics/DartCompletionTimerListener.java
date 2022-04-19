@@ -3,7 +3,6 @@ package io.flutter.analytics;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 
-
 import com.jetbrains.lang.dart.ide.completion.DartCompletionTimerExtension;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
