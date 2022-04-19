@@ -288,12 +288,6 @@ public class FlutterModuleBuilder extends ModuleBuilder {
         "Invalid module name: '" + moduleName + "' - this will conflict with Flutter package dependencies.");
     }
 
-    if (moduleName.length() > FlutterConstants.MAX_MODULE_NAME_LENGTH) {
-      throw new ConfigurationException("Invalid module name - must be less than " +
-                                       FlutterConstants.MAX_MODULE_NAME_LENGTH +
-                                       " characters.");
-    }
-
     return super.validateModuleName(moduleName);
   }
 
