@@ -301,17 +301,22 @@ public class BazelFields {
         progress.getProgressIndicator().setIndeterminate(true);
         try {
           final DevToolsService service = this.devToolsService == null ? DevToolsService.getInstance(project) : this.devToolsService;
-          devToolsFuture.complete(service.getDevToolsInstance().get(30, TimeUnit.SECONDS));
+          final DevToolsInstance instance = service.getDevToolsInstance().get(30, TimeUnit.SECONDS);
+          if (instance != null) {
+            devToolsFuture.complete(instance);
+          } else {
+            devToolsFuture.completeExceptionally(new Exception("DevTools instance not available."));
+          }
         }
         catch (Exception e) {
-          LOG.error(e);
+          devToolsFuture.completeExceptionally(e);
         }
       }, "Starting DevTools", false, project);
       final DevToolsInstance instance = devToolsFuture.get();
       commandLine.addParameter("--devtools-server-address=http://" + instance.host + ":" + instance.port);
     }
     catch (Exception e) {
-      LOG.error(e);
+      LOG.info(e);
     }
 
     commandLine.addParameter(target);

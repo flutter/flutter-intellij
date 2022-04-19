@@ -22,7 +22,6 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Version;
 import com.intellij.openapi.util.io.FileUtil;
 import com.jetbrains.lang.dart.sdk.DartSdk;
-import com.jetbrains.lang.dart.sdk.DartSdkUtil;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
@@ -118,9 +117,16 @@ public class DevToolsService {
       }
 
       if (dartDevToolsSupported) {
-        setUpWithDart();
+        final WorkspaceCache workspaceCache = WorkspaceCache.getInstance(project);
+        if (workspaceCache.isBazel()) {
+          setUpWithDart(createCommand(workspaceCache.get().getRoot().getPath(), workspaceCache.get().getDevToolsScript(),
+                                      ImmutableList.of("--machine")));
+        }
+        else {
+          setUpWithDart(createCommand(DartSdk.getDartSdk(project).getHomePath(), "dart", ImmutableList.of("devtools", "--machine")));
+        }
       }
-      else if (WorkspaceCache.getInstance(project).isBazel() || (sdk != null && sdk.getVersion().useDaemonForDevTools())) {
+      else if (sdk != null && sdk.getVersion().useDaemonForDevTools()) {
         setUpWithDaemon();
       }
       else {
@@ -130,9 +136,7 @@ public class DevToolsService {
     });
   }
 
-  private void setUpWithDart() {
-    final GeneralCommandLine command =
-      createCommand(DartSdk.getDartSdk(project).getHomePath(), "dart", ImmutableList.of("devtools", "--machine"));
+  private void setUpWithDart(GeneralCommandLine command) {
     try {
       this.process = new MostlySilentColoredProcessHandler(command);
       this.process.addProcessListener(new ProcessAdapter() {
@@ -178,7 +182,7 @@ public class DevToolsService {
       });
     }
     catch (ExecutionException e) {
-      throw new RuntimeException(e);
+      logExceptionAndComplete(e);
     }
   }
 

@@ -374,6 +374,7 @@ public class LaunchCommandsTest {
 
     FakeBazelFields(@NotNull BazelFields template,
                     @Nullable String daemonScript,
+                    @Nullable String devToolsScript,
                     @Nullable String doctorScript,
                     @Nullable String testScript,
                     @Nullable String runScript,
@@ -386,7 +387,7 @@ public class LaunchCommandsTest {
                     @Nullable String updatedIosRunMessage) {
       super(template);
       final Pair.NonNull<MockVirtualFileSystem, Workspace> pair = FakeWorkspaceFactory
-        .createWorkspaceAndFilesystem(daemonScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile,
+        .createWorkspaceAndFilesystem(daemonScript, devToolsScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile,
                                       requiredIJPluginID, requiredIJPluginMessage, configWarningMessage, updatedIosRunMessage);
       fs = pair.first;
       fakeWorkspace = pair.second;
