@@ -446,9 +446,9 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
     if (observeThrottling && !IS_TESTING) {
       long currentTimestamp = System.currentTimeMillis();
       // Throttle to one report per interval.
-      //if (currentTimestamp - generalTimestamp < GENERAL_REPORT_INTERVAL) { // TODO
-      //  return;
-      //}
+      if (currentTimestamp - generalTimestamp < GENERAL_REPORT_INTERVAL) {
+        return;
+      }
       generalTimestamp = currentTimestamp;
     }
     func.accept(FlutterInitializer.getAnalytics());
@@ -651,7 +651,6 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
           return;
         }
         Long timestamp = methodTimestamps.get(details.method());
-        timestamp = null; // TODO
         long currentTimestamp = System.currentTimeMillis();
         // Throttle to one report per interval for each distinct details.method().
         if (timestamp == null || currentTimestamp - timestamp > GENERAL_REPORT_INTERVAL) {
