@@ -115,7 +115,6 @@ public class FlutterConstants {
 
   public static final String FLUTTER_SETTINGS_PAGE_ID = "flutter.settings";
   public static final String INDEPENDENT_PATH_SEPARATOR = "/";
-  public static final int MAX_MODULE_NAME_LENGTH = 30;
 
   public static final String URL_GETTING_STARTED = FlutterBundle.message("flutter.io.gettingStarted.url");
   public static final String URL_GETTING_STARTED_IDE = FlutterBundle.message("flutter.io.gettingStarted.IDE.url");
