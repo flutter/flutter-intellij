@@ -513,18 +513,20 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     if (uiAnimationTimer.isRunning()) {
       uiAnimationTimer.stop();
     }
-    try {
-      // We've had a number of NPEs reported from this line, and it is not obvious what's wrong.
-      Disposer.dispose(perfProvider);
-    } catch (NullPointerException ex) {
-      LOG.info("NPE during dispose of " + perfProvider + "/" + perfProvider.isStarted() + "/" + perfProvider.isConnected(), ex);
-    }
-
+    // TODO(jacobr): WidgetPerfProvider implements Disposer but its dispose method
+    // needs to be called manually rather than using the Disposer API
+    // because it is not registered for disposal using
+    // Disposer.register
+    perfProvider.dispose();
     AsyncUtils.invokeLater(() -> {
       clearModels();
 
       for (EditorPerfModel decorations : editorDecorations.values()) {
-        Disposer.dispose(decorations);
+        // TODO(jacobr): EditorPerfModel implements Disposer but its dispose method
+        // needs to be called manually rather than using the Disposer API
+        // because it is not registered for disposal using
+        // Disposer.register
+        decorations.dispose();
       }
       editorDecorations.clear();
       perfListeners.clear();
