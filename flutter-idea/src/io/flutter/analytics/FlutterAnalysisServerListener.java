@@ -2,6 +2,8 @@ package io.flutter.analytics;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
+import com.google.dart.server.AnalysisServerListener;
 import com.google.dart.server.AnalysisServerListenerAdapter;
 import com.google.dart.server.RequestListener;
 import com.google.dart.server.ResponseListener;
@@ -43,7 +45,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("LocalCanBeFinal")
-public final class FlutterAnalysisServerListener extends AnalysisServerListenerAdapter implements Disposable {
+public final class FlutterAnalysisServerListener implements Disposable, AnalysisServerListener {
   // statics
   static final String INITIAL_COMPUTE_ERRORS_TIME = "initialComputeErrorsTime";
   static final String INITIAL_HIGHLIGHTS_TIME = "initialHighlightsTime";
@@ -55,6 +57,9 @@ public final class FlutterAnalysisServerListener extends AnalysisServerListenerA
   static final String ACCEPTED_COMPLETION = "acceptedCompletion";
   static final String REJECTED_COMPLETION = "rejectedCompletion";
   static final String E2E_IJ_COMPLETION_TIME = "e2eIJCompletionTime";
+  static final String GET_SUGGESTIONS = "completion.getSuggestions";
+  static final String FIND_REFERENCES = "search.findElementReferences";
+  static final Set<String> MANUALLY_MANAGED_METHODS = Sets.newHashSet(GET_SUGGESTIONS, FIND_REFERENCES);
   static final String ERRORS = "errors";
   static final String WARNINGS = "warnings";
   static final String HINTS = "hints";
@@ -86,8 +91,8 @@ public final class FlutterAnalysisServerListener extends AnalysisServerListenerA
   private static final Logger LOG = Logger.getInstance(FlutterAnalysisServerListener.class);
   private static final boolean IS_TESTING = ApplicationManager.getApplication().isUnitTestMode();
 
-  @NotNull final RequestListener requestListener;
-  @NotNull final ResponseListener responseListener;
+  @NotNull final FlutterRequestListener requestListener;
+  @NotNull final FlutterResponseListener responseListener;
   @NotNull final DartQuickFixListener quickFixListener;
   // instance members
   @NotNull private final Project project;
@@ -181,10 +186,12 @@ public final class FlutterAnalysisServerListener extends AnalysisServerListenerA
 
   @Override
   public void computedAnalyzedFiles(List<String> list) {
+    // No start time is recorded.
   }
 
   @Override
   public void computedAvailableSuggestions(@NotNull List<AvailableSuggestionSet> list, int[] ints) {
+    // No start time is recorded.
   }
 
   @Override
@@ -197,6 +204,36 @@ public final class FlutterAnalysisServerListener extends AnalysisServerListenerA
                                  List<IncludedSuggestionRelevanceTag> includedSuggestionRelevanceTags,
                                  boolean isLast,
                                  String libraryFilePathSD) {
+    long currentTimestamp = System.currentTimeMillis();
+    String id = getIdForMethod(GET_SUGGESTIONS);
+    if (id == null) {
+      return;
+    }
+    RequestDetails details = requestToDetails.remove(id);
+    if (!isLast) {
+      // TODO(messick) Do we want only the first results or all results? If only the first, remove this check.
+      return;
+    }
+    if (details == null) {
+      return;
+    }
+    maybeReport(true, (analytics) -> {
+      long startTime = details.startTime().toEpochMilli();
+      analytics.sendTiming(ROUND_TRIP_TIME, GET_SUGGESTIONS, currentTimestamp - startTime); // test: computedCompletion
+    });
+  }
+
+  @Nullable
+  private String getIdForMethod(@NotNull String method) {
+    Set<String> keys = requestToDetails.keySet();
+    for (String id : keys) {
+      RequestDetails details = requestToDetails.get(id);
+      assert details != null;
+      if ("completion.getSuggestions".equals(details.method())) {
+        return id;
+      }
+    };
+    return null;
   }
 
   @Override
@@ -266,6 +303,7 @@ public final class FlutterAnalysisServerListener extends AnalysisServerListenerA
 
   @Override
   public void computedImplemented(String s, List<ImplementedClass> list, List<ImplementedMember> list1) {
+    // No start time is recorded.
   }
 
   @Override
@@ -274,10 +312,12 @@ public final class FlutterAnalysisServerListener extends AnalysisServerListenerA
 
   @Override
   public void computedNavigation(String s, List<NavigationRegion> list) {
+    // No start time is recorded.
   }
 
   @Override
   public void computedOccurrences(String s, List<Occurrences> list) {
+    // No start time is recorded.
   }
 
   @Override
@@ -288,18 +328,36 @@ public final class FlutterAnalysisServerListener extends AnalysisServerListenerA
 
   @Override
   public void computedOverrides(String s, List<OverrideMember> list) {
+    // No start time is recorded.
   }
 
   @Override
   public void computedClosingLabels(String s, List<ClosingLabel> list) {
+    // No start time is recorded.
   }
 
   @Override
-  public void computedSearchResults(String s, List<SearchResult> list, boolean b) {
+  public void computedSearchResults(String searchId, List<SearchResult> results, boolean isLast) {
+    if (!isLast) {
+      // TODO(messick) Do we want only the first results or all results? If only the first, remove this check.
+      return;
+    }
+    RequestDetails details = requestToDetails.get(searchId);
+    if (details == null) {
+      return;
+    }
+    requestToDetails.remove(searchId);
+    maybeReport(true, (analytics) -> {
+      String method = details.method();
+      long duration = generalTimestamp - details.startTime().toEpochMilli();
+      LOG.debug(ROUND_TRIP_TIME + " " + method + " " + duration);
+      analytics.sendTiming(ROUND_TRIP_TIME, method, duration); // test: computedSearchResults()
+    });
   }
 
   @Override
   public void flushedResults(List<String> list) {
+    // Timing info not valid.
   }
 
   @Override
@@ -417,6 +475,7 @@ public final class FlutterAnalysisServerListener extends AnalysisServerListenerA
       errorCount = warningCount = hintCount = lintCount = 0;
     }
   }
+
   private static int extractCount(@NotNull Map<String, Integer> errorCounts, String name) {
     //noinspection Java8MapApi,ConstantConditions
     return errorCounts.containsKey(name) ? errorCounts.get(name) : 0;
@@ -424,6 +483,7 @@ public final class FlutterAnalysisServerListener extends AnalysisServerListenerA
 
   @Override
   public void computedExistingImports(String file, Map<String, Map<String, Set<String>>> existingImports) {
+    // No start time is recorded.
   }
 
   private void logCompletion(@NotNull String selection, int prefixLength, @NotNull String eventType) {
@@ -549,7 +609,8 @@ public final class FlutterAnalysisServerListener extends AnalysisServerListenerA
 
   @SuppressWarnings("LocalCanBeFinal")
   class FlutterResponseListener implements ResponseListener {
-    private final Map<String, Long> methodTimestamps = new HashMap<>();
+    final Map<String, Long> methodTimestamps = new HashMap<>();
+
     @Override
     public void onResponse(String jsonString) {
       JsonObject response = new Gson().fromJson(jsonString, JsonObject.class);
@@ -585,6 +646,9 @@ public final class FlutterAnalysisServerListener extends AnalysisServerListenerA
       String id = response.get("id").getAsString();
       RequestDetails details = requestToDetails.get(id);
       if (details != null) {
+        if (MANUALLY_MANAGED_METHODS.contains(details.method())) {
+          return;
+        }
         Long timestamp = methodTimestamps.get(details.method());
         long currentTimestamp = System.currentTimeMillis();
         // Throttle to one report per interval for each distinct details.method().

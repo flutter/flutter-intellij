@@ -195,9 +195,23 @@ public class FlutterAnalysisServerListenerTest {
   }
 
   @Test
-  public void dasListenerTiming() throws Exception {
+  public void computedSearchResults() throws Exception {
+    fasl.requestListener.onRequest("{\"method\":\"" + FIND_REFERENCES + "\",\"id\":\"2\"}");
+    fasl.responseListener.onResponse("{\"event\":\"none\",\"id\":\"2\"}");
+    fasl.computedSearchResults("2", new ArrayList<>(), true);
+    assertEquals(1, transport.sentValues.size());
+    Map<String, String> map = transport.sentValues.get(0);
+    assertEquals(ROUND_TRIP_TIME, map.get("utc"));
+    assertEquals(FIND_REFERENCES, map.get("utv"));
+    assertNotNull(map.get("utt")); // Not checking a computed value, duration.
+  }
+
+  @Test
+  public void computedCompletion() throws Exception {
     fasl.requestListener.onRequest("{\"method\":\"test\",\"id\":\"2\"}");
     fasl.responseListener.onResponse("{\"event\":\"none\",\"id\":\"2\"}");
+    List none = new ArrayList();
+    fasl.computedCompletion("2", 0, 0, none, none, none, none, true, "");
     assertEquals(1, transport.sentValues.size());
     Map<String, String> map = transport.sentValues.get(0);
     assertEquals(ROUND_TRIP_TIME, map.get("utc"));
