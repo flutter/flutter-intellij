@@ -396,6 +396,12 @@ public class WidgetIndentsHighlightingPass {
           }
         }
 
+        final FoldRegion foldRegion = foldingModel.getCollapsedRegionAtOffset(doc.getLineEndOffset(i));
+        if (foldRegion != null && foldRegion.getEndOffset() < doc.getTextLength()) {
+          i = doc.getLineNumber(foldRegion.getEndOffset()) - 1;
+          continue;
+        }
+
         final List<? extends SoftWrap> softWraps = softWrapModel.getSoftWrapsForLine(i);
         int logicalLineHeight = softWraps.size() * lineHeight;
         if (i > startLine + lineShift) {
@@ -412,10 +418,6 @@ public class WidgetIndentsHighlightingPass {
           newY += logicalLineHeight;
         }
 
-        final FoldRegion foldRegion = foldingModel.getCollapsedRegionAtOffset(doc.getLineEndOffset(i));
-        if (foldRegion != null && foldRegion.getEndOffset() < doc.getTextLength()) {
-          i = doc.getLineNumber(foldRegion.getEndOffset());
-        }
       }
 
       if (childLines != null && iChildLine < childLines.size() && splitY == -1) {
