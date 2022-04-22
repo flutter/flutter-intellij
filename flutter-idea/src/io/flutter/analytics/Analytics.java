@@ -298,6 +298,9 @@ public class Analytics {
     }
   }
 
+  // This class is intended to be used during debugging. Replacing the reference to
+  // HttpTransport with NonTransport stops sending any data to Google Analytics,
+  // and instead logs the number of bytes that would have been sent (minus HTTP header bytes).
   private static class NonTransport extends HttpTransport {
     private static final Logger LOG = Logger.getInstance(Analytics.class);
 
