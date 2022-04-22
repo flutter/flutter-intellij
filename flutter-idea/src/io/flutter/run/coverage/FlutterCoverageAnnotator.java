@@ -8,24 +8,24 @@ package io.flutter.run.coverage;
 import com.intellij.coverage.CoverageDataManager;
 import com.intellij.coverage.CoverageSuitesBundle;
 import com.intellij.coverage.SimpleCoverageAnnotator;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.utils.FlutterModuleUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.jetbrains.annotations.NotNull;
-
 public class FlutterCoverageAnnotator extends SimpleCoverageAnnotator {
 
+  @Nullable
   public static FlutterCoverageAnnotator getInstance(Project project) {
-    return ServiceManager.getService(project, FlutterCoverageAnnotator.class);
+    return project.getService(FlutterCoverageAnnotator.class);
   }
 
   public FlutterCoverageAnnotator(Project project) {

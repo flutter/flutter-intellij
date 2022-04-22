@@ -7,7 +7,6 @@ package io.flutter.jxbrowser;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -33,8 +32,9 @@ import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.Dimension;
+import java.awt.*;
 import java.io.File;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
@@ -43,8 +43,8 @@ public class EmbeddedBrowser {
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
 
   @NotNull
-  public static EmbeddedBrowser getInstance(Project project) {
-    return ServiceManager.getService(project, EmbeddedBrowser.class);
+  public static EmbeddedBrowser getInstance(@NotNull Project project) {
+    return Objects.requireNonNull(project.getService(EmbeddedBrowser.class));
   }
 
   private Browser browser;
@@ -70,9 +70,11 @@ public class EmbeddedBrowser {
         final ConsoleMessage consoleMessage = event.consoleMessage();
         LOG.info("Browser message(" + consoleMessage.level().name() + "): " + consoleMessage.message());
       });
-    } catch (UnsupportedRenderingModeException ex) {
+    }
+    catch (UnsupportedRenderingModeException ex) {
       // Skip using a transparent background if an exception is thrown.
-    } catch (Exception | Error ex) {
+    }
+    catch (Exception | Error ex) {
       LOG.info(ex);
       FlutterInitializer.getAnalytics().sendExpectedException("jxbrowser-setup", ex);
     }
@@ -112,7 +114,8 @@ public class EmbeddedBrowser {
 
     try {
       browser.navigation().loadUrl(devToolsUrl.getUrlString());
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       devToolsUrlFuture.completeExceptionally(ex);
       onBrowserUnavailable.run();
       LOG.info(ex);

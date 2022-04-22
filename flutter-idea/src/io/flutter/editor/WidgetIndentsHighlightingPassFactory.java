@@ -12,7 +12,6 @@ import com.intellij.codeHighlighting.TextEditorHighlightingPassFactory;
 import com.intellij.codeHighlighting.TextEditorHighlightingPassRegistrar;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.event.CaretEvent;
@@ -40,7 +39,7 @@ import java.util.Objects;
 
 /**
  * Factory that drives all rendering of widget indents.
- *
+ * <p>
  * Warning: it is unsafe to register the WidgetIndentsHighlightingPassFactory
  * without using WidgetIndentsHighlightingPassFactoryRegistrar as recent
  * versions of IntelliJ will unpredictably clear out all existing highlighting
@@ -68,8 +67,9 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   // Current configuration setting used to display regular indent guides cached from EditorSettingsExternalizable.
   private boolean isIndentGuidesShown;
 
+  @Nullable
   public static WidgetIndentsHighlightingPassFactory getInstance(Project project) {
-    return ServiceManager.getService(project, WidgetIndentsHighlightingPassFactory.class);
+    return project.getService(WidgetIndentsHighlightingPassFactory.class);
   }
 
   public WidgetIndentsHighlightingPassFactory(@NotNull Project project) {
@@ -191,7 +191,8 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     // widget indent guides in distracting ways.
     if (EdtInvocationManager.getInstance().isEventDispatchThread()) {
       e.getSettings().setIndentGuidesShown(false);
-    } else {
+    }
+    else {
       ApplicationManager.getApplication().invokeLater(() -> {
         e.getSettings().setIndentGuidesShown(false);
       });

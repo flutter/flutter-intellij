@@ -16,7 +16,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
@@ -30,10 +29,7 @@ import org.dartlang.analysis.server.protocol.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -63,7 +59,7 @@ public class FlutterDartAnalysisServer implements Disposable {
 
   @NotNull
   public static FlutterDartAnalysisServer getInstance(@NotNull final Project project) {
-    return ServiceManager.getService(project, FlutterDartAnalysisServer.class);
+    return Objects.requireNonNull(project.getService(FlutterDartAnalysisServer.class));
   }
 
   @VisibleForTesting

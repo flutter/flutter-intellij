@@ -9,7 +9,6 @@ import com.intellij.AppTopics;
 import com.intellij.application.options.CodeStyle;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -21,7 +20,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.codeStyle.CodeStyleSettingsManager;
 import com.intellij.util.PsiErrorElementUtil;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.messages.MessageBusConnection;
@@ -34,6 +32,7 @@ import io.flutter.settings.FlutterSettings;
 import org.dartlang.analysis.server.protocol.SourceEdit;
 import org.dartlang.analysis.server.protocol.SourceFileEdit;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -52,8 +51,9 @@ public class FlutterSaveActionsManager {
     getInstance(project);
   }
 
+  @Nullable
   public static FlutterSaveActionsManager getInstance(@NotNull Project project) {
-    return ServiceManager.getService(project, FlutterSaveActionsManager.class);
+    return project.getService(FlutterSaveActionsManager.class);
   }
 
   private final @NotNull Project myProject;

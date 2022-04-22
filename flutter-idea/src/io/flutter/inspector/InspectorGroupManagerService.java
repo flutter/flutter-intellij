@@ -7,7 +7,6 @@ package io.flutter.inspector;
 
 import com.google.common.collect.Lists;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import io.flutter.run.FlutterAppManager;
@@ -20,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -148,7 +148,7 @@ public class InspectorGroupManagerService implements Disposable {
 
   @NotNull
   public static InspectorGroupManagerService getInstance(@NotNull final Project project) {
-    return ServiceManager.getService(project, InspectorGroupManagerService.class);
+    return Objects.requireNonNull(project.getService(InspectorGroupManagerService.class));
   }
 
   public InspectorService getInspectorService() {

@@ -6,7 +6,6 @@
 package io.flutter.editor;
 
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.event.EditorEventMulticaster;
 import com.intellij.openapi.editor.event.EditorMouseEvent;
@@ -16,6 +15,7 @@ import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.event.MouseEvent;
+import java.util.Objects;
 
 /**
  * Service that tracks interactions with editors making it easy to add
@@ -81,7 +81,7 @@ public class EditorMouseEventService extends EditorEventServiceBase<EditorMouseE
 
   @NotNull
   public static EditorMouseEventService getInstance(@NotNull final Project project) {
-    return ServiceManager.getService(project, EditorMouseEventService.class);
+    return Objects.requireNonNull(project.getService(EditorMouseEventService.class));
   }
 
   @Override

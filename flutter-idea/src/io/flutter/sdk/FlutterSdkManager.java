@@ -6,7 +6,6 @@
 package io.flutter.sdk;
 
 import com.intellij.concurrency.JobScheduler;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
@@ -18,6 +17,7 @@ import com.intellij.util.EventDispatcher;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EventListener;
+import java.util.Objects;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -31,7 +31,7 @@ public class FlutterSdkManager {
 
   @NotNull
   public static FlutterSdkManager getInstance(@NotNull Project project) {
-    return ServiceManager.getService(project, FlutterSdkManager.class);
+    return Objects.requireNonNull(project.getService(FlutterSdkManager.class));
   }
 
   private FlutterSdkManager(@NotNull Project project) {

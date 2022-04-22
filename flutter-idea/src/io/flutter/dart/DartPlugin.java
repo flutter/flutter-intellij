@@ -8,7 +8,6 @@ package io.flutter.dart;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -111,10 +110,10 @@ public class DartPlugin {
   }
 
   /**
-   * Return the DartAnalysisServerService instance. This handles the older case where the service was app
-   * based, and the newer case where the service is project based.
+   * Return the DartAnalysisServerService instance.
    */
+  @Nullable
   public DartAnalysisServerService getAnalysisService(@NotNull final Project project) {
-    return ServiceManager.getService(project, DartAnalysisServerService.class);
+    return project.getService(DartAnalysisServerService.class);
   }
 }
