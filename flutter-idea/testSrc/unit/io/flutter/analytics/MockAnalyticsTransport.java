@@ -5,6 +5,8 @@
  */
 package io.flutter.analytics;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +15,7 @@ public class MockAnalyticsTransport implements Analytics.Transport {
   final public List<Map<String, String>> sentValues = new ArrayList<>();
 
   @Override
-  public void send(String url, Map<String, String> values) {
+  public void send(@NotNull String url, @NotNull Map<String, String> values) {
     sentValues.add(values);
   }
 }

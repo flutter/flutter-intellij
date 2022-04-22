@@ -5,6 +5,7 @@
  */
 package io.flutter.analytics;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.SystemInfo;
@@ -19,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -158,7 +160,10 @@ public class Analytics {
     sendPayload(hitType, args, flutterSdk, null);
   }
 
-  private void sendPayload(@NotNull String hitType, @NotNull Map<String, String> args, @Nullable FlutterSdk flutterSdk, @Nullable String sdkVersion) {
+  private void sendPayload(@NotNull String hitType,
+                           @NotNull Map<String, String> args,
+                           @Nullable FlutterSdk flutterSdk,
+                           @Nullable String sdkVersion) {
     if (!canSend()) {
       return;
     }
@@ -182,7 +187,8 @@ public class Analytics {
       if (flutterVersion.getVersionText() != null) {
         args.put("cd2", flutterVersion.getVersionText());
       }
-    } else if (sdkVersion != null) {
+    }
+    else if (sdkVersion != null) {
       args.put("cd2", sdkVersion);
     }
 
@@ -229,7 +235,7 @@ public class Analytics {
   }
 
   public interface Transport {
-    void send(String url, Map<String, String> values);
+    void send(@NotNull String url, @NotNull Map<String, String> values);
   }
 
   private static class HttpTransport implements Transport {
@@ -253,26 +259,17 @@ public class Analytics {
     }
 
     @Override
-    public void send(String url, Map<String, String> values) {
+    public void send(@NotNull String url, @NotNull Map<String, String> values) {
       sendingQueue.add(() -> {
         try {
-          final StringBuilder postData = new StringBuilder();
-          for (Map.Entry<String, String> param : values.entrySet()) {
-            if (postData.length() != 0) {
-              postData.append('&');
-            }
-            postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
-            postData.append('=');
-            postData.append(URLEncoder.encode(param.getValue(), "UTF-8"));
-          }
-          final byte[] postDataBytes = postData.toString().getBytes(StandardCharsets.UTF_8);
+          final byte[] postDataBytes = createPostData(values);
           final HttpURLConnection conn = (HttpURLConnection)new URL(url).openConnection();
           conn.setRequestMethod("POST");
           conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
           conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
           final String userAgent = createUserAgent();
           if (userAgent != null) {
-            conn.setRequestProperty("User-Agent", createUserAgent());
+            conn.setRequestProperty("User-Agent", userAgent);
           }
           conn.setDoOutput(true);
           conn.getOutputStream().write(postDataBytes);
@@ -285,6 +282,37 @@ public class Analytics {
         catch (IOException ignore) {
         }
       });
+    }
+
+    byte[] createPostData(@NotNull Map<String, String> values) throws UnsupportedEncodingException {
+      final StringBuilder postData = new StringBuilder();
+      for (Map.Entry<String, String> param : values.entrySet()) {
+        if (postData.length() != 0) {
+          postData.append('&');
+        }
+        postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
+        postData.append('=');
+        postData.append(URLEncoder.encode(param.getValue(), "UTF-8"));
+      }
+      return postData.toString().getBytes(StandardCharsets.UTF_8);
+    }
+  }
+
+  // This class is intended to be used during debugging. Replacing the reference to
+  // HttpTransport with NonTransport stops sending any data to Google Analytics,
+  // and instead logs the number of bytes that would have been sent (minus HTTP header bytes).
+  private static class NonTransport extends HttpTransport {
+    private static final Logger LOG = Logger.getInstance(Analytics.class);
+
+    @Override
+    public void send(@NotNull String url, @NotNull Map<String, String> values) {
+      try {
+        final byte[] postDataBytes = createPostData(values);
+        //noinspection ConstantConditions
+        LOG.info("Sending " + postDataBytes.length + " bytes");
+      }
+      catch (UnsupportedEncodingException ignore) {
+      }
     }
   }
 }
