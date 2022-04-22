@@ -13,7 +13,6 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -35,6 +34,7 @@ import io.flutter.utils.MostlySilentColoredProcessHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -53,7 +53,7 @@ public class DevToolsService {
 
   @NotNull
   public static DevToolsService getInstance(@NotNull final Project project) {
-    return ServiceManager.getService(project, DevToolsService.class);
+    return Objects.requireNonNull(project.getService(DevToolsService.class));
   }
 
   private DevToolsService(@NotNull final Project project) {

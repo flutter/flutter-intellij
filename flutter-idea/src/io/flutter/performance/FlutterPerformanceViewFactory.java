@@ -7,7 +7,6 @@ package io.flutter.performance;
 
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
@@ -37,7 +36,7 @@ public class FlutterPerformanceViewFactory implements ToolWindowFactory, DumbAwa
 
   private static void initPerfView(@NotNull Project project, FlutterViewMessages.FlutterDebugEvent event) {
     ApplicationManager.getApplication().invokeLater(() -> {
-      final FlutterPerformanceView flutterPerfView = ServiceManager.getService(project, FlutterPerformanceView.class);
+      final FlutterPerformanceView flutterPerfView = project.getService(FlutterPerformanceView.class);
       ToolWindowManager.getInstance(project).getToolWindow(FlutterPerformanceView.TOOL_WINDOW_ID).setAvailable(true);
       flutterPerfView.debugActive(event);
     });
@@ -47,7 +46,7 @@ public class FlutterPerformanceViewFactory implements ToolWindowFactory, DumbAwa
   public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
     //noinspection CodeBlock2Expr
     DumbService.getInstance(project).runWhenSmart(() -> {
-      (ServiceManager.getService(project, FlutterPerformanceView.class)).initToolWindow(toolWindow);
+      (project.getService(FlutterPerformanceView.class)).initToolWindow(toolWindow);
     });
   }
 

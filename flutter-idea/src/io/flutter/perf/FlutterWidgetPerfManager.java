@@ -6,7 +6,6 @@
 package io.flutter.perf;
 
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
@@ -128,8 +127,9 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
     getInstance(project);
   }
 
+  @Nullable
   public static FlutterWidgetPerfManager getInstance(@NotNull Project project) {
-    return ServiceManager.getService(project, FlutterWidgetPerfManager.class);
+    return project.getService(FlutterWidgetPerfManager.class);
   }
 
   public boolean isTrackRebuildWidgets() {

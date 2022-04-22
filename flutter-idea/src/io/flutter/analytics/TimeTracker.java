@@ -6,9 +6,10 @@
 package io.flutter.analytics;
 
 import com.intellij.openapi.components.Service;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 @Service
 public final class TimeTracker {
@@ -17,7 +18,7 @@ public final class TimeTracker {
 
   @NotNull
   public static TimeTracker getInstance(@NotNull final Project project) {
-    return ServiceManager.getService(project, TimeTracker.class);
+    return Objects.requireNonNull(project.getService(TimeTracker.class));
   }
 
   public TimeTracker(Project project) {
@@ -32,6 +33,6 @@ public final class TimeTracker {
     if (projectOpenTime == null) {
       return 0;
     }
-    return (int) (System.currentTimeMillis() - projectOpenTime);
+    return (int)(System.currentTimeMillis() - projectOpenTime);
   }
 }

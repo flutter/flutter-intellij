@@ -8,7 +8,6 @@ package io.flutter.editor;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.fileEditor.*;
@@ -61,7 +60,7 @@ public class ActiveEditorsOutlineService implements Disposable {
 
   @NotNull
   public static ActiveEditorsOutlineService getInstance(@NotNull final Project project) {
-    return ServiceManager.getService(project, ActiveEditorsOutlineService.class);
+    return Objects.requireNonNull(project.getService(ActiveEditorsOutlineService.class));
   }
 
   public ActiveEditorsOutlineService(Project project) {

@@ -12,7 +12,6 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.ide.ActivityTracker;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
@@ -32,6 +31,7 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -57,7 +57,7 @@ public class DeviceService {
 
   @NotNull
   public static DeviceService getInstance(@NotNull final Project project) {
-    return ServiceManager.getService(project, DeviceService.class);
+    return Objects.requireNonNull(project.getService(DeviceService.class));
   }
 
   private DeviceService(@NotNull final Project project) {
@@ -107,6 +107,7 @@ public class DeviceService {
       return ImmutableSet.copyOf(changed);
     });
   }
+
   public boolean isRefreshInProgress() {
     return refreshInProgress;
   }

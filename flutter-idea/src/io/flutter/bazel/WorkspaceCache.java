@@ -7,7 +7,6 @@ package io.flutter.bazel;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.registry.Registry;
@@ -21,6 +20,8 @@ import javax.swing.*;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Holds the current Bazel workspace for a Project.
@@ -79,7 +80,7 @@ public class WorkspaceCache {
 
   @NotNull
   public static WorkspaceCache getInstance(@NotNull final Project project) {
-    return ServiceManager.getService(project, WorkspaceCache.class);
+    return requireNonNull(project.getService(WorkspaceCache.class));
   }
 
   /**

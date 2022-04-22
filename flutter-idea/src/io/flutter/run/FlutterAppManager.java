@@ -27,8 +27,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class FlutterAppManager implements Disposable {
+  @Nullable
   public static FlutterAppManager getInstance(@NotNull Project project) {
-    return ServiceManager.getService(project, FlutterAppManager.class);
+    return project.getService(FlutterAppManager.class);
   }
 
   @NotNull

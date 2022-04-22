@@ -12,7 +12,6 @@ package io.flutter.editor;
  */
 
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Caret;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.event.*;
@@ -21,6 +20,7 @@ import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.util.Objects;
 
 /**
  * Service that tracks the visible area and Carat selection of an editor.
@@ -64,7 +64,7 @@ public class EditorPositionService extends EditorEventServiceBase<EditorPosition
 
   @NotNull
   public static EditorPositionService getInstance(@NotNull final Project project) {
-    return ServiceManager.getService(project, EditorPositionService.class);
+    return Objects.requireNonNull(project.getService(EditorPositionService.class));
   }
 
   public void addListener(@NotNull EditorEx editor, @NotNull Listener listener, Disposable disposable) {

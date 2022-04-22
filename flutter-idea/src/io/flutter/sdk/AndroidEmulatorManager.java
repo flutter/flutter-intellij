@@ -6,7 +6,6 @@
 package io.flutter.sdk;
 
 import com.google.common.collect.ImmutableSet;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.concurrency.AppExecutorUtil;
@@ -18,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -30,7 +30,7 @@ public class AndroidEmulatorManager {
 
   @NotNull
   public static AndroidEmulatorManager getInstance(@NotNull Project project) {
-    return ServiceManager.getService(project, AndroidEmulatorManager.class);
+    return Objects.requireNonNull(project.getService(AndroidEmulatorManager.class));
   }
 
   private final @NotNull Project project;

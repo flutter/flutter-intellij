@@ -9,7 +9,6 @@ import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.event.EditorMouseEvent;
 import com.intellij.openapi.editor.event.EditorMouseEventArea;
@@ -361,7 +360,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
   }
 
   private void showPerfViewMessage() {
-    final FlutterPerformanceView flutterPerfView = ServiceManager.getService(getApp().getProject(), FlutterPerformanceView.class);
+    final FlutterPerformanceView flutterPerfView = getApp().getProject().getService(FlutterPerformanceView.class);
     flutterPerfView.showForAppRebuildCounts(getApp());
     final String message = "<html><body>" +
                            getTooltipHtmlFragment() +

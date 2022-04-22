@@ -5,7 +5,6 @@
  */
 package io.flutter.pub;
 
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -15,10 +14,7 @@ import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Cache the information computed from pubspecs in the project.
@@ -26,7 +22,7 @@ import java.util.Map;
 public class PubRootCache {
   @NotNull
   public static PubRootCache getInstance(@NotNull final Project project) {
-    return ServiceManager.getService(project, PubRootCache.class);
+    return Objects.requireNonNull(project.getService(PubRootCache.class));
   }
 
   @NotNull final Project project;
