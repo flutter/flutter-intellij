@@ -176,14 +176,16 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     }
 
     if (!isShowBuildMethodGuides) {
-      // Reset the editor back to its default indent guide setting as build
-      // method guides are disabled and the file is a dart file.
-      e.getSettings().setIndentGuidesShown(isIndentGuidesShown);
-      // Cleanup custom filtered build method guides that may be left around
-      // from when our custom filtered build method guides were previously
-      // shown. This cleanup is very cheap if it has already been performed
-      // so there is no harm in performing it more than once.
-      FilteredIndentsHighlightingPass.cleanupHighlighters(e);
+      ApplicationManager.getApplication().invokeLater(() -> {
+        // Reset the editor back to its default indent guide setting as build
+        // method guides are disabled and the file is a dart file.
+        e.getSettings().setIndentGuidesShown(isIndentGuidesShown);
+        // Cleanup custom filtered build method guides that may be left around
+        // from when our custom filtered build method guides were previously
+        // shown. This cleanup is very cheap if it has already been performed
+        // so there is no harm in performing it more than once.
+        FilteredIndentsHighlightingPass.cleanupHighlighters(e);
+      });
       return null;
     }
     // If we are showing build method guides we can never show the regular
