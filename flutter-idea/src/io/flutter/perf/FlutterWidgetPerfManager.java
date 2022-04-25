@@ -197,6 +197,7 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
       (TextEditor textEditor) -> new EditorPerfDecorations(textEditor, app),
       path -> new DocumentFileLocationMapper(path, app.getProject())
     );
+    Disposer.register(this, currentStats);
 
     for (PerfModel listener : listeners) {
       currentStats.addPerfListener(listener);
@@ -273,7 +274,6 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
     streamSubscriptions.clear();
 
     if (currentStats != null) {
-      currentStats.dispose();
       currentStats = null;
     }
   }
