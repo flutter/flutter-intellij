@@ -911,6 +911,7 @@ class TestCommand extends ProductCommand {
         negatable: false,
         help: 'Do not run tests, just unpack artifaccts',
         abbr: 's');
+    argParser.addFlag('setup', abbr: 'p', defaultsTo: true);
   }
 
   @override
@@ -939,7 +940,9 @@ class TestCommand extends ProductCommand {
       }
       return 0;
     } finally {
-      await SetupCommand(runner).run();
+      if (argResults['setup']) {
+        await SetupCommand(runner).run();
+      }
     }
   }
 

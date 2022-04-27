@@ -73,11 +73,11 @@ ls -lR > dir-list.txt
 cat dir-list.txt
 
   # Run unit tests.
-  ./bin/plugin test
+  ./bin/plugin test --no-setup
 
 else
 
   # Run the build.
-  ./bin/plugin make --channel=stable --only-version=$IDEA_VERSION
+  ./bin/plugin make --channel=stable --only-version=$IDEA_VERSION --no-setup
 
 fi
