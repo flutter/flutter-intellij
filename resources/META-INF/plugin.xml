@@ -45,6 +45,37 @@
 
   <change-notes>
     <![CDATA[
+<h1>67.0</h1>
+<ul>
+  <li>Disable new analytics for M67 (#6142)</li>
+  <li>Stop running setup on the bots (#6141)</li>
+  <li>Update Dart plugin version (#6139)</li>
+  <li>Change setting on EDT (#6137)</li>
+  <li>Stop using a deprecated method (#6132)</li>
+  <li>Refactor Transport for easier logging while debugging (#6129)</li>
+  <li>Fix child lines when folding code (#6128)</li>
+  <li>Fix analytics (#6119)</li>
+  <li>Fix disposer bug (#6120)</li>
+  <li>Remove the 30-char limit for project names (#6121)</li>
+  <li>Use devtools script to launch bazel devtools (#6115)</li>
+  <li>Report flutter SDK version on startup (#6114)</li>
+  <li>Add dart devtools for starting server (#6112)</li>
+  <li>Delete code duplicated from Dart (#6113)</li>
+  <li>Update web URI mapping version (#6110)</li>
+  <li>Work around Kokoro Dart plugin problem (#6109)</li>
+  <li>Plugin tool improvements (#6106)</li>
+  <li>Fix layout issue (#6105)</li>
+  <li>Clean up edit.dart (#6104)</li>
+  <li>Add more analytics (#5985)</li>
+  <li>Update build for 2022.1 (#6102)</li>
+  <li>Enable Dart with multiple modules (#6099)</li>
+  <li>Look for a single module by name (#6098)</li>
+  <li>Add links to 3P plugin docs (#6090)</li>
+  <li>Fix config to load into 2021.3 (#6088)</li>
+  <li>Move third-party binaries into third_party (#6087)</li>
+  <li>This will allow us to assess the security posture of this repository. (#6047)</li>
+  <li>Update CONTRIBUTING.md (#6074)</li>
+</ul>
 <h1>66.0</h1>
 <ul>
   <li>Use expandable test field for run args (#6065)</li>
@@ -57,78 +88,6 @@
   <li>Notify bazel users to try running iOS apps (#6028)</li>
   <li>Use VM service for mapping breakpoint URIs (#6044)</li>
   <li>Send internal errors to analytics for disconnections (#6005)</li>
-</ul>
-<h1>65.0</h1>
-<ul>
-  <li>Change .packages file use to package config file (#5993)</li>
-  <li>Add Android module when opening any project (#5991)</li>
-  <li>Update JxBrowser to 7.22 (#5990)</li>
-  <li>Use time zone in survey calculation (#5976)</li>
-  <li>Fix return type of createState in macros (#5963)</li>
-  <li>Log perf dispose NPEs (#5975)</li>
-  <li>Build for 2022.1 EAP (#5973)</li>
-  <li>Remove old bazel test file mapping code (#5974)</li>
-  <li>Use VM for mapping breakpoint files during app run (#5947)</li>
-  <li>Update for 64.1 (#5958)</li>
-  <li>Try SIGINT first for all processes (#5950)</li>
-  <li>Open AS 2021.x (#5951)</li>
-  <li>Build for canary (Dolphin) (#5937)</li>
-</ul>
-<h1>64.1</h1>
-<ul>
-  <li>Try SIGINT before SIGKILL for processes (#5950)</li>
-</ul>
-<h1>64.0</h1>
-<ul>
-  <li>Fix modules for working with AS sources (#5913)</li>
-  <li>Add analytics to survey notifications (#5912)</li>
-  <li>Update AS modules for 212 (#5905)</li>
-  <li>Build for 212.5712 (#5894)</li>
-  <li>Improve icon preview and completion performance (#5887)</li>
-  <li>Rename old load classes (#5884)</li>
-  <li>Use IJ 213 for unit tests (#5882)</li>
-  <li>Share resources with both modules (#5877)</li>
-</ul>
-<h1>63.0</h1>
-<ul>
-  <li>Build for IntelliJ 2021.3 and Android Studio canary (#5868)</li>
-  <li>Enable downloading Mac M1 version of JxBrowser (#5871)</li>
-  <li>Convert to Gradle project with Kotlin DSL (#5858)</li>
-</ul>
-<h1>62.0</h1>
-<ul>
-  <li>Update jxbrowser to 7.19 (#5783)</li>
-  <li>Restore ignored tests (#5826)</li>
-  <li>Use Java 11 everywhere (#5836)</li>
-  <li>Add AS Canary to dev channel (#5830)</li>
-  <li>Remove dependencies on built-in Flutter icons (#5824)</li>
-  <li>Add instructions for converting to/from Gradle project (#5822)</li>
-  <li>Derive icon previews from font files for built-in icons (#5820)</li>
-  <li>Enable more compile-time nulllability checking (#5804)</li>
-</ul>
-<h1>61.1</h1>
-<ul>
-  <li>Add null check for manager (#5799)</li>
-</ul>
-<h1>61.0</h1>
-<ul>
-  <li>Make console stack traces expandable (#5777)</li>
-  <li>Do hot reload on auto-save (#5774)</li>
-  <li>Run flutter pub get after changing SDK in preferences (#5773)</li>
-  <li>Allow tests in any marked test dir and optionally in sources (#5770)</li>
-  <li>Add the new skeleton template to the New Project Wizard (#5765)</li>
-  <li>Bug fix in Workspace.java: parsing of contents out of the json file. (#5768)</li>
-  <li>Make unit test name matching more strict (#5763)</li>
-  <li>Stop running an external tool before launching (#5759)</li>
-  <li>Change some deprecated API usage (#5755)</li>
-  <li>Try harder to find pub root (#5753)</li>
-  <li>Add --project-name arg to flutter create (#5752)</li>
-  <li>Delete the project directory if project validation fails (#5751)</li>
-  <li>Build menu should be visible even if no file is selected (#5750)</li>
-  <li>Fix broken image resorce link (#5745)</li>
-  <li>Convert back to iml-based project (#5741)</li>
-  <li>Remove old code from NPW (#5739)</li>
-  <li>Fix some problems in the set up docs (#5734)</li>
 </ul>
 ]]>
   </change-notes>
