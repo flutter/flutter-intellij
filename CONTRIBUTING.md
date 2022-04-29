@@ -55,7 +55,6 @@ file.
     - `flutter pub get`
     - `(cd tool/plugin; flutter pub get)`
     - `bin/plugin test`
-    - `bin/plugin make -csetup -osetup -u` # configures the IDE used to launch the debugger
 * Start IntelliJ
 * In the "Project Structure" dialog (`File | Project Structure`):
   - Select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure the JDK
@@ -81,7 +80,7 @@ file.
   - Select `Modules`
   - Select the `Paths` tab
   - For each module in the Modules list, select it and make sure it uses the inherited compile output path
-  - NOTE: Every time IntelliJ opens the project it resets the output path, so you need to repeat this
+  - NOTE: Every time IntelliJ opens the project (or does a Gradle sync) it resets the output path, so you need to repeat this
 * Build the project using `Build` | `Build Project`
 * Try running the plugin; select the `flutter-intellij [runIde]` run config then click the Debug icon. This should open the "runtime workbench", 
   a new instance of IntelliJ with the plugin installed.
@@ -179,12 +178,6 @@ version of some code duplicated from the Dart plugin.
 ## Running plugin tests
 
 ### Using test run configurations in IntelliJ
-
-THIS SECTION IS OUT OF DATE SINCE THE CONVERSION TO GRADLE
-
-The IntelliJ test framework now requires unit tests to be run in a Gradle project. It is possible to
-import `flutter-intellij` as a Gradle project, but it is difficult, and not covered here. Instead,
-run tests using the plugin tool, as described below.
 
 The repository contains two pre-defined test run configurations. One is for "unit" tests; that is
 currently defined as tests that do not rely on the IntelliJ UI APIs. The other is for "integration"
