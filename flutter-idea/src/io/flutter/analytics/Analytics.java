@@ -50,8 +50,10 @@ public class Analytics {
   @NotNull
   private final String platformVersion;
 
+  @NotNull
   private Transport transport = new HttpTransport();
-  private final ThrottlingBucket bucket = new ThrottlingBucket(20);
+  @NotNull
+  private ThrottlingBucket bucket = new ThrottlingBucket(20);
   private boolean myCanSend = false;
 
   public Analytics(@NotNull String clientId, @NotNull String pluginVersion, @NotNull String platformName, @NotNull String platformVersion) {
@@ -59,6 +61,16 @@ public class Analytics {
     this.pluginVersion = pluginVersion;
     this.platformName = platformName;
     this.platformVersion = platformVersion;
+  }
+
+  public void disableThrottling(@NotNull Runnable func) {
+    ThrottlingBucket original = bucket;
+    try {
+      bucket = new ThrottlingBucket.NonTrhottlingBucket(0);
+      func.run();
+    } finally {
+      bucket = original;
+    }
   }
 
   @NotNull

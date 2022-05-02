@@ -49,4 +49,15 @@ public class ThrottlingBucket {
       lastReplenish += (1000L * inc);
     }
   }
+
+  static class NonTrhottlingBucket extends ThrottlingBucket {
+
+    public NonTrhottlingBucket(int startingCount) {
+      super(startingCount);
+    }
+
+    public boolean removeDrop() {
+      return true;
+    }
+  }
 }

@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.dart.server.AnalysisServerListener;
-import com.google.dart.server.AnalysisServerListenerAdapter;
 import com.google.dart.server.RequestListener;
 import com.google.dart.server.ResponseListener;
 import com.google.gson.Gson;
@@ -232,7 +231,7 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
       if ("completion.getSuggestions".equals(details.method())) {
         return id;
       }
-    };
+    }
     return null;
   }
 
@@ -460,18 +459,20 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
       errorsTimestamp = currentTimestamp;
       Analytics analytics = FlutterInitializer.getAnalytics();
       LOG.debug(DAS_STATUS_EVENT_TYPE + " " + errorCount + " " + warningCount + " " + hintCount + " " + lintCount);
-      if (errorCount > 0) {
-        analytics.sendEventMetric(DAS_STATUS_EVENT_TYPE, ERRORS, errorCount); // test: serverStatus()
-      }
-      if (warningCount > 0) {
-        analytics.sendEventMetric(DAS_STATUS_EVENT_TYPE, WARNINGS, warningCount); // test: serverStatus()
-      }
-      if (hintCount > 0) {
-        analytics.sendEventMetric(DAS_STATUS_EVENT_TYPE, HINTS, hintCount); // test: serverStatus()
-      }
-      if (lintCount > 0) {
-        analytics.sendEventMetric(DAS_STATUS_EVENT_TYPE, LINTS, lintCount); // test: serverStatus()
-      }
+      analytics.disableThrottling(() -> {
+        if (errorCount > 0) {
+          analytics.sendEventMetric(DAS_STATUS_EVENT_TYPE, ERRORS, errorCount); // test: serverStatus()
+        }
+        if (warningCount > 0) {
+          analytics.sendEventMetric(DAS_STATUS_EVENT_TYPE, WARNINGS, warningCount); // test: serverStatus()
+        }
+        if (hintCount > 0) {
+          analytics.sendEventMetric(DAS_STATUS_EVENT_TYPE, HINTS, hintCount); // test: serverStatus()
+        }
+        if (lintCount > 0) {
+          analytics.sendEventMetric(DAS_STATUS_EVENT_TYPE, LINTS, lintCount); // test: serverStatus()
+        }
+      });
       errorCount = warningCount = hintCount = lintCount = 0;
     }
   }
@@ -631,10 +632,10 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
             LOG.debug(ANALYSIS_SERVER_LOG + " " + logEntry);
             // Log the "sdkVersion" only if it was provided in the event
             if (StringUtil.isEmpty(sdkVersionValue)) {
-              FlutterInitializer.getAnalytics().sendEvent(ANALYSIS_SERVER_LOG, logEntry); // test: dasListenerLogging()
+              analytics.sendEvent(ANALYSIS_SERVER_LOG, logEntry); // test: dasListenerLogging()
             }
             else { // test: dasListenerLoggingWithSdk()
-              FlutterInitializer.getAnalytics().sendEventWithSdk(ANALYSIS_SERVER_LOG, logEntry, sdkVersionValue);
+              analytics.sendEventWithSdk(ANALYSIS_SERVER_LOG, logEntry, sdkVersionValue);
             }
           });
         }
