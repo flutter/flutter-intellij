@@ -240,7 +240,7 @@ public class FlutterInitializer implements StartupActivity {
 
   private static void enableAnalytics(@NotNull Project project) {
     ToolWindowTracker.track(project, getAnalytics());
-    // DartAnalysisServerService.getInstance(project).addAnalysisServerListener(FlutterAnalysisServerListener.getInstance(project));
+    DartAnalysisServerService.getInstance(project).addAnalysisServerListener(FlutterAnalysisServerListener.getInstance(project));
   }
 
   private void initializeToolWindows(@NotNull Project project) {
