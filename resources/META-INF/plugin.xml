@@ -438,7 +438,7 @@
   <!-- Dart Plugin extensions -->
   <extensions defaultExtensionNs="Dart">
     <completionExtension implementation="io.flutter.editor.FlutterCompletionContributor" order="last"/>
-    <!-- completionTimerExtension implementation="io.flutter.analytics.DartCompletionTimerListener"/ -->
+    <completionTimerExtension implementation="io.flutter.analytics.DartCompletionTimerListener"/>
   </extensions>
 
 </idea-plugin>
