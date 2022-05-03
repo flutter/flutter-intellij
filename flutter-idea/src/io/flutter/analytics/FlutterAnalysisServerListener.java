@@ -209,10 +209,6 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
       return;
     }
     RequestDetails details = requestToDetails.remove(id);
-    if (!isLast) {
-      // TODO(messick) Do we want only the first results or all results? If only the first, remove this check.
-      return;
-    }
     if (details == null) {
       return;
     }
@@ -337,15 +333,10 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
 
   @Override
   public void computedSearchResults(String searchId, List<SearchResult> results, boolean isLast) {
-    if (!isLast) {
-      // TODO(messick) Do we want only the first results or all results? If only the first, remove this check.
-      return;
-    }
-    RequestDetails details = requestToDetails.get(searchId);
+    RequestDetails details = requestToDetails.remove(searchId);
     if (details == null) {
       return;
     }
-    requestToDetails.remove(searchId);
     maybeReport(true, (analytics) -> {
       String method = details.method();
       long duration = generalTimestamp - details.startTime().toEpochMilli();
