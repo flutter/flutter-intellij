@@ -321,7 +321,7 @@ public class Analytics {
       try {
         final byte[] postDataBytes = createPostData(values);
         //noinspection ConstantConditions
-        LOG.info("Sending " + postDataBytes.length + " bytes");
+        LOG.info("Sending " + postDataBytes.length + " bytes " + new String(postDataBytes));
       }
       catch (UnsupportedEncodingException ignore) {
       }

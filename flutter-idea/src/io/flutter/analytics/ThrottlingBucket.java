@@ -43,10 +43,10 @@ public class ThrottlingBucket {
   private void checkReplenish() {
     final long now = System.currentTimeMillis();
 
-    if (lastReplenish + 1000L >= now) {
+    if (now >= lastReplenish + 1000L) {
       final int inc = ((int)(now - lastReplenish)) / 1000;
       drops = Math.min(drops + inc, startingCount);
-      lastReplenish += (1000L * inc);
+      lastReplenish = now;
     }
   }
 
