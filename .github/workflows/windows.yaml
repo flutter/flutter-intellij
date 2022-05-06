@@ -6,6 +6,8 @@
 # https://docs.github.com/en/free-pro-team@latest/actions/managing-workflow-runs/disabling-and-enabling-a-workflow
 name: windows
 on: [push, pull_request, workflow_dispatch]
+permissions:
+contents: read
 jobs:
   unit-tests:
     runs-on: windows-latest

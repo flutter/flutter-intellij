@@ -10,6 +10,9 @@ on:
       - master
   workflow_dispatch:
 
+permissions:
+contents: read
+
 jobs:
   presubmit:
     runs-on: ubuntu-latest
