@@ -33,6 +33,7 @@ import io.flutter.utils.JsonUtils;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -123,7 +124,8 @@ public class DevToolsService {
                                       ImmutableList.of("--machine")));
         }
         else {
-          setUpWithDart(createCommand(DartSdk.getDartSdk(project).getHomePath(), "dart", ImmutableList.of("devtools", "--machine")));
+          setUpWithDart(createCommand(DartSdk.getDartSdk(project).getHomePath(), DartSdk.getDartSdk(project).getHomePath() + File.separatorChar + "bin" + File.separatorChar + "dart",
+                                      ImmutableList.of("devtools", "--machine")));
         }
       }
       else if (sdk != null && sdk.getVersion().useDaemonForDevTools()) {
