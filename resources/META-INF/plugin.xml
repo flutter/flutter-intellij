@@ -45,6 +45,10 @@
 
   <change-notes>
     <![CDATA[
+<h1>67.1</h1>
+<ul>
+  <li>Specify dart bin path (#6153)</li>
+</ul>
 <h1>67.0</h1>
 <ul>
   <li>Disable new analytics for M67 (#6142)</li>

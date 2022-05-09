@@ -1,3 +1,6 @@
+# 67.1
+- Specify dart bin path (#6153)
+
 # 67.0
 - Disable new analytics for M67 (#6142)
 - Stop running setup on the bots (#6141)
