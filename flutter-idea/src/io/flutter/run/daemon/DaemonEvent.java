@@ -308,6 +308,7 @@ abstract class DaemonEvent {
     String id;
     String name;
     String platform;
+    String emulatorId;
     Boolean emulator;
 
     @Nullable String category;

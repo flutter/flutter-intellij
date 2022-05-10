@@ -32,7 +32,7 @@ public class FlutterDevice {
     @Nullable String category, @Nullable String platformType, @Nullable Boolean ephemeral
   ) {
     myDeviceId = deviceId;
-    myDeviceName = deviceName;
+    myDeviceName = deviceName.replaceAll("_", " ");
     myPlatform = platform;
     myEmulator = emulator;
     myCategory = category;
