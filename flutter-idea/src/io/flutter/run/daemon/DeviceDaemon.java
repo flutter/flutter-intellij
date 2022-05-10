@@ -383,7 +383,7 @@ class DeviceDaemon {
       }
 
       final FlutterDevice newDevice = new FlutterDevice(event.id,
-                                                        event.name == null ? event.id : event.name,
+                                                        event.emulatorId == null ? event.id : event.emulatorId,
                                                         event.platform,
                                                         event.emulator,
                                                         event.category,
