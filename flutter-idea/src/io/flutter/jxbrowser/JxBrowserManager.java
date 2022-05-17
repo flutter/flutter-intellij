@@ -293,6 +293,9 @@ public class JxBrowserManager {
     final Task.Backgroundable task = new Task.Backgroundable(project, "Downloading jxbrowser") {
       @Override
       public void run(@NotNull ProgressIndicator indicator) {
+        if (project.isDisposed()) {
+          return;
+        }
         String currentFileName = null;
         final long startTime = System.currentTimeMillis();
         try {
