@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static io.flutter.analytics.Analytics.TIMING_COMPLETE;
 import static io.flutter.analytics.FlutterAnalysisServerListener.*;
 import static org.junit.Assert.*;
 
@@ -201,22 +202,28 @@ public class FlutterAnalysisServerListenerTest {
     fasl.computedSearchResults("2", new ArrayList<>(), true);
     assertEquals(1, transport.sentValues.size());
     Map<String, String> map = transport.sentValues.get(0);
-    assertEquals(ROUND_TRIP_TIME, map.get("utc"));
-    assertEquals(FIND_REFERENCES, map.get("utv"));
-    assertNotNull(map.get("utt")); // Not checking a computed value, duration.
+    assertEquals(TIMING_COMPLETE, map.get("ea"));
+    assertEquals(ROUND_TRIP_TIME, map.get("ec"));
+    assertEquals(FIND_REFERENCES, map.get("el"));
+    String value = map.get("ev");
+    assertNotNull(value);
+    assertTrue(0 <= Integer.parseInt(value));
   }
 
   @Test
   public void computedCompletion() throws Exception {
-    fasl.requestListener.onRequest("{\"method\":\"test\",\"id\":\"2\"}");
+    fasl.requestListener.onRequest("{\"method\":\"" + GET_SUGGESTIONS + "\",\"id\":\"2\"}");
     fasl.responseListener.onResponse("{\"event\":\"none\",\"id\":\"2\"}");
     List none = new ArrayList();
     fasl.computedCompletion("2", 0, 0, none, none, none, none, true, "");
     assertEquals(1, transport.sentValues.size());
     Map<String, String> map = transport.sentValues.get(0);
-    assertEquals(ROUND_TRIP_TIME, map.get("utc"));
-    assertEquals("test", map.get("utv"));
-    assertNotNull(map.get("utt")); // Not checking a computed value, duration.
+    assertEquals(TIMING_COMPLETE, map.get("ea"));
+    assertEquals(ROUND_TRIP_TIME, map.get("ec"));
+    assertEquals(GET_SUGGESTIONS, map.get("el"));
+    String value = map.get("ev");
+    assertNotNull(value);
+    assertTrue(0 <= Integer.parseInt(value));
   }
 
   @Test
@@ -248,10 +255,9 @@ public class FlutterAnalysisServerListenerTest {
     dctl.dartCompletionEnd();
     assertEquals(1, transport.sentValues.size());
     Map<String, String> map = transport.sentValues.get(0);
-    assertEquals(E2E_IJ_COMPLETION_TIME, map.get("utc"));
-    assertEquals(SUCCESS, map.get("utv"));
-    assertEquals("timing", map.get("t"));
-    assertNotNull(map.get("utt")); // Not checking a computed value, duration.
+    assertEquals(TIMING_COMPLETE, map.get("ea"));
+    assertEquals(E2E_IJ_COMPLETION_TIME, map.get("ec"));
+    assertEquals(SUCCESS, map.get("el"));
   }
 
   @Test
@@ -262,10 +268,12 @@ public class FlutterAnalysisServerListenerTest {
     dctl.dartCompletionError("101", "message", "trace");
     assertEquals(1, transport.sentValues.size());
     Map<String, String> map = transport.sentValues.get(0);
-    assertEquals(E2E_IJ_COMPLETION_TIME, map.get("utc"));
-    assertEquals(FAILURE, map.get("utv"));
-    assertEquals("timing", map.get("t"));
-    assertNotNull(map.get("utt")); // Not checking a computed value, duration.
+    assertEquals(TIMING_COMPLETE, map.get("ea"));
+    assertEquals(E2E_IJ_COMPLETION_TIME, map.get("ec"));
+    assertEquals(FAILURE, map.get("el"));
+    String value = map.get("ev");
+    assertNotNull(value);
+    assertTrue(0 <= Integer.parseInt(value));
   }
 
   @NotNull

@@ -34,6 +34,7 @@ import java.util.Map;
  */
 public class Analytics {
   public static final String GROUP_DISPLAY_ID = "Flutter Usage Statistics";
+  public static final String TIMING_COMPLETE = "timing_complete";
 
   private static final String analyticsUrl = "https://www.google-analytics.com/collect";
   private static final String applicationName = "Flutter IntelliJ Plugin";
@@ -141,11 +142,7 @@ public class Analytics {
   }
 
   public void sendTiming(@NotNull String category, @NotNull String variable, long timeMillis) {
-    final Map<String, String> args = new HashMap<>();
-    args.put("utc", category);
-    args.put("utv", variable);
-    args.put("utt", Long.toString(timeMillis));
-    sendPayload("timing", args, null);
+    sendEvent(category, TIMING_COMPLETE, variable, Long.toString(timeMillis));
   }
 
   public void sendExpectedException(@NotNull String location, @NotNull Throwable throwable) {
