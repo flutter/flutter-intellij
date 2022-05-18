@@ -141,11 +141,7 @@ public class Analytics {
   }
 
   public void sendTiming(@NotNull String category, @NotNull String variable, long timeMillis) {
-    final Map<String, String> args = new HashMap<>();
-    args.put("utc", category);
-    args.put("utv", variable);
-    args.put("utt", Long.toString(timeMillis));
-    sendPayload("timing", args, null);
+    sendEvent(category, "timing_complete", variable, Long.toString(timeMillis));
   }
 
   public void sendExpectedException(@NotNull String location, @NotNull Throwable throwable) {
