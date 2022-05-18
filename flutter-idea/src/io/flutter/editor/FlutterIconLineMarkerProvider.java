@@ -149,7 +149,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
       final PsiElement fontPackage = getNamedArgumentExpression(arguments, "fontPackage");
       final String argument = getValueOfPositionalArgument(arguments, 0);
       if (argument == null) return null;
-      final Icon icon = getIconFromPackage(fontPackage, family, argument, element.getProject(), sdk);
+      final Icon icon = getIconFromPackage(fontPackage, family, argument, element.getProject(), sdk, knownPath, parent);
       if (icon != null) {
         return createLineMarker(element, icon);
       }
@@ -163,7 +163,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
       final PsiElement fontPackage = getNamedArgumentExpression(arguments, "fontPackage");
       final String argument = getValueOfPositionalArgument(arguments, 0);
       if (argument == null) return null;
-      final Icon icon = getIconFromPackage(fontPackage, family, argument, element.getProject(), sdk);
+      final Icon icon = getIconFromPackage(fontPackage, family, argument, element.getProject(), sdk, knownPath, parent);
       if (icon != null) {
         return createLineMarker(element, icon);
       }
@@ -243,7 +243,9 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
 
   // Note: package flutter_icons is not currently supported because it takes forever to analyze it.
   @Nullable
-  private Icon getIconFromPackage(@Nullable PsiElement aPackage, @Nullable String family, @NotNull String argument, @NotNull Project project, @NotNull FlutterSdk sdk) {
+  private Icon getIconFromPackage(@Nullable PsiElement aPackage, @Nullable String family, @NotNull String argument,
+                                  @NotNull Project project, @NotNull FlutterSdk sdk, @NotNull String knownPath,
+                                  @NotNull PsiElement parent) {
     final int code;
     try {
       code = parseLiteralNumber(argument);
@@ -251,7 +253,17 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     catch (NumberFormatException ignored) {
       return null;
     }
-    family = family == null ? "MaterialIcons" : family;
+    if (family == null) {
+      family = "MaterialIcons";
+    } else if (family.isEmpty()) {
+      // We have to work harder to determine the family. It was probably specified as a constant value, not a string literal.
+      PsiElement varDecl = parent.getParent().getParent();
+      ASTNode node = varDecl.getNode();
+      String iconName = node.getFirstChildNode().getLastChildNode().getFirstChildNode().getText();
+      final FlutterIconLineMarkerProvider.IconInfo iconDef = findDefinition("", iconName, project, parent.getContainingFile().getVirtualFile().getPath());
+      if (iconDef == null) return null;
+      return findIconFromDef("", iconDef, knownPath);
+    }
     if (aPackage == null) {
       // Looking for IconData with no package -- package specification not currently supported.
       final String relativeAssetPath = family.equals("MaterialIcons") ? MaterialRelativeAssetPath : CupertinoRelativeAssetPath;
@@ -427,6 +439,9 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
                 final DartExpression dartExpression = list.get(0);
                 assert dartExpression != null;
                 final String codepoint = dartExpression.getText();
+                if (iconName.equals(codepoint)) {
+                  o.getComponentName();
+                }
                 final PsiElement family = getNamedArgumentExpression(arguments, "fontFamily");
                 final String familyName = findFamilyName(family, type);
                 assert className != null;
