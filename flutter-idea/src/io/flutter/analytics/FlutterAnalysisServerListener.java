@@ -224,7 +224,7 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
     for (String id : keys) {
       RequestDetails details = requestToDetails.get(id);
       assert details != null;
-      if ("completion.getSuggestions".equals(details.method())) {
+      if (GET_SUGGESTIONS.equals(details.method())) {
         return id;
       }
     }
@@ -432,14 +432,14 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
   }
 
   private void maybeReport(boolean observeThrottling, @NotNull java.util.function.Consumer<@NotNull Analytics> func) {
+    long currentTimestamp = System.currentTimeMillis();
     if (observeThrottling && !IS_TESTING) {
-      long currentTimestamp = System.currentTimeMillis();
       // Throttle to one report per interval.
       if (currentTimestamp - generalTimestamp < GENERAL_REPORT_INTERVAL) {
         return;
       }
-      generalTimestamp = currentTimestamp;
     }
+    generalTimestamp = currentTimestamp;
     func.accept(FlutterInitializer.getAnalytics());
   }
 
