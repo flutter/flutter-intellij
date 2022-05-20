@@ -149,7 +149,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
       final PsiElement fontPackage = getNamedArgumentExpression(arguments, "fontPackage");
       final String argument = getValueOfPositionalArgument(arguments, 0);
       if (argument == null) return null;
-      final Icon icon = getIconFromPackage(fontPackage, family, argument, element.getProject(), sdk, knownPath, parent);
+      final Icon icon = getIconFromPackage(fontPackage, family, argument, element.getProject(), sdk, parent);
       if (icon != null) {
         return createLineMarker(element, icon);
       }
@@ -163,7 +163,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
       final PsiElement fontPackage = getNamedArgumentExpression(arguments, "fontPackage");
       final String argument = getValueOfPositionalArgument(arguments, 0);
       if (argument == null) return null;
-      final Icon icon = getIconFromPackage(fontPackage, family, argument, element.getProject(), sdk, knownPath, parent);
+      final Icon icon = getIconFromPackage(fontPackage, family, argument, element.getProject(), sdk, parent);
       if (icon != null) {
         return createLineMarker(element, icon);
       }
@@ -248,8 +248,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
   // Note: package flutter_icons is not currently supported because it takes forever to analyze it.
   @Nullable
   private Icon getIconFromPackage(@Nullable PsiElement aPackage, @Nullable String family, @NotNull String argument,
-                                  @NotNull Project project, @NotNull FlutterSdk sdk, @NotNull String knownPath,
-                                  @NotNull PsiElement parent) {
+                                  @NotNull Project project, @NotNull FlutterSdk sdk, @NotNull PsiElement parent) {
     final int code;
     try {
       code = parseLiteralNumber(argument);
