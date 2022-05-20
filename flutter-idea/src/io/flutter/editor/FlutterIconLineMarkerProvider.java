@@ -149,7 +149,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
       final PsiElement fontPackage = getNamedArgumentExpression(arguments, "fontPackage");
       final String argument = getValueOfPositionalArgument(arguments, 0);
       if (argument == null) return null;
-      final Icon icon = getIconFromPackage(fontPackage, family, argument, element.getProject(), sdk);
+      final Icon icon = getIconFromPackage(fontPackage, family, argument, element.getProject(), sdk, parent);
       if (icon != null) {
         return createLineMarker(element, icon);
       }
@@ -163,7 +163,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
       final PsiElement fontPackage = getNamedArgumentExpression(arguments, "fontPackage");
       final String argument = getValueOfPositionalArgument(arguments, 0);
       if (argument == null) return null;
-      final Icon icon = getIconFromPackage(fontPackage, family, argument, element.getProject(), sdk);
+      final Icon icon = getIconFromPackage(fontPackage, family, argument, element.getProject(), sdk, parent);
       if (icon != null) {
         return createLineMarker(element, icon);
       }
@@ -224,7 +224,11 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
   }
 
   @Nullable
-  private IconInfo findStandardDefinition(@NotNull String className, @NotNull String iconName, @NotNull Project project, @Nullable String path, @NotNull FlutterSdk sdk) {
+  private IconInfo findStandardDefinition(@NotNull String className,
+                                          @NotNull String iconName,
+                                          @NotNull Project project,
+                                          @Nullable String path,
+                                          @NotNull FlutterSdk sdk) {
     if (path != null) {
       return findDefinition(className, iconName, project, path);
     }
@@ -243,7 +247,8 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
 
   // Note: package flutter_icons is not currently supported because it takes forever to analyze it.
   @Nullable
-  private Icon getIconFromPackage(@Nullable PsiElement aPackage, @Nullable String family, @NotNull String argument, @NotNull Project project, @NotNull FlutterSdk sdk) {
+  private Icon getIconFromPackage(@Nullable PsiElement aPackage, @Nullable String family, @NotNull String argument,
+                                  @NotNull Project project, @NotNull FlutterSdk sdk, @NotNull PsiElement parent) {
     final int code;
     try {
       code = parseLiteralNumber(argument);
@@ -251,15 +256,47 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     catch (NumberFormatException ignored) {
       return null;
     }
-    family = family == null ? "MaterialIcons" : family;
+    if (family == null) {
+      family = "MaterialIcons";
+    }
+    else if (family.isEmpty()) {
+      // We have to work harder to determine the family. It was probably specified as a constant value, not a string literal.
+      final PsiElement parent2 = parent.getParent();
+      if (parent2 == null) return null;
+      final PsiElement varDecl = parent2.getParent();
+      if (varDecl == null) return null;
+      final ASTNode node = varDecl.getNode();
+      if (node == null) return null;
+      final ASTNode firstChild = node.getFirstChildNode();
+      if (firstChild == null) return null;
+      final ASTNode lastChild = firstChild.getLastChildNode();
+      if (lastChild == null) return null;
+      final String iconName = lastChild.getFirstChildNode().getText();
+      final FlutterIconLineMarkerProvider.IconInfo iconDef =
+        findDefinition("", iconName, project, parent.getContainingFile().getVirtualFile().getPath());
+      if (iconDef == null) return null;
+      family = iconDef.familyName;
+      if (family == null) return null;
+      aPackage = null; // TODO Allow package to be specified.
+    }
     if (aPackage == null) {
       // Looking for IconData with no package -- package specification not currently supported.
       final String relativeAssetPath = family.equals("MaterialIcons") ? MaterialRelativeAssetPath : CupertinoRelativeAssetPath;
-      // TODO Base path is wrong for cupertino -- is there a test for this branch (IconData with cupertino family)?
-      final IconPreviewGenerator generator = new IconPreviewGenerator(sdk.getHomePath() + relativeAssetPath);
+      final String base = getBasePathForFamily(family, sdk, project);
+      if (base == null) return null;
+      final IconPreviewGenerator generator = new IconPreviewGenerator(base + relativeAssetPath);
       return generator.convert(code);
     }
     return null;
+  }
+
+  @Nullable
+  private String getBasePathForFamily(@NotNull String family, @NotNull FlutterSdk sdk, @NotNull Project project) {
+    if (family.equals("MaterialIcons")) {
+      return sdk.getHomePath();
+    }
+    // TODO Generalize this to work with other icon packages from pub.
+    return FlutterSdkUtil.getPathToCupertinoIconsPackage(project);
   }
 
   @Nullable

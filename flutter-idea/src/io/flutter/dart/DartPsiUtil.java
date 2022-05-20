@@ -55,8 +55,12 @@ public class DartPsiUtil {
   @Nullable
   public static String getValueOfNamedArgument(@NotNull DartArguments arguments, @NotNull String name) {
     final PsiElement family = getNamedArgumentExpression(arguments, "fontFamily");
-    if (family != null && family.getNode().getElementType() == DartTokenTypes.STRING_LITERAL_EXPRESSION) {
-      return DartPsiImplUtil.getUnquotedDartStringAndItsRange(family.getText()).first;
+    if (family != null) {
+      if (family.getNode().getElementType() == DartTokenTypes.STRING_LITERAL_EXPRESSION) {
+        return DartPsiImplUtil.getUnquotedDartStringAndItsRange(family.getText()).first;
+      } else {
+        return ""; // Empty string indicates arg was found but value could not be determined easily.
+      }
     }
     return null;
   }
