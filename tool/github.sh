@@ -67,11 +67,6 @@ elif [ "CHECK_BOT" = "$BOT" ] ; then
 
 elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
 
-echo `pwd`
-echo "ls -lR"
-ls -lR > dir-list.txt
-cat dir-list.txt
-
   # Run unit tests.
   ./bin/plugin test --no-setup
 
