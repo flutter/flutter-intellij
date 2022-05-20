@@ -262,16 +262,26 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
       String iconName = node.getFirstChildNode().getLastChildNode().getFirstChildNode().getText();
       final FlutterIconLineMarkerProvider.IconInfo iconDef = findDefinition("", iconName, project, parent.getContainingFile().getVirtualFile().getPath());
       if (iconDef == null) return null;
-      return findIconFromDef("", iconDef, knownPath);
+      family = iconDef.familyName;
+      if (family == null) return null;
     }
     if (aPackage == null) {
       // Looking for IconData with no package -- package specification not currently supported.
       final String relativeAssetPath = family.equals("MaterialIcons") ? MaterialRelativeAssetPath : CupertinoRelativeAssetPath;
-      // TODO Base path is wrong for cupertino -- is there a test for this branch (IconData with cupertino family)?
-      final IconPreviewGenerator generator = new IconPreviewGenerator(sdk.getHomePath() + relativeAssetPath);
+      String base = getBasePathForFamily(family, sdk, parent);
+      final IconPreviewGenerator generator = new IconPreviewGenerator(base + relativeAssetPath);
       return generator.convert(code);
     }
     return null;
+  }
+
+  private String getBasePathForFamily(@NotNull String family, @NotNull FlutterSdk sdk, @NotNull PsiElement element) {
+    if (family.equals("MaterialIcons")) {
+      return sdk.getHomePath();
+    }
+    @NotNull List<VirtualFile> library = DartResolveUtil.findLibraryByName(element, "cupertino_icons");
+    library.get(0);
+    return "";
   }
 
   @Nullable
