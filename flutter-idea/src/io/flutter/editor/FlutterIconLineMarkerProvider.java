@@ -296,6 +296,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     if (family.equals("MaterialIcons")) {
       return sdk.getHomePath();
     }
+    // TODO Generalize this to work with other icon packages from pub.
     return FlutterSdkUtil.getPathToCupertinoIconsPackage(project);
   }
 
