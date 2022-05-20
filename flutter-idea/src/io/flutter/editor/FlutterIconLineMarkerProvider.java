@@ -464,9 +464,6 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
                 final DartExpression dartExpression = list.get(0);
                 assert dartExpression != null;
                 final String codepoint = dartExpression.getText();
-                if (iconName.equals(codepoint)) {
-                  o.getComponentName();
-                }
                 final PsiElement family = getNamedArgumentExpression(arguments, "fontFamily");
                 final String familyName = findFamilyName(family, type);
                 assert className != null;
