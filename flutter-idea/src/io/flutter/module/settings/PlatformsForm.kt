@@ -85,7 +85,7 @@ class PlatformsForm(getSdk: Supplier<out FlutterSdk>) {
           FlutterBundle.message("npw_platform_android"),
           FlutterBundle.message("npw_platform_ios"),
           if (sdk.version.isWindowsPlatformStable) FlutterBundle.message("npw_platform_web") else null,
-          if (sdk.version.isWindowsPlatformStable) "Windows" else null)
+          if (sdk.version.isWindowsPlatformStable) FlutterBundle.message("npw_platform_windows") else null)
         enabled(names.contains(name) || wasSelected)
       }
     }
