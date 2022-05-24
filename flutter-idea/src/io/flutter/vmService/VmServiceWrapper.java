@@ -2,6 +2,7 @@ package io.flutter.vmService;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.net.PercentEscaper;
 import com.google.gson.JsonObject;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
@@ -569,7 +570,7 @@ public class VmServiceWrapper implements Disposable {
 
       final String resolvedUri = getResolvedUri(position);
       LOG.info("Computed resolvedUri: " + resolvedUri);
-      final List<String> resolvedUriList = List.of(resolvedUri);
+      final List<String> resolvedUriList = List.of(percentEscapeUri(resolvedUri));
 
       final CanonicalBreakpoint canonicalBreakpoint =
         new CanonicalBreakpoint(position.getFile().getName(), position.getFile().getCanonicalPath(), line);
@@ -679,6 +680,11 @@ public class VmServiceWrapper implements Disposable {
     }
 
     return url;
+  }
+
+  private String percentEscapeUri(String uri) {
+    final PercentEscaper escaper = new PercentEscaper("!#$&'()*+,-./:;=?@_~", false);
+    return escaper.escape(uri);
   }
 
   public void addBreakpointForIsolates(@NotNull final XLineBreakpoint<XBreakpointProperties> xBreakpoint,
