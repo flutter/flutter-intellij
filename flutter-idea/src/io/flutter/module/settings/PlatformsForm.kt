@@ -84,7 +84,7 @@ class PlatformsForm(getSdk: Supplier<out FlutterSdk>) {
         val names: List<String> = listOfNotNull(
           FlutterBundle.message("npw_platform_android"),
           FlutterBundle.message("npw_platform_ios"),
-          if (sdk.version.isWindowsPlatformStable) FlutterBundle.message("npw_platform_web") else null,
+          if (sdk.version.isWebPlatformStable) FlutterBundle.message("npw_platform_web") else null,
           if (sdk.version.isWindowsPlatformStable) FlutterBundle.message("npw_platform_windows") else null)
         enabled(names.contains(name) || wasSelected)
       }
