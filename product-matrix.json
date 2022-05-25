@@ -14,7 +14,7 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2021.2, Android Studio 2021.2 Beta",
+      "comments": "IntelliJ 2021.2, Android Studio 2021.2",
       "name": "Chipmunk",
       "version": "AS.212",
       "ideaProduct": "android-studio",
@@ -26,7 +26,7 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2021.3, Android Studio 2021.3 Canary",
+      "comments": "IntelliJ 2021.3, Android Studio 2021.3 Beta & Canary",
       "name": "2021.3",
       "version": "AS.213",
       "ideaProduct": "android-studio",

@@ -1,3 +1,14 @@
+# 66.0
+- Use expandable test field for run args (#6065)
+- Ignore scratch files during hot reload on save (#6064)
+- Stop using some deprecated methods (#5994)
+- Allow directories to be recognized as part of a Flutter project (#6057)
+- Drop 2020.3, update Dart plugin for latest EAP (#6059)
+- Check for bazel workspace when using VM mapping (#6055)
+- Add jxbrowser log file for easier debugging (#6051)
+- Notify bazel users to try running iOS apps (#6028)
+- Use VM service for mapping breakpoint URIs (#6044)
+- Send internal errors to analytics for disconnections (#6005)
 
 # 65.0
 - Change .packages file use to package config file (#5993)
