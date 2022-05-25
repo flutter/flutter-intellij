@@ -1,3 +1,16 @@
+# 68.0
+- Enable Windows platform for Flutter 2.10+ (#6195)
+- Escape spaces for VM mapping (#6194)
+- Stop relying only on .packages for pub banner (#6188)
+- Update icon previews to handle new format (#6186)
+- Fix typo in actions (#6180)
+- Send timing data as a GA event (#6179)
+- Check for project disposal before download (#6173)
+- Add default token permissions values + pin dependencies (#6152)
+- Show meaningful device names (#6158)
+- Specify dart bin path (#6153)
+- Update CONTRIBUTING.md (#6146)
+
 # 67.1
 - Specify dart bin path (#6153)
 
@@ -30,15 +43,3 @@
 - Move third-party binaries into third_party (#6087)
 - This will allow us to assess the security posture of this repository. (#6047)
 - Update CONTRIBUTING.md (#6074)
-
-# 66.0
-- Use expandable test field for run args (#6065)
-- Ignore scratch files during hot reload on save (#6064)
-- Stop using some deprecated methods (#5994)
-- Allow directories to be recognized as part of a Flutter project (#6057)
-- Drop 2020.3, update Dart plugin for latest EAP (#6059)
-- Check for bazel workspace when using VM mapping (#6055)
-- Add jxbrowser log file for easier debugging (#6051)
-- Notify bazel users to try running iOS apps (#6028)
-- Use VM service for mapping breakpoint URIs (#6044)
-- Send internal errors to analytics for disconnections (#6005)
