@@ -78,6 +78,11 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   @NotNull
   private static final FlutterSdkVersion MIN_URI_MAPPING_FOR_WEB = new FlutterSdkVersion("2.13.0-0.1.pre");
 
+  @NotNull
+  private static final FlutterSdkVersion MIN_STABLE_WEB_PLATFORM = new FlutterSdkVersion("2.0.0");
+  @NotNull
+  private static final FlutterSdkVersion MIN_STABLE_WINDOWS_PLATFORM = new FlutterSdkVersion("2.10.0");
+
   @Nullable
   private final Version version;
   @Nullable
@@ -205,6 +210,14 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   public boolean isUriMappingSupportedForWeb() {
     return version != null && this.compareTo(MIN_URI_MAPPING_FOR_WEB) >= 0;
+  }
+
+  public boolean isWebPlatformStable() {
+    return version != null && this.compareTo(MIN_STABLE_WEB_PLATFORM) >= 0;
+  }
+
+  public boolean isWindowsPlatformStable() {
+    return version != null && this.compareTo(MIN_STABLE_WINDOWS_PLATFORM) >= 0;
   }
 
   public boolean isValid() {

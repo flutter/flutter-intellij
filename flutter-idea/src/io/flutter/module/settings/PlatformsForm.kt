@@ -74,16 +74,18 @@ class PlatformsForm(getSdk: Supplier<out FlutterSdk>) {
                            config: Boolean?) {
     context.apply {
       val wasSelected = config == true
+      val sdk = sdkGetter.get()
       property.initialize(wasSelected)
       checkBox(name,
                property.get(),
                actionListener = { _, checkBox ->
                  property.set(checkBox.isSelected)
                }).apply {
-        val names: List<String> = listOf(
+        val names: List<String> = listOfNotNull(
           FlutterBundle.message("npw_platform_android"),
           FlutterBundle.message("npw_platform_ios"),
-          FlutterBundle.message("npw_platform_web"))
+          if (sdk.version.isWebPlatformStable) FlutterBundle.message("npw_platform_web") else null,
+          if (sdk.version.isWindowsPlatformStable) FlutterBundle.message("npw_platform_windows") else null)
         enabled(names.contains(name) || wasSelected)
       }
     }
