@@ -482,7 +482,7 @@ public class Refreshable<T> implements Closeable {
         initialized.run();
       };
       Application application = ApplicationManager.getApplication();
-      if (application != null) { // It is null during unit tests.
+      if (application != null && !application.isUnitTestMode()) {
         application.invokeAndWait(callback);
       }
       else {
