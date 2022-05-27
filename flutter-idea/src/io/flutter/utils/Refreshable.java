@@ -8,6 +8,8 @@ package io.flutter.utils;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.util.concurrency.AppExecutorUtil;
@@ -460,25 +462,31 @@ public class Refreshable<T> implements Closeable {
         wasScheduled = unschedule();
         closing = true;
       }
-      SwingUtilities.invokeLater(() -> {
-        unpublish(wasScheduled);
+      Runnable callback = () -> {
+          unpublish(wasScheduled);
 
-        final T wasPublished;
-        synchronized (this) {
-          wasPublished = published;
-          published = null;
-        }
-        unpublish(wasPublished);
-        setState(State.CLOSED);
+          final T wasPublished;
+          synchronized (this) {
+            wasPublished = published;
+            published = null;
+          }
+          unpublish(wasPublished);
+          setState(State.CLOSED);
 
-        // Free subscribers. (Avoid memory leaks.)
-        synchronized (subscribers) {
-          subscribers.clear();
-        }
+          // Free subscribers. (Avoid memory leaks.)
+          synchronized (subscribers) {
+            subscribers.clear();
+          }
 
-        // unblock getWhenReady() if no value was ever published.
-        initialized.run();
-      });
+          // unblock getWhenReady() if no value was ever published.
+          initialized.run();
+      };
+      Application application = ApplicationManager.getApplication();
+      if (application != null) { // It iss null during unit tests.
+        application.invokeAndWait(callback);
+      } else {
+        SwingUtilities.invokeLater(callback);
+      }
       return true;
     }
 
