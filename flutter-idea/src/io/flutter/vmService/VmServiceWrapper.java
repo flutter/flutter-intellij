@@ -651,7 +651,7 @@ public class VmServiceWrapper implements Disposable {
   }
 
   private String getResolvedUri(XSourcePosition position) {
-    final String url = position.getFile().getUrl();
+    final String url = position.getFile().getCanonicalFile().getUrl();
     LOG.info("in getResolvedUri. url: " + url);
 
     if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
