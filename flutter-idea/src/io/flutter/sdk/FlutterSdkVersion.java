@@ -82,6 +82,10 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   private static final FlutterSdkVersion MIN_STABLE_WEB_PLATFORM = new FlutterSdkVersion("2.0.0");
   @NotNull
   private static final FlutterSdkVersion MIN_STABLE_WINDOWS_PLATFORM = new FlutterSdkVersion("2.10.0");
+  @NotNull
+  private static final FlutterSdkVersion MIN_STABLE_LINUX_PLATFORM = new FlutterSdkVersion("3.0.0");
+  @NotNull
+  private static final FlutterSdkVersion MIN_STABLE_MACOS_PLATFORM = new FlutterSdkVersion("3.0.0");
 
   @Nullable
   private final Version version;
@@ -218,6 +222,14 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   public boolean isWindowsPlatformStable() {
     return version != null && this.compareTo(MIN_STABLE_WINDOWS_PLATFORM) >= 0;
+  }
+
+  public boolean isLinuxPlatformStable() {
+    return version != null && this.compareTo(MIN_STABLE_LINUX_PLATFORM) >= 0;
+  }
+
+  public boolean isMacOSPlatformStable() {
+    return version != null && this.compareTo(MIN_STABLE_MACOS_PLATFORM) >= 0;
   }
 
   public boolean isValid() {
