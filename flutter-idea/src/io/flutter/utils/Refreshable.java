@@ -463,28 +463,29 @@ public class Refreshable<T> implements Closeable {
         closing = true;
       }
       Runnable callback = () -> {
-          unpublish(wasScheduled);
+        unpublish(wasScheduled);
 
-          final T wasPublished;
-          synchronized (this) {
-            wasPublished = published;
-            published = null;
-          }
-          unpublish(wasPublished);
-          setState(State.CLOSED);
+        final T wasPublished;
+        synchronized (this) {
+          wasPublished = published;
+          published = null;
+        }
+        unpublish(wasPublished);
+        setState(State.CLOSED);
 
-          // Free subscribers. (Avoid memory leaks.)
-          synchronized (subscribers) {
-            subscribers.clear();
-          }
+        // Free subscribers. (Avoid memory leaks.)
+        synchronized (subscribers) {
+          subscribers.clear();
+        }
 
-          // unblock getWhenReady() if no value was ever published.
-          initialized.run();
+        // unblock getWhenReady() if no value was ever published.
+        initialized.run();
       };
       Application application = ApplicationManager.getApplication();
       if (application != null) { // It iss null during unit tests.
         application.invokeAndWait(callback);
-      } else {
+      }
+      else {
         SwingUtilities.invokeLater(callback);
       }
       return true;
