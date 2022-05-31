@@ -1,4 +1,5 @@
 # 68.0
+- Use distributed icons for current SDK (#6208)
 - Update icons (#6207)
 - Enable stable platforms (#6202)
 - Use correct code to shut down process (#6201)
