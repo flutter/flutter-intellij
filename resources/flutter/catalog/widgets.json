@@ -1,7 +1,7 @@
 {
   "flutter": {
-    "version": "1.23.0-4.0.pre",
-    "channel": "dev"
+    "version": "3.1.0",
+    "channel": "beta"
   },
   "widgets": [
     {
@@ -149,10 +149,28 @@
       "description": "Animated version of [PositionedDirectional] which automatically transitions the child's position over a given duration whenever the given position changes."
     },
     {
+      "name": "AnimatedRotation",
+      "parent": "ImplicitlyAnimatedWidget",
+      "library": "widgets",
+      "description": "Animated version of [Transform.rotate] which automatically transitions the child's rotation over a given duration whenever the given rotation changes."
+    },
+    {
+      "name": "AnimatedScale",
+      "parent": "ImplicitlyAnimatedWidget",
+      "library": "widgets",
+      "description": "Animated version of [Transform.scale] which automatically transitions the child's scale over a given duration whenever the given scale changes."
+    },
+    {
       "name": "AnimatedSize",
-      "parent": "SingleChildRenderObjectWidget",
+      "parent": "StatefulWidget",
       "library": "widgets",
       "description": "Animated widget that automatically transitions its size over a given duration whenever the given child's size changes."
+    },
+    {
+      "name": "AnimatedSlide",
+      "parent": "ImplicitlyAnimatedWidget",
+      "library": "widgets",
+      "description": "Widget which automatically transitions the child's offset relative to its normal position whenever the given offset changes."
     },
     {
       "name": "AnimatedSwitcher",
@@ -192,6 +210,18 @@
       "description": "A widget that attempts to size the child to a specific aspect ratio."
     },
     {
+      "name": "Autocomplete",
+      "parent": "StatelessWidget",
+      "library": "material",
+      "description": "{@macro flutter.widgets.RawAutocomplete.RawAutocomplete}"
+    },
+    {
+      "name": "AutocompleteHighlightedOption",
+      "parent": "InheritedNotifier",
+      "library": "widgets",
+      "description": "An inherited widget used to indicate which autocomplete option should be highlighted for keyboard navigation."
+    },
+    {
       "name": "AutofillGroup",
       "parent": "StatefulWidget",
       "library": "widgets",
@@ -214,6 +244,12 @@
       "parent": "StatelessWidget",
       "library": "material",
       "description": "A \"back\" icon that's appropriate for the current [TargetPlatform]."
+    },
+    {
+      "name": "BackButtonListener",
+      "parent": "StatefulWidget",
+      "library": "widgets",
+      "description": "A convenience widget that registers a callback for when the back button is pressed."
     },
     {
       "name": "BackdropFilter",
@@ -274,7 +310,7 @@
       "name": "Builder",
       "parent": "StatelessWidget",
       "library": "widgets",
-      "description": "A platonic widget that calls a closure to obtain its child widget."
+      "description": "A stateless utility widget whose [build] method uses its [builder] callback to create the widget's child."
     },
     {
       "name": "ButtonBar",
@@ -308,10 +344,10 @@
       "description": "Displays a grid of days for a given month and allows the user to select a date."
     },
     {
-      "name": "CalendarDateRangePicker",
-      "parent": "StatefulWidget",
-      "library": "material",
-      "description": "Displays a scrollable calendar grid that allows a user to select a range of dates."
+      "name": "CallbackShortcuts",
+      "parent": "StatelessWidget",
+      "library": "widgets",
+      "description": "A widget that provides an uncomplicated mechanism for binding a key combination to a specific callback."
     },
     {
       "name": "Card",
@@ -338,10 +374,16 @@
       "description": "A [ListTile] with a [Checkbox]. In other words, a checkbox with a label."
     },
     {
+      "name": "CheckboxTheme",
+      "parent": "InheritedWidget",
+      "library": "material",
+      "description": "Applies a checkbox theme to descendant [Checkbox] widgets."
+    },
+    {
       "name": "CheckedModeBanner",
       "parent": "StatelessWidget",
       "library": "widgets",
-      "description": "Displays a [Banner] saying \"DEBUG\" when running in checked mode. [MaterialApp] builds one of these by default. Does nothing in release mode."
+      "description": "Displays a [Banner] saying \"DEBUG\" when running in debug mode. [MaterialApp] builds one of these by default. Does nothing in release mode."
     },
     {
       "name": "CheckedPopupMenuItem",
@@ -453,6 +495,12 @@
       "description": "An abstract superclass for widgets that defer their building until layout."
     },
     {
+      "name": "ConstraintsTransformBox",
+      "parent": "SingleChildRenderObjectWidget",
+      "library": "widgets",
+      "description": "A container widget that applies an arbitrary transform to its constraints, and sizes its child using the resulting [BoxConstraints], treating any overflow as error."
+    },
+    {
       "name": "Container",
       "parent": "StatelessWidget",
       "library": "widgets",
@@ -513,16 +561,22 @@
       "description": "A date picker widget in iOS style."
     },
     {
-      "name": "CupertinoDialog",
-      "parent": "StatelessWidget",
-      "library": "cupertino",
-      "description": "An iOS-style dialog."
-    },
-    {
       "name": "CupertinoDialogAction",
       "parent": "StatelessWidget",
       "library": "cupertino",
       "description": "A button typically used in a [CupertinoAlertDialog]."
+    },
+    {
+      "name": "CupertinoFormRow",
+      "parent": "StatelessWidget",
+      "library": "cupertino",
+      "description": "An iOS-style form row."
+    },
+    {
+      "name": "CupertinoFormSection",
+      "parent": "StatelessWidget",
+      "library": "cupertino",
+      "description": "An iOS-style form section."
     },
     {
       "name": "CupertinoFullscreenDialogTransition",
@@ -561,6 +615,12 @@
       "description": "An iOS-styled picker."
     },
     {
+      "name": "CupertinoPickerDefaultSelectionOverlay",
+      "parent": "StatelessWidget",
+      "library": "cupertino",
+      "description": "A default selection overlay for [CupertinoPicker]s."
+    },
+    {
       "name": "CupertinoPopupSurface",
       "parent": "StatelessWidget",
       "library": "cupertino",
@@ -568,9 +628,15 @@
     },
     {
       "name": "CupertinoScrollbar",
-      "parent": "StatefulWidget",
+      "parent": "RawScrollbar",
       "library": "cupertino",
       "description": "An iOS style scrollbar."
+    },
+    {
+      "name": "CupertinoSearchTextField",
+      "parent": "StatefulWidget",
+      "library": "cupertino",
+      "description": "A [CupertinoTextField] that mimics the look and behavior of UIKit's `UISearchTextField`."
     },
     {
       "name": "CupertinoSegmentedControl",
@@ -633,10 +699,22 @@
       "description": "An iOS-style text field."
     },
     {
-      "name": "CupertinoTextSelectionToolbar",
-      "parent": "SingleChildRenderObjectWidget",
+      "name": "CupertinoTextFormFieldRow",
+      "parent": "FormField",
       "library": "cupertino",
-      "description": "An iOS-style toolbar that appears in response to text selection."
+      "description": "Creates a [CupertinoFormRow] containing a [FormField] that wraps a [CupertinoTextField]."
+    },
+    {
+      "name": "CupertinoTextSelectionToolbar",
+      "parent": "StatelessWidget",
+      "library": "cupertino",
+      "description": "An iOS-style text selection toolbar."
+    },
+    {
+      "name": "CupertinoTextSelectionToolbarButton",
+      "parent": "StatelessWidget",
+      "library": "cupertino",
+      "description": "A button in the style of the iOS text selection toolbar buttons."
     },
     {
       "name": "CupertinoTheme",
@@ -693,16 +771,16 @@
       "description": "Applies a data table theme to descendant [DataTable] widgets."
     },
     {
-      "name": "DatePickerHeader",
-      "parent": "StatelessWidget",
+      "name": "DatePickerDialog",
+      "parent": "StatefulWidget",
       "library": "material",
-      "description": "Re-usable widget that displays the selected date (in large font) and the help text above it."
+      "description": "A Material-style date picker dialog."
     },
     {
-      "name": "DayPicker",
-      "parent": "StatelessWidget",
+      "name": "DateRangePickerDialog",
+      "parent": "StatefulWidget",
       "library": "material",
-      "description": "Displays the days of a given month and allows choosing a day."
+      "description": "A Material-style date range picker dialog."
     },
     {
       "name": "DecoratedBox",
@@ -723,10 +801,22 @@
       "description": "A widget that determines the default asset bundle for its descendants."
     },
     {
+      "name": "DefaultSelectionStyle",
+      "parent": "InheritedTheme",
+      "library": "widgets",
+      "description": "The selection style to apply to descendant [EditableText] widgets which don't have an explicit style."
+    },
+    {
       "name": "DefaultTabController",
       "parent": "StatefulWidget",
       "library": "material",
       "description": "The [TabController] for descendant widgets that don't specify one explicitly."
+    },
+    {
+      "name": "DefaultTextEditingShortcuts",
+      "parent": "Shortcuts",
+      "library": "widgets",
+      "description": "A [Shortcuts] widget with the shortcuts used for the default text editing behavior."
     },
     {
       "name": "DefaultTextHeightBehavior",
@@ -763,6 +853,12 @@
       "parent": "StatefulWidget",
       "library": "widgets",
       "description": "A widget that can be dismissed by dragging in the indicated [direction]."
+    },
+    {
+      "name": "DisplayFeatureSubScreen",
+      "parent": "StatelessWidget",
+      "library": "widgets",
+      "description": "Positions [child] such that it avoids overlapping any [DisplayFeature] that splits the screen into sub-screens."
     },
     {
       "name": "Divider",
@@ -819,6 +915,12 @@
       "description": "The top-most region of a material design drawer. The header's [child] widget, if any, is placed inside a [Container] whose [decoration] can be passed as an argument, inset by the given [padding]."
     },
     {
+      "name": "DrawerTheme",
+      "parent": "InheritedTheme",
+      "library": "material",
+      "description": "An inherited widget that defines visual properties for [Drawer]s in this widget's subtree."
+    },
+    {
       "name": "DropdownButton",
       "parent": "StatefulWidget",
       "library": "material",
@@ -828,7 +930,7 @@
       "name": "DropdownButtonFormField",
       "parent": "FormField",
       "library": "material",
-      "description": "A convenience widget that makes a [DropdownButton] into a [FormField]."
+      "description": "A [FormField] that contains a [DropdownButton]."
     },
     {
       "name": "DropdownButtonHideUnderline",
@@ -879,6 +981,12 @@
       "description": "A widget that controls whether or not the descendants of this widget are focusable."
     },
     {
+      "name": "ExcludeFocusTraversal",
+      "parent": "StatelessWidget",
+      "library": "widgets",
+      "description": "A widget that controls whether or not the descendants of this widget are traversable."
+    },
+    {
       "name": "ExcludeSemantics",
       "parent": "SingleChildRenderObjectWidget",
       "library": "widgets",
@@ -906,11 +1014,17 @@
       "name": "ExpansionTile",
       "parent": "StatefulWidget",
       "library": "material",
-      "description": "A single-line [ListTile] with a trailing button that expands or collapses the tile to reveal or hide the [children]."
+      "description": "A single-line [ListTile] with an expansion arrow icon that expands or collapses the tile to reveal or hide the [children]."
+    },
+    {
+      "name": "ExpansionTileTheme",
+      "parent": "InheritedTheme",
+      "library": "material",
+      "description": "Overrides the default [ExpansionTileTheme] of its [ExpansionTile] descendants."
     },
     {
       "name": "FadeInImage",
-      "parent": "StatelessWidget",
+      "parent": "StatefulWidget",
       "library": "widgets",
       "description": "An image that shows a [placeholder] image while the target [image] is loading, then fades in the new image when it loads."
     },
@@ -931,12 +1045,6 @@
       "parent": "SingleChildRenderObjectWidget",
       "library": "widgets",
       "description": "Scales and positions its child within itself according to [fit]."
-    },
-    {
-      "name": "FlatButton",
-      "parent": "MaterialButton",
-      "library": "material",
-      "description": "A material design \"flat button\"."
     },
     {
       "name": "Flex",
@@ -991,6 +1099,18 @@
       "parent": "Focus",
       "library": "widgets",
       "description": "A [FocusScope] is similar to a [Focus], but also serves as a scope for its descendants, restricting focus traversal to the scoped controls."
+    },
+    {
+      "name": "FocusTrap",
+      "parent": "SingleChildRenderObjectWidget",
+      "library": "widgets",
+      "description": "The [FocusTrap] widget removes focus when a mouse primary pointer makes contact with another region of the screen."
+    },
+    {
+      "name": "FocusTrapArea",
+      "parent": "SingleChildRenderObjectWidget",
+      "library": "widgets",
+      "description": "Declares a widget subtree which is part of the provided [focusNode]'s focus area without attaching focus to that region."
     },
     {
       "name": "FocusTraversalGroup",
@@ -1087,6 +1207,12 @@
       "parent": "InheritedWidget",
       "library": "widgets",
       "description": "An inherited widget to host a hero controller."
+    },
+    {
+      "name": "HeroMode",
+      "parent": "StatelessWidget",
+      "library": "widgets",
+      "description": "Enables or disables [Hero]es in the widget subtree."
     },
     {
       "name": "HtmlElementView",
@@ -1214,12 +1340,6 @@
       "description": "A [TextFormField] configured to accept and validate a date entered by a user."
     },
     {
-      "name": "InputDateRangePicker",
-      "parent": "StatefulWidget",
-      "library": "material",
-      "description": "Provides a pair of text fields that allow the user to enter the start and end dates that represent a range of dates."
-    },
-    {
       "name": "InputDecorator",
       "parent": "StatefulWidget",
       "library": "material",
@@ -1248,6 +1368,12 @@
       "parent": "ParentDataWidget",
       "library": "widgets",
       "description": "Mark a child as needing to stay alive even when it's in a lazy list that would otherwise remove it."
+    },
+    {
+      "name": "KeyboardListener",
+      "parent": "StatelessWidget",
+      "library": "widgets",
+      "description": "A widget that calls a callback whenever the user presses or releases a key on a keyboard."
     },
     {
       "name": "KeyedSubtree",
@@ -1330,7 +1456,7 @@
     },
     {
       "name": "Listener",
-      "parent": "StatelessWidget",
+      "parent": "SingleChildRenderObjectWidget",
       "library": "widgets",
       "description": "A widget that calls callbacks in response to common pointer events."
     },
@@ -1360,7 +1486,7 @@
     },
     {
       "name": "MaterialBanner",
-      "parent": "StatelessWidget",
+      "parent": "StatefulWidget",
       "library": "material",
       "description": "A Material Design banner."
     },
@@ -1407,16 +1533,10 @@
       "description": "A widget that prevents the user from interacting with widgets behind itself."
     },
     {
-      "name": "MonthPicker",
-      "parent": "StatefulWidget",
-      "library": "material",
-      "description": "A scrollable list of months to allow picking a month."
-    },
-    {
       "name": "MouseRegion",
-      "parent": "StatefulWidget",
+      "parent": "SingleChildRenderObjectWidget",
       "library": "widgets",
-      "description": "A widget that tracks the movement of mice, even when no button is pressed."
+      "description": "A widget that tracks the movement of mice."
     },
     {
       "name": "MultiChildRenderObjectWidget",
@@ -1424,6 +1544,30 @@
       "library": "widgets",
       "abstract": true,
       "description": "A superclass for [RenderObjectWidget]s that configure [RenderObject] subclasses that have a single list of children. (This superclass only provides the storage for that child list, it doesn't actually provide the updating logic.)"
+    },
+    {
+      "name": "NavigationBar",
+      "parent": "StatelessWidget",
+      "library": "material",
+      "description": "Material 3 Navigation Bar component."
+    },
+    {
+      "name": "NavigationBarTheme",
+      "parent": "InheritedTheme",
+      "library": "material",
+      "description": "An inherited widget that defines visual properties for [NavigationBar]s and [NavigationDestination]s in this widget's subtree."
+    },
+    {
+      "name": "NavigationDestination",
+      "parent": "StatelessWidget",
+      "library": "material",
+      "description": "Destination Widget for displaying Icons + labels in the Material 3 Navigation Bars through [NavigationBar.destinations]."
+    },
+    {
+      "name": "NavigationIndicator",
+      "parent": "StatelessWidget",
+      "library": "material",
+      "description": "Selection Indicator for the Material 3 [NavigationBar] and [NavigationRail] components."
     },
     {
       "name": "NavigationRail",
@@ -1463,7 +1607,7 @@
     },
     {
       "name": "NotificationListener",
-      "parent": "StatelessWidget",
+      "parent": "ProxyWidget",
       "library": "widgets",
       "description": "A widget that listens for [Notification]s bubbling up the tree."
     },
@@ -1493,12 +1637,6 @@
       "description": "Builds a widget tree that can depend on the parent widget's orientation (distinct from the device orientation)."
     },
     {
-      "name": "OutlineButton",
-      "parent": "MaterialButton",
-      "library": "material",
-      "description": "Similar to a [FlatButton] with a thin grey rounded rectangle border."
-    },
-    {
       "name": "OutlinedButton",
       "parent": "ButtonStyleButton",
       "library": "material",
@@ -1526,7 +1664,7 @@
       "name": "Overlay",
       "parent": "StatefulWidget",
       "library": "widgets",
-      "description": "A [Stack] of entries that can be managed independently."
+      "description": "A stack of entries that can be managed independently."
     },
     {
       "name": "Padding",
@@ -1582,6 +1720,12 @@
       "parent": "StatelessWidget",
       "library": "widgets",
       "description": "A widget that draws a box that represents where other widgets will one day be added."
+    },
+    {
+      "name": "PlatformMenuBar",
+      "parent": "StatefulWidget",
+      "library": "widgets",
+      "description": "A menu bar that uses the platform's native APIs to construct and render a menu described by a [PlatformMenu]/[PlatformMenuItem] hierarchy."
     },
     {
       "name": "PlatformViewLink",
@@ -1671,6 +1815,12 @@
       "description": "A base class for material design progress indicators."
     },
     {
+      "name": "ProgressIndicatorTheme",
+      "parent": "InheritedTheme",
+      "library": "material",
+      "description": "An inherited widget that defines the configuration for [ProgressIndicator]s in this widget's subtree."
+    },
+    {
       "name": "ProxyWidget",
       "parent": "Widget",
       "library": "widgets",
@@ -1690,16 +1840,22 @@
       "description": "A [ListTile] with a [Radio]. In other words, a radio button with a label."
     },
     {
-      "name": "RaisedButton",
-      "parent": "MaterialButton",
+      "name": "RadioTheme",
+      "parent": "InheritedWidget",
       "library": "material",
-      "description": "A material design \"raised button\"."
+      "description": "Applies a radio theme to descendant [Radio] widgets."
     },
     {
       "name": "RangeSlider",
       "parent": "StatefulWidget",
       "library": "material",
       "description": "A Material Design range slider."
+    },
+    {
+      "name": "RawAutocomplete",
+      "parent": "StatefulWidget",
+      "library": "widgets",
+      "description": "{@template flutter.widgets.RawAutocomplete.RawAutocomplete} A widget for helping the user make a selection by entering some text and choosing from among a list of options."
     },
     {
       "name": "RawChip",
@@ -1736,6 +1892,12 @@
       "description": "Creates a button based on [Semantics], [Material], and [InkWell] widgets."
     },
     {
+      "name": "RawScrollbar",
+      "parent": "StatefulWidget",
+      "library": "widgets",
+      "description": "An extendable base class for building scrollbars that fade in and out."
+    },
+    {
       "name": "RefreshIndicator",
       "parent": "StatefulWidget",
       "library": "material",
@@ -1765,6 +1927,24 @@
       "library": "widgets",
       "abstract": true,
       "description": "RenderObjectWidgets provide the configuration for [RenderObjectElement]s, which wrap [RenderObject]s, which provide the actual rendering of the application."
+    },
+    {
+      "name": "ReorderableDelayedDragStartListener",
+      "parent": "ReorderableDragStartListener",
+      "library": "widgets",
+      "description": "A wrapper widget that will recognize the start of a drag operation by looking for a long press event. Once it is recognized, it will start a drag operation on the wrapped item in the reorderable list."
+    },
+    {
+      "name": "ReorderableDragStartListener",
+      "parent": "StatelessWidget",
+      "library": "widgets",
+      "description": "A wrapper widget that will recognize the start of a drag on the wrapped widget by a [PointerDownEvent], and immediately initiate dragging the wrapped item to a new location in a reorderable list."
+    },
+    {
+      "name": "ReorderableList",
+      "parent": "StatefulWidget",
+      "library": "widgets",
+      "description": "A scrolling container that allows the user to interactively reorder the list items."
     },
     {
       "name": "ReorderableListView",
@@ -1833,6 +2013,12 @@
       "description": "Implements the basic material design visual layout structure."
     },
     {
+      "name": "ScaffoldMessenger",
+      "parent": "StatefulWidget",
+      "library": "material",
+      "description": "Manages [SnackBar]s and [MaterialBanner]s for descendant [Scaffold]s."
+    },
+    {
       "name": "ScaleTransition",
       "parent": "AnimatedWidget",
       "library": "widgets",
@@ -1843,6 +2029,12 @@
       "parent": "InheritedWidget",
       "library": "widgets",
       "description": "Controls how [Scrollable] widgets behave in a subtree."
+    },
+    {
+      "name": "ScrollNotificationObserver",
+      "parent": "StatefulWidget",
+      "library": "widgets",
+      "description": "Notifies its listeners when a descendant scrolls."
     },
     {
       "name": "ScrollView",
@@ -1859,9 +2051,15 @@
     },
     {
       "name": "Scrollbar",
-      "parent": "StatefulWidget",
+      "parent": "StatelessWidget",
       "library": "material",
-      "description": "A material design scrollbar."
+      "description": "A Material Design scrollbar."
+    },
+    {
+      "name": "ScrollbarTheme",
+      "parent": "InheritedWidget",
+      "library": "material",
+      "description": "Applies a scrollbar theme to descendant [Scrollbar] widgets."
     },
     {
       "name": "SelectableText",
@@ -1888,10 +2086,16 @@
       "description": "A widget that applies a mask generated by a [Shader] to its child."
     },
     {
+      "name": "SharedAppData",
+      "parent": "StatefulWidget",
+      "library": "widgets",
+      "description": "Enables sharing key/value data with its `child` and all of the child's descendants."
+    },
+    {
       "name": "Shortcuts",
       "parent": "StatefulWidget",
       "library": "widgets",
-      "description": "A widget that establishes an [ShortcutManager] to be used by its descendants when invoking an [Action] via a keyboard key combination that maps to an [Intent]."
+      "description": "A widget that creates key bindings to specific actions for its descendants."
     },
     {
       "name": "ShrinkWrappingViewport",
@@ -2082,6 +2286,12 @@
       "description": "A sliver that places its box children in a linear array and constrains them to have the same extent as a prototype item along the main axis."
     },
     {
+      "name": "SliverReorderableList",
+      "parent": "StatefulWidget",
+      "library": "widgets",
+      "description": "A sliver list that allows the user to interactively reorder the list items."
+    },
+    {
       "name": "SliverSafeArea",
       "parent": "StatelessWidget",
       "library": "widgets",
@@ -2177,8 +2387,14 @@
       "description": "Base class for widgets that build themselves based on interaction with a specified [Stream]."
     },
     {
-      "name": "Switch",
+      "name": "StretchingOverscrollIndicator",
       "parent": "StatefulWidget",
+      "library": "widgets",
+      "description": "A Material Design visual indication that a scroll view has overscrolled."
+    },
+    {
+      "name": "Switch",
+      "parent": "StatelessWidget",
       "library": "material",
       "description": "A material design switch."
     },
@@ -2187,6 +2403,12 @@
       "parent": "StatelessWidget",
       "library": "material",
       "description": "A [ListTile] with a [Switch]. In other words, a switch with a label."
+    },
+    {
+      "name": "SwitchTheme",
+      "parent": "InheritedWidget",
+      "library": "material",
+      "description": "Applies a switch theme to descendant [Switch] widgets."
     },
     {
       "name": "Tab",
@@ -2210,13 +2432,13 @@
       "name": "TabPageSelector",
       "parent": "StatelessWidget",
       "library": "material",
-      "description": "Displays a row of small circular indicators, one per tab."
+      "description": "Uses [TabPageSelectorIndicator] to display a row of small circular indicators, one per tab."
     },
     {
       "name": "TabPageSelectorIndicator",
       "parent": "StatelessWidget",
       "library": "material",
-      "description": "Displays a single circle with the specified border and background colors."
+      "description": "Displays a single circle with the specified size, border style, border color and background colors."
     },
     {
       "name": "Table",
@@ -2279,6 +2501,18 @@
       "description": "An inherited widget that defines the appearance of text selection in this widget's subtree."
     },
     {
+      "name": "TextSelectionToolbar",
+      "parent": "StatelessWidget",
+      "library": "material",
+      "description": "A fully-functional Material-style text selection toolbar."
+    },
+    {
+      "name": "TextSelectionToolbarTextButton",
+      "parent": "StatelessWidget",
+      "library": "material",
+      "description": "A button styled like a Material native Android text selection menu button."
+    },
+    {
       "name": "Texture",
       "parent": "LeafRenderObjectWidget",
       "library": "widgets",
@@ -2292,9 +2526,15 @@
     },
     {
       "name": "TickerMode",
-      "parent": "StatelessWidget",
+      "parent": "StatefulWidget",
       "library": "widgets",
       "description": "Enables or disables tickers (and thus animation controllers) in the widget subtree."
+    },
+    {
+      "name": "TimePickerDialog",
+      "parent": "StatefulWidget",
+      "library": "material",
+      "description": "A material design time picker designed to appear inside a popup dialog."
     },
     {
       "name": "TimePickerTheme",
@@ -2312,7 +2552,7 @@
       "name": "ToggleButtons",
       "parent": "StatelessWidget",
       "library": "material",
-      "description": "A horizontal set of toggle buttons."
+      "description": "A set of toggle buttons."
     },
     {
       "name": "ToggleButtonsTheme",
@@ -2331,6 +2571,12 @@
       "parent": "InheritedTheme",
       "library": "material",
       "description": "An inherited widget that defines the configuration for [Tooltip]s in this widget's subtree."
+    },
+    {
+      "name": "TooltipVisibility",
+      "parent": "StatelessWidget",
+      "library": "material",
+      "description": "Overrides the visibility of descendant [Tooltip] widgets."
     },
     {
       "name": "Transform",
@@ -2352,7 +2598,7 @@
     },
     {
       "name": "UnconstrainedBox",
-      "parent": "SingleChildRenderObjectWidget",
+      "parent": "StatelessWidget",
       "library": "widgets",
       "description": "A widget that imposes no constraints on its child, allowing it to render at its \"natural\" size."
     },
@@ -2433,7 +2679,7 @@
       "name": "YearPicker",
       "parent": "StatefulWidget",
       "library": "material",
-      "description": "A scrollable list of years to allow picking a year."
+      "description": "A scrollable grid of years to allow picking a year."
     }
   ]
 }
