@@ -1,4 +1,8 @@
 # 68.0
+- Update icons (#6207)
+- Enable stable platforms (#6202)
+- Use correct code to shut down process (#6201)
+- Use canonical paths to map symlinks(#6203)
 - Enable Windows platform for Flutter 2.10+ (#6195)
 - Escape spaces for VM mapping (#6194)
 - Stop relying only on .packages for pub banner (#6188)
