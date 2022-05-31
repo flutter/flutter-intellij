@@ -8,6 +8,8 @@ package io.flutter.utils;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.util.concurrency.AppExecutorUtil;
@@ -460,7 +462,7 @@ public class Refreshable<T> implements Closeable {
         wasScheduled = unschedule();
         closing = true;
       }
-      SwingUtilities.invokeLater(() -> {
+      Runnable callback = () -> {
         unpublish(wasScheduled);
 
         final T wasPublished;
@@ -478,7 +480,14 @@ public class Refreshable<T> implements Closeable {
 
         // unblock getWhenReady() if no value was ever published.
         initialized.run();
-      });
+      };
+      Application application = ApplicationManager.getApplication();
+      if (application != null && !application.isUnitTestMode()) {
+        application.invokeAndWait(callback);
+      }
+      else {
+        SwingUtilities.invokeLater(callback);
+      }
       return true;
     }
 
