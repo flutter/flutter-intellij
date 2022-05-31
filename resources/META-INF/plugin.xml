@@ -47,6 +47,11 @@
     <![CDATA[
 <h1>68.0</h1>
 <ul>
+  <li>Use distributed icons for current SDK (#6208)</li>
+  <li>Update icons (#6207)</li>
+  <li>Enable stable platforms (#6202)</li>
+  <li>Use correct code to shut down process (#6201)</li>
+  <li>Use canonical paths to map symlinks(#6203)</li>
   <li>Enable Windows platform for Flutter 2.10+ (#6195)</li>
   <li>Escape spaces for VM mapping (#6194)</li>
   <li>Stop relying only on .packages for pub banner (#6188)</li>
