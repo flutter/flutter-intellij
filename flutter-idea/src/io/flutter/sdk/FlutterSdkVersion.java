@@ -16,6 +16,11 @@ import java.nio.charset.StandardCharsets;
 
 public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   /**
+   * The version for which the distributed icons can be used.
+   */
+  @VisibleForTesting
+  public static final FlutterSdkVersion DISTRIBUTED_ICONS = new FlutterSdkVersion("3.0.0");
+  /**
    * The minimum version we suggest people use.
    */
   private static final FlutterSdkVersion MIN_SUPPORTED_SDK = new FlutterSdkVersion("0.0.12");
@@ -232,6 +237,9 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
     return version != null && this.compareTo(MIN_STABLE_MACOS_PLATFORM) >= 0;
   }
 
+  public boolean canUseDistributedIcons() {
+    return version != null && this.compareTo(DISTRIBUTED_ICONS) >= 0;
+  }
   public boolean isValid() {
     return version != null;
   }
