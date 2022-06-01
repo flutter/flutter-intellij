@@ -143,6 +143,27 @@ public class FlutterModuleUtils {
   }
 
   @Nullable
+  public static VirtualFile findXcodeProjectFile(@NotNull Project project, @Nullable VirtualFile selectedFile) {
+    if (selectedFile == null) {
+      // This should not happen because the action should not be visible if there is no selection, but ...
+      return findXcodeProjectFile(project);
+    }
+    VirtualFile dir = selectedFile;
+    while (dir != null) {
+      String name = dir.getName();
+      if ("ios".equals(name) || ".ios".equals(name)) {
+        // If needed, we could add a check that the parent of dir contains pubspec.yaml, but this is probably adequate.
+        VirtualFile file = findPreferedXcodeMetadataFile(dir);
+        if (file != null) {
+          return file;
+        }
+      }
+      dir = dir.getParent();
+    }
+    return null;
+  }
+
+  @Nullable
   public static VirtualFile findXcodeProjectFile(@NotNull Project project) {
     if (project.isDisposed()) return null;
 

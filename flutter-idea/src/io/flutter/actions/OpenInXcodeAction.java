@@ -50,7 +50,7 @@ public class OpenInXcodeAction extends AnAction {
     }
 
     if (project != null) {
-      return FlutterModuleUtils.findXcodeProjectFile(project);
+      return FlutterModuleUtils.findXcodeProjectFile(project, file);
     }
 
     return null;
