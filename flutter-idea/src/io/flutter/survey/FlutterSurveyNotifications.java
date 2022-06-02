@@ -37,9 +37,6 @@ public class FlutterSurveyNotifications {
   private static final String SURVEY_ACTION_TEXT = "Take survey";
   private static final String SURVEY_DISMISSAL_TEXT = "No thanks";
 
-  private static final String ANALYTICS_OPT_IN_DETAILS =
-    "By clicking on this link you agree to share feature usage along with the survey responses.";
-
   interface FlutterSurveyNotifier {
     void prompt();
   }
@@ -92,15 +89,13 @@ public class FlutterSurveyNotifications {
     if (properties.getBoolean(survey.uniqueId)) return;
 
     final boolean reportAnalytics = FlutterInitializer.getCanReportAnalytics();
-    final String notificationContents = reportAnalytics ?
-                                        ANALYTICS_OPT_IN_DETAILS : null;
 
     final Notification notification = new Notification(
       FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
       FlutterIcons.Flutter,
       survey.title,
       null,
-      notificationContents,
+      null,
       NotificationType.INFORMATION,
       null
     );
@@ -115,8 +110,6 @@ public class FlutterSurveyNotifications {
         String url = survey.urlPrefix + "?Source=IntelliJ";
         // Add a client ID if analytics have been opted into.
         if (reportAnalytics) {
-          final String clientId = FlutterInitializer.getAnalytics().getClientId();
-          url += ("&ClientID=" + clientId);
           FlutterInitializer.getAnalytics().sendEvent("intellij", "SurveyPromptAccepted");
         }
 
