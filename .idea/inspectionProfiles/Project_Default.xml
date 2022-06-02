@@ -27,7 +27,7 @@
       <option name="nonNlsCommentPattern" value="NON-NLS" />
       <option name="ignoreForEnumConstant" value="true" />
     </inspection_tool>
-    <inspection_tool class="LocalCanBeFinal" enabled="true" level="WARNING" enabled_by_default="true">
+    <inspection_tool class="LocalCanBeFinal" enabled="false" level="WARNING" enabled_by_default="false">
       <option name="REPORT_VARIABLES" value="true" />
       <option name="REPORT_PARAMETERS" value="false" />
       <option name="REPORT_CATCH_PARAMETERS" value="false" />
