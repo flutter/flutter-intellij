@@ -383,7 +383,9 @@ class DeviceDaemon {
       }
 
       final FlutterDevice newDevice = new FlutterDevice(event.id,
-                                                        event.emulatorId == null ? event.id : event.emulatorId,
+                                                        event.emulatorId == null
+                                                        ? (event.name == null ? event.id : event.name)
+                                                        : (event.platformType.equals("android") ? event.emulatorId : event.name),
                                                         event.platform,
                                                         event.emulator,
                                                         event.category,
@@ -440,11 +442,11 @@ class DeviceDaemon {
       final String link = "https://www.google.com/search?q=increase maximum file handles " + os;
       Messages.installHyperlinkSupport(myTextPane);
       final String message =
-      "<html><body><p>The Flutter device daemon cannot be started. " +
-      "<br>Please check your configuration and restart the IDE. " +
-      "<br><br>You may need to <a href=\"" + link +
-      "\">increase the maximum number of file handles</a>" +
-      "<br>available globally.</body></html>";
+        "<html><body><p>The Flutter device daemon cannot be started. " +
+        "<br>Please check your configuration and restart the IDE. " +
+        "<br><br>You may need to <a href=\"" + link +
+        "\">increase the maximum number of file handles</a>" +
+        "<br>available globally.</body></html>";
 
       myTextPane.setText(message);
       myPanel.add(myTextPane);
