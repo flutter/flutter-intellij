@@ -82,14 +82,6 @@ public class PubRoot {
       }
     }
 
-    final Project project = event.getData(CommonDataKeys.PROJECT);
-    if (project != null) {
-      final List<PubRoot> roots = PubRoots.forProject(project);
-      if (!roots.isEmpty()) {
-        return roots.get(0);
-      }
-    }
-
     return null;
   }
 

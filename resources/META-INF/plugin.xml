@@ -216,6 +216,8 @@
         <!--suppress PluginXmlCapitalization -->
         <action id="flutter.build.ios" text="Build iOS" description="Building a Flutter app for Apple App Store distribution"
                 class="io.flutter.actions.FlutterBuildActionGroup$Ios"/>
+        <action id="flutter.build.web" text="Build Web" description="Building a Flutter app for web"
+                class="io.flutter.actions.FlutterBuildActionGroup$Web"/>
       </group>
       <add-to-group group-id="BuildMenu" anchor="first"/>
     </group>
