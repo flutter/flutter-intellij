@@ -164,7 +164,7 @@ public class FlutterModuleUtils {
   }
 
   @Nullable
-  public static VirtualFile findXcodeProjectFile(@NotNull Project project) {
+  private static VirtualFile findXcodeProjectFile(@NotNull Project project) {
     if (project.isDisposed()) return null;
 
     // Look for Xcode metadata file in `ios/`.

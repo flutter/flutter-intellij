@@ -17,10 +17,13 @@ import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 /**
  * Base class for Flutter commands.
@@ -52,7 +55,17 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
 
     FlutterInitializer.sendAnalyticsAction(this);
     FileDocumentManager.getInstance().saveAllDocuments();
-    startCommand(project, sdk, PubRoot.forEventWithRefresh(event), event.getDataContext());
+    PubRoot root = PubRoot.forEventWithRefresh(event);
+    @NotNull DataContext context = event.getDataContext();
+    if (root != null) {
+      startCommand(project, sdk, root, context);
+    }
+    else {
+      List<PubRoot> roots = PubRoots.forProject(project);
+      for (PubRoot sub : roots) {
+        startCommand(project, sdk, sub, context);
+      }
+    }
   }
 
   public abstract void startCommand(@NotNull Project project,

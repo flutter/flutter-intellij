@@ -17,44 +17,54 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterMessages;
 import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.ProgressHelper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public class FlutterBuildActionGroup extends DefaultActionGroup {
 
-  public static ColoredProcessHandler build(@NotNull Project project,
+  public static void build(@NotNull Project project,
                                        @NotNull PubRoot pubRoot,
-                                       FlutterSdk sdk,
-                                       BuildType buildType,
-                                       String desc) {
+                                       @NotNull FlutterSdk sdk,
+                                       @NotNull BuildType buildType,
+                                       @Nullable String desc) {
     final ProgressHelper progressHelper = new ProgressHelper(project);
-    progressHelper.start(desc);
-    final ColoredProcessHandler processHandler = sdk.flutterBuild(pubRoot, buildType.type).startInConsole(project);
-    if (processHandler == null) {
-      progressHelper.done();
+    progressHelper.start(desc == null ? "building" : desc);
+    final Module module = pubRoot.getModule(project);
+    if (module != null) {
+      sdk.flutterBuild(pubRoot, buildType.type).startInModuleConsole(module, pubRoot::refresh, null);
     }
     else {
-      processHandler.addProcessListener(new ProcessAdapter() {
-        @Override
-        public void processTerminated(@NotNull ProcessEvent event) {
-          progressHelper.done();
-          final int exitCode = event.getExitCode();
-          if (exitCode != 0) {
-            FlutterMessages.showError("Error while building " + buildType, "`flutter build` returned: " + exitCode, project);
+      final ColoredProcessHandler processHandler = sdk.flutterBuild(pubRoot, buildType.type).startInConsole(project);
+      if (processHandler == null) {
+        progressHelper.done();
+      }
+      else {
+        processHandler.addProcessListener(new ProcessAdapter() {
+          @Override
+          public void processTerminated(@NotNull ProcessEvent event) {
+            progressHelper.done();
+            final int exitCode = event.getExitCode();
+            if (exitCode != 0) {
+              FlutterMessages.showError("Error while building " + buildType, "`flutter build` returned: " + exitCode, project);
+            }
           }
-        }
-      });
+        });
+      }
     }
-    return processHandler;
   }
 
   public enum BuildType {
     AAR("aar"),
     APK("apk"),
     APP_BUNDLE("appbundle"),
-    IOS("ios");
+    IOS("ios"),
+    WEB("web");
 
     final public String type;
 
@@ -64,7 +74,7 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
   }
 
   @Override
-  public void update(AnActionEvent event) {
+  public void update(@NotNull AnActionEvent event) {
     final Presentation presentation = event.getPresentation();
     final boolean enabled = isInFlutterModule(event);
     presentation.setEnabled(enabled);
@@ -79,6 +89,7 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
     return FlutterModuleUtils.hasFlutterModule(project);
   }
 
+  @Nullable
   public static Module findFlutterModule(@NotNull Project project, @NotNull VirtualFile file) {
     Module module = ModuleUtilCore.findModuleForFile(file, project);
     if (module == null) {
@@ -98,6 +109,7 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
 
   abstract public static class FlutterBuildAction extends AnAction {
 
+    @NotNull
     abstract protected BuildType buildType();
 
     @Override
@@ -112,45 +124,58 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
         return;
       }
       final PubRoot pubRoot = PubRoot.forEventWithRefresh(event);
-      if (pubRoot == null) {
-        return;
-      }
       final BuildType buildType = buildType();
-      build(project, pubRoot, sdk, buildType, presentation.getDescription());
+      if (pubRoot != null) {
+        build(project, pubRoot, sdk, buildType, presentation.getDescription());
+      }
+      else {
+        List<PubRoot> roots = PubRoots.forProject(project);
+        for (PubRoot sub : roots) {
+          build(project, sub, sdk, buildType, presentation.getDescription());
+        }
+      }
     }
   }
 
   public static class AAR extends FlutterBuildAction {
     @Override
-    protected BuildType buildType() {
+    protected @NotNull BuildType buildType() {
       return BuildType.AAR;
     }
   }
 
   public static class APK extends FlutterBuildAction {
     @Override
-    protected BuildType buildType() {
+    protected @NotNull BuildType buildType() {
       return BuildType.APK;
     }
   }
 
   public static class AppBundle extends FlutterBuildAction {
     @Override
-    protected BuildType buildType() {
+    protected @NotNull BuildType buildType() {
       return BuildType.APP_BUNDLE;
     }
   }
 
   public static class Ios extends FlutterBuildAction {
     @Override
-    protected BuildType buildType() {
+    protected @NotNull BuildType buildType() {
       return BuildType.IOS;
     }
 
     @Override
-    public void update(AnActionEvent event) {
+    public void update(@NotNull AnActionEvent event) {
       final Presentation presentation = event.getPresentation();
       presentation.setEnabled(SystemInfo.isMac);
+    }
+  }
+
+  public static class Web extends FlutterBuildAction {
+
+    @Override
+    protected @NotNull BuildType buildType() {
+      return BuildType.WEB;
     }
   }
 }
