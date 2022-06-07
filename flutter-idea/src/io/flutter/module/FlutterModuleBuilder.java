@@ -196,7 +196,12 @@ public class FlutterModuleBuilder extends ModuleBuilder {
                                     ? findAndroidModuleFile(baseDir, flutterModuleName)
                                     : findEmbeddedModuleFile(baseDir, flutterModuleName);
     if (androidFile == null) return;
+    addAndroidModuleFromFile(project, model, androidFile);
+  }
 
+  public static void addAndroidModuleFromFile(@NotNull Project project,
+                                              @Nullable ModifiableModuleModel model,
+                                              @NotNull VirtualFile androidFile) {
     try {
       final ModifiableModuleModel toCommit;
       if (model == null) {
