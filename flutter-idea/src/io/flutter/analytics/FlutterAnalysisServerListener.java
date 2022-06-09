@@ -84,7 +84,10 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
   static final String LOG_ENTRY_TIME = "time";
   static final String LOG_ENTRY_DATA = "data";
   static final String LOG_ENTRY_SDK_VERSION = "sdkVersion";
-
+  static final HashSet<String> REQUEST_ERRORS_TO_IGNORE = new HashSet<>();
+  static {
+    REQUEST_ERRORS_TO_IGNORE.addAll(Arrays.asList("FORMAT_WITH_ERRORS", "ORGANIZE_DIRECTIVES_ERROR", "REFACTORING_REQUEST_CANCELLED"));
+  }
   private static final long ERROR_REPORT_INTERVAL = 1000 * 60 * 60 * 2; // Two hours between cumulative error reports, in ms.
   private static final long GENERAL_REPORT_INTERVAL = 1000 * 60; // One minute between general analytic reports, in ms.
   private static final Logger LOG = Logger.getInstance(FlutterAnalysisServerListener.class);
@@ -357,6 +360,9 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
       String code = requestError.getCode();
       if (code == null) {
         code = requestError.getMessage(); // test: requestErrorNoCode()
+      }
+      if (REQUEST_ERRORS_TO_IGNORE.contains(code)) {
+        return;
       }
       String stack = requestError.getStackTrace();
       String exception = composeException(ERROR_TYPE_REQUEST, code, stack);
