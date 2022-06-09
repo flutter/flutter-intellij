@@ -213,11 +213,16 @@ public class FlutterModuleBuilder extends ModuleBuilder {
         toCommit = null;
       }
 
-      model.loadModule(androidFile.getPath());
+      Module newModule = model.loadModule(androidFile.getPath());
 
       if (toCommit != null) {
         ApplicationManager.getApplication().invokeLater(() -> {
-          WriteAction.run(toCommit::commit);
+          // This check isn't normally needed but can prevent scary problems during testing.
+          // Even if .idea is removed modules may still be created from something in the cache files
+          // if the project had been opened previously.
+          if (ModuleManager.getInstance(project).findModuleByName(newModule.getName()) == null) {
+            WriteAction.run(toCommit::commit);
+          }
         });
       }
     }
