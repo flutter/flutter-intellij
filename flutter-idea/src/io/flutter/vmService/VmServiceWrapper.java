@@ -11,8 +11,10 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.Version;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Alarm;
 import com.intellij.util.concurrency.Semaphore;
+import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpoint;
@@ -650,8 +652,12 @@ public class VmServiceWrapper implements Disposable {
     });
   }
 
-  private String getResolvedUri(XSourcePosition position) {
-    final String url = position.getFile().getCanonicalFile().getUrl();
+  private String getResolvedUri(@NotNull XSourcePosition position) {
+    XDebugSession session = myDebugProcess.getSession();
+    assert session != null;
+    VirtualFile file = WorkspaceCache.getInstance(session.getProject()).isBazel() ? position.getFile() : position.getFile().getCanonicalFile();
+    assert file != null;
+    String url = file.getUrl();
     LOG.info("in getResolvedUri. url: " + url);
 
     if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
