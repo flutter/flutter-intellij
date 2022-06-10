@@ -548,6 +548,7 @@ public class FlutterWidgetPerfTest {
     assertEquals(0, perfModel.idleCount);
     // Verify that an idle event occurs once we wait the idle time delay.
     Thread.sleep(IDLE_DELAY_MILISECONDS);
+    Thread.yield();
     assertEquals(1, perfModel.idleCount);
 
     flutterWidgetPerf.removePerfListener(perfModel);
