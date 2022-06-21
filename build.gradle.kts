@@ -20,8 +20,8 @@ buildscript {
 }
 
 plugins {
-  id("org.jetbrains.intellij") version "1.5.2"
-  id("org.jetbrains.kotlin.jvm") version "1.6.10"
+  id("org.jetbrains.intellij") version "1.7.0-SNAPSHOT"
+  id("org.jetbrains.kotlin.jvm") version "1.7.0"
 }
 
 repositories {

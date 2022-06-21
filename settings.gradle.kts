@@ -4,6 +4,13 @@
  * found in the LICENSE file.
  */
 
+pluginManagement {
+  repositories {
+    maven("https://oss.sonatype.org/content/repositories/snapshots/")
+    gradlePluginPortal()
+  }
+}
+
 val ide: String by settings
 
 include("flutter-idea")

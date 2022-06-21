@@ -30,6 +30,7 @@ void checkAndClearAppliedEditCommands() {
 }
 
 List<EditCommand> editCommands = [
+  // When using LATEST-EAP-SNAPSHOT, also set baseVersion to LATEST-EAP-SNAPSHOT in the build spec.
   Subst(
     path: 'build.gradle.kts',
     initial:
