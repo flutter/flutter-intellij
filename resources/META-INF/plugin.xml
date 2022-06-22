@@ -437,6 +437,7 @@
     <additionalTextAttributes scheme="Default" file="colorSchemes/FlutterLogColorSchemeDefault.xml"/>
     <additionalTextAttributes scheme="Default" file="colorSchemes/FlutterCodeColorSchemeDefault.xml"/>
     <search.optionContributor implementation="io.flutter.sdk.FlutterSearchableOptionContributor"/>
+    <readerModeMatcher implementation="io.flutter.editor.FlutterReaderModeMatcher"/>
 
     <projectService serviceInterface="io.flutter.editor.WidgetIndentsHighlightingPassFactory"
                     serviceImplementation="io.flutter.editor.WidgetIndentsHighlightingPassFactory"
