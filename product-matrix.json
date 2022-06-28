@@ -26,7 +26,7 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2021.3, Android Studio 2021.3 Beta & Canary",
+      "comments": "IntelliJ 2021.3, Android Studio 2021.3 Beta",
       "name": "2021.3",
       "version": "AS.213",
       "ideaProduct": "android-studio",
@@ -50,14 +50,14 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2022.1",
+      "comments": "IntelliJ 2022.1, Android Studio 2021.3 Canary",
       "name": "2022.1",
       "version": "2022.1",
       "isUnitTestTarget": "true",
-      "ideaProduct": "ideaIC",
-      "ideaVersion": "2022.1",
+      "ideaProduct": "android-studio",
+      "ideaVersion": "2022.1.1.6",
       "baseVersion": "221.5080.210",
-      "dartPluginVersion": "221.5177",
+      "dartPluginVersion": "221.4501.155",
       "sinceBuild": "221.5080.210",
       "untilBuild": "221.*"
     },

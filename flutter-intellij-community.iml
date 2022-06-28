@@ -14,6 +14,7 @@
       <sourceFolder url="file://$MODULE_DIR$/flutter-idea/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/flutter-idea/testSrc/unit" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/flutter-idea/third_party/vmServiceDrivers" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/flutter-studio/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/artifacts" />
@@ -52,7 +53,6 @@
       <excludeFolder url="file://$MODULE_DIR$/flutter-idea/testSrc/integration" />
       <excludeFolder url="file://$MODULE_DIR$/flutter-studio/testSrc" />
       <excludeFolder url="file://$MODULE_DIR$/flutter-studio/src/io/flutter/module" />
-      <excludeFolder url="file://$MODULE_DIR$/flutter-studio/src" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -175,6 +175,17 @@
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/third_party/lib/dart-plugin/221/Dart.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module" module-name="intellij.android.projectSystem.gradle" />
+    <orderEntry type="module" module-name="intellij.android.adt.ui" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/artifacts/Dart-221.4501.155.zip!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
