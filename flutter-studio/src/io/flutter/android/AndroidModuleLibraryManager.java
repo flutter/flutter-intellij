@@ -257,7 +257,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     };
 
     GradleSyncInvoker.Request request = new GradleSyncInvoker.Request(TRIGGER_PROJECT_MODIFIED);
-    request.runInBackground = true;
+    //request.runInBackground = true;
     GradleSyncInvoker gradleSyncInvoker = ApplicationManager.getApplication().getService(GradleSyncInvoker.class);
     gradleSyncInvoker.requestProjectSync(androidProject, request, listener);
   }

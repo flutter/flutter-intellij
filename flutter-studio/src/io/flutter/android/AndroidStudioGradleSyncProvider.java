@@ -17,6 +17,6 @@ public class AndroidStudioGradleSyncProvider implements GradleSyncProvider {
   public void scheduleSync(@NotNull Project project) {
     GradleSyncInvoker.getInstance().requestProjectSync(
       project,
-      new GradleSyncInvoker.Request(TRIGGER_PROJECT_MODIFIED));
+      new GradleSyncInvoker.Request(TRIGGER_PROJECT_MODIFIED), null);
   }
 }

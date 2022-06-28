@@ -124,7 +124,7 @@ public class OpenFlutterNewsSidePanelAction extends OpenAssistSidePanelAction {
 
     @Override
     public void toolWindowUnregistered(@NotNull String id, @NotNull ToolWindow toolWindow) {
-      if (id.equals(OpenAssistSidePanelAction.TOOL_WINDOW_TITLE)) {
+      if (id.equals("Assistant:")) {
         myProjectToListenerMap.remove(myProject);
       }
     }
@@ -143,7 +143,7 @@ public class OpenFlutterNewsSidePanelAction extends OpenAssistSidePanelAction {
           return;
         }
 
-        ToolWindow window = ToolWindowManager.getInstance(myProject).getToolWindow(OpenAssistSidePanelAction.TOOL_WINDOW_TITLE);
+        ToolWindow window = ToolWindowManager.getInstance(myProject).getToolWindow("Assistant:");
         if (window == null) {
           return;
         }
