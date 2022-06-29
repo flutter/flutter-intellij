@@ -45,6 +45,21 @@
 
   <change-notes>
     <![CDATA[
+<h1>69.0</h1>
+<ul>
+  <li>Build for canary 221 (#6248)</li>
+  <li>Revert "Delete code duplicated from Dart (#6113)" (#6246)</li>
+  <li>Update .iml for 221 (#6241)</li>
+  <li>Disable reader mode for Flutter plugins (#6238)</li>
+  <li>Update the build for 2022.2 EAP (#6224)</li>
+  <li>Avoid using canonical path for bazel (#6227)</li>
+  <li>Reduce error logging for not-useful errors (#6221)</li>
+  <li>Ensure disconnect even if import cancelled (#6220)</li>
+  <li>Improve import for monorepo projects (#6217)</li>
+  <li>Update Flutter commands on Build and Tools menu to run for all Flutter modules (#6215)</li>
+  <li>Change how Open in Xcode determines what to open (#6211)</li>
+  <li>Update survey announcement (#6210)</li>
+</ul>
 <h1>68.0</h1>
 <ul>
   <li>Use distributed icons for current SDK (#6208)</li>
