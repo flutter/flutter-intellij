@@ -62,14 +62,14 @@
       "untilBuild": "221.*"
     },
     {
-      "channel": "dev",
+      "channel": "stable",
       "comments": "IntelliJ 2022.2",
       "name": "2022.2",
       "version": "2022.2",
       "ideaProduct": "ideaIC",
       "ideaVersion": "222.2889.14",
       "baseVersion": "LATEST-EAP-SNAPSHOT",
-      "dartPluginVersion": "222.2889.11",
+      "dartPluginVersion": "222.3244.12",
       "sinceBuild": "222.2889.14",
       "untilBuild": "222.*"
     }
