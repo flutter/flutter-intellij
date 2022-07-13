@@ -45,8 +45,8 @@ public class WorkspaceTest {
     final VirtualFile contentRoot = tmp.ensureDir("abc/dart/something");
     ModuleRootModificationUtil.addContentRoot(fixture.getModule(), contentRoot.getPath());
 
-    tmp.ensureDir("abc/dart/config/intellij-plugins");
-    tmp.writeFile("abc/dart/config/intellij-plugins/flutter.json",
+    tmp.ensureDir("abc/dart/config/ide");
+    tmp.writeFile("abc/dart/config/ide/flutter.json",
                   "{\"daemonScript\": \"something_daemon.sh\"," +
                   "\"doctorScript\": \"something_doctor.sh\"}");
     tmp.writeFile("abc/something_daemon.sh", "");
@@ -69,8 +69,8 @@ public class WorkspaceTest {
     final VirtualFile contentRoot = tmp.ensureDir("abc/dart/something");
     ModuleRootModificationUtil.addContentRoot(fixture.getModule(), contentRoot.getPath());
 
-    tmp.ensureDir("READONLY/abc/dart/config/intellij-plugins");
-    tmp.writeFile("READONLY/abc/dart/config/intellij-plugins/flutter.json",
+    tmp.ensureDir("READONLY/abc/dart/config/ide");
+    tmp.writeFile("READONLY/abc/dart/config/ide/flutter.json",
                   "{\"daemonScript\": \"scripts/flutter_daemon.sh\"," +
                   "\"doctorScript\": \"scripts/flutter_doctor.sh\"}");
     tmp.ensureDir("READONLY/abc/scripts");

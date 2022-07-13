@@ -36,7 +36,7 @@ public class WorkspaceCacheTest {
 
     tmp.ensureDir("abc");
     tmp.writeFile("abc/WORKSPACE", "");
-    tmp.ensureDir("abc/dart/config/intellij-plugins");
+    tmp.ensureDir("abc/dart/config/ide");
     final VirtualFile contentRoot = tmp.ensureDir("abc/dart/something");
 
     Testing.runOnDispatchThread(
@@ -50,7 +50,7 @@ public class WorkspaceCacheTest {
     // (Unknown cause.)
     checkNoConfig();
 
-    final String configPath = "abc/dart/config/intellij-plugins/flutter.json";
+    final String configPath = "abc/dart/config/ide/flutter.json";
 
     tmp.writeFile(configPath, "{\"daemonScript\": \"first.sh\"}");
     tmp.writeFile("abc/first.sh", "");
