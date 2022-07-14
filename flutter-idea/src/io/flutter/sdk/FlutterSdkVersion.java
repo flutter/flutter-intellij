@@ -19,7 +19,7 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
    * The version for which the distributed icons can be used.
    */
   @VisibleForTesting
-  public static final FlutterSdkVersion DISTRIBUTED_ICONS = new FlutterSdkVersion("3.0.0");
+  public static final FlutterSdkVersion DISTRIBUTED_ICONS = new FlutterSdkVersion("3.1.0");
   /**
    * The minimum version we suggest people use.
    */
