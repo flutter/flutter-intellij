@@ -433,7 +433,8 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
 
   @Nullable
   public XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final ScriptRef scriptRef, int tokenPos) {
-    return mapper.getSourcePosition(isolateId, scriptRef, tokenPos);
+    CompletableFuture<String> fileFuture = myVmServiceWrapper.findResolvedFile(isolateId, scriptRef.getUri());
+    return mapper.getSourcePosition(isolateId, scriptRef, tokenPos, fileFuture);
   }
 
   @Nullable
@@ -694,7 +695,7 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
     /**
      * Returns the local position (to display to the user) corresponding to a token position in Observatory.
      */
-    XSourcePosition getSourcePosition(String isolateId, ScriptRef scriptRef, int tokenPos);
+    XSourcePosition getSourcePosition(String isolateId, ScriptRef scriptRef, int tokenPos, CompletableFuture<String> fileFuture);
 
     /**
      * Returns the local position (to display to the user) corresponding to a token position in Observatory.

@@ -995,6 +995,39 @@ public class VmServiceWrapper implements Disposable {
                                  @NotNull final InvokeConsumer callback) {
     addRequest(() -> myVmService.invoke(isolateId, targetId, methodName, Collections.emptyList(), true, callback));
   }
+
+  public CompletableFuture<String> findResolvedFile(@NotNull final String isolateId, @NotNull final String scriptUri) {
+    CompletableFuture<String> uriFuture = new CompletableFuture<>();
+    myVmService.lookupResolvedPackageUris(isolateId, List.of(scriptUri), true, new UriListConsumer() {
+      @Override
+      public void received(UriList response) {
+        if (response == null) {
+          LOG.info("lookupResolvedPackageUris returned null response");
+          uriFuture.complete(null);
+          return;
+        }
+
+        final List<String> uris = response.getUris();
+        if (uris == null) {
+          LOG.info("lookupResolvedPackageUris returned null uris");
+          uriFuture.complete(null);
+          return;
+        }
+
+        uriFuture.complete(uris.get(0));
+      }
+
+      @Override
+      public void onError(RPCError error) {
+        assert error != null;
+        LOG.info("lookupResolvedPackageUris error: " + error.getMessage());
+
+        uriFuture.complete(null);
+      }
+    });
+
+    return uriFuture;
+  }
 }
 
 class CanonicalBreakpoint {
