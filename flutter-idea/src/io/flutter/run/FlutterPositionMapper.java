@@ -5,7 +5,6 @@
  */
 package io.flutter.run;
 
-import com.android.internal.inputmethod.CancellationGroup;
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
