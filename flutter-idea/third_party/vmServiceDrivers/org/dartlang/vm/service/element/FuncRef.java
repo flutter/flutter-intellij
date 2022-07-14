@@ -37,6 +37,9 @@ public class FuncRef extends ObjRef {
   /**
    * The location of this function in the source code.
    *
+   * Note: this may not agree with the location of `owner` if this is a function from a mixin
+   * application, expression evaluation, patched class, etc.
+   *
    * Can return <code>null</code>.
    */
   public SourceLocation getLocation() {
@@ -59,6 +62,9 @@ public class FuncRef extends ObjRef {
 
   /**
    * The owner of this function, which can be a Library, Class, or a Function.
+   *
+   * Note: the location of `owner` may not agree with `location` if this is a function from a mixin
+   * application, expression evaluation, patched class, etc.
    *
    * @return one of <code>LibraryRef</code>, <code>ClassRef</code> or <code>FuncRef</code>
    */

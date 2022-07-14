@@ -27,7 +27,7 @@ public class CpuSamplesEvent extends Element {
 
   /**
    * A list of references to functions seen in the relevant samples. These references can be looked
-   * up using the indicies provided in a `CpuSample` `stack` to determine which function was on the
+   * up using the indices provided in a `CpuSample` `stack` to determine which function was on the
    * stack.
    *
    * @return one of <code>ElementList<ObjRef></code> or <code>ElementList<NativeFunction></code>

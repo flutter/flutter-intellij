@@ -39,6 +39,9 @@ public class FieldRef extends ObjRef {
   /**
    * The location of this field in the source code.
    *
+   * Note: this may not agree with the location of `owner` if this is a field from a mixin
+   * application, patched class, etc.
+   *
    * Can return <code>null</code>.
    */
   public SourceLocation getLocation() {
@@ -61,6 +64,9 @@ public class FieldRef extends ObjRef {
 
   /**
    * The owner of this field, which can be either a Library or a Class.
+   *
+   * Note: the location of `owner` may not agree with `location` if this is a field from a mixin
+   * application, patched class, etc.
    */
   public ObjRef getOwner() {
     return new ObjRef((JsonObject) json.get("owner"));
