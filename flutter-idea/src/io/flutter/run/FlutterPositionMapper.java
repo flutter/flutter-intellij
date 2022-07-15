@@ -334,7 +334,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
       if (analyzer != null && !isDartPatchUri(remoteUri)) {
         final String path = analyzer.getAbsolutePath(remoteUri);
         if (path != null) {
-          if (fileFuture != null && path.contains("google3")) {
+          if (fileFuture != null && WorkspaceCache.getInstance(project).isBazel() && path.contains("google3")) {
             // Check if this path matches file future
             final Analytics analytics = FlutterInitializer.getAnalytics();
             try {
