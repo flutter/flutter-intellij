@@ -30,7 +30,7 @@ public class CpuSamples extends Response {
 
   /**
    * A list of functions seen in the relevant samples. These references can be looked up using the
-   * indicies provided in a `CpuSample` `stack` to determine which function was on the stack.
+   * indices provided in a `CpuSample` `stack` to determine which function was on the stack.
    */
   public ElementList<ProfileFunction> getFunctions() {
     return new ElementList<ProfileFunction>(json.get("functions").getAsJsonArray()) {

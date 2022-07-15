@@ -83,7 +83,7 @@ public class VmService extends VmServiceBase {
   /**
    * The minor version number of the protocol supported by this client.
    */
-  public static final int versionMinor = 56;
+  public static final int versionMinor = 58;
 
   /**
    * The [addBreakpoint] RPC is used to add a breakpoint at a specific line of some script.
@@ -449,8 +449,9 @@ public class VmService extends VmServiceBase {
    * @param endTokenPos This parameter is optional and may be null.
    * @param forceCompile This parameter is optional and may be null.
    * @param reportLines This parameter is optional and may be null.
+   * @param libraryFilters This parameter is optional and may be null.
    */
-  public void getSourceReport(String isolateId, List<SourceReportKind> reports, String scriptId, Integer tokenPos, Integer endTokenPos, Boolean forceCompile, Boolean reportLines, GetSourceReportConsumer consumer) {
+  public void getSourceReport(String isolateId, List<SourceReportKind> reports, String scriptId, Integer tokenPos, Integer endTokenPos, Boolean forceCompile, Boolean reportLines, List<String> libraryFilters, GetSourceReportConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.add("reports", convertIterableToJsonArray(reports));
@@ -459,6 +460,7 @@ public class VmService extends VmServiceBase {
     if (endTokenPos != null) params.addProperty("endTokenPos", endTokenPos);
     if (forceCompile != null) params.addProperty("forceCompile", forceCompile);
     if (reportLines != null) params.addProperty("reportLines", reportLines);
+    if (libraryFilters != null) params.add("libraryFilters", convertIterableToJsonArray(libraryFilters));
     request("getSourceReport", params, consumer);
   }
 
@@ -598,6 +600,19 @@ public class VmService extends VmServiceBase {
     params.addProperty("isolateId", isolateId);
     params.add("uris", convertIterableToJsonArray(uris));
     request("lookupPackageUris", params, consumer);
+  }
+
+  /**
+   * The [lookupResolvedPackageUris] RPC is used to convert a list of URIs to their resolved (or
+   * absolute) paths. For example, URIs passed to this RPC are mapped in the following ways:
+   * @param local This parameter is optional and may be null.
+   */
+  public void lookupResolvedPackageUris(String isolateId, List<String> uris, Boolean local, UriListConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    params.add("uris", convertIterableToJsonArray(uris));
+    if (local != null) params.addProperty("local", local);
+    request("lookupResolvedPackageUris", params, consumer);
   }
 
   /**

@@ -25,6 +25,7 @@ import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashMap;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
+import io.flutter.analytics.Analytics;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.vmService.DartVmServiceDebugProcess;
@@ -39,6 +40,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Converts positions between Dart files in Observatory and local Dart files.
@@ -233,8 +238,8 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
    * Returns the local position (to display to the user) corresponding to a token position in Observatory.
    */
   @Nullable
-  public XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final ScriptRef scriptRef, int tokenPos) {
-    return getSourcePosition(isolateId, scriptRef.getId(), scriptRef.getUri(), tokenPos);
+  public XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final ScriptRef scriptRef, int tokenPos, CompletableFuture<String> fileFuture) {
+    return getSourcePosition(isolateId, scriptRef.getId(), scriptRef.getUri(), tokenPos, fileFuture);
   }
 
   /**
@@ -245,18 +250,22 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
     return getSourcePosition(isolateId, script.getId(), script.getUri(), tokenPos);
   }
 
+  private XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final String scriptId,
+                                            @NotNull final String scriptUri, int tokenPos) {
+    return getSourcePosition(isolateId, scriptId, scriptUri, tokenPos, null);
+  }
   /**
    * Returns the local position (to display to the user) corresponding to a token position in Observatory.
    */
   @Nullable
   private XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final String scriptId,
-                                            @NotNull final String scriptUri, int tokenPos) {
+                                            @NotNull final String scriptUri, int tokenPos, CompletableFuture<String> fileFuture) {
     if (scriptProvider == null) {
       FlutterUtils.warn(LOG, "attempted to get source position before connected to observatory");
       return null;
     }
 
-    final VirtualFile local = findLocalFile(scriptUri);
+    final VirtualFile local = findLocalFile(scriptUri, fileFuture);
 
     final ObservatoryFile.Cache cache =
       fileCache.computeIfAbsent(isolateId, (id) -> new ObservatoryFile.Cache(id, scriptProvider));
@@ -289,11 +298,15 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
     return findLocalFile(script.getUri());
   }
 
+  @Nullable
+  protected VirtualFile findLocalFile(@NotNull String uri) {
+    return findLocalFile(uri, null);
+  }
   /**
    * Attempt to find a local Dart file corresponding to a script in Observatory.
    */
   @Nullable
-  protected VirtualFile findLocalFile(@NotNull String uri) {
+  protected VirtualFile findLocalFile(@NotNull String uri, CompletableFuture<String> fileFuture) {
     return ApplicationManager.getApplication().runReadAction((Computable<VirtualFile>)() -> {
       // This can be a remote file or URI.
       if (remoteSourceRoot != null && uri.startsWith(remoteSourceRoot)) {
@@ -321,6 +334,20 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
       if (analyzer != null && !isDartPatchUri(remoteUri)) {
         final String path = analyzer.getAbsolutePath(remoteUri);
         if (path != null) {
+          if (fileFuture != null && WorkspaceCache.getInstance(project).isBazel() && path.contains("google3")) {
+            // Check if this path matches file future
+            final Analytics analytics = FlutterInitializer.getAnalytics();
+            try {
+              final String vmServiceFilePath = fileFuture.get(1000, TimeUnit.MILLISECONDS);
+              if (!path.equals(vmServiceFilePath)) {
+                analytics.sendEvent("file-mapping", String.format("mismatch|%s|%s", path, vmServiceFilePath));
+              }
+            }
+            catch (Exception e) {
+              analytics.sendEvent("file-mapping", String.format("exception|%s|%s", path, e.getMessage()));
+            }
+          }
+
           return LocalFileSystem.getInstance().findFileByPath(path);
         }
       }

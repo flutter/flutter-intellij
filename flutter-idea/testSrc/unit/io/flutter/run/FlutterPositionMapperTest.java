@@ -69,7 +69,7 @@ public class FlutterPositionMapperTest {
 
     scripts.addScript("1", "2", "some/stuff/to/ignore/lib/hello.dart", ImmutableList.of(new Line(10, 123, 1)));
 
-    final XSourcePosition pos = mapper.getSourcePosition("1", makeScriptRef("2", "some/stuff/to/ignore/lib/hello.dart"), 123);
+    final XSourcePosition pos = mapper.getSourcePosition("1", makeScriptRef("2", "some/stuff/to/ignore/lib/hello.dart"), 123, null);
     assertNotNull(pos);
     assertEquals(pos.getFile(), hello);
     assertEquals(pos.getLine(), 9); // zero-based
@@ -86,7 +86,7 @@ public class FlutterPositionMapperTest {
 
     scripts.addScript("1", "2", "remote:root/lib/hello.dart", ImmutableList.of(new Line(10, 123, 1)));
 
-    final XSourcePosition pos = mapper.getSourcePosition("1", makeScriptRef("2", "remote:root/lib/hello.dart"), 123);
+    final XSourcePosition pos = mapper.getSourcePosition("1", makeScriptRef("2", "remote:root/lib/hello.dart"), 123, null);
     assertNotNull(pos);
     assertEquals(pos.getFile(), hello);
     assertEquals(pos.getLine(), 9); // zero-based
