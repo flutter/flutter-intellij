@@ -196,7 +196,9 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     }
     else {
       ApplicationManager.getApplication().invokeLater(() -> {
-        e.getSettings().setIndentGuidesShown(false);
+        if (!e.isDisposed()) {
+          e.getSettings().setIndentGuidesShown(false);
+        }
       });
     }
     // If regular indent guides should be shown we need to show the filtered
