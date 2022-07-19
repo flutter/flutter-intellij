@@ -77,8 +77,10 @@ public class FlutterProjectStructureDetector extends ProjectStructureDetector {
 
     projectDescriptor.setModules(modules);
     builder.setupModulesByContentRoots(projectDescriptor, roots);
-    //noinspection ConstantConditions
-    scheduleAndroidModuleAddition(builder.getContext().getProjectName(), modules, 0);
+    String name = builder.getContext().getProjectName();
+    if (name != null) {
+      scheduleAndroidModuleAddition(name, modules, 0);
+    }
   }
 
   private void scheduleAndroidModuleAddition(@NotNull String projectName, @NotNull List<ModuleDescriptor> modules, int tries) {
