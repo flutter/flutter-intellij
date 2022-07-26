@@ -8,6 +8,7 @@ package io.flutter.sdk;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import com.intellij.ProjectTopics;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -190,7 +191,7 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
         }
       }
     }
-    catch (IOException ignored) {
+    catch (IOException | JsonSyntaxException ignored) {
     }
     return result;
   }
