@@ -5,6 +5,7 @@
  */
 package io.flutter.android;
 
+import com.android.tools.idea.emulator.EmulatorSettings;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ColoredProcessHandler;
@@ -51,6 +52,12 @@ public class AndroidEmulator {
       .withWorkDirectory(androidSdk.getHome().getCanonicalPath())
       .withExePath(emulatorPath)
       .withParameters("-avd", this.id);
+    
+    if (EmulatorSettings.getInstance().getLaunchInToolWindow()) {
+      cmd.addParameter("-qt-hide-window");
+      cmd.addParameter("-grpc-use-token");
+      cmd.addParameters("-idle-grpc-timeout", "300");
+    }
 
     try {
       final StringBuilder stdout = new StringBuilder();
