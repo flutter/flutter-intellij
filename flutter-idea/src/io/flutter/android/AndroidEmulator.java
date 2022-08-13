@@ -53,7 +53,8 @@ public class AndroidEmulator {
       .withExePath(emulatorPath)
       .withParameters("-avd", this.id);
     
-    if (EmulatorSettings.getInstance().getLaunchInToolWindow()) {
+    final boolean shouldLaunchEmulatorInToolWindow = EmulatorSettings.getInstance().getLaunchInToolWindow();
+    if (shouldLaunchEmulatorInToolWindow) {
       cmd.addParameter("-qt-hide-window");
       cmd.addParameter("-grpc-use-token");
       cmd.addParameters("-idle-grpc-timeout", "300");
@@ -81,10 +82,28 @@ public class AndroidEmulator {
         }
       });
       process.startNotify();
+      openEmulatorToolWindow(shouldLaunchEmulatorInToolWindow);
     }
     catch (ExecutionException | RuntimeException e) {
       FlutterMessages.showError("Error Opening Emulator", e.toString(), androidSdk.project);
     }
+  }
+  
+  private void openEmulatorToolWindow(boolean shouldLaunchEmulatorInToolWindow) {
+    if (!shouldLaunchEmulatorInToolWindow) {
+      return;
+    }
+    assert androidSdk != null;
+    final ToolWindowManager wm = ToolWindowManager.getInstance(androidSdk.project);
+    final ToolWindow tw = wm.getToolWindow("Android Emulator");
+    if (tw == null || tw.isVisible()) {
+      return;
+    }
+
+    assert ApplicationManager.getApplication() != null;
+    ApplicationManager.getApplication().invokeLater(() -> {
+      tw.show(null);
+    });
   }
 
   @Override
