@@ -13,6 +13,7 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -21,6 +22,10 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import io.flutter.FlutterMessages;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class AndroidEmulator {
   private static final Logger LOG = Logger.getInstance(AndroidEmulator.class);
@@ -55,7 +60,7 @@ public class AndroidEmulator {
       .withWorkDirectory(androidSdk.getHome().getCanonicalPath())
       .withExePath(emulatorPath)
       .withParameters("-avd", this.id);
-    
+
     final boolean shouldLaunchEmulatorInToolWindow = EmulatorSettings.getInstance().getLaunchInToolWindow();
     if (shouldLaunchEmulatorInToolWindow) {
       cmd.addParameter("-qt-hide-window");
@@ -72,6 +77,7 @@ public class AndroidEmulator {
           if (outputType == ProcessOutputTypes.STDERR || outputType == ProcessOutputTypes.STDOUT) {
             stdout.append(event.getText());
           }
+          openEmulatorToolWindow(shouldLaunchEmulatorInToolWindow);
         }
 
         public void processTerminated(@NotNull ProcessEvent event) {
@@ -85,13 +91,12 @@ public class AndroidEmulator {
         }
       });
       process.startNotify();
-      openEmulatorToolWindow(shouldLaunchEmulatorInToolWindow);
     }
     catch (ExecutionException | RuntimeException e) {
       FlutterMessages.showError("Error Opening Emulator", e.toString(), androidSdk.project);
     }
   }
-  
+
   private void openEmulatorToolWindow(boolean shouldLaunchEmulatorInToolWindow) {
     if (!shouldLaunchEmulatorInToolWindow) {
       return;
@@ -105,8 +110,9 @@ public class AndroidEmulator {
 
     assert ApplicationManager.getApplication() != null;
     ApplicationManager.getApplication().invokeLater(() -> {
-      tw.show(null);
-    });
+      tw.setAutoHide(false);
+      tw.show();
+    }, ModalityState.stateForComponent(tw.getComponent()));
   }
 
   @Override
