@@ -28,6 +28,7 @@
   <depends>com.intellij.modules.xdebugger</depends>
   <depends>com.intellij.modules.coverage</depends>
   <depends>org.jetbrains.plugins.yaml</depends>
+  <depends>org.jetbrains.android</depends>
   <depends>Dart</depends>
   <depends>Git4Idea</depends>
 
