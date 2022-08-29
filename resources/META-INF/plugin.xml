@@ -46,6 +46,18 @@
 
   <change-notes>
     <![CDATA[
+<h1>70.0</h1>
+<ul>
+  <li>Respect embedded emulator settings (#6279)</li>
+  <li>Update to JX Browser 7.27 and change linux mode (#6283)</li>
+  <li>Guard against JSON file problems (#6273)</li>
+  <li>Add missing null check (#6268)</li>
+  <li>Check for disposed editor (#6265)</li>
+  <li>Log bazel mapping differences from analyzer (#6263)</li>
+  <li>Update icon version (#6262)</li>
+  <li>Use new flutter.json file location (#6261)</li>
+  <li>Delete FlutterBazelSettingsNotificationProvider (#6256)</li>
+</ul>
 <h1>69.0</h1>
 <ul>
   <li>Build for canary 221 (#6248)</li>
