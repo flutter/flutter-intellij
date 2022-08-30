@@ -1,3 +1,14 @@
+# 70.0
+- Respect embedded emulator settings (#6279)
+- Update to JX Browser 7.27 and change linux mode (#6283)
+- Guard against JSON file problems (#6273)
+- Add missing null check (#6268)
+- Check for disposed editor (#6265)
+- Log bazel mapping differences from analyzer (#6263)
+- Update icon version (#6262)
+- Use new flutter.json file location (#6261)
+- Delete FlutterBazelSettingsNotificationProvider (#6256)
+
 # 69.0
 - Build for canary 221 (#6248)
 - Revert "Delete code duplicated from Dart (#6113)" (#6246)

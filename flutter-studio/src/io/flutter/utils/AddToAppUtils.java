@@ -53,8 +53,9 @@ public class AddToAppUtils {
     // GRADLE_SYNC_TOPIC is not public in Android Studio 3.5. It is in 3.6. It isn't defined in 3.4.
     //noinspection unchecked
     Topic<GradleSyncListener> topic = getStaticFieldValue(GradleSyncState.class, Topic.class, "GRADLE_SYNC_TOPIC");
-    assert topic != null;
-    connection.subscribe(topic, makeSyncListener(project));
+    if (topic != null) {
+      connection.subscribe(topic, makeSyncListener(project));
+    }
 
     if (!FlutterModuleUtils.hasFlutterModule(project)) {
       connection.subscribe(ProjectTopics.MODULES, new ModuleListener() {
