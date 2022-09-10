@@ -7,6 +7,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:path/path.dart' as p;
 
 import 'build_spec.dart';
 import 'globals.dart';
@@ -34,7 +35,7 @@ class BuildCommandRunner extends CommandRunner {
     final jxBrowserKey =
         readTokenFromKeystore('FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME');
     final propertiesFile =
-        File("$rootPath/resources/jxbrowser/jxbrowser.properties");
+        File(p.join(rootPath, "resources", "jxbrowser", "jxbrowser.properties"));
     if (jxBrowserKey.isNotEmpty) {
       final contents = '''
 jxbrowser.license.key=$jxBrowserKey
@@ -67,33 +68,30 @@ testing=$testing
 buildSpec=${spec.version}
 baseVersion=${spec.baseVersion}
 ''';
-    final propertiesFile = File("$rootPath/gradle.properties");
+
+    final propertiesFile = File(p.join(rootPath, "gradle.properties"));
     final source = propertiesFile.readAsStringSync();
     propertiesFile.writeAsStringSync(contents);
-    int result;
+
     // Using the Gradle daemon causes a strange problem.
     // --daemon => Invalid byte 1 of 1-byte UTF-8 sequence, which is nonsense.
     // During instrumentation of FlutterProjectStep.form, which is a UTF-8 file.
     try {
-      if (Platform.isWindows) {
-        if (spec.version == '4.1') {
+      if (spec.version == '4.1') {
+        if (Platform.isWindows) {
           log('CANNOT BUILD ${spec.version} ON WINDOWS');
           return 0;
-        }
-        result = await exec('.\\third_party\\gradlew.bat', command);
-      } else {
-        if (spec.version == '4.1') {
-          return await runShellScript(command, spec);
         } else {
-          result = await exec('./third_party/gradlew', command);
+          return await runShellScript(command, spec);
         }
       }
+      return await execLocalGradleCommand(command);
     } finally {
       propertiesFile.writeAsStringSync(source);
     }
-    return result;
   }
 
+  ///  *nix systems only. Executes the provided command using 'bash'
   Future<int> runShellScript(List<String> command, BuildSpec spec) async {
     var script = '''
 #!/bin/bash
@@ -102,7 +100,7 @@ export JAVA_HOME=\$JAVA_HOME_OLD
 ''';
     var systemTempDir = Directory.systemTemp;
     var dir = systemTempDir.createTempSync();
-    var file = File("${dir.path}/script");
+    var file = File(p.join(dir.path, "script"));
     file.createSync();
     file.writeAsStringSync(script);
     try {

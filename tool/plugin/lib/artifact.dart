@@ -23,9 +23,11 @@ class Artifact {
   bool get isZip => file.endsWith('.zip');
 
   bool exists() {
-    if (FileSystemEntity.isFileSync('artifacts/$file')) return true;
+    var artifactFile = p.join('artifacts', file);
+
+    if (FileSystemEntity.isFileSync(artifactFile)) return true;
     convertToTar();
-    return FileSystemEntity.isFileSync('artifacts/$file');
+    return FileSystemEntity.isFileSync(artifactFile);
   }
 
   String get outPath => p.join(rootPath, 'artifacts', output);
@@ -54,6 +56,7 @@ class ArtifactManager {
     createDir('artifacts');
 
     var result = 0;
+
     for (var artifact in artifacts.sublist(0)) {
       var doDownload = true;
 
@@ -62,7 +65,7 @@ class ArtifactManager {
         doDownload = false;
       }
 
-      var path = 'artifacts/${artifact.file}';
+      var path = p.join('artifacts', artifact.file);
       if (FileSystemEntity.isFileSync(path)) {
         alreadyDownloaded(path);
       } else {
@@ -75,7 +78,8 @@ class ArtifactManager {
         }
         if (doDownload) {
           log('downloading $path...');
-          result = await curl('$base/${artifact.file}', to: path);
+          var baseOutputPath = p.join(base, artifact.file);
+          result = await curl(baseOutputPath, to: path);
           if (result != 0) {
             log('download failed');
           }
@@ -84,12 +88,12 @@ class ArtifactManager {
             // If the file is missing the server returns a small file containing
             // an error message. Delete it and try again. The smallest file we
             // store in the cloud is over 700K.
-            log('archive file not found: $base/${artifact.file}');
+            log('archive file not found: $baseOutputPath');
             archiveFile.deleteSync();
             if (artifact.isZip) {
               artifact.convertToTar();
-              path = 'artifacts/${artifact.file}';
-              result = await curl('$base/${artifact.file}', to: path);
+              path = p.join('artifacts', artifact.file);
+              result = await curl(baseOutputPath, to: path);
               if (result != 0) {
                 log('download failed');
                 artifacts.remove(artifact);
@@ -97,7 +101,7 @@ class ArtifactManager {
               }
               var archiveFile = File(path);
               if (!_isValidDownloadArtifact(archiveFile)) {
-                log('archive file not found: $base/${artifact.file}');
+                log('archive file not found: $baseOutputPath');
                 archiveFile.deleteSync();
                 artifacts.remove(artifact);
                 continue;
@@ -119,16 +123,16 @@ class ArtifactManager {
       }
 
       // expand
-      if (Directory(artifact.outPath).existsSync()) {
-        await removeAll(artifact.outPath);
-      }
+      await Directory(artifact.outPath)
+          .exists()
+          .then((exists) => removeAll(artifact.outPath));
+
       createDir(artifact.outPath);
 
       if (artifact.isZip) {
         if (artifact.bareArchive) {
-          result = await exec(
-              'unzip', ['-q', '-d', artifact.output, artifact.file],
-              cwd: 'artifacts');
+          result = await extractZip(artifact.file,
+              cwd: 'artifacts', targetDirectory: artifact.output);
           var files = Directory(artifact.outPath).listSync();
           if (files.length < 3) /* Might have .DS_Store */ {
             // This is the Mac zip case.
@@ -136,26 +140,20 @@ class ArtifactManager {
             if (entity.statSync().type == FileSystemEntityType.file) {
               entity = files.last;
             }
-            Directory("${entity.path}/Contents")
+            Directory(p.join(entity.path, "Contents"))
                 .renameSync("${artifact.outPath}Temp");
             Directory(artifact.outPath).deleteSync(recursive: true);
             Directory("${artifact.outPath}Temp").renameSync(artifact.outPath);
           }
         } else {
-          result = await exec('unzip', ['-q', artifact.file], cwd: 'artifacts');
+          try {
+            result = await extractZip(artifact.file, cwd: 'artifacts');
+          } catch (e) {
+            print(e);
+          }
         }
       } else {
-        result = await exec(
-          'tar',
-          [
-            '--strip-components=1',
-            '-zxf',
-            artifact.file,
-            '-C',
-            artifact.output
-          ],
-          cwd: p.join(rootPath, 'artifacts'),
-        );
+        result = await extractTar(artifact, cwd: p.join(rootPath, 'artifacts'));
       }
       if (result != 0) {
         log('unpacking failed');
@@ -165,6 +163,7 @@ class ArtifactManager {
 
       log('');
     }
+
     return result;
   }
 }

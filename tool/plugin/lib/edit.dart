@@ -52,7 +52,8 @@ List<EditCommand> editCommands = [
     versions: ['AS.211', 'AS.212'],
   ),
   Subst(
-    path: 'flutter-idea/src/io/flutter/analytics/FlutterAnalysisServerListener.java',
+    path:
+        'flutter-idea/src/io/flutter/analytics/FlutterAnalysisServerListener.java',
     initial: '<@NotNull Analytics>',
     replacement: '<Analytics>',
     versions: ['AS.211', 'AS.212', 'AS.213'],

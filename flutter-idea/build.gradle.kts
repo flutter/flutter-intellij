@@ -98,7 +98,7 @@ sourceSets {
     // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
     resources.srcDirs(listOf(
       "src",
-      "resources"
+      "${project.rootDir}/resources"
     ))
   }
   test {
@@ -108,7 +108,7 @@ sourceSets {
       "third_party/vmServiceDrivers"
     ))
     resources.srcDirs(listOf(
-      "resources",
+      "${project.rootDir}/resources",
       "testData",
       "testSrc/unit"
     ))

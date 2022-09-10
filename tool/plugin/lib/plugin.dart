@@ -360,11 +360,7 @@ class GradleBuildCommand extends BuildCommand {
   }
 
   Future<int> _stopDaemon() async {
-    if (Platform.isWindows) {
-      return await exec('.\\third_party\\gradlew.bat', ['--stop']);
-    } else {
-      return await exec('./third_party/gradlew', ['--stop']);
-    }
+    return execLocalGradleCommand(['--stop']);
   }
 }
 
@@ -448,7 +444,7 @@ abstract class BuildCommand extends ProductCommand {
 
         result = await spec.artifacts.provision(
           rebuildCache:
-          isReleaseMode || argResults['unpack'] || buildSpecs.length > 1,
+              isReleaseMode || argResults['unpack'] || buildSpecs.length > 1,
         );
         if (result != 0) {
           return result;
@@ -892,7 +888,8 @@ class SetupCommand extends Command {
   }
 
   @override
-  String get description => 'Unpack the artifacts required to debug the plugin in IntelliJ';
+  String get description =>
+      'Unpack the artifacts required to debug the plugin in IntelliJ';
 
   @override
   String get name => 'setup';
@@ -922,8 +919,7 @@ class TestCommand extends ProductCommand {
     try {
       final javaHome = Platform.environment['JAVA_HOME'];
       if (javaHome == null) {
-        log(
-            'JAVA_HOME environment variable not set - this is needed by gradle.');
+        log('JAVA_HOME environment variable not set - this is needed by gradle.');
         return 1;
       }
 

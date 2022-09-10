@@ -7,6 +7,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:cli_util/cli_logging.dart';
 import 'package:git/git.dart';
 import 'package:path/path.dart' as p;
@@ -22,7 +23,7 @@ Future<int> exec(String cmd, List<String> args, {String cwd}) async {
     log(_shorten('$cmd ${args.join(' ')}'));
   }
 
-  var codec = Platform.isWindows ? latin1: utf8;
+  var codec = Platform.isWindows ? latin1 : utf8;
   final process = await Process.start(cmd, args, workingDirectory: cwd);
   _toLineStream(process.stderr, codec).listen(log);
   _toLineStream(process.stdout, codec).listen(log);
@@ -99,7 +100,7 @@ void log(String s, {bool indent = true}) {
 void createDir(String name) {
   final dir = Directory(name);
   if (!dir.existsSync()) {
-    log('creating $name/');
+    log('creating $name');
     dir.createSync(recursive: true);
   }
 }
@@ -109,8 +110,18 @@ Future<int> curl(String url, {String to}) async {
 }
 
 Future<int> removeAll(String dir) async {
-  var args = ['-rf', dir];
-  return await exec('rm', args);
+  var targetDirectory = Directory(dir);
+  return targetDirectory.exists().then((exists) async {
+    if (exists) {
+      await targetDirectory.delete(recursive: true);
+      return 0;
+    } else {
+      return -1;
+    }
+  }).onError((error, stackTrace) {
+    log("An error occurred while deleting $targetDirectory");
+    return -1;
+  });
 }
 
 bool isCacheDirectoryValid(Artifact artifact) {
@@ -157,7 +168,6 @@ String readTokenFromKeystore(String keyName) {
   return file.existsSync() ? file.readAsStringSync() : '';
 }
 
-
 int get devBuildNumber {
   // The dev channel is automatically refreshed weekly, so the build number
   // is just the number of weeks since the last stable release.
@@ -182,7 +192,117 @@ String buildVersionNumber(BuildSpec spec) {
 
 String _nextRelease() {
   var current =
-  RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName).group(1);
+      RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName).group(1);
   var val = int.parse(current) + 1;
   return '$val.0';
+}
+
+/// Replicates `tar` --strip-components=N behaviour
+///
+/// Returns [filePath] with the first [i] components removed.
+/// e.g. ('a/b/c/', 1) returns 'b/c'
+String stripComponents(String filePath, int i) {
+  List<String> components = p.split(filePath);
+
+  if (i < components.length - 1) {
+    components.removeRange(0, i);
+  } else {
+    components.removeRange(0, components.length - 1);
+  }
+
+  return p.joinAll(components);
+}
+
+/// Returns a File from  [filePath], throw an error if it doesn't exist
+File getFileOrThrow(String filePath) {
+  var file = File(filePath);
+
+  if (!file.existsSync()) {
+    throw FileSystemException("Unable to locate file '${file.path}'");
+  }
+
+  return file;
+}
+
+/// Extract files from a tar'd [artifact.file] to [artifact.output]
+///
+/// The [artifact] file location can be specified using [cwd] and
+/// [targetDirectory] can be used to set a directory for the extracted files.
+///
+/// An int is returned to match existing patterns of checking for an error ala
+/// the CLI
+Future<int> extractTar(Artifact artifact,
+    {targetDirectory = '', cwd = ''}) async {
+  var artifactPath = p.join(cwd, artifact.file);
+  var outputDir = p.join(cwd, targetDirectory, artifact.output);
+
+  log('Extracting $artifactPath to $outputDir');
+
+  try {
+    var file = getFileOrThrow(artifactPath);
+    var decodedGZipContent = GZipCodec().decode(file.readAsBytesSync());
+    var iStream = InputStream(decodedGZipContent);
+    var decodedArchive = TarDecoder().decodeBuffer(iStream);
+
+    for (var tarFile in decodedArchive.files) {
+      if (!tarFile.isFile) continue; // Don't need to create empty directories
+
+      File(p.join(outputDir, stripComponents(tarFile.name, 1)))
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(tarFile.content);
+    }
+  } on FileSystemException catch (e) {
+    log(e.osError?.message ?? e.message);
+    return -1;
+  } catch (e) {
+    log('An unknown error occurred: $e');
+    return -1;
+  }
+
+  return 0;
+}
+
+/// Extract files from a zipped [artifactPath]
+///
+/// The [artifact] file location can be specified using [cwd] and
+/// [targetDirectory] can be used to set a directory for the extracted files.
+///
+/// An int is returned to match existing patterns of checking for an error ala
+/// the CLI
+Future<int> extractZip(String artifactPath,
+    {targetDirectory = '', cwd = '', quite = true}) async {
+  var filePath = p.join(cwd, artifactPath);
+  var outputPath = p.join(cwd, targetDirectory);
+
+  try {
+    File file = getFileOrThrow(filePath);
+
+    Archive zipArchive = ZipDecoder().decodeBytes(file.readAsBytesSync());
+
+    for (ArchiveFile archiveItem in zipArchive.files) {
+      // Don't need to create empty directories
+      if (!archiveItem.isFile) continue;
+
+      File(p.join(outputPath, archiveItem.name))
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(archiveItem.content);
+    }
+  } on FileSystemException catch (e) {
+    log(e.osError?.message ?? e.message);
+    return -1;
+  } catch (e) {
+    log('An unknown error occurred while opening $targetDirectory: $e');
+    return -1;
+  }
+
+  return 0;
+}
+
+/// Calls the platform specific gradle wrapper with the provided arguments
+Future<int> execLocalGradleCommand(List<String> args) async {
+  if (Platform.isWindows) {
+    return await exec('.\\gradlew.bat', args);
+  } else {
+    return await exec('./gradlew', args);
+  }
 }

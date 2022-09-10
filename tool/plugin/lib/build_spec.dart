@@ -6,6 +6,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:markdown/markdown.dart';
 
 import 'artifact.dart';
@@ -51,7 +52,40 @@ class BuildSpec {
         filesToSkip = json['filesToSkip'] ?? [],
         isUnitTestTarget = (json['isUnitTestTarget'] ?? 'false') == 'true',
         isTestTarget = (json['isTestTarget'] ?? 'false') == 'true' {
-    createArtifacts();
+    List<Artifact> androidStudioArtifacts = [
+      Artifact('$ideaProduct-ide-$ideaVersion-mac.zip',
+          bareArchive: true, output: ideaProduct),
+      Artifact('$ideaProduct-ide-$ideaVersion-linux.zip', output: ideaProduct),
+      Artifact('$ideaProduct-$ideaVersion-windows.zip', output: ideaProduct),
+      Artifact('$ideaProduct-$ideaVersion-mac.zip',
+          bareArchive: true, output: ideaProduct),
+      Artifact('$ideaProduct-$ideaVersion-linux.zip', output: ideaProduct),
+    ];
+
+    if (ideaVersion != 'LATEST-EAP-SNAPSHOT') {
+      if (ideaProduct == 'android-studio') {
+        product = androidStudioArtifacts
+            .firstWhereOrNull((artifact) => artifact.exists());
+        if (product != null) {
+          artifacts.add(product);
+        } else {
+          // We don't know which one we need, so add both.
+          // We only put Linux versions in cloud storage.
+          artifacts.add(Artifact('$ideaProduct-$ideaVersion-linux.tar.gz',
+              output: ideaProduct));
+          artifacts.add(Artifact('$ideaProduct-ide-$ideaVersion-linux.tar.gz',
+              output: ideaProduct));
+        }
+      } else {
+        var artifact = Platform.isWindows
+            ? Artifact('$ideaProduct-$ideaVersion-win.zip', output: ideaProduct)
+            : Artifact('$ideaProduct-$ideaVersion.tar.gz', output: ideaProduct);
+
+        artifacts.add(artifact);
+      }
+    }
+
+    dartPlugin = artifacts.add(Artifact('Dart-$dartPluginVersion.zip'));
   }
 
   bool get copyIjVersion => isAndroidStudio && ijVersion != null;
@@ -80,48 +114,6 @@ class BuildSpec {
     return _changeLog;
   }
 
-  void createArtifacts() {
-    if (ideaVersion != 'LATEST-EAP-SNAPSHOT') {
-      if (ideaProduct == 'android-studio') {
-        product = Artifact('$ideaProduct-ide-$ideaVersion-mac.zip',
-            bareArchive: true, output: ideaProduct);
-        if (product.exists()) {
-          artifacts.add(product);
-        } else {
-          product = Artifact('$ideaProduct-ide-$ideaVersion-linux.zip',
-              output: ideaProduct);
-          if (product.exists()) {
-            artifacts.add(product);
-          } else {
-            product = Artifact('$ideaProduct-$ideaVersion-mac.zip',
-                bareArchive: true, output: ideaProduct);
-            if (product.exists()) {
-              artifacts.add(product);
-            } else {
-              product = Artifact('$ideaProduct-$ideaVersion-linux.zip',
-                  output: ideaProduct);
-              if (product.exists()) {
-                artifacts.add(product);
-              } else {
-                // We don't know which one we need, so add both.
-                // We only put Linux versions in cloud storage.
-                artifacts.add(Artifact('$ideaProduct-$ideaVersion-linux.tar.gz',
-                    output: ideaProduct));
-                artifacts.add(Artifact(
-                    '$ideaProduct-ide-$ideaVersion-linux.tar.gz',
-                    output: ideaProduct));
-              }
-            }
-          }
-        }
-      } else {
-        product = artifacts.add(
-            Artifact('$ideaProduct-$ideaVersion.tar.gz', output: ideaProduct));
-      }
-    }
-    dartPlugin = artifacts.add(Artifact('Dart-$dartPluginVersion.zip'));
-  }
-
   String _parseChangelog() {
     var text = File('CHANGELOG.md').readAsStringSync();
     return _parseChanges(text);
@@ -146,7 +138,7 @@ class BuildSpec {
   @override
   String toString() {
     return 'BuildSpec($ideaProduct $ideaVersion $dartPluginVersion $sinceBuild '
-        '$untilBuild version: "$release")';
+        '$untilBuild version: "$version release: $release")';
   }
 
   Future<BuildSpec> initChangeLog() async {
@@ -163,7 +155,7 @@ class BuildSpec {
 
   void buildForMaster() {
     // Ensure the dev-channel-only files are stored in release_master.
-    if (channel == 'dev' )channel = 'stable';
+    if (channel == 'dev') channel = 'stable';
   }
 }
 
