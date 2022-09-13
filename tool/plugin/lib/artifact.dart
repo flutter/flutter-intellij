@@ -11,37 +11,35 @@ import 'package:path/path.dart' as p;
 import 'globals.dart';
 import 'util.dart';
 
+String artifactDir = p.join(rootPath, 'artifacts');
+
 class Artifact {
-  String file;
-  final bool bareArchive;
-  String output;
+  final String ideaProduct;
+  final String ideaVersion;
+  final String fileName;
+  final String outputFolderName;
 
-  Artifact(this.file, {this.bareArchive = false, this.output}) {
-    output ??= file.substring(0, file.lastIndexOf('-'));
+  Artifact(this.ideaProduct, this.ideaVersion, this.fileName)
+      : outputFolderName = '$ideaProduct-$ideaVersion';
+
+  bool get isZip => fileName.endsWith('.zip');
+
+  Future<bool> exists() {
+    return FileSystemEntity.isFile(filePath);
   }
 
-  bool get isZip => file.endsWith('.zip');
-
-  bool exists() {
-    var artifactFile = p.join('artifacts', file);
-
-    if (FileSystemEntity.isFileSync(artifactFile)) return true;
-    convertToTar();
-    return FileSystemEntity.isFileSync(artifactFile);
+  bool existsSync() {
+    return FileSystemEntity.isFileSync(filePath);
   }
 
-  String get outPath => p.join(rootPath, 'artifacts', output);
+  String get outPath => p.join(artifactDir, outputFolderName);
 
-  // Historically, Android Studio has been distributed as a zip file.
-  // Recent distros are packaged as gzip'd tar files.
-  void convertToTar() {
-    if (!isZip) return;
-    file = _convertToTar(file);
-  }
+  String get filePath => p.join(artifactDir, fileName);
 }
 
 class ArtifactManager {
-  final String base =
+  // We currently only resolve linux packages
+  final String baseUrl =
       'https://storage.googleapis.com/flutter_infra_release/flutter/intellij';
 
   final List<Artifact> artifacts = [];
@@ -52,125 +50,84 @@ class ArtifactManager {
   }
 
   Future<int> provision({bool rebuildCache = false}) async {
-    separator('Getting artifacts');
-    createDir('artifacts');
+    int result = 0;
 
-    var result = 0;
-
+    // Artifacts should remain immutable, only work on copies.
     for (var artifact in artifacts.sublist(0)) {
-      var doDownload = true;
-
-      void alreadyDownloaded(String path) {
-        log('$path exists in cache');
-        doDownload = false;
-      }
-
-      var path = p.join('artifacts', artifact.file);
-      if (FileSystemEntity.isFileSync(path)) {
-        alreadyDownloaded(path);
-      } else {
-        if (artifact.isZip) {
-          var tarPath = _convertToTar(path);
-          if (FileSystemEntity.isFileSync(tarPath)) {
-            artifact.convertToTar();
-            alreadyDownloaded(tarPath);
-          }
-        }
-        if (doDownload) {
-          log('downloading $path...');
-          var baseOutputPath = p.join(base, artifact.file);
-          result = await curl(baseOutputPath, to: path);
-          if (result != 0) {
-            log('download failed');
-          }
-          var archiveFile = File(path);
-          if (!_isValidDownloadArtifact(archiveFile)) {
-            // If the file is missing the server returns a small file containing
-            // an error message. Delete it and try again. The smallest file we
-            // store in the cloud is over 700K.
-            log('archive file not found: $baseOutputPath');
-            archiveFile.deleteSync();
-            if (artifact.isZip) {
-              artifact.convertToTar();
-              path = p.join('artifacts', artifact.file);
-              result = await curl(baseOutputPath, to: path);
-              if (result != 0) {
-                log('download failed');
-                artifacts.remove(artifact);
-                continue;
-              }
-              var archiveFile = File(path);
-              if (!_isValidDownloadArtifact(archiveFile)) {
-                log('archive file not found: $baseOutputPath');
-                archiveFile.deleteSync();
-                artifacts.remove(artifact);
-                continue;
-              }
-            } else {
-              artifacts.remove(artifact);
-              continue;
-            }
-          }
-        }
-      }
-
-      // clear unpacked cache
-      if (rebuildCache || !FileSystemEntity.isDirectorySync(artifact.outPath)) {
-        await removeAll(artifact.outPath);
-      }
-      if (isCacheDirectoryValid(artifact)) {
-        continue;
-      }
-
-      // expand
-      await Directory(artifact.outPath)
-          .exists()
-          .then((exists) => removeAll(artifact.outPath));
-
-      createDir(artifact.outPath);
-
-      if (artifact.isZip) {
-        if (artifact.bareArchive) {
-          result = await extractZip(artifact.file,
-              cwd: 'artifacts', targetDirectory: artifact.output);
-          var files = Directory(artifact.outPath).listSync();
-          if (files.length < 3) /* Might have .DS_Store */ {
-            // This is the Mac zip case.
-            var entity = files.first;
-            if (entity.statSync().type == FileSystemEntityType.file) {
-              entity = files.last;
-            }
-            Directory(p.join(entity.path, "Contents"))
-                .renameSync("${artifact.outPath}Temp");
-            Directory(artifact.outPath).deleteSync(recursive: true);
-            Directory("${artifact.outPath}Temp").renameSync(artifact.outPath);
-          }
+      log('\nChecking artifact ${artifact.fileName}');
+      await artifact.exists().then((exists) async {
+        //  If the artifact doesn't exist...
+        if (exists) {
+          log('Artifact exists at ${artifact.fileName}');
         } else {
-          try {
-            result = await extractZip(artifact.file, cwd: 'artifacts');
-          } catch (e) {
-            print(e);
-          }
+          // ...we need to download it
+          await downloadArtifact(artifact);
         }
-      } else {
-        result = await extractTar(artifact, cwd: p.join(rootPath, 'artifacts'));
-      }
-      if (result != 0) {
-        log('unpacking failed');
-        await removeAll(artifact.output);
-        break;
-      }
 
-      log('');
+        // Force delete existing content
+        if (rebuildCache) {
+          log('Removing ${artifact.outPath}');
+          await removeAll(artifact.outPath);
+        }
+
+        // Check if we need to unpack the artifact
+        if (isUnpacked(artifact)) {
+          log('Artifact directory ${artifact.outPath} has content.');
+        } else {
+          log('Unpacking ${artifact.fileName} to ${artifact.outPath}');
+          await unpackArtifact(artifact, targetDirectory: artifact.outPath);
+          log('${artifact.fileName} unpacked');
+        }
+      }).onError((error, stackTrace) {
+        log("Unable to validate ${artifact.fileName}", asError: true);
+        log('$error', asError: true);
+        result = -1;
+      });
     }
 
     return result;
   }
+
+  Future<void> downloadArtifact(Artifact artifact) async {
+    var artifactUrl = "$baseUrl/${artifact.fileName}";
+
+    // Have to make sure the target parent dir exists...
+    var targetDir = Directory(artifact.filePath).parent;
+    if (!targetDir.existsSync()) {
+      targetDir.createSync(recursive: true);
+    }
+
+    log('Downloading ${artifact.fileName} from $artifactUrl');
+
+    await curl(artifactUrl, to: artifact.filePath).then((result) async {
+      File localFile = File(artifact.filePath);
+      // Storage API returns errors as files,
+      // so peek the size and try the alt if needed.
+      if (localFile.lengthSync() < 1000 &&
+          artifact.ideaProduct == 'android-studio') {
+        // We can try downloading Android Studio from android.com
+        localFile.deleteSync();
+        String altUrl =
+            'https://redirector.gvt1.com/edgedl/android/studio/ide-zips/${artifact.ideaVersion}/${artifact.fileName}';
+        result = await curl(altUrl, to: artifact.filePath);
+      }
+
+      if (localFile.lengthSync() < 1000) {
+        localFile.deleteSync();
+        throw FileSystemException(
+            "Unable to download $artifactUrl to ${artifact.filePath}");
+      }
+    });
+  }
+
+  bool isUnpacked(Artifact artifact) {
+    var directory = Directory(artifact.outPath);
+
+    return directory.existsSync() &&
+        directory.listSync().isNotEmpty &&
+        directory
+            .statSync()
+            .modified
+            .isAfter(File(artifact.fileName).lastModifiedSync());
+  }
 }
-
-String _convertToTar(String path) =>
-    path.replaceFirst('.zip', '.tar.gz', path.length - 5);
-
-bool _isValidDownloadArtifact(File archiveFile) =>
-    archiveFile.existsSync() &&
-    archiveFile.lengthSync() > cloudErrorFileMaxSize;

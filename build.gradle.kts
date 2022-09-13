@@ -8,13 +8,13 @@ buildscript {
   repositories {
     mavenCentral()
     maven {
-      url=uri("https://www.jetbrains.com/intellij-repository/snapshots/")
+      url = uri("https://www.jetbrains.com/intellij-repository/snapshots/")
     }
     maven {
-      url=uri("https://oss.sonatype.org/content/repositories/snapshots/")
+      url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
     }
     maven {
-      url=uri("https://www.jetbrains.com/intellij-repository/releases")
+      url = uri("https://www.jetbrains.com/intellij-repository/releases")
     }
   }
 }
@@ -28,13 +28,13 @@ repositories {
   mavenLocal()
   mavenCentral()
   maven {
-    url=uri("https://www.jetbrains.com/intellij-repository/snapshots/")
+    url = uri("https://www.jetbrains.com/intellij-repository/snapshots/")
   }
   maven {
-    url=uri("https://oss.sonatype.org/content/repositories/snapshots/")
+    url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
   }
   maven {
-    url=uri("https://www.jetbrains.com/intellij-repository/releases")
+    url = uri("https://www.jetbrains.com/intellij-repository/releases")
   }
 }
 
@@ -49,11 +49,12 @@ allprojects {
 }
 
 val ide: String by project
+val ideaPluginName: String by project
 val flutterPluginVersion: String by project
+val ideaVersion: String by project
 val javaVersion: String by project
 val dartVersion: String by project
 val baseVersion: String by project
-val name: String by project
 val buildSpec: String by project
 
 group = "io.flutter"
@@ -65,19 +66,20 @@ java {
 }
 
 intellij {
-  pluginName.set(name)
+  pluginName.set(ideaPluginName)
   // This adds nullability assertions, but also compiles forms.
   instrumentCode.set(true)
   updateSinceUntilBuild.set(false)
-  localPath.set("${project.rootDir.absolutePath}/artifacts/$ide")
+  localPath.set("${project.rootDir.absolutePath}/artifacts/$ide-$ideaVersion")
   downloadSources.set(false)
   val pluginList = mutableListOf(
     project(":flutter-idea"), "java", "properties",
     "junit", "Git4Idea", "Kotlin", "gradle", "org.jetbrains.android",
-    "Groovy", "smali", "IntelliLang", "Dart:$dartVersion")
+    "Groovy", "smali", "IntelliLang", "Dart:$dartVersion"
+  )
   if (ide == "android-studio") {
     pluginList += listOf(project(":flutter-studio"))
-  } else if ("$buildSpec" == "2020.3") {
+  } else if (buildSpec == "2020.3") {
     pluginList += listOf("gradle-dsl-impl")
   }
   plugins.set(pluginList)
@@ -98,9 +100,9 @@ dependencies {
 
 tasks {
   instrumentCode {
-    compilerVersion.set("$baseVersion")
+    compilerVersion.set(baseVersion)
   }
   instrumentTestCode {
-    compilerVersion.set("$baseVersion")
+    compilerVersion.set(baseVersion)
   }
 }

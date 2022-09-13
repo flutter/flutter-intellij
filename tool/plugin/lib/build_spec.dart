@@ -6,11 +6,12 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:collection/collection.dart';
 import 'package:markdown/markdown.dart';
 
 import 'artifact.dart';
 import 'util.dart';
+
+enum Platforms { linux, mac, mac_arm, windows }
 
 class BuildSpec {
   // Build targets
@@ -23,6 +24,7 @@ class BuildSpec {
   final String ideaVersion;
   final String dartPluginVersion;
   final String baseVersion;
+  final Platforms platform;
 
   // plugin.xml variables
   final String sinceBuild;
@@ -38,7 +40,7 @@ class BuildSpec {
   Artifact product;
   Artifact dartPlugin;
 
-  BuildSpec.fromJson(Map json, this.release)
+  BuildSpec.fromJson(Map json, this.release, {this.platform = Platforms.linux})
       : name = json['name'],
         channel = json['channel'],
         version = json['version'],
@@ -52,40 +54,40 @@ class BuildSpec {
         filesToSkip = json['filesToSkip'] ?? [],
         isUnitTestTarget = (json['isUnitTestTarget'] ?? 'false') == 'true',
         isTestTarget = (json['isTestTarget'] ?? 'false') == 'true' {
-    List<Artifact> androidStudioArtifacts = [
-      Artifact('$ideaProduct-ide-$ideaVersion-mac.zip',
-          bareArchive: true, output: ideaProduct),
-      Artifact('$ideaProduct-ide-$ideaVersion-linux.zip', output: ideaProduct),
-      Artifact('$ideaProduct-$ideaVersion-windows.zip', output: ideaProduct),
-      Artifact('$ideaProduct-$ideaVersion-mac.zip',
-          bareArchive: true, output: ideaProduct),
-      Artifact('$ideaProduct-$ideaVersion-linux.zip', output: ideaProduct),
-    ];
+    // We need Dart and an IDE but...
+    artifacts.add(
+        Artifact('Dart', dartPluginVersion, 'Dart-$dartPluginVersion.zip'));
 
+    String ideFileName;
+    // ...we're not supporting canaries...
     if (ideaVersion != 'LATEST-EAP-SNAPSHOT') {
+      double version = double.parse(ideaVersion.split('.').take(2).join('.'));
+      // ...just
       if (ideaProduct == 'android-studio') {
-        product = androidStudioArtifacts
-            .firstWhereOrNull((artifact) => artifact.exists());
-        if (product != null) {
-          artifacts.add(product);
-        } else {
-          // We don't know which one we need, so add both.
-          // We only put Linux versions in cloud storage.
-          artifacts.add(Artifact('$ideaProduct-$ideaVersion-linux.tar.gz',
-              output: ideaProduct));
-          artifacts.add(Artifact('$ideaProduct-ide-$ideaVersion-linux.tar.gz',
-              output: ideaProduct));
-        }
+        String prefix = version < 2020 ? '$ideaProduct-ide' : ideaProduct;
+        String suffix = platform == Platforms.linux && version > 183.5452
+            ? 'tar.gz'
+            : 'zip'; // Versions prior to 183.5452 used zip
+        ideFileName = '$prefix-$ideaVersion-${platform.name}.$suffix';
       } else {
-        var artifact = Platform.isWindows
-            ? Artifact('$ideaProduct-$ideaVersion-win.zip', output: ideaProduct)
-            : Artifact('$ideaProduct-$ideaVersion.tar.gz', output: ideaProduct);
+        // ...and Intellij
+        String ext = () {
+          switch (platform) {
+            case Platforms.linux:
+              return 'tar.gz';
+            case Platforms.mac:
+              return 'dmg';
+            case Platforms.mac_arm:
+              return 'aarch64.dmg';
+            case Platforms.windows:
+              return 'win.zip';
+          }
+        }();
 
-        artifacts.add(artifact);
+        ideFileName = '$ideaProduct-$ideaVersion.$ext';
       }
+      artifacts.add(Artifact(ideaProduct, ideaVersion, ideFileName));
     }
-
-    dartPlugin = artifacts.add(Artifact('Dart-$dartPluginVersion.zip'));
   }
 
   bool get copyIjVersion => isAndroidStudio && ijVersion != null;
@@ -138,7 +140,7 @@ class BuildSpec {
   @override
   String toString() {
     return 'BuildSpec($ideaProduct $ideaVersion $dartPluginVersion $sinceBuild '
-        '$untilBuild version: "$version release: $release")';
+        '$untilBuild version: $version release: $release")';
   }
 
   Future<BuildSpec> initChangeLog() async {

@@ -1,12 +1,15 @@
 
 # Flutter Plugin Maintenance Tool
 
-The previous builder for the Flutter plugin was written in Ant. An expert in Ant would probably have no trouble maintaining it, but we have no such expert available. In order to increase stability and productivity we transformed the builder into a Dart command line tool, inspired by the Flutter tool. The tool is named `plugin`, since it helps with plugin development.
+The previous builder for the Flutter plugin was written in Ant. An expert in Ant would probably have no trouble maintaining it, but
+we have no such expert available. In order to increase stability and productivity we transformed the builder into a Dart command line 
+tool, inspired by the Flutter tool. The tool is named `plugin`, since it helps with plugin development.
 
 
 ## Functions
 
-The tool needs to perform several functions. Building is the basic one, but others are important too. Implementation note: these will be implemented as compound commands in the CLI tool (similar to `flutter doctor` or `flutter run` in the Flutter CLI tool).
+The tool needs to perform several functions. Building is the basic one, but others are important too. Implementation note: these
+will be implemented as compound commands in the CLI tool (similar to `flutter doctor` or `flutter run` in the Flutter CLI tool).
 
 *   `make`
 *   `test`
@@ -21,9 +24,13 @@ There are two global options. On the command line these are given prior to the c
 
 
 *   `-r, --release=XX`
-Use "release mode." The `XX` value specifies the release identifier, like 18 or 19.1. It will be shown in the "version" field of the plugin manager's listing for the Flutter plugin. In this mode additional constraints must be satisfied. The current git branch must have no unsaved changes and must be named "release_XX". The `.github/workflows/presubmit.yaml` file must be newer than the `product-matrix.json` file (see the `generate` command).
+Use "release mode." The `XX` value specifies the release identifier, like 18 or 19.1. It will be shown in the "version" field of the 
+plugin manager's listing for the Flutter plugin. In this mode additional constraints must be satisfied. The current git branch must have 
+no unsaved changes and must be named "release_XX". The `.github/workflows/presubmit.yaml` file must be newer than the `product-matrix.json` 
+file (see the `generate` command).
 *   `-d, --cwd=<working-directory>`
-Set the root directory to the `working-directory` value. This should not be used when running the tool from the command line. It is only intended to be used when running tests from IntelliJ run configurations that have no way to specify the working directory.
+Set the root directory to the `working-directory` value. This should not be used when running the tool from the command line. It is only 
+intended to be used when running tests from IntelliJ run configurations that have no way to specify the working directory.
 
 
 ### Make
@@ -42,7 +49,10 @@ Only build the specified IntelliJ version. `ID` is one of the "version" strings 
 Normally the archive files are not unpacked if the corresponding directory exists. This flag forces the archive files to be unpacked.
 
 
-The make function must generate the correct `plugin.xml` for each platform and generate the correct artifacts for each. In release mode the archive files are always unpacked (--unpack is implied). The plugin files are saved in the `artifacts` directory. In release mode a subdirectory of `artifacts` is created which has the name of the release and they are put there. During a local dev/test run the subdirectory is not created and the created files are children of `artifacts`.
+The make function must generate the correct `plugin.xml` for each platform and generate the correct artifacts for each. In release mode 
+the archive files are always unpacked (--unpack is implied). The plugin files are saved in the `artifacts` directory.
+In release mode a subdirectory of `artifacts` is created which has the name of the release and they are put there. 
+During a local dev/test run the subdirectory is not created and the created files are children of `artifacts`.
 
 Returns a success or failure code to play nice with shell commands.
 
@@ -58,17 +68,21 @@ Both unit and integration tests need to run, and tests should work whether runni
 *   `-i, --[no-]integration`
 Run GUI-based integration tests (or not).
 
-TBD: We may need some mechanism to automatically upload testing artifacts, since we can no longer attach zip files to email. This could also potentially be addressed by creating a 'dev' channel for the plugin on the JetBrains store, and publishing to it when we have release candidates.
+TBD: We may need some mechanism to automatically upload testing artifacts, since we can no longer attach zip files to email. 
+This could also potentially be addressed by creating a 'dev' channel for the plugin on the JetBrains store, and publishing to it
+when we have release candidates.
 
 
 ### Deploy
 
-Automatically upload all required artifacts to the JetBrains site. This function will print instructions to retrieve the password from valentine then prompt for the password to log into the JetBrains site. It has no options. Returns a success or failure code to play nice with shell commands.
-(Used primarily by the dev channel Kokoro job. Not sure if it works for uploading to the stable channel.)
+Automatically upload all required artifacts to the JetBrains site. This function will print instructions to retrieve the password from 
+valentine then prompt for the password to log into the JetBrains site. It has no options. Returns a success or failure code to play nice 
+with shell commands. (Used primarily by the dev channel Kokoro job. Not sure if it works for uploading to the stable channel.)
 
 ### Generate
 
-Generate a `plugin.xml` from `plugin.xml.template` to be used for launching a runtime workbench. This is different from the ones generated during building because it will have a version range that allows use in all targeted platforms.
+Generate a `plugin.xml` from `plugin.xml.template` to be used for launching a runtime workbench. This is different from the ones generated 
+during building because it will have a version range that allows use in all targeted platforms.
 
 
 ### Lint
@@ -90,7 +104,8 @@ Run integration tests without doing a build, assuming an edit-build-test cycle d
 
 	`plugin test --no-unit`
 
-Build everything then run all tests. The big question here is: Can we get integration tests to run using the newly-built plugin rather than sources?
+Build everything then run all tests. The big question here is: Can we get integration tests to run using the newly-built plugin 
+rather than sources?
 
 	`plugin make && plugin test`
 

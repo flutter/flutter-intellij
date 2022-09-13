@@ -90,11 +90,12 @@ final Ansi ansi = Ansi(true);
 
 void separator(String name) {
   log('');
-  log('${ansi.red}${ansi.bold}$name${ansi.none}', indent: false);
+  log('${ansi.green}${ansi.bold}$name${ansi.none}', indent: false);
 }
 
-void log(String s, {bool indent = true}) {
-  indent ? print('  $s') : print(s);
+void log(String s, {bool indent = true, bool asError = false}) {
+  var message = asError ? '${ansi.red}${ansi.bold}$s${ansi.none}' : s;
+  indent ? print('  $message') : print(message);
 }
 
 void createDir(String name) {
@@ -106,7 +107,7 @@ void createDir(String name) {
 }
 
 Future<int> curl(String url, {String to}) async {
-  return await exec('curl', ['-o', to, url]);
+  return await exec('curl', ['-L', '-o', to, url]);
 }
 
 Future<int> removeAll(String dir) async {
@@ -130,12 +131,12 @@ bool isCacheDirectoryValid(Artifact artifact) {
   if (!dir.existsSync()) {
     return false;
   }
-  var filePath = artifact.file;
-  var file = File(p.join(rootPath, 'artifacts', filePath));
-  if (!file.existsSync()) {
-    throw 'Artifact file missing: $filePath';
+
+  if (!artifact.existsSync()) {
+    return false;
   }
-  return isNewer(dir, file);
+
+  return isNewer(dir, File(artifact.filePath));
 }
 
 bool isNewer(FileSystemEntity newer, FileSystemEntity older) {
@@ -224,44 +225,6 @@ File getFileOrThrow(String filePath) {
   return file;
 }
 
-/// Extract files from a tar'd [artifact.file] to [artifact.output]
-///
-/// The [artifact] file location can be specified using [cwd] and
-/// [targetDirectory] can be used to set a directory for the extracted files.
-///
-/// An int is returned to match existing patterns of checking for an error ala
-/// the CLI
-Future<int> extractTar(Artifact artifact,
-    {targetDirectory = '', cwd = ''}) async {
-  var artifactPath = p.join(cwd, artifact.file);
-  var outputDir = p.join(cwd, targetDirectory, artifact.output);
-
-  log('Extracting $artifactPath to $outputDir');
-
-  try {
-    var file = getFileOrThrow(artifactPath);
-    var decodedGZipContent = GZipCodec().decode(file.readAsBytesSync());
-    var iStream = InputStream(decodedGZipContent);
-    var decodedArchive = TarDecoder().decodeBuffer(iStream);
-
-    for (var tarFile in decodedArchive.files) {
-      if (!tarFile.isFile) continue; // Don't need to create empty directories
-
-      File(p.join(outputDir, stripComponents(tarFile.name, 1)))
-        ..createSync(recursive: true)
-        ..writeAsBytesSync(tarFile.content);
-    }
-  } on FileSystemException catch (e) {
-    log(e.osError?.message ?? e.message);
-    return -1;
-  } catch (e) {
-    log('An unknown error occurred: $e');
-    return -1;
-  }
-
-  return 0;
-}
-
 /// Extract files from a zipped [artifactPath]
 ///
 /// The [artifact] file location can be specified using [cwd] and
@@ -269,29 +232,51 @@ Future<int> extractTar(Artifact artifact,
 ///
 /// An int is returned to match existing patterns of checking for an error ala
 /// the CLI
-Future<int> extractZip(String artifactPath,
-    {targetDirectory = '', cwd = '', quite = true}) async {
-  var filePath = p.join(cwd, artifactPath);
-  var outputPath = p.join(cwd, targetDirectory);
+Future<int> unpackArtifact(Artifact artifact, {targetDirectory = ''}) async {
+  var outputDir = p.join(File(artifact.filePath).parent.path, artifact.outputFolderName);
+
+  log('Extracting ${artifact.filePath} to $outputDir');
 
   try {
-    File file = getFileOrThrow(filePath);
+    if (!artifact.existsSync()) {
+      throw FileSystemException("Unable to locate file '${artifact.filePath}'");
+    }
 
-    Archive zipArchive = ZipDecoder().decodeBytes(file.readAsBytesSync());
+    var archiveFile = File(artifact.filePath);
 
-    for (ArchiveFile archiveItem in zipArchive.files) {
-      // Don't need to create empty directories
-      if (!archiveItem.isFile) continue;
+    Archive archive;
 
-      File(p.join(outputPath, archiveItem.name))
+    if (artifact.isZip) {
+      archive = ZipDecoder().decodeBytes(archiveFile.readAsBytesSync());
+    } else {
+      // Nothing is/should ever just be 'tar'...
+      var decodedGZipContent =
+          GZipCodec().decode(archiveFile.readAsBytesSync());
+      var iStream = InputStream(decodedGZipContent);
+      archive = TarDecoder().decodeBuffer(iStream);
+    }
+
+    for (var file in archive.files) {
+      if (!file.isFile) continue; // Don't need to create empty directories
+
+      String filePath;
+
+      if (file.name.startsWith(artifact.ideaProduct)) {
+        filePath = p.join(
+            outputDir, file.name.replaceFirst(artifact.ideaProduct + '/', ''));
+      } else {
+        filePath = p.join(outputDir, file.name);
+      }
+
+      File(filePath)
         ..createSync(recursive: true)
-        ..writeAsBytesSync(archiveItem.content);
+        ..writeAsBytesSync(file.content);
     }
   } on FileSystemException catch (e) {
-    log(e.osError?.message ?? e.message);
+    log(e.osError?.message ?? e.message, asError: true);
     return -1;
   } catch (e) {
-    log('An unknown error occurred while opening $targetDirectory: $e');
+    log('An unknown error occurred: $e');
     return -1;
   }
 

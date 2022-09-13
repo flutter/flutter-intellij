@@ -7,7 +7,7 @@
 repositories {
   mavenCentral()
   maven {
-    url=uri("https://oss.sonatype.org/content/repositories/snapshots/")
+    url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
   }
 }
 
@@ -19,6 +19,7 @@ plugins {
 
 val ide: String by project
 val flutterPluginVersion: String by project
+val ideaVersion: String by project
 val javaVersion: String by project
 val dartVersion: String by project
 val baseVersion: String by project
@@ -42,39 +43,67 @@ intellij {
   instrumentCode.set(true)
   updateSinceUntilBuild.set(false)
   downloadSources.set(false)
-  localPath.set("${project.rootDir.absolutePath}/artifacts/$ide")
-  val pluginList = mutableListOf("java", "Dart:$dartVersion", "properties", "junit",
-             "gradle", "Groovy", "smali", "IntelliLang", "org.jetbrains.android")
+  localPath.set("${project.rootDir.absolutePath}/artifacts/$ide-$ideaVersion")
+  val pluginList = mutableListOf(
+    "java", "Dart:$dartVersion", "properties", "junit",
+    "gradle", "Groovy", "smali", "IntelliLang", "org.jetbrains.android"
+  )
   plugins.set(pluginList)
 }
 
 dependencies {
   compileOnly(project(":flutter-idea"))
   testImplementation(project(":flutter-idea"))
-  compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/lib",
-                         "include" to listOf("*.jar"))))
-  testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/lib",
-                         "include" to listOf("*.jar"))))
-  compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins",
-                         "include" to listOf("**/*.jar"),
-                         "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar"))))
-  testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins",
-                         "include" to listOf("**/*.jar"),
-                         "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar"))))
+  compileOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio-$ideaVersion/lib",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+  testImplementation(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio-$ideaVersion/lib",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+  compileOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio-$ideaVersion/plugins",
+        "include" to listOf("**/*.jar"),
+        "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar")
+      )
+    )
+  )
+  testImplementation(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio-$ideaVersion/plugins",
+        "include" to listOf("**/*.jar"),
+        "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar")
+      )
+    )
+  )
 }
 
 sourceSets {
   main {
-    java.srcDirs(listOf(
-      "src",
-      "third_party/vmServiceDrivers"
-      //"resources"
-    ))
+    java.srcDirs(
+      listOf(
+        "src",
+        "third_party/vmServiceDrivers"
+        //"resources"
+      )
+    )
     // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
     //resources.srcDirs(listOf(
-      //"src",
-      //project(":flutter-idea").sourceSets.main.get().resources
-      //"resources",
+    //"src",
+    //project(":flutter-idea").sourceSets.main.get().resources
+    //"resources",
     //))
   }
 }
@@ -86,10 +115,10 @@ tasks {
   }
 
   instrumentCode {
-    compilerVersion.set("$baseVersion")
+    compilerVersion.set(baseVersion)
   }
 
   instrumentTestCode {
-    compilerVersion.set("$baseVersion")
+    compilerVersion.set(baseVersion)
   }
 }

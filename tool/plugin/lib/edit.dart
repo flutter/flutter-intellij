@@ -34,14 +34,14 @@ List<EditCommand> editCommands = [
   Subst(
     path: 'build.gradle.kts',
     initial:
-        'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide")',
+        'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide-\$ideaVersion")',
     replacement: 'type.set("IC")\n  version.set("LATEST-EAP-SNAPSHOT")',
     version: '2022.3',
   ),
   Subst(
     path: 'flutter-idea/build.gradle.kts',
     initial:
-        'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide")',
+        'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide-\$ideaVersion")',
     replacement: 'type.set("IC")\n  version.set("LATEST-EAP-SNAPSHOT")',
     version: '2022.3',
   ),

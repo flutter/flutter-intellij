@@ -39,9 +39,18 @@ Future<int> main(List<String> args) async {
 }
 
 void addProductFlags(ArgParser argParser, String verb) {
+  Platforms defaultPlatform = Platform.isLinux
+      ? Platforms.linux
+      : Platform.isMacOS
+          ? Platforms.mac
+          : Platforms.windows;
+
   argParser.addFlag('ij', help: '$verb the IntelliJ plugin', defaultsTo: true);
   argParser.addFlag('as',
       help: '$verb the Android Studio plugin', defaultsTo: true);
+  argParser.addOption('platform',
+      help: 'The specific platform to compile against',
+      defaultsTo: defaultPlatform.name);
 }
 
 void copyResources({String from, String to}) {
@@ -49,11 +58,12 @@ void copyResources({String from, String to}) {
   _copyResources(Directory(from), Directory(to));
 }
 
-List<BuildSpec> createBuildSpecs(ProductCommand command) {
+List<BuildSpec> createBuildSpecs(ProductCommand command, Platforms platform) {
   var specs = <BuildSpec>[];
   var input = readProductMatrix();
   for (var json in input) {
-    specs.add(BuildSpec.fromJson(json, command.release));
+    specs.add(
+        BuildSpec.fromJson(json, command.release, platform: command.platform));
   }
   return specs;
 }
@@ -376,12 +386,6 @@ abstract class BuildCommand extends ProductCommand {
         abbr: 'o',
         help: 'Only build the specified IntelliJ version; useful for sharding '
             'builds on CI systems.');
-    argParser.addFlag('unpack',
-        abbr: 'u',
-        help: 'Unpack the artifact files during provisioning, '
-            'even if the cache appears fresh.\n'
-            'This flag is ignored if --release is given.',
-        defaultsTo: false);
     argParser.addOption('minor',
         abbr: 'm', help: 'Set the minor version number.');
     argParser.addFlag('setup', abbr: 's', defaultsTo: true);
@@ -442,9 +446,10 @@ abstract class BuildCommand extends ProductCommand {
           spec.buildForMaster();
         }
 
+        separator('Verifying artifacts for ${spec.ideaProduct}-${spec.ideaVersion}');
         result = await spec.artifacts.provision(
           rebuildCache:
-              isReleaseMode || argResults['unpack'] || buildSpecs.length > 1,
+              isReleaseMode || argResults['unpack'],
         );
         if (result != 0) {
           return result;
@@ -658,6 +663,12 @@ abstract class ProductCommand extends Command {
 
   ProductCommand(this.name) {
     addProductFlags(argParser, name[0].toUpperCase() + name.substring(1));
+    argParser.addFlag('unpack',
+        abbr: 'u',
+        help: 'Unpack the artifact files during provisioning, '
+            'even if the cache appears fresh.\n'
+            'This flag is ignored if --release is given.',
+        defaultsTo: false);
     argParser.addOption('channel',
         abbr: 'c',
         help: 'Select the channel to build: stable or dev',
@@ -667,6 +678,8 @@ abstract class ProductCommand extends Command {
   String get channel => argResults['channel'];
 
   bool get isDevChannel => channel == 'dev';
+
+  Platforms get platform => Platforms.values.byName(argResults['platform']);
 
   /// Returns true when running in the context of a unit test.
   bool get isTesting => false;
@@ -767,7 +780,7 @@ abstract class ProductCommand extends Command {
   }
 
   Future<int> _initSpecs() async {
-    specs = createBuildSpecs(this);
+    specs = createBuildSpecs(this, platform);
     for (var i = 0; i < specs.length; i++) {
       if (isDevChannel) {
         specs[i].buildForDev();
@@ -884,7 +897,7 @@ class SetupCommand extends Command {
 
   @override
   Future<int> run() async {
-    return await runner.run(['make', '-osetup', '-csetup', '-u', '--no-setup']);
+    return await runner.run(['make', '-osetup', '-csetup',  '--no-setup']);
   }
 
   @override
@@ -926,7 +939,12 @@ class TestCommand extends ProductCommand {
       log('JAVA_HOME=$javaHome');
 
       final spec = specs.firstWhere((s) => s.isUnitTestTarget);
-      await spec.artifacts.provision(rebuildCache: true);
+      int result = await spec.artifacts.provision(rebuildCache: argResults['unpack']);
+      if (result != 0) {
+        // todo: Maybe this should be an exception? Stack trace?
+        separator("Unable to provision artifacts.");
+        return -1;
+      }
       if (!argResults['skip']) {
         if (argResults['integration']) {
           return _runIntegrationTests();

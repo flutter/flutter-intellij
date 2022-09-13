@@ -8,15 +8,15 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 repositories {
   mavenLocal()
   maven {
-    url=uri("https://www.jetbrains.com/intellij-repository/snapshots/")
+    url = uri("https://www.jetbrains.com/intellij-repository/snapshots/")
   }
 
   mavenCentral()
   maven {
-    url=uri("https://oss.sonatype.org/content/repositories/snapshots/")
+    url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
   }
   maven {
-    url=uri("https://www.jetbrains.com/intellij-repository/releases")
+    url = uri("https://www.jetbrains.com/intellij-repository/releases")
   }
 }
 
@@ -28,6 +28,7 @@ plugins {
 
 val ide: String by project
 val flutterPluginVersion: String by project
+val ideaVersion: String by project
 val javaVersion: String by project
 val dartVersion: String by project
 val baseVersion: String by project
@@ -51,9 +52,11 @@ intellij {
   instrumentCode.set(true)
   updateSinceUntilBuild.set(false)
   downloadSources.set(false)
-  localPath.set("${project.rootDir.absolutePath}/artifacts/$ide")
-  val pluginList = mutableListOf("java", "properties", "junit", "Kotlin", "Git4Idea",
-             "gradle", "Groovy", "smali", "IntelliLang", "org.jetbrains.android", "yaml", "Dart:$dartVersion")
+  localPath.set("${project.rootDir.absolutePath}/artifacts/$ide-$ideaVersion")
+  val pluginList = mutableListOf(
+    "java", "properties", "junit", "Kotlin", "Git4Idea",
+    "gradle", "Groovy", "smali", "IntelliLang", "org.jetbrains.android", "yaml", "Dart:$dartVersion"
+  )
   plugins.set(pluginList)
 }
 
@@ -61,57 +64,98 @@ dependencies {
   testImplementation("org.powermock:powermock-api-mockito2:2.0.0")
   testImplementation("org.powermock:powermock-module-junit4:2.0.0")
   if (ide == "android-studio") {
+    // Android Studio specific depdendencies.
     testImplementation(project(":flutter-studio"))
-    testRuntimeOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins",
-                         "include" to listOf("**/*.jar"),
-                         "exclude" to listOf("**/android-ndk.jar", "**/kotlin-compiler.jar", "**/kotlin-plugin.jar", "**/kotlin-stdlib-jdk8.jar"))))
-    testRuntimeOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/lib",
-                         "include" to listOf("*.jar"))))
-    compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins/git4idea/lib",
-                         "include" to listOf("*.jar"))))
-    testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins/git4idea/lib",
-                         "include" to listOf("*.jar"))))
-  } else {
-    compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/ideaIC/plugins/git4idea/lib",
-                         "include" to listOf("*.jar"))))
-    testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/ideaIC/plugins/git4idea/lib",
-                         "include" to listOf("*.jar"))))
+    testRuntimeOnly(
+      fileTree(
+        mapOf(
+          "dir" to "${project.rootDir}/artifacts/android-studio-$ideaVersion/plugins",
+          "include" to listOf("**/*.jar"),
+          "exclude" to listOf("**/android-ndk.jar", "**/kotlin-compiler.jar", "**/kotlin-plugin.jar", "**/kotlin-stdlib-jdk8.jar")
+        )
+      )
+    )
+    testRuntimeOnly(
+      fileTree(
+        mapOf(
+          "dir" to "${project.rootDir}/artifacts/android-studio/lib",
+          "include" to listOf("*.jar")
+        )
+      )
+    )
   }
+  // Used by both Android Studio and Intellij
+  compileOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/$ide-$ideaVersion/plugins/git4idea/lib",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+  testImplementation(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/$ide-$ideaVersion/plugins/git4idea/lib",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
   compileOnly("com.google.guava:guava:31.0.1-jre")
   compileOnly("com.google.code.gson:gson:2.9.0")
   testImplementation("com.google.guava:guava:31.0.1-jre")
   testImplementation("com.google.code.gson:gson:2.9.0")
-  compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/third_party/lib/jxbrowser",
-                       "include" to listOf("*.jar"))))
-  testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/third_party/lib/jxbrowser",
-                       "include" to listOf("*.jar"))))
+  compileOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/third_party/lib/jxbrowser",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+  testImplementation(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/third_party/lib/jxbrowser",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
   testImplementation("junit:junit:4.13.2")
   testImplementation(mapOf("group" to "org.mockito", "name" to "mockito-core", "version" to "2.2.2")) // 3.11.2 is latest
 }
 
 sourceSets {
   main {
-    java.srcDirs(listOf(
-      "src",
-      "third_party/vmServiceDrivers"
-    ))
+    java.srcDirs(
+      listOf(
+        "src",
+        "third_party/vmServiceDrivers"
+      )
+    )
     // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
-    resources.srcDirs(listOf(
-      "src",
-      "${project.rootDir}/resources"
-    ))
+    resources.srcDirs(
+      listOf(
+        "src",
+        "${project.rootDir}/resources"
+      )
+    )
   }
   test {
-    java.srcDirs(listOf(
-      "src",
-      "testSrc/unit",
-      "third_party/vmServiceDrivers"
-    ))
-    resources.srcDirs(listOf(
-      "${project.rootDir}/resources",
-      "testData",
-      "testSrc/unit"
-    ))
+    java.srcDirs(
+      listOf(
+        "src",
+        "testSrc/unit",
+        "third_party/vmServiceDrivers"
+      )
+    )
+    resources.srcDirs(
+      listOf(
+        "${project.rootDir}/resources",
+        "testData",
+        "testSrc/unit"
+      )
+    )
   }
 }
 
@@ -122,11 +166,11 @@ tasks {
   }
 
   instrumentCode {
-    compilerVersion.set("$baseVersion")
+    compilerVersion.set(baseVersion)
   }
 
   instrumentTestCode {
-    compilerVersion.set("$baseVersion")
+    compilerVersion.set(baseVersion)
   }
 
   test {
