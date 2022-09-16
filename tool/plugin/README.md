@@ -16,6 +16,7 @@ will be implemented as compound commands in the CLI tool (similar to `flutter do
 *   `deploy`
 *   `generate`
 *   `lint`
+*   `artifacts`
 
 Each command has its own set of optional arguments. If the CLI tool is invoked without a command then it will print its help message.
 
@@ -88,6 +89,11 @@ during building because it will have a version range that allows use in all targ
 ### Lint
 
 Run the lint tool. It checks for bad imports and prints a report of the Dart plugin API usage.
+
+### Artifacts
+
+Identifies artifacts that are needed, whether they exist, and provides urls that may have the required package
+if not found.
 
 
 ## Examples
