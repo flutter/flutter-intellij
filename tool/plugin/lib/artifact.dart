@@ -60,7 +60,7 @@ class ArtifactManager {
       await artifact.exists().then((exists) async {
         //  If the artifact doesn't exist...
         if (exists) {
-          log('Artifact exists at ${artifact.fileName}');
+          log('Artifact ${artifact.fileName} found at ${artifact.filePath}');
         } else {
           // ...we need to download it
           await downloadArtifact(artifact);
@@ -137,12 +137,12 @@ class ArtifactManager {
         directory
             .statSync()
             .modified
-            .isAfter(File(artifact.fileName).lastModifiedSync());
+            .isAfter(File(artifact.filePath).lastModifiedSync());
   }
 
   void doReport(Artifact artifact) {
     if (artifact.existsSync()) {
-      log('Artifact exists at ${artifact.fileName}');
+       log('${artifact.fileName} found at ${artifact.filePath}');
     } else {
       log('Artifact ${artifact.fileName} not found.', asError: true);
       log(
