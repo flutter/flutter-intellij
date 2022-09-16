@@ -25,6 +25,7 @@ Future<int> main(List<String> args) async {
   runner.addCommand(LintCommand(runner));
   runner.addCommand(AntBuildCommand(runner));
   runner.addCommand(GradleBuildCommand(runner));
+  runner.addCommand(ArtifactReportCommand(runner));
   runner.addCommand(TestCommand(runner));
   runner.addCommand(DeployCommand(runner));
   runner.addCommand(GenerateCommand(runner));
@@ -331,6 +332,32 @@ class AntBuildCommand extends BuildCommand {
   }
 }
 
+class ArtifactReportCommand extends ProductCommand {
+  final BuildCommandRunner runner;
+
+  ArtifactReportCommand(this.runner) : super('artifacts');
+
+  @override
+  String get description =>
+      "Validates and reports on artifacts used for builds";
+
+  @override
+  Future<int> doit() async {
+    var buildSpecs = specs;
+
+    for (var spec in buildSpecs) {
+      if (spec.isDevChannel && !isDevChannel) {
+        spec.buildForMaster();
+      }
+
+      separator(
+          'Verifying artifacts for ${spec.ideaProduct}-${spec.ideaVersion}');
+      await spec.artifacts.provision(reportOnly: true);
+    }
+    return 0;
+  }
+}
+
 class GradleBuildCommand extends BuildCommand {
   GradleBuildCommand(BuildCommandRunner runner) : super(runner, 'make');
 
@@ -419,7 +446,7 @@ abstract class BuildCommand extends ProductCommand {
         buildSpecs =
             specs.where((spec) => spec.version == onlyVersion).toList();
         if (buildSpecs.isEmpty) {
-          log("No spec found for version '$onlyVersion'");
+          log("No spec found for version '$onlyVersion'", asError: true);
           return 1;
         }
       }
@@ -446,10 +473,10 @@ abstract class BuildCommand extends ProductCommand {
           spec.buildForMaster();
         }
 
-        separator('Verifying artifacts for ${spec.ideaProduct}-${spec.ideaVersion}');
+        separator(
+            'Verifying artifacts for ${spec.ideaProduct}-${spec.ideaVersion}');
         result = await spec.artifacts.provision(
-          rebuildCache:
-              isReleaseMode || argResults['unpack'],
+          rebuildCache: isReleaseMode || argResults['unpack'],
         );
         if (result != 0) {
           return result;
@@ -897,7 +924,7 @@ class SetupCommand extends Command {
 
   @override
   Future<int> run() async {
-    return await runner.run(['make', '-osetup', '-csetup',  '--no-setup']);
+    return await runner.run(['make', '-osetup', '-csetup', '--no-setup']);
   }
 
   @override
@@ -939,7 +966,8 @@ class TestCommand extends ProductCommand {
       log('JAVA_HOME=$javaHome');
 
       final spec = specs.firstWhere((s) => s.isUnitTestTarget);
-      int result = await spec.artifacts.provision(rebuildCache: argResults['unpack']);
+      int result =
+          await spec.artifacts.provision(rebuildCache: argResults['unpack']);
       if (result != 0) {
         // todo: Maybe this should be an exception? Stack trace?
         separator("Unable to provision artifacts.");

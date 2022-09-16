@@ -38,9 +38,6 @@ class Artifact {
 }
 
 class ArtifactManager {
-  // We currently only resolve linux packages
-  final String baseUrl =
-      'https://storage.googleapis.com/flutter_infra_release/flutter/intellij';
 
   final List<Artifact> artifacts = [];
 
@@ -49,11 +46,16 @@ class ArtifactManager {
     return artifact;
   }
 
-  Future<int> provision({bool rebuildCache = false}) async {
+  Future<int> provision({bool rebuildCache = false, reportOnly = false}) async {
     int result = 0;
 
     // Artifacts should remain immutable, only work on copies.
     for (var artifact in artifacts.sublist(0)) {
+      if (reportOnly) {
+        doReport(artifact);
+        continue;
+      }
+
       log('\nChecking artifact ${artifact.fileName}');
       await artifact.exists().then((exists) async {
         //  If the artifact doesn't exist...
@@ -89,7 +91,7 @@ class ArtifactManager {
   }
 
   Future<void> downloadArtifact(Artifact artifact) async {
-    var artifactUrl = "$baseUrl/${artifact.fileName}";
+    var artifactUrl = getDownloadUrl(artifact);
 
     // Have to make sure the target parent dir exists...
     var targetDir = Directory(artifact.filePath).parent;
@@ -107,8 +109,7 @@ class ArtifactManager {
           artifact.ideaProduct == 'android-studio') {
         // We can try downloading Android Studio from android.com
         localFile.deleteSync();
-        String altUrl =
-            'https://redirector.gvt1.com/edgedl/android/studio/ide-zips/${artifact.ideaVersion}/${artifact.fileName}';
+        String altUrl = getDownloadUrl(artifact, useAlt: true);
         result = await curl(altUrl, to: artifact.filePath);
       }
 
@@ -120,14 +121,37 @@ class ArtifactManager {
     });
   }
 
+
+  String getDownloadUrl(Artifact artifact, {bool useAlt = false}) =>
+      useAlt
+          ? 'https://redirector.gvt1.com/edgedl/android/studio/ide-zips/${artifact.ideaVersion}/${artifact.fileName}'
+          : 'https://storage.googleapis.com/flutter_infra_release/flutter/intellij/${artifact.fileName}'; // currently only resolves linux packages
+
   bool isUnpacked(Artifact artifact) {
     var directory = Directory(artifact.outPath);
 
     return directory.existsSync() &&
-        directory.listSync().isNotEmpty &&
+        directory
+            .listSync()
+            .isNotEmpty &&
         directory
             .statSync()
             .modified
             .isAfter(File(artifact.fileName).lastModifiedSync());
+  }
+
+  void doReport(Artifact artifact) {
+    if (artifact.existsSync()) {
+      log('Artifact exists at ${artifact.fileName}');
+    } else {
+      log('Artifact ${artifact.fileName} not found.', asError: true);
+      log(
+'''
+  Artifact should be found at `${artifact.filePath}` but it is missing. 
+    It may be available from one of the following locations: 
+    ${getDownloadUrl(artifact)}
+    ${getDownloadUrl(artifact, useAlt: true)}
+''');
+    }
   }
 }
