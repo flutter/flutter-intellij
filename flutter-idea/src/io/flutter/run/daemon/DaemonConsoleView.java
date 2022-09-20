@@ -22,6 +22,7 @@ import io.flutter.FlutterInitializer;
 import io.flutter.analytics.Analytics;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.StdoutJsonParser;
 import org.jetbrains.annotations.NotNull;
 
@@ -63,6 +64,9 @@ public class DaemonConsoleView extends ConsoleViewImpl {
 
   @Override
   public void print(@NotNull String text, @NotNull ConsoleViewContentType contentType) {
+    if (!FlutterModuleUtils.hasFlutterModule(getProject())) {
+      return;
+    }
     if (FlutterSettings.getInstance().isVerboseLogging()) {
       super.print(text, contentType);
       return;
