@@ -41,7 +41,7 @@ class BuildSpec {
   Artifact dartPlugin;
 
   BuildSpec.fromJson(Map json, this.release, {this.platform = Platforms.linux})
-      : name = json['name'],
+      : name = json['ideaPluginName'],
         channel = json['channel'],
         version = json['version'],
         ijVersion = json['ijVersion'],
@@ -64,7 +64,9 @@ class BuildSpec {
       double version = double.parse(ideaVersion.split('.').take(2).join('.'));
       // ...just
       if (ideaProduct == 'android-studio') {
-        String prefix = version < 2020 ? '$ideaProduct-ide' : ideaProduct;
+        // Oldest supported version is currently 2021.1
+        //   versions < 2020 had a prefix of '$ideaProduct-ide
+        String prefix = ideaProduct;
         String suffix = platform == Platforms.linux && version > 183.5452
             ? 'tar.gz'
             : 'zip'; // Versions prior to 183.5452 used zip
