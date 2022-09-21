@@ -34,8 +34,8 @@ class BuildCommandRunner extends CommandRunner {
   void writeJxBrowserKeyToFile() {
     final jxBrowserKey =
         readTokenFromKeystore('FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME');
-    final propertiesFile =
-        File(p.join(rootPath, "resources", "jxbrowser", "jxbrowser.properties"));
+    final propertiesFile = File(
+        p.join(rootPath, "resources", "jxbrowser", "jxbrowser.properties"));
     if (jxBrowserKey.isNotEmpty) {
       final contents = '''
 jxbrowser.license.key=$jxBrowserKey
@@ -44,16 +44,16 @@ jxbrowser.license.key=$jxBrowserKey
     }
   }
 
-  Future<int> buildPlugin(BuildSpec spec, String version) async {
+  Future<int> buildPlugin(BuildSpec spec, String flutterPluginVersion) async {
     writeJxBrowserKeyToFile();
-    return await runGradleCommand(['buildPlugin'], spec, version, 'false');
+    return await runGradleCommand(['buildPlugin'], spec, flutterPluginVersion, false);
   }
 
   Future<int> runGradleCommand(
     List<String> command,
     BuildSpec spec,
-    String version,
-    String testing,
+    String flutterPluginVersion,
+    bool testing,
   ) async {
     var javaVersion = ['4.1'].contains(spec.version) ? '1.8' : '11';
     final contents = '''
@@ -62,7 +62,7 @@ org.gradle.parallel=true
 org.gradle.jvmargs=-Xms128m -Xmx1024m -XX:+CMSClassUnloadingEnabled
 javaVersion=$javaVersion
 dartVersion=${spec.dartPluginVersion}
-flutterPluginVersion=$version
+flutterPluginVersion=$flutterPluginVersion
 ideaVersion=${spec.ideaVersion}
 ide=${spec.ideaProduct}
 testing=$testing

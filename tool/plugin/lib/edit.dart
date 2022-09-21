@@ -75,8 +75,11 @@ class Unused extends EditCommand {
 Future<int> applyEdits(BuildSpec spec, Function compileFn) async {
   // Handle skipped files.
   for (String file in spec.filesToSkip) {
-    var entity =
-        FileSystemEntity.isFileSync(file) ? File(file) : Directory(file);
+    if(!FileSystemEntity.isFileSync(file)){
+      continue; //we don't apply edits to directories.
+    }
+    var entity = File(file);
+
     if (entity.existsSync()) {
       await entity.rename('$file~');
       log('renamed $file');
@@ -99,7 +102,6 @@ Future<int> applyEdits(BuildSpec spec, Function compileFn) async {
         appliedEditCommands.add(edit);
       }
     }
-
     return await compileFn.call();
   } finally {
     // Restore sources.
@@ -111,8 +113,7 @@ Future<int> applyEdits(BuildSpec spec, Function compileFn) async {
     // Restore skipped files.
     for (var file in spec.filesToSkip) {
       var name = '$file~';
-      var entity =
-          FileSystemEntity.isFileSync(name) ? File(name) : Directory(name);
+      var entity = File(name);
       if (entity.existsSync()) {
         await entity.rename(file);
       }

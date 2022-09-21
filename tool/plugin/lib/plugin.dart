@@ -97,13 +97,10 @@ List<String> findJavaFiles(String path) {
 }
 
 Future<bool> genPluginFiles(BuildSpec spec, String destDir) async {
-  var result = await genPluginXml(spec, destDir, 'META-INF/plugin.xml');
-  if (result == null) return false;
-
-  result = await genPluginXml(spec, destDir, 'META-INF/studio-contribs.xml');
-  if (result == null) return false;
-
-  return true;
+  return (await Future.wait([
+    genPluginXml(spec, destDir, 'META-INF/plugin.xml'),
+    genPluginXml(spec, destDir, 'META-INF/studio-contribs.xml'),
+  ])).every((result) => result != null);
 }
 
 Future<File> genPluginXml(BuildSpec spec, String destDir, String path) async {
@@ -333,6 +330,7 @@ class AntBuildCommand extends BuildCommand {
 }
 
 class ArtifactReportCommand extends ProductCommand {
+  @override
   final BuildCommandRunner runner;
 
   ArtifactReportCommand(this.runner) : super('artifacts');
@@ -511,7 +509,8 @@ abstract class BuildCommand extends ProductCommand {
         separator('Built artifact');
         log(releasesFilePath(spec));
       }
-      if (argResults['only-version'] == null) {
+
+      if (onlyVersion == null) {
         checkAndClearAppliedEditCommands();
       }
 
@@ -991,7 +990,7 @@ class TestCommand extends ProductCommand {
   Future<int> _runUnitTests(BuildSpec spec) async {
     // run './gradlew test'
     return await applyEdits(spec, () async {
-      return await runner.runGradleCommand(['test'], spec, '1', 'true');
+      return await runner.runGradleCommand(['test'], spec, '1', true);
     });
   }
 

@@ -110,17 +110,19 @@ Future<int> curl(String url, {String to}) async {
   return await exec('curl', ['-L', '-o', to, url]);
 }
 
+/// Recursively removes the target [dir] and all its content
 Future<int> removeAll(String dir) async {
   var targetDirectory = Directory(dir);
   return targetDirectory.exists().then((exists) async {
     if (exists) {
+      log("Removing directory $targetDirectory");
       await targetDirectory.delete(recursive: true);
-      return 0;
-    } else {
-      return -1;
     }
+    // If it doesn't exist, that's as good as success, right?
+    return 0;
   }).onError((error, stackTrace) {
     log("An error occurred while deleting $targetDirectory");
+    log("$error", asError: true);
     return -1;
   });
 }
