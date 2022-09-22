@@ -108,6 +108,9 @@ class BuildSpec {
                 artifacts.add(Artifact('$ideaProduct-$ideaVersion-linux.tar.gz',
                     output: ideaProduct));
                 artifacts.add(Artifact(
+                    '$ideaProduct-$ideaVersion-linux.tar.gz',
+                    output: ideaProduct));
+                artifacts.add(Artifact(
                     '$ideaProduct-ide-$ideaVersion-linux.tar.gz',
                     output: ideaProduct));
               }

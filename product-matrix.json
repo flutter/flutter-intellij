@@ -50,27 +50,27 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2022.1, Android Studio 2021.3 Canary",
+      "comments": "IntelliJ 2022.1, Android Studio 2021.3 Beta",
       "name": "2022.1",
       "version": "2022.1",
       "isUnitTestTarget": "true",
       "ideaProduct": "android-studio",
-      "ideaVersion": "2022.1.1.6",
-      "baseVersion": "221.5080.210",
-      "dartPluginVersion": "221.4501.155",
-      "sinceBuild": "221.5080.210",
+      "ideaVersion": "2022.1.1.11",
+      "baseVersion": "221.6008.13",
+      "dartPluginVersion": "221.6008.17",
+      "sinceBuild": "221.6008.13",
       "untilBuild": "221.*"
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2022.2",
+      "comments": "IntelliJ 2022.2, Android Studio 2021.3 Canary",
       "name": "2022.2",
       "version": "2022.2",
-      "ideaProduct": "ideaIC",
-      "ideaVersion": "222.3244.4",
-      "baseVersion": "222.3244.4",
-      "dartPluginVersion": "222.3244.4",
-      "sinceBuild": "222.3244.4",
+      "ideaProduct": "android-studio",
+      "ideaVersion": "2022.2.1.1",
+      "baseVersion": "222.3739.54",
+      "dartPluginVersion": "222.3739.24",
+      "sinceBuild": "222.3739.54",
       "untilBuild": "222.*"
     }
   ]
