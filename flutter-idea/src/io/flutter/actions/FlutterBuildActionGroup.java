@@ -35,26 +35,29 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
                                        @Nullable String desc) {
     final ProgressHelper progressHelper = new ProgressHelper(project);
     progressHelper.start(desc == null ? "building" : desc);
+    ProcessAdapter processAdapter = new ProcessAdapter() {
+      @Override
+      public void processTerminated(@NotNull ProcessEvent event) {
+        progressHelper.done();
+        final int exitCode = event.getExitCode();
+        if (exitCode != 0) {
+          FlutterMessages.showError("Error while building " + buildType, "`flutter build` returned: " + exitCode, project);
+        }
+      }
+    };
     final Module module = pubRoot.getModule(project);
     if (module != null) {
-      sdk.flutterBuild(pubRoot, buildType.type).startInModuleConsole(module, pubRoot::refresh, null);
+      //noinspection ConstantConditions
+      sdk.flutterBuild(pubRoot, buildType.type).startInModuleConsole(module, pubRoot::refresh, processAdapter);
     }
     else {
+      //noinspection ConstantConditions
       final ColoredProcessHandler processHandler = sdk.flutterBuild(pubRoot, buildType.type).startInConsole(project);
       if (processHandler == null) {
         progressHelper.done();
       }
       else {
-        processHandler.addProcessListener(new ProcessAdapter() {
-          @Override
-          public void processTerminated(@NotNull ProcessEvent event) {
-            progressHelper.done();
-            final int exitCode = event.getExitCode();
-            if (exitCode != 0) {
-              FlutterMessages.showError("Error while building " + buildType, "`flutter build` returned: " + exitCode, project);
-            }
-          }
-        });
+        processHandler.addProcessListener(processAdapter);
       }
     }
   }
