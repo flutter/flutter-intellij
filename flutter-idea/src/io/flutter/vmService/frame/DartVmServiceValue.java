@@ -306,6 +306,9 @@ public class DartVmServiceValue extends XNamedValue {
             node.setPresentation(getIcon(), typeName, "", canHaveChildren);
           }
           else {
+            if (toStringInstanceRef.getValueAsStringIsTruncated()) {
+              addFullStringValueEvaluator(node, toStringInstanceRef);
+            }
             node.setPresentation(getIcon(), typeName, value, canHaveChildren);
           }
         }
