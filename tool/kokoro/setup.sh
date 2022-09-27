@@ -17,7 +17,7 @@ setup() {
   export FLUTTER_SDK=`pwd`/../flutter
 
   export JAVA_HOME_OLD=$JAVA_HOME
-  curl https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_osx-x64_bin.tar.gz > ../java.tar.gz
+  curl https://download.oracle.com/java/17/archive/jdk-17.0.4.1_macos-aarch64_bin.tar.gz > ../java.tar.gz
   (cd ..; tar fx java.tar.gz)
   export JAVA_HOME=`pwd`/../jdk-11.0.2.jdk/Contents/Home
   export PATH=$PATH:$JAVA_HOME/bin

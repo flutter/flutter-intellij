@@ -54,11 +54,20 @@ jxbrowser.license.key=$jxBrowserKey
     String version,
     String testing,
   ) async {
-    var javaVersion = ['4.1'].contains(spec.version) ? '1.8' : '11';
+    var javaVersion, smaliPlugin, langPlugin;
+    if (['AS.211', 'AS.212', 'AS.213', 'setup', '2022.1', '2022.2'].contains(spec.version)) {
+      javaVersion = '11';
+      smaliPlugin = 'smali';
+      langPlugin = 'IntelliLang';
+    } else {
+      javaVersion = '17';
+      smaliPlugin = 'com.android.tools.idea.smali';
+      langPlugin = 'org.intellij.intelliLang';
+    }
     final contents = '''
 name = "flutter-intellij"
 org.gradle.parallel=true
-org.gradle.jvmargs=-Xms128m -Xmx1024m -XX:+CMSClassUnloadingEnabled
+org.gradle.jvmargs=-Xms128m -Xmx1024m
 javaVersion=$javaVersion
 dartVersion=${spec.dartPluginVersion}
 flutterPluginVersion=$version
@@ -66,6 +75,8 @@ ide=${spec.ideaProduct}
 testing=$testing
 buildSpec=${spec.version}
 baseVersion=${spec.baseVersion}
+smaliPlugin=$smaliPlugin
+langPlugin=$langPlugin
 ''';
     final propertiesFile = File("$rootPath/gradle.properties");
     final source = propertiesFile.readAsStringSync();

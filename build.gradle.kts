@@ -21,7 +21,7 @@ buildscript {
 
 plugins {
   id("org.jetbrains.intellij") version "1.9.0"
-  id("org.jetbrains.kotlin.jvm") version "1.7.0"
+  id("org.jetbrains.kotlin.jvm") version "1.7.10"
 }
 
 repositories {
@@ -55,6 +55,8 @@ val dartVersion: String by project
 val baseVersion: String by project
 val name: String by project
 val buildSpec: String by project
+val smaliPlugin: String by project
+val langPlugin: String by project
 
 group = "io.flutter"
 version = flutterPluginVersion
@@ -74,7 +76,9 @@ intellij {
   val pluginList = mutableListOf(
     project(":flutter-idea"), "java", "properties",
     "junit", "Git4Idea", "Kotlin", "gradle", "org.jetbrains.android",
-    "Groovy", "smali", "IntelliLang", "Dart:$dartVersion")
+    "Groovy", "Dart:$dartVersion")
+  pluginList.add(smaliPlugin)
+  pluginList.add(langPlugin)
   if (ide == "android-studio") {
     pluginList += listOf(project(":flutter-studio"))
   } else if ("$buildSpec" == "2020.3") {
