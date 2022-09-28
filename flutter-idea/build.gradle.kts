@@ -31,6 +31,8 @@ val flutterPluginVersion: String by project
 val javaVersion: String by project
 val dartVersion: String by project
 val baseVersion: String by project
+val smaliPlugin: String by project
+val langPlugin: String by project
 
 group = "io.flutter"
 version = flutterPluginVersion
@@ -53,7 +55,9 @@ intellij {
   downloadSources.set(false)
   localPath.set("${project.rootDir.absolutePath}/artifacts/$ide")
   val pluginList = mutableListOf("java", "properties", "junit", "Kotlin", "Git4Idea",
-             "gradle", "Groovy", "smali", "IntelliLang", "org.jetbrains.android", "yaml", "Dart:$dartVersion")
+             "gradle", "Groovy", "org.jetbrains.android", "yaml", "Dart:$dartVersion")
+  pluginList.add(smaliPlugin)
+  pluginList.add(langPlugin)
   plugins.set(pluginList)
 }
 
