@@ -7,6 +7,8 @@
 # Fast fail the script on failures.
 set -e
 
+echo "JAVA_HOME=$JAVA_HOME"
+
 git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
 export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
 flutter config --no-analytics
