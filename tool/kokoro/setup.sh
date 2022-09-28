@@ -9,22 +9,22 @@ setup() {
   # that no confidential information is displayed.
   # set -x
 
+  export JAVA_HOME_OLD=$JAVA_HOME
+  curl https://download.oracle.com/java/17/archive/jdk-17.0.4.1_macos-aarch64_bin.tar.gz > ../java.tar.gz
+  (cd ..; tar fx java.tar.gz)
+
+  export JAVA_HOME=`pwd`/../jdk-17.0.4.1.jdk/Contents/Home
+  export PATH=$PATH:$JAVA_HOME/bin
+  export JAVA_OPTS=" -Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true"
+  echo "JAVA_HOME=$JAVA_HOME"
+  java -version
+
   # If we move to branch-based builds we might not be able to use such a shallow clone.
   git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
   export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
   flutter config --no-analytics
   flutter doctor
   export FLUTTER_SDK=`pwd`/../flutter
-
-  export JAVA_HOME_OLD=$JAVA_HOME
-  curl https://download.oracle.com/java/17/archive/jdk-17.0.4.1_macos-aarch64_bin.tar.gz > ../java.tar.gz
-  (cd ..; tar fx java.tar.gz)
-echo `file /tmpfs/src/github/flutter-intellij-kokoro/../jdk-17.0.4.1.jdk/Contents/Home/bin/java`
-  export JAVA_HOME=`pwd`/../jdk-17.0.4.1.jdk/Contents/Home
-  export PATH=$PATH:$JAVA_HOME/bin
-  export JAVA_OPTS=" -Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true"
-  echo "JAVA_HOME=$JAVA_HOME"
-  java -version
 
   export FLUTTER_KEYSTORE_ID=74840
   export FLUTTER_KEYSTORE_NAME=flutter-intellij-plugin-auth-token
