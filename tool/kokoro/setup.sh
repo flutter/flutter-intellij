@@ -18,7 +18,7 @@ setup() {
   export JAVA_OPTS=" -Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true"
   echo "JAVA_HOME=$JAVA_HOME"
   java -version
-
+echo `file /tmpfs/src/github/flutter-intellij-kokoro/../jdk-17.0.4.1.jdk/Contents/Home/bin/java`
   # If we move to branch-based builds we might not be able to use such a shallow clone.
   git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
   export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
