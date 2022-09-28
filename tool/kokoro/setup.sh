@@ -19,7 +19,7 @@ setup() {
   export JAVA_HOME_OLD=$JAVA_HOME
   curl https://download.oracle.com/java/17/archive/jdk-17.0.4.1_macos-aarch64_bin.tar.gz > ../java.tar.gz
   (cd ..; tar fx java.tar.gz)
-
+echo `ls ..`
   export JAVA_HOME=`pwd`/../jdk-17.0.4.1.jdk/Contents/Home
   export PATH=$PATH:$JAVA_HOME/bin
   export JAVA_OPTS=" -Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true"
