@@ -23,6 +23,11 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@d171c3b028d844f2bf14e9fdec0c58114451e4bf
+      - name: set up java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
       - name: build ${{ matrix.version }}
         run: ./tool/github.sh
         env:
