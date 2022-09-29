@@ -283,12 +283,12 @@ public class PubRoot {
 
   public @Nullable Map<String, String> getPackagesMap() {
     final var packageConfigFile = getPackageConfigFile();
-    if(packageConfigFile != null) {
+    if (packageConfigFile != null) {
       return DotPackagesFileUtil.getPackagesMapFromPackageConfigJsonFile(packageConfigFile);
     }
 
     final var packagesFile = getPackagesFile();
-    if(packagesFile != null) {
+    if (packagesFile != null) {
       return DotPackagesFileUtil.getPackagesMap(packagesFile);
     }
 

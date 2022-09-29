@@ -98,7 +98,7 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
   }
 
   private void fileChanged(@NotNull final Project project, @NotNull final VirtualFile file) {
-    if(!isPackageConfigFile(file) && !isPackagesFile(file)) return;
+    if (!isPackageConfigFile(file) && !isPackagesFile(file)) return;
     if (LocalFileSystem.getInstance() != file.getFileSystem() && !ApplicationManager.getApplication().isUnitTestMode()) return;
 
     scheduleUpdate();
@@ -140,7 +140,7 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
 
     for (PubRoot pubRoot : roots) {
       final var packagesMap = pubRoot.getPackagesMap();
-      if(packagesMap == null) {
+      if (packagesMap == null) {
         continue;
       }
 
