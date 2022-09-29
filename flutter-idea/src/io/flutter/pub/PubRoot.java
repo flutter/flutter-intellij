@@ -17,11 +17,13 @@ import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import com.jetbrains.lang.dart.util.DotPackagesFileUtil;
 import io.flutter.FlutterUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * A snapshot of the root directory of a pub package.
@@ -274,6 +276,20 @@ public class PubRoot {
     final VirtualFile packages = root.findChild(".packages");
     if (packages != null && !packages.isDirectory()) {
       return packages;
+    }
+
+    return null;
+  }
+
+  public @Nullable Map<String, String> getPackagesMap() {
+    final var packageConfigFile = getPackageConfigFile();
+    if (packageConfigFile != null) {
+      return DotPackagesFileUtil.getPackagesMapFromPackageConfigJsonFile(packageConfigFile);
+    }
+
+    final var packagesFile = getPackagesFile();
+    if (packagesFile != null) {
+      return DotPackagesFileUtil.getPackagesMap(packagesFile);
     }
 
     return null;

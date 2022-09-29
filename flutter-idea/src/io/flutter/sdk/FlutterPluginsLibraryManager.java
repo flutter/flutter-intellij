@@ -85,16 +85,23 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
     return FlutterPluginLibraryType.LIBRARY_KIND;
   }
 
+  private boolean isPackagesFile(@NotNull final VirtualFile file) {
+    final VirtualFile parent = file.getParent();
+    return file.getName().equals(DotPackagesFileUtil.DOT_PACKAGES) && parent != null && parent.findChild(PUBSPEC_YAML) != null;
+  }
+
+  private boolean isPackageConfigFile(@NotNull final VirtualFile file) {
+    final VirtualFile parent = file.getParent();
+    return file.getName().equals(DotPackagesFileUtil.PACKAGE_CONFIG_JSON)
+           && parent != null
+           && parent.getName().equals(DotPackagesFileUtil.DART_TOOL_DIR);
+  }
+
   private void fileChanged(@NotNull final Project project, @NotNull final VirtualFile file) {
-    if (!DotPackagesFileUtil.DOT_PACKAGES.equals(file.getName())) return;
+    if (!isPackageConfigFile(file) && !isPackagesFile(file)) return;
     if (LocalFileSystem.getInstance() != file.getFileSystem() && !ApplicationManager.getApplication().isUnitTestMode()) return;
 
-    final VirtualFile parent = file.getParent();
-    final VirtualFile pubspec = parent == null ? null : parent.findChild(PUBSPEC_YAML);
-
-    if (pubspec != null) {
-      scheduleUpdate();
-    }
+    scheduleUpdate();
   }
 
   private void scheduleUpdate() {
@@ -132,24 +139,12 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
     final Set<String> paths = new HashSet<>();
 
     for (PubRoot pubRoot : roots) {
+      final var packagesMap = pubRoot.getPackagesMap();
+      if (packagesMap == null) {
+        continue;
+      }
 
-      final Map<String, String> map;
-      if (pubRoot.getPackagesFile() == null) {
-        @Nullable VirtualFile configFile = pubRoot.getPackageConfigFile();
-        if (configFile == null) {
-          continue;
-        }
-        // TODO(messick) Use the code in the Dart plugin when available.
-        // This is just a backup in case we need it. It does not have a proper cache, but the Dart plugin does.
-        map = loadPackagesMap(configFile);
-      }
-      else {
-        map = DotPackagesFileUtil.getPackagesMap(pubRoot.getPackagesFile());
-        if (map == null) {
-          continue;
-        }
-      }
-      for (String packagePath : map.values()) {
+      for (String packagePath : packagesMap.values()) {
         final VirtualFile libFolder = LocalFileSystem.getInstance().findFileByPath(packagePath);
         if (libFolder == null) {
           continue;
@@ -166,54 +161,5 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
     }
 
     return paths;
-  }
-
-  private static Map<String, String> loadPackagesMap(@NotNull VirtualFile root) {
-    Map<String, String> result = new HashMap<>();
-    try {
-      JsonElement element = JsonUtils.parseString(new String(root.contentsToByteArray(), StandardCharsets.UTF_8));
-      if (element != null) {
-        JsonElement packages = element.getAsJsonObject().get("packages");
-        if (packages != null) {
-          JsonArray array = packages.getAsJsonArray();
-          for (int i = 0; i < array.size(); i++) {
-            JsonObject pkg = array.get(i).getAsJsonObject();
-            String name = pkg.get("name").getAsString();
-            String rootUri = pkg.get("rootUri").getAsString();
-            if (name != null && rootUri != null) {
-              // need to protect '+' chars because URLDecoder.decode replaces '+' with space
-              final String encodedUriWithoutPluses = StringUtil.replace(rootUri, "+", "%2B");
-              final String uri = URLUtil.decode(encodedUriWithoutPluses);
-              final String packageUri = getAbsolutePackageRootPath(root.getParent().getParent(), uri);
-              result.put(name, packageUri);
-            }
-          }
-        }
-      }
-    }
-    catch (IOException | JsonSyntaxException ignored) {
-    }
-    return result;
-  }
-
-  @Nullable
-  private static String getAbsolutePackageRootPath(@NotNull final VirtualFile baseDir, @NotNull final String uri) {
-    // Copied from the Dart plugin.
-    if (uri.startsWith("file:/")) {
-      final String pathAfterSlashes = StringUtil.trimEnd(StringUtil.trimLeading(StringUtil.trimStart(uri, "file:/"), '/'), "/");
-      if (SystemInfo.isWindows && !ApplicationManager.getApplication().isUnitTestMode()) {
-        if (pathAfterSlashes.length() > 2 && Character.isLetter(pathAfterSlashes.charAt(0)) && ':' == pathAfterSlashes.charAt(1)) {
-          return pathAfterSlashes;
-        }
-      }
-      else {
-        return "/" + pathAfterSlashes;
-      }
-    }
-    else {
-      return FileUtil.toCanonicalPath(baseDir.getPath() + "/" + uri);
-    }
-
-    return null;
   }
 }
