@@ -101,7 +101,9 @@ public class AndroidEmulator {
     if (!shouldLaunchEmulatorInToolWindow) {
       return;
     }
-    assert androidSdk != null;
+    if (androidSdk == null || androidSdk.project == null || androidSdk.project.isDisposed()) {
+      return;
+    }
     final ToolWindowManager wm = ToolWindowManager.getInstance(androidSdk.project);
     final ToolWindow tw = wm.getToolWindow("Android Emulator");
     if (tw == null || tw.isVisible()) {
