@@ -15,7 +15,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@61b9e3751b92087fd0b06925ba6dd6314e06f089
       - name: setup java
-        uses: actions/setup-java@1253a7eed45cc6191dc4bd9cacd3542878479569
+        uses: actions/setup-java@a18c333f3f14249953dab3e186e5e21bf3390f1d
         with:
           java-version: '11'
           java-package: jdk
