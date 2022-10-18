@@ -85,7 +85,11 @@ public class EmbeddedBrowser {
       @Override
       public void projectClosing(@NotNull Project project) {
         if (browser != null) {
-          browser.close();
+          try {
+            browser.close();
+          } catch (Exception ex) {
+            LOG.info(ex);
+          }
           browser = null;
         }
       }
