@@ -59,11 +59,6 @@ class PlatformsForm(getSdk: Supplier<out FlutterSdk>) {
         }
       }
       row {
-        label(FlutterBundle.message("npw_platform_availability_help")).apply {
-          comment(FlutterBundle.message("npw_platform_availability_comment"))
-        }
-      }
-      row {
         label(FlutterBundle.message("npw_platform_selection_help"))
       }
     }.apply { component = this }
