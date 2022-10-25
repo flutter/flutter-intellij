@@ -1,5 +1,7 @@
 #!/bin/bash
 
+exit
+
 source ./tool/kokoro/setup.sh
 setup
 

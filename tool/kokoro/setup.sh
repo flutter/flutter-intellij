@@ -1,5 +1,7 @@
 #!/bin/bash
 
+exit
+
 # Initialize everything required by the plugin tool.
 setup() {
   # Fail on any error.
