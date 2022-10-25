@@ -1,8 +1,9 @@
 package io.flutter.vmService.frame;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.LayeredIcon;
 import com.intellij.xdebugger.XSourcePosition;
@@ -10,6 +11,7 @@ import com.intellij.xdebugger.frame.*;
 import com.intellij.xdebugger.frame.presentation.XKeywordValuePresentation;
 import com.intellij.xdebugger.frame.presentation.XNumericValuePresentation;
 import com.intellij.xdebugger.frame.presentation.XStringValuePresentation;
+import io.flutter.utils.TypedDataList;
 import io.flutter.vmService.DartVmServiceDebugProcess;
 import io.flutter.vmService.VmServiceConsumers;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
@@ -18,6 +20,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.nio.ByteBuffer;
+import java.text.MessageFormat;
+import java.util.Base64;
 
 // TODO: implement some combination of XValue.getEvaluationExpression() /
 // XValue.calculateEvaluationExpression() in order to support evaluate expression in variable values.
@@ -29,6 +34,9 @@ public class DartVmServiceValue extends XNamedValue {
   private static final LayeredIcon STATIC_FIELD_ICON = new LayeredIcon(AllIcons.Nodes.Field, AllIcons.Nodes.StaticMark);
   private static final LayeredIcon STATIC_FINAL_FIELD_ICON =
     new LayeredIcon(AllIcons.Nodes.Field, AllIcons.Nodes.StaticMark, AllIcons.Nodes.FinalMark);
+  private static final String JSON_STRING_TEMPLATE =
+    "'{'\"type\":\"@Instance\",\"class\":'{'\"type\":\"@Class\",\"fixedId\":\"true\",\"id\":\"classes/91\"," +
+    "\"name\":\"_OneByteString\"'}',\"kind\":\"String\",\"length\":\"{0}\",\"valueAsString\":\"{1}\"'}'";
 
   @NotNull private final DartVmServiceDebugProcess myDebugProcess;
   @NotNull private final String myIsolateId;
@@ -385,7 +393,7 @@ public class DartVmServiceValue extends XNamedValue {
 
         if (offset + count < instanceRef.getLength()) {
           node.tooManyChildren(instanceRef.getLength() - offset - count
-                               ,() -> computeCollectionChildren(instanceRef, offset + count, node));
+            , () -> computeCollectionChildren(instanceRef, offset + count, node));
         }
       }
 
@@ -413,6 +421,20 @@ public class DartVmServiceValue extends XNamedValue {
       return;
     }
 
+    if (instance.getBytes() != null) { // true for typed data
+      //noinspection ConstantConditions
+      byte @NotNull [] bytes = Base64.getDecoder().decode(instance.getBytes());
+      TypedDataList data = getTypedDataList(bytes);
+      XValueChildrenList childrenList = new XValueChildrenList(data.size());
+      for (int i = 0; i < data.size(); i++) {
+        childrenList.add(
+          new DartVmServiceValue(myDebugProcess, myIsolateId, String.valueOf(i), instanceRefForString(data.getValue(i)), null, null,
+                                 false));
+      }
+      node.addChildren(childrenList, true);
+      return;
+    }
+
     if (instance.getKind() == InstanceKind.List) {
       node.addChildren(XValueChildrenList.EMPTY, true);
       return;
@@ -435,6 +457,46 @@ public class DartVmServiceValue extends XNamedValue {
         node.addChildren(XValueChildrenList.EMPTY, true);
       }
     });
+  }
+
+  private InstanceRef instanceRefForString(@NotNull String value) {
+    String json = MessageFormat.format(JSON_STRING_TEMPLATE, value.length(), value);
+    JsonObject ref = new Gson().fromJson(json, JsonObject.class);
+    //noinspection ConstantConditions
+    return new InstanceRef(ref);
+  }
+
+  private TypedDataList getTypedDataList(byte @NotNull [] bytes) {
+    ByteBuffer buffer = ByteBuffer.wrap(bytes);
+    //noinspection ConstantConditions
+    switch (myInstanceRef.getKind()) {
+      case Uint8List:
+      case Uint8ClampedList:
+        return new TypedDataList.Uint8List(bytes);
+      case Int8List:
+        return new TypedDataList.Int8List(bytes);
+      case Uint16List:
+        return new TypedDataList.Uint16List(bytes);
+      case Int16List:
+        return new TypedDataList.Int16List(bytes);
+      case Uint32List:
+        return new TypedDataList.Uint32List(bytes);
+      case Int32List:
+      case Int32x4List:
+        return new TypedDataList.Int32List(bytes);
+      case Uint64List:
+        return new TypedDataList.Uint64List(bytes);
+      case Int64List:
+        return new TypedDataList.Int64List(bytes);
+      case Float32List:
+      case Float32x4List:
+        return new TypedDataList.Float32List(bytes);
+      case Float64List:
+      case Float64x2List:
+        return new TypedDataList.Float64List(bytes);
+      default:
+        return new TypedDataList.Int8List(bytes);
+    }
   }
 
   private void addMapChildren(int offset, @NotNull final XCompositeNode node, @NotNull final ElementList<MapAssociation> mapAssociations) {
