@@ -102,7 +102,8 @@ public class FlutterCreateAdditionalSettingsFields {
     }
     orgField.setEnabled(projectType != FlutterProjectType.PACKAGE);
     UIUtil.setEnabled(androidLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
-    UIUtil.setEnabled(iosLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);UIUtil.setEnabled(platformsForm.getComponent(), areLanguageFeaturesVisible, true, true);
+    UIUtil.setEnabled(iosLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
+    UIUtil.setEnabled(platformsForm.getComponent(), areLanguageFeaturesVisible, true, true);
   }
 
   private void changeSettingsItemVisibility(JComponent component, boolean areLanguageFeaturesVisible) {
