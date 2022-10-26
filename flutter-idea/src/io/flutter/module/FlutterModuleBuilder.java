@@ -175,7 +175,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     if (StringUtils.endsWith(org, ".")) {
       return FlutterBundle.message("npw_invalid_org_error");
     }
-    if (mySettingsFields.isShowingPlatforms() && !settings.isSomePlatformSelected()) {
+    if (!settings.isSomePlatformSelected()) {
       return FlutterBundle.message("npw_none_selected_error");
     }
     // Invalid package names will cause issues down the line.
