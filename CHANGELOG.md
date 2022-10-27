@@ -1,5 +1,5 @@
 # 71.0
-- Remove the process listener after teermination (#6377)
+- Remove the process listener after emulator termination (#6377)
 - Remove obsolete code from NPW  (#6374)
 - Check for disposed project (#6371)
 - Remove platform availability channel warning (#6356)
