@@ -14,37 +14,16 @@ import io.flutter.sdk.FlutterSdkChannel
 import io.flutter.sdk.FlutterSdkChannel.ID
 import java.util.function.Supplier
 
-class PlatformsForm(getSdk: Supplier<out FlutterSdk>) {
+class PlatformsForm() {
 
-  val sdkGetter = getSdk
   var channel: FlutterSdkChannel? = null
-  var configAndroid: Boolean? = null
-  var configIos: Boolean? = null
-  var configLinux: Boolean? = null
-  var configMacos: Boolean? = null
-  var configWeb: Boolean? = null
-  var configWindows: Boolean? = null
+  var configAndroid: Boolean = true
+  var configIos: Boolean = true
+  var configLinux: Boolean = true
+  var configMacos: Boolean = true
+  var configWeb: Boolean = true
+  var configWindows: Boolean = true
   var component: DialogPanel? = null
-
-  fun initChannel() {
-    val sdk = sdkGetter.get()
-    channel = sdk.queryFlutterChannel(true)
-    // Use the settings defined by `flutter config` as the default value for the check boxes.
-    val platforms = sdk.queryConfiguredPlatforms(true)
-    configAndroid = platforms.contains("enable-android")
-    configIos = platforms.contains("enable-ios")
-    configLinux = platforms.contains("enable-linux-desktop")
-    configMacos = platforms.contains("enable-macos-desktop")
-    configWeb = platforms.contains("enable-web")
-    configWindows = platforms.contains("enable-windows-desktop")
-  }
-
-  fun shouldBeVisible(): Boolean {
-    // TODO (messick) Keep this up-to-date with Flutter SDK changes.
-    val ch = channel
-    ch ?: return false
-    return ch.id > ID.STABLE || sdkGetter.get().version.stableChannelSupportsPlatforms();
-  }
 
   fun panel(settings: FlutterCreateAdditionalSettings) =
     panel {
@@ -69,7 +48,6 @@ class PlatformsForm(getSdk: Supplier<out FlutterSdk>) {
                            config: Boolean?) {
     context.apply {
       val wasSelected = config == true
-      val sdk = sdkGetter.get()
       property.initialize(wasSelected)
       checkBox(name,
                property.get(),
@@ -79,10 +57,10 @@ class PlatformsForm(getSdk: Supplier<out FlutterSdk>) {
         val names: List<String> = listOfNotNull(
           FlutterBundle.message("npw_platform_android"),
           FlutterBundle.message("npw_platform_ios"),
-          if (sdk.version.isWebPlatformStable) FlutterBundle.message("npw_platform_web") else null,
-          if (sdk.version.isWindowsPlatformStable) FlutterBundle.message("npw_platform_windows") else null,
-          if (sdk.version.isLinuxPlatformStable) FlutterBundle.message("npw_platform_linux") else null,
-          if (sdk.version.isMacOSPlatformStable) FlutterBundle.message("npw_platform_macos") else null,
+          FlutterBundle.message("npw_platform_web"),
+          FlutterBundle.message("npw_platform_windows"),
+          FlutterBundle.message("npw_platform_linux"),
+          FlutterBundle.message("npw_platform_macos"),
         )
         enabled(names.contains(name) || wasSelected)
       }

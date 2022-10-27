@@ -90,7 +90,7 @@ public class FlutterCreateAdditionalSettingsFields {
     );
     iosLanguageRadios.setToolTipText(FlutterBundle.message("flutter.module.create.settings.radios.ios.tip"));
 
-    platformsForm = new PlatformsForm(getSdk);
+    platformsForm = new PlatformsForm();
     createParams = new FlutterCreateParams();
   }
 
@@ -103,9 +103,7 @@ public class FlutterCreateAdditionalSettingsFields {
     orgField.setEnabled(projectType != FlutterProjectType.PACKAGE);
     UIUtil.setEnabled(androidLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
     UIUtil.setEnabled(iosLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
-    if (isShowingPlatforms()) {
-      UIUtil.setEnabled(platformsForm.getComponent(), areLanguageFeaturesVisible, true, true);
-    }
+    UIUtil.setEnabled(platformsForm.getComponent(), areLanguageFeaturesVisible, true, true);
   }
 
   private void changeSettingsItemVisibility(JComponent component, boolean areLanguageFeaturesVisible) {
@@ -136,14 +134,10 @@ public class FlutterCreateAdditionalSettingsFields {
     addBorder(iosLanguageRadios.getComponent(), false);
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.ios.label"),
                                   iosLanguageRadios.getComponent());
-    if (projectTypeHasPlatforms()) {
-      platformsForm.initChannel();
-      if (platformsForm.shouldBeVisible()) {
-        panel = platformsForm.panel(settings);
-        addBorder(panel, true);
-        settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.platforms.label"), panel);
-      }
-    }
+      panel = platformsForm.panel(settings);
+      addBorder(panel, true);
+      settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.platforms.label"), panel);
+
 
     if (!FlutterUtils.isAndroidStudio()) {
       // In IntelliJ the help form appears on the second page of the wizard, along with the project type selection drop-down.
@@ -161,21 +155,6 @@ public class FlutterCreateAdditionalSettingsFields {
         return JBUI.insets(5, left ? 3 : 0, 0, 0);
       }
     });
-  }
-
-  private boolean projectTypeHasPlatforms() {
-    final FlutterProjectType type = settings.getType();
-    if (type != null) {
-      switch (type) {
-        case APP:
-        case PLUGIN:
-        case SKELETON:
-          return true;
-        default:
-          return false;
-      }
-    }
-    return false;
   }
 
   public void updateProjectType(FlutterProjectType projectType) {
@@ -205,7 +184,7 @@ public class FlutterCreateAdditionalSettingsFields {
       case APP: // fall through
       case SKELETON:
       case PLUGIN:
-        return platformsForm.shouldBeVisible();
+        return true;
       default:
         return false;
     }
@@ -219,10 +198,6 @@ public class FlutterCreateAdditionalSettingsFields {
   // The help form appears on the first page of the wizard.
   public void linkHelpForm(SettingsHelpForm form) {
     helpForm = form;
-  }
-
-  public boolean isShowingPlatforms() {
-    return projectTypeHasPlatforms() && platformsForm.shouldBeVisible();
   }
 
   public void updateProjectTypes() {
