@@ -49,6 +49,9 @@ public class FlutterRunNotifications {
   }
 
   private void checkForDisplayFirstReload() {
+    if (myProject.isDisposed()) {
+      return;
+    }
     final PropertiesComponent properties = PropertiesComponent.getInstance(myProject);
 
     final boolean alreadyRun = properties.getBoolean(RELOAD_ALREADY_RUN);
