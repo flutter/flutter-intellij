@@ -23,17 +23,14 @@ import io.flutter.FlutterMessages;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
-import java.util.Timer;
-import java.util.TimerTask;
-
 public class AndroidEmulator {
   private static final Logger LOG = Logger.getInstance(AndroidEmulator.class);
 
-  final AndroidSdk androidSdk;
-  final String id;
+  @NotNull final AndroidSdk androidSdk;
+  @NotNull final String id;
+  ProcessAdapter listener;
 
-  AndroidEmulator(AndroidSdk androidSdk, String id) {
+  AndroidEmulator(@NotNull AndroidSdk androidSdk, @NotNull String id) {
     this.androidSdk = androidSdk;
     this.id = id;
   }
@@ -43,6 +40,9 @@ public class AndroidEmulator {
   }
 
   public void startEmulator() {
+    if (androidSdk.project.isDisposed()) {
+      return;
+    }
     final VirtualFile emulator = androidSdk.getEmulatorToolExecutable();
     if (emulator == null) {
       FlutterMessages.showError(
@@ -71,9 +71,12 @@ public class AndroidEmulator {
     try {
       final StringBuilder stdout = new StringBuilder();
       final ColoredProcessHandler process = new MostlySilentColoredProcessHandler(cmd);
-      process.addProcessListener(new ProcessAdapter() {
+      listener = new ProcessAdapter() {
         @Override
         public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
+          if (androidSdk.project.isDisposed()) {
+            return;
+          }
           if (outputType == ProcessOutputTypes.STDERR || outputType == ProcessOutputTypes.STDOUT) {
             stdout.append(event.getText());
           }
@@ -81,6 +84,7 @@ public class AndroidEmulator {
         }
 
         public void processTerminated(@NotNull ProcessEvent event) {
+          process.removeProcessListener(listener);
           final int exitCode = event.getExitCode();
           if (exitCode != 0) {
             final String message = stdout.length() == 0
@@ -89,7 +93,8 @@ public class AndroidEmulator {
             FlutterMessages.showError("Error Opening Emulator", message, androidSdk.project);
           }
         }
-      });
+      };
+      process.addProcessListener(listener);
       process.startNotify();
     }
     catch (ExecutionException | RuntimeException e) {
@@ -101,7 +106,7 @@ public class AndroidEmulator {
     if (!shouldLaunchEmulatorInToolWindow) {
       return;
     }
-    if (androidSdk == null || androidSdk.project == null || androidSdk.project.isDisposed()) {
+    if (androidSdk.project.isDisposed()) {
       return;
     }
     final ToolWindowManager wm = ToolWindowManager.getInstance(androidSdk.project);

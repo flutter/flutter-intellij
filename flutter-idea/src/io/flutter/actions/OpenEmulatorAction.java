@@ -12,6 +12,7 @@ import io.flutter.android.AndroidEmulator;
 import io.flutter.sdk.AndroidEmulatorManager;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -25,6 +26,9 @@ public class OpenEmulatorAction extends AnAction {
    * to the list of emulators.
    */
   public static List<OpenEmulatorAction> getEmulatorActions(Project project) {
+    if (project == null || project.isDisposed()) {
+      return new ArrayList<>();
+    }
     final AndroidEmulatorManager emulatorManager = AndroidEmulatorManager.getInstance(project);
 
     final List<AndroidEmulator> emulators = emulatorManager.getCachedEmulators();
