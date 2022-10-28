@@ -1,3 +1,10 @@
+# 71.0
+- Remove the process listener after emulator termination (#6377)
+- Remove obsolete code from NPW  (#6374)
+- Check for disposed project (#6371)
+- Remove platform availability channel warning (#6356)
+- Show values of TypedDataList in debugger (#6369)
+
 # 70.0
 - Respect embedded emulator settings (#6279)
 - Update to JX Browser 7.27 and change linux mode (#6283)

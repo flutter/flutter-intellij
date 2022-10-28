@@ -46,6 +46,14 @@
 
   <change-notes>
     <![CDATA[
+<h1>71.0</h1>
+<ul>
+  <li>Remove the process listener after emulator termination (#6377)</li>
+  <li>Remove obsolete code from NPW  (#6374)</li>
+  <li>Check for disposed project (#6371)</li>
+  <li>Remove platform availability channel warning (#6356)</li>
+  <li>Show values of TypedDataList in debugger (#6369)</li>
+</ul>
 <h1>70.0</h1>
 <ul>
   <li>Respect embedded emulator settings (#6279)</li>
