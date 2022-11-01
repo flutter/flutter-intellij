@@ -17,7 +17,7 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.SystemInfo;
-import com.intellij.ui.GuiUtils;
+import com.intellij.util.ModalityUiUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
@@ -36,8 +36,6 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   private final List<Project> knownProjects = Collections.synchronizedList(new ArrayList<>());
 
   private SelectDeviceAction selectedDeviceAction;
-  private Runnable deviceListener;
-  private Runnable emulatorListener;
 
   DeviceSelectorAction() {
     setSmallVariant(true);
@@ -84,11 +82,11 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
           knownProjects.remove(closedProject);
         }
       });
-      deviceListener = () -> queueUpdate(project, e.getPresentation());
+      Runnable deviceListener = () -> queueUpdate(project, e.getPresentation());
       DeviceService.getInstance(project).addListener(deviceListener);
 
       // Listen for android device changes, and rebuild the menu if necessary.
-      emulatorListener = () -> queueUpdate(project, e.getPresentation());
+      Runnable emulatorListener = () -> queueUpdate(project, e.getPresentation());
       AndroidEmulatorManager.getInstance(project).addListener(emulatorListener);
       ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
         public void projectClosing(@NotNull Project project) {
@@ -124,13 +122,13 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     }
   }
 
-  private void queueUpdate(Project project, Presentation presentation) {
-    GuiUtils.invokeLaterIfNeeded(
-      () -> update(project, presentation),
-      ModalityState.defaultModalityState());
+  private void queueUpdate(@NotNull Project project, @NotNull Presentation presentation) {
+    ModalityUiUtil.invokeLaterIfNeeded(
+      ModalityState.defaultModalityState(),
+      () -> update(project, presentation));
   }
 
-  private void update(Project project, Presentation presentation) {
+  private void update(@NotNull Project project, @NotNull Presentation presentation) {
     if (project.isDisposed()) {
       return; // This check is probably unnecessary, but safe.
     }

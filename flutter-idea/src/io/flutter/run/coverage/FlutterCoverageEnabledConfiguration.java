@@ -13,6 +13,7 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.GuiUtils;
+import com.intellij.util.ModalityUiUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -28,9 +29,9 @@ public class FlutterCoverageEnabledConfiguration extends CoverageEnabledConfigur
     super(configuration);
     super.setCoverageRunner(CoverageRunner.getInstance(FlutterCoverageRunner.class));
     createCoverageFile();
-    GuiUtils.invokeLaterIfNeeded(
-      () -> setCurrentCoverageSuite(CoverageDataManager.getInstance(configuration.getProject()).addCoverageSuite(this)),
-      ModalityState.any());
+    ModalityUiUtil.invokeLaterIfNeeded(
+      ModalityState.any(),
+      () -> setCurrentCoverageSuite(CoverageDataManager.getInstance(configuration.getProject()).addCoverageSuite(this)));
   }
 
   @Override
