@@ -52,9 +52,51 @@ List<EditCommand> editCommands = [
     versions: ['AS.211', 'AS.212'],
   ),
   Subst(
-    path: 'flutter-idea/src/io/flutter/analytics/FlutterAnalysisServerListener.java',
+    path:
+        'flutter-idea/src/io/flutter/analytics/FlutterAnalysisServerListener.java',
     initial: '<@NotNull Analytics>',
     replacement: '<Analytics>',
+    versions: ['AS.211', 'AS.212', 'AS.213'],
+  ),
+  MultiSubst(
+    path: 'flutter-idea/src/io/flutter/actions/DeviceSelectorAction.java',
+    initials: [
+      'import com.intellij.util.ModalityUiUtil;',
+      '''
+    ModalityUiUtil.invokeLaterIfNeeded(
+      ModalityState.defaultModalityState(),
+      () -> update(project, presentation));
+''',
+    ],
+    replacements: [
+      'import com.intellij.ui.GuiUtils;',
+      '''
+    GuiUtils.invokeLaterIfNeeded(
+      () -> update(project, presentation),
+      ModalityState.defaultModalityState());
+''',
+    ],
+    versions: ['AS.211', 'AS.212', 'AS.213'],
+  ),
+  MultiSubst(
+    path:
+        'flutter-idea/src/io/flutter/run/coverage/FlutterCoverageEnabledConfiguration.java',
+    initials: [
+      'import com.intellij.util.ModalityUiUtil;',
+      '''
+    ModalityUiUtil.invokeLaterIfNeeded(
+      ModalityState.any(),
+      () -> setCurrentCoverageSuite(CoverageDataManager.getInstance(configuration.getProject()).addCoverageSuite(this)));
+''',
+    ],
+    replacements: [
+      'import com.intellij.ui.GuiUtils;',
+      '''
+    GuiUtils.invokeLaterIfNeeded(
+      () -> setCurrentCoverageSuite(CoverageDataManager.getInstance(configuration.getProject()).addCoverageSuite(this)),
+      ModalityState.any());
+''',
+    ],
     versions: ['AS.211', 'AS.212', 'AS.213'],
   ),
 ];

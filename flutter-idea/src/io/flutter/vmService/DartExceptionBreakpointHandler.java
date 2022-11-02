@@ -13,6 +13,9 @@ import org.dartlang.vm.service.element.ExceptionPauseMode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Set;
+
 public class DartExceptionBreakpointHandler extends XBreakpointHandler<XBreakpoint<DartExceptionBreakpointProperties>> {
 
   private final DartVmServiceDebugProcess myDebugProcess;
@@ -26,7 +29,10 @@ public class DartExceptionBreakpointHandler extends XBreakpointHandler<XBreakpoi
   public static XBreakpoint<DartExceptionBreakpointProperties> getDefaultExceptionBreakpoint(@NotNull final Project project) {
     final XBreakpointManager bpManager = XDebuggerManager.getInstance(project).getBreakpointManager();
     final DartExceptionBreakpointType bpType = XBreakpointType.EXTENSION_POINT_NAME.findExtension(DartExceptionBreakpointType.class);
-    final XBreakpoint<DartExceptionBreakpointProperties> breakpoint = bpManager.getDefaultBreakpoint(bpType);
+    assert(bpType != null);
+    @NotNull Set<XBreakpoint<DartExceptionBreakpointProperties>> bps = bpManager.getDefaultBreakpoints(bpType);
+    assert (bps.size() == 1);
+    final XBreakpoint<DartExceptionBreakpointProperties> breakpoint = new ArrayList<>(bps).get(0);
     assert breakpoint != null;
     return breakpoint;
   }
