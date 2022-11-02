@@ -55,13 +55,17 @@ jxbrowser.license.key=$jxBrowserKey
     String testing,
   ) async {
     var javaVersion, smaliPlugin, langPlugin;
-    if (['AS.211', 'AS.212', 'AS.213', 'setup', '2022.1', '2022.2'].contains(spec.version)) {
+    if (['AS.211', 'AS.212', 'AS.213', 'setup', '2022.1'].contains(spec.version)) {
       javaVersion = '11';
       smaliPlugin = 'smali';
       langPlugin = 'IntelliLang';
     } else {
       javaVersion = '17';
-      smaliPlugin = 'com.android.tools.idea.smali';
+      if (spec.version == '2022.2') {
+        smaliPlugin = 'smali';
+      } else {
+        smaliPlugin = 'com.android.tools.idea.smali';
+      }
       langPlugin = 'org.intellij.intelliLang';
     }
     final contents = '''
@@ -77,6 +81,7 @@ buildSpec=${spec.version}
 baseVersion=${spec.baseVersion}
 smaliPlugin=$smaliPlugin
 langPlugin=$langPlugin
+kotlin.stdlib.default.dependency=false
 ''';
     final propertiesFile = File("$rootPath/gradle.properties");
     final source = propertiesFile.readAsStringSync();
