@@ -24,11 +24,14 @@ import com.intellij.util.ThreeState;
 import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
+import io.flutter.bazel.Workspace;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.SdkAttachConfig;
 import io.flutter.run.SdkFields;
 import io.flutter.run.SdkRunConfig;
+import io.flutter.run.bazel.BazelAttachConfig;
+import io.flutter.run.bazel.BazelRunConfig;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
@@ -89,6 +92,49 @@ public class AttachDebuggerAction extends FlutterSdkAction {
     ProgramRunnerUtil.executeConfiguration(env, false, true);
   }
 
+  public void startCommandInBazelContext(@NotNull Project project, @NotNull Workspace workspace, AnActionEvent event) {
+    // NOTE: When making changes here, consider making similar changes to RunFlutterAction.
+    FlutterInitializer.sendAnalyticsAction(this);
+
+    RunConfiguration configuration = findRunConfig(project);
+    if (configuration == null) {
+      final RunnerAndConfigurationSettings settings = RunManagerEx.getInstanceEx(project).getSelectedConfiguration();
+      if (settings == null) {
+        showSelectConfigDialog();
+        return;
+      }
+      configuration = settings.getConfiguration();
+      if (!(configuration instanceof BazelRunConfig)) {
+        if (project.isDefault() || !FlutterSdkUtil.hasFlutterModules(project)) {
+          return;
+        }
+        showSelectConfigDialog();
+        return;
+      }
+    }
+
+    final BazelAttachConfig sdkRunConfig = new BazelAttachConfig((BazelRunConfig)configuration);
+    final Executor executor = RunFlutterAction.getExecutor(ToolWindowId.DEBUG);
+    if (executor == null) {
+      return;
+    }
+
+    final ExecutionEnvironmentBuilder builder = ExecutionEnvironmentBuilder.create(executor, sdkRunConfig);
+
+    final ExecutionEnvironment env = builder.activeTarget().dataContext(event.getDataContext()).build();
+    FlutterLaunchMode.addToEnvironment(env, FlutterLaunchMode.DEBUG);
+
+    if (project.getUserData(ATTACH_IS_ACTIVE) == null) {
+      project.putUserData(ATTACH_IS_ACTIVE, ThreeState.fromBoolean(true));
+      onAttachTermination(project, (p) -> p.putUserData(ATTACH_IS_ACTIVE, null));
+    }
+    ProgramRunnerUtil.executeConfiguration(env, false, true);
+  }
+
+  public boolean enableActionInBazelContext() {
+    return true;
+  }
+
   @Override
   public void update(AnActionEvent e) {
     final Project project = e.getProject();
@@ -110,7 +156,7 @@ public class AttachDebuggerAction extends FlutterSdkAction {
       }
       else {
         configuration = settings.getConfiguration();
-        enabled = configuration instanceof SdkRunConfig;
+        enabled = configuration instanceof SdkRunConfig || configuration instanceof BazelRunConfig;
       }
     }
     else {

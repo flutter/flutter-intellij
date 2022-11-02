@@ -8,6 +8,7 @@ package io.flutter.actions;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ColoredProcessHandler;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -36,7 +37,7 @@ public class FlutterDoctorAction extends FlutterSdkAction {
   }
 
   @Override
-  public void startCommandInBazelContext(@NotNull Project project, @NotNull Workspace workspace) {
+  public void startCommandInBazelContext(@NotNull Project project, @NotNull Workspace workspace, @NotNull AnActionEvent event) {
     final String doctorScript = workspace.getDoctorScript();
     if (doctorScript != null) {
       runWorkspaceFlutterDoctorScript(project, workspace.getRoot().getPath(), doctorScript);

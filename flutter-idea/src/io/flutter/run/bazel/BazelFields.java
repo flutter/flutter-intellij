@@ -156,6 +156,15 @@ public class BazelFields {
     return runScript;
   }
 
+  private String getToolsScriptFromWorkspace(@NotNull final Project project) {
+    final Workspace workspace = getWorkspace(project);
+    String runScript = workspace == null ? null : workspace.getToolsScript();
+    if (runScript != null) {
+      runScript = workspace.getRoot().getPath() + "/" + runScript;
+    }
+    return runScript;
+  }
+
   // TODO(djshuckerow): this is dependency injection; switch this to a framework as we need more DI.
   @Nullable
   protected Workspace getWorkspace(@NotNull Project project) {
@@ -217,7 +226,7 @@ public class BazelFields {
 
     final Workspace workspace = getWorkspace(project);
 
-    final String launchingScript = getRunScriptFromWorkspace(project);
+    final String launchingScript = getToolsScriptFromWorkspace(project);
     assert launchingScript != null; // already checked
     assert workspace != null; // if the workspace is null, then so is the launching script, therefore this was already checked.
 
@@ -230,6 +239,7 @@ public class BazelFields {
       .withWorkDirectory(workspace.getRoot().getPath());
     commandLine.setCharset(StandardCharsets.UTF_8);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
+    commandLine.addParameter("attach");
 
     final String inputBazelArgs = StringUtil.notNullize(bazelArgs);
     if (!inputBazelArgs.isEmpty()) {

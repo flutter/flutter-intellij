@@ -42,7 +42,7 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
       if (workspace != null) {
         FlutterInitializer.sendAnalyticsAction(this);
         FileDocumentManager.getInstance().saveAllDocuments();
-        startCommandInBazelContext(project, workspace);
+        startCommandInBazelContext(project, workspace, event);
         return;
       }
     }
@@ -77,7 +77,7 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
    * Implemented by actions which are used in the Bazel context ({@link #enableActionInBazelContext()} returns true), by default this method
    * throws an {@link Error}.
    */
-  public void startCommandInBazelContext(@NotNull Project project, @NotNull Workspace workspace) {
+  public void startCommandInBazelContext(@NotNull Project project, @NotNull Workspace workspace, @NotNull AnActionEvent event) {
     throw new Error("This method should not be called directly, but should be overridden.");
   }
 
