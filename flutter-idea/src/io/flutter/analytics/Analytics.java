@@ -230,7 +230,11 @@ public class Analytics {
    * Return true if any open project is a Dart project and uses Bazel.
    */
   private boolean anyProjectUsesBazel() {
-    for (Project project : ProjectManager.getInstance().getOpenProjects()) {
+    ProjectManager mgr = ProjectManager.getInstance();
+    if (mgr == null) {
+      return false; // In unit testing.
+    }
+    for (Project project : mgr.getOpenProjects()) {
       if (project.isDisposed()) {
         continue;
       }
