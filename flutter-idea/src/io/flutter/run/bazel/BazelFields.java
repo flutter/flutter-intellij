@@ -210,12 +210,18 @@ public class BazelFields {
     }
   }
 
+  GeneralCommandLine getLaunchCommand(@NotNull Project project,
+                                      @Nullable FlutterDevice device,
+                                      @NotNull RunMode mode) throws ExecutionException {
+    return getLaunchCommand(project, device, mode, false);
+  }
+
   /**
    * Returns the command to use to launch the Flutter app. (Via running the Bazel target.)
    */
   GeneralCommandLine getLaunchCommand(@NotNull Project project,
                                       @Nullable FlutterDevice device,
-                                      @NotNull RunMode mode)
+                                      @NotNull RunMode mode, boolean isAttach)
     throws ExecutionException {
     try {
       checkRunnable(project);
@@ -226,7 +232,7 @@ public class BazelFields {
 
     final Workspace workspace = getWorkspace(project);
 
-    final String launchingScript = getToolsScriptFromWorkspace(project);
+    final String launchingScript = isAttach ? getToolsScriptFromWorkspace(project) : getRunScriptFromWorkspace(project);
     assert launchingScript != null; // already checked
     assert workspace != null; // if the workspace is null, then so is the launching script, therefore this was already checked.
 
@@ -239,7 +245,10 @@ public class BazelFields {
       .withWorkDirectory(workspace.getRoot().getPath());
     commandLine.setCharset(StandardCharsets.UTF_8);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
-    commandLine.addParameter("attach");
+
+    if (isAttach) {
+      commandLine.addParameter("attach");
+    }
 
     final String inputBazelArgs = StringUtil.notNullize(bazelArgs);
     if (!inputBazelArgs.isEmpty()) {

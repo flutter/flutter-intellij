@@ -31,7 +31,7 @@ public class BazelAttachConfig extends BazelRunConfig {
   public GeneralCommandLine getCommand(ExecutionEnvironment env, @NotNull FlutterDevice device) throws ExecutionException {
     final BazelFields launchFields = fields.copy();
     final RunMode mode = RunMode.fromEnv(env);
-    return launchFields.getLaunchCommand(env.getProject(), device, mode);
+    return launchFields.getLaunchCommand(env.getProject(), device, mode, true);
   }
 
 }

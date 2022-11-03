@@ -105,10 +105,6 @@ public class AttachDebuggerAction extends FlutterSdkAction {
       }
       configuration = settings.getConfiguration();
       if (!(configuration instanceof BazelRunConfig)) {
-        if (project.isDefault() || !FlutterSdkUtil.hasFlutterModules(project)) {
-          return;
-        }
-        showSelectConfigDialog();
         return;
       }
     }
