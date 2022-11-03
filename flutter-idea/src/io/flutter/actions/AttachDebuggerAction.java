@@ -120,10 +120,6 @@ public class AttachDebuggerAction extends FlutterSdkAction {
     final ExecutionEnvironment env = builder.activeTarget().dataContext(event.getDataContext()).build();
     FlutterLaunchMode.addToEnvironment(env, FlutterLaunchMode.DEBUG);
 
-    if (project.getUserData(ATTACH_IS_ACTIVE) == null) {
-      project.putUserData(ATTACH_IS_ACTIVE, ThreeState.fromBoolean(true));
-      onAttachTermination(project, (p) -> p.putUserData(ATTACH_IS_ACTIVE, null));
-    }
     ProgramRunnerUtil.executeConfiguration(env, false, true);
   }
 
