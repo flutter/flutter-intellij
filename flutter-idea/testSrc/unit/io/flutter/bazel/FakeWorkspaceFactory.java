@@ -23,6 +23,7 @@ public class FakeWorkspaceFactory {
     @Nullable String testScript,
     @Nullable String runScript,
     @Nullable String syncScript,
+    @Nullable String toolsScript,
     @Nullable String sdkHome,
     @Nullable String versionFile,
     @Nullable String requiredIJPluginID,
@@ -50,6 +51,9 @@ public class FakeWorkspaceFactory {
     if (syncScript != null) {
       fs.file("/workspace/" + syncScript, "");
     }
+    if (toolsScript != null) {
+      fs.file("/workspace/" + toolsScript, "");
+    }
     if (sdkHome != null) {
       fs.file("/workspace/" + sdkHome, "");
     }
@@ -73,6 +77,7 @@ public class FakeWorkspaceFactory {
           testScript,
           runScript,
           syncScript,
+          toolsScript,
           sdkHome,
           requiredIJPluginID,
           requiredIJPluginMessage,
@@ -97,6 +102,7 @@ public class FakeWorkspaceFactory {
       "scripts/flutter-test.sh",
       "scripts/flutter-run.sh",
       "scripts/flutter-sync.sh",
+      "scripts/flutter-tools.sh",
       "scripts/",
       "flutter-version",
       "some.ij.plugin.id",
