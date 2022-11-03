@@ -179,6 +179,9 @@ public class Workspace {
     return syncScript;
   }
 
+  /**
+   * Returns the generic script for running flutter actions, or null if not configured.
+   */
   @Nullable
   public String getToolsScript() {
     return toolsScript;

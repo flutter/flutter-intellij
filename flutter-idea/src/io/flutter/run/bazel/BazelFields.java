@@ -158,11 +158,11 @@ public class BazelFields {
 
   private String getToolsScriptFromWorkspace(@NotNull final Project project) {
     final Workspace workspace = getWorkspace(project);
-    String runScript = workspace == null ? null : workspace.getToolsScript();
-    if (runScript != null) {
-      runScript = workspace.getRoot().getPath() + "/" + runScript;
+    String toolsScript = workspace == null ? null : workspace.getToolsScript();
+    if (toolsScript != null) {
+      toolsScript = workspace.getRoot().getPath() + "/" + toolsScript;
     }
-    return runScript;
+    return toolsScript;
   }
 
   // TODO(djshuckerow): this is dependency injection; switch this to a framework as we need more DI.
