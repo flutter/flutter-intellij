@@ -22,6 +22,6 @@ class _$NAME$State extends State<$NAME$> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Container($END$);
+    return Placeholder($END$);
   }
 }

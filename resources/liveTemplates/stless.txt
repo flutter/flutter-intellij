@@ -3,6 +3,6 @@ class $NAME$ extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container($END$);
+    return Placeholder($END$);
   }
 }
