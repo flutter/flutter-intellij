@@ -64,6 +64,11 @@ public class PluginConfig {
   }
 
   @Nullable
+  String getToolsScript() {
+    return fields.toolsScript;
+  }
+
+  @Nullable
   String getSdkHome() {
     return fields.sdkHome;
   }
@@ -144,6 +149,7 @@ public class PluginConfig {
     @Nullable String testScript,
     @Nullable String runScript,
     @Nullable String syncScript,
+    @Nullable String toolsScript,
     @Nullable String sdkHome,
     @Nullable String requiredIJPluginID,
     @Nullable String requiredIJPluginMessage,
@@ -157,6 +163,7 @@ public class PluginConfig {
       testScript,
       runScript,
       syncScript,
+      toolsScript,
       sdkHome,
       requiredIJPluginID,
       requiredIJPluginMessage,
@@ -203,6 +210,9 @@ public class PluginConfig {
     @SerializedName("syncScript")
     private String syncScript;
 
+    @SerializedName("toolsScript")
+    private String toolsScript;
+
     /**
      * The directory containing the SDK tools.
      */
@@ -245,6 +255,7 @@ public class PluginConfig {
            String testScript,
            String runScript,
            String syncScript,
+           String toolsScript,
            String sdkHome,
            String requiredIJPluginID,
            String requiredIJPluginMessage,
@@ -256,6 +267,7 @@ public class PluginConfig {
       this.testScript = testScript;
       this.runScript = runScript;
       this.syncScript = syncScript;
+      this.toolsScript = toolsScript;
       this.sdkHome = sdkHome;
       this.requiredIJPluginID = requiredIJPluginID;
       this.requiredIJPluginMessage = requiredIJPluginMessage;

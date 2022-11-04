@@ -29,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class BazelRunConfig extends RunConfigurationBase<LaunchState>
   implements RunConfigurationWithSuppressedDefaultRunAction, LaunchState.RunConfig {
-  @NotNull private BazelFields fields;
+  @NotNull protected BazelFields fields;
 
   BazelRunConfig(final @NotNull Project project, final @NotNull ConfigurationFactory factory, @NotNull final String name) {
     super(project, factory, name);

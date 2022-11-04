@@ -379,6 +379,7 @@ public class LaunchCommandsTest {
                     @Nullable String testScript,
                     @Nullable String runScript,
                     @Nullable String syncScript,
+                    @Nullable String toolsScript,
                     @Nullable String sdkHome,
                     @Nullable String versionFile,
                     @Nullable String requiredIJPluginID,
@@ -387,7 +388,7 @@ public class LaunchCommandsTest {
                     @Nullable String updatedIosRunMessage) {
       super(template);
       final Pair.NonNull<MockVirtualFileSystem, Workspace> pair = FakeWorkspaceFactory
-        .createWorkspaceAndFilesystem(daemonScript, devToolsScript, doctorScript, testScript, runScript, syncScript, sdkHome, versionFile,
+        .createWorkspaceAndFilesystem(daemonScript, devToolsScript, doctorScript, testScript, runScript, syncScript, toolsScript, sdkHome, versionFile,
                                       requiredIJPluginID, requiredIJPluginMessage, configWarningMessage, updatedIosRunMessage);
       fs = pair.first;
       fakeWorkspace = pair.second;

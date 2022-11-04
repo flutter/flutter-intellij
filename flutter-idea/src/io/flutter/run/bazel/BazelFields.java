@@ -37,6 +37,7 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -156,6 +157,15 @@ public class BazelFields {
     return runScript;
   }
 
+  private String getToolsScriptFromWorkspace(@NotNull final Project project) {
+    final Workspace workspace = getWorkspace(project);
+    String toolsScript = workspace == null ? null : workspace.getToolsScript();
+    if (toolsScript != null) {
+      toolsScript = workspace.getRoot().getPath() + File.separatorChar + toolsScript;
+    }
+    return toolsScript;
+  }
+
   // TODO(djshuckerow): this is dependency injection; switch this to a framework as we need more DI.
   @Nullable
   protected Workspace getWorkspace(@NotNull Project project) {
@@ -201,12 +211,18 @@ public class BazelFields {
     }
   }
 
+  GeneralCommandLine getLaunchCommand(@NotNull Project project,
+                                      @Nullable FlutterDevice device,
+                                      @NotNull RunMode mode) throws ExecutionException {
+    return getLaunchCommand(project, device, mode, false);
+  }
+
   /**
    * Returns the command to use to launch the Flutter app. (Via running the Bazel target.)
    */
   GeneralCommandLine getLaunchCommand(@NotNull Project project,
                                       @Nullable FlutterDevice device,
-                                      @NotNull RunMode mode)
+                                      @NotNull RunMode mode, boolean isAttach)
     throws ExecutionException {
     try {
       checkRunnable(project);
@@ -217,7 +233,7 @@ public class BazelFields {
 
     final Workspace workspace = getWorkspace(project);
 
-    final String launchingScript = getRunScriptFromWorkspace(project);
+    final String launchingScript = isAttach ? getToolsScriptFromWorkspace(project) : getRunScriptFromWorkspace(project);
     assert launchingScript != null; // already checked
     assert workspace != null; // if the workspace is null, then so is the launching script, therefore this was already checked.
 
@@ -230,6 +246,10 @@ public class BazelFields {
       .withWorkDirectory(workspace.getRoot().getPath());
     commandLine.setCharset(StandardCharsets.UTF_8);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
+
+    if (isAttach) {
+      commandLine.addParameter("attach");
+    }
 
     final String inputBazelArgs = StringUtil.notNullize(bazelArgs);
     if (!inputBazelArgs.isEmpty()) {

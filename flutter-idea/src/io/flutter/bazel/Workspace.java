@@ -45,6 +45,7 @@ public class Workspace {
   @Nullable private final String testScript;
   @Nullable private final String runScript;
   @Nullable private final String syncScript;
+  @Nullable private final String toolsScript;
   @Nullable private final String sdkHome;
   @Nullable private final String requiredIJPluginID;
   @Nullable private final String requiredIJPluginMessage;
@@ -59,6 +60,7 @@ public class Workspace {
                     @Nullable String testScript,
                     @Nullable String runScript,
                     @Nullable String syncScript,
+                    @Nullable String toolsScript,
                     @Nullable String sdkHome,
                     @Nullable String requiredIJPluginID,
                     @Nullable String requiredIJPluginMessage,
@@ -72,6 +74,7 @@ public class Workspace {
     this.testScript = testScript;
     this.runScript = runScript;
     this.syncScript = syncScript;
+    this.toolsScript = toolsScript;
     this.sdkHome = sdkHome;
     this.requiredIJPluginID = requiredIJPluginID;
     this.requiredIJPluginMessage = requiredIJPluginMessage;
@@ -174,6 +177,14 @@ public class Workspace {
   @Nullable
   public String getSyncScript() {
     return syncScript;
+  }
+
+  /**
+   * Returns the generic script for running flutter actions, or null if not configured.
+   */
+  @Nullable
+  public String getToolsScript() {
+    return toolsScript;
   }
 
   /**
@@ -288,6 +299,8 @@ public class Workspace {
 
     final String syncScript = config == null ? null : getScriptFromPath(root, readonlyPath, config.getSyncScript());
 
+    final String toolsScript = config == null ? null : getScriptFromPath(root, readonlyPath, config.getToolsScript());
+
     final String sdkHome = config == null ? null : getScriptFromPath(root, readonlyPath, config.getSdkHome());
 
     final String requiredIJPluginID = config == null ? null : config.getRequiredIJPluginID();
@@ -298,7 +311,7 @@ public class Workspace {
 
     final String updatedIosRunMessage = config == null ? null : config.getUpdatedIosRunMessage();
 
-    return new Workspace(root, config, daemonScript, devToolsScript, doctorScript, testScript, runScript, syncScript, sdkHome, requiredIJPluginID, requiredIJPluginMessage, configWarningPrefix, updatedIosRunMessage);
+    return new Workspace(root, config, daemonScript, devToolsScript, doctorScript, testScript, runScript, syncScript, toolsScript, sdkHome, requiredIJPluginID, requiredIJPluginMessage, configWarningPrefix, updatedIosRunMessage);
   }
 
   @VisibleForTesting
@@ -312,6 +325,7 @@ public class Workspace {
       pluginConfig.getTestScript(),
       pluginConfig.getRunScript(),
       pluginConfig.getSyncScript(),
+      pluginConfig.getToolsScript(),
       pluginConfig.getSdkHome(),
       pluginConfig.getRequiredIJPluginID(),
       pluginConfig.getRequiredIJPluginMessage(),
