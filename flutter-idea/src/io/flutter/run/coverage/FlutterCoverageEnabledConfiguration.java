@@ -17,6 +17,7 @@ import com.intellij.util.ModalityUiUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
+import io.flutter.run.test.TestConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,11 +38,11 @@ public class FlutterCoverageEnabledConfiguration extends CoverageEnabledConfigur
   @Override
   protected String createCoverageFile() {
     if (myCoverageFilePath == null) {
-      final List<PubRoot> roots = PubRoots.forProject(getConfiguration().getProject());
-      if (roots.isEmpty()) {
-        throw new RuntimeException(FlutterBundle.message("project.root.not.found"));
+      if (!(getConfiguration() instanceof TestConfig)) {
+        return "";
       }
-      final VirtualFile root = roots.get(0).getRoot();
+      VirtualFile file = ((TestConfig)getConfiguration()).getFields().getFileOrDir();
+      final VirtualFile root = PubRoot.forFile(file).getRoot();
       myCoverageFilePath = root.getPath() + "/coverage/lcov.info";
     }
     return myCoverageFilePath;
