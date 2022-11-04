@@ -37,6 +37,7 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -160,7 +161,7 @@ public class BazelFields {
     final Workspace workspace = getWorkspace(project);
     String toolsScript = workspace == null ? null : workspace.getToolsScript();
     if (toolsScript != null) {
-      toolsScript = workspace.getRoot().getPath() + "/" + toolsScript;
+      toolsScript = workspace.getRoot().getPath() + File.separatorChar + toolsScript;
     }
     return toolsScript;
   }

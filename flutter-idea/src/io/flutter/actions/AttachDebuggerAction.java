@@ -92,7 +92,7 @@ public class AttachDebuggerAction extends FlutterSdkAction {
     ProgramRunnerUtil.executeConfiguration(env, false, true);
   }
 
-  public void startCommandInBazelContext(@NotNull Project project, @NotNull Workspace workspace, AnActionEvent event) {
+  public void startCommandInBazelContext(@NotNull Project project, @NotNull Workspace workspace, @NotNull AnActionEvent event) {
     FlutterInitializer.sendAnalyticsAction(this);
 
     RunConfiguration configuration = findRunConfig(project);
