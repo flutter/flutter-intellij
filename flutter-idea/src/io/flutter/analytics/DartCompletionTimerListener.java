@@ -3,6 +3,7 @@ package io.flutter.analytics;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 
+import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.lang.dart.ide.completion.DartCompletionTimerExtension;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,8 +21,12 @@ public class DartCompletionTimerListener extends DartCompletionTimerExtension {
   @Override
   public void dartCompletionStart() {
     if (dasListener == null) {
-      Project project = ProjectManager.getInstance().getDefaultProject();
-      dasListener = FlutterAnalysisServerListener.getInstance(project);
+      try {
+        Project project = ProjectManager.getInstance().getDefaultProject();
+        dasListener = FlutterAnalysisServerListener.getInstance(project);
+      } catch (IncorrectOperationException ex) {
+        return;
+      }
     }
     startTimeMS = Instant.now().toEpochMilli();
   }
