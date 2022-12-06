@@ -65,61 +65,65 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     // Only show device menu when the device daemon process is running.
     final Project project = e.getProject();
-    if (!isSelectorVisible(project)) {
-      e.getPresentation().setVisible(false);
-      return;
-    }
-
-    super.update(e);
-
     final Presentation presentation = e.getPresentation();
-    if (!knownProjects.contains(project)) {
-      knownProjects.add(project);
-      final Application application = ApplicationManager.getApplication();
-      application.getMessageBus().connect().subscribe(ProjectManager.TOPIC, new ProjectManagerListener() {
-        @Override
-        public void projectClosed(@NotNull Project closedProject) {
-          knownProjects.remove(closedProject);
-        }
-      });
-      Runnable deviceListener = () -> queueUpdate(project, e.getPresentation());
-      DeviceService.getInstance(project).addListener(deviceListener);
+    final Application application = ApplicationManager.getApplication();
+    if (application == null) return;
 
-      // Listen for android device changes, and rebuild the menu if necessary.
-      Runnable emulatorListener = () -> queueUpdate(project, e.getPresentation());
-      AndroidEmulatorManager.getInstance(project).addListener(emulatorListener);
-      ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
-        public void projectClosing(@NotNull Project project) {
-          DeviceService.getInstance(project).removeListener(deviceListener);
-          AndroidEmulatorManager.getInstance(project).removeListener(emulatorListener);
-        }
-      });
-      update(project, presentation);
-    }
-
-    final DeviceService deviceService = DeviceService.getInstance(project);
-
-    final FlutterDevice selectedDevice = deviceService.getSelectedDevice();
-    final Collection<FlutterDevice> devices = deviceService.getConnectedDevices();
-
-    if (devices.isEmpty()) {
-      final boolean isLoading = deviceService.getStatus() == DeviceService.State.LOADING;
-      if (isLoading) {
-        presentation.setText(FlutterBundle.message("devicelist.loading"));
+    application.invokeLater(() -> {
+      if (!isSelectorVisible(project)) {
+        e.getPresentation().setVisible(false);
+        return;
       }
-      else {
-        presentation.setText("<no devices>");
+
+      super.update(e);
+
+      if (!knownProjects.contains(project)) {
+        knownProjects.add(project);
+        application.getMessageBus().connect().subscribe(ProjectManager.TOPIC, new ProjectManagerListener() {
+          @Override
+          public void projectClosed(@NotNull Project closedProject) {
+            knownProjects.remove(closedProject);
+          }
+        });
+        Runnable deviceListener = () -> queueUpdate(project, e.getPresentation());
+        DeviceService.getInstance(project).addListener(deviceListener);
+
+        // Listen for android device changes, and rebuild the menu if necessary.
+        Runnable emulatorListener = () -> queueUpdate(project, e.getPresentation());
+        AndroidEmulatorManager.getInstance(project).addListener(emulatorListener);
+        ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
+          public void projectClosing(@NotNull Project project) {
+            DeviceService.getInstance(project).removeListener(deviceListener);
+            AndroidEmulatorManager.getInstance(project).removeListener(emulatorListener);
+          }
+        });
+        update(project, presentation);
       }
-    }
-    else if (selectedDevice == null) {
-      presentation.setText("<no device selected>");
-    }
-    else if (selectedDeviceAction != null) {
-      final Presentation template = selectedDeviceAction.getTemplatePresentation();
-      presentation.setIcon(template.getIcon());
-      presentation.setText(selectedDevice.presentationName());
-      presentation.setEnabled(true);
-    }
+
+      final DeviceService deviceService = DeviceService.getInstance(project);
+
+      final FlutterDevice selectedDevice = deviceService.getSelectedDevice();
+      final Collection<FlutterDevice> devices = deviceService.getConnectedDevices();
+
+      if (devices.isEmpty()) {
+        final boolean isLoading = deviceService.getStatus() == DeviceService.State.LOADING;
+        if (isLoading) {
+          presentation.setText(FlutterBundle.message("devicelist.loading"));
+        }
+        else {
+          presentation.setText("<no devices>");
+        }
+      }
+      else if (selectedDevice == null) {
+        presentation.setText("<no device selected>");
+      }
+      else if (selectedDeviceAction != null) {
+        final Presentation template = selectedDeviceAction.getTemplatePresentation();
+        presentation.setIcon(template.getIcon());
+        presentation.setText(selectedDevice.presentationName());
+        presentation.setEnabled(true);
+      }
+    });
   }
 
   private void queueUpdate(@NotNull Project project, @NotNull Presentation presentation) {
