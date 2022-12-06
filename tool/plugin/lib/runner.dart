@@ -55,7 +55,7 @@ jxbrowser.license.key=$jxBrowserKey
     String testing,
   ) async {
     var javaVersion, smaliPlugin, langPlugin;
-    if (['AS.211', 'AS.212', 'AS.213', 'setup', '2022.1'].contains(spec.version)) {
+    if (['AS.211', 'AS.212', 'AS.213', '2022.1'].contains(spec.version)) {
       javaVersion = '11';
       smaliPlugin = 'smali';
       langPlugin = 'IntelliLang';
