@@ -85,7 +85,7 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   /**
    * The version that includes the skeleton template.
    */
-  private static final FlutterSdkVersion MIN_EMPTY_PROJECT = new FlutterSdkVersion("3.6.0-5.0.pre.2");
+  private static final FlutterSdkVersion MIN_EMPTY_PROJECT = new FlutterSdkVersion("3.6.0-0.1.pre");
 
   /**
    * The version that implements URI mapping for web.
