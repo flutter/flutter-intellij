@@ -1,11 +1,11 @@
 <templateSet group="Flutter">
-  <template name="stless" value="class $NAME$ extends StatelessWidget {&#10;  const $NAME$({Key? key}) : super(key: key);&#10;&#10;  @override&#10;  Widget build(BuildContext context) {&#10;    return Placeholder($END$);&#10;  }&#10;}&#10;" description="New Stateless widget" toReformat="false" toShortenFQNames="true">
+  <template name="stless" value="class $NAME$ extends StatelessWidget {&#10;  const $NAME$({Key? key}) : super(key: key);&#10;&#10;  @override&#10;  Widget build(BuildContext context) {&#10;    return const Placeholder($END$);&#10;  }&#10;}&#10;" description="New Stateless widget" toReformat="false" toShortenFQNames="true">
     <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
     <context>
       <option name="DART_TOPLEVEL" value="true" />
     </context>
   </template>
-  <template name="stful" value="class $NAME$ extends StatefulWidget {&#10;  const $NAME$({Key? key}) : super(key: key);&#10;&#10;  @override&#10;  State&lt;$NAME$&gt; createState() =&gt; $SNAME$();&#10;}&#10;&#10;class $SNAME$ extends State&lt;$NAME$&gt; {&#10;  @override&#10;  Widget build(BuildContext context) {&#10;    return Placeholder($END$);&#10;  }&#10;}&#10;" description="New Stateful widget" toReformat="false" toShortenFQNames="true">
+  <template name="stful" value="class $NAME$ extends StatefulWidget {&#10;  const $NAME$({Key? key}) : super(key: key);&#10;&#10;  @override&#10;  State&lt;$NAME$&gt; createState() =&gt; $SNAME$();&#10;}&#10;&#10;class $SNAME$ extends State&lt;$NAME$&gt; {&#10;  @override&#10;  Widget build(BuildContext context) {&#10;    return const Placeholder($END$);&#10;  }&#10;}&#10;" description="New Stateful widget" toReformat="false" toShortenFQNames="true">
     <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
     <variable name="SNAME" expression="regularExpression(concat(&quot;_&quot;, NAME, &quot;State&quot;), &quot;^__&quot;, &quot;_&quot;)" defaultValue="" alwaysStopAt="false" />
     <context>
@@ -19,7 +19,7 @@
       <option name="DART_TOPLEVEL" value="true" />
     </context>
   </template>
-  <template name="stanim" value="class $NAME$ extends StatefulWidget {&#10;  const $NAME$({Key? key}) : super(key: key);&#10;&#10;  @override&#10;  State&lt;$NAME$&gt; createState() =&gt; _$NAME$State();&#10;}&#10;&#10;class _$NAME$State extends State&lt;$NAME$&gt; with SingleTickerProviderStateMixin {&#10;  late AnimationController _controller;&#10;&#10;  @override&#10;  void initState() {&#10;    super.initState();&#10;    _controller = AnimationController(vsync: this);&#10;  }&#10;&#10;  @override&#10;  void dispose() {&#10;    _controller.dispose();&#10;    super.dispose();&#10;  }&#10;&#10;  @override&#10;  Widget build(BuildContext context) {&#10;    return Placeholder($END$);&#10;  }&#10;}&#10;" description="New Stateful widget with AnimationController" toReformat="false" toShortenFQNames="true">
+  <template name="stanim" value="class $NAME$ extends StatefulWidget {&#10;  const $NAME$({Key? key}) : super(key: key);&#10;&#10;  @override&#10;  State&lt;$NAME$&gt; createState() =&gt; _$NAME$State();&#10;}&#10;&#10;class _$NAME$State extends State&lt;$NAME$&gt; with SingleTickerProviderStateMixin {&#10;  late AnimationController _controller;&#10;&#10;  @override&#10;  void initState() {&#10;    super.initState();&#10;    _controller = AnimationController(vsync: this);&#10;  }&#10;&#10;  @override&#10;  void dispose() {&#10;    _controller.dispose();&#10;    super.dispose();&#10;  }&#10;&#10;  @override&#10;  Widget build(BuildContext context) {&#10;    return const Placeholder($END$);&#10;  }&#10;}&#10;" description="New Stateful widget with AnimationController" toReformat="false" toShortenFQNames="true">
     <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
     <context>
       <option name="DART_TOPLEVEL" value="true" />
