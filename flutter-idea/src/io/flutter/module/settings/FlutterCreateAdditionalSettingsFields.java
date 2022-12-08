@@ -174,7 +174,7 @@ public class FlutterCreateAdditionalSettingsFields {
       .setPlatformIos(shouldIncludePlatforms() ? settings.getPlatformIos() : null)
       .setPlatformLinux(shouldIncludePlatforms() ? settings.getPlatformLinux() : null)
       .setPlatformMacos(shouldIncludePlatforms() ? settings.getPlatformMacos() : null)
-      .setPlatformWeb(shouldIncludePlatforms() ? settings.getPlatformWeb() : null)
+      .setPlatformWeb(shouldIncludePlatforms() && projectTypeForm.getType() != FlutterProjectType.PLUGIN_FFI ? settings.getPlatformWeb() : null)
       .setPlatformWindows(shouldIncludePlatforms() ? settings.getPlatformWindows() : null)
       .build();
   }
@@ -184,6 +184,8 @@ public class FlutterCreateAdditionalSettingsFields {
       case APP: // fall through
       case SKELETON:
       case PLUGIN:
+      case PLUGIN_FFI:
+      case EMPTY_PROJECT:
         return true;
       default:
         return false;

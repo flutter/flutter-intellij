@@ -78,6 +78,16 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   private static final FlutterSdkVersion MIN_SKELETON_TEMPLATE = new FlutterSdkVersion("2.5.0");
 
   /**
+   * The version that includes the skeleton template.
+   */
+  private static final FlutterSdkVersion MIN_PLUGIN_FFI_TEMPLATE = new FlutterSdkVersion("3.0.0");
+
+  /**
+   * The version that includes the skeleton template.
+   */
+  private static final FlutterSdkVersion MIN_EMPTY_PROJECT = new FlutterSdkVersion("3.6.0-0.1.pre");
+
+  /**
    * The version that implements URI mapping for web.
    */
   @NotNull
@@ -215,6 +225,14 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   public boolean isSkeletonTemplateAvailable() {
     return version != null && version.compareTo(MIN_SKELETON_TEMPLATE.version) >= 0;
+  }
+
+  public boolean isPluginFfiTemplateAvailable() {
+    return version != null && version.compareTo(MIN_PLUGIN_FFI_TEMPLATE.version) >= 0;
+  }
+
+  public boolean isEmptyProjectAvailable() {
+    return version != null && version.compareTo(MIN_EMPTY_PROJECT.version) >= 0;
   }
 
   public boolean isUriMappingSupportedForWeb() {

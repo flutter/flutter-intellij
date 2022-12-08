@@ -12,7 +12,9 @@ public enum FlutterProjectType {
   PLUGIN(FlutterBundle.message("flutter.module.create.settings.type.plugin"), "plugin", true),
   PACKAGE(FlutterBundle.message("flutter.module.create.settings.type.package"), "package", false),
   MODULE(FlutterBundle.message("flutter.module.create.settings.type.module"), "module", false),
-  SKELETON("Skeleton", "skeleton", false),
+  SKELETON("Skeleton", "skeleton", true),
+  PLUGIN_FFI("FFI Plugin", "plugin_ffi", true),
+  EMPTY_PROJECT("Empty Project", "--empty", true),
   IMPORT(FlutterBundle.message("flutter.module.create.settings.type.import_module"), "module", false);
 
   final public String title;

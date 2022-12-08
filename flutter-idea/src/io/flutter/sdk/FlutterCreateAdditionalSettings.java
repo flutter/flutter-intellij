@@ -118,7 +118,9 @@ public class FlutterCreateAdditionalSettings {
     }
 
     if (type != null) {
-      args.add("--template");
+      if (type != FlutterProjectType.EMPTY_PROJECT) {
+        args.add("--template");
+      }
       args.add(type.arg);
     }
 

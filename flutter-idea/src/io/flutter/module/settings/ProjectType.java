@@ -10,6 +10,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkVersion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,6 +71,26 @@ public class ProjectType {
     void removeSkeleton() {
       myList.remove(FlutterProjectType.SKELETON);
     }
+
+    void addPluginFfi() {
+      if (!myList.contains(FlutterProjectType.PLUGIN_FFI)) {
+        myList.add(FlutterProjectType.PLUGIN_FFI);
+      }
+    }
+
+    void removePluginFfi() {
+      myList.remove(FlutterProjectType.PLUGIN_FFI);
+    }
+
+    void addEmptyProject() {
+      if (!myList.contains(FlutterProjectType.EMPTY_PROJECT)) {
+        myList.add(FlutterProjectType.EMPTY_PROJECT);
+      }
+    }
+
+    void removeEmptyProject() {
+      myList.remove(FlutterProjectType.EMPTY_PROJECT);
+    }
   }
 
   private Supplier<? extends FlutterSdk> getSdk;
@@ -114,11 +135,25 @@ public class ProjectType {
   }
 
   public void updateProjectTypes() {
-    if (getSdk.get().getVersion().isSkeletonTemplateAvailable()) {
-      ((ProjectTypeComboBoxModel)projectTypeCombo.getModel()).addSkeleton();
+    FlutterSdkVersion version = getSdk.get().getVersion();
+    ProjectTypeComboBoxModel model = (ProjectTypeComboBoxModel)projectTypeCombo.getModel();
+    if (version.isSkeletonTemplateAvailable()) {
+      model.addSkeleton();
     }
     else {
-      ((ProjectTypeComboBoxModel)projectTypeCombo.getModel()).removeSkeleton();
+      model.removeSkeleton();
+    }
+    if (version.isPluginFfiTemplateAvailable()) {
+      model.addPluginFfi();
+    }
+    else {
+      model.removePluginFfi();
+    }
+    if (version.isEmptyProjectAvailable()) {
+      model.addEmptyProject();
+    }
+    else {
+      model.removeEmptyProject();
     }
   }
 }
