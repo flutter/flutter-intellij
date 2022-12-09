@@ -1,3 +1,14 @@
+# 71.1
+- Tweak device selector code
+- Add new project types plugin_ffi and empty (#6433)
+- Update device selector in background (#6429)
+- Catch exception if default project was disposed (#6401)
+- Fix test coverage for monorepo projects (#6391)
+- Permit attach in bazel context (#6389)
+- Change Container to Placeholder in live templates (#6390)
+- Move tests to 2022.2 (#6386)
+- Remove some deprecated API uses (#6383)
+
 # 71.0
 - Remove the process listener after emulator termination (#6377)
 - Remove obsolete code from NPW  (#6374)
