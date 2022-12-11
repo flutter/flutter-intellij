@@ -1,7 +1,7 @@
 // Copyright 2017 The Chromium Authors. All rights reserved. Use of this source
 // code is governed by a BSD-style license that can be found in the LICENSE file.
 
-// @dart = 2.10
+// @dart = 2.12
 
 import 'dart:async';
 import 'dart:io';
@@ -96,7 +96,7 @@ void main() {
   group('release', () {
     test('simple', () async {
       var runner = makeTestRunner();
-      TestDeployCommand cmd;
+      late TestDeployCommand cmd;
       await runner.run(["-r19", "-d../..", "deploy"]).whenComplete(() {
         cmd = (runner.commands['deploy'] as TestDeployCommand);
       });
@@ -105,7 +105,7 @@ void main() {
 
     test('minor', () async {
       var runner = makeTestRunner();
-      TestDeployCommand cmd;
+      late TestDeployCommand cmd;
       await runner.run(["-r19.2", "-d../..", "deploy"]).whenComplete(() {
         cmd = (runner.commands['deploy'] as TestDeployCommand);
       });
@@ -114,7 +114,7 @@ void main() {
 
     test('patch invalid', () async {
       var runner = makeTestRunner();
-      TestDeployCommand cmd;
+      late TestDeployCommand cmd;
       await runner.run(["-r19.2.1", "-d../..", "deploy"]).whenComplete(() {
         cmd = (runner.commands['deploy'] as TestDeployCommand);
       });
@@ -123,7 +123,7 @@ void main() {
 
     test('non-numeric', () async {
       var runner = makeTestRunner();
-      TestDeployCommand cmd;
+      late TestDeployCommand cmd;
       await runner.run(["-rx19.2", "-d../..", "deploy"]).whenComplete(() {
         cmd = (runner.commands['deploy'] as TestDeployCommand);
       });
@@ -148,7 +148,7 @@ void main() {
 
     test('without --release', () async {
       var runner = makeTestRunner();
-      TestDeployCommand cmd;
+      late TestDeployCommand cmd;
       await runner.run(["-d../..", "deploy"]).whenComplete(() {
         cmd = (runner.commands['deploy'] as TestDeployCommand);
       });
@@ -157,7 +157,7 @@ void main() {
 
     test('release paths', () async {
       var runner = makeTestRunner();
-      TestDeployCommand cmd;
+      late TestDeployCommand cmd;
       await runner.run(["--release=19", "-d../..", "deploy"]).whenComplete(() {
         cmd = (runner.commands['deploy'] as TestDeployCommand);
       });
@@ -169,7 +169,7 @@ void main() {
   group('build', () {
     test('plugin.xml', () async {
       var runner = makeTestRunner();
-      TestBuildCommand cmd;
+      late TestBuildCommand cmd;
       await runner.run(["-d../..", "build"]).whenComplete(() {
         cmd = (runner.commands['build'] as TestBuildCommand);
       });
@@ -188,7 +188,7 @@ void main() {
     // test timeout.
     test('provision', () async {
       var runner = makeTestRunner();
-      TestBuildCommand cmd;
+      late TestBuildCommand cmd;
       await runner.run(["-d../..", "build"]).whenComplete(() {
         cmd = (runner.commands['build'] as TestBuildCommand);
       });
@@ -199,7 +199,8 @@ void main() {
     }, skip: true);
 
     test('only-version', () async {
-      ProductCommand command = makeTestRunner().commands['build'];
+      ProductCommand command =
+          makeTestRunner().commands['build'] as ProductCommand;
       var results = command.argParser.parse(['--only-version=2018.1']);
       expect(results['only-version'], '2018.1');
     });
@@ -208,7 +209,7 @@ void main() {
   group('ProductCommand', () {
     test('parses release', () async {
       var runner = makeTestRunner();
-      ProductCommand command;
+      late ProductCommand command;
       await runner.run(["-d../..", '-r22.0', "build"]).whenComplete(() {
         command = (runner.commands['build'] as ProductCommand);
       });
@@ -216,7 +217,7 @@ void main() {
     });
     test('parses release partial number', () async {
       var runner = makeTestRunner();
-      ProductCommand command;
+      late ProductCommand command;
       await runner.run(["-d../..", '-r22', "build"]).whenComplete(() {
         command = (runner.commands['build'] as ProductCommand);
       });
@@ -225,7 +226,7 @@ void main() {
 
     test('isReleaseValid', () async {
       var runner = makeTestRunner();
-      ProductCommand command;
+      late ProductCommand command;
       await runner.run(["-d../..", '-r22.0', "build"]).whenComplete(() {
         command = (runner.commands['build'] as ProductCommand);
       });
@@ -233,7 +234,7 @@ void main() {
     });
     test('isReleaseValid partial version', () async {
       var runner = makeTestRunner();
-      ProductCommand command;
+      late ProductCommand command;
       await runner.run(["-d../..", '-r22', "build"]).whenComplete(() {
         command = (runner.commands['build'] as ProductCommand);
       });
@@ -241,7 +242,7 @@ void main() {
     });
     test('isReleaseValid bad version', () async {
       var runner = makeTestRunner();
-      ProductCommand command;
+      late ProductCommand command;
       await runner.run(["-d../..", '-r22.0.0', "build"]).whenComplete(() {
         command = (runner.commands['build'] as ProductCommand);
       });

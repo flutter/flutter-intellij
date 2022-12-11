@@ -1,7 +1,7 @@
 // Copyright 2017 The Chromium Authors. All rights reserved. Use of this source
 // code is governed by a BSD-style license that can be found in the LICENSE file.
 
-// @dart = 2.10
+// @dart = 2.12
 
 import 'dart:async';
 import 'dart:io';
@@ -61,7 +61,7 @@ class LintCommand extends Command {
       if (import.startsWith('import ')) import = import.substring(7);
       if (import.endsWith(';')) import = import.substring(0, import.length - 1);
       usages.putIfAbsent(import, () => []);
-      usages[import].add(place);
+      usages[import]!.add(place);
     });
 
     // print report
@@ -74,7 +74,7 @@ class LintCommand extends Command {
     for (var import in keys) {
       print('$import:');
       var places = usages[import];
-      for (var place in places) {
+      for (var place in places!) {
         print('  $place');
       }
       print('');

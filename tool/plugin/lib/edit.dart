@@ -4,12 +4,10 @@
  * found in the LICENSE file.
  */
 
-// @dart = 2.10
+// @dart = 2.12
 
 import 'dart:async';
 import 'dart:io';
-
-import 'package:meta/meta.dart';
 
 import 'build_spec.dart';
 import 'util.dart';
@@ -107,7 +105,7 @@ class Unused extends EditCommand {
   String get path => 'unused';
 
   @override
-  String convert(BuildSpec spec) {
+  String? convert(BuildSpec spec) {
     return null;
   }
 }
@@ -163,7 +161,7 @@ Future<int> applyEdits(BuildSpec spec, Function compileFn) async {
 
 /// Make some changes to a source file prior to compiling for a specific IDE.
 abstract class EditCommand {
-  String convert(BuildSpec spec);
+  String? convert(BuildSpec spec);
 
   void restore(String source) {
     var processedFile = File(path);
@@ -184,23 +182,19 @@ class Subst extends EditCommand {
   List<String> versions;
 
   Subst(
-      {this.versions,
-      @required this.initial,
-      @required this.replacement,
-      @required this.path,
-      String version})
-      : assert(initial != null),
-        assert(replacement != null),
-        assert(path != null) {
+      {this.versions = const [''],
+      required this.initial,
+      required this.replacement,
+      required this.path,
+      String? version}) {
     if (version != null) {
       // Disallow both version and versions keywords.
-      assert(versions == null);
       versions = [version];
     }
   }
 
   @override
-  String convert(BuildSpec spec) {
+  String? convert(BuildSpec spec) {
     if (versionMatches(spec)) {
       var processedFile = File(path);
       var source = processedFile.readAsStringSync();
@@ -231,19 +225,18 @@ class MultiSubst extends EditCommand {
   List<String> versions;
 
   MultiSubst({
-    this.versions,
-    this.initials,
-    this.replacements,
-    @required this.path,
+    required this.versions,
+    required this.initials,
+    required this.replacements,
+    required this.path,
   }) {
     assert(initials.length == replacements.length);
-    assert(path != null);
     assert(versions.isNotEmpty);
     assert(initials.isNotEmpty);
   }
 
   @override
-  String convert(BuildSpec spec) {
+  String? convert(BuildSpec spec) {
     if (versionMatches(spec)) {
       var processedFile = File(path);
       var source = processedFile.readAsStringSync();
