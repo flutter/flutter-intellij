@@ -1,7 +1,7 @@
 // Copyright 2017 The Chromium Authors. All rights reserved. Use of this source
 // code is governed by a BSD-style license that can be found in the LICENSE file.
 
-// @dart = 2.10
+// @dart = 2.12
 
 import 'dart:async';
 import 'dart:io';
@@ -15,7 +15,7 @@ class BuildSpec {
   // Build targets
   final String name;
   final String version;
-  final String ijVersion;
+  final String? ijVersion;
   final bool isTestTarget;
   final bool isUnitTestTarget;
   final String ideaProduct;
@@ -27,15 +27,15 @@ class BuildSpec {
   final String sinceBuild;
   final String untilBuild;
   final String pluginId = 'io.flutter';
-  final String release;
+  final String? release;
   final List<dynamic> filesToSkip;
   String channel;
-  String _changeLog;
+  String? _changeLog;
 
   ArtifactManager artifacts = ArtifactManager();
 
-  Artifact product;
-  Artifact dartPlugin;
+  late Artifact product;
+  late Artifact dartPlugin;
 
   BuildSpec.fromJson(Map json, this.release)
       : name = json['name'],
@@ -77,7 +77,7 @@ class BuildSpec {
       }
     }
 
-    return _changeLog;
+    return _changeLog!;
   }
 
   void createArtifacts() {
@@ -107,8 +107,7 @@ class BuildSpec {
                 // We only put Linux versions in cloud storage.
                 artifacts.add(Artifact('$ideaProduct-$ideaVersion-linux.tar.gz',
                     output: ideaProduct));
-                artifacts.add(Artifact(
-                    '$ideaProduct-$ideaVersion-linux.tar.gz',
+                artifacts.add(Artifact('$ideaProduct-$ideaVersion-linux.tar.gz',
                     output: ideaProduct));
                 artifacts.add(Artifact(
                     '$ideaProduct-ide-$ideaVersion-linux.tar.gz',
@@ -166,7 +165,7 @@ class BuildSpec {
 
   void buildForMaster() {
     // Ensure the dev-channel-only files are stored in release_master.
-    if (channel == 'dev' )channel = 'stable';
+    if (channel == 'dev') channel = 'stable';
   }
 }
 
@@ -177,10 +176,10 @@ class BuildSpec {
 /// last one is the latest used during development. This BuildSpec combines
 /// those two.
 class SyntheticBuildSpec extends BuildSpec {
-  BuildSpec alternate;
+  late BuildSpec alternate;
 
   SyntheticBuildSpec.fromJson(
-      Map json, String releaseNum, List<BuildSpec> specs)
+      Map json, String? releaseNum, List<BuildSpec> specs)
       : super.fromJson(json, releaseNum) {
     try {
       // 'isUnitTestTarget' should always be in the spec for the latest IntelliJ (not AS).

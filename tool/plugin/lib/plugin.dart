@@ -1,7 +1,7 @@
 // Copyright 2017 The Chromium Authors. All rights reserved. Use of this source
 // code is governed by a BSD-style license that can be found in the LICENSE file.
 
-// @dart = 2.10
+// @dart = 2.12
 
 import 'dart:async';
 import 'dart:convert';
@@ -44,7 +44,7 @@ void addProductFlags(ArgParser argParser, String verb) {
       help: '$verb the Android Studio plugin', defaultsTo: true);
 }
 
-void copyResources({String from, String to}) {
+void copyResources({required String from, required String to}) {
   log('copying resources from $from to $to');
   _copyResources(Directory(from), Directory(to));
 }
@@ -86,18 +86,14 @@ List<String> findJavaFiles(String path) {
 }
 
 Future<bool> genPluginFiles(BuildSpec spec, String destDir) async {
-  var result = await genPluginXml(spec, destDir, 'META-INF/plugin.xml');
-  if (result == null) return false;
-
-  result = await genPluginXml(spec, destDir, 'META-INF/studio-contribs.xml');
-  if (result == null) return false;
-
+  await genPluginXml(spec, destDir, 'META-INF/plugin.xml');
+  await genPluginXml(spec, destDir, 'META-INF/studio-contribs.xml');
   return true;
 }
 
 Future<File> genPluginXml(BuildSpec spec, String destDir, String path) async {
   var templatePath =
-      path.substring(0, path.length - '.xml'.length) + '_template.xml';
+      '${path.substring(0, path.length - '.xml'.length)}_template.xml';
   var file =
       await File(p.join(rootPath, destDir, path)).create(recursive: true);
   log('writing ${p.relative(file.path)}');
@@ -403,7 +399,7 @@ abstract class BuildCommand extends ProductCommand {
   Future<int> doit() async {
     try {
       if (isReleaseMode) {
-        if (argResults['unpack']) {
+        if (argResults!['unpack']) {
           separator('Release mode (--release) implies --unpack');
         }
         if (!await performReleaseChecks(this)) {
@@ -412,7 +408,7 @@ abstract class BuildCommand extends ProductCommand {
       }
 
       // Check to see if we should only be building a specific version.
-      String onlyVersion = argResults['only-version'];
+      String? onlyVersion = argResults!['only-version'];
 
       var buildSpecs = specs;
       if (onlyVersion != null && onlyVersion.isNotEmpty) {
@@ -424,7 +420,7 @@ abstract class BuildCommand extends ProductCommand {
         }
       }
 
-      String minorNumber = argResults['minor'];
+      String? minorNumber = argResults!['minor'];
       if (minorNumber != null) {
         pluginCount = int.parse(minorNumber) - 1;
       }
@@ -448,7 +444,7 @@ abstract class BuildCommand extends ProductCommand {
 
         result = await spec.artifacts.provision(
           rebuildCache:
-          isReleaseMode || argResults['unpack'] || buildSpecs.length > 1,
+              isReleaseMode || argResults!['unpack'] || buildSpecs.length > 1,
         );
         if (result != 0) {
           return result;
@@ -483,13 +479,13 @@ abstract class BuildCommand extends ProductCommand {
         separator('Built artifact');
         log(releasesFilePath(spec));
       }
-      if (argResults['only-version'] == null) {
+      if (argResults!['only-version'] == null) {
         checkAndClearAppliedEditCommands();
       }
 
       return 0;
     } finally {
-      if (argResults['setup']) {
+      if (argResults!['setup']) {
         await SetupCommand(runner).run();
       }
     }
@@ -529,7 +525,7 @@ class DeployCommand extends ProductCommand {
       changeDirectory(file.parent);
       var pluginNumber = pluginRegistryIds[spec.pluginId];
       value = await upload(
-          p.basename(file.path), pluginNumber, token, spec.channel);
+          p.basename(file.path), pluginNumber!, token, spec.channel);
       if (value != 0) {
         return value;
       }
@@ -594,19 +590,15 @@ class GenerateCommand extends ProductCommand {
   Future<int> doit() async {
     var json = readProductMatrix();
     var spec = SyntheticBuildSpec.fromJson(json.first, release, specs);
-    var value = 1;
-    var result = await genPluginFiles(spec, 'resources');
-    if (result != null) {
-      genPresubmitYaml(specs);
-      value = 0;
-    }
+    await genPluginFiles(spec, 'resources');
+    genPresubmitYaml(specs);
     generateLiveTemplates();
     if (isReleaseMode) {
       if (!await performReleaseChecks(this)) {
         return 1;
       }
     }
-    return value;
+    return 0;
   }
 
   SyntheticBuildSpec makeSyntheticSpec(List specs) =>
@@ -645,7 +637,7 @@ class GenerateCommand extends ProductCommand {
       // Replace the existing content in the xml live template file with the
       // content from the template $name.txt file.
       final matchString = match.group(1);
-      final matchStart = contents.indexOf(matchString);
+      final matchStart = contents.indexOf(matchString!);
       contents = contents.substring(0, matchStart) +
           replaceContents +
           contents.substring(matchStart + matchString.length);
@@ -658,7 +650,7 @@ class GenerateCommand extends ProductCommand {
 abstract class ProductCommand extends Command {
   @override
   final String name;
-  List<BuildSpec> specs;
+  late List<BuildSpec> specs;
 
   ProductCommand(this.name) {
     addProductFlags(argParser, name[0].toUpperCase() + name.substring(1));
@@ -668,16 +660,16 @@ abstract class ProductCommand extends Command {
         defaultsTo: 'stable');
   }
 
-  String get channel => argResults['channel'];
+  String get channel => argResults!['channel'];
 
   bool get isDevChannel => channel == 'dev';
 
   /// Returns true when running in the context of a unit test.
   bool get isTesting => false;
 
-  bool get isForAndroidStudio => argResults['as'];
+  bool get isForAndroidStudio => argResults!['as'];
 
-  bool get isForIntelliJ => argResults['ij'];
+  bool get isForIntelliJ => argResults!['ij'];
 
   DateTime get releaseDate => lastReleaseDate;
 
@@ -692,10 +684,10 @@ abstract class ProductCommand extends Command {
     return rel == RegExp(r'^\d+\.\d(?:-dev.\d)?$').stringMatch(rel);
   }
 
-  bool get isTestMode => globalResults['cwd'] != null;
+  bool get isTestMode => globalResults!['cwd'] != null;
 
-  String get release {
-    String rel = globalResults['release'];
+  String? get release {
+    String? rel = globalResults!['release'];
 
     if (rel != null) {
       if (rel.startsWith('=')) {
@@ -709,7 +701,7 @@ abstract class ProductCommand extends Command {
     return rel;
   }
 
-  String get releaseMajor {
+  String? get releaseMajor {
     var rel = release;
     if (rel != null) {
       var idx = rel.indexOf('.');
@@ -760,7 +752,7 @@ abstract class ProductCommand extends Command {
     // Initialization constraint: rootPath depends on arg parsing, and
     // lastReleaseName and lastReleaseDate depend on rootPath.
     rootPath = Directory.current.path;
-    var rel = globalResults['cwd'];
+    var rel = globalResults!['cwd'];
     if (rel != null) {
       rootPath = p.normalize(p.join(rootPath, rel));
     }
@@ -791,7 +783,8 @@ class RenamePackageCommand extends ProductCommand {
   @override
   final BuildCommandRunner runner;
   String baseDir = Directory.current.path; // Run from flutter-intellij dir.
-  String oldName, newName;
+  late String oldName;
+  late String newName;
 
   RenamePackageCommand(this.runner) : super('rename') {
     argParser.addOption('package',
@@ -809,11 +802,11 @@ class RenamePackageCommand extends ProductCommand {
 
   @override
   Future<int> doit() async {
-    if (argResults['studio']) baseDir = p.join(baseDir, 'flutter-studio/src');
-    oldName = argResults['package'];
-    newName = argResults.wasParsed('new-name')
-        ? argResults['new-name']
-        : oldName + argResults['append'];
+    if (argResults!['studio']) baseDir = p.join(baseDir, 'flutter-studio/src');
+    oldName = argResults!['package'];
+    newName = argResults!.wasParsed('new-name')
+        ? argResults!['new-name']
+        : oldName + argResults!['append'];
     if (oldName == newName) {
       log('Nothing to do; new name is same as old name');
       return 1;
@@ -868,7 +861,8 @@ class RenamePackageCommand extends ProductCommand {
     }
   }
 
-  void _editAll(Directory src, {Directory skipOld, Directory skipNew}) {
+  void _editAll(Directory src,
+      {required Directory skipOld, required Directory skipNew}) {
     if (src.path == skipOld.path || src.path == skipNew.path) return;
     for (var entity in src.listSync(followLinks: false)) {
       if (entity is File) {
@@ -892,7 +886,8 @@ class SetupCommand extends Command {
   }
 
   @override
-  String get description => 'Unpack the artifacts required to debug the plugin in IntelliJ';
+  String get description =>
+      'Unpack the artifacts required to debug the plugin in IntelliJ';
 
   @override
   String get name => 'setup';
@@ -922,8 +917,7 @@ class TestCommand extends ProductCommand {
     try {
       final javaHome = Platform.environment['JAVA_HOME'];
       if (javaHome == null) {
-        log(
-            'JAVA_HOME environment variable not set - this is needed by gradle.');
+        log('JAVA_HOME environment variable not set - this is needed by gradle.');
         return 1;
       }
 
@@ -931,8 +925,8 @@ class TestCommand extends ProductCommand {
 
       final spec = specs.firstWhere((s) => s.isUnitTestTarget);
       await spec.artifacts.provision(rebuildCache: true);
-      if (!argResults['skip']) {
-        if (argResults['integration']) {
+      if (!argResults!['skip']) {
+        if (argResults!['integration']) {
           return _runIntegrationTests();
         } else {
           return _runUnitTests(spec);
@@ -940,7 +934,7 @@ class TestCommand extends ProductCommand {
       }
       return 0;
     } finally {
-      if (argResults['setup']) {
+      if (argResults!['setup']) {
         await SetupCommand(runner).run();
       }
     }

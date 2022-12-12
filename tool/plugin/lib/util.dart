@@ -1,7 +1,7 @@
 // Copyright 2017 The Chromium Authors. All rights reserved. Use of this source
 // code is governed by a BSD-style license that can be found in the LICENSE file.
 
-// @dart = 2.10
+// @dart = 2.12
 
 import 'dart:async';
 import 'dart:convert';
@@ -15,14 +15,14 @@ import 'artifact.dart';
 import 'build_spec.dart';
 import 'globals.dart';
 
-Future<int> exec(String cmd, List<String> args, {String cwd}) async {
+Future<int> exec(String cmd, List<String> args, {String? cwd}) async {
   if (cwd != null) {
     log(_shorten('$cmd ${args.join(' ')} {cwd=$cwd}'));
   } else {
     log(_shorten('$cmd ${args.join(' ')}'));
   }
 
-  var codec = Platform.isWindows ? latin1: utf8;
+  var codec = Platform.isWindows ? latin1 : utf8;
   final process = await Process.start(cmd, args, workingDirectory: cwd);
   _toLineStream(process.stderr, codec).listen(log);
   _toLineStream(process.stdout, codec).listen(log);
@@ -31,7 +31,7 @@ Future<int> exec(String cmd, List<String> args, {String cwd}) async {
 }
 
 Future<String> makeDevLog(BuildSpec spec) async {
-  if (lastReleaseName == null) {
+  if (lastReleaseName.isEmpty) {
     return '';
   } // The shallow on travis causes problems.
   _checkGitDir();
@@ -59,9 +59,9 @@ Future<DateTime> dateOfLastRelease() async {
   var logLine = out.trim().split('\n').first.trim();
   var match =
       RegExp(r'release_\d+\s+([A-Fa-f\d]{40})\s').matchAsPrefix(logLine);
-  var commitHash = match.group(1);
+  var commitHash = match!.group(1);
   processResult =
-      await gitDir.runCommand(['show', '--pretty=tformat:"%cI"', commitHash]);
+      await gitDir.runCommand(['show', '--pretty=tformat:"%cI"', commitHash!]);
   out = processResult.stdout;
   var date = out.trim().split('\n').first.trim();
   return DateTime.parse(date.replaceAll('"', ''));
@@ -104,7 +104,7 @@ void createDir(String name) {
   }
 }
 
-Future<int> curl(String url, {String to}) async {
+Future<int> curl(String url, {required String to}) async {
   return await exec('curl', ['-o', to, url]);
 }
 
@@ -141,7 +141,7 @@ void _checkGitDir() async {
 String _shorten(String str) {
   return str.length < 200
       ? str
-      : str.substring(0, 170) + ' ... ' + str.substring(str.length - 30);
+      : '${str.substring(0, 170)} ... ${str.substring(str.length - 30)}';
 }
 
 Stream<String> _toLineStream(Stream<List<int>> s, Encoding encoding) =>
@@ -156,7 +156,6 @@ String readTokenFromKeystore(String keyName) {
   var file = File('$base/${id}_$name');
   return file.existsSync() ? file.readAsStringSync() : '';
 }
-
 
 int get devBuildNumber {
   // The dev channel is automatically refreshed weekly, so the build number
@@ -182,7 +181,7 @@ String buildVersionNumber(BuildSpec spec) {
 
 String _nextRelease() {
   var current =
-  RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName).group(1);
-  var val = int.parse(current) + 1;
+      RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName)!.group(1);
+  var val = int.parse(current!) + 1;
   return '$val.0';
 }

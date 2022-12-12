@@ -1,7 +1,7 @@
 // Copyright 2017 The Chromium Authors. All rights reserved. Use of this source
 // code is governed by a BSD-style license that can be found in the LICENSE file.
 
-// @dart = 2.10
+// @dart = 2.12
 
 import 'dart:async';
 import 'dart:io';
@@ -14,7 +14,7 @@ import 'util.dart';
 class Artifact {
   String file;
   final bool bareArchive;
-  String output;
+  String? output;
 
   Artifact(this.file, {this.bareArchive = false, this.output}) {
     output ??= file.substring(0, file.lastIndexOf('-'));
@@ -127,7 +127,7 @@ class ArtifactManager {
       if (artifact.isZip) {
         if (artifact.bareArchive) {
           result = await exec(
-              'unzip', ['-q', '-d', artifact.output, artifact.file],
+              'unzip', ['-q', '-d', artifact.output!, artifact.file],
               cwd: 'artifacts');
           var files = Directory(artifact.outPath).listSync();
           if (files.length < 3) /* Might have .DS_Store */ {
@@ -152,14 +152,14 @@ class ArtifactManager {
             '-zxf',
             artifact.file,
             '-C',
-            artifact.output
+            artifact.output!
           ],
           cwd: p.join(rootPath, 'artifacts'),
         );
       }
       if (result != 0) {
         log('unpacking failed');
-        await removeAll(artifact.output);
+        await removeAll(artifact.output!);
         break;
       }
 

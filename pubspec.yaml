@@ -2,7 +2,7 @@ name: flutter_intellij
 version: 0.1.0
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=3.0.0-0.0.dev <4.0.0'
 
 dependencies:
   args: any
@@ -11,5 +11,5 @@ dependencies:
 dev_dependencies:
   grinder: ^0.9.0
   http: ^0.13.0
-  lints: ^1.0.0
+  lints: ^2.0.0
   meta: any

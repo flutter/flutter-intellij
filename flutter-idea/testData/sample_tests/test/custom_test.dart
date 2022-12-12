@@ -49,6 +49,6 @@ void nonTest(String name) {}
 
 // This is a similar signature to the testWidgets method from Flutter.
 @isTest
-void testWidgets(String name, Future<void> test(Object tester)) {
-  test(null);
+void testWidgets(String name, Future<void> Function(Object tester) test) {
+  test(Object());
 }
