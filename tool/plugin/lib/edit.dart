@@ -44,16 +44,10 @@ List<EditCommand> editCommands = [
     version: '2022.4',
   ),
   Subst(
-    path: 'resources/META-INF/plugin.xml',
+    path: 'resources/META-INF/plugin_template.xml',
     initial: '<add-to-group group-id="MainToolbarRight" />',
     replacement: '',
-    versions: ['AS.211', 'AS.212', 'AS.213', '2022.1', '2022.2'],
-  ),
-  Subst(
-    path: '',
-    initial: '<add-to-group group-id="MainToolbarRight" />',
-    replacement: '',
-    versions: ['AS.211', 'AS.212', 'AS.213', '2022.1', '2022.2'],
+    versions: ['2022.2'],
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/pub/PubRoot.java',
