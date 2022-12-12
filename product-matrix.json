@@ -83,7 +83,8 @@
       "baseVersion": "223.7571,182",
       "dartPluginVersion": "223.7571.203",
       "sinceBuild": "223.4884.69",
-      "untilBuild": "223.*"
+      "untilBuild": "223.*",
+      "filesToSkip": ["flutter-idea/src/io/flutter/actions/DeviceSelectorAction.java"]
     }
   ]
 }
