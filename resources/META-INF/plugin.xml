@@ -46,6 +46,18 @@
 
   <change-notes>
     <![CDATA[
+<h1>71.1</h1>
+<ul>
+  <li>Tweak device selector code</li>
+  <li>Add new project types plugin_ffi and empty (#6433)</li>
+  <li>Update device selector in background (#6429)</li>
+  <li>Catch exception if default project was disposed (#6401)</li>
+  <li>Fix test coverage for monorepo projects (#6391)</li>
+  <li>Permit attach in bazel context (#6389)</li>
+  <li>Change Container to Placeholder in live templates (#6390)</li>
+  <li>Move tests to 2022.2 (#6386)</li>
+  <li>Remove some deprecated API uses (#6383)</li>
+</ul>
 <h1>71.0</h1>
 <ul>
   <li>Remove the process listener after emulator termination (#6377)</li>
