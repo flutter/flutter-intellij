@@ -38,20 +38,20 @@
     },
     {
       "channel": "setup",
-      "comments": "IntelliJ 2022.3",
+      "comments": "IntelliJ 2022.2",
       "name": "setup",
       "version": "setup",
       "isUnitTestTarget": "true",
       "ideaProduct": "ideaIC",
-      "ideaVersion": "2022.3",
-      "baseVersion": "223.4884.69",
-      "dartPluginVersion": "223.7571.203",
-      "sinceBuild": "223.7571,182",
-      "untilBuild": "223.*"
+      "ideaVersion": "2022.2.3",
+      "baseVersion": "222.4345.14",
+      "dartPluginVersion": "222.4345.14",
+      "sinceBuild": "222.4345.14",
+      "untilBuild": "222.*"
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2022.1, Android Studio 2021.3 Beta",
+      "comments": "IntelliJ 2022.1",
       "name": "2022.1",
       "version": "2022.1",
       "ideaProduct": "android-studio",
