@@ -59,7 +59,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     // Suppress device actions in all but the toolbars.
     final String place = e.getPlace();
     if (!Objects.equals(place, ActionPlaces.NAVIGATION_BAR_TOOLBAR) && !Objects.equals(place, ActionPlaces.MAIN_TOOLBAR)) {
-      e.getPresentation().setVisible(false);
+      //e.getPresentation().setVisible(false);
       return;
     }
 
@@ -73,7 +73,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     application.invokeLater(() -> {
       if (!isSelectorVisible(project)) {
-        presentation.setVisible(false);
+        //presentation.setVisible(false);
         return;
       }
 
@@ -147,7 +147,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     final JComponent component = (JComponent)presentation.getClientProperty("customComponent");
     if (component != null) {
-      component.setVisible(visible);
+      component.setVisible(true); // always visible in 2022.3
       if (component.getParent() != null) {
         component.getParent().doLayout();
         component.getParent().repaint();

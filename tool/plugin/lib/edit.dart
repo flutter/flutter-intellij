@@ -47,7 +47,8 @@ List<EditCommand> editCommands = [
     path: 'resources/META-INF/plugin_template.xml',
     initial: '<add-to-group group-id="MainToolbarRight" />',
     replacement: '',
-    versions: ['AS.211', 'AS.212', 'AS.213', '2022.1', '2022.2'],
+    // TODO Remove 'setup' when we resume building with 2022.3.
+    versions: ['AS.211', 'AS.212', 'AS.213', '2022.1', '2022.2', 'setup'],
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/pub/PubRoot.java',
