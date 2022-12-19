@@ -54,7 +54,9 @@ public class JxBrowserUtils {
 
   @NotNull
   public String getDistributionLink(@NotNull String fileName) {
-    return "https://storage.googleapis.com/flutter_infra_release/flutter/intellij/jxbrowser/" + fileName;
+    String envBaseUrl = java.lang.System.getenv("FLUTTER_STORAGE_BASE_URL");
+    String baseUrl = envBaseUrl == null ? "https://storage.googleapis.com" : envBaseUrl;
+    return String.format("%s/flutter_infra_release/flutter/intellij/jxbrowser/%s", baseUrl, fileName);
   }
 
   @NotNull
