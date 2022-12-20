@@ -15,16 +15,16 @@
     },
     {
       "channel": "setup",
-      "comments": "IntelliJ 2022.2",
+      "comments": "IntelliJ 2022.3",
       "name": "setup",
       "version": "setup",
       "isUnitTestTarget": "true",
       "ideaProduct": "ideaIC",
-      "ideaVersion": "2022.2.3",
-      "baseVersion": "222.4345.14",
-      "dartPluginVersion": "222.4345.14",
-      "sinceBuild": "222.4345.14",
-      "untilBuild": "222.*"
+      "ideaVersion": "2022.3.1",
+      "baseVersion": "223.8214.52",
+      "dartPluginVersion": "223.8214.16",
+      "sinceBuild": "223.4884.69",
+      "untilBuild": "223.*"
     },
     {
       "channel": "stable",

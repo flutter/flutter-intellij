@@ -191,6 +191,9 @@ class SyntheticBuildSpec extends BuildSpec {
   }
 
   @override
+  String get sinceBuild => alternate.sinceBuild;
+
+  @override
   String get untilBuild => alternate.untilBuild;
 
   @override

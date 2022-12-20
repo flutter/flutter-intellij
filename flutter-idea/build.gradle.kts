@@ -77,7 +77,9 @@ dependencies {
                          "include" to listOf("*.jar"))))
   } else {
     compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/ideaIC/plugins/git4idea/lib",
-                         "include" to listOf("*.jar"))))
+      "include" to listOf("*.jar"))))
+    compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/ideaIC/plugins/java/lib",
+      "include" to listOf("*.jar"))))
     testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/ideaIC/plugins/git4idea/lib",
                          "include" to listOf("*.jar"))))
   }
