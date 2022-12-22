@@ -178,7 +178,6 @@
       <action id="Flutter.DeviceSelectorRefresher" class="io.flutter.actions.DeviceSelectorRefresherAction"
               text="Refresh Device List"
               description="Refresh device list" />
-      <add-to-group group-id="MainToolbarRight" />
       <add-to-group anchor="before" group-id="RunContextGroup" relative-to-action="RunConfiguration"/>
       <add-to-group anchor="before" group-id="ToolbarRunGroup" relative-to-action="RunConfiguration"/>
     </group>
