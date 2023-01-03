@@ -38,7 +38,13 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   private SelectDeviceAction selectedDeviceAction;
 
   DeviceSelectorAction() {
+    getTemplatePresentation().setText(" ", false);
     setSmallVariant(true);
+  }
+
+  @Override
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
   }
 
   @NotNull
@@ -59,7 +65,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     // Suppress device actions in all but the toolbars.
     final String place = e.getPlace();
     if (!Objects.equals(place, ActionPlaces.NAVIGATION_BAR_TOOLBAR) && !Objects.equals(place, ActionPlaces.MAIN_TOOLBAR)) {
-      //e.getPresentation().setVisible(false);
+      e.getPresentation().setVisible(false);
       return;
     }
 
