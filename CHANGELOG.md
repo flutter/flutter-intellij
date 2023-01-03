@@ -1,3 +1,6 @@
+# 71.3
+- Fix the "Empty menu item text" problem
+
 # 71.2
 - Always show device selector in IntelliJ 2022.3 due to: https://youtrack.jetbrains.com/issue/IDEA-308897/IntelliJ-2022.3-causes-custom-toolbar-widget-to-flash?s=IntelliJ-2022.3-causes-custom-toolbar-widget-to-flash
 - Re-enable embedded DevTools

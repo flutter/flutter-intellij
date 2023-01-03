@@ -46,6 +46,10 @@
 
   <change-notes>
     <![CDATA[
+<h1>71.3</h1>
+<ul>
+  <li>Fix the "Empty menu item text" problem</li>
+</ul>
 <h1>71.2</h1>
 <ul>
   <li>Always show device selector in IntelliJ 2022.3 due to: https://youtrack.jetbrains.com/issue/IDEA-308897/IntelliJ-2022.3-causes-custom-toolbar-widget-to-flash?s=IntelliJ-2022.3-causes-custom-toolbar-widget-to-flash</li>
