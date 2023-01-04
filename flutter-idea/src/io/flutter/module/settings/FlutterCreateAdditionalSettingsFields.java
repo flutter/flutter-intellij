@@ -179,7 +179,7 @@ public class FlutterCreateAdditionalSettingsFields {
       .build();
   }
 
-  private boolean shouldIncludePlatforms() {
+  public boolean shouldIncludePlatforms() {
     switch (projectTypeForm.getType()) {
       case APP: // fall through
       case SKELETON:
