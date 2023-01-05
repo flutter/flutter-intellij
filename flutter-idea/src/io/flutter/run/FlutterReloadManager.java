@@ -182,8 +182,11 @@ public class FlutterReloadManager {
                 someEditor = editor;
               }
               if (null != PsiTreeUtil.findChildOfType(psiFile, PsiErrorElement.class, false)) {
-                // If there are analysis errors we want to silently exit, without showing a notification.
-                return null;
+                // The Dart plugin may create empty files that it then claims have a syntax error. Ignore them.
+                if (editor.getDocument().getTextLength() != 0) {
+                  // If there are analysis errors we want to silently exit, without showing a notification.
+                  return null;
+                }
               }
             }
             return someEditor;
