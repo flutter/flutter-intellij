@@ -43,6 +43,7 @@ public class FlutterAppManager implements Disposable {
   private FlutterAppManager(@NotNull Project project) {
     this.project = project;
 
+    // TODO This object shoud have a different disposable parent to enable dynamic plugin loading.
     Disposer.register(project, this);
 
     task = JobScheduler.getScheduler().scheduleWithFixedDelay(
@@ -119,6 +120,9 @@ public class FlutterAppManager implements Disposable {
 
   @Nullable
   private RunContentManager getRunContentManager() {
+    if (project.isDisposed()) {
+      return null;
+    }
     // Creating a RunContentManager causes a blank window to appear, so don't create it here.
     // See https://github.com/flutter/flutter-intellij/issues/4217
     if (ServiceManager.getServiceIfCreated(project, RunContentManager.class) == null) {
