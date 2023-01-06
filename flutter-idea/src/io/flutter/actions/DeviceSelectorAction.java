@@ -41,6 +41,10 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     setSmallVariant(true);
   }
 
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
+  }
+
   @NotNull
   @Override
   protected DefaultActionGroup createPopupActionGroup(JComponent button) {
@@ -55,14 +59,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   }
 
   @Override
-  public void update(final AnActionEvent e) {
-    // Suppress device actions in all but the toolbars.
-    final String place = e.getPlace();
-    if (!Objects.equals(place, ActionPlaces.NAVIGATION_BAR_TOOLBAR) && !Objects.equals(place, ActionPlaces.MAIN_TOOLBAR)) {
-      e.getPresentation().setVisible(false);
-      return;
-    }
-
+  public void update(@NotNull AnActionEvent e) {
     // Only show device menu when the device daemon process is running.
     final Project project = e.getProject();
     if (!isSelectorVisible(project)) {
