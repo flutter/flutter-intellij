@@ -9,6 +9,8 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.execution.testframework.TestConsoleProperties;
+import com.intellij.execution.testframework.actions.ConsolePropertiesProvider;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
@@ -20,8 +22,12 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * A configuration for running Flutter tests.
+ *
+ * Inheriting from ConsolePropertiesProvider enables the auto-test-before-commit feature in the VCS tool window.
+ * Note that using that window causes additional analysis to occur, which creates a bunch of spurious errors.
+ * IntelliJ has its own rules for Android files, and Flutter doesn't follow some of them.
  */
-public class TestConfig extends LocatableConfigurationBase<CommandLineState> {
+public class TestConfig extends LocatableConfigurationBase<CommandLineState> implements ConsolePropertiesProvider {
   @NotNull
   private TestFields fields = TestFields.forFile("");
 
@@ -84,5 +90,11 @@ public class TestConfig extends LocatableConfigurationBase<CommandLineState> {
   @Override
   public CommandLineState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) throws ExecutionException {
     return TestLaunchState.create(env, this);
+  }
+
+  @Nullable
+  @Override
+  public TestConsoleProperties createTestConsoleProperties(@NotNull Executor exec) {
+    return new FlutterTestConsoleProperties(this, exec);
   }
 }
