@@ -22,6 +22,10 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * A configuration for running Flutter tests.
+ *
+ * Inheriting from ConsolePropertiesProvider enables the auto-test-before-commit feature in the VCS tool window.
+ * Note that using that window causes additional analysis to occur, which creates a bunch of spurious errors.
+ * IntelliJ has its own rules for Android files, and Flutter doesn't follow some of them.
  */
 public class TestConfig extends LocatableConfigurationBase<CommandLineState> implements ConsolePropertiesProvider {
   @NotNull
