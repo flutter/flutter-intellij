@@ -1,28 +1,15 @@
 {
   "list": [
     {
-      "channel": "stable",
-      "comments": "IntelliJ 2021.3, Android Studio 2021.3 Beta",
-      "name": "2021.3",
-      "version": "AS.213",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "2021.3.1.8",
-      "baseVersion": "213.7172.25",
-      "dartPluginVersion": "213.7306",
-      "sinceBuild": "213.6461.79",
-      "untilBuild": "213.*",
-      "filesToSkip": ["flutter-idea/src/org/jetbrains/android/facet/AndroidFrameworkDetector.java"]
-    },
-    {
       "channel": "setup",
       "comments": "IntelliJ 2022.3",
       "name": "setup",
       "version": "setup",
       "isUnitTestTarget": "true",
-      "ideaProduct": "ideaIC",
-      "ideaVersion": "2022.3.1",
-      "baseVersion": "223.8214.52",
-      "dartPluginVersion": "223.8214.16",
+      "ideaProduct": "android-studio",
+      "ideaVersion": "2022.3.1.1",
+      "baseVersion": "223.4884.69",
+      "dartPluginVersion": "223.4884.65",
       "sinceBuild": "223.4884.69",
       "untilBuild": "223.*"
     },
