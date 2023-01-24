@@ -156,7 +156,6 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
     this.requestListener = new FlutterRequestListener();
     this.responseListener = new FlutterResponseListener();
     DartAnalysisServerService analysisServer = DartAnalysisServerService.getInstance(project);
-    analysisServer.setServerLogSubscription(true);
     analysisServer.addQuickFixListener(this.quickFixListener);
     analysisServer.addRequestListener(this.requestListener);
     analysisServer.addResponseListener(this.responseListener);
