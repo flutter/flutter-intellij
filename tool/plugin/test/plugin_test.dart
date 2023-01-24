@@ -49,7 +49,7 @@ void main() {
               'ideaIC',
               'android-studio',
               'android-studio',
-              'ideaIC',
+              'android-studio',
             ]));
       });
     });
@@ -68,7 +68,7 @@ void main() {
               'ideaIC',
               'android-studio',
               'android-studio',
-              'ideaIC',
+              'android-studio',
             ]));
       });
     });
@@ -87,7 +87,7 @@ void main() {
               'ideaIC',
               'android-studio',
               'android-studio',
-              'ideaIC',
+              'android-studio',
             ]));
       });
     });
