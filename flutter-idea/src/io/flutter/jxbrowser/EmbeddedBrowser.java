@@ -142,18 +142,26 @@ public class EmbeddedBrowser {
 
         // Creating Swing component for rendering web content
         // loaded in the given Browser instance.
-        final BrowserView view = BrowserView.newInstance(browser);
-        view.setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
+        try {
+          final BrowserView view = BrowserView.newInstance(browser);
+          view.setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
 
-        // DevTools may show a confirm dialog to use a fallback version.
-        browser.set(ConfirmCallback.class, new DefaultConfirmCallback(view));
-        browser.set(AlertCallback.class, new DefaultAlertCallback(view));
+          // DevTools may show a confirm dialog to use a fallback version.
+          browser.set(ConfirmCallback.class, new DefaultConfirmCallback(view));
+          browser.set(AlertCallback.class, new DefaultAlertCallback(view));
 
-        content.setComponent(view);
-        content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
-        // TODO(helin24): Use differentiated icons for each tab and copy from devtools toolbar.
-        content.setIcon(FlutterIcons.Phone);
-        contentManager.addContent(content);
+          content.setComponent(view);
+          content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
+          // TODO(helin24): Use differentiated icons for each tab and copy from devtools toolbar.
+          content.setIcon(FlutterIcons.Phone);
+          contentManager.addContent(content);
+        }
+        catch (UnsatisfiedLinkError error) {
+          // Sometimes this error occurs once but is resolved on IDE restart. In this case use our fallback option.
+          onBrowserUnavailable.run();
+          LOG.info(error);
+          FlutterInitializer.getAnalytics().sendExpectedException("browser-view-load", error);
+        }
       });
     });
   }
