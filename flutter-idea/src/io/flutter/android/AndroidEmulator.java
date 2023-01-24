@@ -6,6 +6,7 @@
 package io.flutter.android;
 
 import com.android.tools.idea.emulator.EmulatorSettings;
+//import com.android.tools.idea.streaming.EmulatorSettings;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ColoredProcessHandler;
