@@ -63,6 +63,16 @@ List<EditCommand> editCommands = [
     replacement: '<Analytics>',
     versions: ['AS.211', 'AS.212', 'AS.213'],
   ),
+  Subst(
+    path: 'flutter-idea/src/io/flutter/actions/DeviceSelectorAction.java',
+    initial: '''
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
+  }
+''',
+    replacement: '',
+    version: '2022.1',
+  ),
   MultiSubst(
     path: 'flutter-idea/src/io/flutter/actions/DeviceSelectorAction.java',
     initials: [
@@ -72,6 +82,11 @@ List<EditCommand> editCommands = [
       ModalityState.defaultModalityState(),
       () -> update(project, presentation));
 ''',
+      '''
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
+  }
+''',
     ],
     replacements: [
       'import com.intellij.ui.GuiUtils;',
@@ -80,6 +95,7 @@ List<EditCommand> editCommands = [
       () -> update(project, presentation),
       ModalityState.defaultModalityState());
 ''',
+      '',
     ],
     versions: ['AS.211', 'AS.212', 'AS.213'],
   ),
