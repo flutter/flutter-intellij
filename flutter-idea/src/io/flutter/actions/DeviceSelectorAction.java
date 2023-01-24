@@ -20,7 +20,6 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.ModalityUiUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.sdk.AndroidEmulatorManager;
@@ -129,10 +128,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     if (project.isDisposed()) {
       return; // This check is probably unnecessary, but safe.
     }
-    FlutterUtils.invokeAndWait(() -> {
-      updateActions(project, presentation);
-      updateVisibility(project, presentation);
-    });
+    updateActions(project, presentation);
+    updateVisibility(project, presentation);
   }
 
   private static void updateVisibility(final Project project, final Presentation presentation) {
