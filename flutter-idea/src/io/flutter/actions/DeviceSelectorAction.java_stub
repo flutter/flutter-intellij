@@ -38,7 +38,6 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   private SelectDeviceAction selectedDeviceAction;
 
   DeviceSelectorAction() {
-    getTemplatePresentation().setText(" ", false);
     setSmallVariant(true);
   }
 

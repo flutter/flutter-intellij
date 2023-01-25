@@ -20,7 +20,6 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.ModalityUiUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.sdk.AndroidEmulatorManager;
@@ -41,6 +40,10 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     setSmallVariant(true);
   }
 
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
+  }
+
   @NotNull
   @Override
   protected DefaultActionGroup createPopupActionGroup(JComponent button) {
@@ -55,14 +58,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   }
 
   @Override
-  public void update(final AnActionEvent e) {
-    // Suppress device actions in all but the toolbars.
-    final String place = e.getPlace();
-    if (!Objects.equals(place, ActionPlaces.NAVIGATION_BAR_TOOLBAR) && !Objects.equals(place, ActionPlaces.MAIN_TOOLBAR)) {
-      e.getPresentation().setVisible(false);
-      return;
-    }
-
+  public void update(@NotNull AnActionEvent e) {
     // Only show device menu when the device daemon process is running.
     final Project project = e.getProject();
     if (!isSelectorVisible(project)) {
@@ -132,10 +128,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     if (project.isDisposed()) {
       return; // This check is probably unnecessary, but safe.
     }
-    FlutterUtils.invokeAndWait(() -> {
-      updateActions(project, presentation);
-      updateVisibility(project, presentation);
-    });
+    updateActions(project, presentation);
+    updateVisibility(project, presentation);
   }
 
   private static void updateVisibility(final Project project, final Presentation presentation) {
