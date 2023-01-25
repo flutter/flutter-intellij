@@ -84,9 +84,9 @@
       "name": "2022.3",
       "version": "2022.3",
       "ideaProduct": "android-studio",
-      "ideaVersion": "2022.2.1.1",
-      "baseVersion": "222.3739.54",
-      "dartPluginVersion": "222.3739.24",
+      "ideaVersion": "2022.3.1.1",
+      "baseVersion": "223.4884.69",
+      "dartPluginVersion": "223.4884.65",
       "sinceBuild": "223.4884.69",
       "untilBuild": "223.*"
     }
