@@ -10,7 +10,8 @@
       "baseVersion": "211.7628.21",
       "dartPluginVersion": "211.7811",
       "sinceBuild": "211.6432.7",
-      "untilBuild": "211.7727"
+      "untilBuild": "211.7727",
+      "filesToSkip": ["flutter-idea/src/org/jetbrains/android/facet/AndroidFrameworkDetector.java"]
     },
     {
       "channel": "stable",
@@ -22,7 +23,8 @@
       "baseVersion": "212.5457.46",
       "dartPluginVersion": "212.5742",
       "sinceBuild": "212.5457.46",
-      "untilBuild": "212.5712.43"
+      "untilBuild": "212.5712.43",
+      "filesToSkip": ["flutter-idea/src/org/jetbrains/android/facet/AndroidFrameworkDetector.java"]
     },
     {
       "channel": "stable",
@@ -34,7 +36,8 @@
       "baseVersion": "213.7172.25",
       "dartPluginVersion": "213.7306",
       "sinceBuild": "213.6461.79",
-      "untilBuild": "213.*"
+      "untilBuild": "213.*",
+      "filesToSkip": ["flutter-idea/src/org/jetbrains/android/facet/AndroidFrameworkDetector.java"]
     },
     {
       "channel": "setup",
@@ -59,7 +62,8 @@
       "baseVersion": "221.6008.13",
       "dartPluginVersion": "221.6008.17",
       "sinceBuild": "221.6008.13",
-      "untilBuild": "221.*"
+      "untilBuild": "221.*",
+      "filesToSkip": ["flutter-idea/src/org/jetbrains/android/facet/AndroidFrameworkDetector.java"]
     },
     {
       "channel": "stable",
@@ -71,17 +75,18 @@
       "baseVersion": "222.3739.54",
       "dartPluginVersion": "222.3739.24",
       "sinceBuild": "222.3739.54",
-      "untilBuild": "222.*"
+      "untilBuild": "222.*",
+      "filesToSkip": ["flutter-idea/src/org/jetbrains/android/facet/AndroidFrameworkDetector.java"]
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2022.3",
+      "comments": "IntelliJ 2022.3, Android Studio 2022.3",
       "name": "2022.3",
       "version": "2022.3",
-      "ideaProduct": "ideaIC",
-      "ideaVersion": "2022.3",
-      "baseVersion": "223.7571,182",
-      "dartPluginVersion": "223.7571.203",
+      "ideaProduct": "android-studio",
+      "ideaVersion": "2022.2.1.1",
+      "baseVersion": "222.3739.54",
+      "dartPluginVersion": "222.3739.24",
       "sinceBuild": "223.4884.69",
       "untilBuild": "223.*",
       "filesToSkip": ["flutter-idea/src/io/flutter/actions/DeviceSelectorAction.java"]
