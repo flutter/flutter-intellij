@@ -63,6 +63,18 @@
       "dartPluginVersion": "222.3739.24",
       "sinceBuild": "223.4884.69",
       "untilBuild": "223.*"
+    },
+    {
+      "channel": "stable",
+      "comments": "IntelliJ 2023.1",
+      "name": "2021.1",
+      "version": "2023.1",
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "231.5920.14",
+      "baseVersion": "231.5920.14",
+      "dartPluginVersion": "231.5920.7",
+      "sinceBuild": "231.4840.387",
+      "untilBuild": "231.*"
     }
   ]
 }
