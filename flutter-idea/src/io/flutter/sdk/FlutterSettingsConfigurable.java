@@ -7,6 +7,7 @@ package io.flutter.sdk;
 
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
+import com.intellij.ide.actionsOnSave.ActionsOnSaveConfigurable;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
@@ -27,8 +28,11 @@ import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
+import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.labels.LinkLabel;
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.PlatformIcons;
 import icons.FlutterIcons;
 import io.flutter.*;
@@ -45,6 +49,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
+import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -82,6 +87,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private FixedSizeButton myCopyButton;
   private JTextArea myFontPackagesTextArea; // This should be changed to a structured list some day.
   private JCheckBox myAllowTestsInSourcesRoot;
+  private ActionLink settingsLink;
 
   private final @NotNull Project myProject;
   private final WorkspaceCache workspaceCache;
@@ -101,7 +107,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     this.myProject = project;
     workspaceCache = WorkspaceCache.getInstance(project);
     init();
-
     myVersionLabel.setText(" ");
   }
 
@@ -163,6 +168,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   private void createUIComponents() {
     mySdkCombo = new ComboboxWithBrowseButton(new ComboBox<>());
+    settingsLink = ActionsOnSaveConfigurable.createGoToActionsOnSavePageLink();
   }
 
   @Override
