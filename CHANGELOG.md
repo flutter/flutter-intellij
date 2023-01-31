@@ -1,3 +1,15 @@
+# 72.0
+- Build 2023.1 (#6593)
+- Update settings to emphasize global options (#6592)-
+- Run update() on BGT (#6556)
+- Build AS canary with 2022.3 (#6583)
+- Catch UnsatisfiedLinkError for inspector (#6585)
+- Stop logging to improve completion times (#6584)
+- Allow auto pre-commit test to run prior to git commit (#6557)
+- Ignore disposed project in FlutterAppManager (#6554)
+- Ignore empty files that the Dart plugin says have errors (#6553)
+- Fix creating package project (#6542)
+
 # 71.3
 - Fix the "Empty menu item text" problem
 
