@@ -37,11 +37,7 @@ public abstract class TypedDataList {
     }
 
     public @NotNull String getValue(int i) {
-      String hex = Integer.toHexString(buffer.get(i) & 0xff);
-      if (hex.length() == 2) {
-        hex = hex.substring(1, 2);
-      }
-      return "0x" + hex;
+      return "0x" + Integer.toHexString(buffer.get(i) & 0xff);
     }
   }
 
