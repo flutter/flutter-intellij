@@ -30,19 +30,19 @@ public class TypedDataListTest {
     Uint8List b = new Uint8List(new byte[]{6, 7, -1, -7, -6, -5, -4, -3, -2, 8});
     assertEquals("0x6", b.getValue(0));
     assertEquals("0x7", b.getValue(1));
-    assertEquals("0xf", b.getValue(2));
-    assertEquals("0x9", b.getValue(3));
-    assertEquals("0xa", b.getValue(4));
-    assertEquals("0xb", b.getValue(5));
-    assertEquals("0xc", b.getValue(6));
-    assertEquals("0xd", b.getValue(7));
-    assertEquals("0xe", b.getValue(8));
+    assertEquals("0xff", b.getValue(2));
+    assertEquals("0xf9", b.getValue(3));
+    assertEquals("0xfa", b.getValue(4));
+    assertEquals("0xfb", b.getValue(5));
+    assertEquals("0xfc", b.getValue(6));
+    assertEquals("0xfd", b.getValue(7));
+    assertEquals("0xfe", b.getValue(8));
     assertEquals("0x8", b.getValue(9));
     Uint8List list = new Uint8List(signedBytes);
     assertEquals("0x1", list.getValue(0));
-    assertEquals("0xf", list.getValue(1));
+    assertEquals("0xff", list.getValue(1));
     list = new Uint8List(unsignedBytes);
-    assertEquals("0xf", list.getValue(0));
+    assertEquals("0xff", list.getValue(0));
   }
 
   @Test
