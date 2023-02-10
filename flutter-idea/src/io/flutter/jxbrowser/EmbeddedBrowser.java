@@ -18,10 +18,13 @@ import com.teamdev.jxbrowser.browser.Browser;
 import com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException;
 import com.teamdev.jxbrowser.browser.callback.AlertCallback;
 import com.teamdev.jxbrowser.browser.callback.ConfirmCallback;
+import com.teamdev.jxbrowser.browser.callback.input.PressKeyCallback;
 import com.teamdev.jxbrowser.browser.event.ConsoleMessageReceived;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.js.ConsoleMessage;
 import com.teamdev.jxbrowser.navigation.event.LoadFinished;
+import com.teamdev.jxbrowser.ui.KeyCode;
+import com.teamdev.jxbrowser.ui.event.KeyPressed;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
 import com.teamdev.jxbrowser.view.swing.callback.DefaultAlertCallback;
 import com.teamdev.jxbrowser.view.swing.callback.DefaultConfirmCallback;
@@ -155,6 +158,17 @@ public class EmbeddedBrowser {
           // TODO(helin24): Use differentiated icons for each tab and copy from devtools toolbar.
           content.setIcon(FlutterIcons.Phone);
           contentManager.addContent(content);
+
+          // This is for pulling up Chrome inspector for debugging purposes.
+          browser.set(PressKeyCallback.class, params -> {
+            KeyPressed keyEvent = params.event();
+            boolean keyCodeC = keyEvent.keyCode() == KeyCode.KEY_CODE_J;
+            boolean controlDown = keyEvent.keyModifiers().isControlDown();
+            if (controlDown && keyCodeC) {
+              browser.devTools().show();
+            }
+            return PressKeyCallback.Response.proceed();
+          });
         }
         catch (UnsatisfiedLinkError error) {
           // Sometimes this error occurs once but is resolved on IDE restart. In this case use our fallback option.
