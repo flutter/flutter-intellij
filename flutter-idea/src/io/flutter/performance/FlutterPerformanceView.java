@@ -34,6 +34,8 @@ import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.view.*;
@@ -214,8 +216,13 @@ public class FlutterPerformanceView implements Disposable {
           return;
         }
 
+        FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(app.getProject());
+        if (flutterSdk == null) {
+          return;
+        }
+
         BrowserLauncher.getInstance().browse(
-                (new DevToolsUrl(instance.host, instance.port, app.getConnector().getBrowserUrl(), null, false, null, null)).getUrlString(),
+                (new DevToolsUrl(instance.host, instance.port, app.getConnector().getBrowserUrl(), null, false, null, null, flutterSdk.getVersion())).getUrlString(),
                 null
         );
       });

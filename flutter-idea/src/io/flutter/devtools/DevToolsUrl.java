@@ -6,6 +6,7 @@
 package io.flutter.devtools;
 
 import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.sdk.FlutterSdkVersion;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -21,6 +22,7 @@ public class DevToolsUrl {
   public String colorHexCode;
   public String widgetId;
   public Float fontSize;
+  private final FlutterSdkVersion flutterSdkVersion;
   private final FlutterSdkUtil sdkUtil;
 
   public DevToolsUrl(String devtoolsHost,
@@ -29,8 +31,9 @@ public class DevToolsUrl {
                      String page,
                      boolean embed,
                      String colorHexCode,
-                     Float fontSize) {
-    this(devtoolsHost, devtoolsPort, vmServiceUri, page, embed, colorHexCode, fontSize, new FlutterSdkUtil());
+                     Float fontSize,
+                     FlutterSdkVersion flutterSdkVersion) {
+    this(devtoolsHost, devtoolsPort, vmServiceUri, page, embed, colorHexCode, fontSize, flutterSdkVersion, new FlutterSdkUtil());
   }
 
   public DevToolsUrl(String devtoolsHost,
@@ -40,6 +43,7 @@ public class DevToolsUrl {
                      boolean embed,
                      String colorHexCode,
                      Float fontSize,
+                     FlutterSdkVersion flutterSdkVersion,
                      FlutterSdkUtil flutterSdkUtil) {
     this.devtoolsHost = devtoolsHost;
     this.devtoolsPort = devtoolsPort;
@@ -48,6 +52,7 @@ public class DevToolsUrl {
     this.embed = embed;
     this.colorHexCode = colorHexCode;
     this.fontSize = fontSize;
+    this.flutterSdkVersion = flutterSdkVersion;
     this.sdkUtil = flutterSdkUtil;
   }
 
@@ -55,7 +60,7 @@ public class DevToolsUrl {
     final List<String> params = new ArrayList<>();
 
     params.add("ide=" + sdkUtil.getFlutterHostEnvValue());
-    if (page != null) {
+    if (page != null && !flutterSdkVersion.canUseDevToolsPathUrls()) {
       params.add("page=" + page);
     }
     if (colorHexCode != null) {
@@ -80,6 +85,10 @@ public class DevToolsUrl {
     if (widgetId != null) {
       params.add("inspectorRef=" + widgetId);
     }
-    return "http://" + devtoolsHost + ":" + devtoolsPort + "/?" + String.join("&", params);
+    if (flutterSdkVersion.canUseDevToolsPathUrls()) {
+      return "http://" + devtoolsHost + ":" + devtoolsPort + "/" + ( page != null ? page : "" )  + "?" + String.join("&", params);
+    } else {
+      return "http://" + devtoolsHost + ":" + devtoolsPort + "/#/?" + String.join("&", params);
+    }
   }
 }

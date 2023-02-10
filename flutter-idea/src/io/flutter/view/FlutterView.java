@@ -60,6 +60,7 @@ import io.flutter.run.FlutterDevice;
 import io.flutter.run.daemon.DevToolsInstance;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.toolwindow.FlutterViewToolWindowManagerListener;
 import io.flutter.utils.AsyncUtils;
@@ -272,6 +273,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
 
     final String browserUrl = app.getConnector().getBrowserUrl();
+    FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(app.getProject());
+    if (flutterSdk == null) {
+      return;
+    }
 
     if (isEmbedded) {
       final String color = ColorUtil.toHex(UIUtil.getEditorPaneBackground());
@@ -282,7 +287,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
               "inspector",
               true,
               color,
-              UIUtil.getFontSize(UIUtil.FontSize.NORMAL)
+              UIUtil.getFontSize(UIUtil.FontSize.NORMAL),
+              flutterSdk.getVersion()
       );
 
       //noinspection CodeBlock2Expr
@@ -310,7 +316,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
     } else {
       BrowserLauncher.getInstance().browse(
-        (new DevToolsUrl(devToolsInstance.host, devToolsInstance.port, browserUrl, "inspector", false, null, null).getUrlString()),
+        (new DevToolsUrl(devToolsInstance.host, devToolsInstance.port, browserUrl, "inspector", false, null, null,
+                         flutterSdk.getVersion()).getUrlString()),
         null
       );
       presentLabel(toolWindow, "DevTools inspector has been opened in the browser.");
@@ -969,8 +976,13 @@ class FlutterViewDevToolsAction extends FlutterViewAction {
           return;
         }
 
+        FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(app.getProject());
+        if (flutterSdk == null) {
+          return;
+        }
+
         BrowserLauncher.getInstance().browse(
-          (new DevToolsUrl(instance.host, instance.port, urlString, null, false, null, null).getUrlString()),
+          (new DevToolsUrl(instance.host, instance.port, urlString, null, false, null, null, flutterSdk.getVersion()).getUrlString()),
           null
         );
       });
