@@ -60,7 +60,7 @@ public class DevToolsUrlTest {
     FlutterSdkVersion oldVersion = new FlutterSdkVersion("3.0.0");
     assertEquals(
       "http://127.0.0.1:9100/#/?ide=IntelliJ-IDEA&page=timeline&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
-      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, null, newVersion, mockSdkUtil)).getUrlString()
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, null, oldVersion, mockSdkUtil)).getUrlString()
     );
   }
 }
