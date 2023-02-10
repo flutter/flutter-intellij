@@ -60,7 +60,7 @@ public class DevToolsUrl {
     final List<String> params = new ArrayList<>();
 
     params.add("ide=" + sdkUtil.getFlutterHostEnvValue());
-    if (page != null && !flutterSdkVersion.canUseModernDevToolsUrl()) {
+    if (page != null && !flutterSdkVersion.canUseDevToolsPathUrls()) {
       params.add("page=" + page);
     }
     if (colorHexCode != null) {
@@ -85,7 +85,7 @@ public class DevToolsUrl {
     if (widgetId != null) {
       params.add("inspectorRef=" + widgetId);
     }
-    if (flutterSdkVersion.canUseModernDevToolsUrl()) {
+    if (flutterSdkVersion.canUseDevToolsPathUrls()) {
       return "http://" + devtoolsHost + ":" + devtoolsPort + "/" + ( page != null ? page : "" )  + "?" + String.join("&", params);
     } else {
       return "http://" + devtoolsHost + ":" + devtoolsPort + "/#/?" + String.join("&", params);
