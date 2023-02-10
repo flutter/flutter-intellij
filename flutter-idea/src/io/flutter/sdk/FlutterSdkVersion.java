@@ -102,6 +102,9 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   @NotNull
   private static final FlutterSdkVersion MIN_STABLE_MACOS_PLATFORM = new FlutterSdkVersion("3.0.0");
 
+  @NotNull
+  private static final FlutterSdkVersion MIN_MODERN_DEVTOOLS_URL = new FlutterSdkVersion("3.3.0");
+
   @Nullable
   private final Version version;
   @Nullable
@@ -257,6 +260,10 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   public boolean canUseDistributedIcons() {
     return version != null && this.compareTo(DISTRIBUTED_ICONS) >= 0;
+  }
+
+  public boolean canUseModernDevToolsUrl() {
+    return version != null && this.compareTo(MIN_MODERN_DEVTOOLS_URL) >= 0;
   }
   public boolean isValid() {
     return version != null;

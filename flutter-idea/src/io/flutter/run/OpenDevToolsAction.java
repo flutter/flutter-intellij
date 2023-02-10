@@ -17,6 +17,7 @@ import io.flutter.ObservatoryConnector;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -75,8 +76,13 @@ public class OpenDevToolsAction extends DumbAwareAction {
 
       final String serviceUrl = myConnector != null && myConnector.getBrowserUrl() != null ? myConnector.getBrowserUrl() : null;
 
+      FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
+      if (flutterSdk == null) {
+        return;
+      }
+
       BrowserLauncher.getInstance().browse(
-        (new DevToolsUrl(instance.host, instance.port, serviceUrl, null, false, null, null).getUrlString()),
+        (new DevToolsUrl(instance.host, instance.port, serviceUrl, null, false, null, null, flutterSdk.getVersion()).getUrlString()),
         null
       );
     });
