@@ -86,7 +86,7 @@ public class DevToolsUrl {
       params.add("inspectorRef=" + widgetId);
     }
     if (flutterSdkVersion.canUseModernDevToolsUrl()) {
-      return "http://" + devtoolsHost + ":" + devtoolsPort + "/" + page + "?" + String.join("&", params);
+      return "http://" + devtoolsHost + ":" + devtoolsPort + "/" + ( page != null ? page : "" )  + "?" + String.join("&", params);
     } else {
       return "http://" + devtoolsHost + ":" + devtoolsPort + "/#/?" + String.join("&", params);
     }
