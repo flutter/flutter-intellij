@@ -59,7 +59,7 @@ public class ActiveEditorsOutlineServiceTest {
     innerFixture = projectFixture.getInner();
     project = projectFixture.getProject();
     flutterDas = new TestFlutterDartAnalysisServer(project);
-    service = new ActiveEditorsOutlineService(project, flutterDas);
+    service = new ActiveEditorsOutlineService(project);
     listener = new Listener();
     service.addListener(listener);
     mainFile = innerFixture.addFileToProject("lib/main.dart", fileContents);

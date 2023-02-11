@@ -39,7 +39,7 @@ public class FlutterDartAnalysisServer implements Disposable {
   private static final String FLUTTER_NOTIFICATION_OUTLINE = "flutter.outline";
   private static final String FLUTTER_NOTIFICATION_OUTLINE_KEY = "\"flutter.outline\"";
 
-  @NotNull final DartAnalysisServerService analysisService;
+  @NotNull final Project project;
 
   /**
    * Each key is a notification identifier.
@@ -62,9 +62,15 @@ public class FlutterDartAnalysisServer implements Disposable {
     return Objects.requireNonNull(project.getService(FlutterDartAnalysisServer.class));
   }
 
+  @NotNull
+  private DartAnalysisServerService getAnalysisService() {
+    return Objects.requireNonNull(DartPlugin.getInstance().getAnalysisService(project));
+  }
+
   @VisibleForTesting
   public FlutterDartAnalysisServer(@NotNull Project project) {
-    analysisService = DartPlugin.getInstance().getAnalysisService(project);
+    this.project = project;
+    DartAnalysisServerService analysisService = getAnalysisService();
     analysisService.addResponseListener(new CompatibleResponseListener());
     analysisService.addAnalysisServerListener(new AnalysisServerListenerAdapter() {
       private boolean hasComputedErrors = false;
@@ -140,12 +146,14 @@ public class FlutterDartAnalysisServer implements Disposable {
   }
 
   private void sendSubscriptions() {
+    DartAnalysisServerService analysisService = getAnalysisService();
     final String id = analysisService.generateUniqueId();
     analysisService.sendRequest(id, FlutterRequestUtilities.generateAnalysisSetSubscriptions(id, subscriptions));
   }
 
   @NotNull
   public List<SourceChange> edit_getAssists(@NotNull VirtualFile file, int offset, int length) {
+    DartAnalysisServerService analysisService = getAnalysisService();
     return analysisService.edit_getAssists(file, offset, length);
   }
 
@@ -153,6 +161,7 @@ public class FlutterDartAnalysisServer implements Disposable {
   public CompletableFuture<List<FlutterWidgetProperty>> getWidgetDescription(@NotNull VirtualFile file, int _offset) {
     final CompletableFuture<List<FlutterWidgetProperty>> result = new CompletableFuture<>();
     final String filePath = FileUtil.toSystemDependentName(file.getPath());
+    DartAnalysisServerService analysisService = getAnalysisService();
     final int offset = analysisService.getOriginalOffset(file, _offset);
 
     final String id = analysisService.generateUniqueId();
@@ -182,6 +191,7 @@ public class FlutterDartAnalysisServer implements Disposable {
   public SourceChange setWidgetPropertyValue(int propertyId, FlutterWidgetPropertyValue value) {
     final CountDownLatch latch = new CountDownLatch(1);
     final AtomicReference<SourceChange> result = new AtomicReference<>();
+    DartAnalysisServerService analysisService = getAnalysisService();
     final String id = analysisService.generateUniqueId();
     synchronized (responseConsumers) {
       responseConsumers.put(id, (resultObject) -> {
