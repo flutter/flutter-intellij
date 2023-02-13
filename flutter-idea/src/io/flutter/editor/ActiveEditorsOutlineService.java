@@ -5,7 +5,6 @@
  */
 package io.flutter.editor;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.editor.Editor;
@@ -41,22 +40,21 @@ import java.util.*;
  * </ul>
  */
 public class ActiveEditorsOutlineService implements Disposable {
-  private final Project project;
-  private final FlutterDartAnalysisServer analysisServer;
+  @NotNull private final Project project;
 
   /**
    * Outlines for the currently visible files.
    */
-  private final Map<String, FlutterOutline> pathToOutline = new HashMap<>();
+  @NotNull private final Map<String, FlutterOutline> pathToOutline = new HashMap<>();
   /**
    * Outline listeners for the currently visible files.
    */
-  private final Map<String, FlutterOutlineListener> outlineListeners = new HashMap<>();
+  @NotNull private final Map<String, FlutterOutlineListener> outlineListeners = new HashMap<>();
 
   /**
    * List of listeners.
    */
-  private final Set<Listener> listeners = new HashSet<>();
+  @NotNull private final Set<Listener> listeners = new HashSet<>();
 
   @NotNull
   public static ActiveEditorsOutlineService getInstance(@NotNull final Project project) {
@@ -64,19 +62,18 @@ public class ActiveEditorsOutlineService implements Disposable {
   }
 
   public ActiveEditorsOutlineService(Project project) {
-    this(project, FlutterDartAnalysisServer.getInstance(project));
-  }
-
-  @VisibleForTesting
-  ActiveEditorsOutlineService(Project project, FlutterDartAnalysisServer analysisServer) {
     this.project = project;
-    this.analysisServer = analysisServer;
     updateActiveEditors();
     project.getMessageBus().connect(project).subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
       public void selectionChanged(@NotNull FileEditorManagerEvent event) {
         updateActiveEditors();
       }
     });
+  }
+
+  @NotNull
+  FlutterDartAnalysisServer getAnalysisServer() {
+    return FlutterDartAnalysisServer.getInstance(project);
   }
 
   /**
@@ -127,6 +124,7 @@ public class ActiveEditorsOutlineService implements Disposable {
 
     // Remove obsolete outline listeners.
     final List<String> obsoletePaths = new ArrayList<>();
+    FlutterDartAnalysisServer analysisServer = getAnalysisServer();
 
     synchronized (outlineListeners) {
       for (final String path : outlineListeners.keySet()) {
@@ -225,6 +223,7 @@ public class ActiveEditorsOutlineService implements Disposable {
 
   @Override
   public void dispose() {
+    FlutterDartAnalysisServer analysisServer = getAnalysisServer();
     synchronized (outlineListeners) {
       final Iterator<Map.Entry<String, FlutterOutlineListener>> iterator = outlineListeners.entrySet().iterator();
 
