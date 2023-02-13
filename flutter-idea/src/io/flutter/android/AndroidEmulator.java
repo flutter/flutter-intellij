@@ -5,8 +5,6 @@
  */
 package io.flutter.android;
 
-import com.android.tools.idea.emulator.EmulatorSettings;
-//import com.android.tools.idea.streaming.EmulatorSettings;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ColoredProcessHandler;
@@ -20,9 +18,13 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.util.ReflectionUtil;
 import io.flutter.FlutterMessages;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import org.jetbrains.annotations.NotNull;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class AndroidEmulator {
   private static final Logger LOG = Logger.getInstance(AndroidEmulator.class);
@@ -62,7 +64,7 @@ public class AndroidEmulator {
       .withExePath(emulatorPath)
       .withParameters("-avd", this.id);
 
-    final boolean shouldLaunchEmulatorInToolWindow = EmulatorSettings.getInstance().getLaunchInToolWindow();
+    final boolean shouldLaunchEmulatorInToolWindow = getLaunchInToolWindow();
     if (shouldLaunchEmulatorInToolWindow) {
       cmd.addParameter("-qt-hide-window");
       cmd.addParameter("-grpc-use-token");
@@ -131,5 +133,35 @@ public class AndroidEmulator {
   @Override
   public int hashCode() {
     return id.hashCode();
+  }
+
+  // This is: EmulatorSettings.getInstance().getLaunchInToolWindow();
+  // Beginning in 2022.2, Android Studio moved this class to a different package.
+  // IntelliJ did not adopt that change, and we cannot build separate plugins for the two.
+  @SuppressWarnings("ConstantConditions")
+  private boolean getLaunchInToolWindow() {
+    Class<?> aClass;
+    try {
+      // IntelliJ
+      aClass = Class.forName("com.android.tools.idea.emulator.EmulatorSettings");
+    }
+    catch (ClassNotFoundException e) {
+      try {
+        // Android Studio
+        aClass = Class.forName("com.android.tools.idea.streaming.EmulatorSettings");
+      }
+      catch (ClassNotFoundException ex) {
+        return false;
+      }
+    }
+    Method method = ReflectionUtil.getDeclaredMethod(aClass, "getInstance");
+    try {
+      Object instance = method.invoke(null);
+      Method option = ReflectionUtil.getDeclaredMethod(aClass, "getLaunchInToolWindow");
+      return (boolean)option.invoke(instance);
+    }
+    catch (IllegalAccessException | InvocationTargetException e) {
+      return false;
+    }
   }
 }
