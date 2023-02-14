@@ -55,7 +55,8 @@ jxbrowser.license.key=$jxBrowserKey
     String testing,
   ) async {
     String javaVersion, smaliPlugin, langPlugin;
-    if (['AS.211', 'AS.212', 'AS.213', '2022.1', '2022.2'].contains(spec.version)) {
+    if (['AS.211', 'AS.212', 'AS.213', '2022.1', '2022.2']
+        .contains(spec.version)) {
       javaVersion = '11';
       smaliPlugin = 'smali';
       langPlugin = 'IntelliLang';
@@ -71,7 +72,7 @@ jxbrowser.license.key=$jxBrowserKey
     final contents = '''
 name = "flutter-intellij"
 org.gradle.parallel=true
-org.gradle.jvmargs=-Xms128m -Xmx1024m
+org.gradle.jvmargs=-Xms1024m -Xmx4048m
 javaVersion=$javaVersion
 dartVersion=${spec.dartPluginVersion}
 flutterPluginVersion=$version
