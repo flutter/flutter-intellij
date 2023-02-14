@@ -61,18 +61,20 @@ public class ActiveEditorsOutlineService implements Disposable {
     return Objects.requireNonNull(project.getService(ActiveEditorsOutlineService.class));
   }
 
-  public ActiveEditorsOutlineService(Project project) {
+  public ActiveEditorsOutlineService(@NotNull Project project) {
     this.project = project;
     updateActiveEditors();
-    project.getMessageBus().connect(project).subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
-      public void selectionChanged(@NotNull FileEditorManagerEvent event) {
-        updateActiveEditors();
-      }
-    });
+    // See comment in WidgetIndentsHighlightingPassFactory for choice of disposable here.
+    project.getMessageBus().connect(getAnalysisServer())
+      .subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
+        public void selectionChanged(@NotNull FileEditorManagerEvent event) {
+          updateActiveEditors();
+        }
+      });
   }
 
   @NotNull
-  FlutterDartAnalysisServer getAnalysisServer() {
+  private FlutterDartAnalysisServer getAnalysisServer() {
     return FlutterDartAnalysisServer.getInstance(project);
   }
 
@@ -136,7 +138,7 @@ public class ActiveEditorsOutlineService implements Disposable {
       for (final String path : obsoletePaths) {
         final FlutterOutlineListener listener = outlineListeners.remove(path);
         if (listener != null) {
-          analysisServer.removeOutlineListener(path, listener);
+          getAnalysisServer().removeOutlineListener(path, listener);
         }
       }
 
@@ -148,7 +150,7 @@ public class ActiveEditorsOutlineService implements Disposable {
 
         final FlutterOutlineListener listener = new OutlineListener(path);
         outlineListeners.put(path, listener);
-        analysisServer.addOutlineListener(FileUtil.toSystemDependentName(path), listener);
+        getAnalysisServer().addOutlineListener(FileUtil.toSystemDependentName(path), listener);
       }
     }
 
@@ -236,7 +238,7 @@ public class ActiveEditorsOutlineService implements Disposable {
         iterator.remove();
 
         if (listener != null) {
-          analysisServer.removeOutlineListener(path, listener);
+          getAnalysisServer().removeOutlineListener(path, listener);
         }
       }
 

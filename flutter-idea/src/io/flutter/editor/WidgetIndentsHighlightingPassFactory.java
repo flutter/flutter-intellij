@@ -52,12 +52,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   // widget indent guide lines after editing code containing guides.
   private static final boolean SIMULATE_SLOW_ANALYSIS_UPDATES = false;
 
-  private final Project project;
-  private final FlutterDartAnalysisServer flutterDartAnalysisService;
-  private final InspectorGroupManagerService inspectorGroupManagerService;
-  private final EditorMouseEventService editorEventService;
-  private final EditorPositionService editorPositionService;
-  private final ActiveEditorsOutlineService editorOutlineService;
+  @NotNull private final Project project;
   private final FlutterSettings.Listener settingsListener;
   private final ActiveEditorsOutlineService.Listener outlineListener;
   protected InspectorService inspectorService;
@@ -74,15 +69,10 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
 
   public WidgetIndentsHighlightingPassFactory(@NotNull Project project) {
     this.project = project;
-    flutterDartAnalysisService = FlutterDartAnalysisServer.getInstance(project);
     // TODO(jacobr): I'm not clear which Disposable it is best to tie the
     // lifecycle of this object. The FlutterDartAnalysisServer is chosen at
     // random as a Disposable with generally the right lifecycle. IntelliJ
     // returns a lint warning if you tie the lifecycle to the Project.
-    this.editorOutlineService = ActiveEditorsOutlineService.getInstance(project);
-    this.inspectorGroupManagerService = InspectorGroupManagerService.getInstance(project);
-    this.editorEventService = EditorMouseEventService.getInstance(project);
-    this.editorPositionService = EditorPositionService.getInstance(project);
     this.settingsListener = this::onSettingsChanged;
     this.outlineListener = this::updateEditor;
     syncSettings(FlutterSettings.getInstance());
@@ -109,7 +99,32 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
         WidgetIndentsHighlightingPass.onCaretPositionChanged(editorEx, event.getCaret());
       }
     }, this);
-    editorOutlineService.addListener(outlineListener);
+    getEditorOutlineService().addListener(outlineListener);
+  }
+
+  @NotNull
+  private FlutterDartAnalysisServer getAnalysisService() {
+    return FlutterDartAnalysisServer.getInstance(project);
+  }
+
+  @NotNull
+  private InspectorGroupManagerService getInspectorGroupManagerService() {
+    return InspectorGroupManagerService.getInstance(project);
+  }
+
+  @NotNull
+  private EditorMouseEventService getEditorEventService() {
+    return EditorMouseEventService.getInstance(project);
+  }
+
+  @NotNull
+  private EditorPositionService getEditorPositionService() {
+    return EditorPositionService.getInstance(project);
+  }
+
+  @NotNull
+  private ActiveEditorsOutlineService getEditorOutlineService() {
+    return ActiveEditorsOutlineService.getInstance(project);
   }
 
   /**
@@ -132,7 +147,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       if (project.isDisposed()) {
         return;
       }
-      for (EditorEx editor : editorOutlineService.getActiveDartEditors()) {
+      for (EditorEx editor : getEditorOutlineService().getActiveDartEditors()) {
         final String filePath = editor.getVirtualFile().getCanonicalPath();
         if (!editor.isDisposed() && Objects.equals(filePath, path)) {
           runWidgetIndentsPass(editor, outline);
@@ -150,9 +165,9 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       if (project.isDisposed()) {
         return;
       }
-      for (EditorEx editor : editorOutlineService.getActiveDartEditors()) {
+      for (EditorEx editor : getEditorOutlineService().getActiveDartEditors()) {
         if (!editor.isDisposed()) {
-          runWidgetIndentsPass(editor, editorOutlineService.getOutline(editor.getVirtualFile().getCanonicalPath()));
+          runWidgetIndentsPass(editor, getEditorOutlineService().getOutline(editor.getVirtualFile().getCanonicalPath()));
         }
       }
     });
@@ -225,7 +240,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     if (!FlutterUtils.couldContainWidgets(virtualFile)) {
       return highlightingPass;
     }
-    final FlutterOutline outline = editorOutlineService.getOutline(virtualFile.getCanonicalPath());
+    final FlutterOutline outline = getEditorOutlineService().getOutline(virtualFile.getCanonicalPath());
 
     if (outline != null) {
       ApplicationManager.getApplication().invokeLater(() -> runWidgetIndentsPass(editor, outline));
@@ -276,10 +291,10 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       project,
       editor,
       outline,
-      flutterDartAnalysisService,
-      inspectorGroupManagerService,
-      editorEventService,
-      editorPositionService,
+      getAnalysisService(),
+      getInspectorGroupManagerService(),
+      getEditorEventService(),
+      getEditorPositionService(),
       convertOffsets
     );
   }
@@ -287,7 +302,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   @Override
   public void dispose() {
     FlutterSettings.getInstance().removeListener(settingsListener);
-    editorOutlineService.removeListener(outlineListener);
+    getEditorOutlineService().removeListener(outlineListener);
   }
 
   void onSettingsChanged() {
