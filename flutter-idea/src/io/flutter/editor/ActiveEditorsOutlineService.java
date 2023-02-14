@@ -65,11 +65,12 @@ public class ActiveEditorsOutlineService implements Disposable {
     this.project = project;
     updateActiveEditors();
     // See comment in WidgetIndentsHighlightingPassFactory for choice of disposable here.
-    project.getMessageBus().connect(getAnalysisServer()).subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
-      public void selectionChanged(@NotNull FileEditorManagerEvent event) {
-        updateActiveEditors();
-      }
-    });
+    project.getMessageBus().connect(getAnalysisServer())
+      .subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
+        public void selectionChanged(@NotNull FileEditorManagerEvent event) {
+          updateActiveEditors();
+        }
+      });
   }
 
   @NotNull

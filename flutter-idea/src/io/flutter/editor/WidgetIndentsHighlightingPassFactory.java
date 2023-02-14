@@ -106,18 +106,22 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   private FlutterDartAnalysisServer getAnalysisService() {
     return FlutterDartAnalysisServer.getInstance(project);
   }
+
   @NotNull
   private InspectorGroupManagerService getInspectorGroupManagerService() {
     return InspectorGroupManagerService.getInstance(project);
   }
+
   @NotNull
   private EditorMouseEventService getEditorEventService() {
     return EditorMouseEventService.getInstance(project);
   }
+
   @NotNull
   private EditorPositionService getEditorPositionService() {
     return EditorPositionService.getInstance(project);
   }
+
   @NotNull
   private ActiveEditorsOutlineService getEditorOutlineService() {
     return ActiveEditorsOutlineService.getInstance(project);
