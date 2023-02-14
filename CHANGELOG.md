@@ -1,3 +1,12 @@
+# 72.1
+- Eliminate more potentially nested service creations (#6626)
+- Create only a single service at a time (#6618)
+- Use reflection to find EmulatorSettings in both IDEs (#6625)
+- Check version of SDK for forming DevTools URL (#6614)
+- Open chrome devtools from JxBrowser (#6615)
+- Attempt to fix error email (#6605)
+- Fix debugger display of Uint8List elements (#6603)
+
 # 72.0
 - Build 2023.1 (#6593)
 - Update settings to emphasize global options (#6592)-

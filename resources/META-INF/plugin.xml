@@ -46,6 +46,16 @@
 
   <change-notes>
     <![CDATA[
+<h1>72.1</h1>
+<ul>
+  <li>Eliminate more potentially nested service creations (#6626)</li>
+  <li>Create only a single service at a time (#6618)</li>
+  <li>Use reflection to find EmulatorSettings in both IDEs (#6625)</li>
+  <li>Check version of SDK for forming DevTools URL (#6614)</li>
+  <li>Open chrome devtools from JxBrowser (#6615)</li>
+  <li>Attempt to fix error email (#6605)</li>
+  <li>Fix debugger display of Uint8List elements (#6603)</li>
+</ul>
 <h1>72.0</h1>
 <ul>
   <li>Build 2023.1 (#6593)</li>
