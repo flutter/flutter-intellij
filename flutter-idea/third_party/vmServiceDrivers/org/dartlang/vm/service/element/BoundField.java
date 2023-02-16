@@ -45,8 +45,16 @@ public class BoundField extends Element {
     final JsonObject elem = (JsonObject)json.get("name");
     if (elem == null) return null;
 
-    if (elem.get("type").getAsString().equals("String")) return new String(elem);
-    if (elem.get("type").getAsString().equals("int")) return new int(elem);
+    // TODO(messick): Test these two. I had to fix the generated code.
+    // Also in RetainingObject and InboundReference.
+    if (elem.get("type").getAsString().equals("String")) return elem.get("value").getAsString();
+    if (elem.get("type").getAsString().equals("int")) {
+      try {
+        return Integer.parseInt(elem.get("value").getAsString());
+      } catch (NumberFormatException ex) {
+        // ignored
+      }
+    }
     return null;
   }
 

@@ -39,8 +39,14 @@ public class RetainingObject extends Element {
     final JsonObject elem = (JsonObject)json.get("parentField");
     if (elem == null) return null;
 
-    if (elem.get("type").getAsString().equals("String")) return new String(elem);
-    if (elem.get("type").getAsString().equals("int")) return new int(elem);
+    if (elem.get("type").getAsString().equals("String")) return elem.get("value").getAsString();
+    if (elem.get("type").getAsString().equals("int")) {
+      try {
+        return Integer.parseInt(elem.get("value").getAsString());
+      } catch (NumberFormatException ex) {
+        // ignored
+      }
+    }
     return null;
   }
 
