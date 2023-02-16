@@ -111,9 +111,24 @@ public enum InstanceKind {
   ReceivePort,
 
   /**
+   * An instance of the Dart class Record.
+   */
+  Record,
+
+  /**
+   * An instance of the Dart class RecordType.
+   */
+  RecordType,
+
+  /**
    * An instance of the Dart class RegExp.
    */
   RegExp,
+
+  /**
+   * An instance of the built-in VM Set implementation. User-defined Sets will be PlainInstance.
+   */
+  Set,
 
   /**
    * An instance of the Dart class StackTrace.
@@ -158,6 +173,11 @@ public enum InstanceKind {
    * An instance of the Dart class WeakProperty.
    */
   WeakProperty,
+
+  /**
+   * An instance of the Dart class WeakReference.
+   */
+  WeakReference,
 
   /**
    * Represents a value returned by the VM but unknown to this client.

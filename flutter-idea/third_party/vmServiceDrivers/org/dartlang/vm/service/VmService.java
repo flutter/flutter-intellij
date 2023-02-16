@@ -78,12 +78,12 @@ public class VmService extends VmServiceBase {
   /**
    * The major version number of the protocol supported by this client.
    */
-  public static final int versionMajor = 3;
+  public static final int versionMajor = 4;
 
   /**
    * The minor version number of the protocol supported by this client.
    */
-  public static final int versionMinor = 58;
+  public static final int versionMinor = 1;
 
   /**
    * The [addBreakpoint] RPC is used to add a breakpoint at a specific line of some script.
@@ -319,7 +319,21 @@ public class VmService extends VmServiceBase {
 
   /**
    * The [getInstances] RPC is used to retrieve a set of instances which are of a specific class.
-   * This does not include instances of subclasses of the given class.
+   * @param includeSubclasses This parameter is optional and may be null.
+   * @param includeImplementers This parameter is optional and may be null.
+   */
+  public void getInstances(String isolateId, String objectId, int limit, Boolean includeSubclasses, Boolean includeImplementers, GetInstancesConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    params.addProperty("objectId", objectId);
+    params.addProperty("limit", limit);
+    if (includeSubclasses != null) params.addProperty("includeSubclasses", includeSubclasses);
+    if (includeImplementers != null) params.addProperty("includeImplementers", includeImplementers);
+    request("getInstances", params, consumer);
+  }
+
+  /**
+   * The [getInstances] RPC is used to retrieve a set of instances which are of a specific class.
    */
   public void getInstances(String isolateId, String objectId, int limit, GetInstancesConsumer consumer) {
     final JsonObject params = new JsonObject();

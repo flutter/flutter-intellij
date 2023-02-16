@@ -160,6 +160,7 @@ public class Instance extends Obj {
    *  - String
    *  - List
    *  - Map
+   *  - Set
    *  - Uint8ClampedList
    *  - Uint8List
    *  - Uint16List
@@ -194,10 +195,11 @@ public class Instance extends Obj {
   }
 
   /**
-   * The elements of a List instance.
+   * The elements of a List or Set instance.
    *
    * Provided for instance kinds:
    *  - List
+   *  - Set
    *
    * @return one of <code>ElementList<InstanceRef></code> or <code>ElementList<Sentinel></code>
    *
@@ -215,7 +217,11 @@ public class Instance extends Obj {
   }
 
   /**
-   * The fields of this Instance.
+   * The (non-static) fields of this Instance.
+   *
+   * Provided for instance kinds:
+   *  - PlainInstance
+   *  - Record
    *
    * Can return <code>null</code>.
    */
@@ -275,13 +281,16 @@ public class Instance extends Obj {
   }
 
   /**
-   * The length of a List or the number of associations in a Map or the number of codeunits in a
-   * String.
+   * The number of (non-static) fields of a PlainInstance, or the length of a List, or the number
+   * of associations in a Map, or the number of codeunits in a String, or the total number of
+   * fields (positional and named) in a Record.
    *
    * Provided for instance kinds:
+   *  - PlainInstance
    *  - String
    *  - List
    *  - Map
+   *  - Set
    *  - Uint8ClampedList
    *  - Uint8List
    *  - Uint16List
@@ -296,6 +305,7 @@ public class Instance extends Obj {
    *  - Int32x4List
    *  - Float32x4List
    *  - Float64x2List
+   *  - Record
    *
    * Can return <code>null</code>.
    */
@@ -311,10 +321,15 @@ public class Instance extends Obj {
    *
    * Can return <code>null</code>.
    */
-  public InstanceRef getMirrorReferent() {
+  public ObjRef getMirrorReferent() {
     JsonObject obj = (JsonObject) json.get("mirrorReferent");
     if (obj == null) return null;
-    return new InstanceRef(obj);
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new ObjRef(obj);
   }
 
   /**
@@ -337,6 +352,7 @@ public class Instance extends Obj {
    *  - String
    *  - List
    *  - Map
+   *  - Set
    *  - Uint8ClampedList
    *  - Uint8List
    *  - Uint16List
@@ -442,10 +458,15 @@ public class Instance extends Obj {
    *
    * Can return <code>null</code>.
    */
-  public InstanceRef getPropertyKey() {
+  public ObjRef getPropertyKey() {
     JsonObject obj = (JsonObject) json.get("propertyKey");
     if (obj == null) return null;
-    return new InstanceRef(obj);
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new ObjRef(obj);
   }
 
   /**
@@ -456,10 +477,15 @@ public class Instance extends Obj {
    *
    * Can return <code>null</code>.
    */
-  public InstanceRef getPropertyValue() {
+  public ObjRef getPropertyValue() {
     JsonObject obj = (JsonObject) json.get("propertyValue");
     if (obj == null) return null;
-    return new InstanceRef(obj);
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new ObjRef(obj);
   }
 
   /**
@@ -474,6 +500,25 @@ public class Instance extends Obj {
     JsonObject obj = (JsonObject) json.get("returnType");
     if (obj == null) return null;
     return new InstanceRef(obj);
+  }
+
+  /**
+   * The target for a WeakReference instance.
+   *
+   * Provided for instance kinds:
+   *  - WeakReference
+   *
+   * Can return <code>null</code>.
+   */
+  public ObjRef getTarget() {
+    JsonObject obj = (JsonObject) json.get("target");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new ObjRef(obj);
   }
 
   /**

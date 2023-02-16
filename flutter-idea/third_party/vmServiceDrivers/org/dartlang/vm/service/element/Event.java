@@ -170,6 +170,18 @@ public class Event extends Response {
   }
 
   /**
+   * The garbage collection (GC) operation performed.
+   *
+   * This is provided for the event kinds:
+   *  - GC
+   *
+   * Can return <code>null</code>.
+   */
+  public String getGcType() {
+    return getAsString("gcType");
+  }
+
+  /**
    * The argument passed to dart:developer.inspect.
    *
    * This is provided for the Inspect event.
