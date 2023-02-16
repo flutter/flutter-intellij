@@ -46,20 +46,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.consumer.AddBreakpointWithScriptUriConsumer;
-import org.dartlang.vm.service.consumer.EvaluateConsumer;
-import org.dartlang.vm.service.consumer.EvaluateInFrameConsumer;
-import org.dartlang.vm.service.consumer.GetIsolateConsumer;
-import org.dartlang.vm.service.consumer.GetObjectConsumer;
-import org.dartlang.vm.service.consumer.GetStackConsumer;
-import org.dartlang.vm.service.consumer.InvokeConsumer;
-import org.dartlang.vm.service.consumer.PauseConsumer;
-import org.dartlang.vm.service.consumer.RemoveBreakpointConsumer;
-import org.dartlang.vm.service.consumer.SetExceptionPauseModeConsumer;
-import org.dartlang.vm.service.consumer.SuccessConsumer;
-import org.dartlang.vm.service.consumer.UriListConsumer;
-import org.dartlang.vm.service.consumer.VMConsumer;
-import org.dartlang.vm.service.consumer.VersionConsumer;
+import org.dartlang.vm.service.consumer.*;
 import org.dartlang.vm.service.element.Breakpoint;
 import org.dartlang.vm.service.element.ElementList;
 import org.dartlang.vm.service.element.ErrorRef;
@@ -253,7 +240,7 @@ public class VmServiceWrapper implements Disposable {
     addRequest(() -> myVmService.getIsolate(isolateId, consumer));
   }
 
-  public void handleIsolate(@NotNull final IsolateRef isolateRef, final boolean isolatePausedStart) {
+  public void handleIsolate(@NotNull IsolateRef isolateRef, boolean isolatePausedStart) {
     // We should auto-resume on a StartPaused event, if we're not remote debugging, and after breakpoints have been set.
 
     final boolean newIsolate = myIsolatesInfo.addIsolate(isolateRef);
@@ -264,28 +251,56 @@ public class VmServiceWrapper implements Disposable {
 
     // Just to make sure that the main isolate is not handled twice, both from handleDebuggerConnected() and DartVmServiceListener.received(PauseStart)
     if (newIsolate) {
-      addRequest(() -> myVmService.setExceptionPauseMode(
-        isolateRef.getId(),
-        myDebugProcess.getBreakOnExceptionMode(),
-        new SetExceptionPauseModeConsumer() {
-          @Override
-          public void received(Success response) {
-            setInitialBreakpointsAndResume(isolateRef);
-          }
-
-          @Override
-          public void onError(RPCError error) {
-
-          }
-
-          @Override
-          public void received(Sentinel response) {
-
-          }
-        }));
+      setIsolatePauseMode(isolateRef.getId(), myDebugProcess.getBreakOnExceptionMode(), new com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers.SuccessConsumerWrapper() {
+        @Override
+        public void received(Success response) {
+          setInitialBreakpointsAndResume(isolateRef);
+        }
+      });
     }
     else {
       checkInitialResume(isolateRef);
+    }
+  }
+
+  private void setIsolatePauseMode(String isolateId, ExceptionPauseMode mode, SuccessConsumer consumer) {
+    if (supportsSetIsolatePauseMode()) {
+      SetIsolatePauseModeConsumer sipmc = new SetIsolatePauseModeConsumer() {
+        @Override
+        public void received(Sentinel response) {
+          consumer.received(new Success(response.getJson()));
+        }
+
+        @Override
+        public void received(Success response) {
+          consumer.received(response);
+        }
+
+        @Override
+        public void onError(RPCError error) {
+          consumer.onError(error);
+        }
+      };
+      addRequest(() -> myVmService.setIsolatePauseMode(isolateId, mode, false, sipmc));
+    }
+    else {
+      SetExceptionPauseModeConsumer sepmc = new SetExceptionPauseModeConsumer() {
+        @Override
+        public void received(Sentinel response) {
+          consumer.received(new Success(response.getJson()));
+        }
+
+        @Override
+        public void received(Success response) {
+          consumer.received(response);
+        }
+
+        @Override
+        public void onError(RPCError error) {
+          consumer.onError(error);
+        }
+      };
+      addRequest(() -> myVmService.setExceptionPauseMode(isolateId, mode, sepmc));
     }
   }
 
@@ -1027,6 +1042,12 @@ public class VmServiceWrapper implements Disposable {
     });
 
     return uriFuture;
+  }
+
+  private boolean supportsSetIsolatePauseMode() {
+    org.dartlang.vm.service.element.Version version = myVmService.getRuntimeVersion();
+    return version.getMajor() > 3 ||
+           version.getMajor() == 3 && version.getMinor() >= 53;
   }
 }
 
