@@ -122,20 +122,20 @@ public class VmServiceWrapper implements Disposable {
   public void handleDebuggerConnected() {
     streamListen(VmService.DEBUG_STREAM_ID, new VmServiceConsumers.SuccessConsumerWrapper() {
       @Override
-      public void received(Success success) {
+      public void received(final Success success) {
         myVmServiceReceiverThreadId = Thread.currentThread().getId();
         streamListen(VmService.ISOLATE_STREAM_ID, new VmServiceConsumers.SuccessConsumerWrapper() {
           @Override
-          public void received(Success success) {
+          public void received(final Success success) {
             getVm(new VmServiceConsumers.VmConsumerWrapper() {
               @Override
-              public void received(VM vm) {
-                for (IsolateRef isolateRef : vm.getIsolates()) {
+              public void received(final VM vm) {
+                for (final IsolateRef isolateRef : vm.getIsolates()) {
                   getIsolate(isolateRef.getId(), new VmServiceConsumers.GetIsolateConsumerWrapper() {
                     @Override
-                    public void received(Isolate isolate) {
-                      Event event = isolate.getPauseEvent();
-                      EventKind eventKind = event.getKind();
+                    public void received(final Isolate isolate) {
+                      final Event event = isolate.getPauseEvent();
+                      final EventKind eventKind = event.getKind();
 
                       // Ignore isolates that are very early in their lifecycle. You can't set breakpoints on them
                       // yet, and we'll get lifecycle events for them later.
@@ -158,11 +158,11 @@ public class VmServiceWrapper implements Disposable {
                         myDebugProcess.isolateSuspended(isolateRef);
 
                         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-                          ElementList<Breakpoint> breakpoints =
+                          final ElementList<Breakpoint> breakpoints =
                             eventKind == EventKind.PauseBreakpoint ? event.getPauseBreakpoints() : null;
-                          InstanceRef exception = eventKind == EventKind.PauseException ? event.getException() : null;
-                          myVmServiceListener.onIsolatePaused(isolateRef, breakpoints, exception, event.getTopFrame(),
-                                                              event.getAtAsyncSuspension());
+                          final InstanceRef exception = eventKind == EventKind.PauseException ? event.getException() : null;
+                          myVmServiceListener
+                            .onIsolatePaused(isolateRef, breakpoints, exception, event.getTopFrame(), event.getAtAsyncSuspension());
                         });
                       }
                     }
@@ -210,14 +210,14 @@ public class VmServiceWrapper implements Disposable {
     }));
   }
 
-  private void getIsolate(String isolateId, @NotNull GetIsolateConsumer consumer) {
+  private void getIsolate(@NotNull String isolateId, @NotNull GetIsolateConsumer consumer) {
     addRequest(() -> myVmService.getIsolate(isolateId, consumer));
   }
 
   public void handleIsolate(@NotNull IsolateRef isolateRef, boolean isolatePausedStart) {
     // We should auto-resume on a StartPaused event, if we're not remote debugging, and after breakpoints have been set.
 
-    boolean newIsolate = myIsolatesInfo.addIsolate(isolateRef);
+    final boolean newIsolate = myIsolatesInfo.addIsolate(isolateRef);
 
     if (isolatePausedStart) {
       myIsolatesInfo.setShouldInitialResume(isolateRef);
@@ -296,7 +296,7 @@ public class VmServiceWrapper implements Disposable {
       // need to detect remote project root path before setting breakpoints
       getIsolate(isolateRef.getId(), new VmServiceConsumers.GetIsolateConsumerWrapper() {
         @Override
-        public void received(Isolate isolate) {
+        public void received(final Isolate isolate) {
           myDebugProcess.guessRemoteProjectRoot(isolate.getLibraries());
           doSetInitialBreakpointsAndResume(isolateRef);
         }
@@ -338,9 +338,9 @@ public class VmServiceWrapper implements Disposable {
       return;
     }
 
-    AtomicInteger counter = new AtomicInteger(xBreakpoints.size());
+    final AtomicInteger counter = new AtomicInteger(xBreakpoints.size());
 
-    for (XLineBreakpoint<XBreakpointProperties> xBreakpoint : xBreakpoints) {
+    for (final XLineBreakpoint<XBreakpointProperties> xBreakpoint : xBreakpoints) {
       addBreakpoint(isolateId, xBreakpoint.getSourcePosition(), new VmServiceConsumers.BreakpointsConsumer() {
         @Override
         void sourcePositionNotApplicable() {
@@ -662,7 +662,7 @@ public class VmServiceWrapper implements Disposable {
 
   public void addBreakpointForIsolates(@NotNull XLineBreakpoint<XBreakpointProperties> xBreakpoint,
                                        @NotNull Collection<IsolatesInfo.IsolateInfo> isolateInfos) {
-    for (IsolatesInfo.IsolateInfo isolateInfo : isolateInfos) {
+    for (final IsolatesInfo.IsolateInfo isolateInfo : isolateInfos) {
       addBreakpoint(isolateInfo.getIsolateId(), xBreakpoint.getSourcePosition(), new VmServiceConsumers.BreakpointsConsumer() {
         @Override
         void sourcePositionNotApplicable() {
@@ -711,17 +711,14 @@ public class VmServiceWrapper implements Disposable {
     addRequest(() -> myVmService.removeBreakpoint(isolateId, vmBreakpointId, new RemoveBreakpointConsumer() {
       @Override
       public void onError(RPCError error) {
-
       }
 
       @Override
       public void received(Sentinel response) {
-
       }
 
       @Override
       public void received(Success response) {
-
       }
     }));
   }
@@ -735,21 +732,18 @@ public class VmServiceWrapper implements Disposable {
   }
 
   public void setExceptionPauseMode(@NotNull ExceptionPauseMode mode) {
-    for (IsolatesInfo.IsolateInfo isolateInfo : myIsolatesInfo.getIsolateInfos()) {
+    for (final IsolatesInfo.IsolateInfo isolateInfo : myIsolatesInfo.getIsolateInfos()) {
       addRequest(() -> myVmService.setExceptionPauseMode(isolateInfo.getIsolateId(), mode, new SetExceptionPauseModeConsumer() {
         @Override
         public void onError(RPCError error) {
-
         }
 
         @Override
         public void received(Sentinel response) {
-
         }
 
         @Override
         public void received(Success response) {
-
         }
       }));
     }
@@ -806,17 +800,17 @@ public class VmServiceWrapper implements Disposable {
             elementList = vmStack.getFrames();
           }
 
-          List<Frame> vmFrames = Lists.newArrayList(elementList);
-          List<XStackFrame> xStackFrames = new ArrayList<>(vmFrames.size());
+          final List<Frame> vmFrames = Lists.newArrayList(elementList);
+          final List<XStackFrame> xStackFrames = new ArrayList<>(vmFrames.size());
 
-          for (Frame vmFrame : vmFrames) {
+          for (final Frame vmFrame : vmFrames) {
             if (vmFrame.getKind() == FrameKind.AsyncSuspensionMarker) {
               // Render an asynchronous gap.
-              XStackFrame markerFrame = new DartAsyncMarkerFrame();
+              final XStackFrame markerFrame = new DartAsyncMarkerFrame();
               xStackFrames.add(markerFrame);
             }
             else {
-              DartVmServiceStackFrame stackFrame =
+              final DartVmServiceStackFrame stackFrame =
                 new DartVmServiceStackFrame(myDebugProcess, isolateId, vmFrame, vmFrames, exceptionToAddToFrame);
               stackFrame.setIsDroppableFrame(vmFrame.getKind() == FrameKind.Regular);
               xStackFrames.add(stackFrame);
@@ -847,10 +841,10 @@ public class VmServiceWrapper implements Disposable {
   public Script getScriptSync(@NotNull String isolateId, @NotNull String scriptId) {
     assertSyncRequestAllowed();
 
-    Semaphore semaphore = new Semaphore();
+    final Semaphore semaphore = new Semaphore();
     semaphore.down();
 
-    Ref<Script> resultRef = Ref.create();
+    final Ref<Script> resultRef = Ref.create();
 
     addRequest(() -> myVmService.getObject(isolateId, scriptId, new GetObjectConsumer() {
       @Override
