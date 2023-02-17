@@ -28,23 +28,37 @@ public class InboundReference extends Element {
   }
 
   /**
-   * If source is a field of an object, parentField is the field containing the inbound reference.
+   * If `source` is a `List`, `parentField` is the index of the inbound reference. If `source` is a
+   * record, `parentField` is the field name of the inbound reference. If `source` is an instance
+   * of any other kind, `parentField` is the field containing the inbound reference.
+   *
+   * Note: In v5.0 of the spec, `@Field` will no longer be a part of this property's type, i.e. the
+   * type will become `string|int`.
+   *
+   * @return one of <code>FieldRef</code>, <code>String</code> or <code>int</code>
    *
    * Can return <code>null</code>.
    */
-  public FieldRef getParentField() {
-    JsonObject obj = (JsonObject) json.get("parentField");
-    if (obj == null) return null;
-    final String type = json.get("type").getAsString();
-    if ("Instance".equals(type) || "@Instance".equals(type)) {
-      final String kind = json.get("kind").getAsString();
-      if ("Null".equals(kind)) return null;
+  public Object getParentField() {
+    final JsonObject elem = (JsonObject)json.get("parentField");
+    if (elem == null) return null;
+
+    if (elem.get("type").getAsString().equals("@Field")) return new FieldRef(elem);
+    if (elem.get("type").getAsString().equals("String")) return elem.get("value").getAsString();
+    if (elem.get("type").getAsString().equals("int")) {
+      try {
+        return Integer.parseInt(elem.get("value").getAsString());
+      } catch (NumberFormatException ex) {
+        // ignored
+      }
     }
-    return new FieldRef(obj);
+    return null;
   }
 
   /**
-   * If source is a List, parentListIndex is the index of the inbound reference.
+   * If source is a List, parentListIndex is the index of the inbound reference (deprecated).
+   *
+   * Note: this property is deprecated and will be replaced by `parentField`.
    *
    * Can return <code>null</code>.
    */

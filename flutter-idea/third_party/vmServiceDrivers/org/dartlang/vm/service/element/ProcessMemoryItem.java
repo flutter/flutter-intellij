@@ -26,7 +26,7 @@ public class ProcessMemoryItem extends Element {
   }
 
   /**
-   * Subdivisons of this bucket of memory.
+   * Subdivisions of this bucket of memory.
    */
   public ElementList<ProcessMemoryItem> getChildren() {
     return new ElementList<ProcessMemoryItem>(json.get("children").getAsJsonArray()) {

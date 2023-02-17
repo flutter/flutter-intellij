@@ -121,13 +121,16 @@ public class InstanceRef extends ObjRef {
   }
 
   /**
-   * The length of a List or the number of associations in a Map or the number of codeunits in a
-   * String.
+   * The number of (non-static) fields of a PlainInstance, or the length of a List, or the number
+   * of associations in a Map, or the number of codeunits in a String, or the total number of
+   * fields (positional and named) in a Record.
    *
    * Provided for instance kinds:
+   *  - PlainInstance
    *  - String
    *  - List
    *  - Map
+   *  - Set
    *  - Uint8ClampedList
    *  - Uint8List
    *  - Uint16List
@@ -142,6 +145,7 @@ public class InstanceRef extends ObjRef {
    *  - Int32x4List
    *  - Float32x4List
    *  - Float64x2List
+   *  - Record
    *
    * Can return <code>null</code>.
    */

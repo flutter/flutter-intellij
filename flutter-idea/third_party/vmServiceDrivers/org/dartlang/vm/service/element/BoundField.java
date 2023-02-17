@@ -28,8 +28,34 @@ public class BoundField extends Element {
     super(json);
   }
 
+  /**
+   * Provided for fields of instances that are NOT of the following instance kinds:
+   *  - Record
+   *
+   * Note: this property is deprecated and will be replaced by `name`.
+   */
   public FieldRef getDecl() {
     return new FieldRef((JsonObject) json.get("decl"));
+  }
+
+  /**
+   * @return one of <code>String</code> or <code>int</code>
+   */
+  public Object getName() {
+    final JsonObject elem = (JsonObject)json.get("name");
+    if (elem == null) return null;
+
+    // TODO(messick): Test these two. I had to fix the generated code.
+    // Also in RetainingObject and InboundReference.
+    if (elem.get("type").getAsString().equals("String")) return elem.get("value").getAsString();
+    if (elem.get("type").getAsString().equals("int")) {
+      try {
+        return Integer.parseInt(elem.get("value").getAsString());
+      } catch (NumberFormatException ex) {
+        // ignored
+      }
+    }
+    return null;
   }
 
   /**

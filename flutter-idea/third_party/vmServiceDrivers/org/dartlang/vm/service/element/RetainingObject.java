@@ -28,16 +28,33 @@ public class RetainingObject extends Element {
   }
 
   /**
-   * The name of the field containing the retaining object within an object.
+   * If `value` is a non-List, non-Map object, `parentField` is the name of the field containing
+   * the previous object on the retaining path.
+   *
+   * @return one of <code>String</code> or <code>int</code>
    *
    * Can return <code>null</code>.
    */
-  public String getParentField() {
-    return getAsString("parentField");
+  public Object getParentField() {
+    final JsonObject elem = (JsonObject)json.get("parentField");
+    if (elem == null) return null;
+
+    if (elem.get("type").getAsString().equals("String")) return elem.get("value").getAsString();
+    if (elem.get("type").getAsString().equals("int")) {
+      try {
+        return Integer.parseInt(elem.get("value").getAsString());
+      } catch (NumberFormatException ex) {
+        // ignored
+      }
+    }
+    return null;
   }
 
   /**
-   * The offset of the retaining object in a containing list.
+   * If `value` is a List, `parentListIndex` is the index where the previous object on the
+   * retaining path is located (deprecated).
+   *
+   * Note: this property is deprecated and will be replaced by `parentField`.
    *
    * Can return <code>null</code>.
    */
@@ -46,7 +63,8 @@ public class RetainingObject extends Element {
   }
 
   /**
-   * The key mapping to the retaining object in a containing map.
+   * If `value` is a Map, `parentMapKey` is the key mapping to the previous object on the retaining
+   * path.
    *
    * Can return <code>null</code>.
    */

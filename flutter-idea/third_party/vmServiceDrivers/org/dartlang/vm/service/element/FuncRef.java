@@ -79,6 +79,13 @@ public class FuncRef extends ObjRef {
   }
 
   /**
+   * Is this function an abstract method?
+   */
+  public boolean isAbstract() {
+    return getAsBoolean("abstract");
+  }
+
+  /**
    * Is this function const?
    */
   public boolean isConst() {

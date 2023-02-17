@@ -108,6 +108,13 @@ public class Isolate extends Response {
   }
 
   /**
+   * The id of the isolate group that this isolate belongs to.
+   */
+  public String getIsolateGroupId() {
+    return getAsString("isolateGroupId");
+  }
+
+  /**
    * A list of all libraries for this isolate.
    *
    * Guaranteed to be initialized when the IsolateRunnable event fires.

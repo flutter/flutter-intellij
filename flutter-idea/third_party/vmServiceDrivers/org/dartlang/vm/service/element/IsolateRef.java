@@ -43,6 +43,13 @@ public class IsolateRef extends Response {
   }
 
   /**
+   * The id of the isolate group that this isolate belongs to.
+   */
+  public String getIsolateGroupId() {
+    return getAsString("isolateGroupId");
+  }
+
+  /**
    * A name identifying this isolate. Not guaranteed to be unique.
    */
   public String getName() {
