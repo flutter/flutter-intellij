@@ -43,6 +43,7 @@ public class InboundReference extends Element {
     final JsonObject elem = (JsonObject)json.get("parentField");
     if (elem == null) return null;
 
+    // TODO(messick): Verify this is correct. I had to modify the generated code.
     if (elem.get("type").getAsString().equals("@Field")) return new FieldRef(elem);
     if (elem.get("type").getAsString().equals("String")) return elem.get("value").getAsString();
     if (elem.get("type").getAsString().equals("int")) {
