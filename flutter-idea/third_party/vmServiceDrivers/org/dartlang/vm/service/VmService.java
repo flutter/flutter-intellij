@@ -83,7 +83,7 @@ public class VmService extends VmServiceBase {
   /**
    * The minor version number of the protocol supported by this client.
    */
-  public static final int versionMinor = 1;
+  public static final int versionMinor = 2;
 
   /**
    * The [addBreakpoint] RPC is used to add a breakpoint at a specific line of some script.
@@ -341,6 +341,40 @@ public class VmService extends VmServiceBase {
     params.addProperty("objectId", objectId);
     params.addProperty("limit", limit);
     request("getInstances", params, consumer);
+  }
+
+  /**
+   * The [getInstancesAsList] RPC is used to retrieve a set of instances which are of a specific
+   * class. This RPC returns an <code>@Instance</code>@Instance corresponding to a Dart
+   * <code>List<dynamic></code>List<dynamic> that contains the requested instances. This
+   * <code>List</code>List is not growable, but it is otherwise mutable. The response type is what
+   * distinguishes this RPC from <code>getInstances</code>getInstances, which returns an
+   * <code>InstanceSet</code>InstanceSet.
+   * @param includeSubclasses This parameter is optional and may be null.
+   * @param includeImplementers This parameter is optional and may be null.
+   */
+  public void getInstancesAsList(String isolateId, String objectId, Boolean includeSubclasses, Boolean includeImplementers, GetInstancesAsListConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    params.addProperty("objectId", objectId);
+    if (includeSubclasses != null) params.addProperty("includeSubclasses", includeSubclasses);
+    if (includeImplementers != null) params.addProperty("includeImplementers", includeImplementers);
+    request("getInstancesAsList", params, consumer);
+  }
+
+  /**
+   * The [getInstancesAsList] RPC is used to retrieve a set of instances which are of a specific
+   * class. This RPC returns an <code>@Instance</code>@Instance corresponding to a Dart
+   * <code>List<dynamic></code>List<dynamic> that contains the requested instances. This
+   * <code>List</code>List is not growable, but it is otherwise mutable. The response type is what
+   * distinguishes this RPC from <code>getInstances</code>getInstances, which returns an
+   * <code>InstanceSet</code>InstanceSet.
+   */
+  public void getInstancesAsList(String isolateId, String objectId, GetInstancesAsListConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    params.addProperty("objectId", objectId);
+    request("getInstancesAsList", params, consumer);
   }
 
   /**
@@ -1026,6 +1060,20 @@ public class VmService extends VmServiceBase {
       }
       if (responseType.equals("Sentinel")) {
         ((GetInboundReferencesConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+    }
+    if (consumer instanceof GetInstancesAsListConsumer) {
+      if (responseType.equals("@Instance")) {
+        ((GetInstancesAsListConsumer) consumer).received(new InstanceRef(json));
+        return;
+      }
+      if (responseType.equals("@Null")) {
+        ((GetInstancesAsListConsumer) consumer).received(new NullRef(json));
+        return;
+      }
+      if (responseType.equals("Sentinel")) {
+        ((GetInstancesAsListConsumer) consumer).received(new Sentinel(json));
         return;
       }
     }

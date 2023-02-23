@@ -39,13 +39,15 @@ public class BoundField extends Element {
   }
 
   /**
-   * @return a <code>String</code>
+   * @return one of <code>String</code> or <code>int</code>
    */
-  public String getName() {
-    // TODO(messick): Verify this is correct. I had to modify the generated code.
-    final JsonObject elem = (JsonObject)json.get("decl");
+  public Object getName() {
+    final JsonObject elem = (JsonObject)json.get("name");
     if (elem == null) return null;
-    return elem.get("name").getAsString();
+
+    if (elem.get("type").getAsString().equals("String")) return elem.getAsString();
+    if (elem.get("type").getAsString().equals("int")) return elem.getAsInt();
+    return null;
   }
 
   /**
