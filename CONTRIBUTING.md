@@ -175,6 +175,23 @@ version of some code duplicated from the Dart plugin.
     - `cd tool/plugin`
     - `flutter pub get`
 
+### Handle symlinks on Windows
+
+If exceptions like these occurred:
+```
+A problem occurred configuring project ':flutter-idea'.
+> Source directory 'X:\path\to\your\flutter-intellij\flutter-idea\resources' is not a directory.
+```
+
+Check out if the directory is a symlink by open the link in IDEA, and it'll displayed as:
+```symlink
+../resources
+```
+
+Delete the file, then create a Windows-style symlink manually using:
+- Powershell: `New-Item -ItemType Junction -Path "flutter-idea/resources" -Target "resources"`
+- CMD: `mklink /j flutter-idea\resources resources`
+
 ## Running plugin tests
 
 ### Using test run configurations in IntelliJ
