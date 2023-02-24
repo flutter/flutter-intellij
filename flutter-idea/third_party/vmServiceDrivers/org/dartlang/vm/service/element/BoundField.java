@@ -42,11 +42,17 @@ public class BoundField extends Element {
    * @return one of <code>String</code> or <code>int</code>
    */
   public Object getName() {
-    final JsonObject elem = (JsonObject)json.get("name");
+    final JsonElement elem = json.get("name");
     if (elem == null) return null;
 
-    if (elem.get("type").getAsString().equals("String")) return elem.getAsString();
-    if (elem.get("type").getAsString().equals("int")) return elem.getAsInt();
+    if (elem.isJsonObject()) return elem.getAsString();
+    if (elem.isJsonPrimitive()) {
+      try {
+        return elem.getAsInt();
+      } catch (NumberFormatException ex) {
+        return elem.getAsString(); // e.g. name is "$1"
+      }
+    }
     return null;
   }
 

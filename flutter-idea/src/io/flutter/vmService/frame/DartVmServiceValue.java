@@ -381,14 +381,15 @@ public class DartVmServiceValue extends XNamedValue {
     myDebugProcess.getVmServiceWrapper().getCollectionObject(myIsolateId, myInstanceRef.getId(), offset, count, new GetObjectConsumer() {
       @Override
       public void received(Obj instance) {
-        if (isListKind(instanceRef.getKind())) {
+        InstanceKind kind = instanceRef.getKind();
+        if (isListKind(kind)) {
           addListChildren(offset, node, (Instance)instance);
         }
-        else if (instanceRef.getKind() == InstanceKind.Map) {
+        else if (kind == InstanceKind.Map) {
           addMapChildren(offset, node, ((Instance)instance).getAssociations());
         }
         else {
-          assert false : instanceRef.getKind();
+          assert false : kind;
         }
 
         if (offset + count < instanceRef.getLength()) {
@@ -533,11 +534,28 @@ public class DartVmServiceValue extends XNamedValue {
     }
     else {
       final XValueChildrenList childrenList = new XValueChildrenList(fields.size());
-      for (BoundField field : fields) {
-        final InstanceRef value = field.getValue();
-        if (value != null) {
-          childrenList
-            .add(new DartVmServiceValue(myDebugProcess, myIsolateId, field.getName(), value, null, field.getDecl(), false));
+      if (getInstanceRef().getKind() == InstanceKind.Record) {
+        for (BoundField field : fields) {
+          assert field != null;
+          Object name = field.getName();
+          InstanceRef value = field.getValue();
+          if (name != null && value != null) {
+            final String n;
+            if (name instanceof String) {
+              n = (String)name;
+            } else {
+              n = "$" + (int)name;
+            }
+            childrenList.add(new DartVmServiceValue(myDebugProcess, myIsolateId, n, value, null, null, false));
+          }
+        }
+      }
+      else {
+        for (BoundField field : fields) {
+          final InstanceRef value = field.getValue();
+          if (value != null) {
+            childrenList.add(new DartVmServiceValue(myDebugProcess, myIsolateId, (String)field.getName(), value, null, field.getDecl(), false));
+          }
         }
       }
       node.addChildren(childrenList, true);
