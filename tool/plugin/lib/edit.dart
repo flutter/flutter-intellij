@@ -44,6 +44,18 @@ List<EditCommand> editCommands = [
     version: '2023.1',
   ),
   Subst(
+    path: 'flutter-idea/src/io/flutter/vmService/frame/DartVmServiceValue.java',
+    initial: '@NotNull',
+    replacement: '',
+    versions: ['2022.1', '2022.2'],
+  ),
+  Subst(
+    path: 'flutter-idea/src/io/flutter/analytics/FlutterAnalysisServerListener.java',
+    initial: '@NotNull',
+    replacement: '',
+    versions: ['2022.1', '2022.2'],
+  ),
+  Subst(
     path: 'resources/META-INF/plugin_template.xml',
     initial: '<add-to-group group-id="MainToolbarRight" />',
     replacement: '',

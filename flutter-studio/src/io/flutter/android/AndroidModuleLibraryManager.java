@@ -32,7 +32,6 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.impl.ProjectExImpl;
 import com.intellij.openapi.project.impl.ProjectImpl;
 import com.intellij.openapi.project.impl.ProjectManagerImpl;
 import com.intellij.openapi.project.impl.ProjectStoreFactory;
@@ -126,7 +125,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   private void addAndroidLibraryDependencies(@NotNull Project androidProject,
                                              @NotNull Module androidModule,
                                              @NotNull Module flutterModule) {
-    AndroidSdkUtils.setupAndroidPlatformIfNecessary(androidModule, true);
+    //AndroidSdkUtils.setupAndroidPlatformIfNecessary(androidModule, true);
     Sdk currentSdk = ModuleRootManager.getInstance(androidModule).getSdk();
     if (currentSdk != null) {
       // TODO(messick) Add sdk dependency on currentSdk if not already set
@@ -324,7 +323,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     getInstance(project).scheduleUpdate();
   }
 
-  private class EmbeddedAndroidProject extends ProjectExImpl {
+  private class EmbeddedAndroidProject extends ProjectImpl {
     private Path path;
 
     protected EmbeddedAndroidProject(@NotNull Path filePath) {
