@@ -39,8 +39,16 @@ class Artifact {
 }
 
 class ArtifactManager {
-  final String base =
-      'https://storage.googleapis.com/flutter_infra_release/flutter/intellij';
+  final String base = () {
+    final baseFromEnv = Platform.environment['FLUTTER_STORAGE_BASE_URL'] ?? '';
+    final String base;
+    if (baseFromEnv.isEmpty) {
+      base = 'https://storage.googleapis.com';
+    } else {
+      base = baseFromEnv;
+    }
+    return '$base/flutter_infra_release/flutter/intellij';
+  }();
 
   final List<Artifact> artifacts = [];
 
