@@ -34,21 +34,44 @@ List<EditCommand> editCommands = [
     initial:
         'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide")',
     replacement: 'type.set("IC")\n  version.set("LATEST-EAP-SNAPSHOT")',
-    version: '2022.4',
+    version: '2023.2',
   ),
   Subst(
     path: 'flutter-idea/build.gradle.kts',
     initial:
         'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide")',
     replacement: 'type.set("IC")\n  version.set("LATEST-EAP-SNAPSHOT")',
-    version: '2022.4',
+    version: '2023.2',
+  ),
+  MultiSubst(
+    path: 'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java',
+    initials: [
+      '//import ',
+      'extends ProjectImpl '
+    ],
+    replacements: [
+      'import ',
+      'extends ProjectExImpl '
+    ],
+    versions: ['2022.1', '2022.2', '2031.1'],
+  ),
+  Subst(
+    path: 'flutter-idea/src/io/flutter/vmService/frame/DartVmServiceValue.java',
+    initial: '@NotNull',
+    replacement: '',
+    versions: ['2022.1', '2022.2'],
+  ),
+  Subst(
+    path: 'flutter-idea/src/io/flutter/analytics/FlutterAnalysisServerListener.java',
+    initial: '@NotNull',
+    replacement: '',
+    versions: ['2022.1', '2022.2'],
   ),
   Subst(
     path: 'resources/META-INF/plugin_template.xml',
     initial: '<add-to-group group-id="MainToolbarRight" />',
     replacement: '',
-    // TODO Remove 'setup' when we resume building with 2022.3.
-    versions: ['AS.211', 'AS.212', 'AS.213', '2022.1', '2022.2', 'setup'],
+    versions: ['AS.211', 'AS.212', 'AS.213', '2022.1', '2022.2'],
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/pub/PubRoot.java',

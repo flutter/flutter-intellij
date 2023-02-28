@@ -13,7 +13,7 @@
           <option value="runIde" />
         </list>
       </option>
-      <option name="vmOptions" value="-Djava.system.class.loader=com.intellij.util.lang.PathClassLoader" />
+      <option name="vmOptions" value="" />
     </ExternalSystemSettings>
     <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>

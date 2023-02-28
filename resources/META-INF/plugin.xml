@@ -21,7 +21,7 @@
 
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
-  <idea-version since-build="213.6461.79" until-build="222.*"/>
+  <idea-version since-build="223.8617.56" until-build="223.*"/>
 
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.lang</depends>
@@ -46,139 +46,6 @@
 
   <change-notes>
     <![CDATA[
-<h1>72.1</h1>
-<ul>
-  <li>Eliminate more potentially nested service creations (#6626)</li>
-  <li>Create only a single service at a time (#6618)</li>
-  <li>Use reflection to find EmulatorSettings in both IDEs (#6625)</li>
-  <li>Check version of SDK for forming DevTools URL (#6614)</li>
-  <li>Open chrome devtools from JxBrowser (#6615)</li>
-  <li>Attempt to fix error email (#6605)</li>
-  <li>Fix debugger display of Uint8List elements (#6603)</li>
-</ul>
-<h1>72.0</h1>
-<ul>
-  <li>Build 2023.1 (#6593)</li>
-  <li>Update settings to emphasize global options (#6592)-</li>
-  <li>Run update() on BGT (#6556)</li>
-  <li>Build AS canary with 2022.3 (#6583)</li>
-  <li>Catch UnsatisfiedLinkError for inspector (#6585)</li>
-  <li>Stop logging to improve completion times (#6584)</li>
-  <li>Allow auto pre-commit test to run prior to git commit (#6557)</li>
-  <li>Ignore disposed project in FlutterAppManager (#6554)</li>
-  <li>Ignore empty files that the Dart plugin says have errors (#6553)</li>
-  <li>Fix creating package project (#6542)</li>
-</ul>
-<h1>71.3</h1>
-<ul>
-  <li>Fix the "Empty menu item text" problem</li>
-</ul>
-<h1>71.2</h1>
-<ul>
-  <li>Always show device selector in IntelliJ 2022.3 due to: https://youtrack.jetbrains.com/issue/IDEA-308897/IntelliJ-2022.3-causes-custom-toolbar-widget-to-flash?s=IntelliJ-2022.3-causes-custom-toolbar-widget-to-flash</li>
-  <li>Re-enable embedded DevTools</li>
-</ul>
-<h1>71.1</h1>
-<ul>
-  <li>Tweak device selector code</li>
-  <li>Add new project types plugin_ffi and empty (#6433)</li>
-  <li>Update device selector in background (#6429)</li>
-  <li>Catch exception if default project was disposed (#6401)</li>
-  <li>Fix test coverage for monorepo projects (#6391)</li>
-  <li>Permit attach in bazel context (#6389)</li>
-  <li>Change Container to Placeholder in live templates (#6390)</li>
-  <li>Move tests to 2022.2 (#6386)</li>
-  <li>Remove some deprecated API uses (#6383)</li>
-</ul>
-<h1>71.0</h1>
-<ul>
-  <li>Remove the process listener after emulator termination (#6377)</li>
-  <li>Remove obsolete code from NPW  (#6374)</li>
-  <li>Check for disposed project (#6371)</li>
-  <li>Remove platform availability channel warning (#6356)</li>
-  <li>Show values of TypedDataList in debugger (#6369)</li>
-</ul>
-<h1>70.0</h1>
-<ul>
-  <li>Respect embedded emulator settings (#6279)</li>
-  <li>Update to JX Browser 7.27 and change linux mode (#6283)</li>
-  <li>Guard against JSON file problems (#6273)</li>
-  <li>Add missing null check (#6268)</li>
-  <li>Check for disposed editor (#6265)</li>
-  <li>Log bazel mapping differences from analyzer (#6263)</li>
-  <li>Update icon version (#6262)</li>
-  <li>Use new flutter.json file location (#6261)</li>
-  <li>Delete FlutterBazelSettingsNotificationProvider (#6256)</li>
-</ul>
-<h1>69.0</h1>
-<ul>
-  <li>Build for canary 221 (#6248)</li>
-  <li>Revert "Delete code duplicated from Dart (#6113)" (#6246)</li>
-  <li>Update .iml for 221 (#6241)</li>
-  <li>Disable reader mode for Flutter plugins (#6238)</li>
-  <li>Update the build for 2022.2 EAP (#6224)</li>
-  <li>Avoid using canonical path for bazel (#6227)</li>
-  <li>Reduce error logging for not-useful errors (#6221)</li>
-  <li>Ensure disconnect even if import cancelled (#6220)</li>
-  <li>Improve import for monorepo projects (#6217)</li>
-  <li>Update Flutter commands on Build and Tools menu to run for all Flutter modules (#6215)</li>
-  <li>Change how Open in Xcode determines what to open (#6211)</li>
-  <li>Update survey announcement (#6210)</li>
-</ul>
-<h1>68.0</h1>
-<ul>
-  <li>Use distributed icons for current SDK (#6208)</li>
-  <li>Update icons (#6207)</li>
-  <li>Enable stable platforms (#6202)</li>
-  <li>Use correct code to shut down process (#6201)</li>
-  <li>Use canonical paths to map symlinks(#6203)</li>
-  <li>Enable Windows platform for Flutter 2.10+ (#6195)</li>
-  <li>Escape spaces for VM mapping (#6194)</li>
-  <li>Stop relying only on .packages for pub banner (#6188)</li>
-  <li>Update icon previews to handle new format (#6186)</li>
-  <li>Fix typo in actions (#6180)</li>
-  <li>Send timing data as a GA event (#6179)</li>
-  <li>Check for project disposal before download (#6173)</li>
-  <li>Add default token permissions values + pin dependencies (#6152)</li>
-  <li>Show meaningful device names (#6158)</li>
-  <li>Specify dart bin path (#6153)</li>
-  <li>Update CONTRIBUTING.md (#6146)</li>
-</ul>
-<h1>67.1</h1>
-<ul>
-  <li>Specify dart bin path (#6153)</li>
-</ul>
-<h1>67.0</h1>
-<ul>
-  <li>Disable new analytics for M67 (#6142)</li>
-  <li>Stop running setup on the bots (#6141)</li>
-  <li>Update Dart plugin version (#6139)</li>
-  <li>Change setting on EDT (#6137)</li>
-  <li>Stop using a deprecated method (#6132)</li>
-  <li>Refactor Transport for easier logging while debugging (#6129)</li>
-  <li>Fix child lines when folding code (#6128)</li>
-  <li>Fix analytics (#6119)</li>
-  <li>Fix disposer bug (#6120)</li>
-  <li>Remove the 30-char limit for project names (#6121)</li>
-  <li>Use devtools script to launch bazel devtools (#6115)</li>
-  <li>Report flutter SDK version on startup (#6114)</li>
-  <li>Add dart devtools for starting server (#6112)</li>
-  <li>Delete code duplicated from Dart (#6113)</li>
-  <li>Update web URI mapping version (#6110)</li>
-  <li>Work around Kokoro Dart plugin problem (#6109)</li>
-  <li>Plugin tool improvements (#6106)</li>
-  <li>Fix layout issue (#6105)</li>
-  <li>Clean up edit.dart (#6104)</li>
-  <li>Add more analytics (#5985)</li>
-  <li>Update build for 2022.1 (#6102)</li>
-  <li>Enable Dart with multiple modules (#6099)</li>
-  <li>Look for a single module by name (#6098)</li>
-  <li>Add links to 3P plugin docs (#6090)</li>
-  <li>Fix config to load into 2021.3 (#6088)</li>
-  <li>Move third-party binaries into third_party (#6087)</li>
-  <li>This will allow us to assess the security posture of this repository. (#6047)</li>
-  <li>Update CONTRIBUTING.md (#6074)</li>
-</ul>
 ]]>
   </change-notes>
 

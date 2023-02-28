@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [AS.213, 2022.1, 2022.2, 2022.3, 2023.1]
+        version: [2022.1, 2022.2, 2022.3, 2023.1]
     steps:
       - name: checkout
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c

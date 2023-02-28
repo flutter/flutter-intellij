@@ -1,30 +1,16 @@
 {
   "list": [
     {
-      "channel": "stable",
-      "comments": "IntelliJ 2021.3, Android Studio 2021.3 Beta",
-      "name": "2021.3",
-      "version": "AS.213",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "2021.3.1.8",
-      "baseVersion": "213.7172.25",
-      "dartPluginVersion": "213.7306",
-      "sinceBuild": "213.6461.79",
-      "untilBuild": "213.*",
-      "filesToSkip": ["flutter-idea/src/org/jetbrains/android/facet/AndroidFrameworkDetector.java"]
-    },
-    {
       "channel": "setup",
-      "comments": "IntelliJ 2022.2",
+      "comments": "IntelliJ 2022.3",
       "name": "setup",
       "version": "setup",
-      "isUnitTestTarget": "true",
-      "ideaProduct": "ideaIC",
-      "ideaVersion": "2022.2.3",
-      "baseVersion": "222.4345.14",
-      "dartPluginVersion": "222.4345.14",
-      "sinceBuild": "222.4345.14",
-      "untilBuild": "222.*"
+      "ideaProduct": "android-studio",
+      "ideaVersion": "2022.3.1.7",
+      "baseVersion": "223.8617.56",
+      "dartPluginVersion": "223.8617.8",
+      "sinceBuild": "223.8617.56",
+      "untilBuild": "223.*"
     },
     {
       "channel": "stable",
@@ -57,11 +43,12 @@
       "comments": "IntelliJ 2022.3, Android Studio 2022.3",
       "name": "2022.3",
       "version": "2022.3",
+      "isUnitTestTarget": "true",
       "ideaProduct": "android-studio",
-      "ideaVersion": "2022.2.1.1",
-      "baseVersion": "222.3739.54",
-      "dartPluginVersion": "222.3739.24",
-      "sinceBuild": "223.4884.69",
+      "ideaVersion": "2022.3.1.7",
+      "baseVersion": "223.8617.56",
+      "dartPluginVersion": "223.8617.8",
+      "sinceBuild": "223.8617.56",
       "untilBuild": "223.*"
     },
     {
@@ -70,10 +57,10 @@
       "name": "2021.1",
       "version": "2023.1",
       "ideaProduct": "ideaIC",
-      "ideaVersion": "231.5920.14",
-      "baseVersion": "231.5920.14",
-      "dartPluginVersion": "231.5920.7",
-      "sinceBuild": "231.4840.387",
+      "ideaVersion": "231.7665.28",
+      "baseVersion": "231.7665.28",
+      "dartPluginVersion": "231.7665.20",
+      "sinceBuild": "231.7665.28",
       "untilBuild": "231.*"
     }
   ]

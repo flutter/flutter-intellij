@@ -927,9 +927,9 @@ class TestCommand extends ProductCommand {
       await spec.artifacts.provision(rebuildCache: true);
       if (!argResults!['skip']) {
         if (argResults!['integration']) {
-          return _runIntegrationTests();
+          return await _runIntegrationTests();
         } else {
-          return _runUnitTests(spec);
+          return await _runUnitTests(spec);
         }
       }
       return 0;

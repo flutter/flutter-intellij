@@ -62,6 +62,8 @@ intellij {
 }
 
 dependencies {
+  compileOnly("org.jetbrains:annotations:24.0.0")
+  testImplementation("org.jetbrains:annotations:24.0.0")
   testImplementation("org.powermock:powermock-api-mockito2:2.0.0")
   testImplementation("org.powermock:powermock-module-junit4:2.0.0")
   if (ide == "android-studio") {
@@ -69,15 +71,20 @@ dependencies {
     testRuntimeOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins",
                          "include" to listOf("**/*.jar"),
                          "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar", "**/kotlin-stdlib-jdk8.jar"))))
+    compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/lib",
+      "include" to listOf("*.jar"),
+      "exclude" to listOf("**/annotations.jar"))))
     testRuntimeOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/lib",
-                         "include" to listOf("*.jar"))))
+      "include" to listOf("*.jar"))))
     compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins/git4idea/lib",
                          "include" to listOf("*.jar"))))
     testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins/git4idea/lib",
                          "include" to listOf("*.jar"))))
   } else {
     compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/ideaIC/plugins/git4idea/lib",
-                         "include" to listOf("*.jar"))))
+      "include" to listOf("*.jar"))))
+    compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/ideaIC/plugins/java/lib",
+      "include" to listOf("*.jar"))))
     testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/ideaIC/plugins/git4idea/lib",
                          "include" to listOf("*.jar"))))
   }
