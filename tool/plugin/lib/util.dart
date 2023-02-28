@@ -107,9 +107,9 @@ Future<int> curl(String url, {required String to}) async {
   return await exec('curl', ['-o', to, url]);
 }
 
-Future<int> removeAll(String dir) async {
-  var args = ['-rf', dir];
-  return await exec('rm', args);
+/// Remove the directory without exceptions if it does not exists.
+Future<void> removeAll(String dir) async {
+  await Directory(dir).delete(recursive: true).then((_) {}, onError: (_) {});
 }
 
 bool isCacheDirectoryValid(Artifact artifact) {
