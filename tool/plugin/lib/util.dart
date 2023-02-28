@@ -22,10 +22,9 @@ Future<int> exec(String cmd, List<String> args, {String? cwd}) async {
     log(_shorten('$cmd ${args.join(' ')}'));
   }
 
-  var codec = Platform.isWindows ? latin1 : utf8;
   final process = await Process.start(cmd, args, workingDirectory: cwd);
-  _toLineStream(process.stderr, codec).listen(log);
-  _toLineStream(process.stdout, codec).listen(log);
+  _toLineStream(process.stderr).listen(log);
+  _toLineStream(process.stdout).listen(log);
 
   return await process.exitCode;
 }
@@ -144,8 +143,8 @@ String _shorten(String str) {
       : '${str.substring(0, 170)} ... ${str.substring(str.length - 30)}';
 }
 
-Stream<String> _toLineStream(Stream<List<int>> s, Encoding encoding) =>
-    s.transform(encoding.decoder).transform(const LineSplitter());
+Stream<String> _toLineStream(Stream<List<int>> s) =>
+    s.transform(utf8.decoder).transform(const LineSplitter());
 
 String readTokenFromKeystore(String keyName) {
   var env = Platform.environment;
