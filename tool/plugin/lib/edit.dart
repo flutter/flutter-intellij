@@ -34,14 +34,26 @@ List<EditCommand> editCommands = [
     initial:
         'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide")',
     replacement: 'type.set("IC")\n  version.set("LATEST-EAP-SNAPSHOT")',
-    version: '2023.1',
+    version: '2023.2',
   ),
   Subst(
     path: 'flutter-idea/build.gradle.kts',
     initial:
         'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide")',
     replacement: 'type.set("IC")\n  version.set("LATEST-EAP-SNAPSHOT")',
-    version: '2023.1',
+    version: '2023.2',
+  ),
+  MultiSubst(
+    path: 'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java',
+    initials: [
+      '//import ',
+      'extends ProjectImpl '
+    ],
+    replacements: [
+      'import ',
+      'extends ProjectExImpl '
+    ],
+    versions: ['2022.1', '2022.2', '2031.1'],
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/vmService/frame/DartVmServiceValue.java',
