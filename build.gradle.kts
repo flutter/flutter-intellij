@@ -95,7 +95,7 @@ tasks {
 }
 
 dependencies {
-  implementation(project("flutter-idea", "instrumentedJar"))
+  implementation(project("flutter-idea", "instrumentedJar")) // Second arg is required to use forms
   if (ide == "android-studio") {
     implementation(project("flutter-studio"))
   }
