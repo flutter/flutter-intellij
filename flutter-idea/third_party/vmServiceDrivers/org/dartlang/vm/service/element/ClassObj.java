@@ -83,6 +83,41 @@ public class ClassObj extends Obj {
   }
 
   /**
+   * Is this a base class?
+   */
+  public boolean getIsBaseClass() {
+    return getAsBoolean("isBaseClass");
+  }
+
+  /**
+   * Is this a final class?
+   */
+  public boolean getIsFinal() {
+    return getAsBoolean("isFinal");
+  }
+
+  /**
+   * Is this an interface class?
+   */
+  public boolean getIsInterfaceClass() {
+    return getAsBoolean("isInterfaceClass");
+  }
+
+  /**
+   * Is this a mixin class?
+   */
+  public boolean getIsMixinClass() {
+    return getAsBoolean("isMixinClass");
+  }
+
+  /**
+   * Is this a sealed class?
+   */
+  public boolean getIsSealed() {
+    return getAsBoolean("isSealed");
+  }
+
+  /**
    * The library which contains this class.
    */
   public LibraryRef getLibrary() {
