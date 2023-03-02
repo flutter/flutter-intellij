@@ -16,6 +16,7 @@ buildscript {
     maven {
       url=uri("https://www.jetbrains.com/intellij-repository/releases")
     }
+    gradlePluginPortal()
   }
 }
 
@@ -94,7 +95,7 @@ tasks {
 }
 
 dependencies {
-  implementation(project("flutter-idea"))
+  implementation(project("flutter-idea", "instrumentedJar")) // Second arg is required to use forms
   if (ide == "android-studio") {
     implementation(project("flutter-studio"))
   }

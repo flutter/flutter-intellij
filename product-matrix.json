@@ -2,15 +2,15 @@
   "list": [
     {
       "channel": "setup",
-      "comments": "IntelliJ 2022.3",
+      "comments": "IntelliJ 2023.1",
       "name": "setup",
       "version": "setup",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "2022.3.1.7",
-      "baseVersion": "223.8617.56",
-      "dartPluginVersion": "223.8617.8",
-      "sinceBuild": "223.8617.56",
-      "untilBuild": "223.*"
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "231.7665.28",
+      "baseVersion": "231.7665.28",
+      "dartPluginVersion": "231.7665.20",
+      "sinceBuild": "231.7665.28",
+      "untilBuild": "231.*"
     },
     {
       "channel": "stable",
@@ -43,7 +43,6 @@
       "comments": "IntelliJ 2022.3, Android Studio 2022.3",
       "name": "2022.3",
       "version": "2022.3",
-      "isUnitTestTarget": "true",
       "ideaProduct": "android-studio",
       "ideaVersion": "2022.3.1.7",
       "baseVersion": "223.8617.56",
@@ -56,6 +55,7 @@
       "comments": "IntelliJ 2023.1",
       "name": "2021.1",
       "version": "2023.1",
+      "isUnitTestTarget": "true",
       "ideaProduct": "ideaIC",
       "ideaVersion": "231.7665.28",
       "baseVersion": "231.7665.28",
