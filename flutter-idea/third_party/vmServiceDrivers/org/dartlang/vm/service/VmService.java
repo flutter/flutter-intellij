@@ -83,7 +83,7 @@ public class VmService extends VmServiceBase {
   /**
    * The minor version number of the protocol supported by this client.
    */
-  public static final int versionMinor = 2;
+  public static final int versionMinor = 3;
 
   /**
    * The [addBreakpoint] RPC is used to add a breakpoint at a specific line of some script.

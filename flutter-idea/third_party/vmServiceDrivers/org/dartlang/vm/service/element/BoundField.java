@@ -17,6 +17,7 @@ package org.dartlang.vm.service.element;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 /**
  * A {@link BoundField} represents a field bound to a particular value in an {@link Instance}.
@@ -45,13 +46,10 @@ public class BoundField extends Element {
     final JsonElement elem = json.get("name");
     if (elem == null) return null;
 
-    if (elem.isJsonObject()) return elem.getAsString();
     if (elem.isJsonPrimitive()) {
-      try {
-        return elem.getAsInt();
-      } catch (NumberFormatException ex) {
-        return elem.getAsString(); // e.g. name is "$1"
-      }
+    final JsonPrimitive p = (JsonPrimitive) elem;
+    if (p.isString()) return p.getAsString();
+    if (p.isNumber()) return p.getAsInt();
     }
     return null;
   }
