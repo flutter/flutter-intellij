@@ -71,20 +71,17 @@ List<EditCommand> editCommands = [
     path: 'resources/META-INF/plugin_template.xml',
     initial: '<add-to-group group-id="MainToolbarRight" />',
     replacement: '',
-    versions: ['AS.211', 'AS.212', 'AS.213', '2022.1', '2022.2'],
+    versions: ['2022.1', '2022.2'],
   ),
   Subst(
-    path: 'flutter-idea/src/io/flutter/pub/PubRoot.java',
-    initial: 'String @NotNull [] TEST_DIRS',
-    replacement: 'String [] TEST_DIRS',
-    versions: ['AS.211', 'AS.212'],
-  ),
-  Subst(
-    path:
-        'flutter-idea/src/io/flutter/analytics/FlutterAnalysisServerListener.java',
-    initial: '<@NotNull Analytics>',
-    replacement: '<Analytics>',
-    versions: ['AS.211', 'AS.212', 'AS.213'],
+    path: 'flutter-idea/src/io/flutter/actions/AttachDebuggerAction.java',
+    initial: '''
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
+  }
+''',
+    replacement: '',
+    version: '2022.1',
   ),
   Subst(
     path: 'flutter-idea/src/io/flutter/actions/DeviceSelectorAction.java',
@@ -95,53 +92,6 @@ List<EditCommand> editCommands = [
 ''',
     replacement: '',
     version: '2022.1',
-  ),
-  MultiSubst(
-    path: 'flutter-idea/src/io/flutter/actions/DeviceSelectorAction.java',
-    initials: [
-      'import com.intellij.util.ModalityUiUtil;',
-      '''
-    ModalityUiUtil.invokeLaterIfNeeded(
-      ModalityState.defaultModalityState(),
-      () -> update(project, presentation));
-''',
-      '''
-  public @NotNull ActionUpdateThread getActionUpdateThread() {
-    return ActionUpdateThread.BGT;
-  }
-''',
-    ],
-    replacements: [
-      'import com.intellij.ui.GuiUtils;',
-      '''
-    GuiUtils.invokeLaterIfNeeded(
-      () -> update(project, presentation),
-      ModalityState.defaultModalityState());
-''',
-      '',
-    ],
-    versions: ['AS.211', 'AS.212', 'AS.213'],
-  ),
-  MultiSubst(
-    path:
-        'flutter-idea/src/io/flutter/run/coverage/FlutterCoverageEnabledConfiguration.java',
-    initials: [
-      'import com.intellij.util.ModalityUiUtil;',
-      '''
-    ModalityUiUtil.invokeLaterIfNeeded(
-      ModalityState.any(),
-      () -> setCurrentCoverageSuite(CoverageDataManager.getInstance(configuration.getProject()).addCoverageSuite(this)));
-''',
-    ],
-    replacements: [
-      'import com.intellij.ui.GuiUtils;',
-      '''
-    GuiUtils.invokeLaterIfNeeded(
-      () -> setCurrentCoverageSuite(CoverageDataManager.getInstance(configuration.getProject()).addCoverageSuite(this)),
-      ModalityState.any());
-''',
-    ],
-    versions: ['AS.211', 'AS.212', 'AS.213'],
   ),
 ];
 
