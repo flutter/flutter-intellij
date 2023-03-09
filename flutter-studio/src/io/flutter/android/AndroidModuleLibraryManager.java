@@ -332,38 +332,8 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
 
     static final String TEMPLATE_PROJECT_NAME = "_android";
 
-    private IProjectStore componentStore = ApplicationManager.getApplication().getService(ProjectStoreFactory.class).createStore(this);
-
-    protected IProjectStore getStateStore1() {
-      return componentStore;
-    }
-
-    public Disposable getEarlyDisposable1() {
-      return null;
-    }
-
     public String getLocationHash() {
       return "";
-    }
-
-    public VirtualFile getWorkspaceFile1() {
-      return null;
-    }
-
-    public String getProjectFilePath1() {
-      return null;
-    }
-
-    public VirtualFile getProjectFile1() {
-      return null;
-    }
-
-    public String getBasePath1() {
-      return null;
-    }
-
-    public VirtualFile getBaseDir1() {
-      return null;
     }
 
     public void init42(@Nullable ProgressIndicator indicator) {
