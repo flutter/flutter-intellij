@@ -30,7 +30,7 @@ jobs:
         env:
           IDEA_VERSION: ${{ matrix.version }}
   checker:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: true
       matrix:
