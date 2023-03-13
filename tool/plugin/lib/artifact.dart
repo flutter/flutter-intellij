@@ -144,12 +144,10 @@ class ArtifactManager {
             if (entity.statSync().type == FileSystemEntityType.file) {
               entity = files.last;
             }
-            // Directory("${entity.path}/Contents")
-            //     .renameSync("${artifact.outPath}Temp");
-            // Directory(artifact.outPath).deleteSync(recursive: true);
-            // Directory("${artifact.outPath}Temp").renameSync(artifact.outPath);
-            result = await exec(
-                'ln', ['-s', '${entity.path}/Contents', artifact.outPath]);
+            Directory("${entity.path}/Contents")
+                .renameSync("${artifact.outPath}Temp");
+            Directory(artifact.outPath).deleteSync(recursive: true);
+            Directory("${artifact.outPath}Temp").renameSync(artifact.outPath);
           }
         } else {
           result = await exec('unzip', ['-q', artifact.file], cwd: 'artifacts');
