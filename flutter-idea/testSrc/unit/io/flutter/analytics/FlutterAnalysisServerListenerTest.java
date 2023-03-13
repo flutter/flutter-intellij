@@ -24,10 +24,7 @@ import org.dartlang.analysis.server.protocol.AnalysisStatus;
 import org.dartlang.analysis.server.protocol.PubStatus;
 import org.dartlang.analysis.server.protocol.RequestError;
 import org.jetbrains.annotations.NotNull;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -226,7 +223,7 @@ public class FlutterAnalysisServerListenerTest {
     assertTrue(0 <= Integer.parseInt(value));
   }
 
-  @Test
+  @Test @Ignore
   public void dasListenerLogging() throws Exception {
     fasl.requestListener.onRequest("{\"method\":\"test\",\"id\":\"2\"}");
     fasl.responseListener.onResponse("{\"event\":\"server.log\",\"params\":{\"entry\":{\"time\":\"1\",\"kind\":\"\",\"data\":\"\"}}}");

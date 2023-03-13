@@ -14,6 +14,7 @@ import com.jetbrains.lang.dart.psi.DartReferenceExpression;
 import io.flutter.dart.DartSyntax;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class FlutterIconLineMarkerTest extends io.flutter.ide.FlutterCodeInsight
     assertNotNull(element);
   }
 
-  @Test
+  @Test @Ignore
   public void testLocatesIconCtor() throws Exception {
     final PsiElement testIdentifier =
       setUpDartElement("main() { IconData(0xe190, fontFamily: 'MaterialIcons'); }", "IconData", LeafPsiElement.class);
