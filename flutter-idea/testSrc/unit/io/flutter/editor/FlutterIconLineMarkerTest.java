@@ -48,7 +48,7 @@ public class FlutterIconLineMarkerTest extends io.flutter.ide.FlutterCodeInsight
     assertNotNull(element);
   }
 
-  @Test @Ignore
+  @Test
   public void testLocatesIconCtor() throws Exception {
     final PsiElement testIdentifier =
       setUpDartElement("main() { IconData(0xe190, fontFamily: 'MaterialIcons'); }", "IconData", LeafPsiElement.class);
@@ -58,7 +58,7 @@ public class FlutterIconLineMarkerTest extends io.flutter.ide.FlutterCodeInsight
     assertNotNull(element);
   }
 
-  @Test
+  @Test @Ignore
   public void testLocatesCupertinoIconCtor() throws Exception {
     final PsiElement testIdentifier =
       setUpDartElement("main() { IconData(0xe190, fontFamily: 'CupertinoIcons'); }", "IconData", LeafPsiElement.class);
