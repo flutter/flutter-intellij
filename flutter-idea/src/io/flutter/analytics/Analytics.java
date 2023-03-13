@@ -5,6 +5,7 @@
  */
 package io.flutter.analytics;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -230,6 +231,9 @@ public class Analytics {
    * Return true if any open project is a Dart project and uses Bazel.
    */
   private boolean anyProjectUsesBazel() {
+    if (ApplicationManager.getApplication() == null) {
+      return false; // In unit testing.
+    }
     ProjectManager mgr = ProjectManager.getInstance();
     if (mgr == null) {
       return false; // In unit testing.

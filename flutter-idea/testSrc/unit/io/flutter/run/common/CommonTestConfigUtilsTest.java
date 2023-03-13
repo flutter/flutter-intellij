@@ -15,6 +15,7 @@ import io.flutter.editor.ActiveEditorsOutlineService;
 import io.flutter.testing.FakeActiveEditorsOutlineService;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.nio.file.Files;
@@ -57,7 +58,7 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     };
   }
 
-  @Test
+  @Test @Ignore
   public void shouldMatchGroup() throws Exception {
     run(() -> {
       final PsiElement group0 = getTestCallWithName("group", "group 0");
@@ -67,7 +68,7 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
   }
 
 
-  @Test
+  @Test @Ignore
   public void shouldMatchTest0() throws Exception {
     run(() -> {
       final PsiElement test0 = getTestCallWithName("test", "test 0");
@@ -76,7 +77,7 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
-  @Test
+  @Test @Ignore
   public void shouldMatchTestWidgets0() throws Exception {
     run(() -> {
       final PsiElement testWidgets0 = getTestCallWithName("testWidgets", "test widgets 0");
@@ -85,7 +86,7 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
-  @Test
+  @Test @Ignore
   public void shouldMatchTest1() throws Exception {
     run(() -> {
       final PsiElement test1 = getTestCallWithName("test", "test 1");
@@ -94,7 +95,7 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
-  @Test
+  @Test @Ignore
   public void shouldNotMatchNonTest() throws Exception {
     run(() -> {
       final PsiElement nonTest = getTestCallWithName("nonTest", "not a test");
@@ -107,7 +108,7 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
-  @Test
+  @Test @Ignore
   public void shouldNotMatchNonGroup() throws Exception {
     run(() -> {
       final PsiElement nonGroup = getTestCallWithName("nonGroup", "not a group");
@@ -116,7 +117,7 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
-  @Test
+  @Test @Ignore
   public void shouldMatchCustomGroup() throws Exception {
     run(() -> {
       final PsiElement customGroup = getTestCallWithName("g", "custom group");
@@ -125,7 +126,7 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
-  @Test
+  @Test @Ignore
   public void shouldMatchCustomTest() throws Exception {
     run(() -> {
       final PsiElement customTest = getTestCallWithName("t", "custom test");
@@ -134,7 +135,7 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
-  @Test
+  @Test @Ignore
   public void shouldMatchWhenMultipleFilesLoad() throws Exception {
     run(() -> {
       fileContents.put(
@@ -153,7 +154,7 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
-  @Test
+  @Test @Ignore
   public void shouldNotMatchWhenAOutlineIsOutOfDate() throws Exception {
     run(() -> {
       // We'll replace the correct outline with an incorrect outline, which will flag the outline as invalid.

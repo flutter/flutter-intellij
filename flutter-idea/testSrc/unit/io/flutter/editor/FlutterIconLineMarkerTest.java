@@ -26,9 +26,16 @@ public class FlutterIconLineMarkerTest extends io.flutter.ide.FlutterCodeInsight
 
   private FlutterSdk getSdk() {
     final FlutterSdk mockSdk = mock(FlutterSdk.class);
-    when(mockSdk.getHomePath()).thenReturn("testData/sdk");
+    String sdkPath = getSdkPath();
+    when(mockSdk.getHomePath()).thenReturn(sdkPath);
     when(mockSdk.getVersion()).thenReturn(FlutterSdkVersion.DISTRIBUTED_ICONS);
     return mockSdk;
+  }
+
+  private String getSdkPath() {
+    String sdk = System.getenv("FLUTTER_SDK");
+    if (sdk == null) sdk = System.getProperty("flutter.sdk");
+    return sdk == null ? "testData/sdk" : sdk; // This constant is not usable, but used to be the root of a stripped-down Flutter SDK
   }
 
   @Test
