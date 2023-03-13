@@ -265,6 +265,7 @@ public class VmServiceWrapper implements Disposable {
           setInitialBreakpointsAndResume(isolateRef);
         }
       };
+      //noinspection deprecation
       addRequest(() -> myVmService.setExceptionPauseMode(isolateId, mode, wrapper));
     }
   }
@@ -732,20 +733,38 @@ public class VmServiceWrapper implements Disposable {
   }
 
   public void setExceptionPauseMode(@NotNull ExceptionPauseMode mode) {
-    for (final IsolatesInfo.IsolateInfo isolateInfo : myIsolatesInfo.getIsolateInfos()) {
-      addRequest(() -> myVmService.setExceptionPauseMode(isolateInfo.getIsolateId(), mode, new SetExceptionPauseModeConsumer() {
-        @Override
-        public void onError(RPCError error) {
-        }
+    for (IsolatesInfo.IsolateInfo isolateInfo : myIsolatesInfo.getIsolateInfos()) {
+      if (supportsSetIsolatePauseMode()) {
+        addRequest(() -> myVmService.setIsolatePauseMode(isolateInfo.getIsolateId(), mode, false, new SetIsolatePauseModeConsumer() {
+          @Override
+          public void onError(RPCError error) {
+          }
 
-        @Override
-        public void received(Sentinel response) {
-        }
+          @Override
+          public void received(Sentinel response) {
+          }
 
-        @Override
-        public void received(Success response) {
-        }
-      }));
+          @Override
+          public void received(Success response) {
+          }
+        }));
+      }
+      else {
+        //noinspection deprecation
+        addRequest(() -> myVmService.setExceptionPauseMode(isolateInfo.getIsolateId(), mode, new SetExceptionPauseModeConsumer() {
+          @Override
+          public void onError(RPCError error) {
+          }
+
+          @Override
+          public void received(Sentinel response) {
+          }
+
+          @Override
+          public void received(Success response) {
+          }
+        }));
+      }
     }
   }
 
