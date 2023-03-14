@@ -6,6 +6,7 @@
 package io.flutter.project;
 
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.PlatformTestUtil;
@@ -45,8 +46,8 @@ public class ProjectWatchTest {
       final AtomicInteger callCount = new AtomicInteger();
       final ProjectWatch listen = ProjectWatch.subscribe(fixture.getProject(), callCount::incrementAndGet);
 
-      VirtualFile file = fixture.getModule().getModuleFile();
-      VirtualFile dir = file.getParent().createChildDirectory(this, "testDir");
+      VirtualFile[] contentRoots = ModuleRootManager.getInstance(fixture.getModule()).getContentRoots();
+      VirtualFile dir = contentRoots[0].createChildDirectory(this, "testDir");
       ModuleRootModificationUtil.addContentRoot(fixture.getModule(), dir);
       PlatformTestUtil.dispatchAllEventsInIdeEventQueue();
       // The number of events fired is an implementation detail of the project manager. We just need at least one.

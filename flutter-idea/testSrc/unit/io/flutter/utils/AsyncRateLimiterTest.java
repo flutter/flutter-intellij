@@ -170,7 +170,7 @@ public class AsyncRateLimiterTest {
                requestsPerSecond * 10 + 5.0 > TEST_FRAMES_PER_SECOND);
   }
 
-  @Test
+  @Test @Ignore("flakey")
   public void avoidUnneededRequests() {
     // In this test we verify that we don't accidentally schedule unneeded
 

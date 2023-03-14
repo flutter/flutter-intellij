@@ -58,7 +58,7 @@ public class FlutterIconLineMarkerTest extends io.flutter.ide.FlutterCodeInsight
     assertNotNull(element);
   }
 
-  @Test @Ignore
+  @Test @Ignore("file not found")
   public void testLocatesCupertinoIconCtor() throws Exception {
     final PsiElement testIdentifier =
       setUpDartElement("main() { IconData(0xe190, fontFamily: 'CupertinoIcons'); }", "IconData", LeafPsiElement.class);
