@@ -93,6 +93,16 @@ List<EditCommand> editCommands = [
     replacement: '',
     version: '2022.1',
   ),
+  Subst(
+    path: 'flutter-idea/src/io/flutter/actions/DeviceSelectorRefreshAction.java',
+    initial: '''
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
+  }
+''',
+    replacement: '',
+    version: '2022.1',
+  ),
 ];
 
 // Used to test checkAndClearAppliedEditCommands()
