@@ -57,16 +57,16 @@ public class FlutterIconLineMarkerTest extends io.flutter.ide.FlutterCodeInsight
     final DartCallExpression element = DartSyntax.findEnclosingFunctionCall(testIdentifier, "IconData");
     assertNotNull(element);
   }
-
-  @Test @Ignore("file not found")
-  public void testLocatesCupertinoIconCtor() throws Exception {
-    final PsiElement testIdentifier =
-      setUpDartElement("main() { IconData(0xe190, fontFamily: 'CupertinoIcons'); }", "IconData", LeafPsiElement.class);
-    final LineMarkerInfo<?> marker = new FlutterIconLineMarkerProvider().getLineMarkerInfo(testIdentifier, getSdk());
-    assertNotNull(marker);
-    final DartCallExpression element = DartSyntax.findEnclosingFunctionCall(testIdentifier, "IconData");
-    assertNotNull(element);
-  }
+  //
+  //@Test @Ignore("file not found")
+  //public void testLocatesCupertinoIconCtor() throws Exception {
+  //  final PsiElement testIdentifier =
+  //    setUpDartElement("main() { IconData(0xe190, fontFamily: 'CupertinoIcons'); }", "IconData", LeafPsiElement.class);
+  //  final LineMarkerInfo<?> marker = new FlutterIconLineMarkerProvider().getLineMarkerInfo(testIdentifier, getSdk());
+  //  assertNotNull(marker);
+  //  final DartCallExpression element = DartSyntax.findEnclosingFunctionCall(testIdentifier, "IconData");
+  //  assertNotNull(element);
+  //}
 
   @Test
   public void testLocatesConstIconCtor() throws Exception {

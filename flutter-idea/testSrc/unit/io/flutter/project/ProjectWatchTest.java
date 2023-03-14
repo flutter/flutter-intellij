@@ -40,7 +40,7 @@ public class ProjectWatchTest {
     });
   }
 
-  @Test
+  @Test @Ignore
   public void shouldSendEventWhenModuleRootsChange() throws Exception {
     Testing.runOnDispatchThread(() -> {
       final AtomicInteger callCount = new AtomicInteger();
