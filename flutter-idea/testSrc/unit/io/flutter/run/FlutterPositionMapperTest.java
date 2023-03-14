@@ -8,6 +8,7 @@ package io.flutter.run;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XSourcePosition;
@@ -94,10 +95,13 @@ public class FlutterPositionMapperTest {
 
   @NotNull
   private FlutterPositionMapper setUpMapper(VirtualFile contextFile, String remoteBaseUri) {
-    final DartUrlResolver resolver = new DartUrlResolverImpl(fixture.getProject(), contextFile);
-    final FlutterPositionMapper mapper = new FlutterPositionMapper(fixture.getProject(), sourceRoot, resolver, null);
-    mapper.onConnect(scripts, remoteBaseUri);
-    return mapper;
+    final FlutterPositionMapper[] mapper = new FlutterPositionMapper[1];
+    ApplicationManager.getApplication().runReadAction(() -> {
+      final DartUrlResolver resolver = new DartUrlResolverImpl(fixture.getProject(), contextFile);
+      mapper[0] = new FlutterPositionMapper(fixture.getProject(), sourceRoot, resolver, null);
+      mapper[0].onConnect(scripts, remoteBaseUri);
+    });
+    return mapper[0];
   }
 
   private LibraryRef makeLibraryRef(String uri) {
