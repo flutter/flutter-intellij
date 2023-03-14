@@ -94,7 +94,7 @@ List<EditCommand> editCommands = [
     version: '2022.1',
   ),
   Subst(
-    path: 'flutter-idea/src/io/flutter/actions/DeviceSelectorRefreshAction.java',
+    path: 'flutter-idea/src/io/flutter/actions/DeviceSelectorRefresherAction.java',
     initial: '''
   public @NotNull ActionUpdateThread getActionUpdateThread() {
     return ActionUpdateThread.BGT;
