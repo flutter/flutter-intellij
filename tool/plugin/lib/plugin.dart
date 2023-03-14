@@ -442,13 +442,13 @@ abstract class BuildCommand extends ProductCommand {
           spec.buildForMaster();
         }
 
-        result = await spec.artifacts.provision(
+        /*result = await spec.artifacts.provision(
           rebuildCache:
               isReleaseMode || argResults!['unpack'] || buildSpecs.length > 1,
         );
         if (result != 0) {
           return result;
-        }
+        }*/
         if (channel == 'setup') {
           return 0;
         }
@@ -924,7 +924,7 @@ class TestCommand extends ProductCommand {
       log('JAVA_HOME=$javaHome');
 
       final spec = specs.firstWhere((s) => s.isUnitTestTarget);
-      await spec.artifacts.provision(rebuildCache: true);
+      //await spec.artifacts.provision(rebuildCache: true);
       if (!argResults!['skip']) {
         if (argResults!['integration']) {
           return await _runIntegrationTests();

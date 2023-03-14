@@ -21,8 +21,8 @@ buildscript {
 }
 
 plugins {
-  id("org.jetbrains.intellij") version "1.13.1-SNAPSHOT"
-  id("org.jetbrains.kotlin.jvm") version "1.8.20-Beta"
+  id("org.jetbrains.intellij") version "1.13.2"
+  id("org.jetbrains.kotlin.jvm") version "1.8.20-RC"
 }
 
 repositories {
@@ -58,6 +58,7 @@ val name: String by project
 val buildSpec: String by project
 val smaliPlugin: String by project
 val langPlugin: String by project
+val ideVersion: String by project
 
 group = "io.flutter"
 version = flutterPluginVersion
@@ -72,7 +73,7 @@ intellij {
   // This adds nullability assertions, but also compiles forms.
   instrumentCode.set(true)
   updateSinceUntilBuild.set(false)
-  localPath.set("${project.rootDir.absolutePath}/artifacts/$ide")
+  version.set(ideVersion)
   downloadSources.set(false)
   val pluginList = mutableListOf(
     project(":flutter-idea"), "java", "properties",
@@ -81,9 +82,8 @@ intellij {
   pluginList.add(smaliPlugin)
   pluginList.add(langPlugin)
   if (ide == "android-studio") {
+    type.set("AI")
     pluginList += listOf(project(":flutter-studio"))
-  } else if ("$buildSpec" == "2020.3") {
-    pluginList += listOf("gradle-dsl-impl")
   }
   plugins.set(pluginList)
 }

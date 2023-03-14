@@ -55,7 +55,7 @@ jxbrowser.license.key=$jxBrowserKey
     String testing,
   ) async {
     String javaVersion, smaliPlugin, langPlugin;
-    if (['AS.211', 'AS.212', 'AS.213', '2022.1', '2022.2']
+    if (['2022.1', '2022.2']
         .contains(spec.version)) {
       javaVersion = '11';
       smaliPlugin = 'smali';
@@ -83,6 +83,7 @@ baseVersion=${spec.baseVersion}
 smaliPlugin=$smaliPlugin
 langPlugin=$langPlugin
 kotlin.stdlib.default.dependency=false
+ideVersion=${spec.ideaVersion}
 ''';
     final propertiesFile = File("$rootPath/gradle.properties");
     final source = propertiesFile.readAsStringSync();
