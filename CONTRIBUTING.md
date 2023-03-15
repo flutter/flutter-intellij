@@ -50,6 +50,11 @@ file.
       ```
       export JAVA_HOME=`/usr/libexec/java_home -v 11.0.14.1`
       ```
+* Set your FLUTTER_SDK directory to point to the Flutter SDK installed earlier.
+    - `export FLUTTER_SDK=/path/to/flutter`
+    - This is only needed to run unit tests locally, and if not set, two tests will fail
+* Ensure both FLUTTER_SDK and JAVA_HOME are added to the shell initialization script that runs at login
+      (and not the one used for every interactive shell).
 * Download other dependencies from the command line:
     - `cd path/to/flutter-intellij`
     - `flutter pub get`
