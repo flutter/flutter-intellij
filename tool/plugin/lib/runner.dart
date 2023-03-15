@@ -1,8 +1,6 @@
 // Copyright 2017 The Chromium Authors. All rights reserved. Use of this source
 // code is governed by a BSD-style license that can be found in the LICENSE file.
 
-// @dart = 2.12
-
 import 'dart:async';
 import 'dart:io';
 
@@ -55,8 +53,7 @@ jxbrowser.license.key=$jxBrowserKey
     String testing,
   ) async {
     String javaVersion, smaliPlugin, langPlugin;
-    if (['2022.1', '2022.2']
-        .contains(spec.version)) {
+    if (['2022.1', '2022.2'].contains(spec.version)) {
       javaVersion = '11';
       smaliPlugin = 'smali';
       langPlugin = 'IntelliLang';

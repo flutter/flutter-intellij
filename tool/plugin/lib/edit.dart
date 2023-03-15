@@ -4,8 +4,6 @@
  * found in the LICENSE file.
  */
 
-// @dart = 2.12
-
 import 'dart:async';
 import 'dart:io';
 
@@ -42,15 +40,10 @@ List<EditCommand> editCommands = [
     version: '2023.1',
   ),
   MultiSubst(
-    path: 'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java',
-    initials: [
-      '//import ',
-      'extends ProjectImpl '
-    ],
-    replacements: [
-      'import ',
-      'extends ProjectExImpl '
-    ],
+    path:
+        'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java',
+    initials: ['//import ', 'extends ProjectImpl '],
+    replacements: ['import ', 'extends ProjectExImpl '],
     versions: ['2022.1', '2022.2', '2031.1'],
   ),
   Subst(
@@ -60,7 +53,8 @@ List<EditCommand> editCommands = [
     versions: ['2022.1', '2022.2'],
   ),
   Subst(
-    path: 'flutter-idea/src/io/flutter/analytics/FlutterAnalysisServerListener.java',
+    path:
+        'flutter-idea/src/io/flutter/analytics/FlutterAnalysisServerListener.java',
     initial: '@NotNull',
     replacement: '',
     versions: ['2022.1', '2022.2'],
@@ -92,7 +86,8 @@ List<EditCommand> editCommands = [
     version: '2022.1',
   ),
   Subst(
-    path: 'flutter-idea/src/io/flutter/actions/DeviceSelectorRefresherAction.java',
+    path:
+        'flutter-idea/src/io/flutter/actions/DeviceSelectorRefresherAction.java',
     initial: '''
   public @NotNull ActionUpdateThread getActionUpdateThread() {
     return ActionUpdateThread.BGT;
