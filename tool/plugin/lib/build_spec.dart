@@ -8,7 +8,6 @@ import 'dart:io';
 
 import 'package:markdown/markdown.dart';
 
-import 'artifact.dart';
 import 'util.dart';
 
 class BuildSpec {
@@ -32,11 +31,6 @@ class BuildSpec {
   String channel;
   String? _changeLog;
 
-  ArtifactManager artifacts = ArtifactManager();
-
-  late Artifact product;
-  late Artifact dartPlugin;
-
   BuildSpec.fromJson(Map json, this.release)
       : name = json['name'],
         channel = json['channel'],
@@ -50,9 +44,7 @@ class BuildSpec {
         untilBuild = json['untilBuild'],
         filesToSkip = json['filesToSkip'] ?? [],
         isUnitTestTarget = (json['isUnitTestTarget'] ?? 'false') == 'true',
-        isTestTarget = (json['isTestTarget'] ?? 'false') == 'true' {
-    createArtifacts();
-  }
+        isTestTarget = (json['isTestTarget'] ?? 'false') == 'true';
 
   bool get copyIjVersion => isAndroidStudio && ijVersion != null;
 
@@ -78,50 +70,6 @@ class BuildSpec {
     }
 
     return _changeLog!;
-  }
-
-  void createArtifacts() {
-    if (ideaVersion != 'LATEST-EAP-SNAPSHOT') {
-      if (ideaProduct == 'android-studio') {
-        product = Artifact('$ideaProduct-ide-$ideaVersion-mac.zip',
-            bareArchive: true, output: ideaProduct);
-        if (product.exists()) {
-          artifacts.add(product);
-        } else {
-          product = Artifact('$ideaProduct-ide-$ideaVersion-linux.zip',
-              output: ideaProduct);
-          if (product.exists()) {
-            artifacts.add(product);
-          } else {
-            product = Artifact('$ideaProduct-$ideaVersion-mac.zip',
-                bareArchive: true, output: ideaProduct);
-            if (product.exists()) {
-              artifacts.add(product);
-            } else {
-              product = Artifact('$ideaProduct-$ideaVersion-linux.zip',
-                  output: ideaProduct);
-              if (product.exists()) {
-                artifacts.add(product);
-              } else {
-                // We don't know which one we need, so add both.
-                // We only put Linux versions in cloud storage.
-                artifacts.add(Artifact('$ideaProduct-$ideaVersion-linux.tar.gz',
-                    output: ideaProduct));
-                artifacts.add(Artifact('$ideaProduct-$ideaVersion-linux.tar.gz',
-                    output: ideaProduct));
-                artifacts.add(Artifact(
-                    '$ideaProduct-ide-$ideaVersion-linux.tar.gz',
-                    output: ideaProduct));
-              }
-            }
-          }
-        }
-      } else {
-        product = artifacts.add(
-            Artifact('$ideaProduct-$ideaVersion.tar.gz', output: ideaProduct));
-      }
-    }
-    dartPlugin = artifacts.add(Artifact('Dart-$dartPluginVersion.zip'));
   }
 
   String _parseChangelog() {

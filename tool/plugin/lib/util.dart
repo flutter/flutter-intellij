@@ -9,9 +9,7 @@ import 'dart:io';
 
 import 'package:cli_util/cli_logging.dart';
 import 'package:git/git.dart';
-import 'package:path/path.dart' as p;
 
-import 'artifact.dart';
 import 'build_spec.dart';
 import 'globals.dart';
 
@@ -110,20 +108,6 @@ Future<int> curl(String url, {required String to}) async {
 /// Remove the directory without exceptions if it does not exists.
 Future<void> removeAll(String dir) async {
   await Directory(dir).delete(recursive: true).then((_) {}, onError: (_) {});
-}
-
-bool isCacheDirectoryValid(Artifact artifact) {
-  var dirPath = artifact.outPath;
-  var dir = Directory(dirPath);
-  if (!dir.existsSync()) {
-    return false;
-  }
-  var filePath = artifact.file;
-  var file = File(p.join(rootPath, 'artifacts', filePath));
-  if (!file.existsSync()) {
-    throw 'Artifact file missing: $filePath';
-  }
-  return isNewer(dir, file);
 }
 
 bool isNewer(FileSystemEntity newer, FileSystemEntity older) {

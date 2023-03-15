@@ -178,20 +178,6 @@ void main() {
       expect(loc, -1);
     });
 
-    // Skipped as downloading the artifacts can take longer than the 30 second
-    // test timeout.
-    test('provision', () async {
-      var runner = makeTestRunner();
-      late TestBuildCommand cmd;
-      await runner.run(["-d../..", "build"]).whenComplete(() {
-        cmd = (runner.commands['build'] as TestBuildCommand);
-      });
-      var spec = cmd.specs[0];
-      expect(spec.artifacts.artifacts.length, greaterThan(1));
-      var result = await spec.artifacts.provision(rebuildCache: false);
-      expect(result, 0);
-    }, skip: true);
-
     test('only-version', () async {
       ProductCommand command =
           makeTestRunner().commands['build'] as ProductCommand;
