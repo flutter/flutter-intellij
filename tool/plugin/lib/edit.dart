@@ -31,17 +31,15 @@ List<EditCommand> editCommands = [
   // When using LATEST-EAP-SNAPSHOT, also set baseVersion to LATEST-EAP-SNAPSHOT in the build spec.
   Subst(
     path: 'build.gradle.kts',
-    initial:
-        'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide")',
-    replacement: 'type.set("IC")\n  version.set("LATEST-EAP-SNAPSHOT")',
-    version: '2023.2',
+    initial: 'version.set(ideVersion)',
+    replacement: 'version.set("LATEST-EAP-SNAPSHOT")',
+    version: '2023.1',
   ),
   Subst(
     path: 'flutter-idea/build.gradle.kts',
-    initial:
-        'localPath.set("\${project.rootDir.absolutePath}/artifacts/\$ide")',
-    replacement: 'type.set("IC")\n  version.set("LATEST-EAP-SNAPSHOT")',
-    version: '2023.2',
+    initial: 'version.set(ideVersion)',
+    replacement: 'version.set("LATEST-EAP-SNAPSHOT")',
+    version: '2023.1',
   ),
   MultiSubst(
     path: 'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java',

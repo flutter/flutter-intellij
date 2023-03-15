@@ -33,7 +33,7 @@ file.
 
 ## Flutter plugin development on MacOS and Linux
 
-* Download and install the latest stable version of IntelliJ (2022.1 or later)
+* Download and install the latest version of IntelliJ (2023.1 or later)
   - [IntelliJ Downloads](https://www.jetbrains.com/idea/download/)
   - Either the community edition (free) or Ultimate will work
   - Determine the directory of your downloaded IntelliJ Community Edition installation 
@@ -50,7 +50,7 @@ file.
       ```
       export JAVA_HOME=`/usr/libexec/java_home -v 11.0.14.1`
       ```
-* Download Dart and other dependencies from the command line:
+* Download other dependencies from the command line:
     - `cd path/to/flutter-intellij`
     - `flutter pub get`
     - `(cd tool/plugin; flutter pub get)`
@@ -59,20 +59,16 @@ file.
 * In the "Project Structure" dialog (`File | Project Structure`):
   - Select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure the JDK
     - Point it to the directory of the jbr which is under the IDEA's content (e.g. `IntelliJ IDEA CE.app/Contents/jbr`)
-    - Change the name to `IntelliJ IDEA jbr 11`
+    - Change the name to `IntelliJ IDEA jbr 17`
   - Select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure an IntelliJ Platform Plugin SDK
     - Point it to the directory of the content which is under the IDEA's installation 
       (e.g, `IntelliJ IDEA CE.app/Contents`)
     - Change the name to `IntelliJ IDEA Community Edition`
-    - Change the "Internal Java Platform" to `IntelliJ IDEA jbr 11`
-    - Extend it with additional plugin libraries by adding to `Classpath`:
-      - plugins/git4idea/lib/git4idea.jar
-      - plugins/android/lib/android.jar
-      - plugins/yaml/lib/yaml.jar
-* In the "Java Compiler" preference page, make sure that the "Project bytecode version" is set to `11` or `Same as language level`
-* In the "Kotlin Compiler" preference page, make sure that the "Target JVM Version" is set to `11` or `Same as language level`
+    - Change the "Internal Java Platform" to `IntelliJ IDEA jbr 17`
+* In the "Java Compiler" preference page, make sure that the "Project bytecode version" is set to `Same as language level`
+* In the "Kotlin Compiler" preference page, make sure that the "Target JVM Version" is set to `Same as language level`
 * One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin
-  - Find `Plugins` (in Settings/Preferences) and install the Dart plugin, then restart the IDE
+  - Find `Plugins` (in Settings/Preferences) and install the Dart plugin, then restart the IDE, if needed
 * Open the flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository).
   - If you see a popup with "Gradle build scripts found", confirm loading the Gradle project and confirm that you trust it
   - Ignore suggestion for protobuf-java plugin, unless you want it
@@ -84,7 +80,6 @@ file.
 * Build the project using `Build` | `Build Project`
 * Try running the plugin; select the `flutter-intellij [runIde]` run config then click the Debug icon. This should open the "runtime workbench", 
   a new instance of IntelliJ with the plugin installed.
-  - If this causes an error message `Specified localPath '/.../flutter-intellij/artifacts/ideaIC' doesn't exist or is not a directory`, you may need to first build the plugin on the command line with `bin/plugin make`.
 * If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install"
   - Install the Dart plugin, exit
 * Verify installation of the Flutter plugin:
@@ -118,6 +113,8 @@ you can drop the definition into its `tools` directory before starting IntelliJ.
 The definition is in `resources/intellij/External Tools.xml`.
 
 ## Flutter plugin development on Windows
+
+[Note: this may be out-of-date. It has not been verified recently.]
 
 These are notes taken while making a Windows dev env for the Flutter plugin.
 It assumes familiarity with the section about set-up on MacOS.
@@ -195,6 +192,8 @@ Delete the file, then create a Windows-style symlink manually using:
 ## Running plugin tests
 
 ### Using test run configurations in IntelliJ
+
+[Note: this may be out-of-date. It has not been verified recently.]
 
 The repository contains two pre-defined test run configurations. One is for "unit" tests; that is
 currently defined as tests that do not rely on the IntelliJ UI APIs. The other is for "integration"

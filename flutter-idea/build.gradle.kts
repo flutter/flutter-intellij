@@ -33,6 +33,7 @@ val dartVersion: String by project
 val baseVersion: String by project
 val smaliPlugin: String by project
 val langPlugin: String by project
+val ideVersion: String by project
 
 group = "io.flutter"
 version = flutterPluginVersion
@@ -53,19 +54,23 @@ intellij {
   instrumentCode.set(true)
   updateSinceUntilBuild.set(false)
   downloadSources.set(false)
-  localPath.set("${project.rootDir.absolutePath}/artifacts/$ide")
+  version.set(ideVersion)
   val pluginList = mutableListOf("java", "properties", "junit", "Kotlin", "Git4Idea",
              "gradle", "Groovy", "org.jetbrains.android", "yaml", "Dart:$dartVersion")
   pluginList.add(smaliPlugin)
   pluginList.add(langPlugin)
   plugins.set(pluginList)
+  if (ide == "android-studio") {
+    type.set("AI")
+  }
 }
 
 dependencies {
   compileOnly("org.jetbrains:annotations:24.0.0")
   testImplementation("org.jetbrains:annotations:24.0.0")
-  testImplementation("org.powermock:powermock-api-mockito2:2.0.0")
-  testImplementation("org.powermock:powermock-module-junit4:2.0.0")
+  testImplementation("org.powermock:powermock-api-mockito2:2.0.9")
+  testImplementation("org.powermock:powermock-module-junit4:2.0.9")
+  testImplementation(mapOf("group" to "org.mockito", "name" to "mockito-core", "version" to "5.2.0"))
   if (ide == "android-studio") {
     testImplementation(project(":flutter-studio"))
     testRuntimeOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins",
@@ -88,16 +93,15 @@ dependencies {
     testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/ideaIC/plugins/git4idea/lib",
                          "include" to listOf("*.jar"))))
   }
-  compileOnly("com.google.guava:guava:31.0.1-jre")
-  compileOnly("com.google.code.gson:gson:2.9.0")
-  testImplementation("com.google.guava:guava:31.0.1-jre")
-  testImplementation("com.google.code.gson:gson:2.9.0")
+  compileOnly("com.google.guava:guava:31.1-jre")
+  compileOnly("com.google.code.gson:gson:2.10.1")
+  testImplementation("com.google.guava:guava:31.1-jre")
+  testImplementation("com.google.code.gson:gson:2.10.1")
   compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/third_party/lib/jxbrowser",
                        "include" to listOf("*.jar"))))
   testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/third_party/lib/jxbrowser",
                        "include" to listOf("*.jar"))))
   testImplementation("junit:junit:4.13.2")
-  testImplementation(mapOf("group" to "org.mockito", "name" to "mockito-core", "version" to "2.2.2")) // 3.11.2 is latest
 }
 
 sourceSets {
