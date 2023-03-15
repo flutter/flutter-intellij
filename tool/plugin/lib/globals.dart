@@ -1,8 +1,6 @@
 // Copyright 2017 The Chromium Authors. All rights reserved. Use of this source
 // code is governed by a BSD-style license that can be found in the LICENSE file.
 
-// @dart = 2.12
-
 // Map plugin ID to JetBrains registry ID.
 const Map<String, String> pluginRegistryIds = {
   'io.flutter': '9212',
