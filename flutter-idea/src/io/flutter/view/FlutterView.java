@@ -50,6 +50,7 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.InspectorGroupManagerService;
@@ -61,6 +62,7 @@ import io.flutter.run.daemon.DevToolsInstance;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.toolwindow.FlutterViewToolWindowManagerListener;
 import io.flutter.utils.AsyncUtils;
@@ -274,21 +276,20 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     final String browserUrl = app.getConnector().getBrowserUrl();
     FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(app.getProject());
-    if (flutterSdk == null) {
-      return;
-    }
+    FlutterSdkVersion flutterSdkVersion = flutterSdk == null ? null : flutterSdk.getVersion();
 
     if (isEmbedded) {
       final String color = ColorUtil.toHex(UIUtil.getEditorPaneBackground());
       final DevToolsUrl devToolsUrl = new DevToolsUrl(
-              devToolsInstance.host,
-              devToolsInstance.port,
-              browserUrl,
-              "inspector",
-              true,
-              color,
-              UIUtil.getFontSize(UIUtil.FontSize.NORMAL),
-              flutterSdk.getVersion()
+        devToolsInstance.host,
+        devToolsInstance.port,
+        browserUrl,
+        "inspector",
+        true,
+        color,
+        UIUtil.getFontSize(UIUtil.FontSize.NORMAL),
+        flutterSdkVersion,
+        WorkspaceCache.getInstance(app.getProject())
       );
 
       //noinspection CodeBlock2Expr
@@ -317,7 +318,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     } else {
       BrowserLauncher.getInstance().browse(
         (new DevToolsUrl(devToolsInstance.host, devToolsInstance.port, browserUrl, "inspector", false, null, null,
-                         flutterSdk.getVersion()).getUrlString()),
+                         flutterSdkVersion, WorkspaceCache.getInstance(app.getProject())).getUrlString()),
         null
       );
       presentLabel(toolWindow, "DevTools inspector has been opened in the browser.");
@@ -977,12 +978,8 @@ class FlutterViewDevToolsAction extends FlutterViewAction {
         }
 
         FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(app.getProject());
-        if (flutterSdk == null) {
-          return;
-        }
-
         BrowserLauncher.getInstance().browse(
-          (new DevToolsUrl(instance.host, instance.port, urlString, null, false, null, null, flutterSdk.getVersion()).getUrlString()),
+          (new DevToolsUrl(instance.host, instance.port, urlString, null, false, null, null, flutterSdk == null ? null : flutterSdk.getVersion(), WorkspaceCache.getInstance(app.getProject())).getUrlString()),
           null
         );
       });

@@ -1,5 +1,6 @@
 package io.flutter.devtools;
 
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.sdk.FlutterSdkVersion;
 import org.junit.Test;
@@ -19,48 +20,64 @@ public class DevToolsUrlTest {
     final FlutterSdkUtil mockSdkUtil = mock(FlutterSdkUtil.class);
     when(mockSdkUtil.getFlutterHostEnvValue()).thenReturn("IntelliJ-IDEA");
 
+    final WorkspaceCache notBazelWorkspaceCache = mock(WorkspaceCache.class);
+    when(notBazelWorkspaceCache.isBazel()).thenReturn(false);
+
+    final WorkspaceCache bazelWorkspaceCache = mock(WorkspaceCache.class);
+    when(bazelWorkspaceCache.isBazel()).thenReturn(true);
+
     FlutterSdkVersion newVersion = new FlutterSdkVersion("3.3.0");
     assertEquals(
       "http://127.0.0.1:9100/timeline?ide=IntelliJ-IDEA&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
-      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, null, newVersion, mockSdkUtil)).getUrlString()
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, null, newVersion, notBazelWorkspaceCache, mockSdkUtil)).getUrlString()
     );
 
     assertEquals(
       "http://127.0.0.1:9100/timeline?ide=IntelliJ-IDEA&embed=true&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
-      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, true, null, null, newVersion, mockSdkUtil)).getUrlString()
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, true, null, null, newVersion, notBazelWorkspaceCache, mockSdkUtil)).getUrlString()
     );
 
     assertEquals(
       "http://127.0.0.1:9100/?ide=IntelliJ-IDEA",
-      (new DevToolsUrl(devtoolsHost, devtoolsPort, null, null, false, null, null, newVersion, mockSdkUtil).getUrlString())
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, null, null, false, null, null, newVersion, notBazelWorkspaceCache, mockSdkUtil).getUrlString())
     );
 
     assertEquals(
       "http://127.0.0.1:9100/timeline?ide=IntelliJ-IDEA&backgroundColor=ffffff&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
-      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, "ffffff", null, newVersion, mockSdkUtil).getUrlString())
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, "ffffff", null, newVersion, notBazelWorkspaceCache, mockSdkUtil).getUrlString())
     );
 
     assertEquals(
       "http://127.0.0.1:9100/timeline?ide=IntelliJ-IDEA&backgroundColor=ffffff&fontSize=12.0&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
-      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, "ffffff", 12.0f, newVersion, mockSdkUtil).getUrlString())
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, "ffffff", 12.0f, newVersion, notBazelWorkspaceCache, mockSdkUtil).getUrlString())
     );
 
     when(mockSdkUtil.getFlutterHostEnvValue()).thenReturn("Android-Studio");
 
     assertEquals(
       "http://127.0.0.1:9100/timeline?ide=Android-Studio&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
-      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, null, newVersion, mockSdkUtil).getUrlString())
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, null, newVersion, notBazelWorkspaceCache, mockSdkUtil).getUrlString())
     );
 
     assertEquals(
       "http://127.0.0.1:9100/timeline?ide=Android-Studio&backgroundColor=3c3f41&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
-      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, "3c3f41", null, newVersion, mockSdkUtil).getUrlString())
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, "3c3f41", null, newVersion, notBazelWorkspaceCache, mockSdkUtil).getUrlString())
     );
 
     FlutterSdkVersion oldVersion = new FlutterSdkVersion("3.0.0");
     assertEquals(
       "http://127.0.0.1:9100/#/?ide=Android-Studio&page=timeline&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
-      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, null, oldVersion, mockSdkUtil)).getUrlString()
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, null, oldVersion, notBazelWorkspaceCache, mockSdkUtil)).getUrlString()
+    );
+
+    assertEquals(
+      "http://127.0.0.1:9100/#/?ide=Android-Studio&page=timeline&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, null, null, notBazelWorkspaceCache, mockSdkUtil)).getUrlString()
+    );
+
+    assertEquals(
+      "http://127.0.0.1:9100/timeline?ide=Android-Studio&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
+      (new DevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page, false, null, null, null, bazelWorkspaceCache, mockSdkUtil)).getUrlString()
     );
   }
 }
