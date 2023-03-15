@@ -29,6 +29,7 @@ import com.intellij.ui.content.ContentManager;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
@@ -217,12 +218,8 @@ public class FlutterPerformanceView implements Disposable {
         }
 
         FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(app.getProject());
-        if (flutterSdk == null) {
-          return;
-        }
-
         BrowserLauncher.getInstance().browse(
-                (new DevToolsUrl(instance.host, instance.port, app.getConnector().getBrowserUrl(), null, false, null, null, flutterSdk.getVersion())).getUrlString(),
+                (new DevToolsUrl(instance.host, instance.port, app.getConnector().getBrowserUrl(), null, false, null, null, flutterSdk == null ? null : flutterSdk.getVersion(), WorkspaceCache.getInstance(app.getProject()))).getUrlString(),
                 null
         );
       });
