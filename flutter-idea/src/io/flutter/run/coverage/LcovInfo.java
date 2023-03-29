@@ -10,6 +10,7 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.rt.coverage.data.ClassData;
 import com.intellij.rt.coverage.data.LineData;
 import com.intellij.rt.coverage.data.ProjectData;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +41,7 @@ public class LcovInfo {
     this.base = base;
   }
 
-  public static void readInto(ProjectData data, File file) throws IOException {
+  public static void readInto(@NotNull ProjectData data, @NotNull File file) throws IOException {
     final String filePath = file.getAbsolutePath();
     final int index = filePath.indexOf("coverage");
     if (index < 0) {
@@ -52,8 +53,11 @@ public class LcovInfo {
       lines.forEach(lcov::processLine);
     }
     for (String path : lcov.counts.keySet()) {
-      final ClassData classData = data.getOrCreateClassData(path);
       final List<LineCount> list = lcov.counts.get(path);
+      if (list == null || list.isEmpty()) {
+        continue;
+      }
+      final ClassData classData = data.getOrCreateClassData(path);
       classData.setSource(fullPath(path));
       final int max = list.get(list.size() - 1).lineNum + 1;
       final LineData[] lines = new LineData[max];
