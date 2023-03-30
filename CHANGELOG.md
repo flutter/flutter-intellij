@@ -1,4 +1,5 @@
 # 73
+- Prevent NPE when process is stopped while record fields are displayed
 - Check lcov files for files with no test coverage (#6692)
 - Add FLUTTER_SDK to setup instructions (#6684)
 - Fix DevTools opening for bazel workspaces (#6682)
