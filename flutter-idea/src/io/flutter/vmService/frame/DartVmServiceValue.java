@@ -537,6 +537,9 @@ public class DartVmServiceValue extends XNamedValue {
       if (getInstanceRef().getKind() == InstanceKind.Record) {
         for (BoundField field : fields) {
           assert field != null;
+          if (field.getJson() == null) {
+            continue;
+          }
           Object name = field.getName();
           InstanceRef value = field.getValue();
           if (name != null && value != null) {
