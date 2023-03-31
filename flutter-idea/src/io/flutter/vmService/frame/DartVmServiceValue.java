@@ -540,7 +540,7 @@ public class DartVmServiceValue extends XNamedValue {
           if (field.getJson() == null) {
             continue;
           }
-          Object name = field.getName();
+          Object name = getFieldName(field);
           InstanceRef value = field.getValue();
           if (name != null && value != null) {
             final String n;
@@ -555,14 +555,26 @@ public class DartVmServiceValue extends XNamedValue {
       }
       else {
         for (BoundField field : fields) {
+          assert field != null;
           final InstanceRef value = field.getValue();
+          final Object name = getFieldName(field);
           if (value != null) {
-            childrenList.add(new DartVmServiceValue(myDebugProcess, myIsolateId, (String)field.getName(), value, null, field.getDecl(), false));
+            childrenList.add(new DartVmServiceValue(myDebugProcess, myIsolateId, (String)name, value, null, field.getDecl(), false));
           }
         }
       }
       node.addChildren(childrenList, true);
     }
+  }
+
+  private Object getFieldName(@NotNull BoundField field) {
+    Object name = field.getName();
+    // A bug in getName() returns null instead of fetching the decl name.
+    if (name == null) {
+      FieldRef decl = field.getDecl();
+      name = decl.getName();
+    }
+    return name;
   }
 
   @NotNull
