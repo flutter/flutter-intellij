@@ -21,7 +21,7 @@ public class FlutterIcons {
 
   public static final Icon Phone = load("/icons/phone.png");
   public static final Icon Feedback = load("/icons/feedback.png");
-  public static final Icon RefreshItems = load("/icons/frefresh_items.png");
+  public static final Icon RefreshItems = load("/icons/refresh_items.png");
 
   public static final Icon Dart_16 = load("/icons/dart_16.svg");
 
