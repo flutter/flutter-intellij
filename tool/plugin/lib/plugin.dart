@@ -106,7 +106,8 @@ Future<File> genPluginXml(BuildSpec spec, String destDir, String path) async {
   return await dest.done;
 }
 
-void genPresubmitYaml(List<BuildSpec> specs) {
+bool genPresubmitYaml(List<BuildSpec> specs) {
+  // This assumes the file contains 'steps:', which seems reasonable.
   var file = File(p.join(rootPath, '.github', 'workflows', 'presubmit.yaml'));
   var versions = [];
   for (var spec in specs) {
@@ -126,7 +127,17 @@ void genPresubmitYaml(List<BuildSpec> specs) {
       " and run './bin/plugin generate'.\n\n";
   var contents = header + templateContents;
   log('writing ${p.relative(file.path)}');
-  file.writeAsStringSync(contents, flush: true);
+  var templateIndex = contents.indexOf('steps:');
+  if (templateIndex < 0) {
+    log('presubmit template cannot be generated');
+    return false;
+  }
+  var fileContents = file.readAsStringSync();
+  var fileIndex = fileContents.indexOf('steps:');
+  var newContent =
+      contents.substring(0, templateIndex) + fileContents.substring(fileIndex);
+  file.writeAsStringSync(newContent, flush: true);
+  return true;
 }
 
 bool isTravisFileValid() {
@@ -570,7 +581,9 @@ class GenerateCommand extends ProductCommand {
     var json = readProductMatrix();
     var spec = SyntheticBuildSpec.fromJson(json.first, release, specs);
     await genPluginFiles(spec, 'resources');
-    genPresubmitYaml(specs);
+    if (!genPresubmitYaml(specs)) {
+      return 1;
+    }
     generateLiveTemplates();
     if (isReleaseMode) {
       if (!await performReleaseChecks(this)) {
