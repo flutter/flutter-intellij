@@ -57,9 +57,9 @@
       "version": "2023.1",
       "isUnitTestTarget": "true",
       "ideaProduct": "ideaIC",
-      "ideaVersion": "231.7665.28",
-      "baseVersion": "231.7665.28",
-      "dartPluginVersion": "231.8109.2",
+      "ideaVersion": "231.8770.17",
+      "baseVersion": "231.8770.17",
+      "dartPluginVersion": "231.8770.15",
       "sinceBuild": "231.7665.28",
       "untilBuild": "231.*"
     }
