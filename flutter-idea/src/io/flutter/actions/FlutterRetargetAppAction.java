@@ -41,7 +41,6 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
     myPlaces.addAll(Arrays.asList(places));
   }
 
-  @Override
   public @NotNull ActionUpdateThread getActionUpdateThread() {
     return ActionUpdateThread.BGT;
   }
