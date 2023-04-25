@@ -5,9 +5,7 @@
  */
 package io.flutter.actions;
 
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import io.flutter.utils.FlutterModuleUtils;
@@ -38,6 +36,10 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
     super(text, description, null);
     myActionId = actionId;
     myPlaces.addAll(Arrays.asList(places));
+  }
+
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
   }
 
   @Override
