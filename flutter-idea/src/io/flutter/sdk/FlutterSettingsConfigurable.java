@@ -77,7 +77,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myIncludeAllStackTraces;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
   private JCheckBox myEnableHotUiCheckBox;
-  private JCheckBox myEnableEmbeddedBrowsersCheckBox;
   private JCheckBox myEnableBazelHotRestartCheckBox;
 
   private JCheckBox myShowAllRunConfigurationsInContextCheckBox;
@@ -160,8 +159,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     // the following statement:
     // experimentsPanel.setVisible(FlutterUtils.isAndroidStudio());
     mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
-
-    myEnableEmbeddedBrowsersCheckBox.setVisible(true);
 
     myEnableBazelHotRestartCheckBox.setVisible(WorkspaceCache.getInstance(myProject).isBazel());
   }
@@ -249,10 +246,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isEnableEmbeddedBrowsers() != myEnableEmbeddedBrowsersCheckBox.isSelected()) {
-      return true;
-    }
-
     if (settings.isEnableBazelHotRestart() != myEnableBazelHotRestartCheckBox.isSelected()) {
       return true;
     }
@@ -323,7 +316,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
     settings.setEnableHotUi(myEnableHotUiCheckBox.isSelected());
-    settings.setEnableEmbeddedBrowsers(myEnableEmbeddedBrowsersCheckBox.isSelected());
     settings.setEnableBazelHotRestart(myEnableBazelHotRestartCheckBox.isSelected());
     settings.setAllowTestsInSourcesRoot(myAllowTestsInSourcesRoot.isSelected());
     settings.setShowAllRunConfigurationsInContext(myShowAllRunConfigurationsInContextCheckBox.isSelected());
@@ -391,7 +383,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myEnableHotUiCheckBox.setSelected(settings.isEnableHotUi());
 
-    myEnableEmbeddedBrowsersCheckBox.setSelected(settings.isEnableEmbeddedBrowsers());
     myEnableBazelHotRestartCheckBox.setSelected(settings.isEnableBazelHotRestart());
     myAllowTestsInSourcesRoot.setSelected(settings.isAllowTestsInSourcesRoot());
 

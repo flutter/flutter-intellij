@@ -319,28 +319,7 @@ public class FlutterSettings {
   }
 
   public boolean isEnableEmbeddedBrowsers() {
-    // For Big Sur users, change this setting to true if it's currently false and we haven't already set it to true.
-    if (SystemInfo.isMac && (SystemInfo.isOsVersionAtLeast("11.0") || SystemInfo.isOsVersionAtLeast("10.16")) &&
-            !getPropertiesComponent().getBoolean(enableEmbeddedBrowsersKey, true) &&
-            isChangeBigSurToTrue()) {
-      FlutterMessages.showInfo(
-              "Embedded DevTools Inspector",
-              "The embedded inspector is now supported for MacOS Big Sur and is enabled by default. To disable, go to Preferences > Flutter.",
-              null
-      );
-
-      // We do not want to set it back to true again in the future (e.g. if a user decides to set to false).
-      setChangeBigSurToTrue(false);
-      setEnableEmbeddedBrowsers(true);
-      return true;
-    }
-
-    return getPropertiesComponent().getBoolean(enableEmbeddedBrowsersKey, true);
-  }
-
-  public void setEnableEmbeddedBrowsers(boolean value) {
-    getPropertiesComponent().setValue(enableEmbeddedBrowsersKey, value, true);
-    fireEvent();
+    return true;
   }
 
   public boolean isEnableBazelHotRestart() {
