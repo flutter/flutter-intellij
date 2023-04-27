@@ -166,7 +166,7 @@ void main() {
         cmd = (runner.commands['build'] as TestBuildCommand);
       });
       var spec = cmd.specs[0];
-      await removeAll('../../build/classes');
+      await Directory('../../build/classes').deleteAll();
       await genPluginFiles(spec, 'build/classes');
       var file = File("../../build/classes/META-INF/plugin.xml");
       expect(file.existsSync(), isTrue);

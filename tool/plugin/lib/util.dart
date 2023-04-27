@@ -103,11 +103,6 @@ Future<int> curl(String url, {required String to}) async {
   return await exec('curl', ['-o', to, url]);
 }
 
-/// Remove the directory without exceptions if it does not exists.
-Future<void> removeAll(String dir) async {
-  await Directory(dir).delete(recursive: true).then((_) {}, onError: (_) {});
-}
-
 bool isNewer(FileSystemEntity newer, FileSystemEntity older) {
   return newer.statSync().modified.isAfter(older.statSync().modified);
 }
@@ -165,4 +160,12 @@ String _nextRelease() {
       RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName)!.group(1);
   var val = int.parse(current!) + 1;
   return '$val.0';
+}
+
+/// A series of extension methods to help improving file manipulations.
+extension FileSystemEntityExtension on FileSystemEntity {
+  /// Remove the file or the directory without exceptions if it does not exists.
+  Future<void> deleteAll() async {
+    await delete(recursive: true).then((_) {}, onError: (_) {});
+  }
 }
