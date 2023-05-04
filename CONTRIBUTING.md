@@ -103,9 +103,14 @@ The current Java Developmenet Kit version is: **17**.
         - Point it to the directory of the content which is under the IDEA's installation 
         - Remember the generated name (probably `IntelliJ IDEA IU-231.8109.175`) or change to name to format like this.
         - Change the "Internal Java Platform" to the previous `IDEA JBR 17`.
-    - Select "Platform Settings > Modules", select "flutter-intellij > flutter-idea > main" module,
-      switch to the "Paths" window, select the **Inherit project compile output path** option then apply.
-        - This step can be repeated after everytime the project is open.
+    - Select "Platform Settings > Project", change the "SDK" selection to **the previous IntelliJ Platform Plugin SDK**
+      (probably `IntelliJ IDEA IU-231.8109.175 java version 17`).
+    - Select "Platform Settings > Modules".
+        - Select "flutter-intellij > flutter-idea > main" module, switch to the "Paths" window,
+          select the **Inherit project compile output path** option then apply.
+          This step can be repeated after everytime the project is open.
+        - Select every module from the top (flutter-intellij) to the bottom (test) (could be 6 modules in summary),
+          switch to the "Dependencies" window, change the "Module SDK" selection to `Project SDK`.
 9. In the "File | Settings | Build, Execution, Deployment | Compiler" setting:
     - In "Java Compiler", change the "Project bytecode version" to the same version of the JDK.
     - In "Kotlin Compiler", change the "Target JVM version" to the same version of the JDK.
