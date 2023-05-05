@@ -111,16 +111,18 @@ The current Java Developmenet Kit version is: **17**.
           This step can be repeated after everytime the project is open.
         - Select every module from the top (flutter-intellij) to the bottom (test) (could be 6 modules in summary),
           switch to the "Dependencies" window, change the "Module SDK" selection to `Project SDK`.
-9. In the "File | Settings | Build, Execution, Deployment | Compiler" setting:
+9. In the "File | Settings | Build, Execution, Deployment | Build Tools | Gradle" setting:
+    - Change "Gradle JVM" selection to "Project SDK".
+10. In the "File | Settings | Build, Execution, Deployment | Compiler" setting:
     - In "Java Compiler", change the "Project bytecode version" to the same version of the JDK.
     - In "Kotlin Compiler", change the "Target JVM version" to the same version of the JDK.
-10. One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin.
+11. One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin.
     - Find `Plugins` (in "File | Settings | Plugins") and install the Dart plugin, then restart the IDE if needed.
-11. Build the project using `Build` | `Build Project`.
-12. Try running the plugin; select the `flutter-intellij [runIde]` run config then click the Debug icon.
+12. Build the project using `Build` | `Build Project`.
+13. Try running the plugin; select the `flutter-intellij [runIde]` run config then click the Debug icon.
     This should open the "runtime workbench", a new instance of IntelliJ IDEA with the plugin installed.
-13. If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install".
-14. Verify installation of the Flutter plugin:
+14. If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install".
+15. Verify installation of the Flutter plugin:
     - Select `flutter-intellij [runIde]` in the Run Configuration drop-down list.
     - Click Debug button (to the right of that drop-down).
     - In the new IntelliJ process that spawns, open the `path/to/flutter/examples/hello_world` project.
