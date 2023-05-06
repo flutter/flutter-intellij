@@ -55,15 +55,6 @@ List<BuildSpec> createBuildSpecs(ProductCommand command) {
   return specs;
 }
 
-Future<int> deleteBuildContents() async {
-  final dir = Directory(p.join(rootPath, 'build'));
-  if (!dir.existsSync()) throw 'No build directory found';
-  var args = <String>[];
-  args.add('-rf');
-  args.add(p.join(rootPath, 'build', '*'));
-  return await exec('rm', args);
-}
-
 List<File> findJars(String path) {
   final dir = Directory(path);
   return dir
@@ -163,16 +154,6 @@ Future<int> jar(String directory, String outFile) async {
   return await exec('jar', args, cwd: directory);
 }
 
-Future<int> moveToArtifacts(ProductCommand cmd, BuildSpec spec) async {
-  final dir = Directory(p.join(rootPath, 'artifacts'));
-  if (!dir.existsSync()) throw 'No artifacts directory found';
-  var file = pluginRegistryIds[spec.pluginId];
-  var args = <String>[];
-  args.add(p.join(rootPath, 'build', file));
-  args.add(cmd.releasesFilePath(spec));
-  return await exec('mv', args);
-}
-
 Future<bool> performReleaseChecks(ProductCommand cmd) async {
   // git must have a release_NN branch where NN is the value of --release
   // git must have no uncommitted changes
@@ -265,13 +246,6 @@ String substituteTemplateVariables(String line, BuildSpec spec) {
     }
   }
   return line;
-}
-
-Future<int> zip(String directory, String outFile) async {
-  var dest = p.absolute(outFile);
-  createDir(p.dirname(dest));
-  var args = ['-r', dest, p.basename(directory)];
-  return await exec('zip', args, cwd: p.dirname(directory));
 }
 
 void _copyFile(File file, Directory to, {String filename = ''}) {
@@ -731,6 +705,7 @@ abstract class ProductCommand extends Command {
   Future<int> run() async {
     await _initGlobals();
     await _initSpecs();
+    _handleSymlinksOnWindows();
     try {
       return await doit();
     } catch (ex, stack) {
@@ -763,6 +738,26 @@ abstract class ProductCommand extends Command {
       await specs[i].initChangeLog();
     }
     return specs.length;
+  }
+
+  void _handleSymlinksOnWindows() {
+    if (!Platform.isWindows) {
+      return;
+    }
+    const List<String> symlinks = [
+      r'flutter-idea\resources',
+      r'flutter-studio\resources',
+    ];
+    final currentPath = Directory.current.path;
+    for (final entityPath in symlinks) {
+      final path = '$currentPath\\$entityPath';
+      if (FileSystemEntity.isLinkSync(path)) {
+        continue;
+      }
+      final content = File(path).readAsStringSync();
+      File(path).deleteSync();
+      Link(path).createSync(content);
+    }
   }
 }
 
