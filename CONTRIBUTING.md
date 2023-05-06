@@ -4,7 +4,7 @@ Contributing to Flutter Plugin for IntelliJ
 <!-- TOC -->
 * [Contributing to Flutter Plugin for IntelliJ](#contributing-to-flutter-plugin-for-intellij)
   * [Contributing code](#contributing-code)
-  * [Getting start](#getting-start)
+  * [Getting started](#getting-started)
   * [Setting environments](#setting-environments)
     * [Handle symlinks](#handle-symlinks)
   * [Provision Tool](#provision-tool)
@@ -33,7 +33,7 @@ before any of your contributions with code get merged into the repo.
 If you've never submitted code before, you must add your (or your organization's)
 name and contact info to the [AUTHORS](AUTHORS) file.
 
-## Getting start
+## Getting started
 
 1. Install Flutter SDK from [Flutter SDK download](https://flutter.dev/docs/get-started/install) or
    [GitHub](https://github.com/flutter/flutter) and set it up according to its instructions.
