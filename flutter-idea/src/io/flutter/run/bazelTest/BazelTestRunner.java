@@ -118,7 +118,7 @@ public class BazelTestRunner extends GenericProgramRunner {
     private String runfilesDir;
     private String workspaceDirName;
     private static final String STARTED_PROCESS = "test.startedProcess";
-    private static final String OBSERVATORY_URI_KEY = "observatoryUri";
+    private static final String OBSERVATORY_URI_KEY = "vmServiceUri";
     private static final String RUNFILES_DIR_KEY = "runfilesDir";
     private static final String WORKSPACE_DIR_NAME_KEY = "workspaceDirName";
 
