@@ -38,13 +38,13 @@ List<EditCommand> editCommands = [
     path: 'build.gradle.kts',
     initials: ['version.set(ideVersion)'],
     replacements: ['version.set("LATEST-EAP-SNAPSHOT")'],
-    versions: ['2023.1'],
+    versions: ['2023.2'],
   ),
   EditCommand(
     path: 'flutter-idea/build.gradle.kts',
     initials: ['version.set(ideVersion)'],
     replacements: ['version.set("LATEST-EAP-SNAPSHOT")'],
-    versions: ['2023.1'],
+    versions: ['2023.2'],
   ),
   EditCommand(
     path:
