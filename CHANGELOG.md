@@ -1,3 +1,6 @@
+# 73.1
+- Build for Android Studio Hedgehog
+
 # 73
 - Prevent NPE when process is stopped while record fields are displayed
 - Check lcov files for files with no test coverage (#6692)
