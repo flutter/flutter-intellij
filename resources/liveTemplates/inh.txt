@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class $NAME$ extends InheritedWidget {
   const $NAME$({
     super.key,
