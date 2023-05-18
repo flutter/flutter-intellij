@@ -1,5 +1,5 @@
 class $NAME$ extends StatefulWidget {
-  const $NAME$({Key? key}) : super(key: key);
+  const $NAME$({super.key});
 
   @override
   State<$NAME$> createState() => _$NAME$State();
