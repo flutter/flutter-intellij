@@ -1,8 +1,8 @@
 class $NAME$ extends InheritedWidget {
   const $NAME$({
-    Key? key,
+    super.key,
     required Widget child,
-  }) : super(key: key, child: child);
+  }) : super(child: child);
 
   static $NAME$ of(BuildContext context) {
     final $NAME$? result = context.dependOnInheritedWidgetOfExactType<$NAME$>();
