@@ -33,6 +33,20 @@ const String _actionThreadEditContent = '''
 ''';
 
 List<EditCommand> editCommands = [
+  EditCommand(
+    path: 'flutter-idea/src/io/flutter/FlutterUtils.java',
+    initials: [
+      '''
+final Yaml yaml = new Yaml(new SafeConstructor(), new Representer(), new DumperOptions(), new Resolver() {
+'''
+    ],
+    replacements: [
+      '''
+final Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()), new Representer(new DumperOptions()), new DumperOptions(), new Resolver() {
+'''
+    ],
+    versions: ['2023.2'],
+  ),
   // When using LATEST-EAP-SNAPSHOT, also set baseVersion to LATEST-EAP-SNAPSHOT in the build spec.
   EditCommand(
     path: 'build.gradle.kts',
