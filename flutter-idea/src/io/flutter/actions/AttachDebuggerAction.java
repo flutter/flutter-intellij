@@ -78,6 +78,7 @@ public class AttachDebuggerAction extends FlutterSdkAction {
     }
 
     final SdkAttachConfig sdkRunConfig = new SdkAttachConfig((SdkRunConfig)configuration);
+    sdkRunConfig.pubRoot = root;
     final Executor executor = RunFlutterAction.getExecutor(ToolWindowId.DEBUG);
     if (executor == null) {
       return;

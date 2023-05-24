@@ -28,14 +28,12 @@ public class FlutterSearchableOptionContributor extends SearchableOptionContribu
     add(processor, FlutterBundle.message("settings.flutter.version"));
     add(processor, FlutterBundle.message("settings.open.inspector.on.launch"));
     add(processor, FlutterBundle.message("settings.hot.reload.on.save"));
-    add(processor, FlutterBundle.message("settings.enable.embedding.devtools"));
     add(processor, FlutterBundle.message("settings.enable.bazel.hot.restart"));
     add(processor, FlutterBundle.message("settings.allow.tests.in.sources"));
     add(processor, FlutterBundle.message("settings.allow.tests.tooltip"));
     add(processor, FlutterBundle.message("settings.font.packages"));
     add(processor, FlutterBundle.message("settings.show.all.configs"));
     add(processor, FlutterBundle.message("settings.show.all.configs.tooltip"));
-    add(processor, FlutterBundle.message("settings.enable.embedding.devtools.tooltip"));
     add(processor, FlutterBundle.message("settings.enable.androi.gradle.sync.tooltip"));
     add(processor, FlutterBundle.message("settings.experiments"));
     add(processor, FlutterBundle.message("settings.editor"));

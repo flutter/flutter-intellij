@@ -6,6 +6,7 @@
 package io.flutter.utils;
 
 //import static com.android.tools.idea.gradle.project.importing.GradleProjectImporter.ANDROID_PROJECT_TYPE;
+
 import static com.intellij.util.ReflectionUtil.findAssignableField;
 import static io.flutter.actions.AttachDebuggerAction.ATTACH_IS_ACTIVE;
 import static io.flutter.actions.AttachDebuggerAction.findRunConfig;
@@ -18,14 +19,14 @@ import com.intellij.debugger.engine.DebugProcessListener;
 import com.intellij.debugger.impl.DebuggerManagerListener;
 import com.intellij.debugger.impl.DebuggerSession;
 import com.intellij.execution.RunManagerEx;
+import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.ModuleListener;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectType;
-import com.intellij.openapi.project.ProjectTypeService;
+import com.intellij.openapi.project.*;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ThreeState;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.messages.MessageBusConnection;
@@ -33,17 +34,22 @@ import com.intellij.util.messages.Topic;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.AttachDebuggerAction;
 import io.flutter.pub.PubRoot;
+import io.flutter.run.SdkAttachConfig;
 import io.flutter.run.SdkRunConfig;
 import io.flutter.sdk.FlutterSdk;
+import com.intellij.openapi.diagnostic.Logger;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Objects;
+
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class AddToAppUtils {
+  //private static final Logger LOG = Logger.getInstance(AddToAppUtils.class);
 
   private AddToAppUtils() {
   }
@@ -126,7 +132,6 @@ public class AddToAppUtils {
 
   @NotNull
   private static DebuggerManagerListener makeAddToAppAttachListener(@NotNull Project project) {
-
     return new DebuggerManagerListener() {
 
       DebugProcessListener dpl = new DebugProcessListener() {
@@ -144,12 +149,14 @@ public class AddToAppUtils {
             return;
           }
           // Launch flutter attach if a run config can be found.
-          if (findRunConfig(project) == null) {
+          @Nullable RunConfiguration runConfig = findRunConfig(project);
+          if (runConfig == null) {
             // Either there is no Flutter run config or there are more than one.
-            if (RunManagerEx.getInstanceEx(project).getSelectedConfiguration() instanceof SdkRunConfig) {
-              // The selected run config at this point is not Flutter, so we can't start the process automatically.
-              return;
-            }
+            return;
+          }
+          if (!(runConfig instanceof SdkAttachConfig)) {
+            // The selected run config at this point is not Flutter, so we can't start the process automatically.
+            return;
           }
           FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
           if (sdk == null) {
@@ -157,9 +164,7 @@ public class AddToAppUtils {
           }
           // If needed, DataContext could be saved by FlutterReloadManager.beforeActionPerformed() in project user data.
           DataContext context = DataContext.EMPTY_CONTEXT;
-          List<Module> modules = FlutterModuleUtils.findModulesWithFlutterContents(project);
-          assert modules.size() == 1; // TODO(messick) Need to change this if multiple :flutter sub-projects supported.
-          PubRoot pubRoot = PubRoot.forDirectory(Objects.requireNonNull(modules.get(0).getModuleFile()).getParent());
+          PubRoot pubRoot = ((SdkAttachConfig)runConfig).pubRoot;
           Application app = ApplicationManager.getApplication();
           project.putUserData(ATTACH_IS_ACTIVE, ThreeState.fromBoolean(true));
           // Note: Using block comments to preserve formatting.
