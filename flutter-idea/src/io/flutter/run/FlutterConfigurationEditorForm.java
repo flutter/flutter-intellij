@@ -34,22 +34,8 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig>
   private EnvironmentVariablesTextFieldWithBrowseButton myEnvironmentVariables;
   private JLabel myEnvvarLabel;
 
-  private static final List<String> DESKTOP_PLATFORMS =
-    Lists.newArrayList("enable-linux-desktop", "enable-macos-desktop", "enable-windows-desktop", "enable-windows-uwp-desktop");
-
   public FlutterConfigurationEditorForm(final Project project) {
     initDartFileTextWithBrowse(project, myFileField);
-    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    if (sdk != null) {
-      final Set<String> platforms = sdk.queryConfiguredPlatforms(true);
-      for (String platform : platforms) {
-        if (DESKTOP_PLATFORMS.contains(platform)) {
-          return;
-        }
-      }
-    }
-    myEnvironmentVariables.setEnabled(false);
-    myEnvvarLabel.setEnabled(false);
   }
 
   @Override
