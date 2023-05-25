@@ -42,6 +42,8 @@ import org.jetbrains.annotations.Nullable;
 
 public class SdkAttachConfig extends SdkRunConfig {
 
+  public PubRoot pubRoot;
+
   public SdkAttachConfig(SdkRunConfig config) {
     //noinspection ConstantConditions
     super(config.getProject(), config.getFactory(), config.getName());
