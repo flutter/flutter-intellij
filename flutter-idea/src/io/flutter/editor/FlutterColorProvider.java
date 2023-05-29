@@ -101,6 +101,9 @@ public class FlutterColorProvider implements ElementColorProvider {
 
   @Nullable
   private PsiElement resolveReferencedElement(@NotNull PsiElement element) {
+    if (element instanceof DartCallExpression && element.getFirstChild().getText().equals("Color")) {
+      return element;
+    }
     final PsiElement symbol = element.getLastChild();
     final PsiElement result;
     if (symbol instanceof DartReference) {
@@ -112,14 +115,16 @@ public class FlutterColorProvider implements ElementColorProvider {
     else {
       return null;
     }
-    // Recursively determine reference if the result is still a `DartReference`.
-    if (result instanceof DartReference) return resolveReferencedElement(result);
     if (!(result instanceof DartComponentName) || result.getParent() == null) return null;
     final PsiElement declaration = result.getParent().getParent();
     if (!(declaration instanceof DartVarDeclarationList)) return null;
     final PsiElement lastChild = declaration.getLastChild();
     if (!(lastChild instanceof DartVarInit)) return null;
-    return lastChild.getLastChild();
+
+    final PsiElement effectiveElement = lastChild.getLastChild();
+    // Recursively determine reference if the initialization is still a `DartReference`.
+    if (effectiveElement instanceof DartReference) return resolveReferencedElement(effectiveElement);
+    return effectiveElement;
   }
 
   @Nullable
