@@ -58,7 +58,8 @@ public class FlutterColorProvider implements ElementColorProvider {
       return parseColorElements(parent, refExpr);
     }
     else {
-      if (parent.getNode().getElementType() == DartTokenTypes.VAR_INIT) {
+      if (parent.getNode().getElementType() == DartTokenTypes.VAR_INIT ||
+          parent.getNode().getElementType() == DartTokenTypes.FUNCTION_BODY) {
         final PsiElement reference = resolveReferencedElement(refExpr);
         if (reference != null && reference.getLastChild() != null) {
           Color tryParseColor = null;
@@ -123,7 +124,9 @@ public class FlutterColorProvider implements ElementColorProvider {
 
     final PsiElement effectiveElement = lastChild.getLastChild();
     // Recursively determine reference if the initialization is still a `DartReference`.
-    if (effectiveElement instanceof DartReference) return resolveReferencedElement(effectiveElement);
+    if (effectiveElement instanceof DartReference && !(effectiveElement instanceof DartCallExpression)) {
+      return resolveReferencedElement(effectiveElement);
+    }
     return effectiveElement;
   }
 
