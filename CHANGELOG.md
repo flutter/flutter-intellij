@@ -1,4 +1,7 @@
 # 74
+- Support multiple running instance for inspectors (#6772)
+- Add Short super.key  (#6757)
+- Resolves the referenced element before parsing colors (#6768)
 - Enable envars for run configs (#6765)
 - Save pub root for attach (#6764)
 - Build for 2023.2 EAP (#6763)
