@@ -1,3 +1,24 @@
+# 74
+- Support multiple running instance for inspectors (#6772)
+- Add Short super.key  (#6757)
+- Resolves the referenced element before parsing colors (#6768)
+- Enable envars for run configs (#6765)
+- Save pub root for attach (#6764)
+- Build for 2023.2 EAP (#6763)
+- Use VM service URI instead of observatory URI for bazel test startup (#6742)
+- Reorg CONTRIBUTING.md (#6740)
+- Improve run configurations (#6739)
+- Allow making the plugin from multiple platforms (#6730)
+- Delete `flutter-idea/artifacts` link (#6729)
+- Remove use of legacy inspector (#6728)
+- Use BGT to update UI for restart/reload (#6727)
+- Update versions in build script (#6721)
+- Update Dart version for latest EAP build (#6720)
+- Fix generation of presubmit.yaml (#6708)
+- Add a readme for kokoro (#6707)
+- Fix typo in icon file name (#6705)
+- Fix presubmit template (#6706)
+
 # 73.1
 - Build for Android Studio Hedgehog
 
