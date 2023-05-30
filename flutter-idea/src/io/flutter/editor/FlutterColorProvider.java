@@ -14,10 +14,7 @@ import com.intellij.psi.impl.PsiFileFactoryImpl;
 import com.intellij.psi.impl.source.tree.AstBufferUtil;
 import com.jetbrains.lang.dart.DartLanguage;
 import com.jetbrains.lang.dart.DartTokenTypes;
-import com.jetbrains.lang.dart.psi.DartArgumentList;
-import com.jetbrains.lang.dart.psi.DartArguments;
-import com.jetbrains.lang.dart.psi.DartExpression;
-import com.jetbrains.lang.dart.psi.DartLiteralExpression;
+import com.jetbrains.lang.dart.psi.*;
 import io.flutter.FlutterBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -38,7 +35,6 @@ public class FlutterColorProvider implements ElementColorProvider {
     if (element.getNode().getElementType() != DartTokenTypes.IDENTIFIER) return null;
 
     final String name = element.getText();
-    if (!(name.equals("Colors") || name.equals("CupertinoColors") || name.equals("Color"))) return null;
 
     final PsiElement refExpr = topmostReferenceExpression(element);
     if (refExpr == null) return null;
@@ -62,6 +58,28 @@ public class FlutterColorProvider implements ElementColorProvider {
       return parseColorElements(parent, refExpr);
     }
     else {
+      if (parent.getNode().getElementType() == DartTokenTypes.VAR_INIT ||
+          parent.getNode().getElementType() == DartTokenTypes.FUNCTION_BODY) {
+        final PsiElement reference = resolveReferencedElement(refExpr);
+        if (reference != null && reference.getLastChild() != null) {
+          Color tryParseColor = null;
+          if (reference instanceof DartCallExpression) {
+            final DartExpression expression = ((DartCallExpression)reference).getExpression();
+            if (expression != null && expression.getLastChild() instanceof DartReferenceExpression) {
+              tryParseColor = parseColorElements(reference, expression);
+              if (tryParseColor != null) return tryParseColor;
+            }
+          }
+          final PsiElement lastChild = reference.getLastChild();
+          if (lastChild instanceof DartArguments && reference.getParent() != null) {
+            tryParseColor = parseColorElements(reference, reference.getParent());
+          }
+          else {
+            tryParseColor = parseColorElements(reference, reference.getLastChild());
+          }
+          if (tryParseColor != null) return tryParseColor;
+        }
+      }
       // name.equals(refExpr.getFirstChild().getText()) -> Colors.blue
       final PsiElement idNode = refExpr.getFirstChild();
       if (idNode == null) return null;
@@ -80,6 +98,36 @@ public class FlutterColorProvider implements ElementColorProvider {
       }
     }
     return null;
+  }
+
+  @Nullable
+  private PsiElement resolveReferencedElement(@NotNull PsiElement element) {
+    if (element instanceof DartCallExpression && element.getFirstChild().getText().equals("Color")) {
+      return element;
+    }
+    final PsiElement symbol = element.getLastChild();
+    final PsiElement result;
+    if (symbol instanceof DartReference) {
+      result = ((DartReference)symbol).resolve();
+    }
+    else if (element instanceof DartReference) {
+      result = ((DartReference)element).resolve();
+    }
+    else {
+      return null;
+    }
+    if (!(result instanceof DartComponentName) || result.getParent() == null) return null;
+    final PsiElement declaration = result.getParent().getParent();
+    if (!(declaration instanceof DartVarDeclarationList)) return null;
+    final PsiElement lastChild = declaration.getLastChild();
+    if (!(lastChild instanceof DartVarInit)) return null;
+
+    final PsiElement effectiveElement = lastChild.getLastChild();
+    // Recursively determine reference if the initialization is still a `DartReference`.
+    if (effectiveElement instanceof DartReference && !(effectiveElement instanceof DartCallExpression)) {
+      return resolveReferencedElement(effectiveElement);
+    }
+    return effectiveElement;
   }
 
   @Nullable
