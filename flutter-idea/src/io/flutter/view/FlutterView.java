@@ -705,7 +705,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       if (contentManager.isDisposed()) {
         return;
       }
-      contentManager.removeAllContents(true);
 
       final JPanel panel = new JPanel(new BorderLayout());
       panel.add(label, BorderLayout.CENTER);
