@@ -169,17 +169,6 @@ public class FlutterConsoleLogManager {
       final JsonObject jsonObject = extensionData.getJson().getAsJsonObject();
       final DiagnosticsNode diagnosticsNode = new DiagnosticsNode(jsonObject, objectGroup, app, false, null);
 
-      // Send analytics for the diagnosticsNode.
-      if (isFirstErrorForFrame()) {
-        final String errorId = FlutterErrorHelper.getAnalyticsId(diagnosticsNode);
-        if (errorId != null) {
-          FlutterInitializer.getAnalytics().sendEvent(
-            "flutter-error", errorId,
-            // Note: this can be null from tests.
-            app.getProject() == null ? null : FlutterSdk.getFlutterSdk(app.getProject()));
-        }
-      }
-
       if (FlutterSettings.getInstance().isShowStructuredErrors()) {
         queueLength.incrementAndGet();
 
