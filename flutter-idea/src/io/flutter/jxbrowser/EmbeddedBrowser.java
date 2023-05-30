@@ -37,6 +37,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,7 +52,8 @@ public class EmbeddedBrowser {
     return Objects.requireNonNull(project.getService(EmbeddedBrowser.class));
   }
 
-  private Browser browser;
+  private final Map<@NotNull String, @NotNull Browser> browsers = new HashMap<>();
+  private final Map<@NotNull String, @NotNull Content> contents = new HashMap<>();
   private CompletableFuture<DevToolsUrl> devToolsUrlFuture;
 
   private EmbeddedBrowser(Project project) {
@@ -61,18 +64,46 @@ public class EmbeddedBrowser {
       System.setProperty("jxbrowser.logging.level", "ALL");
     }
 
+    ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
+      @Override
+      public void projectClosing(@NotNull Project project) {
+        for (final String key: browsers.keySet()) {
+          final Browser browser = browsers.get(key);
+          if (browser != null) {
+            try {
+              browser.close();
+            } catch (Exception ex) {
+              LOG.info(ex);
+            }
+            browsers.remove(key);
+          }
+        }
+        contents.clear();
+      }
+    });
+  }
+
+  private void openBrowserInstanceFor(String tabName) {
     try {
       final Engine engine = EmbeddedBrowserEngine.getInstance().getEngine();
       if (engine == null) {
         return;
       }
-
-      this.browser = engine.newBrowser();
-      browser.settings().enableTransparentBackground();
-      browser.on(ConsoleMessageReceived.class, event -> {
+      final Browser newBrowser = engine.newBrowser();
+      newBrowser.settings().enableTransparentBackground();
+      newBrowser.on(ConsoleMessageReceived.class, event -> {
         final ConsoleMessage consoleMessage = event.consoleMessage();
         LOG.info("Browser message(" + consoleMessage.level().name() + "): " + consoleMessage.message());
       });
+      final Browser oldBrowser = browsers.get(tabName);
+      if (oldBrowser != null) {
+        try {
+          oldBrowser.close();
+        } catch (Exception ex) {
+          LOG.info(ex);
+        }
+      }
+      browsers.put(tabName, newBrowser);
     }
     catch (UnsupportedRenderingModeException ex) {
       // Skip using a transparent background if an exception is thrown.
@@ -81,22 +112,7 @@ public class EmbeddedBrowser {
       LOG.info(ex);
       FlutterInitializer.getAnalytics().sendExpectedException("jxbrowser-setup", ex);
     }
-
     resetUrl();
-
-    ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
-      @Override
-      public void projectClosing(@NotNull Project project) {
-        if (browser != null) {
-          try {
-            browser.close();
-          } catch (Exception ex) {
-            LOG.info(ex);
-          }
-          browser = null;
-        }
-      }
-    });
   }
 
   /**
@@ -109,8 +125,13 @@ public class EmbeddedBrowser {
     this.devToolsUrlFuture = new CompletableFuture<>();
   }
 
-  public void openPanel(ContentManager contentManager, String tabName, DevToolsUrl devToolsUrl, Runnable onBrowserUnavailable) {
+  public void openPanel(ContentManager contentManager, @NotNull String tabName, DevToolsUrl devToolsUrl, Runnable onBrowserUnavailable) {
+    final Browser firstBrowser = browsers.get(tabName);
+    if (browsers.get(tabName) == null) {
+      openBrowserInstanceFor(tabName);
+    }
     // If the browser failed to start during setup, run unavailable callback.
+    final Browser browser = browsers.get(tabName);
     if (browser == null) {
       onBrowserUnavailable.run();
       return;
@@ -141,6 +162,17 @@ public class EmbeddedBrowser {
         }
 
         contentManager.removeAllContents(false);
+        if (contents.get(tabName) != null) {
+          contents.remove(tabName);
+        }
+        for (final Content content: contents.values()) {
+          contentManager.addContent(content);
+        }
+        final Content previousContent = contents.get(tabName);
+        if (previousContent != null) {
+          contentManager.setSelectedContent(previousContent, true);
+          return;
+        }
         final Content content = contentManager.getFactory().createContent(null, tabName, false);
 
         // Creating Swing component for rendering web content
@@ -158,6 +190,8 @@ public class EmbeddedBrowser {
           // TODO(helin24): Use differentiated icons for each tab and copy from devtools toolbar.
           content.setIcon(FlutterIcons.Phone);
           contentManager.addContent(content);
+          contentManager.setSelectedContent(content, true);
+          contents.put(tabName, content);
 
           // This is for pulling up Chrome inspector for debugging purposes.
           browser.set(PressKeyCallback.class, params -> {
@@ -227,7 +261,9 @@ public class EmbeddedBrowser {
         // Reload is no longer needed - either URL has been reset or there has been no change.
         return;
       }
-      browser.navigation().loadUrl(devToolsUrl.getUrlString());
+      for (final Browser browser: browsers.values()) {
+        browser.navigation().loadUrl(devToolsUrl.getUrlString());
+      }
     });
   }
 }
