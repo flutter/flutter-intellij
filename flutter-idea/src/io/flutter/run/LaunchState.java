@@ -49,6 +49,7 @@ import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -148,12 +149,22 @@ public class LaunchState extends CommandLineState {
     }
 
     final FlutterLaunchMode launchMode = FlutterLaunchMode.fromEnv(env);
+    final RunContentDescriptor descriptor;
     if (launchMode.supportsDebugConnection()) {
-      return createDebugSession(env, app, result).getRunContentDescriptor();
+      descriptor = createDebugSession(env, app, result).getRunContentDescriptor();
     }
     else {
-      return new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
+      descriptor = new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
     }
+    try {
+      final Field f = descriptor.getClass().getDeclaredField("myDisplayName");
+      f.setAccessible(true);
+      f.set(descriptor, descriptor.getDisplayName() + " (" + device.deviceName() + ")");
+    }
+    catch (IllegalAccessException | NoSuchFieldException e) {
+      LOG.info(e);
+    }
+    return descriptor;
   }
 
   private static Class classForName(String className) {
