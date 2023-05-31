@@ -87,6 +87,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JTextArea myFontPackagesTextArea; // This should be changed to a structured list some day.
   private JCheckBox myAllowTestsInSourcesRoot;
   private ActionLink settingsLink;
+  private JCheckBox myEnableLogsPreserveAfterHotReloadOrRestart;
 
   private final @NotNull Project myProject;
   private final WorkspaceCache workspaceCache;
@@ -234,6 +235,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isPerservingLogsAfterHotReloadAndRestart() != myEnableLogsPreserveAfterHotReloadOrRestart.isSelected()) {
+      return true;
+    }
+
     if (settings.isVerboseLogging() != myEnableVerboseLoggingCheckBox.isSelected()) {
       return true;
     }
@@ -313,6 +318,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setShowStructuredErrors(myShowStructuredErrors.isSelected());
     settings.setIncludeAllStackTraces(myIncludeAllStackTraces.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
+    settings.setPerservingLogsAfterHotReloadAndRestart(myEnableLogsPreserveAfterHotReloadOrRestart.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
     settings.setEnableHotUi(myEnableHotUiCheckBox.isSelected());
@@ -378,6 +384,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myShowStructuredErrors.setSelected(settings.isShowStructuredErrors());
     myIncludeAllStackTraces.setSelected(settings.isIncludeAllStackTraces());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
+    myEnableLogsPreserveAfterHotReloadOrRestart.setSelected(settings.isPerservingLogsAfterHotReloadAndRestart());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
 

@@ -903,7 +903,7 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
     if (event.getType().startsWith("hot.")) {
       // We clear the console view in order to help indicate that a reload is happening.
       if (app.getConsole() != null) {
-        if (!FlutterSettings.getInstance().isVerboseLogging()) {
+        if (!FlutterSettings.getInstance().isVerboseLogging() && !FlutterSettings.getInstance().isPerservingLogsAfterHotReloadAndRestart()) {
           app.getConsole().clear();
         }
       }
