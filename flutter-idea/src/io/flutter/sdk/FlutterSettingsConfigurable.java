@@ -31,8 +31,6 @@ import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.labels.LinkLabel;
-import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.PlatformIcons;
 import icons.FlutterIcons;
 import io.flutter.*;
@@ -49,7 +47,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
-import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -87,6 +84,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JTextArea myFontPackagesTextArea; // This should be changed to a structured list some day.
   private JCheckBox myAllowTestsInSourcesRoot;
   private ActionLink settingsLink;
+  private JCheckBox myEnableLogsPreserveAfterHotReloadOrRestart;
 
   private final @NotNull Project myProject;
   private final WorkspaceCache workspaceCache;
@@ -234,6 +232,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isPerserveLogsDuringHotReloadAndRestart() != myEnableLogsPreserveAfterHotReloadOrRestart.isSelected()) {
+      return true;
+    }
+
     if (settings.isVerboseLogging() != myEnableVerboseLoggingCheckBox.isSelected()) {
       return true;
     }
@@ -313,6 +315,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setShowStructuredErrors(myShowStructuredErrors.isSelected());
     settings.setIncludeAllStackTraces(myIncludeAllStackTraces.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
+    settings.setPerserveLogsDuringHotReloadAndRestart(myEnableLogsPreserveAfterHotReloadOrRestart.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
     settings.setEnableHotUi(myEnableHotUiCheckBox.isSelected());
@@ -378,6 +381,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myShowStructuredErrors.setSelected(settings.isShowStructuredErrors());
     myIncludeAllStackTraces.setSelected(settings.isIncludeAllStackTraces());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
+    myEnableLogsPreserveAfterHotReloadOrRestart.setSelected(settings.isPerserveLogsDuringHotReloadAndRestart());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
 

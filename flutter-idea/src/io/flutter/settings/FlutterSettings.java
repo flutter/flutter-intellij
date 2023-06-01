@@ -8,11 +8,9 @@ package io.flutter.settings;
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
-import io.flutter.FlutterMessages;
 import io.flutter.analytics.Analytics;
 
 import java.util.EventListener;
@@ -20,6 +18,7 @@ import java.util.EventListener;
 public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
   private static final String openInspectorOnAppLaunchKey = "io.flutter.openInspectorOnAppLaunch";
+  private static final String perserveLogsDuringHotReloadAndRestartKey = "io.flutter.persereLogsDuringHotReloadAndRestart";
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
   private static final String formatCodeOnSaveKey = "io.flutter.formatCodeOnSave";
   private static final String organizeImportsOnSaveKey = "io.flutter.organizeImportsOnSave";
@@ -90,6 +89,10 @@ public class FlutterSettings {
 
     if (isOpenInspectorOnAppLaunch()) {
       analytics.sendEvent("settings", afterLastPeriod(openInspectorOnAppLaunchKey));
+    }
+
+    if (isPerserveLogsDuringHotReloadAndRestart()) {
+      analytics.sendEvent("settings", afterLastPeriod(perserveLogsDuringHotReloadAndRestartKey));
     }
 
     if (isFormatCodeOnSave()) {
@@ -238,6 +241,15 @@ public class FlutterSettings {
   public void setOpenInspectorOnAppLaunch(boolean value) {
     getPropertiesComponent().setValue(openInspectorOnAppLaunchKey, value, false);
 
+    fireEvent();
+  }
+
+  public boolean isPerserveLogsDuringHotReloadAndRestart() {
+    return getPropertiesComponent().getBoolean(perserveLogsDuringHotReloadAndRestartKey, false);
+  }
+
+  public void setPerserveLogsDuringHotReloadAndRestart(boolean value) {
+    getPropertiesComponent().setValue(perserveLogsDuringHotReloadAndRestartKey, value, false);
     fireEvent();
   }
 

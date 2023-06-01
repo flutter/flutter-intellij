@@ -250,15 +250,15 @@ public class FlutterApp implements Disposable {
 
     if (WorkspaceCache.getInstance(project).isBazel()) {
       Workspace workspace = WorkspaceCache.getInstance(project).get();
-      assert(workspace != null);
+      assert (workspace != null);
       String configWarningPrefix = workspace.getConfigWarningPrefix();
       if (configWarningPrefix != null) {
         onTextAvailable = text -> {
           if (text.startsWith(configWarningPrefix)) {
             FlutterMessages.showWarning(
-                    "Configuration warning",
-                    UrlUtils.generateHtmlFragmentWithHrefTags(text.substring(configWarningPrefix.length())),
-                    null
+              "Configuration warning",
+              UrlUtils.generateHtmlFragmentWithHrefTags(text.substring(configWarningPrefix.length())),
+              null
             );
           }
         };
@@ -903,7 +903,7 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
     if (event.getType().startsWith("hot.")) {
       // We clear the console view in order to help indicate that a reload is happening.
       if (app.getConsole() != null) {
-        if (!FlutterSettings.getInstance().isVerboseLogging()) {
+        if (!FlutterSettings.getInstance().isVerboseLogging() && !FlutterSettings.getInstance().isPerserveLogsDuringHotReloadAndRestart()) {
           app.getConsole().clear();
         }
       }
