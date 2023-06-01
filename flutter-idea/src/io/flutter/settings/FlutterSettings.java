@@ -18,7 +18,7 @@ import java.util.EventListener;
 public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
   private static final String openInspectorOnAppLaunchKey = "io.flutter.openInspectorOnAppLaunch";
-  private static final String perservingLogsAfterHotReloadAndRestartKey = "io.flutter.perservingLogsAfterHotReloadAndRestart";
+  private static final String perserveLogsDuringHotReloadAndRestartKey = "io.flutter.persereLogsDuringHotReloadAndRestart";
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
   private static final String formatCodeOnSaveKey = "io.flutter.formatCodeOnSave";
   private static final String organizeImportsOnSaveKey = "io.flutter.organizeImportsOnSave";
@@ -91,8 +91,8 @@ public class FlutterSettings {
       analytics.sendEvent("settings", afterLastPeriod(openInspectorOnAppLaunchKey));
     }
 
-    if (isPerservingLogsAfterHotReloadAndRestart()) {
-      analytics.sendEvent("settings", afterLastPeriod(perservingLogsAfterHotReloadAndRestartKey));
+    if (isPerserveLogsDuringHotReloadAndRestart()) {
+      analytics.sendEvent("settings", afterLastPeriod(perserveLogsDuringHotReloadAndRestartKey));
     }
 
     if (isFormatCodeOnSave()) {
@@ -244,12 +244,12 @@ public class FlutterSettings {
     fireEvent();
   }
 
-  public boolean isPerservingLogsAfterHotReloadAndRestart() {
-    return getPropertiesComponent().getBoolean(perservingLogsAfterHotReloadAndRestartKey, false);
+  public boolean isPerserveLogsDuringHotReloadAndRestart() {
+    return getPropertiesComponent().getBoolean(perserveLogsDuringHotReloadAndRestartKey, false);
   }
 
-  public void setPerservingLogsAfterHotReloadAndRestart(boolean value) {
-    getPropertiesComponent().setValue(perservingLogsAfterHotReloadAndRestartKey, value, false);
+  public void setPerserveLogsDuringHotReloadAndRestart(boolean value) {
+    getPropertiesComponent().setValue(perserveLogsDuringHotReloadAndRestartKey, value, false);
     fireEvent();
   }
 
