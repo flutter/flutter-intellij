@@ -17,6 +17,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.colors.EditorColorsListener;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
@@ -24,7 +25,6 @@ import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.openapi.util.ActionCallback;
 import com.intellij.openapi.util.ActiveRunnable;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -68,10 +68,7 @@ import io.flutter.toolwindow.FlutterViewToolWindowManagerListener;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.JxBrowserUtils;
-import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.vmService.ServiceExtensions;
-import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -305,11 +302,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       });
 
       if (!busSubscribed) {
-        busConnection.subscribe(EditorColorsManager.TOPIC, scheme ->
+        busConnection.subscribe(EditorColorsManager.TOPIC, (EditorColorsListener)scheme ->
           embeddedBrowserOptional()
             .ifPresent(embeddedBrowser -> embeddedBrowser.updateColor(ColorUtil.toHex(UIUtil.getEditorPaneBackground())))
         );
-        busConnection.subscribe(UISettingsListener.TOPIC, scheme ->
+        busConnection.subscribe(UISettingsListener.TOPIC, (UISettingsListener)scheme ->
           embeddedBrowserOptional()
             .ifPresent(embeddedBrowser -> embeddedBrowser.updateFontSize(UIUtil.getFontSize(UIUtil.FontSize.NORMAL)))
         );
@@ -326,7 +323,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private Optional<EmbeddedBrowser> embeddedBrowserOptional() {
-    return myProject.isDisposed() ? Optional.empty() : Optional.of(EmbeddedBrowser.getInstance(myProject));
+    if (myProject.isDisposed()) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(FlutterUtils.embeddedBrowser(myProject));
   }
 
   private void addInspectorViewContent(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
@@ -741,10 +741,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
 
-    if (jxBrowserManager.getStatus().equals(JxBrowserStatus.INSTALLED)) {
-      // Reset the URL since we may have an outdated one from a previous app run.
-      embeddedBrowserOptional().ifPresent(EmbeddedBrowser::resetUrl);
-    }
+    //if (jxBrowserManager.getStatus().equals(JxBrowserStatus.INSTALLED)) {
+    //  // Reset the URL since we may have an outdated one from a previous app run.
+    //  //embeddedBrowserOptional().ifPresent(EmbeddedBrowser::resetUrl);
+    //  //app.device().getUniqueName()
+    //  // device.getUniqueName(existingDevices);
+    //}
     if (toolWindow.isVisible()) {
       displayEmbeddedBrowser(app, inspectorService, toolWindow);
     }
@@ -760,6 +762,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private void displayEmbeddedBrowser(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
+    if (FlutterSettings.getInstance().isEnableJcefBrowser()) {
+      presentDevTools(app, inspectorService, toolWindow, true);
+    } else {
+      displayEmbeddedBrowserIfJxBrowser(app, inspectorService, toolWindow);
+    }
+  }
+
+  private void displayEmbeddedBrowserIfJxBrowser(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
     final JxBrowserManager manager = jxBrowserManager;
     final JxBrowserStatus jxBrowserStatus = manager.getStatus();
 
@@ -771,7 +781,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
     else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
       handleJxBrowserInstallationFailed(app, inspectorService, toolWindow);
-    } else if (jxBrowserStatus.equals(JxBrowserStatus.NOT_INSTALLED)) {
+    } else if (jxBrowserStatus.equals(JxBrowserStatus.NOT_INSTALLED) || jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_SKIPPED)) {
       manager.setUp(myProject);
       handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
     }

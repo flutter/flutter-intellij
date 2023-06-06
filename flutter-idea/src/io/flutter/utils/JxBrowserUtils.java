@@ -6,6 +6,7 @@
 package io.flutter.utils;
 
 import com.intellij.openapi.util.SystemInfo;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 // import com.intellij.util.system.CpuArch;
 
@@ -83,5 +84,10 @@ public class JxBrowserUtils {
 
   public boolean licenseIsSet() {
     return System.getProperty(JxBrowserUtils.LICENSE_PROPERTY_NAME) != null;
+  }
+
+
+  public boolean skipInstallation() {
+    return FlutterSettings.getInstance().isEnableJcefBrowser();
   }
 }
