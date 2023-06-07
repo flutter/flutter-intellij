@@ -69,11 +69,6 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
   }
 
   @Override
-  public void loadUrlFirstTime(String url) {
-    this.browser.navigation().loadUrl(url);
-  }
-
-  @Override
   public void loadUrl(String url) {
     this.browser.navigation().loadUrl(url);
   }

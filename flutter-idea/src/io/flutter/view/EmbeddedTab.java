@@ -10,8 +10,6 @@ import com.intellij.ui.content.ContentManager;
 import javax.swing.*;
 
 public interface EmbeddedTab {
-  void loadUrlFirstTime(String url);
-
   void loadUrl(String url);
 
   void close();

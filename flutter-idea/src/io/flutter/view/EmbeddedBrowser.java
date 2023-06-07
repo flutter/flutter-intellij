@@ -83,7 +83,7 @@ public abstract class EmbeddedBrowser {
     final AtomicBoolean contentLoaded = new AtomicBoolean(false);
 
     try {
-      tab.embeddedTab.loadUrlFirstTime(devToolsUrl.getUrlString());
+      tab.embeddedTab.loadUrl(devToolsUrl.getUrlString());
     } catch (Exception ex) {
       tab.devToolsUrlFuture.completeExceptionally(ex);
       onBrowserUnavailable.run();

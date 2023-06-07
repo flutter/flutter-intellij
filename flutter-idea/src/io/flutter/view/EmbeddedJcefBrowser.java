@@ -31,11 +31,6 @@ class EmbeddedJcefBrowserTab implements EmbeddedTab {
   }
 
   @Override
-  public void loadUrlFirstTime(String url) {
-    browser.loadURL(url);
-  }
-
-  @Override
   public void loadUrl(String url) {
     browser.loadURL(url);
   }
