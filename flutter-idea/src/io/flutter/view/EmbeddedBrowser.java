@@ -102,10 +102,6 @@ public abstract class EmbeddedBrowser {
 
       contentManager.removeAllContents(false);
 
-      // I don't understand this part. Does this become significant when multiple tabs?
-      //if (contents.get(tabName) != null) {
-      //  contents.remove(tabName);
-      //}
       for (final String otherTabName: tabs.keySet()) {
         if (otherTabName.equals(tabName)) {
           continue;
@@ -113,11 +109,6 @@ public abstract class EmbeddedBrowser {
         final BrowserTab browserTab = tabs.get(otherTabName);
         contentManager.addContent(browserTab.content);
       }
-      //final Content previousContent = contents.get(tabName);
-      //if (previousContent != null) {
-      //  contentManager.setSelectedContent(previousContent, true);
-      //  return;
-      //}
 
       tab.content = contentManager.getFactory().createContent(null, tabName, false);
       tab.content.setComponent(component);
