@@ -75,9 +75,9 @@ public class EmbeddedBrowser {
             } catch (Exception ex) {
               LOG.info(ex);
             }
-            browsers.remove(key);
           }
         }
+        browsers.clear();
         contents.clear();
       }
     });
