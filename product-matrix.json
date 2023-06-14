@@ -71,9 +71,9 @@
       "ideaProduct": "ideaIC",
       "ideaVersion": "2023.2",
       "baseVersion": "LATEST-EAP-SNAPSHOT",
-      "dartPluginVersion": "232.6095.10",
-      "sinceBuild": "232.6095.10",
-      "untilBuild": "232.*"
+      "dartPluginVersion": "232.7295.8",
+      "sinceBuild": "232.7295.16",
+      "untilBuild": "232.7295.16"
     }
   ]
 }
