@@ -31,6 +31,7 @@ public class FlutterSettings {
   private static final String enableEmbeddedBrowsersKey = "io.flutter.editor.enableEmbeddedBrowsers";
   private static final String enableBazelHotRestartKey = "io.flutter.editor.enableBazelHotRestart";
   private static final String showBazelHotRestartWarningKey = "io.flutter.showBazelHotRestartWarning";
+  private static final String enableJcefBrowserKey = "io.flutter.enableJcefBrowser";
   private static final String fontPackagesKey = "io.flutter.fontPackages";
   private static final String allowTestsInSourcesRootKey = "io.flutter.allowTestsInSources";
   private static final String showBazelIosRunNotificationKey = "io.flutter.hideBazelIosRunNotification";
@@ -265,6 +266,16 @@ public class FlutterSettings {
 
   public void setShowAllRunConfigurationsInContext(boolean value) {
     Registry.get(suggestAllRunConfigurationsFromContextKey).setValue(value);
+
+    fireEvent();
+  }
+
+  public boolean isEnableJcefBrowser() {
+    return getPropertiesComponent().getBoolean(enableJcefBrowserKey, false);
+  }
+
+  public void setEnableJcefBrowser(boolean value) {
+    getPropertiesComponent().setValue(enableJcefBrowserKey, value, false);
 
     fireEvent();
   }

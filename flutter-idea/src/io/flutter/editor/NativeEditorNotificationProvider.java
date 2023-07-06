@@ -75,6 +75,9 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     else if (root.getName().equals("ios")) {
       return "flutter.xcode.open";
     }
+    else if (root.getName().equals("macos")) {
+      return "flutter.xcode.open";
+    }
     else {
       return null;
     }
