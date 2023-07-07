@@ -636,10 +636,12 @@ public class FlutterSdk {
 
         final JsonObject obj = elem.getAsJsonObject();
         for (String jsonKey : JsonUtils.getKeySet(obj)) {
-          final JsonPrimitive primitive = obj.getAsJsonPrimitive(jsonKey);
-          if (primitive != null) {
-            cachedConfigValues.put(jsonKey, primitive.getAsString());
+          final JsonElement element = obj.get(jsonKey);
+          if (element == null || element.isJsonNull()) {
+            continue;
           }
+          final JsonPrimitive primitive = (JsonPrimitive)element;
+          cachedConfigValues.put(jsonKey, primitive.getAsString());
         }
       }
       catch (JsonSyntaxException ignored) {
