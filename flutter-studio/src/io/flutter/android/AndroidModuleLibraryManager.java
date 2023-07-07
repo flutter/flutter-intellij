@@ -344,7 +344,8 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
           .getDeclaredMethod(ProjectManagerImpl.class, "initProject", Path.class, ProjectImpl.class, boolean.class, boolean.class,
                              Project.class, ProgressIndicator.class);
         if (method == null) {
-          throw new IllegalAccessException(); // caught below
+          disableGradleSyncAndNotifyUser();
+          return;
         }
         try {
           method.invoke(null, path, this, true, true, null, null);
