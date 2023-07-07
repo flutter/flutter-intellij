@@ -343,7 +343,10 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
         Method method = ReflectionUtil
           .getDeclaredMethod(ProjectManagerImpl.class, "initProject", Path.class, ProjectImpl.class, boolean.class, boolean.class,
                              Project.class, ProgressIndicator.class);
-        assert (method != null);
+        if (method == null) {
+          disableGradleSyncAndNotifyUser();
+          return;
+        }
         try {
           method.invoke(null, path, this, true, true, null, null);
         }
