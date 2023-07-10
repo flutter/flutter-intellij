@@ -288,8 +288,9 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   @Override
   public int compareTo(@NotNull FlutterSdkVersion otherVersion) {
-    assert version != null;
-    assert otherVersion.version != null;
+    // TODO(messick) Remove "version != null" prior to calling this method everywhere in this file.
+    if (version == null) return -1;
+    if (otherVersion.version == null) return 1;
     final int standardComparisonResult = version.compareTo(otherVersion.version);
     if (standardComparisonResult != 0) {
       return standardComparisonResult;
