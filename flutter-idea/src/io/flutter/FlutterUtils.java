@@ -468,7 +468,7 @@ public class FlutterUtils {
   }
 
   private static Map<String, Object> loadPubspecInfo(@NotNull String yamlContents) {
-    final Yaml yaml = new Yaml(new SafeConstructor(), new Representer(), new DumperOptions(), new Resolver() {
+    final Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()), new Representer(new DumperOptions()), new DumperOptions(), new Resolver() {
       @Override
       protected void addImplicitResolvers() {
         this.addImplicitResolver(Tag.BOOL, BOOL, "yYnNtTfFoO");

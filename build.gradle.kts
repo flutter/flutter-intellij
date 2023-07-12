@@ -21,9 +21,8 @@ buildscript {
 }
 
 plugins {
-  id("org.jetbrains.intellij") version "1.13.3"
-  id("org.jetbrains.kotlin.jvm") version "1.8.20-RC"
-}
+  id("org.jetbrains.intellij") version "1.15.0"
+  id("org.jetbrains.kotlin.jvm") version "1.9.0"}
 
 repositories {
   mavenLocal()
@@ -79,7 +78,7 @@ intellij {
     project(":flutter-idea"), "java", "properties",
     "junit", "Git4Idea", "Kotlin", "gradle", "org.jetbrains.android",
     "Groovy", "Dart:$dartVersion")
-  if (ideVersion != "2023.2") {
+  if (ide == "android-studio") {
     pluginList.add(smaliPlugin)
   }
   pluginList.add(langPlugin)
