@@ -21,8 +21,8 @@ buildscript {
 }
 
 plugins {
-  id("org.jetbrains.intellij") version "1.13.3"
-  id("org.jetbrains.kotlin.jvm") version "1.8.20-RC"
+  id("org.jetbrains.intellij") version "1.15.0"
+  id("org.jetbrains.kotlin.jvm") version "1.9.0"
 }
 
 repositories {
@@ -93,6 +93,12 @@ intellij {
 tasks {
   buildSearchableOptions {
     enabled = false
+  }
+  prepareSandbox {
+    dependsOn(":flutter-idea:prepareSandbox")
+    if (ide == "android-studio") {
+      dependsOn(":flutter-studio:prepareSandbox")
+    }
   }
 }
 
