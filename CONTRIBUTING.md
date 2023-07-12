@@ -54,7 +54,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
 
 ## Setting environments
 
-The current Java Developmenet Kit version is: **17**.
+The current Java Developmenet Kit version is: **20**.
 
 1. Set your `JAVA_HOME` directory in your environment.
     - For example, on macOS, the following works:
@@ -64,7 +64,7 @@ The current Java Developmenet Kit version is: **17**.
       ```
       Set your `JAVA_HOME` env variable to match that version.
       ```shell
-      export JAVA_HOME=`/usr/libexec/java_home -v 17`
+      export JAVA_HOME=`/usr/libexec/java_home -v 20`
       ```
 2. Set your `FLUTTER_SDK` directory to point to `/path/to/flutter`.
 3. Also set your `DART_SDK` directory to `/path/to/flutter/bin/cache/dart-sdk`.
