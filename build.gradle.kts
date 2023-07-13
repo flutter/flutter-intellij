@@ -79,7 +79,7 @@ intellij {
     project(":flutter-idea"), "java", "properties",
     "junit", "Git4Idea", "Kotlin", "gradle", "org.jetbrains.android",
     "Groovy", "Dart:$dartVersion")
-  if (ideVersion != "2023.2") {
+  if (ide == "android-studio") {
     pluginList.add(smaliPlugin)
   }
   pluginList.add(langPlugin)
