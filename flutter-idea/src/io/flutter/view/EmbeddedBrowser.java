@@ -60,9 +60,9 @@ public abstract class EmbeddedBrowser {
             } catch (Exception ex) {
               logger().info(ex);
             }
-            tabs.remove(tabName);
           }
         }
+        tabs.clear();
       }
     });
   }
