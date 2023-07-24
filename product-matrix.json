@@ -1,31 +1,6 @@
 {
   "list": [
     {
-      "channel": "setup",
-      "comments": "IntelliJ 2023.1",
-      "name": "setup",
-      "version": "setup",
-      "ideaProduct": "ideaIC",
-      "ideaVersion": "231.7665.28",
-      "baseVersion": "231.7665.28",
-      "dartPluginVersion": "231.7665.20",
-      "sinceBuild": "231.7665.28",
-      "untilBuild": "231.*"
-    },
-    {
-      "channel": "stable",
-      "comments": "IntelliJ 2022.1",
-      "name": "2022.1",
-      "version": "2022.1",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "2022.1.1.11",
-      "baseVersion": "221.6008.13",
-      "dartPluginVersion": "221.6008.17",
-      "sinceBuild": "221.6008.13",
-      "untilBuild": "221.*",
-      "filesToSkip": ["flutter-idea/src/org/jetbrains/android/facet/AndroidFrameworkDetector.java"]
-    },
-    {
       "channel": "stable",
       "comments": "IntelliJ 2022.2",
       "name": "2022.2",
