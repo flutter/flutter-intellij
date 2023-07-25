@@ -37,3 +37,6 @@ flutter-idea/build/
 flutter-idea/.gradle/
 tool/plugin/.idea
 lib/kotlin*
+gradle
+gradlew
+gradlew.bat
