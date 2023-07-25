@@ -18,6 +18,9 @@ package org.dartlang.vm.service.element;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+/**
+ * See getVMTimeline;
+ */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class Timeline extends Response {
 

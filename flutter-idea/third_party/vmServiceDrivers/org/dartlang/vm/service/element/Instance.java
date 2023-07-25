@@ -65,7 +65,8 @@ public class Instance extends Obj {
   /**
    * The bound of a TypeParameter or BoundedType.
    *
-   * The value will always be of one of the kinds: Type, TypeRef, TypeParameter, BoundedType.
+   * The value will always be of one of the kinds: Type, TypeParameter, RecordType, FunctionType,
+   * BoundedType.
    *
    * Provided for instance kinds:
    *  - BoundedType
@@ -278,6 +279,18 @@ public class Instance extends Obj {
     } catch (IllegalArgumentException e) {
       return InstanceKind.Unknown;
     }
+  }
+
+  /**
+   * The label associated with a UserTag.
+   *
+   * Provided for instance kinds:
+   *  - UserTag
+   *
+   * Can return <code>null</code>.
+   */
+  public String getLabel() {
+    return getAsString("label");
   }
 
   /**
@@ -522,13 +535,13 @@ public class Instance extends Obj {
   }
 
   /**
-   * The type bounded by a BoundedType instance - or - the referent of a TypeRef instance.
+   * The type bounded by a BoundedType instance.
    *
-   * The value will always be of one of the kinds: Type, TypeRef, TypeParameter, BoundedType.
+   * The value will always be of one of the kinds: Type, TypeParameter, RecordType, FunctionType,
+   * BoundedType.
    *
    * Provided for instance kinds:
    *  - BoundedType
-   *  - TypeRef
    *
    * Can return <code>null</code>.
    */

@@ -198,7 +198,8 @@ public class Event extends Response {
    * The isolate with which this event is associated.
    *
    * This is provided for all event kinds except for:
-   *  - VMUpdate, VMFlagUpdate
+   *  - VMUpdate, VMFlagUpdate, TimelineStreamSubscriptionsUpdate,
+   *  - TimelineEvents, IsolateReload
    *
    * Can return <code>null</code>.
    */
@@ -211,6 +212,25 @@ public class Event extends Response {
       if ("Null".equals(kind)) return null;
     }
     return new IsolateRef(obj);
+  }
+
+  /**
+   * The isolate group with which this event is associated.
+   *
+   * This is provided for all event kinds except for:
+   *  - VMUpdate, VMFlagUpdate, TimelineStreamSubscriptionsUpdate, TimelineEvents
+   *
+   * Can return <code>null</code>.
+   */
+  public IsolateGroupRef getIsolateGroup() {
+    JsonObject obj = (JsonObject) json.get("isolateGroup");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new IsolateGroupRef(obj);
   }
 
   /**
