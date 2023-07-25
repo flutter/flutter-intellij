@@ -121,6 +121,18 @@ public class InstanceRef extends ObjRef {
   }
 
   /**
+   * The label associated with a UserTag.
+   *
+   * Provided for instance kinds:
+   *  - UserTag
+   *
+   * Can return <code>null</code>.
+   */
+  public String getLabel() {
+    return getAsString("label");
+  }
+
+  /**
    * The number of (non-static) fields of a PlainInstance, or the length of a List, or the number
    * of associations in a Map, or the number of codeunits in a String, or the total number of
    * fields (positional and named) in a Record.

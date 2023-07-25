@@ -31,7 +31,8 @@ public class Field extends Obj {
   /**
    * The declared type of this field.
    *
-   * The value will always be of one of the kinds: Type, TypeRef, TypeParameter, BoundedType.
+   * The value will always be of one of the kinds: Type, TypeParameter, RecordType, FunctionType,
+   * BoundedType.
    */
   public InstanceRef getDeclaredType() {
     return new InstanceRef((JsonObject) json.get("declaredType"));
