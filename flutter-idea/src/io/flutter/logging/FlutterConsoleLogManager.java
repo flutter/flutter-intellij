@@ -265,7 +265,6 @@ public class FlutterConsoleLogManager {
         if (StringUtil.equals("ErrorSummary", property.getType())) {
           errorSummary = property.getDescription();
         } else if (StringUtil.equals("DevToolsDeepLinkProperty", property.getType()) &&
-                FlutterSettings.getInstance().isEnableEmbeddedBrowsers() &&
                 FlutterUtils.embeddedBrowserAvailable(JxBrowserManager.getInstance().getStatus())) {
           showDeepLinkNotification(property, errorSummary);
           continue;

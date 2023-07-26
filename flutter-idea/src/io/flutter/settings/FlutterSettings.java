@@ -28,7 +28,6 @@ public class FlutterSettings {
   private static final String includeAllStackTracesKey = "io.flutter.includeAllStackTraces";
   private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
   private static final String enableHotUiKey = "io.flutter.editor.enableHotUi";
-  private static final String enableEmbeddedBrowsersKey = "io.flutter.editor.enableEmbeddedBrowsers";
   private static final String enableBazelHotRestartKey = "io.flutter.editor.enableBazelHotRestart";
   private static final String showBazelHotRestartWarningKey = "io.flutter.showBazelHotRestartWarning";
   private static final String enableJcefBrowserKey = "io.flutter.enableJcefBrowser";
@@ -126,10 +125,6 @@ public class FlutterSettings {
 
     if (showAllRunConfigurationsInContext()) {
       analytics.sendEvent("settings", "showAllRunConfigurations");
-    }
-
-    if (isEnableEmbeddedBrowsers()) {
-      analytics.sendEvent("settings", afterLastPeriod(enableEmbeddedBrowsersKey));
     }
 
     if (isEnableHotUi()) {
@@ -341,9 +336,6 @@ public class FlutterSettings {
     return false;
   }
 
-  public boolean isEnableEmbeddedBrowsers() {
-    return true;
-  }
 
   public boolean isEnableBazelHotRestart() {
     return getPropertiesComponent().getBoolean(enableBazelHotRestartKey, false);
