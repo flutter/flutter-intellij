@@ -161,7 +161,7 @@ public class JxBrowserManager {
 
       // Set up JxBrowser files if the embedded inspector option has been turned on and the files aren't already loaded.
       //noinspection ConstantConditions
-      if (settings.isEnableEmbeddedBrowsers() && getStatus().equals(JxBrowserStatus.NOT_INSTALLED)) {
+      if (getStatus().equals(JxBrowserStatus.NOT_INSTALLED)) {
         setUp(project);
       }
     }
