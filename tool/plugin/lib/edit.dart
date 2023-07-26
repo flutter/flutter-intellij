@@ -52,13 +52,13 @@ final Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()), new Represe
     path: 'build.gradle.kts',
     initials: ['version.set(ideVersion)'],
     replacements: ['version.set("LATEST-EAP-SNAPSHOT")'],
-    versions: ['2023.2'],
+    versions: ['2023.3'],
   ),
   EditCommand(
     path: 'flutter-idea/build.gradle.kts',
     initials: ['version.set(ideVersion)'],
     replacements: ['version.set("LATEST-EAP-SNAPSHOT")'],
-    versions: ['2023.2'],
+    versions: ['2023.3'],
   ),
   EditCommand(
     path:
