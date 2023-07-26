@@ -6,6 +6,7 @@
 package io.flutter.pub;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
@@ -15,6 +16,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.util.DotPackagesFileUtil;
@@ -116,8 +118,10 @@ public class PubRoot {
   @Nullable
   public static PubRoot forDescendant(@NotNull VirtualFile fileOrDir, @NotNull Project project) {
     final ProjectFileIndex index = ProjectRootManager.getInstance(project).getFileIndex();
-    final VirtualFile root = index.getContentRootForFile(fileOrDir);
-    return forDirectory(root);
+    return ApplicationManager.getApplication().runReadAction((Computable<PubRoot>)() -> {
+      final VirtualFile root = index.getContentRootForFile(fileOrDir);
+      return forDirectory(root);
+    });
   }
 
   /**
