@@ -46,6 +46,29 @@
 
   <change-notes>
     <![CDATA[
+<h1>75</h1>
+<ul>
+  <li>Use pooled thread to find location of Android Studio (#6849)</li>
+  <li>Update build script for AS canary and IJ stable (#6846)</li>
+  <li>Remove isEnableEmbeddedBrowsers setting (#6845)</li>
+  <li>Stop showing an error after running tests with coverage (#6843)</li>
+  <li>Add gradle to ignore list (#6839)</li>
+  <li>Update VM service protocol to 4.11 (#6838)</li>
+  <li>Make AS 2022.2 the oldest supported platform (#6837)</li>
+  <li>Clear browser tabs when window closes (#6835)</li>
+  <li>Use BGT to update UI during reload/restart (#6836)</li>
+  <li>Default to JCEF browser (#6834)</li>
+  <li>Debug with 2023.2 (#6826)</li>
+  <li>Update Java, Gradle, plugins, and clean up (#6825)</li>
+  <li>Use EAP to run unit tests (#6822)</li>
+  <li>FlutterSdkVersion.version needs to be nullable (#6821)</li>
+  <li>Update build for latest EAP (#6820)</li>
+  <li>Disable Java indexing in AS canary (#6815)</li>
+  <li>add Open in Xcode for macOS (#6791)</li>
+  <li>Remove deprecated strong-mode entry in analysis options (#6800)</li>
+  <li>Update EAP build (#6797)</li>
+  <li>Add JCEF browser (#6787)</li>
+</ul>
 <h1>74</h1>
 <ul>
   <li>Support multiple running instance for inspectors (#6772)</li>
