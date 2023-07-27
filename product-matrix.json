@@ -32,9 +32,9 @@
       "version": "2023.1",
       "ideaProduct": "android-studio",
       "ideaVersion": "2023.1.1.14",
-      "baseVersion": "231.9225.16",
+      "baseVersion": "231.9161.38",
       "dartPluginVersion": "231.9161.14",
-      "sinceBuild": "231.9225.16",
+      "sinceBuild": "231.9161.38",
       "untilBuild": "231.*"
     },
     {
