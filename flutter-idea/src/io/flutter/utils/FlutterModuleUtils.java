@@ -151,7 +151,7 @@ public class FlutterModuleUtils {
     VirtualFile dir = selectedFile;
     while (dir != null) {
       String name = dir.getName();
-      if ("ios".equals(name) || ".ios".equals(name)) {
+      if ("ios".equals(name) || ".ios".equals(name) || "macos".equals(name)) {
         // If needed, we could add a check that the parent of dir contains pubspec.yaml, but this is probably adequate.
         VirtualFile file = findPreferedXcodeMetadataFile(dir);
         if (file != null) {
