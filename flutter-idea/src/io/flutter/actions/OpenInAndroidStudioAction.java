@@ -66,37 +66,37 @@ public class OpenInAndroidStudioAction extends AnAction {
       }
     }
 
-    final String androidStudioPath = findAndroidStudio(project);
-    if (androidStudioPath == null) {
-      FlutterMessages.showError(
-        "Unable to locate Android Studio",
-        "You can configure the Android Studio location via 'flutter config --android-studio-dir path-to-android-studio'.",
-        project);
-      return;
-    }
-
-    final VirtualFile projectFile = findProjectFile(event);
-    if (projectFile == null) {
-      FlutterMessages.showError("Error Opening Android Studio", "Project not found.", project);
-      return;
-    }
-
-    final VirtualFile sourceFile = event.getData(CommonDataKeys.VIRTUAL_FILE);
-    final String sourceFilePath = sourceFile == null ? null : sourceFile.isDirectory() ? null : sourceFile.getPath();
-
-    final Integer line;
-    final Integer column;
-    final Editor editor = getCurrentEditor(project, sourceFile);
-    if (editor != null) {
-      final CaretModel caretModel = editor.getCaretModel();
-      line = caretModel.getLogicalPosition().line + 1;
-      column = caretModel.getLogicalPosition().column;
-    }
-    else {
-      line = column = null;
-    }
-
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      final String androidStudioPath = findAndroidStudio(project);
+      if (androidStudioPath == null) {
+        FlutterMessages.showError(
+          "Unable to locate Android Studio",
+          "You can configure the Android Studio location via 'flutter config --android-studio-dir path-to-android-studio'.",
+          project);
+        return;
+      }
+
+      final VirtualFile projectFile = findProjectFile(event);
+      if (projectFile == null) {
+        FlutterMessages.showError("Error Opening Android Studio", "Project not found.", project);
+        return;
+      }
+
+      final VirtualFile sourceFile = event.getData(CommonDataKeys.VIRTUAL_FILE);
+      final String sourceFilePath = sourceFile == null ? null : sourceFile.isDirectory() ? null : sourceFile.getPath();
+
+      final Integer line;
+      final Integer column;
+      final Editor editor = getCurrentEditor(project, sourceFile);
+      if (editor != null) {
+        final CaretModel caretModel = editor.getCaretModel();
+        line = caretModel.getLogicalPosition().line + 1;
+        column = caretModel.getLogicalPosition().column;
+      }
+      else {
+        line = column = null;
+      }
+
       openFileInStudio(androidStudioPath, project, projectFile.getPath(), sourceFilePath, line, column);
     });
   }
