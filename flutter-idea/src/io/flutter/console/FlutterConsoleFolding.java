@@ -8,6 +8,7 @@ package io.flutter.console;
 import com.intellij.execution.ConsoleFolding;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.util.SystemInfo;
 import io.flutter.FlutterConstants;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
@@ -19,8 +20,9 @@ import java.util.List;
  * Fold lines like '/Users/.../projects/flutter/flutter/bin/flutter --no-color packages get'.
  */
 public class FlutterConsoleFolding extends ConsoleFolding {
+  private static final String scriptName = SystemInfo.isWindows ? "flutter.bat" : "flutter";
   private static final String flutterMarker =
-    FlutterConstants.INDEPENDENT_PATH_SEPARATOR + FlutterSdkUtil.flutterScriptName() + " --no-color ";
+    FlutterConstants.INDEPENDENT_PATH_SEPARATOR + scriptName + " --no-color ";
 
   @Override
   public boolean shouldFoldLine(@NotNull Project project, @NotNull String line) {

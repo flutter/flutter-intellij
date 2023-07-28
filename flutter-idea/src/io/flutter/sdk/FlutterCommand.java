@@ -254,7 +254,7 @@ public class FlutterCommand {
     if (androidHome != null) {
       line.withEnvironment("ANDROID_HOME", androidHome);
     }
-    line.setExePath(FileUtil.toSystemDependentName(sdk.getHomePath() + "/bin/" + FlutterSdkUtil.flutterScriptName()));
+    line.setExePath(FileUtil.toSystemDependentName(sdk.getHomePath() + "/bin/" + FlutterSdkUtil.flutterScriptName(sdk.getHomePath())));
     if (workDir != null) {
       line.setWorkDirectory(workDir.getPath());
     }
