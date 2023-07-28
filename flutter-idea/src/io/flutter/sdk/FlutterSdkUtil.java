@@ -164,7 +164,7 @@ public class FlutterSdkUtil {
 
   @NotNull
   public static String flutterScriptName(@NotNull String sdkPath) {
-    return SystemInfo.isWindows && !sdkPath.contains("wsl$") ? "flutter.bat" : "flutter";
+    return SystemInfo.isWindows && !sdkPath.contains("\\\\wsl$\\") ? "flutter.bat" : "flutter";
   }
 
   /**
