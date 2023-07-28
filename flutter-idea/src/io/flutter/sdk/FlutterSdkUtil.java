@@ -155,7 +155,7 @@ public class FlutterSdkUtil {
 
   @NotNull
   public static String pathToFlutterTool(@NotNull String sdkPath) throws ExecutionException {
-    final String path = findDescendant(sdkPath, "/bin/" + flutterScriptName());
+    final String path = findDescendant(sdkPath, "/bin/" + flutterScriptName(sdkPath));
     if (path == null) {
       throw new ExecutionException("Flutter SDK is not configured");
     }
@@ -163,8 +163,8 @@ public class FlutterSdkUtil {
   }
 
   @NotNull
-  public static String flutterScriptName() {
-    return SystemInfo.isWindows ? "flutter.bat" : "flutter";
+  public static String flutterScriptName(@NotNull String sdkPath) {
+    return SystemInfo.isWindows && !sdkPath.contains("wsl$") ? "flutter.bat" : "flutter";
   }
 
   /**
