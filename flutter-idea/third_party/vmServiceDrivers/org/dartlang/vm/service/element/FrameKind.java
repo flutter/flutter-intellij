@@ -21,9 +21,6 @@ package org.dartlang.vm.service.element;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public enum FrameKind {
 
-  /**
-   * Deprecated since version 4.7 of the protocol. Will not occur in responses.
-   */
   AsyncActivation,
 
   AsyncCausal,

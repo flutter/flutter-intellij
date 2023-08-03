@@ -39,8 +39,7 @@ public class TypeArguments extends Obj {
   /**
    * A list of types.
    *
-   * The value will always be one of the kinds: Type, TypeParameter, RecordType, FunctionType,
-   * BoundedType.
+   * The value will always be one of the kinds: Type, TypeRef, TypeParameter, BoundedType.
    */
   public ElementList<InstanceRef> getTypes() {
     return new ElementList<InstanceRef>(json.get("types").getAsJsonArray()) {

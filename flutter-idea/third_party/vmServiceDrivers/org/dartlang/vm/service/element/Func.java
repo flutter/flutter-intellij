@@ -52,20 +52,6 @@ public class Func extends Obj {
   }
 
   /**
-   * Is this function a getter?
-   */
-  public boolean getIsGetter() {
-    return getAsBoolean("isGetter");
-  }
-
-  /**
-   * Is this function a setter?
-   */
-  public boolean getIsSetter() {
-    return getAsBoolean("isSetter");
-  }
-
-  /**
    * The location of this function in the source code.
    *
    * Note: this may not agree with the location of `owner` if this is a function from a mixin
