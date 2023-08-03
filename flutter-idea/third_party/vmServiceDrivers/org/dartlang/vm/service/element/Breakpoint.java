@@ -43,7 +43,8 @@ public class Breakpoint extends Obj {
   }
 
   /**
-   * Note: this property is deprecated and is always absent from the response.
+   * Is this a breakpoint that was added synthetically as part of a step OverAsyncSuspension resume
+   * command?
    *
    * Can return <code>null</code>.
    */

@@ -83,7 +83,7 @@ public class VmService extends VmServiceBase {
   /**
    * The minor version number of the protocol supported by this client.
    */
-  public static final int versionMinor = 11;
+  public static final int versionMinor = 3;
 
   /**
    * The [addBreakpoint] RPC is used to add a breakpoint at a specific line of some script.
@@ -283,8 +283,10 @@ public class VmService extends VmServiceBase {
   }
 
   /**
-   * The [getCpuSamples] RPC is used to retrieve samples collected by the CPU profiler. See
-   * CpuSamples for a detailed description of the response.
+   * The [getCpuSamples] RPC is used to retrieve samples collected by the CPU profiler. Only
+   * samples collected in the time range <code>[timeOriginMicros, timeOriginMicros +
+   * timeExtentMicros]</code>[timeOriginMicros, timeOriginMicros + timeExtentMicros] will be
+   * reported.
    */
   public void getCpuSamples(String isolateId, int timeOriginMicros, int timeExtentMicros, GetCpuSamplesConsumer consumer) {
     final JsonObject params = new JsonObject();
@@ -404,15 +406,6 @@ public class VmService extends VmServiceBase {
   }
 
   /**
-   * The [getIsolatePauseEvent] RPC is used to lookup an isolate's pause event by its [id].
-   */
-  public void getIsolatePauseEvent(String isolateId, GetIsolatePauseEventConsumer consumer) {
-    final JsonObject params = new JsonObject();
-    params.addProperty("isolateId", isolateId);
-    request("getIsolatePauseEvent", params, consumer);
-  }
-
-  /**
    * The [getMemoryUsage] RPC is used to lookup an isolate's memory usage statistics by its [id].
    */
   public void getMemoryUsage(String isolateId, GetMemoryUsageConsumer consumer) {
@@ -443,56 +436,6 @@ public class VmService extends VmServiceBase {
     if (offset != null) params.addProperty("offset", offset);
     if (count != null) params.addProperty("count", count);
     request("getObject", params, consumer);
-  }
-
-  /**
-   * The [getPerfettoCpuSamples] RPC is used to retrieve samples collected by the CPU profiler,
-   * serialized in Perfetto's proto format. See PerfettoCpuSamples for a detailed description of
-   * the response.
-   */
-  public void getPerfettoCpuSamples(String isolateId, GetPerfettoCpuSamplesConsumer consumer) {
-    final JsonObject params = new JsonObject();
-    params.addProperty("isolateId", isolateId);
-    request("getPerfettoCpuSamples", params, consumer);
-  }
-
-  /**
-   * The [getPerfettoCpuSamples] RPC is used to retrieve samples collected by the CPU profiler,
-   * serialized in Perfetto's proto format. See PerfettoCpuSamples for a detailed description of
-   * the response.
-   * @param timeOriginMicros This parameter is optional and may be null.
-   * @param timeExtentMicros This parameter is optional and may be null.
-   */
-  public void getPerfettoCpuSamples(String isolateId, Integer timeOriginMicros, Integer timeExtentMicros, GetPerfettoCpuSamplesConsumer consumer) {
-    final JsonObject params = new JsonObject();
-    params.addProperty("isolateId", isolateId);
-    if (timeOriginMicros != null) params.addProperty("timeOriginMicros", timeOriginMicros);
-    if (timeExtentMicros != null) params.addProperty("timeExtentMicros", timeExtentMicros);
-    request("getPerfettoCpuSamples", params, consumer);
-  }
-
-  /**
-   * The [getPerfettoVMTimeline] RPC is used to retrieve an object which contains a VM timeline
-   * trace represented in Perfetto's proto format. See PerfettoTimeline for a detailed description
-   * of the response.
-   * @param timeOriginMicros This parameter is optional and may be null.
-   * @param timeExtentMicros This parameter is optional and may be null.
-   */
-  public void getPerfettoVMTimeline(Integer timeOriginMicros, Integer timeExtentMicros, PerfettoTimelineConsumer consumer) {
-    final JsonObject params = new JsonObject();
-    if (timeOriginMicros != null) params.addProperty("timeOriginMicros", timeOriginMicros);
-    if (timeExtentMicros != null) params.addProperty("timeExtentMicros", timeExtentMicros);
-    request("getPerfettoVMTimeline", params, consumer);
-  }
-
-  /**
-   * The [getPerfettoVMTimeline] RPC is used to retrieve an object which contains a VM timeline
-   * trace represented in Perfetto's proto format. See PerfettoTimeline for a detailed description
-   * of the response.
-   */
-  public void getPerfettoVMTimeline(PerfettoTimelineConsumer consumer) {
-    final JsonObject params = new JsonObject();
-    request("getPerfettoVMTimeline", params, consumer);
   }
 
   /**
@@ -609,8 +552,7 @@ public class VmService extends VmServiceBase {
   }
 
   /**
-   * The [getVMTimeline] RPC is used to retrieve an object which contains VM timeline events. See
-   * Timeline for a detailed description of the response.
+   * The [getVMTimeline] RPC is used to retrieve an object which contains VM timeline events.
    * @param timeOriginMicros This parameter is optional and may be null.
    * @param timeExtentMicros This parameter is optional and may be null.
    */
@@ -622,8 +564,7 @@ public class VmService extends VmServiceBase {
   }
 
   /**
-   * The [getVMTimeline] RPC is used to retrieve an object which contains VM timeline events. See
-   * Timeline for a detailed description of the response.
+   * The [getVMTimeline] RPC is used to retrieve an object which contains VM timeline events.
    */
   public void getVMTimeline(TimelineConsumer consumer) {
     final JsonObject params = new JsonObject();
@@ -1176,16 +1117,6 @@ public class VmService extends VmServiceBase {
         return;
       }
     }
-    if (consumer instanceof GetIsolatePauseEventConsumer) {
-      if (responseType.equals("Event")) {
-        ((GetIsolatePauseEventConsumer) consumer).received(new Event(json));
-        return;
-      }
-      if (responseType.equals("Sentinel")) {
-        ((GetIsolatePauseEventConsumer) consumer).received(new Sentinel(json));
-        return;
-      }
-    }
     if (consumer instanceof GetMemoryUsageConsumer) {
       if (responseType.equals("MemoryUsage")) {
         ((GetMemoryUsageConsumer) consumer).received(new MemoryUsage(json));
@@ -1251,16 +1182,6 @@ public class VmService extends VmServiceBase {
       }
       if (responseType.equals("TypeArguments")) {
         ((GetObjectConsumer) consumer).received(new TypeArguments(json));
-        return;
-      }
-    }
-    if (consumer instanceof GetPerfettoCpuSamplesConsumer) {
-      if (responseType.equals("PerfettoCpuSamples")) {
-        ((GetPerfettoCpuSamplesConsumer) consumer).received(new PerfettoCpuSamples(json));
-        return;
-      }
-      if (responseType.equals("Sentinel")) {
-        ((GetPerfettoCpuSamplesConsumer) consumer).received(new Sentinel(json));
         return;
       }
     }
@@ -1339,12 +1260,6 @@ public class VmService extends VmServiceBase {
       }
       if (responseType.equals("Success")) {
         ((PauseConsumer) consumer).received(new Success(json));
-        return;
-      }
-    }
-    if (consumer instanceof PerfettoTimelineConsumer) {
-      if (responseType.equals("PerfettoTimeline")) {
-        ((PerfettoTimelineConsumer) consumer).received(new PerfettoTimeline(json));
         return;
       }
     }
