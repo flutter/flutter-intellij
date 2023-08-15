@@ -8,11 +8,9 @@ package io.flutter.settings;
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
-import io.flutter.FlutterMessages;
 import io.flutter.analytics.Analytics;
 
 import java.util.EventListener;
@@ -20,6 +18,7 @@ import java.util.EventListener;
 public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
   private static final String openInspectorOnAppLaunchKey = "io.flutter.openInspectorOnAppLaunch";
+  private static final String perserveLogsDuringHotReloadAndRestartKey = "io.flutter.persereLogsDuringHotReloadAndRestart";
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
   private static final String formatCodeOnSaveKey = "io.flutter.formatCodeOnSave";
   private static final String organizeImportsOnSaveKey = "io.flutter.organizeImportsOnSave";
@@ -29,9 +28,9 @@ public class FlutterSettings {
   private static final String includeAllStackTracesKey = "io.flutter.includeAllStackTraces";
   private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
   private static final String enableHotUiKey = "io.flutter.editor.enableHotUi";
-  private static final String enableEmbeddedBrowsersKey = "io.flutter.editor.enableEmbeddedBrowsers";
   private static final String enableBazelHotRestartKey = "io.flutter.editor.enableBazelHotRestart";
   private static final String showBazelHotRestartWarningKey = "io.flutter.showBazelHotRestartWarning";
+  private static final String enableJcefBrowserKey = "io.flutter.enableJcefBrowser";
   private static final String fontPackagesKey = "io.flutter.fontPackages";
   private static final String allowTestsInSourcesRootKey = "io.flutter.allowTestsInSources";
   private static final String showBazelIosRunNotificationKey = "io.flutter.hideBazelIosRunNotification";
@@ -92,6 +91,10 @@ public class FlutterSettings {
       analytics.sendEvent("settings", afterLastPeriod(openInspectorOnAppLaunchKey));
     }
 
+    if (isPerserveLogsDuringHotReloadAndRestart()) {
+      analytics.sendEvent("settings", afterLastPeriod(perserveLogsDuringHotReloadAndRestartKey));
+    }
+
     if (isFormatCodeOnSave()) {
       analytics.sendEvent("settings", afterLastPeriod(formatCodeOnSaveKey));
 
@@ -122,10 +125,6 @@ public class FlutterSettings {
 
     if (showAllRunConfigurationsInContext()) {
       analytics.sendEvent("settings", "showAllRunConfigurations");
-    }
-
-    if (isEnableEmbeddedBrowsers()) {
-      analytics.sendEvent("settings", afterLastPeriod(enableEmbeddedBrowsersKey));
     }
 
     if (isEnableHotUi()) {
@@ -241,6 +240,15 @@ public class FlutterSettings {
     fireEvent();
   }
 
+  public boolean isPerserveLogsDuringHotReloadAndRestart() {
+    return getPropertiesComponent().getBoolean(perserveLogsDuringHotReloadAndRestartKey, false);
+  }
+
+  public void setPerserveLogsDuringHotReloadAndRestart(boolean value) {
+    getPropertiesComponent().setValue(perserveLogsDuringHotReloadAndRestartKey, value, false);
+    fireEvent();
+  }
+
   /**
    * Tells IntelliJ to show all run configurations possible when the user clicks on the left-hand green arrow to run a test.
    * <p>
@@ -253,6 +261,16 @@ public class FlutterSettings {
 
   public void setShowAllRunConfigurationsInContext(boolean value) {
     Registry.get(suggestAllRunConfigurationsFromContextKey).setValue(value);
+
+    fireEvent();
+  }
+
+  public boolean isEnableJcefBrowser() {
+    return getPropertiesComponent().getBoolean(enableJcefBrowserKey, false);
+  }
+
+  public void setEnableJcefBrowser(boolean value) {
+    getPropertiesComponent().setValue(enableJcefBrowserKey, value, false);
 
     fireEvent();
   }
@@ -318,9 +336,6 @@ public class FlutterSettings {
     return false;
   }
 
-  public boolean isEnableEmbeddedBrowsers() {
-    return true;
-  }
 
   public boolean isEnableBazelHotRestart() {
     return getPropertiesComponent().getBoolean(enableBazelHotRestartKey, false);

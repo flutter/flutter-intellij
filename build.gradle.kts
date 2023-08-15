@@ -21,8 +21,8 @@ buildscript {
 }
 
 plugins {
-  id("org.jetbrains.intellij") version "1.13.3"
-  id("org.jetbrains.kotlin.jvm") version "1.8.20-RC"
+  id("org.jetbrains.intellij") version "1.15.0"
+  id("org.jetbrains.kotlin.jvm") version "1.9.0"
 }
 
 repositories {
@@ -79,7 +79,9 @@ intellij {
     project(":flutter-idea"), "java", "properties",
     "junit", "Git4Idea", "Kotlin", "gradle", "org.jetbrains.android",
     "Groovy", "Dart:$dartVersion")
-  pluginList.add(smaliPlugin)
+  if (ide == "android-studio") {
+    pluginList.add(smaliPlugin)
+  }
   pluginList.add(langPlugin)
   if (ide == "android-studio") {
     type.set("AI")
@@ -91,6 +93,12 @@ intellij {
 tasks {
   buildSearchableOptions {
     enabled = false
+  }
+  prepareSandbox {
+    dependsOn(":flutter-idea:prepareSandbox")
+    if (ide == "android-studio") {
+      dependsOn(":flutter-studio:prepareSandbox")
+    }
   }
 }
 

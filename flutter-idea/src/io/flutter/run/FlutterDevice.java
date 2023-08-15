@@ -111,6 +111,7 @@ public class FlutterDevice {
   /**
    * Given a collection of devices, return a unique name for this device.
    */
+  @NotNull
   public String getUniqueName(Collection<FlutterDevice> devices) {
     for (final FlutterDevice other : devices) {
       if (other == this) {
@@ -141,6 +142,7 @@ public class FlutterDevice {
     return new FlutterDevice("flutter-tester", "Flutter test device", null, false);
   }
 
+  @NotNull
   public String presentationName() {
     if (category() != null) {
       return deviceName() + " (" + category() + ")";

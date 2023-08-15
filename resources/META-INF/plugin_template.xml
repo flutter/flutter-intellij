@@ -107,7 +107,7 @@
               text="Open Android module in Android Studio"
               description="Launch Android Studio to edit the Android module as a top-level project"/>
       <action id="flutter.xcode.open" class="io.flutter.actions.OpenInXcodeAction"
-              text="Open iOS module in Xcode"
+              text="Open iOS/macOS module in Xcode"
               description="Launch Xcode to edit the iOS module as a top-level project"/>
       <action id="flutter.appcode.open" class="io.flutter.actions.OpenInAppCodeAction"
               text="Open iOS module in AppCode"
@@ -385,8 +385,11 @@
                     serviceImplementation="io.flutter.editor.WidgetIndentsHighlightingPassFactory"
                     overrides="false"/>
     <highlightingPassFactory implementation="io.flutter.editor.WidgetIndentsHighlightingPassFactoryRegistrar"/>
-    <projectService serviceInterface="io.flutter.jxbrowser.EmbeddedBrowser"
-                    serviceImplementation="io.flutter.jxbrowser.EmbeddedBrowser"
+    <projectService serviceInterface="io.flutter.jxbrowser.EmbeddedJxBrowser"
+                    serviceImplementation="io.flutter.jxbrowser.EmbeddedJxBrowser"
+                    overrides="false"/>
+    <projectService serviceInterface="io.flutter.view.EmbeddedJcefBrowser"
+                    serviceImplementation="io.flutter.view.EmbeddedJcefBrowser"
                     overrides="false"/>
   </extensions>
 

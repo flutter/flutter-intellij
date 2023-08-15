@@ -34,18 +34,20 @@ import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.concurrency.QueueProcessor;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterUtils;
 import io.flutter.devtools.DevToolsUtils;
 import io.flutter.inspector.DiagnosticLevel;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.DiagnosticsTreeStyle;
 import io.flutter.inspector.InspectorService;
-import io.flutter.jxbrowser.EmbeddedBrowser;
+import io.flutter.jxbrowser.EmbeddedJxBrowser;
 import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.jxbrowser.JxBrowserStatus;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
+import io.flutter.view.EmbeddedBrowser;
 import io.flutter.view.FlutterView;
 import io.flutter.vmService.VmServiceConsumers;
 import org.dartlang.vm.service.VmService;
@@ -169,17 +171,6 @@ public class FlutterConsoleLogManager {
       final JsonObject jsonObject = extensionData.getJson().getAsJsonObject();
       final DiagnosticsNode diagnosticsNode = new DiagnosticsNode(jsonObject, objectGroup, app, false, null);
 
-      // Send analytics for the diagnosticsNode.
-      if (isFirstErrorForFrame()) {
-        final String errorId = FlutterErrorHelper.getAnalyticsId(diagnosticsNode);
-        if (errorId != null) {
-          FlutterInitializer.getAnalytics().sendEvent(
-            "flutter-error", errorId,
-            // Note: this can be null from tests.
-            app.getProject() == null ? null : FlutterSdk.getFlutterSdk(app.getProject()));
-        }
-      }
-
       if (FlutterSettings.getInstance().isShowStructuredErrors()) {
         queueLength.incrementAndGet();
 
@@ -274,8 +265,7 @@ public class FlutterConsoleLogManager {
         if (StringUtil.equals("ErrorSummary", property.getType())) {
           errorSummary = property.getDescription();
         } else if (StringUtil.equals("DevToolsDeepLinkProperty", property.getType()) &&
-                FlutterSettings.getInstance().isEnableEmbeddedBrowsers() &&
-                JxBrowserManager.getInstance().getStatus().equals(JxBrowserStatus.INSTALLED)) {
+                FlutterUtils.embeddedBrowserAvailable(JxBrowserManager.getInstance().getStatus())) {
           showDeepLinkNotification(property, errorSummary);
           continue;
         }
@@ -439,7 +429,10 @@ public class FlutterConsoleLogManager {
 
         Project project = app.getProject();
         if (!project.isDisposed()) {
-          EmbeddedBrowser.getInstance(project).updatePanelToWidget(widgetId);
+          final EmbeddedBrowser browser = FlutterUtils.embeddedBrowser(project);
+          if (browser != null) {
+            browser.updatePanelToWidget(widgetId);
+          }
         }
 
         notification.expire();

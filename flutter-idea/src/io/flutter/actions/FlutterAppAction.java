@@ -5,6 +5,7 @@
  */
 package io.flutter.actions;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAwareAction;
@@ -43,6 +44,11 @@ abstract public class FlutterAppAction extends DumbAwareAction {
     myActionId = actionId;
 
     updateActionRegistration(app.isConnected());
+  }
+
+  @Override
+  public ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
   }
 
   private void updateActionRegistration(boolean isConnected) {

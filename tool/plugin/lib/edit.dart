@@ -52,64 +52,39 @@ final Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()), new Represe
     path: 'build.gradle.kts',
     initials: ['version.set(ideVersion)'],
     replacements: ['version.set("LATEST-EAP-SNAPSHOT")'],
-    versions: ['2023.2'],
+    versions: ['2023.3'],
   ),
   EditCommand(
     path: 'flutter-idea/build.gradle.kts',
     initials: ['version.set(ideVersion)'],
     replacements: ['version.set("LATEST-EAP-SNAPSHOT")'],
-    versions: ['2023.2'],
+    versions: ['2023.3'],
   ),
   EditCommand(
     path:
         'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java',
     initials: ['//import ', 'extends ProjectImpl '],
     replacements: ['import ', 'extends ProjectExImpl '],
-    versions: ['2022.1', '2022.2', '2031.1'],
+    versions: ['2022.2', '2031.1'],
   ),
   EditCommand(
     path: 'flutter-idea/src/io/flutter/vmService/frame/DartVmServiceValue.java',
     initials: ['@NotNull'],
     replacements: [''],
-    versions: ['2022.1', '2022.2'],
+    versions: ['2022.2'],
   ),
   EditCommand(
     path:
         'flutter-idea/src/io/flutter/analytics/FlutterAnalysisServerListener.java',
     initials: ['@NotNull'],
     replacements: [''],
-    versions: ['2022.1', '2022.2'],
+    versions: ['2022.2'],
   ),
   EditCommand(
     path: 'resources/META-INF/plugin_template.xml',
     initials: ['<add-to-group group-id="MainToolbarRight" />'],
     replacements: [''],
-    versions: ['2022.1', '2022.2'],
-  ),
-  EditCommand(
-    path: 'flutter-idea/src/io/flutter/actions/AttachDebuggerAction.java',
-    initials: [_actionThreadEditContent],
-    replacements: [''],
-    versions: ['2022.1'],
-  ),
-  EditCommand(
-    path: 'flutter-idea/src/io/flutter/actions/DeviceSelectorAction.java',
-    initials: [_actionThreadEditContent],
-    replacements: [''],
-    versions: ['2022.1'],
-  ),
-  EditCommand(
-    path:
-        'flutter-idea/src/io/flutter/actions/DeviceSelectorRefresherAction.java',
-    initials: [_actionThreadEditContent],
-    replacements: [''],
-    versions: ['2022.1'],
-  ),
-  EditCommand(
-    path: 'flutter-idea/src/io/flutter/actions/FlutterRetargetAppAction.java',
-    initials: [_actionThreadEditContent],
-    replacements: [''],
-    versions: ['2022.1'],
+    versions: ['2022.2'],
   ),
 ];
 

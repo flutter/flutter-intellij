@@ -161,7 +161,7 @@ public class JxBrowserManager {
 
       // Set up JxBrowser files if the embedded inspector option has been turned on and the files aren't already loaded.
       //noinspection ConstantConditions
-      if (settings.isEnableEmbeddedBrowsers() && getStatus().equals(JxBrowserStatus.NOT_INSTALLED)) {
+      if (getStatus().equals(JxBrowserStatus.NOT_INSTALLED)) {
         setUp(project);
       }
     }
@@ -203,6 +203,16 @@ public class JxBrowserManager {
   }
 
   public void setUp(@NotNull Project project) {
+    if (jxBrowserUtils.skipInstallation()) {
+      status.set(JxBrowserStatus.INSTALLATION_SKIPPED);
+      return;
+    }
+
+    if (!jxBrowserUtils.skipInstallation() && status.get().equals(JxBrowserStatus.INSTALLATION_SKIPPED)) {
+      // This check returns status to NOT_INSTALLED so that JxBrowser can be downloaded and installed in cases where it is enabled after being disabled.
+      status.compareAndSet(JxBrowserStatus.INSTALLATION_SKIPPED, JxBrowserStatus.NOT_INSTALLED);
+    }
+
     if (!status.compareAndSet(JxBrowserStatus.NOT_INSTALLED, JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
       // This check ensures that an IDE only downloads and installs JxBrowser once, even if multiple projects are open.
       // If already in progress, let calling point wait until success or failure (it may make sense to call setUp but proceed).

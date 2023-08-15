@@ -48,7 +48,9 @@ intellij {
   version.set(ideVersion)
   val pluginList = mutableListOf("java", "Dart:$dartVersion", "properties", "junit",
              "gradle", "Groovy", "org.jetbrains.android")
-  pluginList.add(smaliPlugin)
+  if (ideVersion != "2023.2") {
+    pluginList.add(smaliPlugin)
+  }
   pluginList.add(langPlugin)
   plugins.set(pluginList)
   if (ide == "android-studio") {
