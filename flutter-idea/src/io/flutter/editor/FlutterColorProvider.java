@@ -94,7 +94,7 @@ public class FlutterColorProvider implements ElementColorProvider {
       if (child == null) return null;
       if (child.getText().startsWith("shade")) {
         final String code = AstBufferUtil.getTextSkippingWhitespaceComments(refExpr.getNode());
-        return parseColorText(code.substring(code.indexOf(name) + name.length() + 1), name);
+        return parseColorText(code.substring(code.indexOf(name)), name);
       }
     }
     return null;
