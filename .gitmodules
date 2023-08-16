@@ -1,0 +1,3 @@
+[submodule "resources/flutter"]
+	path = resources/flutter
+	url = https://github.com/flutter/tools_metadata

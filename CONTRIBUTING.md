@@ -47,7 +47,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
    If you already have a fork, and are now installing a development environment on a new machine,
    make sure you've updated your fork with the master branch
    so that you don't use stale configuration options from long ago.
-4. `git clone -c core.symlinks=true https://github.com/<your_name_here>/flutter-intellij`
+4. `git clone -c core.symlinks=true https://github.com/<your_name_here>/flutter-intellij` --recursive
 5. `cd flutter-intellij`
 6. `git remote add upstream https://github.com/flutter/flutter-intellij`
    The name `upsteram` can be whatever you want.
@@ -148,7 +148,7 @@ Check out if the directory is a symlink by open the link in IDEA, and it'll disp
 Delete the file, then re-clone the repo using the below command:
 
 ```shell
-git clone -c core.symlinks=true https://github.com/<your_name_here>/flutter-intellij
+git clone -c core.symlinks=true https://github.com/<your_name_here>/flutter-intellij --recursive
 ```
 
 **NOTE**: Avoid symlinks addition during development as possible as you can,

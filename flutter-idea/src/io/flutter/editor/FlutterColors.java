@@ -49,7 +49,7 @@ public class FlutterColors {
     colors = new Properties();
 
     try {
-      colors.load(FlutterUtils.class.getResourceAsStream("/flutter/colors/material.properties"));
+      colors.load(FlutterUtils.class.getResourceAsStream("/flutter/resources/colors/material.properties"));
     }
     catch (IOException e) {
       FlutterUtils.warn(LOG, e);

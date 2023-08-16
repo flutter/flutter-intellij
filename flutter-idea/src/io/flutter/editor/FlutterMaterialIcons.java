@@ -22,7 +22,7 @@ public class FlutterMaterialIcons {
     icons = new Properties();
 
     try {
-      icons.load(FlutterMaterialIcons.class.getResourceAsStream("/flutter/icons/material.properties"));
+      icons.load(FlutterMaterialIcons.class.getResourceAsStream("/flutter/resources/icons/material.properties"));
     }
     catch (IOException e) {
       FlutterUtils.warn(LOG, e);
@@ -46,6 +46,6 @@ public class FlutterMaterialIcons {
     if (path == null) {
       return null;
     }
-    return IconLoader.findIcon("/flutter/icons/" + path, FlutterMaterialIcons.class);
+    return IconLoader.findIcon("/flutter/resources/icons/" + path, FlutterMaterialIcons.class);
   }
 }
