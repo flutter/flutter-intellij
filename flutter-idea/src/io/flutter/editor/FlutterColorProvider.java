@@ -93,8 +93,9 @@ public class FlutterColorProvider implements ElementColorProvider {
       final PsiElement child = refExpr.getLastChild();
       if (child == null) return null;
       if (child.getText().startsWith("shade")) {
-        final String code = AstBufferUtil.getTextSkippingWhitespaceComments(refExpr.getNode());
-        return parseColorText(code.substring(code.indexOf(name)), name);
+        String code = AstBufferUtil.getTextSkippingWhitespaceComments(refExpr.getNode());
+        code = code.replaceFirst("(Cupertino)?Colors\\.", "");
+        return parseColorText(code, name);
       }
     }
     return null;
