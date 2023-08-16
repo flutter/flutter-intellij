@@ -49,7 +49,7 @@ public class FlutterColorProvider implements ElementColorProvider {
         return null;
       }
       final String code = AstBufferUtil.getTextSkippingWhitespaceComments(parent.getNode());
-      return parseColorText(code.substring(code.indexOf(name) + name.length() + 1), name);
+      return parseColorText(code.substring(code.indexOf(name) + name.length()), name);
     }
     else if (parent.getNode().getElementType() == DartTokenTypes.CALL_EXPRESSION) {
       // foo(Color.fromRGBO(0, 255, 0, 0.5))
