@@ -49,7 +49,7 @@ public class FlutterColorProvider implements ElementColorProvider {
         return null;
       }
       final String code = AstBufferUtil.getTextSkippingWhitespaceComments(parent.getNode());
-      return parseColorText(code.substring(code.indexOf(name) + name.length()), name);
+      return parseColorText(code.substring(code.indexOf(name)), name);
     }
     else if (parent.getNode().getElementType() == DartTokenTypes.CALL_EXPRESSION) {
       // foo(Color.fromRGBO(0, 255, 0, 0.5))
@@ -118,7 +118,6 @@ public class FlutterColorProvider implements ElementColorProvider {
       if (child == null) return null;
       if (child.getText().startsWith("shade")) {
         if (idNode.getText().contains(name)) return null; // Avoid duplicate resolves.
-        if (resolveReferencedElement(refExpr) == null) return null; // `Colors` is override by codes.
         String code = AstBufferUtil.getTextSkippingWhitespaceComments(refExpr.getNode());
         code = code.replaceFirst("(Cupertino)?Colors\\.", "");
         return parseColorText(code, name);
