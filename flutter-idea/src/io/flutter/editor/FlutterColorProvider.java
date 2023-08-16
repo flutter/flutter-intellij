@@ -35,6 +35,7 @@ public class FlutterColorProvider implements ElementColorProvider {
     if (element.getNode().getElementType() != DartTokenTypes.IDENTIFIER) return null;
 
     final String name = element.getText();
+    if (name == null) return null;
 
     final PsiElement refExpr = topmostReferenceExpression(element);
     if (refExpr == null) return null;
@@ -43,15 +44,34 @@ public class FlutterColorProvider implements ElementColorProvider {
 
     if (parent.getNode().getElementType() == DartTokenTypes.ARRAY_ACCESS_EXPRESSION) {
       // Colors.blue[200]
+      if (name.equals(refExpr.getFirstChild().getText()) && refExpr.getChildren().length > 1) {
+        // Avoid duplicate resolves.
+        return null;
+      }
       final String code = AstBufferUtil.getTextSkippingWhitespaceComments(parent.getNode());
       return parseColorText(code.substring(code.indexOf(name) + name.length() + 1), name);
     }
     else if (parent.getNode().getElementType() == DartTokenTypes.CALL_EXPRESSION) {
       // foo(Color.fromRGBO(0, 255, 0, 0.5))
+      if (name.matches("fromARGB") || name.matches("fromRGBO")) {
+        // Avoid duplicate resolves.
+        return null;
+      }
+      if (parent.getLastChild() instanceof DartArguments && !name.matches("(Cupertino)?Color")) {
+        // Avoid duplicate resolves.
+        final DartExpression colorExpression = ((DartArguments)parent.getLastChild()).getArgumentList().getExpressionList().get(0);
+        final Color color = parseColorElements(colorExpression, colorExpression.getFirstChild());
+        if (color != null) return null;
+      }
+      // Color.fromRGBO(0, 255, 0, 0.5)
       return parseColorElements(parent, refExpr);
     }
     else if (parent.getNode().getElementType() == DartTokenTypes.SIMPLE_TYPE) {
       // const Color.fromARGB(100, 255, 0, 0)
+      if (name.matches("fromARGB") || name.matches("fromRGBO")) {
+        // Avoid duplicate resolves.
+        return null;
+      }
       // parent.getParent().getParent() is a new expr
       parent = getNewExprFromType(parent);
       if (parent == null) return null;
@@ -60,6 +80,10 @@ public class FlutterColorProvider implements ElementColorProvider {
     else {
       if (parent.getNode().getElementType() == DartTokenTypes.VAR_INIT ||
           parent.getNode().getElementType() == DartTokenTypes.FUNCTION_BODY) {
+        if (name.equals(refExpr.getFirstChild().getText()) && refExpr.getChildren().length > 1) {
+          // Avoid duplicate resolves.
+          return null;
+        }
         final PsiElement reference = resolveReferencedElement(refExpr);
         if (reference != null && reference.getLastChild() != null) {
           Color tryParseColor = null;
@@ -93,6 +117,8 @@ public class FlutterColorProvider implements ElementColorProvider {
       final PsiElement child = refExpr.getLastChild();
       if (child == null) return null;
       if (child.getText().startsWith("shade")) {
+        if (idNode.getText().contains(name)) return null; // Avoid duplicate resolves.
+        if (resolveReferencedElement(refExpr) == null) return null; // `Colors` is override by codes.
         String code = AstBufferUtil.getTextSkippingWhitespaceComments(refExpr.getNode());
         code = code.replaceFirst("(Cupertino)?Colors\\.", "");
         return parseColorText(code, name);
@@ -119,6 +145,7 @@ public class FlutterColorProvider implements ElementColorProvider {
     }
     if (!(result instanceof DartComponentName) || result.getParent() == null) return null;
     final PsiElement declaration = result.getParent().getParent();
+    if (declaration instanceof DartClassMembers) return declaration;
     if (!(declaration instanceof DartVarDeclarationList)) return null;
     final PsiElement lastChild = declaration.getLastChild();
     if (!(lastChild instanceof DartVarInit)) return null;
