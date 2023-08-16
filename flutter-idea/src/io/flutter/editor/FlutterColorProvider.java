@@ -167,7 +167,7 @@ public class FlutterColorProvider implements ElementColorProvider {
     final boolean isFromRGBO = "fromRGBO".equals(selector);
     if (isFromARGB || isFromRGBO) {
       String code = AstBufferUtil.getTextSkippingWhitespaceComments(parent.getNode());
-      if (code.startsWith("constColor(")) {
+      if (code.startsWith("constColor(") || code.startsWith("constColor.")) {
         code = code.substring(5);
       }
       return ExpressionParsingUtils.parseColorComponents(code.substring(code.indexOf(selector)), selector + "(", isFromARGB);
