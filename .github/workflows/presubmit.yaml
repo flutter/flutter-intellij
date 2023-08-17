@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+        with:
+          submodules: true
       - name: build ${{ matrix.version }}
         run: ./tool/github.sh
         env:
@@ -38,6 +40,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+        with:
+          submodules: true
       - name: Linux ${{ matrix.bot }}
         run: ./tool/github.sh
         env:
