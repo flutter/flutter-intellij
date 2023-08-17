@@ -704,6 +704,7 @@ abstract class ProductCommand extends Command {
   @override
   Future<int> run() async {
     await _initGlobals();
+    await _initSubmodules();
     await _initSpecs();
     _handleSymlinksOnWindows();
     try {
@@ -726,6 +727,17 @@ abstract class ProductCommand extends Command {
     if (isDevChannel) {
       lastReleaseName = await lastRelease();
       lastReleaseDate = await dateOfLastRelease();
+    }
+  }
+
+  Future<void> _initSubmodules() async {
+    if (Directory(p.join(rootPath, 'resources', 'flutter'))
+        .listSync()
+        .isEmpty) {
+      await Process.run(
+        'git',
+        ['submodule', 'update', '--init', '--recursive'],
+      );
     }
   }
 
