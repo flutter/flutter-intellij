@@ -15,7 +15,6 @@ setup() {
 
   export JAVA_HOME=`pwd`/../jdk-17.0.4.1.jdk/Contents/Home
   export PATH=$PATH:$JAVA_HOME/bin
-  export JAVA_OPTS=" -Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true"
   echo "JAVA_HOME=$JAVA_HOME"
   java -version
 
