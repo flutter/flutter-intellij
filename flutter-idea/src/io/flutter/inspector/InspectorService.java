@@ -21,6 +21,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
@@ -55,7 +56,10 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -417,6 +421,35 @@ public class InspectorService implements Disposable {
           });
         }
         break;
+      }
+      case "ToolEvent": {
+        if ("navigate".equals(event.getExtensionKind())) {
+          JsonObject json = event.getExtensionData().getJson();
+          if (json == null) return;
+
+          final String fileUri = Optional.ofNullable(json.get("fileUri")).map(JsonElement::getAsString).orElse(null);
+          if (fileUri == null) return;
+
+          String path = null;
+          try {
+            path = new URL(fileUri).getFile();
+          }
+          catch (MalformedURLException e) {
+            return;
+          }
+
+          VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
+          final Integer line = Optional.ofNullable(json.get("line")).map(JsonElement::getAsInt).orElse(null);
+          final Integer column = Optional.ofNullable(json.get("column")).map(JsonElement::getAsInt).orElse(null);
+
+          ApplicationManager.getApplication().invokeLater(() -> {
+            if (file != null && line != null && column != null) {
+              XSourcePositionImpl position = XSourcePositionImpl.create(file, line - 1, column - 1);
+              position.createNavigatable(app.getProject()).navigate(false);
+            }
+          });
+        }
+        System.out.println(event);
       }
       default:
     }

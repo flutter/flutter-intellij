@@ -174,6 +174,20 @@ public class VmServiceWrapper implements Disposable {
         });
       }
     });
+
+    streamListen("ToolEvent", new SuccessConsumer() {
+      @Override
+      public void received(Success response) {
+        System.out.println("success");
+        System.out.println(response);
+      }
+
+      @Override
+      public void onError(RPCError error) {
+        System.out.println("error");
+        System.out.println(error);
+      }
+    });
   }
 
   private void streamListen(@NotNull String streamId, @NotNull SuccessConsumer consumer) {
