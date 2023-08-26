@@ -35,7 +35,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
 
 ## Getting started
 
-1. Install Flutter SDK from [Flutter SDK download](https://flutter.dev/docs/get-started/install) or
+1. Install Flutter SDK from [Flutter SDK download](https://docs.flutter.dev/get-started/install) or
    [GitHub](https://github.com/flutter/flutter) and set it up according to its instructions.
 2. Verify installation from the command line:
     - Connect an android device with USB debugging.
