@@ -174,6 +174,17 @@ public class VmServiceWrapper implements Disposable {
         });
       }
     });
+
+    streamListen("ToolEvent", new SuccessConsumer() {
+      @Override
+      public void received(Success response) {
+      }
+
+      @Override
+      public void onError(RPCError error) {
+        LOG.error("Error listening to ToolEvent stream: " + error);
+      }
+    });
   }
 
   private void streamListen(@NotNull String streamId, @NotNull SuccessConsumer consumer) {

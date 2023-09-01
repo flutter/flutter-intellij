@@ -21,6 +21,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
@@ -55,7 +56,10 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -413,6 +417,37 @@ public class InspectorService implements Disposable {
           ApplicationManager.getApplication().invokeLater(() -> {
             for (InspectorServiceClient client : clients) {
               client.onFlutterFrame();
+            }
+          });
+        }
+        break;
+      }
+      case "ToolEvent": {
+        Optional<Event> eventOrNull = Optional.ofNullable(event);
+        if ("navigate".equals(eventOrNull.map(Event::getExtensionKind).orElse(null))) {
+          JsonObject json = eventOrNull.map(Event::getExtensionData).map(ExtensionData::getJson).orElse(null);
+          if (json == null) return;
+
+          String fileUri = JsonUtils.getStringMember(json, "fileUri");
+          if (fileUri == null) return;
+
+          String path;
+          try {
+            path = new URL(fileUri).getFile();
+          }
+          catch (MalformedURLException e) {
+            return;
+          }
+          if (path == null) return;
+
+          VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
+          final Integer line = JsonUtils.getIntMember(json, "line");
+          final Integer column = JsonUtils.getIntMember(json, "column");;
+
+          ApplicationManager.getApplication().invokeLater(() -> {
+            if (file != null && line >= 0 && column >= 0) {
+              XSourcePositionImpl position = XSourcePositionImpl.create(file, line - 1, column - 1);
+              position.createNavigatable(app.getProject()).navigate(false);
             }
           });
         }
