@@ -423,33 +423,35 @@ public class InspectorService implements Disposable {
         break;
       }
       case "ToolEvent": {
-        if ("navigate".equals(event.getExtensionKind())) {
-          JsonObject json = event.getExtensionData().getJson();
+        Optional<Event> eventOrNull = Optional.ofNullable(event);
+        if ("navigate".equals(eventOrNull.map(Event::getExtensionKind).orElse(null))) {
+          JsonObject json = eventOrNull.map(Event::getExtensionData).map(ExtensionData::getJson).orElse(null);
           if (json == null) return;
 
-          final String fileUri = Optional.ofNullable(json.get("fileUri")).map(JsonElement::getAsString).orElse(null);
+          String fileUri = JsonUtils.getStringMember(json, "fileUri");
           if (fileUri == null) return;
 
-          String path = null;
+          String path;
           try {
             path = new URL(fileUri).getFile();
           }
           catch (MalformedURLException e) {
             return;
           }
+          if (path == null) return;
 
           VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
-          final Integer line = Optional.ofNullable(json.get("line")).map(JsonElement::getAsInt).orElse(null);
-          final Integer column = Optional.ofNullable(json.get("column")).map(JsonElement::getAsInt).orElse(null);
+          final Integer line = JsonUtils.getIntMember(json, "line");
+          final Integer column = JsonUtils.getIntMember(json, "column");;
 
           ApplicationManager.getApplication().invokeLater(() -> {
-            if (file != null && line != null && column != null) {
+            if (file != null && line >= 0 && column >= 0) {
               XSourcePositionImpl position = XSourcePositionImpl.create(file, line - 1, column - 1);
               position.createNavigatable(app.getProject()).navigate(false);
             }
           });
         }
-        System.out.println(event);
+        break;
       }
       default:
     }
