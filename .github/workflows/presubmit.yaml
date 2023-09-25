@@ -24,7 +24,7 @@ jobs:
         version: [2022.2, 2022.3, 2023.1, 2023.2]
     steps:
       - name: checkout
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608
       - name: build ${{ matrix.version }}
         run: ./tool/github.sh
         env:
@@ -37,7 +37,7 @@ jobs:
         bot: [CHECK_BOT, DART_BOT, UNIT_TEST_BOT]
     steps:
       - name: checkout
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608
       - name: Linux ${{ matrix.bot }}
         run: ./tool/github.sh
         env:
