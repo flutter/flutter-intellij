@@ -13,7 +13,7 @@ import com.google.dart.server.utilities.general.ObjectUtilities;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.apache.commons.lang.StringUtils;
+import static org.apache.commons.lang3.StringUtils.join;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
@@ -351,7 +351,7 @@ public class FlutterOutline {
     builder.append(dartElement + ", ");
     if (attributes != null) {
       builder.append("attributes=");
-      builder.append(StringUtils.join(attributes, ", ") + ", ");
+      builder.append(join(attributes, ", ") + ", ");
     }
     builder.append("className=");
     builder.append(className + ", ");
@@ -361,7 +361,7 @@ public class FlutterOutline {
     builder.append(variableName + ", ");
     if (children != null) {
       builder.append("children=");
-      builder.append(StringUtils.join(children, ", "));
+      builder.append(join(children, ", "));
     }
 
     builder.append("]");
