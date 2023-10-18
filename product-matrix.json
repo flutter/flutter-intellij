@@ -2,19 +2,6 @@
   "list": [
     {
       "channel": "stable",
-      "comments": "IntelliJ 2022.2, Android Studio 2022.2",
-      "name": "2022.2",
-      "version": "2022.2",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "2022.2.1.1",
-      "baseVersion": "222.3739.54",
-      "dartPluginVersion": "222.3739.24",
-      "sinceBuild": "222.3739.54",
-      "untilBuild": "222.*",
-      "filesToSkip": ["flutter-idea/src/org/jetbrains/android/facet/AndroidFrameworkDetector.java"]
-    },
-    {
-      "channel": "stable",
       "comments": "IntelliJ 2022.3, Android Studio 2022.3",
       "name": "2022.3",
       "version": "2022.3",
