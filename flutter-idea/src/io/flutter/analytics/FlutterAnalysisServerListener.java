@@ -277,7 +277,7 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
       // errorCountsArray[*]
       for (int i = 0; i < ERROR_TYPES.length; i++) {
         final int j = i;
-        errorCountsArray[j] += errors.stream().filter(e -> {
+        errorCountsArray[j] += (int) errors.stream().filter(e -> {
           assert e != null;
           return Objects.equals(e.getType(), ERROR_TYPES[j]);
         }).count();

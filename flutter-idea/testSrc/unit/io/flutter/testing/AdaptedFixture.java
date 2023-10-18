@@ -6,6 +6,7 @@
 package io.flutter.testing;
 
 import com.intellij.testFramework.fixtures.IdeaTestFixture;
+import org.jetbrains.annotations.NotNull;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -30,7 +31,7 @@ abstract public class AdaptedFixture<T extends IdeaTestFixture> implements TestR
   }
 
   @Override
-  public Statement apply(Statement base, Description description) {
+  public Statement apply(@NotNull Statement base, @NotNull Description description) {
     return new Statement() {
       public void evaluate() throws Throwable {
         inner = factory.create(description.getClassName());

@@ -86,7 +86,7 @@ public class FlutterColorProvider implements ElementColorProvider {
         }
         final PsiElement reference = resolveReferencedElement(refExpr);
         if (reference != null && reference.getLastChild() != null) {
-          Color tryParseColor = null;
+          Color tryParseColor;
           if (reference instanceof DartCallExpression) {
             final DartExpression expression = ((DartCallExpression)reference).getExpression();
             if (expression != null && expression.getLastChild() instanceof DartReferenceExpression) {

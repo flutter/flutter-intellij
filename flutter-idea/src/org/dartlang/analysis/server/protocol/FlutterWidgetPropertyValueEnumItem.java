@@ -152,11 +152,11 @@ public class FlutterWidgetPropertyValueEnumItem {
     StringBuilder builder = new StringBuilder();
     builder.append("[");
     builder.append("libraryUri=");
-    builder.append(libraryUri + ", ");
+    builder.append(libraryUri).append(", ");
     builder.append("className=");
-    builder.append(className + ", ");
+    builder.append(className).append(", ");
     builder.append("name=");
-    builder.append(name + ", ");
+    builder.append(name).append(", ");
     builder.append("documentation=");
     builder.append(documentation);
     builder.append("]");

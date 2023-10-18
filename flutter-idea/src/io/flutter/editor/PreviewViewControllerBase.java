@@ -656,7 +656,7 @@ public abstract class PreviewViewControllerBase extends WidgetViewController {
       }
       g2d.setColor(JBColor.BLACK);
 
-      drawMultilineString(g2d, getNoScreenshotMessage(), screenshotBounds.x + 4, screenshotBounds.y + +lineHeight - 4, lineHeight);
+      drawMultilineString(g2d, getNoScreenshotMessage(), screenshotBounds.x + 4, screenshotBounds.y + lineHeight - 4, lineHeight);
     }
     g2d.setClip(clip);
 

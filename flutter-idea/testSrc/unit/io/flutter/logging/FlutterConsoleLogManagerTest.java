@@ -204,7 +204,7 @@ class ConsoleViewMock implements ConsoleView {
   }
 
   @Override
-  public void attachToProcess(ProcessHandler handler) {
+  public void attachToProcess(@NotNull ProcessHandler handler) {
 
   }
 
@@ -255,7 +255,7 @@ class ConsoleViewMock implements ConsoleView {
 
   @NotNull
   @Override
-  public AnAction[] createConsoleActions() {
+  public AnAction @NotNull [] createConsoleActions() {
     return new AnAction[0];
   }
 

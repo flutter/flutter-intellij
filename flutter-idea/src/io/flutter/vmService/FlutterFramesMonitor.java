@@ -99,7 +99,7 @@ public class FlutterFramesMonitor {
    */
   public double getFPS() {
     int frameCount = 0;
-    int costCount = 0;
+    long costCount = 0;
 
     synchronized (this) {
       for (FlutterFrameEvent frame : frames) {

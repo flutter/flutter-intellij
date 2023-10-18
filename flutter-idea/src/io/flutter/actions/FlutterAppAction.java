@@ -47,7 +47,7 @@ abstract public class FlutterAppAction extends DumbAwareAction {
   }
 
   @Override
-  public ActionUpdateThread getActionUpdateThread() {
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
     return ActionUpdateThread.BGT;
   }
 

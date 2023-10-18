@@ -402,6 +402,7 @@ public class TreeScrollAnimator implements Disposable {
       for (TreePath target : targets) {
         if (this.targets.contains(target)) {
           newTarget = false;
+          break;
         }
       }
     }
