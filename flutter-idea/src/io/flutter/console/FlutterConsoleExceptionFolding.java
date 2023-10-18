@@ -7,7 +7,6 @@ package io.flutter.console;
 
 import com.intellij.execution.ConsoleFolding;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

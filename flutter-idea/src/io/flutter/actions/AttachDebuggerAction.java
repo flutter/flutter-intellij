@@ -5,7 +5,6 @@
  */
 package io.flutter.actions;
 
-import com.google.common.base.Joiner;
 import com.intellij.execution.*;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.process.ProcessHandler;
@@ -27,7 +26,6 @@ import io.flutter.bazel.Workspace;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.SdkAttachConfig;
-import io.flutter.run.SdkFields;
 import io.flutter.run.SdkRunConfig;
 import io.flutter.run.bazel.BazelAttachConfig;
 import io.flutter.run.bazel.BazelRunConfig;
@@ -37,7 +35,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 

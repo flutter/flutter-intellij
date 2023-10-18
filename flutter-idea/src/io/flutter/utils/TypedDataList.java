@@ -5,8 +5,6 @@
  */
 package io.flutter.utils;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.nio.*;
 
 public abstract class TypedDataList {

@@ -8,7 +8,6 @@ package io.flutter.survey;
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
 
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 

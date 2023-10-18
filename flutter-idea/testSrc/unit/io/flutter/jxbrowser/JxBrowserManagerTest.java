@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 import static io.flutter.jxbrowser.JxBrowserManager.DOWNLOAD_PATH;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 public class JxBrowserManagerTest {
