@@ -7,7 +7,7 @@ package io.flutter.run.common;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.psi.PsiElement;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;

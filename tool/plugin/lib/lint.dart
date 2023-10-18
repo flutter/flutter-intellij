@@ -87,9 +87,12 @@ class LintCommand extends Command {
       'com.android.annotations.NonNull',
       'io.netty.',
       'javax.annotation.Nullable',
-      // Not technically a bad import, but we are using
-      // org.apache.commons.lang.StringUtils already in the codebase.
-      'org.apache.commons.lang3.StringUtils',
+      // org.apache.commons.lang.StringUtils and
+      // org.apache.commons.lang.StringEscapeUtils are being deprecated,
+      // use org.apache.commons.lang3.* instead.
+      // See https://github.com/flutter/flutter-intellij/issues/6933
+      'org.apache.commons.lang.StringUtils',
+      'org.apache.commons.lang.StringEscapeUtils',
 
       // Not technically a bad import, but not all IntelliJ platforms provide
       // this library.

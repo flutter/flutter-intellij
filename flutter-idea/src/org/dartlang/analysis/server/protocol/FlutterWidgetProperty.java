@@ -13,7 +13,7 @@ import com.google.dart.server.utilities.general.ObjectUtilities;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.apache.commons.lang.StringUtils;
+import static org.apache.commons.lang3.StringUtils.join;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
@@ -285,7 +285,7 @@ public class FlutterWidgetProperty {
     builder.append("name=");
     builder.append(name + ", ");
     builder.append("children=");
-    builder.append(StringUtils.join(children, ", ") + ", ");
+    builder.append(join(children, ", ") + ", ");
     builder.append("editor=");
     builder.append(editor + ", ");
     builder.append("value=");
