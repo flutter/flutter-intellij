@@ -1,3 +1,7 @@
+# 76
+- Widget inspector doesn't jump to source code (#6875)
+- Change to use `org.apache.commons.lang3.*`, from `org.apache.commons.lang.*` (#6933)
+
 # 75
 - Use pooled thread to find location of Android Studio (#6849)
 - Update build script for AS canary and IJ stable (#6846)

@@ -46,6 +46,11 @@
 
   <change-notes>
     <![CDATA[
+<h1>76</h1>
+<ul>
+  <li>Widget inspector doesn't jump to source code (#6875)</li>
+  <li>Change to use <code>org.apache.commons.lang3.*</code>, from <code>org.apache.commons.lang.*</code> (#6933)</li>
+</ul>
 <h1>75</h1>
 <ul>
   <li>Use pooled thread to find location of Android Studio (#6849)</li>
