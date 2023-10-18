@@ -283,16 +283,16 @@ To set up the license key:
 
 ## Signing commits
 
-We require that all commits to the repository are signed with a GPG key.
-[GitHub's documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification)
-provides instructions, but if you are on macOS, the following tips may help:
+We require that all commits to the repository are signed with GPG or SSH, see [GitHub's documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification).
+
+If you are on macOS, and choose to sign with GPG, here are some additonal notes:
 
 - Download GPG's tarball along with its dependencies from [here](https://www.gnupg.org/download/).
   GPG is the first item, the dependencies are in the block below (Libgpg-error, Libgcrypt, etc.).
 - To install these tarballs on macOS, follow these instructions:
-    - Download the desired .tar.gz or (.tar.bz2) file
+    - Download the desired `.tar.gz` or (`.tar.bz2`) file
     - Open Terminal
-    - Extract the .tar.gz or (.tar.bz2) file with the following commands (Follow these steps for the dependencies first, then for GPG):
+    - Extract the `.tar.gz` or (`.tar.bz2`) file with the following commands (Follow these steps for the dependencies first, then for GPG):
     ```bash
     tar xvjf PACKAGENAME.tar.bz2
     # Navigate to the extracted folder using cd command
