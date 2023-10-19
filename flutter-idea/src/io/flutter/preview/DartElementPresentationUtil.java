@@ -6,7 +6,9 @@
 package io.flutter.preview;
 
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.ui.IconManager;
 import com.intellij.ui.LayeredIcon;
+import com.intellij.ui.PlatformIcons;
 import com.intellij.ui.SimpleTextAttributes;
 import com.jetbrains.lang.dart.DartComponentType;
 import com.jetbrains.lang.dart.util.DartPresentableUtil;
@@ -27,15 +29,29 @@ import static com.intellij.icons.AllIcons.RunConfigurations.Junit;
  * https://github.com/JetBrains/intellij-plugins/blob/master/Dart/src/com/jetbrains/lang/dart/ide/structure/DartStructureViewElement.java
  */
 public class DartElementPresentationUtil {
-  private static final LayeredIcon STATIC_FINAL_FIELD_ICON = new LayeredIcon(Field, StaticMark, FinalMark);
-  private static final LayeredIcon FINAL_FIELD_ICON = new LayeredIcon(Field, FinalMark);
-  private static final LayeredIcon STATIC_FIELD_ICON = new LayeredIcon(Field, StaticMark);
-  private static final LayeredIcon STATIC_METHOD_ICON = new LayeredIcon(Method, StaticMark);
-  private static final LayeredIcon TOP_LEVEL_FUNCTION_ICON = new LayeredIcon(Function, StaticMark);
-  private static final LayeredIcon TOP_LEVEL_VAR_ICON = new LayeredIcon(Variable, StaticMark);
-  private static final LayeredIcon CONSTRUCTOR_INVOCATION_ICON = new LayeredIcon(Class, TabPin);
-  private static final LayeredIcon FUNCTION_INVOCATION_ICON = new LayeredIcon(Method, TabPin);
-  private static final LayeredIcon TOP_LEVEL_CONST_ICON = new LayeredIcon(Variable, StaticMark, FinalMark);
+  private static final LayeredIcon STATIC_FINAL_FIELD_ICON = LayeredIcon.layeredIcon(() -> {
+    IconManager iconManager = IconManager.getInstance();
+    return new Icon[]{Field, iconManager.getPlatformIcon(
+      PlatformIcons.StaticMark), iconManager.getPlatformIcon(PlatformIcons.FinalMark)};
+  });
+  private static final LayeredIcon FINAL_FIELD_ICON =
+    LayeredIcon.layeredIcon(() -> new Icon[]{Field, IconManager.getInstance().getPlatformIcon(
+      PlatformIcons.FinalMark)});
+  private static final LayeredIcon STATIC_FIELD_ICON =
+    LayeredIcon.layeredIcon(() -> new Icon[]{Field, IconManager.getInstance().getPlatformIcon(PlatformIcons.StaticMark)});
+  private static final LayeredIcon STATIC_METHOD_ICON =
+    LayeredIcon.layeredIcon(() -> new Icon[]{Method, IconManager.getInstance().getPlatformIcon(PlatformIcons.StaticMark)});
+  private static final LayeredIcon TOP_LEVEL_FUNCTION_ICON =
+    LayeredIcon.layeredIcon(() -> new Icon[]{Lambda, IconManager.getInstance().getPlatformIcon(PlatformIcons.StaticMark)});
+  private static final LayeredIcon TOP_LEVEL_VAR_ICON =
+    LayeredIcon.layeredIcon(() -> new Icon[]{Variable, IconManager.getInstance().getPlatformIcon(PlatformIcons.StaticMark)});
+  private static final LayeredIcon CONSTRUCTOR_INVOCATION_ICON =
+    LayeredIcon.layeredIcon(() -> new Icon[]{IconManager.getInstance().getPlatformIcon(PlatformIcons.Class), TabPin});
+  private static final LayeredIcon FUNCTION_INVOCATION_ICON = LayeredIcon.layeredIcon(() -> new Icon[]{Method, TabPin});
+  private static final LayeredIcon TOP_LEVEL_CONST_ICON = LayeredIcon.layeredIcon(() -> {
+    IconManager iconManager = IconManager.getInstance();
+    return new Icon[]{Variable, iconManager.getPlatformIcon(PlatformIcons.StaticMark), iconManager.getPlatformIcon(PlatformIcons.FinalMark)};
+  });
 
   @Nullable
   public static Icon getIcon(@NotNull Element element) {

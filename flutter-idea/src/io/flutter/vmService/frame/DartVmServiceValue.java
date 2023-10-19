@@ -5,7 +5,9 @@ import com.google.gson.JsonObject;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.ui.IconManager;
 import com.intellij.ui.LayeredIcon;
+import com.intellij.ui.PlatformIcons;
 import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.frame.*;
 import com.intellij.xdebugger.frame.presentation.XKeywordValuePresentation;
@@ -24,16 +26,23 @@ import java.nio.ByteBuffer;
 import java.text.MessageFormat;
 import java.util.Base64;
 
+import static com.intellij.icons.AllIcons.Nodes.*;
+
 // TODO: implement some combination of XValue.getEvaluationExpression() /
 // XValue.calculateEvaluationExpression() in order to support evaluate expression in variable values.
 // See https://youtrack.jetbrains.com/issue/WEB-17629.
 
 public class DartVmServiceValue extends XNamedValue {
 
-  private static final LayeredIcon FINAL_FIELD_ICON = new LayeredIcon(AllIcons.Nodes.Field, AllIcons.Nodes.FinalMark);
-  private static final LayeredIcon STATIC_FIELD_ICON = new LayeredIcon(AllIcons.Nodes.Field, AllIcons.Nodes.StaticMark);
+  private static final LayeredIcon FINAL_FIELD_ICON = LayeredIcon.layeredIcon(() -> new Icon[]{Field, IconManager.getInstance().getPlatformIcon(
+    PlatformIcons.FinalMark)});
+  private static final LayeredIcon STATIC_FIELD_ICON = LayeredIcon.layeredIcon(() -> new Icon[]{Field, IconManager.getInstance().getPlatformIcon(PlatformIcons.StaticMark)});
   private static final LayeredIcon STATIC_FINAL_FIELD_ICON =
-    new LayeredIcon(AllIcons.Nodes.Field, AllIcons.Nodes.StaticMark, AllIcons.Nodes.FinalMark);
+    LayeredIcon.layeredIcon(() -> {
+      IconManager iconManager = IconManager.getInstance();
+      return new Icon[]{Field, iconManager.getPlatformIcon(
+        PlatformIcons.StaticMark), iconManager.getPlatformIcon(PlatformIcons.FinalMark)};
+    });
   private static final String JSON_STRING_TEMPLATE =
     "'{'\"type\":\"@Instance\",\"class\":'{'\"type\":\"@Class\",\"fixedId\":\"true\",\"id\":\"classes/91\"," +
     "\"name\":\"_OneByteString\"'}',\"kind\":\"String\",\"length\":\"{0}\",\"valueAsString\":\"{1}\"'}'";
