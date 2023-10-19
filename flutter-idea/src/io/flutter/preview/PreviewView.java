@@ -186,7 +186,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
   }
 
   public void initToolWindow(@NotNull ToolWindow toolWindow) {
-    final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+    final ContentFactory contentFactory = ContentFactory.getInstance();
     final ContentManager contentManager = toolWindow.getContentManager();
 
     final Content content = contentFactory.createContent(null, null, false);
