@@ -22,6 +22,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
 public class AsyncRateLimiterTest {

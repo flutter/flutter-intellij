@@ -23,8 +23,8 @@ import org.junit.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
 
 public class ActiveEditorsOutlineServiceTest {
   private static final String fileContents = "void main() {\n" +
