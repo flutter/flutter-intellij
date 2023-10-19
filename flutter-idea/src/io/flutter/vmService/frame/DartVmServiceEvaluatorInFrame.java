@@ -1,6 +1,5 @@
 package io.flutter.vmService.frame;
 
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.xdebugger.XSourcePosition;
 import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.element.Frame;

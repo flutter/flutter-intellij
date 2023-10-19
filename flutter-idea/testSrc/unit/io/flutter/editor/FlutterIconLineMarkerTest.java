@@ -14,10 +14,7 @@ import com.jetbrains.lang.dart.psi.DartReferenceExpression;
 import io.flutter.dart.DartSyntax;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import java.io.IOException;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

@@ -9,8 +9,6 @@ import static java.util.Arrays.asList;
 
 import com.intellij.execution.OutputListener;
 import com.intellij.execution.process.ProcessListener;
-import com.intellij.facet.Facet;
-import com.intellij.facet.FacetManager;
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.ide.projectView.impl.ProjectViewPane;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
@@ -36,7 +34,6 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.ToolWindowId;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;

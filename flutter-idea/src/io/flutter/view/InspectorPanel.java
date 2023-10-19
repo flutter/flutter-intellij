@@ -21,7 +21,6 @@ import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
-import com.intellij.xdebugger.XSourcePosition;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.editor.FlutterMaterialIcons;
