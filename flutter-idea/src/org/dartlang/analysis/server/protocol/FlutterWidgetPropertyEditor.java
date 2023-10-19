@@ -110,7 +110,7 @@ public class FlutterWidgetPropertyEditor {
     StringBuilder builder = new StringBuilder();
     builder.append("[");
     builder.append("kind=");
-    builder.append(kind + ", ");
+    builder.append(kind).append(", ");
     builder.append("enumItems=");
     builder.append(join(enumItems, ", "));
     builder.append("]");

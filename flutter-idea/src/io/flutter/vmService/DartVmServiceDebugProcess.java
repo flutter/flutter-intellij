@@ -280,7 +280,7 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
 
   @Override
   @NotNull
-  public XBreakpointHandler<?>[] getBreakpointHandlers() {
+  public XBreakpointHandler<?> @NotNull [] getBreakpointHandlers() {
     return myBreakpointHandlers;
   }
 

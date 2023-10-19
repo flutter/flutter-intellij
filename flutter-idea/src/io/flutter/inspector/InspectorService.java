@@ -440,8 +440,8 @@ public class InspectorService implements Disposable {
           if (path == null) return;
 
           VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
-          final Integer line = JsonUtils.getIntMember(json, "line");
-          final Integer column = JsonUtils.getIntMember(json, "column");;
+          final int line = JsonUtils.getIntMember(json, "line");
+          final int column = JsonUtils.getIntMember(json, "column");;
 
           ApplicationManager.getApplication().invokeLater(() -> {
             if (file != null && line >= 0 && column >= 0) {

@@ -49,7 +49,7 @@ public class FlutterConsoleFilter implements Filter {
     }
 
     @Override
-    public void navigate(Project project) {
+    public void navigate(@NotNull Project project) {
       try {
         final GeneralCommandLine cmd = new GeneralCommandLine().withExePath("open").withParameters(myPath);
         final ColoredProcessHandler handler = new ColoredProcessHandler(cmd);
@@ -257,7 +257,7 @@ public class FlutterConsoleFilter implements Filter {
 
   private static class FlutterDoctorHyperlinkInfo implements HyperlinkInfo {
     @Override
-    public void navigate(final Project project) {
+    public void navigate(final @NotNull Project project) {
       // TODO(skybrian) analytics for clicking the link? (We do log the command.)
       final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
       if (sdk == null) {

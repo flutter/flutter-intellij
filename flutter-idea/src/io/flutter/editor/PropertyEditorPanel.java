@@ -98,7 +98,6 @@ class PropertyEnumComboBoxModel extends AbstractListModel<EnumValueWrapper>
     String expression = property.getExpression();
     if (expression == null) {
       mySelected = null;
-      expression = "";
       return;
     }
     if (property.getValue() != null) {
@@ -489,7 +488,7 @@ public class PropertyEditorPanel extends SimpleToolWindowPanel {
         continue;
       }
       final String documentation = property.getDocumentation();
-      JComponent field = null;
+      JComponent field;
 
       if (property.getEditor() == null) {
         // TODO(jacobr): detect color properties more robustly.
