@@ -58,7 +58,7 @@ class FlutterConsole {
     panel.setContent(view.getComponent());
 
     final String title = module != null ? "[" + module.getName() + "] Flutter" : "Flutter";
-    final Content content = ContentFactory.SERVICE.getInstance().createContent(panel.getComponent(), title, true);
+    final Content content = ContentFactory.getInstance().createContent(panel.getComponent(), title, true);
     Disposer.register(content, view);
 
     return new FlutterConsole(view, content, project, module);
