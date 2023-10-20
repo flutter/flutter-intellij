@@ -86,6 +86,6 @@ class Cubic extends Curve {
 
   @Override
   public String toString() {
-    return getClass().toString() + "(" + a + ", " + b + ", " + c + ", " + d + ")";
+    return getClass() + "(" + a + ", " + b + ", " + c + ", " + d + ")";
   }
 }

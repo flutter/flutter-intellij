@@ -61,7 +61,7 @@ public class FlutterSdkChannel {
   }
 
   public String toString() {
-    return "channel " + channel.toString();
+    return "channel " + channel;
   }
 
   @NotNull

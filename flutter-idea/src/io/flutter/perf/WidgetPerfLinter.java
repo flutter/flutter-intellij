@@ -175,7 +175,7 @@ public class WidgetPerfLinter {
               matchingLocations.add(stats.getLocation());
             }
           }
-          if (matchingLocations.size() > 0) {
+          if (!matchingLocations.isEmpty()) {
             matches.add(new PerfTip(rule, matchingLocations, 1.0 / rule.priority));
           }
         }

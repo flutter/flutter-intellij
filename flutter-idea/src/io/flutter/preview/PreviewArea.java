@@ -103,7 +103,7 @@ public class PreviewArea {
     if (editor.isDisposed()) return;
 
     final InspectorService.ObjectGroup group = getObjectGroup();
-    if (group != null && outlines.size() > 0) {
+    if (group != null && !outlines.isEmpty()) {
       final FlutterOutline outline = findWidgetToHighlight(outlines.get(0));
       if (outline == null) return;
       final InspectorService.Location location = InspectorService.Location.outlineToLocation(editor, outline);

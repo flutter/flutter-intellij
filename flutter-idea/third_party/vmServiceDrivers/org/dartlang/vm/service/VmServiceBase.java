@@ -613,7 +613,7 @@ abstract class VmServiceBase implements VmServiceConst {
       }
       // ServiceExtensionConsumers do not care about the response type.
       else if (!(consumer instanceof ServiceExtensionConsumer)) {
-        Logging.getLogger().logError("Response missing " + TYPE + ": " + result.toString());
+        Logging.getLogger().logError("Response missing " + TYPE + ": " + result);
         return;
       }
       forwardResponse(consumer, responseType, result);

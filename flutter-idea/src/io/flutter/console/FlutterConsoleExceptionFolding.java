@@ -39,7 +39,7 @@ public class FlutterConsoleExceptionFolding extends ConsoleFolding {
   public String getPlaceholderText(@NotNull Project project, @NotNull List<String> lines) {
     if (foldingInProgress) {
       foldingInProgress = false;
-      return lines.size() == 0 ? null : lines.get(0); // Newlines are removed, so we can only show one line.
+      return lines.isEmpty() ? null : lines.get(0); // Newlines are removed, so we can only show one line.
     }
     return null;
   }

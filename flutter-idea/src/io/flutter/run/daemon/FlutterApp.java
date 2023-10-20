@@ -749,7 +749,7 @@ public class FlutterApp implements Disposable {
 
   @Override
   public String toString() {
-    return myExecutionEnvironment.toString() + ":" + deviceId();
+    return myExecutionEnvironment + ":" + deviceId();
   }
 
   public boolean isFlutterIsolateSuspended() {
