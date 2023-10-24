@@ -254,7 +254,7 @@ public class WidgetIndentsHighlightingPass {
       }
 
       int endLine = doc.getLineNumber(endOffset);
-      if (childLines != null && childLines.size() > 0) {
+      if (childLines != null && !childLines.isEmpty()) {
         final VisualPosition endPositionLastChild = editor.offsetToVisualPosition(childLines.get(childLines.size() - 1).getGuideOffset());
         if (endPositionLastChild.line == endPosition.line) {
           // The last child is on the same line as the end of the block.

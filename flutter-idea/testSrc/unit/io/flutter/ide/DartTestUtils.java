@@ -91,7 +91,7 @@ public class DartTestUtils {
 
         final ContentEntry oldContentEntry = contentEntries[0];
         assert oldContentEntry != null;
-        if (oldContentEntry.getSourceFolders().length != 1 || oldContentEntry.getExcludeFolderUrls().size() > 0) {
+        if (oldContentEntry.getSourceFolders().length != 1 || !oldContentEntry.getExcludeFolderUrls().isEmpty()) {
           modifiableModel.removeContentEntry(oldContentEntry);
           final ContentEntry newContentEntry = modifiableModel.addContentEntry(oldContentEntry.getUrl());
           newContentEntry.addSourceFolder(newContentEntry.getUrl(), false);

@@ -242,7 +242,7 @@ public class EventStreamTest {
   }
 
   private void reportFailure(Exception e) {
-    fail("Exception: " + e + "\nLog: " + getLogEntries().toString());
+    fail("Exception: " + e + "\nLog: " + getLogEntries());
   }
 
   private void checkLog(String... expectedEntries) {

@@ -267,7 +267,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
 
         final StatsForReportKind statsForKind = getStatsForKind(kind);
         final PerfSourceReport report = new PerfSourceReport(json.getAsJsonArray("events"), kind, startTimeMicros);
-        if (report.getEntries().size() > 0) {
+        if (!report.getEntries().isEmpty()) {
           statsForReportKind.lastNonEmptyReportTime = startTimeMilis;
         }
         for (PerfSourceReport.Entry entry : report.getEntries()) {

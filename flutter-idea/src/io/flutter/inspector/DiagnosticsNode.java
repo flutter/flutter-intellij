@@ -711,7 +711,7 @@ public class DiagnosticsNode {
       return false;
     }
     final JsonArray jsonArray = json.get("properties").getAsJsonArray();
-    return jsonArray.size() > 0;
+    return !jsonArray.isEmpty();
   }
 
   /**

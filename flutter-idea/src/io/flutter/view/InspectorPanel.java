@@ -1434,7 +1434,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     private void showPropertiesHelper(ArrayList<DiagnosticsNode> properties) {
       currentProperties = properties;
-      if (properties.size() == 0) {
+      if (properties.isEmpty()) {
         getTreeModel().setRoot(new DefaultMutableTreeNode());
         getEmptyText().setText(FlutterBundle.message("app.inspector.no_properties"));
         groups.promoteNext();

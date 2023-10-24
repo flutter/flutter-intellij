@@ -98,7 +98,7 @@ public class StdoutJsonParser {
   }
 
   private void flushLine() {
-    if (buffer.length() > 0) {
+    if (!buffer.isEmpty()) {
       synchronized (lines) {
         lines.add(buffer.toString());
       }

@@ -227,7 +227,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
    */
   @Override
   public void setIcon(@Nullable Icon icon) {
-    assert (myIcons.size() == 0);
+    assert (myIcons.isEmpty());
     if (icon == null) {
       return;
     }
@@ -656,7 +656,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
   @NotNull
   protected JLabel formatToLabel(@NotNull JLabel label) {
     // TODO(jacobr): interleave icons inline?
-    label.setIcon(myIcons.size() > 0 ? myIcons.get(0).icon : null);
+    label.setIcon(!myIcons.isEmpty() ? myIcons.get(0).icon : null);
 
     if (!myFragments.isEmpty()) {
       final StringBuilder text = new StringBuilder();

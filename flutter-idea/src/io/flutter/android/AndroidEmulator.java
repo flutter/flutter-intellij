@@ -90,7 +90,7 @@ public class AndroidEmulator {
           process.removeProcessListener(listener);
           final int exitCode = event.getExitCode();
           if (exitCode != 0) {
-            final String message = stdout.length() == 0
+            final String message = stdout.isEmpty()
                                    ? "Android emulator terminated with exit code " + exitCode
                                    : stdout.toString().trim();
             FlutterMessages.showError("Error Opening Emulator", message, androidSdk.project);

@@ -222,7 +222,7 @@ public class FlutterConsoleLogManager {
    * Pretty print the error using the available console syling attributes.
    */
   private void processFlutterErrorEvent(@NotNull DiagnosticsNode diagnosticsNode) {
-    final String description = " " + diagnosticsNode.toString() + " ";
+    final String description = " " + diagnosticsNode + " ";
 
     final boolean terseError = !isFirstErrorForFrame() && !FlutterSettings.getInstance().isIncludeAllStackTraces();
 

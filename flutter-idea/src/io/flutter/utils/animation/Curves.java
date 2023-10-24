@@ -265,7 +265,7 @@ class ElasticInCurve extends Curve {
 
   @Override
   public String toString() {
-    return getClass().toString() + "(" + period + ")";
+    return getClass() + "(" + period + ")";
   }
 }
 
@@ -305,7 +305,7 @@ class ElasticOutCurve extends Curve {
 
   @Override
   public String toString() {
-    return getClass().toString() + "(" + period + ")";
+    return getClass() + "(" + period + ")";
   }
 }
 
@@ -352,6 +352,6 @@ class ElasticInOutCurve extends Curve {
 
   @Override
   public String toString() {
-    return getClass().toString() + "(" + period + ")";
+    return getClass() + "(" + period + ")";
   }
 }

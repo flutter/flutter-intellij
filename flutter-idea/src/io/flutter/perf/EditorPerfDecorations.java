@@ -465,7 +465,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
       sb.append("Since last hot reload/restart: " + stats.getValue(PerfMetric.total));
       sb.append("</p>");
     }
-    if (sb.length() == 0) {
+    if (sb.isEmpty()) {
       sb.append("<p><b>No widget rebuilds detected for line.</b></p>");
     }
     return sb.toString();

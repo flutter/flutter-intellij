@@ -168,7 +168,7 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
       return false;
     }
     // If any rows will be animating, the first row will be animating.
-    return entries.size() > 0 && entries.get(0).getValue(metric) > 0;
+    return !entries.isEmpty() && entries.get(0).getValue(metric) > 0;
   }
 
   @Override
@@ -330,13 +330,13 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
       }
       else {
         // Report events for all the changes made to the table.
-        if (indicesChanged.size() > 0) {
+        if (!indicesChanged.isEmpty()) {
           model.nodesChanged(root, indicesChanged.toNativeArray());
         }
-        if (indicesInserted.size() > 0) {
+        if (!indicesInserted.isEmpty()) {
           model.nodesWereInserted(root, indicesInserted.toNativeArray());
         }
-        if (indicesRemoved.size() > 0) {
+        if (!indicesRemoved.isEmpty()) {
           model.nodesWereRemoved(root, indicesRemoved.toNativeArray(), nodesRemoved.toArray());
         }
       }

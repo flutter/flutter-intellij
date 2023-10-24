@@ -560,7 +560,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
           return view.get("id").getAsString();
         }
       }
-      throw new RuntimeException("No Flutter views to query: " + viewsList.toString());
+      throw new RuntimeException("No Flutter views to query: " + viewsList);
     });
   }
 
