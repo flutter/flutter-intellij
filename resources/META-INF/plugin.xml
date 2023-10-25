@@ -46,6 +46,11 @@
 
   <change-notes>
     <![CDATA[
+<h1>76.1</h1>
+<ul>
+  <li>Fix for IndexOutOfBounds on startup (#6942)</li>
+  <li>Fix for JXBrowser key not provided (#6992)</li>
+</ul>
 <h1>76</h1>
 <ul>
   <li>Widget inspector doesn't jump to source code (#6875)</li>
