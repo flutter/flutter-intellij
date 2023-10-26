@@ -7,7 +7,6 @@ package io.flutter.console;
 
 import com.intellij.execution.ConsoleFolding;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,7 +39,7 @@ public class FlutterConsoleExceptionFolding extends ConsoleFolding {
   public String getPlaceholderText(@NotNull Project project, @NotNull List<String> lines) {
     if (foldingInProgress) {
       foldingInProgress = false;
-      return lines.size() == 0 ? null : lines.get(0); // Newlines are removed, so we can only show one line.
+      return lines.isEmpty() ? null : lines.get(0); // Newlines are removed, so we can only show one line.
     }
     return null;
   }

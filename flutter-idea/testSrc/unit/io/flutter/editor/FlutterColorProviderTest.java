@@ -122,7 +122,7 @@ public class FlutterColorProviderTest extends AbstractDartElementTest {
   @Test
   public void locatesColorShadeReference() throws Exception {
     run(() -> {
-      final PsiElement testIdentifier = setUpDartElement("main() { Colors.blue.shade700; }", "Colors", LeafPsiElement.class);
+      final PsiElement testIdentifier = setUpDartElement("main() { Colors.blue.shade700; }", "shade700", LeafPsiElement.class);
       final Color color = new FlutterColorProvider().getColorFrom(testIdentifier);
       assertNotNull(color);
       final DartReferenceExpression element = DartSyntax.findEnclosingReferenceExpression(testIdentifier);
@@ -133,7 +133,7 @@ public class FlutterColorProviderTest extends AbstractDartElementTest {
   @Test
   public void locatesColorArrayReference() throws Exception {
     run(() -> {
-      final PsiElement testIdentifier = setUpDartElement("main() { Colors.blue[200]]; }", "Colors", LeafPsiElement.class);
+      final PsiElement testIdentifier = setUpDartElement("main() { Colors.blue[200]; }", "blue", LeafPsiElement.class);
       final Color color = new FlutterColorProvider().getColorFrom(testIdentifier);
       assertNotNull(color);
       final DartReferenceExpression element = DartSyntax.findEnclosingReferenceExpression(testIdentifier);
@@ -155,7 +155,7 @@ public class FlutterColorProviderTest extends AbstractDartElementTest {
   @Test
   public void locatesColorReferenceWithComment() throws Exception {
     run(() -> {
-      final PsiElement testIdentifier = setUpDartElement("main() { Colors . blue . /* darkish */ shade700; }", "Colors", LeafPsiElement.class);
+      final PsiElement testIdentifier = setUpDartElement("main() { Colors . blue . /* darkish */ shade700; }", "shade700", LeafPsiElement.class);
       final Color color = new FlutterColorProvider().getColorFrom(testIdentifier);
       assertNotNull(color);
       final DartReferenceExpression element = DartSyntax.findEnclosingReferenceExpression(testIdentifier);

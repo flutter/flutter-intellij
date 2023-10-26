@@ -5,14 +5,9 @@
  */
 package io.flutter.jxbrowser;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.project.ProjectManagerListener;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.teamdev.jxbrowser.browser.Browser;
 import com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException;
@@ -22,15 +17,12 @@ import com.teamdev.jxbrowser.browser.callback.input.PressKeyCallback;
 import com.teamdev.jxbrowser.browser.event.ConsoleMessageReceived;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.js.ConsoleMessage;
-import com.teamdev.jxbrowser.navigation.event.LoadFinished;
 import com.teamdev.jxbrowser.ui.KeyCode;
 import com.teamdev.jxbrowser.ui.event.KeyPressed;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
 import com.teamdev.jxbrowser.view.swing.callback.DefaultAlertCallback;
 import com.teamdev.jxbrowser.view.swing.callback.DefaultConfirmCallback;
-import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
-import io.flutter.devtools.DevToolsUrl;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.view.EmbeddedBrowser;
 import io.flutter.view.EmbeddedTab;
@@ -40,8 +32,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 class EmbeddedJxBrowserTab implements EmbeddedTab {
   private final Engine engine;

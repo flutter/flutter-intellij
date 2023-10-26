@@ -5,15 +5,14 @@
  */
 package io.flutter.devtools;
 
-import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.sdk.FlutterSdkVersion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,12 +92,8 @@ public class DevToolsUrl {
     }
 
     if (vmServiceUri != null) {
-      try {
-        final String urlParam = URLEncoder.encode(vmServiceUri, "UTF-8");
-        params.add("uri=" + urlParam);
-      }
-      catch (UnsupportedEncodingException ignored) {
-      }
+      final String urlParam = URLEncoder.encode(vmServiceUri, StandardCharsets.UTF_8);
+      params.add("uri=" + urlParam);
     }
 
     if (widgetId != null) {

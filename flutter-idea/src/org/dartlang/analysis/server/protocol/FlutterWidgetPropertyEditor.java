@@ -13,7 +13,7 @@ import com.google.dart.server.utilities.general.ObjectUtilities;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.apache.commons.lang.StringUtils;
+import static org.apache.commons.lang3.StringUtils.join;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
@@ -110,9 +110,9 @@ public class FlutterWidgetPropertyEditor {
     StringBuilder builder = new StringBuilder();
     builder.append("[");
     builder.append("kind=");
-    builder.append(kind + ", ");
+    builder.append(kind).append(", ");
     builder.append("enumItems=");
-    builder.append(StringUtils.join(enumItems, ", "));
+    builder.append(join(enumItems, ", "));
     builder.append("]");
     return builder.toString();
   }

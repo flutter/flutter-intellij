@@ -240,7 +240,7 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
       }
       catch (IOException | RuntimeException e) {
         onConnectFailed("Failed to connect to the VM observatory service at: " + url + "\n"
-                        + e.toString() + "\n" + formatStackTraces(e));
+                        + e + "\n" + formatStackTraces(e));
         return;
       }
       onConnectSucceeded(vmService);
@@ -280,7 +280,7 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
 
   @Override
   @NotNull
-  public XBreakpointHandler<?>[] getBreakpointHandlers() {
+  public XBreakpointHandler<?> @NotNull [] getBreakpointHandlers() {
     return myBreakpointHandlers;
   }
 
@@ -464,7 +464,7 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
     final StringBuilder out = new StringBuilder();
     Throwable cause = e.getCause();
     while (cause != null) {
-      out.append("Caused by: ").append(cause.toString()).append("\n");
+      out.append("Caused by: ").append(cause).append("\n");
       cause = cause.getCause();
     }
     return out.toString();

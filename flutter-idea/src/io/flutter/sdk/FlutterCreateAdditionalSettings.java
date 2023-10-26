@@ -163,7 +163,7 @@ public class FlutterCreateAdditionalSettings {
     if (platformWindows.get()) {
       platforms.append("windows,");
     }
-    if (type.requiresPlatform && platforms.length() == 0) {
+    if (type.requiresPlatform && platforms.isEmpty()) {
       platforms.append("android,ios,");
     }
 

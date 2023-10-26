@@ -13,7 +13,7 @@ import com.google.dart.server.utilities.general.ObjectUtilities;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.apache.commons.lang.StringUtils;
+import static org.apache.commons.lang3.StringUtils.join;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
@@ -336,32 +336,32 @@ public class FlutterOutline {
     final StringBuilder builder = new StringBuilder();
     builder.append("[");
     builder.append("kind=");
-    builder.append(kind + ", ");
+    builder.append(kind).append(", ");
     builder.append("offset=");
-    builder.append(offset + ", ");
+    builder.append(offset).append(", ");
     builder.append("length=");
-    builder.append(length + ", ");
+    builder.append(length).append(", ");
     builder.append("codeOffset=");
-    builder.append(codeOffset + ", ");
+    builder.append(codeOffset).append(", ");
     builder.append("codeLength=");
-    builder.append(codeLength + ", ");
+    builder.append(codeLength).append(", ");
     builder.append("label=");
-    builder.append(label + ", ");
+    builder.append(label).append(", ");
     builder.append("dartElement=");
-    builder.append(dartElement + ", ");
+    builder.append(dartElement).append(", ");
     if (attributes != null) {
       builder.append("attributes=");
-      builder.append(StringUtils.join(attributes, ", ") + ", ");
+      builder.append(join(attributes, ", ")).append(", ");
     }
     builder.append("className=");
-    builder.append(className + ", ");
+    builder.append(className).append(", ");
     builder.append("parentAssociationLabel=");
-    builder.append(parentAssociationLabel + ", ");
+    builder.append(parentAssociationLabel).append(", ");
     builder.append("variableName=");
-    builder.append(variableName + ", ");
+    builder.append(variableName).append(", ");
     if (children != null) {
       builder.append("children=");
-      builder.append(StringUtils.join(children, ", "));
+      builder.append(join(children, ", "));
     }
 
     builder.append("]");

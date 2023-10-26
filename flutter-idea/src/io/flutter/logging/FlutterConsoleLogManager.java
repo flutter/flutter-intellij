@@ -40,9 +40,7 @@ import io.flutter.inspector.DiagnosticLevel;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.DiagnosticsTreeStyle;
 import io.flutter.inspector.InspectorService;
-import io.flutter.jxbrowser.EmbeddedJxBrowser;
 import io.flutter.jxbrowser.JxBrowserManager;
-import io.flutter.jxbrowser.JxBrowserStatus;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
@@ -224,7 +222,7 @@ public class FlutterConsoleLogManager {
    * Pretty print the error using the available console syling attributes.
    */
   private void processFlutterErrorEvent(@NotNull DiagnosticsNode diagnosticsNode) {
-    final String description = " " + diagnosticsNode.toString() + " ";
+    final String description = " " + diagnosticsNode + " ";
 
     final boolean terseError = !isFirstErrorForFrame() && !FlutterSettings.getInstance().isIncludeAllStackTraces();
 

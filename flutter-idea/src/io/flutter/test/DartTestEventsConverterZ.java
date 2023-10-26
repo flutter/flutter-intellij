@@ -112,7 +112,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
   }
 
   @Override
-  protected boolean processServiceMessages(final String text, final Key outputType, final ServiceMessageVisitor visitor)
+  protected boolean processServiceMessages(final String text, final @NotNull Key outputType, final @NotNull ServiceMessageVisitor visitor)
     throws ParseException {
     LOG.debug("<<< " + text.trim());
     myCurrentOutputType = outputType;
@@ -211,7 +211,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
         path = test.getName().substring(COMPILING_PREFIX.length());
       }
 
-      if (path.length() > 0) myLocation = FILE_URL_PREFIX + path;
+      if (!path.isEmpty()) myLocation = FILE_URL_PREFIX + path;
 
       test.myTestStartReported = false;
       return true;

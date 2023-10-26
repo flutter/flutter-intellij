@@ -38,7 +38,7 @@ public class FlutterConsoles {
 
     // Getting a MessageView has to happen on the UI thread.
     ApplicationManager.getApplication().invokeLater(() -> {
-      final MessageView messageView = MessageView.SERVICE.getInstance(project);
+      final MessageView messageView = MessageView.getInstance(project);
       messageView.runWhenInitialized(() -> {
         final FlutterConsole console = findOrCreate(project, module);
         console.watchProcess(process);
@@ -55,7 +55,7 @@ public class FlutterConsoles {
   public static void displayMessage(@NotNull Project project, @Nullable Module module, @NotNull String message, boolean clearContent) {
     // Getting a MessageView has to happen on the UI thread.
     ApplicationManager.getApplication().invokeLater(() -> {
-      final MessageView messageView = MessageView.SERVICE.getInstance(project);
+      final MessageView messageView = MessageView.getInstance(project);
       messageView.runWhenInitialized(() -> {
         final FlutterConsole console = findOrCreate(project, module);
         if (clearContent) {
@@ -69,7 +69,7 @@ public class FlutterConsoles {
 
   @NotNull
   static FlutterConsole findOrCreate(@NotNull Project project, @Nullable Module module) {
-    for (Content content : MessageView.SERVICE.getInstance(project).getContentManager().getContents()) {
+    for (Content content : MessageView.getInstance(project).getContentManager().getContents()) {
       final FlutterConsole console = content.getUserData(KEY);
       if (console != null && console.module == module) {
         assert (project == console.project);

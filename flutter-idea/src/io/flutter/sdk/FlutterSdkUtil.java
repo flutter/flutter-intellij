@@ -337,7 +337,7 @@ public class FlutterSdkUtil {
         final JsonObject json = element.getAsJsonObject();
         if (JsonUtils.getIntMember(json, "configVersion") < 2) continue;
         final JsonArray packages = json.getAsJsonArray("packages");
-        if (packages == null || packages.size() == 0) {
+        if (packages == null || packages.isEmpty()) {
           continue;
         }
         entries.addAll(packages);

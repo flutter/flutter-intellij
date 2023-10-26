@@ -51,7 +51,7 @@ public class XcodeUtils {
           textBuffer.append(output.getStdout());
         }
         if (!output.getStderr().isEmpty()) {
-          if (textBuffer.length() > 0) {
+          if (!textBuffer.isEmpty()) {
             textBuffer.append("\n");
           }
           textBuffer.append(output.getStderr());

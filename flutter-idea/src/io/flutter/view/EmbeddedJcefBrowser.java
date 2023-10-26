@@ -8,20 +8,13 @@ package io.flutter.view;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.jcef.JBCefBrowser;
-import icons.FlutterIcons;
-import io.flutter.FlutterInitializer;
-import io.flutter.devtools.DevToolsUrl;
 import io.flutter.jxbrowser.JxBrowserManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.Dimension;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 class EmbeddedJcefBrowserTab implements EmbeddedTab {
   private JBCefBrowser browser;

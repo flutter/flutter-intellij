@@ -304,12 +304,12 @@ public class Analytics {
     byte[] createPostData(@NotNull Map<String, String> values) throws UnsupportedEncodingException {
       final StringBuilder postData = new StringBuilder();
       for (Map.Entry<String, String> param : values.entrySet()) {
-        if (postData.length() != 0) {
+        if (!postData.isEmpty()) {
           postData.append('&');
         }
-        postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
+        postData.append(URLEncoder.encode(param.getKey(), StandardCharsets.UTF_8));
         postData.append('=');
-        postData.append(URLEncoder.encode(param.getValue(), "UTF-8"));
+        postData.append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8));
       }
       return postData.toString().getBytes(StandardCharsets.UTF_8);
     }

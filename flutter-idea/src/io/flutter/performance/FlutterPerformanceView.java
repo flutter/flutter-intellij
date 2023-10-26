@@ -36,7 +36,6 @@ import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.view.*;

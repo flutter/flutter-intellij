@@ -10,15 +10,12 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.*;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.util.SmartList;
 import com.jetbrains.lang.dart.DartLanguage;
-import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
-import com.jetbrains.lang.dart.sdk.DartSdkUtil;
 import io.flutter.sdk.FlutterSdkUtil;
 import junit.framework.TestCase;
 import org.jetbrains.annotations.NotNull;
@@ -94,7 +91,7 @@ public class DartTestUtils {
 
         final ContentEntry oldContentEntry = contentEntries[0];
         assert oldContentEntry != null;
-        if (oldContentEntry.getSourceFolders().length != 1 || oldContentEntry.getExcludeFolderUrls().size() > 0) {
+        if (oldContentEntry.getSourceFolders().length != 1 || !oldContentEntry.getExcludeFolderUrls().isEmpty()) {
           modifiableModel.removeContentEntry(oldContentEntry);
           final ContentEntry newContentEntry = modifiableModel.addContentEntry(oldContentEntry.getUrl());
           newContentEntry.addSourceFolder(newContentEntry.getUrl(), false);

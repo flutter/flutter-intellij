@@ -123,7 +123,7 @@ public class FlutterTestRunner extends GenericProgramRunner {
       catch (IOException | RuntimeException e) {
         if (!launcher.isTerminated()) {
           launcher.notifyTextAvailable(
-            "Failed to connect to the VM service at: " + url + "\n" + e.toString() + "\n",
+            "Failed to connect to the VM service at: " + url + "\n" + e + "\n",
             ProcessOutputTypes.STDERR);
         }
         return;

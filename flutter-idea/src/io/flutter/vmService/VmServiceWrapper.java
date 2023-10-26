@@ -174,6 +174,17 @@ public class VmServiceWrapper implements Disposable {
         });
       }
     });
+
+    streamListen("ToolEvent", new SuccessConsumer() {
+      @Override
+      public void received(Success response) {
+      }
+
+      @Override
+      public void onError(RPCError error) {
+        LOG.error("Error listening to ToolEvent stream: " + error);
+      }
+    });
   }
 
   private void streamListen(@NotNull String streamId, @NotNull SuccessConsumer consumer) {
@@ -352,12 +363,12 @@ public class VmServiceWrapper implements Disposable {
 
         @Override
         void received(List<Breakpoint> breakpointResponses, List<RPCError> errorResponses) {
-          if (breakpointResponses.size() > 0) {
+          if (!breakpointResponses.isEmpty()) {
             for (Breakpoint breakpoint : breakpointResponses) {
               myBreakpointHandler.vmBreakpointAdded(xBreakpoint, isolateId, breakpoint);
             }
           }
-          else if (errorResponses.size() > 0) {
+          else if (!errorResponses.isEmpty()) {
             myBreakpointHandler.breakpointFailed(xBreakpoint);
           }
 

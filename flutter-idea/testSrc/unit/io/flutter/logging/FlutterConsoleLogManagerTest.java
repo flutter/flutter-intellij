@@ -33,7 +33,7 @@ import java.io.InputStreamReader;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -204,7 +204,7 @@ class ConsoleViewMock implements ConsoleView {
   }
 
   @Override
-  public void attachToProcess(ProcessHandler handler) {
+  public void attachToProcess(@NotNull ProcessHandler handler) {
 
   }
 
@@ -255,7 +255,7 @@ class ConsoleViewMock implements ConsoleView {
 
   @NotNull
   @Override
-  public AnAction[] createConsoleActions() {
+  public AnAction @NotNull [] createConsoleActions() {
     return new AnAction[0];
   }
 

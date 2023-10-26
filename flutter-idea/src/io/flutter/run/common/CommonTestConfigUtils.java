@@ -22,7 +22,7 @@ import io.flutter.dart.DartSyntax;
 import io.flutter.editor.ActiveEditorsOutlineService;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.dartlang.analysis.server.protocol.ElementKind;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;

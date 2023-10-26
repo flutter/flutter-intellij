@@ -77,7 +77,7 @@ public class DaemonConsoleView extends ConsoleViewImpl {
 
       // TODO(helin24): We want to log only disconnection messages, but we aren't sure what those are yet.
       // Until then, only log error messages for internal users.
-      if (WorkspaceCache.getInstance(getProject()).isBazel() && contentType.equals(ConsoleViewContentType.ERROR_OUTPUT) && text.length() > 0) {
+      if (WorkspaceCache.getInstance(getProject()).isBazel() && contentType.equals(ConsoleViewContentType.ERROR_OUTPUT) && !text.isEmpty()) {
         analytics.sendEvent("potential-disconnect", text);
       }
       super.print(text, contentType);

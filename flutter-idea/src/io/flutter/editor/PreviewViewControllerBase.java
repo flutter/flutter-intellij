@@ -232,7 +232,7 @@ public abstract class PreviewViewControllerBase extends WidgetViewController {
       hoverGroups.promoteNext();
       // TODO(jacobr): consider removing the navigateTo option?
       if (navigateTo && popopOpenInProgress) {
-        final DiagnosticsNode node = hits.size() > 0 ? hits.get(0) : null;
+        final DiagnosticsNode node = !hits.isEmpty() ? hits.get(0) : null;
         if (node == null) return;
         final TransformedRect transform = node.getTransformToRoot();
         if (transform != null) {
@@ -246,7 +246,7 @@ public abstract class PreviewViewControllerBase extends WidgetViewController {
         }
         popopOpenInProgress = false;
       }
-      if (navigateTo && hits.size() > 0) {
+      if (navigateTo && !hits.isEmpty()) {
         getGroups().getCurrent().setSelection(hits.get(0).getValueRef(), false, false);
       }
       forceRender();
@@ -489,7 +489,7 @@ public abstract class PreviewViewControllerBase extends WidgetViewController {
   }
 
   protected ArrayList<DiagnosticsNode> getNodesToHighlight() {
-    return currentHits != null && currentHits.size() > 0 ? currentHits : boxes;
+    return currentHits != null && !currentHits.isEmpty() ? currentHits : boxes;
   }
 
   protected void clearScreenshot() {
@@ -612,7 +612,7 @@ public abstract class PreviewViewControllerBase extends WidgetViewController {
       final java.util.List<DiagnosticsNode> nodesToHighlight = getNodesToHighlight();
       // Sometimes it is fine to display even if we are loading.
       // TODO(jacobr): be smarter and track if the highlights are associated with a different screenshot.
-      if (nodesToHighlight != null && nodesToHighlight.size() > 0) { //&& !screenshotLoading) {
+      if (nodesToHighlight != null && !nodesToHighlight.isEmpty()) { //&& !screenshotLoading) {
         boolean first = true;
         for (DiagnosticsNode box : nodesToHighlight) {
           final TransformedRect transform = box.getTransformToRoot();
@@ -636,7 +636,7 @@ public abstract class PreviewViewControllerBase extends WidgetViewController {
               polygon.addPoint((int)Math.round(point.getX()), (int)Math.round(point.getY()));
             }
 
-            if (first && elements.size() > 0 && !Objects.equals(box.getValueRef(), elements.get(0).getValueRef())) {
+            if (first && !elements.isEmpty() && !Objects.equals(box.getValueRef(), elements.get(0).getValueRef())) {
               g2d.setColor(FlutterEditorColors.HIGHLIGHTED_RENDER_OBJECT_BORDER_COLOR);
               g2d.fillPolygon(polygon);
             }
@@ -656,7 +656,7 @@ public abstract class PreviewViewControllerBase extends WidgetViewController {
       }
       g2d.setColor(JBColor.BLACK);
 
-      drawMultilineString(g2d, getNoScreenshotMessage(), screenshotBounds.x + 4, screenshotBounds.y + +lineHeight - 4, lineHeight);
+      drawMultilineString(g2d, getNoScreenshotMessage(), screenshotBounds.x + 4, screenshotBounds.y + lineHeight - 4, lineHeight);
     }
     g2d.setClip(clip);
 

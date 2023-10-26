@@ -12,16 +12,11 @@ import com.intellij.execution.configurations.coverage.CoverageEnabledConfigurati
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.GuiUtils;
 import com.intellij.util.ModalityUiUtil;
-import io.flutter.FlutterBundle;
 import io.flutter.pub.PubRoot;
-import io.flutter.pub.PubRoots;
 import io.flutter.run.test.TestConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 public class FlutterCoverageEnabledConfiguration extends CoverageEnabledConfiguration {
   private static final Logger LOG = Logger.getInstance(FlutterCoverageEnabledConfiguration.class.getName());

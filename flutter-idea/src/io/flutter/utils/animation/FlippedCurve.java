@@ -35,6 +35,6 @@ public class FlippedCurve extends Curve {
 
   @Override
   public String toString() {
-    return this.getClass().toString() + "(" + curve + ")";
+    return this.getClass() + "(" + curve + ")";
   }
 }

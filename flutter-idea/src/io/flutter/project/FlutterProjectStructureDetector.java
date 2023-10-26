@@ -89,6 +89,15 @@ public class FlutterProjectStructureDetector extends ProjectStructureDetector {
     scheduleDisconnectIfCancelled(connection);
     //noinspection ConstantConditions
     connection[0].subscribe(ProjectManager.TOPIC, new ProjectManagerListener() {
+      //See https://plugins.jetbrains.com/docs/intellij/plugin-components.html#comintellijpoststartupactivity
+      // for notice and documentation on the deprecation intentions of
+      // Components from JetBrains.
+      //
+      // Migration forward has different directions before and after
+      // 2023.1, if we can, it would be prudent to wait until we are
+      // only supporting this major platform as a minimum version.
+      //
+      // https://github.com/flutter/flutter-intellij/issues/6953
       @Override
       public void projectOpened(@NotNull Project project) {
         if (connection[0] != null) {
