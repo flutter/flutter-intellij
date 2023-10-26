@@ -58,10 +58,14 @@ public class FlutterColorProvider implements ElementColorProvider {
         return null;
       }
       if (parent.getLastChild() instanceof DartArguments && !name.matches("(Cupertino)?Color")) {
+        final DartArgumentList argumentList = ((DartArguments)parent.getLastChild()).getArgumentList();
+        if (argumentList == null) {
+          return null;
+        }
         // Avoid duplicate resolves.
         Color color = null;
-        final List<DartExpression> expressionList= ((DartArguments)parent.getLastChild()).getArgumentList().getExpressionList();
-        if(!expressionList.isEmpty()) {
+        final List<DartExpression> expressionList = argumentList.getExpressionList();
+        if (!expressionList.isEmpty()) {
           final DartExpression colorExpression = expressionList.get(0);
           color = parseColorElements(colorExpression, colorExpression.getFirstChild());
         }
