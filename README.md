@@ -1,5 +1,6 @@
 # <img src="https://github.com/dart-lang/site-shared/blob/master/src/_assets/image/flutter/icon/64.png?raw=1" alt="Flutter" width="26" height="26"/> Flutter Plugin for IntelliJ
 
+[![Latest plugin version](https://img.shields.io/jetbrains/plugin/v/9212)](https://plugins.jetbrains.com/plugin/9212-flutter)
 [![Build Status](https://travis-ci.org/flutter/flutter-intellij.svg)](https://travis-ci.org/flutter/flutter-intellij)
 
 An IntelliJ plugin for [Flutter](https://flutter.dev/) development. Flutter is a multi-platform
