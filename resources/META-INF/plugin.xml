@@ -46,9 +46,12 @@
 
   <change-notes>
     <![CDATA[
-<h1>76.1</h1>
+<h1>76.2</h1>
 <ul>
   <li>Fix for IndexOutOfBounds on startup (#6942)</li>
+</ul>
+<h1>76.1</h1>
+<ul>
   <li>Fix for JXBrowser key not provided (#6992)</li>
 </ul>
 <h1>76</h1>

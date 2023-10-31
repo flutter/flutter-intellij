@@ -1,5 +1,7 @@
-# 76.1
+# 76.2
 - Fix for IndexOutOfBounds on startup (#6942)
+
+# 76.1
 - Fix for JXBrowser key not provided (#6992)
 
 # 76
