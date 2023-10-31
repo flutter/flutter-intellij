@@ -21,7 +21,7 @@
 
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
-  <idea-version since-build="232.8660.185" until-build="232.*"/>
+  <idea-version since-build="233.11361.10" until-build="233.*"/>
 
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.lang</depends>
@@ -46,9 +46,14 @@
 
   <change-notes>
     <![CDATA[
-<h1>76.1</h1>
+<h1>76.2</h1>
 <ul>
   <li>Fix for IndexOutOfBounds on startup (#6942)</li>
+  <li>Build for Android Studio Iguana, 2023.2</li>
+  <li>Build for IntelliJ EAP, 2023.3</li>
+</ul>
+<h1>76.1</h1>
+<ul>
   <li>Fix for JXBrowser key not provided (#6992)</li>
 </ul>
 <h1>76</h1>

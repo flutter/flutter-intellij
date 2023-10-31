@@ -1,5 +1,9 @@
-# 76.1
+# 76.2
 - Fix for IndexOutOfBounds on startup (#6942)
+- Build for Android Studio Iguana, 2023.2
+- Build for IntelliJ EAP, 2023.3
+
+# 76.1
 - Fix for JXBrowser key not provided (#6992)
 
 # 76
