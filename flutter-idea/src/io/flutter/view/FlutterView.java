@@ -291,10 +291,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
       //noinspection CodeBlock2Expr
       ApplicationManager.getApplication().invokeLater(() -> {
-        embeddedBrowserOptional().ifPresent(embeddedBrowser -> embeddedBrowser.openPanel(contentManager, tabName, devToolsUrl, () -> {
+        embeddedBrowserOptional().ifPresent(embeddedBrowser -> embeddedBrowser.openPanel(contentManager, tabName, devToolsUrl, (String error) -> {
           // If the embedded browser doesn't work, offer a link to open in the regular browser.
           final List<LabelInput> inputs = Arrays.asList(
-            new LabelInput("The embedded browser failed to load."),
+            new LabelInput("The embedded browser failed to load. Error: " + error),
             openDevToolsLabel(app, inspectorService, toolWindow)
           );
           presentClickableLabel(toolWindow, inputs);
@@ -709,6 +709,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       final JPanel panel = new JPanel(new BorderLayout());
       panel.add(label, BorderLayout.CENTER);
       final Content content = contentManager.getFactory().createContent(panel, null, false);
+      contentManager.removeAllContents(true);
       contentManager.addContent(content);
     });
   }

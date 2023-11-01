@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 class BrowserTab {
@@ -56,15 +57,21 @@ public abstract class EmbeddedBrowser {
     });
   }
 
-  public void openPanel(ContentManager contentManager, String tabName, DevToolsUrl devToolsUrl, Runnable onBrowserUnavailable) {
+  public void openPanel(ContentManager contentManager, String tabName, DevToolsUrl devToolsUrl, Consumer<String> onBrowserUnavailable) {
     final BrowserTab firstTab = tabs.get(tabName);
     if (firstTab == null) {
-      openBrowserTabFor(tabName);
+      try {
+        openBrowserTabFor(tabName);
+      } catch (Exception ex) {
+        onBrowserUnavailable.accept(ex.getMessage());
+        return;
+      }
     }
+
     final BrowserTab tab = tabs.get(tabName);
     // If the browser failed to start during setup, run unavailable callback.
     if (tab == null) {
-      onBrowserUnavailable.run();
+      onBrowserUnavailable.accept("Browser failed to start during setup.");
       return;
     }
 
@@ -75,7 +82,7 @@ public abstract class EmbeddedBrowser {
       tab.embeddedTab.loadUrl(devToolsUrl.getUrlString());
     } catch (Exception ex) {
       tab.devToolsUrlFuture.completeExceptionally(ex);
-      onBrowserUnavailable.run();
+      onBrowserUnavailable.accept(ex.getMessage());
       logger().info(ex);
       return;
     }
