@@ -19,7 +19,7 @@ import java.awt.Dimension;
 class EmbeddedJcefBrowserTab implements EmbeddedTab {
   private JBCefBrowser browser;
 
-  public EmbeddedJcefBrowserTab() throws Exception {
+  public EmbeddedJcefBrowserTab() {
     this.browser = new JBCefBrowser();
   }
 
@@ -57,7 +57,7 @@ public class EmbeddedJcefBrowser extends EmbeddedBrowser {
   }
 
   @Override
-  public EmbeddedTab openEmbeddedTab() throws Exception {
+  public EmbeddedTab openEmbeddedTab() {
     return new EmbeddedJcefBrowserTab();
   }
 }
