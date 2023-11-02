@@ -15,6 +15,7 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
+import io.flutter.analytics.Analytics;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
@@ -33,12 +34,17 @@ class BrowserTab {
   protected CompletableFuture<DevToolsUrl> devToolsUrlFuture;
 }
 
+
 public abstract class EmbeddedBrowser {
+  public static final String ANALYTICS_CATEGORY = "embedded-browser";
+
   protected final Map<@NotNull String, @NotNull BrowserTab> tabs = new HashMap<>();
 
   public abstract Logger logger();
+  private final Analytics analytics;
 
   public EmbeddedBrowser(Project project) {
+    this.analytics = FlutterInitializer.getAnalytics();
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
       @Override
       public void projectClosing(@NotNull Project project) {
@@ -63,6 +69,7 @@ public abstract class EmbeddedBrowser {
       try {
         openBrowserTabFor(tabName);
       } catch (Exception ex) {
+        analytics.sendEvent(ANALYTICS_CATEGORY, "openBrowserTabFailed-" + this.getClass());
         onBrowserUnavailable.accept(ex.getMessage());
         return;
       }
@@ -116,7 +123,7 @@ public abstract class EmbeddedBrowser {
     });
   }
 
-  private BrowserTab openBrowserTabFor(String tabName) {
+  private BrowserTab openBrowserTabFor(String tabName) throws Exception {
     BrowserTab tab = new BrowserTab();
     tab.devToolsUrlFuture = new CompletableFuture<>();
     tab.embeddedTab = openEmbeddedTab();
@@ -124,7 +131,7 @@ public abstract class EmbeddedBrowser {
     return tab;
   }
 
-  public abstract EmbeddedTab openEmbeddedTab();
+  public abstract EmbeddedTab openEmbeddedTab() throws Exception;
 
   public void updatePanelToWidget(String widgetId) {
     updateUrlAndReload(devToolsUrl -> {
