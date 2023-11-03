@@ -528,7 +528,6 @@
                         serviceImplementation="io.flutter.settings.FlutterSettings"
                         overrides="false"/>
 
-    <applicationService serviceImplementation="io.flutter.jxbrowser.EmbeddedBrowserEngine" overrides="false" />
     <applicationService serviceImplementation="io.flutter.font.FontPreviewProcessor"/>
     <console.folding implementation="io.flutter.console.FlutterConsoleFolding" id="1"/>
     <console.folding implementation="io.flutter.console.FlutterConsoleExceptionFolding" order="after 1"/>
@@ -603,9 +602,6 @@
                     serviceImplementation="io.flutter.editor.WidgetIndentsHighlightingPassFactory"
                     overrides="false"/>
     <highlightingPassFactory implementation="io.flutter.editor.WidgetIndentsHighlightingPassFactoryRegistrar"/>
-    <projectService serviceInterface="io.flutter.jxbrowser.EmbeddedJxBrowser"
-                    serviceImplementation="io.flutter.jxbrowser.EmbeddedJxBrowser"
-                    overrides="false"/>
     <projectService serviceInterface="io.flutter.view.EmbeddedJcefBrowser"
                     serviceImplementation="io.flutter.view.EmbeddedJcefBrowser"
                     overrides="false"/>
