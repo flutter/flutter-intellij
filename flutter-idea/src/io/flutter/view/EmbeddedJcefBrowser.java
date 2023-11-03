@@ -10,7 +10,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.jcef.JBCefBrowser;
-import io.flutter.jxbrowser.JxBrowserManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -41,7 +40,7 @@ class EmbeddedJcefBrowserTab implements EmbeddedTab {
 }
 
 public class EmbeddedJcefBrowser extends EmbeddedBrowser {
-  private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
+  private static final Logger LOG = Logger.getInstance(EmbeddedJcefBrowser.class);
 
   public EmbeddedJcefBrowser(Project project) {
     super(project);

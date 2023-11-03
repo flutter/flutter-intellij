@@ -56,7 +56,6 @@ import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.InspectorGroupManagerService;
 import io.flutter.inspector.InspectorService;
 import io.flutter.inspector.InspectorSourceLocation;
-import io.flutter.jxbrowser.*;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.daemon.DevToolsInstance;
 import io.flutter.run.daemon.DevToolsService;
@@ -67,7 +66,6 @@ import io.flutter.settings.FlutterSettings;
 import io.flutter.toolwindow.FlutterViewToolWindowManagerListener;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.EventStream;
-import io.flutter.utils.JxBrowserUtils;
 import io.flutter.vmService.ServiceExtensions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -77,7 +75,6 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeoutException;
 
 @com.intellij.openapi.components.State(
   name = "FlutterView",
@@ -102,10 +99,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   public static final String WIDGET_TAB_LABEL = "Widgets";
   public static final String RENDER_TAB_LABEL = "Render Tree";
   public static final String PERFORMANCE_TAB_LABEL = "Performance";
-  protected static final String INSTALLATION_IN_PROGRESS_LABEL = "Installing JxBrowser and DevTools...";
-  protected static final String INSTALLATION_TIMED_OUT_LABEL =
-    "Waiting for JxBrowser installation timed out. Restart your IDE to try again.";
-  protected static final String INSTALLATION_WAIT_FAILED = "The JxBrowser installation failed unexpectedly. Restart your IDE to try again.";
   protected static final String DEVTOOLS_FAILED_LABEL = "Setting up DevTools failed.";
   protected static final int INSTALLATION_WAIT_LIMIT_SECONDS = 2000;
 
@@ -127,19 +120,15 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   private FlutterViewToolWindowManagerListener toolWindowListener;
   private int devToolsInstallCount = 0;
-  private final JxBrowserUtils jxBrowserUtils;
-  private final JxBrowserManager jxBrowserManager;
 
   public FlutterView(@NotNull Project project) {
-    this(project, JxBrowserManager.getInstance(), new JxBrowserUtils(), InspectorGroupManagerService.getInstance(project), ApplicationManager.getApplication().getMessageBus().connect());
+    this(project, InspectorGroupManagerService.getInstance(project), ApplicationManager.getApplication().getMessageBus().connect());
   }
 
   @VisibleForTesting
   @NonInjectable
-  protected FlutterView(@NotNull Project project, @NotNull JxBrowserManager jxBrowserManager, JxBrowserUtils jxBrowserUtils, InspectorGroupManagerService inspectorGroupManagerService, MessageBusConnection messageBusConnection) {
+  protected FlutterView(@NotNull Project project, @NotNull InspectorGroupManagerService inspectorGroupManagerService, MessageBusConnection messageBusConnection) {
     myProject = project;
-    this.jxBrowserUtils = jxBrowserUtils;
-    this.jxBrowserManager = jxBrowserManager;
     this.busConnection = messageBusConnection;
 
     shouldAutoHorizontalScroll.listen(state::setShouldAutoScroll);
@@ -577,89 +566,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     });
   }
 
-  protected void handleJxBrowserInstallationInProgress(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
-    presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_IN_PROGRESS_LABEL);
-
-    if (jxBrowserManager.getStatus().equals(JxBrowserStatus.INSTALLED)) {
-      handleJxBrowserInstalled(app, inspectorService, toolWindow);
-    }
-    else {
-      startJxBrowserInstallationWaitingThread(app, inspectorService, toolWindow);
-    }
-  }
-
-  protected void startJxBrowserInstallationWaitingThread(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
-    ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      waitForJxBrowserInstallation(app, inspectorService, toolWindow);
-    });
-  }
-
-  protected void waitForJxBrowserInstallation(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
-    try {
-      final JxBrowserStatus newStatus = jxBrowserManager.waitForInstallation(INSTALLATION_WAIT_LIMIT_SECONDS);
-
-      handleUpdatedJxBrowserStatusOnEventThread(app, inspectorService, toolWindow, newStatus);
-    }
-    catch (TimeoutException e) {
-      presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_TIMED_OUT_LABEL);
-
-      FlutterInitializer.getAnalytics().sendEvent(JxBrowserManager.ANALYTICS_CATEGORY, "timedOut");
-    }
-  }
-
-  protected void handleUpdatedJxBrowserStatusOnEventThread(
-          FlutterApp app,
-          InspectorService inspectorService,
-          ToolWindow toolWindow,
-          JxBrowserStatus jxBrowserStatus
-  ) {
-    AsyncUtils.invokeLater(() -> handleUpdatedJxBrowserStatus(app, inspectorService, toolWindow, jxBrowserStatus));
-  }
-
-  protected void handleUpdatedJxBrowserStatus(
-          FlutterApp app,
-          InspectorService inspectorService,
-          ToolWindow toolWindow,
-          JxBrowserStatus jxBrowserStatus
-  ) {
-    if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {
-      handleJxBrowserInstalled(app, inspectorService, toolWindow);
-    } else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
-      handleJxBrowserInstallationFailed(app, inspectorService, toolWindow);
-    } else {
-      // newStatus can be null if installation is interrupted or stopped for another reason.
-      presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_WAIT_FAILED);
-    }
-  }
-
-  protected void handleJxBrowserInstallationFailed(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
-    final List<LabelInput> inputs = new ArrayList<>();
-    final LabelInput openDevToolsLabel = openDevToolsLabel(app, inspectorService, toolWindow);
-
-    final InstallationFailedReason latestFailureReason = jxBrowserManager.getLatestFailureReason();
-
-    if (!jxBrowserUtils.licenseIsSet()) {
-      // If the license isn't available, allow the user to open the equivalent page in a non-embedded browser window.
-      inputs.add(new LabelInput("The JxBrowser license could not be found."));
-      inputs.add(openDevToolsLabel);
-    } else if (latestFailureReason != null && latestFailureReason.failureType.equals(FailureType.SYSTEM_INCOMPATIBLE)) {
-      // If we know the system is incompatible, skip retry link and offer to open in browser.
-      inputs.add(new LabelInput(latestFailureReason.detail));
-      inputs.add(openDevToolsLabel);
-    }
-    else {
-      // Allow the user to manually restart or open the equivalent page in a non-embedded browser window.
-      inputs.add(new LabelInput("JxBrowser installation failed."));
-      inputs.add(new LabelInput("Retry installation?", (linkLabel, data) -> {
-        jxBrowserManager.retryFromFailed(app.getProject());
-        handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
-      }));
-      inputs.add(openDevToolsLabel);
-    }
-
-    presentClickableLabel(toolWindow, inputs);
-  }
-
   protected void presentLabel(ToolWindow toolWindow, String text) {
     final JBLabel label = new JBLabel(text, SwingConstants.CENTER);
     label.setForeground(UIUtil.getLabelDisabledForeground());
@@ -757,29 +663,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private void displayEmbeddedBrowser(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
-    if (FlutterSettings.getInstance().isEnableJcefBrowser()) {
-      presentDevTools(app, inspectorService, toolWindow, true);
-    } else {
-      displayEmbeddedBrowserIfJxBrowser(app, inspectorService, toolWindow);
-    }
-  }
-
-  private void displayEmbeddedBrowserIfJxBrowser(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
-    final JxBrowserManager manager = jxBrowserManager;
-    final JxBrowserStatus jxBrowserStatus = manager.getStatus();
-
-    if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {
-      handleJxBrowserInstalled(app, inspectorService, toolWindow);
-    }
-    else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
-      handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
-    }
-    else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
-      handleJxBrowserInstallationFailed(app, inspectorService, toolWindow);
-    } else if (jxBrowserStatus.equals(JxBrowserStatus.NOT_INSTALLED) || jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_SKIPPED)) {
-      manager.setUp(myProject);
-      handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow);
-    }
+    presentDevTools(app, inspectorService, toolWindow, true);
   }
 
   private void updateForEmptyContent(ToolWindow toolWindow) {
