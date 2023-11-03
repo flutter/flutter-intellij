@@ -123,7 +123,7 @@ public abstract class EmbeddedBrowser {
     });
   }
 
-  private BrowserTab openBrowserTabFor(String tabName) throws Exception {
+  private BrowserTab openBrowserTabFor(String tabName) {
     BrowserTab tab = new BrowserTab();
     tab.devToolsUrlFuture = new CompletableFuture<>();
     tab.embeddedTab = openEmbeddedTab();
@@ -131,7 +131,7 @@ public abstract class EmbeddedBrowser {
     return tab;
   }
 
-  public abstract EmbeddedTab openEmbeddedTab() throws Exception;
+  public abstract EmbeddedTab openEmbeddedTab();
 
   public void updatePanelToWidget(String widgetId) {
     updateUrlAndReload(devToolsUrl -> {

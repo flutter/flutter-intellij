@@ -7,8 +7,6 @@ See [tool/plugin/README.md](../tool/plugin/README.md) for details.
 
 Update the changelog, then generate plugin.xml changes using `bin/plugin generate`. Commit and submit these changes.
 
-Verify that the file `./resources/jxbrowser/jxbrowser.properties` has been copied from `./resources/jxbrowser/jxbrowser.properties.template` with the `<KEY>` replaced with a valid JXBrowser key to be used in the built Flutter plugin.
-
 For major releases:
 - Name the branch `release_<release number>` and push to github
 - Run `bin/plugin make -r<release number>` to build the plugin for all supported versions

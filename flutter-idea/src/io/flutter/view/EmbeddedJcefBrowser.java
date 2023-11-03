@@ -10,7 +10,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.jcef.JBCefBrowser;
-import io.flutter.jxbrowser.JxBrowserManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -19,7 +18,7 @@ import java.awt.Dimension;
 class EmbeddedJcefBrowserTab implements EmbeddedTab {
   private JBCefBrowser browser;
 
-  public EmbeddedJcefBrowserTab() throws Exception {
+  public EmbeddedJcefBrowserTab() {
     this.browser = new JBCefBrowser();
   }
 
@@ -41,7 +40,7 @@ class EmbeddedJcefBrowserTab implements EmbeddedTab {
 }
 
 public class EmbeddedJcefBrowser extends EmbeddedBrowser {
-  private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
+  private static final Logger LOG = Logger.getInstance(EmbeddedJcefBrowser.class);
 
   public EmbeddedJcefBrowser(Project project) {
     super(project);
@@ -57,7 +56,7 @@ public class EmbeddedJcefBrowser extends EmbeddedBrowser {
   }
 
   @Override
-  public EmbeddedTab openEmbeddedTab() throws Exception {
+  public EmbeddedTab openEmbeddedTab() {
     return new EmbeddedJcefBrowserTab();
   }
 }
