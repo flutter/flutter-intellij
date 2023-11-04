@@ -15,11 +15,7 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationDisplayType;
-import com.intellij.notification.NotificationGroup;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
+import com.intellij.notification.*;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
@@ -397,15 +393,10 @@ public class FlutterConsoleLogManager {
     }
   }
 
-  private void showDeepLinkNotification(DiagnosticsNode property, String errorSummary) {
-    // TODO(helin24): We can register a notification group in plugin.xml for 2020.3
-    // (see https://plugins.jetbrains.com/docs/intellij/notifications.html?from=jetbrains.org#top-level-notifications)
-    final NotificationGroup notificationGroup = new NotificationGroup(DEEP_LINK_GROUP_ID, NotificationDisplayType.STICKY_BALLOON);
-    final Notification notification = new Notification(
-      DEEP_LINK_GROUP_ID,
-      "",
-      errorSummary,
-      NotificationType.INFORMATION);
+  private void showDeepLinkNotification(DiagnosticsNode property, @NotNull String errorSummary) {
+    NotificationGroup group = NotificationGroupManager.getInstance().getNotificationGroup(DEEP_LINK_GROUP_ID);
+    assert group != null;
+    Notification notification = group.createNotification(errorSummary, NotificationType.INFORMATION);
     notification.setIcon(AllIcons.General.BalloonWarning);
     notification.addAction(new AnAction("Inspect Widget") {
       @Override
