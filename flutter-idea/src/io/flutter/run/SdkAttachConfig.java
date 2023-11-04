@@ -32,6 +32,7 @@ import com.intellij.refactoring.listeners.RefactoringElementListener;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterProjectDisposable;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.common.RunMode;
@@ -94,7 +95,7 @@ public class SdkAttachConfig extends SdkRunConfig {
         }
       };
       FlutterSdkManager.getInstance(project).addListener(sdkListener);
-      Disposer.register(project, () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
+      Disposer.register(FlutterSdkManager.getInstance(project), () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
 
       return app;
     };

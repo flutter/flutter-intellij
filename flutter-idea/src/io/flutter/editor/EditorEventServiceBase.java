@@ -12,6 +12,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
+import io.flutter.FlutterProjectDisposable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class EditorEventServiceBase<L> implements Disposable {
 
   public EditorEventServiceBase(Project project) {
     this.project = project;
-    Disposer.register(project, this);
+    Disposer.register(FlutterProjectDisposable.getInstance(project), this);
   }
 
   protected void invokeAll(InvokeListener<L> invoke, Editor editor) {
@@ -59,7 +60,7 @@ public class EditorEventServiceBase<L> implements Disposable {
   public void addListener(@NotNull EditorEx editor, @NotNull L listener, Disposable parent) {
     synchronized (listeners) {
       listeners.put(editor, listener);
-      Disposer.register(parent, () -> removeListener(editor, listener));
+      Disposer.register(FlutterProjectDisposable.getInstance(project), () -> removeListener(editor, listener));
     }
   }
 

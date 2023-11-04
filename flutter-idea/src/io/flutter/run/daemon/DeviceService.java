@@ -18,6 +18,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ex.ProjectRootManagerEx;
 import com.intellij.openapi.util.Disposer;
 import io.flutter.FlutterMessages;
+import io.flutter.FlutterProjectDisposable;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.FlutterDevice;
@@ -79,8 +80,9 @@ public class DeviceService {
         refreshDeviceDaemon();
       }
     };
-    FlutterSdkManager.getInstance(project).addListener(sdkListener);
-    Disposer.register(project, () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
+    FlutterSdkManager instance = FlutterSdkManager.getInstance(project);
+    instance.addListener(sdkListener);
+    Disposer.register(instance, () -> instance.removeListener(sdkListener));
 
     // Watch for Bazel workspace changes.
     WorkspaceCache.getInstance(project).subscribe(this::refreshDeviceDaemon);

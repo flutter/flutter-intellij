@@ -23,6 +23,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterProjectDisposable;
 import io.flutter.analytics.TimeTracker;
 import io.flutter.utils.JsonUtils;
 import org.dartlang.analysis.server.protocol.*;
@@ -98,7 +99,7 @@ public class FlutterDartAnalysisServer implements Disposable {
         super.computedErrors(file, errors);
       }
     });
-    Disposer.register(project, this);
+    Disposer.register(FlutterProjectDisposable.getInstance(project), this);
   }
 
   public void addOutlineListener(@NotNull final String filePath, @NotNull final FlutterOutlineListener listener) {

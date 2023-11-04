@@ -9,6 +9,7 @@ import com.google.common.collect.Lists;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
+import io.flutter.FlutterProjectDisposable;
 import io.flutter.run.FlutterAppManager;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AsyncUtils;
@@ -143,7 +144,7 @@ public class InspectorGroupManagerService implements Disposable {
   public InspectorGroupManagerService(Project project) {
     FlutterAppManager.getInstance(project).getActiveAppAsStream().listen(
       this::updateActiveApp, true);
-    Disposer.register(project, this);
+    Disposer.register(FlutterProjectDisposable.getInstance(project), this);
   }
 
   @NotNull

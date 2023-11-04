@@ -35,6 +35,7 @@ import com.intellij.util.PathUtil;
 import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
 import com.intellij.util.xmlb.XmlSerializer;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
+import io.flutter.FlutterProjectDisposable;
 import io.flutter.FlutterUtils;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.run.common.RunMode;
@@ -64,6 +65,11 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
 
   public SdkRunConfig(final @NotNull Project project, final @NotNull ConfigurationFactory factory, final @NotNull String name) {
     super(project, factory, name);
+    //while (true) {
+    //  System.out.println("in SdkRunConfig");
+    //  System.out.println(this);
+    //  Thread.sleep(30000);
+    //}
   }
 
   @NotNull
@@ -200,7 +206,8 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
         }
       };
       FlutterSdkManager.getInstance(project).addListener(sdkListener);
-      Disposer.register(project, () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
+      //Disposer.register(project, () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
+      Disposer.register(FlutterSdkManager.getInstance(project), () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
 
       return app;
     };

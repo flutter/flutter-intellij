@@ -587,6 +587,9 @@
     <projectService serviceInterface="io.flutter.inspector.InspectorGroupManagerService"
                     serviceImplementation="io.flutter.inspector.InspectorGroupManagerService"
                     overrides="false"/>
+    <projectService serviceInterface="io.flutter.FlutterProjectDisposable"
+                    serviceImplementation="io.flutter.FlutterProjectDisposable"
+                    overrides="false"/>
 
     <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>
 

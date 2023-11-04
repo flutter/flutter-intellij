@@ -13,6 +13,7 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterProjectDisposable;
 import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterAppManager;
 import io.flutter.run.daemon.FlutterApp;
@@ -77,7 +78,7 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
   private FlutterWidgetPerfManager(@NotNull Project project) {
     this.project = project;
 
-    Disposer.register(project, this);
+    Disposer.register(FlutterProjectDisposable.getInstance(project), this);
 
     FlutterAppManager.getInstance(project).getActiveAppAsStream().listen(
       this::updateCurrentAppChanged, true);

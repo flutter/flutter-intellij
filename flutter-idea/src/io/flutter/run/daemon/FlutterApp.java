@@ -28,10 +28,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
-import io.flutter.FlutterInitializer;
-import io.flutter.FlutterMessages;
-import io.flutter.FlutterUtils;
-import io.flutter.ObservatoryConnector;
+import io.flutter.*;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.logging.FlutterConsoleLogManager;
@@ -266,7 +263,7 @@ public class FlutterApp implements Disposable {
     }
 
     final ProcessHandler process = new MostlySilentColoredProcessHandler(command, onTextAvailable);
-    Disposer.register(project, process::destroyProcess);
+    Disposer.register(FlutterProjectDisposable.getInstance(project), process::destroyProcess);
 
     // Send analytics for the start and stop events.
     if (analyticsStart != null) {

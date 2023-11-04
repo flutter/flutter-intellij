@@ -16,6 +16,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
+import io.flutter.FlutterProjectDisposable;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.EventStream;
 import org.jetbrains.annotations.NotNull;
@@ -44,7 +45,7 @@ public class FlutterAppManager implements Disposable {
     this.project = project;
 
     // TODO This object shoud have a different disposable parent to enable dynamic plugin loading.
-    Disposer.register(project, this);
+    Disposer.register(FlutterProjectDisposable.getInstance(project), this);
 
     task = JobScheduler.getScheduler().scheduleWithFixedDelay(
       this::updateActiveApp, 1, 1, TimeUnit.SECONDS);
