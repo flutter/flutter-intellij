@@ -381,6 +381,7 @@
     <projectService serviceInterface="io.flutter.view.EmbeddedJcefBrowser"
                     serviceImplementation="io.flutter.view.EmbeddedJcefBrowser"
                     overrides="false"/>
+    <notificationGroup displayType="STICKY_BALLOON" id="deeplink"/>
   </extensions>
 
   <!-- Dart Plugin extensions -->
