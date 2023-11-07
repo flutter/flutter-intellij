@@ -46,6 +46,10 @@
 
   <change-notes>
     <![CDATA[
+<h1>76.3</h1>
+<ul>
+  <li>Unmigrate change to use the new ActionListener API from IntelliJ as it introduced an issue with FlutterReloadManager (#6996)</li>
+</ul>
 <h1>76.2</h1>
 <ul>
   <li>Fix for IndexOutOfBounds on startup (#6942)</li>
