@@ -94,7 +94,7 @@ public class SdkAttachConfig extends SdkRunConfig {
         }
       };
       FlutterSdkManager.getInstance(project).addListener(sdkListener);
-      Disposer.register(project, () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
+      Disposer.register(app, () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
 
       return app;
     };
