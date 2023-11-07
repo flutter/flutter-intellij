@@ -1,3 +1,6 @@
+# 76.3
+- Unmigrate change to use the new ActionListener API from IntelliJ as it introduced an issue with FlutterReloadManager (#6996)
+
 # 76.2
 - Fix for IndexOutOfBounds on startup (#6942)
 

@@ -118,7 +118,7 @@ public class FlutterReloadManager {
       private @Nullable Project eventProject;
       private @Nullable Editor eventEditor;
 
-      public void beforeActionPerformed(@NotNull AnAction action, @NotNull AnActionEvent event) {
+      public void beforeActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
         if (!(action instanceof SaveAllAction)) {
           return;
         }
@@ -135,7 +135,7 @@ public class FlutterReloadManager {
         }
       }
 
-      public void afterActionPerformed(@NotNull AnAction action, @NotNull AnActionEvent event) {
+      public void afterActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
         if (!(action instanceof SaveAllAction)) {
           return;
         }
