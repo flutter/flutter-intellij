@@ -15,6 +15,7 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
+import io.flutter.analytics.Analytics;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
@@ -24,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 class BrowserTab {
@@ -32,12 +34,17 @@ class BrowserTab {
   protected CompletableFuture<DevToolsUrl> devToolsUrlFuture;
 }
 
+
 public abstract class EmbeddedBrowser {
+  public static final String ANALYTICS_CATEGORY = "embedded-browser";
+
   protected final Map<@NotNull String, @NotNull BrowserTab> tabs = new HashMap<>();
 
   public abstract Logger logger();
+  private final Analytics analytics;
 
   public EmbeddedBrowser(Project project) {
+    this.analytics = FlutterInitializer.getAnalytics();
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
       @Override
       public void projectClosing(@NotNull Project project) {
@@ -56,15 +63,22 @@ public abstract class EmbeddedBrowser {
     });
   }
 
-  public void openPanel(ContentManager contentManager, String tabName, DevToolsUrl devToolsUrl, Runnable onBrowserUnavailable) {
+  public void openPanel(ContentManager contentManager, String tabName, DevToolsUrl devToolsUrl, Consumer<String> onBrowserUnavailable) {
     final BrowserTab firstTab = tabs.get(tabName);
     if (firstTab == null) {
-      openBrowserTabFor(tabName);
+      try {
+        openBrowserTabFor(tabName);
+      } catch (Exception ex) {
+        analytics.sendEvent(ANALYTICS_CATEGORY, "openBrowserTabFailed-" + this.getClass());
+        onBrowserUnavailable.accept(ex.getMessage());
+        return;
+      }
     }
+
     final BrowserTab tab = tabs.get(tabName);
     // If the browser failed to start during setup, run unavailable callback.
     if (tab == null) {
-      onBrowserUnavailable.run();
+      onBrowserUnavailable.accept("Browser failed to start during setup.");
       return;
     }
 
@@ -75,7 +89,7 @@ public abstract class EmbeddedBrowser {
       tab.embeddedTab.loadUrl(devToolsUrl.getUrlString());
     } catch (Exception ex) {
       tab.devToolsUrlFuture.completeExceptionally(ex);
-      onBrowserUnavailable.run();
+      onBrowserUnavailable.accept(ex.getMessage());
       logger().info(ex);
       return;
     }
