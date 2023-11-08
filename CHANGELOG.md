@@ -1,3 +1,6 @@
+#76.4
+- Support for Android Studio Canary, 2023.2 (Iguana) (#7013)
+
 # 76.3
 - Unmigrate change to use the new ActionListener API from IntelliJ as it introduced an issue with FlutterReloadManager (#6996)
 

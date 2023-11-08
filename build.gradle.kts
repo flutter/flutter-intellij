@@ -85,7 +85,7 @@ intellij {
   pluginList.add(langPlugin)
   if (ide == "android-studio") {
     type.set("AI")
-    pluginList += listOf(project(":flutter-studio"))
+//    pluginList += listOf(project(":flutter-studio"))
   }
   plugins.set(pluginList)
 }
@@ -97,7 +97,7 @@ tasks {
   prepareSandbox {
     dependsOn(":flutter-idea:prepareSandbox")
     if (ide == "android-studio") {
-      dependsOn(":flutter-studio:prepareSandbox")
+//      dependsOn(":flutter-studio:prepareSandbox")
     }
   }
 }
@@ -105,7 +105,7 @@ tasks {
 dependencies {
   implementation(project("flutter-idea", "instrumentedJar")) // Second arg is required to use forms
   if (ide == "android-studio") {
-    implementation(project("flutter-studio"))
+    //implementation(project("flutter-studio"))
   }
 }
 

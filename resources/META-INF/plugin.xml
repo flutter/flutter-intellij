@@ -21,7 +21,7 @@
 
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
-  <idea-version since-build="232.8660.185" until-build="232.*"/>
+  <idea-version since-build="232.10072.19" until-build="232.*"/>
 
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.lang</depends>
@@ -46,6 +46,9 @@
 
   <change-notes>
     <![CDATA[
+#76.4<ul>
+  <li>Support for Android Studio Canary, 2023.2 (Iguana) (#7013)</li>
+</ul>
 <h1>76.3</h1>
 <ul>
   <li>Unmigrate change to use the new ActionListener API from IntelliJ as it introduced an issue with FlutterReloadManager (#6996)</li>

@@ -15,5 +15,5 @@ val ide: String by settings
 
 include("flutter-idea")
 if ("$ide" == "android-studio") {
-  include("flutter-studio")
+//  include("flutter-studio")
 }

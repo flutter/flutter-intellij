@@ -5,8 +5,6 @@
  */
 package io.flutter;
 
-import com.intellij.framework.FrameworkType;
-import com.intellij.framework.detection.DetectionExcludesConfiguration;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.notification.Notification;
@@ -33,7 +31,6 @@ import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
-import org.jetbrains.android.facet.AndroidFrameworkDetector;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -109,19 +106,19 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     if (PluginManagerCore.getPlugin(PluginId.getId("org.jetbrains.android")) == null) {
       return;
     }
-    try {
-      final DetectionExcludesConfiguration excludesConfiguration = DetectionExcludesConfiguration.getInstance(project);
-      try {
-        final FrameworkType type = new AndroidFrameworkDetector().getFrameworkType();
-        if (!excludesConfiguration.isExcludedFromDetection(type)) {
-          excludesConfiguration.addExcludedFramework(type);
-        }
-      } catch (NullPointerException ignored) {
-        // If the Android facet has not been configured then getFrameworkType() throws a NPE.
-      }
-    } catch (NoClassDefFoundError ignored) {
-      // This should never happen. But just in case ...
-    }
+    //try {
+    //  final DetectionExcludesConfiguration excludesConfiguration = DetectionExcludesConfiguration.getInstance(project);
+    //  try {
+    //    final FrameworkType type = new AndroidFrameworkDetector().getFrameworkType();
+    //    if (!excludesConfiguration.isExcludedFromDetection(type)) {
+    //      excludesConfiguration.addExcludedFramework(type);
+    //    }
+    //  } catch (NullPointerException ignored) {
+    //    // If the Android facet has not been configured then getFrameworkType() throws a NPE.
+    //  }
+    //} catch (NoClassDefFoundError ignored) {
+    //  // This should never happen. But just in case ...
+    //}
   }
 
   private static class PackagesOutOfDateNotification extends Notification {
