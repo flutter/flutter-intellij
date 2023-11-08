@@ -16,7 +16,8 @@ For minor releases:
 - Run `bin/plugin make -r<release number>.<minor number>` (e.g. `-r64.1`) to build the plugin for all supported versions
 - Push the updated branch `release_<release number>` to github
   - The release branch will be on someone's personal fork
-  - Releases up to 75 can be found at https://github.com/stevemessick/flutter-intellij
+  - Releases up to 75 can be found at https://github.com/stevemessick/flutter-intellij/branches/all?query=release
+  - Releases up from 76 can be found at https://github.com/jwren/flutter-intellij/branches/all?query=release
 
 Once plugin files are generated, upload release files to Drive for testing.
 
