@@ -200,7 +200,7 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
         }
       };
       FlutterSdkManager.getInstance(project).addListener(sdkListener);
-      Disposer.register(project, () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
+      Disposer.register(app, () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
 
       return app;
     };
