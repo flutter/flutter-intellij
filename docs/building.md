@@ -14,12 +14,12 @@ For major releases:
 For minor releases:
 - Fetch and checkout the branch `release_<release number>` from github for the latest release (e.g. pull `release_64` if about to release 64.1)
 - Run `bin/plugin make -r<release number>.<minor number>` (e.g. `-r64.1`) to build the plugin for all supported versions
-- Push the updated branch `release_<release number>` to github
-  - The release branch will be on someone's personal fork
-  - Releases up to 75 can be found at https://github.com/stevemessick/flutter-intellij/branches/all?query=release
-  - Releases up from 76 can be found at https://github.com/jwren/flutter-intellij/branches/all?query=release
+- Push the updated branch `release_<release number>` to GitHub. The release branch will be on:
+  - Releases 1 to 70 can be found at https://github.com/flutter/flutter-intellij/branches/all?query=release
+  - Releases 71 to 75 can be found at https://github.com/stevemessick/flutter-intellij/branches/all?query=release
+  - Releases from 76 can be found at https://github.com/jwren/flutter-intellij/branches/all?query=release
 
-Once plugin files are generated, upload release files to Drive for testing.
+Once plugin files are generated, upload release files to Drive for manual testing.
 
 When ready to release to the public, go to the [Flutter plugin site](https://plugins.jetbrains.com/plugin/9212-flutter). You will need to be invited to the organization to upload plugin files.
 
