@@ -118,6 +118,10 @@ public class FlutterReloadManager {
       private @Nullable Project eventProject;
       private @Nullable Editor eventEditor;
 
+      /**
+       * WARNING on the deprecation of this API: the modification of this file was made at one point to resolve this error, but Flutter
+       * Hot Reload was broken, see https://github.com/flutter/flutter-intellij/issues/6996, the change had to be rolled back.
+       */
       public void beforeActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
         if (!(action instanceof SaveAllAction)) {
           return;
@@ -135,6 +139,9 @@ public class FlutterReloadManager {
         }
       }
 
+      /**
+       * See note above on {{@link #beforeActionPerformed(AnAction, DataContext, AnActionEvent)}}.
+       */
       public void afterActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
         if (!(action instanceof SaveAllAction)) {
           return;
