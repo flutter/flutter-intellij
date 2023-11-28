@@ -13,6 +13,7 @@ import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -174,6 +175,9 @@ public abstract class CommonTestConfigUtils {
     final ActiveEditorsOutlineService service = getActiveEditorsOutlineService(file.getProject());
     if (!listenerCache.containsKey(path) && service != null) {
       listenerCache.put(path, new LineMarkerUpdatingListener(this, file.getProject(), service));
+      Disposer.register(file.getProject(), () -> {
+        listenerCache.remove(path);
+      });
     }
     return listenerCache.get(path);
   }
