@@ -60,32 +60,6 @@ final Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()), new Represe
     replacements: ['version.set("LATEST-EAP-SNAPSHOT")'],
     versions: ['2023.3'],
   ),
-  EditCommand(
-    path:
-        'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java',
-    initials: ['//import ', 'extends ProjectImpl '],
-    replacements: ['import ', 'extends ProjectExImpl '],
-    versions: ['2022.2', '2031.1'],
-  ),
-  EditCommand(
-    path: 'flutter-idea/src/io/flutter/vmService/frame/DartVmServiceValue.java',
-    initials: ['@NotNull'],
-    replacements: [''],
-    versions: ['2022.2'],
-  ),
-  EditCommand(
-    path:
-        'flutter-idea/src/io/flutter/analytics/FlutterAnalysisServerListener.java',
-    initials: ['@NotNull'],
-    replacements: [''],
-    versions: ['2022.2'],
-  ),
-  EditCommand(
-    path: 'resources/META-INF/plugin_template.xml',
-    initials: ['<add-to-group group-id="MainToolbarRight" />'],
-    replacements: [''],
-    versions: ['2022.2'],
-  ),
 ];
 
 /// Apply all the editCommands applicable to a given BuildSpec.
