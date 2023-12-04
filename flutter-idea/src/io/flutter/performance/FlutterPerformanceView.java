@@ -218,7 +218,7 @@ public class FlutterPerformanceView implements Disposable {
 
         FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(app.getProject());
         BrowserLauncher.getInstance().browse(
-                (new DevToolsUrl(instance.host, instance.port, app.getConnector().getBrowserUrl(), null, false, null, null, flutterSdk == null ? null : flutterSdk.getVersion(), WorkspaceCache.getInstance(app.getProject()))).getUrlString(),
+                (new DevToolsUrl(instance.host, instance.port, app.getConnector().getBrowserUrl(), null, false, null, null, flutterSdk == null ? null : flutterSdk.getVersion(), WorkspaceCache.getInstance(app.getProject()), null)).getUrlString(),
                 null
         );
       });

@@ -15,6 +15,7 @@ import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
 import io.flutter.ObservatoryConnector;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.FlutterApp;
@@ -79,7 +80,7 @@ public class OpenDevToolsAction extends DumbAwareAction {
 
       FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
       BrowserLauncher.getInstance().browse(
-        (new DevToolsUrl(instance.host, instance.port, serviceUrl, null, false, null, null, flutterSdk == null ? null : flutterSdk.getVersion(), WorkspaceCache.getInstance(project)).getUrlString()),
+        (new DevToolsUrl(instance.host, instance.port, serviceUrl, null, false, null, null, flutterSdk == null ? null : flutterSdk.getVersion(), WorkspaceCache.getInstance(project), DevToolsIdeFeature.RUN_CONSOLE).getUrlString()),
         null
       );
     });

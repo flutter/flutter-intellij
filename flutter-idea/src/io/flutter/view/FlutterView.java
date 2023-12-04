@@ -51,6 +51,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.InspectorGroupManagerService;
@@ -243,6 +244,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
                                               @Nullable InspectorService inspectorService,
                                               ToolWindow toolWindow,
                                               boolean isEmbedded,
+                                              boolean openOnAppLaunch,
                                               DevToolsInstance devToolsInstance) {
     assert(SwingUtilities.isEventDispatchThread());
 
@@ -275,7 +277,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         color,
         UIUtil.getFontSize(UIUtil.FontSize.NORMAL),
         flutterSdkVersion,
-        WorkspaceCache.getInstance(app.getProject())
+        WorkspaceCache.getInstance(app.getProject()),
+        openOnAppLaunch ? DevToolsIdeFeature.ON_DEBUG_AUTOMATIC : DevToolsIdeFeature.TOOL_WINDOW
       );
 
       //noinspection CodeBlock2Expr
@@ -284,7 +287,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           // If the embedded browser doesn't work, offer a link to open in the regular browser.
           final List<LabelInput> inputs = Arrays.asList(
             new LabelInput("The embedded browser failed to load. Error: " + error),
-            openDevToolsLabel(app, inspectorService, toolWindow)
+            openDevToolsLabel(app, inspectorService, toolWindow, openOnAppLaunch)
           );
           presentClickableLabel(toolWindow, inputs);
         }));
@@ -304,7 +307,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     } else {
       BrowserLauncher.getInstance().browse(
         (new DevToolsUrl(devToolsInstance.host, devToolsInstance.port, browserUrl, "inspector", false, null, null,
-                         flutterSdkVersion, WorkspaceCache.getInstance(app.getProject())).getUrlString()),
+                         flutterSdkVersion, WorkspaceCache.getInstance(app.getProject()), openOnAppLaunch ? DevToolsIdeFeature.ON_DEBUG_AUTOMATIC : DevToolsIdeFeature.TOOL_WINDOW).getUrlString()),
         null
       );
       presentLabel(toolWindow, "DevTools inspector has been opened in the browser.");
@@ -486,19 +489,15 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
   }
 
-  protected void handleJxBrowserInstalled(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
-    presentDevTools(app, inspectorService, toolWindow, true);
-  }
-
-  private void presentDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
+  private void presentDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded, boolean openOnAppLaunch) {
     verifyEventDispatchThread();
 
     devToolsInstallCount += 1;
     presentLabel(toolWindow, getInstallingDevtoolsLabel());
 
-    openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded);
+    openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded, openOnAppLaunch);
 
-    setUpToolWindowListener(app, inspectorService, toolWindow, isEmbedded);
+    setUpToolWindowListener(app, inspectorService, toolWindow, isEmbedded, openOnAppLaunch);
   }
 
   @VisibleForTesting
@@ -507,14 +506,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   @VisibleForTesting
-  protected void setUpToolWindowListener(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
+  protected void setUpToolWindowListener(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded, boolean openOnAppLaunch) {
     if (this.toolWindowListener == null) {
       this.toolWindowListener = new FlutterViewToolWindowManagerListener(myProject, toolWindow);
     }
     this.toolWindowListener.updateOnWindowOpen(() -> {
       devToolsInstallCount += 1;
       presentLabel(toolWindow, getInstallingDevtoolsLabel());
-      openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded, true);
+      openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded, openOnAppLaunch, true);
     });
   }
 
@@ -524,14 +523,15 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   @VisibleForTesting
-  protected void openInspectorWithDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded) {
-    openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded, false);
+  protected void openInspectorWithDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded, boolean openOnAppLaunch) {
+    openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded, openOnAppLaunch, false);
   }
 
   private void openInspectorWithDevTools(FlutterApp app,
                                            InspectorService inspectorService,
                                            ToolWindow toolWindow,
                                            boolean isEmbedded,
+                                           boolean openOnAppLaunch,
                                            boolean forceDevToolsRestart) {
     AsyncUtils.whenCompleteUiThread(
       forceDevToolsRestart
@@ -555,14 +555,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           return;
         }
 
-        addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded, instance);
+        addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded, openOnAppLaunch, instance);
       }
     );
   }
 
-  private LabelInput openDevToolsLabel(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
+  private LabelInput openDevToolsLabel(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean openOnAppLaunch) {
     return new LabelInput("Open DevTools in the browser?", (linkLabel, data) -> {
-      presentDevTools(app, inspectorService, toolWindow, false);
+      presentDevTools(app, inspectorService, toolWindow, false, openOnAppLaunch);
     });
   }
 
@@ -595,16 +595,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     replacePanelLabel(toolWindow, center);
   }
 
-  protected void presentOpenDevToolsOptionWithMessage(FlutterApp app,
-                                                      InspectorService inspectorService,
-                                                      ToolWindow toolWindow,
-                                                      String message) {
-    final List<LabelInput> inputs = new ArrayList<>();
-    inputs.add(new LabelInput(message));
-    inputs.add(openDevToolsLabel(app, inspectorService, toolWindow));
-    presentClickableLabel(toolWindow, inputs);
-  }
-
   private void replacePanelLabel(ToolWindow toolWindow, JComponent label) {
     ApplicationManager.getApplication().invokeLater(() -> {
       final ContentManager contentManager = toolWindow.getContentManager();
@@ -631,12 +621,13 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       return;
     }
 
+    final boolean openOnAppLaunch = FlutterSettings.getInstance().isOpenInspectorOnAppLaunch();
     if (toolWindow.isAvailable()) {
-      updateToolWindowVisibility(toolWindow);
+      updateToolWindowVisibility(toolWindow, openOnAppLaunch);
     }
     else {
       toolWindow.setAvailable(true, () -> {
-        updateToolWindowVisibility(toolWindow);
+        updateToolWindowVisibility(toolWindow, openOnAppLaunch);
       });
     }
 
@@ -649,7 +640,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
 
     if (toolWindow.isVisible()) {
-      displayEmbeddedBrowser(app, inspectorService, toolWindow);
+      displayEmbeddedBrowser(app, inspectorService, toolWindow, openOnAppLaunch);
     }
     else {
       if (toolWindowListener == null) {
@@ -657,13 +648,13 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
       // If the window isn't visible yet, only executed embedded browser steps when it becomes visible.
       toolWindowListener.updateOnWindowFirstVisible(() -> {
-        displayEmbeddedBrowser(app, inspectorService, toolWindow);
+        displayEmbeddedBrowser(app, inspectorService, toolWindow, openOnAppLaunch);
       });
     }
   }
 
-  private void displayEmbeddedBrowser(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
-    presentDevTools(app, inspectorService, toolWindow, true);
+  private void displayEmbeddedBrowser(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean openOnAppLaunch) {
+    presentDevTools(app, inspectorService, toolWindow, true, openOnAppLaunch);
   }
 
   private void updateForEmptyContent(ToolWindow toolWindow) {
@@ -765,12 +756,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
   }
 
-  private void updateToolWindowVisibility(ToolWindow flutterToolWindow) {
+  private void updateToolWindowVisibility(ToolWindow flutterToolWindow, boolean openOnAppLaunch) {
     if (flutterToolWindow.isVisible()) {
       return;
     }
 
-    if (FlutterSettings.getInstance().isOpenInspectorOnAppLaunch()) {
+    if (openOnAppLaunch) {
       flutterToolWindow.show(null);
     }
   }
@@ -802,7 +793,7 @@ class FlutterViewDevToolsAction extends FlutterViewAction {
 
         FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(app.getProject());
         BrowserLauncher.getInstance().browse(
-          (new DevToolsUrl(instance.host, instance.port, urlString, null, false, null, null, flutterSdk == null ? null : flutterSdk.getVersion(), WorkspaceCache.getInstance(app.getProject())).getUrlString()),
+          (new DevToolsUrl(instance.host, instance.port, urlString, null, false, null, null, flutterSdk == null ? null : flutterSdk.getVersion(), WorkspaceCache.getInstance(app.getProject()), null).getUrlString()),
           null
         );
       });

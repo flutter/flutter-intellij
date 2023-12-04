@@ -30,6 +30,8 @@ public class DevToolsUrl {
 
   private final boolean canUseDevToolsPathUrl;
 
+  private final DevToolsIdeFeature ideFeature;
+
   public DevToolsUrl(String devtoolsHost,
                      int devtoolsPort,
                      String vmServiceUri,
@@ -38,8 +40,9 @@ public class DevToolsUrl {
                      String colorHexCode,
                      Float fontSize,
                      @Nullable FlutterSdkVersion flutterSdkVersion,
-                     WorkspaceCache workspaceCache) {
-    this(devtoolsHost, devtoolsPort, vmServiceUri, page, embed, colorHexCode, fontSize, flutterSdkVersion, workspaceCache, new FlutterSdkUtil());
+                     WorkspaceCache workspaceCache,
+                     DevToolsIdeFeature ideFeature) {
+    this(devtoolsHost, devtoolsPort, vmServiceUri, page, embed, colorHexCode, fontSize, flutterSdkVersion, workspaceCache, ideFeature, new FlutterSdkUtil());
   }
 
 
@@ -52,6 +55,7 @@ public class DevToolsUrl {
                      Float fontSize,
                      FlutterSdkVersion flutterSdkVersion,
                      WorkspaceCache workspaceCache,
+                     DevToolsIdeFeature ideFeature,
                      FlutterSdkUtil flutterSdkUtil) {
     this.devtoolsHost = devtoolsHost;
     this.devtoolsPort = devtoolsPort;
@@ -61,6 +65,7 @@ public class DevToolsUrl {
     this.colorHexCode = colorHexCode;
     this.fontSize = fontSize;
     this.flutterSdkVersion = flutterSdkVersion;
+    this.ideFeature = ideFeature;
     this.sdkUtil = flutterSdkUtil;
 
     if (workspaceCache != null && workspaceCache.isBazel()) {
@@ -98,6 +103,9 @@ public class DevToolsUrl {
 
     if (widgetId != null) {
       params.add("inspectorRef=" + widgetId);
+    }
+    if (ideFeature != null) {
+      params.add("ideFeature=" + ideFeature);
     }
     if (this.canUseDevToolsPathUrl) {
       return "http://" + devtoolsHost + ":" + devtoolsPort + "/" + ( page != null ? page : "" )  + "?" + String.join("&", params);
