@@ -10,9 +10,9 @@ public enum DevToolsIdeFeature {
   RUN_CONSOLE("runConsole"),
   TOOL_WINDOW("toolWindow");
 
-  private final String ideFeature;
+  public final String value;
 
-  DevToolsIdeFeature(String ideFeature) {
-    this.ideFeature = ideFeature;
+  DevToolsIdeFeature(String value) {
+    this.value = value;
   }
 }

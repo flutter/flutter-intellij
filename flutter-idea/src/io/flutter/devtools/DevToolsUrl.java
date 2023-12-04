@@ -30,7 +30,7 @@ public class DevToolsUrl {
 
   private final boolean canUseDevToolsPathUrl;
 
-  private final DevToolsIdeFeature ideFeature;
+  public final DevToolsIdeFeature ideFeature;
 
   public DevToolsUrl(String devtoolsHost,
                      int devtoolsPort,
@@ -95,17 +95,15 @@ public class DevToolsUrl {
     if (fontSize != null) {
       params.add("fontSize=" + fontSize);
     }
-
+    if (ideFeature != null) {
+      params.add("ideFeature=" + ideFeature.value);
+    }
     if (vmServiceUri != null) {
       final String urlParam = URLEncoder.encode(vmServiceUri, StandardCharsets.UTF_8);
       params.add("uri=" + urlParam);
     }
-
     if (widgetId != null) {
       params.add("inspectorRef=" + widgetId);
-    }
-    if (ideFeature != null) {
-      params.add("ideFeature=" + ideFeature);
     }
     if (this.canUseDevToolsPathUrl) {
       return "http://" + devtoolsHost + ":" + devtoolsPort + "/" + ( page != null ? page : "" )  + "?" + String.join("&", params);
