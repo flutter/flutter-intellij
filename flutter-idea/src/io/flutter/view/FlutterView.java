@@ -76,6 +76,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @com.intellij.openapi.components.State(
   name = "FlutterView",
@@ -621,13 +622,13 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       return;
     }
 
-    final boolean openOnAppLaunch = FlutterSettings.getInstance().isOpenInspectorOnAppLaunch();
+    AtomicBoolean openedAutomatically = new AtomicBoolean(false);
     if (toolWindow.isAvailable()) {
-      updateToolWindowVisibility(toolWindow, openOnAppLaunch);
+      openedAutomatically.set(updateToolWindowVisibility(toolWindow));
     }
     else {
       toolWindow.setAvailable(true, () -> {
-        updateToolWindowVisibility(toolWindow, openOnAppLaunch);
+        openedAutomatically.set(updateToolWindowVisibility(toolWindow));
       });
     }
 
@@ -640,7 +641,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
 
     if (toolWindow.isVisible()) {
-      displayEmbeddedBrowser(app, inspectorService, toolWindow, openOnAppLaunch);
+      displayEmbeddedBrowser(app, inspectorService, toolWindow, openedAutomatically.get());
     }
     else {
       if (toolWindowListener == null) {
@@ -648,7 +649,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
       // If the window isn't visible yet, only executed embedded browser steps when it becomes visible.
       toolWindowListener.updateOnWindowFirstVisible(() -> {
-        displayEmbeddedBrowser(app, inspectorService, toolWindow, openOnAppLaunch);
+        displayEmbeddedBrowser(app, inspectorService, toolWindow, openedAutomatically.get());
       });
     }
   }
@@ -756,14 +757,18 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
   }
 
-  private void updateToolWindowVisibility(ToolWindow flutterToolWindow, boolean openOnAppLaunch) {
+  // Returns true if the toolWindow was initially closed but opened automatically on app launch.
+  private boolean updateToolWindowVisibility(ToolWindow flutterToolWindow) {
     if (flutterToolWindow.isVisible()) {
-      return;
+      return false;
     }
 
-    if (openOnAppLaunch) {
+    if (FlutterSettings.getInstance().isOpenInspectorOnAppLaunch()) {
       flutterToolWindow.show(null);
+      return true;
     }
+
+    return false;
   }
 }
 
