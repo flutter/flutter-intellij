@@ -5,6 +5,9 @@
  */
 package io.flutter.devtools;
 
+/**
+ * This identifies from what feature DevTools is started. See https://github.com/flutter/flutter-intellij/issues/7100 for details.
+ */
 public enum DevToolsIdeFeature {
   ON_DEBUG_AUTOMATIC("onDebugAutomatic"),
   RUN_CONSOLE("runConsole"),
