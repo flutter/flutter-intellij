@@ -47,6 +47,139 @@ final Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()), new Represe
     ],
     versions: ['2023.2'],
   ),
+  EditCommand(
+    path:
+        'flutter-idea/src/org/jetbrains/android/facet/AndroidFrameworkDetector.java',
+    initials: [
+      '''
+import com.android.tools.idea.gradle.project.GradleProjectInfo;
+'''
+    ],
+    replacements: [
+      '''
+import com.android.tools.idea.gradle.project.Info;
+'''
+    ],
+    versions: ['2023.2'],
+  ),
+  EditCommand(
+    path:
+        'flutter-idea/src/org/jetbrains/android/facet/AndroidFrameworkDetector.java',
+    initials: [
+      '''
+GradleProjectInfo gradleProjectInfo = GradleProjectInfo.getInstance(project);
+'''
+    ],
+    replacements: [
+      '''
+Info gradleProjectInfo = Info.getInstance(project);
+'''
+    ],
+    versions: ['2023.2'],
+  ),
+  EditCommand(
+    path: 'flutter-studio/src/io/flutter/utils/AndroidLocationProvider.java',
+    initials: [
+      '''
+import com.android.tools.idea.gradle.util.GradleUtil;
+'''
+    ],
+    replacements: [
+      '''
+import com.android.tools.idea.gradle.util.GradleProjectSystemUtil;
+'''
+    ],
+    versions: ['2023.2'],
+  ),
+  EditCommand(
+    path: 'flutter-studio/src/io/flutter/utils/AndroidLocationProvider.java',
+    initials: [
+      '''
+GradleModuleModel moduleModel = GradleUtil.getGradleModuleModel(module);
+'''
+    ],
+    replacements: [
+      '''
+GradleModuleModel moduleModel = GradleProjectSystemUtil.getGradleModuleModel(module);
+'''
+    ],
+    versions: ['2023.2'],
+  ),
+  EditCommand(
+    path:
+        'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java',
+    initials: [
+      '''
+import static com.android.tools.idea.gradle.util.GradleUtil.GRADLE_SYSTEM_ID;
+'''
+    ],
+    replacements: [
+      '''
+import static com.android.tools.idea.gradle.util.GradleProjectSystemUtil.GRADLE_SYSTEM_ID;
+'''
+    ],
+    versions: ['2023.2'],
+  ),
+  EditCommand(
+    path:
+        'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java',
+    initials: [
+      '''
+import com.intellij.openapi.vfs.VirtualFileManager;
+'''
+    ],
+    replacements: [
+      '''
+import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.serviceContainer.ComponentManagerImpl;
+ '''
+    ],
+    versions: ['2023.2'],
+  ),
+  EditCommand(
+    path:
+        'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java',
+    initials: [
+      '''
+super(filePath, TEMPLATE_PROJECT_NAME);
+'''
+    ],
+    replacements: [
+      '''
+super((ComponentManagerImpl) ApplicationManager.getApplication(), filePath, TEMPLATE_PROJECT_NAME);
+ '''
+    ],
+    versions: ['2023.2'],
+  ),
+  EditCommand(
+    path: 'flutter-studio/src/io/flutter/utils/GradleUtils.java',
+    initials: [
+      '''
+import com.android.tools.idea.gradle.util.GradleUtil;
+'''
+    ],
+    replacements: [
+      '''
+import com.android.tools.idea.gradle.util.GradleProjectSystemUtil;
+'''
+    ],
+    versions: ['2023.2'],
+  ),
+
+  EditCommand(
+    path: 'flutter-studio/src/io/flutter/utils/GradleUtils.java',
+    initials: [
+      '''
+buildFile = GradleUtil.getGradleBuildFile(flutterModuleRoot);
+'''
+    ],
+    replacements: [
+      '''
+buildFile = GradleProjectSystemUtil.getGradleBuildFile(flutterModuleRoot);
+'''
+    ],
+    versions: ['2023.2'],
+  ),
   // When using LATEST-EAP-SNAPSHOT, also set baseVersion to LATEST-EAP-SNAPSHOT in the build spec.
   EditCommand(
     path: 'build.gradle.kts',
