@@ -30,6 +30,8 @@ public class DevToolsUrl {
 
   private final boolean canUseDevToolsPathUrl;
 
+  public final DevToolsIdeFeature ideFeature;
+
   public DevToolsUrl(String devtoolsHost,
                      int devtoolsPort,
                      String vmServiceUri,
@@ -38,8 +40,9 @@ public class DevToolsUrl {
                      String colorHexCode,
                      Float fontSize,
                      @Nullable FlutterSdkVersion flutterSdkVersion,
-                     WorkspaceCache workspaceCache) {
-    this(devtoolsHost, devtoolsPort, vmServiceUri, page, embed, colorHexCode, fontSize, flutterSdkVersion, workspaceCache, new FlutterSdkUtil());
+                     WorkspaceCache workspaceCache,
+                     DevToolsIdeFeature ideFeature) {
+    this(devtoolsHost, devtoolsPort, vmServiceUri, page, embed, colorHexCode, fontSize, flutterSdkVersion, workspaceCache, ideFeature, new FlutterSdkUtil());
   }
 
 
@@ -52,6 +55,7 @@ public class DevToolsUrl {
                      Float fontSize,
                      FlutterSdkVersion flutterSdkVersion,
                      WorkspaceCache workspaceCache,
+                     DevToolsIdeFeature ideFeature,
                      FlutterSdkUtil flutterSdkUtil) {
     this.devtoolsHost = devtoolsHost;
     this.devtoolsPort = devtoolsPort;
@@ -61,6 +65,7 @@ public class DevToolsUrl {
     this.colorHexCode = colorHexCode;
     this.fontSize = fontSize;
     this.flutterSdkVersion = flutterSdkVersion;
+    this.ideFeature = ideFeature;
     this.sdkUtil = flutterSdkUtil;
 
     if (workspaceCache != null && workspaceCache.isBazel()) {
@@ -90,12 +95,13 @@ public class DevToolsUrl {
     if (fontSize != null) {
       params.add("fontSize=" + fontSize);
     }
-
+    if (ideFeature != null) {
+      params.add("ideFeature=" + ideFeature.value);
+    }
     if (vmServiceUri != null) {
       final String urlParam = URLEncoder.encode(vmServiceUri, StandardCharsets.UTF_8);
       params.add("uri=" + urlParam);
     }
-
     if (widgetId != null) {
       params.add("inspectorRef=" + widgetId);
     }
