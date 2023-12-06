@@ -11,7 +11,8 @@ package io.flutter.devtools;
 public enum DevToolsIdeFeature {
   ON_DEBUG_AUTOMATIC("onDebugAutomatic"),
   RUN_CONSOLE("runConsole"),
-  TOOL_WINDOW("toolWindow");
+  TOOL_WINDOW("toolWindow"),
+  TOOL_WINDOW_RELOAD("toolWindowReload");
 
   public final String value;
 
