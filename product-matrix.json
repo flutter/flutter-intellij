@@ -29,13 +29,26 @@
       "comments": "IntelliJ 2023.2, Android Studio 2023.2",
       "name": "2023.2",
       "version": "2023.2",
-      "isUnitTestTarget": "true",
+      "isUnitTestTarget": "false",
       "ideaProduct": "android-studio",
       "ideaVersion": "2023.2.1.11",
       "baseVersion": "232.10203.10",
       "dartPluginVersion": "232.10072.19",
       "sinceBuild": "232.10072.19",
       "untilBuild": "232.*"
+    },
+    {
+      "channel": "stable",
+      "comments": "IntelliJ 2023.3",
+      "name": "2023.3",
+      "version": "2023.3",
+      "isUnitTestTarget": "true",
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "2023.3",
+      "baseVersion": "233.11799.196",
+      "dartPluginVersion": "233.11799.172",
+      "sinceBuild": "233.11799.196",
+      "untilBuild": "233.*"
     }
   ]
 }
