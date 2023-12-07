@@ -40,9 +40,19 @@
 
   <change-notes>
     <![CDATA[
+<h1>77</h1>
+<ul>
+  <li>Report IDE feature source when opening DevTools (#7108)</li>
+  <li>Remove listener for file path on project dispose (#7093)</li>
+  <li>Dispose SDK config correctly on app ending (#7064)</li>
+  <li>Remove deprecated notification group usage from deep link (#7061)</li>
+  <li>Update plugin for Android Studio 2023.3 (Iguana) and IntelliJ 2023.3 (#7113)</li>
+</ul>
 <h1>76.3</h1>
 <ul>
   <li>Unmigrate change to use the new ActionListener API from IntelliJ as it introduced an issue with FlutterReloadManager (#6996)</li>
+  <li>Remove JX Browser usages and references (#7059)</li>
+  <li>Log and show link to open DevTools in separate browser if JCEF fails (#7057)</li>
 </ul>
 <h1>76.2</h1>
 <ul>

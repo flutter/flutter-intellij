@@ -1,5 +1,14 @@
+# 77
+- Report IDE feature source when opening DevTools (#7108)
+- Remove listener for file path on project dispose (#7093)
+- Dispose SDK config correctly on app ending (#7064)
+- Remove deprecated notification group usage from deep link (#7061)
+- Update plugin for Android Studio 2023.3 (Iguana) and IntelliJ 2023.3 (#7113)
+
 # 76.3
 - Unmigrate change to use the new ActionListener API from IntelliJ as it introduced an issue with FlutterReloadManager (#6996)
+- Remove JX Browser usages and references (#7059)
+- Log and show link to open DevTools in separate browser if JCEF fails (#7057)
 
 # 76.2
 - Fix for IndexOutOfBounds on startup (#6942)
