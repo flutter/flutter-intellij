@@ -5,7 +5,7 @@ See [tool/plugin/README.md](../tool/plugin/README.md) for details.
 
 ## Releasing the plugin
 
-Update the changelog, then generate plugin.xml changes using `bin/plugin generate`. Commit and submit these changes.
+Update the changelog, then generate `plugin.xml` changes using `.bin/plugin generate`. Commit and submit these changes.
 
 For major releases:
 - Name the branch `release_<release number>` and push to github
@@ -18,6 +18,21 @@ For minor releases:
   - Releases 1 to 70 can be found at https://github.com/flutter/flutter-intellij/branches/all?query=release
   - Releases 71 to 75 can be found at https://github.com/stevemessick/flutter-intellij/branches/all?query=release
   - Releases from 76 can be found at https://github.com/jwren/flutter-intellij/branches/all?query=release
+
+### For platform versions `2023.3+`
+
+With the release of `2023.3`, the Gradle-downloaded version of the IntelliJ binaries does not include the required Android
+(`org.jetbrains.android`) IJ plugin. Additionally, the CLI commands that IntelliJ provides to install JB plugins from the marketplace do
+not work.  The consequence here is that the build-bot that we have to verify that each commit works for all platform versions, has broken
+starting at version `2023.3` for the Flutter Plugin.  To build manually:
+- download a version of the Android plugin manually from the
+[JetBrains Marketplace](https://plugins.jetbrains.com/plugin/22989-android)
+- unzip the directory and copy it to your Gradle cache, example:
+`$HOME/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/LATEST-EAP-SNAPSHOT/<hash>/ideaIC-LATEST-EAP-SNAPSHOT/plugins`
+- modify your `builtinRegistry-1.xml` so that the plugin can be mapped to the plugin identifier for dependency purpuses
+- to build a specific IJ platform version run `./bin/plugin make -r77 --only-version=2023.3`
+
+### Test and upload to the JetBrains Servers
 
 Once plugin files are generated, upload release files to Drive for manual testing.
 

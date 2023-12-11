@@ -25,13 +25,6 @@ void checkAndClearAppliedEditCommands() {
   appliedEditCommands.clear();
 }
 
-const String _actionThreadEditContent = '''
-
-  public @NotNull ActionUpdateThread getActionUpdateThread() {
-    return ActionUpdateThread.BGT;
-  }
-''';
-
 List<EditCommand> editCommands = [
   EditCommand(
     path: 'flutter-idea/src/io/flutter/FlutterUtils.java',
