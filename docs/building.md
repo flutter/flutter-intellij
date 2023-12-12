@@ -1,19 +1,23 @@
 ## The plugin tool
 
-Building is done by the `plugin` tool.
-See [tool/plugin/README.md](../tool/plugin/README.md) for details.
+Building is done by the `plugin` tool. See [tool/plugin/README.md](../tool/plugin/README.md) for details.
 
 ## Releasing the plugin
 
-Update the changelog, then generate `plugin.xml` changes using `.bin/plugin generate`. Commit and submit these changes.
+Update the `product-matrix.json`:
+- Android Studio versions can be found here: https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
+- Dart Plugin versions can be found here: https://plugins.jetbrains.com/plugin/6351-dart
+- IntelliJ IDEA versions can be found here: https://www.jetbrains.com/idea/download/other.html
+
+Update the changelog, then generate `plugin.xml` changes using `./bin/plugin generate`. Commit and submit these changes.
 
 For major releases:
-- Name the branch `release_<release number>` and push to github
-- Run `bin/plugin make -r<release number>` to build the plugin for all supported versions
+- Name the branch `release_<release number>` and push to GitHub
+- Run `./bin/plugin make -r<release number>` to build the plugin for all supported versions
 
 For minor releases:
-- Fetch and checkout the branch `release_<release number>` from github for the latest release (e.g. pull `release_64` if about to release 64.1)
-- Run `bin/plugin make -r<release number>.<minor number>` (e.g. `-r64.1`) to build the plugin for all supported versions
+- Fetch and checkout the branch `release_<release number>` from GitHub for the latest release (e.g. pull `release_64` if about to release 64.1)
+- Run `./bin/plugin make -r<release number>.<minor number>` (e.g. `-r64.1`) to build the plugin for all supported versions
 - Push the updated branch `release_<release number>` to GitHub. The release branch will be on:
   - Releases 1 to 70 can be found at https://github.com/flutter/flutter-intellij/branches/all?query=release
   - Releases 71 to 75 can be found at https://github.com/stevemessick/flutter-intellij/branches/all?query=release
