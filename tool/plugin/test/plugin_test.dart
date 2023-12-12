@@ -43,7 +43,6 @@ void main() {
             orderedEquals([
               'android-studio',
               'android-studio',
-              'android-studio',
               'ideaIC'
             ]));
       });
@@ -59,7 +58,6 @@ void main() {
             orderedEquals([
               'android-studio',
               'android-studio',
-              'android-studio',
               'ideaIC'
             ]));
       });
@@ -73,7 +71,6 @@ void main() {
         expect(
             specs.map((spec) => spec.ideaProduct).toList(),
             orderedEquals([
-              'android-studio',
               'android-studio',
               'android-studio',
               'ideaIC'
@@ -176,8 +173,8 @@ void main() {
     test('only-version', () async {
       ProductCommand command =
           makeTestRunner().commands['build'] as ProductCommand;
-      var results = command.argParser.parse(['--only-version=2018.1']);
-      expect(results['only-version'], '2018.1');
+      var results = command.argParser.parse(['--only-version=2023.1']);
+      expect(results['only-version'], '2023.1');
     });
   });
 
