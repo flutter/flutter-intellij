@@ -7,11 +7,11 @@ environment:
 
 dependencies:
   args: ^2.0.0
-  cli_util: ^0.3.0
+  cli_util: ^0.4.1
   git: ^2.0.0
-  markdown: ^6.0.0
+  markdown: ^7.1.1
   path: ^1.8.0
 
 dev_dependencies:
-  lints: ^2.0.0
+  lints: ^3.0.0
   test: ^1.22.0

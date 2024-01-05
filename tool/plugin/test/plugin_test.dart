@@ -234,7 +234,7 @@ BuildCommandRunner makeTestRunner() {
 }
 
 class TestBuildCommand extends AntBuildCommand {
-  TestBuildCommand(runner) : super(runner);
+  TestBuildCommand(super.runner);
 
   @override
   bool get isTesting => true;
@@ -244,7 +244,7 @@ class TestBuildCommand extends AntBuildCommand {
 }
 
 class TestMakeCommand extends GradleBuildCommand {
-  TestMakeCommand(runner) : super(runner);
+  TestMakeCommand(super.runner);
 
   @override
   bool get isTesting => true;
@@ -257,7 +257,7 @@ class TestDeployCommand extends DeployCommand {
   List<String> paths = <String>[];
   List<String> plugins = <String>[];
 
-  TestDeployCommand(runner) : super(runner);
+  TestDeployCommand(super.runner);
 
   @override
   bool get isTesting => true;
@@ -279,7 +279,7 @@ class TestDeployCommand extends DeployCommand {
 }
 
 class TestGenCommand extends GenerateCommand {
-  TestGenCommand(runner) : super(runner);
+  TestGenCommand(super.runner);
 
   @override
   bool get isTesting => true;
@@ -289,7 +289,7 @@ class TestGenCommand extends GenerateCommand {
 }
 
 class TestTestCommand extends TestCommand {
-  TestTestCommand(runner) : super(runner);
+  TestTestCommand(super.runner);
 
   @override
   bool get isTesting => true;
