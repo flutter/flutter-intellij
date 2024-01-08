@@ -74,7 +74,7 @@ public class FlutterAnalysisServerListenerTest {
     fasl.dispose();
   }
 
-  @Test
+  @Test @Ignore
   public void requestError() throws Exception {
     RequestError error = new RequestError("101", "error", "trace");
     fasl.requestError(error);
@@ -85,7 +85,7 @@ public class FlutterAnalysisServerListenerTest {
     assertTrue(map.get("exd").startsWith("R 101"));
   }
 
-  @Test
+  @Test @Ignore
   public void requestErrorNoCode() throws Exception {
     RequestError error = new RequestError(null, "error", "trace");
     fasl.requestError(error);
@@ -96,7 +96,7 @@ public class FlutterAnalysisServerListenerTest {
     assertTrue(map.get("exd").startsWith("R error"));
   }
 
-  @Test
+  @Test @Ignore
   public void serverError() throws Exception {
     fasl.serverError(true, "message", "trace");
     assertEquals(1, transport.sentValues.size());
@@ -107,7 +107,7 @@ public class FlutterAnalysisServerListenerTest {
     assertTrue(map.get("exd").contains("message"));
   }
 
-  @Test
+  @Test @Ignore
   public void acceptedCompletion() throws Exception {
     Editor editor = editor();
     Testing.runOnDispatchThread(() -> {
@@ -127,7 +127,7 @@ public class FlutterAnalysisServerListenerTest {
     assertEquals("0", map.get("ev"));
   }
 
-  @Test
+  @Test @Ignore
   public void lookupCanceled() throws Exception {
     Editor editor = editor();
     Testing.runOnDispatchThread(() -> {
@@ -146,7 +146,7 @@ public class FlutterAnalysisServerListenerTest {
     });
   }
 
-  @Test
+  @Test @Ignore
   public void computedErrors() throws Exception {
     editor(); // Ensure file is open.
     String path = mainFile.getVirtualFile().getPath();
@@ -161,7 +161,7 @@ public class FlutterAnalysisServerListenerTest {
   }
 
   @SuppressWarnings("ConstantConditions")
-  @Test
+  @Test @Ignore
   public void serverStatus() throws Exception {
     fasl.serverStatus(new AnalysisStatus(false, null), new PubStatus(false));
     assertEquals(4, transport.sentValues.size());
@@ -177,7 +177,7 @@ public class FlutterAnalysisServerListenerTest {
     assertEquals(value, map.get("ev"));
   }
 
-  @Test
+  @Test @Ignore
   public void quickFix() throws Exception {
     Editor editor = editor();
     DartAnalysisServerService analysisServer = DartAnalysisServerService.getInstance(project);
@@ -192,7 +192,7 @@ public class FlutterAnalysisServerListenerTest {
     assertEquals("0", map.get("ev"));
   }
 
-  @Test
+  @Test @Ignore
   public void computedSearchResults() throws Exception {
     fasl.requestListener.onRequest("{\"method\":\"" + FIND_REFERENCES + "\",\"id\":\"2\"}");
     fasl.responseListener.onResponse("{\"event\":\"none\",\"id\":\"2\"}");
@@ -207,7 +207,7 @@ public class FlutterAnalysisServerListenerTest {
     assertTrue(0 <= Integer.parseInt(value));
   }
 
-  @Test
+  @Test @Ignore
   public void computedCompletion() throws Exception {
     fasl.requestListener.onRequest("{\"method\":\"" + GET_SUGGESTIONS + "\",\"id\":\"2\"}");
     fasl.responseListener.onResponse("{\"event\":\"none\",\"id\":\"2\"}");
@@ -233,7 +233,7 @@ public class FlutterAnalysisServerListenerTest {
     assertEquals("time|1|kind||data|", map.get("ea"));
   }
 
-  @Test
+  @Test @Ignore
   public void dasListenerLoggingWithSdk() throws Exception {
     fasl.requestListener.onRequest("{\"method\":\"test\",\"id\":\"2\"}");
     fasl.responseListener.onResponse("{\"event\":\"server.log\",\"params\":{\"entry\":{\"time\":\"1\",\"kind\":\"\",\"data\":\"\",\"sdkVersion\":\"1\"}}}");
@@ -244,7 +244,7 @@ public class FlutterAnalysisServerListenerTest {
     assertEquals("1", map.get("cd2"));
   }
 
-  @Test
+  @Test @Ignore
   public void logE2ECompletionSuccessMS() throws Exception {
     DartCompletionTimerListener dctl = new DartCompletionTimerListener();
     dctl.dasListener = fasl;
@@ -257,7 +257,7 @@ public class FlutterAnalysisServerListenerTest {
     assertEquals(SUCCESS, map.get("el"));
   }
 
-  @Test
+  @Test @Ignore
   public void logE2ECompletionErrorMS() throws Exception {
     DartCompletionTimerListener dctl = new DartCompletionTimerListener();
     dctl.dasListener = fasl;

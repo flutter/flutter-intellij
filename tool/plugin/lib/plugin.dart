@@ -102,7 +102,7 @@ bool genPresubmitYaml(List<BuildSpec> specs) {
   var file = File(p.join(rootPath, '.github', 'workflows', 'presubmit.yaml'));
   var versions = [];
   for (var spec in specs) {
-    if (spec.channel == 'stable' && !spec.untilBuild.contains('SNAPSHOT') && spec.version != '2023.3') {
+    if (spec.channel == 'stable' && !spec.untilBuild.contains('SNAPSHOT')) {
       versions.add(spec.version);
     }
   }

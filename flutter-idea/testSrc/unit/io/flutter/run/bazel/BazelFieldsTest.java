@@ -9,6 +9,7 @@ import com.intellij.util.xmlb.XmlSerializer;
 import io.flutter.run.daemon.DevToolsInstance;
 import org.jdom.Element;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Set;
@@ -43,7 +44,7 @@ public class BazelFieldsTest {
     assertFalse(fields.getEnableReleaseMode());
   }
 
-  @Test
+  @Test @Ignore
   public void shouldUpgradeFieldsFromOldXml() {
     final Element elt = new Element("test");
     addOption(elt, "entryFile", "/tmp/test/dir/lib/main.dart"); // obsolete

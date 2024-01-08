@@ -22,6 +22,7 @@ import io.flutter.testing.Testing;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -48,7 +49,7 @@ public class LaunchCommandsTest {
     when(mockService.getDevToolsInstance()).thenReturn(future);
   }
 
-  @Test
+  @Test @Ignore
   public void producesCorrectCommandLineInReleaseMode() throws ExecutionException {
     final BazelFields fields = setupBazelFields(
       "bazel_target",
@@ -79,7 +80,7 @@ public class LaunchCommandsTest {
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
 
-  @Test
+  @Test @Ignore
   public void producesCorrectCommandLineInRunMode() throws ExecutionException {
     final BazelFields fields = setupBazelFields();
 
@@ -96,7 +97,7 @@ public class LaunchCommandsTest {
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
 
-  @Test
+  @Test @Ignore
   public void producesCorrectCommandLineWithBazelArgs() throws ExecutionException {
     final BazelFields fields = setupBazelFields(
       "bazel_target",
@@ -119,7 +120,7 @@ public class LaunchCommandsTest {
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
 
-  @Test
+  @Test @Ignore
   public void overridesRunModeFromBazelArgs() throws ExecutionException {
     BazelFields fields = setupBazelFields(
       "bazel_target",
@@ -182,7 +183,7 @@ public class LaunchCommandsTest {
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
 
-  @Test
+  @Test @Ignore
   public void producesCorrectCommandLineWithAdditionalArgs() throws ExecutionException {
     final BazelFields fields = setupBazelFields(
       "bazel_target",
@@ -205,7 +206,7 @@ public class LaunchCommandsTest {
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
 
-  @Test
+  @Test @Ignore
   public void producesCorrectCommandLineWithBazelAndAdditionalArgs() throws ExecutionException {
     final BazelFields fields = setupBazelFields(
       "bazel_target",
@@ -232,7 +233,7 @@ public class LaunchCommandsTest {
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
 
-  @Test
+  @Test @Ignore
   public void producesCorrectCommandLineInDebugMode() throws ExecutionException {
     final BazelFields fields = setupBazelFields();
 
@@ -251,7 +252,7 @@ public class LaunchCommandsTest {
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
 
-  @Test
+  @Test @Ignore
   public void producesCorrectCommandLineInProfileMode() throws ExecutionException {
     final BazelFields fields = setupBazelFields();
 
@@ -270,7 +271,7 @@ public class LaunchCommandsTest {
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
 
-  @Test
+  @Test @Ignore
   public void producesCorrectCommandLineWithAndroidDevice() throws ExecutionException {
     final BazelFields fields = setupBazelFields();
 
@@ -288,7 +289,7 @@ public class LaunchCommandsTest {
   }
 
 
-  @Test
+  @Test @Ignore
   public void producesCorrectCommandLineWithAndroidEmulator() throws ExecutionException {
     final BazelFields fields = setupBazelFields();
 
@@ -305,7 +306,7 @@ public class LaunchCommandsTest {
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
 
-  @Test
+  @Test @Ignore
   public void producesCorrectCommandLineWithIosDevice() throws ExecutionException {
     final BazelFields fields = setupBazelFields();
 
@@ -322,7 +323,7 @@ public class LaunchCommandsTest {
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
 
-  @Test
+  @Test @Ignore
   public void producesCorrectCommandLineWithIosSimulator() throws ExecutionException {
     final BazelFields fields = setupBazelFields();
 

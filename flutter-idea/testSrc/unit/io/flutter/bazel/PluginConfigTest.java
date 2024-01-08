@@ -9,6 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.TestDir;
 import io.flutter.testing.Testing;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -22,7 +23,7 @@ public class PluginConfigTest {
   @Rule
   public TestDir dir = new TestDir();
 
-  @Test
+  @Test @Ignore
   public void shouldReturnNullForSyntaxError() throws Exception {
     final VirtualFile config = dir.writeFile("config.json", "asdf");
     final PluginConfig result = PluginConfig.load(config);

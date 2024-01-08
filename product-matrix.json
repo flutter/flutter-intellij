@@ -8,6 +8,7 @@
       "ideaProduct": "android-studio",
       "ideaVersion": "2023.1.1.14",
       "baseVersion": "231.9161.38",
+      "androidPluginVersion": "X.Y.Z",
       "dartPluginVersion": "231.9161.14",
       "sinceBuild": "231.9161.38",
       "untilBuild": "231.*"
@@ -21,6 +22,7 @@
       "ideaProduct": "android-studio",
       "ideaVersion": "2023.2.1.11",
       "baseVersion": "232.10203.10",
+      "androidPluginVersion": "X.Y.Z",
       "dartPluginVersion": "232.10072.19",
       "sinceBuild": "232.10072.19",
       "untilBuild": "232.*"
@@ -34,6 +36,7 @@
       "ideaProduct": "ideaIC",
       "ideaVersion": "2023.3",
       "baseVersion": "233.11799.196",
+      "androidPluginVersion": "233.11799.264",
       "dartPluginVersion": "233.11799.172",
       "sinceBuild": "233.11799.196",
       "untilBuild": "233.*"

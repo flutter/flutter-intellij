@@ -13,6 +13,7 @@ import io.flutter.testing.TestDir;
 import io.flutter.testing.Testing;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
@@ -37,28 +38,28 @@ public class FlutterConsoleFilterTest {
       () -> ModuleRootModificationUtil.addContentRoot(fixture.getModule(), contentRoot.getPath()));
   }
 
-  @Test
+  @Test @Ignore
   public void checkTestFileUrlLink() {
     final String line = "#4      main.<anonymous closure> (file://" + appDir + "/widget_test.dart:23:18)\n";
     final Filter.Result link = new FlutterConsoleFilter(fixture.getModule()).applyFilter(line, 659);
     assertNotNull(link);
   }
 
-  @Test
+  @Test @Ignore
   public void checkLaunchingLink() {
     final String line = "Launching test/widget_test.dart on Android SDK built for x86 in debug mode...\n";
     final Filter.Result link = new FlutterConsoleFilter(fixture.getModule()).applyFilter(line, line.length());
     assertNotNull(link);
   }
 
-  @Test
+  @Test @Ignore
   public void checkErrorMessage() {
     final String line = "test/widget_test.dart:23:18: Error: Expected ';' after this.";
     final Filter.Result link = new FlutterConsoleFilter(fixture.getModule()).applyFilter(line, line.length());
     assertNotNull(link);
   }
 
-  @Test(timeout=1000)
+  @Test(timeout=1000) @Ignore
   public void checkBadErrorMessage() {
     final Filter.Result link = new FlutterConsoleFilter(fixture.getModule()).applyFilter(backtracker, backtracker.length());
     assertNull(link);

@@ -52,6 +52,7 @@ allprojects {
 val ide: String by project
 val flutterPluginVersion: String by project
 val javaVersion: String by project
+val androidVersion: String by project
 val dartVersion: String by project
 val baseVersion: String by project
 val name: String by project
@@ -77,8 +78,15 @@ intellij {
   downloadSources.set(false)
   val pluginList = mutableListOf(
     project(":flutter-idea"), "java", "properties",
-    "junit", "Git4Idea", "Kotlin", "gradle", "org.jetbrains.android",
+    "junit", "Git4Idea", "Kotlin", "gradle",
     "Groovy", "Dart:$dartVersion")
+  // If 2023.3+, then "org.jetbrains.android:$androidVersion", otherwise "org.jetbrains.android",
+  // see https://github.com/flutter/flutter-intellij/issues/7145
+  if(ideVersion == "2023.3" || ideVersion == "2024.1" || ideVersion == "2024.2"|| ideVersion == "2024.3") {
+    pluginList.add("org.jetbrains.android:$androidVersion");
+  } else {
+    pluginList.add("org.jetbrains.android");
+  }
   if (ide == "android-studio") {
     pluginList.add(smaliPlugin)
   }
