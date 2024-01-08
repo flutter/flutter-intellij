@@ -127,8 +127,7 @@ class SyntheticBuildSpec extends BuildSpec {
   late BuildSpec alternate;
 
   SyntheticBuildSpec.fromJson(
-      Map json, String? releaseNum, List<BuildSpec> specs)
-      : super.fromJson(json, releaseNum) {
+      super.json, super.releaseNum, List<BuildSpec> specs) :super.fromJson() {
     try {
       // 'isUnitTestTarget' should always be in the spec for the latest IntelliJ (not AS).
       alternate = specs.firstWhere((s) => s.isUnitTestTarget);

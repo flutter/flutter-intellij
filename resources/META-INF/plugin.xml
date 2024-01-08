@@ -168,7 +168,7 @@
 </ul>
 <h1>71.3</h1>
 <ul>
-  <li>Fix the "Empty menu item text" problem</li>
+  <li>Fix the &quot;Empty menu item text&quot; problem</li>
 </ul>
 <h1>71.2</h1>
 <ul>
@@ -210,7 +210,7 @@
 <h1>69.0</h1>
 <ul>
   <li>Build for canary 221 (#6248)</li>
-  <li>Revert "Delete code duplicated from Dart (#6113)" (#6246)</li>
+  <li>Revert &quot;Delete code duplicated from Dart (#6113)&quot; (#6246)</li>
   <li>Update .iml for 221 (#6241)</li>
   <li>Disable reader mode for Flutter plugins (#6238)</li>
   <li>Update the build for 2022.2 EAP (#6224)</li>
