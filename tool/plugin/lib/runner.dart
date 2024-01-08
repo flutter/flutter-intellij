@@ -57,6 +57,7 @@ name = "flutter-intellij"
 org.gradle.parallel=true
 org.gradle.jvmargs=-Xms1024m -Xmx4048m
 javaVersion=$javaVersion
+androidVersion=${spec.androidPluginVersion}
 dartVersion=${spec.dartPluginVersion}
 flutterPluginVersion=$version
 ide=${spec.ideaProduct}

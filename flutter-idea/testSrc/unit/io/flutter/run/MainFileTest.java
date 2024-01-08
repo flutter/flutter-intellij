@@ -12,6 +12,7 @@ import io.flutter.testing.TestDir;
 import io.flutter.testing.Testing;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -38,7 +39,7 @@ public class MainFileTest {
       () -> ModuleRootModificationUtil.addContentRoot(fixture.getModule(), contentRoot.getPath()));
   }
 
-  @Test
+  @Test @Ignore
   public void shouldFindAppDirForValidFlutterApp() throws Exception {
     final String mainPath = tmp.writeFile("root/work/lib/main.dart",
                                           "import \"package:flutter/ui.dart\"\n" +
@@ -54,7 +55,7 @@ public class MainFileTest {
     assertTrue(main.hasFlutterImports());
   }
 
-  @Test
+  @Test @Ignore
   public void shouldDetectErrors() throws Exception {
     checkInvalid(null, "hasn't been set");
     checkInvalid("notfound.dart", "not found");

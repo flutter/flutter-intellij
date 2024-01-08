@@ -17,6 +17,7 @@ class BuildSpec {
   final bool isUnitTestTarget;
   final String ideaProduct;
   final String ideaVersion;
+  final String androidPluginVersion;
   final String dartPluginVersion;
   final String baseVersion;
 
@@ -37,6 +38,7 @@ class BuildSpec {
         ideaProduct = json['ideaProduct'],
         ideaVersion = json['ideaVersion'],
         baseVersion = json['baseVersion'] ?? json['ideaVersion'],
+        androidPluginVersion = json['androidPluginVersion'],
         dartPluginVersion = json['dartPluginVersion'],
         sinceBuild = json['sinceBuild'],
         untilBuild = json['untilBuild'],

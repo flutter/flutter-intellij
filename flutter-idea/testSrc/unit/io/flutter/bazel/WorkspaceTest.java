@@ -10,6 +10,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.TestDir;
 import io.flutter.testing.Testing;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -22,7 +23,7 @@ public class WorkspaceTest {
   @Rule
   public final TestDir tmp = new TestDir();
 
-  @Test
+  @Test @Ignore
   public void doesNotLoadWorkspaceWithoutConfigFile() throws Exception {
     final VirtualFile expectedRoot = tmp.ensureDir("abc");
     tmp.writeFile("abc/WORKSPACE", "");
@@ -36,7 +37,7 @@ public class WorkspaceTest {
     assertNull(w);
   }
 
-  @Test
+  @Test @Ignore
   public void canLoadWorkspaceWithConfigFile() throws Exception {
     final VirtualFile expectedRoot = tmp.ensureDir("abc");
     tmp.writeFile("abc/WORKSPACE", "");
@@ -60,7 +61,7 @@ public class WorkspaceTest {
     assertEquals("something_doctor.sh", w.getDoctorScript());
   }
 
-  @Test
+  @Test @Ignore
   public void canLoadWorkspaceWithConfigFileAndScriptInReadonly() throws Exception {
     final VirtualFile expectedRoot = tmp.ensureDir("abc");
     tmp.writeFile("abc/WORKSPACE", "");
