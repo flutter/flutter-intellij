@@ -174,18 +174,18 @@ buildFile = GradleProjectSystemUtil.getGradleBuildFile(flutterModuleRoot);
     versions: ['2023.2'],
   ),
   // When using LATEST-EAP-SNAPSHOT, also set baseVersion to LATEST-EAP-SNAPSHOT in the build spec.
-  EditCommand(
-    path: 'build.gradle.kts',
-    initials: ['version.set(ideVersion)'],
-    replacements: ['version.set("LATEST-EAP-SNAPSHOT")'],
-    versions: ['2023.3'],
-  ),
-  EditCommand(
-    path: 'flutter-idea/build.gradle.kts',
-    initials: ['version.set(ideVersion)'],
-    replacements: ['version.set("LATEST-EAP-SNAPSHOT")'],
-    versions: ['2023.3'],
-  ),
+  // EditCommand(
+  //   path: 'build.gradle.kts',
+  //   initials: ['version.set(ideVersion)'],
+  //   replacements: ['version.set("LATEST-EAP-SNAPSHOT")'],
+  //   versions: ['2023.3'],
+  // ),
+  // EditCommand(
+  //   path: 'flutter-idea/build.gradle.kts',
+  //   initials: ['version.set(ideVersion)'],
+  //   replacements: ['version.set("LATEST-EAP-SNAPSHOT")'],
+  //   versions: ['2023.3'],
+  // ),
 ];
 
 /// Apply all the editCommands applicable to a given BuildSpec.

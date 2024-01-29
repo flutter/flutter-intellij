@@ -11,7 +11,7 @@
     ]]>
   </description>
   <!--suppress PluginXmlValidity -->
-  <vendor url="https://github.com/flutter/flutter-intellij">flutter.dev</vendor>
+  <vendor url="https://google.com">Google</vendor>
 
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
@@ -40,7 +40,11 @@
 
   <change-notes>
     <![CDATA[
-<h1>77</h1>
+<h1>77.2</h1>
+<ul>
+  <li>Update the vendor information for the JetBrains plugin marketplace (#7193)</li>
+</ul>
+<h1>77, 77.1</h1>
 <ul>
   <li>Report IDE feature source when opening DevTools (#7108)</li>
   <li>Remove listener for file path on project dispose (#7093)</li>

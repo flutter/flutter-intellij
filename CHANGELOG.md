@@ -1,4 +1,7 @@
-# 77
+# 77.2
+- Update the vendor information for the JetBrains plugin marketplace (#7193)
+
+# 77, 77.1
 - Report IDE feature source when opening DevTools (#7108)
 - Remove listener for file path on project dispose (#7093)
 - Dispose SDK config correctly on app ending (#7064)
