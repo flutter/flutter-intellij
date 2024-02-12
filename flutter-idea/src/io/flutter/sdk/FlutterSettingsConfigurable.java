@@ -78,6 +78,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   private JCheckBox myShowAllRunConfigurationsInContextCheckBox;
 
+  private JCheckBox myEnableJcefBrowserCheckBox;
+
   private JCheckBox myShowBuildMethodGuides;
   private JCheckBox myShowClosingLabels;
   private FixedSizeButton myCopyButton;
@@ -265,6 +267,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isEnableJcefBrowser() != myEnableJcefBrowserCheckBox.isSelected()) {
+      return true;
+    }
+
     return false;
   }
 
@@ -323,6 +329,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setAllowTestsInSourcesRoot(myAllowTestsInSourcesRoot.isSelected());
     settings.setShowAllRunConfigurationsInContext(myShowAllRunConfigurationsInContextCheckBox.isSelected());
     settings.setFontPackages(myFontPackagesTextArea.getText());
+    settings.setEnableJcefBrowser(myEnableJcefBrowserCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
     checkFontPackages(settings.getFontPackages(), oldFontPackages);
@@ -394,6 +401,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myIncludeAllStackTraces.setEnabled(myShowStructuredErrors.isSelected());
 
     myShowAllRunConfigurationsInContextCheckBox.setSelected(settings.showAllRunConfigurationsInContext());
+    myEnableJcefBrowserCheckBox.setSelected(settings.isEnableJcefBrowser());
     myFontPackagesTextArea.setText(settings.getFontPackages());
   }
 

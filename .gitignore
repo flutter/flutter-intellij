@@ -14,11 +14,15 @@ flutter-gui-tests/guitest.log
 flutter-intellij.jar
 flutter-intellij.zip
 third_party/lib/*.jar
+third_party/lib/jxbrowser/*
+!third_party/lib/jxbrowser/jxbrowser-7.27.jar
+!third_party/lib/jxbrowser/jxbrowser-swing-7.27.jar
 !third_party/lib/java-string-similarity-2.0.0.jar
 material-design-icons/
 out/
 pubspec.lock
 releases/
+resources/jxbrowser/jxbrowser.properties
 .idea/encodings.xml
 **/.idea/gradle.xml
 .idea/jarRepositories.xml

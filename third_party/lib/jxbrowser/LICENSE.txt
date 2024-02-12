@@ -1,0 +1,7 @@
+We subscribe to a project license for JxBrowser. See
+https://www.teamdev.com/jxbrowser/project-license-agreement
+
+JxBrowser is based on Chromium and is subject to LGPL compliance.
+We include instructions for re-packaging the distributed
+software to swap out the LGPL licensed binaries with each
+installed plugin.

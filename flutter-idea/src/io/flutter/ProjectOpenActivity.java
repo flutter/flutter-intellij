@@ -27,6 +27,7 @@ import com.intellij.openapi.ui.Messages;
 import icons.FlutterIcons;
 import io.flutter.analytics.TimeTracker;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
@@ -58,6 +59,8 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     }
 
     // Set up JxBrowser listening and check if it's already enabled.
+    JxBrowserManager.getInstance().listenForSettingChanges(project);
+    JxBrowserManager.getInstance().setUp(project);
     excludeAndroidFrameworkDetector(project);
 
     final FlutterSdk sdk = FlutterSdk.getIncomplete(project);
