@@ -12,6 +12,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.ide.ui.UISettingsListener;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
@@ -635,7 +636,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       handleJxBrowserInstallationFailed(app, inspectorService, toolWindow, ideFeature);
     } else {
       // newStatus can be null if installation is interrupted or stopped for another reason.
-      presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_WAIT_FAILED);
+      presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_WAIT_FAILED, ideFeature);
     }
   }
 
