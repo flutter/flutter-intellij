@@ -265,6 +265,10 @@ public class FlutterSettings {
     fireEvent();
   }
 
+  public boolean isEnableJcefBrowser() {
+    return getPropertiesComponent().getBoolean(enableJcefBrowserKey, false);
+  }
+
   public void setEnableJcefBrowser(boolean value) {
     getPropertiesComponent().setValue(enableJcefBrowserKey, value, false);
 
