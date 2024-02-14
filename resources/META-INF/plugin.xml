@@ -46,6 +46,10 @@
 
   <change-notes>
     <![CDATA[
+<h1>78, 78.1</h1>
+<ul>
+  <li>Fix DevTools Inspector for all Android Studio users (#7147)</li>
+</ul>
 <h1>77.2</h1>
 <ul>
   <li>Update the vendor information for the JetBrains plugin marketplace (#7193)</li>
