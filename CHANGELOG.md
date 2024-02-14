@@ -1,3 +1,6 @@
+# 78, 78.1
+- Fix DevTools Inspector for all Android Studio users (#7147)
+
 # 77.2
 - Update the vendor information for the JetBrains plugin marketplace (#7193)
 
