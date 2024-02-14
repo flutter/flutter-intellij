@@ -1,0 +1,11 @@
+package io.flutter.jxbrowser;
+
+public enum FailureType {
+    SYSTEM_INCOMPATIBLE,
+    FILE_DOWNLOAD_FAILED,
+    MISSING_KEY,
+    DIRECTORY_CREATION_FAILED,
+    MISSING_PLATFORM_FILES,
+    CLASS_LOAD_FAILED,
+    CLASS_NOT_FOUND,
+}
