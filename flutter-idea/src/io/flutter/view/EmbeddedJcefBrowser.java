@@ -42,6 +42,7 @@ class EmbeddedJcefBrowserTab implements EmbeddedTab {
 
 public class EmbeddedJcefBrowser extends EmbeddedBrowser {
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
+  private static Boolean jcefIsUsable = null;
 
   public EmbeddedJcefBrowser(Project project) {
     super(project);
@@ -53,13 +54,16 @@ public class EmbeddedJcefBrowser extends EmbeddedBrowser {
   }
 
   public static boolean isUsable() {
+    if (jcefIsUsable != null) return jcefIsUsable;
+
     try {
-      // TODO(helin24): This may need to be a different check. I'm unsure whether this is robust.
-      Class<?> clazz = Class.forName("com.intellij.ui.jcef.JBCefBrowser");
+      new JBCefBrowser();
     }
-    catch (ClassNotFoundException e) {
+    catch (IllegalStateException e) {
+      jcefIsUsable = false;
       return false;
     }
+    jcefIsUsable = true;
     return true;
   }
 
