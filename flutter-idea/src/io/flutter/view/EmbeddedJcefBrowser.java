@@ -52,6 +52,17 @@ public class EmbeddedJcefBrowser extends EmbeddedBrowser {
     return ServiceManager.getService(project, EmbeddedJcefBrowser.class);
   }
 
+  public static boolean isUsable() {
+    try {
+      // TODO(helin24): This may need to be a different check. I'm unsure whether this is robust.
+      Class<?> clazz = Class.forName("com.intellij.ui.jcef.JBCefBrowser");
+    }
+    catch (ClassNotFoundException e) {
+      return false;
+    }
+    return true;
+  }
+
   public Logger logger() {
     return LOG;
   }
