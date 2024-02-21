@@ -42,6 +42,7 @@ class EmbeddedJcefBrowserTab implements EmbeddedTab {
 
 public class EmbeddedJcefBrowser extends EmbeddedBrowser {
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
+  private static Boolean jcefIsUsable = null;
 
   public EmbeddedJcefBrowser(Project project) {
     super(project);
@@ -50,6 +51,20 @@ public class EmbeddedJcefBrowser extends EmbeddedBrowser {
   @NotNull
   public static EmbeddedJcefBrowser getInstance(Project project) {
     return ServiceManager.getService(project, EmbeddedJcefBrowser.class);
+  }
+
+  public static boolean isUsable() {
+    if (jcefIsUsable != null) return jcefIsUsable;
+
+    try {
+      new JBCefBrowser();
+    }
+    catch (IllegalStateException e) {
+      jcefIsUsable = false;
+      return false;
+    }
+    jcefIsUsable = true;
+    return true;
   }
 
   public Logger logger() {

@@ -7,6 +7,7 @@ package io.flutter.utils;
 
 import com.intellij.openapi.util.SystemInfo;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.view.EmbeddedJcefBrowser;
 import org.jetbrains.annotations.NotNull;
 // import com.intellij.util.system.CpuArch;
 
@@ -88,6 +89,6 @@ public class JxBrowserUtils {
 
 
   public boolean skipInstallation() {
-    return FlutterSettings.getInstance().isEnableJcefBrowser();
+    return EmbeddedJcefBrowser.isUsable();
   }
 }

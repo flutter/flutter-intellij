@@ -768,7 +768,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private void displayEmbeddedBrowser(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, DevToolsIdeFeature ideFeature) {
-    if (FlutterSettings.getInstance().isEnableJcefBrowser()) {
+    if (EmbeddedJcefBrowser.isUsable()) {
       presentDevTools(app, inspectorService, toolWindow, true, ideFeature);
     } else {
       displayEmbeddedBrowserIfJxBrowser(app, inspectorService, toolWindow, ideFeature);
