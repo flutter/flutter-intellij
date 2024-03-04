@@ -46,6 +46,11 @@
 
   <change-notes>
     <![CDATA[
+<h1>78.2, 78.3</h1>
+<ul>
+  <li>Fix debugger variable information (#7228)</li>
+  <li>Make JX Browser the fallback and remove settings option (#7232)</li>
+</ul>
 <h1>78, 78.1</h1>
 <ul>
   <li>Fix DevTools Inspector for all Android Studio users (#7147)</li>

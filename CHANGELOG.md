@@ -1,3 +1,7 @@
+# 78.2, 78.3
+- Fix debugger variable information (#7228)
+- Make JX Browser the fallback and remove settings option (#7232)
+
 # 78, 78.1
 - Fix DevTools Inspector for all Android Studio users (#7147)
 
