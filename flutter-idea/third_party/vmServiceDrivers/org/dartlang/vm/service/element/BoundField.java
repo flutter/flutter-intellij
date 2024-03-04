@@ -30,10 +30,36 @@ public class BoundField extends Element {
   }
 
   /**
+   * Provided for fields of instances that are NOT of the following instance kinds:
+   *  - Record
+   *
+   * Note: this property is deprecated and will be replaced by `name`.
+   */
+  public FieldRef getDecl() {
+    final JsonElement jsonDeclElement = json.get("decl");
+    if(jsonDeclElement != null && jsonDeclElement.isJsonObject()) {
+      return new FieldRef((JsonObject)jsonDeclElement);
+    } else {
+      return null;
+    }
+  }
+
+  /**
    * @return one of <code>String</code> or <code>int</code>
    */
   public Object getName() {
     final JsonElement elem = json.get("name");
+    if (elem == null) {
+      if (getDecl() != null) {
+        Object name = getDecl().getName();
+        if (name != null) {
+          return name;
+        }
+        else {
+          return null;
+        }
+      }
+    }
     if (elem.isJsonPrimitive()) {
       final JsonPrimitive p = (JsonPrimitive) elem;
       if (p.isString()) return p.getAsString();
