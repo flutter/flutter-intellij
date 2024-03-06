@@ -633,10 +633,11 @@ public class FlutterUtils {
       return null;
     }
 
-    return EmbeddedJcefBrowser.isUsable() ? EmbeddedJcefBrowser.getInstance(project) : EmbeddedJxBrowser.getInstance(project);
+    return FlutterSettings.getInstance().isEnableJcefBrowser() ? EmbeddedJcefBrowser.getInstance(project) : EmbeddedJxBrowser.getInstance(project);
   }
 
   public static boolean embeddedBrowserAvailable(JxBrowserStatus status) {
-    return status.equals(JxBrowserStatus.INSTALLED) || status.equals(JxBrowserStatus.INSTALLATION_SKIPPED) && EmbeddedJcefBrowser.isUsable();
+    return status.equals(JxBrowserStatus.INSTALLED) || status.equals(JxBrowserStatus.INSTALLATION_SKIPPED) && FlutterSettings.getInstance()
+      .isEnableJcefBrowser();
   }
 }
