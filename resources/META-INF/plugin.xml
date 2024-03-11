@@ -21,7 +21,7 @@
 
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
-  <idea-version since-build="233.13135" until-build="233.*"/>
+  <idea-version since-build="233.13135.103" until-build="233.*"/>
 
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.lang</depends>
@@ -46,6 +46,10 @@
 
   <change-notes>
     <![CDATA[
+<h1>78.4, 78.5</h1>
+<ul>
+  <li>Use Dart plugin's DevTools instance with DTD (#7264)</li>
+</ul>
 <h1>78.2, 78.3</h1>
 <ul>
   <li>Fix debugger variable information (#7228)</li>
