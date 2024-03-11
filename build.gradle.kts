@@ -21,12 +21,12 @@ buildscript {
 }
 
 plugins {
-  id("org.jetbrains.intellij") version "1.16.1"
-  id("org.jetbrains.kotlin.jvm") version "1.9.22"
+  id("org.jetbrains.intellij") version "1.17.2"
+  id("org.jetbrains.kotlin.jvm") version "2.0.0-Beta4"
 }
 
 repositories {
-  mavenLocal()
+//  mavenLocal()
   mavenCentral()
   maven {
     url=uri("https://www.jetbrains.com/intellij-repository/snapshots/")
@@ -102,6 +102,10 @@ tasks {
   buildSearchableOptions {
     enabled = false
   }
+  patchPluginXml {
+    version.set("233.13135.103")
+    sinceBuild.set("233.13135.103")
+  }
   prepareSandbox {
     dependsOn(":flutter-idea:prepareSandbox")
     if (ide == "android-studio") {
@@ -119,9 +123,9 @@ dependencies {
 
 tasks {
   instrumentCode {
-    compilerVersion.set("$baseVersion")
+    compilerVersion.set("233.13135.103")
   }
   instrumentTestCode {
-    compilerVersion.set("$baseVersion")
+    compilerVersion.set("233.13135.103")
   }
 }
