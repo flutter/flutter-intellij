@@ -38,7 +38,7 @@ final Yaml yaml = new Yaml(new SafeConstructor(), new Representer(), new DumperO
 final Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()), new Representer(new DumperOptions()), new DumperOptions(), new Resolver() {
 '''
     ],
-    versions: ['2023.2'],
+    versions: ['2023.2.3'],
   ),
   EditCommand(
     path:
@@ -53,7 +53,7 @@ import com.android.tools.idea.gradle.project.GradleProjectInfo;
 import com.android.tools.idea.gradle.project.Info;
 '''
     ],
-    versions: ['2023.2'],
+    versions: ['2023.2.3'],
   ),
   EditCommand(
     path:
@@ -68,7 +68,7 @@ GradleProjectInfo gradleProjectInfo = GradleProjectInfo.getInstance(project);
 Info gradleProjectInfo = Info.getInstance(project);
 '''
     ],
-    versions: ['2023.2'],
+    versions: ['2023.2.3'],
   ),
   EditCommand(
     path: 'flutter-studio/src/io/flutter/utils/AndroidLocationProvider.java',
@@ -82,7 +82,7 @@ import com.android.tools.idea.gradle.util.GradleUtil;
 import com.android.tools.idea.gradle.util.GradleProjectSystemUtil;
 '''
     ],
-    versions: ['2023.2'],
+    versions: ['2023.2.3'],
   ),
   EditCommand(
     path: 'flutter-studio/src/io/flutter/utils/AndroidLocationProvider.java',
@@ -96,7 +96,7 @@ GradleModuleModel moduleModel = GradleUtil.getGradleModuleModel(module);
 GradleModuleModel moduleModel = GradleProjectSystemUtil.getGradleModuleModel(module);
 '''
     ],
-    versions: ['2023.2'],
+    versions: ['2023.2.3'],
   ),
   EditCommand(
     path:
@@ -111,7 +111,7 @@ import static com.android.tools.idea.gradle.util.GradleUtil.GRADLE_SYSTEM_ID;
 import static com.android.tools.idea.gradle.util.GradleProjectSystemUtil.GRADLE_SYSTEM_ID;
 '''
     ],
-    versions: ['2023.2'],
+    versions: ['2023.2.3'],
   ),
   EditCommand(
     path:
@@ -127,7 +127,7 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.serviceContainer.ComponentManagerImpl;
  '''
     ],
-    versions: ['2023.2'],
+    versions: ['2023.2.3'],
   ),
   EditCommand(
     path:
@@ -142,7 +142,7 @@ super(filePath, TEMPLATE_PROJECT_NAME);
 super((ComponentManagerImpl) ApplicationManager.getApplication(), filePath, TEMPLATE_PROJECT_NAME);
  '''
     ],
-    versions: ['2023.2'],
+    versions: ['2023.2.3'],
   ),
   EditCommand(
     path: 'flutter-studio/src/io/flutter/utils/GradleUtils.java',
@@ -156,7 +156,7 @@ import com.android.tools.idea.gradle.util.GradleUtil;
 import com.android.tools.idea.gradle.util.GradleProjectSystemUtil;
 '''
     ],
-    versions: ['2023.2'],
+    versions: ['2023.2.3'],
   ),
 
   EditCommand(
@@ -171,7 +171,7 @@ buildFile = GradleUtil.getGradleBuildFile(flutterModuleRoot);
 buildFile = GradleProjectSystemUtil.getGradleBuildFile(flutterModuleRoot);
 '''
     ],
-    versions: ['2023.2'],
+    versions: ['2023.2.3'],
   ),
   // When using LATEST-EAP-SNAPSHOT, also set baseVersion to LATEST-EAP-SNAPSHOT in the build spec.
   // EditCommand(
