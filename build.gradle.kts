@@ -26,7 +26,7 @@ plugins {
 }
 
 repositories {
-//  mavenLocal()
+  mavenLocal()
   mavenCentral()
   maven {
     url=uri("https://www.jetbrains.com/intellij-repository/snapshots/")
@@ -102,10 +102,6 @@ tasks {
   buildSearchableOptions {
     enabled = false
   }
-  patchPluginXml {
-    version.set("233.13135.103")
-    sinceBuild.set("233.13135.103")
-  }
   prepareSandbox {
     dependsOn(":flutter-idea:prepareSandbox")
     if (ide == "android-studio") {
@@ -123,9 +119,9 @@ dependencies {
 
 tasks {
   instrumentCode {
-    compilerVersion.set("233.13135.103")
+    compilerVersion.set("$baseVersion")
   }
   instrumentTestCode {
-    compilerVersion.set("233.13135.103")
+    compilerVersion.set("$baseVersion")
   }
 }

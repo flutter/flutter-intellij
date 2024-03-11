@@ -145,17 +145,13 @@ tasks {
   buildSearchableOptions {
     enabled = false
   }
-  patchPluginXml {
-    version.set("233.13135.103")
-    sinceBuild.set("233.13135.103")
-  }
 
   instrumentCode {
-    compilerVersion.set("233.13135.103")
+    compilerVersion.set("$baseVersion")
   }
 
   instrumentTestCode {
-    compilerVersion.set("233.13135.103")
+    compilerVersion.set("$baseVersion")
   }
 
   test {
