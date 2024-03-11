@@ -60,7 +60,7 @@ intellij {
              "gradle", "Groovy", "yaml", "Dart:$dartVersion")
   // If 2023.3+, then "org.jetbrains.android:$androidVersion", otherwise "org.jetbrains.android",
   // see https://github.com/flutter/flutter-intellij/issues/7145
-  if(ideVersion == "2023.3" || ideVersion == "2024.1" || ideVersion == "2024.2"|| ideVersion == "2024.3" || ideVersion == "2023.3.4") {
+  if(ideVersion == "2023.3" || ideVersion == "2024.1" || ideVersion == "2024.2"|| ideVersion == "2024.3" || ideVersion == "2023.3.2") {
     pluginList.add("org.jetbrains.android:$androidVersion");
   } else {
     pluginList.add("org.jetbrains.android");
