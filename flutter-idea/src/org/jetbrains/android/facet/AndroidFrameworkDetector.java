@@ -2,7 +2,7 @@
 package org.jetbrains.android.facet;
 
 import com.android.SdkConstants;
-import com.android.tools.idea.gradle.project.Info;
+import com.android.tools.idea.gradle.project.GradleProjectInfo;
 import com.intellij.facet.FacetType;
 import com.intellij.framework.detection.DetectedFrameworkDescription;
 import com.intellij.framework.detection.FacetBasedFrameworkDetector;
