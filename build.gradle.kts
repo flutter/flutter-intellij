@@ -21,8 +21,8 @@ buildscript {
 }
 
 plugins {
-  id("org.jetbrains.intellij") version "1.16.1"
-  id("org.jetbrains.kotlin.jvm") version "1.9.22"
+  id("org.jetbrains.intellij") version "1.17.2"
+  id("org.jetbrains.kotlin.jvm") version "2.0.0-Beta4"
 }
 
 repositories {
@@ -82,7 +82,7 @@ intellij {
     "Groovy", "Dart:$dartVersion")
   // If 2023.3+, then "org.jetbrains.android:$androidVersion", otherwise "org.jetbrains.android",
   // see https://github.com/flutter/flutter-intellij/issues/7145
-  if(ideVersion == "2023.3" || ideVersion == "2024.1" || ideVersion == "2024.2"|| ideVersion == "2024.3") {
+  if(ideVersion == "2023.3" || ideVersion == "2024.1" || ideVersion == "2024.2"|| ideVersion == "2024.3" || ideVersion == "2023.3.2") {
     pluginList.add("org.jetbrains.android:$androidVersion");
   } else {
     pluginList.add("org.jetbrains.android");
