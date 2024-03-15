@@ -9,7 +9,7 @@
       "ideaProduct": "android-studio",
       "ideaVersion": "2023.2",
       "baseVersion": "232.10072.27",
-      "androidPluginVersion": "X.Y.Z",
+      "androidPluginVersion": "233.13135.106",
       "dartPluginVersion": "232.10305",
       "sinceBuild": "232.10072.27",
       "untilBuild": "232.*"
