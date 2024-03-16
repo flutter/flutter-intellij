@@ -10,6 +10,7 @@ Update the [product-matrix.json](../product-matrix.json):
 - Dart Plugin versions can be found here: https://plugins.jetbrains.com/plugin/6351-dart
 - Android Studio versions can be found here: https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
   - To view the current sources from Android Studio, use https://cs.android.com/android-studio
+- To get versions of the Android plugin for IntelliJ, versions can be pulled from https://plugins.jetbrains.com/plugin/22989-android
 
 Update the changelog, then generate `plugin.xml` changes using `./bin/plugin generate`. Commit and submit these changes.
 
@@ -27,18 +28,11 @@ For minor releases:
   - Releases 71 to 75 can be found at https://github.com/stevemessick/flutter-intellij/branches/all?query=release
   - Releases from 76 can be found at https://github.com/jwren/flutter-intellij/branches/all?query=release
 
-### For platform versions `2023.3+`
+### Some additional notes to build and test the Flutter Plugin
 
-With the release of `2023.3`, the Gradle-downloaded version of the IntelliJ binaries does not include the required Android
-(`org.jetbrains.android`) IJ plugin. Additionally, the CLI commands that IntelliJ provides to install JB plugins from the marketplace do
-not work.  The consequence here is that the build-bot that we have to verify that each commit works for all platform versions, has broken
-starting at version `2023.3` for the Flutter Plugin.  To build manually:
-- download a version of the Android plugin manually from the
-[JetBrains Marketplace](https://plugins.jetbrains.com/plugin/22989-android)
-- unzip the directory and copy it to your Gradle cache, example:
-`$HOME/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/LATEST-EAP-SNAPSHOT/<hash>/ideaIC-LATEST-EAP-SNAPSHOT/plugins`
-- modify your `builtinRegistry-1.xml` so that the plugin can be mapped to the plugin identifier for dependency purpuses
-- to build a specific IJ platform version run `./bin/plugin make -r77 --only-version=2023.3`
+To test that building works, the `-r` flag is not needed, just run `./bin/plugin make`.
+
+To build a specific version of the Flutter Plugin append `--only-version=`, i.e. `./bin/plugin make -r77 --only-version=2023.3`
 
 ### Test and upload to the JetBrains Servers
 
