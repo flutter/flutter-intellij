@@ -12,6 +12,7 @@ export JAVA_HOME=$JAVA_HOME_17_X64
 git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
 export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
 flutter config --no-analytics
+flutter channel beta
 flutter doctor
 export FLUTTER_SDK=`pwd`/../flutter
 
