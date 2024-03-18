@@ -57,10 +57,10 @@ class DartStaticFieldsGroup extends XValueGroup {
         public void received(Obj field) {
           final InstanceRef instanceRef = ((Field)field).getStaticValue();
           // static field may be not initialized yet, in this case this instanceRef is in fact a Sentinel
-          if ("@Instance".equals(instanceRef.getType())) {
+          if (instanceRef != null && "@Instance".equals(instanceRef.getType())) {
             list.add(new DartVmServiceValue(myDebugProcess, myIsolateId, ((Field)field).getName(), instanceRef, null, fieldRef, false));
           }
-          else if ("Sentinel".equals(instanceRef.getType())) {
+          else if (instanceRef != null && "Sentinel".equals(instanceRef.getType())) {
             list.add(new XNamedValue(((Field)field).getName()) {
               @Override
               public void computeSourcePosition(@NotNull XNavigatable navigatable) {
