@@ -39,37 +39,3 @@ To build a specific version of the Flutter Plugin append `--only-version=`, i.e.
 Once plugin files are generated, upload release files to Drive for manual testing.
 
 When ready to release to the public, go to the [Flutter plugin site](https://plugins.jetbrains.com/plugin/9212-flutter). You will need to be invited to the organization to upload plugin files.
-
-## The build pre-reqs
-
-This section is obsolete.
-
-Several large files required for building the plugin are downloaded from Google Storage
-and cached in the `artifacts/` directory. We use timestamps to know if the local cached
-copies are up-to-date.
-
-### install gs_util
-
-It is no longer necessary to use gs_util. All artifact management is automated.
-This section is being retained in case someone wants to clean up the cloud storage.
-
-If necessary, install the gs_util command-line utility from
-[here](https://cloud.google.com/storage/docs/gsutil_install).
-
-### to list existing artifacts
-
-To see a list of all current IntelliJ build pre-reqs:
-
-```shell
-$ gsutil ls gs://flutter_infra_release/flutter/intellij/
-```
-
-### uploading new artifacts
-
-Do not upload new artifacts.
-
-In order to update or add a new pre-req:
-
-```shell
-$ gsutil cp <path-to-archive> gs://flutter_infra_release/flutter/intellij/
-```
