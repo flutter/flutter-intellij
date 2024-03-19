@@ -19,13 +19,13 @@ setup() {
   echo "JAVA_HOME=$JAVA_HOME"
   java -version
 
-  # If we move to branch-based builds we might not be able to use such a shallow clone.
-  git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
+  # Clone and configure Flutter to the latest stable release
+  git clone --depth 1 -b stable --single-branch https://github.com/flutter/flutter.git ../flutter
   export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
   flutter config --no-analytics
   flutter doctor
-  export FLUTTER_SDK=`pwd`/../flutter
 
+  export FLUTTER_SDK=`pwd`/../flutter
   export FLUTTER_KEYSTORE_ID=74840
   export FLUTTER_KEYSTORE_NAME=flutter-intellij-plugin-auth-token
   export FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME=flutter-intellij-plugin-jxbrowser-license-key
