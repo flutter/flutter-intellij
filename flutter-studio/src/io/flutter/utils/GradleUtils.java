@@ -17,7 +17,7 @@ import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslExpressionList
 import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslLiteral;
 import com.android.tools.idea.gradle.dsl.parser.files.GradleSettingsFile;
 import com.android.tools.idea.gradle.project.sync.GradleSyncState;
-import com.android.tools.idea.gradle.util.GradleUtil;
+import com.android.tools.idea.gradle.util.GradleProjectSystemUtil;
 import com.intellij.lang.java.JavaParserDefinition;
 import com.intellij.lexer.Lexer;
 import com.intellij.openapi.application.ApplicationManager;
@@ -416,7 +416,7 @@ public class GradleUtils {
       }
       PsiElement includeFlutterModuleStmt = findInclude(parsedSettings, flutterModuleName);
       hasIncludeFlutterModuleStatement = includeFlutterModuleStmt != null;
-      buildFile = GradleUtil.getGradleBuildFile(flutterModuleRoot);
+      buildFile = GradleProjectSystemUtil.getGradleBuildFile(flutterModuleRoot);
       buildFileIsValid = buildFile != null && doesBuildFileExist(flutterModuleDir) && buildFile.getLength() > 0;
       return !(hasIncludeFlutterModuleStatement && buildFileIsValid);
     }

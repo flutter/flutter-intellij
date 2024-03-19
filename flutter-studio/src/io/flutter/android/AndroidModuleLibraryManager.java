@@ -5,7 +5,7 @@
  */
 package io.flutter.android;
 
-import static com.android.tools.idea.gradle.util.GradleUtil.GRADLE_SYSTEM_ID;
+import static com.android.tools.idea.gradle.util.GradleProjectSystemUtil.GRADLE_SYSTEM_ID;
 import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED;
 import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_KIND;
 import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_NAME;
@@ -53,7 +53,8 @@ import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileContentsChangedAdapter;
 import com.intellij.openapi.vfs.VirtualFileManager;
-import com.intellij.util.ReflectionUtil;
+import com.intellij.serviceContainer.ComponentManagerImpl;
+ import com.intellij.util.ReflectionUtil;
 import com.intellij.util.modules.CircularModuleDependenciesDetector;
 import io.flutter.sdk.AbstractLibraryManager;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -326,8 +327,8 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     private Path path;
 
     protected EmbeddedAndroidProject(@NotNull Path filePath) {
-      super(filePath, TEMPLATE_PROJECT_NAME);
-      path = filePath;
+      super((ComponentManagerImpl) ApplicationManager.getApplication(), filePath, TEMPLATE_PROJECT_NAME);
+       path = filePath;
     }
 
     static final String TEMPLATE_PROJECT_NAME = "_android";

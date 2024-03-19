@@ -2,7 +2,7 @@
 package org.jetbrains.android.facet;
 
 import com.android.SdkConstants;
-import com.android.tools.idea.gradle.project.GradleProjectInfo;
+import com.android.tools.idea.gradle.project.Info;
 import com.intellij.facet.FacetType;
 import com.intellij.framework.detection.DetectedFrameworkDescription;
 import com.intellij.framework.detection.FacetBasedFrameworkDetector;
@@ -39,7 +39,7 @@ public class AndroidFrameworkDetector extends FacetBasedFrameworkDetector<Androi
                                                              @NotNull FrameworkDetectionContext context) {
     Project project = context.getProject();
     if (project != null) {
-      GradleProjectInfo gradleProjectInfo = GradleProjectInfo.getInstance(project);
+      Info gradleProjectInfo = Info.getInstance(project);
       // See https://code.google.com/p/android/issues/detail?id=203384
       // Since this method is invoked before sync, 'isBuildWithGradle' may return false even for Gradle projects. If that happens, we fall
       // back to checking that a project has a suitable Gradle file at its toplevel.

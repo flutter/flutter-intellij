@@ -7,7 +7,7 @@ package io.flutter.utils;
 
 import com.android.tools.idea.gradle.dsl.model.BuildModelContext;
 import com.android.tools.idea.gradle.project.model.GradleModuleModel;
-import com.android.tools.idea.gradle.util.GradleUtil;
+import com.android.tools.idea.gradle.util.GradleProjectSystemUtil;
 import com.android.tools.idea.projectsystem.AndroidProjectRootUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -23,7 +23,7 @@ public class AndroidLocationProvider implements BuildModelContext.ResolvedConfig
   @Nullable
   @Override
   public VirtualFile getGradleBuildFile(@NotNull Module module) {
-    GradleModuleModel moduleModel = GradleUtil.getGradleModuleModel(module);
+    GradleModuleModel moduleModel = GradleProjectSystemUtil.getGradleModuleModel(module);
     if (moduleModel != null) {
       return moduleModel.getBuildFile();
     }
