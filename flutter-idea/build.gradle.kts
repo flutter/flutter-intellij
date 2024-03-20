@@ -58,12 +58,13 @@ intellij {
   version.set(ideVersion)
   val pluginList = mutableListOf("java", "properties", "junit", "Kotlin", "Git4Idea",
              "gradle", "Groovy", "yaml", "Dart:$dartVersion")
-  // If 2023.3+, then "org.jetbrains.android:$androidVersion", otherwise "org.jetbrains.android",
+
+  // If 2023.3+ and IDEA (not AS), then "org.jetbrains.android:$androidVersion", otherwise "org.jetbrains.android",
   // see https://github.com/flutter/flutter-intellij/issues/7145
-  if(ideVersion == "2023.3" || ideVersion == "2024.1" || ideVersion == "2024.2"|| ideVersion == "2024.3" || ideVersion == "2023.3.2") {
-    pluginList.add("org.jetbrains.android:$androidVersion");
-  } else {
+  if(ide == "android-studio") {
     pluginList.add("org.jetbrains.android");
+  } else if (ide == "ideaIC") {
+    pluginList.add("org.jetbrains.android:$androidVersion");
   }
   if (ide == "android-studio") {
     pluginList.add(smaliPlugin)
