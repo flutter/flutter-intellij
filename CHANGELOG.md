@@ -1,4 +1,4 @@
-# 78.4, 78.5
+# 78.4
 - Use Dart plugin's DevTools instance with DTD (#7264)
 
 # 78.2, 78.3
