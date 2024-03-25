@@ -49,6 +49,9 @@ public class OpenAndroidModule extends OpenInAndroidStudioAction implements Dumb
     // Using:
     //ProjectUtil.openOrImport(projectFile.getPath(), e.getProject(), forceOpenInNewFrame);
     // presents the user with a really imposing Gradle project import dialog.
+    // By not including the project name as described, this bug was introduced:
+    // - https://github.com/flutter/flutter-intellij/issues/7280
+    // - https://github.com/flutter/flutter-intellij/issues/7103
     openOrImportProject(projectFile, e.getProject(), sourceFile, forceOpenInNewFrame);
   }
 
@@ -61,7 +64,7 @@ public class OpenAndroidModule extends OpenInAndroidStudioAction implements Dumb
       VirtualFile target = findGradleTarget(projectFile);
       if (target != null) {
         GradleProjectImporter gradleImporter = GradleProjectImporter.getInstance();
-        gradleImporter.importAndOpenProjectCore(null, true, projectFile);
+        gradleImporter.importAndOpenProjectCore(project, true, projectFile);
         for (Project proj : ProjectManager.getInstance().getOpenProjects()) {
           if (projectFile.equals(proj.getBaseDir()) || projectFile.equals(proj.getProjectFile())) {
             if (sourceFile != null && !sourceFile.isDirectory()) {
