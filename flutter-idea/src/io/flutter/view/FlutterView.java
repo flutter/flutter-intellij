@@ -253,7 +253,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private void addBrowserInspectorViewContent(FlutterApp app,
-                                              @Nullable InspectorService inspectorService,
                                               ToolWindow toolWindow,
                                               boolean isEmbedded,
                                               DevToolsIdeFeature ideFeature,
@@ -299,7 +298,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           // If the embedded browser doesn't work, offer a link to open in the regular browser.
           final List<LabelInput> inputs = Arrays.asList(
             new LabelInput("The embedded browser failed to load. Error: " + error),
-            openDevToolsLabel(app, inspectorService, toolWindow, ideFeature)
+            openDevToolsLabel(app, toolWindow, ideFeature)
           );
           presentClickableLabel(toolWindow, inputs);
         }));
@@ -501,19 +500,19 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
   }
 
-  protected void handleJxBrowserInstalled(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, DevToolsIdeFeature ideFeature) {
-    presentDevTools(app, inspectorService, toolWindow, true, ideFeature);
+  protected void handleJxBrowserInstalled(FlutterApp app, ToolWindow toolWindow, DevToolsIdeFeature ideFeature) {
+    presentDevTools(app, toolWindow, true, ideFeature);
   }
 
-  private void presentDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded, DevToolsIdeFeature ideFeature) {
+  private void presentDevTools(FlutterApp app, ToolWindow toolWindow, boolean isEmbedded, DevToolsIdeFeature ideFeature) {
     verifyEventDispatchThread();
 
     devToolsInstallCount += 1;
     presentLabel(toolWindow, getInstallingDevtoolsLabel());
 
-    openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded, ideFeature);
+    openInspectorWithDevTools(app, toolWindow, isEmbedded, ideFeature);
 
-    setUpToolWindowListener(app, inspectorService, toolWindow, isEmbedded, ideFeature);
+    setUpToolWindowListener(app, toolWindow, isEmbedded, ideFeature);
   }
 
   @VisibleForTesting
@@ -522,14 +521,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   @VisibleForTesting
-  protected void setUpToolWindowListener(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded, DevToolsIdeFeature ideFeature) {
+  protected void setUpToolWindowListener(FlutterApp app, ToolWindow toolWindow, boolean isEmbedded, DevToolsIdeFeature ideFeature) {
     if (this.toolWindowListener == null) {
       this.toolWindowListener = new FlutterViewToolWindowManagerListener(myProject, toolWindow);
     }
     this.toolWindowListener.updateOnWindowOpen(() -> {
       devToolsInstallCount += 1;
       presentLabel(toolWindow, getInstallingDevtoolsLabel());
-      openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded, ideFeature, true);
+      openInspectorWithDevTools(app, toolWindow, isEmbedded, ideFeature, true);
     });
   }
 
@@ -539,12 +538,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   @VisibleForTesting
-  protected void openInspectorWithDevTools(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, boolean isEmbedded, DevToolsIdeFeature ideFeature) {
-    openInspectorWithDevTools(app, inspectorService, toolWindow, isEmbedded, ideFeature, false);
+  protected void openInspectorWithDevTools(FlutterApp app, ToolWindow toolWindow, boolean isEmbedded, DevToolsIdeFeature ideFeature) {
+    openInspectorWithDevTools(app, toolWindow, isEmbedded, ideFeature, false);
   }
 
   private void openInspectorWithDevTools(FlutterApp app,
-                                           InspectorService inspectorService,
                                            ToolWindow toolWindow,
                                            boolean isEmbedded,
                                            DevToolsIdeFeature ideFeature,
@@ -571,45 +569,45 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           return;
         }
 
-        addBrowserInspectorViewContent(app, inspectorService, toolWindow, isEmbedded, ideFeature, instance);
+        addBrowserInspectorViewContent(app, toolWindow, isEmbedded, ideFeature, instance);
       }
     );
   }
 
-  private LabelInput openDevToolsLabel(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, DevToolsIdeFeature ideFeature) {
+  private LabelInput openDevToolsLabel(FlutterApp app, ToolWindow toolWindow, DevToolsIdeFeature ideFeature) {
     return new LabelInput("Open DevTools in the browser?", (linkLabel, data) -> {
-      presentDevTools(app, inspectorService, toolWindow, false, ideFeature);
+      presentDevTools(app, toolWindow, false, ideFeature);
     });
   }
 
-  protected void handleJxBrowserInstallationInProgress(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow,
+  protected void handleJxBrowserInstallationInProgress(FlutterApp app, ToolWindow toolWindow,
                                                        DevToolsIdeFeature ideFeature) {
-    presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_IN_PROGRESS_LABEL, ideFeature);
+    presentOpenDevToolsOptionWithMessage(app, toolWindow, INSTALLATION_IN_PROGRESS_LABEL, ideFeature);
 
     if (jxBrowserManager.getStatus().equals(JxBrowserStatus.INSTALLED)) {
-      handleJxBrowserInstalled(app, inspectorService, toolWindow, ideFeature);
+      handleJxBrowserInstalled(app, toolWindow, ideFeature);
     }
     else {
-      startJxBrowserInstallationWaitingThread(app, inspectorService, toolWindow, ideFeature);
+      startJxBrowserInstallationWaitingThread(app, toolWindow, ideFeature);
     }
   }
 
-  protected void startJxBrowserInstallationWaitingThread(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow,
+  protected void startJxBrowserInstallationWaitingThread(FlutterApp app, ToolWindow toolWindow,
                                                          DevToolsIdeFeature ideFeature) {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      waitForJxBrowserInstallation(app, inspectorService, toolWindow, ideFeature);
+      waitForJxBrowserInstallation(app, toolWindow, ideFeature);
     });
   }
 
-  protected void waitForJxBrowserInstallation(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow,
+  protected void waitForJxBrowserInstallation(FlutterApp app, ToolWindow toolWindow,
                                               DevToolsIdeFeature ideFeature) {
     try {
       final JxBrowserStatus newStatus = jxBrowserManager.waitForInstallation(INSTALLATION_WAIT_LIMIT_SECONDS);
 
-      handleUpdatedJxBrowserStatusOnEventThread(app, inspectorService, toolWindow, newStatus, ideFeature);
+      handleUpdatedJxBrowserStatusOnEventThread(app, toolWindow, newStatus, ideFeature);
     }
     catch (TimeoutException e) {
-      presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_TIMED_OUT_LABEL, ideFeature);
+      presentOpenDevToolsOptionWithMessage(app, toolWindow, INSTALLATION_TIMED_OUT_LABEL, ideFeature);
 
       FlutterInitializer.getAnalytics().sendEvent(JxBrowserManager.ANALYTICS_CATEGORY, "timedOut");
     }
@@ -617,33 +615,31 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   protected void handleUpdatedJxBrowserStatusOnEventThread(
           FlutterApp app,
-          InspectorService inspectorService,
           ToolWindow toolWindow,
           JxBrowserStatus jxBrowserStatus,
           DevToolsIdeFeature ideFeature) {
-    AsyncUtils.invokeLater(() -> handleUpdatedJxBrowserStatus(app, inspectorService, toolWindow, jxBrowserStatus, ideFeature));
+    AsyncUtils.invokeLater(() -> handleUpdatedJxBrowserStatus(app, toolWindow, jxBrowserStatus, ideFeature));
   }
 
   protected void handleUpdatedJxBrowserStatus(
           FlutterApp app,
-          InspectorService inspectorService,
           ToolWindow toolWindow,
           JxBrowserStatus jxBrowserStatus,
           DevToolsIdeFeature ideFeature) {
     if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {
-      handleJxBrowserInstalled(app, inspectorService, toolWindow, ideFeature);
+      handleJxBrowserInstalled(app, toolWindow, ideFeature);
     } else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
-      handleJxBrowserInstallationFailed(app, inspectorService, toolWindow, ideFeature);
+      handleJxBrowserInstallationFailed(app, toolWindow, ideFeature);
     } else {
       // newStatus can be null if installation is interrupted or stopped for another reason.
-      presentOpenDevToolsOptionWithMessage(app, inspectorService, toolWindow, INSTALLATION_WAIT_FAILED, ideFeature);
+      presentOpenDevToolsOptionWithMessage(app, toolWindow, INSTALLATION_WAIT_FAILED, ideFeature);
     }
   }
 
-  protected void handleJxBrowserInstallationFailed(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow,
+  protected void handleJxBrowserInstallationFailed(FlutterApp app, ToolWindow toolWindow,
                                                    DevToolsIdeFeature ideFeature) {
     final List<LabelInput> inputs = new ArrayList<>();
-    final LabelInput openDevToolsLabel = openDevToolsLabel(app, inspectorService, toolWindow, ideFeature);
+    final LabelInput openDevToolsLabel = openDevToolsLabel(app, toolWindow, ideFeature);
 
     final InstallationFailedReason latestFailureReason = jxBrowserManager.getLatestFailureReason();
 
@@ -661,7 +657,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       inputs.add(new LabelInput("JxBrowser installation failed."));
       inputs.add(new LabelInput("Retry installation?", (linkLabel, data) -> {
         jxBrowserManager.retryFromFailed(app.getProject());
-        handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow, ideFeature);
+        handleJxBrowserInstallationInProgress(app, toolWindow, ideFeature);
       }));
       inputs.add(openDevToolsLabel);
     }
@@ -699,13 +695,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   protected void presentOpenDevToolsOptionWithMessage(FlutterApp app,
-                                                      InspectorService inspectorService,
                                                       ToolWindow toolWindow,
                                                       String message,
                                                       DevToolsIdeFeature ideFeature) {
     final List<LabelInput> inputs = new ArrayList<>();
     inputs.add(new LabelInput(message));
-    inputs.add(openDevToolsLabel(app, inspectorService, toolWindow, ideFeature));
+    inputs.add(openDevToolsLabel(app, toolWindow, ideFeature));
     presentClickableLabel(toolWindow, inputs);
   }
 
@@ -754,7 +749,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
 
     if (toolWindow.isVisible()) {
-      displayEmbeddedBrowser(app, inspectorService, toolWindow, ideFeature.get());
+      displayEmbeddedBrowser(app, toolWindow, ideFeature.get());
     }
     else {
       if (toolWindowListener == null) {
@@ -762,35 +757,35 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
       // If the window isn't visible yet, only executed embedded browser steps when it becomes visible.
       toolWindowListener.updateOnWindowFirstVisible(() -> {
-        displayEmbeddedBrowser(app, inspectorService, toolWindow, DevToolsIdeFeature.TOOL_WINDOW);
+        displayEmbeddedBrowser(app, toolWindow, DevToolsIdeFeature.TOOL_WINDOW);
       });
     }
   }
 
-  private void displayEmbeddedBrowser(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow, DevToolsIdeFeature ideFeature) {
+  private void displayEmbeddedBrowser(FlutterApp app, ToolWindow toolWindow, DevToolsIdeFeature ideFeature) {
     if (FlutterSettings.getInstance().isEnableJcefBrowser()) {
-      presentDevTools(app, inspectorService, toolWindow, true, ideFeature);
+      presentDevTools(app, toolWindow, true, ideFeature);
     } else {
-      displayEmbeddedBrowserIfJxBrowser(app, inspectorService, toolWindow, ideFeature);
+      displayEmbeddedBrowserIfJxBrowser(app, toolWindow, ideFeature);
     }
   }
 
-  private void displayEmbeddedBrowserIfJxBrowser(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow,
+  private void displayEmbeddedBrowserIfJxBrowser(FlutterApp app, ToolWindow toolWindow,
                                                  DevToolsIdeFeature ideFeature) {
     final JxBrowserManager manager = jxBrowserManager;
     final JxBrowserStatus jxBrowserStatus = manager.getStatus();
 
     if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {
-      handleJxBrowserInstalled(app, inspectorService, toolWindow, ideFeature);
+      handleJxBrowserInstalled(app, toolWindow, ideFeature);
     }
     else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
-      handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow, ideFeature);
+      handleJxBrowserInstallationInProgress(app, toolWindow, ideFeature);
     }
     else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
-      handleJxBrowserInstallationFailed(app, inspectorService, toolWindow,  ideFeature);
+      handleJxBrowserInstallationFailed(app, toolWindow,  ideFeature);
     } else if (jxBrowserStatus.equals(JxBrowserStatus.NOT_INSTALLED) || jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_SKIPPED)) {
       manager.setUp(myProject);
-      handleJxBrowserInstallationInProgress(app, inspectorService, toolWindow, ideFeature);
+      handleJxBrowserInstallationInProgress(app, toolWindow, ideFeature);
     }
   }
 
