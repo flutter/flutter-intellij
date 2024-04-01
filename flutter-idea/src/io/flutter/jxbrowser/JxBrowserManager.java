@@ -86,7 +86,7 @@ public class JxBrowserManager {
   @NotNull
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
   @NotNull
-  private static CompletableFuture<JxBrowserStatus> installation = new CompletableFuture<>();
+  public static CompletableFuture<JxBrowserStatus> installation = new CompletableFuture<>();
   @NotNull
   public static final String ANALYTICS_CATEGORY = "jxbrowser";
   private static InstallationFailedReason latestFailureReason;

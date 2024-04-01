@@ -36,7 +36,6 @@ import com.intellij.ui.SideBorder;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.labels.LinkLabel;
-import com.intellij.ui.components.labels.LinkListener;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerAdapter;
@@ -69,6 +68,7 @@ import io.flutter.toolwindow.FlutterViewToolWindowManagerListener;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.JxBrowserUtils;
+import io.flutter.utils.LabelInput;
 import io.flutter.vmService.ServiceExtensions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -1097,19 +1097,5 @@ class AppState {
   FlutterViewAction registerAction(FlutterViewAction action) {
     flutterViewActions.add(action);
     return action;
-  }
-}
-
-class LabelInput {
-  String text;
-  LinkListener<String> listener;
-
-  public LabelInput(String text) {
-    this(text, null);
-  }
-
-  public LabelInput(String text, LinkListener<String> listener) {
-    this.text = text;
-    this.listener = listener;
   }
 }

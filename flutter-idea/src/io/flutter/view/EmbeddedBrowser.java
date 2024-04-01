@@ -5,23 +5,31 @@
  */
 package io.flutter.view;
 
+import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
+import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
+import com.intellij.util.ui.JBUI;
 import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
 import io.flutter.analytics.Analytics;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
+import io.flutter.utils.LabelInput;
 
 import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,6 +50,9 @@ public abstract class EmbeddedBrowser {
 
   public abstract Logger logger();
   private final Analytics analytics;
+
+  private ContentManager contentManager;
+  private DevToolsUrl url;
 
   public EmbeddedBrowser(Project project) {
     this.analytics = FlutterInitializer.getAnalytics();
@@ -64,6 +75,8 @@ public abstract class EmbeddedBrowser {
   }
 
   public void openPanel(ContentManager contentManager, String tabName, DevToolsUrl devToolsUrl, Consumer<String> onBrowserUnavailable) {
+    this.contentManager = contentManager;
+    this.url = devToolsUrl;
     final BrowserTab firstTab = tabs.get(tabName);
     if (firstTab == null) {
       try {
@@ -120,6 +133,81 @@ public abstract class EmbeddedBrowser {
       tab.content.setIcon(FlutterIcons.Phone);
       contentManager.addContent(tab.content);
       contentManager.setSelectedContent(tab.content, true);
+    });
+  }
+
+  private void openLinkInStandardBrowser() {
+    verifyEventDispatchThread();
+    if (url == null) {
+      showMessage("The URL is invalid.");
+    } else {
+      BrowserLauncher.getInstance().browse(
+        url.getUrlString(),
+        null
+      );
+
+      showMessage("The URL has been opened in the browser.");
+    }
+  }
+
+  protected void verifyEventDispatchThread() {
+    assert(SwingUtilities.isEventDispatchThread());
+  }
+
+  protected void showMessageWithUrlLink(@NotNull String message) {
+    final List<LabelInput> labels = new ArrayList<>();
+    labels.add(new LabelInput(message));
+    showLabelsWithUrlLink(labels);
+  }
+
+  protected void showLabelsWithUrlLink(@NotNull List<LabelInput> labels) {
+    labels.add(new LabelInput("Open DevTools in the browser?", (linkLabel, data) -> {
+      openLinkInStandardBrowser();
+    }));
+
+    showLabels(labels);
+  }
+
+  protected void showMessage(@NotNull String message) {
+    final List<LabelInput> labels = new ArrayList<>();
+    labels.add(new LabelInput(message));
+    showLabels(labels);
+  }
+
+  protected void showLabels(List<LabelInput> labels) {
+    final JPanel panel = new JPanel(new GridLayout(0, 1));
+
+    for (LabelInput input : labels) {
+      if (input.listener == null) {
+        final JLabel descriptionLabel = new JLabel("<html>" + input.text + "</html>");
+        descriptionLabel.setBorder(JBUI.Borders.empty(5));
+        descriptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        panel.add(descriptionLabel, BorderLayout.NORTH);
+      } else {
+        final LinkLabel<String> linkLabel = new LinkLabel<>("<html>" + input.text + "</html>", null);
+        linkLabel.setBorder(JBUI.Borders.empty(5));
+        linkLabel.setListener(input.listener, null);
+        linkLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        panel.add(linkLabel, BorderLayout.SOUTH);
+      }
+    }
+
+    final JPanel center = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER));
+    center.add(panel);
+    replacePanelLabel(center);
+  }
+
+  private void replacePanelLabel(JComponent label) {
+    ApplicationManager.getApplication().invokeLater(() -> {
+      if (contentManager.isDisposed()) {
+        return;
+      }
+
+      final JPanel panel = new JPanel(new BorderLayout());
+      panel.add(label, BorderLayout.CENTER);
+      final Content content = contentManager.getFactory().createContent(panel, null, false);
+      contentManager.removeAllContents(true);
+      contentManager.addContent(content);
     });
   }
 

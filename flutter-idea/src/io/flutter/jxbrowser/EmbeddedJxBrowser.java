@@ -24,14 +24,22 @@ import com.teamdev.jxbrowser.view.swing.callback.DefaultAlertCallback;
 import com.teamdev.jxbrowser.view.swing.callback.DefaultConfirmCallback;
 import io.flutter.FlutterInitializer;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.AsyncUtils;
+import io.flutter.utils.JxBrowserUtils;
 import io.flutter.view.EmbeddedBrowser;
 import io.flutter.view.EmbeddedTab;
+import io.flutter.utils.LabelInput;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 class EmbeddedJxBrowserTab implements EmbeddedTab {
   private final Engine engine;
@@ -96,7 +104,17 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
 
 public class EmbeddedJxBrowser extends EmbeddedBrowser {
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
-  private final Engine engine;
+  private static final String INSTALLATION_IN_PROGRESS_LABEL = "Installing JxBrowser...";
+  private static final String INSTALLATION_TIMED_OUT_LABEL =
+    "Waiting for JxBrowser installation timed out. Restart your IDE to try again.";
+  private static final String INSTALLATION_WAIT_FAILED = "The JxBrowser installation failed unexpectedly. Restart your IDE to try again.";
+  private static final int INSTALLATION_WAIT_LIMIT_SECONDS = 30;
+  private final AtomicReference<Engine> engineRef = new AtomicReference<>(null);
+
+  private final Project project;
+
+  private final JxBrowserManager jxBrowserManager;
+  private final JxBrowserUtils jxBrowserUtils;
 
   @NotNull
   public static EmbeddedJxBrowser getInstance(@NotNull Project project) {
@@ -105,6 +123,16 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
 
   private EmbeddedJxBrowser(Project project) {
     super(project);
+    this.project = project;
+
+    this.jxBrowserManager = JxBrowserManager.getInstance();
+    this.jxBrowserUtils = new JxBrowserUtils();
+    final JxBrowserStatus jxBrowserStatus = jxBrowserManager.getStatus();
+
+    if (jxBrowserStatus.equals(JxBrowserStatus.NOT_INSTALLED) || jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_SKIPPED)) {
+      jxBrowserManager.setUp(project);
+    }
+
     System.setProperty("jxbrowser.force.dpi.awareness", "1.0");
     System.setProperty("jxbrowser.logging.level", "DEBUG");
     System.setProperty("jxbrowser.logging.file", PathManager.getLogPath() + File.separatorChar + "jxbrowser.log");
@@ -112,7 +140,11 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
       System.setProperty("jxbrowser.logging.level", "ALL");
     }
 
-    this.engine = EmbeddedBrowserEngine.getInstance().getEngine();
+    JxBrowserManager.installation.thenAccept((JxBrowserStatus status) -> {
+      if (status.equals(JxBrowserStatus.INSTALLED)) {
+        engineRef.compareAndSet(null, EmbeddedBrowserEngine.getInstance().getEngine());
+      }
+    });
   }
 
   @Override
@@ -121,7 +153,94 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
   }
 
   @Override
-  public EmbeddedTab openEmbeddedTab() {
-    return new EmbeddedJxBrowserTab(engine);
+  public @Nullable EmbeddedTab openEmbeddedTab() {
+    manageJxBrowserDownload();
+    engineRef.compareAndSet(null, EmbeddedBrowserEngine.getInstance().getEngine());
+    final Engine engine = engineRef.get();
+    if (engine == null) {
+      showMessageWithUrlLink("JX Browser engine failed to start");
+      return null;
+    } else {
+      return new EmbeddedJxBrowserTab(engine);
+    }
+  }
+
+  private void manageJxBrowserDownload() {
+    final JxBrowserStatus jxBrowserStatus = jxBrowserManager.getStatus();
+
+    if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {
+      return;
+    }
+    else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
+      handleJxBrowserInstallationInProgress();
+    }
+    else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
+      handleJxBrowserInstallationFailed();
+    } else if (jxBrowserStatus.equals(JxBrowserStatus.NOT_INSTALLED) || jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_SKIPPED)) {
+      jxBrowserManager.setUp(project);
+      handleJxBrowserInstallationInProgress();
+    }
+  }
+
+  protected void handleJxBrowserInstallationInProgress() {
+    showMessageWithUrlLink(INSTALLATION_IN_PROGRESS_LABEL);
+
+    if (jxBrowserManager.getStatus().equals(JxBrowserStatus.INSTALLED)) {
+      return;
+    }
+    else {
+      waitForJxBrowserInstallation();
+    }
+  }
+
+  protected void waitForJxBrowserInstallation() {
+    try {
+      final JxBrowserStatus newStatus = jxBrowserManager.waitForInstallation(INSTALLATION_WAIT_LIMIT_SECONDS);
+
+      handleUpdatedJxBrowserStatusOnEventThread(newStatus);
+    }
+    catch (TimeoutException e) {
+      showMessageWithUrlLink(INSTALLATION_TIMED_OUT_LABEL);
+      FlutterInitializer.getAnalytics().sendEvent(JxBrowserManager.ANALYTICS_CATEGORY, "timedOut");
+    }
+  }
+
+  protected void handleUpdatedJxBrowserStatusOnEventThread(JxBrowserStatus jxBrowserStatus) {
+    AsyncUtils.invokeLater(() -> handleUpdatedJxBrowserStatus(jxBrowserStatus));
+  }
+
+  protected void handleUpdatedJxBrowserStatus(JxBrowserStatus jxBrowserStatus) {
+    if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {
+      return;
+    } else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
+      handleJxBrowserInstallationFailed();
+    } else {
+      // newStatus can be null if installation is interrupted or stopped for another reason.
+      showMessageWithUrlLink(INSTALLATION_WAIT_FAILED);
+    }
+  }
+
+  protected void handleJxBrowserInstallationFailed() {
+    final List<LabelInput> inputs = new ArrayList<>();
+
+    final InstallationFailedReason latestFailureReason = jxBrowserManager.getLatestFailureReason();
+
+    if (!jxBrowserUtils.licenseIsSet()) {
+      // If the license isn't available, allow the user to open the equivalent page in a non-embedded browser window.
+      inputs.add(new LabelInput("The JxBrowser license could not be found."));
+    } else if (latestFailureReason != null && latestFailureReason.failureType.equals(FailureType.SYSTEM_INCOMPATIBLE)) {
+      // If we know the system is incompatible, skip retry link and offer to open in browser.
+      inputs.add(new LabelInput(latestFailureReason.detail));
+    }
+    else {
+      // Allow the user to manually restart or open the equivalent page in a non-embedded browser window.
+      inputs.add(new LabelInput("JxBrowser installation failed."));
+      inputs.add(new LabelInput("Retry installation?", (linkLabel, data) -> {
+        jxBrowserManager.retryFromFailed(project);
+        handleJxBrowserInstallationInProgress();
+      }));
+    }
+
+    showLabelsWithUrlLink(inputs);
   }
 }
