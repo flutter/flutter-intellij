@@ -36,14 +36,11 @@ public class DeepLinksViewFactory implements ToolWindowFactory {
             return;
           }
 
-          //if (error != null) {
-          //  LOG.error(error);
-          //  presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
-          //  return;
-          //}
+          if (error != null) {
+            return;
+          }
 
           if (instance == null) {
-            //presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
             return;
           }
 
