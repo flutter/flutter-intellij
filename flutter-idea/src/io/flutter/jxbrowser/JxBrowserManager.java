@@ -86,7 +86,7 @@ public class JxBrowserManager {
   @NotNull
   private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
   @NotNull
-  private static CompletableFuture<JxBrowserStatus> installation = new CompletableFuture<>();
+  public static CompletableFuture<JxBrowserStatus> installation = new CompletableFuture<>();
   @NotNull
   public static final String ANALYTICS_CATEGORY = "jxbrowser";
   private static InstallationFailedReason latestFailureReason;
@@ -335,44 +335,6 @@ public class JxBrowserManager {
     final BackgroundableProcessIndicator processIndicator = new BackgroundableProcessIndicator(task);
     processIndicator.setIndeterminate(false);
     ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, processIndicator);
-  }
-
-  private void loadClasses2020(@NotNull String[] fileNames) {
-    final ClassLoader current = Thread.currentThread().getContextClassLoader();
-    try {
-      //noinspection ConstantConditions
-      Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-      //noinspection ConstantConditions
-      for (String fileName : fileNames) {
-        final String fullPath = getFilePath(fileName);
-        try {
-          //noinspection ConstantConditions
-          fileUtils.loadClass(this.getClass().getClassLoader(), fullPath);
-        }
-        catch (Exception ex) {
-          LOG.info("Failed to load JxBrowser file", ex);
-          setStatusFailed(new InstallationFailedReason(FailureType.CLASS_LOAD_FAILED));
-          return;
-        }
-        LOG.info("Loaded JxBrowser file successfully: " + fullPath);
-      }
-      try {
-        final Class<?> clazz = Class.forName("com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException");
-        final Constructor<?> constructor = clazz.getConstructor(RenderingMode.class);
-        constructor.newInstance(RenderingMode.HARDWARE_ACCELERATED);
-      }
-      catch (NoClassDefFoundError | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-        LOG.info("Failed to find JxBrowser class: " + e.getMessage());
-        setStatusFailed(new InstallationFailedReason(FailureType.CLASS_NOT_FOUND));
-        return;
-      }
-    }
-    finally {
-      Thread.currentThread().setContextClassLoader(current);
-    }
-    analytics.sendEvent(ANALYTICS_CATEGORY, "installed");
-    status.set(JxBrowserStatus.INSTALLED);
-    installation.complete(JxBrowserStatus.INSTALLED);
   }
 
   private void loadClasses(@NotNull String[] fileNames) {

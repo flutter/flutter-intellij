@@ -588,6 +588,8 @@
                 factoryClass="io.flutter.performance.FlutterPerformanceViewFactory"/>
     <projectService serviceImplementation="io.flutter.performance.FlutterPerformanceView" overrides="false"/>
 
+    <toolWindow id="Flutter Deep Links" anchor="right" icon="FlutterIcons.Flutter_13" factoryClass="io.flutter.deeplinks.DeepLinksViewFactory" />
+
     <projectOpenProcessor id="flutter" implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
 
     <localInspection bundle="io.flutter.FlutterBundle" key="outdated.dependencies.inspection.name"
