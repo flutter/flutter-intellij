@@ -14,6 +14,8 @@ import io.flutter.sdk.FlutterSdkChannel
 import io.flutter.sdk.FlutterSdkChannel.ID
 import java.util.function.Supplier
 
+// This file needs to be migrated due to deprecation,
+// https://github.com/flutter/flutter-intellij/issues/7310
 class PlatformsForm() {
 
   var channel: FlutterSdkChannel? = null
@@ -62,7 +64,9 @@ class PlatformsForm() {
           FlutterBundle.message("npw_platform_linux"),
           FlutterBundle.message("npw_platform_macos"),
         )
-        enabled(names.contains(name) || wasSelected)
+        // TODO(jwren) for the 2024.1 roll I needed to comment out the following line, it should be resolved however when
+        //  https://github.com/flutter/flutter-intellij/issues/7310 is addressed.
+        // enabled(names.contains(name) || wasSelected)
       }
     }
   }
