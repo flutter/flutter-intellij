@@ -31,6 +31,7 @@ resources/jxbrowser/jxbrowser.properties
 **/.idea/modules/
 .idea/libraries/Gradle_*.xml
 **/.idea/modules.xml
+.kotlin/
 flutter-studio/build/
 flutter-studio/.gradle/
 flutter-idea/build/
