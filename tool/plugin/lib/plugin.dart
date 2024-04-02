@@ -197,6 +197,14 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
   } else {
     log('the current working directory is not managed by git: $rootPath');
   }
+  // Finally, check that a jxbrowser.properties exists
+  var jxBrowserFile = File(p.join(rootPath, 'resources', 'jxbrowser', 'jxbrowser.properties'));
+  var jxBrowserFileContents = jxBrowserFile.readAsStringSync();
+  if(jxBrowserFile.existsSync() && jxBrowserFileContents.isNotEmpty && !jxBrowserFileContents.contains("<KEY>")) {
+    return true;
+  } else {
+    log('Release mode requires the jxbrowser.properties file to exist and include a key.');
+  }
   return false;
 }
 
