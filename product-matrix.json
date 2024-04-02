@@ -27,6 +27,20 @@
       "dartPluginVersion": "233.14888",
       "sinceBuild": "233.13135.103",
       "untilBuild": "233.*"
+    },
+    {
+      "channel": "stable",
+      "comments": "IntelliJ 2024.1",
+      "name": "2024.1",
+      "version": "2024.1",
+      "isUnitTestTarget": "true",
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "LATEST-EAP-SNAPSHOT",
+      "baseVersion": "LATEST-EAP-SNAPSHOT",
+      "androidPluginVersion": "241.14494.17",
+      "dartPluginVersion": "241.14768",
+      "sinceBuild": "241.14494.17",
+      "untilBuild": "241.*"
     }
   ]
 }

@@ -42,7 +42,8 @@ void main() {
             specs.map((spec) => spec.ideaProduct).toList(),
             orderedEquals([
               'android-studio',
-              'android-studio'
+              'android-studio',
+              'ideaIC'
             ]));
       });
     });
@@ -56,7 +57,8 @@ void main() {
             specs.map((spec) => spec.ideaProduct).toList(),
             orderedEquals([
               'android-studio',
-              'android-studio'
+              'android-studio',
+              'ideaIC'
             ]));
       });
     });
@@ -70,7 +72,8 @@ void main() {
             specs.map((spec) => spec.ideaProduct).toList(),
             orderedEquals([
               'android-studio',
-              'android-studio'
+              'android-studio',
+              'ideaIC'
             ]));
       });
     });
