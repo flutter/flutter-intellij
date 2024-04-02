@@ -155,7 +155,9 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
   @Override
   public @Nullable EmbeddedTab openEmbeddedTab() {
     manageJxBrowserDownload();
-    engineRef.compareAndSet(null, EmbeddedBrowserEngine.getInstance().getEngine());
+    if (engineRef.get() == null) {
+      engineRef.compareAndSet(null, EmbeddedBrowserEngine.getInstance().getEngine());
+    }
     final Engine engine = engineRef.get();
     if (engine == null) {
       showMessageWithUrlLink("JX Browser engine failed to start");
