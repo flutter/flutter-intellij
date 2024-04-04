@@ -294,7 +294,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
       //noinspection CodeBlock2Expr
       ApplicationManager.getApplication().invokeLater(() -> {
-        embeddedBrowserOptional().ifPresent(embeddedBrowser -> embeddedBrowser.openPanel(contentManager, tabName, devToolsUrl, (String error) -> {
+        embeddedBrowserOptional().ifPresent(embeddedBrowser -> embeddedBrowser.openPanel(toolWindow, tabName, devToolsUrl, (String error) -> {
           // If the embedded browser doesn't work, offer a link to open in the regular browser.
           final List<LabelInput> inputs = Arrays.asList(
             new LabelInput("The embedded browser failed to load. Error: " + error),

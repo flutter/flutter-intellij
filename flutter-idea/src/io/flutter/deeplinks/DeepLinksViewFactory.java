@@ -19,7 +19,6 @@ import io.flutter.devtools.DevToolsUrl;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -64,7 +63,7 @@ public class DeepLinksViewFactory implements ToolWindowFactory {
 
           ApplicationManager.getApplication().invokeLater(() -> {
             Optional.ofNullable(
-              FlutterUtils.embeddedBrowser(project)).ifPresent(embeddedBrowser -> embeddedBrowser.openPanel(contentManager, "Deep Links", devToolsUrl, (String err) -> {
+              FlutterUtils.embeddedBrowser(project)).ifPresent(embeddedBrowser -> embeddedBrowser.openPanel(toolWindow, "Deep Links", devToolsUrl, (String err) -> {
               System.out.println(err);
             }));
           });

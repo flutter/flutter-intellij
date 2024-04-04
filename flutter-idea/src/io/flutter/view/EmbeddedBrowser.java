@@ -40,18 +40,21 @@ class BrowserTab {
   protected EmbeddedTab embeddedTab;
   protected Content content;
   protected CompletableFuture<DevToolsUrl> devToolsUrlFuture;
+  public ContentManager contentManager;
 }
 
-
+/**
+ * There is one instance of embedded browser across the project, but it manages tabs across multiple tool
+ * windows. Each tab can display contents of an independent URL.
+ */
 public abstract class EmbeddedBrowser {
   public static final String ANALYTICS_CATEGORY = "embedded-browser";
 
-  protected final Map<@NotNull String, @NotNull BrowserTab> tabs = new HashMap<>();
+  protected final Map<@NotNull String, Map<@NotNull String, @NotNull BrowserTab>> windows = new HashMap<>();
 
   public abstract Logger logger();
   private final Analytics analytics;
 
-  private ContentManager contentManager;
   private DevToolsUrl url;
 
   public EmbeddedBrowser(Project project) {
@@ -59,28 +62,33 @@ public abstract class EmbeddedBrowser {
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
       @Override
       public void projectClosing(@NotNull Project project) {
-        for (final String tabName: tabs.keySet()) {
-          final BrowserTab tab = tabs.get(tabName);
-          if (tab.embeddedTab != null) {
-            try {
-              tab.embeddedTab.close();
-            } catch (Exception ex) {
-              logger().info(ex);
+        for (final String window: windows.keySet()) {
+          final Map<String, BrowserTab> tabs = windows.get(window);
+          for (final String tabName: tabs.keySet()) {
+            final BrowserTab tab = tabs.get(tabName);
+            if (tab.embeddedTab != null) {
+              try {
+                tab.embeddedTab.close();
+              } catch (Exception ex) {
+                logger().info(ex);
+              }
             }
           }
+          tabs.clear();
         }
-        tabs.clear();
+        windows.clear();
       }
     });
   }
 
-  public void openPanel(ContentManager contentManager, String tabName, DevToolsUrl devToolsUrl, Consumer<String> onBrowserUnavailable) {
-    this.contentManager = contentManager;
+  public void openPanel(ToolWindow toolWindow, String tabName, DevToolsUrl devToolsUrl, Consumer<String> onBrowserUnavailable) {
     this.url = devToolsUrl;
+    Map<String, BrowserTab> tabs = windows.computeIfAbsent(toolWindow.getId(), k -> new HashMap<>());
+
     final BrowserTab firstTab = tabs.get(tabName);
     if (firstTab == null) {
       try {
-        openBrowserTabFor(tabName);
+        tabs.put(tabName, openBrowserTabFor(tabName, toolWindow));
       } catch (Exception ex) {
         analytics.sendEvent(ANALYTICS_CATEGORY, "openBrowserTabFailed-" + this.getClass());
         onBrowserUnavailable.accept(ex.getMessage());
@@ -109,44 +117,44 @@ public abstract class EmbeddedBrowser {
 
     tab.devToolsUrlFuture.complete(devToolsUrl);
 
-    JComponent component = tab.embeddedTab.getTabComponent(contentManager);
+    JComponent component = tab.embeddedTab.getTabComponent(tab.contentManager);
 
     ApplicationManager.getApplication().invokeLater(() -> {
-      if (contentManager.isDisposed()) {
+      if (tab.contentManager.isDisposed()) {
         return;
       }
 
-      contentManager.removeAllContents(false);
+      tab.contentManager.removeAllContents(false);
 
       for (final String otherTabName: tabs.keySet()) {
         if (otherTabName.equals(tabName)) {
           continue;
         }
         final BrowserTab browserTab = tabs.get(otherTabName);
-        contentManager.addContent(browserTab.content);
+        tab.contentManager.addContent(browserTab.content);
       }
 
-      tab.content = contentManager.getFactory().createContent(null, tabName, false);
+      tab.content = tab.contentManager.getFactory().createContent(null, tabName, false);
       tab.content.setComponent(component);
       tab.content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
       // TODO(helin24): Use differentiated icons for each tab and copy from devtools toolbar.
       tab.content.setIcon(FlutterIcons.Phone);
-      contentManager.addContent(tab.content);
-      contentManager.setSelectedContent(tab.content, true);
+      tab.contentManager.addContent(tab.content);
+      tab.contentManager.setSelectedContent(tab.content, true);
     });
   }
 
-  private void openLinkInStandardBrowser() {
+  private void openLinkInStandardBrowser(ContentManager contentManager) {
     verifyEventDispatchThread();
     if (url == null) {
-      showMessage("The URL is invalid.");
+      showMessage("The URL is invalid.", contentManager);
     } else {
       BrowserLauncher.getInstance().browse(
         url.getUrlString(),
         null
       );
 
-      showMessage("The URL has been opened in the browser.");
+      showMessage("The URL has been opened in the browser.", contentManager);
     }
   }
 
@@ -154,27 +162,27 @@ public abstract class EmbeddedBrowser {
     assert(SwingUtilities.isEventDispatchThread());
   }
 
-  protected void showMessageWithUrlLink(@NotNull String message) {
+  protected void showMessageWithUrlLink(@NotNull String message, ContentManager contentManager) {
     final List<LabelInput> labels = new ArrayList<>();
     labels.add(new LabelInput(message));
-    showLabelsWithUrlLink(labels);
+    showLabelsWithUrlLink(labels, contentManager);
   }
 
-  protected void showLabelsWithUrlLink(@NotNull List<LabelInput> labels) {
+  protected void showLabelsWithUrlLink(@NotNull List<LabelInput> labels, ContentManager contentManager) {
     labels.add(new LabelInput("Open DevTools in the browser?", (linkLabel, data) -> {
-      openLinkInStandardBrowser();
+      openLinkInStandardBrowser(contentManager);
     }));
 
-    showLabels(labels);
+    showLabels(labels, contentManager);
   }
 
-  protected void showMessage(@NotNull String message) {
+  protected void showMessage(@NotNull String message, ContentManager contentManager) {
     final List<LabelInput> labels = new ArrayList<>();
     labels.add(new LabelInput(message));
-    showLabels(labels);
+    showLabels(labels, contentManager);
   }
 
-  protected void showLabels(List<LabelInput> labels) {
+  protected void showLabels(List<LabelInput> labels, ContentManager contentManager) {
     final JPanel panel = new JPanel(new GridLayout(0, 1));
 
     for (LabelInput input : labels) {
@@ -194,10 +202,10 @@ public abstract class EmbeddedBrowser {
 
     final JPanel center = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER));
     center.add(panel);
-    replacePanelLabel(center);
+    replacePanelLabel(center, contentManager);
   }
 
-  private void replacePanelLabel(JComponent label) {
+  private void replacePanelLabel(JComponent label, ContentManager contentManager) {
     ApplicationManager.getApplication().invokeLater(() -> {
       if (contentManager.isDisposed()) {
         return;
@@ -211,15 +219,15 @@ public abstract class EmbeddedBrowser {
     });
   }
 
-  private BrowserTab openBrowserTabFor(String tabName) throws Exception {
+  private BrowserTab openBrowserTabFor(String tabName, ToolWindow toolWindow) throws Exception {
     BrowserTab tab = new BrowserTab();
     tab.devToolsUrlFuture = new CompletableFuture<>();
-    tab.embeddedTab = openEmbeddedTab();
-    tabs.put(tabName, tab);
+    tab.embeddedTab = openEmbeddedTab(toolWindow.getContentManager());
+    tab.contentManager = toolWindow.getContentManager();
     return tab;
   }
 
-  public abstract EmbeddedTab openEmbeddedTab() throws Exception;
+  public abstract EmbeddedTab openEmbeddedTab(ContentManager contentManager) throws Exception;
 
   public void updatePanelToWidget(String widgetId) {
     updateUrlAndReload(devToolsUrl -> {
@@ -249,27 +257,29 @@ public abstract class EmbeddedBrowser {
   }
 
   private void updateUrlAndReload(Function<DevToolsUrl, DevToolsUrl> newDevToolsUrlFn) {
-    this.tabs.forEach((tabName, tab) -> {
-      final CompletableFuture<DevToolsUrl> updatedUrlFuture = tab.devToolsUrlFuture.thenApply(devToolsUrl -> {
-        if (devToolsUrl == null) {
-          // This happens if URL has already been reset (e.g. new app has started). In this case [openPanel] should be called again instead of
-          // modifying the URL.
-          return null;
-        }
-        return newDevToolsUrlFn.apply(devToolsUrl);
-      });
+    this.windows.forEach((window, tabs) -> {
+      tabs.forEach((tabName, tab) -> {
+        final CompletableFuture<DevToolsUrl> updatedUrlFuture = tab.devToolsUrlFuture.thenApply(devToolsUrl -> {
+          if (devToolsUrl == null) {
+            // This happens if URL has already been reset (e.g. new app has started). In this case [openPanel] should be called again instead of
+            // modifying the URL.
+            return null;
+          }
+          return newDevToolsUrlFn.apply(devToolsUrl);
+        });
 
-      AsyncUtils.whenCompleteUiThread(updatedUrlFuture, (devToolsUrl, ex) -> {
-        if (ex != null) {
-          logger().info(ex);
-          FlutterInitializer.getAnalytics().sendExpectedException("browser-update", ex);
-          return;
-        }
-        if (devToolsUrl == null) {
-          // Reload is no longer needed - either URL has been reset or there has been no change.
-          return;
-        }
-        tab.embeddedTab.loadUrl(devToolsUrl.getUrlString());
+        AsyncUtils.whenCompleteUiThread(updatedUrlFuture, (devToolsUrl, ex) -> {
+          if (ex != null) {
+            logger().info(ex);
+            FlutterInitializer.getAnalytics().sendExpectedException("browser-update", ex);
+            return;
+          }
+          if (devToolsUrl == null) {
+            // Reload is no longer needed - either URL has been reset or there has been no change.
+            return;
+          }
+          tab.embeddedTab.loadUrl(devToolsUrl.getUrlString());
+        });
       });
     });
   }
