@@ -57,7 +57,7 @@ public class EmbeddedJcefBrowser extends EmbeddedBrowser {
   }
 
   @Override
-  public EmbeddedTab openEmbeddedTab() throws Exception {
+  public EmbeddedTab openEmbeddedTab(ContentManager contentManager) throws Exception {
     return new EmbeddedJcefBrowserTab();
   }
 }

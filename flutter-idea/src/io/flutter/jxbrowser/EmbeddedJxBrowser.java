@@ -153,76 +153,76 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
   }
 
   @Override
-  public @Nullable EmbeddedTab openEmbeddedTab() {
-    manageJxBrowserDownload();
+  public @Nullable EmbeddedTab openEmbeddedTab(ContentManager contentManager) {
+    manageJxBrowserDownload(contentManager);
     if (engineRef.get() == null) {
       engineRef.compareAndSet(null, EmbeddedBrowserEngine.getInstance().getEngine());
     }
     final Engine engine = engineRef.get();
     if (engine == null) {
-      showMessageWithUrlLink("JX Browser engine failed to start");
+      showMessageWithUrlLink("JX Browser engine failed to start", contentManager);
       return null;
     } else {
       return new EmbeddedJxBrowserTab(engine);
     }
   }
 
-  private void manageJxBrowserDownload() {
+  private void manageJxBrowserDownload(ContentManager contentManager) {
     final JxBrowserStatus jxBrowserStatus = jxBrowserManager.getStatus();
 
     if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {
       return;
     }
     else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_IN_PROGRESS)) {
-      handleJxBrowserInstallationInProgress();
+      handleJxBrowserInstallationInProgress(contentManager);
     }
     else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
-      handleJxBrowserInstallationFailed();
+      handleJxBrowserInstallationFailed(contentManager);
     } else if (jxBrowserStatus.equals(JxBrowserStatus.NOT_INSTALLED) || jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_SKIPPED)) {
       jxBrowserManager.setUp(project);
-      handleJxBrowserInstallationInProgress();
+      handleJxBrowserInstallationInProgress(contentManager);
     }
   }
 
-  protected void handleJxBrowserInstallationInProgress() {
-    showMessageWithUrlLink(INSTALLATION_IN_PROGRESS_LABEL);
+  protected void handleJxBrowserInstallationInProgress(ContentManager contentManager) {
+    showMessageWithUrlLink(INSTALLATION_IN_PROGRESS_LABEL, contentManager);
 
     if (jxBrowserManager.getStatus().equals(JxBrowserStatus.INSTALLED)) {
       return;
     }
     else {
-      waitForJxBrowserInstallation();
+      waitForJxBrowserInstallation(contentManager);
     }
   }
 
-  protected void waitForJxBrowserInstallation() {
+  protected void waitForJxBrowserInstallation(ContentManager contentManager) {
     try {
       final JxBrowserStatus newStatus = jxBrowserManager.waitForInstallation(INSTALLATION_WAIT_LIMIT_SECONDS);
 
-      handleUpdatedJxBrowserStatusOnEventThread(newStatus);
+      handleUpdatedJxBrowserStatusOnEventThread(newStatus, contentManager);
     }
     catch (TimeoutException e) {
-      showMessageWithUrlLink(INSTALLATION_TIMED_OUT_LABEL);
+      showMessageWithUrlLink(INSTALLATION_TIMED_OUT_LABEL, contentManager);
       FlutterInitializer.getAnalytics().sendEvent(JxBrowserManager.ANALYTICS_CATEGORY, "timedOut");
     }
   }
 
-  protected void handleUpdatedJxBrowserStatusOnEventThread(JxBrowserStatus jxBrowserStatus) {
-    AsyncUtils.invokeLater(() -> handleUpdatedJxBrowserStatus(jxBrowserStatus));
+  protected void handleUpdatedJxBrowserStatusOnEventThread(JxBrowserStatus jxBrowserStatus, ContentManager contentManager) {
+    AsyncUtils.invokeLater(() -> handleUpdatedJxBrowserStatus(jxBrowserStatus, contentManager));
   }
 
-  protected void handleUpdatedJxBrowserStatus(JxBrowserStatus jxBrowserStatus) {
+  protected void handleUpdatedJxBrowserStatus(JxBrowserStatus jxBrowserStatus, ContentManager contentManager) {
     if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {
       return;
     } else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
-      handleJxBrowserInstallationFailed();
+      handleJxBrowserInstallationFailed(contentManager);
     } else {
       // newStatus can be null if installation is interrupted or stopped for another reason.
-      showMessageWithUrlLink(INSTALLATION_WAIT_FAILED);
+      showMessageWithUrlLink(INSTALLATION_WAIT_FAILED, contentManager);
     }
   }
 
-  protected void handleJxBrowserInstallationFailed() {
+  protected void handleJxBrowserInstallationFailed(ContentManager contentManager) {
     final List<LabelInput> inputs = new ArrayList<>();
 
     final InstallationFailedReason latestFailureReason = jxBrowserManager.getLatestFailureReason();
@@ -239,10 +239,10 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
       inputs.add(new LabelInput("JxBrowser installation failed."));
       inputs.add(new LabelInput("Retry installation?", (linkLabel, data) -> {
         jxBrowserManager.retryFromFailed(project);
-        handleJxBrowserInstallationInProgress();
+        handleJxBrowserInstallationInProgress(contentManager);
       }));
     }
 
-    showLabelsWithUrlLink(inputs);
+    showLabelsWithUrlLink(inputs, contentManager);
   }
 }
