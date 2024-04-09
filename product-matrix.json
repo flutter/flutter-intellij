@@ -30,16 +30,16 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2024.1",
+      "comments": "IntelliJ 2024.1, Android Studio Koala 2024.1",
       "name": "2024.1",
       "version": "2024.1",
-      "isUnitTestTarget": "true",
-      "ideaProduct": "ideaIC",
-      "ideaVersion": "LATEST-EAP-SNAPSHOT",
-      "baseVersion": "LATEST-EAP-SNAPSHOT",
-      "androidPluginVersion": "241.14494.17",
-      "dartPluginVersion": "241.14768",
-      "sinceBuild": "241.14494.17",
+      "isUnitTestTarget": "false",
+      "ideaProduct": "android-studio",
+      "ideaVersion": "2024.1.1.1",
+      "baseVersion": "241.14494.158",
+      "androidPluginVersion": "X.Y.Z",
+      "dartPluginVersion": "241.15845",
+      "sinceBuild": "241.14494.158",
       "untilBuild": "241.*"
     }
   ]

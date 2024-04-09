@@ -20,6 +20,7 @@ plugins {
 val ide: String by project
 val flutterPluginVersion: String by project
 val javaVersion: String by project
+val androidVersion: String by project
 val dartVersion: String by project
 val baseVersion: String by project
 val smaliPlugin: String by project
@@ -47,7 +48,16 @@ intellij {
   downloadSources.set(false)
   version.set(ideVersion)
   val pluginList = mutableListOf("java", "Dart:$dartVersion", "properties", "junit",
-             "gradle", "Groovy", "org.jetbrains.android")
+             "gradle", "Groovy")
+
+  // If 2023.3+ and IDEA (not AS), then "org.jetbrains.android:$androidVersion", otherwise "org.jetbrains.android",
+  // see https://github.com/flutter/flutter-intellij/issues/7145
+  if(ide == "android-studio") {
+    pluginList.add("org.jetbrains.android");
+  } else if (ide == "ideaIC") {
+    pluginList.add("org.jetbrains.android:$androidVersion");
+  }
+
   if (ideVersion != "2023.2") {
     pluginList.add(smaliPlugin)
   }

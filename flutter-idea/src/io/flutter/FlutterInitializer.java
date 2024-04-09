@@ -159,10 +159,11 @@ public class FlutterInitializer implements StartupActivity {
       FlutterModuleUtils.ensureRunConfigSelected(project);
     }
 
-    if (hasFlutterModule) {
-      // Check to see if we're on a supported version of Android Studio; warn otherwise.
-      performAndroidStudioCanaryCheck(project);
-    }
+    // TODO(jwren) delete if not needed anymore:
+    //if (hasFlutterModule) {
+    //  // Check to see if we're on a supported version of Android Studio; warn otherwise.
+    //  performAndroidStudioCanaryCheck(project);
+    //}
 
     FlutterRunNotifications.init(project);
 
