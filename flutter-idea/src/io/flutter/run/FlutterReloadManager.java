@@ -5,6 +5,7 @@
  */
 package io.flutter.run;
 
+import com.google.common.collect.ImmutableMap;
 import com.intellij.AppTopics;
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.hint.HintManagerImpl;
@@ -13,14 +14,8 @@ import com.intellij.concurrency.JobScheduler;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.ide.actions.SaveAllAction;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationGroup;
-import com.intellij.notification.NotificationListener;
-import com.intellij.notification.NotificationType;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.notification.*;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.AnActionListener;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -64,6 +59,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
+import org.assertj.core.util.Strings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -84,12 +80,18 @@ public class FlutterReloadManager {
 
   private static final Map<String, NotificationGroup> toolWindowNotificationGroups = new HashMap<>();
 
-  private static NotificationGroup getNotificationGroup(String toolWindowId) {
-    if (!toolWindowNotificationGroups.containsKey(toolWindowId)) {
-      final NotificationGroup notificationGroup = NotificationGroup.toolWindowGroup("Flutter " + toolWindowId, toolWindowId, false);
-      toolWindowNotificationGroups.put(toolWindowId, notificationGroup);
-    }
+  private static final Map<String, String> toolWindowIdsToNotificationGroupIds = ImmutableMap.of(
+    ToolWindowId.DEBUG, "flutter-debug",
+    ToolWindowId.RUN, "flutter-run",
+    DartProblemsView.TOOLWINDOW_ID, "flutter-analysis"
+  );
 
+  private static NotificationGroup getNotificationGroup(@NotNull String toolWindowId) {
+    if (!toolWindowNotificationGroups.containsKey(toolWindowId)) {
+      final String notificationGroupId = toolWindowIdsToNotificationGroupIds.get(toolWindowId);
+      NotificationGroup group = NotificationGroupManager.getInstance().getNotificationGroup(notificationGroupId);
+      toolWindowNotificationGroups.put(toolWindowId, group);
+    }
     return toolWindowNotificationGroups.get(toolWindowId);
   }
 
@@ -387,16 +389,15 @@ public class FlutterReloadManager {
 
   private void showAnalysisNotification(@NotNull String title, @NotNull String content, boolean isError) {
     final ToolWindow dartProblemsView = ToolWindowManager.getInstance(myProject).getToolWindow(DartProblemsView.TOOLWINDOW_ID);
-    if (dartProblemsView != null && !dartProblemsView.isVisible()) {
-      content += " (<a href='open.analysis.view'>view issues</a>)";
-    }
 
     final NotificationGroup notificationGroup = getNotificationGroup(DartProblemsView.TOOLWINDOW_ID);
     final Notification notification = notificationGroup.createNotification(
-      title, content, isError ? NotificationType.ERROR : NotificationType.INFORMATION,
-      new NotificationListener.Adapter() {
+      title, content, isError ? NotificationType.ERROR : NotificationType.INFORMATION);
+
+    if (dartProblemsView != null && !dartProblemsView.isVisible()) {
+      notification.addAction(new AnAction("View Issues") {
         @Override
-        protected void hyperlinkActivated(@NotNull final Notification notification, @NotNull final HyperlinkEvent e) {
+        public void actionPerformed(@NotNull AnActionEvent event) {
           notification.expire();
 
           final ToolWindow dartProblemsView = ToolWindowManager.getInstance(myProject).getToolWindow(DartProblemsView.TOOLWINDOW_ID);
@@ -405,6 +406,8 @@ public class FlutterReloadManager {
           }
         }
       });
+    }
+
     notification.setIcon(FlutterIcons.Flutter);
     notification.notify(myProject);
 
@@ -414,14 +417,7 @@ public class FlutterReloadManager {
   private Notification showRunNotification(@NotNull FlutterApp app, @Nullable String title, @NotNull String content, boolean isError) {
     final String toolWindowId = app.getMode() == RunMode.DEBUG ? ToolWindowId.DEBUG : ToolWindowId.RUN;
     final NotificationGroup notificationGroup = getNotificationGroup(toolWindowId);
-    final Notification notification;
-    if (title == null) {
-      notification = notificationGroup.createNotification(content, isError ? NotificationType.ERROR : NotificationType.INFORMATION);
-    }
-    else {
-      notification =
-        notificationGroup.createNotification(title, content, isError ? NotificationType.ERROR : NotificationType.INFORMATION, null);
-    }
+    final Notification notification = notificationGroup.createNotification(content, isError ? NotificationType.ERROR : NotificationType.INFORMATION);
     notification.setIcon(FlutterIcons.Flutter);
     notification.notify(myProject);
 

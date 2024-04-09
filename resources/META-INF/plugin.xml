@@ -648,6 +648,9 @@
                     serviceImplementation="io.flutter.view.EmbeddedJcefBrowser"
                     overrides="false"/>
     <notificationGroup displayType="STICKY_BALLOON" id="deeplink"/>
+    <notificationGroup displayType="TOOL_WINDOW" id="flutter-run" toolWindowId="Run" />
+    <notificationGroup displayType="TOOL_WINDOW" id="flutter-debug" toolWindowId="Debug" />
+    <notificationGroup displayType="TOOL_WINDOW" id="flutter-analysis" toolWindowId="Dart Analysis" />
   </extensions>
 
   <!-- Dart Plugin extensions -->
