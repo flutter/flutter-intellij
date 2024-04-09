@@ -59,12 +59,10 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
-import org.assertj.core.util.Strings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -86,10 +84,19 @@ public class FlutterReloadManager {
     DartProblemsView.TOOLWINDOW_ID, "flutter-analysis"
   );
 
-  private static NotificationGroup getNotificationGroup(@NotNull String toolWindowId) {
+  private static @Nullable NotificationGroup getNotificationGroup(@NotNull String toolWindowId) {
     if (!toolWindowNotificationGroups.containsKey(toolWindowId)) {
       final String notificationGroupId = toolWindowIdsToNotificationGroupIds.get(toolWindowId);
-      NotificationGroup group = NotificationGroupManager.getInstance().getNotificationGroup(notificationGroupId);
+      if (notificationGroupId == null) {
+        LOG.error("Notification group ID could not be found for toolWindowId: " + toolWindowId);
+        return null;
+      }
+
+      NotificationGroupManager manager = NotificationGroupManager.getInstance();
+      if (manager == null) {
+        return null;
+      }
+      NotificationGroup group = manager.getNotificationGroup(notificationGroupId);
       toolWindowNotificationGroups.put(toolWindowId, group);
     }
     return toolWindowNotificationGroups.get(toolWindowId);
@@ -269,7 +276,9 @@ public class FlutterReloadManager {
 
       app.performHotReload(true, FlutterConstants.RELOAD_REASON_SAVE).thenAccept(result -> {
         if (!result.ok()) {
-          notification.expire();
+          if (notification != null) {
+            notification.expire();
+          }
           showRunNotification(app, "Hot Reload Error", result.getMessage(), true);
         }
         else {
@@ -277,7 +286,9 @@ public class FlutterReloadManager {
           final long delay = Math.max(0, 2000 - (System.currentTimeMillis() - startTime));
 
           JobScheduler.getScheduler().schedule(() -> UIUtil.invokeLaterIfNeeded(() -> {
-            notification.expire();
+            if (notification != null) {
+              notification.expire();
+            }
 
             // If the 'Reloading…' notification is still the most recent one, then clear it.
             if (isLastNotification(notification)) {
@@ -391,6 +402,10 @@ public class FlutterReloadManager {
     final ToolWindow dartProblemsView = ToolWindowManager.getInstance(myProject).getToolWindow(DartProblemsView.TOOLWINDOW_ID);
 
     final NotificationGroup notificationGroup = getNotificationGroup(DartProblemsView.TOOLWINDOW_ID);
+    if (notificationGroup == null) {
+      LOG.error("Could not find notification group for toolWindowId: " + DartProblemsView.TOOLWINDOW_ID);
+      return;
+    }
     final Notification notification = notificationGroup.createNotification(
       title, content, isError ? NotificationType.ERROR : NotificationType.INFORMATION);
 
@@ -414,9 +429,14 @@ public class FlutterReloadManager {
     lastNotification = notification;
   }
 
-  private Notification showRunNotification(@NotNull FlutterApp app, @Nullable String title, @NotNull String content, boolean isError) {
+  private @Nullable Notification showRunNotification(@NotNull FlutterApp app, @Nullable String title, @NotNull String content, boolean isError) {
     final String toolWindowId = app.getMode() == RunMode.DEBUG ? ToolWindowId.DEBUG : ToolWindowId.RUN;
     final NotificationGroup notificationGroup = getNotificationGroup(toolWindowId);
+    if (notificationGroup == null) {
+      LOG.error("Could not find notification group for toolWindowId: " + DartProblemsView.TOOLWINDOW_ID);
+      return null;
+    }
+
     final Notification notification = notificationGroup.createNotification(content, isError ? NotificationType.ERROR : NotificationType.INFORMATION);
     notification.setIcon(FlutterIcons.Flutter);
     notification.notify(myProject);
