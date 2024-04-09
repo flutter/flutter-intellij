@@ -108,6 +108,9 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   @NotNull
   private static final FlutterSdkVersion MIN_SUPPORTS_TOOL_EVENT_STREAM = new FlutterSdkVersion("3.7.1");
 
+  @NotNull
+  private static final FlutterSdkVersion MIN_SUPPORTS_DEEP_LINKS_TOOL = new FlutterSdkVersion("3.19.0");
+
   @Nullable
   private final Version version;
   @Nullable
@@ -271,6 +274,10 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   public boolean canUseToolEventStream() {
     return version != null && this.compareTo(MIN_SUPPORTS_TOOL_EVENT_STREAM) >= 0;
+  }
+
+  public boolean canUseDeepLinksTool() {
+    return version != null && this.compareTo(MIN_SUPPORTS_DEEP_LINKS_TOOL) >= 0;
   }
 
   public boolean isValid() {

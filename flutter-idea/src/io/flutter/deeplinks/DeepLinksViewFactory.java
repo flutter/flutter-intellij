@@ -10,7 +10,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.ColorUtil;
+import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
+import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.WorkspaceCache;
@@ -22,11 +24,28 @@ import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.Optional;
 
 public class DeepLinksViewFactory implements ToolWindowFactory {
   @Override
   public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+    final ContentManager contentManager = toolWindow.getContentManager();
+    FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+    FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
+    if (sdkVersion == null || !sdkVersion.canUseDeepLinksTool()) {
+      JLabel label = new JLabel("<html>Deep links isn't supported<br> for this version of the Flutter SDK</html>");
+      label.setBorder(JBUI.Borders.empty(5));
+      label.setHorizontalAlignment(SwingConstants.CENTER);
+      final JPanel panel = new JPanel(new BorderLayout());
+      panel.add(label, BorderLayout.CENTER);
+      final Content content = contentManager.getFactory().createContent(panel, null, false);
+
+      toolWindow.getContentManager().addContent(content);
+      return;
+    }
+
       AsyncUtils.whenCompleteUiThread(
         DevToolsService.getInstance(project).getDevToolsInstance(),
         (instance, error) -> {
@@ -43,10 +62,6 @@ public class DeepLinksViewFactory implements ToolWindowFactory {
             return;
           }
 
-          FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
-          FlutterSdkVersion flutterSdkVersion = flutterSdk == null ? null : flutterSdk.getVersion();
-
-          final ContentManager contentManager = toolWindow.getContentManager();
           final String color = ColorUtil.toHex(UIUtil.getEditorPaneBackground());
           final DevToolsUrl devToolsUrl = new DevToolsUrl(
             instance.host,
@@ -56,7 +71,7 @@ public class DeepLinksViewFactory implements ToolWindowFactory {
             true,
             color,
             UIUtil.getFontSize(UIUtil.FontSize.NORMAL),
-            flutterSdkVersion,
+            sdkVersion,
             WorkspaceCache.getInstance(project),
             DevToolsIdeFeature.TOOL_WINDOW
           );
