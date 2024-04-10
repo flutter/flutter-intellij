@@ -41,50 +41,50 @@ final Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()), new Represe
     versions: ['2023.2'],
   ),
 
-  EditCommand(
-    path:
-    'flutter-idea/src/org/jetbrains/android/facet/AndroidFrameworkDetector.java',
-    initials: [
-      '''
-import com.android.tools.idea.gradle.project.Info;
-'''
-    ],
-    replacements: [
-      '''
-import com.android.tools.idea.gradle.project.GradleProjectInfo;
-'''
-    ],
-    versions: ['2024.1'],
-  ),
-  EditCommand(
-    path:
-    'flutter-idea/src/org/jetbrains/android/facet/AndroidFrameworkDetector.java',
-    initials: [
-      '''
-Info gradleProjectInfo = Info.getInstance(project);
-'''
-    ],
-    replacements: [
-      '''
-GradleProjectInfo gradleProjectInfo = GradleProjectInfo.getInstance(project);
-'''
-    ],
-    versions: ['2024.1'],
-  ),
+//   EditCommand(
+//     path:
+//     'flutter-idea/src/org/jetbrains/android/facet/AndroidFrameworkDetector.java',
+//     initials: [
+//       '''
+// import com.android.tools.idea.gradle.project.Info;
+// '''
+//     ],
+//     replacements: [
+//       '''
+// import com.android.tools.idea.gradle.project.GradleProjectInfo;
+// '''
+//     ],
+//     versions: ['2024.1'],
+//   ),
+//   EditCommand(
+//     path:
+//     'flutter-idea/src/org/jetbrains/android/facet/AndroidFrameworkDetector.java',
+//     initials: [
+//       '''
+// Info gradleProjectInfo = Info.getInstance(project);
+// '''
+//     ],
+//     replacements: [
+//       '''
+// GradleProjectInfo gradleProjectInfo = GradleProjectInfo.getInstance(project);
+// '''
+//     ],
+//     versions: ['2024.1'],
+//   ),
 
   // When using LATEST-EAP-SNAPSHOT, also set baseVersion to LATEST-EAP-SNAPSHOT in the build spec.
-  EditCommand(
-    path: 'build.gradle.kts',
-    initials: ['version.set(ideVersion)'],
-    replacements: ['version.set("LATEST-EAP-SNAPSHOT")'],
-    versions: ['2024.1'],
-  ),
-  EditCommand(
-    path: 'flutter-idea/build.gradle.kts',
-    initials: ['version.set(ideVersion)'],
-    replacements: ['version.set("LATEST-EAP-SNAPSHOT")'],
-    versions: ['2024.1'],
-  ),
+  // EditCommand(
+  //   path: 'build.gradle.kts',
+  //   initials: ['version.set(ideVersion)'],
+  //   replacements: ['version.set("LATEST-EAP-SNAPSHOT")'],
+  //   versions: ['2024.1'],
+  // ),
+  // EditCommand(
+  //   path: 'flutter-idea/build.gradle.kts',
+  //   initials: ['version.set(ideVersion)'],
+  //   replacements: ['version.set("LATEST-EAP-SNAPSHOT")'],
+  //   versions: ['2024.1'],
+  // ),
 ];
 
 /// Apply all the editCommands applicable to a given BuildSpec.
