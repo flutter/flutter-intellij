@@ -46,7 +46,12 @@
 
   <change-notes>
     <![CDATA[
-<h1>78.5</h1>Support IntelliJ 2024.1, EAP (#7269)<h1>78.4</h1>
+<h1>78.5</h1>
+<ul>
+  <li>Support IntelliJ 2024.1, EAP (#7269)</li>
+  <li>Add panel for DevTools deep links (#7307)</li>
+</ul>
+<h1>78.4</h1>
 <ul>
   <li>Use Dart plugin's DevTools instance with DTD (#7264)</li>
 </ul>
