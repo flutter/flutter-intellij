@@ -35,7 +35,7 @@ public class DeepLinksViewFactory implements ToolWindowFactory {
     FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
     if (sdkVersion == null || !sdkVersion.canUseDeepLinksTool()) {
-      JLabel label = new JLabel("<html>Deep links isn't supported<br> for this version of the Flutter SDK</html>");
+      JLabel label = new JLabel("<html>Deep links isn't supported<br> for this version of the Flutter SDK.<br>The minimum version required is 3.19.0.</html>");
       label.setBorder(JBUI.Borders.empty(5));
       label.setHorizontalAlignment(SwingConstants.CENTER);
       final JPanel panel = new JPanel(new BorderLayout());
