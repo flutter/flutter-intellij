@@ -1,5 +1,6 @@
 # 78.5
 Support IntelliJ 2024.1, EAP (#7269)
+Add panel for DevTools deep links (#7307)
 
 # 78.4
 - Use Dart plugin's DevTools instance with DTD (#7264)
