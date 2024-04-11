@@ -1,5 +1,12 @@
+# 79
+- Support IntelliJ 2024.1 (#7269)
+- Check version before starting ToolEvent stream (#7317)
+- Convert hot reload notifications to not use deprecated methods (#7337)
+- Add separate browser windows and save content manager for deep links (#7325)
+
 # 78.5
-Support IntelliJ 2024.1, EAP (#7269)
+- Support IntelliJ 2024.1, EAP (#7269)
+- Add panel for DevTools deep links (#7307)
 
 # 78.4
 - Use Dart plugin's DevTools instance with DTD (#7264)
