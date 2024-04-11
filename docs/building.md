@@ -18,15 +18,17 @@ Verify that the file `./resources/jxbrowser/jxbrowser.properties` has been copie
 
 For major releases:
 - Name the branch `release_<release number>` and push to GitHub
+- Check that `$JAVA_HOME` is set (see CONTRIBUTING.md for instructions if not set)
 - Run `./bin/plugin make -r<release number>` to build the plugin for all supported versions
 
 For minor releases:
 - Fetch and checkout the branch `release_<release number>` from GitHub for the latest release (e.g. pull `release_64` if about to release 64.1)
 - Run `./bin/plugin make -r<release number>.<minor number>` (e.g. `-r64.1`) to build the plugin for all supported versions
-- Push the updated branch `release_<release number>` to GitHub. The release branch will be on:
-  - Releases 1 to 70 can be found at https://github.com/flutter/flutter-intellij/branches/all?query=release
-  - Releases 71 to 75 can be found at https://github.com/stevemessick/flutter-intellij/branches/all?query=release
-  - Releases from 76 can be found at https://github.com/jwren/flutter-intellij/branches/all?query=release
+
+Push the updated branch `release_<release number>` to GitHub. The release branch will be on:
+- Releases 1 to 70 can be found at https://github.com/flutter/flutter-intellij/branches/all?query=release
+- Releases 71 to 75 can be found at https://github.com/stevemessick/flutter-intellij/branches/all?query=release
+- Releases from 76 can be found at https://github.com/jwren/flutter-intellij/branches/all?query=release
 
 ### Some additional notes to build and test the Flutter Plugin
 
