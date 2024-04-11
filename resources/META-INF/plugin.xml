@@ -46,6 +46,13 @@
 
   <change-notes>
     <![CDATA[
+<h1>79</h1>
+<ul>
+  <li>Support IntelliJ 2024.1 (#7269)</li>
+  <li>Check version before starting ToolEvent stream (#7317)</li>
+  <li>Convert hot reload notifications to not use deprecated methods (#7337)</li>
+  <li>Add separate browser windows and save content manager for deep links (#7325)</li>
+</ul>
 <h1>78.5</h1>
 <ul>
   <li>Support IntelliJ 2024.1, EAP (#7269)</li>
