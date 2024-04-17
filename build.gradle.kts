@@ -121,9 +121,9 @@ dependencies {
 
 tasks {
   instrumentCode {
-    compilerVersion.set("$baseVersion")
+    compilerVersion.set(baseVersion)
   }
   instrumentTestCode {
-    compilerVersion.set("$baseVersion")
+    compilerVersion.set(baseVersion)
   }
 }
