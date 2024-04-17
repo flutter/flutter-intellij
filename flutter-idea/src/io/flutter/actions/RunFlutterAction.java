@@ -13,6 +13,7 @@ import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
@@ -124,6 +125,13 @@ public abstract class RunFlutterAction extends AnAction {
     final RunConfiguration config = settings == null ? null : settings.getConfiguration();
     // TODO(pq): add support for Bazel.
     return config instanceof SdkRunConfig && LaunchState.getRunningAppProcess((SdkRunConfig)config) == null;
+  }
+
+  @Override
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    // Since we're modifying presentation in update(), we need to run on the EDT, not BGT
+    // See https://plugins.jetbrains.com/docs/intellij/general-threading-rules.html
+    return ActionUpdateThread.EDT;
   }
 
   @Nullable
