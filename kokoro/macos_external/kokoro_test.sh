@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # This should execute as a presubmit.
+#This is currently not invoked as we don't have an IC target in our product matrix.
 
 # Fail on any error.
 set -e
