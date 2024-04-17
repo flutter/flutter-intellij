@@ -66,6 +66,9 @@ elif [ "CHECK_BOT" = "$BOT" ] ; then
   # Check plugin-referenced urls for liveness.
   dart tool/grind.dart check-urls
 
+  # Run the Gradle verify tasks
+  ./bin/plugin verify
+
 elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
 
   # Run unit tests.
