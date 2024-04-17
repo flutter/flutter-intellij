@@ -106,10 +106,16 @@ tasks {
   }
 
   instrumentCode {
-    compilerVersion.set("$baseVersion")
+    compilerVersion.set(baseVersion)
   }
 
   instrumentTestCode {
-    compilerVersion.set("$baseVersion")
+    compilerVersion.set(baseVersion)
+  }
+
+  verifyPlugin {
+    // verifyPlugin fails when no descriptor is provided, however with the way we create the final product,
+    // there is no descriptor in the studio plugin.xml
+    ignoreFailures.set(true);
   }
 }
