@@ -16,6 +16,7 @@ import 'globals.dart';
 import 'lint.dart';
 import 'runner.dart';
 import 'util.dart';
+import 'verify.dart';
 
 Future<int> main(List<String> args) async {
   var runner = BuildCommandRunner();
@@ -26,6 +27,7 @@ Future<int> main(List<String> args) async {
   runner.addCommand(TestCommand(runner));
   runner.addCommand(DeployCommand(runner));
   runner.addCommand(GenerateCommand(runner));
+  runner.addCommand(VerifyCommand(runner));
 
   try {
     return await runner.run(args) ?? 0;
