@@ -145,16 +145,18 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
     inspectorGroupManagerService = InspectorGroupManagerService.getInstance(project);
 
     // Show preview for the file selected when the view is being opened.
-    final VirtualFile[] selectedFiles = FileEditorManager.getInstance(project).getSelectedFiles();
-    if (selectedFiles.length != 0) {
-      setSelectedFile(selectedFiles[0]);
-    }
+    final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+    if(fileEditorManager != null) {
+      final VirtualFile[] selectedFiles = fileEditorManager.getSelectedFiles();
+      if (selectedFiles.length != 0) {
+        setSelectedFile(selectedFiles[0]);
+      }
 
-    final FileEditor[] selectedEditors = FileEditorManager.getInstance(project).getSelectedEditors();
-    if (selectedEditors.length != 0) {
-      setSelectedEditor(selectedEditors[0]);
+      final FileEditor[] selectedEditors = fileEditorManager.getSelectedEditors();
+      if (selectedEditors.length != 0) {
+        setSelectedEditor(selectedEditors[0]);
+      }
     }
-
     // Listen for selecting files.
     final MessageBusConnection bus = project.getMessageBus().connect(project);
     bus.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {

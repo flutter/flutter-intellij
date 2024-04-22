@@ -87,7 +87,6 @@ public class ActiveEditorsOutlineService implements Disposable {
     }
     final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
     if (fileEditorManager == null) {
-      // TODO(jacobr): why do we sometimes hit this edge case?
       return Collections.emptyList();
     }
 
@@ -111,7 +110,6 @@ public class ActiveEditorsOutlineService implements Disposable {
 
     final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
     if (fileEditorManager == null) {
-      // TODO(jacobr): why do we sometimes hit this edge case?
       return;
     }
 

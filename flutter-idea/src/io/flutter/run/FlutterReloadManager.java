@@ -177,30 +177,37 @@ public class FlutterReloadManager {
         if (!FlutterModuleUtils.hasFlutterModule(myProject)) return;
         // The "Save files if the IDE is idle ..." option runs whether there are any changes or not.
         boolean isModified = false;
-        for (FileEditor fileEditor : FileEditorManager.getInstance(myProject).getAllEditors()) {
-          if (fileEditor.isModified()) {
-            isModified = true;
-            break;
+        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(myProject);
+        if(fileEditorManager != null) {
+          for (FileEditor fileEditor : fileEditorManager.getAllEditors()) {
+            if (fileEditor != null && fileEditor.isModified()) {
+              isModified = true;
+              break;
+            }
           }
+          if (!isModified) return;
         }
-        if (!isModified) return;
 
         ApplicationManager.getApplication().invokeLater(() -> {
           // Find a Dart editor to trigger the reload.
           final Editor anEditor = ApplicationManager.getApplication().runReadAction((Computable<Editor>)() -> {
             Editor someEditor = null;
-            for (Editor editor : EditorFactory.getInstance().getAllEditors()) {
-              if (editor.isDisposed()) continue;
-              if (editor.getProject() != myProject) continue;
-              final PsiFile psiFile = PsiDocumentManager.getInstance(myProject).getPsiFile(editor.getDocument());
-              if (psiFile instanceof DartFile && someEditor == null) {
-                someEditor = editor;
-              }
-              if (null != PsiTreeUtil.findChildOfType(psiFile, PsiErrorElement.class, false)) {
-                // The Dart plugin may create empty files that it then claims have a syntax error. Ignore them.
-                if (editor.getDocument().getTextLength() != 0) {
-                  // If there are analysis errors we want to silently exit, without showing a notification.
-                  return null;
+            final EditorFactory editorFactory = EditorFactory.getInstance();
+            if(editorFactory != null) {
+              for (Editor editor : editorFactory.getAllEditors()) {
+                if (editor == null || editor.isDisposed() || editor.getProject() != myProject) {
+                  continue;
+                }
+                final PsiFile psiFile = PsiDocumentManager.getInstance(myProject).getPsiFile(editor.getDocument());
+                if (psiFile instanceof DartFile && someEditor == null) {
+                  someEditor = editor;
+                }
+                if (null != PsiTreeUtil.findChildOfType(psiFile, PsiErrorElement.class, false)) {
+                  // The Dart plugin may create empty files that it then claims have a syntax error. Ignore them.
+                  if (editor.getDocument().getTextLength() != 0) {
+                    // If there are analysis errors we want to silently exit, without showing a notification.
+                    return null;
+                  }
                 }
               }
             }

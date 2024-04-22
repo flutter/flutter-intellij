@@ -295,21 +295,24 @@ public class FlutterModuleUtils {
     if (main == null) return;
 
     DumbService.getInstance(project).runWhenSmart(() -> {
-      final FileEditorManager manager = FileEditorManager.getInstance(project);
-      FileEditor[] editors = manager.getAllEditors();
+      final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+      if (fileEditorManager == null) {
+        return;
+      }
+      FileEditor[] editors = fileEditorManager.getAllEditors();
       if (editors.length > 1) {
         return;
       }
       for (FileEditor editor : editors) {
-        VirtualFile file = editor.getFile();
-        if (file.equals(main)) {
+        if (editor == null) {
           return;
         }
-        if (file.getFileType().equals(DartFileType.INSTANCE)) {
+        VirtualFile file = editor.getFile();
+        if (file != null && file.equals(main) && file.getFileType().equals(DartFileType.INSTANCE)) {
           return;
         }
       }
-      manager.openFile(main, editors.length == 0);
+      fileEditorManager.openFile(main, editors.length == 0);
     });
   }
 

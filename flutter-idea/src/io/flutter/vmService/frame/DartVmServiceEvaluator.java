@@ -50,7 +50,7 @@ public class DartVmServiceEvaluator extends XDebuggerEvaluator {
                        @Nullable final XSourcePosition expressionPosition) {
     final String isolateId = myDebugProcess.getCurrentIsolateId();
     final Project project = myDebugProcess.getSession().getProject();
-    final FileEditorManager manager = FileEditorManager.getInstance(project);
+    final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
     PsiElement element = null;
     PsiFile psiFile = null;
     final List<VirtualFile> libraryFiles = new ArrayList<>();
@@ -85,20 +85,21 @@ public class DartVmServiceEvaluator extends XDebuggerEvaluator {
       if (psiFile != null) {
         element = psiFile.findElementAt(expressionPosition.getOffset());
       }
-    }
-    else {
+    } else {
       // TODO(jacobr): we could use the most recently selected Dart file instead
       // of using the selected file.
-      final Editor editor = manager.getSelectedTextEditor();
-      if (editor instanceof TextEditor) {
-        final TextEditor textEditor = (TextEditor)editor;
-        final FileEditorLocation fileEditorLocation = textEditor.getCurrentLocation();
-        final VirtualFile virtualFile = textEditor.getFile();
-        if (virtualFile != null) {
-          psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-          if (psiFile != null && fileEditorLocation instanceof TextEditorLocation) {
-            final TextEditorLocation textEditorLocation = (TextEditorLocation)fileEditorLocation;
-            element = psiFile.findElementAt(textEditor.getEditor().logicalPositionToOffset(textEditorLocation.getPosition()));
+      if (fileEditorManager != null) {
+        final Editor editor = fileEditorManager.getSelectedTextEditor();
+        if (editor instanceof TextEditor) {
+          final TextEditor textEditor = (TextEditor)editor;
+          final FileEditorLocation fileEditorLocation = textEditor.getCurrentLocation();
+          final VirtualFile virtualFile = textEditor.getFile();
+          if (virtualFile != null) {
+            psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+            if (psiFile != null && fileEditorLocation instanceof TextEditorLocation) {
+              final TextEditorLocation textEditorLocation = (TextEditorLocation)fileEditorLocation;
+              element = psiFile.findElementAt(textEditor.getEditor().logicalPositionToOffset(textEditorLocation.getPosition()));
+            }
           }
         }
       }

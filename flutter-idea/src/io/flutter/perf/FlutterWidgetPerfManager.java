@@ -102,7 +102,11 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
    * @return whether the set of selected editors actually changed.
    */
   private boolean updateSelectedEditors() {
-    final FileEditor[] editors = FileEditorManager.getInstance(project).getSelectedEditors();
+    final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+    if(fileEditorManager == null) {
+      return false;
+    }
+    final FileEditor[] editors = fileEditorManager.getSelectedEditors();
     final Set<TextEditor> newEditors = new HashSet<>();
     for (FileEditor editor : editors) {
       if (editor instanceof TextEditor) {
