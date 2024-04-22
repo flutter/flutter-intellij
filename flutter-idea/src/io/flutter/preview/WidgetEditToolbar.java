@@ -214,9 +214,15 @@ public class WidgetEditToolbar {
 
   Editor getCurrentEditor() {
     final VirtualFile file = activeFile.getValue();
-    if (file == null) return null;
+    if (file == null) {
+      return null;
+    }
 
-    final FileEditor fileEditor = FileEditorManager.getInstance(project).getSelectedEditor(file);
+    final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+    if(fileEditorManager == null) {
+      return null;
+    }
+    final FileEditor fileEditor = fileEditorManager.getSelectedEditor(file);
     if (fileEditor instanceof TextEditor) {
       final TextEditor textEditor = (TextEditor)fileEditor;
       final Editor editor = textEditor.getEditor();

@@ -116,7 +116,8 @@ public class FlutterInitializer implements StartupActivity {
         FlutterModuleUtils.autoCreateRunConfig(project, root);
 
         // If there are no open editors, show main.
-        if (FileEditorManager.getInstance(project).getOpenFiles().length == 0) {
+        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        if (fileEditorManager != null && fileEditorManager.getOpenFiles().length == 0) {
           FlutterModuleUtils.autoShowMain(project, root);
         }
       }

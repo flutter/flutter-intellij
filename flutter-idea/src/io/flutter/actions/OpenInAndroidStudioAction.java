@@ -101,8 +101,14 @@ public class OpenInAndroidStudioAction extends AnAction {
 
   @Nullable
   private static Editor getCurrentEditor(@NotNull Project project, @Nullable VirtualFile file) {
-    if (file == null) return null;
-    final FileEditor fileEditor = FileEditorManager.getInstance(project).getSelectedEditor(file);
+    if (file == null) {
+      return null;
+    }
+    final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+    if(fileEditorManager == null) {
+      return null;
+    }
+    final FileEditor fileEditor = fileEditorManager.getSelectedEditor(file);
     if (fileEditor instanceof TextEditor) {
       final TextEditor textEditor = (TextEditor)fileEditor;
       final Editor editor = textEditor.getEditor();
