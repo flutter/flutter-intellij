@@ -55,6 +55,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.ComboBoxEditor;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+
+import javaslang.collection.Array;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -214,6 +216,10 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
       if (toCommit != null) {
         ApplicationManager.getApplication().invokeLater(() -> {
+          // This check was due to https://github.com/flutter/flutter-intellij/issues/7306:
+          if (project.isDisposed()) {
+            return;
+          }
           // This check isn't normally needed but can prevent scary problems during testing.
           // Even if .idea is removed modules may still be created from something in the cache files
           // if the project had been opened previously.
