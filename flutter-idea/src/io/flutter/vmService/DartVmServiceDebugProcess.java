@@ -621,7 +621,12 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
   }
 
   private static void focusProject(@NotNull Project project) {
-    final JFrame projectFrame = WindowManager.getInstance().getFrame(project);
+    final WindowManager windowManager = WindowManager.getInstance();
+    if (windowManager == null) {
+      return;
+    }
+
+    final JFrame projectFrame = windowManager.getFrame(project);
     if (projectFrame == null) {
       return;
     }
@@ -661,7 +666,9 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
 
         @Override
         public void windowActivated(WindowEvent e) {
-          projectFrame.setVisible(true);
+          if(projectFrame.isDisplayable()) {
+            projectFrame.setVisible(true);
+          }
           anchor.dispose();
         }
 
