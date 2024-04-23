@@ -60,7 +60,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
 
     // Set up JxBrowser listening and check if it's already enabled.
     JxBrowserManager.getInstance().listenForSettingChanges(project);
-    JxBrowserManager.getInstance().setUp(project);
+    JxBrowserManager.getInstance().setUp(project.getName());
     excludeAndroidFrameworkDetector(project);
 
     final FlutterSdk sdk = FlutterSdk.getIncomplete(project);

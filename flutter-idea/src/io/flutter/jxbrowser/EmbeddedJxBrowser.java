@@ -121,7 +121,7 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
     return Objects.requireNonNull(project.getService(EmbeddedJxBrowser.class));
   }
 
-  private EmbeddedJxBrowser(Project project) {
+  private EmbeddedJxBrowser(@NotNull Project project) {
     super(project);
     this.project = project;
 
@@ -130,7 +130,7 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
     final JxBrowserStatus jxBrowserStatus = jxBrowserManager.getStatus();
 
     if (jxBrowserStatus.equals(JxBrowserStatus.NOT_INSTALLED) || jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_SKIPPED)) {
-      jxBrowserManager.setUp(project);
+      jxBrowserManager.setUp(project.getName());
     }
 
     System.setProperty("jxbrowser.force.dpi.awareness", "1.0");
@@ -179,7 +179,7 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
     else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
       handleJxBrowserInstallationFailed(contentManager);
     } else if (jxBrowserStatus.equals(JxBrowserStatus.NOT_INSTALLED) || jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_SKIPPED)) {
-      jxBrowserManager.setUp(project);
+      jxBrowserManager.setUp(project.getName());
       handleJxBrowserInstallationInProgress(contentManager);
     }
   }
