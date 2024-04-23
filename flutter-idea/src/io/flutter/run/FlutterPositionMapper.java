@@ -51,8 +51,13 @@ import java.util.concurrent.TimeUnit;
 public class FlutterPositionMapper implements DartVmServiceDebugProcess.PositionMapper {
   private static final Logger LOG = Logger.getInstance(FlutterPositionMapper.class);
 
-  @NotNull
-  private final Project project;
+  /**
+   * This Project can't be non-null as we set it to null {@link #shutdown()} so the Project isn't held onto.
+   * <p>
+   * See https://github.com/flutter/flutter-intellij/issues/7380
+   */
+  @Nullable
+  private Project project;
 
   /**
    * The directory containing the Flutter application's source code.
@@ -105,7 +110,6 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
                                @NotNull VirtualFile sourceRoot,
                                @NotNull DartUrlResolver resolver,
                                @Nullable Analyzer analyzer) {
-
     this.project = project;
     this.sourceRoot = sourceRoot;
     this.resolver = resolver;
@@ -151,6 +155,8 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
    * Returns null if there isn't a unique result.
    */
   private String findRemoteSourceRoot(String remotePath) {
+    if (project == null || project.isDisposed()) return null;
+
     // Find files with the same filename (matching the suffix after the last slash).
     final PsiFile[] localFilesWithSameName = ApplicationManager.getApplication().runReadAction((Computable<PsiFile[]>)() -> {
       final String remoteFileName = PathUtil.getFileName(remotePath);
@@ -202,7 +208,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
       results.add(threeSlashize(new File(file.getPath()).toURI().toString()));
     }
 
-    if (WorkspaceCache.getInstance(project).isBazel()) {
+    if (project != null && !project.isDisposed() && WorkspaceCache.getInstance(project).isBazel()) {
       FlutterInitializer.getAnalytics().sendEvent("breakpoint", analyzer == null ? "analyzer-found" : "analyzer-null");
     }
 
@@ -236,7 +242,10 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
    * Returns the local position (to display to the user) corresponding to a token position in Observatory.
    */
   @Nullable
-  public XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final ScriptRef scriptRef, int tokenPos, CompletableFuture<String> fileFuture) {
+  public XSourcePosition getSourcePosition(@NotNull final String isolateId,
+                                           @NotNull final ScriptRef scriptRef,
+                                           int tokenPos,
+                                           CompletableFuture<String> fileFuture) {
     return getSourcePosition(isolateId, scriptRef.getId(), scriptRef.getUri(), tokenPos, fileFuture);
   }
 
@@ -252,6 +261,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
                                             @NotNull final String scriptUri, int tokenPos) {
     return getSourcePosition(isolateId, scriptId, scriptUri, tokenPos, null);
   }
+
   /**
    * Returns the local position (to display to the user) corresponding to a token position in Observatory.
    */
@@ -300,6 +310,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
   protected VirtualFile findLocalFile(@NotNull String uri) {
     return findLocalFile(uri, null);
   }
+
   /**
    * Attempt to find a local Dart file corresponding to a script in Observatory.
    */
@@ -332,7 +343,11 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
       if (analyzer != null && !isDartPatchUri(remoteUri)) {
         final String path = analyzer.getAbsolutePath(remoteUri);
         if (path != null) {
-          if (fileFuture != null && WorkspaceCache.getInstance(project).isBazel() && path.contains("google3")) {
+          if (fileFuture != null &&
+              project != null &&
+              !project.isDisposed() &&
+              WorkspaceCache.getInstance(project).isBazel() &&
+              path.contains("google3")) {
             // Check if this path matches file future
             final Analytics analytics = FlutterInitializer.getAnalytics();
             try {
@@ -374,6 +389,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
     if (analyzer != null) {
       analyzer.close();
     }
+    project = null;
   }
 
   /**
