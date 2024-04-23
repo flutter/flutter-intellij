@@ -5,7 +5,6 @@
  */
 package io.flutter.jxbrowser;
 
-import com.intellij.openapi.project.Project;
 import io.flutter.analytics.Analytics;
 import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
@@ -20,7 +19,7 @@ import static io.flutter.jxbrowser.JxBrowserManager.DOWNLOAD_PATH;
 import static org.mockito.Mockito.*;
 
 public class JxBrowserManagerTest {
-  final Project mockProject = mock(Project.class);
+  final String projectName = "projectName";
   final Analytics mockAnalytics = mock(Analytics.class);
   final String PLATFORM_FILE_NAME = "test/platform/file/name";
   final String API_FILE_NAME = "test/api/file/name";
@@ -39,7 +38,7 @@ public class JxBrowserManagerTest {
     // If the directory for JxBrowser files cannot be created, the installation should fail.
     final JxBrowserManager manager = new JxBrowserManager(mockUtils, mockAnalytics, mock(FileUtils.class));
 
-    manager.setUp(mockProject);
+    manager.setUp(projectName);
     Assert.assertEquals(JxBrowserStatus.INSTALLATION_FAILED, manager.getStatus());
   }
 
@@ -54,7 +53,7 @@ public class JxBrowserManagerTest {
     // If the directory for JxBrowser files cannot be created, the installation should fail.
     final JxBrowserManager manager = new JxBrowserManager(mockUtils, mockAnalytics, mockFileUtils);
 
-    manager.setUp(mockProject);
+    manager.setUp(projectName);
     Assert.assertEquals(JxBrowserStatus.INSTALLATION_FAILED, manager.getStatus());
   }
 
@@ -70,7 +69,7 @@ public class JxBrowserManagerTest {
     // If the system platform is not found among JxBrowser files, then the installation should fail.
     final JxBrowserManager manager = new JxBrowserManager(mockUtils, mockAnalytics, mockFileUtils);
 
-    manager.setUp(mockProject);
+    manager.setUp(projectName);
     Assert.assertEquals(JxBrowserStatus.INSTALLATION_FAILED, manager.getStatus());
   }
 
@@ -89,7 +88,7 @@ public class JxBrowserManagerTest {
     // If all of the files are already downloaded, we should load the existing files.
     final JxBrowserManager manager = new JxBrowserManager(mockUtils, mockAnalytics, mockFileUtils);
 
-    manager.setUp(mockProject);
+    manager.setUp(projectName);
     final String[] expectedFileNames = {PLATFORM_FILE_NAME, API_FILE_NAME, SWING_FILE_NAME};
     Assert.assertEquals(JxBrowserStatus.INSTALLED, manager.getStatus());
   }
@@ -114,15 +113,15 @@ public class JxBrowserManagerTest {
     final JxBrowserManager manager = new JxBrowserManager(mockUtils, mockAnalytics, mockFileUtils);
     final JxBrowserManager spy = spy(manager);
     final String[] expectedFileNames = {PLATFORM_FILE_NAME, API_FILE_NAME, SWING_FILE_NAME};
-    doNothing().when(spy).downloadJxBrowser(mockProject, expectedFileNames);
+    doNothing().when(spy).downloadJxBrowser(expectedFileNames);
 
     System.out.println("using spy");
-    spy.setUp(mockProject);
+    spy.setUp(projectName);
 
     verify(mockFileUtils, times(1)).deleteFile(DOWNLOAD_PATH + File.separatorChar + PLATFORM_FILE_NAME);
     verify(mockFileUtils, times(1)).deleteFile(DOWNLOAD_PATH + File.separatorChar + API_FILE_NAME);
     verify(mockFileUtils, times(1)).deleteFile(DOWNLOAD_PATH + File.separatorChar + SWING_FILE_NAME);
 
-    verify(spy, times(1)).downloadJxBrowser(mockProject, expectedFileNames);
+    verify(spy, times(1)).downloadJxBrowser(expectedFileNames);
   }
 }
