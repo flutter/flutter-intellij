@@ -40,6 +40,15 @@ public class WorkspaceCache {
   private WorkspaceCache(@NotNull final Project project) {
     this.project = project;
 
+    // Do not attempt to set the WorkspaceCache unless the user has configured the
+    // dartProjectsWithoutPubspecRegistryKey registry key.
+    //
+    // https://github.com/flutter/flutter-intellij/issues/7333
+    if(Registry.is(dartProjectsWithoutPubspecRegistryKey, false)) {
+      this.cache = null;
+      return;
+    }
+
     // Trigger a reload when file dependencies change.
     final AtomicReference<FileWatch> fileWatch = new AtomicReference<>();
     subscribe(() -> {
@@ -140,15 +149,6 @@ public class WorkspaceCache {
     disconnected = false;
     cache = workspace;
 
-    // If the current workspace is a bazel workspace, update the Dart plugin
-    // registry key to indicate that there are dart projects without pubspec
-    // registry keys. TODO(jacobr): it would be nice if the Dart plugin was
-    // instead smarter about handling Bazel projects.
-    if (cache != null) {
-      if (!Registry.is(dartProjectsWithoutPubspecRegistryKey, false)) {
-        Registry.get(dartProjectsWithoutPubspecRegistryKey).setValue(true);
-      }
-    }
     notifyListeners();
   }
 
