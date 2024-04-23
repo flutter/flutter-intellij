@@ -6,7 +6,6 @@
 package io.flutter.actions;
 
 import com.android.tools.idea.gradle.project.importing.GradleProjectImporter;
-import com.intellij.ide.GeneralSettings;
 import com.intellij.ide.actions.OpenFileAction;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.AnActionEvent;

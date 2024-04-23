@@ -6,10 +6,6 @@
 
 package io.flutter.utils;
 
-import static com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil.getChildren;
-import static com.intellij.openapi.util.text.StringUtil.isNotEmpty;
-import static java.util.Objects.requireNonNull;
-
 import com.android.tools.idea.gradle.dsl.model.BuildModelContext;
 import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslElement;
 import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslExpression;
@@ -18,8 +14,6 @@ import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslLiteral;
 import com.android.tools.idea.gradle.dsl.parser.files.GradleSettingsFile;
 import com.android.tools.idea.gradle.project.sync.GradleSyncState;
 import com.android.tools.idea.gradle.util.GradleProjectSystemUtil;
-import com.intellij.lang.java.JavaParserDefinition;
-import com.intellij.lexer.Lexer;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalProjectInfo;
@@ -30,16 +24,11 @@ import com.intellij.openapi.externalSystem.model.task.TaskData;
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectType;
-import com.intellij.openapi.project.ProjectTypeService;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.pom.java.LanguageLevel;
-import com.intellij.psi.JavaTokenType;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.tree.java.IKeywordElementType;
 import com.intellij.util.ReflectionUtil;
 import com.intellij.util.WaitFor;
 import com.intellij.util.concurrency.AppExecutorUtil;
