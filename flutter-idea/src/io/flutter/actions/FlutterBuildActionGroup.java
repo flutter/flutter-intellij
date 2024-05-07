@@ -138,6 +138,11 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
         }
       }
     }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+      return ActionUpdateThread.BGT;
+    }
   }
 
   public static class AAR extends FlutterBuildAction {
