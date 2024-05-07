@@ -199,7 +199,7 @@ public class InspectorService implements Disposable {
   @NotNull private final EvalOnDartLibrary inspectorLibrary;
   @NotNull private final Set<String> supportedServiceMethods;
 
-  private final StreamSubscription<Boolean> setPubRootDirectoriesSubscription;
+  private final StreamSubscription<Boolean> addPubRootDirectoriesSubscription;
 
   /**
    * Convenience ObjectGroup constructor for users who need to use DiagnosticsNode objects before the InspectorService is available.
@@ -269,8 +269,8 @@ public class InspectorService implements Disposable {
     vmService.streamListen(VmService.EXTENSION_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
 
     assert (app.getVMServiceManager() != null);
-    setPubRootDirectoriesSubscription =
-      app.getVMServiceManager().hasServiceExtension(ServiceExtensions.setPubRootDirectories, (Boolean available) -> {
+    addPubRootDirectoriesSubscription =
+      app.getVMServiceManager().hasServiceExtension(ServiceExtensions.addPubRootDirectories, (Boolean available) -> {
         if (!available) {
           return;
         }
@@ -297,7 +297,7 @@ public class InspectorService implements Disposable {
             rootDirectories.add(path);
           }
         }
-        setPubRootDirectories(rootDirectories);
+        addPubRootDirectories(rootDirectories);
       });
   }
 
@@ -362,7 +362,7 @@ public class InspectorService implements Disposable {
   @Override
   public void dispose() {
     Disposer.dispose(inspectorLibrary);
-    Disposer.dispose(setPubRootDirectoriesSubscription);
+    Disposer.dispose(addPubRootDirectoriesSubscription);
   }
 
   public CompletableFuture<?> forceRefresh() {
@@ -481,23 +481,8 @@ public class InspectorService implements Disposable {
     return invokeServiceExtensionNoGroup(methodName, params);
   }
 
-  private CompletableFuture<Void> setPubRootDirectories(List<String> rootDirectories) {
-    if (useServiceExtensionApi()) {
-      return invokeServiceExtensionNoGroup("setPubRootDirectories", rootDirectories).thenApplyAsync((ignored) -> null);
-    }
-    else {
-      // TODO(jacobr): remove this call as soon as
-      // `ext.flutter.inspector.*` has been in two revs of the Flutter Beta
-      // channel. The feature landed in the Flutter dev chanel on
-      // April 16, 2018.
-      final JsonArray jsonArray = new JsonArray();
-      for (String rootDirectory : rootDirectories) {
-        jsonArray.add(rootDirectory);
-      }
-      return getInspectorLibrary().eval(
-        "WidgetInspectorService.instance.setPubRootDirectories(" + new Gson().toJson(jsonArray) + ")", null, null)
-        .thenApplyAsync((instance) -> null);
-    }
+  private CompletableFuture<Void> addPubRootDirectories(List<String> rootDirectories) {
+    return invokeServiceExtensionNoGroup("addPubRootDirectories", rootDirectories).thenApplyAsync((ignored) -> null);
   }
 
   CompletableFuture<InstanceRef> invokeEvalNoGroup(String methodName) {
