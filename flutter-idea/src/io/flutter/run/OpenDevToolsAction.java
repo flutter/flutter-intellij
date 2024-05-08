@@ -6,6 +6,7 @@
 package io.flutter.run;
 
 import com.intellij.ide.browsers.BrowserLauncher;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAwareAction;
@@ -54,6 +55,11 @@ public class OpenDevToolsAction extends DumbAwareAction {
     else {
       e.getPresentation().setEnabled(myIsApplicable.compute());
     }
+  }
+
+  @Override
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
   }
 
   @Override

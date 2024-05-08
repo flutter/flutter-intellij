@@ -5,11 +5,13 @@
  */
 package io.flutter.actions;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
 import io.flutter.utils.FlutterModuleUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FlutterToolsActionGroup extends DefaultActionGroup {
@@ -22,5 +24,10 @@ public class FlutterToolsActionGroup extends DefaultActionGroup {
       presentation.setEnabled(visible);
       presentation.setVisible(visible);
     }
+  }
+
+  @Override
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
   }
 }
