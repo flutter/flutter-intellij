@@ -6,6 +6,7 @@
 package io.flutter.actions;
 
 import com.intellij.CommonBundle;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -62,6 +63,11 @@ public class ExtractWidgetAction extends DumbAwareAction {
   public void update(AnActionEvent e) {
     e.getPresentation().setVisible(isVisibleFor(e));
     super.update(e);
+  }
+
+  @Override
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
   }
 
   protected static boolean isVisibleFor(AnActionEvent e) {
