@@ -5,11 +5,13 @@
  */
 package io.flutter.actions;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import io.flutter.FlutterInitializer;
 import io.flutter.run.daemon.DeviceService;
+import org.jetbrains.annotations.NotNull;
 
 public class RestartFlutterDaemonAction extends AnAction {
   public RestartFlutterDaemonAction() {
@@ -26,5 +28,10 @@ public class RestartFlutterDaemonAction extends AnAction {
     }
 
     DeviceService.getInstance(project).restart();
+  }
+
+  @Override
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
   }
 }

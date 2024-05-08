@@ -234,5 +234,10 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
         service.setSelectedDevice(device);
       }
     }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+      return ActionUpdateThread.BGT;
+    }
   }
 }
