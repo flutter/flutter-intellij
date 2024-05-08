@@ -102,9 +102,9 @@
               text="Open Flutter DevTools"
               description="Open Flutter DevTools"/>
       <separator/>
-      <action id="flutter.androidstudio.open" class="io.flutter.actions.OpenInAndroidStudioAction"
-              text="Open Android module in Android Studio"
-              description="Launch Android Studio to edit the Android module as a top-level project"/>
+<!--      <action id="flutter.androidstudio.open" class="io.flutter.actions.OpenInAndroidStudioAction"-->
+<!--              text="Open Android module in Android Studio"-->
+<!--              description="Launch Android Studio to edit the Android module as a top-level project"/>-->
       <action id="flutter.xcode.open" class="io.flutter.actions.OpenInXcodeAction"
               text="Open iOS/macOS module in Xcode"
               description="Launch Xcode to edit the iOS module as a top-level project"/>
@@ -125,7 +125,7 @@
         <reference ref="flutter.pub.get"/>
         <reference ref="flutter.pub.upgrade"/>
         <separator/>
-        <reference ref="flutter.androidstudio.open"/>
+<!--        <reference ref="flutter.androidstudio.open"/>-->
         <reference ref="flutter.xcode.open"/>
         <reference ref="flutter.appcode.open"/>
         <separator/>
@@ -135,16 +135,17 @@
       <separator/>
       <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="AddToFavorites" anchor="before"/>
     </group>
-    <group id="FlutterExternalIdeActionGroup" class="io.flutter.actions.FlutterExternalIdeActionGroup">
-      <separator/>
-      <group text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">
-        <reference ref="flutter.androidstudio.open"/>
-        <reference ref="flutter.xcode.open"/>
-        <reference ref="flutter.appcode.open"/>
-      </group>
-      <separator/>
-      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="AddToFavorites" anchor="before"/>
-    </group>
+<!--    See comment at the top of FlutterExternalIdeActionGroup.-->
+<!--    <group id="FlutterExternalIdeActionGroup" class="io.flutter.actions.FlutterExternalIdeActionGroup">-->
+<!--      <separator/>-->
+<!--      <group text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">-->
+<!--        <reference ref="flutter.androidstudio.open"/>-->
+<!--        <reference ref="flutter.xcode.open"/>-->
+<!--        <reference ref="flutter.appcode.open"/>-->
+<!--      </group>-->
+<!--      <separator/>-->
+<!--      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="AddToFavorites" anchor="before"/>-->
+<!--    </group>-->
     <group id="FlutterBuildActionGroup" class="io.flutter.actions.FlutterBuildActionGroup">
       <separator/>
       <group text="Flutter" popup="true">
