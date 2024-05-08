@@ -36,6 +36,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 
+/**
+ * This action has been removed from the plugin.xml as a required dependent method call {GradleProjectImporter.importAndOpenProjectCore()
+ * throws "configureNewProject should be used with new projects only".
+ * See https://github.com/flutter/flutter-intellij/issues/7103
+ */
 public class OpenInAndroidStudioAction extends AnAction {
   private static final String LABEL_FILE = FlutterBundle.message("flutter.androidstudio.open.file.text");
   private static final String DESCR_FILE = FlutterBundle.message("flutter.androidstudio.open.file.description");

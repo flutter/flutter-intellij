@@ -15,6 +15,11 @@ import io.flutter.FlutterUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * This action has been removed from the plugin.xml as a required dependent method call {GradleProjectImporter.importAndOpenProjectCore()
+ * throws "configureNewProject should be used with new projects only".
+ * See https://github.com/flutter/flutter-intellij/issues/7103
+ */
 public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
   private static boolean isExternalIdeFile(AnActionEvent e) {
     final VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
