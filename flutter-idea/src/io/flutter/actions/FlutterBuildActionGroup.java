@@ -84,6 +84,11 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
     presentation.setVisible(enabled);
   }
 
+  @Override
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
+  }
+
   private static boolean isInFlutterModule(@NotNull AnActionEvent event) {
     final Project project = event.getProject();
     if (project == null) {
