@@ -6,6 +6,7 @@
 package io.flutter.view;
 
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.Toggleable;
@@ -63,6 +64,11 @@ abstract class FlutterViewToggleableAction<T> extends FlutterViewAction implemen
       isSelected()
       ? extensionDescription.getEnabledText()
       : extensionDescription.getDisabledText());
+  }
+
+  @Override
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
   }
 
   @Override
