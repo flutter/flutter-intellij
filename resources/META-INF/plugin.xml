@@ -517,8 +517,6 @@
     <listener class="io.flutter.view.FlutterViewFactory$FlutterViewListener" topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
     <listener class="io.flutter.performance.FlutterPerformanceViewFactory$FlutterPerformanceViewListener"
               topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
-    <listener class="io.flutter.preview.PreviewViewFactory$PreviewViewListener"
-              topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
   </projectListeners>
 
   <extensionPoints>
@@ -587,10 +585,6 @@
     <colorProvider implementation="io.flutter.editor.FlutterColorProvider"/>
     <codeInsight.lineMarkerProvider language="Dart" implementationClass="io.flutter.editor.FlutterIconLineMarkerProvider"/>
     <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
-
-    <toolWindow id="Flutter Outline" anchor="right" icon="FlutterIcons.Flutter_13"
-                factoryClass="io.flutter.preview.PreviewViewFactory"/>
-    <projectService serviceImplementation="io.flutter.preview.PreviewView" overrides="false"/>
 
     <toolWindow id="Flutter Inspector" anchor="right" icon="FlutterIcons.Flutter_13"
                 factoryClass="io.flutter.view.FlutterViewFactory"/>

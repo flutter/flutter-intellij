@@ -36,7 +36,6 @@ import io.flutter.logging.FlutterConsoleLogManager;
 import io.flutter.module.FlutterModuleBuilder;
 import io.flutter.perf.FlutterWidgetPerfManager;
 import io.flutter.performance.FlutterPerformanceViewFactory;
-import io.flutter.preview.PreviewViewFactory;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterReloadManager;
@@ -249,7 +248,6 @@ public class FlutterInitializer implements StartupActivity {
     // Start watching for Flutter debug active events.
     FlutterViewFactory.init(project);
     FlutterPerformanceViewFactory.init(project);
-    PreviewViewFactory.init(project);
     toolWindowsInitialized = true;
   }
 
