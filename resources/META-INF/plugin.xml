@@ -335,8 +335,8 @@
       <action id="Flutter.DeviceSelectorRefresher" class="io.flutter.actions.DeviceSelectorRefresherAction"
               text="Refresh Device List"
               description="Refresh device list" />
-      <add-to-group group-id="MainToolbarRight" />
-      <add-to-group anchor="before" group-id="ToolbarRunGroup" relative-to-action="RunConfiguration"/>
+<!--      <add-to-group group-id="MainToolbarRight" />-->
+      <add-to-group anchor="before" group-id="MainToolbarRight" relative-to-action="RedesignedRunConfigurationSelector"/>
     </group>
 
     <group id="FlutterToolsActionGroup" class="io.flutter.actions.FlutterToolsActionGroup" popup="true"
@@ -432,19 +432,22 @@
     </group>
 
     <!-- main toolbar run actions -->
-    <action id="AttachDebuggerAction"
-            class="io.flutter.actions.AttachDebuggerAction"
-            text="Flutter Attach"
-            description="Attach debugger to a Flutter process embedded in an Android app"
-            icon="FlutterIcons.AttachDebugger">
-      <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="RunnerActions"/>
-    </action>
-    <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.ReloadFlutterAppRetarget"
-            description="Reload"
-            icon="FlutterIcons.HotReload">
-      <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="RunnerActions"/>
-      <keyboard-shortcut keymap="$default" first-keystroke="ctrl BACK_SLASH"/>
-    </action>
+    <group>
+      <action id="AttachDebuggerAction"
+              class="io.flutter.actions.AttachDebuggerAction"
+              text="Flutter Attach"
+              description="Attach debugger to a Flutter process embedded in an Android app"
+              icon="FlutterIcons.AttachDebugger">
+        <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="RunnerActions"/>
+      </action>
+      <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.ReloadFlutterAppRetarget"
+              description="Reload"
+              icon="FlutterIcons.HotReload">
+        <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="RunnerActions"/>
+        <keyboard-shortcut keymap="$default" first-keystroke="ctrl BACK_SLASH"/>
+      </action>
+      <add-to-group anchor="before" group-id="MainToolbarRight" relative-to-action="RedesignedRunConfigurationSelector"/>
+    </group>
 
     <!-- run menu actions -->
     <group id="Flutter.MenuActions.Run">
