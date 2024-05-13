@@ -190,6 +190,7 @@
         <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="RunnerActions"/>
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl BACK_SLASH"/>
       </action>
+      <add-to-group anchor="before" group-id="MainToolbarRight" relative-to-action="RedesignedRunConfigurationSelector"/>
     </group>
 
     <!-- run menu actions -->
