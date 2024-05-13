@@ -273,20 +273,6 @@ public class PropertyEditorPanel extends SimpleToolWindowPanel {
     return balloon;
   }
 
-  public static Balloon showPopup(
-    InspectorGroupManagerService inspectorGroupManagerService,
-    Project project,
-    Component component,
-    @Nullable DiagnosticsNode node,
-    @NonNls InspectorService.Location location,
-    FlutterDartAnalysisServer service,
-    Point point
-  ) {
-    final Balloon balloon = showPopupHelper(inspectorGroupManagerService, project, node, location, service);
-    balloon.show(new RelativePoint(component, point), Balloon.Position.above);
-    return balloon;
-  }
-
   public static Balloon showPopupHelper(
     InspectorGroupManagerService inspectorService,
     Project project,
