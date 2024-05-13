@@ -45,6 +45,19 @@
 
   <change-notes>
     <![CDATA[
+<h1>79.1</h1>
+<ul>
+  <li>Update JxBrowser to <code>v7.38.2</code> (#7413)</li>
+  <li>&quot;Open Android Module in Android Studio&quot; action removed (#7103)</li>
+  <li>Fix for deprecation of <code>ActionUpdateThread.OLD_EDT</code> (#7330)</li>
+  <li>Deprecation of <code>ServiceExtensions.setPubRootDirectories</code> (#7142)</li>
+  <li>Fix plugin not opening in Android Studio (#7305)</li>
+  <li>Deadlock involving <code>WorkspaceCache.getInstance()</code> (#7333)</li>
+  <li>Fix for <code>AlreadyDisposedException</code> from <code>DartVmServiceDebugProcess</code> (#7381)</li>
+  <li>Memory leak fix out of <code>DartVmServiceDebugProcess</code> (7380)</li>
+  <li>Memory leak fix in <code>FlutterSettings</code> and <code>JxBrowser</code> (#7377)</li>
+  <li>Delete actions specific to legacy inspector (#7416)</li>
+</ul>
 <h1>79</h1>
 <ul>
   <li>Support IntelliJ 2024.1 (#7269)</li>

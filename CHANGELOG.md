@@ -1,3 +1,15 @@
+# 79.1
+- Update JxBrowser to `v7.38.2` (#7413)
+- "Open Android Module in Android Studio" action removed (#7103)
+- Fix for deprecation of `ActionUpdateThread.OLD_EDT` (#7330)
+- Deprecation of `ServiceExtensions.setPubRootDirectories` (#7142)
+- Fix plugin not opening in Android Studio (#7305)
+- Deadlock involving `WorkspaceCache.getInstance()` (#7333)
+- Fix for `AlreadyDisposedException` from `DartVmServiceDebugProcess` (#7381)
+- Memory leak fix out of `DartVmServiceDebugProcess` (7380)
+- Memory leak fix in `FlutterSettings` and `JxBrowser` (#7377)
+- Delete actions specific to legacy inspector (#7416)
+
 # 79
 - Support IntelliJ 2024.1 (#7269)
 - Check version before starting ToolEvent stream (#7317)
