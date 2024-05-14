@@ -107,7 +107,8 @@ public abstract class EmbeddedBrowser {
     final AtomicBoolean contentLoaded = new AtomicBoolean(false);
 
     try {
-      tab.embeddedTab.loadUrl(devToolsUrl.getUrlString());
+      final String url = devToolsUrl.getUrlString();
+      tab.embeddedTab.loadUrl(url);
     } catch (Exception ex) {
       tab.devToolsUrlFuture.completeExceptionally(ex);
       onBrowserUnavailable.accept(ex.getMessage());
@@ -238,10 +239,7 @@ public abstract class EmbeddedBrowser {
 
   public void updateColor(String newColor) {
     updateUrlAndReload(devToolsUrl -> {
-      if (devToolsUrl.colorHexCode.equals(newColor)) {
-        return null;
-      }
-      devToolsUrl.colorHexCode = newColor;
+      devToolsUrl.maybeUpdateColor();
       return devToolsUrl;
     });
   }

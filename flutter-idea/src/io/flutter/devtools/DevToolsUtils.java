@@ -5,6 +5,10 @@
  */
 package io.flutter.devtools;
 
+import com.intellij.ui.ColorUtil;
+import com.intellij.ui.JBColor;
+import com.intellij.util.ui.UIUtil;
+
 public class DevToolsUtils {
   public static String findWidgetId(String url) {
     final String searchFor = "inspectorRef=";
@@ -16,4 +20,14 @@ public class DevToolsUtils {
     }
     return null;
   }
+
+  public String getColorHexCode() {
+    return ColorUtil.toHex(UIUtil.getEditorPaneBackground());
+  }
+
+  public Boolean getIsBackgroundBright() {
+    return JBColor.isBright();
+  }
+
+  public Float getFontSize() {return UIUtil.getFontSize(UIUtil.FontSize.NORMAL);}
 }

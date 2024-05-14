@@ -86,7 +86,15 @@ public class OpenDevToolsAction extends DumbAwareAction {
 
       FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
       BrowserLauncher.getInstance().browse(
-        (new DevToolsUrl(instance.host, instance.port, serviceUrl, null, false, null, null, flutterSdk == null ? null : flutterSdk.getVersion(), WorkspaceCache.getInstance(project), DevToolsIdeFeature.RUN_CONSOLE).getUrlString()),
+        new DevToolsUrl.Builder()
+          .setDevToolsHost(instance.host)
+          .setDevToolsPort(instance.port)
+          .setVmServiceUri(serviceUrl)
+          .setFlutterSdkVersion(flutterSdk == null ? null : flutterSdk.getVersion())
+          .setWorkspaceCache(WorkspaceCache.getInstance(project))
+          .setIdeFeature(DevToolsIdeFeature.RUN_CONSOLE)
+          .build()
+          .getUrlString(),
         null
       );
     });
