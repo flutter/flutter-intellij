@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.ColorUtil;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.util.ui.JBUI;
@@ -62,19 +63,15 @@ public class DeepLinksViewFactory implements ToolWindowFactory {
             return;
           }
 
-          final String color = ColorUtil.toHex(UIUtil.getEditorPaneBackground());
-          final DevToolsUrl devToolsUrl = new DevToolsUrl(
-            instance.host,
-            instance.port,
-            null,
-            "deep-links",
-            true,
-            color,
-            UIUtil.getFontSize(UIUtil.FontSize.NORMAL),
-            sdkVersion,
-            WorkspaceCache.getInstance(project),
-            DevToolsIdeFeature.TOOL_WINDOW
-          );
+          final DevToolsUrl devToolsUrl = new DevToolsUrl.Builder()
+            .setDevToolsHost(instance.host)
+            .setDevToolsPort(instance.port)
+            .setPage("deep-links")
+            .setEmbed(true)
+            .setFlutterSdkVersion(sdkVersion)
+            .setWorkspaceCache(WorkspaceCache.getInstance(project))
+            .setIdeFeature(DevToolsIdeFeature.TOOL_WINDOW)
+            .build();
 
           ApplicationManager.getApplication().invokeLater(() -> {
             Optional.ofNullable(

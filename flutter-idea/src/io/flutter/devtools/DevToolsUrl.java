@@ -17,12 +17,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DevToolsUrl {
-  private String devtoolsHost;
-  private int devtoolsPort;
+  private String devToolsHost;
+  private int devToolsPort;
   private String vmServiceUri;
   private String page;
   private boolean embed;
   public String colorHexCode;
+  public Boolean isBright;
   public String widgetId;
   public Float fontSize;
   private final FlutterSdkVersion flutterSdkVersion;
@@ -32,53 +33,128 @@ public class DevToolsUrl {
 
   public final DevToolsIdeFeature ideFeature;
 
-  public DevToolsUrl(String devtoolsHost,
-                     int devtoolsPort,
-                     String vmServiceUri,
-                     String page,
-                     boolean embed,
-                     String colorHexCode,
-                     Float fontSize,
-                     @Nullable FlutterSdkVersion flutterSdkVersion,
-                     WorkspaceCache workspaceCache,
-                     DevToolsIdeFeature ideFeature) {
-    this(devtoolsHost, devtoolsPort, vmServiceUri, page, embed, colorHexCode, fontSize, flutterSdkVersion, workspaceCache, ideFeature, new FlutterSdkUtil());
+  public static class Builder {
+    private String devToolsHost;
+
+    private int devToolsPort;
+    private String vmServiceUri;
+    private String page;
+    private Boolean embed;
+    private String widgetId;
+    private Float fontSize;
+
+    private FlutterSdkVersion flutterSdkVersion;
+    private WorkspaceCache workspaceCache;
+    private DevToolsIdeFeature ideFeature;
+
+    private DevToolsUtils devToolsUtils;
+
+    private FlutterSdkUtil flutterSdkUtil;
+
+    public Builder() {}
+
+    public Builder setDevToolsHost(String devToolsHost) {
+      this.devToolsHost = devToolsHost;
+      return this;
+    }
+
+    public Builder setDevToolsPort(int devToolsPort) {
+      this.devToolsPort = devToolsPort;
+      return this;
+    }
+
+    public Builder setVmServiceUri(String vmServiceUri) {
+      this.vmServiceUri = vmServiceUri;
+      return this;
+    }
+
+    public Builder setPage(String page) {
+      this.page = page;
+      return this;
+    }
+
+    public Builder setEmbed(Boolean embed) {
+      this.embed = embed;
+      return this;
+    }
+
+    public Builder setWidgetId(String widgetId) {
+      this.widgetId = widgetId;
+      return this;
+    }
+
+    public Builder setFontSize(Float fontSize) {
+      this.fontSize = fontSize;
+      return this;
+    }
+
+    public Builder setDevToolsUtils(DevToolsUtils devToolsUtils) {
+      this.devToolsUtils = devToolsUtils;
+      return this;
+    }
+
+    public Builder setFlutterSdkVersion(FlutterSdkVersion sdkVersion) {
+      this.flutterSdkVersion = sdkVersion;
+      return this;
+    }
+
+    public Builder setWorkspaceCache(WorkspaceCache workspaceCache) {
+      this.workspaceCache = workspaceCache;
+      return this;
+    }
+
+    public Builder setIdeFeature(DevToolsIdeFeature ideFeature) {
+      this.ideFeature = ideFeature;
+      return this;
+    }
+
+    public Builder setFlutterSdkUtil(FlutterSdkUtil flutterSdkUtil) {
+      this.flutterSdkUtil = flutterSdkUtil;
+      return this;
+    }
+
+    public DevToolsUrl build() {
+      if (devToolsUtils == null) {
+        devToolsUtils = new DevToolsUtils();
+      }
+      if (flutterSdkUtil == null) {
+        flutterSdkUtil = new FlutterSdkUtil();
+      }
+      if (embed == null) {
+        embed = false;
+      }
+      return new DevToolsUrl(this);
+    }
   }
 
+  private DevToolsUrl(Builder builder) {
+    this.devToolsHost = builder.devToolsHost;
+    this.devToolsPort = builder.devToolsPort;
+    this.vmServiceUri = builder.vmServiceUri;
+    this.page = builder.page;
+    this.embed = builder.embed;
+    if (builder.embed) {
+      this.colorHexCode = builder.devToolsUtils.getColorHexCode();
+      this.isBright = builder.devToolsUtils.getIsBackgroundBright();
+      this.fontSize = builder.devToolsUtils.getFontSize();
+    }
+    this.widgetId = builder.widgetId;
+    this.flutterSdkVersion = builder.flutterSdkVersion;
+    this.ideFeature = builder.ideFeature;
+    this.sdkUtil = builder.flutterSdkUtil;
 
-  public DevToolsUrl(String devtoolsHost,
-                     int devtoolsPort,
-                     String vmServiceUri,
-                     String page,
-                     boolean embed,
-                     String colorHexCode,
-                     Float fontSize,
-                     FlutterSdkVersion flutterSdkVersion,
-                     WorkspaceCache workspaceCache,
-                     DevToolsIdeFeature ideFeature,
-                     FlutterSdkUtil flutterSdkUtil) {
-    this.devtoolsHost = devtoolsHost;
-    this.devtoolsPort = devtoolsPort;
-    this.vmServiceUri = vmServiceUri;
-    this.page = page;
-    this.embed = embed;
-    this.colorHexCode = colorHexCode;
-    this.fontSize = fontSize;
-    this.flutterSdkVersion = flutterSdkVersion;
-    this.ideFeature = ideFeature;
-    this.sdkUtil = flutterSdkUtil;
-
-    if (workspaceCache != null && workspaceCache.isBazel()) {
+    if (builder.workspaceCache != null && builder.workspaceCache.isBazel()) {
       this.canUseDevToolsPathUrl = true;
-    } else if (flutterSdkVersion != null) {
+    }
+    else if (flutterSdkVersion != null) {
       this.canUseDevToolsPathUrl = flutterSdkVersion.canUseDevToolsPathUrls();
-    } else {
+    }
+    else {
       this.canUseDevToolsPathUrl = false;
     }
   }
 
   @NotNull
-
   public String getUrlString() {
     final List<String> params = new ArrayList<>();
 
@@ -88,6 +164,9 @@ public class DevToolsUrl {
     }
     if (colorHexCode != null) {
       params.add("backgroundColor=" + colorHexCode);
+    }
+    if (isBright != null) {
+      params.add("theme=" + (isBright ? "light" : "dark"));
     }
     if (embed) {
       params.add("embed=true");
@@ -106,9 +185,10 @@ public class DevToolsUrl {
       params.add("inspectorRef=" + widgetId);
     }
     if (this.canUseDevToolsPathUrl) {
-      return "http://" + devtoolsHost + ":" + devtoolsPort + "/" + ( page != null ? page : "" )  + "?" + String.join("&", params);
-    } else {
-      return "http://" + devtoolsHost + ":" + devtoolsPort + "/#/?" + String.join("&", params);
+      return "http://" + devToolsHost + ":" + devToolsPort + "/" + (page != null ? page : "") + "?" + String.join("&", params);
+    }
+    else {
+      return "http://" + devToolsHost + ":" + devToolsPort + "/#/?" + String.join("&", params);
     }
   }
 }
