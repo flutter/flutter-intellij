@@ -239,10 +239,7 @@ public abstract class EmbeddedBrowser {
 
   public void updateColor(String newColor) {
     updateUrlAndReload(devToolsUrl -> {
-      if (devToolsUrl.colorHexCode.equals(newColor)) {
-        return null;
-      }
-      devToolsUrl.colorHexCode = newColor;
+      devToolsUrl.maybeUpdateColor();
       return devToolsUrl;
     });
   }

@@ -33,6 +33,8 @@ public class DevToolsUrl {
 
   public final DevToolsIdeFeature ideFeature;
 
+  private final DevToolsUtils devToolsUtils;
+
   public static class Builder {
     private String devToolsHost;
 
@@ -133,6 +135,7 @@ public class DevToolsUrl {
     this.vmServiceUri = builder.vmServiceUri;
     this.page = builder.page;
     this.embed = builder.embed;
+    this.devToolsUtils = builder.devToolsUtils;
     if (builder.embed) {
       this.colorHexCode = builder.devToolsUtils.getColorHexCode();
       this.isBright = builder.devToolsUtils.getIsBackgroundBright();
@@ -190,5 +193,15 @@ public class DevToolsUrl {
     else {
       return "http://" + devToolsHost + ":" + devToolsPort + "/#/?" + String.join("&", params);
     }
+  }
+
+  public void maybeUpdateColor() {
+    final String newColor = devToolsUtils.getColorHexCode();
+    if (colorHexCode == newColor) {
+      return;
+    }
+
+    colorHexCode = newColor;
+    isBright = devToolsUtils.getIsBackgroundBright();
   }
 }
