@@ -172,20 +172,27 @@ public class FlutterColorProvider implements ElementColorProvider {
     final String selector = selectorNode.getText();
     final boolean isFromARGB = "fromARGB".equals(selector);
     final boolean isFromRGBO = "fromRGBO".equals(selector);
-    if (isFromARGB || isFromRGBO) {
-      String code = AstBufferUtil.getTextSkippingWhitespaceComments(parent.getNode());
-      if (code.startsWith("constColor(") || code.startsWith("constColor.")) {
-        code = code.substring(5);
+    try {
+      if (isFromARGB || isFromRGBO) {
+        String code = AstBufferUtil.getTextSkippingWhitespaceComments(parent.getNode());
+        if (code.startsWith("constColor(") || code.startsWith("constColor.")) {
+          code = code.substring(5);
+        }
+        return ExpressionParsingUtils.parseColorComponents(code.substring(code.indexOf(selector)), selector + "(", isFromARGB);
       }
-      return ExpressionParsingUtils.parseColorComponents(code.substring(code.indexOf(selector)), selector + "(", isFromARGB);
+      final PsiElement args = parent.getLastChild();
+      if (args != null && args.getNode().getElementType() == DartTokenTypes.ARGUMENTS) {
+        String code = AstBufferUtil.getTextSkippingWhitespaceComments(parent.getNode());
+        if (code.startsWith("constColor(")) {
+          code = code.substring(5);
+        }
+        return ExpressionParsingUtils.parseColor(code);
+      }
     }
-    final PsiElement args = parent.getLastChild();
-    if (args != null && args.getNode().getElementType() == DartTokenTypes.ARGUMENTS) {
-      String code = AstBufferUtil.getTextSkippingWhitespaceComments(parent.getNode());
-      if (code.startsWith("constColor(")) {
-        code = code.substring(5);
-      }
-      return ExpressionParsingUtils.parseColor(code);
+    catch (StringIndexOutOfBoundsException e) {
+      // This is rare but possible in 2023.3, see https://github.com/flutter/flutter-intellij/issues/7285
+      // from the call to AstBufferUtil.getTextSkippingWhitespaceComments()
+      return null;
     }
     return null;
   }
