@@ -695,6 +695,11 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
       presentation.putClientProperty(SELECTED_PROPERTY, FlutterSettings.getInstance().isShowOnlyWidgets());
       presentation.setEnabled(currentOutline != null);
     }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+      return ActionUpdateThread.BGT;
+    }
   }
 }
 

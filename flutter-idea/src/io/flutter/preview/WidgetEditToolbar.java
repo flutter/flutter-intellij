@@ -73,6 +73,11 @@ public class WidgetEditToolbar {
       e.getPresentation().setEnabled(hasChange);
     }
 
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+      return ActionUpdateThread.BGT;
+    }
+
     boolean isEnabled() {
       return actionToChangeMap.containsKey(this);
     }
@@ -118,6 +123,11 @@ public class WidgetEditToolbar {
       e.getPresentation().setEnabled(isEnabled);
     }
 
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+      return ActionUpdateThread.BGT;
+    }
+
     boolean isEnabled() {
       return getWidgetOutline() != null && getCurrentEditor() != null;
     }
@@ -154,6 +164,11 @@ public class WidgetEditToolbar {
     public void update(AnActionEvent e) {
       final boolean isEnabled = isEnabled();
       e.getPresentation().setEnabled(isEnabled);
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+      return ActionUpdateThread.BGT;
     }
 
     boolean isEnabled() {
