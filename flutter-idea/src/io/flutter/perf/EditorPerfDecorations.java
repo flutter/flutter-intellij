@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -156,17 +157,26 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
   }
 
   private void addRangeHighlighter(TextRange textRange, MarkupModel markupModel) {
-    final RangeHighlighter rangeHighlighter = markupModel.addRangeHighlighter(
-      textRange.getStartOffset(), textRange.getEndOffset(), HIGHLIGHTER_LAYER, new TextAttributes(), HighlighterTargetArea.EXACT_RANGE);
+    if(textRange == null || markupModel == null) {
+      return;
+    }
+    try {
+      // Catch possible (and rare) instances of addRangeHighlighter throwing an IllegalArgumentException, see
+      // https://github.com/flutter/flutter-intellij/issues/7328
+      final RangeHighlighter rangeHighlighter = markupModel.addRangeHighlighter(
+        textRange.getStartOffset(), textRange.getEndOffset(), HIGHLIGHTER_LAYER, new TextAttributes(), HighlighterTargetArea.EXACT_RANGE);
 
-    final PerfGutterIconRenderer renderer = new PerfGutterIconRenderer(
-      textRange,
-      this,
-      rangeHighlighter
-    );
-    rangeHighlighter.setGutterIconRenderer(renderer);
-    assert !perfMarkers.containsKey(textRange);
-    perfMarkers.put(textRange, renderer);
+      final PerfGutterIconRenderer renderer = new PerfGutterIconRenderer(
+        textRange,
+        this,
+        rangeHighlighter
+      );
+      rangeHighlighter.setGutterIconRenderer(renderer);
+      assert !perfMarkers.containsKey(textRange);
+      perfMarkers.put(textRange, renderer);
+    } catch (IllegalArgumentException e) {
+      // do nothing
+    }
   }
 
   @Override
