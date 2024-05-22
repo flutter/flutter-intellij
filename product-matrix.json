@@ -24,7 +24,7 @@
       "ideaVersion": "2023.3.1.16",
       "baseVersion": "233.14808.21",
       "androidPluginVersion": "X.Y.Z",
-      "dartPluginVersion": "233.15123",
+      "dartPluginVersion": "233.15271",
       "sinceBuild": "233.14808.21",
       "untilBuild": "233.*"
     },
@@ -36,10 +36,10 @@
       "isUnitTestTarget": "true",
       "ideaProduct": "android-studio",
       "ideaVersion": "2024.1.1.1",
-      "baseVersion": "241.14494.158",
+      "baseVersion": "241.15989.150",
       "androidPluginVersion": "X.Y.Z",
-      "dartPluginVersion": "241.15845",
-      "sinceBuild": "241.14494.158",
+      "dartPluginVersion": "241.17502",
+      "sinceBuild": "241.15989.150",
       "untilBuild": "241.*"
     }
   ]
