@@ -1,3 +1,9 @@
+# 79.2
+- Additional fixes for deprecation of `ActionUpdateThread.OLD_EDT` (#7330)
+- Exception from EditorPerfDecorations fixed (#7432)
+- Exception from FlutterColorProvider fixed (#7428)
+- Fix top toolbar for new UI (#7423)
+
 # 79.1
 - Update JxBrowser to `v7.38.2` (#7413)
 - "Open Android Module in Android Studio" action removed (#7103)
