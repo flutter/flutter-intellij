@@ -45,6 +45,13 @@
 
   <change-notes>
     <![CDATA[
+<h1>79.2</h1>
+<ul>
+  <li>Additional fixes for deprecation of <code>ActionUpdateThread.OLD_EDT</code> (#7330)</li>
+  <li>Exception from EditorPerfDecorations fixed (#7432)</li>
+  <li>Exception from FlutterColorProvider fixed (#7428)</li>
+  <li>Fix top toolbar for new UI (#7423)</li>
+</ul>
 <h1>79.1</h1>
 <ul>
   <li>Update JxBrowser to <code>v7.38.2</code> (#7413)</li>
