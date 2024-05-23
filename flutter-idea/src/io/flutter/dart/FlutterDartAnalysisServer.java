@@ -67,6 +67,15 @@ public class FlutterDartAnalysisServer implements Disposable {
     return Objects.requireNonNull(DartPlugin.getInstance().getAnalysisService(project));
   }
 
+  @NotNull
+  public String getSdkVersion() {
+    return getAnalysisService().getSdkVersion();
+  }
+
+  public boolean isServerConnected() {
+    return !getSdkVersion().isEmpty();
+  }
+
   @VisibleForTesting
   public FlutterDartAnalysisServer(@NotNull Project project) {
     this.project = project;
@@ -82,6 +91,9 @@ public class FlutterDartAnalysisServer implements Disposable {
         if (!subscriptions.isEmpty()) {
           sendSubscriptions();
         }
+        // TODO(jwren) at this point the Dart Analysis Server Service is connected and isServerConnected() will return true, however
+        // the Flutter Plugin may have already called addOutlineListener (or other methods).  If addOutlineListener is called before the
+        // server is connected, this method should follow up with those calls to undo the race condition.
       }
 
       @Override
@@ -102,6 +114,9 @@ public class FlutterDartAnalysisServer implements Disposable {
   }
 
   public void addOutlineListener(@NotNull final String filePath, @NotNull final FlutterOutlineListener listener) {
+    if(!isServerConnected()) {
+      return;
+    }
     synchronized (fileOutlineListeners) {
       final List<FlutterOutlineListener> listeners = fileOutlineListeners.computeIfAbsent(filePath, k -> new ArrayList<>());
       listeners.add(listener);
@@ -110,6 +125,9 @@ public class FlutterDartAnalysisServer implements Disposable {
   }
 
   public void removeOutlineListener(@NotNull final String filePath, @NotNull final FlutterOutlineListener listener) {
+    if(!isServerConnected()) {
+      return;
+    }
     final boolean removeSubscription;
     synchronized (fileOutlineListeners) {
       final List<FlutterOutlineListener> listeners = fileOutlineListeners.get(filePath);
@@ -126,9 +144,13 @@ public class FlutterDartAnalysisServer implements Disposable {
    * Note that <code>filePath</code> must be an absolute path.
    */
   private void addSubscription(@NotNull final String service, @NotNull final String filePath) {
+    if(!isServerConnected()) {
+      return;
+    }
     final List<String> files = subscriptions.computeIfAbsent(service, k -> new ArrayList<>());
-    if (!files.contains(filePath)) {
-      files.add(filePath);
+    final String filePathOrUri = getAnalysisService().getLocalFileUri(filePath);
+    if (!files.contains(filePathOrUri)) {
+      files.add(filePathOrUri);
       sendSubscriptions();
     }
   }
@@ -139,13 +161,20 @@ public class FlutterDartAnalysisServer implements Disposable {
    * Note that <code>filePath</code> must be an absolute path.
    */
   private void removeSubscription(@NotNull final String service, @NotNull final String filePath) {
+    if(!isServerConnected()) {
+      return;
+    }
+    final String filePathOrUri = getAnalysisService().getLocalFileUri(filePath);
     final List<String> files = subscriptions.get(service);
-    if (files != null && files.remove(filePath)) {
+    if (files != null && files.remove(filePathOrUri)) {
       sendSubscriptions();
     }
   }
 
   private void sendSubscriptions() {
+    if(!isServerConnected()) {
+      return;
+    }
     DartAnalysisServerService analysisService = getAnalysisService();
     final String id = analysisService.generateUniqueId();
     analysisService.sendRequest(id, FlutterRequestUtilities.generateAnalysisSetSubscriptions(id, subscriptions));
