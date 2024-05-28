@@ -24,8 +24,6 @@ public class FlutterCreateAdditionalSettings {
   @Nullable
   private String org;
   @Nullable
-  private Boolean swift;
-  @Nullable
   private Boolean kotlin;
   @Nullable
   private Boolean offlineMode;
@@ -51,7 +49,6 @@ public class FlutterCreateAdditionalSettings {
                                           @Nullable FlutterProjectType type,
                                           @Nullable String description,
                                           @Nullable String org,
-                                          @Nullable Boolean swift,
                                           @Nullable Boolean kotlin,
                                           @Nullable Boolean offlineMode,
                                           @Nullable Boolean platformAndroid,
@@ -64,7 +61,6 @@ public class FlutterCreateAdditionalSettings {
     this.type = type;
     this.description = description;
     this.org = org;
-    this.swift = swift;
     this.kotlin = kotlin;
     this.offlineMode = offlineMode;
     this.platformAndroid.set(Boolean.TRUE.equals(platformAndroid));
@@ -95,10 +91,6 @@ public class FlutterCreateAdditionalSettings {
 
   public void setOrg(@Nullable String value) {
     org = value;
-  }
-
-  public void setSwift(boolean value) {
-    swift = value;
   }
 
   public void setKotlin(boolean value) {
@@ -132,11 +124,6 @@ public class FlutterCreateAdditionalSettings {
     if (!StringUtil.isEmptyOrSpaces(org)) {
       args.add("--org");
       args.add(org);
-    }
-
-    if (swift == null || Boolean.FALSE.equals(swift)) {
-      args.add("--ios-language");
-      args.add("objc");
     }
 
     if (kotlin == null || Boolean.FALSE.equals(kotlin)) {
@@ -190,11 +177,6 @@ public class FlutterCreateAdditionalSettings {
   @Nullable
   public Boolean getKotlin() {
     return kotlin;
-  }
-
-  @Nullable
-  public Boolean getSwift() {
-    return swift;
   }
 
   @Nullable
@@ -316,11 +298,6 @@ public class FlutterCreateAdditionalSettings {
       return this;
     }
 
-    public Builder setSwift(@Nullable Boolean swift) {
-      this.swift = swift;
-      return this;
-    }
-
     public Builder setKotlin(@Nullable Boolean kotlin) {
       this.kotlin = kotlin;
       return this;
@@ -363,7 +340,7 @@ public class FlutterCreateAdditionalSettings {
 
     public FlutterCreateAdditionalSettings build() {
       return new FlutterCreateAdditionalSettings(
-        includeDriverTest, type, description, org, swift, kotlin, offlineMode,
+        includeDriverTest, type, description, org, kotlin, offlineMode,
         platformAndroid, platformIos, platformWeb, platformLinux, platformMacos, platformWindows);
     }
   }
