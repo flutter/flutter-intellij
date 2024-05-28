@@ -74,25 +74,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
     if (flutterSdk == null) {
       return createNoFlutterSdkPanel(project);
     }
-    else if (!flutterSdk.getVersion().isMinRecommendedSupported()) {
-      return createOutOfDateFlutterSdkPanel(flutterSdk);
-    }
 
     return null;
-  }
-
-  private EditorNotificationPanel createOutOfDateFlutterSdkPanel(@NotNull FlutterSdk sdk) {
-    final FlutterUIConfig settings = FlutterUIConfig.getInstance();
-    if (settings.shouldIgnoreOutOfDateFlutterSdks()) return null;
-
-    final EditorNotificationPanel panel = new EditorNotificationPanel();
-    panel.icon(FlutterIcons.Flutter);
-    panel.setText(FlutterBundle.message("flutter.old.sdk.warning"));
-    panel.createActionLabel("Dismiss", () -> {
-      settings.setIgnoreOutOfDateFlutterSdks();
-      panel.setVisible(false);
-    });
-
-    return panel;
   }
 }
