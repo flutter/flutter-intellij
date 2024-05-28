@@ -413,14 +413,22 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
      */
     @Nullable
     static Analyzer create(@NotNull Project project, @NotNull VirtualFile sourceLocation) {
-      final DartAnalysisServerService service = DartPlugin.getInstance().getAnalysisService(project);
-      if (!service.serverReadyForRequest()) {
-        // TODO(skybrian) make this required to debug at all? It seems bad for breakpoints to be flaky.
+      DartPlugin dartPluginInstance = DartPlugin.getInstance();
+      if (dartPluginInstance == null) {
+        return null;
+      }
+
+      final DartAnalysisServerService dartAnalysisServerService = dartPluginInstance.getAnalysisService(project);
+      if (dartAnalysisServerService == null) {
+        return null;
+      }
+
+      if (!dartAnalysisServerService.serverReadyForRequest()) {
         FlutterUtils.warn(LOG, "Dart analysis server is not running. Some breakpoints may not work.");
         return null;
       }
 
-      final String contextId = service.execution_createContext(sourceLocation.getPath());
+      final String contextId = dartAnalysisServerService.execution_createContext(sourceLocation.getPath());
       if (contextId == null) {
         FlutterUtils.warn(LOG, "Failed to get execution context from analysis server. Some breakpoints may not work.");
         return null;
@@ -430,18 +438,18 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
         @Override
         @Nullable
         public String getAbsolutePath(@NotNull String dartUri) {
-          return service.execution_mapUri(contextId, null, dartUri);
+          return dartAnalysisServerService.execution_mapUri(contextId, null, dartUri);
         }
 
         @Override
         @Nullable
         public String getUri(@NotNull String absolutePath) {
-          return service.execution_mapUri(contextId, absolutePath, null);
+          return dartAnalysisServerService.execution_mapUri(contextId, absolutePath, null);
         }
 
         @Override
         public void close() {
-          service.execution_deleteContext(contextId);
+          dartAnalysisServerService.execution_deleteContext(contextId);
         }
       };
     }
