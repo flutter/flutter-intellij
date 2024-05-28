@@ -29,7 +29,6 @@ public class FlutterCreateAdditionalSettingsFields {
   private final JTextField orgField;
   private final JTextField descriptionField;
   private final RadiosForm androidLanguageRadios;
-  private final RadiosForm iosLanguageRadios;
   private final ProjectType projectTypeForm;
   private final PlatformsForm platformsForm;
   private final FlutterCreateParams createParams;
@@ -80,16 +79,6 @@ public class FlutterCreateAdditionalSettingsFields {
     );
     androidLanguageRadios.setToolTipText(FlutterBundle.message("flutter.module.create.settings.radios.android.tip"));
 
-    iosLanguageRadios = new RadiosForm(FlutterBundle.message("flutter.module.create.settings.radios.ios.object_c"),
-                                       FlutterBundle.message("flutter.module.create.settings.radios.ios.swift"));
-    androidLanguageRadios.addItemListener(
-      e -> {
-        final boolean isObjcSelected = e.getStateChange() == ItemEvent.SELECTED;
-        settings.setSwift(!isObjcSelected);
-      }
-    );
-    iosLanguageRadios.setToolTipText(FlutterBundle.message("flutter.module.create.settings.radios.ios.tip"));
-
     platformsForm = new PlatformsForm();
     createParams = new FlutterCreateParams();
   }
@@ -102,7 +91,6 @@ public class FlutterCreateAdditionalSettingsFields {
     }
     orgField.setEnabled(projectType != FlutterProjectType.PACKAGE);
     UIUtil.setEnabled(androidLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
-    UIUtil.setEnabled(iosLanguageRadios.getComponent(), areLanguageFeaturesVisible, true, true);
     UIUtil.setEnabled(platformsForm.getComponent(), areLanguageFeaturesVisible, true, true);
   }
 
@@ -131,9 +119,6 @@ public class FlutterCreateAdditionalSettingsFields {
     addBorder(androidLanguageRadios.getComponent(), false);
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.android.label"),
                                   androidLanguageRadios.getComponent());
-    addBorder(iosLanguageRadios.getComponent(), false);
-    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.ios.label"),
-                                  iosLanguageRadios.getComponent());
       panel = platformsForm.panel(settings);
       addBorder(panel, true);
       settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.platforms.label"), panel);
@@ -168,7 +153,6 @@ public class FlutterCreateAdditionalSettingsFields {
       // Packages are pure Dart code, no iOS or Android modules.
       .setKotlin(androidLanguageRadios.isRadio2Selected() ? true : null)
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
-      .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
       .setOffline(createParams.isOfflineSelected())
       .setPlatformAndroid(shouldIncludePlatforms() ? settings.getPlatformAndroid() : null)
       .setPlatformIos(shouldIncludePlatforms() ? settings.getPlatformIos() : null)
