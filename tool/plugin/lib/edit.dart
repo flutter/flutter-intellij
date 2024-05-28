@@ -26,51 +26,6 @@ void checkAndClearAppliedEditCommands() {
 }
 
 List<EditCommand> editCommands = [
-  EditCommand(
-    path: 'flutter-idea/src/io/flutter/FlutterUtils.java',
-    initials: [
-      '''
-final Yaml yaml = new Yaml(new SafeConstructor(), new Representer(), new DumperOptions(), new Resolver() {
-'''
-    ],
-    replacements: [
-      '''
-final Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()), new Representer(new DumperOptions()), new DumperOptions(), new Resolver() {
-'''
-    ],
-    versions: ['2023.2'],
-  ),
-
-//   EditCommand(
-//     path:
-//     'flutter-idea/src/org/jetbrains/android/facet/AndroidFrameworkDetector.java',
-//     initials: [
-//       '''
-// import com.android.tools.idea.gradle.project.Info;
-// '''
-//     ],
-//     replacements: [
-//       '''
-// import com.android.tools.idea.gradle.project.GradleProjectInfo;
-// '''
-//     ],
-//     versions: ['2024.1'],
-//   ),
-//   EditCommand(
-//     path:
-//     'flutter-idea/src/org/jetbrains/android/facet/AndroidFrameworkDetector.java',
-//     initials: [
-//       '''
-// Info gradleProjectInfo = Info.getInstance(project);
-// '''
-//     ],
-//     replacements: [
-//       '''
-// GradleProjectInfo gradleProjectInfo = GradleProjectInfo.getInstance(project);
-// '''
-//     ],
-//     versions: ['2024.1'],
-//   ),
 
   // When using LATEST-EAP-SNAPSHOT, also set baseVersion to LATEST-EAP-SNAPSHOT in the build spec.
   // EditCommand(
