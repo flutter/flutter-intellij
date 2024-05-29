@@ -42,8 +42,10 @@ public class MainFileTest {
   @Test @Ignore
   public void shouldFindAppDirForValidFlutterApp() throws Exception {
     final String mainPath = tmp.writeFile("root/work/lib/main.dart",
-                                          "import \"package:flutter/ui.dart\"\n" +
-                                          "main() {}\n").getPath();
+                                          """
+                                            import "package:flutter/ui.dart"
+                                            main() {}
+                                            """).getPath();
 
     final MainFile.Result result = Testing.computeOnDispatchThread(() -> MainFile.verify(mainPath, fixture.getProject()));
     if (!result.canLaunch()) {

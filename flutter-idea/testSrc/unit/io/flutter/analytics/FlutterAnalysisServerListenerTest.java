@@ -36,11 +36,12 @@ import static org.junit.Assert.*;
 
 @SuppressWarnings({"LocalCanBeFinal"})
 public class FlutterAnalysisServerListenerTest {
-  private static final String fileContents = "void main() {\n" +
-                                             "  group('group 1', () {\n" +
-                                             "    test('test 1', () {});\n" +
-                                             "  });\n" +
-                                             "}";
+  private static final String fileContents = """
+    void main() {
+      group('group 1', () {
+        test('test 1', () {});
+      });
+    }""";
 
   @Rule
   public final @NotNull CodeInsightProjectFixture projectFixture = Testing.makeCodeInsightModule();
