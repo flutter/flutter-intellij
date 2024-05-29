@@ -63,7 +63,7 @@ public class FlutterDartAnalysisServer implements Disposable {
   }
 
   @NotNull
-  private DartAnalysisServerService getAnalysisService() {
+  public DartAnalysisServerService getAnalysisService() {
     return Objects.requireNonNull(DartPlugin.getInstance().getAnalysisService(project));
   }
 
@@ -118,7 +118,7 @@ public class FlutterDartAnalysisServer implements Disposable {
       return;
     }
     synchronized (fileOutlineListeners) {
-      final List<FlutterOutlineListener> listeners = fileOutlineListeners.computeIfAbsent(filePath, k -> new ArrayList<>());
+      final List<FlutterOutlineListener> listeners = fileOutlineListeners.computeIfAbsent(getAnalysisService().getLocalFileUri(filePath), k -> new ArrayList<>());
       listeners.add(listener);
     }
     addSubscription(FlutterService.OUTLINE, filePath);
