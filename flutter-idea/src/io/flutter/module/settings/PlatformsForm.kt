@@ -6,13 +6,11 @@
 package io.flutter.module.settings
 
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.ui.layout.*
+import com.intellij.ui.layout.Cell
+import com.intellij.ui.layout.panel
 import io.flutter.FlutterBundle
 import io.flutter.sdk.FlutterCreateAdditionalSettings
-import io.flutter.sdk.FlutterSdk
 import io.flutter.sdk.FlutterSdkChannel
-import io.flutter.sdk.FlutterSdkChannel.ID
-import java.util.function.Supplier
 
 // This file needs to be migrated due to deprecation,
 // https://github.com/flutter/flutter-intellij/issues/7310
