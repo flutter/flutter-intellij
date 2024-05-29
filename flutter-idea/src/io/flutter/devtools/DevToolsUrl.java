@@ -25,6 +25,7 @@ public class DevToolsUrl {
   public Boolean isBright;
   public String widgetId;
   public Float fontSize;
+  public String hide;
   private final FlutterSdkVersion flutterSdkVersion;
   private final FlutterSdkUtil sdkUtil;
 
@@ -44,6 +45,7 @@ public class DevToolsUrl {
     private Boolean embed;
     private String widgetId;
     private Float fontSize;
+    private String hide;
 
     private FlutterSdkVersion flutterSdkVersion;
     private WorkspaceCache workspaceCache;
@@ -87,6 +89,11 @@ public class DevToolsUrl {
 
     public Builder setFontSize(Float fontSize) {
       this.fontSize = fontSize;
+      return this;
+    }
+
+    public Builder setHide(String hide) {
+      this.hide = hide;
       return this;
     }
 
@@ -141,6 +148,7 @@ public class DevToolsUrl {
       this.isBright = builder.devToolsUtils.getIsBackgroundBright();
       this.fontSize = builder.devToolsUtils.getFontSize();
     }
+    this.hide = builder.hide;
     this.widgetId = builder.widgetId;
     this.flutterSdkVersion = builder.flutterSdkVersion;
     this.ideFeature = builder.ideFeature;
@@ -174,7 +182,18 @@ public class DevToolsUrl {
       params.add("theme=" + (isBright ? "light" : "dark"));
     }
     if (embed) {
-      params.add(this.canUseMultiEmbed ? "embedMode=one" : "embed=true");
+      if (!this.canUseMultiEmbed) {
+        // This is for older versions of DevTools that do not support embed= one vs. many.
+        params.add("embed=true");
+      } else {
+        if (hide != null) {
+          // If we are using the hide param, we can assume that we are trying to embed multiple tabs.
+          params.add("embed=many");
+          params.add("hide=" + hide);
+        } else {
+          params.add("embed=one");
+        }
+      }
     }
     if (fontSize != null) {
       params.add("fontSize=" + fontSize);
