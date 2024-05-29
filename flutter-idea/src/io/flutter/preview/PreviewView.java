@@ -108,7 +108,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
   private final FlutterOutlineListener outlineListener = new FlutterOutlineListener() {
     @Override
     public void outlineUpdated(@NotNull String filePath, @NotNull FlutterOutline outline, @Nullable String instrumentedCode) {
-      if (Objects.equals(currentFilePath, filePath)) {
+      if (Objects.equals("file://" + currentFilePath, filePath)) {
         ApplicationManager.getApplication().invokeLater(() -> updateOutline(outline));
       }
     }

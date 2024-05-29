@@ -146,8 +146,8 @@ public class ActiveEditorsOutlineService implements Disposable {
           continue;
         }
 
-        final FlutterOutlineListener listener = new OutlineListener(path);
-        outlineListeners.put(path, listener);
+        final FlutterOutlineListener listener = new OutlineListener("file://" + path);
+        outlineListeners.put("file://" + path, listener);
         getAnalysisServer().addOutlineListener(FileUtil.toSystemDependentName(path), listener);
       }
     }

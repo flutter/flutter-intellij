@@ -118,7 +118,7 @@ public class FlutterDartAnalysisServer implements Disposable {
       return;
     }
     synchronized (fileOutlineListeners) {
-      final List<FlutterOutlineListener> listeners = fileOutlineListeners.computeIfAbsent(filePath, k -> new ArrayList<>());
+      final List<FlutterOutlineListener> listeners = fileOutlineListeners.computeIfAbsent("file://" + filePath, k -> new ArrayList<>());
       listeners.add(listener);
     }
     addSubscription(FlutterService.OUTLINE, filePath);
