@@ -108,8 +108,14 @@ public class FlutterSampleNotificationProvider extends EditorNotifications.Provi
         continue;
       }
 
-      final List<String> dartdoc = DartDocumentUtils.getDartdocFor(document, declaration);
-      if (containsDartdocFlutterSample(dartdoc)) {
+      List<String> dartdoc = null;
+      try {
+        // Context: https://github.com/flutter/flutter-intellij/issues/5634
+        dartdoc = DartDocumentUtils.getDartdocFor(document, declaration);
+      }catch (IndexOutOfBoundsException e) {
+        // ignore
+      }
+      if (dartdoc != null && containsDartdocFlutterSample(dartdoc)) {
         assert (declaration.getName() != null);
 
         String libraryName = filePath.substring(flutterPackagePath.length());
