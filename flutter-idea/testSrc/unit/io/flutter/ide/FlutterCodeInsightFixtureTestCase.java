@@ -121,34 +121,37 @@ abstract public class FlutterCodeInsightFixtureTestCase extends BasePlatformTest
   }
 
   private static final String SamplePubspec =
-    "name: hello_world\n" +
-    "\n" +
-    "environment:\n" +
-    "  sdk: \">=2.12.0-0 <3.0.0\"\n" +
-    "\n" +
-    "dependencies:\n" +
-    "  flutter:\n" +
-    "    sdk: flutter\n";
+    """
+      name: hello_world
+
+      environment:
+        sdk: ">=2.12.0-0 <3.0.0"
+
+      dependencies:
+        flutter:
+          sdk: flutter
+      """;
 
   private static final String SampleConfig =
-    "{\n" +
-    "  \"configVersion\": 2,\n" +
-    "  \"packages\": [\n" +
-    "    {\n" +
-    "      \"name\": \"cupertino_icons\",\n" +
-    "      \"rootUri\": \"file:///Users/messick/.pub-cache/hosted/pub.dartlang.org/cupertino_icons-1.0.3\",\n" +
-    "      \"packageUri\": \"lib/\",\n" +
-    "      \"languageVersion\": \"2.12\"\n" +
-    "    },\n" +
-    "    {\n" +
-    "      \"name\": \"flutter\",\n" +
-    "      \"rootUri\": \"file:///Users/messick/src/flutter/flutter/packages/flutter\",\n" +
-    "      \"packageUri\": \"lib/\",\n" +
-    "      \"languageVersion\": \"2.12\"\n" +
-    "    },\n" +
-    "  ],\n" +
-    "  \"generated\": \"2021-05-12T16:34:11.007747Z\",\n" +
-    "  \"generator\": \"pub\",\n" +
-    "  \"generatorVersion\": \"2.14.0-48.0.dev\"\n" +
-    "}";
+    """
+      {
+        "configVersion": 2,
+        "packages": [
+          {
+            "name": "cupertino_icons",
+            "rootUri": "file:///Users/messick/.pub-cache/hosted/pub.dartlang.org/cupertino_icons-1.0.3",
+            "packageUri": "lib/",
+            "languageVersion": "2.12"
+          },
+          {
+            "name": "flutter",
+            "rootUri": "file:///Users/messick/src/flutter/flutter/packages/flutter",
+            "packageUri": "lib/",
+            "languageVersion": "2.12"
+          },
+        ],
+        "generated": "2021-05-12T16:34:11.007747Z",
+        "generator": "pub",
+        "generatorVersion": "2.14.0-48.0.dev"
+      }""";
 }

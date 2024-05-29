@@ -148,26 +148,28 @@ public class FlutterConsoleLogManagerTest {
 
     logManager.processLoggingEvent(event);
 
-    assertEquals("[log] hello world\n" +
-                 "      #0      MyApp.build.<anonymous closure> (package:xfactor_wod/main.dart:64:65)\n" +
-                 "      #1      _InkResponseState._handleTap (package:flutter/src/material/ink_well.dart:635:14)\n" +
-                 "      #2      _InkResponseState.build.<anonymous closure> (package:flutter/src/material/ink_well.dart:711:32)\n" +
-                 "      #3      GestureRecognizer.invokeCallback (package:flutter/src/gestures/recognizer.dart:182:24)\n" +
-                 "      #4      TapGestureRecognizer._checkUp (package:flutter/src/gestures/tap.dart:365:11)\n" +
-                 "      #5      TapGestureRecognizer.handlePrimaryPointer (package:flutter/src/gestures/tap.dart:275:7)\n" +
-                 "      #6      PrimaryPointerGestureRecognizer.handleEvent (package:flutter/src/gestures/recognizer.dart:455:9)\n" +
-                 "      #7      PointerRouter._dispatch (package:flutter/src/gestures/pointer_router.dart:75:13)\n" +
-                 "      #8      PointerRouter.route (package:flutter/src/gestures/pointer_router.dart:102:11)\n" +
-                 "      #9      _WidgetsFlutterBinding&BindingBase&GestureBinding.handleEvent (package:flutter/src/gestures/binding.dart:218:19)\n" +
-                 "      #10     _WidgetsFlutterBinding&BindingBase&GestureBinding.dispatchEvent (package:flutter/src/gestures/binding.dart:198:22)\n" +
-                 "      #11     _WidgetsFlutterBinding&BindingBase&GestureBinding._handlePointerEvent (package:flutter/src/gestures/binding.dart:156:7)\n" +
-                 "      #12     _WidgetsFlutterBinding&BindingBase&GestureBinding._flushPointerEventQueue (package:flutter/src/gestures/binding.dart:102:7)\n" +
-                 "      #13     _WidgetsFlutterBinding&BindingBase&GestureBinding._handlePointerDataPacket (package:flutter/src/gestures/binding.dart:86:7)\n" +
-                 "      #14     _rootRunUnary (dart:async/zone.dart:1136:13)\n" +
-                 "      #15     _CustomZone.runUnary (dart:async/zone.dart:1029:19)\n" +
-                 "      #16     _CustomZone.runUnaryGuarded (dart:async/zone.dart:931:7)\n" +
-                 "      #17     _invoke1 (dart:ui/hooks.dart:250:10)\n" +
-                 "      #18     _dispatchPointerDataPacket (dart:ui/hooks.dart:159:5)\n", console.getText());
+    assertEquals("""
+                   [log] hello world
+                         #0      MyApp.build.<anonymous closure> (package:xfactor_wod/main.dart:64:65)
+                         #1      _InkResponseState._handleTap (package:flutter/src/material/ink_well.dart:635:14)
+                         #2      _InkResponseState.build.<anonymous closure> (package:flutter/src/material/ink_well.dart:711:32)
+                         #3      GestureRecognizer.invokeCallback (package:flutter/src/gestures/recognizer.dart:182:24)
+                         #4      TapGestureRecognizer._checkUp (package:flutter/src/gestures/tap.dart:365:11)
+                         #5      TapGestureRecognizer.handlePrimaryPointer (package:flutter/src/gestures/tap.dart:275:7)
+                         #6      PrimaryPointerGestureRecognizer.handleEvent (package:flutter/src/gestures/recognizer.dart:455:9)
+                         #7      PointerRouter._dispatch (package:flutter/src/gestures/pointer_router.dart:75:13)
+                         #8      PointerRouter.route (package:flutter/src/gestures/pointer_router.dart:102:11)
+                         #9      _WidgetsFlutterBinding&BindingBase&GestureBinding.handleEvent (package:flutter/src/gestures/binding.dart:218:19)
+                         #10     _WidgetsFlutterBinding&BindingBase&GestureBinding.dispatchEvent (package:flutter/src/gestures/binding.dart:198:22)
+                         #11     _WidgetsFlutterBinding&BindingBase&GestureBinding._handlePointerEvent (package:flutter/src/gestures/binding.dart:156:7)
+                         #12     _WidgetsFlutterBinding&BindingBase&GestureBinding._flushPointerEventQueue (package:flutter/src/gestures/binding.dart:102:7)
+                         #13     _WidgetsFlutterBinding&BindingBase&GestureBinding._handlePointerDataPacket (package:flutter/src/gestures/binding.dart:86:7)
+                         #14     _rootRunUnary (dart:async/zone.dart:1136:13)
+                         #15     _CustomZone.runUnary (dart:async/zone.dart:1029:19)
+                         #16     _CustomZone.runUnaryGuarded (dart:async/zone.dart:931:7)
+                         #17     _invoke1 (dart:ui/hooks.dart:250:10)
+                         #18     _dispatchPointerDataPacket (dart:ui/hooks.dart:159:5)
+                   """, console.getText());
   }
 
   private FlutterApp createFlutterApp() {

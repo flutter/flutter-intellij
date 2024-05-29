@@ -27,11 +27,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.*;
 
 public class ActiveEditorsOutlineServiceTest {
-  private static final String fileContents = "void main() {\n" +
-                                             "  group('group 1', () {\n" +
-                                             "    test('test 1', () {});\n" +
-                                             "  });\n" +
-                                             "}";
+  private static final String fileContents = """
+    void main() {
+      group('group 1', () {
+        test('test 1', () {});
+      });
+    }""";
 
   // The outline service doesn't care too much what the outline's contents are, only that the outlines update.
   // However, the request method uses the outline's length to determine if the outline is up-to-date.
