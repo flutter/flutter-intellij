@@ -23,7 +23,6 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.settings.FlutterUIConfig;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
