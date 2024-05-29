@@ -111,7 +111,7 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   @NotNull
   private static final FlutterSdkVersion MIN_SUPPORTS_DEEP_LINKS_TOOL = new FlutterSdkVersion("3.19.0");
 
-  // TODO(helin24): Find out what flutter version will include Dart 3.7.0
+  // TODO(helin24): Find out what flutter version will include Dart 3.7.0 or has DevTools 2.37
   private static final FlutterSdkVersion MIN_SUPPORTS_DEVTOOLS_EMBED_ONE = new FlutterSdkVersion("3.19.0");
 
   @Nullable
