@@ -360,8 +360,11 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
               analytics.sendEvent("file-mapping", String.format("exception|%s|%s", path, e.getMessage()));
             }
           }
-
-          return LocalFileSystem.getInstance().findFileByPath(path);
+          if(path.startsWith("file://")) {
+            LocalFileSystem.getInstance().findFileByPath(path.substring(7));
+          } else {
+            LocalFileSystem.getInstance().findFileByPath(path);
+          }
         }
       }
 
@@ -438,13 +441,13 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
         @Override
         @Nullable
         public String getAbsolutePath(@NotNull String dartUri) {
-          return dartAnalysisServerService.execution_mapUri(contextId, null, dartUri);
+          return dartAnalysisServerService.execution_mapUri(contextId, dartUri);
         }
 
         @Override
         @Nullable
         public String getUri(@NotNull String absolutePath) {
-          return dartAnalysisServerService.execution_mapUri(contextId, absolutePath, null);
+          return dartAnalysisServerService.execution_mapUri(contextId, absolutePath);
         }
 
         @Override
