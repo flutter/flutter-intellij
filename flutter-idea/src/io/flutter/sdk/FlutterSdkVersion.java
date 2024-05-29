@@ -111,13 +111,8 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   @NotNull
   private static final FlutterSdkVersion MIN_SUPPORTS_DEEP_LINKS_TOOL = new FlutterSdkVersion("3.19.0");
 
-<<<<<<< HEAD
   @NotNull
   private static final FlutterSdkVersion MIN_SUPPORTS_DEVTOOLS_MULTI_EMBED = new FlutterSdkVersion("3.23.0-0.1.pre");
-=======
-  // TODO(helin24): Find out what flutter version will include Dart 3.7.0
-  private static final FlutterSdkVersion MIN_SUPPORTS_DEVTOOLS_EMBED_ONE = new FlutterSdkVersion("3.19.0");
->>>>>>> 8d7bd3aae (Use embedMode=one for DevTools URL)
 
   @Nullable
   private final Version version;
@@ -288,13 +283,8 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
     return version != null && this.compareTo(MIN_SUPPORTS_DEEP_LINKS_TOOL) >= 0;
   }
 
-<<<<<<< HEAD
   public boolean canUseDevToolsMultiEmbed() {
     return version != null && this.compareTo(MIN_SUPPORTS_DEVTOOLS_MULTI_EMBED) >= 0;
-=======
-  public boolean canUseDevToolsEmbedOne() {
-    return version != null && this.compareTo(MIN_SUPPORTS_DEEP_LINKS_TOOL) >= 0;
->>>>>>> 8d7bd3aae (Use embedMode=one for DevTools URL)
   }
 
   public boolean isValid() {
