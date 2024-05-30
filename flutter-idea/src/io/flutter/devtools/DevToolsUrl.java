@@ -161,7 +161,7 @@ public class DevToolsUrl {
     final List<String> params = new ArrayList<>();
 
     String ideValue = sdkUtil.getFlutterHostEnvValue();
-    params.add("ide=" + (ideValue == null ? "IntelliJPluginUnknown" : sdkUtil.getFlutterHostEnvValue()));
+    params.add("ide=" + (ideValue == null ? "IntelliJPluginUnknown" : ideValue));
     if (page != null && !this.canUseDevToolsPathUrl) {
       params.add("page=" + page);
     }
