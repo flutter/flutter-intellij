@@ -18,7 +18,7 @@ import java.util.List;
 public class DevToolsUrl {
   private String devToolsHost;
   private int devToolsPort;
-  private String vmServiceUri;
+  public String vmServiceUri;
   private String page;
   private boolean embed;
   public String colorHexCode;
