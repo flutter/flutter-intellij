@@ -26,7 +26,7 @@ import java.util.Optional;
 public class RemainingDevToolsViewFactory implements ToolWindowFactory {
   public static void init(Project project) {
     project.getMessageBus().connect().subscribe(
-      FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (event) -> initView(project, event)
+      FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (FlutterViewMessages.FlutterDebugNotifier)event -> initView(project, event)
     );
   }
 
@@ -76,8 +76,9 @@ public class RemainingDevToolsViewFactory implements ToolWindowFactory {
             .ifPresent(embeddedBrowser -> {
               service.setEmbeddedBrowser(embeddedBrowser);
               embeddedBrowser.openPanel(window, "Flutter DevTools", devToolsUrl, (String err) -> {
-              System.out.println(err);
-            });});
+                System.out.println(err);
+              });
+            });
         });
       }
     );
