@@ -45,15 +45,15 @@
 
   <change-notes>
     <![CDATA[
-<h1>79.2</h1>
+<h1>80</h1>
 <ul>
+  <li>Resolve debugger issue with the new Dart macro file uri format (#7449)</li>
+  <li>Hide deep links window when insufficient SDK version (#7478)</li>
+  <li>Fix exceptions out of FlutterSampleNotificationProvider (#5634)</li>
   <li>Additional fixes for deprecation of <code>ActionUpdateThread.OLD_EDT</code> (#7330)</li>
   <li>Exception from EditorPerfDecorations fixed (#7432)</li>
   <li>Exception from FlutterColorProvider fixed (#7428)</li>
   <li>Fix top toolbar for new UI (#7423)</li>
-</ul>
-<h1>79.1</h1>
-<ul>
   <li>Update JxBrowser to <code>v7.38.2</code> (#7413)</li>
   <li>&quot;Open Android Module in Android Studio&quot; action removed (#7103)</li>
   <li>Fix for deprecation of <code>ActionUpdateThread.OLD_EDT</code> (#7330)</li>

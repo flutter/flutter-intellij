@@ -1,10 +1,11 @@
-# 79.2
+# 80
+- Resolve debugger issue with the new Dart macro file uri format (#7449)
+- Hide deep links window when insufficient SDK version (#7478)
+- Fix exceptions out of FlutterSampleNotificationProvider (#5634)
 - Additional fixes for deprecation of `ActionUpdateThread.OLD_EDT` (#7330)
 - Exception from EditorPerfDecorations fixed (#7432)
 - Exception from FlutterColorProvider fixed (#7428)
 - Fix top toolbar for new UI (#7423)
-
-# 79.1
 - Update JxBrowser to `v7.38.2` (#7413)
 - "Open Android Module in Android Studio" action removed (#7103)
 - Fix for deprecation of `ActionUpdateThread.OLD_EDT` (#7330)
