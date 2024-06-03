@@ -23,7 +23,7 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.startup.ProjectActivity;
+import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.analytics.Analytics;
@@ -48,10 +48,7 @@ import io.flutter.settings.FlutterSettings;
 import io.flutter.survey.FlutterSurveyNotifications;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.view.FlutterViewFactory;
-import kotlin.Unit;
-import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.event.HyperlinkEvent;
 import java.util.List;
@@ -64,7 +61,7 @@ import java.util.UUID;
  * @see io.flutter.project.FlutterProjectOpenProcessor for additional actions that
  * may run when a project is being imported.
  */
-public class FlutterInitializer implements ProjectActivity {
+public class FlutterInitializer implements StartupActivity {
   private static final String analyticsClientIdKey = "io.flutter.analytics.clientId";
   private static final String analyticsOptOutKey = "io.flutter.analytics.optOut";
   private static final String analyticsToastShown = "io.flutter.analytics.toastShown";
@@ -73,9 +70,8 @@ public class FlutterInitializer implements ProjectActivity {
 
   private boolean toolWindowsInitialized = false;
 
-  @Nullable
   @Override
-  public Object execute(@NotNull Project project, @NotNull Continuation<? super Unit> continuation) {
+  public void runActivity(@NotNull Project project) {
     // Convert all modules of deprecated type FlutterModuleType.
     if (FlutterModuleUtils.convertFromDeprecatedModuleType(project)) {
       // If any modules were converted over, create a notification
@@ -242,7 +238,6 @@ public class FlutterInitializer implements ProjectActivity {
         enableAnalytics(project);
       }
     }
-    return null;
   }
 
   private static void enableAnalytics(@NotNull Project project) {
