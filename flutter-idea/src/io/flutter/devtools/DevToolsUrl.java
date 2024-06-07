@@ -188,10 +188,10 @@ public class DevToolsUrl {
       } else {
         if (hide != null) {
           // If we are using the hide param, we can assume that we are trying to embed multiple tabs.
-          params.add("embed=many");
+          params.add("embedMode=many");
           params.add("hide=" + hide);
         } else {
-          params.add("embed=one");
+          params.add("embedMode=one");
         }
       }
     }
