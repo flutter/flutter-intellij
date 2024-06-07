@@ -29,7 +29,7 @@ public class DevToolsUrl {
   private final FlutterSdkUtil sdkUtil;
 
   private final boolean canUseDevToolsPathUrl;
-  private final boolean canUseEmbedOne;
+  private final boolean canUseMultiEmbed;
 
   public final DevToolsIdeFeature ideFeature;
 
@@ -148,13 +148,13 @@ public class DevToolsUrl {
 
     if (builder.workspaceCache != null && builder.workspaceCache.isBazel()) {
       this.canUseDevToolsPathUrl = true;
-      this.canUseEmbedOne = true;
+      this.canUseMultiEmbed = true;
     } else if (flutterSdkVersion != null) {
       this.canUseDevToolsPathUrl = flutterSdkVersion.canUseDevToolsPathUrls();
-      this.canUseEmbedOne = flutterSdkVersion.canUseDevToolsEmbedOne();
+      this.canUseMultiEmbed = flutterSdkVersion.canUseDevToolsMultiEmbed();
     } else {
       this.canUseDevToolsPathUrl = false;
-      this.canUseEmbedOne = false;
+      this.canUseMultiEmbed = false;
     }
   }
 
@@ -174,7 +174,7 @@ public class DevToolsUrl {
       params.add("theme=" + (isBright ? "light" : "dark"));
     }
     if (embed) {
-      params.add(this.canUseEmbedOne ? "embedMode=one" : "embed=true");
+      params.add(this.canUseMultiEmbed ? "embedMode=one" : "embed=true");
     }
     if (fontSize != null) {
       params.add("fontSize=" + fontSize);
