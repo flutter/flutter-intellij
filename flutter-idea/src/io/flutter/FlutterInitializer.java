@@ -45,6 +45,8 @@ import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.sdk.FlutterPluginsLibraryManager;
+import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.survey.FlutterSurveyNotifications;
 import io.flutter.utils.FlutterModuleUtils;
@@ -244,8 +246,10 @@ public class FlutterInitializer implements StartupActivity {
   }
 
   private void setUpDtdAnalytics(Project project) {
+    if (project == null) return;
+    FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+    if (sdk == null || !sdk.getVersion().canUseDtd()) return;
     Thread t1 = new Thread(() -> {
-      if (project == null) return;
       UnifiedAnalytics unifiedAnalytics = new UnifiedAnalytics(project);
       unifiedAnalytics.manageConsent(); // check on current status of consent, show message if appropriate, store consent.
     });
