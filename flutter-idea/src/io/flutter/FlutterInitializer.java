@@ -6,12 +6,14 @@
 package io.flutter;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.gson.JsonObject;
 import com.intellij.ProjectTopics;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.*;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationInfo;
@@ -26,9 +28,14 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
+import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonConsumer;
+import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonListener;
+import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
+import de.roderick.weberknecht.WebSocketException;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.FlutterAnalysisServerListener;
 import io.flutter.analytics.ToolWindowTracker;
+import io.flutter.analytics.UnifiedAnalytics;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.editor.FlutterSaveActionsManager;
@@ -193,6 +200,8 @@ public class FlutterInitializer implements StartupActivity {
     // Set our preferred settings for the run console.
     FlutterConsoleLogManager.initConsolePreferences();
 
+    setUpDtdAnalytics(project);
+
     // Initialize analytics.
     final PropertiesComponent properties = PropertiesComponent.getInstance();
     if (!properties.getBoolean(analyticsToastShown)) {
@@ -238,6 +247,14 @@ public class FlutterInitializer implements StartupActivity {
         enableAnalytics(project);
       }
     }
+  }
+
+  private void setUpDtdAnalytics(Project project) {
+    Thread t1 = new Thread(() -> {
+      UnifiedAnalytics unifiedAnalytics = new UnifiedAnalytics(project);
+      unifiedAnalytics.manageConsent(); // check on current status of consent, show message if appropriate, store consent.
+    });
+    t1.start();
   }
 
   private static void enableAnalytics(@NotNull Project project) {
