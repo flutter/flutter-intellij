@@ -111,6 +111,9 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   @NotNull
   private static final FlutterSdkVersion MIN_SUPPORTS_DEEP_LINKS_TOOL = new FlutterSdkVersion("3.19.0");
 
+  @NotNull
+  private static final FlutterSdkVersion MIN_SUPPORTS_DEVTOOLS_MULTI_EMBED = new FlutterSdkVersion("3.23.0-0.1.pre");
+
   @Nullable
   private final Version version;
   @Nullable
@@ -278,6 +281,10 @@ public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   public boolean canUseDeepLinksTool() {
     return version != null && this.compareTo(MIN_SUPPORTS_DEEP_LINKS_TOOL) >= 0;
+  }
+
+  public boolean canUseDevToolsMultiEmbed() {
+    return version != null && this.compareTo(MIN_SUPPORTS_DEVTOOLS_MULTI_EMBED) >= 0;
   }
 
   public boolean isValid() {
