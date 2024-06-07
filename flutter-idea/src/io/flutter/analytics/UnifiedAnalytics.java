@@ -7,32 +7,34 @@ package io.flutter.analytics;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.intellij.ide.BrowserUtil;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonConsumer;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import de.roderick.weberknecht.WebSocketException;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.swing.event.HyperlinkEvent;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * Facilitates sending information to unified analytics.
  */
 public class UnifiedAnalytics {
-  Boolean enabled = null;
+  private static final Logger LOG = Logger.getInstance(UnifiedAnalytics.class);
+
+  @Nullable Boolean enabled = null;
   final Project project;
   final DartToolingDaemonService dtdService;
   @NotNull final FlutterSdkUtil flutterSdkUtil;
+
 
   public UnifiedAnalytics(@NotNull Project project) {
     this.project = project;
@@ -64,28 +66,24 @@ public class UnifiedAnalytics {
       }
     }
     catch (Exception e) {
-      throw new RuntimeException(e);
+      LOG.info(e);
     }
   }
 
-  private CompletableFuture<Boolean> telemetryEnabled(DartToolingDaemonService service, JsonObject params) {
-    CompletableFuture<Boolean> finalResult = new CompletableFuture<>();
+  private CompletableFuture<JsonObject> makeUnifiedAnalyticsRequest(String requestName,
+                                                                    @NotNull DartToolingDaemonService service,
+                                                                    @NotNull JsonObject params) {
+    CompletableFuture<JsonObject> finalResult = new CompletableFuture<>();
     try {
-      service.sendRequest("UnifiedAnalytics.telemetryEnabled", params, false, new DartToolingDaemonConsumer() {
+      service.sendRequest("UnifiedAnalytics." + requestName, params, false, new DartToolingDaemonConsumer() {
         @Override
         public void received(@NotNull JsonObject object) {
-          System.out.println(object);
           JsonObject result = object.getAsJsonObject("result");
           if (result == null) {
-            finalResult.completeExceptionally(new Exception("telemetryEnabled JSON result is malformed: " + object));
+            finalResult.completeExceptionally(new Exception(requestName + " JSON result is malformed: " + object));
             return;
           }
-          JsonPrimitive value = result.getAsJsonPrimitive("value");
-          if (value == null) {
-            finalResult.completeExceptionally(new Exception("telemetryEnabled value is null"));
-            return;
-          }
-          finalResult.complete(value.getAsBoolean());
+          finalResult.complete(result);
         }
       });
     }
@@ -95,59 +93,47 @@ public class UnifiedAnalytics {
     return finalResult;
   }
 
-  private CompletableFuture<Boolean> clientShowedMessage(DartToolingDaemonService service, JsonObject params) {
-    CompletableFuture<Boolean> finalResult = new CompletableFuture<>();
-    try {
-      service.sendRequest("UnifiedAnalytics.clientShowedMessage", params, false, new DartToolingDaemonConsumer() {
-        @Override
-        public void received(@NotNull JsonObject object) {
-          System.out.println(object);
-          JsonObject result = object.getAsJsonObject("result");
-          if (result == null) {
-            finalResult.completeExceptionally(new Exception("clientShowedMessage JSON result is malformed: " + object));
-            return;
-          }
-          JsonPrimitive type = result.getAsJsonPrimitive("type");
-          if (type == null) {
-            finalResult.completeExceptionally(new Exception("setTelemetry type is null"));
-            return;
-          }
-          finalResult.complete("Success".equals(type.getAsString()));
-        }
-      });
-    }
-    catch (WebSocketException e) {
-      finalResult.completeExceptionally(e);
-    }
-    return finalResult;
+  private @Nullable CompletableFuture<Boolean> telemetryEnabled(@NotNull DartToolingDaemonService service, @NotNull JsonObject params) {
+    return makeUnifiedAnalyticsRequest("telemetryEnabled", service, params).thenCompose(result -> {
+      assert result != null;
+      JsonPrimitive value = result.getAsJsonPrimitive("value");
+      CompletableFuture<Boolean> innerResult = new CompletableFuture<>();
+
+      if (value == null) {
+        return CompletableFuture.failedFuture(new Exception("telemetryEnabled value is null"));
+      }
+      innerResult.complete(value.getAsBoolean());
+      return innerResult;
+    });
   }
 
-  private CompletableFuture<Boolean> setTelemetry(DartToolingDaemonService service, JsonObject params, Boolean canSendAnalytics) {
+  private @Nullable CompletableFuture<Boolean> clientShowedMessage(@NotNull DartToolingDaemonService service, @NotNull JsonObject params) {
+    return makeUnifiedAnalyticsRequest("clientShowedMessage", service, params).thenCompose(result -> {
+      assert result != null;
+      JsonPrimitive type = result.getAsJsonPrimitive("type");
+      CompletableFuture<Boolean> innerResult = new CompletableFuture<>();
+
+      if (type == null) {
+        return CompletableFuture.failedFuture(new Exception("clientShowedMessage type is null"));
+      }
+      innerResult.complete("Success".equals(type.getAsString()));
+      return innerResult;
+    });
+  }
+
+  private @Nullable CompletableFuture<Boolean> setTelemetry(@NotNull DartToolingDaemonService service, @NotNull JsonObject params, Boolean canSendAnalytics) {
     params.addProperty("enable", canSendAnalytics);
-    CompletableFuture<Boolean> finalResult = new CompletableFuture<>();
-    try {
-      service.sendRequest("UnifiedAnalytics.setTelemetry", params, false, new DartToolingDaemonConsumer() {
-        @Override
-        public void received(@NotNull JsonObject object) {
-          System.out.println(object);
-          JsonObject result = object.getAsJsonObject("result");
-          if (result == null) {
-            finalResult.completeExceptionally(new Exception("setTelemetry JSON result is malformed: " + object));
-            return;
-          }
-          JsonPrimitive type = result.getAsJsonPrimitive("type");
-          if (type == null) {
-            finalResult.completeExceptionally(new Exception("setTelemetry type is null"));
-            return;
-          }
-          finalResult.complete("Success".equals(type.getAsString()));
-        }
-      });
-    }
-    catch (WebSocketException e) {
-      finalResult.completeExceptionally(e);
-    }
-    return finalResult;
+    return makeUnifiedAnalyticsRequest("setTelemetry", service, params).thenCompose(result -> {
+      assert result != null;
+      JsonPrimitive type = result.getAsJsonPrimitive("type");
+      CompletableFuture<Boolean> innerResult = new CompletableFuture<>();
+
+      if (type == null) {
+        return CompletableFuture.failedFuture(new Exception("setTelemetry type is null"));
+      }
+      innerResult.complete("Success".equals(type.getAsString()));
+      return innerResult;
+    });
   }
 
   private CompletableFuture<Boolean> showMessage(@NotNull String message) {
@@ -193,58 +179,31 @@ public class UnifiedAnalytics {
     }
   }
 
-  private CompletableFuture<Boolean> shouldShowMessage(@NotNull DartToolingDaemonService service, @NotNull JsonObject params) {
-    CompletableFuture<Boolean> finalResult = new CompletableFuture<>();
-    try {
-      service.sendRequest("UnifiedAnalytics.shouldShowMessage", params, false, new DartToolingDaemonConsumer() {
-        @Override
-        public void received(@NotNull JsonObject object) {
-          System.out.println(object);
-          JsonObject result = object.getAsJsonObject("result");
-          if (result == null) {
-            finalResult.completeExceptionally(new Exception("Should show message JSON result is malformed: " + object));
-            return;
-          }
-          JsonPrimitive value = result.getAsJsonPrimitive("value");
-          if (value == null) {
-            finalResult.completeExceptionally(new Exception("Should show message value is null"));
-            return;
-          }
-          finalResult.complete(value.getAsBoolean());
-        }
-      });
-    }
-    catch (WebSocketException e) {
-      finalResult.completeExceptionally(e);
-    }
-    return finalResult;
+  private @Nullable CompletableFuture<Boolean> shouldShowMessage(@NotNull DartToolingDaemonService service, @NotNull JsonObject params) {
+    return makeUnifiedAnalyticsRequest("shouldShowMessage", service, params).thenCompose(result -> {
+      assert result != null;
+      JsonPrimitive value = result.getAsJsonPrimitive("value");
+      CompletableFuture<Boolean> innerResult = new CompletableFuture<>();
+
+      if (value == null) {
+        return CompletableFuture.failedFuture(new Exception("shouldShowMessage value is null"));
+      }
+      innerResult.complete(value.getAsBoolean());
+      return innerResult;
+    });
   }
 
-  private CompletableFuture<String> getConsentMessage(@NotNull DartToolingDaemonService service, @NotNull JsonObject params) {
-    CompletableFuture<String> finalResult = new CompletableFuture<>();
-    try {
-      service.sendRequest("UnifiedAnalytics.getConsentMessage", params, false, new DartToolingDaemonConsumer() {
-        @Override
-        public void received(@NotNull JsonObject object) {
-          System.out.println(object);
-          JsonObject result = object.getAsJsonObject("result");
-          if (result == null) {
-            finalResult.completeExceptionally(new Exception("getConsentMessage JSON result is malformed: " + object));
-            return;
-          }
-          JsonPrimitive value = result.getAsJsonPrimitive("value");
-          if (value == null) {
-            finalResult.completeExceptionally(new Exception("getConsentMessage value is null"));
-            return;
-          }
-          finalResult.complete(value.getAsString());
-        }
-      });
-    }
-    catch (WebSocketException e) {
-      finalResult.completeExceptionally(e);
-    }
-    return finalResult;
+  private @Nullable CompletableFuture<String> getConsentMessage(@NotNull DartToolingDaemonService service, @NotNull JsonObject params) {
+    return makeUnifiedAnalyticsRequest("getConsentMessage", service, params).thenCompose(result -> {
+      assert result != null;
+      JsonPrimitive value = result.getAsJsonPrimitive("value");
+      CompletableFuture<String> innerResult = new CompletableFuture<>();
+      if (value == null) {
+        return CompletableFuture.failedFuture(new Exception("getConsentMessage value is null"));
+      }
+      innerResult.complete(value.getAsString());
+      return innerResult;
+    });
   }
 
   private CompletableFuture<DartToolingDaemonService> readyDtdService() {
