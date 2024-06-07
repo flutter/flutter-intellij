@@ -251,7 +251,8 @@ public class FlutterInitializer implements StartupActivity {
     if (sdk == null || !sdk.getVersion().canUseDtd()) return;
     Thread t1 = new Thread(() -> {
       UnifiedAnalytics unifiedAnalytics = new UnifiedAnalytics(project);
-      unifiedAnalytics.manageConsent(); // check on current status of consent, show message if appropriate, store consent.
+      // TODO(helin24): Turn on after adding some unified analytics reporting.
+      //unifiedAnalytics.manageConsent();
     });
     t1.start();
   }
