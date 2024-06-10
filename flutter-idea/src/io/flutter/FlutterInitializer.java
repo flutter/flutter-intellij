@@ -29,6 +29,7 @@ import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.FlutterAnalysisServerListener;
 import io.flutter.analytics.ToolWindowTracker;
+import io.flutter.analytics.UnifiedAnalytics;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.editor.FlutterSaveActionsManager;
@@ -44,6 +45,8 @@ import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.sdk.FlutterPluginsLibraryManager;
+import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.survey.FlutterSurveyNotifications;
 import io.flutter.utils.FlutterModuleUtils;
@@ -193,6 +196,8 @@ public class FlutterInitializer implements StartupActivity {
     // Set our preferred settings for the run console.
     FlutterConsoleLogManager.initConsolePreferences();
 
+    setUpDtdAnalytics(project);
+
     // Initialize analytics.
     final PropertiesComponent properties = PropertiesComponent.getInstance();
     if (!properties.getBoolean(analyticsToastShown)) {
@@ -238,6 +243,18 @@ public class FlutterInitializer implements StartupActivity {
         enableAnalytics(project);
       }
     }
+  }
+
+  private void setUpDtdAnalytics(Project project) {
+    if (project == null) return;
+    FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+    if (sdk == null || !sdk.getVersion().canUseDtd()) return;
+    Thread t1 = new Thread(() -> {
+      UnifiedAnalytics unifiedAnalytics = new UnifiedAnalytics(project);
+      // TODO(helin24): Turn on after adding some unified analytics reporting.
+      //unifiedAnalytics.manageConsent();
+    });
+    t1.start();
   }
 
   private static void enableAnalytics(@NotNull Project project) {
