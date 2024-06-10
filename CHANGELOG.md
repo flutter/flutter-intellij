@@ -1,3 +1,6 @@
+# Next
+- Resolve Released EditorImpl held by lambda in FlutterReloadManager (#7507)
+
 # 80
 - Resolve debugger issue with the new Dart macro file uri format (#7449)
 - Hide deep links window when insufficient SDK version (#7478)
