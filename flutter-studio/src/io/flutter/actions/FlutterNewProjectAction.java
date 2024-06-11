@@ -18,6 +18,8 @@ import com.intellij.ui.OffsetIcon;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import javax.swing.Icon;
+
+import io.flutter.FlutterUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterNewProjectAction extends AnAction implements DumbAware {
@@ -36,6 +38,9 @@ public class FlutterNewProjectAction extends AnAction implements DumbAware {
 
   @Override
   public void actionPerformed(@NotNull AnActionEvent e) {
+    if (FlutterUtils.isAndroidStudio()) {
+      System.setProperty("studio.projectview", "true");
+    }
     NewProjectWizard wizard = new NewProjectWizard(null, ModulesProvider.EMPTY_MODULES_PROVIDER, null);
     NewProjectUtil.createNewProject(wizard);
   }

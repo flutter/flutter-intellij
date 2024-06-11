@@ -1,5 +1,6 @@
 # Next
 - Resolve Released EditorImpl held by lambda in FlutterReloadManager (#7507)
+- Configure the Project view for Flutter in AS, when creating a new Flutter project (#4470)
 
 # 80
 - Resolve debugger issue with the new Dart macro file uri format (#7449)
