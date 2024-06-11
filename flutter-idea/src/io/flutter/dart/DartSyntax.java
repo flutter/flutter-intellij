@@ -28,7 +28,7 @@ public class DartSyntax {
    */
   @Nullable
   public static DartCallExpression findEnclosingFunctionCall(@NotNull PsiElement elt, @NotNull String functionName) {
-    return findEnclosingFunctionCall(elt, functionName, new Equator<String, String>() {
+    return findEnclosingFunctionCall(elt, functionName, new Equator<>() {
       @Override
       boolean equate(@NotNull String first, @NotNull String second) {
         return Objects.equals(first, second);
@@ -43,7 +43,7 @@ public class DartSyntax {
    */
   @Nullable
   public static DartCallExpression findEnclosingFunctionCall(@NotNull PsiElement elt, @NotNull Pattern functionRegex) {
-    return findEnclosingFunctionCall(elt, functionRegex, new Equator<Pattern, String>() {
+    return findEnclosingFunctionCall(elt, functionRegex, new Equator<>() {
       @Override
       boolean equate(@NotNull Pattern first, @NotNull String second) {
         return first.matcher(second).matches();
@@ -54,8 +54,7 @@ public class DartSyntax {
   private static <T> DartCallExpression findEnclosingFunctionCall(
     @NotNull PsiElement elt, @NotNull T functionDescriptor, @NotNull Equator<T, String> equator) {
     while (elt != null) {
-      if (elt instanceof DartCallExpression) {
-        final DartCallExpression call = (DartCallExpression)elt;
+      if (elt instanceof DartCallExpression call) {
         final String name = getCalledFunctionName(call);
         if (name != null && equator.equate(functionDescriptor, name)) {
           return call;
@@ -72,8 +71,7 @@ public class DartSyntax {
   @Nullable
   public static DartCallExpression findClosestEnclosingFunctionCall(@Nullable PsiElement element) {
     while (element != null) {
-      if (element instanceof DartCallExpression) {
-        final DartCallExpression call = (DartCallExpression)element;
+      if (element instanceof DartCallExpression call) {
         final String name = getCalledFunctionName(call);
         if (name != null) {
           return call;
@@ -181,8 +179,7 @@ public class DartSyntax {
     if (lit.getFirstChild() == null) return null;
     final PsiElement second = lit.getFirstChild().getNextSibling();
     if (second.getNextSibling() != lit.getLastChild()) return null; // not three items
-    if (!(second instanceof LeafPsiElement)) return null;
-    final LeafPsiElement leaf = (LeafPsiElement)second;
+    if (!(second instanceof LeafPsiElement leaf)) return null;
 
     if (leaf.getElementType() != DartTokenTypes.REGULAR_STRING_PART) return null;
     return leaf.getText();

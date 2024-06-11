@@ -56,12 +56,10 @@ public abstract class TestLineMarkerContributor extends RunLineMarkerContributor
     //   DartReferenceExpression
     //     DartId
     //       LeafPsiElement
-    if (element instanceof LeafElement && element.getParent() instanceof DartId) {
-      final DartId dartId = (DartId)element.getParent();
+    if (element instanceof LeafElement && element.getParent() instanceof DartId dartId) {
 
       if (dartId.getParent() != null) {
-        if (dartId.getParent().getParent() instanceof DartCallExpression) {
-          final DartCallExpression dartCallExpression = (DartCallExpression)dartId.getParent().getParent();
+        if (dartId.getParent().getParent() instanceof DartCallExpression dartCallExpression) {
           final TestType testCall = testConfigUtils.asTestCall(dartCallExpression);
           if (testCall != null) {
             final Icon icon = getTestStateIcon(element, testCall.getIcon());

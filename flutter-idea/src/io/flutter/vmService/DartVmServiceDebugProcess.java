@@ -368,13 +368,8 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
 
   public CompletableFuture<?> whenIsolateResumed(String isolateId) {
     final CompletableFuture<?> future = mySuspendedIsolateIds.get(isolateId);
-    if (future == null) {
-      // Isolate wasn't actually suspended.
-      return CompletableFuture.completedFuture(null);
-    }
-    else {
-      return future;
-    }
+    // If the future is null, then the isolate wasn't actually suspended.
+    return Objects.requireNonNullElseGet(future, () -> CompletableFuture.completedFuture(null));
   }
 
   public boolean isIsolateAlive(@NotNull final String isolateId) {

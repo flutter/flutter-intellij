@@ -102,8 +102,7 @@ public class IconPreviewGenerator {
       try (InputStream stream = new BufferedInputStream(new FileInputStream(file))) {
         fontMap.load(stream);
         for (Object nextKey : fontMap.keySet()) {
-          if (!(nextKey instanceof String)) continue;
-          String codepoint = (String)nextKey;
+          if (!(nextKey instanceof String codepoint)) continue;
           if (!codepoint.endsWith(".codepoint")) continue;
           String iconName = fontMap.getProperty(codepoint);
           codepoint = codepoint.substring(0, codepoint.indexOf(".codepoint"));

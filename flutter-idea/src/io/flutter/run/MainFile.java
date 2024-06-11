@@ -96,10 +96,9 @@ public class MainFile {
     }
 
     final PsiFile psi = PsiManager.getInstance(project).findFile(file);
-    if (!(psi instanceof DartFile)) {
+    if (!(psi instanceof DartFile dart)) {
       return error(FlutterBundle.message("entrypoint.not.dart"));
     }
-    final DartFile dart = (DartFile)psi;
 
     if (DartResolveUtil.getMainFunction(dart) == null) {
       return error(FlutterBundle.message("main.not.in.entrypoint"));

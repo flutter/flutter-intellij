@@ -181,8 +181,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     if (SystemInfo.isMac) {
       boolean simulatorOpen = false;
       for (AnAction action : actions) {
-        if (action instanceof SelectDeviceAction) {
-          final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
+        if (action instanceof SelectDeviceAction deviceAction) {
           final FlutterDevice device = deviceAction.device;
           if (device.isIOS() && device.emulator()) {
             simulatorOpen = true;

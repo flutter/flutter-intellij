@@ -273,8 +273,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
           final ServiceExtensionDescription extension = ServiceExtensions.toggleableExtensionsAllowList.get(name);
           if (extension != null) {
             final Object value = getExtensionValueFromEventJson(name, valueFromJson);
-            if (extension instanceof ToggleableServiceExtensionDescription) {
-              final ToggleableServiceExtensionDescription toggleableExtension = (ToggleableServiceExtensionDescription)extension;
+            if (extension instanceof ToggleableServiceExtensionDescription toggleableExtension) {
               setServiceExtensionState(name, value.equals(toggleableExtension.getEnabledValue()), value);
             }
             else {
@@ -409,9 +408,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
   }
 
   private void maybeRestoreExtension(String name, Object value) {
-    if (ServiceExtensions.toggleableExtensionsAllowList.get(name) instanceof ToggleableServiceExtensionDescription) {
-      final ToggleableServiceExtensionDescription extensionDescription =
-        (ToggleableServiceExtensionDescription)ServiceExtensions.toggleableExtensionsAllowList.get(name);
+    if (ServiceExtensions.toggleableExtensionsAllowList.get(name) instanceof ToggleableServiceExtensionDescription extensionDescription) {
       if (value.equals(extensionDescription.getEnabledValue())) {
         setServiceExtensionState(name, true, value);
       }

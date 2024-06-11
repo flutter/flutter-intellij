@@ -93,8 +93,7 @@ public class ActiveEditorsOutlineService implements Disposable {
     final FileEditor[] editors = fileEditorManager.getSelectedEditors();
     final List<EditorEx> dartEditors = new ArrayList<>();
     for (FileEditor fileEditor : editors) {
-      if (!(fileEditor instanceof TextEditor)) continue;
-      final TextEditor textEditor = (TextEditor)fileEditor;
+      if (!(fileEditor instanceof TextEditor textEditor)) continue;
       final Editor editor = textEditor.getEditor();
       if (editor instanceof EditorEx && !editor.isDisposed() && FlutterUtils.isDartFile(((EditorEx)editor).getVirtualFile())) {
         dartEditors.add((EditorEx)editor);

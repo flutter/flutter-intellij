@@ -61,8 +61,7 @@ public class FlutterIconProvider extends IconProvider {
     }
 
     // Files.
-    if (element instanceof DartFile) {
-      final DartFile dartFile = (DartFile)element;
+    if (element instanceof DartFile dartFile) {
       final VirtualFile file = dartFile.getVirtualFile();
       if (file == null || !file.isInLocalFileSystem()) return null;
 

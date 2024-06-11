@@ -527,12 +527,11 @@ public final class FlutterAnalysisServerListener implements Disposable, Analysis
    */
   void onPropertyChange(@NotNull PropertyChangeEvent propertyChangeEvent) {
     Object newValue = propertyChangeEvent.getNewValue();
-    if (!(newValue instanceof LookupImpl)) {
+    if (!(newValue instanceof LookupImpl lookup)) {
       return;
     }
 
     setLookupSelectionHandler();
-    LookupImpl lookup = (LookupImpl)newValue;
     lookup.addLookupListener(lookupSelectionHandler);
   }
 

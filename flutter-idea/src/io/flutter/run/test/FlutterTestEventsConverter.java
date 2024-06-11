@@ -47,9 +47,8 @@ public class FlutterTestEventsConverter extends DartTestEventsConverterZ {
 
   @Nullable
   private static JsonElement getValue(@NotNull JsonElement element, @NotNull String member) {
-    if (!(element instanceof JsonObject)) return null;
+    if (!(element instanceof JsonObject object)) return null;
 
-    final JsonObject object = (JsonObject)element;
     return object.has(member) ? object.get(member) : null;
   }
 

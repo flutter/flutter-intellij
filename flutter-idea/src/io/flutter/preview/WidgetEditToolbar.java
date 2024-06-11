@@ -238,8 +238,7 @@ public class WidgetEditToolbar {
       return null;
     }
     final FileEditor fileEditor = fileEditorManager.getSelectedEditor(file);
-    if (fileEditor instanceof TextEditor) {
-      final TextEditor textEditor = (TextEditor)fileEditor;
+    if (fileEditor instanceof TextEditor textEditor) {
       final Editor editor = textEditor.getEditor();
       if (!editor.isDisposed()) {
         return editor;

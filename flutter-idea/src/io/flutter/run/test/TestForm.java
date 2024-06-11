@@ -52,7 +52,7 @@ public class TestForm extends SettingsEditor<TestConfig> {
       updateFields(next);
       render(next);
     });
-    scope.setRenderer(new ListCellRendererWrapper<Scope>() {
+    scope.setRenderer(new ListCellRendererWrapper<>() {
       @Override
       public void customize(final JList list,
                             final Scope value,
@@ -96,20 +96,12 @@ public class TestForm extends SettingsEditor<TestConfig> {
 
   @Override
   protected void applyEditorTo(@NotNull TestConfig config) throws ConfigurationException {
-    final TestFields fields;
-    switch (getScope()) {
-      case NAME:
-        fields = TestFields.forTestName(testName.getText(), testFile.getText());
-        break;
-      case FILE:
-        fields = TestFields.forFile(testFile.getText());
-        break;
-      case DIRECTORY:
-        fields = TestFields.forDir(testDir.getText());
-        break;
-      default:
-        throw new ConfigurationException("unexpected scope: " + scope.getSelectedItem());
-    }
+    final TestFields fields = switch (getScope()) {
+      case NAME -> TestFields.forTestName(testName.getText(), testFile.getText());
+      case FILE -> TestFields.forFile(testFile.getText());
+      case DIRECTORY -> TestFields.forDir(testDir.getText());
+      default -> throw new ConfigurationException("unexpected scope: " + scope.getSelectedItem());
+    };
     fields.setAdditionalArgs(additionalArgs.getText().trim());
     config.setFields(fields);
   }

@@ -94,8 +94,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
         final Editor editor = event.getEditor();
         if (editor.getProject() != project) return;
         if (editor.isDisposed() || project.isDisposed()) return;
-        if (!(editor instanceof EditorEx)) return;
-        final EditorEx editorEx = (EditorEx)editor;
+        if (!(editor instanceof EditorEx editorEx)) return;
         WidgetIndentsHighlightingPass.onCaretPositionChanged(editorEx, event.getCaret());
       }
     }, this);
@@ -233,8 +232,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       FilteredIndentsHighlightingPass.cleanupHighlighters(e);
     }
 
-    if (!(e instanceof EditorEx)) return highlightingPass;
-    final EditorEx editor = (EditorEx)e;
+    if (!(e instanceof EditorEx editor)) return highlightingPass;
 
     final VirtualFile virtualFile = editor.getVirtualFile();
     if (!FlutterUtils.couldContainWidgets(virtualFile)) {

@@ -45,7 +45,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 
@@ -159,7 +158,7 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
       String existingJson = null;
       if (Files.exists(cachedParametersPath)) {
         try {
-          existingJson = new String(Files.readAllBytes(cachedParametersPath), StandardCharsets.UTF_8);
+          existingJson = Files.readString(cachedParametersPath);
         }
         catch (IOException e) {
           FlutterUtils.warn(LOG, "Unable to get existing json from " + cachedParametersPath);
@@ -181,7 +180,7 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
           else {
             Files.createDirectory(buildPath);
           }
-          Files.write(cachedParametersPath, json.getBytes(StandardCharsets.UTF_8));
+          Files.writeString(cachedParametersPath, json);
         }
         catch (IOException e) {
           FlutterUtils.warn(LOG, e);

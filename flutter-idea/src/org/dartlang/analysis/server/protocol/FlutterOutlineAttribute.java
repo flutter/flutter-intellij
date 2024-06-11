@@ -94,8 +94,7 @@ public class FlutterOutlineAttribute {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof FlutterOutlineAttribute) {
-      FlutterOutlineAttribute other = (FlutterOutlineAttribute)obj;
+    if (obj instanceof FlutterOutlineAttribute other) {
       return
         ObjectUtilities.equals(other.name, name) &&
         ObjectUtilities.equals(other.label, label) &&
@@ -127,7 +126,7 @@ public class FlutterOutlineAttribute {
     if (jsonArray == null) {
       return EMPTY_LIST;
     }
-    ArrayList<FlutterOutlineAttribute> list = new ArrayList<FlutterOutlineAttribute>(jsonArray.size());
+    ArrayList<FlutterOutlineAttribute> list = new ArrayList<>(jsonArray.size());
     Iterator<JsonElement> iterator = jsonArray.iterator();
     while (iterator.hasNext()) {
       list.add(fromJson(iterator.next().getAsJsonObject()));

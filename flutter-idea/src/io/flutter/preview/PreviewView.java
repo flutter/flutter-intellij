@@ -210,8 +210,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
     initTreePopup();
 
     // Add collapse all, expand all, and show only widgets buttons.
-    if (toolWindow instanceof ToolWindowEx) {
-      final ToolWindowEx toolWindowEx = (ToolWindowEx)toolWindow;
+    if (toolWindow instanceof ToolWindowEx toolWindowEx) {
 
       final CommonActionsManager actions = CommonActionsManager.getInstance();
       final TreeExpander expander = new DefaultTreeExpander(tree);
@@ -637,8 +636,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
   }
 
   private void scrollTreeToNodeOnTop(TreeNode node) {
-    if (node instanceof DefaultMutableTreeNode) {
-      final DefaultMutableTreeNode defaultNode = (DefaultMutableTreeNode)node;
+    if (node instanceof DefaultMutableTreeNode defaultNode) {
       final Rectangle bounds = tree.getPathBounds(new TreePath(defaultNode.getPath()));
       // Set the height to the visible tree height to force the node to top.
       if (bounds != null) {
@@ -664,8 +662,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
   private static void doLayoutRecursively(Component component) {
     if (component != null) {
       component.doLayout();
-      if (component instanceof Container) {
-        final Container container = (Container)component;
+      if (component instanceof Container container) {
         for (Component child : container.getComponents()) {
           doLayoutRecursively(child);
         }
@@ -813,10 +810,9 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
     final boolean hasFocus
   ) {
     final Object userObject = ((DefaultMutableTreeNode)value).getUserObject();
-    if (!(userObject instanceof OutlineObject)) {
+    if (!(userObject instanceof OutlineObject node)) {
       return;
     }
-    final OutlineObject node = (OutlineObject)userObject;
     final FlutterOutline outline = node.outline;
 
     this.tree = tree;

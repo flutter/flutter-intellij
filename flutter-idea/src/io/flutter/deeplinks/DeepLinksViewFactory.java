@@ -66,9 +66,7 @@ public class DeepLinksViewFactory implements ToolWindowFactory {
         ApplicationManager.getApplication().invokeLater(() -> {
           Optional.ofNullable(
               FlutterUtils.embeddedBrowser(project))
-            .ifPresent(embeddedBrowser -> embeddedBrowser.openPanel(toolWindow, "Deep Links", devToolsUrl, (String err) -> {
-              System.out.println(err);
-            }));
+            .ifPresent(embeddedBrowser -> embeddedBrowser.openPanel(toolWindow, "Deep Links", devToolsUrl, System.out::println));
         });
       }
     );

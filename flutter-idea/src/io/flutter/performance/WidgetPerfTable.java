@@ -278,8 +278,7 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
       final int selectedRowIndex = getSelectedRow();
       if (selectedRowIndex != -1) {
         final Object selectedRow = getTreeModel().getRowValue(selectedRowIndex);
-        if (selectedRow instanceof DefaultMutableTreeNode) {
-          final DefaultMutableTreeNode selectedRowNode = (DefaultMutableTreeNode)selectedRow;
+        if (selectedRow instanceof DefaultMutableTreeNode selectedRowNode) {
           final SlidingWindowStatsSummary selectedStats = (SlidingWindowStatsSummary)selectedRowNode.getUserObject();
           if (selectedStats != null) {
             lastSelectedLocation = selectedStats.getLocation();
@@ -401,8 +400,7 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
       if (value == null) return panel;
       panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
-      if (value instanceof SlidingWindowStatsSummary) {
-        final SlidingWindowStatsSummary stats = (SlidingWindowStatsSummary)value;
+      if (value instanceof SlidingWindowStatsSummary stats) {
         final SimpleTextAttributes attributes = SimpleTextAttributes.REGULAR_ATTRIBUTES;
 
         final JBLabel label = new JBLabel(stats.getLocation().name);
@@ -440,8 +438,7 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
       if (value == null) return panel;
       panel.setLayout(new BorderLayout());
 
-      if (value instanceof SlidingWindowStatsSummary) {
-        final SlidingWindowStatsSummary stats = (SlidingWindowStatsSummary)value;
+      if (value instanceof SlidingWindowStatsSummary stats) {
         final SimpleTextAttributes attributes = SimpleTextAttributes.REGULAR_ATTRIBUTES;
         final Location location = stats.getLocation();
         final String path = location.path;
@@ -489,8 +486,7 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
       if (value == null) return panel;
       panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
-      if (value instanceof SlidingWindowStatsSummary) {
-        final SlidingWindowStatsSummary stats = (SlidingWindowStatsSummary)value;
+      if (value instanceof SlidingWindowStatsSummary stats) {
         final SimpleTextAttributes attributes = SimpleTextAttributes.REGULAR_ATTRIBUTES;
         final int count = stats.getValue(metric);
 
@@ -592,14 +588,11 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
 
     @Override
     public String getTooltipText() {
-      switch (metric) {
-        case lastFrame:
-          return "The number of times the widget was rebuilt in the last frame.";
-        case totalSinceEnteringCurrentScreen:
-          return "The number of times the widget was rebuilt since entering the current screen.";
-        default:
-          return null;
-      }
+      return switch (metric) {
+        case lastFrame -> "The number of times the widget was rebuilt in the last frame.";
+        case totalSinceEnteringCurrentScreen -> "The number of times the widget was rebuilt since entering the current screen.";
+        default -> null;
+      };
     }
   }
 }

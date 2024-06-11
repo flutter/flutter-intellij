@@ -527,8 +527,7 @@ public class WidgetIndentsHighlightingPass {
       return answer;
     }
     final CustomHighlighterRenderer renderer = h.getCustomRenderer();
-    if (renderer instanceof WidgetCustomHighlighterRenderer) {
-      final WidgetCustomHighlighterRenderer widgetRenderer = (WidgetCustomHighlighterRenderer)renderer;
+    if (renderer instanceof WidgetCustomHighlighterRenderer widgetRenderer) {
       return widgetRenderer.descriptor.compareTo(r.descriptor);
     }
     return -1;
@@ -550,9 +549,7 @@ public class WidgetIndentsHighlightingPass {
     final WidgetIndentsPassData data = getIndentsPassData(editor);
     if (data == null || data.highlighters == null) return;
     for (RangeHighlighter h : data.highlighters) {
-      if (h.getCustomRenderer() instanceof WidgetIndentsHighlightingPass.WidgetCustomHighlighterRenderer) {
-        final WidgetIndentsHighlightingPass.WidgetCustomHighlighterRenderer renderer =
-          (WidgetIndentsHighlightingPass.WidgetCustomHighlighterRenderer)h.getCustomRenderer();
+      if (h.getCustomRenderer() instanceof WidgetCustomHighlighterRenderer renderer) {
         final boolean changed = renderer.updateSelected(editor, h, caret);
         if (changed) {
           editor.repaint(h.getStartOffset(), h.getEndOffset());

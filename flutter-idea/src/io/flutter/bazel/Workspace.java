@@ -247,8 +247,7 @@ public class Workspace {
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof Workspace)) return false;
-    final Workspace other = (Workspace)obj;
+    if (!(obj instanceof Workspace other)) return false;
     return Objects.equal(root, other.root) && Objects.equal(config, other.config);
   }
 

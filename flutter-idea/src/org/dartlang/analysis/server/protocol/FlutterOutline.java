@@ -131,8 +131,7 @@ public class FlutterOutline {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof FlutterOutline) {
-      final FlutterOutline other = (FlutterOutline)obj;
+    if (obj instanceof FlutterOutline other) {
       return
         ObjectUtilities.equals(other.kind, kind) &&
         other.offset == offset &&

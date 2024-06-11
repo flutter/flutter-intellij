@@ -470,34 +470,19 @@ public class DartVmServiceValue extends XNamedValue {
   private TypedDataList getTypedDataList(byte @NotNull [] bytes) {
     ByteBuffer buffer = ByteBuffer.wrap(bytes);
     //noinspection ConstantConditions
-    switch (myInstanceRef.getKind()) {
-      case Uint8List:
-      case Uint8ClampedList:
-        return new TypedDataList.Uint8List(bytes);
-      case Int8List:
-        return new TypedDataList.Int8List(bytes);
-      case Uint16List:
-        return new TypedDataList.Uint16List(bytes);
-      case Int16List:
-        return new TypedDataList.Int16List(bytes);
-      case Uint32List:
-        return new TypedDataList.Uint32List(bytes);
-      case Int32List:
-      case Int32x4List:
-        return new TypedDataList.Int32List(bytes);
-      case Uint64List:
-        return new TypedDataList.Uint64List(bytes);
-      case Int64List:
-        return new TypedDataList.Int64List(bytes);
-      case Float32List:
-      case Float32x4List:
-        return new TypedDataList.Float32List(bytes);
-      case Float64List:
-      case Float64x2List:
-        return new TypedDataList.Float64List(bytes);
-      default:
-        return new TypedDataList.Int8List(bytes);
-    }
+    return switch (myInstanceRef.getKind()) {
+      case Uint8List, Uint8ClampedList -> new TypedDataList.Uint8List(bytes);
+      case Int8List -> new TypedDataList.Int8List(bytes);
+      case Uint16List -> new TypedDataList.Uint16List(bytes);
+      case Int16List -> new TypedDataList.Int16List(bytes);
+      case Uint32List -> new TypedDataList.Uint32List(bytes);
+      case Int32List, Int32x4List -> new TypedDataList.Int32List(bytes);
+      case Uint64List -> new TypedDataList.Uint64List(bytes);
+      case Int64List -> new TypedDataList.Int64List(bytes);
+      case Float32List, Float32x4List -> new TypedDataList.Float32List(bytes);
+      case Float64List, Float64x2List -> new TypedDataList.Float64List(bytes);
+      default -> new TypedDataList.Int8List(bytes);
+    };
   }
 
   private void addMapChildren(int offset, @NotNull final XCompositeNode node, @NotNull final ElementList<MapAssociation> mapAssociations) {

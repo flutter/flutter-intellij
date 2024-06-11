@@ -65,8 +65,7 @@ public class FlutterWidgetPropertyValueEnumItem {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof FlutterWidgetPropertyValueEnumItem) {
-      FlutterWidgetPropertyValueEnumItem other = (FlutterWidgetPropertyValueEnumItem)obj;
+    if (obj instanceof FlutterWidgetPropertyValueEnumItem other) {
       return
         ObjectUtilities.equals(other.libraryUri, libraryUri) &&
         ObjectUtilities.equals(other.className, className) &&
@@ -88,7 +87,7 @@ public class FlutterWidgetPropertyValueEnumItem {
     if (jsonArray == null) {
       return EMPTY_LIST;
     }
-    ArrayList<FlutterWidgetPropertyValueEnumItem> list = new ArrayList<FlutterWidgetPropertyValueEnumItem>(jsonArray.size());
+    ArrayList<FlutterWidgetPropertyValueEnumItem> list = new ArrayList<>(jsonArray.size());
     Iterator<JsonElement> iterator = jsonArray.iterator();
     while (iterator.hasNext()) {
       list.add(fromJson(iterator.next().getAsJsonObject()));

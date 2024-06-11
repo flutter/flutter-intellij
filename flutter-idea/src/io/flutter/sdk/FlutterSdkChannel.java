@@ -28,18 +28,13 @@ public class FlutterSdkChannel {
 
     @NotNull
     public static ID fromText(String name) {
-      switch (name) {
-        case "master":
-          return MASTER;
-        case "dev":
-          return DEV;
-        case "beta":
-          return BETA;
-        case "stable":
-          return STABLE;
-        default:
-          return UNKNOWN;
-      }
+      return switch (name) {
+        case "master" -> MASTER;
+        case "dev" -> DEV;
+        case "beta" -> BETA;
+        case "stable" -> STABLE;
+        default -> UNKNOWN;
+      };
     }
   }
 

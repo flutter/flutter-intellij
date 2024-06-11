@@ -136,8 +136,7 @@ class PropertyEnumComboBoxModel extends AbstractListModel<EnumValueWrapper>
 
   @Override
   public void setSelectedItem(Object item) {
-    if (item instanceof String) {
-      final String expression = (String)item;
+    if (item instanceof String expression) {
       for (EnumValueWrapper e : myList) {
         if (Objects.equals(e.expression, expression)) {
           mySelected = e;
@@ -551,12 +550,7 @@ public class PropertyEditorPanel extends SimpleToolWindowPanel {
       }
 
       if (name.equals("data")) {
-        if (documentation != null) {
-          field.setToolTipText(documentation);
-        }
-        else {
-          field.setToolTipText("data");
-        }
+        field.setToolTipText(Objects.requireNonNullElse(documentation, "data"));
         add(field, "span, growx");
       }
       else {

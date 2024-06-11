@@ -280,10 +280,9 @@ class DeviceDaemon {
 
     @Override
     public boolean equals(Object obj) {
-      if (!(obj instanceof Command)) {
+      if (!(obj instanceof Command other)) {
         return false;
       }
-      final Command other = (Command)obj;
       return Objects.equal(workDir, other.workDir)
              && Objects.equal(command, other.command)
              && Objects.equal(parameters, other.parameters)

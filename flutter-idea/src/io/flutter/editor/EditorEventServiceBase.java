@@ -31,7 +31,7 @@ public class EditorEventServiceBase<L> implements Disposable {
   }
 
   protected void invokeAll(InvokeListener<L> invoke, Editor editor) {
-    if (!(editor instanceof EditorEx)) {
+    if (!(editor instanceof EditorEx editorEx)) {
       return;
     }
     final ArrayList<EditorEx> disposedEditors = new ArrayList<>();
@@ -43,7 +43,6 @@ public class EditorEventServiceBase<L> implements Disposable {
     for (EditorEx e : disposedEditors) {
       listeners.removeAll(e);
     }
-    final EditorEx editorEx = (EditorEx)editor;
     final Set<L> matches = listeners.get(editorEx);
     if (matches == null || matches.isEmpty()) return;
     for (L listener : matches) {

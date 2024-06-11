@@ -306,12 +306,11 @@ public class LaunchState extends CommandLineState {
         return false;
       }
 
-      if (!(profile instanceof RunConfig)) {
+      if (!(profile instanceof RunConfig config)) {
         return false;
       }
 
       // If the app is running and the launch mode is the same, then we can run.
-      final RunConfig config = (RunConfig)profile;
       final ProcessHandler process = getRunningAppProcess(config);
       if (process != null) {
         final FlutterApp app = FlutterApp.fromProcess(process);
@@ -354,12 +353,11 @@ public class LaunchState extends CommandLineState {
     @Override
     protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env)
       throws ExecutionException {
-      if (!(state instanceof LaunchState)) {
+      if (!(state instanceof LaunchState launchState)) {
         LOG.error("unexpected RunProfileState: " + state.getClass());
         return null;
       }
 
-      final LaunchState launchState = (LaunchState)state;
       final String executorId = env.getExecutor().getId();
 
       // See if we should issue a hot-reload.
