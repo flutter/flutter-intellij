@@ -81,8 +81,7 @@ public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSet
   }
 
   private void processCoverage(ExecutionEnvironment env) {
-    if (!(env.getRunProfile() instanceof TestConfig)) return;
-    final TestConfig runConfig = (TestConfig)env.getRunProfile();
+    if (!(env.getRunProfile() instanceof TestConfig runConfig)) return;
     final CoverageEnabledConfiguration configuration = CoverageEnabledConfiguration.getOrCreate(runConfig);
     if (configuration.getCoverageFilePath() == null) return;
 

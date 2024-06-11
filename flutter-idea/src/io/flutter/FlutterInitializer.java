@@ -46,7 +46,6 @@ import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.sdk.FlutterPluginsLibraryManager;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.survey.FlutterSurveyNotifications;
 import io.flutter.utils.FlutterModuleUtils;

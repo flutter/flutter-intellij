@@ -56,8 +56,7 @@ public class WidgetIndentHitTester {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof WidgetIndentHitTester)) return false;
-    final WidgetIndentHitTester other = (WidgetIndentHitTester)o;
+    if (!(o instanceof WidgetIndentHitTester other)) return false;
     return Arrays.equals(lines, other.lines);
   }
 

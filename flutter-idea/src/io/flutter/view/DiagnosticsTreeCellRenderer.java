@@ -81,8 +81,7 @@ class DiagnosticsTreeCellRenderer extends InspectorColoredTreeCellRenderer {
       appendText((String)userObject, SimpleTextAttributes.GRAYED_ATTRIBUTES);
       return;
     }
-    if (!(userObject instanceof DiagnosticsNode)) return;
-    final DiagnosticsNode node = (DiagnosticsNode)userObject;
+    if (!(userObject instanceof DiagnosticsNode node)) return;
 
     boolean highlight = selected;
     boolean isLinkedChild = false;

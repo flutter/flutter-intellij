@@ -36,8 +36,7 @@ public class ExtractWidgetFeedback extends RefactoringFeedback {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof ExtractWidgetFeedback) {
-      ExtractWidgetFeedback other = (ExtractWidgetFeedback)obj;
+    if (obj instanceof ExtractWidgetFeedback other) {
       return
         true;
     }
@@ -52,7 +51,7 @@ public class ExtractWidgetFeedback extends RefactoringFeedback {
     if (jsonArray == null) {
       return EMPTY_LIST;
     }
-    ArrayList<ExtractWidgetFeedback> list = new ArrayList<ExtractWidgetFeedback>(jsonArray.size());
+    ArrayList<ExtractWidgetFeedback> list = new ArrayList<>(jsonArray.size());
     Iterator<JsonElement> iterator = jsonArray.iterator();
     while (iterator.hasNext()) {
       list.add(fromJson(iterator.next().getAsJsonObject()));

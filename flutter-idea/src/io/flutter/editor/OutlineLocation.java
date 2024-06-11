@@ -191,8 +191,7 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof OutlineLocation)) return false;
-    final OutlineLocation other = (OutlineLocation)o;
+    if (!(o instanceof OutlineLocation other)) return false;
     return line == other.line &&
            column == other.column &&
            indent == other.indent &&

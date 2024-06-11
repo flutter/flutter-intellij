@@ -46,8 +46,7 @@ public class FlutterWidgetPropertyEditor {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof FlutterWidgetPropertyEditor) {
-      FlutterWidgetPropertyEditor other = (FlutterWidgetPropertyEditor)obj;
+    if (obj instanceof FlutterWidgetPropertyEditor other) {
       return
         ObjectUtilities.equals(other.kind, kind) &&
         ObjectUtilities.equals(other.enumItems, enumItems);
@@ -68,7 +67,7 @@ public class FlutterWidgetPropertyEditor {
     if (jsonArray == null) {
       return EMPTY_LIST;
     }
-    ArrayList<FlutterWidgetPropertyEditor> list = new ArrayList<FlutterWidgetPropertyEditor>(jsonArray.size());
+    ArrayList<FlutterWidgetPropertyEditor> list = new ArrayList<>(jsonArray.size());
     Iterator<JsonElement> iterator = jsonArray.iterator();
     while (iterator.hasNext()) {
       list.add(fromJson(iterator.next().getAsJsonObject()));

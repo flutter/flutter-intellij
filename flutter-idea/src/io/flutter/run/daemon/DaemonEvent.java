@@ -55,34 +55,21 @@ abstract class DaemonEvent {
   @Nullable
   static DaemonEvent create(@NotNull String eventName, @NotNull JsonObject params) {
     try {
-      switch (eventName) {
-        case "daemon.connected":
-          return GSON.fromJson(params, DaemonConnected.class);
-        case "daemon.log":
-          return GSON.fromJson(params, DaemonLog.class);
-        case "daemon.logMessage":
-          return GSON.fromJson(params, DaemonLogMessage.class);
-        case "daemon.showMessage":
-          return GSON.fromJson(params, DaemonShowMessage.class);
-        case "app.start":
-          return GSON.fromJson(params, AppStarting.class);
-        case "app.debugPort":
-          return GSON.fromJson(params, AppDebugPort.class);
-        case "app.started":
-          return GSON.fromJson(params, AppStarted.class);
-        case "app.log":
-          return GSON.fromJson(params, AppLog.class);
-        case "app.progress":
-          return GSON.fromJson(params, AppProgress.class);
-        case "app.stop":
-          return GSON.fromJson(params, AppStopped.class);
-        case "device.added":
-          return GSON.fromJson(params, DeviceAdded.class);
-        case "device.removed":
-          return GSON.fromJson(params, DeviceRemoved.class);
-        default:
-          return null; // Drop an unknown event.
-      }
+      return switch (eventName) {
+        case "daemon.connected" -> GSON.fromJson(params, DaemonConnected.class);
+        case "daemon.log" -> GSON.fromJson(params, DaemonLog.class);
+        case "daemon.logMessage" -> GSON.fromJson(params, DaemonLogMessage.class);
+        case "daemon.showMessage" -> GSON.fromJson(params, DaemonShowMessage.class);
+        case "app.start" -> GSON.fromJson(params, AppStarting.class);
+        case "app.debugPort" -> GSON.fromJson(params, AppDebugPort.class);
+        case "app.started" -> GSON.fromJson(params, AppStarted.class);
+        case "app.log" -> GSON.fromJson(params, AppLog.class);
+        case "app.progress" -> GSON.fromJson(params, AppProgress.class);
+        case "app.stop" -> GSON.fromJson(params, AppStopped.class);
+        case "device.added" -> GSON.fromJson(params, DeviceAdded.class);
+        case "device.removed" -> GSON.fromJson(params, DeviceRemoved.class);
+        default -> null; // Drop an unknown event.
+      };
     }
     catch (JsonSyntaxException e) {
       LOG.info("Unexpected parameters in event from flutter process: " + params);

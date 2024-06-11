@@ -175,8 +175,7 @@ public class DartVmServiceStackFrame extends XStackFrame {
 
     for (BoundVariable var : vars) {
       final Object value = var.getValue();
-      if (value instanceof InstanceRef) {
-        final InstanceRef instanceRef = (InstanceRef)value;
+      if (value instanceof InstanceRef instanceRef) {
         final DartVmServiceValue.LocalVarSourceLocation varLocation =
           "this".equals(var.getName())
           ? null

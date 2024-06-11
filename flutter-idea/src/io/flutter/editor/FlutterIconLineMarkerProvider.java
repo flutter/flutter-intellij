@@ -451,8 +451,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
         String className = null;
         DartArguments arguments = null;
         DartType type = null;
-        if (expression instanceof DartNewExpression) {
-          final DartNewExpression newExpr = (DartNewExpression)expression;
+        if (expression instanceof DartNewExpression newExpr) {
           type = newExpr.getType();
           if (type != null) {
             className = type.getText();

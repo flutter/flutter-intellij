@@ -458,15 +458,11 @@ public class FlutterConsoleLogManager {
   }
 
   private ConsoleViewContentType getContentTypeFor(DiagnosticLevel level) {
-    switch (level) {
-      case error:
-      case summary:
-        return ERROR_CONTENT_TYPE;
-      case hint:
-        return NORMAL_CONTENT_TYPE;
-      default:
-        return SUBTLE_CONTENT_TYPE;
-    }
+    return switch (level) {
+      case error, summary -> ERROR_CONTENT_TYPE;
+      case hint -> NORMAL_CONTENT_TYPE;
+      default -> SUBTLE_CONTENT_TYPE;
+    };
   }
 
   @VisibleForTesting

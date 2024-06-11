@@ -170,10 +170,9 @@ class Vector4 implements Vector {
    */
   @Override()
   public boolean equals(Object o) {
-    if (!(o instanceof Vector4)) {
+    if (!(o instanceof Vector4 other)) {
       return false;
     }
-    final Vector4 other = (Vector4)o;
     return (_v4storage[0] == other._v4storage[0]) &&
            (_v4storage[1] == other._v4storage[1]) &&
            (_v4storage[2] == other._v4storage[2]) &&

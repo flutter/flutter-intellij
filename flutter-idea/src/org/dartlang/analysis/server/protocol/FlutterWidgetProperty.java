@@ -110,8 +110,7 @@ public class FlutterWidgetProperty {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof FlutterWidgetProperty) {
-      FlutterWidgetProperty other = (FlutterWidgetProperty)obj;
+    if (obj instanceof FlutterWidgetProperty other) {
       return
         ObjectUtilities.equals(other.documentation, documentation) &&
         ObjectUtilities.equals(other.expression, expression) &&
@@ -146,7 +145,7 @@ public class FlutterWidgetProperty {
     if (jsonArray == null) {
       return EMPTY_LIST;
     }
-    ArrayList<FlutterWidgetProperty> list = new ArrayList<FlutterWidgetProperty>(jsonArray.size());
+    ArrayList<FlutterWidgetProperty> list = new ArrayList<>(jsonArray.size());
     Iterator<JsonElement> iterator = jsonArray.iterator();
     while (iterator.hasNext()) {
       list.add(fromJson(iterator.next().getAsJsonObject()));

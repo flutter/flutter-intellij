@@ -95,8 +95,7 @@ public class PluginConfig {
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof PluginConfig)) return false;
-    final PluginConfig other = (PluginConfig)obj;
+    if (!(obj instanceof PluginConfig other)) return false;
     return Objects.equal(fields, other.fields);
   }
 
@@ -277,8 +276,7 @@ public class PluginConfig {
 
     @Override
     public boolean equals(Object obj) {
-      if (!(obj instanceof Fields)) return false;
-      final Fields other = (Fields)obj;
+      if (!(obj instanceof Fields other)) return false;
       return Objects.equal(daemonScript, other.daemonScript)
              && Objects.equal(devToolsScript, other.devToolsScript)
              && Objects.equal(doctorScript, other.doctorScript)

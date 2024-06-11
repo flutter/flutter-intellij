@@ -164,16 +164,10 @@ public class FlutterCreateAdditionalSettingsFields {
   }
 
   public boolean shouldIncludePlatforms() {
-    switch (projectTypeForm.getType()) {
-      case APP: // fall through
-      case SKELETON:
-      case PLUGIN:
-      case PLUGIN_FFI:
-      case EMPTY_PROJECT:
-        return true;
-      default:
-        return false;
-    }
+    return switch (projectTypeForm.getType()) { // fall through
+      case APP, SKELETON, PLUGIN, PLUGIN_FFI, EMPTY_PROJECT -> true;
+      default -> false;
+    };
   }
 
   public FlutterCreateAdditionalSettings getSettings() {

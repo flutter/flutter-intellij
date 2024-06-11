@@ -336,8 +336,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     if (node.getChildCount() >= 0) {
       for (final Enumeration<? extends TreeNode> e = node.children(); e.hasMoreElements(); ) {
         final DefaultMutableTreeNode n = (DefaultMutableTreeNode)e.nextElement();
-        if (n.getUserObject() instanceof DiagnosticsNode) {
-          final DiagnosticsNode diagonsticsNode = (DiagnosticsNode)n.getUserObject();
+        if (n.getUserObject() instanceof DiagnosticsNode diagonsticsNode) {
           if (!diagonsticsNode.childrenReady() ||
               (diagonsticsNode.isProperty() && !expandProperties)) {
             continue;
@@ -350,21 +349,15 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   protected static SimpleTextAttributes textAttributesForLevel(DiagnosticLevel level) {
-    switch (level) {
-      case hidden:
-        return SimpleTextAttributes.GRAYED_ATTRIBUTES;
-      case fine:
+    return switch (level) {
+      case hidden -> SimpleTextAttributes.GRAYED_ATTRIBUTES;
+      case fine ->
         //noinspection DuplicateBranchesInSwitch
-        return SimpleTextAttributes.REGULAR_ATTRIBUTES;
-      case warning:
-        return WARNING_ATTRIBUTES;
-      case error:
-        return SimpleTextAttributes.ERROR_ATTRIBUTES;
-      case debug:
-      case info:
-      default:
-        return SimpleTextAttributes.REGULAR_ATTRIBUTES;
-    }
+        SimpleTextAttributes.REGULAR_ATTRIBUTES;
+      case warning -> WARNING_ATTRIBUTES;
+      case error -> SimpleTextAttributes.ERROR_ATTRIBUTES;
+      default -> SimpleTextAttributes.REGULAR_ATTRIBUTES;
+    };
   }
 
   @Nullable
@@ -799,10 +792,9 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   void maybeLoadChildren(DefaultMutableTreeNode node) {
-    if (!(node.getUserObject() instanceof DiagnosticsNode)) {
+    if (!(node.getUserObject() instanceof DiagnosticsNode diagnosticsNode)) {
       return;
     }
-    final DiagnosticsNode diagnosticsNode = (DiagnosticsNode)node.getUserObject();
     if (diagnosticsNode.hasChildren() || !diagnosticsNode.getInlineProperties().isEmpty()) {
       if (hasPlaceholderChildren(node)) {
         diagnosticsNode.safeWhenComplete(diagnosticsNode.getChildren(), (ArrayList<DiagnosticsNode> children, Throwable throwable) -> {
@@ -1029,8 +1021,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
   private void maybePopulateChildren(DefaultMutableTreeNode treeNode) {
     final Object userObject = treeNode.getUserObject();
-    if (userObject instanceof DiagnosticsNode) {
-      final DiagnosticsNode diagnostic = (DiagnosticsNode)userObject;
+    if (userObject instanceof DiagnosticsNode diagnostic) {
       if (diagnostic.hasChildren() && treeNode.getChildCount() == 0) {
         diagnostic.safeWhenComplete(diagnostic.getChildren(), (ArrayList<DiagnosticsNode> children, Throwable throwable) -> {
           if (throwable != null) {

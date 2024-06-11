@@ -164,10 +164,9 @@ public class Vector3 implements Vector {
    */
   @Override()
   public boolean equals(Object o) {
-    if (!(o instanceof Vector3)) {
+    if (!(o instanceof Vector3 other)) {
       return false;
     }
-    final Vector3 other = (Vector3)o;
     return (_v3storage[0] == other._v3storage[0]) &&
            (_v3storage[1] == other._v3storage[1]) &&
            (_v3storage[2] == other._v3storage[2]);

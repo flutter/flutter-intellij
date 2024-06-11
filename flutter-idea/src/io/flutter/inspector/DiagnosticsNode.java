@@ -88,8 +88,7 @@ public class DiagnosticsNode {
 
   @Override
   public boolean equals(Object other) {
-    if (other instanceof DiagnosticsNode) {
-      final DiagnosticsNode otherNode = (DiagnosticsNode)other;
+    if (other instanceof DiagnosticsNode otherNode) {
       return getDartDiagnosticRef().equals(otherNode.getDartDiagnosticRef());
     }
     return false;

@@ -323,10 +323,9 @@ public class TreeScrollAnimator implements Disposable {
 
     @Override
     public boolean equals(Object o) {
-      if (!(o instanceof Interval)) {
+      if (!(o instanceof Interval interval)) {
         return false;
       }
-      final Interval interval = (Interval)o;
       return interval.start == start && interval.length == length;
     }
   }

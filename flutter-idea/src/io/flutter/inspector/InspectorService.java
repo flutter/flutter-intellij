@@ -139,8 +139,7 @@ public class InspectorService implements Disposable {
           PsiElement match = null;
           if (callExpression != null) {
             final DartExpression expression = callExpression.getExpression();
-            if (expression instanceof DartReferenceExpression) {
-              final DartReferenceExpression referenceExpression = (DartReferenceExpression)expression;
+            if (expression instanceof DartReferenceExpression referenceExpression) {
               final PsiElement[] children = referenceExpression.getChildren();
               if (children.length > 1) {
                 // This case handles expressions like 'ClassName.namedConstructor'
@@ -171,8 +170,7 @@ public class InspectorService implements Disposable {
      */
     @Nullable
     public static InspectorService.Location outlineToLocation(Editor editor, FlutterOutline outline) {
-      if (!(editor instanceof EditorEx)) return null;
-      final EditorEx editorEx = (EditorEx)editor;
+      if (!(editor instanceof EditorEx editorEx)) return null;
       return outlineToLocation(editor.getProject(), editorEx.getVirtualFile(), outline, editor.getDocument());
     }
   }
@@ -652,13 +650,10 @@ public class InspectorService implements Disposable {
     public CompletableFuture<DiagnosticsNode> getRoot(FlutterTreeType type) {
       // There is no excuse to call this method on a disposed group.
       assert (!disposed);
-      switch (type) {
-        case widget:
-          return getRootWidget();
-        case renderObject:
-          return getRootRenderObject();
-      }
-      throw new RuntimeException("Unexpected FlutterTreeType");
+      return switch (type) {
+        case widget -> getRootWidget();
+        case renderObject -> getRootRenderObject();
+      };
     }
 
     /**
@@ -1297,14 +1292,11 @@ public class InspectorService implements Disposable {
         CompletableFuture<DiagnosticsNode> result = null;
         final InspectorInstanceRef previousSelectionRef = previousSelection != null ? previousSelection.getDartDiagnosticRef() : null;
 
-        switch (treeType) {
-          case widget:
-            result = invokeServiceMethodReturningNode(localOnly ? "getSelectedSummaryWidget" : "getSelectedWidget", previousSelectionRef);
-            break;
-          case renderObject:
-            result = invokeServiceMethodReturningNode("getSelectedRenderObject", previousSelectionRef);
-            break;
-        }
+        result = switch (treeType) {
+          case widget ->
+            invokeServiceMethodReturningNode(localOnly ? "getSelectedSummaryWidget" : "getSelectedWidget", previousSelectionRef);
+          case renderObject -> invokeServiceMethodReturningNode("getSelectedRenderObject", previousSelectionRef);
+        };
         return result.thenApplyAsync((DiagnosticsNode newSelection) -> nullValueIfDisposed(() -> {
           if (newSelection != null && newSelection.getDartDiagnosticRef().equals(previousSelectionRef)) {
             return previousSelection;

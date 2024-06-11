@@ -15,7 +15,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonConsumer;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import de.roderick.weberknecht.WebSocketException;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -75,16 +74,13 @@ public class UnifiedAnalytics {
                                                                     @NotNull JsonObject params) {
     CompletableFuture<JsonObject> finalResult = new CompletableFuture<>();
     try {
-      service.sendRequest("UnifiedAnalytics." + requestName, params, false, new DartToolingDaemonConsumer() {
-        @Override
-        public void received(@NotNull JsonObject object) {
-          JsonObject result = object.getAsJsonObject("result");
-          if (result == null) {
-            finalResult.completeExceptionally(new Exception(requestName + " JSON result is malformed: " + object));
-            return;
-          }
-          finalResult.complete(result);
+      service.sendRequest("UnifiedAnalytics." + requestName, params, false, object -> {
+        JsonObject result = object.getAsJsonObject("result");
+        if (result == null) {
+          finalResult.completeExceptionally(new Exception(requestName + " JSON result is malformed: " + object));
+          return;
         }
+        finalResult.complete(result);
       });
     }
     catch (WebSocketException e) {

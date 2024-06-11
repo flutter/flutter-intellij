@@ -51,7 +51,7 @@ public class FlutterSampleNotificationProvider extends EditorNotifications.Provi
   public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file,
                                                          @NotNull FileEditor fileEditor,
                                                          @NotNull Project project) {
-    if (!(fileEditor instanceof TextEditor)) {
+    if (!(fileEditor instanceof TextEditor textEditor)) {
       return null;
     }
 
@@ -68,7 +68,6 @@ public class FlutterSampleNotificationProvider extends EditorNotifications.Provi
       return null;
     }
 
-    final TextEditor textEditor = (TextEditor)fileEditor;
     final Editor editor = textEditor.getEditor();
     final Document document = editor.getDocument();
 

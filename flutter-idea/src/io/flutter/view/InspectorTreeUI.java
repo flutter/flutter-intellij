@@ -97,7 +97,7 @@ public class InspectorTreeUI extends BasicTreeUI {
 
   @Override
   protected MouseListener createMouseListener() {
-    return new MouseEventAdapter<MouseListener>(super.createMouseListener()) {
+    return new MouseEventAdapter<>(super.createMouseListener()) {
       @Override
       public void mouseDragged(MouseEvent event) {
         final JTree tree = (JTree)event.getSource();
@@ -169,8 +169,7 @@ public class InspectorTreeUI extends BasicTreeUI {
         @Override
         public void actionPerformed(ActionEvent e) {
           final Object source = e.getSource();
-          if (source instanceof JTree) {
-            final JTree tree = (JTree)source;
+          if (source instanceof JTree tree) {
             final int selectionRow = tree.getLeadSelectionRow();
             if (selectionRow != -1) {
               final TreePath selectionPath = tree.getPathForRow(selectionRow);
@@ -209,8 +208,7 @@ public class InspectorTreeUI extends BasicTreeUI {
       @Override
       public void actionPerformed(final ActionEvent e) {
         final Object source = e.getSource();
-        if (source instanceof JTree) {
-          final JTree tree = (JTree)source;
+        if (source instanceof JTree tree) {
           final int selectionRow = tree.getLeadSelectionRow();
           if (selectionRow == -1) return;
 
@@ -266,8 +264,7 @@ public class InspectorTreeUI extends BasicTreeUI {
     }
     if (path.getPathCount() >= 2) {
       final Object treeNode = path.getPathComponent(path.getPathCount() - 2);
-      if (treeNode instanceof DefaultMutableTreeNode) {
-        final DefaultMutableTreeNode node = (DefaultMutableTreeNode)treeNode;
+      if (treeNode instanceof DefaultMutableTreeNode node) {
         if (node.getChildCount() < 2) {
           return;
         }

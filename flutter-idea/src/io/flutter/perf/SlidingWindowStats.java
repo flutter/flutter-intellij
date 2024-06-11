@@ -125,19 +125,13 @@ class SlidingWindowStats {
   }
 
   public int getValue(PerfMetric metric, int currentTime) {
-    switch (metric) {
-      case total:
-        return getTotal();
-      case pastSecond:
-        return getTotalWithinWindow(currentTime - 999);
-      case lastFrame:
-        return getPeakWithinWindow(currentTime);
-      case peakRecent:
-        return getPeakWithinWindow(currentTime - 499);
-      case totalSinceEnteringCurrentScreen:
-        return getTotalSinceNavigation();
-      default:
-        return 0;
-    }
+    return switch (metric) {
+      case total -> getTotal();
+      case pastSecond -> getTotalWithinWindow(currentTime - 999);
+      case lastFrame -> getPeakWithinWindow(currentTime);
+      case peakRecent -> getPeakWithinWindow(currentTime - 499);
+      case totalSinceEnteringCurrentScreen -> getTotalSinceNavigation();
+      default -> 0;
+    };
   }
 }

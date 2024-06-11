@@ -61,7 +61,7 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
       updateFields(next);
       render(next);
     });
-    scope.setRenderer(new ListCellRendererWrapper<Scope>() {
+    scope.setRenderer(new ListCellRendererWrapper<>() {
       @Override
       public void customize(final JList list,
                             final Scope value,

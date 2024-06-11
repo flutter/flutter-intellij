@@ -130,8 +130,7 @@ public class Vector2 implements Vector {
    */
   @Override()
   public boolean equals(Object other) {
-    if (!(other instanceof Vector2)) return false;
-    Vector2 otherV = (Vector2)other;
+    if (!(other instanceof Vector2 otherV)) return false;
     return (_v2storage[0] == otherV._v2storage[0]) &&
            (_v2storage[1] == otherV._v2storage[1]);
   }

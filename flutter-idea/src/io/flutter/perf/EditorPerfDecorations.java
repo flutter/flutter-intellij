@@ -487,10 +487,9 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof PerfGutterIconRenderer)) {
+    if (!(obj instanceof PerfGutterIconRenderer other)) {
       return false;
     }
-    final PerfGutterIconRenderer other = (PerfGutterIconRenderer)obj;
     return other.getCurrentValue() == getCurrentValue();
   }
 

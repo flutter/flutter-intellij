@@ -113,8 +113,7 @@ public abstract class CommonTestConfigUtils {
 
   @Nullable
   protected TestType findNamedTestCall(@NotNull PsiElement element) {
-    if (element instanceof DartCallExpression) {
-      final DartCallExpression call = (DartCallExpression)element;
+    if (element instanceof DartCallExpression call) {
       return getTestsFromOutline(element.getContainingFile()).get(call.getTextOffset());
     }
     return null;
@@ -145,8 +144,7 @@ public abstract class CommonTestConfigUtils {
   @Nullable
   private DartCallExpression findEnclosingTestCall(@NotNull PsiElement element, @NotNull Map<Integer, TestType> callToTestType) {
     while (element != null) {
-      if (element instanceof DartCallExpression) {
-        final DartCallExpression call = (DartCallExpression)element;
+      if (element instanceof DartCallExpression call) {
         if (callToTestType.containsKey(call.getTextOffset())) {
           return call;
         }

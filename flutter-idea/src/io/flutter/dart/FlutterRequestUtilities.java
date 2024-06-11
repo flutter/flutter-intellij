@@ -84,8 +84,7 @@ public class FlutterRequestUtilities {
     else if (object instanceof String) {
       return new JsonPrimitive((String)object);
     }
-    else if (object instanceof List<?>) {
-      final List<?> list = (List<?>)object;
+    else if (object instanceof List<?> list) {
       final JsonArray jsonArray = new JsonArray();
       for (Object item : list) {
         final JsonElement jsonItem = buildJsonElement(item);
@@ -93,8 +92,7 @@ public class FlutterRequestUtilities {
       }
       return jsonArray;
     }
-    else if (object instanceof Map<?, ?>) {
-      final Map<?, ?> map = (Map<?, ?>)object;
+    else if (object instanceof Map<?, ?> map) {
       final JsonObject jsonObject = new JsonObject();
       for (Map.Entry<?, ?> entry : map.entrySet()) {
         final Object key = entry.getKey();

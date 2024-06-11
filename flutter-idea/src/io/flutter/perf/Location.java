@@ -29,8 +29,7 @@ public class Location {
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof Location)) return false;
-    final Location other = (Location)obj;
+    if (!(obj instanceof Location other)) return false;
     return Objects.equal(line, other.line)
            && Objects.equal(column, other.column)
            && Objects.equal(path, other.path)

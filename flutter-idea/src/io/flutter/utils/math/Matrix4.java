@@ -657,10 +657,9 @@ public class Matrix4 {
    */
   @Override()
   public boolean equals(Object o) {
-    if (!(o instanceof Matrix4)) {
+    if (!(o instanceof Matrix4 other)) {
       return false;
     }
-    final Matrix4 other = (Matrix4)o;
     return (_m4storage[0] == other._m4storage[0]) &&
            (_m4storage[1] == other._m4storage[1]) &&
            (_m4storage[2] == other._m4storage[2]) &&
