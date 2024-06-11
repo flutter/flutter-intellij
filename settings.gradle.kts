@@ -14,6 +14,6 @@ pluginManagement {
 val ide: String by settings
 
 include("flutter-idea")
-if ("$ide" == "android-studio") {
+if (ide == "android-studio") {
   include("flutter-studio")
 }
