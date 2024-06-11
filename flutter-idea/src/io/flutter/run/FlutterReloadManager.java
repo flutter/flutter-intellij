@@ -166,6 +166,10 @@ public class FlutterReloadManager {
         }
         catch (Throwable t) {
           FlutterUtils.warn(LOG, "Exception from hot reload on save", t);
+        } finally {
+          // Context: "Released EditorImpl held by lambda in FlutterReloadManager" (https://github.com/flutter/flutter-intellij/issues/7507)
+          eventProject = null;
+          eventEditor = null;
         }
       }
     });

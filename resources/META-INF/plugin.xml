@@ -45,6 +45,10 @@
 
   <change-notes>
     <![CDATA[
+<h1>Next</h1>
+<ul>
+  <li>Resolve Released EditorImpl held by lambda in FlutterReloadManager (#7507)</li>
+</ul>
 <h1>80</h1>
 <ul>
   <li>Resolve debugger issue with the new Dart macro file uri format (#7449)</li>
