@@ -8,7 +8,7 @@ package io.flutter.vmService;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import io.flutter.NotificationManager;
+import io.flutter.FlutterMessages;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.StreamSubscription;
 import org.dartlang.vm.service.VmService;
@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 
 public class DisplayRefreshRateManager {
   private static final Logger LOG = Logger.getInstance(DisplayRefreshRateManager.class);
-  private static final String INVALID_DISPLAY_REFRESH_RATE = "INVALID_DISPLAY_REFRESH_RATE";
+  private static boolean notificationDisplayedAlready = false;
 
   public static final double defaultRefreshRate = 60.0;
 
@@ -127,12 +127,12 @@ public class DisplayRefreshRateManager {
             final double fps = object.get(fpsField).getAsDouble();
             // Defend against invalid refresh rate for Flutter Desktop devices (0.0).
             if (invalidFps(fps)) {
-              NotificationManager.showWarning(
-                "Flutter device frame rate invalid",
-                "Device returned a target frame rate of " + fps + " FPS." + " Using 60 FPS instead.",
-                INVALID_DISPLAY_REFRESH_RATE,
-                true
-              );
+              if (!notificationDisplayedAlready) {
+                FlutterMessages.showWarning("Flutter device frame rate invalid",
+                                            "Device returned a target frame rate of " + fps + " FPS." + " Using 60 FPS instead.",
+                                            null);
+                notificationDisplayedAlready = true;
+              }
               ret.complete(defaultRefreshRate);
             }
             else {
