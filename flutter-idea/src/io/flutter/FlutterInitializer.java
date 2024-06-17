@@ -154,19 +154,14 @@ public class FlutterInitializer implements StartupActivity {
         boolean isModule = false;
         try { // TODO(messick) Rewrite this loop to eliminate the need for this try-catch
           FlutterModuleBuilder.addAndroidModule(project, null, baseDir.getPath(), module.getName(), isModule);
-        } catch (IllegalStateException ignored) {
+        }
+        catch (IllegalStateException ignored) {
         }
       }
 
       // Ensure a run config is selected and ready to go.
       FlutterModuleUtils.ensureRunConfigSelected(project);
     }
-
-    // TODO(jwren) delete if not needed anymore:
-    //if (hasFlutterModule) {
-    //  // Check to see if we're on a supported version of Android Studio; warn otherwise.
-    //  performAndroidStudioCanaryCheck(project);
-    //}
 
     FlutterRunNotifications.init(project);
 
@@ -348,19 +343,5 @@ public class FlutterInitializer implements StartupActivity {
 
   public static void sendAnalyticsAction(@NotNull String name) {
     getAnalytics().sendEvent("intellij", name);
-  }
-
-  private static void performAndroidStudioCanaryCheck(Project project) {
-    if (!FlutterUtils.isAndroidStudio()) {
-      return;
-    }
-
-    final ApplicationInfo info = ApplicationInfo.getInstance();
-    if (info.getFullVersion().contains("Canary") && !info.getBuild().isSnapshot()) {
-      FlutterMessages.showWarning(
-        "Unsupported Android Studio version",
-        "Canary versions of Android Studio are not supported by the Flutter plugin.",
-        project);
-    }
   }
 }
