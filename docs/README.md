@@ -1,4 +1,4 @@
-Welcome to the `flutter-intellij` wiki!
+Welcome to the `flutter-intellij` docs!
 
 This wiki is intended largely for development and process documentation.  
 
