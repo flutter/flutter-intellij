@@ -41,7 +41,7 @@ public interface Logger {
     }
   }
 
-  static final Logger NULL = new NullLogger();
+  Logger NULL = new NullLogger();
 
   /**
    * Log the given message as an error.

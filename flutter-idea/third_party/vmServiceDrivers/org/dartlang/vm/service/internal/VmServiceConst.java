@@ -17,44 +17,44 @@ package org.dartlang.vm.service.internal;
  * JSON constants used when communicating with the VM observatory service.
  */
 public interface VmServiceConst {
-  static final String CODE = "code";
-  static final String ERROR = "error";
-  static final String EVENT = "event";
-  static final String ID = "id";
-  static final String MESSAGE = "message";
-  static final String METHOD = "method";
-  static final String PARAMS = "params";
-  static final String RESULT = "result";
-  static final String STREAM_ID = "streamId";
-  static final String TYPE = "type";
-  static final String JSONRPC = "jsonrpc";
-  static final String JSONRPC_VERSION = "2.0";
-  static final String DATA = "data";
+  String CODE = "code";
+  String ERROR = "error";
+  String EVENT = "event";
+  String ID = "id";
+  String MESSAGE = "message";
+  String METHOD = "method";
+  String PARAMS = "params";
+  String RESULT = "result";
+  String STREAM_ID = "streamId";
+  String TYPE = "type";
+  String JSONRPC = "jsonrpc";
+  String JSONRPC_VERSION = "2.0";
+  String DATA = "data";
 
   /**
    * Parse error	Invalid JSON was received by the server.
    * An error occurred on the server while parsing the JSON text.
    */
-  static final int PARSE_ERROR = -32700;
+  int PARSE_ERROR = -32700;
 
   /**
    * Invalid Request	The JSON sent is not a valid Request object.
    */
-  static final int INVALID_REQUEST = -32600;
+  int INVALID_REQUEST = -32600;
 
   /**
    * Method not found	The method does not exist / is not available.
    */
-  static final int METHOD_NOT_FOUND = -32601;
+  int METHOD_NOT_FOUND = -32601;
 
   /**
    * Invalid params	Invalid method parameter(s).
    */
-  static final int INVALID_PARAMS = -32602;
+  int INVALID_PARAMS = -32602;
 
   /**
    * Server error	Reserved for implementation-defined server-errors.
    * -32000 to -32099
    */
-  static final int SERVER_ERROR = -32000;
+  int SERVER_ERROR = -32000;
 }
