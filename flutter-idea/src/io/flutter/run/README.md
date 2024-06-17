@@ -3,7 +3,7 @@
 ## `io.flutter.run`
 
 * `LaunchState` - launches a Flutter app in "machine" mode so that it
-  [sends and receives JSON messages](https://github.com/flutter/flutter/wiki/The-flutter-daemon-mode).
+  sends and receives JSON messages.
 
 * `LaunchState.Runner` - abstract class for a way of running a Flutter app (either using a Flutter SDK or Bazel).
 

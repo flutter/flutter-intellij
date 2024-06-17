@@ -16,10 +16,6 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * <p>A message received from a Flutter process that's not in response to a particular request.
- *
- * <p>The protocol is specified in
- * <a href="https://github.com/flutter/flutter/wiki/The-flutter-daemon-mode"
- * >The Flutter Daemon Mode</a>.
  */
 abstract class DaemonEvent {
   /**
