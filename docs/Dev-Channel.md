@@ -2,7 +2,7 @@ We have an early-access version of the plugin, called the dev channel. This vers
 
 NOTE: If you already have the Flutter plugin installed, please uninstall it before proceeding. Once you have the plugin installed from one channel it will not be available on other channels.
 
-Open the Plugins preference page (Mac) or settings page (Windows, Linux). Click the gear at the top-right and select _Manage Plugin Repositories_.
+Open the Plugins preference page (macOS) or settings page (Windows, Linux). Click the gear at the top-right and select _Manage Plugin Repositories_.
 
 
 ![Screen shot of repositories page](https://lh4.googleusercontent.com/zo9vANXp01YXJC_tQGuiLJxgbdtRFWV-VXViIx_MnqCphGi8PhhQbNTa7H-8ogl0AxIpU7enEQpAs3FZ8lSd0eUw4FpSkxXRkDoQj9uCpvs93D4pTdIrjyK0--q9xBPXTQ0MN7PB)

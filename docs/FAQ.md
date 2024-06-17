@@ -7,6 +7,5 @@ The Flutter plugin for IntelliJ depends on a Flutter SDK to be configured in the
 ### How do I build the plugin?
 
 For details about developing with IntelliJ, see our
-[contributing](https://github.com/flutter/flutter-intellij/blob/master/CONTRIBUTING.md
-)
+[contributing](../CONTRIBUTING.md)
 instructions.
