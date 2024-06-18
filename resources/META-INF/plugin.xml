@@ -49,6 +49,7 @@
 <ul>
   <li>Resolve Released EditorImpl held by lambda in FlutterReloadManager (#7507)</li>
   <li>Configure the Project view for Flutter in AS, when creating a new Flutter project (#4470)</li>
+  <li>Migrate to Kotlin UI DSL Version 2 (#7310)</li>
 </ul>
 <h1>80</h1>
 <ul>
