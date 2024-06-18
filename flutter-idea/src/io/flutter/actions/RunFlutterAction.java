@@ -123,7 +123,6 @@ public abstract class RunFlutterAction extends AnAction {
   private static boolean shouldEnable(@Nullable AnActionEvent e) {
     final RunnerAndConfigurationSettings settings = getRunConfigSettings(e);
     final RunConfiguration config = settings == null ? null : settings.getConfiguration();
-    // TODO(pq): add support for Bazel.
     return config instanceof SdkRunConfig && LaunchState.getRunningAppProcess((SdkRunConfig)config) == null;
   }
 
