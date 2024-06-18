@@ -104,9 +104,9 @@ dependencies {
     testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/ideaIC/plugins/git4idea/lib",
                          "include" to listOf("*.jar"))))
   }
-  compileOnly("com.google.guava:guava:31.1-jre")
+  compileOnly("com.google.guava:guava:32.0.0-android")
   compileOnly("com.google.code.gson:gson:2.10.1")
-  testImplementation("com.google.guava:guava:31.1-jre")
+  testImplementation("com.google.guava:guava:32.0.0-jre")
   testImplementation("com.google.code.gson:gson:2.10.1")
   compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/third_party/lib/jxbrowser",
                        "include" to listOf("*.jar"))))

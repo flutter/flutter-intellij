@@ -53,9 +53,9 @@ intellij {
   // If 2023.3+ and IDEA (not AS), then "org.jetbrains.android:$androidVersion", otherwise "org.jetbrains.android",
   // see https://github.com/flutter/flutter-intellij/issues/7145
   if(ide == "android-studio") {
-    pluginList.add("org.jetbrains.android");
+    pluginList.add("org.jetbrains.android")
   } else if (ide == "ideaIC") {
-    pluginList.add("org.jetbrains.android:$androidVersion");
+    pluginList.add("org.jetbrains.android:$androidVersion")
   }
 
   if (ideVersion != "2023.2") {
@@ -116,6 +116,6 @@ tasks {
   verifyPlugin {
     // verifyPlugin fails when no descriptor is provided, however with the way we create the final product,
     // there is no descriptor in the studio plugin.xml
-    ignoreFailures.set(true);
+    ignoreFailures.set(true)
   }
 }
