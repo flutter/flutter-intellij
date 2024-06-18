@@ -110,13 +110,14 @@ public class FlutterUtils {
     return isDartFile(file) || PubRoot.isPubspec(file);
   }
 
-  public static boolean couldContainWidgets(@Nullable VirtualFile file) {
-    // Skip temp file used to show things like files downloaded from the VM.
-    if (file instanceof LightVirtualFile) {
-      return false;
-    }
-    // TODO(jacobr): we might also want to filter for files not under the current project root.
-    return file != null && isDartFile(file);
+  public static boolean couldContainWidgets(@Nullable Project project, @Nullable VirtualFile file) {
+    // Skip nulls, temp file used to show things like files downloaded from the VM, non-local files
+    return file != null &&
+           project != null &&
+           !(file instanceof LightVirtualFile) &&
+           isDartFile(file) &&
+           file.isInLocalFileSystem() &&
+           ProjectFileIndex.getInstance(project).isInProject(file);
   }
 
   public static boolean isDartFile(@NotNull VirtualFile file) {
@@ -468,16 +469,17 @@ public class FlutterUtils {
   }
 
   private static Map<String, Object> loadPubspecInfo(@NotNull String yamlContents) {
-    final Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()), new Representer(new DumperOptions()), new DumperOptions(), new Resolver() {
-      @Override
-      protected void addImplicitResolvers() {
-        this.addImplicitResolver(Tag.BOOL, BOOL, "yYnNtTfFoO");
-        this.addImplicitResolver(Tag.NULL, NULL, "~nN\u0000");
-        this.addImplicitResolver(Tag.NULL, EMPTY, null);
-        this.addImplicitResolver(new Tag("tag:yaml.org,2002:value"), VALUE, "=");
-        this.addImplicitResolver(Tag.MERGE, MERGE, "<");
-      }
-    });
+    final Yaml yaml =
+      new Yaml(new SafeConstructor(new LoaderOptions()), new Representer(new DumperOptions()), new DumperOptions(), new Resolver() {
+        @Override
+        protected void addImplicitResolvers() {
+          this.addImplicitResolver(Tag.BOOL, BOOL, "yYnNtTfFoO");
+          this.addImplicitResolver(Tag.NULL, NULL, "~nN\u0000");
+          this.addImplicitResolver(Tag.NULL, EMPTY, null);
+          this.addImplicitResolver(new Tag("tag:yaml.org,2002:value"), VALUE, "=");
+          this.addImplicitResolver(Tag.MERGE, MERGE, "<");
+        }
+      });
 
     try {
       return yaml.load(yamlContents);
@@ -633,7 +635,9 @@ public class FlutterUtils {
       return null;
     }
 
-    return FlutterSettings.getInstance().isEnableJcefBrowser() ? EmbeddedJcefBrowser.getInstance(project) : EmbeddedJxBrowser.getInstance(project);
+    return FlutterSettings.getInstance().isEnableJcefBrowser()
+           ? EmbeddedJcefBrowser.getInstance(project)
+           : EmbeddedJxBrowser.getInstance(project);
   }
 
   public static boolean embeddedBrowserAvailable(JxBrowserStatus status) {
