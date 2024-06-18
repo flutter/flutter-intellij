@@ -235,7 +235,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     if (!(e instanceof EditorEx editor)) return highlightingPass;
 
     final VirtualFile virtualFile = editor.getVirtualFile();
-    if (!FlutterUtils.couldContainWidgets(virtualFile)) {
+    if (!FlutterUtils.couldContainWidgets(project, virtualFile)) {
       return highlightingPass;
     }
     final FlutterOutline outline = getEditorOutlineService().getOutline(virtualFile.getCanonicalPath());
@@ -261,7 +261,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       return;
     }
     final VirtualFile file = editor.getVirtualFile();
-    if (!FlutterUtils.couldContainWidgets(file)) {
+    if (!FlutterUtils.couldContainWidgets(project, file)) {
       return;
     }
     // If the editor and the outline have different lengths then

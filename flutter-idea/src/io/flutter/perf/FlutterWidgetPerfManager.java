@@ -111,7 +111,7 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
     for (FileEditor editor : editors) {
       if (editor instanceof TextEditor) {
         final VirtualFile file = editor.getFile();
-        if (FlutterUtils.couldContainWidgets(file)) {
+        if (FlutterUtils.couldContainWidgets(project, file)) {
           newEditors.add((TextEditor)editor);
         }
       }
