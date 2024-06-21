@@ -53,6 +53,7 @@ public abstract class EmbeddedBrowser {
   protected final Map<@NotNull String, Map<@NotNull String, @NotNull BrowserTab>> windows = new HashMap<>();
 
   public abstract Logger logger();
+
   private final Analytics analytics;
 
   private DevToolsUrl url;
@@ -62,14 +63,15 @@ public abstract class EmbeddedBrowser {
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
       @Override
       public void projectClosing(@NotNull Project project) {
-        for (final String window: windows.keySet()) {
+        for (final String window : windows.keySet()) {
           final Map<String, BrowserTab> tabs = windows.get(window);
-          for (final String tabName: tabs.keySet()) {
+          for (final String tabName : tabs.keySet()) {
             final BrowserTab tab = tabs.get(tabName);
             if (tab.embeddedTab != null) {
               try {
                 tab.embeddedTab.close();
-              } catch (Exception ex) {
+              }
+              catch (Exception ex) {
                 logger().info(ex);
               }
             }
@@ -89,7 +91,8 @@ public abstract class EmbeddedBrowser {
     if (firstTab == null) {
       try {
         tabs.put(tabName, openBrowserTabFor(tabName, toolWindow));
-      } catch (Exception ex) {
+      }
+      catch (Exception ex) {
         analytics.sendEvent(ANALYTICS_CATEGORY, "openBrowserTabFailed-" + this.getClass());
         onBrowserUnavailable.accept(ex.getMessage());
         return;
@@ -109,7 +112,8 @@ public abstract class EmbeddedBrowser {
     try {
       final String url = devToolsUrl.getUrlString();
       tab.embeddedTab.loadUrl(url);
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       tab.devToolsUrlFuture.completeExceptionally(ex);
       onBrowserUnavailable.accept(ex.getMessage());
       logger().info(ex);
@@ -127,7 +131,7 @@ public abstract class EmbeddedBrowser {
 
       tab.contentManager.removeAllContents(false);
 
-      for (final String otherTabName: tabs.keySet()) {
+      for (final String otherTabName : tabs.keySet()) {
         if (otherTabName.equals(tabName)) {
           continue;
         }
@@ -149,7 +153,8 @@ public abstract class EmbeddedBrowser {
     verifyEventDispatchThread();
     if (url == null) {
       showMessage("The URL is invalid.", contentManager);
-    } else {
+    }
+    else {
       BrowserLauncher.getInstance().browse(
         url.getUrlString(),
         null
@@ -160,7 +165,7 @@ public abstract class EmbeddedBrowser {
   }
 
   protected void verifyEventDispatchThread() {
-    assert(SwingUtilities.isEventDispatchThread());
+    assert (SwingUtilities.isEventDispatchThread());
   }
 
   protected void showMessageWithUrlLink(@NotNull String message, ContentManager contentManager) {
@@ -192,7 +197,8 @@ public abstract class EmbeddedBrowser {
         descriptionLabel.setBorder(JBUI.Borders.empty(5));
         descriptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(descriptionLabel, BorderLayout.NORTH);
-      } else {
+      }
+      else {
         final LinkLabel<String> linkLabel = new LinkLabel<>("<html>" + input.text + "</html>", null);
         linkLabel.setBorder(JBUI.Borders.empty(5));
         linkLabel.setListener(input.listener, null);
@@ -250,6 +256,16 @@ public abstract class EmbeddedBrowser {
         return null;
       }
       devToolsUrl.fontSize = newFontSize;
+      return devToolsUrl;
+    });
+  }
+
+  public void updateVmServiceUri(@NotNull String newVmServiceUri) {
+    updateUrlAndReload(devToolsUrl -> {
+      if (newVmServiceUri.equals(devToolsUrl.vmServiceUri)) {
+        return null;
+      }
+      devToolsUrl.vmServiceUri = newVmServiceUri;
       return devToolsUrl;
     });
   }

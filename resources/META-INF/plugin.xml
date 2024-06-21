@@ -640,6 +640,7 @@
     <projectService serviceImplementation="io.flutter.performance.FlutterPerformanceView" overrides="false"/>
 
     <toolWindow id="Flutter Deep Links" anchor="right" icon="FlutterIcons.Flutter_13" factoryClass="io.flutter.deeplinks.DeepLinksViewFactory" />
+    <toolWindow id="Flutter DevTools" anchor="right" icon="FlutterIcons.Flutter_13" factoryClass="io.flutter.devtools.RemainingDevToolsViewFactory" />
 
     <projectOpenProcessor id="flutter" implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
 
