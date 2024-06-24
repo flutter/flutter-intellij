@@ -42,7 +42,7 @@ public class DevToolsExtensionsViewFactory implements ToolWindowFactory {
     final ContentManager contentManager = window.getContentManager();
     FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
-    RemainingDevToolsViewService service = project.getService(RemainingDevToolsViewService.class);
+    DevToolsExtensionsViewService service = project.getService(DevToolsExtensionsViewService.class);
 
     AsyncUtils.whenCompleteUiThread(
       DevToolsService.getInstance(project).getDevToolsInstance(),

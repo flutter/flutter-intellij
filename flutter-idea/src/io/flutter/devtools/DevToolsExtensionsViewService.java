@@ -11,20 +11,8 @@ import io.flutter.view.EmbeddedBrowser;
 import org.jetbrains.annotations.NotNull;
 
 @Service(Service.Level.PROJECT)
-public final class DevToolsExtensionsViewService {
-  private final Project myProject;
-  private EmbeddedBrowser embeddedBrowser;
-
-  DevToolsExtensionsViewService(Project project) {
-    this.myProject = project;
-  }
-
-  public void setEmbeddedBrowser(EmbeddedBrowser embeddedBrowser) {
-    this.embeddedBrowser = embeddedBrowser;
-  }
-
-  public void updateVmServiceUri(@NotNull String vmServiceUri) {
-    if (this.embeddedBrowser == null) return;
-    this.embeddedBrowser.updateVmServiceUri(vmServiceUri);
+public final class DevToolsExtensionsViewService extends DevToolsViewService {
+  DevToolsExtensionsViewService(@NotNull Project project) {
+    super(project);
   }
 }
