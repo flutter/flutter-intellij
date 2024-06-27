@@ -153,7 +153,7 @@ public class PubRoot {
    */
   @Nullable
   public static PubRoot forDirectoryWithRefresh(@NotNull VirtualFile dir) {
-    // Ensure file existence and timestamps are up to date.
+    // Ensure file existence and timestamps are up-to-date.
     dir.refresh(false, false);
 
     return forDirectory(dir);
@@ -342,11 +342,10 @@ public class PubRoot {
     if (main != null) {
       return main;
     }
-
     final VirtualFile lib = getLib();
     if (lib != null) {
       final VirtualFile[] files = lib.getChildren();
-      if (files.length != 0) {
+      if (files != null && files.length != 0) {
         return files[0];
       }
     }
@@ -365,6 +364,7 @@ public class PubRoot {
   /**
    * Returns example/lib/main.dart if it exists.
    */
+  @Nullable
   public VirtualFile getExampleLibMain() {
     final VirtualFile exampleDir = root.findChild("example");
     if (exampleDir != null) {

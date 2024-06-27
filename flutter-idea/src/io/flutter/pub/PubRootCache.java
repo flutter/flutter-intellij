@@ -90,7 +90,7 @@ public class PubRootCache {
   }
 
   @Nullable
-  private VirtualFile findPubspecDir(VirtualFile file) {
+  private VirtualFile findPubspecDir(@Nullable VirtualFile file) {
     if (file == null) {
       return null;
     }
