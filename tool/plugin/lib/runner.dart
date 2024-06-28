@@ -41,9 +41,9 @@ jxbrowser.license.key=$jxBrowserKey
     }
   }
 
-  Future<int> buildPlugin(BuildSpec spec, String version) async {
+  Future<int> buildPlugin(BuildSpec spec, String version) {
     writeJxBrowserKeyToFile();
-    return await runGradleCommand(['buildPlugin', '--stacktrace'], spec, version, 'false');
+    return runGradleCommand(['buildPlugin', '--stacktrace'], spec, version, 'false');
   }
 
   Future<int> runGradleCommand(

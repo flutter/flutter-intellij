@@ -22,7 +22,7 @@ Future<int> exec(String cmd, List<String> args, {String? cwd}) async {
   _toLineStream(process.stderr).listen(log);
   _toLineStream(process.stdout).listen(log);
 
-  return await process.exitCode;
+  return process.exitCode;
 }
 
 Future<String> makeDevLog(BuildSpec spec) async {
@@ -99,13 +99,13 @@ void createDir(String name) {
   }
 }
 
-Future<int> curl(String url, {required String to}) async {
-  return await exec('curl', ['-o', to, url]);
+Future<int> curl(String url, {required String to}) {
+  return exec('curl', ['-o', to, url]);
 }
 
 /// Remove the directory without exceptions if it does not exists.
-Future<void> removeAll(String dir) async {
-  await Directory(dir).delete(recursive: true).then((_) {}, onError: (_) {});
+Future<void> removeAll(String dir) {
+  return Directory(dir).delete(recursive: true).then((_) {}, onError: (_) {});
 }
 
 bool isNewer(FileSystemEntity newer, FileSystemEntity older) {
