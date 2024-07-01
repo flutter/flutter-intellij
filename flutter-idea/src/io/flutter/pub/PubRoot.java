@@ -24,6 +24,7 @@ import io.flutter.FlutterUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -281,7 +282,6 @@ public class PubRoot {
     if (packages != null && !packages.isDirectory()) {
       return packages;
     }
-
     return null;
   }
 
@@ -300,19 +300,27 @@ public class PubRoot {
   }
 
   /**
-   * Returns true if the packages are up to date wrt pubspec.yaml.
+   * Returns true if the packages are up-to-date with regard to the `pubspec.yaml`. The `.packages` file is used if no
+   * `.tool/package_config.json` is found.  The default value returned is to return false.
    */
   public boolean hasUpToDatePackages() {
+    // See context at these URLs for the reason we can't use VirtualFile#getTimeStamp()
+    // https://github.com/flutter/flutter-intellij/issues/7538
+    // https://intellij-support.jetbrains.com/hc/en-us/community/posts/8009750602514-VirtualFile-is-not-refreshed
+
     final VirtualFile configFile = getPackageConfigFile();
     if (configFile != null) {
-      return pubspec.getTimeStamp() < configFile.getTimeStamp();
+      long pubspecLastModified = new File(pubspec.getPath()).lastModified();
+      long configLastModified = new File(configFile.getPath()).lastModified();
+      return pubspecLastModified < configLastModified;
     }
     final VirtualFile packagesFile = getPackagesFile();
-    if (packagesFile == null) {
-      return false;
+    if (packagesFile != null) {
+      long pubspecLastModified = new File(pubspec.getPath()).lastModified();
+      long packagesLastModified = new File(packagesFile.getPath()).lastModified();
+      return pubspecLastModified < packagesLastModified;
     }
-
-    return pubspec.getTimeStamp() < packagesFile.getTimeStamp();
+    return false;
   }
 
   @Nullable

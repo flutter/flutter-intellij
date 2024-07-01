@@ -87,7 +87,7 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
   }
 
   private interface SdkAction {
-    void run(FlutterSdk sdk, @NotNull PubRoot root, @NotNull Project project);
+    Process run(FlutterSdk sdk, @NotNull PubRoot root, @NotNull Project project);
   }
 
   private static class PackageUpdateFix extends IntentionAndQuickFixAction {
@@ -126,6 +126,8 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
 
       // TODO(skybrian) analytics?
       mySdkAction.run(sdk, root, project);
+
+      DaemonCodeAnalyzer.getInstance(project).restart(psiFile);
     }
   }
 
@@ -158,7 +160,7 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
     @Override
     public void applyFix(@NotNull final Project project, @NotNull final PsiFile psiFile, @Nullable final Editor editor) {
       myIgnoredPubspecPaths.add(myPubspecPath);
-      DaemonCodeAnalyzer.getInstance(project).restart();
+      DaemonCodeAnalyzer.getInstance(project).restart(psiFile);
     }
   }
 }
