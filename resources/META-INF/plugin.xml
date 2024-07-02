@@ -48,6 +48,7 @@
 <h1>Next</h1>
 <ul>
   <li>Resolve &quot;Exception: Cannot invoke &quot;org..AnAction.getTemplatePresentation()&quot; exception (#7488)</li>
+  <li>Resolve &quot;Pubspec has been edited&quot; editor notification is stuck (#7538)</li>
   <li>Resolve Released EditorImpl held by lambda in FlutterReloadManager (#7507)</li>
   <li>Configure the Project view for Flutter in AS, when creating a new Flutter project (#4470)</li>
   <li>Migrate to Kotlin UI DSL Version 2 (#7310)</li>

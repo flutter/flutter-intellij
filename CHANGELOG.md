@@ -1,5 +1,6 @@
 # Next
 - Resolve "Exception: Cannot invoke "org..AnAction.getTemplatePresentation()" exception (#7488)
+- Resolve "Pubspec has been edited" editor notification is stuck (#7538)
 - Resolve Released EditorImpl held by lambda in FlutterReloadManager (#7507)
 - Configure the Project view for Flutter in AS, when creating a new Flutter project (#4470)
 - Migrate to Kotlin UI DSL Version 2 (#7310)
