@@ -147,13 +147,13 @@ bool isTravisFileValid() {
   return isNewer(travisFile, matrixFile);
 }
 
-Future<int> jar(String directory, String outFile) async {
+Future<int> jar(String directory, String outFile) {
   var args = ['cf', p.absolute(outFile)];
   args.addAll(Directory(directory)
       .listSync(followLinks: false)
       .map((f) => p.basename(f.path)));
   args.remove('.DS_Store');
-  return await exec('jar', args, cwd: directory);
+  return exec('jar', args, cwd: directory);
 }
 
 Future<bool> performReleaseChecks(ProductCommand cmd) async {
@@ -347,11 +347,11 @@ class GradleBuildCommand extends BuildCommand {
     return 0;
   }
 
-  Future<int> _stopDaemon() async {
+  Future<int> _stopDaemon() {
     if (Platform.isWindows) {
-      return await exec('.\\third_party\\gradlew.bat', ['--stop']);
+      return exec('.\\third_party\\gradlew.bat', ['--stop']);
     } else {
-      return await exec('./third_party/gradlew', ['--stop']);
+      return exec('./third_party/gradlew', ['--stop']);
     }
   }
 }
@@ -437,8 +437,8 @@ abstract class BuildCommand extends ProductCommand {
 
       log('spec.version: ${spec.version}');
 
-      result = await applyEdits(spec, () async {
-        return await externalBuildCommand(spec);
+      result = await applyEdits(spec, () {
+        return externalBuildCommand(spec);
       });
       if (result != 0) {
         log('applyEdits() returned ${result.toString()}');
@@ -903,18 +903,18 @@ class TestCommand extends ProductCommand {
     final spec = specs.firstWhere((s) => s.isUnitTestTarget);
     if (!argResults!['skip']) {
       if (argResults!['integration']) {
-        return await _runIntegrationTests();
+        return _runIntegrationTests();
       } else {
-        return await _runUnitTests(spec);
+        return _runUnitTests(spec);
       }
     }
     return 0;
   }
 
-  Future<int> _runUnitTests(BuildSpec spec) async {
+  Future<int> _runUnitTests(BuildSpec spec) {
     // run './gradlew test'
-    return await applyEdits(spec, () async {
-      return await runner.runGradleCommand(['test'], spec, '1', 'true');
+    return applyEdits(spec, () {
+      return runner.runGradleCommand(['test'], spec, '1', 'true');
     });
   }
 
