@@ -74,10 +74,10 @@ public class RemainingDevToolsViewFactory implements ToolWindowFactory {
           Optional.ofNullable(
               FlutterUtils.embeddedBrowser(project))
             .ifPresent(embeddedBrowser -> {
-              service.setEmbeddedBrowser(embeddedBrowser);
               embeddedBrowser.openPanel(window, "Flutter DevTools", devToolsUrl, (String err) -> {
                 System.out.println(err);
               });
+              service.setEmbeddedBrowser(embeddedBrowser);
             });
         });
       }

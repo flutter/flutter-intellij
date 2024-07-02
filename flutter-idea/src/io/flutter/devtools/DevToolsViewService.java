@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 public abstract class DevToolsViewService {
   private final Project myProject;
   private EmbeddedBrowser embeddedBrowser;
+  private String vmServiceUri;
 
   DevToolsViewService(Project project) {
     this.myProject = project;
@@ -22,10 +23,18 @@ public abstract class DevToolsViewService {
 
   public void setEmbeddedBrowser(EmbeddedBrowser embeddedBrowser) {
     this.embeddedBrowser = embeddedBrowser;
+    if (this.vmServiceUri != null) {
+      updateVmServiceUri(this.vmServiceUri);
+      this.vmServiceUri = null;
+    }
   }
 
   public void updateVmServiceUri(@NotNull String vmServiceUri) {
-    if (this.embeddedBrowser == null) return;
+    if (this.embeddedBrowser == null) {
+      // Store the VM service URI for later
+      this.vmServiceUri = vmServiceUri;
+      return;
+    }
     this.embeddedBrowser.updateVmServiceUri(vmServiceUri);
   }
 }
