@@ -49,14 +49,16 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     return createPanelForFile(file, findRootDir(file, project.getBaseDir()));
   }
 
-  private EditorNotificationPanel createPanelForFile(VirtualFile file, VirtualFile root) {
+  @Nullable
+  private EditorNotificationPanel createPanelForFile(@NotNull VirtualFile file, @Nullable VirtualFile root) {
     if (root == null) {
       return null;
     }
     return createPanelForAction(file, root, getActionName(root));
   }
 
-  private EditorNotificationPanel createPanelForAction(VirtualFile file, VirtualFile root, String actionName) {
+  @Nullable
+  private EditorNotificationPanel createPanelForAction(@NotNull VirtualFile file, @NotNull VirtualFile root, @Nullable String actionName) {
     if (actionName == null) {
       return null;
     }
@@ -64,15 +66,18 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     return panel.isValidForFile() ? panel : null;
   }
 
-  private static String getActionName(VirtualFile root) {
+  @Nullable
+  private static String getActionName(@Nullable VirtualFile root) {
     if (root == null) {
       return null;
     }
 
-    if (root.getName().equals("android")) {
-      return "flutter.androidstudio.open";
-    }
-    else if (root.getName().equals("ios")) {
+    // See https://github.com/flutter/flutter-intellij/issues/7103
+    //if (root.getName().equals("android")) {
+    //  return "flutter.androidstudio.open";
+    //}
+    //else
+    if (root.getName().equals("ios")) {
       return "flutter.xcode.open";
     }
     else if (root.getName().equals("macos")) {
