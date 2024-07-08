@@ -133,19 +133,19 @@ public class ActiveEditorsOutlineService implements Disposable {
       }
 
       for (final String path : obsoletePaths) {
-        final FlutterOutlineListener listener = outlineListeners.remove(path);
+        final String filePathOrUri = getAnalysisServer().getAnalysisService().getLocalFileUri(path);
+        final FlutterOutlineListener listener = outlineListeners.remove(filePathOrUri);
         if (listener != null) {
-          getAnalysisServer().removeOutlineListener(path, listener);
+          getAnalysisServer().removeOutlineListener(FileUtil.toSystemDependentName(path), listener);
         }
       }
 
       // Register new outline listeners.
       for (final String path : newPaths) {
-        if (outlineListeners.containsKey(path)) {
+        final String filePathOrUri = getAnalysisServer().getAnalysisService().getLocalFileUri(path);
+        if (outlineListeners.containsKey(filePathOrUri)) {
           continue;
         }
-
-        final String filePathOrUri = getAnalysisServer().getAnalysisService().getLocalFileUri(path);
         final FlutterOutlineListener listener = new OutlineListener(filePathOrUri);
         outlineListeners.put(filePathOrUri, listener);
         getAnalysisServer().addOutlineListener(FileUtil.toSystemDependentName(path), listener);
@@ -189,7 +189,11 @@ public class ActiveEditorsOutlineService implements Disposable {
    */
   @Nullable
   public FlutterOutline getOutline(@Nullable String path) {
-    return pathToOutline.get(path);
+    if(path != null) {
+      final String filePathOrUri = path.contains("://") ? path : getAnalysisServer().getAnalysisService().getLocalFileUri(path);
+      return pathToOutline.get(filePathOrUri);
+    }
+    return null;
   }
 
   /**

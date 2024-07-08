@@ -269,7 +269,7 @@ public abstract class CommonTestConfigUtils {
 
       ApplicationManager.getApplication().invokeLater(
         () -> DaemonCodeAnalyzer.getInstance(project).restart(),
-        ModalityState.NON_MODAL,
+        ModalityState.defaultModalityState(),
         project.getDisposed()
       );
     }

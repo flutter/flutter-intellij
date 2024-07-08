@@ -47,6 +47,8 @@
     <![CDATA[
 <h1>Next</h1>
 <ul>
+  <li>Restore Flutter test icons in the editor gutter (#7505)</li>
+  <li>Fix widget tree highlighting in the editor (#7522)</li>
   <li>Resolve &quot;Exception: Cannot invoke &quot;org..AnAction.getTemplatePresentation()&quot; exception (#7488)</li>
   <li>Resolve &quot;Pubspec has been edited&quot; editor notification is stuck (#7538)</li>
   <li>Resolve Released EditorImpl held by lambda in FlutterReloadManager (#7507)</li>
