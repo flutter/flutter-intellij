@@ -32,6 +32,8 @@ import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.analytics.UnifiedAnalytics;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.devtools.DevToolsExtensionsViewFactory;
+import io.flutter.devtools.DevToolsExtensionsViewService;
 import io.flutter.devtools.RemainingDevToolsViewFactory;
 import io.flutter.editor.FlutterSaveActionsManager;
 import io.flutter.logging.FlutterConsoleLogManager;
@@ -263,6 +265,7 @@ public class FlutterInitializer implements StartupActivity {
     FlutterPerformanceViewFactory.init(project);
     PreviewViewFactory.init(project);
     RemainingDevToolsViewFactory.init(project);
+    DevToolsExtensionsViewFactory.init(project);
     toolWindowsInitialized = true;
   }
 

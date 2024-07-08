@@ -643,6 +643,7 @@
 
     <toolWindow id="Flutter Deep Links" anchor="right" icon="FlutterIcons.Flutter_13" factoryClass="io.flutter.deeplinks.DeepLinksViewFactory" />
     <toolWindow id="Flutter DevTools" anchor="right" icon="FlutterIcons.Flutter_13" factoryClass="io.flutter.devtools.RemainingDevToolsViewFactory" />
+    <toolWindow id="Flutter Extensions" anchor="right" icon="FlutterIcons.Flutter_13" factoryClass="io.flutter.devtools.DevToolsExtensionsViewFactory" />
 
     <projectOpenProcessor id="flutter" implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
 

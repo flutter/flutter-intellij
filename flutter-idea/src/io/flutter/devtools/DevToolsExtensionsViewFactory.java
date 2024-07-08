@@ -23,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public class RemainingDevToolsViewFactory implements ToolWindowFactory {
+public class DevToolsExtensionsViewFactory implements ToolWindowFactory {
   public static void init(Project project) {
     project.getMessageBus().connect().subscribe(
       FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (FlutterViewMessages.FlutterDebugNotifier)event -> initView(project, event)
@@ -31,19 +31,18 @@ public class RemainingDevToolsViewFactory implements ToolWindowFactory {
   }
 
   private static void initView(Project project, FlutterViewMessages.FlutterDebugEvent event) {
-    RemainingDevToolsViewService service = project.getService(RemainingDevToolsViewService.class);
+    DevToolsExtensionsViewService service = project.getService(DevToolsExtensionsViewService.class);
     String vmServiceUri = event.app.getConnector().getBrowserUrl();
     if (vmServiceUri == null) return;
     service.updateVmServiceUri(vmServiceUri);
   }
-
 
   @Override
   public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow window) {
     final ContentManager contentManager = window.getContentManager();
     FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
-    RemainingDevToolsViewService service = project.getService(RemainingDevToolsViewService.class);
+    DevToolsExtensionsViewService service = project.getService(DevToolsExtensionsViewService.class);
 
     AsyncUtils.whenCompleteUiThread(
       DevToolsService.getInstance(project).getDevToolsInstance(),
@@ -64,7 +63,7 @@ public class RemainingDevToolsViewFactory implements ToolWindowFactory {
         final DevToolsUrl devToolsUrl = new DevToolsUrl.Builder()
           .setDevToolsHost(instance.host)
           .setDevToolsPort(instance.port)
-          .setHide("home,inspector,deep-links,extensions")
+          .setHide("all-except-extensions")
           .setEmbed(true).setFlutterSdkVersion(sdkVersion)
           .setWorkspaceCache(WorkspaceCache.getInstance(project))
           .setIdeFeature(DevToolsIdeFeature.TOOL_WINDOW)

@@ -11,8 +11,8 @@ import io.flutter.view.EmbeddedBrowser;
 import org.jetbrains.annotations.NotNull;
 
 @Service(Service.Level.PROJECT)
-public final class RemainingDevToolsViewService extends DevToolsViewService {
-  RemainingDevToolsViewService(@NotNull Project project) {
+public final class DevToolsExtensionsViewService extends DevToolsViewService {
+  DevToolsExtensionsViewService(@NotNull Project project) {
     super(project);
   }
 }
