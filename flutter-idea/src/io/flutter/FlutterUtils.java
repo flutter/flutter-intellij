@@ -133,7 +133,7 @@ public class FlutterUtils {
    * <p>
    * This is separate from LOG.warn() to allow us to decorate the behavior.
    */
-  public static void warn(Logger logger, @NotNull Throwable t) {
+  public static void warn(@NotNull Logger logger, @NotNull Throwable t) {
     logger.warn(t);
   }
 
@@ -142,7 +142,7 @@ public class FlutterUtils {
    * <p>
    * This is separate from LOG.warn() to allow us to decorate the behavior.
    */
-  public static void warn(Logger logger, String message) {
+  public static void warn(@NotNull Logger logger, @NotNull String message) {
     logger.warn(message);
   }
 
@@ -151,7 +151,7 @@ public class FlutterUtils {
    * <p>
    * This is separate from LOG.warn() to allow us to decorate the behavior.
    */
-  public static void warn(Logger logger, String message, @NotNull Throwable t) {
+  public static void warn(@NotNull Logger logger, @NotNull String message, @NotNull Throwable t) {
     logger.warn(message, t);
   }
 
@@ -281,7 +281,7 @@ public class FlutterUtils {
    * Returns the Dart file for the given PsiElement, or null if not a match.
    */
   @Nullable
-  public static DartFile getDartFile(final @Nullable PsiElement elt) {
+  public static DartFile getDartFile(@Nullable final PsiElement elt) {
     if (elt == null) return null;
 
     final PsiFile psiFile = elt.getContainingFile();
@@ -397,6 +397,7 @@ public class FlutterUtils {
    * Returns a structured object with information about the Flutter properties of the given
    * pubspec file.
    */
+  @NotNull
   public static FlutterPubspecInfo getFlutterPubspecInfo(@NotNull final VirtualFile pubspec) {
     // It uses Flutter if it contains 'dependencies: flutter'.
     // It's a plugin if it contains 'flutter: plugin'.
@@ -455,19 +456,24 @@ public class FlutterUtils {
    */
   @Nullable
   public static Project findProject(@NotNull String path) {
-    for (Project project : ProjectManager.getInstance().getOpenProjects()) {
-      if (ProjectUtil.isSameProject(Paths.get(path), project)) {
-        return project;
+    ProjectManager projectManager = ProjectManager.getInstance();
+    if (projectManager != null) {
+      for (Project project : projectManager.getOpenProjects()) {
+        if (ProjectUtil.isSameProject(Paths.get(path), project)) {
+          return project;
+        }
       }
     }
     return null;
   }
 
+  @Nullable
   private static Map<String, Object> readPubspecFileToMap(@NotNull final VirtualFile pubspec) throws IOException {
     final String contents = new String(pubspec.contentsToByteArray(true /* cache contents */));
     return loadPubspecInfo(contents);
   }
 
+  @Nullable
   private static Map<String, Object> loadPubspecInfo(@NotNull String yamlContents) {
     final Yaml yaml =
       new Yaml(new SafeConstructor(new LoaderOptions()), new Representer(new DumperOptions()), new DumperOptions(), new Resolver() {
@@ -519,6 +525,7 @@ public class FlutterUtils {
     return false;
   }
 
+  @Nullable
   private static VirtualFile getAndroidProjectDir(VirtualFile dir) {
     return (dir.findChild("app") == null) ? null : dir;
   }
@@ -569,7 +576,9 @@ public class FlutterUtils {
   @Nullable
   public static Module findModuleNamed(@NotNull Project project, @NotNull String name) {
     final Module[] modules = ModuleManager.getInstance(project).getModules();
+    assert modules != null;
     for (Module module : modules) {
+      assert module != null;
       if (module.getName().equals(name)) {
         return module;
       }
@@ -577,7 +586,8 @@ public class FlutterUtils {
     return null;
   }
 
-  public static String flutterGradleModuleName(Project project) {
+  @NotNull
+  public static String flutterGradleModuleName(@NotNull Project project) {
     return project.getName().replaceAll(" ", "_") + "." + AndroidUtils.FLUTTER_MODULE_NAME;
   }
 
