@@ -8,7 +8,7 @@ package io.flutter.run.test;
 import io.flutter.run.common.TestLineMarkerContributor;
 
 /**
- * Annotates conventional Flutter tests with line markers.
+ * Annotates conventional Flutter tests with line markers for running tests.
  */
 public class FlutterTestLineMarkerContributor extends TestLineMarkerContributor {
   public FlutterTestLineMarkerContributor() {

@@ -1,4 +1,6 @@
 # Next
+- Restore Flutter test icons in the editor gutter (#7505)
+- Fix widget tree highlighting in the editor (#7522)
 - Resolve "Exception: Cannot invoke "org..AnAction.getTemplatePresentation()" exception (#7488)
 - Resolve "Pubspec has been edited" editor notification is stuck (#7538)
 - Resolve Released EditorImpl held by lambda in FlutterReloadManager (#7507)
