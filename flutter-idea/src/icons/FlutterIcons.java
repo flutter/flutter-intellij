@@ -9,7 +9,17 @@ public class FlutterIcons {
     return IconLoader.getIcon(path, FlutterIcons.class);
   }
 
-  public static final Icon Flutter_13 = load("/icons/flutter_13.png");
+  public static final Icon FlutterDefault = load("/icons/Flutter_DarkMode_C.2.svg");
+  public static final Icon DevToolsDeepLinks = load("/icons/DeepLinks_DarkMode_C.2.svg");
+  public static final Icon DevTools = load("/icons/DevTools_DarkMode_C.2.svg");
+  public static final Icon DevToolsExtensions = load("/icons/DevToolsExtensions_DarkMode_C.2.svg");
+  public static final Icon DevToolsInspector = load("/icons/Inspector_DarkMode_C.2.svg");
+
+  public static final Icon FlutterDefaultLight = load("/icons/Flutter_LtMode_C.2.svg");
+  public static final Icon DevToolsDeepLinksLight = load("/icons/DeepLinks_LtMode_C.2.svg");
+  public static final Icon DevToolsLight = load("/icons/DevTools_LtMode_C.2.svg");
+  public static final Icon DevToolsExtensionsLight = load("/icons/DevToolsExtensions_LtMode_C.2.svg");
+  public static final Icon DevToolsInspectorLight = load("/icons/Inspector_LtMode_C.2.svg");
   public static final Icon Flutter_13_2x = load("/icons/flutter_13@2x.png");
   public static final Icon Flutter_64 = load("/icons/flutter_64.png");
   public static final Icon Flutter_64_2x = load("/icons/flutter_64@2x.png");
