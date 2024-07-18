@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Copyright 2024 The Chromium Authors. All rights reserved.
+  - Use of this source code is governed by a BSD-style license that can be
+  - found in the LICENSE file.
+  -->
+
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 500 500">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #6d707d;
+        stroke-width: 0px;
+      }
+    </style>
+  </defs>
+  <path class="cls-1" d="M325.3,87.5l-173.9,173.9-11.5-11.4,162.5-162.5h23M325.3,269.6l-46.8,46.8-24.7,24.7,24.7,24.7,46.8,46.8h-23l-71.5-71.5,71.5-71.5h23M409.5,52.6h-121.6L90.5,250l61,60.6L409.5,52.6h0ZM409.5,234.7h-121.6l-106.3,106.3,106.3,106.3h121.6l-106.3-106.3,106.3-106.3h0Z"/>
+</svg>

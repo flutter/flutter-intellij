@@ -13,6 +13,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
+import icons.FlutterIcons;
+import io.flutter.utils.UIUtils;
 import io.flutter.utils.ViewListener;
 import io.flutter.view.FlutterViewMessages;
 import org.jetbrains.annotations.NotNull;
@@ -22,11 +24,12 @@ public class FlutterPerformanceViewFactory implements ToolWindowFactory, DumbAwa
 
   public static void init(@NotNull Project project) {
     project.getMessageBus().connect().subscribe(
-      FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (event) -> initPerfView(project, event)
+      FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (FlutterViewMessages.FlutterDebugNotifier)(event) -> initPerfView(project, event)
     );
     final ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(FlutterPerformanceView.TOOL_WINDOW_ID);
     if (window != null) {
       window.setAvailable(true);
+      UIUtils.registerLightDarkIconsForWindow(window, FlutterIcons.FlutterDefaultLight, FlutterIcons.FlutterDefault);
 
       if (PropertiesComponent.getInstance(project).getBoolean(TOOL_WINDOW_VISIBLE_PROPERTY, false)) {
         window.activate(null, false);

@@ -7,11 +7,18 @@ package io.flutter.utils;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.colors.ColorKey;
 import com.intellij.openapi.editor.colors.EditorColors;
+import com.intellij.openapi.editor.colors.EditorColorsListener;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.IdeFrame;
+import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.WindowManager;
+import icons.FlutterIcons;
+import io.flutter.devtools.DevToolsUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,5 +61,20 @@ public class UIUtils {
       }
     }
     return null;
+  }
+
+  public static void registerLightDarkIconsForWindow(@NotNull ToolWindow window, @NotNull Icon lightIcon, @NotNull Icon darkIcon) {
+    window.setIcon(Boolean.TRUE.equals(new DevToolsUtils().getIsBackgroundBright())
+                   ? lightIcon
+                   : darkIcon);
+
+    final Application application = ApplicationManager.getApplication();
+    if (application == null) return;
+    application.getMessageBus().connect()
+      .subscribe(EditorColorsManager.TOPIC, (EditorColorsListener)scheme -> {
+        window.setIcon(Boolean.TRUE.equals(new DevToolsUtils().getIsBackgroundBright())
+                       ? lightIcon
+                       : darkIcon);
+      });
   }
 }

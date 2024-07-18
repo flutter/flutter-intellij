@@ -631,21 +631,21 @@
     <codeInsight.lineMarkerProvider language="Dart" implementationClass="io.flutter.editor.FlutterIconLineMarkerProvider"/>
     <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
 
-    <toolWindow id="Flutter Outline" anchor="right" icon="FlutterIcons.Flutter_13"
+    <toolWindow id="Flutter Outline" anchor="right" icon="FlutterIcons.FlutterDefault"
                 factoryClass="io.flutter.preview.PreviewViewFactory"/>
     <projectService serviceImplementation="io.flutter.preview.PreviewView" overrides="false"/>
 
-    <toolWindow id="Flutter Inspector" anchor="right" icon="FlutterIcons.Flutter_13"
+    <toolWindow id="Flutter Inspector" anchor="right" icon="FlutterIcons.DevToolsInspector"
                 factoryClass="io.flutter.view.FlutterViewFactory"/>
     <projectService serviceImplementation="io.flutter.view.FlutterView" overrides="false"/>
 
-    <toolWindow id="Flutter Performance" anchor="right" icon="FlutterIcons.Flutter_13"
+    <toolWindow id="Flutter Performance" anchor="right" icon="FlutterIcons.FlutterDefault"
                 factoryClass="io.flutter.performance.FlutterPerformanceViewFactory"/>
     <projectService serviceImplementation="io.flutter.performance.FlutterPerformanceView" overrides="false"/>
 
-    <toolWindow id="Flutter Deep Links" anchor="right" icon="FlutterIcons.Flutter_13" factoryClass="io.flutter.deeplinks.DeepLinksViewFactory" />
-    <toolWindow id="Flutter DevTools" anchor="right" icon="FlutterIcons.Flutter_13" factoryClass="io.flutter.devtools.RemainingDevToolsViewFactory" />
-    <toolWindow id="Flutter DevTools Extensions" anchor="right" icon="FlutterIcons.Flutter_13" factoryClass="io.flutter.devtools.DevToolsExtensionsViewFactory" />
+    <toolWindow id="Flutter Deep Links" anchor="right" icon="FlutterIcons.DevToolsDeepLinks" factoryClass="io.flutter.deeplinks.DeepLinksViewFactory" />
+    <toolWindow id="Flutter DevTools" anchor="right" icon="FlutterIcons.DevTools" factoryClass="io.flutter.devtools.RemainingDevToolsViewFactory" />
+    <toolWindow id="Flutter DevTools Extensions" anchor="right" icon="FlutterIcons.DevToolsExtensions" factoryClass="io.flutter.devtools.DevToolsExtensionsViewFactory" />
 
     <projectOpenProcessor id="flutter" implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
 

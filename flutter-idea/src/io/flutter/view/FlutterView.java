@@ -530,8 +530,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       emptyContent = null;
     }
 
-    toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
-
     if (toolWindow.isVisible()) {
       displayEmbeddedBrowser(app, toolWindow, ideFeature.get());
     }
@@ -578,8 +576,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (toolWindow.isDisposed()) {
       return;
     }
-
-    toolWindow.setIcon(FlutterIcons.Flutter_13);
 
     // Display a 'No running applications' message.
     final ContentManager contentManager = toolWindow.getContentManager();

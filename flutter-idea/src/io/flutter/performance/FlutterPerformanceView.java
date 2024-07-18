@@ -88,8 +88,6 @@ public class FlutterPerformanceView implements Disposable {
       return;
     }
 
-    toolWindow.setIcon(FlutterIcons.Flutter_13);
-
     // Display a 'No running applications' message.
     final ContentManager contentManager = toolWindow.getContentManager();
     final JPanel panel = new JPanel(new BorderLayout());
@@ -177,8 +175,6 @@ public class FlutterPerformanceView implements Disposable {
       contentManager.removeContent(emptyContent, true);
       emptyContent = null;
     }
-
-    toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
 
     final PerfViewAppState state = getOrCreateStateForApp(app);
     assert (state.content == null);

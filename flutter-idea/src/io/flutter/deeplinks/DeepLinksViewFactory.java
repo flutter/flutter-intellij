@@ -5,30 +5,45 @@
  */
 package io.flutter.deeplinks;
 
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.ContentManager;
+import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.devtools.DevToolsUrl;
+import io.flutter.performance.FlutterPerformanceView;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.AsyncUtils;
+import io.flutter.utils.UIUtils;
+import io.flutter.view.FlutterViewMessages;
 import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
 public class DeepLinksViewFactory implements ToolWindowFactory {
+  private static String TOOL_WINDOW_ID = "Flutter Deep Links";
+
   @Override
   public Object isApplicableAsync(@NotNull Project project, @NotNull Continuation<? super Boolean> $completion) {
     FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
     return sdkVersion != null && sdkVersion.canUseDeepLinksTool();
+  }
+
+  public static void init(@NotNull Project project) {
+    final ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(TOOL_WINDOW_ID);
+    if (window != null) {
+      UIUtils.registerLightDarkIconsForWindow(window, FlutterIcons.DevToolsDeepLinksLight, FlutterIcons.DevToolsDeepLinks);
+    }
   }
 
   @Override

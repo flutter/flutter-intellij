@@ -9,13 +9,16 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.ContentManager;
+import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.AsyncUtils;
+import io.flutter.utils.UIUtils;
 import io.flutter.view.FlutterViewMessages;
 import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
@@ -24,10 +27,16 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
 public class DevToolsExtensionsViewFactory implements ToolWindowFactory {
+  private static String TOOL_WINDOW_ID = "Flutter DevTools Extensions";
   public static void init(Project project) {
     project.getMessageBus().connect().subscribe(
       FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (FlutterViewMessages.FlutterDebugNotifier)event -> initView(project, event)
     );
+
+    final ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(TOOL_WINDOW_ID);
+    if (window != null) {
+      UIUtils.registerLightDarkIconsForWindow(window, FlutterIcons.DevToolsExtensionsLight, FlutterIcons.DevToolsExtensions);
+    }
   }
 
   private static void initView(Project project, FlutterViewMessages.FlutterDebugEvent event) {
