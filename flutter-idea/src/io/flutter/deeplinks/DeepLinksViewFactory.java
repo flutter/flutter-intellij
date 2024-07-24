@@ -39,13 +39,6 @@ public class DeepLinksViewFactory implements ToolWindowFactory {
     return sdkVersion != null && sdkVersion.canUseDeepLinksTool();
   }
 
-  public static void init(@NotNull Project project) {
-    final ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(TOOL_WINDOW_ID);
-    if (window != null) {
-      UIUtils.registerLightDarkIconsForWindow(window, FlutterIcons.DevToolsDeepLinksLight, FlutterIcons.DevToolsDeepLinks);
-    }
-  }
-
   @Override
   public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
     final ContentManager contentManager = toolWindow.getContentManager();

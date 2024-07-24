@@ -62,19 +62,4 @@ public class UIUtils {
     }
     return null;
   }
-
-  public static void registerLightDarkIconsForWindow(@NotNull ToolWindow window, @NotNull Icon lightIcon, @NotNull Icon darkIcon) {
-    window.setIcon(Boolean.TRUE.equals(new DevToolsUtils().getIsBackgroundBright())
-                   ? lightIcon
-                   : darkIcon);
-
-    final Application application = ApplicationManager.getApplication();
-    if (application == null) return;
-    application.getMessageBus().connect()
-      .subscribe(EditorColorsManager.TOPIC, (EditorColorsListener)scheme -> {
-        window.setIcon(Boolean.TRUE.equals(new DevToolsUtils().getIsBackgroundBright())
-                       ? lightIcon
-                       : darkIcon);
-      });
-  }
 }

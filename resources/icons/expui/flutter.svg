@@ -1,0 +1,10 @@
+<!--
+  - Copyright 2024 The Chromium Authors. All rights reserved.
+  - Use of this source code is governed by a BSD-style license that can be
+  - found in the LICENSE file.
+  -->
+
+<svg width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M4.41211 9.54533L2.86011 8.004L9.46944 1.396H12.5628L4.41211 9.54533Z" stroke="#0468D7" stroke-miterlimit="10" stroke-linejoin="round"/>
+  <path d="M12.5627 14.616H9.46939L6.11206 11.26L9.46939 7.90271H12.5627L9.20673 11.26L12.5627 14.616Z" stroke="#0468D7" stroke-miterlimit="10" stroke-linejoin="round"/>
+</svg>

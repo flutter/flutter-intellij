@@ -29,7 +29,6 @@ public class FlutterPerformanceViewFactory implements ToolWindowFactory, DumbAwa
     final ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(FlutterPerformanceView.TOOL_WINDOW_ID);
     if (window != null) {
       window.setAvailable(true);
-      UIUtils.registerLightDarkIconsForWindow(window, FlutterIcons.FlutterDefaultLight, FlutterIcons.FlutterDefault);
 
       if (PropertiesComponent.getInstance(project).getBoolean(TOOL_WINDOW_VISIBLE_PROPERTY, false)) {
         window.activate(null, false);

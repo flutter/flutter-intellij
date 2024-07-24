@@ -1,0 +1,11 @@
+{
+  "icons": {
+    "expui": {
+      "deepLinks.svg": "icons/deepLinks.svg",
+      "devTools.svg": "icons/devTools.svg",
+      "extensions.svg": "icons/extensions.svg",
+      "flutter.svg": "icons/flutter.svg",
+      "inspector.svg": "icons/inspector.svg"
+    }
+  }
+}
