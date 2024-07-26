@@ -36,6 +36,7 @@ import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.view.*;
@@ -183,6 +184,23 @@ public class FlutterPerformanceView implements Disposable {
     final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app, this);
     toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar(
       "FlutterPerfViewToolbar", toolbarGroup, true).getComponent());
+
+    FlutterSdk sdk = FlutterSdk.getFlutterSdk(app.getProject());
+    FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
+    if (sdkVersion != null && sdkVersion.canUseDevToolsMultiEmbed()) {
+      final JPanel warning = new JPanel(new BorderLayout(50, 50));
+      JTextArea area = new JTextArea("The performance panel is being removed soon. Use the Flutter DevTools panel instead: View -> Tool windows -> Flutter DevTools");
+      area.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // hello
+      area.setLineWrap(true);
+      area.setWrapStyleWord(true);
+      area.setOpaque(false);
+      area.setEditable(false);
+      area.setFocusable(false);
+      area.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD));
+      area.setBackground(UIManager.getColor("Label.background"));
+      warning.add(area);
+      perfViewsPanel.add(warning);
+    }
 
     final ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("PerformanceToolbar", toolbarGroup, true);
     final JComponent toolbarComponent = toolbar.getComponent();
