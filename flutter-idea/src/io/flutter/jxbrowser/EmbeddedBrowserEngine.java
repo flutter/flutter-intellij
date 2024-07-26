@@ -29,9 +29,7 @@ public class EmbeddedBrowserEngine {
     return ServiceManager.getService(EmbeddedBrowserEngine.class);
   }
 
-  // This can take a long time
   public EmbeddedBrowserEngine() {
-    System.out.println("Within EmbeddedBrowserEngine::init");
     final String dataPath = JxBrowserManager.DOWNLOAD_PATH + File.separatorChar + "user-data";
     LOG.info("JxBrowser user data path: " + dataPath);
 

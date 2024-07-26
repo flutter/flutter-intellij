@@ -211,15 +211,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         .build();
 
       //noinspection CodeBlock2Expr
-      // Can this use a thread instead?
-      final long start = System.currentTimeMillis();
 
       Thread thread = new Thread(() -> {
-        System.out.println("Within thread and about to call optional, time elapsed: " + (System.currentTimeMillis() - start));
         embeddedBrowserOptional().ifPresent(
           embeddedBrowser -> ApplicationManager.getApplication().invokeLater(() -> {
-            System.out.println("Embedded browser is present and in invokeLater, time elapsed: " + (System.currentTimeMillis() - start));
-
             embeddedBrowser.openPanel(toolWindow, tabName, devToolsUrl, (String error) -> {
               // If the embedded browser doesn't work, offer a link to open in the regular browser.
               final List<LabelInput> inputs = Arrays.asList(
@@ -228,28 +223,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
               );
               presentClickableLabel(toolWindow, inputs);
             });
-            System.out.println("After opening panel, time elapsed: " + (System.currentTimeMillis() - start));
           }));
       });
       thread.start();
-      System.out.println("Started thread, time elapsed: " + (System.currentTimeMillis() - start));
 
-      //ApplicationManager.getApplication().invokeLater(() -> {
-      //  final long start = System.currentTimeMillis();
-      //
-      //  embeddedBrowserOptional().ifPresent(embeddedBrowser -> embeddedBrowser.openPanel(toolWindow, tabName, devToolsUrl, (String error) -> {
-      //    // If the embedded browser doesn't work, offer a link to open in the regular browser.
-      //    final List<LabelInput> inputs = Arrays.asList(
-      //      new LabelInput("The embedded browser failed to load. Error: " + error),
-      //      openDevToolsLabel(app, toolWindow, ideFeature)
-      //    );
-      //    presentClickableLabel(toolWindow, inputs);
-      //  }));
-      //
-      //  System.out.println("elapsed time: " + (System.currentTimeMillis() - start));
-      //});
-
-      // would this also need to be in thread?
       if (!busSubscribed) {
         busConnection.subscribe(EditorColorsManager.TOPIC, (EditorColorsListener)scheme ->
           embeddedBrowserOptional()
