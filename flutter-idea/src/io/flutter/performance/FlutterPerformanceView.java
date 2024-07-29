@@ -190,7 +190,7 @@ public class FlutterPerformanceView implements Disposable {
     if (sdkVersion != null && sdkVersion.canUseDevToolsMultiEmbed()) {
       final JPanel warning = new JPanel(new BorderLayout(50, 50));
       JTextArea area = new JTextArea("The performance panel is being removed soon. Use the Flutter DevTools panel instead: View -> Tool windows -> Flutter DevTools");
-      area.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // hello
+      area.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
       area.setLineWrap(true);
       area.setWrapStyleWord(true);
       area.setOpaque(false);
