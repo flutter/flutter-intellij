@@ -16,6 +16,9 @@ import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.EditorColorsListener;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.progress.EmptyProgressIndicator;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.openapi.util.Disposer;
@@ -212,7 +215,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
       //noinspection CodeBlock2Expr
 
-      Thread thread = new Thread(() -> {
+      Runnable task = () -> {
         embeddedBrowserOptional().ifPresent(
           embeddedBrowser -> ApplicationManager.getApplication().invokeLater(() -> {
             embeddedBrowser.openPanel(toolWindow, tabName, devToolsUrl, (String error) -> {
@@ -224,8 +227,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
               presentClickableLabel(toolWindow, inputs);
             });
           }));
-      });
-      thread.start();
+      };
+      final ProgressManager progressManager = ProgressManager.getInstanceOrNull();
+      if (progressManager != null) {
+        progressManager.runProcess(task, new EmptyProgressIndicator());
+      }
 
       if (!busSubscribed) {
         busConnection.subscribe(EditorColorsManager.TOPIC, (EditorColorsListener)scheme ->
