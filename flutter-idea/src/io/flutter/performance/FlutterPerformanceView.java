@@ -45,6 +45,9 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -189,17 +192,12 @@ public class FlutterPerformanceView implements Disposable {
     FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
     if (sdkVersion != null && sdkVersion.canUseDevToolsMultiEmbed()) {
       final JPanel warning = new JPanel(new BorderLayout(50, 50));
-      JTextArea area = new JTextArea(
-        "The performance panel is being removed soon. Use the Flutter DevTools panel instead: View -> Tool windows -> Flutter DevTools");
-      area.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-      area.setLineWrap(true);
-      area.setWrapStyleWord(true);
-      area.setOpaque(false);
-      area.setEditable(false);
-      area.setFocusable(false);
-      area.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD));
-      area.setBackground(UIManager.getColor("Label.background"));
-      warning.add(area);
+      JTextPane text = new JTextPane();
+      text.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+      text.setCharacterAttributes(StyleContext.getDefaultStyleContext().addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, new Color(234, 57, 35)), false);
+      text.setText("The performance panel is being removed soon. Use the Flutter DevTools panel instead: View -> Tool windows -> Flutter DevTools");
+      text.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD));
+      warning.add(text);
       perfViewsPanel.add(warning);
     }
 
