@@ -639,6 +639,7 @@ public class FlutterUtils {
     return null;
   }
 
+  // TODO(helin24): Make other usages of embedded browser initialization safe for UI?
   @Nullable
   public static EmbeddedBrowser embeddedBrowser(Project project) {
     if (project == null || project.isDisposed()) {

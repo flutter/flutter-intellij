@@ -16,6 +16,9 @@ import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.EditorColorsListener;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.progress.EmptyProgressIndicator;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.openapi.util.Disposer;
@@ -211,16 +214,24 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         .build();
 
       //noinspection CodeBlock2Expr
-      ApplicationManager.getApplication().invokeLater(() -> {
-        embeddedBrowserOptional().ifPresent(embeddedBrowser -> embeddedBrowser.openPanel(toolWindow, tabName, devToolsUrl, (String error) -> {
-          // If the embedded browser doesn't work, offer a link to open in the regular browser.
-          final List<LabelInput> inputs = Arrays.asList(
-            new LabelInput("The embedded browser failed to load. Error: " + error),
-            openDevToolsLabel(app, toolWindow, ideFeature)
-          );
-          presentClickableLabel(toolWindow, inputs);
-        }));
-      });
+
+      Runnable task = () -> {
+        embeddedBrowserOptional().ifPresent(
+          embeddedBrowser -> ApplicationManager.getApplication().invokeLater(() -> {
+            embeddedBrowser.openPanel(toolWindow, tabName, devToolsUrl, (String error) -> {
+              // If the embedded browser doesn't work, offer a link to open in the regular browser.
+              final List<LabelInput> inputs = Arrays.asList(
+                new LabelInput("The embedded browser failed to load. Error: " + error),
+                openDevToolsLabel(app, toolWindow, ideFeature)
+              );
+              presentClickableLabel(toolWindow, inputs);
+            });
+          }));
+      };
+      final ProgressManager progressManager = ProgressManager.getInstanceOrNull();
+      if (progressManager != null) {
+        progressManager.runProcess(task, new EmptyProgressIndicator());
+      }
 
       if (!busSubscribed) {
         busConnection.subscribe(EditorColorsManager.TOPIC, (EditorColorsListener)scheme ->
