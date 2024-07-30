@@ -32,11 +32,6 @@ public class RemainingDevToolsViewFactory implements ToolWindowFactory {
     project.getMessageBus().connect().subscribe(
       FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (FlutterViewMessages.FlutterDebugNotifier)event -> initView(project, event)
     );
-
-    final ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(TOOL_WINDOW_ID);
-    if (window != null) {
-      UIUtils.registerLightDarkIconsForWindow(window, FlutterIcons.DevToolsLight, FlutterIcons.DevTools);
-    }
   }
 
   private static void initView(Project project, FlutterViewMessages.FlutterDebugEvent event) {

@@ -575,6 +575,7 @@
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
+    <iconMapper mappingFile="FlutterIconMappings.json"/>
     <postStartupActivity implementation="io.flutter.ProjectOpenActivity"/>
     <postStartupActivity implementation="io.flutter.FlutterInitializer"/>
     <projectService serviceInterface="io.flutter.run.daemon.DeviceService"

@@ -27,16 +27,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
 public class DevToolsExtensionsViewFactory implements ToolWindowFactory {
-  private static String TOOL_WINDOW_ID = "Flutter DevTools Extensions";
   public static void init(Project project) {
     project.getMessageBus().connect().subscribe(
       FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (FlutterViewMessages.FlutterDebugNotifier)event -> initView(project, event)
     );
-
-    final ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(TOOL_WINDOW_ID);
-    if (window != null) {
-      UIUtils.registerLightDarkIconsForWindow(window, FlutterIcons.DevToolsExtensionsLight, FlutterIcons.DevToolsExtensions);
-    }
   }
 
   private static void initView(Project project, FlutterViewMessages.FlutterDebugEvent event) {

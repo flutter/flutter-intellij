@@ -267,7 +267,6 @@ public class FlutterInitializer implements StartupActivity {
     PreviewViewFactory.init(project);
     RemainingDevToolsViewFactory.init(project);
     DevToolsExtensionsViewFactory.init(project);
-    DeepLinksViewFactory.init(project);
     toolWindowsInitialized = true;
   }
 
