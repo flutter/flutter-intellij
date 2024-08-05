@@ -45,8 +45,9 @@
 
   <change-notes>
     <![CDATA[
-<h1>Next</h1>
+<h1>81</h1>
 <ul>
+  <li>New icons to match &quot;New UI&quot; features in IntelliJ and Android Studio (#6595)</li>
   <li>Restore Flutter test icons in the editor gutter (#7505)</li>
   <li>Fix widget tree highlighting in the editor (#7522)</li>
   <li>Resolve &quot;Exception: Cannot invoke &quot;org..AnAction.getTemplatePresentation()&quot; exception (#7488)</li>

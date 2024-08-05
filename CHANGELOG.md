@@ -1,4 +1,5 @@
-# Next
+# 81
+- New icons to match "New UI" features in IntelliJ and Android Studio (#6595)
 - Restore Flutter test icons in the editor gutter (#7505)
 - Fix widget tree highlighting in the editor (#7522)
 - Resolve "Exception: Cannot invoke "org..AnAction.getTemplatePresentation()" exception (#7488)
