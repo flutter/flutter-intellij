@@ -21,11 +21,11 @@
       "version": "2024.1",
       "isUnitTestTarget": "true",
       "ideaProduct": "android-studio",
-      "ideaVersion": "2024.1.1.1",
+      "ideaVersion": "2024.1.1.12",
       "baseVersion": "241.18034.62",
       "androidPluginVersion": "X.Y.Z",
-      "dartPluginVersion": "241.17502",
-      "sinceBuild": "241.14494.150",
+      "dartPluginVersion": "241.18808",
+      "sinceBuild": "241.15989.150",
       "untilBuild": "241.*"
     }
   ]
