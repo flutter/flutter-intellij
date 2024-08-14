@@ -45,6 +45,10 @@
 
   <change-notes>
     <![CDATA[
+<h1>81.1</h1>
+<ul>
+  <li>Initial support 2024.2 &amp; Android Studio Ladybug Canary 6 (#7595)</li>
+</ul>
 <h1>81</h1>
 <ul>
   <li>New icons to match &quot;New UI&quot; features in IntelliJ and Android Studio (#6595)</li>

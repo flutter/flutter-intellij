@@ -1,3 +1,6 @@
+# 81.1
+- Initial support 2024.2 & Android Studio Ladybug Canary 6 (#7595)
+
 # 81
 - New icons to match "New UI" features in IntelliJ and Android Studio (#6595)
 - Restore Flutter test icons in the editor gutter (#7505)
