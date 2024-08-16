@@ -27,7 +27,7 @@ setup() {
 
   export FLUTTER_SDK=`pwd`/../flutter
   export FLUTTER_KEYSTORE_ID=74840
-  export FLUTTER_KEYSTORE_NAME=flutter-intellij-plugin-auth-token
+  export FLUTTER_KEYSTORE_NAME=jetbrains-plugin-upload-auth-token
   export FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME=flutter-intellij-plugin-jxbrowser-license-key
   export NO_FS_ROOTS_ACCESS_CHECK=true
 

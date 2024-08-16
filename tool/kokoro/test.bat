@@ -27,7 +27,7 @@ set PATH=%PATH%;%~dp0..\..\..ant\apache-ant-1.10.7\bin
 rem ant -version
 
 set FLUTTER_KEYSTORE_ID=74840
-set FLUTTER_KEYSTORE_NAME=flutter-intellij-plugin-auth-token
+set FLUTTER_KEYSTORE_NAME=jetbrains-plugin-upload-auth-token
 
 cd tool\plugin
 rem dir /s/o ..\..\..
