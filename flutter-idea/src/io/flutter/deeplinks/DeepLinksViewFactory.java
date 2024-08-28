@@ -5,25 +5,19 @@
  */
 package io.flutter.deeplinks;
 
-import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
-import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.ContentManager;
-import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.devtools.DevToolsUrl;
-import io.flutter.performance.FlutterPerformanceView;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.AsyncUtils;
-import io.flutter.utils.UIUtils;
-import io.flutter.view.FlutterViewMessages;
 import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 
