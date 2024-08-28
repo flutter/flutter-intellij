@@ -5,9 +5,6 @@
  */
 package io.flutter.perf;
 
-import com.intellij.codeInsight.hint.HintManager;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.event.EditorMouseEvent;
@@ -18,16 +15,10 @@ import com.intellij.openapi.editor.ex.RangeHighlighterEx;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.util.TextRange;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.ui.ColorUtil;
 import com.intellij.ui.JBColor;
-import com.intellij.xdebugger.XSourcePosition;
-import io.flutter.performance.FlutterPerformanceView;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -338,53 +329,6 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
 
   RangeHighlighter getHighlighter() {
     return highlighter;
-  }
-
-  /**
-   * Returns the action executed when the icon is left-clicked.
-   *
-   * @return the action instance, or null if no action is required.
-   */
-  @Nullable
-  public AnAction getClickAction() {
-    return new AnAction() {
-      @Override
-      public void actionPerformed(@NotNull AnActionEvent event) {
-        if (isActive()) {
-
-          final ToolWindowManagerEx toolWindowManager = ToolWindowManagerEx.getInstanceEx(getApp().getProject());
-          final ToolWindow flutterPerfToolWindow = toolWindowManager.getToolWindow(FlutterPerformanceView.TOOL_WINDOW_ID);
-          if (flutterPerfToolWindow == null) {
-            return;
-          }
-
-          if (flutterPerfToolWindow.isVisible()) {
-            showPerfViewMessage();
-            return;
-          }
-          flutterPerfToolWindow.show(() -> showPerfViewMessage());
-        }
-      }
-    };
-  }
-
-  private void showPerfViewMessage() {
-    final FlutterPerformanceView flutterPerfView = getApp().getProject().getService(FlutterPerformanceView.class);
-    flutterPerfView.showForAppRebuildCounts(getApp());
-    final String message = "<html><body>" +
-                           getTooltipHtmlFragment() +
-                           "</body></html>";
-    final Iterable<SummaryStats> current = perfModelForFile.getStats().getRangeStats(range);
-    if (current.iterator().hasNext()) {
-      final SummaryStats first = current.iterator().next();
-      final XSourcePosition position = first.getLocation().getXSourcePosition();
-      if (position != null) {
-        AsyncUtils.invokeLater(() -> {
-          position.createNavigatable(getApp().getProject()).navigate(true);
-          HintManager.getInstance().showInformationHint(perfModelForFile.getTextEditor().getEditor(), message);
-        });
-      }
-    }
   }
 
   @NotNull

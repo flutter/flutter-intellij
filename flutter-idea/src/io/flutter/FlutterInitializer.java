@@ -32,15 +32,12 @@ import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.analytics.UnifiedAnalytics;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.bazel.WorkspaceCache;
-import io.flutter.deeplinks.DeepLinksViewFactory;
 import io.flutter.devtools.DevToolsExtensionsViewFactory;
-import io.flutter.devtools.DevToolsExtensionsViewService;
 import io.flutter.devtools.RemainingDevToolsViewFactory;
 import io.flutter.editor.FlutterSaveActionsManager;
 import io.flutter.logging.FlutterConsoleLogManager;
 import io.flutter.module.FlutterModuleBuilder;
 import io.flutter.perf.FlutterWidgetPerfManager;
-import io.flutter.performance.FlutterPerformanceViewFactory;
 import io.flutter.preview.PreviewViewFactory;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -263,7 +260,6 @@ public class FlutterInitializer implements StartupActivity {
   private void initializeToolWindows(@NotNull Project project) {
     // Start watching for Flutter debug active events.
     FlutterViewFactory.init(project);
-    FlutterPerformanceViewFactory.init(project);
     PreviewViewFactory.init(project);
     RemainingDevToolsViewFactory.init(project);
     DevToolsExtensionsViewFactory.init(project);

@@ -262,8 +262,6 @@
 
   <projectListeners>
     <listener class="io.flutter.view.FlutterViewFactory$FlutterViewListener" topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
-    <listener class="io.flutter.performance.FlutterPerformanceViewFactory$FlutterPerformanceViewListener"
-              topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
     <listener class="io.flutter.preview.PreviewViewFactory$PreviewViewListener"
               topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
   </projectListeners>
@@ -343,10 +341,6 @@
     <toolWindow id="Flutter Inspector" anchor="right" icon="FlutterIcons.DevToolsInspector"
                 factoryClass="io.flutter.view.FlutterViewFactory"/>
     <projectService serviceImplementation="io.flutter.view.FlutterView" overrides="false"/>
-
-    <toolWindow id="Flutter Performance" anchor="right" icon="FlutterIcons.FlutterDefault"
-                factoryClass="io.flutter.performance.FlutterPerformanceViewFactory"/>
-    <projectService serviceImplementation="io.flutter.performance.FlutterPerformanceView" overrides="false"/>
 
     <toolWindow id="Flutter Deep Links" anchor="right" icon="FlutterIcons.DevToolsDeepLinks" factoryClass="io.flutter.deeplinks.DeepLinksViewFactory" />
     <toolWindow id="Flutter DevTools" anchor="right" icon="FlutterIcons.DevTools" factoryClass="io.flutter.devtools.RemainingDevToolsViewFactory" />
