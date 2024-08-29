@@ -9,11 +9,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
-import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
-import io.flutter.performance.FlutterPerformanceView;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
@@ -25,14 +21,12 @@ public class RefreshToolWindowAction extends DumbAwareAction {
     super(AllIcons.Actions.Refresh);
   }
 
-  public RefreshToolWindowAction(String toolWindowId) {
+  public RefreshToolWindowAction(@NotNull String toolWindowId) {
     super(AllIcons.Actions.Refresh);
     this.toolWindowId = toolWindowId;
   }
   @Override
   public void actionPerformed(@NotNull AnActionEvent event) {
-    System.out.println("In refresh tool window: " + toolWindowId);
-
     final Project project = event.getProject();
     if (project == null) {
       return;

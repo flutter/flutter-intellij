@@ -125,12 +125,6 @@ public abstract class EmbeddedBrowser {
     tab.devToolsUrlFuture.complete(devToolsUrl);
 
     JComponent component = tab.embeddedTab.getTabComponent(tab.contentManager);
-    component.addMouseListener(new MouseAdapter() {
-      @Override
-      public void mousePressed(MouseEvent e) {
-        System.out.println("mouse clicked");
-      }
-    });
 
     ApplicationManager.getApplication().invokeLater(() -> {
       if (tab.contentManager.isDisposed()) {
