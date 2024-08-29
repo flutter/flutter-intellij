@@ -39,6 +39,7 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
+import io.flutter.actions.RefreshToolWindowAction;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.devtools.DevToolsUrl;
@@ -244,6 +245,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         );
         busSubscribed = true;
       }
+
+      toolWindow.setTitleActions(List.of(new RefreshToolWindowAction(TOOL_WINDOW_ID)));
     } else {
       BrowserLauncher.getInstance().browse(
         new DevToolsUrl.Builder()

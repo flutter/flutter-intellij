@@ -27,6 +27,8 @@ import io.flutter.utils.LabelInput;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -123,6 +125,12 @@ public abstract class EmbeddedBrowser {
     tab.devToolsUrlFuture.complete(devToolsUrl);
 
     JComponent component = tab.embeddedTab.getTabComponent(tab.contentManager);
+    component.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mousePressed(MouseEvent e) {
+        System.out.println("mouse clicked");
+      }
+    });
 
     ApplicationManager.getApplication().invokeLater(() -> {
       if (tab.contentManager.isDisposed()) {
@@ -267,6 +275,25 @@ public abstract class EmbeddedBrowser {
       }
       devToolsUrl.vmServiceUri = newVmServiceUri;
       return devToolsUrl;
+    });
+  }
+
+  // This will refresh all the browser tabs within a tool window (e.g. if there are multiple apps running and the inspector tool window is
+  // refreshed, an inspector tab will refresh for each app.)
+  // TODO(helin24): Consider allowing refresh for single browser tabs within tool windows.
+  public void refresh(String toolWindowId) {
+    Map<String, BrowserTab> tabs = windows.get(toolWindowId);
+
+    if (tabs == null) {
+      return;
+    }
+
+    tabs.forEach((tabName, tab) -> {
+      if (tab == null || tab.devToolsUrlFuture == null) return;
+      tab.devToolsUrlFuture.thenAccept(devToolsUrl -> {
+        if (devToolsUrl == null) return;
+        tab.embeddedTab.loadUrl(devToolsUrl.getUrlString());
+      });
     });
   }
 

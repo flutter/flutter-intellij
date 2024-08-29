@@ -546,6 +546,10 @@
             text="Open Flutter DevTools" description="Open Flutter DevTools" icon="FlutterIcons.Dart_16">
     </action>
 
+    <action id="io.flutter.RefreshToolWindow" class="io.flutter.actions.RefreshToolWindowAction" text="Refresh Tool Window"
+            description="Refresh current tool window contents">
+    </action>
+
     <!-- action
       id="DeveloperServices.FlutterNewsAssistant"
       class="io.flutter.actions.OpenFlutterNewsSidePanelAction"
