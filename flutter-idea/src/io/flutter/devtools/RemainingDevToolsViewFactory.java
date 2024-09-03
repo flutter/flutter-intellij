@@ -9,25 +9,24 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
-import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.ContentManager;
-import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
+import io.flutter.actions.RefreshToolWindowAction;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.AsyncUtils;
-import io.flutter.utils.UIUtils;
 import io.flutter.view.FlutterViewMessages;
 import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Optional;
 
 public class RemainingDevToolsViewFactory implements ToolWindowFactory {
-  private static String TOOL_WINDOW_ID = "Flutter DevTools";
+  @NotNull private static String TOOL_WINDOW_ID = "Flutter DevTools";
   public static void init(Project project) {
     project.getMessageBus().connect().subscribe(
       FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (FlutterViewMessages.FlutterDebugNotifier)event -> initView(project, event)
@@ -86,6 +85,8 @@ public class RemainingDevToolsViewFactory implements ToolWindowFactory {
         });
       }
     );
+
+    window.setTitleActions(List.of(new RefreshToolWindowAction(TOOL_WINDOW_ID)));
   }
 
   @Nullable

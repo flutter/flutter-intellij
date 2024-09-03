@@ -5,32 +5,27 @@
  */
 package io.flutter.deeplinks;
 
-import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
-import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.content.ContentManager;
-import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
+import io.flutter.actions.RefreshToolWindowAction;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.devtools.DevToolsUrl;
-import io.flutter.performance.FlutterPerformanceView;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.AsyncUtils;
-import io.flutter.utils.UIUtils;
-import io.flutter.view.FlutterViewMessages;
 import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Optional;
 
 public class DeepLinksViewFactory implements ToolWindowFactory {
-  private static String TOOL_WINDOW_ID = "Flutter Deep Links";
+  @NotNull private static String TOOL_WINDOW_ID = "Flutter Deep Links";
 
   @Override
   public Object isApplicableAsync(@NotNull Project project, @NotNull Continuation<? super Boolean> $completion) {
@@ -41,7 +36,6 @@ public class DeepLinksViewFactory implements ToolWindowFactory {
 
   @Override
   public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-    final ContentManager contentManager = toolWindow.getContentManager();
     FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
 
@@ -78,5 +72,9 @@ public class DeepLinksViewFactory implements ToolWindowFactory {
         });
       }
     );
+
+    // TODO(helin24): It may be better to add this to the gear actions or to attach as a mouse event on individual tabs within a tool
+    //  window, but I wasn't able to get either working immediately.
+    toolWindow.setTitleActions(List.of(new RefreshToolWindowAction(TOOL_WINDOW_ID)));
   }
 }

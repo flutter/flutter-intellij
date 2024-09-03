@@ -22,8 +22,8 @@ import io.flutter.FlutterInitializer;
 import io.flutter.analytics.Analytics;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.utils.AsyncUtils;
-import org.jetbrains.annotations.NotNull;
 import io.flutter.utils.LabelInput;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -267,6 +267,25 @@ public abstract class EmbeddedBrowser {
       }
       devToolsUrl.vmServiceUri = newVmServiceUri;
       return devToolsUrl;
+    });
+  }
+
+  // This will refresh all the browser tabs within a tool window (e.g. if there are multiple apps running and the inspector tool window is
+  // refreshed, an inspector tab will refresh for each app.)
+  // TODO(helin24): Consider allowing refresh for single browser tabs within tool windows.
+  public void refresh(String toolWindowId) {
+    Map<String, BrowserTab> tabs = windows.get(toolWindowId);
+
+    if (tabs == null) {
+      return;
+    }
+
+    tabs.forEach((tabName, tab) -> {
+      if (tab == null || tab.devToolsUrlFuture == null) return;
+      tab.devToolsUrlFuture.thenAccept(devToolsUrl -> {
+        if (devToolsUrl == null) return;
+        tab.embeddedTab.loadUrl(devToolsUrl.getUrlString());
+      });
     });
   }
 
