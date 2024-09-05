@@ -5,6 +5,8 @@
  */
 package io.flutter.devtools;
 
+import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.bazel.WorkspaceCache;
@@ -229,8 +231,9 @@ public class DevToolsUrl {
   }
 
   public void maybeUpdateFontSize() {
-    final Float newFontSize = UIUtil.getFontSize(UIUtil.FontSize.NORMAL);
-    if (!newFontSize.equals(fontSize)) {
+    EditorColorsScheme scheme = EditorColorsManager.getInstance().getGlobalScheme();
+    final Float newFontSize = (float) scheme.getEditorFontSize();
+    if (fontSize == null || !fontSize.equals(newFontSize)) {
       fontSize = newFontSize;
     }
   }
