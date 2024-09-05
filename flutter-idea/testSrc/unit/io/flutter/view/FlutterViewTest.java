@@ -38,7 +38,6 @@ public class FlutterViewTest {
   JxBrowserUtils mockUtils = mock(JxBrowserUtils.class);
   JxBrowserManager mockJxBrowserManager = mock(JxBrowserManager.class);
   InspectorGroupManagerService mockInspectorGroupManagerService = mock(InspectorGroupManagerService.class);
-  MessageBusConnection mockBusConnection = mock(MessageBusConnection.class);
 
   @Test
   public void testHandleJxBrowserInstalled() {
@@ -59,7 +58,7 @@ public class FlutterViewTest {
     when(mockJxBrowserManager.getLatestFailureReason()).thenReturn(new InstallationFailedReason(FailureType.FILE_DOWNLOAD_FAILED));
 
     // If JxBrowser failed to install, we should show a failure message that allows the user to manually retry.
-    final FlutterView flutterView = new FlutterView(mockProject, mockJxBrowserManager, mockJxBrowserUtils, mockInspectorGroupManagerService, mockBusConnection);
+    final FlutterView flutterView = new FlutterView(mockProject, mockJxBrowserManager, mockJxBrowserUtils, mockInspectorGroupManagerService);
     final FlutterView spy = spy(flutterView);
     doNothing().when(spy).presentClickableLabel(
       eq(mockToolWindow),
@@ -79,7 +78,7 @@ public class FlutterViewTest {
 
     // If the JxBrowser installation is initially in progress, we should show a message about the installation.
     // If the installation quickly finishes (on the first re-check), then we should call the function to handle successful installation.
-    final FlutterView flutterView = new FlutterView(mockProject, mockJxBrowserManager, mockUtils, mockInspectorGroupManagerService, mockBusConnection);
+    final FlutterView flutterView = new FlutterView(mockProject, mockJxBrowserManager, mockUtils, mockInspectorGroupManagerService);
     final FlutterView spy = spy(flutterView);
 
     doNothing().when(spy).presentOpenDevToolsOptionWithMessage(any(), any(), any(), any());
@@ -97,7 +96,7 @@ public class FlutterViewTest {
 
     // If the JxBrowser installation is in progress and is not finished on the first re-check, we should start a thread to wait for the
     // installation to finish.
-    final FlutterView flutterView = new FlutterView(mockProject, mockJxBrowserManager, mockUtils, mockInspectorGroupManagerService, mockBusConnection);
+    final FlutterView flutterView = new FlutterView(mockProject, mockJxBrowserManager, mockUtils, mockInspectorGroupManagerService);
     final FlutterView spy = spy(flutterView);
 
     doNothing().when(spy).presentOpenDevToolsOptionWithMessage(any(), any(), any(), any());
@@ -115,7 +114,7 @@ public class FlutterViewTest {
     when(mockJxBrowserManager.waitForInstallation(INSTALLATION_WAIT_LIMIT_SECONDS)).thenReturn(JxBrowserStatus.INSTALLATION_FAILED);
 
     // If waiting for JxBrowser installation completes without timing out, then we should return to event thread.
-    final FlutterView flutterView = new FlutterView(mockProject, mockJxBrowserManager, mockUtils, mockInspectorGroupManagerService, mockBusConnection);
+    final FlutterView flutterView = new FlutterView(mockProject, mockJxBrowserManager, mockUtils, mockInspectorGroupManagerService);
     final FlutterView spy = spy(flutterView);
 
     doNothing().when(spy).handleUpdatedJxBrowserStatusOnEventThread(any(), any(), any(), any());
@@ -132,7 +131,7 @@ public class FlutterViewTest {
     when(mockJxBrowserManager.waitForInstallation(INSTALLATION_WAIT_LIMIT_SECONDS)).thenThrow(new TimeoutException());
 
     // If the JxBrowser installation doesn't complete on time, we should show a timed out message.
-    final FlutterView flutterView = new FlutterView(mockProject, mockJxBrowserManager, mockUtils, mockInspectorGroupManagerService, mockBusConnection);
+    final FlutterView flutterView = new FlutterView(mockProject, mockJxBrowserManager, mockUtils, mockInspectorGroupManagerService);
     final FlutterView spy = spy(flutterView);
 
     doNothing().when(spy).presentOpenDevToolsOptionWithMessage(any(), any(), any(), any());
