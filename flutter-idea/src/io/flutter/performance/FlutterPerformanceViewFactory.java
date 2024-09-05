@@ -13,10 +13,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
-import icons.FlutterIcons;
-import io.flutter.utils.UIUtils;
+import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.ViewListener;
 import io.flutter.view.FlutterViewMessages;
+import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterPerformanceViewFactory implements ToolWindowFactory, DumbAware {
@@ -61,5 +62,12 @@ public class FlutterPerformanceViewFactory implements ToolWindowFactory, DumbAwa
     public FlutterPerformanceViewListener(@NotNull Project project) {
       super(project, FlutterPerformanceView.TOOL_WINDOW_ID, TOOL_WINDOW_VISIBLE_PROPERTY);
     }
+  }
+
+  @Override
+  public Object isApplicableAsync(@NotNull Project project, @NotNull Continuation<? super Boolean> $completion) {
+    FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+    FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
+    return sdkVersion == null || !sdkVersion.canUseDeepLinksTool();
   }
 }
