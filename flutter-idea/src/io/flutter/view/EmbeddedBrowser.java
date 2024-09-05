@@ -243,23 +243,6 @@ public abstract class EmbeddedBrowser {
     });
   }
 
-  public void updateColor(String newColor) {
-    updateUrlAndReload(devToolsUrl -> {
-      devToolsUrl.maybeUpdateColor();
-      return devToolsUrl;
-    });
-  }
-
-  public void updateFontSize(float newFontSize) {
-    updateUrlAndReload(devToolsUrl -> {
-      if (devToolsUrl.fontSize.equals(newFontSize)) {
-        return null;
-      }
-      devToolsUrl.fontSize = newFontSize;
-      return devToolsUrl;
-    });
-  }
-
   public void updateVmServiceUri(@NotNull String newVmServiceUri) {
     updateUrlAndReload(devToolsUrl -> {
       if (newVmServiceUri.equals(devToolsUrl.vmServiceUri)) {
@@ -284,6 +267,8 @@ public abstract class EmbeddedBrowser {
       if (tab == null || tab.devToolsUrlFuture == null) return;
       tab.devToolsUrlFuture.thenAccept(devToolsUrl -> {
         if (devToolsUrl == null) return;
+        devToolsUrl.maybeUpdateColor();
+        devToolsUrl.maybeUpdateFontSize();
         tab.embeddedTab.loadUrl(devToolsUrl.getUrlString());
       });
     });

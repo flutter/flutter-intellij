@@ -5,6 +5,8 @@
  */
 package io.flutter.devtools;
 
+import com.intellij.util.ui.JBFont;
+import com.intellij.util.ui.UIUtil;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.sdk.FlutterSdkVersion;
@@ -224,5 +226,12 @@ public class DevToolsUrl {
 
     colorHexCode = newColor;
     isBright = devToolsUtils.getIsBackgroundBright();
+  }
+
+  public void maybeUpdateFontSize() {
+    final Float newFontSize = UIUtil.getFontSize(UIUtil.FontSize.NORMAL);
+    if (!newFontSize.equals(fontSize)) {
+      fontSize = newFontSize;
+    }
   }
 }
