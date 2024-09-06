@@ -5,6 +5,10 @@
  */
 package io.flutter.devtools;
 
+import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.editor.colors.EditorColorsScheme;
+import com.intellij.util.ui.JBFont;
+import com.intellij.util.ui.UIUtil;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.sdk.FlutterSdkVersion;
@@ -224,5 +228,13 @@ public class DevToolsUrl {
 
     colorHexCode = newColor;
     isBright = devToolsUtils.getIsBackgroundBright();
+  }
+
+  public void maybeUpdateFontSize() {
+    EditorColorsScheme scheme = EditorColorsManager.getInstance().getGlobalScheme();
+    final Float newFontSize = (float) scheme.getEditorFontSize();
+    if (fontSize == null || !fontSize.equals(newFontSize)) {
+      fontSize = newFontSize;
+    }
   }
 }

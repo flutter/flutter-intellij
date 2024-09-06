@@ -101,9 +101,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   @NotNull
   private final Project myProject;
 
-  private final MessageBusConnection busConnection;
-  private boolean busSubscribed = false;
-
   private Content emptyContent;
 
   private FlutterViewToolWindowManagerListener toolWindowListener;
@@ -112,16 +109,15 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private final JxBrowserManager jxBrowserManager;
 
   public FlutterView(@NotNull Project project) {
-    this(project, JxBrowserManager.getInstance(), new JxBrowserUtils(), InspectorGroupManagerService.getInstance(project), ApplicationManager.getApplication().getMessageBus().connect());
+    this(project, JxBrowserManager.getInstance(), new JxBrowserUtils(), InspectorGroupManagerService.getInstance(project));
   }
 
   @VisibleForTesting
   @NonInjectable
-  protected FlutterView(@NotNull Project project, @NotNull JxBrowserManager jxBrowserManager, JxBrowserUtils jxBrowserUtils, InspectorGroupManagerService inspectorGroupManagerService, MessageBusConnection messageBusConnection) {
+  protected FlutterView(@NotNull Project project, @NotNull JxBrowserManager jxBrowserManager, JxBrowserUtils jxBrowserUtils, InspectorGroupManagerService inspectorGroupManagerService) {
     myProject = project;
     this.jxBrowserUtils = jxBrowserUtils;
     this.jxBrowserManager = jxBrowserManager;
-    this.busConnection = messageBusConnection;
 
     shouldAutoHorizontalScroll.listen(state::setShouldAutoScroll);
     highlightNodesShownInBothTrees.listen(state::setHighlightNodesShownInBothTrees);
@@ -153,7 +149,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   @Override
   public void dispose() {
-    busConnection.disconnect();
     Disposer.dispose(this);
   }
 
@@ -234,18 +229,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       final ProgressManager progressManager = ProgressManager.getInstanceOrNull();
       if (progressManager != null) {
         progressManager.runProcess(task, new EmptyProgressIndicator());
-      }
-
-      if (!busSubscribed) {
-        busConnection.subscribe(EditorColorsManager.TOPIC, (EditorColorsListener)scheme ->
-          embeddedBrowserOptional()
-            .ifPresent(embeddedBrowser -> embeddedBrowser.updateColor(ColorUtil.toHex(UIUtil.getEditorPaneBackground())))
-        );
-        busConnection.subscribe(UISettingsListener.TOPIC, (UISettingsListener)scheme ->
-          embeddedBrowserOptional()
-            .ifPresent(embeddedBrowser -> embeddedBrowser.updateFontSize(UIUtil.getFontSize(UIUtil.FontSize.NORMAL)))
-        );
-        busSubscribed = true;
       }
 
       toolWindow.setTitleActions(List.of(new RefreshToolWindowAction(TOOL_WINDOW_ID)));
