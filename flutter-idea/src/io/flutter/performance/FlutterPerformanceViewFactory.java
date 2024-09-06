@@ -68,6 +68,6 @@ public class FlutterPerformanceViewFactory implements ToolWindowFactory, DumbAwa
   public Object isApplicableAsync(@NotNull Project project, @NotNull Continuation<? super Boolean> $completion) {
     FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
-    return sdkVersion == null || !sdkVersion.canUseDeepLinksTool();
+    return sdkVersion == null || !sdkVersion.canUseDevToolsMultiEmbed();
   }
 }
