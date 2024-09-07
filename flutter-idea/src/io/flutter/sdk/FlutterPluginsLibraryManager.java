@@ -13,6 +13,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
 import com.intellij.openapi.roots.libraries.PersistentLibraryKind;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.*;
 import com.jetbrains.lang.dart.util.DotPackagesFileUtil;
 import io.flutter.pub.PubRoot;
@@ -137,7 +138,7 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
         if (libFolder == null) {
           continue;
         }
-        final PubRoot pluginRoot = PubRoot.forDirectory(libFolder.getParent());
+        final PubRoot pluginRoot = ApplicationManager.getApplication().runReadAction((Computable<PubRoot>)()->PubRoot.forDirectory(libFolder.getParent()));
         if (pluginRoot == null) {
           continue;
         }

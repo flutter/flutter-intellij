@@ -25,6 +25,7 @@ import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.*;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -117,7 +118,8 @@ public class FlutterUtils {
            !(file instanceof LightVirtualFile) &&
            isDartFile(file) &&
            file.isInLocalFileSystem() &&
-           ProjectFileIndex.getInstance(project).isInProject(file);
+           ApplicationManager.getApplication().runReadAction(
+             (Computable<Boolean>)()->ProjectFileIndex.getInstance(project).isInProject(file));
   }
 
   public static boolean isDartFile(@NotNull VirtualFile file) {
