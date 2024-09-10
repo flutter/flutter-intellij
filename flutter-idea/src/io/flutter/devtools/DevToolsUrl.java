@@ -18,6 +18,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class DevToolsUrl {
   private String devToolsHost;
@@ -38,7 +39,7 @@ public class DevToolsUrl {
 
   public final DevToolsIdeFeature ideFeature;
 
-  private final DevToolsUtils devToolsUtils;
+  @NotNull private final DevToolsUtils devToolsUtils;
 
   public static class Builder {
     private String devToolsHost;
@@ -222,7 +223,7 @@ public class DevToolsUrl {
 
   public void maybeUpdateColor() {
     final String newColor = devToolsUtils.getColorHexCode();
-    if (colorHexCode == newColor) {
+    if (Objects.equals(colorHexCode, newColor)) {
       return;
     }
 
@@ -231,8 +232,7 @@ public class DevToolsUrl {
   }
 
   public void maybeUpdateFontSize() {
-    EditorColorsScheme scheme = EditorColorsManager.getInstance().getGlobalScheme();
-    final Float newFontSize = (float) scheme.getEditorFontSize();
+    final Float newFontSize = devToolsUtils.getFontSize();
     if (fontSize == null || !fontSize.equals(newFontSize)) {
       fontSize = newFontSize;
     }

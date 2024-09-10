@@ -5,9 +5,12 @@
  */
 package io.flutter.devtools;
 
+import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.ui.ColorUtil;
 import com.intellij.ui.JBColor;
 import com.intellij.util.ui.UIUtil;
+import org.jetbrains.annotations.NotNull;
 
 public class DevToolsUtils {
   public static String findWidgetId(String url) {
@@ -29,5 +32,12 @@ public class DevToolsUtils {
     return JBColor.isBright();
   }
 
-  public Float getFontSize() {return UIUtil.getFontSize(UIUtil.FontSize.NORMAL);}
+  public @NotNull Float getFontSize() {
+    EditorColorsManager manager = EditorColorsManager.getInstance();
+    if (manager == null) {
+      // Return the default normal font size if editor manager is not found.
+      return UIUtil.getFontSize(UIUtil.FontSize.NORMAL);
+    }
+    return (float) manager.getGlobalScheme().getEditorFontSize();
+  }
 }
