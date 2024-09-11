@@ -7,6 +7,7 @@ package io.flutter;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.intellij.ProjectTopics;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
@@ -18,6 +19,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.EditorColorsListener;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.extensions.PluginId;
@@ -39,9 +41,8 @@ import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.analytics.UnifiedAnalytics;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.bazel.WorkspaceCache;
-import io.flutter.deeplinks.DeepLinksViewFactory;
+import io.flutter.dart.DtdUtils;
 import io.flutter.devtools.DevToolsExtensionsViewFactory;
-import io.flutter.devtools.DevToolsExtensionsViewService;
 import io.flutter.devtools.DevToolsUtils;
 import io.flutter.devtools.RemainingDevToolsViewFactory;
 import io.flutter.editor.FlutterSaveActionsManager;
@@ -67,10 +68,10 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.event.HyperlinkEvent;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Runs actions after the project has started up and the index is up to date.
@@ -80,6 +81,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * may run when a project is being imported.
  */
 public class FlutterInitializer implements StartupActivity {
+  private static final Logger LOG = Logger.getInstance(FlutterInitializer.class);
   private static final String analyticsClientIdKey = "io.flutter.analytics.clientId";
   private static final String analyticsOptOutKey = "io.flutter.analytics.optOut";
   private static final String analyticsToastShown = "io.flutter.analytics.toastShown";
@@ -280,20 +282,19 @@ public class FlutterInitializer implements StartupActivity {
     if (sdk == null || !sdk.getVersion().canUseDtd()) return;
     Thread t1 = new Thread(() -> {
       if (busSubscribed) return;
-      final DartToolingDaemonService dtdService = DartToolingDaemonService.getInstance(project);
       final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
       connection.subscribe(EditorColorsManager.TOPIC, (EditorColorsListener)scheme -> {
-        sendThemeChangedEvent(dtdService);
+        sendThemeChangedEvent(project);
       });
       connection.subscribe(UISettingsListener.TOPIC, (UISettingsListener)scheme -> {
-        sendThemeChangedEvent(dtdService);
+        sendThemeChangedEvent(project);
       });
       busSubscribed = true;
     });
     t1.start();
   }
 
-  private void sendThemeChangedEvent(@NotNull DartToolingDaemonService dtdService) {
+  private void sendThemeChangedEvent(@NotNull Project project) {
     // Debounce this request because the topic subscriptions can trigger multiple times (potentially from initial notification of change and
     // also from application of change)
 
@@ -322,16 +323,32 @@ public class FlutterInitializer implements StartupActivity {
       params.add("eventData", eventData);
 
       try {
+        final DtdUtils dtdUtils = new DtdUtils();
+        final DartToolingDaemonService dtdService = dtdUtils.readyDtdService(project).get();
+        if (dtdService == null) {
+          LOG.error("Unable to send theme changed event because DTD service is null");
+          return;
+        }
+
         dtdService.sendRequest("postEvent", params, false, object -> {
                                  JsonObject result = object.getAsJsonObject("result");
                                  if (result == null) {
-                                   System.out.println("Result from posting theme change event was null");
+                                   LOG.error("Theme changed event returned null result");
+                                   return;
+                                 }
+                                 JsonPrimitive type = result.getAsJsonPrimitive("type");
+                                 if (type == null) {
+                                   LOG.error("Theme changed event result type is null");
+                                   return;
+                                 }
+                                 if (!"Success".equals(type.getAsString())) {
+                                   LOG.error("Theme changed event result: " + type.getAsString());
                                  }
                                }
         );
       }
-      catch (WebSocketException e) {
-        throw new RuntimeException(e);
+      catch (WebSocketException | InterruptedException | ExecutionException e) {
+        LOG.error("Unable to send theme changed event", e);
       }
     }, 1, TimeUnit.SECONDS);
   }

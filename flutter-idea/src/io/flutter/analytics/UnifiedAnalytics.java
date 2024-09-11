@@ -17,6 +17,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import de.roderick.weberknecht.WebSocketException;
+import io.flutter.dart.DtdUtils;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,19 +32,19 @@ public class UnifiedAnalytics {
 
   @Nullable Boolean enabled = null;
   final Project project;
-  final DartToolingDaemonService dtdService;
+  final DtdUtils dtdUtils;
   @NotNull final FlutterSdkUtil flutterSdkUtil;
 
 
   public UnifiedAnalytics(@NotNull Project project) {
     this.project = project;
-    this.dtdService = DartToolingDaemonService.getInstance(project);
+    this.dtdUtils = new DtdUtils();
     this.flutterSdkUtil = new FlutterSdkUtil();
   }
 
   public void manageConsent() {
     try {
-      DartToolingDaemonService service = readyDtdService().get();
+      DartToolingDaemonService service = dtdUtils.readyDtdService(project).get();
       if (service != null) {
         final JsonObject params = new JsonObject();
         params.addProperty("tool", getToolName());
@@ -200,29 +201,5 @@ public class UnifiedAnalytics {
       innerResult.complete(value.getAsString());
       return innerResult;
     });
-  }
-
-  private CompletableFuture<DartToolingDaemonService> readyDtdService() {
-    CompletableFuture<DartToolingDaemonService> readyService = new CompletableFuture<>();
-    int attemptsRemaining = 10;
-    final int TIME_IN_BETWEEN = 2;
-    while (attemptsRemaining > 0) {
-      attemptsRemaining--;
-      if (dtdService != null && dtdService.getWebSocketReady()) {
-        readyService.complete(dtdService);
-        break;
-      }
-      try {
-        Thread.sleep(TIME_IN_BETWEEN * 1000);
-      }
-      catch (InterruptedException e) {
-        readyService.completeExceptionally(e);
-        break;
-      }
-    }
-    if (!readyService.isDone()) {
-      readyService.completeExceptionally(new Exception("Timed out waiting for DTD websocket to start"));
-    }
-    return readyService;
   }
 }
