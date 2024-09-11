@@ -305,13 +305,10 @@ public class FlutterInitializer implements StartupActivity {
     // Schedule event to be sent in a second if nothing more recent has come in.
     Executors.newSingleThreadScheduledExecutor().schedule(() -> {
       if (lastScheduledThemeChangeTime.get() != requestTime) {
-        System.out.println("this request is being dropped:  " + requestTime);
-        System.out.println("last scheduled time is: " + lastScheduledThemeChangeTime.get());
         // A more recent request has been set, so drop this request.
         return;
       }
 
-      System.out.println("this request is being sent:  " + requestTime);
       final JsonObject params = new JsonObject();
       params.addProperty("eventKind", "themeChanged");
       params.addProperty("streamId", "Editor");
