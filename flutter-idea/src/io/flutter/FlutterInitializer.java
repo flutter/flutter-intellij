@@ -376,6 +376,7 @@ public class FlutterInitializer implements StartupActivity {
         notification.addAction(new AnAction("More Info") {
           @Override
           public void actionPerformed(@NotNull AnActionEvent event) {
+            // TODO(helin24): Update with informational URL.
             BrowserLauncher.getInstance().browse("https://www.google.com", null);
             settings.setSdkVersionOutdatedWarningAcknowledged(version.getVersionText(), true);
             notification.expire();
