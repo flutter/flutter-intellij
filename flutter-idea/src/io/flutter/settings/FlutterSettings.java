@@ -12,6 +12,7 @@ import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
 import io.flutter.analytics.Analytics;
+import io.flutter.sdk.FlutterSdkVersion;
 
 import java.util.EventListener;
 
@@ -34,6 +35,7 @@ public class FlutterSettings {
   private static final String fontPackagesKey = "io.flutter.fontPackages";
   private static final String allowTestsInSourcesRootKey = "io.flutter.allowTestsInSources";
   private static final String showBazelIosRunNotificationKey = "io.flutter.hideBazelIosRunNotification";
+  private static final String sdkVersionOutdatedWarningAcknowledgedKey = "io.flutter.sdkVersionOutdatedWarningAcknowledged";
 
   // TODO(helin24): This is to change the embedded browser setting back to true only once for Big Sur users. If we
   // switch to enabling the embedded browser for everyone, then delete this key.
@@ -380,5 +382,17 @@ public class FlutterSettings {
   public void setShowBazelIosRunNotification(boolean value) {
     getPropertiesComponent().setValue(showBazelIosRunNotificationKey, value, true);
     fireEvent();
+  }
+
+  public boolean isSdkVersionOutdatedWarningAcknowledged(String versionText) {
+    return getPropertiesComponent().getBoolean(getSdkVersionKey(versionText));
+  }
+
+  public void setSdkVersionOutdatedWarningAcknowledged(String versionText, boolean value) {
+    getPropertiesComponent().setValue(getSdkVersionKey(versionText), value);
+  }
+
+  private String getSdkVersionKey(String versionText) {
+    return sdkVersionOutdatedWarningAcknowledgedKey + "_" + versionText;
   }
 }

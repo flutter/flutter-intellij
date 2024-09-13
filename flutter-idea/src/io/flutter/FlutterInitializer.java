@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.intellij.ProjectTopics;
 import com.intellij.ide.BrowserUtil;
+import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.ui.UISettingsListener;
@@ -31,8 +32,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.messages.MessageBusConnection;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
+import com.jetbrains.lang.dart.ide.errorTreeView.DartProblemsView;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import de.roderick.weberknecht.WebSocketException;
 import io.flutter.analytics.Analytics;
@@ -59,6 +63,7 @@ import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.sdk.FlutterPluginsLibraryManager;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.survey.FlutterSurveyNotifications;
 import io.flutter.utils.FlutterModuleUtils;
@@ -215,6 +220,9 @@ public class FlutterInitializer implements StartupActivity {
     // Initialize notifications for theme changes.
     setUpThemeChangeNotifications(project);
 
+    // Send unsupported SDK notifications if relevant.
+    checkSdkVersionNotification(project);
+
     setUpDtdAnalytics(project);
 
     // Initialize analytics.
@@ -276,8 +284,7 @@ public class FlutterInitializer implements StartupActivity {
     t1.start();
   }
 
-  private void setUpThemeChangeNotifications(Project project) {
-    if (project == null) return;
+  private void setUpThemeChangeNotifications(@NotNull Project project) {
     FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     if (sdk == null || !sdk.getVersion().canUseDtd()) return;
     Thread t1 = new Thread(() -> {
@@ -348,6 +355,43 @@ public class FlutterInitializer implements StartupActivity {
         LOG.error("Unable to send theme changed event", e);
       }
     }, 1, TimeUnit.SECONDS);
+  }
+
+  private void checkSdkVersionNotification(@NotNull Project project) {
+    FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+    if (sdk == null) return;
+    final FlutterSdkVersion version = sdk.getVersion();
+
+    if (!version.sdkIsSupported() && version.getVersionText() != null) {
+      final FlutterSettings settings = FlutterSettings.getInstance();
+      if (settings == null || settings.isSdkVersionOutdatedWarningAcknowledged(version.getVersionText())) return;
+
+      ApplicationManager.getApplication().invokeLater(() -> {
+        final Notification notification = new Notification("flutter-sdk",
+                                                           "Flutter SDK requires update",
+                                                           "Support for v" +
+                                                           version.getVersionText() +
+                                                           " of the Flutter SDK will be removed in an upcoming release of the Flutter plugin. Consider updating to a more recent Flutter SDK",
+                                                           NotificationType.WARNING);
+        notification.addAction(new AnAction("More Info") {
+          @Override
+          public void actionPerformed(@NotNull AnActionEvent event) {
+            BrowserLauncher.getInstance().browse("https://www.google.com", null);
+            settings.setSdkVersionOutdatedWarningAcknowledged(version.getVersionText(), true);
+            notification.expire();
+          }
+        });
+
+        notification.addAction(new AnAction("I understand") {
+          @Override
+          public void actionPerformed(@NotNull AnActionEvent event) {
+            settings.setSdkVersionOutdatedWarningAcknowledged(version.getVersionText(), true);
+            notification.expire();
+          }
+        });
+        Notifications.Bus.notify(notification, project);
+      });
+    }
   }
 
   private static void enableAnalytics(@NotNull Project project) {
