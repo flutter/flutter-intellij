@@ -21,12 +21,15 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Version;
 import com.intellij.openapi.util.io.FileUtil;
 import com.jetbrains.lang.dart.ide.devtools.DartDevToolsService;
+import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.console.FlutterConsoles;
+import io.flutter.dart.DtdUtils;
+import io.flutter.devtools.DevToolsUtils;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -119,26 +122,44 @@ public class DevToolsService {
       }
 
       if (dartDevToolsSupported) {
+        // We can use `dart devtools` to start
         final WorkspaceCache workspaceCache = WorkspaceCache.getInstance(project);
         if (workspaceCache.isBazel()) {
+          // This is only for internal usages.
           setUpWithDart(createCommand(workspaceCache.get().getRoot().getPath(), workspaceCache.get().getDevToolsScript(),
                                       ImmutableList.of("--machine")));
         }
         else {
-          // The Dart plugin should start DevTools with DTD, so try to use this instance of DevTools before trying to start another.
-          final String dartPluginUri = DartDevToolsService.getInstance(project).getDevToolsHostAndPort();
-          if (dartPluginUri != null) {
-            String[] parts = dartPluginUri.split(":");
-            String host = parts[0];
-            Integer port = Integer.parseInt(parts[1]);
-            if (host != null && port != null) {
-              devToolsFutureRef.get().complete(new DevToolsInstance(host, port));
-              return;
-            }
+          // Start DevTools and pass in DTD.
+          final DtdUtils dtdUtils = new DtdUtils();
+          try {
+            final DartToolingDaemonService dtdService = dtdUtils.readyDtdService(project).get();
+            final String dtdUri = dtdService.getUri();
+            setUpInDevMode(createCommand("/Users/helinx/Documents/devtools", "devtools_tool",
+                                         ImmutableList.of("serve", "--machine", "--dtd-uri=" + dtdUri)));
+          }
+          catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+          catch (java.util.concurrent.ExecutionException e) {
+            throw new RuntimeException(e);
           }
 
-          setUpWithDart(createCommand(DartSdk.getDartSdk(project).getHomePath(), DartSdk.getDartSdk(project).getHomePath() + File.separatorChar + "bin" + File.separatorChar + "dart",
-                                      ImmutableList.of("devtools", "--machine")));
+          //// The Dart plugin should start DevTools with DTD, so try to use this instance of DevTools before trying to start another.
+          //final String dartPluginUri = DartDevToolsService.getInstance(project).getDevToolsHostAndPort();
+          //if (dartPluginUri != null) {
+          //  String[] parts = dartPluginUri.split(":");
+          //  String host = parts[0];
+          //  Integer port = Integer.parseInt(parts[1]);
+          //  if (host != null && port != null) {
+          //    devToolsFutureRef.get().complete(new DevToolsInstance(host, port));
+          //    return;
+          //  }
+          //}
+          //
+          //setUpWithDart(createCommand(DartSdk.getDartSdk(project).getHomePath(),
+          //                            DartSdk.getDartSdk(project).getHomePath() + File.separatorChar + "bin" + File.separatorChar + "dart",
+          //                            ImmutableList.of("devtools", "--machine")));
         }
       }
       else if (sdk != null && sdk.getVersion().useDaemonForDevTools()) {
@@ -149,6 +170,46 @@ public class DevToolsService {
         setUpWithPub();
       }
     });
+  }
+
+  private void setUpInDevMode(GeneralCommandLine command) {
+    try {
+      this.process = new MostlySilentColoredProcessHandler(command);
+      this.process.addProcessListener(new ProcessAdapter() {
+        @Override
+        public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
+          final String text = event.getText().trim();
+          System.out.println("DevTools startup: " + text);
+          if (text.startsWith("{") && text.endsWith("}")) {
+            try {
+              final JsonElement element = JsonUtils.parseString(text);
+
+              final JsonObject obj = element.getAsJsonObject();
+
+              if (JsonUtils.getStringMember(obj, "event").equals("server.started")) {
+                final JsonObject params = obj.getAsJsonObject("params");
+                final String host = JsonUtils.getStringMember(params, "host");
+                final int port = JsonUtils.getIntMember(params, "port");
+
+                if (port != -1) {
+                  devToolsFutureRef.get().complete(new DevToolsInstance(host, port));
+                }
+                else {
+                  logExceptionAndComplete("DevTools port was invalid");
+                }
+              }
+            }
+            catch (JsonSyntaxException e) {
+              logExceptionAndComplete(e);
+            }
+          }
+        }
+      });
+      process.startNotify();
+    }
+    catch (ExecutionException e) {
+      logExceptionAndComplete(e);
+    }
   }
 
   private void setUpWithDart(GeneralCommandLine command) {
