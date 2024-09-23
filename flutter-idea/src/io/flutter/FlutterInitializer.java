@@ -312,11 +312,15 @@ public class FlutterInitializer implements StartupActivity {
       final JsonObject params = new JsonObject();
       params.addProperty("eventKind", "themeChanged");
       params.addProperty("streamId", "Editor");
-      final JsonObject eventData = new JsonObject();
+
+      final JsonObject themeData = new JsonObject();
       final DevToolsUtils utils = new DevToolsUtils();
-      eventData.addProperty("isDarkMode", Boolean.FALSE.equals(utils.getIsBackgroundBright()));
-      eventData.addProperty("backgroundColor", utils.getColorHexCode());
-      eventData.addProperty("fontSize", utils.getFontSize().intValue());
+      themeData.addProperty("isDarkMode", Boolean.FALSE.equals(utils.getIsBackgroundBright()));
+      themeData.addProperty("backgroundColor", utils.getColorHexCode());
+      themeData.addProperty("fontSize", utils.getFontSize().intValue());
+
+      final JsonObject eventData = new JsonObject();
+      eventData.add("theme", themeData);
       params.add("eventData", eventData);
 
       try {
