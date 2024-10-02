@@ -5,6 +5,7 @@
  */
 package io.flutter.inspector;
 
+import com.google.api.client.json.Json;
 import com.google.common.base.Joiner;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -29,14 +30,17 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
 import com.intellij.xdebugger.impl.XSourcePositionImpl;
+import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
 import com.jetbrains.lang.dart.psi.DartExpression;
 import com.jetbrains.lang.dart.psi.DartReferenceExpression;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.dart.DtdUtils;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.JsonUtils;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
@@ -61,6 +65,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -251,7 +256,29 @@ public class InspectorService implements Disposable {
 
     clients = new HashSet<>();
 
-    vmService.addVmServiceListener(new VmServiceListenerAdapter() {
+    // This code hasn't been tested yet, as it requires the Dart plugin to be updated to this PR: https://github.com/JetBrains/intellij-plugins/pull/920.
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(app.getProject());
+    if (sdk != null && sdk.getVersion().canUseDtd()) {
+      Thread t1 = new Thread(() -> {
+        CompletableFuture<DartToolingDaemonService> future = new DtdUtils().readyDtdService(app.getProject());
+        future.thenApply((dtdService) -> {
+          JsonObject capabilities = new JsonObject();
+          JsonArray capabilitiesList = new JsonArray();
+          capabilitiesList.add("file");
+          capabilities.add("supportedSchemes", capabilitiesList);
+
+          dtdService.registerServiceMethod("Editor", "navigateToCode", capabilities, new DartToolingDaemonRequestHandler() {
+            public DartToolingDaemonResponse handleRequest(JsonObject request) {
+              // Extract request params
+              // Then replicate ToolEvent actions below
+            }
+          });
+        });
+      });
+      t1.start();
+    }
+
+                                                            vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
       public void received(String streamId, Event event) {
         onVmServiceReceived(streamId, event);
