@@ -5,7 +5,7 @@
  */
 package io.flutter.run.daemon;
 
-import com.google.common.collect.ImmutableList;
+import  com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
@@ -18,6 +18,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.Version;
 import com.intellij.openapi.util.io.FileUtil;
 import com.jetbrains.lang.dart.ide.devtools.DartDevToolsService;
@@ -130,36 +131,40 @@ public class DevToolsService {
                                       ImmutableList.of("--machine")));
         }
         else {
-          // Start DevTools and pass in DTD.
-          final DtdUtils dtdUtils = new DtdUtils();
-          try {
-            final DartToolingDaemonService dtdService = dtdUtils.readyDtdService(project).get();
-            final String dtdUri = dtdService.getUri();
-            setUpInDevMode(createCommand("/Users/helinx/Documents/devtools", "devtools_tool",
-                                         ImmutableList.of("serve", "--machine", "--dtd-uri=" + dtdUri)));
-          }
-          catch (InterruptedException e) {
-            throw new RuntimeException(e);
-          }
-          catch (java.util.concurrent.ExecutionException e) {
-            throw new RuntimeException(e);
+          //if (Registry.is("flutter.dev.devtools") || true) {
+          if (true) {
+            // Start DevTools and pass in DTD.
+            final DtdUtils dtdUtils = new DtdUtils();
+            try {
+              final DartToolingDaemonService dtdService = dtdUtils.readyDtdService(project).get();
+              final String dtdUri = dtdService.getUri();
+              setUpInDevMode(createCommand("/Users/helinx/Documents/devtools", "devtools_tool",
+                                           ImmutableList.of("serve", "--machine", "--dtd-uri=" + dtdUri)));
+            }
+            catch (InterruptedException e) {
+              throw new RuntimeException(e);
+            }
+            catch (java.util.concurrent.ExecutionException e) {
+              throw new RuntimeException(e);
+            }
+            return;
           }
 
-          //// The Dart plugin should start DevTools with DTD, so try to use this instance of DevTools before trying to start another.
-          //final String dartPluginUri = DartDevToolsService.getInstance(project).getDevToolsHostAndPort();
-          //if (dartPluginUri != null) {
-          //  String[] parts = dartPluginUri.split(":");
-          //  String host = parts[0];
-          //  Integer port = Integer.parseInt(parts[1]);
-          //  if (host != null && port != null) {
-          //    devToolsFutureRef.get().complete(new DevToolsInstance(host, port));
-          //    return;
-          //  }
-          //}
-          //
-          //setUpWithDart(createCommand(DartSdk.getDartSdk(project).getHomePath(),
-          //                            DartSdk.getDartSdk(project).getHomePath() + File.separatorChar + "bin" + File.separatorChar + "dart",
-          //                            ImmutableList.of("devtools", "--machine")));
+          // The Dart plugin should start DevTools with DTD, so try to use this instance of DevTools before trying to start another.
+          final String dartPluginUri = DartDevToolsService.getInstance(project).getDevToolsHostAndPort();
+          if (dartPluginUri != null) {
+            String[] parts = dartPluginUri.split(":");
+            String host = parts[0];
+            Integer port = Integer.parseInt(parts[1]);
+            if (host != null && port != null) {
+              devToolsFutureRef.get().complete(new DevToolsInstance(host, port));
+              return;
+            }
+          }
+
+          setUpWithDart(createCommand(DartSdk.getDartSdk(project).getHomePath(),
+                                      DartSdk.getDartSdk(project).getHomePath() + File.separatorChar + "bin" + File.separatorChar + "dart",
+                                      ImmutableList.of("devtools", "--machine")));
         }
       }
       else if (sdk != null && sdk.getVersion().useDaemonForDevTools()) {
