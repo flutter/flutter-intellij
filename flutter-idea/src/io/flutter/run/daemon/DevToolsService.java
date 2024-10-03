@@ -30,7 +30,6 @@ import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.console.FlutterConsoles;
 import io.flutter.dart.DtdUtils;
-import io.flutter.devtools.DevToolsUtils;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -48,6 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class DevToolsService {
   private static final Logger LOG = Logger.getInstance(DevToolsService.class);
+  public static final String LOCAL_DEVTOOLS = "flutter.local.devtools.dir";
 
   private static class DevToolsServiceListener implements DaemonEvent.Listener {
   }
@@ -123,7 +123,7 @@ public class DevToolsService {
       }
 
       if (dartDevToolsSupported) {
-        // We can use `dart devtools` to start
+        // This condition means we can use `dart devtools` to start.
         final WorkspaceCache workspaceCache = WorkspaceCache.getInstance(project);
         if (workspaceCache.isBazel()) {
           // This is only for internal usages.
@@ -131,14 +131,19 @@ public class DevToolsService {
                                       ImmutableList.of("--machine")));
         }
         else {
-          //if (Registry.is("flutter.dev.devtools") || true) {
-          if (true) {
-            // Start DevTools and pass in DTD.
+          final String localDevToolsDir = Registry.stringValue(LOCAL_DEVTOOLS);
+          if (!localDevToolsDir.isEmpty()) {
+            // This is only for development to check integration with a locally run DevTools server.
+            // The plugin will run `devtools_tool serve` and assumes that setup from
+            // https://github.com/flutter/devtools/blob/master/CONTRIBUTING.md has been done.
+            // To use this option, go to Help > Find action > Registry > Set "flutter.local.devtools.dir" to your local DevTools directory,
+            // e.g. "/Users/username/Documents/devtools".
+            // To go back to using DevTools from the SDK (the standard way), clear out the registry setting.
             final DtdUtils dtdUtils = new DtdUtils();
             try {
               final DartToolingDaemonService dtdService = dtdUtils.readyDtdService(project).get();
               final String dtdUri = dtdService.getUri();
-              setUpInDevMode(createCommand("/Users/helinx/Documents/devtools", "devtools_tool",
+              setUpInDevMode(createCommand(localDevToolsDir, "devtools_tool",
                                            ImmutableList.of("serve", "--machine", "--dtd-uri=" + dtdUri)));
             }
             catch (InterruptedException e) {
@@ -184,30 +189,10 @@ public class DevToolsService {
         @Override
         public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
           final String text = event.getText().trim();
+
+          // Keep this printout so developers can see DevTools startup output in idea.log.
           System.out.println("DevTools startup: " + text);
-          if (text.startsWith("{") && text.endsWith("}")) {
-            try {
-              final JsonElement element = JsonUtils.parseString(text);
-
-              final JsonObject obj = element.getAsJsonObject();
-
-              if (JsonUtils.getStringMember(obj, "event").equals("server.started")) {
-                final JsonObject params = obj.getAsJsonObject("params");
-                final String host = JsonUtils.getStringMember(params, "host");
-                final int port = JsonUtils.getIntMember(params, "port");
-
-                if (port != -1) {
-                  devToolsFutureRef.get().complete(new DevToolsInstance(host, port));
-                }
-                else {
-                  logExceptionAndComplete("DevTools port was invalid");
-                }
-              }
-            }
-            catch (JsonSyntaxException e) {
-              logExceptionAndComplete(e);
-            }
-          }
+          tryParseStartupText(text);
         }
       });
       process.startNotify();
@@ -223,33 +208,7 @@ public class DevToolsService {
       this.process.addProcessListener(new ProcessAdapter() {
         @Override
         public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
-          final String text = event.getText().trim();
-
-          if (text.startsWith("{") && text.endsWith("}")) {
-            // {"event":"server.started","params":{"host":"127.0.0.1","port":9100}}
-
-            try {
-              final JsonElement element = JsonUtils.parseString(text);
-
-              final JsonObject obj = element.getAsJsonObject();
-
-              if (JsonUtils.getStringMember(obj, "event").equals("server.started")) {
-                final JsonObject params = obj.getAsJsonObject("params");
-                final String host = JsonUtils.getStringMember(params, "host");
-                final int port = JsonUtils.getIntMember(params, "port");
-
-                if (port != -1) {
-                  devToolsFutureRef.get().complete(new DevToolsInstance(host, port));
-                }
-                else {
-                  logExceptionAndComplete("DevTools port was invalid");
-                }
-              }
-            }
-            catch (JsonSyntaxException e) {
-              logExceptionAndComplete(e);
-            }
-          }
+          tryParseStartupText(event.getText().trim());
         }
       });
       process.startNotify();
@@ -264,6 +223,32 @@ public class DevToolsService {
     }
     catch (ExecutionException e) {
       logExceptionAndComplete(e);
+    }
+  }
+
+  private void tryParseStartupText(@NotNull String text) {
+    if (text.startsWith("{") && text.endsWith("}")) {
+      try {
+        final JsonElement element = JsonUtils.parseString(text);
+
+        final JsonObject obj = element.getAsJsonObject();
+
+        if (JsonUtils.getStringMember(obj, "event").equals("server.started")) {
+          final JsonObject params = obj.getAsJsonObject("params");
+          final String host = JsonUtils.getStringMember(params, "host");
+          final int port = JsonUtils.getIntMember(params, "port");
+
+          if (port != -1) {
+            devToolsFutureRef.get().complete(new DevToolsInstance(host, port));
+          }
+          else {
+            logExceptionAndComplete("DevTools port was invalid");
+          }
+        }
+      }
+      catch (JsonSyntaxException e) {
+        logExceptionAndComplete(e);
+      }
     }
   }
 
