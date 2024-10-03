@@ -39,6 +39,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -47,7 +50,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class DevToolsService {
   private static final Logger LOG = Logger.getInstance(DevToolsService.class);
-  public static final String LOCAL_DEVTOOLS = "flutter.local.devtools.dir";
+  public static final String LOCAL_DEVTOOLS_DIR = "flutter.local.devtools.dir";
+  public static final String LOCAL_DEVTOOLS_ARGS = "flutter.local.devtools.args";
 
   private static class DevToolsServiceListener implements DaemonEvent.Listener {
   }
@@ -131,7 +135,7 @@ public class DevToolsService {
                                       ImmutableList.of("--machine")));
         }
         else {
-          final String localDevToolsDir = Registry.stringValue(LOCAL_DEVTOOLS);
+          final String localDevToolsDir = Registry.stringValue(LOCAL_DEVTOOLS_DIR);
           if (!localDevToolsDir.isEmpty()) {
             // This is only for development to check integration with a locally run DevTools server.
             // The plugin will run `devtools_tool serve` and assumes that setup from
@@ -143,8 +147,18 @@ public class DevToolsService {
             try {
               final DartToolingDaemonService dtdService = dtdUtils.readyDtdService(project).get();
               final String dtdUri = dtdService.getUri();
+
+              final List<String> args = new ArrayList<>();
+              args.add("serve");
+              args.add("--machine");
+              args.add("--dtd-uri=" + dtdUri);
+              final String localDevToolsArgs = Registry.stringValue(LOCAL_DEVTOOLS_ARGS);
+              if (!localDevToolsArgs.isEmpty()) {
+                args.addAll(Arrays.stream(localDevToolsArgs.split(" ")).toList());
+              }
+
               setUpInDevMode(createCommand(localDevToolsDir, "devtools_tool",
-                                           ImmutableList.of("serve", "--machine", "--dtd-uri=" + dtdUri)));
+                                           args));
             }
             catch (InterruptedException e) {
               throw new RuntimeException(e);
@@ -431,7 +445,7 @@ public class DevToolsService {
     }
   }
 
-  private static GeneralCommandLine createCommand(String workDir, String command, ImmutableList<String> arguments) {
+  private static GeneralCommandLine createCommand(String workDir, String command, List<String> arguments) {
     final GeneralCommandLine result = new GeneralCommandLine().withWorkDirectory(workDir);
     result.setCharset(StandardCharsets.UTF_8);
     result.setExePath(FileUtil.toSystemDependentName(command));
