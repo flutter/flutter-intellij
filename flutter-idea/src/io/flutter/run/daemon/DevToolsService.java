@@ -18,15 +18,18 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.Version;
 import com.intellij.openapi.util.io.FileUtil;
 import com.jetbrains.lang.dart.ide.devtools.DartDevToolsService;
+import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.console.FlutterConsoles;
+import io.flutter.dart.DtdUtils;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -36,6 +39,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +50,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class DevToolsService {
   private static final Logger LOG = Logger.getInstance(DevToolsService.class);
+  public static final String LOCAL_DEVTOOLS_DIR = "flutter.local.devtools.dir";
+  public static final String LOCAL_DEVTOOLS_ARGS = "flutter.local.devtools.args";
 
   private static class DevToolsServiceListener implements DaemonEvent.Listener {
   }
@@ -119,12 +127,48 @@ public class DevToolsService {
       }
 
       if (dartDevToolsSupported) {
+        // This condition means we can use `dart devtools` to start.
         final WorkspaceCache workspaceCache = WorkspaceCache.getInstance(project);
         if (workspaceCache.isBazel()) {
+          // This is only for internal usages.
           setUpWithDart(createCommand(workspaceCache.get().getRoot().getPath(), workspaceCache.get().getDevToolsScript(),
                                       ImmutableList.of("--machine")));
         }
         else {
+          final String localDevToolsDir = Registry.stringValue(LOCAL_DEVTOOLS_DIR);
+          if (!localDevToolsDir.isEmpty()) {
+            // This is only for development to check integration with a locally run DevTools server.
+            // The plugin will run `devtools_tool serve` and assumes that setup from
+            // https://github.com/flutter/devtools/blob/master/CONTRIBUTING.md has been done.
+            // To use this option, go to Help > Find action > Registry > Set "flutter.local.devtools.dir" to your local DevTools directory,
+            // e.g. "/Users/username/Documents/devtools".
+            // To go back to using DevTools from the SDK (the standard way), clear out the registry setting.
+            final DtdUtils dtdUtils = new DtdUtils();
+            try {
+              final DartToolingDaemonService dtdService = dtdUtils.readyDtdService(project).get();
+              final String dtdUri = dtdService.getUri();
+
+              final List<String> args = new ArrayList<>();
+              args.add("serve");
+              args.add("--machine");
+              args.add("--dtd-uri=" + dtdUri);
+              final String localDevToolsArgs = Registry.stringValue(LOCAL_DEVTOOLS_ARGS);
+              if (!localDevToolsArgs.isEmpty()) {
+                args.addAll(Arrays.stream(localDevToolsArgs.split(" ")).toList());
+              }
+
+              setUpInDevMode(createCommand(localDevToolsDir, "devtools_tool",
+                                           args));
+            }
+            catch (InterruptedException e) {
+              throw new RuntimeException(e);
+            }
+            catch (java.util.concurrent.ExecutionException e) {
+              throw new RuntimeException(e);
+            }
+            return;
+          }
+
           // The Dart plugin should start DevTools with DTD, so try to use this instance of DevTools before trying to start another.
           final String dartPluginUri = DartDevToolsService.getInstance(project).getDevToolsHostAndPort();
           if (dartPluginUri != null) {
@@ -137,7 +181,8 @@ public class DevToolsService {
             }
           }
 
-          setUpWithDart(createCommand(DartSdk.getDartSdk(project).getHomePath(), DartSdk.getDartSdk(project).getHomePath() + File.separatorChar + "bin" + File.separatorChar + "dart",
+          setUpWithDart(createCommand(DartSdk.getDartSdk(project).getHomePath(),
+                                      DartSdk.getDartSdk(project).getHomePath() + File.separatorChar + "bin" + File.separatorChar + "dart",
                                       ImmutableList.of("devtools", "--machine")));
         }
       }
@@ -151,7 +196,7 @@ public class DevToolsService {
     });
   }
 
-  private void setUpWithDart(GeneralCommandLine command) {
+  private void setUpInDevMode(GeneralCommandLine command) {
     try {
       this.process = new MostlySilentColoredProcessHandler(command);
       this.process.addProcessListener(new ProcessAdapter() {
@@ -159,31 +204,25 @@ public class DevToolsService {
         public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
           final String text = event.getText().trim();
 
-          if (text.startsWith("{") && text.endsWith("}")) {
-            // {"event":"server.started","params":{"host":"127.0.0.1","port":9100}}
+          // Keep this printout so developers can see DevTools startup output in idea.log.
+          System.out.println("DevTools startup: " + text);
+          tryParseStartupText(text);
+        }
+      });
+      process.startNotify();
+    }
+    catch (ExecutionException e) {
+      logExceptionAndComplete(e);
+    }
+  }
 
-            try {
-              final JsonElement element = JsonUtils.parseString(text);
-
-              final JsonObject obj = element.getAsJsonObject();
-
-              if (JsonUtils.getStringMember(obj, "event").equals("server.started")) {
-                final JsonObject params = obj.getAsJsonObject("params");
-                final String host = JsonUtils.getStringMember(params, "host");
-                final int port = JsonUtils.getIntMember(params, "port");
-
-                if (port != -1) {
-                  devToolsFutureRef.get().complete(new DevToolsInstance(host, port));
-                }
-                else {
-                  logExceptionAndComplete("DevTools port was invalid");
-                }
-              }
-            }
-            catch (JsonSyntaxException e) {
-              logExceptionAndComplete(e);
-            }
-          }
+  private void setUpWithDart(GeneralCommandLine command) {
+    try {
+      this.process = new MostlySilentColoredProcessHandler(command);
+      this.process.addProcessListener(new ProcessAdapter() {
+        @Override
+        public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
+          tryParseStartupText(event.getText().trim());
         }
       });
       process.startNotify();
@@ -198,6 +237,32 @@ public class DevToolsService {
     }
     catch (ExecutionException e) {
       logExceptionAndComplete(e);
+    }
+  }
+
+  private void tryParseStartupText(@NotNull String text) {
+    if (text.startsWith("{") && text.endsWith("}")) {
+      try {
+        final JsonElement element = JsonUtils.parseString(text);
+
+        final JsonObject obj = element.getAsJsonObject();
+
+        if (JsonUtils.getStringMember(obj, "event").equals("server.started")) {
+          final JsonObject params = obj.getAsJsonObject("params");
+          final String host = JsonUtils.getStringMember(params, "host");
+          final int port = JsonUtils.getIntMember(params, "port");
+
+          if (port != -1) {
+            devToolsFutureRef.get().complete(new DevToolsInstance(host, port));
+          }
+          else {
+            logExceptionAndComplete("DevTools port was invalid");
+          }
+        }
+      }
+      catch (JsonSyntaxException e) {
+        logExceptionAndComplete(e);
+      }
     }
   }
 
@@ -380,7 +445,7 @@ public class DevToolsService {
     }
   }
 
-  private static GeneralCommandLine createCommand(String workDir, String command, ImmutableList<String> arguments) {
+  private static GeneralCommandLine createCommand(String workDir, String command, List<String> arguments) {
     final GeneralCommandLine result = new GeneralCommandLine().withWorkDirectory(workDir);
     result.setCharset(StandardCharsets.UTF_8);
     result.setExePath(FileUtil.toSystemDependentName(command));

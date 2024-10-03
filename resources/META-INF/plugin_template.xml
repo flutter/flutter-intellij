@@ -417,6 +417,9 @@
     <notificationGroup displayType="TOOL_WINDOW" id="flutter-run" toolWindowId="Run" />
     <notificationGroup displayType="TOOL_WINDOW" id="flutter-debug" toolWindowId="Debug" />
     <notificationGroup displayType="TOOL_WINDOW" id="flutter-analysis" toolWindowId="Dart Analysis" />
+
+    <registryKey defaultValue="" description="Launch local server for DevTools" key="flutter.local.devtools.dir"/>
+    <registryKey defaultValue="" description="Local DevTools server arguments" key="flutter.local.devtools.args"/>
   </extensions>
 
   <!-- Dart Plugin extensions -->
