@@ -271,6 +271,18 @@ public class InspectorService implements Disposable {
             public DartToolingDaemonResponse handleRequest(JsonObject request) {
               // Extract request params
               // Then replicate ToolEvent actions below
+
+              // This is a code pointer for where DevTools is currently using `ToolEvent` for the performance panel's rebuild stats:
+              // https://github.com/flutter/devtools/blob/master/packages/devtools_app/lib/src/screens/performance/panes/rebuild_stats/rebuild_stats.dart#L215
+              // It would make sense to send a DTD `Editor.navigateToCode` request here (once this IJ change has landed).
+
+              // DevTools also sends a `ToolEvent` when a location is clicked in the inspector panel, but this is through flutter/flutter:
+              // https://github.com/flutter/flutter/blob/master/packages/flutter/lib/src/widgets/widget_inspector.dart#L1607
+              // It would also make sense to make a DTD `Editor.navigateToCode` where this is used (I am not sure where DevTools invokes
+              // this code).
+
+              // I'm not sure if we should remove `ToolEvent` entirely. We should probably keep while there are cases when DTD isn't
+              // started: internal users, is DTD is started all the time in Dart?
             }
           });
         });
