@@ -21,7 +21,7 @@
 
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
-  <idea-version since-build="242.20224.300" until-build="242.*"/>
+  <idea-version since-build="241.14494.158" until-build="242.*"/>
 
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.lang</depends>
@@ -718,6 +718,8 @@
     <notificationGroup displayType="TOOL_WINDOW" id="flutter-run" toolWindowId="Run" />
     <notificationGroup displayType="TOOL_WINDOW" id="flutter-debug" toolWindowId="Debug" />
     <notificationGroup displayType="TOOL_WINDOW" id="flutter-analysis" toolWindowId="Dart Analysis" />
+
+    <registryKey defaultValue="" description="Launch local server for DevTools" key="flutter.local.devtools.dir"/>
   </extensions>
 
   <!-- Dart Plugin extensions -->

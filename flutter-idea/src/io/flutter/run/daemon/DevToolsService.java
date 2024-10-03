@@ -5,7 +5,7 @@
  */
 package io.flutter.run.daemon;
 
-import  com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
