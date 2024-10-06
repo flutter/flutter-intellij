@@ -416,11 +416,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
      */
     @Nullable
     static Analyzer create(@NotNull Project project, @NotNull VirtualFile sourceLocation) {
-      DartPlugin dartPluginInstance = DartPlugin.getInstance();
-      if (dartPluginInstance == null) {
-        return null;
-      }
-
+      final DartPlugin dartPluginInstance = DartPlugin.getInstance();
       final DartAnalysisServerService dartAnalysisServerService = dartPluginInstance.getAnalysisService(project);
       if (dartAnalysisServerService == null) {
         return null;

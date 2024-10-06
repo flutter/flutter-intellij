@@ -22,21 +22,25 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.Objects;
 
 /**
- * Provides access to the Dart Plugin.
+ * Provides access to the Dart Plugin for IntelliJ.
  */
 public class DartPlugin {
 
   /**
    * Tracks the minimum required Dart Plugin version.
    */
-  private static final Version MINIMUM_VERSION = Version.parseVersion("171.3780.79");
+  @NotNull
+  private static final Version MINIMUM_VERSION = Objects.requireNonNull(Version.parseVersion("171.3780.79"));
 
+  @NotNull
   private static final DartPlugin INSTANCE = new DartPlugin();
 
   private Version myVersion;
 
+  @NotNull
   public static DartPlugin getInstance() {
     return INSTANCE;
   }
@@ -74,11 +78,11 @@ public class DartPlugin {
     DartPubActionBase.setIsInProgress(inProgress);
   }
 
-  public static boolean isDartRunConfiguration(ConfigurationType type) {
+  public static boolean isDartRunConfiguration(@NotNull ConfigurationType type) {
     return type.getId().equals("DartCommandLineRunConfigurationType");
   }
 
-  public static boolean isDartTestConfiguration(ConfigurationType type) {
+  public static boolean isDartTestConfiguration(@NotNull ConfigurationType type) {
     return type.getId().equals("DartTestRunConfigurationType");
   }
 
@@ -86,31 +90,32 @@ public class DartPlugin {
     return DartSdkUpdateOption.getDartSdkUpdateOption();
   }
 
-  public static void setCheckForUpdates(DartSdkUpdateOption sdkUpdateOption) {
+  public static void setCheckForUpdates(@NotNull DartSdkUpdateOption sdkUpdateOption) {
     DartSdkUpdateOption.setDartSdkUpdateOption(sdkUpdateOption);
   }
 
   /**
-   * @return the minimum required version of the Dart Plugin
+   * Return the minimum required {@link Version} of the Dart Plugin.
    */
+  @NotNull
   public Version getMinimumVersion() {
     return MINIMUM_VERSION;
   }
 
   /**
-   * @return the version of the currently installed Dart Plugin
+   * Return the {@link Version} of the currently installed Dart Plugin.
    */
   public Version getVersion() {
     if (myVersion == null) {
       final IdeaPluginDescriptor descriptor = PluginManagerCore.getPlugin(PluginId.getId("Dart"));
       assert (descriptor != null);
-      myVersion = Version.parseVersion(descriptor.getVersion());
+      myVersion = Objects.requireNonNull(Version.parseVersion(Objects.requireNonNull(descriptor.getVersion())));
     }
     return myVersion;
   }
 
   /**
-   * Return the DartAnalysisServerService instance.
+   * Return the {@link DartAnalysisServerService} instance for the passed {@link Project}.
    */
   @Nullable
   public DartAnalysisServerService getAnalysisService(@NotNull final Project project) {
