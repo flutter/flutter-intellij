@@ -64,7 +64,7 @@ public class FlutterTestEventsConverter extends DartTestEventsConverterZ {
           final JsonElement params = getValue(element, "params");
           if (params != null) {
             final JsonElement uri = getValue(params, "observatoryUri");
-            if (uri != null) return true;
+            return uri != null;
           }
         }
       }

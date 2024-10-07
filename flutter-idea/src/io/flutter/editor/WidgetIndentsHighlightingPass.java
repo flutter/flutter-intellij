@@ -248,10 +248,7 @@ public class WidgetIndentsHighlightingPass {
       final Point end = editor.visualPositionToXY(endPosition);
       double splitY = -1;
       int maxY = end.y;
-      boolean includeLastLine = false;
-      if (endPosition.line == editor.offsetToVisualPosition(doc.getTextLength()).line) {
-        includeLastLine = true;
-      }
+      boolean includeLastLine = endPosition.line == editor.offsetToVisualPosition(doc.getTextLength()).line;
 
       int endLine = doc.getLineNumber(endOffset);
       if (childLines != null && !childLines.isEmpty()) {

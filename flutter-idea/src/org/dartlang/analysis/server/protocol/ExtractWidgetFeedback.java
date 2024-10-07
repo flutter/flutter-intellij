@@ -36,11 +36,8 @@ public class ExtractWidgetFeedback extends RefactoringFeedback {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof ExtractWidgetFeedback other) {
-      return
-        true;
-    }
-    return false;
+    return
+      obj instanceof ExtractWidgetFeedback other;
   }
 
   public static ExtractWidgetFeedback fromJson(JsonObject jsonObject) {

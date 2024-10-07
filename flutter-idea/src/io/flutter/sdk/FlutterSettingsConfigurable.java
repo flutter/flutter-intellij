@@ -267,11 +267,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isEnableJcefBrowser() != myEnableJcefBrowserCheckBox.isSelected()) {
-      return true;
-    }
-
-    return false;
+    return settings.isEnableJcefBrowser() != myEnableJcefBrowserCheckBox.isSelected();
   }
 
   @Override

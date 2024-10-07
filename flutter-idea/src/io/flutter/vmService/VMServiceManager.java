@@ -587,12 +587,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
         @Override
         public void received(JsonObject object) {
-          if (object == null) {
-            ret.complete(null);
-          }
-          else {
-            ret.complete(object);
-          }
+          ret.complete(object);
         }
       }
     );

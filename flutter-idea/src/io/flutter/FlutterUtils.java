@@ -252,9 +252,7 @@ public class FlutterUtils {
     }
     if (foundSourceRoot) {
       // The file is in a sources root but not marked as tests.
-      if (file.getName().endsWith(("_test.dart")) && FlutterSettings.getInstance().isAllowTestsInSourcesRoot()) {
-        return true;
-      }
+      return file.getName().endsWith(("_test.dart")) && FlutterSettings.getInstance().isAllowTestsInSourcesRoot();
     }
     return false;
   }
