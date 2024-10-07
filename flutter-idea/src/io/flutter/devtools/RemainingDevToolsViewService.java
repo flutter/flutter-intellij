@@ -7,7 +7,6 @@ package io.flutter.devtools;
 
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.project.Project;
-import io.flutter.view.EmbeddedBrowser;
 import org.jetbrains.annotations.NotNull;
 
 @Service(Service.Level.PROJECT)

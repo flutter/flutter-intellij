@@ -12,7 +12,6 @@ import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
 import io.flutter.analytics.Analytics;
-import io.flutter.sdk.FlutterSdkVersion;
 
 import java.util.EventListener;
 
