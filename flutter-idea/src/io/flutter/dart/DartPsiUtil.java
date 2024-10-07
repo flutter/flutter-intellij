@@ -26,12 +26,13 @@ public class DartPsiUtil {
   }
 
   @Nullable
-  public static PsiElement getNewExprFromType(PsiElement element) {
+  public static PsiElement getNewExprFromType(@NotNull PsiElement element) {
+    if (element.getNode() == null) return null;
     if (element.getNode().getElementType() != DartTokenTypes.SIMPLE_TYPE) return null;
     PsiElement parent = element.getParent();
     if (parent == null) return null;
     parent = parent.getParent();
-    if (parent == null) return null;
+    if (parent == null || parent.getNode() == null) return null;
     if (parent.getNode().getElementType() != DartTokenTypes.NEW_EXPRESSION) return null;
     return parent;
   }
@@ -39,7 +40,7 @@ public class DartPsiUtil {
   @Nullable
   public static String getValueOfPositionalArgument(@NotNull DartArguments arguments, int index) {
     final DartExpression expression = getPositionalArgument(arguments, index);
-    if (expression == null) return null;
+    if (expression == null || expression.getNode() == null) return null;
     if (expression.getNode().getElementType() != DartTokenTypes.LITERAL_EXPRESSION) return null;
     return expression.getText();
   }
@@ -56,9 +57,12 @@ public class DartPsiUtil {
   public static String getValueOfNamedArgument(@NotNull DartArguments arguments, @NotNull String name) {
     final PsiElement family = getNamedArgumentExpression(arguments, "fontFamily");
     if (family != null) {
+      assert family.getNode() != null;
       if (family.getNode().getElementType() == DartTokenTypes.STRING_LITERAL_EXPRESSION) {
+        assert family.getText() != null;
         return DartPsiImplUtil.getUnquotedDartStringAndItsRange(family.getText()).first;
-      } else {
+      }
+      else {
         return ""; // Empty string indicates arg was found but value could not be determined easily.
       }
     }
@@ -71,10 +75,12 @@ public class DartPsiUtil {
     if (list == null) return null;
     final List<DartNamedArgument> namedArgumentList = list.getNamedArgumentList();
     for (DartNamedArgument namedArgument : namedArgumentList) {
+      assert namedArgument != null;
       final DartExpression nameExpression = namedArgument.getParameterReferenceExpression();
+      assert nameExpression != null;
       final PsiElement childId = nameExpression.getFirstChild();
       final PsiElement child = nameExpression.getFirstChild();
-      if (name.equals(child.getText())) {
+      if (name.equals(child != null ? child.getText() : "")) {
         return namedArgument.getExpression();
       }
     }
@@ -84,12 +90,14 @@ public class DartPsiUtil {
   @Nullable
   public static PsiElement topmostReferenceExpression(@NotNull PsiElement element) {
     final PsiElement id = element.getParent();
-    if (id == null || id.getNode().getElementType() != DartTokenTypes.ID) return null;
+    if (id == null || id.getNode() == null || id.getNode().getElementType() != DartTokenTypes.ID) return null;
     PsiElement refExpr = id.getParent();
-    if (refExpr == null || refExpr.getNode().getElementType() != DartTokenTypes.REFERENCE_EXPRESSION) return null;
+    if (refExpr == null || refExpr.getNode() == null || refExpr.getNode().getElementType() != DartTokenTypes.REFERENCE_EXPRESSION) {
+      return null;
+    }
 
     PsiElement parent = refExpr.getParent();
-    while (parent != null && parent.getNode().getElementType() == DartTokenTypes.REFERENCE_EXPRESSION) {
+    while (parent != null && parent.getNode() != null && parent.getNode().getElementType() == DartTokenTypes.REFERENCE_EXPRESSION) {
       refExpr = parent;
       parent = parent.getParent();
     }
