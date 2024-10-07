@@ -1,3 +1,9 @@
+# 82
+- Various DevTools integration improvements (#7626) (#7621)
+- Removal of the old Performance page, now replaced by DevTools (#7624)
+- Add an option to reload a DevTools window (#7617)
+- Fix to the developer build (#7625)
+
 # 81.1
 - Initial support 2024.2 & Android Studio Ladybug Canary 6 (#7595)
 

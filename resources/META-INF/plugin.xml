@@ -45,6 +45,13 @@
 
   <change-notes>
     <![CDATA[
+<h1>82</h1>
+<ul>
+  <li>Various DevTools integration improvements (#7626) (#7621)</li>
+  <li>Removal of the old Performance page, now replaced by DevTools (#7624)</li>
+  <li>Add an option to reload a DevTools window (#7617)</li>
+  <li>Fix to the developer build (#7625)</li>
+</ul>
 <h1>81.1</h1>
 <ul>
   <li>Initial support 2024.2 &amp; Android Studio Ladybug Canary 6 (#7595)</li>
