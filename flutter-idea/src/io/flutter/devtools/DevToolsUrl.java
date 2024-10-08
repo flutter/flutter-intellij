@@ -5,10 +5,6 @@
  */
 package io.flutter.devtools;
 
-import com.intellij.openapi.editor.colors.EditorColorsManager;
-import com.intellij.openapi.editor.colors.EditorColorsScheme;
-import com.intellij.util.ui.JBFont;
-import com.intellij.util.ui.UIUtil;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.sdk.FlutterSdkVersion;

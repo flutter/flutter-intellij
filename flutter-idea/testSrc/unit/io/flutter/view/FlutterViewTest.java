@@ -7,7 +7,6 @@ package io.flutter.view;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.ObservatoryConnector;
 import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.inspector.InspectorGroupManagerService;
