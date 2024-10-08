@@ -1,6 +1,3 @@
 <!-- Defines IDEA IDE-specific contributions and implementations. -->
 <idea-plugin>
-  <extensions defaultExtensionNs="com.intellij">
-    <editorNotificationProvider implementation="io.flutter.inspections.IncompatibleDartPluginNotificationProvider"/>
-  </extensions>
 </idea-plugin>

@@ -95,14 +95,6 @@ public class DartPlugin {
   }
 
   /**
-   * Return the minimum required {@link Version} of the Dart Plugin.
-   */
-  @NotNull
-  public Version getMinimumVersion() {
-    return MINIMUM_VERSION;
-  }
-
-  /**
    * Return the {@link Version} of the currently installed Dart Plugin.
    */
   public Version getVersion() {
