@@ -6,12 +6,13 @@
 package io.flutter.utils;
 
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.util.system.CpuArch;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
-// import com.intellij.util.system.CpuArch;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Properties;
 
 public class JxBrowserUtils {
@@ -22,19 +23,20 @@ public class JxBrowserUtils {
 
   public String getPlatformFileName() throws FileNotFoundException {
     String name = "";
+    final boolean is64Bit = Objects.requireNonNull(CpuArch.CURRENT).width == 64;
     if (SystemInfo.isMac) {
-      if (SystemInfo.OS_ARCH.equals("aarch64")) {
+      if (SystemInfo.isAarch64){
         name = "mac-arm";
       } else {
         name = "mac";
       }
     } else if (SystemInfo.isWindows) {
-      if (SystemInfo.is32Bit) {
+      if (CpuArch.is32Bit()) {
         name = "win32";
-      } else if (SystemInfo.is64Bit) {
+      } else if (is64Bit) {
         name = "win64";
       }
-    } else if (SystemInfo.isLinux && SystemInfo.is64Bit) {
+    } else if (SystemInfo.isLinux && is64Bit) {
       name = "linux64";
     }
 
