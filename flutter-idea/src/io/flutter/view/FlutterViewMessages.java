@@ -21,7 +21,7 @@ public class FlutterViewMessages {
   public static final Topic<FlutterDebugNotifier> FLUTTER_DEBUG_TOPIC = Topic.create("flutter.debugActive", FlutterDebugNotifier.class);
 
   public interface FlutterDebugNotifier {
-    void debugActive(FlutterDebugEvent event);
+    void debugActive(@NotNull FlutterDebugEvent event);
   }
 
   public static class FlutterDebugEvent {
