@@ -40,8 +40,11 @@ public class FlutterPerformanceViewFactory implements ToolWindowFactory, DumbAwa
   private static void initPerfView(@NotNull Project project, FlutterViewMessages.FlutterDebugEvent event) {
     ApplicationManager.getApplication().invokeLater(() -> {
       final FlutterPerformanceView flutterPerfView = project.getService(FlutterPerformanceView.class);
-      ToolWindowManager.getInstance(project).getToolWindow(FlutterPerformanceView.TOOL_WINDOW_ID).setAvailable(true);
-      flutterPerfView.debugActive(event);
+      final ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(FlutterPerformanceView.TOOL_WINDOW_ID);
+      if (flutterPerfView != null && window != null) {
+        window.setAvailable(true);
+        flutterPerfView.debugActive(event);
+      }
     });
   }
 
