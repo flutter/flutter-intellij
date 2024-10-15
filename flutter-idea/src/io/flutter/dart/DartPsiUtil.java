@@ -78,7 +78,6 @@ public class DartPsiUtil {
       assert namedArgument != null;
       final DartExpression nameExpression = namedArgument.getParameterReferenceExpression();
       assert nameExpression != null;
-      final PsiElement childId = nameExpression.getFirstChild();
       final PsiElement child = nameExpression.getFirstChild();
       if (name.equals(child != null ? child.getText() : "")) {
         return namedArgument.getExpression();

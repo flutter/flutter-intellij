@@ -6,9 +6,6 @@
 package io.flutter.dart;
 
 import com.intellij.execution.configurations.ConfigurationType;
-import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManagerCore;
-import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Version;
@@ -16,12 +13,9 @@ import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.ide.actions.DartPubActionBase;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
-import com.jetbrains.lang.dart.sdk.DartSdkUpdateOption;
-import com.jetbrains.lang.dart.sdk.DartSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -37,8 +31,6 @@ public class DartPlugin {
 
   @NotNull
   private static final DartPlugin INSTANCE = new DartPlugin();
-
-  private Version myVersion;
 
   @NotNull
   public static DartPlugin getInstance() {
@@ -62,14 +54,6 @@ public class DartPlugin {
     DartSdkLibUtil.ensureDartSdkConfigured(project, sdkHomePath);
   }
 
-  public static void disableDartSdk(@NotNull Collection<Module> modules) {
-    DartSdkLibUtil.disableDartSdk(modules);
-  }
-
-  public static boolean isDartSdkHome(@Nullable String path) {
-    return DartSdkUtil.isDartSdkHome(path);
-  }
-
   public static boolean isPubActionInProgress() {
     return DartPubActionBase.isInProgress();
   }
@@ -84,26 +68,6 @@ public class DartPlugin {
 
   public static boolean isDartTestConfiguration(@NotNull ConfigurationType type) {
     return type.getId().equals("DartTestRunConfigurationType");
-  }
-
-  public static DartSdkUpdateOption doCheckForUpdates() {
-    return DartSdkUpdateOption.getDartSdkUpdateOption();
-  }
-
-  public static void setCheckForUpdates(@NotNull DartSdkUpdateOption sdkUpdateOption) {
-    DartSdkUpdateOption.setDartSdkUpdateOption(sdkUpdateOption);
-  }
-
-  /**
-   * Return the {@link Version} of the currently installed Dart Plugin.
-   */
-  public Version getVersion() {
-    if (myVersion == null) {
-      final IdeaPluginDescriptor descriptor = PluginManagerCore.getPlugin(PluginId.getId("Dart"));
-      assert (descriptor != null);
-      myVersion = Objects.requireNonNull(Version.parseVersion(Objects.requireNonNull(descriptor.getVersion())));
-    }
-    return myVersion;
   }
 
   /**

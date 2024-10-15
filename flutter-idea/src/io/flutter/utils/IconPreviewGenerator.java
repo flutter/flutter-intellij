@@ -162,36 +162,6 @@ public class IconPreviewGenerator {
   }
 
   @Nullable
-  public static VirtualFile findAssetMapFor(@NotNull DartComponent dartClass) {
-    final ASTNode node = dartClass.getNode();
-    if (DartTokenTypes.CLASS_DEFINITION != node.getElementType()) {
-      return null;
-    }
-    final DartFile psiElement = (DartFile)node.getPsi().getParent();
-    final VirtualFile file = psiElement.getVirtualFile();
-    VirtualFile map = findAssetMapIn(file.getParent());
-    if (map != null) {
-      return map;
-    }
-    final PsiElement identifier = dartClass.getNameIdentifier();
-    if (identifier == null) {
-      return null;
-    }
-    final String className = AstBufferUtil.getTextSkippingWhitespaceComments(identifier.getNode());
-    final URL resource = IconPreviewGenerator.class.getResource("/iconAssetMaps/" + className + "/asset_map.yaml");
-    if (resource == null) {
-      return null;
-    }
-    try {
-      final URI uri = resource.toURI();
-      return LocalFileSystem.getInstance().findFileByNioFile(Paths.get(uri));
-    }
-    catch (URISyntaxException e) {
-      return null;
-    }
-  }
-
-  @Nullable
   public static VirtualFile findAssetMapIn(@NotNull VirtualFile dartClass) {
     VirtualFile dir = dartClass.getParent();
     VirtualFile preview = null;
