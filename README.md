@@ -1,7 +1,7 @@
-# <img src="https://github.com/dart-lang/site-shared/blob/master/src/_assets/image/flutter/icon/64.png?raw=1" alt="Flutter" width="26" height="26"/> Flutter Plugin for IntelliJ
+# <img src="https://raw.githubusercontent.com/dart-lang/site-shared/refs/heads/main/src/_assets/image/flutter/icon/64.png" alt="Flutter" width="26" height="26"/> Flutter Plugin for IntelliJ
 
 [![Latest plugin version](https://img.shields.io/jetbrains/plugin/v/9212)](https://plugins.jetbrains.com/plugin/9212-flutter)
-[![Build Status](https://travis-ci.org/flutter/flutter-intellij.svg)](https://travis-ci.org/flutter/flutter-intellij)
+[![Build Status](https://github.com/flutter/flutter-intellij/workflows/presubmit/badge.svg)](https://github.com/flutter/flutter-intellij/actions?query=branch%3Amaster+workflow%3Apresubmit)
 
 An IntelliJ plugin for [Flutter](https://flutter.dev/) development. Flutter is a multi-platform
 app SDK to help developers and designers build modern apps for iOS, Android and the web.
@@ -9,8 +9,8 @@ app SDK to help developers and designers build modern apps for iOS, Android and 
 ## Documentation
 
 - [flutter.dev](https://flutter.dev)
-- [Installing Flutter](https://flutter.dev/docs/get-started/install)
-- [Getting Started with IntelliJ](https://flutter.dev/docs/development/tools/ide)
+- [Installing Flutter](https://docs.flutter.dev/get-started/install)
+- [Getting Started with IntelliJ](https://docs.flutter.dev/tools/android-studio)
 
 ## Fast development
 
@@ -20,11 +20,11 @@ simulators, and hardware for iOS and Android.
 
 <img src="https://user-images.githubusercontent.com/919717/28131204-0f8c3cda-66ee-11e7-9428-6a0513eac75d.gif" alt="Make a change in your code, and your app is changed instantly.">
 
-## Quick-start
+## Quick start
 
-A brief summary of the [getting started guide](https://flutter.dev/docs/development/tools/ide):
+A brief summary of the [getting started guide](https://docs.flutter.dev/tools/android-studio):
 
-- install the [Flutter SDK](https://flutter.dev/docs/get-started/install)
+- install the [Flutter SDK](https://docs.flutter.dev/get-started/install)
 - run `flutter doctor` from the command line to verify your installation
 - ensure you have a supported IntelliJ development environment; either:
   - the latest stable version of [IntelliJ](https://www.jetbrains.com/idea/download), Community or Ultimate Edition (EAP versions are not always supported)
@@ -45,7 +45,7 @@ for Flutter IntelliJ issues.
 - for more general Flutter issues, you should prefer to use the Flutter
   [issue tracker](https://github.com/flutter/flutter/issues)
 - for more Dart IntelliJ related issues, you can use JetBrains'
-  [YouTrack tracker](https://youtrack.jetbrains.com/issues?q=%23Dart%20%23Unresolved%20)
+  [YouTrack tracker](https://youtrack.jetbrains.com/issues?q=Subsystem:%20%7BLang.%20Dart%7D%20%20State:%20Unresolved)
 
 ## Known issues
 
@@ -60,7 +60,7 @@ Please note the following known issues:
   [pub docs](https://dart.dev/tools/pub/troubleshoot#pub-get-fails-from-behind-a-corporate-firewall).
   (See also: [#2914](https://github.com/flutter/flutter-intellij/issues/2914).)
 
-## Dev Channel
+## Dev channel
 
 If you like getting new features as soon as they've been added to the code then you
 might want to try out the dev channel. It is updated weekly with the latest contents
