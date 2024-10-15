@@ -147,10 +147,6 @@ public class EvalOnDartLibrary implements Disposable {
     return isolateId;
   }
 
-  CompletableFuture<LibraryRef> getLibraryRef() {
-    return libraryRef;
-  }
-
   public void dispose() {
     subscription.dispose();
     // TODO(jacobr): complete all pending futures as cancelled?
@@ -265,18 +261,6 @@ public class EvalOnDartLibrary implements Disposable {
 
   public CompletableFuture<Func> getFunc(FuncRef instance, InspectorService.ObjectGroup isAlive) {
     return getObjectHelper(instance, isAlive);
-  }
-
-  public CompletableFuture<Instance> getInstance(CompletableFuture<InstanceRef> instanceFuture, InspectorService.ObjectGroup isAlive) {
-    return instanceFuture.thenComposeAsync((instance) -> getInstance(instance, isAlive));
-  }
-
-  private JsonObject convertMapToJsonObject(Map<String, String> map) {
-    final JsonObject obj = new JsonObject();
-    for (String key : map.keySet()) {
-      obj.addProperty(key, map.get(key));
-    }
-    return obj;
   }
 
   private void initialize(String isolateId) {
