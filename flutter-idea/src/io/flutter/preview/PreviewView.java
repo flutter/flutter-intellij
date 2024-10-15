@@ -92,7 +92,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
   private Splitter propertyEditSplitter;
   private JScrollPane scrollPane;
   private OutlineTree tree;
-  private @Nullable PreviewArea previewArea;
 
   private final Set<FlutterOutline> outlinesWithWidgets = Sets.newHashSet();
   private final Map<FlutterOutline, DefaultMutableTreeNode> outlineToNodeMap = Maps.newHashMap();
@@ -336,12 +335,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
         currentEditor.getCaretModel().addCaretListener(caretListener);
       }
     }
-
-    // TODO(jacobr): refactor the previewArea to listen on the stream of
-    // selected outlines instead.
-    if (previewArea != null) {
-      previewArea.select(ImmutableList.of(outline), currentEditor);
-    }
   }
 
   // TODO: Add parent relationship info to FlutterOutline instead of this O(n^2) traversal.
@@ -409,30 +402,12 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
         @Override
         public void onInspectorAvailabilityChanged() {
           super.onInspectorAvailabilityChanged();
-          // Only show the screen mirror if there is a running device and
-          // the inspector supports the neccessary apis.
-          if (getInspectorService() != null && getInspectorService().isHotUiScreenMirrorSupported()) {
-            // Wait to create the preview area until it is needed.
-            if (previewArea == null) {
-              previewArea = new PreviewArea(project, outlinesWithWidgets, project);
-            }
-            propertyEditSplitter.setSecondComponent(previewArea.getComponent());
-          }
-          else {
-            propertyEditSplitter.setSecondComponent(null);
-          }
+          propertyEditSplitter.setSecondComponent(null);
         }
       };
       inspectorGroupManagerService.addListener(inspectorStateServiceClient, project);
 
       splitter.setSecondComponent(propertyEditSplitter);
-    }
-
-    // TODO(jacobr): this is the wrong spot.
-    if (propertyEditToolbarGroup != null) {
-      final TitleAction propertyTitleAction = new TitleAction("Properties");
-      propertyEditToolbarGroup.removeAll();
-      propertyEditToolbarGroup.add(propertyTitleAction);
     }
   }
 
@@ -591,12 +566,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
     activeOutlines.setValue(selectedOutlines);
 
     applyOutlinesSelectionToTree(selectedOutlines);
-
-    // TODO(jacobr): refactor the previewArea to listen on the stream of
-    // selected outlines instead.
-    if (previewArea != null) {
-      previewArea.select(selectedOutlines, currentEditor);
-    }
   }
 
   private void applyOutlinesSelectionToTree(List<FlutterOutline> outlines) {

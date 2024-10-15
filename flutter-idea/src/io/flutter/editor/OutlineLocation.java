@@ -110,16 +110,6 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
   private final int line;
   private final int column;
   private final int indent;
-  private final int offset;
-  /**
-   * Tracker for the range of lines indent guides for the outline should show.
-   */
-  private final TextRangeTracker guideTracker;
-
-  /**
-   * Tracker for the entire range of text describing this outline location.
-   */
-  private final TextRangeTracker fullTracker;
 
   @Nullable
   private String nodeStartingWord;
@@ -130,8 +120,7 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
     int line,
     int column,
     int indent,
-    VirtualFile file,
-    WidgetIndentsHighlightingPass pass
+    VirtualFile file
   ) {
     this.line = line;
     this.column = column;
@@ -146,21 +135,9 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
     assert (column >= indent);
     assert (line >= 0);
     this.indent = indent;
-    final int nodeOffset = pass.getConvertedOffset(node);
-    final int endOffset = pass.getConvertedOffset(node.getOffset() + node.getLength());
-    fullTracker = new TextRangeTracker(nodeOffset, endOffset);
-    final int delta = Math.max(column - indent, 0);
-    this.offset = Math.max(nodeOffset - delta, 0);
-    guideTracker = new TextRangeTracker(offset, nodeOffset + 1);
   }
 
   public void dispose() {
-    if (guideTracker != null) {
-      guideTracker.dispose();
-    }
-    if (fullTracker != null) {
-      fullTracker.dispose();
-    }
   }
 
   /**
@@ -172,11 +149,7 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
    */
   public void track(Document document) {
     this.document = document;
-
     assert (indent <= column);
-
-    fullTracker.track(document);
-    guideTracker.track(document);
   }
 
   @Override
@@ -184,7 +157,6 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
     int hashCode = line;
     hashCode = hashCode * 31 + column;
     hashCode = hashCode * 31 + indent;
-    hashCode = hashCode * 31 + offset;
     return hashCode;
   }
 
@@ -194,81 +166,13 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
     if (!(o instanceof OutlineLocation other)) return false;
     return line == other.line &&
            column == other.column &&
-           indent == other.indent &&
-           offset == other.offset &&
-           getGuideOffset() == other.getGuideOffset();
-  }
-
-  /**
-   * Offset in the document accurate even if the document has been edited.
-   */
-  public int getGuideOffset() {
-    if (guideTracker.isTracking() && guideTracker.getRange() != null) {
-      return guideTracker.getRange().getStartOffset();
-    }
-    return offset;
-  }
-
-  // Sometimes markers stop being valid in which case we need to stop
-  // displaying the rendering until they are valid again.
-  public boolean isValid() {
-    if (!guideTracker.isTracking()) return true;
-
-    return guideTracker.isConsistentEndingWord();
-  }
-
-  /**
-   * Line in the document this outline node is at.
-   */
-  public int getLine() {
-    if (guideTracker.isTracking() && guideTracker.getRange() != null) {
-      return document.getLineNumber(guideTracker.getRange().getStartOffset());
-    }
-    return line;
+           indent == other.indent;
   }
 
   public int getColumnForOffset(int offset) {
     assert (document != null);
     final int currentLine = document.getLineNumber(offset);
     return offset - document.getLineStartOffset(currentLine);
-  }
-
-  /*
-   * Indent of the line to use for line visualization.
-   *
-   * This may intentionally differ from the column as for the line
-   * `  child: Text(`
-   * The indent will be 2 while the column is 9.
-   */
-  public int getIndent() {
-    if (!guideTracker.isTracking()) {
-      return indent;
-    }
-    final TextRange range = guideTracker.getRange();
-    assert (range != null);
-    return getColumnForOffset(range.getStartOffset());
-  }
-
-  /**
-   * Column this outline node is at.
-   * <p>
-   * This is the column offset of the start of the widget constructor call.
-   */
-  public int getColumn() {
-    if (!guideTracker.isTracking()) {
-      return column;
-    }
-    final TextRange range = guideTracker.getRange();
-    assert (range != null);
-    return getColumnForOffset(Math.max(range.getStartOffset(), range.getEndOffset() - 1));
-  }
-
-  public TextRange getGuideTextRange() {
-    return guideTracker.getRange();
-  }
-
-  public TextRange getFullRange() {
-    return fullTracker.getRange();
   }
 
   @Override

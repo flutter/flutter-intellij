@@ -331,12 +331,6 @@ public class FlutterSettings {
     fireEvent();
   }
 
-  public boolean isEnableHotUiInCodeEditor() {
-    // We leave this setting off for now to avoid possible performance and
-    // usability issues rendering previews directly in the code editor.
-    return false;
-  }
-
 
   public boolean isEnableBazelHotRestart() {
     return getPropertiesComponent().getBoolean(enableBazelHotRestartKey, false);

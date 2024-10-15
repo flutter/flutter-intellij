@@ -5,9 +5,7 @@
  */
 package io.flutter.inspector;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import io.flutter.utils.math.Matrix4;
 
 import java.awt.geom.Rectangle2D;
 
@@ -25,14 +23,5 @@ public class TransformedRect {
       json.getAsJsonPrimitive("width").getAsDouble(),
       json.getAsJsonPrimitive("height").getAsDouble()
     );
-  }
-
-  public Matrix4 getTransform() {
-    final JsonArray data = json.getAsJsonArray("transform");
-    final double[] storage = new double[16];
-    for (int i = 0; i < 16; i++) {
-      storage[i] = data.get(i).getAsDouble();
-    }
-    return new Matrix4(storage);
   }
 }
