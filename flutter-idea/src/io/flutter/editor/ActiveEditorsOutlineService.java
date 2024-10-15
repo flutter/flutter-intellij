@@ -123,7 +123,6 @@ public class ActiveEditorsOutlineService implements Disposable {
 
     // Remove obsolete outline listeners.
     final List<String> obsoletePaths = new ArrayList<>();
-    FlutterDartAnalysisServer analysisServer = getAnalysisServer();
 
     synchronized (outlineListeners) {
       for (final String path : outlineListeners.keySet()) {

@@ -55,19 +55,6 @@ public class FileUtils {
     }
     return true;
   }
-
-  public void loadClass(ClassLoader classLoader, String path) throws Exception {
-    final UrlClassLoader urlClassLoader = (UrlClassLoader) classLoader;
-
-    final File file = new File(path);
-    if (!file.exists()) {
-      throw new Exception("File does not exist: " + file.getAbsolutePath());
-    }
-
-    final URL url = file.toURI().toURL();
-    urlClassLoader.addURL(url);
-  }
-
   /**
    * Loads a list of file paths with a class loader.
    *

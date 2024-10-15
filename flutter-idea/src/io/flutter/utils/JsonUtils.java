@@ -39,19 +39,6 @@ public class JsonUtils {
     return value instanceof JsonNull ? -1 : value.getAsInt();
   }
 
-  @NotNull
-  public static List<String> getValues(@NotNull JsonObject json, @NotNull String member) {
-    if (!json.has(member)) {
-      return Collections.emptyList();
-    }
-
-    final JsonArray rawValues = json.getAsJsonArray(member);
-    final ArrayList<String> values = new ArrayList<>(rawValues.size());
-    rawValues.forEach(element -> values.add(element.getAsString()));
-
-    return values;
-  }
-
   // JsonObject.keySet() is defined in 2.8.6 but not 2.7.
   // The 2020.3 version of Android Studio includes both, and 2.7 is first on the class path.
   public static Set<String> getKeySet(JsonObject obj) {
@@ -61,10 +48,6 @@ public class JsonUtils {
       strings.add(entry.getKey());
     }
     return strings;
-  }
-
-  public static boolean hasJsonData(@Nullable String data) {
-    return StringUtils.isNotEmpty(data) && !Objects.equals(data, "null");
   }
 
   /**

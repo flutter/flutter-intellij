@@ -18,17 +18,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 public class UIUtils {
-
-  @Nullable
-  public static JComponent getComponentOfActionEvent(@NotNull AnActionEvent e) {
-    final Presentation presentation = e.getPresentation();
-    JComponent component = (JComponent)presentation.getClientProperty("button");
-    if (component == null && e.getInputEvent().getSource() instanceof JComponent) {
-      component = (JComponent)e.getInputEvent().getSource();
-    }
-    return component;
-  }
-
   /**
    * All editor notifications in the Flutter plugin should get and set the background color from this method, which will ensure if any are
    * changed, they are all changed.
@@ -38,21 +27,4 @@ public class UIUtils {
     return EditorColors.GUTTER_BACKGROUND;
   }
 
-  /**
-   * Unstable API warning: only use this in the deprecated inspector.
-   * @return best-guess for the current project based on the top-most window.
-   */
-  @Nullable
-  public static Project findVisibleProject() {
-    final WindowManager wm = WindowManager.getInstance();
-    if (wm == null) return null;
-    final JFrame jframe = wm.findVisibleFrame();
-    if (jframe == null) return null;
-    for (IdeFrame frame : wm.getAllProjectFrames()) {
-      if (frame.getComponent() == jframe.getRootPane()) {
-        return frame.getProject();
-      }
-    }
-    return null;
-  }
 }

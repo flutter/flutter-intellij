@@ -95,21 +95,6 @@ public class FlutterUtils {
   private FlutterUtils() {
   }
 
-  /**
-   * This method exists for compatibility with older IntelliJ API versions.
-   * <p>
-   * `Application.invokeAndWait(Runnable)` doesn't exist pre 2016.3.
-   */
-  public static void invokeAndWait(@NotNull Runnable runnable) throws ProcessCanceledException {
-    ApplicationManager.getApplication().invokeAndWait(
-      runnable,
-      ModalityState.defaultModalityState());
-  }
-
-  public static boolean isFlutteryFile(@NotNull VirtualFile file) {
-    return isDartFile(file) || PubRoot.isPubspec(file);
-  }
-
   public static boolean couldContainWidgets(@Nullable Project project, @Nullable VirtualFile file) {
     // Skip nulls, temp file used to show things like files downloaded from the VM, non-local files
     return file != null &&
@@ -155,14 +140,6 @@ public class FlutterUtils {
     logger.warn(message, t);
   }
 
-  private static int getBaselineVersion() {
-    final ApplicationInfo appInfo = ApplicationInfo.getInstance();
-    if (appInfo != null) {
-      return appInfo.getBuild().getBaselineVersion();
-    }
-    return -1;
-  }
-
   public static void disableGradleProjectMigrationNotification(@NotNull Project project) {
     final String showMigrateToGradlePopup = "show.migrate.to.gradle.popup";
     final PropertiesComponent properties = PropertiesComponent.getInstance(project);
@@ -170,10 +147,6 @@ public class FlutterUtils {
     if (properties.getValue(showMigrateToGradlePopup) == null) {
       properties.setValue(showMigrateToGradlePopup, "false");
     }
-  }
-
-  public static boolean exists(@Nullable VirtualFile file) {
-    return file != null && file.exists();
   }
 
   /**
@@ -356,39 +329,11 @@ public class FlutterUtils {
     return name.endsWith(".xcworkspace");
   }
 
-  /**
-   * Checks whether the given commandline executes cleanly.
-   *
-   * @param cmd the command
-   * @return true if the command runs cleanly
-   */
-  public static boolean runsCleanly(@NotNull GeneralCommandLine cmd) {
-    try {
-      return ExecUtil.execAndGetOutput(cmd).getExitCode() == 0;
-    }
-    catch (ExecutionException e) {
-      return false;
-    }
-  }
-
   @NotNull
   public static PluginId getPluginId() {
     final PluginId pluginId = PluginId.findId("io.flutter", "");
     assert pluginId != null;
     return pluginId;
-  }
-
-  /**
-   * Given some plugin id, this method returns the {@link IdeaPluginDescriptor}, or null if the plugin is not installed.
-   */
-  @Nullable
-  public static IdeaPluginDescriptor getPluginDescriptor(@NotNull String pluginId) {
-    for (IdeaPluginDescriptor descriptor : PluginManagerCore.getPlugins()) {
-      if (descriptor.getPluginId().getIdString().equals(pluginId)) {
-        return descriptor;
-      }
-    }
-    return null;
   }
 
   /**
@@ -491,36 +436,6 @@ public class FlutterUtils {
     catch (Exception e) {
       return null;
     }
-  }
-
-  public static boolean isAndroidxProject(@NotNull Project project) {
-    @SystemIndependent final String basePath = project.getBasePath();
-    assert basePath != null;
-    final VirtualFile projectDir = LocalFileSystem.getInstance().findFileByPath(basePath);
-    assert projectDir != null;
-    VirtualFile androidDir = getFlutterManagedAndroidDir(projectDir);
-    if (androidDir == null) {
-      androidDir = getAndroidProjectDir(projectDir);
-      if (androidDir == null) {
-        return false;
-      }
-    }
-    final VirtualFile propFile = androidDir.findChild("gradle.properties");
-    if (propFile == null) {
-      return false;
-    }
-    final Properties properties = new Properties();
-    try {
-      properties.load(new InputStreamReader(propFile.getInputStream(), Charsets.UTF_8));
-    }
-    catch (IOException ex) {
-      return false;
-    }
-    final String value = properties.getProperty("android.useAndroidX");
-    if (value != null) {
-      return Boolean.parseBoolean(value);
-    }
-    return false;
   }
 
   @Nullable
