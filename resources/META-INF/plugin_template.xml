@@ -50,18 +50,6 @@
   <!-- See: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
 
   <actions>
-    <group id="Flutter.InspectorActions">
-      <action id="Flutter.JumpToTypeSource" class="io.flutter.inspector.JumpToTypeSourceAction"
-              description="Jump to Type Source"
-              text="Jump to Type Source">
-        <keyboard-shortcut keymap="$default" first-keystroke="shift F4"/>
-      </action>
-      <action id="Flutter.JumpToSource" class="io.flutter.inspector.JumpToSourceAction"
-              text="Jump to Source">
-        <keyboard-shortcut keymap="$default" first-keystroke="control DOWN"/>
-      </action>
-    </group>
-
     <group id="Flutter.MainToolbarActions">
       <action id="Flutter.DeviceSelector" class="io.flutter.actions.DeviceSelectorAction"
               description="Flutter Device Selection"
@@ -403,10 +391,6 @@
     <search.optionContributor implementation="io.flutter.sdk.FlutterSearchableOptionContributor"/>
     <readerModeMatcher implementation="io.flutter.editor.FlutterReaderModeMatcher"/>
 
-    <projectService serviceInterface="io.flutter.editor.WidgetIndentsHighlightingPassFactory"
-                    serviceImplementation="io.flutter.editor.WidgetIndentsHighlightingPassFactory"
-                    overrides="false"/>
-    <highlightingPassFactory implementation="io.flutter.editor.WidgetIndentsHighlightingPassFactoryRegistrar"/>
     <projectService serviceInterface="io.flutter.jxbrowser.EmbeddedJxBrowser"
                     serviceImplementation="io.flutter.jxbrowser.EmbeddedJxBrowser"
                     overrides="false"/>
