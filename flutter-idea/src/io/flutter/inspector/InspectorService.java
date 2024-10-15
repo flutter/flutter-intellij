@@ -453,23 +453,6 @@ public class InspectorService implements Disposable {
     }
   }
 
-  /**
-   * If the widget tree is not ready, the application should wait for the next
-   * Flutter.Frame event before attempting to display the widget tree. If the
-   * application is ready, the next Flutter.Frame event may never come as no
-   * new frames will be triggered to draw unless something changes in the UI.
-   */
-  public CompletableFuture<Boolean> isWidgetTreeReady() {
-    if (useServiceExtensionApi()) {
-      return invokeServiceExtensionNoGroup("isWidgetTreeReady", new JsonObject())
-        .thenApplyAsync(JsonElement::getAsBoolean);
-    }
-    else {
-      return invokeEvalNoGroup("isWidgetTreeReady")
-        .thenApplyAsync((InstanceRef ref) -> "true".equals(ref.getValueAsString()));
-    }
-  }
-
   CompletableFuture<JsonElement> invokeServiceExtensionNoGroup(String methodName, List<String> args) {
     final JsonObject params = new JsonObject();
     for (int i = 0; i < args.size(); ++i) {
@@ -480,10 +463,6 @@ public class InspectorService implements Disposable {
 
   private CompletableFuture<Void> addPubRootDirectories(List<String> rootDirectories) {
     return invokeServiceExtensionNoGroup("addPubRootDirectories", rootDirectories).thenApplyAsync((ignored) -> null);
-  }
-
-  CompletableFuture<InstanceRef> invokeEvalNoGroup(String methodName) {
-    return getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "()", null, null);
   }
 
   CompletableFuture<JsonElement> invokeServiceExtensionNoGroup(String methodName, JsonObject params) {

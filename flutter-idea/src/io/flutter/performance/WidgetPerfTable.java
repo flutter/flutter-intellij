@@ -22,7 +22,6 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.xdebugger.XSourcePosition;
 import gnu.trove.TIntArrayList;
 import io.flutter.inspector.InspectorActions;
-import io.flutter.inspector.InspectorTree;
 import io.flutter.perf.*;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AsyncUtils;
@@ -386,7 +385,7 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
   @Nullable
   @Override
   public Object getData(@NotNull String dataId) {
-    return InspectorTree.INSPECTOR_KEY.is(dataId) ? getTree() : null;
+    return null;
   }
 
   private static class WidgetNameRenderer extends SimpleColoredRenderer implements TableCellRenderer {
