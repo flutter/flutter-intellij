@@ -1,15 +1,19 @@
 name: flutter_intellij
 version: 0.1.0
+publish_to: none
 
 environment:
-  sdk: '>=3.5.0-0.0 <4.0.0'
+  sdk: ^3.5.0
+
+workspace:
+  - tool/plugin
 
 dependencies:
   args: any
   path: any
 
 dev_dependencies:
-  grinder: ^0.9.0
-  http: ^1.1.2
+  grinder: ^0.9.3
+  http: ^1.2.0
   lints: ^5.0.0
   meta: any

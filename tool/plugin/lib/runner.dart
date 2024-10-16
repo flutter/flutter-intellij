@@ -10,7 +10,7 @@ import 'build_spec.dart';
 import 'globals.dart';
 import 'util.dart';
 
-class BuildCommandRunner extends CommandRunner {
+class BuildCommandRunner extends CommandRunner<int> {
   BuildCommandRunner()
       : super('plugin',
             'A script to build, test, and deploy the Flutter IntelliJ plugin.') {
@@ -43,7 +43,8 @@ jxbrowser.license.key=$jxBrowserKey
 
   Future<int> buildPlugin(BuildSpec spec, String version) async {
     writeJxBrowserKeyToFile();
-    return await runGradleCommand(['buildPlugin', '--stacktrace'], spec, version, 'false');
+    return await runGradleCommand(
+        ['buildPlugin', '--stacktrace'], spec, version, 'false');
   }
 
   Future<int> runGradleCommand(

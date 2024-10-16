@@ -81,7 +81,7 @@ Future<bool> genPluginFiles(BuildSpec spec, String destDir) async {
   return true;
 }
 
-Future<File> genPluginXml(BuildSpec spec, String destDir, String path) async {
+Future<void> genPluginXml(BuildSpec spec, String destDir, String path) async {
   var templatePath =
       '${path.substring(0, path.length - '.xml'.length)}_template.xml';
   var file =
@@ -96,7 +96,7 @@ Future<File> genPluginXml(BuildSpec spec, String destDir, String path) async {
       .transform(LineSplitter())
       .forEach((l) => dest.writeln(substituteTemplateVariables(l, spec)));
   await dest.close();
-  return await dest.done;
+  await dest.done;
 }
 
 bool genPresubmitYaml(List<BuildSpec> specs) {
@@ -200,9 +200,12 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
     log('the current working directory is not managed by git: $rootPath');
   }
   // Finally, check that a jxbrowser.properties exists
-  var jxBrowserFile = File(p.join(rootPath, 'resources', 'jxbrowser', 'jxbrowser.properties'));
+  var jxBrowserFile =
+      File(p.join(rootPath, 'resources', 'jxbrowser', 'jxbrowser.properties'));
   var jxBrowserFileContents = jxBrowserFile.readAsStringSync();
-  if(jxBrowserFile.existsSync() && jxBrowserFileContents.isNotEmpty && !jxBrowserFileContents.contains("<KEY>")) {
+  if (jxBrowserFile.existsSync() &&
+      jxBrowserFileContents.isNotEmpty &&
+      !jxBrowserFileContents.contains("<KEY>")) {
     return true;
   } else {
     log('Release mode requires the jxbrowser.properties file to exist and include a key.');
@@ -210,11 +213,11 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
   return false;
 }
 
-List readProductMatrix() {
+List<Map<String, Object?>> readProductMatrix() {
   var contents =
       File(p.join(rootPath, 'product-matrix.json')).readAsStringSync();
   var map = json.decode(contents);
-  return map['list'];
+  return (map['list'] as List<Object?>).cast<Map<String, Object?>>();
 }
 
 String substituteTemplateVariables(String line, BuildSpec spec) {
@@ -389,8 +392,9 @@ abstract class BuildCommand extends ProductCommand {
 
   @override
   Future<int> doit() async {
+    final argResults = this.argResults!;
     if (isReleaseMode) {
-      if (argResults!['unpack']) {
+      if (argResults.flag('unpack')) {
         separator('Release mode (--release) implies --unpack');
       }
       if (!await performReleaseChecks(this)) {
@@ -399,7 +403,7 @@ abstract class BuildCommand extends ProductCommand {
     }
 
     // Check to see if we should only be building a specific version.
-    String? onlyVersion = argResults!['only-version'];
+    final onlyVersion = argResults.option('only-version');
 
     var buildSpecs = specs;
     if (onlyVersion != null && onlyVersion.isNotEmpty) {
@@ -410,7 +414,7 @@ abstract class BuildCommand extends ProductCommand {
       }
     }
 
-    String? minorNumber = argResults!['minor'];
+    final minorNumber = argResults.option('minor');
     if (minorNumber != null) {
       pluginCount = int.parse(minorNumber) - 1;
     }
@@ -458,7 +462,7 @@ abstract class BuildCommand extends ProductCommand {
       separator('Built artifact');
       log(releasesFilePath(spec));
     }
-    if (argResults!['only-version'] == null) {
+    if (argResults.option('only-version') == null) {
       checkAndClearAppliedEditCommands();
     }
 
@@ -534,7 +538,7 @@ https://plugins.jetbrains.com/plugin/uploadPlugin
     if (processResult.exitCode != 0) {
       log('Upload failed: ${processResult.stderr} for file: $filePath');
     }
-    String out = processResult.stdout;
+    final out = processResult.stdout as String;
     var message = out.trim().split('\n').last.trim();
     log(message);
     return processResult.exitCode;
@@ -576,9 +580,6 @@ class GenerateCommand extends ProductCommand {
     }
     return 0;
   }
-
-  SyntheticBuildSpec makeSyntheticSpec(List specs) =>
-      SyntheticBuildSpec.fromJson(specs[0], release, specs[2]);
 
   void generateLiveTemplates() {
     // Find all the live templates.
@@ -623,7 +624,7 @@ class GenerateCommand extends ProductCommand {
   }
 }
 
-abstract class ProductCommand extends Command {
+abstract class ProductCommand extends Command<int> {
   @override
   final String name;
   late List<BuildSpec> specs;
@@ -636,16 +637,16 @@ abstract class ProductCommand extends Command {
         defaultsTo: 'stable');
   }
 
-  String get channel => argResults!['channel'];
+  String get channel => argResults!.option('channel')!;
 
   bool get isDevChannel => channel == 'dev';
 
   /// Returns true when running in the context of a unit test.
   bool get isTesting => false;
 
-  bool get isForAndroidStudio => argResults!['as'];
+  bool get isForAndroidStudio => argResults!.flag('as');
 
-  bool get isForIntelliJ => argResults!['ij'];
+  bool get isForIntelliJ => argResults!.flag('ij');
 
   DateTime get releaseDate => lastReleaseDate;
 
@@ -660,10 +661,10 @@ abstract class ProductCommand extends Command {
     return rel == RegExp(r'^\d+\.\d(?:-dev.\d)?$').stringMatch(rel);
   }
 
-  bool get isTestMode => globalResults!['cwd'] != null;
+  bool get isTestMode => globalResults!.option('cwd') != null;
 
   String? get release {
-    String? rel = globalResults!['release'];
+    var rel = globalResults!.option('release');
 
     if (rel != null) {
       if (rel.startsWith('=')) {
@@ -729,7 +730,7 @@ abstract class ProductCommand extends Command {
     // Initialization constraint: rootPath depends on arg parsing, and
     // lastReleaseName and lastReleaseDate depend on rootPath.
     rootPath = Directory.current.path;
-    var rel = globalResults!['cwd'];
+    var rel = globalResults!.option('cwd');
     if (rel != null) {
       rootPath = p.normalize(p.join(rootPath, rel));
     }
@@ -799,11 +800,14 @@ class RenamePackageCommand extends ProductCommand {
 
   @override
   Future<int> doit() async {
-    if (argResults!['studio']) baseDir = p.join(baseDir, 'flutter-studio/src');
-    oldName = argResults!['package'];
-    newName = argResults!.wasParsed('new-name')
-        ? argResults!['new-name']
-        : oldName + argResults!['append'];
+    final argResults = this.argResults!;
+    if (argResults.flag('studio')) {
+      baseDir = p.join(baseDir, 'flutter-studio/src');
+    }
+    oldName = argResults.option('package')!;
+    newName = argResults.wasParsed('new-name')
+        ? argResults.option('new-name')!
+        : oldName + argResults.option('append')!;
     if (oldName == newName) {
       log('Nothing to do; new name is same as old name');
       return 1;
@@ -901,8 +905,8 @@ class TestCommand extends ProductCommand {
     log('JAVA_HOME=$javaHome');
 
     final spec = specs.firstWhere((s) => s.isUnitTestTarget);
-    if (!argResults!['skip']) {
-      if (argResults!['integration']) {
+    if (!argResults!.flag('skip')) {
+      if (argResults!.flag('integration')) {
         return await _runIntegrationTests();
       } else {
         return await _runUnitTests(spec);

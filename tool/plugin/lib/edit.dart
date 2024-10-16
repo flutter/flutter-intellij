@@ -26,7 +26,6 @@ void checkAndClearAppliedEditCommands() {
 }
 
 List<EditCommand> editCommands = [
-
   // When using LATEST-EAP-SNAPSHOT, also set baseVersion to LATEST-EAP-SNAPSHOT in the build spec.
   // EditCommand(
   //   path: 'build.gradle.kts',
@@ -43,7 +42,7 @@ List<EditCommand> editCommands = [
 ];
 
 /// Apply all the editCommands applicable to a given BuildSpec.
-Future<int> applyEdits(BuildSpec spec, Function compileFn) async {
+Future<int> applyEdits(BuildSpec spec, Future<int> Function() compileFn) async {
   // Handle skipped files.
   for (String file in spec.filesToSkip) {
     final entity =
