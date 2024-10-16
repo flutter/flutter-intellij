@@ -40,11 +40,8 @@ void main() {
         expect(specs, isNotNull);
         expect(
             specs.map((spec) => spec.ideaProduct).toList(),
-            orderedEquals([
-              'android-studio',
-              'android-studio',
-              'android-studio'
-            ]));
+            orderedEquals(
+                ['android-studio', 'android-studio', 'android-studio']));
       });
     });
 
@@ -55,11 +52,8 @@ void main() {
         expect(specs, isNotNull);
         expect(
             specs.map((spec) => spec.ideaProduct).toList(),
-            orderedEquals([
-              'android-studio',
-              'android-studio',
-              'android-studio'
-            ]));
+            orderedEquals(
+                ['android-studio', 'android-studio', 'android-studio']));
       });
     });
 
@@ -70,11 +64,8 @@ void main() {
         expect(specs, isNotNull);
         expect(
             specs.map((spec) => spec.ideaProduct).toList(),
-            orderedEquals([
-              'android-studio',
-              'android-studio',
-              'android-studio'
-            ]));
+            orderedEquals(
+                ['android-studio', 'android-studio', 'android-studio']));
       });
     });
   });

@@ -9,7 +9,7 @@ import 'package:args/command_runner.dart';
 import 'runner.dart';
 import 'util.dart';
 
-class LintCommand extends Command {
+class LintCommand extends Command<int> {
   @override
   final BuildCommandRunner runner;
 
@@ -43,7 +43,7 @@ class LintCommand extends Command {
       // Note: extra quotes added so grep doesn't match this file.
       ['grep', 'import com.jetbrains.' 'lang.dart.'],
     );
-    final String imports = result.stdout.trim();
+    final String imports = (result.stdout as String).trim();
 
     // path:import
     final usages = <String, List<String>>{};
@@ -107,7 +107,7 @@ class LintCommand extends Command {
         ['grep', 'import $import'],
       );
 
-      final String results = result.stdout.trim();
+      final String results = (result.stdout as String).trim();
       if (results.isNotEmpty) {
         print('Found proscribed imports:\n');
         print(results);
@@ -129,7 +129,7 @@ class LintCommand extends Command {
         ['grep', 'import $import'],
       );
 
-      final String results = result.stdout.trim();
+      final String results = (result.stdout as String).trim();
       if (results.isNotEmpty) {
         print('Found proscribed imports:\n');
         print(results);

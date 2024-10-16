@@ -26,25 +26,25 @@ class BuildSpec {
   final String untilBuild;
   final String pluginId = 'io.flutter';
   final String? release;
-  final List<dynamic> filesToSkip;
+  final List<String> filesToSkip;
   String channel;
   String? _changeLog;
 
-  BuildSpec.fromJson(Map json, this.release)
-      : name = json['name'],
-        channel = json['channel'],
-        version = json['version'],
-        ijVersion = json['ijVersion'],
-        ideaProduct = json['ideaProduct'],
-        ideaVersion = json['ideaVersion'],
-        baseVersion = json['baseVersion'] ?? json['ideaVersion'],
-        androidPluginVersion = json['androidPluginVersion'],
-        dartPluginVersion = json['dartPluginVersion'],
-        sinceBuild = json['sinceBuild'],
-        untilBuild = json['untilBuild'],
-        filesToSkip = json['filesToSkip'] ?? [],
-        isUnitTestTarget = (json['isUnitTestTarget'] ?? 'false') == 'true',
-        isTestTarget = (json['isTestTarget'] ?? 'false') == 'true';
+  BuildSpec.fromJson(Map<String, Object?> json, this.release)
+      : name = json['name'] as String,
+        channel = json['channel'] as String,
+        version = json['version'] as String,
+        ijVersion = json['ijVersion'] as String?,
+        ideaProduct = json['ideaProduct'] as String,
+        ideaVersion = json['ideaVersion'] as String,
+        baseVersion = (json['baseVersion'] ?? json['ideaVersion']) as String,
+        androidPluginVersion = json['androidPluginVersion'] as String,
+        dartPluginVersion = json['dartPluginVersion'] as String,
+        sinceBuild = json['sinceBuild'] as String,
+        untilBuild = json['untilBuild'] as String,
+        filesToSkip = json['filesToSkip'] as List<String>? ?? [],
+        isUnitTestTarget = json['isUnitTestTarget'] == 'true',
+        isTestTarget = json['isTestTarget'] == 'true';
 
   bool get copyIjVersion => isAndroidStudio && ijVersion != null;
 
@@ -61,15 +61,15 @@ class BuildSpec {
   String get productFile => isAndroidStudio ? "$ideaProduct-ide" : ideaProduct;
 
   String get changeLog {
-    if (_changeLog == null) {
-      if (channel == 'stable') {
-        _changeLog = _parseChangelog();
-      } else {
-        _changeLog = '';
-      }
+    if (_changeLog case final changelog?) {
+      return changelog;
     }
 
-    return _changeLog!;
+    if (channel == 'stable') {
+      return _changeLog = _parseChangelog();
+    } else {
+      return _changeLog = '';
+    }
   }
 
   String _parseChangelog() {
@@ -124,10 +124,13 @@ class BuildSpec {
 /// last one is the latest used during development. This BuildSpec combines
 /// those two.
 class SyntheticBuildSpec extends BuildSpec {
-  late BuildSpec alternate;
+  late final BuildSpec alternate;
 
   SyntheticBuildSpec.fromJson(
-      super.json, super.releaseNum, List<BuildSpec> specs) :super.fromJson() {
+    super.json,
+    super.releaseNum,
+    List<BuildSpec> specs,
+  ) : super.fromJson() {
     try {
       // 'isUnitTestTarget' should always be in the spec for the latest IntelliJ (not AS).
       alternate = specs.firstWhere((s) => s.isUnitTestTarget);

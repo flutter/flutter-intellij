@@ -34,7 +34,7 @@ Future<String> makeDevLog(BuildSpec spec) async {
   var since = lastReleaseName;
   var processResult =
       await gitDir.runCommand(['log', '--oneline', '$since..HEAD']);
-  String out = processResult.stdout;
+  String out = processResult.stdout as String;
   var messages = out.trim().split('\n');
   var devLog = StringBuffer();
   devLog.writeln('## Changes since ${since.replaceAll('_', ' ')}');
@@ -50,14 +50,14 @@ Future<DateTime> dateOfLastRelease() async {
   var gitDir = await GitDir.fromExisting(rootPath);
   var processResult = await gitDir
       .runCommand(['branch', '--list', '-v', '--no-abbrev', lastReleaseName]);
-  String out = processResult.stdout;
+  String out = processResult.stdout as String;
   var logLine = out.trim().split('\n').first.trim();
   var match =
       RegExp(r'release_\d+\s+([A-Fa-f\d]{40})\s').matchAsPrefix(logLine);
   var commitHash = match!.group(1);
   processResult =
       await gitDir.runCommand(['show', '--pretty=tformat:"%cI"', commitHash!]);
-  out = processResult.stdout;
+  out = processResult.stdout as String;
   var date = out.trim().split('\n').first.trim();
   return DateTime.parse(date.replaceAll('"', ''));
 }
@@ -67,12 +67,12 @@ Future<String> lastRelease() async {
   var gitDir = await GitDir.fromExisting(rootPath);
   var processResult =
       await gitDir.runCommand(['branch', '--list', 'release_*']);
-  String out = processResult.stdout;
+  String out = processResult.stdout as String;
   var release = out.trim().split('\n').last.trim();
   if (release.isNotEmpty) return release;
   processResult =
       await gitDir.runCommand(['branch', '--list', '-a', '*release_*']);
-  out = processResult.stdout;
+  out = processResult.stdout as String;
   var remote =
       out.trim().split('\n').last.trim(); // "remotes/origin/release_43"
   release = remote.substring(remote.lastIndexOf('/') + 1);
