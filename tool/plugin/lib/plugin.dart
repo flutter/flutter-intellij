@@ -205,7 +205,8 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
   var jxBrowserFileContents = jxBrowserFile.readAsStringSync();
   if (jxBrowserFile.existsSync() &&
       jxBrowserFileContents.isNotEmpty &&
-      !jxBrowserFileContents.contains("<KEY>")) {
+      jxBrowserFileContents.contains('jxbrowser.license.key=') &&
+      !jxBrowserFileContents.contains('jxbrowser.license.key=<KEY>')) {
     return true;
   } else {
     log('Release mode requires the jxbrowser.properties file to exist and include a key.');
