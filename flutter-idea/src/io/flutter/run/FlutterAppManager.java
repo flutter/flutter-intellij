@@ -13,7 +13,6 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.execution.ui.RunContentManager;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import io.flutter.run.daemon.FlutterApp;
@@ -125,9 +124,9 @@ public class FlutterAppManager implements Disposable {
     }
     // Creating a RunContentManager causes a blank window to appear, so don't create it here.
     // See https://github.com/flutter/flutter-intellij/issues/4217
-    if (ServiceManager.getServiceIfCreated(project, RunContentManager.class) == null) {
+    if (project.getServiceIfCreated(RunContentManager.class) == null) {
       return null;
     }
-    return ExecutionManager.getInstance(project).getContentManager();
+    return RunContentManager.getInstance(project);
   }
 }
