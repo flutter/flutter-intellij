@@ -32,6 +32,8 @@ resources/jxbrowser/jxbrowser.properties
 .idea/libraries/Gradle_*.xml
 **/.idea/modules.xml
 .kotlin/
+.intellijPlatform/
+**/.intellijPlatform/
 flutter-studio/build/
 flutter-studio/.gradle/
 flutter-idea/build/
