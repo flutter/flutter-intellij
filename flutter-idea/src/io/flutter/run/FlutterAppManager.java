@@ -8,7 +8,6 @@ package io.flutter.run;
 // RunContentManager
 
 import com.intellij.concurrency.JobScheduler;
-import com.intellij.execution.ExecutionManager;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.execution.ui.RunContentManager;

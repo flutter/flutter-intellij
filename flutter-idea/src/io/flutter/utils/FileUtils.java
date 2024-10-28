@@ -11,7 +11,6 @@ import com.jetbrains.lang.dart.DartFileType;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.net.URL;
 import java.nio.file.Path;
 import java.util.List;
 

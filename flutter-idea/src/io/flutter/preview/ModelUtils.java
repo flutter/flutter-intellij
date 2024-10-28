@@ -7,10 +7,7 @@ package io.flutter.preview;
 
 import com.intellij.openapi.util.text.StringUtil;
 import org.dartlang.analysis.server.protocol.Element;
-import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 public class ModelUtils {
   private ModelUtils() {

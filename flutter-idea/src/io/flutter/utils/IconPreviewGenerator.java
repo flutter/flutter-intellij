@@ -5,16 +5,9 @@
  */
 package io.flutter.utils;
 
-import com.intellij.lang.ASTNode;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.impl.source.tree.AstBufferUtil;
 import com.intellij.util.TripleFunction;
-import com.jetbrains.lang.dart.DartTokenTypes;
-import com.jetbrains.lang.dart.psi.DartComponent;
-import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.FlutterUtils;
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -32,10 +25,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Paths;
 import java.util.Properties;
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
