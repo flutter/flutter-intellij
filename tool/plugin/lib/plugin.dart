@@ -22,7 +22,6 @@ Future<int> main(List<String> args) async {
   var runner = BuildCommandRunner();
 
   runner.addCommand(LintCommand(runner));
-  runner.addCommand(AntBuildCommand(runner));
   runner.addCommand(GradleBuildCommand(runner));
   runner.addCommand(TestCommand(runner));
   runner.addCommand(DeployCommand(runner));
@@ -292,82 +291,14 @@ void _copyResources(Directory from, Directory to) {
   }
 }
 
-class AntBuildCommand extends BuildCommand {
-  AntBuildCommand(BuildCommandRunner runner) : super(runner, 'build');
-
-  @override
-  Future<int> doit() async {
-    return GradleBuildCommand(runner).doit();
-  }
-
-  @override
-  Future<int> externalBuildCommand(BuildSpec spec) async {
-    // Not used
-    return 0;
-  }
-
-  @override
-  Future<int> savePluginArtifact(BuildSpec spec) async {
-    // Not used
-    return 0;
-  }
-}
-
-class GradleBuildCommand extends BuildCommand {
-  GradleBuildCommand(BuildCommandRunner runner) : super(runner, 'make');
-
-  @override
-  Future<int> externalBuildCommand(BuildSpec spec) async {
-    var pluginFile = File('resources/META-INF/plugin.xml');
-    var studioFile = File('resources/META-INF/studio-contribs.xml');
-    var pluginSrc = pluginFile.readAsStringSync();
-    var studioSrc = studioFile.readAsStringSync();
-    try {
-      await genPluginFiles(spec, 'resources');
-      return await runner.buildPlugin(spec, buildVersionNumber(spec));
-    } finally {
-      pluginFile.writeAsStringSync(pluginSrc);
-      studioFile.writeAsStringSync(studioSrc);
-    }
-  }
-
-  @override
-  Future<int> savePluginArtifact(BuildSpec spec) async {
-    final file = File(releasesFilePath(spec));
-    final version = buildVersionNumber(spec);
-    var source = File('build/distributions/flutter-intellij-$version.zip');
-    if (!source.existsSync()) {
-      // Setting the plugin name in Gradle should eliminate the need for this,
-      // but it does not.
-      // TODO(messick) Find a way to make the Kokoro file name: flutter-intellij-DEV.zip
-      source = File('build/distributions/flutter-intellij-kokoro-$version.zip');
-    }
-    _copyFile(
-      source,
-      file.parent,
-      filename: p.basename(file.path),
-    );
-    await _stopDaemon();
-    return 0;
-  }
-
-  Future<int> _stopDaemon() async {
-    if (Platform.isWindows) {
-      return await exec('.\\third_party\\gradlew.bat', ['--stop']);
-    } else {
-      return await exec('./third_party/gradlew', ['--stop']);
-    }
-  }
-}
-
 /// Build deployable plugin files. If the --release argument is given
 /// then perform additional checks to verify that the release environment
 /// is in good order.
-abstract class BuildCommand extends ProductCommand {
+class GradleBuildCommand extends ProductCommand {
   @override
   final BuildCommandRunner runner;
 
-  BuildCommand(this.runner, String commandName) : super(commandName) {
+  GradleBuildCommand(this.runner) : super('make') {
     argParser.addOption('only-version',
         abbr: 'o',
         help: 'Only build the specified IntelliJ version; useful for sharding '
@@ -386,10 +317,6 @@ abstract class BuildCommand extends ProductCommand {
   @override
   String get description => 'Build a deployable version of the Flutter plugin, '
       'compiled against the specified artifacts.';
-
-  Future<int> externalBuildCommand(BuildSpec spec);
-
-  Future<int> savePluginArtifact(BuildSpec spec);
 
   @override
   Future<int> doit() async {
@@ -466,8 +393,50 @@ abstract class BuildCommand extends ProductCommand {
     if (argResults.option('only-version') == null) {
       checkAndClearAppliedEditCommands();
     }
-
     return 0;
+  }
+
+  @override
+  Future<int> externalBuildCommand(BuildSpec spec) async {
+    var pluginFile = File('resources/META-INF/plugin.xml');
+    var studioFile = File('resources/META-INF/studio-contribs.xml');
+    var pluginSrc = pluginFile.readAsStringSync();
+    var studioSrc = studioFile.readAsStringSync();
+    try {
+      await genPluginFiles(spec, 'resources');
+      return await runner.buildPlugin(spec, buildVersionNumber(spec));
+    } finally {
+      pluginFile.writeAsStringSync(pluginSrc);
+      studioFile.writeAsStringSync(studioSrc);
+    }
+  }
+
+  @override
+  Future<int> savePluginArtifact(BuildSpec spec) async {
+    final file = File(releasesFilePath(spec));
+    final version = buildVersionNumber(spec);
+    var source = File('build/distributions/flutter-intellij-$version.zip');
+    if (!source.existsSync()) {
+      // Setting the plugin name in Gradle should eliminate the need for this,
+      // but it does not.
+      // TODO(messick) Find a way to make the Kokoro file name: flutter-intellij-DEV.zip
+      source = File('build/distributions/flutter-intellij-kokoro-$version.zip');
+    }
+    _copyFile(
+      source,
+      file.parent,
+      filename: p.basename(file.path),
+    );
+    await _stopDaemon();
+    return 0;
+  }
+
+  Future<int> _stopDaemon() async {
+    if (Platform.isWindows) {
+      return await exec('.\\third_party\\gradlew.bat', ['--stop']);
+    } else {
+      return await exec('./third_party/gradlew', ['--stop']);
+    }
   }
 }
 

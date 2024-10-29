@@ -216,22 +216,11 @@ void main() {
 
 BuildCommandRunner makeTestRunner() {
   var runner = BuildCommandRunner();
-  runner.addCommand(TestBuildCommand(runner));
   runner.addCommand(TestMakeCommand(runner));
   runner.addCommand(TestTestCommand(runner));
   runner.addCommand(TestDeployCommand(runner));
   runner.addCommand(TestGenCommand(runner));
   return runner;
-}
-
-class TestBuildCommand extends AntBuildCommand {
-  TestBuildCommand(super.runner);
-
-  @override
-  bool get isTesting => true;
-
-  @override
-  Future<int> doit() async => Future(() => 0);
 }
 
 class TestMakeCommand extends GradleBuildCommand {
