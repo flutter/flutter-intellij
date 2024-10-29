@@ -396,7 +396,6 @@ class GradleBuildCommand extends ProductCommand {
     return 0;
   }
 
-  @override
   Future<int> externalBuildCommand(BuildSpec spec) async {
     var pluginFile = File('resources/META-INF/plugin.xml');
     var studioFile = File('resources/META-INF/studio-contribs.xml');
@@ -411,7 +410,6 @@ class GradleBuildCommand extends ProductCommand {
     }
   }
 
-  @override
   Future<int> savePluginArtifact(BuildSpec spec) async {
     final file = File(releasesFilePath(spec));
     final version = buildVersionNumber(spec);

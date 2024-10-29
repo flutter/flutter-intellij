@@ -11,10 +11,6 @@ import 'package:test/test.dart';
 
 void main() {
   group("create", () {
-    test('build', () {
-      expect(AntBuildCommand(BuildCommandRunner()).name, "build");
-    });
-
     test('make', () {
       expect(GradleBuildCommand(BuildCommandRunner()).name, "make");
     });
@@ -146,9 +142,9 @@ void main() {
   group('build', () {
     test('plugin.xml', () async {
       var runner = makeTestRunner();
-      late TestBuildCommand cmd;
+      late TestMakeCommand cmd;
       await runner.run(["-d../..", "build"]).whenComplete(() {
-        cmd = (runner.commands['build'] as TestBuildCommand);
+        cmd = (runner.commands['build'] as TestMakeCommand);
       });
       var spec = cmd.specs[0];
       await removeAll('../../build/classes');
