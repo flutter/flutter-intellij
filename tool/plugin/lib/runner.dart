@@ -53,36 +53,21 @@ jxbrowser.license.key=$jxBrowserKey
     String version,
     String testing,
   ) async {
-    String javaVersion, smaliPlugin, langPlugin;
-    if (['2022.1', '2022.2'].contains(spec.version)) {
-      javaVersion = '11';
-      smaliPlugin = 'smali';
-      langPlugin = 'IntelliLang';
-    } else {
-      javaVersion = '17';
-      if (spec.version == '2022.2') {
-        smaliPlugin = 'smali';
-      } else {
-        smaliPlugin = 'com.android.tools.idea.smali';
-      }
-      langPlugin = 'org.intellij.intelliLang';
-    }
     final contents = '''
-name = "flutter-intellij"
+name = "flutter-intellij
+buildSpec=${spec.version}
+flutterPluginVersion=$version
+ideaProduct=${spec.ideaProduct}
+ideaVersion=${spec.ideaVersion}
+baseVersion=${spec.baseVersion}
+dartPluginVersion=${spec.dartPluginVersion}
+androidPluginVersion=${spec.androidPluginVersion}
+sinceBuild=${spec.sinceBuild}
+untilBuild=${spec.untilBuild}
+testing=$testing
+kotlin.stdlib.default.dependency=false
 org.gradle.parallel=true
 org.gradle.jvmargs=-Xms1024m -Xmx4048m
-javaVersion=$javaVersion
-androidVersion=${spec.androidPluginVersion}
-dartVersion=${spec.dartPluginVersion}
-flutterPluginVersion=$version
-ide=${spec.ideaProduct}
-testing=$testing
-buildSpec=${spec.version}
-baseVersion=${spec.baseVersion}
-smaliPlugin=$smaliPlugin
-langPlugin=$langPlugin
-kotlin.stdlib.default.dependency=false
-ideVersion=${spec.ideaVersion}
 ''';
     final propertiesFile = File("$rootPath/gradle.properties");
     final source = propertiesFile.readAsStringSync();

@@ -415,14 +415,7 @@ class GradleBuildCommand extends ProductCommand {
 
   Future<int> savePluginArtifact(BuildSpec spec) async {
     final file = File(releasesFilePath(spec));
-    final version = buildVersionNumber(spec);
-    var source = File('build/distributions/flutter-intellij-$version.zip');
-    if (!source.existsSync()) {
-      // Setting the plugin name in Gradle should eliminate the need for this,
-      // but it does not.
-      // TODO(messick) Find a way to make the Kokoro file name: flutter-intellij-DEV.zip
-      source = File('build/distributions/flutter-intellij-kokoro-$version.zip');
-    }
+    final source = File('build/distributions/flutter-intellij.zip');
     _copyFile(
       source,
       file.parent,

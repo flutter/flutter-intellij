@@ -5,11 +5,12 @@
  */
 package io.flutter.editor;
 
-import com.android.tools.idea.ui.resourcechooser.colorpicker2.ColorPickerBuilder;
+import com.intellij.ui.colorpicker.ColorPickerBuilder;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.ui.popup.BalloonBuilder;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.ui.awt.RelativePoint;
+import com.intellij.ui.colorpicker.LightCalloutPopup;
 import kotlin.Unit;
 
 import java.awt.event.ActionEvent;
@@ -36,7 +37,7 @@ public class AndroidStudioColorPickerProvider implements ColorPickerProvider {
     }
     popup = null;
 
-    final JComponent colorPanel = new ColorPickerBuilder()
+    final LightCalloutPopup colorPanel = new ColorPickerBuilder()
       .setOriginalColor(initialColor != null ? initialColor : new Color(255, 255, 255))
       .addSaturationBrightnessComponent()
       .addColorAdjustPanel()
@@ -71,9 +72,10 @@ public class AndroidStudioColorPickerProvider implements ColorPickerProvider {
           }
         }
       )
-      .addColorPickerListener((c, o) -> colorListener.colorChanged(c, null))
+
+      .addColorListener((c, o) -> colorListener.colorChanged(c, null))
       .build();
-    final BalloonBuilder balloonBuilder = JBPopupFactory.getInstance().createBalloonBuilder(colorPanel);
+    final BalloonBuilder balloonBuilder = JBPopupFactory.getInstance().createBalloonBuilder(colorPanel.getContent());
     balloonBuilder.setFadeoutTime(0);
     balloonBuilder.setAnimationCycle(0);
     balloonBuilder.setHideOnClickOutside(true);
@@ -83,7 +85,7 @@ public class AndroidStudioColorPickerProvider implements ColorPickerProvider {
     balloonBuilder.setBlockClicksThroughBalloon(true);
     balloonBuilder.setRequestFocus(true);
     balloonBuilder.setShadow(true);
-    balloonBuilder.setFillColor(colorPanel.getBackground());
+    balloonBuilder.setFillColor(colorPanel.getContent().getBackground());
     popup = balloonBuilder.createBalloon();
     popup.show(new RelativePoint(component, offset), position);
   }
