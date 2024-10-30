@@ -388,10 +388,10 @@ class GradleBuildCommand extends ProductCommand {
       }
 
       separator('Built artifact');
-      var releaseFilePath = releasesFilePath(spec);
+      final releaseFilePath = releasesFilePath(spec);
       final file = File(releaseFilePath);
       final fileSize = file.lengthSync() / 1000000;
-      log(releaseFilePath + ', $fileSize MB');
+      log('$releaseFilePath, $fileSize MB');
     }
     if (argResults.option('only-version') == null) {
       checkAndClearAppliedEditCommands();
