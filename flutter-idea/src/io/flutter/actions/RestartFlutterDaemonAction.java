@@ -9,7 +9,6 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
-import io.flutter.FlutterInitializer;
 import io.flutter.run.daemon.DeviceService;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,8 +19,6 @@ public class RestartFlutterDaemonAction extends AnAction {
 
   @Override
   public void actionPerformed(AnActionEvent event) {
-    FlutterInitializer.sendAnalyticsAction(this);
-
     final Project project = event.getProject();
     if (project == null) {
       return;

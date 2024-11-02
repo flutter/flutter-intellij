@@ -59,7 +59,7 @@
           </component>
         </children>
       </grid>
-      <grid id="e885c" layout-manager="GridLayoutManager" row-count="3" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="e885c" layout-manager="GridLayoutManager" row-count="2" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -67,38 +67,18 @@
         <properties/>
         <border type="etched" title="General"/>
         <children>
-          <component id="6304a" class="javax.swing.JCheckBox" binding="myReportUsageInformationCheckBox">
-            <constraints>
-              <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text resource-bundle="io/flutter/FlutterBundle" key="settings.report.google.analytics"/>
-              <toolTipText resource-bundle="io/flutter/FlutterBundle" key="settings.report.analytics.tooltip"/>
-            </properties>
-          </component>
           <component id="be19f" class="javax.swing.JCheckBox" binding="myEnableVerboseLoggingCheckBox" default-binding="true">
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.enable.verbose.logging"/>
               <toolTipText resource-bundle="io/flutter/FlutterBundle" key="settings.enable.verbose.logging.tooltip"/>
             </properties>
           </component>
-          <component id="c59f0" class="com.intellij.ui.components.labels.LinkLabel" binding="myPrivacyPolicy">
-            <constraints>
-              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <horizontalAlignment value="2"/>
-              <horizontalTextPosition value="2"/>
-              <text value="www.google.com/policies/privacy" noi18n="true"/>
-              <toolTipText value="http://www.google.com/policies/privacy/" noi18n="true"/>
-            </properties>
-          </component>
           <component id="efbd7" class="javax.swing.JCheckBox" binding="myAllowTestsInSourcesRoot">
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.allow.tests.in.sources"/>

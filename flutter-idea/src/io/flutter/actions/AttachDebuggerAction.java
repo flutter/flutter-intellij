@@ -21,7 +21,6 @@ import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.util.ThreeState;
 import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.FlutterConstants;
-import io.flutter.FlutterInitializer;
 import io.flutter.bazel.Workspace;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterLaunchMode;
@@ -55,8 +54,6 @@ public class AttachDebuggerAction extends FlutterSdkAction {
   @Override
   public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root, @NotNull DataContext context) {
     // NOTE: When making changes here, consider making similar changes to RunFlutterAction.
-    FlutterInitializer.sendAnalyticsAction(this);
-
     RunConfiguration configuration = findRunConfig(project);
     if (configuration == null) {
       final RunnerAndConfigurationSettings settings = RunManagerEx.getInstanceEx(project).getSelectedConfiguration();
@@ -94,8 +91,6 @@ public class AttachDebuggerAction extends FlutterSdkAction {
   }
 
   public void startCommandInBazelContext(@NotNull Project project, @NotNull Workspace workspace, @NotNull AnActionEvent event) {
-    FlutterInitializer.sendAnalyticsAction(this);
-
     RunConfiguration configuration = findRunConfig(project);
     if (configuration == null) {
       final RunnerAndConfigurationSettings settings = RunManagerEx.getInstanceEx(project).getSelectedConfiguration();

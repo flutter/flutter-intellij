@@ -13,7 +13,6 @@ import com.intellij.execution.process.UnixProcessManager;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.io.BaseOutputReader;
-import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
@@ -63,7 +62,6 @@ public class MostlySilentColoredProcessHandler extends ColoredProcessHandler {
     if (SystemInfo.isUnix && shouldDestroyProcessRecursively() && processCanBeKilledByOS(process)) {
       final boolean result = UnixProcessManager.sendSigIntToProcessTree(process);
       if (!result) {
-        FlutterInitializer.getAnalytics().sendEvent("process", "process kill failed");
         super.doDestroyProcess();
       }
     }

@@ -18,14 +18,12 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.DumbAware;
-import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectType;
 import com.intellij.openapi.project.ProjectTypeService;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.ui.Messages;
 import icons.FlutterIcons;
-import io.flutter.analytics.TimeTracker;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.pub.PubRoot;
@@ -50,8 +48,6 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
 
   @Override
   public void runActivity(@NotNull Project project) {
-    TimeTracker.getInstance(project).onProjectOpen();
-
     // TODO(helinx): We don't have a good way to check whether a Bazel project is using Flutter. Look into whether we can
     // build a better Flutter Bazel check into `declaresFlutter` so we don't need the second condition.
     if (!FlutterModuleUtils.declaresFlutter(project) && !WorkspaceCache.getInstance(project).isBazel()) {
@@ -69,16 +65,6 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       // Note: this branch is taken when opening a project immediately after creating it -- not sure that is expected.
       return;
     }
-
-    // Report time when indexing finishes.
-    DumbService.getInstance(project).runWhenSmart(() -> {
-      FlutterInitializer.getAnalytics().sendEventMetric(
-        "startup",
-        "indexingFinished",
-        project.getService(TimeTracker.class).millisSinceProjectOpen(),
-        FlutterSdk.getFlutterSdk(project)
-      );
-    });
 
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       sdk.queryFlutterConfig("android-studio-dir", false);

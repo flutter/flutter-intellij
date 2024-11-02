@@ -27,7 +27,6 @@ import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerListener;
-import io.flutter.FlutterInitializer;
 import io.flutter.assistant.whatsnew.FlutterNewsBundleCreator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -164,13 +163,11 @@ public class OpenFlutterNewsSidePanelAction extends OpenAssistSidePanelAction {
     private static void fireOpenEvent(@NotNull Project project, boolean isAutoOpened) {
       // An extra "open" can fire when the window is already open and the user manually uses the OpenFlutterNewsSidePanelAction
       // again, so in this case just ignore the call.
-      if (openProjectTools.contains(project)) return;
-      FlutterInitializer.getAnalytics().sendEvent("intellij", isAutoOpened ? "AutoOpenFlutterNews" : "OpenFlutterNews");
+      //if (openProjectTools.contains(project)) return;
     }
 
     private static void fireClosedEvent(@NotNull Project project) {
       openProjectTools.remove(project);
-      FlutterInitializer.getAnalytics().sendEvent("intellij", "CloseFlutterNews");
     }
   }
 }

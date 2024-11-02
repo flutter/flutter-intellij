@@ -603,7 +603,6 @@
     <projectService serviceInterface="io.flutter.bazel.WorkspaceCache"
                     serviceImplementation="io.flutter.bazel.WorkspaceCache"/>
     <projectService serviceImplementation="io.flutter.pub.PubRootCache"/>
-    <projectService serviceImplementation="io.flutter.analytics.FlutterAnalysisServerListener"/>
 
     <configurationType implementation="io.flutter.run.FlutterRunConfigurationType"/>
     <runConfigurationProducer implementation="io.flutter.run.FlutterRunConfigurationProducer"/>
@@ -723,7 +722,6 @@
   <!-- Dart Plugin extensions -->
   <extensions defaultExtensionNs="Dart">
     <completionExtension implementation="io.flutter.editor.FlutterCompletionContributor" order="last"/>
-    <completionTimerExtension implementation="io.flutter.analytics.DartCompletionTimerListener"/>
   </extensions>
 
 </idea-plugin>

@@ -18,8 +18,6 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.util.ui.JBUI;
 import icons.FlutterIcons;
-import io.flutter.FlutterInitializer;
-import io.flutter.analytics.Analytics;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.LabelInput;
@@ -54,12 +52,9 @@ public abstract class EmbeddedBrowser {
 
   public abstract Logger logger();
 
-  private final Analytics analytics;
-
   private DevToolsUrl url;
 
   public EmbeddedBrowser(Project project) {
-    this.analytics = FlutterInitializer.getAnalytics();
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
       @Override
       public void projectClosing(@NotNull Project project) {
@@ -93,7 +88,6 @@ public abstract class EmbeddedBrowser {
         tabs.put(tabName, openBrowserTabFor(tabName, toolWindow));
       }
       catch (Exception ex) {
-        analytics.sendEvent(ANALYTICS_CATEGORY, "openBrowserTabFailed-" + this.getClass());
         onBrowserUnavailable.accept(ex.getMessage());
         return;
       }
@@ -289,7 +283,6 @@ public abstract class EmbeddedBrowser {
         AsyncUtils.whenCompleteUiThread(updatedUrlFuture, (devToolsUrl, ex) -> {
           if (ex != null) {
             logger().info(ex);
-            FlutterInitializer.getAnalytics().sendExpectedException("browser-update", ex);
             return;
           }
           if (devToolsUrl == null) {

@@ -15,7 +15,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.console.FlutterConsoles;
@@ -168,11 +167,7 @@ public class FlutterCommand {
     try {
       final GeneralCommandLine commandLine = createGeneralCommandLine(null);
       LOG.info(commandLine.toString());
-      final ColoredProcessHandler handler = new ColoredProcessHandler(commandLine);
-      if (sendAnalytics) {
-        type.sendAnalyticsEvent();
-      }
-      return handler;
+      return new ColoredProcessHandler(commandLine);
     }
     catch (ExecutionException e) {
       FlutterMessages.showError(
@@ -209,7 +204,6 @@ public class FlutterCommand {
           }
         }
       });
-      type.sendAnalyticsEvent();
       return new FlutterCommandStartResult(handler);
     }
     catch (ExecutionException e) {
@@ -293,11 +287,6 @@ public class FlutterCommand {
     Type(String title, String... subCommand) {
       this.title = title;
       this.subCommand = ImmutableList.copyOf(subCommand);
-    }
-
-    void sendAnalyticsEvent() {
-      final String action = String.join("_", subCommand).replaceAll("-", "");
-      FlutterInitializer.getAnalytics().sendEvent("flutter", action);
     }
   }
 }

@@ -36,7 +36,6 @@ import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashMap;
 import gnu.trove.TIntObjectHashMap;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
 import io.flutter.run.FlutterLaunchMode;
@@ -466,7 +465,6 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
   }
 
   private void onConnectFailed(@NotNull String message) {
-    FlutterInitializer.getAnalytics().sendException(message, false);
     if (!message.endsWith("\n")) {
       message = message + "\n";
     }

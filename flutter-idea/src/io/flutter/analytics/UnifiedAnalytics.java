@@ -137,7 +137,7 @@ public class UnifiedAnalytics {
     CompletableFuture<Boolean> finalResult = new CompletableFuture<>();
     ApplicationManager.getApplication().invokeLater(() -> {
       final Notification notification = new Notification(
-        Analytics.GROUP_DISPLAY_ID,
+        "Flutter Usage Statistics", // Analytics.GROUP_DISPLAY_ID,
         "Welcome to Flutter!",
         message,
         NotificationType.INFORMATION);

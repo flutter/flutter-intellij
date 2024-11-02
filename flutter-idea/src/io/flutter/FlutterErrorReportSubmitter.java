@@ -180,10 +180,6 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
       builder.append("\n");
     }
 
-    for (IdeaLoggingEvent event : events) {
-      FlutterInitializer.getAnalytics().sendException(event.getThrowableText(), false);
-    }
-
     final String text = builder.toString().trim() + "\n";
 
     // Create scratch file.

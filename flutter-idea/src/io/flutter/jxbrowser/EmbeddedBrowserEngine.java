@@ -13,7 +13,6 @@ import com.intellij.openapi.util.SystemInfo;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.engine.EngineOptions;
 import com.teamdev.jxbrowser.engine.PasswordStore;
-import io.flutter.FlutterInitializer;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -51,7 +50,6 @@ public class EmbeddedBrowserEngine {
     } catch (Exception ex) {
       temp = null;
       LOG.info(ex);
-      FlutterInitializer.getAnalytics().sendExpectedException("jxbrowser-engine", ex);
     }
     engine = temp;
 
@@ -64,7 +62,6 @@ public class EmbeddedBrowserEngine {
           }
         } catch (Exception ex) {
           LOG.info(ex);
-          FlutterInitializer.getAnalytics().sendExpectedException("jxbrowswer-engine-close", ex);
         }
         return true;
       }

@@ -12,7 +12,6 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
@@ -40,7 +39,6 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
       // See if the Bazel workspace exists for this project.
       final Workspace workspace = FlutterModuleUtils.getFlutterBazelWorkspace(project);
       if (workspace != null) {
-        FlutterInitializer.sendAnalyticsAction(this);
         FileDocumentManager.getInstance().saveAllDocuments();
         startCommandInBazelContext(project, workspace, event);
         return;
@@ -53,7 +51,6 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
       return;
     }
 
-    FlutterInitializer.sendAnalyticsAction(this);
     FileDocumentManager.getInstance().saveAllDocuments();
     PubRoot root = PubRoot.forEventWithRefresh(event);
     @NotNull DataContext context = event.getDataContext();

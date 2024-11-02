@@ -22,7 +22,6 @@ import com.teamdev.jxbrowser.ui.event.KeyPressed;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
 import com.teamdev.jxbrowser.view.swing.callback.DefaultAlertCallback;
 import com.teamdev.jxbrowser.view.swing.callback.DefaultConfirmCallback;
-import io.flutter.FlutterInitializer;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.JxBrowserUtils;
@@ -62,7 +61,6 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
     }
     catch (Exception | Error ex) {
       LOG.info(ex);
-      FlutterInitializer.getAnalytics().sendExpectedException("jxbrowser-setup", ex);
     }
   }
 
@@ -203,7 +201,6 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
     }
     catch (TimeoutException e) {
       showMessageWithUrlLink(INSTALLATION_TIMED_OUT_LABEL, contentManager);
-      FlutterInitializer.getAnalytics().sendEvent(JxBrowserManager.ANALYTICS_CATEGORY, "timedOut");
     }
   }
 

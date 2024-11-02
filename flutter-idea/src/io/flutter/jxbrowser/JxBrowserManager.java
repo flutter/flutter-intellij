@@ -23,8 +23,6 @@ import com.intellij.util.download.DownloadableFileService;
 import com.intellij.util.download.FileDownloader;
 import com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException;
 import com.teamdev.jxbrowser.engine.RenderingMode;
-import io.flutter.FlutterInitializer;
-import io.flutter.analytics.Analytics;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
@@ -89,13 +87,11 @@ public class JxBrowserManager {
   public static final String ANALYTICS_CATEGORY = "jxbrowser";
   private static InstallationFailedReason latestFailureReason;
   private final JxBrowserUtils jxBrowserUtils;
-  private final Analytics analytics;
   private final FileUtils fileUtils;
 
   @VisibleForTesting
-  protected JxBrowserManager(@NotNull JxBrowserUtils jxBrowserUtils, @NotNull Analytics analytics, @NotNull FileUtils fileUtils) {
+  protected JxBrowserManager(@NotNull JxBrowserUtils jxBrowserUtils, @NotNull FileUtils fileUtils) {
     this.jxBrowserUtils = jxBrowserUtils;
-    this.analytics = analytics;
     this.fileUtils = fileUtils;
   }
 
@@ -103,7 +99,7 @@ public class JxBrowserManager {
   public static JxBrowserManager getInstance() {
     if (manager == null) {
       //noinspection ConstantConditions
-      manager = new JxBrowserManager(new JxBrowserUtils(), FlutterInitializer.getAnalytics(), FileUtils.getInstance());
+      manager = new JxBrowserManager(new JxBrowserUtils(), FileUtils.getInstance());
     }
     return manager;
   }
@@ -179,13 +175,6 @@ public class JxBrowserManager {
     if (reason.detail != null) {
       eventName.append("-");
       eventName.append(reason.detail);
-    }
-
-    if (time != null) {
-      analytics.sendEventMetric(ANALYTICS_CATEGORY, eventName.toString(), time.intValue());
-    }
-    else {
-      analytics.sendEvent(ANALYTICS_CATEGORY, eventName.toString());
     }
 
     latestFailureReason = reason;
@@ -335,7 +324,6 @@ public class JxBrowserManager {
               }
             }
 
-            analytics.sendEvent(ANALYTICS_CATEGORY, "filesDownloaded");
             loadClasses(fileNames);
           }
           catch (IOException e) {
@@ -387,7 +375,6 @@ public class JxBrowserManager {
     } finally {
       Thread.currentThread().setContextClassLoader(current);
     }
-    analytics.sendEvent(ANALYTICS_CATEGORY, "installed");
     status.set(JxBrowserStatus.INSTALLED);
     installation.complete(JxBrowserStatus.INSTALLED);
   }

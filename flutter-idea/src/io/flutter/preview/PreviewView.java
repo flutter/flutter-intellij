@@ -36,7 +36,6 @@ import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.speedSearch.SpeedSearchUtil;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.messages.MessageBusConnection;
-import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.dart.FlutterOutlineListener;
@@ -336,8 +335,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
     }
     final int offset = outline.getDartElement() != null ? outline.getDartElement().getLocation().getOffset() : outline.getOffset();
     final int editorOffset = getOutlineOffsetConverter().getConvertedFileOffset(offset);
-
-    sendAnalyticEvent("jumpToSource");
 
     if (currentFile != null) {
       currentEditor.getCaretModel().removeCaretListener(caretListener);
@@ -650,10 +647,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
         }
       }
     }
-  }
-
-  private void sendAnalyticEvent(@NotNull String name) {
-    FlutterInitializer.getAnalytics().sendEvent("preview", name);
   }
 
   private class ShowOnlyWidgetsAction extends AnAction implements Toggleable, RightAlignedToolbarAction {

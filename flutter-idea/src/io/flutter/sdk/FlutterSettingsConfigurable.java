@@ -63,7 +63,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JPanel mainPanel;
   private ComboboxWithBrowseButton mySdkCombo;
   private JBLabel myVersionLabel;
-  private JCheckBox myReportUsageInformationCheckBox;
   private LinkLabel<?> myPrivacyPolicy;
   private JCheckBox myHotReloadOnSaveCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
@@ -198,10 +197,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (FlutterInitializer.getCanReportAnalytics() != myReportUsageInformationCheckBox.isSelected()) {
-      return true;
-    }
-
     if (settings.isReloadOnSave() != myHotReloadOnSaveCheckBox.isSelected()) {
       return true;
     }
@@ -304,8 +299,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       }
     }
 
-    FlutterInitializer.setCanReportAnalytics(myReportUsageInformationCheckBox.isSelected());
-
     final FlutterSettings settings = FlutterSettings.getInstance();
     final String oldFontPackages = settings.getFontPackages();
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
@@ -369,8 +362,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     else {
       previousSdkVersion = null;
     }
-
-    myReportUsageInformationCheckBox.setSelected(FlutterInitializer.getCanReportAnalytics());
 
     final FlutterSettings settings = FlutterSettings.getInstance();
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
