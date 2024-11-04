@@ -45,6 +45,13 @@
 
   <change-notes>
     <![CDATA[
+<h1>82.1</h1>
+<ul>
+  <li>Fix for Cannot invoke &quot;com.intellij.openapi.wm.ToolWindow.setAvailable(boolean)&quot; issue -- thanks to @parlough (#7691)</li>
+  <li>New SDK notification to notify of old Flutter SDK usage (#7763)</li>
+  <li>Progress on migrating off of old IDEA APIs (#7718)</li>
+  <li>Significant code cleanup</li>
+</ul>
 <h1>82</h1>
 <ul>
   <li>Various DevTools integration improvements (#7626) (#7621)</li>
