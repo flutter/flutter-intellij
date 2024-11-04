@@ -378,7 +378,9 @@ public class FlutterInitializer implements StartupActivity {
                                                            " of the Flutter SDK will be removed in an upcoming release of the Flutter " +
                                                            "plugin. Consider updating to a more recent Flutter SDK.",
                                                            NotificationType.WARNING);
-        //notification.addAction(new AnAction("More Info") {
+        // TODO(jwren) If we can get a URL on the Flutter website with the appropriate information, we should include it in the
+        //  notification as an action:
+        // notification.addAction(new AnAction("More Info") {
         //  @Override
         //  public void actionPerformed(@NotNull AnActionEvent event) {
         //    // TODO(helin24): Update with informational URL.
