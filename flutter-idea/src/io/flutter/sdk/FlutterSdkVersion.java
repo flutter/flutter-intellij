@@ -130,9 +130,19 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   @NotNull
   private static final FlutterSdkVersion MIN_SUPPORTS_DTD = new FlutterSdkVersion("3.22.0");
 
+  /**
+   * The minimum version that will trigger a notification that the Flutter SDK needs to be updated, otherwise support may be lost in the
+   * Flutter Plugin.
+   * <p>
+   * Note, this is for the Flutter SDK version, not the Dart SDK version, this mapping can be found:
+   * <a href="https://docs.flutter.dev/release/archive">Flutter SDK Release Archive list</a>.
+   * <p>
+   * The Flutter version `3.7.12` maps to the Dart SDK version in before NNBD (early 2023 stable).
+   * <p>
+   * This version was updated last on November 4th, 2024, and in coordination with the VS Code support.
+   */
   @NotNull
-  // TODO(helin24): Update with the right version.
-  private static final FlutterSdkVersion MIN_SDK_SUPPORTED = new FlutterSdkVersion("0.0.1");
+  private static final FlutterSdkVersion MIN_SDK_SUPPORTED = new FlutterSdkVersion("3.10.0");
 
   @Nullable
   private final Version version;
