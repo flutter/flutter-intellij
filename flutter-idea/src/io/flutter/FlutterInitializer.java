@@ -217,6 +217,8 @@ public class FlutterInitializer implements StartupActivity {
     // Initialize notifications for theme changes.
     setUpThemeChangeNotifications(project);
 
+    // TODO(jwren) For releases in early H1 2025, include this message as well as a new one if the user is using a Flutter SDK version that
+    //  is not supported, i.e. match VS Code implementation.
     // Send unsupported SDK notifications if relevant.
     checkSdkVersionNotification(project);
 
@@ -363,28 +365,30 @@ public class FlutterInitializer implements StartupActivity {
     if (sdk == null) return;
     final FlutterSdkVersion version = sdk.getVersion();
 
-    if (!version.sdkIsSupported() && version.getVersionText() != null) {
+    // See FlutterSdkVersion.MIN_SDK_SUPPORTED.
+    if (version.isValid() && !version.sdkIsSupported()) {
       final FlutterSettings settings = FlutterSettings.getInstance();
       if (settings == null || settings.isSdkVersionOutdatedWarningAcknowledged(version.getVersionText())) return;
 
       ApplicationManager.getApplication().invokeLater(() -> {
-        final Notification notification = new Notification("flutter-sdk",
+        final Notification notification = new Notification(FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
                                                            "Flutter SDK requires update",
                                                            "Support for v" +
                                                            version.getVersionText() +
-                                                           " of the Flutter SDK will be removed in an upcoming release of the Flutter plugin. Consider updating to a more recent Flutter SDK",
+                                                           " of the Flutter SDK will be removed in an upcoming release of the Flutter " +
+                                                           "plugin. Consider updating to a more recent Flutter SDK.",
                                                            NotificationType.WARNING);
-        notification.addAction(new AnAction("More Info") {
-          @Override
-          public void actionPerformed(@NotNull AnActionEvent event) {
-            // TODO(helin24): Update with informational URL.
-            BrowserLauncher.getInstance().browse("https://www.google.com", null);
-            settings.setSdkVersionOutdatedWarningAcknowledged(version.getVersionText(), true);
-            notification.expire();
-          }
-        });
+        //notification.addAction(new AnAction("More Info") {
+        //  @Override
+        //  public void actionPerformed(@NotNull AnActionEvent event) {
+        //    // TODO(helin24): Update with informational URL.
+        //    BrowserLauncher.getInstance().browse("https://www.google.com", null);
+        //    settings.setSdkVersionOutdatedWarningAcknowledged(version.getVersionText(), true);
+        //    notification.expire();
+        //  }
+        //});
 
-        notification.addAction(new AnAction("I understand") {
+        notification.addAction(new AnAction("Dismiss") {
           @Override
           public void actionPerformed(@NotNull AnActionEvent event) {
             settings.setSdkVersionOutdatedWarningAcknowledged(version.getVersionText(), true);

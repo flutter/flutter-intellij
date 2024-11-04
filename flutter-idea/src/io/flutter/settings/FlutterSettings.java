@@ -377,6 +377,9 @@ public class FlutterSettings {
     fireEvent();
   }
 
+  /**
+   * See {FlutterSdkVersion#MIN_SDK_SUPPORTED}.
+   */
   public boolean isSdkVersionOutdatedWarningAcknowledged(String versionText) {
     return getPropertiesComponent().getBoolean(getSdkVersionKey(versionText));
   }
