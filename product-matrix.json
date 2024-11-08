@@ -11,7 +11,7 @@
       "baseVersion": "233.14808.21",
       "androidPluginVersion": "X.Y.Z",
       "dartPluginVersion": "233.15271",
-      "sinceBuild": "233.14808.21",
+      "sinceBuild": "233",
       "untilBuild": "233.*"
     },
     {
@@ -25,7 +25,7 @@
       "baseVersion": "241.18034.62",
       "androidPluginVersion": "X.Y.Z",
       "dartPluginVersion": "241.17502",
-      "sinceBuild": "241.14494.150",
+      "sinceBuild": "241",
       "untilBuild": "241.*"
     },
     {
@@ -39,7 +39,7 @@
       "baseVersion": "242.23339.11",
       "androidPluginVersion": "X.Y.Z",
       "dartPluginVersion": "241.17502",
-      "sinceBuild": "242.20224.300",
+      "sinceBuild": "242",
       "untilBuild": "242.*"
     }
   ]
