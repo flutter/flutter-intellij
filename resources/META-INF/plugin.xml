@@ -45,6 +45,12 @@
 
   <change-notes>
     <![CDATA[
+<h1>82.2</h1>
+<ul>
+  <li>Release of the plugin for 2024.3 (#7670)</li>
+  <li>Migration to IntelliJ Platform Gradle Plugin (2.x) (#7670)</li>
+  <li>The Flutter coverage runner support has been removed (#7670)</li>
+</ul>
 <h1>82.1</h1>
 <ul>
   <li>Fix for Cannot invoke &quot;com.intellij.openapi.wm.ToolWindow.setAvailable(boolean)&quot; issue -- thanks to @parlough (#7691)</li>
