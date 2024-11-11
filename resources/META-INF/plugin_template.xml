@@ -327,8 +327,8 @@
     <codeInsight.lineMarkerProvider language="Dart" implementationClass="io.flutter.editor.FlutterIconLineMarkerProvider"/>
     <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
 
-    <toolWindow id="Flutter Outline" anchor="right" icon="FlutterIcons.FlutterDefault"
-                factoryClass="io.flutter.preview.PreviewViewFactory"/>
+<!--    <toolWindow id="Flutter Outline" anchor="right" icon="FlutterIcons.FlutterDefault"-->
+<!--                factoryClass="io.flutter.preview.PreviewViewFactory"/>-->
     <projectService serviceImplementation="io.flutter.preview.PreviewView" overrides="false"/>
 
     <toolWindow id="Flutter Inspector" anchor="right" icon="FlutterIcons.DevToolsInspector"
