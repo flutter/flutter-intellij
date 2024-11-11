@@ -10,7 +10,9 @@ import 'util.dart';
 
 class BuildSpec {
   // Build targets
+  // TODO (jwren) can we get rid of "name"
   final String name;
+  // TODO (jwren) these two can be consilidated
   final String version;
   final String? ijVersion;
   final bool isTestTarget;
@@ -19,6 +21,7 @@ class BuildSpec {
   final String ideaVersion;
   final String androidPluginVersion;
   final String dartPluginVersion;
+  // TODO (jwren) can baseVersion be removed?
   final String baseVersion;
 
   // plugin.xml variables

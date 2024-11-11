@@ -5,42 +5,60 @@
       "comments": "IntelliJ 2023.3, Android Studio Jellyfish 2023.3",
       "name": "2023.3",
       "version": "2023.3",
-      "isUnitTestTarget": "false",
+      "ijVersion": "2023.3",
       "ideaProduct": "android-studio",
       "ideaVersion": "2023.3.1.16",
       "baseVersion": "233.14808.21",
-      "androidPluginVersion": "X.Y.Z",
       "dartPluginVersion": "233.15271",
+      "androidPluginVersion": "",
       "sinceBuild": "233",
-      "untilBuild": "233.*"
+      "untilBuild": "233.*",
+      "isUnitTestTarget": "false"
     },
     {
       "channel": "stable",
       "comments": "IntelliJ 2024.1, Android Studio Koala 2024.1",
       "name": "2024.1",
       "version": "2024.1",
-      "isUnitTestTarget": "false",
+      "ijVersion": "2024.1",
       "ideaProduct": "android-studio",
-      "ideaVersion": "2024.1.1.1",
+      "ideaVersion": "2024.1.2.10",
       "baseVersion": "241.18034.62",
-      "androidPluginVersion": "X.Y.Z",
       "dartPluginVersion": "241.17502",
+      "androidPluginVersion": "",
       "sinceBuild": "241",
-      "untilBuild": "241.*"
+      "untilBuild": "241.*",
+      "isUnitTestTarget": "true"
     },
     {
       "channel": "stable",
       "comments": "IntelliJ 2024.2, Android Studio Ladybug 2024.2",
       "name": "2024.2",
       "version": "2024.2",
-      "isUnitTestTarget": "true",
+      "ijVersion": "2024.2",
       "ideaProduct": "android-studio",
-      "ideaVersion": "2024.1.1.1",
+      "ideaVersion": "2024.1.2.13",
       "baseVersion": "242.23339.11",
-      "androidPluginVersion": "X.Y.Z",
       "dartPluginVersion": "241.17502",
+      "androidPluginVersion": "",
       "sinceBuild": "242",
-      "untilBuild": "242.*"
+      "untilBuild": "242.*",
+      "isUnitTestTarget": "false"
+    },
+    {
+      "channel": "stable",
+      "comments": "IntelliJ 2024.3, IntelliJ 2024.3 EAP",
+      "name": "2024.3",
+      "version": "2024.3",
+      "ijVersion": "2024.3",
+      "ideaProduct": "IC",
+      "ideaVersion": "243.21565.23",
+      "baseVersion": "243.21565.23",
+      "dartPluginVersion": " 243.21565.120",
+      "androidPluginVersion": "243.21565.23",
+      "sinceBuild": "243",
+      "untilBuild": "253.*",
+      "isUnitTestTarget": "false"
     }
   ]
 }
