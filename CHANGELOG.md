@@ -1,3 +1,8 @@
+# 82.2
+- Release of the plugin for 2024.3 (#7670)
+- Migration to IntelliJ Platform Gradle Plugin (2.x) (#7670)
+- The Flutter coverage runner support has been removed (#7670)
+
 # 82.1
 - Fix for Cannot invoke "com.intellij.openapi.wm.ToolWindow.setAvailable(boolean)" issue -- thanks to @parlough (#7691)
 - New SDK notification to notify of old Flutter SDK usage (#7763)
