@@ -845,9 +845,6 @@ class TestCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
   TestCommand(this.runner) : super('test') {
-    argParser.addFlag('unit', negatable: false, help: 'Run unit tests');
-    argParser.addFlag('integration',
-        negatable: false, help: 'Run integration tests');
     argParser.addFlag('skip',
         negatable: false,
         help: 'Do not run tests, just unpack artifaccts',
@@ -870,11 +867,7 @@ class TestCommand extends ProductCommand {
 
     final spec = specs.firstWhere((s) => s.isUnitTestTarget);
     if (!argResults!.flag('skip')) {
-      if (argResults!.flag('integration')) {
-        return await _runIntegrationTests();
-      } else {
-        return await _runUnitTests(spec);
-      }
+      return await _runUnitTests(spec);
     }
     return 0;
   }
@@ -884,9 +877,5 @@ class TestCommand extends ProductCommand {
     return await applyEdits(spec, () async {
       return await runner.runGradleCommand(['test'], spec, '1', 'true');
     });
-  }
-
-  Future<int> _runIntegrationTests() async {
-    throw 'integration test execution not yet implemented';
   }
 }
