@@ -13,6 +13,7 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
@@ -30,7 +31,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -123,7 +123,7 @@ public class FlutterGeneratorPeer {
   @Nullable
   private ValidationInfo validateSdk() {
     final String sdkPath = getSdkComboPath();
-    if (StringUtils.isEmpty(sdkPath)) {
+    if (StringUtil.isEmpty(sdkPath)) {
       return new ValidationInfo("A Flutter SDK must be specified for project creation.", mySdkPathComboWithBrowse);
     }
     final String message = FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(sdkPath);

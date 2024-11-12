@@ -7,7 +7,7 @@ package io.flutter.run.common;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.psi.PsiElement;
-import org.apache.commons.lang3.StringUtils;
+import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -51,7 +51,7 @@ public enum TestType {
   @NotNull
   public String getTooltip(@NotNull PsiElement element, @NotNull CommonTestConfigUtils testConfigUtils) {
     final String testName = testConfigUtils.findTestName(element);
-    if (StringUtils.isNotEmpty(testName)) {
+    if (StringUtil.isNotEmpty(testName)) {
       return "Run '" + testName + "'";
     }
 

@@ -56,7 +56,6 @@ import javax.swing.ComboBoxEditor;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -170,7 +169,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     if (org == null) {
       return null;
     }
-    if (StringUtils.endsWith(org, ".")) {
+    if (StringUtil.endsWith(org, ".")) {
       return FlutterBundle.message("npw_invalid_org_error");
     }
     if (mySettingsFields.shouldIncludePlatforms() && !settings.isSomePlatformSelected()) {

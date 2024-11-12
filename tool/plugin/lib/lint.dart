@@ -93,6 +93,8 @@ class LintCommand extends Command<int> {
       // See https://github.com/flutter/flutter-intellij/issues/6933
       'org.apache.commons.lang.StringUtils',
       'org.apache.commons.lang.StringEscapeUtils',
+      // https://github.com/dart-lang/sdk/issues/39377
+      'org.apache.commons.lang3.StringUtils',
 
       // Not technically a bad import, but not all IntelliJ platforms provide
       // this library.
