@@ -416,7 +416,19 @@ class GradleBuildCommand extends ProductCommand {
 
   Future<int> savePluginArtifact(BuildSpec spec) async {
     final file = File(releasesFilePath(spec));
-    final source = File('build/distributions/flutter-intellij.zip');
+
+    // Log the contents of ./build/distributions, this is useful in debugging
+    // in general and especially useful for the Kokoro bot which is run remotely
+    final result = Process.runSync(
+      'ls',
+      ['-laf', '-laf', 'build/distributions'],
+    );
+    log('Content generated in ./build/distributions:\n${result.stdout}');
+
+    var source = File('build/distributions/flutter-intellij.zip');
+    if(!source.existsSync()) {
+      source = File('build/distributions/flutter-intellij-kokoro.zip');
+    }
     _copyFile(
       source,
       file.parent,
