@@ -29,6 +29,7 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
@@ -47,7 +48,6 @@ import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
 import io.flutter.utils.StdoutJsonParser;
 import io.flutter.utils.UrlUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -279,7 +279,7 @@ public class BazelTestRunner extends GenericProgramRunner {
 
       // Verify the returned workspace directory name, we weren't passed a workspace name or if the valid workspace name does not start the
       // uri then return the super invocation of this method. This prevents the unknown URI type from being passed to the analysis server.
-      if (StringUtils.isEmpty(workspaceDirName) || !uri.startsWith(workspaceDirName + ":/")) return super.findLocalFile(uri);
+      if (StringUtil.isEmpty(workspaceDirName) || !uri.startsWith(workspaceDirName + ":/")) return super.findLocalFile(uri);
 
       final String pathFromWorkspace = uri.substring(workspaceDirName.length() + 1);
 

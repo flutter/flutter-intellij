@@ -12,6 +12,7 @@ import com.google.gson.JsonObject;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
@@ -19,7 +20,6 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.CustomIconMaker;
 import io.flutter.utils.JsonUtils;
 import io.flutter.vmService.frame.DartVmServiceValue;
-import org.apache.commons.lang3.StringUtils;
 import org.dartlang.analysis.server.protocol.HoverInformation;
 import org.dartlang.vm.service.element.InstanceRef;
 import org.jetbrains.annotations.NotNull;
@@ -97,7 +97,7 @@ public class DiagnosticsNode {
   @Override
   public String toString() {
     final String name = getName();
-    if (StringUtils.isEmpty(name) || !getShowName()) {
+    if (StringUtil.isEmpty(name) || !getShowName()) {
       return getDescription();
     }
 
