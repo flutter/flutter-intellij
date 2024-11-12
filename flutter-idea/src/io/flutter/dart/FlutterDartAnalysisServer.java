@@ -317,12 +317,6 @@ public class FlutterDartAnalysisServer implements Disposable {
   }
 
   class CompatibleResponseListener implements ResponseListener {
-    // TODO(anyone): Remove this once 192 is the minimum supported base.
-    @SuppressWarnings({"override", "RedundantSuppression"})
-    public void onResponse(JsonObject jsonObject) {
-      processResponse(jsonObject);
-    }
-
     @SuppressWarnings({"override", "RedundantSuppression"})
     public void onResponse(String jsonString) {
       processString(jsonString);
