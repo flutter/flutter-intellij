@@ -7,6 +7,7 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
@@ -49,12 +50,17 @@ java {
 
 dependencies {
   intellijPlatform {
+    // Documentation on the create(...) methods:
+    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#custom-target-platforms
     if (ideaProduct == "android-studio") {
       create(IntelliJPlatformType.AndroidStudio, ideaVersion)
     } else { // if (ideaProduct == "IC") {
       create(IntelliJPlatformType.IntellijIdeaCommunity, ideaVersion)
     }
     testFramework(TestFrameworkType.Platform)
+
+    // Plugin dependnecy documentation:
+    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
     val bundledPluginList = mutableListOf(
       "com.intellij.java",
       "com.intellij.properties",
@@ -84,7 +90,7 @@ dependencies {
     //  Please ensure the `instrumentationTools()` entry is present in the project dependencies section along with the `intellijDependencies()` entry in the repositories section.
     //  See: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     instrumentationTools()
-//    pluginVerifier()
+    pluginVerifier()
   }
 }
 
@@ -96,30 +102,43 @@ intellijPlatform {
       untilBuild = untilBuildInput
     }
   }
-  // TODO (jwren) get the verifier to work, and enable in the github presubmit,
-  //  the com.teamdev dep is having the verifier fail
-  // Verifier documentation: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html#intellijPlatform-pluginVerification-ides
-//  pluginVerification {
-//    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-faq.html#mutePluginVerifierProblems
-//    freeArgs = listOf(
-//      "-mute",
-//      "TemplateWordInPluginId"
-//    )
-//    ides {
-//      if (ideaProduct == "android-studio") {
-//        ide(IntelliJPlatformType.AndroidStudio, ideaVersion)
-//      } else {
-//          ide(IntelliJPlatformType.IntellijIdeaCommunity, ideaVersion)
-//        }
-//      recommended()
-////      select {
-////        types = listOf(IntelliJPlatformType.AndroidStudio)
-////        channels = listOf(ProductRelease.Channel.RELEASE)
-////        sinceBuild = sinceBuildInput
-////        untilBuild = untilBuildInput
-////      }
-//    }
-//  }
+
+  // Verifier documentation
+  // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html#intellijPlatform-pluginVerification
+  // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html#intellijPlatform-pluginVerification-ides
+  pluginVerification {
+    // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
+    // https://github.com/JetBrains/intellij-plugin-verifier
+    cliPath = file("../third_party/lib/verifier-cli-1.379-all.jar")
+    failureLevel = listOf(
+      VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
+//      VerifyPluginTask.FailureLevel.PLUGIN_STRUCTURE_WARNINGS,
+      VerifyPluginTask.FailureLevel.INVALID_PLUGIN,
+      )
+    verificationReportsFormats = VerifyPluginTask.VerificationReportsFormats.ALL
+    subsystemsToCheck = VerifyPluginTask.Subsystems.ALL
+    // Mute and freeArgs documentation
+    // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
+    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-faq.html#mutePluginVerifierProblems
+    freeArgs = listOf(
+      "-mute",
+      "TemplateWordInPluginId,ForbiddenPluginIdPrefix,TemplateWordInPluginName"
+    )
+    ides {
+      if (ideaProduct == "android-studio") {
+        ide(IntelliJPlatformType.AndroidStudio, ideaVersion)
+      } else {
+          ide(IntelliJPlatformType.IntellijIdeaCommunity, ideaVersion)
+        }
+      recommended()
+//      select {
+//        types = listOf(IntelliJPlatformType.AndroidStudio)
+//        channels = listOf(ProductRelease.Channel.RELEASE)
+//        sinceBuild = sinceBuildInput
+//        untilBuild = untilBuildInput
+//      }
+    }
+  }
 }
 
 dependencies {
@@ -154,11 +173,13 @@ dependencies {
   compileOnly("com.google.code.gson:gson:2.10.1")
   testImplementation("com.google.guava:guava:32.0.0-jre")
   testImplementation("com.google.code.gson:gson:2.10.1")
+  testImplementation("junit:junit:4.13.2")
+  runtimeOnly(fileTree(mapOf("dir" to "${project.rootDir}/third_party/lib/jxbrowser",
+    "include" to listOf("*.jar"))))
   compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/third_party/lib/jxbrowser",
     "include" to listOf("*.jar"))))
   testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/third_party/lib/jxbrowser",
     "include" to listOf("*.jar"))))
-  testImplementation("junit:junit:4.13.2")
 }
 
 sourceSets {

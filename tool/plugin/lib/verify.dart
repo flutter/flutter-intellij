@@ -19,13 +19,27 @@ class VerifyCommand extends ProductCommand {
 
   @override
   Future<int> doit() async {
+    // run './gradlew verifyPluginProjectConfiguration'
+    // run './gradlew verifyPluginStructure'
+    // run './gradlew verifyPluginSignature'
     // run './gradlew verifyPlugin'
-    // run './gradlew verifyPluginConfiguration'
     var result = 0;
     for (var spec in specs) {
-      log('\nverifyPluginConfiguration for $spec:');
+      log('\nverifyPluginProjectConfiguration for $spec:');
       result = await runner
-          .runGradleCommand(['verifyPluginConfiguration'], spec, '1', 'false');
+          .runGradleCommand(['verifyPluginProjectConfiguration'], spec, '1', 'false');
+      if (result != 0) {
+        return result;
+      }
+      log('\nverifyPluginStructure for $spec:');
+      result =
+          await runner.runGradleCommand(['verifyPluginStructure'], spec, '1', 'false');
+      if (result != 0) {
+        return result;
+      }
+      log('\nverifyPluginSignature for $spec:');
+      result =
+      await runner.runGradleCommand(['verifyPluginSignature'], spec, '1', 'false');
       if (result != 0) {
         return result;
       }

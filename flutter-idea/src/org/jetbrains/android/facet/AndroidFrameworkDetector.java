@@ -54,25 +54,27 @@ public class AndroidFrameworkDetector extends FacetBasedFrameworkDetector<Androi
     return Boolean.parseBoolean(pair.getFirst());
   }
 
-  @NotNull
-  public static Notification showDexOptionNotification(@NotNull Module module, @NotNull String propertyName) {
-    Project project = module.getProject();
-    Notification notification = NotificationGroupManager.getInstance().getNotificationGroup("Android Module Importing").createNotification(
-      AndroidBundle.message("android.facet.importing.title", module.getName()),
-      "'" + propertyName +
-      "' property is detected in " + SdkConstants.FN_PROJECT_PROPERTIES +
-      " file.<br>You may enable related option in <a href='configure'>Settings | Compiler | Android DX</a>",
-      NotificationType.INFORMATION).setListener(new NotificationListener.Adapter() {
-      @Override
-      protected void hyperlinkActivated(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
-        notification.expire();
-        ShowSettingsUtil.getInstance().showSettingsDialog(
-          project, AndroidBundle.message("android.dex.compiler.configurable.display.name"));
-      }
-    });
-    notification.notify(project);
-    return notification;
-  }
+  // TODO(jwren) Add this support back into the plugin or delete the code
+  //  Method is current dead when uncommented, commented out for the `./bin/plugin verify` command
+  //@NotNull
+  //public static Notification showDexOptionNotification(@NotNull Module module, @NotNull String propertyName) {
+  //  Project project = module.getProject();
+  //  Notification notification = NotificationGroupManager.getInstance().getNotificationGroup("Android Module Importing").createNotification(
+  //    AndroidBundle.message("android.facet.importing.title", module.getName()),
+  //    "'" + propertyName +
+  //    "' property is detected in " + SdkConstants.FN_PROJECT_PROPERTIES +
+  //    " file.<br>You may enable related option in <a href='configure'>Settings | Compiler | Android DX</a>",
+  //    NotificationType.INFORMATION).setListener(new NotificationListener.Adapter() {
+  //    @Override
+  //    protected void hyperlinkActivated(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
+  //      notification.expire();
+  //      ShowSettingsUtil.getInstance().showSettingsDialog(
+  //        project, AndroidBundle.message("android.dex.compiler.configurable.display.name"));
+  //    }
+  //  });
+  //  notification.notify(project);
+  //  return notification;
+  //}
 
   @NotNull
   @Override
