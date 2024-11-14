@@ -159,7 +159,7 @@ void main() {
 
     test('only-version', () async {
       ProductCommand command =
-          makeTestRunner().commands['make'] as ProductCommand;
+      makeTestRunner().commands['make'] as ProductCommand;
       var results = command.argParser.parse(['--only-version=2023.1']);
       expect(results['only-version'], '2023.1');
     });
@@ -246,8 +246,8 @@ class TestDeployCommand extends DeployCommand {
   void changeDirectory(Directory dir) {}
 
   @override
-  Future<int> upload(
-      String filePath, String pluginNumber, String token, String channel) {
+  Future<int> upload(String filePath, String pluginNumber, String token,
+      String channel) {
     paths.add(filePath);
     plugins.add(pluginNumber);
     return Future(() => 0);

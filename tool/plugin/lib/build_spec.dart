@@ -13,6 +13,7 @@ class BuildSpec {
   // TODO (jwren) can we get rid of "name"
   final String name;
   // TODO (jwren) these two can be consilidated
+
   final String version;
   final String? ijVersion;
   final bool isTestTarget;
@@ -21,6 +22,7 @@ class BuildSpec {
   final String ideaVersion;
   final String androidPluginVersion;
   final String dartPluginVersion;
+
   // TODO (jwren) can baseVersion be removed?
   final String baseVersion;
 
@@ -129,11 +131,9 @@ class BuildSpec {
 class SyntheticBuildSpec extends BuildSpec {
   late final BuildSpec alternate;
 
-  SyntheticBuildSpec.fromJson(
-    super.json,
-    super.releaseNum,
-    List<BuildSpec> specs,
-  ) : super.fromJson() {
+  SyntheticBuildSpec.fromJson(super.json,
+      super.releaseNum,
+      List<BuildSpec> specs,) : super.fromJson() {
     try {
       // 'isUnitTestTarget' should always be in the spec for the latest IntelliJ (not AS).
       alternate = specs.firstWhere((s) => s.isUnitTestTarget);

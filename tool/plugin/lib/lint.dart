@@ -49,7 +49,9 @@ class LintCommand extends Command<int> {
     final usages = <String, List<String>>{};
 
     imports.split('\n').forEach((String line) {
-      if (line.trim().isEmpty) {
+      if (line
+          .trim()
+          .isEmpty) {
         return;
       }
 
