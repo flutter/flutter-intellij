@@ -160,7 +160,7 @@ intellijPlatform {
       } else {
         ide(IntelliJPlatformType.IntellijIdeaCommunity, ideaVersion)
       }
-      recommended()
+//      recommended()
 //      select {
 //        types = listOf(IntelliJPlatformType.AndroidStudio)
 //        channels = listOf(ProductRelease.Channel.RELEASE)
