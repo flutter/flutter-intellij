@@ -12,7 +12,6 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
-import gnu.trove.THashMap;
 import io.flutter.inspector.EvalOnDartLibrary;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.EventStream;
@@ -40,13 +39,13 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
   @NotNull private final FlutterApp app;
   @NotNull private final HeapMonitor heapMonitor;
   @NotNull private final FlutterFramesMonitor flutterFramesMonitor;
-  @NotNull private final Map<String, EventStream<Boolean>> serviceExtensions = new THashMap<>();
+  @NotNull private final Map<String, EventStream<Boolean>> serviceExtensions = new HashMap<>();
 
   /**
    * Boolean value applicable only for boolean service extensions indicating
    * whether the service extension is enabled or disabled.
    */
-  @NotNull private final Map<String, EventStream<ServiceExtensionState>> serviceExtensionState = new THashMap<>();
+  @NotNull private final Map<String, EventStream<ServiceExtensionState>> serviceExtensionState = new HashMap<>();
 
   private final EventStream<IsolateRef> flutterIsolateRefStream;
 

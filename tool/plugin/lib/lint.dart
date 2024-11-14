@@ -103,6 +103,9 @@ class LintCommand extends Command<int> {
       // Not technically a bad import, but not all IntelliJ platforms provide
       // this library.
       'org.apache.commons.io.',
+
+      // gnu.trove. classes seem to all be deprecated, avoid into the future
+      'gnu.trove.',
     ];
 
     for (var import in proscribedImports) {
