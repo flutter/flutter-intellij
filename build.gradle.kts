@@ -7,6 +7,7 @@
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.models.ProductRelease
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
@@ -68,12 +69,17 @@ java {
 
 dependencies {
   intellijPlatform {
+    // Documentation on the create(...) methods:
+    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#custom-target-platforms
     if (ideaProduct == "android-studio") {
       create(IntelliJPlatformType.AndroidStudio, ideaVersion)
     } else {//if (ide == "ideaIC") {
       create(IntelliJPlatformType.IntellijIdeaCommunity, ideaVersion)
     }
     testFramework(TestFrameworkType.Platform)
+
+    // Plugin dependnecy documentation:
+    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
     val bundledPluginList = mutableListOf(
       "com.intellij.java",
       "com.intellij.properties",
@@ -103,42 +109,56 @@ dependencies {
     //  Please ensure the `instrumentationTools()` entry is present in the project dependencies section along with the `intellijDependencies()` entry in the repositories section.
     //  See: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     instrumentationTools()
-//    pluginVerifier()
+    pluginVerifier()
   }
 }
-//intellijPlatform {
-//  pluginConfiguration {
-//    version = flutterPluginVersion
-//    ideaVersion {
-//      sinceBuild = sinceBuildInput
-//      untilBuild = untilBuildInput
-//    }
-//  }
-//  // TODO (jwren) get the verifier to work, and enable in the github presubmit,
-//  //  the com.teamdev dep is having the verifier fail
-//  // Verifier documentation: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html#intellijPlatform-pluginVerification-ides
-//  pluginVerification {
-//    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-faq.html#mutePluginVerifierProblems
-//    freeArgs = listOf(
-//      "-mute",
-//      "TemplateWordInPluginId"
-//    )
-//    ides {
-//      if (ideaProduct == "android-studio") {
-//        ide(IntelliJPlatformType.AndroidStudio, ideaVersion)
-//      } else {
-//          ide(IntelliJPlatformType.IntellijIdeaCommunity, ideaVersion)
-//        }
-//      recommended()
-////      select {
-////        types = listOf(IntelliJPlatformType.AndroidStudio)
-////        channels = listOf(ProductRelease.Channel.RELEASE)
-////        sinceBuild = sinceBuildInput
-////        untilBuild = untilBuildInput
-////      }
-//    }
-//  }
-//}
+
+intellijPlatform {
+  pluginConfiguration {
+    version = flutterPluginVersion
+    ideaVersion {
+      sinceBuild = sinceBuildInput
+      untilBuild = untilBuildInput
+    }
+  }
+
+  // Verifier documentation
+  // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html#intellijPlatform-pluginVerification
+  // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html#intellijPlatform-pluginVerification-ides
+  pluginVerification {
+    // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
+    // https://github.com/JetBrains/intellij-plugin-verifier
+    cliPath = file("../third_party/lib/verifier-cli-1.379-all.jar")
+    failureLevel = listOf(
+      VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
+//      VerifyPluginTask.FailureLevel.PLUGIN_STRUCTURE_WARNINGS,
+      VerifyPluginTask.FailureLevel.INVALID_PLUGIN,
+    )
+    verificationReportsFormats = VerifyPluginTask.VerificationReportsFormats.ALL
+    subsystemsToCheck = VerifyPluginTask.Subsystems.ALL
+    // Mute and freeArgs documentation
+    // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
+    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-faq.html#mutePluginVerifierProblems
+    freeArgs = listOf(
+      "-mute",
+      "TemplateWordInPluginId,ForbiddenPluginIdPrefix,TemplateWordInPluginName"
+    )
+    ides {
+      if (ideaProduct == "android-studio") {
+        ide(IntelliJPlatformType.AndroidStudio, ideaVersion)
+      } else {
+        ide(IntelliJPlatformType.IntellijIdeaCommunity, ideaVersion)
+      }
+      recommended()
+//      select {
+//        types = listOf(IntelliJPlatformType.AndroidStudio)
+//        channels = listOf(ProductRelease.Channel.RELEASE)
+//        sinceBuild = sinceBuildInput
+//        untilBuild = untilBuildInput
+//      }
+    }
+  }
+}
 
 // Documentation for printProductsReleases:
 // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-faq.html#how-to-check-the-latest-available-eap-release
