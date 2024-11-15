@@ -31,12 +31,13 @@ class VerifyCommand extends ProductCommand {
       }
       log('\nverifyPlugin for $spec:');
       result =
-          await runner.runGradleCommand(['verifyPlugin'], spec, '1', 'false');
+      await runner.runGradleCommand(['verifyPlugin'], spec, '1', 'false');
       if (result != 0) {
         return result;
       }
     }
-    log('\nSummary: verification of all ${specs.length} build specifications was successful.');
+    log('\nSummary: verification of all ${specs
+        .length} build specifications was successful.');
     return result;
   }
 }

@@ -33,7 +33,7 @@ Future<String> makeDevLog(BuildSpec spec) async {
   var gitDir = await GitDir.fromExisting(rootPath);
   var since = lastReleaseName;
   var processResult =
-      await gitDir.runCommand(['log', '--oneline', '$since..HEAD']);
+  await gitDir.runCommand(['log', '--oneline', '$since..HEAD']);
   String out = processResult.stdout as String;
   var messages = out.trim().split('\n');
   var devLog = StringBuffer();
@@ -51,14 +51,22 @@ Future<DateTime> dateOfLastRelease() async {
   var processResult = await gitDir
       .runCommand(['branch', '--list', '-v', '--no-abbrev', lastReleaseName]);
   String out = processResult.stdout as String;
-  var logLine = out.trim().split('\n').first.trim();
+  var logLine = out
+      .trim()
+      .split('\n')
+      .first
+      .trim();
   var match =
-      RegExp(r'release_\d+\s+([A-Fa-f\d]{40})\s').matchAsPrefix(logLine);
+  RegExp(r'release_\d+\s+([A-Fa-f\d]{40})\s').matchAsPrefix(logLine);
   var commitHash = match!.group(1);
   processResult =
-      await gitDir.runCommand(['show', '--pretty=tformat:"%cI"', commitHash!]);
+  await gitDir.runCommand(['show', '--pretty=tformat:"%cI"', commitHash!]);
   out = processResult.stdout as String;
-  var date = out.trim().split('\n').first.trim();
+  var date = out
+      .trim()
+      .split('\n')
+      .first
+      .trim();
   return DateTime.parse(date.replaceAll('"', ''));
 }
 
@@ -66,15 +74,23 @@ Future<String> lastRelease() async {
   _checkGitDir();
   var gitDir = await GitDir.fromExisting(rootPath);
   var processResult =
-      await gitDir.runCommand(['branch', '--list', 'release_*']);
+  await gitDir.runCommand(['branch', '--list', 'release_*']);
   String out = processResult.stdout as String;
-  var release = out.trim().split('\n').last.trim();
+  var release = out
+      .trim()
+      .split('\n')
+      .last
+      .trim();
   if (release.isNotEmpty) return release;
   processResult =
-      await gitDir.runCommand(['branch', '--list', '-a', '*release_*']);
+  await gitDir.runCommand(['branch', '--list', '-a', '*release_*']);
   out = processResult.stdout as String;
   var remote =
-      out.trim().split('\n').last.trim(); // "remotes/origin/release_43"
+  out
+      .trim()
+      .split('\n')
+      .last
+      .trim(); // "remotes/origin/release_43"
   release = remote.substring(remote.lastIndexOf('/') + 1);
   await gitDir.runCommand(['branch', '--track', release, remote]);
   return release;
@@ -109,7 +125,12 @@ Future<void> removeAll(String dir) async {
 }
 
 bool isNewer(FileSystemEntity newer, FileSystemEntity older) {
-  return newer.statSync().modified.isAfter(older.statSync().modified);
+  return newer
+      .statSync()
+      .modified
+      .isAfter(older
+      .statSync()
+      .modified);
 }
 
 void _checkGitDir() async {
@@ -142,7 +163,9 @@ int get devBuildNumber {
   // The dev channel is automatically refreshed weekly, so the build number
   // is just the number of weeks since the last stable release.
   var today = DateTime.now();
-  var daysSinceRelease = today.difference(lastReleaseDate).inDays;
+  var daysSinceRelease = today
+      .difference(lastReleaseDate)
+      .inDays;
   var weekNumber = daysSinceRelease ~/ 7 + 1;
   return weekNumber;
 }
@@ -162,7 +185,7 @@ String buildVersionNumber(BuildSpec spec) {
 
 String _nextRelease() {
   var current =
-      RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName)!.group(1);
+  RegExp(r'release_(\d+)').matchAsPrefix(lastReleaseName)!.group(1);
   var val = int.parse(current!) + 1;
   return '$val.0';
 }
