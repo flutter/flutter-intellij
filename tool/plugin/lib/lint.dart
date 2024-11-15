@@ -95,6 +95,8 @@ class LintCommand extends Command<int> {
       'org.apache.commons.lang.StringEscapeUtils',
       // https://github.com/dart-lang/sdk/issues/39377
       'org.apache.commons.lang3.StringUtils',
+      // org.apache.commons.lang3.StringEscapeUtils is deprecated
+      'org.apache.commons.lang3.StringEscapeUtils',
 
       // Not technically a bad import, but not all IntelliJ platforms provide
       // this library.
