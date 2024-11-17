@@ -55,6 +55,9 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -192,92 +195,102 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
     final ContentFactory contentFactory = ContentFactory.getInstance();
     final ContentManager contentManager = toolWindow.getContentManager();
 
-    final Content content = contentFactory.createContent(null, null, false);
-    content.setCloseable(false);
+    final JPanel warning = new JPanel(new BorderLayout(50, 50));
+    JTextPane text = new JTextPane();
+    text.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+    text.setCharacterAttributes(
+      StyleContext.getDefaultStyleContext().addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, new Color(234, 57, 35)), false);
+    text.setText("The Flutter Outline window is being removed soon. Use the Structure view instead: View -> Tool Windows -> Structure");
+    text.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD));
+    warning.add(text);
+    contentManager.getComponent().add(warning);
 
-    windowPanel = new OutlineComponent(this);
-    content.setComponent(windowPanel);
-
-    windowPanel.setToolbar(widgetEditToolbar.getToolbar().getComponent());
-
-    final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
-
-    tree = new OutlineTree(rootNode);
-    tree.setCellRenderer(new OutlineTreeCellRenderer());
-    tree.expandAll();
-
-    initTreePopup();
-
-    // Add collapse all, expand all, and show only widgets buttons.
-    if (toolWindow instanceof ToolWindowEx toolWindowEx) {
-
-      final CommonActionsManager actions = CommonActionsManager.getInstance();
-      final TreeExpander expander = new DefaultTreeExpander(tree);
-
-      final AnAction expandAllAction = actions.createExpandAllAction(expander, tree);
-      expandAllAction.getTemplatePresentation().setIcon(AllIcons.Actions.Expandall);
-
-      final AnAction collapseAllAction = actions.createCollapseAllAction(expander, tree);
-      collapseAllAction.getTemplatePresentation().setIcon(AllIcons.Actions.Collapseall);
-
-      final ShowOnlyWidgetsAction showOnlyWidgetsAction = new ShowOnlyWidgetsAction();
-
-      toolWindowEx.setTitleActions(Arrays.asList(expandAllAction, collapseAllAction, showOnlyWidgetsAction));
-    }
-
-    new TreeSpeedSearch(tree) {
-      @Override
-      protected String getElementText(Object element) {
-        final TreePath path = (TreePath)element;
-        final DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
-        final Object object = node.getUserObject();
-        if (object instanceof OutlineObject) {
-          return ((OutlineObject)object).getSpeedSearchString();
-        }
-        return null;
-      }
-    };
-
-    tree.addMouseListener(new MouseAdapter() {
-      @Override
-      public void mouseClicked(MouseEvent e) {
-        if (e.getClickCount() > 1) {
-          final TreePath selectionPath = tree.getSelectionPath();
-          if (selectionPath != null) {
-            selectPath(selectionPath, true);
-          }
-        }
-      }
-    });
-
-    tree.addTreeSelectionListener(treeSelectionListener);
-
-    scrollPane = ScrollPaneFactory.createScrollPane(tree);
-    content.setPreferredFocusableComponent(tree);
-
-    contentManager.addContent(content);
-    contentManager.setSelectedContent(content);
-
-    splitter = new Splitter(true);
-    setSplitterProportion(getState().getSplitterProportion());
-    getState().addListener(e -> {
-      final float newProportion = getState().getSplitterProportion();
-      if (splitter.getProportion() != newProportion) {
-        setSplitterProportion(newProportion);
-      }
-    });
-    //noinspection Convert2Lambda
-    splitter.addPropertyChangeListener("proportion", new PropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent evt) {
-        if (!isSettingSplitterProportion) {
-          getState().setSplitterProportion(splitter.getProportion());
-        }
-      }
-    });
-    scrollPane.setMinimumSize(new Dimension(1, 1));
-    splitter.setFirstComponent(scrollPane);
-    windowPanel.setContent(splitter);
+    //final Content content = contentFactory.createContent(null, null, false);
+    //content.setCloseable(false);
+    //
+    //windowPanel = new OutlineComponent(this);
+    //content.setComponent(windowPanel);
+    //
+    //windowPanel.setToolbar(widgetEditToolbar.getToolbar().getComponent());
+    //
+    //final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
+    //
+    //tree = new OutlineTree(rootNode);
+    //tree.setCellRenderer(new OutlineTreeCellRenderer());
+    //tree.expandAll();
+    //
+    //initTreePopup();
+    //
+    //// Add collapse all, expand all, and show only widgets buttons.
+    //if (toolWindow instanceof ToolWindowEx toolWindowEx) {
+    //
+    //  final CommonActionsManager actions = CommonActionsManager.getInstance();
+    //  final TreeExpander expander = new DefaultTreeExpander(tree);
+    //
+    //  final AnAction expandAllAction = actions.createExpandAllAction(expander, tree);
+    //  expandAllAction.getTemplatePresentation().setIcon(AllIcons.Actions.Expandall);
+    //
+    //  final AnAction collapseAllAction = actions.createCollapseAllAction(expander, tree);
+    //  collapseAllAction.getTemplatePresentation().setIcon(AllIcons.Actions.Collapseall);
+    //
+    //  final ShowOnlyWidgetsAction showOnlyWidgetsAction = new ShowOnlyWidgetsAction();
+    //
+    //  toolWindowEx.setTitleActions(Arrays.asList(expandAllAction, collapseAllAction, showOnlyWidgetsAction));
+    //}
+    //
+    //new TreeSpeedSearch(tree) {
+    //  @Override
+    //  protected String getElementText(Object element) {
+    //    final TreePath path = (TreePath)element;
+    //    final DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
+    //    final Object object = node.getUserObject();
+    //    if (object instanceof OutlineObject) {
+    //      return ((OutlineObject)object).getSpeedSearchString();
+    //    }
+    //    return null;
+    //  }
+    //};
+    //
+    //tree.addMouseListener(new MouseAdapter() {
+    //  @Override
+    //  public void mouseClicked(MouseEvent e) {
+    //    if (e.getClickCount() > 1) {
+    //      final TreePath selectionPath = tree.getSelectionPath();
+    //      if (selectionPath != null) {
+    //        selectPath(selectionPath, true);
+    //      }
+    //    }
+    //  }
+    //});
+    //
+    //tree.addTreeSelectionListener(treeSelectionListener);
+    //
+    //scrollPane = ScrollPaneFactory.createScrollPane(tree);
+    //content.setPreferredFocusableComponent(tree);
+    //
+    //contentManager.addContent(content);
+    //contentManager.setSelectedContent(content);
+    //
+    //splitter = new Splitter(true);
+    //setSplitterProportion(getState().getSplitterProportion());
+    //getState().addListener(e -> {
+    //  final float newProportion = getState().getSplitterProportion();
+    //  if (splitter.getProportion() != newProportion) {
+    //    setSplitterProportion(newProportion);
+    //  }
+    //});
+    ////noinspection Convert2Lambda
+    //splitter.addPropertyChangeListener("proportion", new PropertyChangeListener() {
+    //  @Override
+    //  public void propertyChange(PropertyChangeEvent evt) {
+    //    if (!isSettingSplitterProportion) {
+    //      getState().setSplitterProportion(splitter.getProportion());
+    //    }
+    //  }
+    //});
+    //scrollPane.setMinimumSize(new Dimension(1, 1));
+    //splitter.setFirstComponent(scrollPane);
+    //windowPanel.setContent(splitter);
   }
 
   private void initTreePopup() {

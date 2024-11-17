@@ -194,7 +194,7 @@ public class FlutterPerformanceView implements Disposable {
       JTextPane text = new JTextPane();
       text.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
       text.setCharacterAttributes(StyleContext.getDefaultStyleContext().addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, new Color(234, 57, 35)), false);
-      text.setText("The performance panel is being removed soon. Use the Flutter DevTools panel instead: View -> Tool windows -> Flutter DevTools");
+      text.setText("The performance panel is being removed soon. Use the Flutter DevTools panel instead: View -> Tool Windows -> Flutter DevTools");
       text.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD));
       warning.add(text);
       perfViewsPanel.add(warning);
