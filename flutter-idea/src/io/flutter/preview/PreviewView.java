@@ -199,7 +199,11 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
     text.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
     text.setCharacterAttributes(
       StyleContext.getDefaultStyleContext().addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, new Color(234, 57, 35)), false);
-    text.setText("The Flutter Outline window is being removed soon. Use the Structure view instead: View -> Tool Windows -> Structure");
+    text.setText("""
+                   The Flutter Outline window is being removed soon. Use the Structure view instead: View -> Tool Windows -> Structure\
+
+
+                   The refactorings in the Outline view can be found in the editor as Context Actions ⌥⏎ (macOS) / Alt+Enter (Windows/Linux)\s""");
     text.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD));
     warning.add(text);
     contentManager.getComponent().add(warning);
