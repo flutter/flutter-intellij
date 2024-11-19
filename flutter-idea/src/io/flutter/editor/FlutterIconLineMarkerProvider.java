@@ -28,7 +28,6 @@ import com.jetbrains.lang.dart.psi.*;
 import com.jetbrains.lang.dart.psi.impl.DartCallExpressionImpl;
 import com.jetbrains.lang.dart.util.DartPsiImplUtil;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
-import gnu.trove.THashSet;
 import info.debatty.java.stringsimilarity.JaroWinkler;
 import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterSdk;
@@ -62,9 +61,9 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
 
   public static void initialize() {
     KnownPaths.clear();
-    KnownPaths.put("Icons", new THashSet<>(Collections.singleton("packages/flutter/lib/src/material")));
-    KnownPaths.put("IconData", new THashSet<>(Collections.singleton("packages/flutter/lib/src/widgets")));
-    KnownPaths.put("CupertinoIcons", new THashSet<>(Collections.singleton("packages/flutter/lib/src/cupertino")));
+    KnownPaths.put("Icons", new HashSet<>(Collections.singleton("packages/flutter/lib/src/material")));
+    KnownPaths.put("IconData", new HashSet<>(Collections.singleton("packages/flutter/lib/src/widgets")));
+    KnownPaths.put("CupertinoIcons", new HashSet<>(Collections.singleton("packages/flutter/lib/src/cupertino")));
     BuiltInPaths.clear();
     BuiltInPaths.put("Icons", MaterialRelativeIconsPath);
     BuiltInPaths.put("IconData", MaterialRelativeIconsPath);

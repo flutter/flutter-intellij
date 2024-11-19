@@ -11,7 +11,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.PathUtil;
 import com.jetbrains.lang.dart.ide.runner.util.DartTestLocationProvider;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
-import gnu.trove.TIntLongHashMap;
 import io.flutter.utils.JsonUtils;
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessageVisitor;
 import org.jetbrains.annotations.NotNull;
@@ -94,7 +93,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
   private String myLocation;
   private Key myCurrentOutputType;
   private ServiceMessageVisitor myCurrentVisitor;
-  private final TIntLongHashMap myTestIdToTimestamp;
+  private final HashMap myTestIdToTimestamp;
   private final Map<Integer, Test> myTestData;
   private final Map<Integer, Group> myGroupData;
   private final Map<Integer, Suite> mySuiteData;
@@ -105,7 +104,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
                                   @NotNull final DartUrlResolver urlResolver) {
     super(testFrameworkName, consoleProperties);
     myUrlResolver = urlResolver;
-    myTestIdToTimestamp = new TIntLongHashMap();
+    myTestIdToTimestamp = new HashMap();
     myTestData = new HashMap<>();
     myGroupData = new HashMap<>();
     mySuiteData = new HashMap<>();
@@ -268,7 +267,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     //if (test.getMetadata().skip) return true; // skipped tests are reported as ignored in handleTestStart(). testFinished signal must follow
 
     ServiceMessageBuilder testFinished = ServiceMessageBuilder.testFinished(test.getBaseName());
-    long duration = getTimestamp(obj) - myTestIdToTimestamp.get(test.getId());
+    long duration = getTimestamp(obj) - (Long)myTestIdToTimestamp.get(test.getId());
     testFinished.addAttribute("duration", Long.toString(duration));
 
     return finishMessage(testFinished, test.getId(), test.getValidParentId()) && checkGroupDone(test.getParent());

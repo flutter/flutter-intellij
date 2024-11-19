@@ -20,7 +20,6 @@ import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.PathUtil;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.xdebugger.XSourcePosition;
-import gnu.trove.TIntArrayList;
 import io.flutter.inspector.InspectorActions;
 import io.flutter.perf.*;
 import io.flutter.run.daemon.FlutterApp;
@@ -286,8 +285,8 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
       }
       final boolean previouslyEmpty = root.getChildCount() == 0;
       int childIndex = 0;
-      final TIntArrayList indicesChanged = new TIntArrayList();
-      final TIntArrayList indicesInserted = new TIntArrayList();
+      final ArrayList<Integer> indicesChanged = new ArrayList();
+      final ArrayList<Integer> indicesInserted = new ArrayList();
       for (SlidingWindowStatsSummary entry : entries) {
         if (entry.getLocation().equals(lastSelectedLocation)) {
           selectionIndex = childIndex;
@@ -308,8 +307,8 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
         childIndex++;
       }
       final int endChildIndex = childIndex;
-      final ArrayList<TreeNode> nodesRemoved = new ArrayList<>();
-      final TIntArrayList indicesRemoved = new TIntArrayList();
+      final ArrayList<TreeNode> nodesRemoved = new ArrayList();
+      final ArrayList<Integer> indicesRemoved = new ArrayList();
       // Gather nodes to remove.
       for (int j = endChildIndex; j < root.getChildCount(); j++) {
         nodesRemoved.add(root.getChildAt(j));
@@ -322,6 +321,7 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
         root.remove(lastChild);
       }
 
+      assert(model != null);
       if (previouslyEmpty) {
         // TODO(jacobr): I'm not clear why this event is needed in this case.
         model.nodeStructureChanged(root);
@@ -329,13 +329,13 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
       else {
         // Report events for all the changes made to the table.
         if (!indicesChanged.isEmpty()) {
-          model.nodesChanged(root, indicesChanged.toNativeArray());
+          model.nodesChanged(root, indicesChanged.stream().mapToInt(i -> i).toArray());//.intStream().toArray());
         }
         if (!indicesInserted.isEmpty()) {
-          model.nodesWereInserted(root, indicesInserted.toNativeArray());
+          model.nodesWereInserted(root, indicesInserted.stream().mapToInt(i -> i).toArray());
         }
         if (!indicesRemoved.isEmpty()) {
-          model.nodesWereRemoved(root, indicesRemoved.toNativeArray(), nodesRemoved.toArray());
+          model.nodesWereRemoved(root, indicesRemoved.stream().mapToInt(i -> i).toArray(), nodesRemoved.toArray());
         }
       }
 

@@ -22,7 +22,6 @@ import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
-import gnu.trove.THashMap;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.vmService.DartVmServiceDebugProcess;
@@ -33,10 +32,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -100,7 +96,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
   /**
    * A cache containing each file version downloaded from Observatory. The key is an isolate id.
    */
-  private final Map<String, ObservatoryFile.Cache> fileCache = new THashMap<>();
+  private final Map<String, ObservatoryFile.Cache> fileCache = new HashMap<>();
 
   public FlutterPositionMapper(@NotNull Project project,
                                @NotNull VirtualFile sourceRoot,

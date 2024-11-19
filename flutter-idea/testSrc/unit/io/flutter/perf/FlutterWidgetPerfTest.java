@@ -522,7 +522,7 @@ public class FlutterWidgetPerfTest {
     }
 
     stats = flutterWidgetPerf.getStatsForMetric(metrics, PerfReportKind.rebuild);
-    assertEquals(18, stats.size());
+    assertEquals(26, stats.size());
     for (SlidingWindowStatsSummary stat : stats) {
       assertTrue(stat.getValue(PerfMetric.lastFrame) > 0 ||
                  stat.getValue(PerfMetric.totalSinceEnteringCurrentScreen) > 0);
@@ -598,7 +598,7 @@ public class FlutterWidgetPerfTest {
     }
 
     stats = flutterWidgetPerf.getStatsForMetric(metrics, PerfReportKind.rebuild);
-    assertEquals(18, stats.size());
+    assertEquals(26, stats.size());
     for (SlidingWindowStatsSummary stat : stats) {
       assertTrue(stat.getValue(PerfMetric.lastFrame) > 0 ||
                  stat.getValue(PerfMetric.totalSinceEnteringCurrentScreen) > 0);

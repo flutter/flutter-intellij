@@ -30,8 +30,6 @@ import com.jetbrains.lang.dart.psi.DartComponentName;
 import com.jetbrains.lang.dart.resolve.ClassNameScopeProcessor;
 import com.jetbrains.lang.dart.resolve.DartPsiScopeProcessor;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
-import gnu.trove.THashMap;
-import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
 import io.flutter.editor.FlutterIconLineMarkerProvider;
 import io.flutter.settings.FlutterSettings;
@@ -55,13 +53,13 @@ import static io.flutter.editor.FlutterIconLineMarkerProvider.KnownPaths;
 public class FontPreviewProcessor {
 
   public static final String PACKAGE_SEPARATORS = "[,\r\n]";
-  public static final Map<String, String> UNSUPPORTED_PACKAGES = new THashMap<>();
+  public static final Map<String, String> UNSUPPORTED_PACKAGES = new HashMap<>();
 
   // If there are triple quotes around a package URL they won't be recognized.
   private static final Pattern EXPORT_STATEMENT_PATTERN = Pattern.compile("^\\s*export\\s+[\"']([-_. $A-Za-z0-9/]+\\.dart)[\"'].*");
   private static final Pattern IMPORT_STATEMENT_PATTERN = Pattern.compile("^\\s*import\\s+[\"']([-_. $A-Za-z0-9/]+\\.dart)[\"'].*");
-  private static final Map<String, Set<String>> ANALYZED_PROJECT_FILES = new THashMap<>();
-  private static final Map<String, WorkItem> WORK_ITEMS = new THashMap<>();
+  private static final Map<String, Set<String>> ANALYZED_PROJECT_FILES = new HashMap<>();
+  private static final Map<String, WorkItem> WORK_ITEMS = new HashMap<>();
   private static Logger LOG = Logger.getInstance(FontPreviewProcessor.class);
 
   static {
@@ -86,7 +84,7 @@ public class FontPreviewProcessor {
     }
     LOG = FlutterSettings.getInstance().isVerboseLogging() ? Logger.getInstance(FontPreviewProcessor.class) : null;
     log("Analyzing project ", project.getName());
-    ANALYZED_PROJECT_FILES.put(project.getBasePath(), new THashSet<>());
+    ANALYZED_PROJECT_FILES.put(project.getBasePath(), new HashSet<>());
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
       @Override
       public void projectClosed(@NotNull Project project) {
@@ -257,12 +255,12 @@ public class FontPreviewProcessor {
       log("Cannot get PSI file for ", file.getName());
       return;
     }
-    final Set<DartComponentName> classNames = new THashSet<>();
+    final Set<DartComponentName> classNames = new HashSet<>();
     final DartPsiScopeProcessor processor = new ClassNameScopeProcessor(classNames);
     final boolean success = DumbService.getInstance(project).runReadActionInSmartMode(() -> {
       final boolean result = DartResolveUtil.processTopLevelDeclarations(psiFile, processor, file, null);
       if (result) {
-        final Set<DartComponentName> keep = new THashSet<>();
+        final Set<DartComponentName> keep = new HashSet<>();
         for (DartComponentName name : classNames) {
           if (file.equals(name.getContainingFile().getVirtualFile())) {
             keep.add(name);
@@ -299,7 +297,7 @@ public class FontPreviewProcessor {
       log("Adding ", name, " -> ", path);
       final Set<String> knownPaths = KnownPaths.get(name);
       if (knownPaths == null) {
-        KnownPaths.put(name, new THashSet<>(Collections.singleton(path)));
+        KnownPaths.put(name, new HashSet<>(Collections.singleton(path)));
       }
       else {
         knownPaths.add(path);
@@ -460,7 +458,7 @@ public class FontPreviewProcessor {
     final Queue<FileInfo> filesToRewrite = new LinkedList<>();
     final Queue<ClassInfo> classesToAnalyze = new LinkedList<>();
     final Queue<FileInfo> filesToCheck = new LinkedList<>();
-    final Map<String, PathInfo> filesWithNoClasses = new THashMap<>();
+    final Map<String, PathInfo> filesWithNoClasses = new HashMap<>();
     final String projectPath;
     boolean isCancelled = false;
 
