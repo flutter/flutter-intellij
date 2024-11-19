@@ -7,6 +7,8 @@ import 'dart:io';
 import 'package:plugin_tool/plugin.dart';
 import 'package:plugin_tool/runner.dart';
 import 'package:plugin_tool/util.dart';
+import 'package:plugin_tool/verify.dart';
+import 'package:string_validator/string_validator.dart' as validator;
 import 'package:test/test.dart';
 
 void main() {
@@ -26,42 +28,76 @@ void main() {
     test('generate', () {
       expect(GenerateCommand(BuildCommandRunner()).name, "generate");
     });
+
+    test('verify', () {
+      expect(VerifyCommand(BuildCommandRunner()).name, "verify");
+    });
   });
 
   group("spec", () {
+    /// This method has assertions which can be made for all commands in this
+    /// test group.
+    void buildSpecAssertions(BuildCommandRunner runner, String command) {
+      var specs = (runner.commands[command] as ProductCommand).specs;
+      expect(specs, isList);
+      expect(specs, isNotEmpty);
+
+      // channel should be set to stable in the product-matrix.json
+      for (String channel in specs.map((spec) => spec.channel).toList()) {
+        expect(channel, anyOf('stable'));
+      }
+
+      // name should be set to stable in the product-matrix.json
+      for (String name in specs.map((spec) => spec.name).toList()) {
+        expect(name, isNotEmpty);
+        expect(name.length, 6);
+        expect(name, validator.isFloat);
+      }
+
+      // ideaProduct should be android-studio or IC
+      for (String ideaProduct
+          in specs.map((spec) => spec.ideaProduct).toList()) {
+        expect(ideaProduct, anyOf('android-studio', 'IC'));
+      }
+
+      // sinceBuild should be in the form of '243'
+      for (String sinceBuild in specs.map((spec) => spec.sinceBuild).toList()) {
+        expect(sinceBuild.length, 3);
+        expect(sinceBuild, validator.isNumeric);
+      }
+
+      // untilBuild should be in the form of '243.*'
+      for (String untilBuild in specs.map((spec) => spec.untilBuild).toList()) {
+        expect(untilBuild.length, 5);
+        expect(untilBuild.substring(0, 2), validator.isNumeric);
+      }
+    }
+
     test('build', () async {
       var runner = makeTestRunner();
       await runner.run(["-r=19", "-d../..", "make"]).whenComplete(() {
-        var specs = (runner.commands['make'] as ProductCommand).specs;
-        expect(specs, isNotNull);
-        expect(
-            specs.map((spec) => spec.ideaProduct).toList(),
-            orderedEquals(
-                ['android-studio', 'android-studio', 'android-studio', 'IC']));
+        buildSpecAssertions(runner, "make");
       });
     });
 
     test('test', () async {
       var runner = makeTestRunner();
       await runner.run(["-r=19", "-d../..", "test"]).whenComplete(() {
-        var specs = (runner.commands['test'] as ProductCommand).specs;
-        expect(specs, isNotNull);
-        expect(
-            specs.map((spec) => spec.ideaProduct).toList(),
-            orderedEquals(
-                ['android-studio', 'android-studio', 'android-studio', 'IC']));
+        buildSpecAssertions(runner, "test");
       });
     });
 
     test('deploy', () async {
       var runner = makeTestRunner();
       await runner.run(["-r19", "-d../..", "deploy"]).whenComplete(() {
-        var specs = (runner.commands['deploy'] as ProductCommand).specs;
-        expect(specs, isNotNull);
-        expect(
-            specs.map((spec) => spec.ideaProduct).toList(),
-            orderedEquals(
-                ['android-studio', 'android-studio', 'android-studio', 'IC']));
+        buildSpecAssertions(runner, "deploy");
+      });
+    });
+
+    test('verify', () async {
+      var runner = makeTestRunner();
+      await runner.run(["-r19", "-d../..", "verify"]).whenComplete(() {
+        buildSpecAssertions(runner, "verify");
       });
     });
   });
@@ -159,7 +195,16 @@ void main() {
 
     test('only-version', () async {
       ProductCommand command =
-      makeTestRunner().commands['make'] as ProductCommand;
+          makeTestRunner().commands['make'] as ProductCommand;
+      var results = command.argParser.parse(['--only-version=2023.1']);
+      expect(results['only-version'], '2023.1');
+    });
+  });
+
+  group('verify', () {
+    test('only-version', () async {
+      ProductCommand command =
+          makeTestRunner().commands['verify'] as ProductCommand;
       var results = command.argParser.parse(['--only-version=2023.1']);
       expect(results['only-version'], '2023.1');
     });
@@ -216,17 +261,8 @@ BuildCommandRunner makeTestRunner() {
   runner.addCommand(TestTestCommand(runner));
   runner.addCommand(TestDeployCommand(runner));
   runner.addCommand(TestGenCommand(runner));
+  runner.addCommand(TestVerifyCommand(runner));
   return runner;
-}
-
-class TestMakeCommand extends GradleBuildCommand {
-  TestMakeCommand(super.runner);
-
-  @override
-  bool get isTesting => true;
-
-  @override
-  Future<int> doit() async => Future(() => 0);
 }
 
 class TestDeployCommand extends DeployCommand {
@@ -238,16 +274,16 @@ class TestDeployCommand extends DeployCommand {
   @override
   bool get isTesting => true;
 
+  @override
+  void changeDirectory(Directory dir) {}
+
   String readTokenFile() {
     return "token";
   }
 
   @override
-  void changeDirectory(Directory dir) {}
-
-  @override
-  Future<int> upload(String filePath, String pluginNumber, String token,
-      String channel) {
+  Future<int> upload(
+      String filePath, String pluginNumber, String token, String channel) {
     paths.add(filePath);
     plugins.add(pluginNumber);
     return Future(() => 0);
@@ -264,8 +300,28 @@ class TestGenCommand extends GenerateCommand {
   Future<int> doit() async => Future(() => 0);
 }
 
+class TestMakeCommand extends GradleBuildCommand {
+  TestMakeCommand(super.runner);
+
+  @override
+  bool get isTesting => true;
+
+  @override
+  Future<int> doit() async => Future(() => 0);
+}
+
 class TestTestCommand extends TestCommand {
   TestTestCommand(super.runner);
+
+  @override
+  bool get isTesting => true;
+
+  @override
+  Future<int> doit() async => Future(() => 0);
+}
+
+class TestVerifyCommand extends VerifyCommand {
+  TestVerifyCommand(super.runner);
 
   @override
   bool get isTesting => true;
