@@ -63,7 +63,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JPanel mainPanel;
   private ComboboxWithBrowseButton mySdkCombo;
   private JBLabel myVersionLabel;
-  private LinkLabel<?> myPrivacyPolicy;
   private JCheckBox myHotReloadOnSaveCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
   private JCheckBox myOpenInspectorOnAppLaunchCheckBox;
@@ -138,14 +137,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     mySdkCombo.addBrowseFolderListener("Select Flutter SDK Path", null, null,
                                        FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                                        TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
-
-    myPrivacyPolicy.setListener((linkLabel, data) -> {
-      try {
-        BrowserLauncher.getInstance().browse(new URI(FlutterBundle.message("flutter.analytics.privacyUrl")));
-      }
-      catch (URISyntaxException ignore) {
-      }
-    }, null);
 
     myFormatCodeOnSaveCheckBox.addChangeListener(
       (e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
