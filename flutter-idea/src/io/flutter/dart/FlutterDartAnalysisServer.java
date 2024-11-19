@@ -22,8 +22,6 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
-import io.flutter.FlutterInitializer;
-import io.flutter.analytics.TimeTracker;
 import io.flutter.utils.JsonUtils;
 import org.dartlang.analysis.server.protocol.*;
 import org.jetbrains.annotations.NotNull;
@@ -99,11 +97,6 @@ public class FlutterDartAnalysisServer implements Disposable {
       @Override
       public void computedErrors(String file, List<AnalysisError> errors) {
         if (!hasComputedErrors && project.isOpen()) {
-          FlutterInitializer.getAnalytics().sendEventMetric(
-            "startup",
-            "analysisComputedErrors",
-            TimeTracker.getInstance(project).millisSinceProjectOpen()
-          );
           hasComputedErrors = true;
         }
 

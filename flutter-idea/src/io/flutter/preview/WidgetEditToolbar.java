@@ -19,7 +19,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.assists.AssistUtils;
 import com.jetbrains.lang.dart.assists.DartSourceEditException;
 import icons.FlutterIcons;
-import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.inspector.InspectorGroupManagerService;
@@ -56,7 +55,6 @@ public class WidgetEditToolbar {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-      sendAnalyticEvent(id);
       final SourceChange change;
       synchronized (actionToChangeMap) {
         change = actionToChangeMap.get(this);
@@ -316,10 +314,6 @@ public class WidgetEditToolbar {
       }
     }
     return null;
-  }
-
-  private void sendAnalyticEvent(@NotNull String name) {
-    FlutterInitializer.getAnalytics().sendEvent("preview", name);
   }
 
   private void applyChangeAndShowException(SourceChange change) {

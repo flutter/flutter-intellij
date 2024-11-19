@@ -23,10 +23,7 @@ import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashMap;
-import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
-import io.flutter.analytics.Analytics;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.element.LibraryRef;
@@ -41,7 +38,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Converts positions between Dart files in Observatory and local Dart files.
@@ -208,10 +204,6 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
       results.add(threeSlashize(new File(file.getPath()).toURI().toString()));
     }
 
-    if (project != null && !project.isDisposed() && WorkspaceCache.getInstance(project).isBazel()) {
-      FlutterInitializer.getAnalytics().sendEvent("breakpoint", analyzer == null ? "analyzer-found" : "analyzer-null");
-    }
-
     // package: (if applicable)
     if (analyzer != null) {
       final String uriByServer = analyzer.getUri(file.getPath());
@@ -343,23 +335,6 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
       if (analyzer != null && !isDartPatchUri(remoteUri)) {
         final String path = analyzer.getAbsolutePath(remoteUri);
         if (path != null) {
-          if (fileFuture != null &&
-              project != null &&
-              !project.isDisposed() &&
-              WorkspaceCache.getInstance(project).isBazel() &&
-              path.contains("google3")) {
-            // Check if this path matches file future
-            final Analytics analytics = FlutterInitializer.getAnalytics();
-            try {
-              final String vmServiceFilePath = fileFuture.get(1000, TimeUnit.MILLISECONDS);
-              if (!path.equals(vmServiceFilePath)) {
-                analytics.sendEvent("file-mapping", String.format("mismatch|%s|%s", path, vmServiceFilePath));
-              }
-            }
-            catch (Exception e) {
-              analytics.sendEvent("file-mapping", String.format("exception|%s|%s", path, e.getMessage()));
-            }
-          }
           if(path.startsWith("file://")) {
             LocalFileSystem.getInstance().findFileByPath(path.substring(7));
           } else {

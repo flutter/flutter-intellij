@@ -11,9 +11,6 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.actionSystem.AnAction;
-import io.flutter.FlutterInitializer;
-import io.flutter.analytics.Analytics;
-import io.flutter.analytics.MockAnalyticsTransport;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
@@ -24,7 +21,6 @@ import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import javax.swing.*;
@@ -38,20 +34,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class FlutterConsoleLogManagerTest {
-  private Analytics analytics;
-  private MockAnalyticsTransport transport;
-
-  @Before
-  public void setUp() {
-    transport = new MockAnalyticsTransport();
-
-    analytics = new Analytics("123e4567-e89b-12d3-a456-426655440000", "1.0", "IntelliJ CE", "2016.3.2");
-    analytics.setTransport(transport);
-    analytics.setCanSend(false);
-
-    FlutterInitializer.setAnalytics(analytics);
-  }
-
   @After
   public void tearDown() {
     FlutterSettings.setInstance(null);

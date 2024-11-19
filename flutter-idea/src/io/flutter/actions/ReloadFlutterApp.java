@@ -12,7 +12,6 @@ import com.intellij.openapi.util.Computable;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
-import io.flutter.FlutterInitializer;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
@@ -42,12 +41,10 @@ public class ReloadFlutterApp extends FlutterAppAction {
     final boolean shouldRestart = (e.getModifiers() & InputEvent.SHIFT_MASK) != 0 && !"GoToAction".equals(e.getPlace());
 
     if (shouldRestart) {
-      FlutterInitializer.sendAnalyticsAction(RestartFlutterApp.class.getSimpleName());
       FlutterReloadManager.getInstance(project).saveAllAndRestart(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
     }
     else {
       // Else perform a hot reload.
-      FlutterInitializer.sendAnalyticsAction(this);
       FlutterReloadManager.getInstance(project).saveAllAndReload(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
     }
   }

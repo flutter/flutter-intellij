@@ -29,7 +29,6 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.concurrency.QueueProcessor;
-import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.devtools.DevToolsUtils;
 import io.flutter.inspector.DiagnosticLevel;
@@ -38,7 +37,6 @@ import io.flutter.inspector.DiagnosticsTreeStyle;
 import io.flutter.inspector.InspectorService;
 import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
 import io.flutter.view.EmbeddedBrowser;
@@ -425,12 +423,6 @@ public class FlutterConsoleLogManager {
         }
 
         notification.expire();
-
-        FlutterInitializer.getAnalytics().sendEvent(
-          "deep-link-clicked",
-          errorSummary.contains("RenderFlex overflowed") ? "overflow" : "unknown",
-          FlutterSdk.getFlutterSdk(app.getProject())
-        );
       }
     });
     Notifications.Bus.notify(notification, app.getProject());

@@ -18,7 +18,6 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterInitializer;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.LaunchState;
 import io.flutter.run.SdkFields;
@@ -51,8 +50,6 @@ public abstract class RunFlutterAction extends AnAction {
   @Override
   public void actionPerformed(@NotNull AnActionEvent e) {
     // NOTE: When making changes here, consider making similar changes to ConnectAndroidDebuggerAction.
-    FlutterInitializer.sendAnalyticsAction(this);
-
     final RunnerAndConfigurationSettings settings = getRunConfigSettings(e);
     if (settings == null) {
       return;

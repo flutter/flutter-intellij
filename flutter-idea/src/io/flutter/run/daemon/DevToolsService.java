@@ -24,7 +24,6 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.jetbrains.lang.dart.ide.devtools.DartDevToolsService;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import com.jetbrains.lang.dart.sdk.DartSdk;
-import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
@@ -412,7 +411,6 @@ public class DevToolsService {
 
   private void logExceptionAndComplete(Exception exception) {
     LOG.info(exception);
-    FlutterInitializer.getAnalytics().sendExpectedException("devtools-service", exception);
     final CompletableFuture<DevToolsInstance> future = devToolsFutureRef.get();
     if (future != null) {
       future.completeExceptionally(exception);

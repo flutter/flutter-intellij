@@ -23,8 +23,6 @@ import com.intellij.xdebugger.frame.XExecutionStack;
 import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import com.jetbrains.lang.dart.DartFileType;
-import io.flutter.FlutterInitializer;
-import io.flutter.analytics.Analytics;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
@@ -420,9 +418,6 @@ public class VmServiceWrapper implements Disposable {
                   }
                 }
 
-                Analytics analytics = FlutterInitializer.getAnalytics();
-                String category = "breakpoint";
-
                 Sets.SetView<CanonicalBreakpoint> initialDifference =
                   Sets.difference(canonicalBreakpoints, mappedCanonicalBreakpoints);
                 Set<CanonicalBreakpoint> finalDifference = new HashSet<>();
@@ -434,29 +429,14 @@ public class VmServiceWrapper implements Disposable {
                     finalDifference.add(missingBreakpoint);
                   }
                 }
-
-                analytics.sendEventMetric(category, "unmapped-count", finalDifference.size());
-
-                // TODO(helin24): Get rid of this and instead track unmapped files in addBreakpoint?
-                // For internal bazel projects, report files where mapping failed.
-                if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
-                  for (CanonicalBreakpoint canonicalBreakpoint : finalDifference) {
-                    if (canonicalBreakpoint.path.contains("google3")) {
-                      analytics.sendEvent(category,
-                                          String.format("unmapped-file|%s|%s", response.getRootLib().getUri(), canonicalBreakpoint.path));
-                    }
-                  }
-                }
               }
 
               @Override
               public void received(Sentinel response) {
-
               }
 
               @Override
               public void onError(RPCError error) {
-
               }
             });
           }
@@ -584,17 +564,6 @@ public class VmServiceWrapper implements Disposable {
             JsonObject error = new JsonObject();
             error.addProperty("error", "Breakpoint could not be mapped to package URI");
             errorResponses.add(new RPCError(error));
-
-            Analytics analytics = FlutterInitializer.getAnalytics();
-            String category = "breakpoint";
-
-            // For internal bazel projects, report files where mapping failed.
-            if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
-              if (resolvedUri.contains("google3")) {
-                analytics.sendEvent(category, String.format("no-package-uri|%s", resolvedUri));
-              }
-            }
-
             consumer.received(breakpointResponses, errorResponses);
             return;
           }

@@ -29,7 +29,6 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.RefreshToolWindowAction;
 import io.flutter.bazel.WorkspaceCache;
@@ -386,8 +385,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
     catch (TimeoutException e) {
       presentOpenDevToolsOptionWithMessage(app, toolWindow, INSTALLATION_TIMED_OUT_LABEL, ideFeature);
-
-      FlutterInitializer.getAnalytics().sendEvent(JxBrowserManager.ANALYTICS_CATEGORY, "timedOut");
     }
   }
 

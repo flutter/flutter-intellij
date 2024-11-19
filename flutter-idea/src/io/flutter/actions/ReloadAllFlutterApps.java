@@ -12,7 +12,6 @@ import com.intellij.openapi.util.Computable;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
-import io.flutter.FlutterInitializer;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
@@ -38,8 +37,6 @@ public class ReloadAllFlutterApps extends FlutterAppAction {
     if (project == null) {
       return;
     }
-
-    FlutterInitializer.sendAnalyticsAction(this);
     FlutterReloadManager.getInstance(project)
       .saveAllAndReloadAll(FlutterApp.allFromProjectProcess(project), FlutterConstants.RELOAD_REASON_MANUAL);
   }

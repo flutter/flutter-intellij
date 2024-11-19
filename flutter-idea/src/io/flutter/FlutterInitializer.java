@@ -5,20 +5,15 @@
  */
 package io.flutter;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.intellij.ProjectTopics;
-import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.browsers.BrowserLauncher;
-import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.ui.UISettingsListener;
-import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.*;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.EditorColorsListener;
@@ -33,13 +28,8 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.messages.MessageBusConnection;
-import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import de.roderick.weberknecht.WebSocketException;
-import io.flutter.analytics.Analytics;
-import io.flutter.analytics.FlutterAnalysisServerListener;
-import io.flutter.analytics.ToolWindowTracker;
-import io.flutter.analytics.UnifiedAnalytics;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DtdUtils;
@@ -67,9 +57,7 @@ import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.view.FlutterViewFactory;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.event.HyperlinkEvent;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -84,11 +72,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class FlutterInitializer implements StartupActivity {
   private static final Logger LOG = Logger.getInstance(FlutterInitializer.class);
-  private static final String analyticsClientIdKey = "io.flutter.analytics.clientId";
-  private static final String analyticsOptOutKey = "io.flutter.analytics.optOut";
-  private static final String analyticsToastShown = "io.flutter.analytics.toastShown";
-
-  private static Analytics analytics;
 
   private boolean toolWindowsInitialized = false;
 
@@ -205,12 +188,6 @@ public class FlutterInitializer implements StartupActivity {
     final FlutterPluginsLibraryManager libraryManager = new FlutterPluginsLibraryManager(project);
     libraryManager.startWatching();
 
-    // Initialize the analytics notification group.
-    NotificationsConfiguration.getNotificationsConfiguration().register(
-      Analytics.GROUP_DISPLAY_ID,
-      NotificationDisplayType.STICKY_BALLOON,
-      false);
-
     // Set our preferred settings for the run console.
     FlutterConsoleLogManager.initConsolePreferences();
 
@@ -223,64 +200,18 @@ public class FlutterInitializer implements StartupActivity {
     checkSdkVersionNotification(project);
 
     setUpDtdAnalytics(project);
-
-    // Initialize analytics.
-    final PropertiesComponent properties = PropertiesComponent.getInstance();
-    if (!properties.getBoolean(analyticsToastShown)) {
-      properties.setValue(analyticsToastShown, true);
-
-      final Notification notification = new Notification(
-        Analytics.GROUP_DISPLAY_ID,
-        "Welcome to Flutter!",
-        FlutterBundle.message("flutter.analytics.notification.content"),
-        NotificationType.INFORMATION,
-        (notification1, event) -> {
-          if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-            if ("url".equals(event.getDescription())) {
-              BrowserUtil.browse("https://www.google.com/policies/privacy/");
-            }
-          }
-        });
-      boolean finalHasFlutterModule = hasFlutterModule;
-      //noinspection DialogTitleCapitalization
-      notification.addAction(new AnAction("Sounds good!") {
-        @Override
-        public void actionPerformed(@NotNull AnActionEvent event) {
-          notification.expire();
-          // We only track for flutter projects.
-          if (finalHasFlutterModule) {
-            enableAnalytics(project);
-          }
-        }
-      });
-      //noinspection DialogTitleCapitalization
-      notification.addAction(new AnAction("No thanks") {
-        @Override
-        public void actionPerformed(@NotNull AnActionEvent event) {
-          notification.expire();
-          setCanReportAnalytics(false);
-        }
-      });
-      Notifications.Bus.notify(notification, project);
-    }
-    else {
-      // We only track for flutter projects.
-      if (hasFlutterModule) {
-        enableAnalytics(project);
-      }
-    }
   }
 
   private void setUpDtdAnalytics(Project project) {
     if (project == null) return;
     FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     if (sdk == null || !sdk.getVersion().canUseDtd()) return;
-    Thread t1 = new Thread(() -> {
-      UnifiedAnalytics unifiedAnalytics = new UnifiedAnalytics(project);
-      // TODO(helin24): Turn on after adding some unified analytics reporting.
+    //Thread t1 = new Thread(() -> {
+    //  UnifiedAnalytics unifiedAnalytics = new UnifiedAnalytics(project);
+    //   TODO(helin24): Turn on after adding some unified analytics reporting.
       //unifiedAnalytics.manageConsent();
-    });
-    t1.start();
+    //});
+    //t1.start();
   }
 
   private void setUpThemeChangeNotifications(@NotNull Project project) {
@@ -402,11 +333,6 @@ public class FlutterInitializer implements StartupActivity {
     }
   }
 
-  private static void enableAnalytics(@NotNull Project project) {
-    ToolWindowTracker.track(project, getAnalytics());
-    DartAnalysisServerService.getInstance(project).addAnalysisServerListener(FlutterAnalysisServerListener.getInstance(project));
-  }
-
   private void initializeToolWindows(@NotNull Project project) {
     // Start watching for Flutter debug active events.
     FlutterViewFactory.init(project);
@@ -431,70 +357,5 @@ public class FlutterInitializer implements StartupActivity {
     }
 
     ApplicationManager.getApplication().runWriteAction(() -> wanted.setCurrent(project));
-  }
-
-  /**
-   * This method is only used for testing.
-   */
-  @VisibleForTesting
-  public static void setAnalytics(Analytics inAnalytics) {
-    analytics = inAnalytics;
-  }
-
-  @NotNull
-  public static Analytics getAnalytics() {
-    if (analytics == null) {
-      final PropertiesComponent properties = PropertiesComponent.getInstance();
-
-      String clientId = properties.getValue(analyticsClientIdKey);
-      if (clientId == null) {
-        clientId = UUID.randomUUID().toString();
-        properties.setValue(analyticsClientIdKey, clientId);
-      }
-
-      final IdeaPluginDescriptor descriptor = PluginManagerCore.getPlugin(FlutterUtils.getPluginId());
-      assert descriptor != null;
-      final ApplicationInfo info = ApplicationInfo.getInstance();
-      analytics = new Analytics(clientId, descriptor.getVersion(), info.getVersionName(), info.getFullVersion());
-
-      // Set up reporting prefs.
-      analytics.setCanSend(getCanReportAnalytics());
-
-      // Send initial loading hit.
-      analytics.sendScreenView("main");
-
-      FlutterSettings.getInstance().sendSettingsToAnalytics(analytics);
-    }
-
-    return analytics;
-  }
-
-  public static boolean getCanReportAnalytics() {
-    final PropertiesComponent properties = PropertiesComponent.getInstance();
-    return !properties.getBoolean(analyticsOptOutKey, false);
-  }
-
-  public static void setCanReportAnalytics(boolean canReportAnalytics) {
-    if (getCanReportAnalytics() != canReportAnalytics) {
-      final boolean wasReporting = getCanReportAnalytics();
-
-      final PropertiesComponent properties = PropertiesComponent.getInstance();
-      properties.setValue(analyticsOptOutKey, !canReportAnalytics);
-      if (analytics != null) {
-        analytics.setCanSend(getCanReportAnalytics());
-      }
-
-      if (!wasReporting && canReportAnalytics) {
-        getAnalytics().sendScreenView("main");
-      }
-    }
-  }
-
-  public static void sendAnalyticsAction(@NotNull AnAction action) {
-    sendAnalyticsAction(action.getClass().getSimpleName());
-  }
-
-  public static void sendAnalyticsAction(@NotNull String name) {
-    getAnalytics().sendEvent("intellij", name);
   }
 }

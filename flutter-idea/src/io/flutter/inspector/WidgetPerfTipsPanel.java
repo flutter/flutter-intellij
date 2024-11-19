@@ -19,7 +19,6 @@ import com.intellij.ui.components.labels.LinkListener;
 import com.intellij.ui.components.panels.VerticalLayout;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.JBUI;
-import io.flutter.FlutterInitializer;
 import io.flutter.perf.*;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AsyncUtils;
@@ -81,8 +80,6 @@ public class WidgetPerfTipsPanel extends JPanel {
   }
 
   private static void handleTipSelection(@NotNull PerfTip tip) {
-    // Send analytics.
-    FlutterInitializer.getAnalytics().sendEvent("perf", "perfTipSelected." + tip.getRule().getId());
     BrowserLauncher.getInstance().browse(tip.getUrl(), null);
   }
 

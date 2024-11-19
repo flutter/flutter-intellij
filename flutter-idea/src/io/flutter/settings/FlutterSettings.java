@@ -11,7 +11,6 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
-import io.flutter.analytics.Analytics;
 
 import java.util.EventListener;
 
@@ -77,80 +76,6 @@ public class FlutterSettings {
   private final EventDispatcher<Listener> dispatcher = EventDispatcher.create(Listener.class);
 
   public FlutterSettings() {
-  }
-
-  public void sendSettingsToAnalytics(Analytics analytics) {
-
-    // Send data on the number of experimental features enabled by users.
-    analytics.sendEvent("settings", "ping");
-
-    if (isReloadOnSave()) {
-      analytics.sendEvent("settings", afterLastPeriod(reloadOnSaveKey));
-    }
-
-    if (isOpenInspectorOnAppLaunch()) {
-      analytics.sendEvent("settings", afterLastPeriod(openInspectorOnAppLaunchKey));
-    }
-
-    if (isPerserveLogsDuringHotReloadAndRestart()) {
-      analytics.sendEvent("settings", afterLastPeriod(perserveLogsDuringHotReloadAndRestartKey));
-    }
-
-    if (isFormatCodeOnSave()) {
-      analytics.sendEvent("settings", afterLastPeriod(formatCodeOnSaveKey));
-
-      if (isOrganizeImportsOnSave()) {
-        analytics.sendEvent("settings", afterLastPeriod(organizeImportsOnSaveKey));
-      }
-    }
-
-    if (isShowOnlyWidgets()) {
-      analytics.sendEvent("settings", afterLastPeriod(showOnlyWidgetsKey));
-    }
-
-    if (isSyncingAndroidLibraries()) {
-      analytics.sendEvent("settings", afterLastPeriod(syncAndroidLibrariesKey));
-    }
-
-    if (isShowBuildMethodGuides()) {
-      analytics.sendEvent("settings", afterLastPeriod(showBuildMethodGuidesKey));
-    }
-
-    if (isShowStructuredErrors()) {
-      analytics.sendEvent("settings", afterLastPeriod(showStructuredErrorsKey));
-
-      if (isIncludeAllStackTraces()) {
-        analytics.sendEvent("settings", afterLastPeriod(includeAllStackTracesKey));
-      }
-    }
-
-    if (showAllRunConfigurationsInContext()) {
-      analytics.sendEvent("settings", "showAllRunConfigurations");
-    }
-
-    if (isEnableHotUi()) {
-      analytics.sendEvent("settings", afterLastPeriod(enableHotUiKey));
-    }
-
-    if (isShowBazelHotRestartWarning()) {
-      analytics.sendEvent("settings", afterLastPeriod(showBazelHotRestartWarningKey));
-    }
-
-    if (isChangeBigSurToTrue()) {
-      analytics.sendEvent("settings", afterLastPeriod(changeBigSurToTrueKey));
-    }
-
-    if (isAllowTestsInSourcesRoot()) {
-      analytics.sendEvent("settings", afterLastPeriod(allowTestsInSourcesRootKey));
-    }
-
-    if (!getFontPackages().isEmpty()) {
-      analytics.sendEvent("settings", afterLastPeriod(fontPackagesKey));
-    }
-
-    if (isShowBazelIosRunNotification()) {
-      analytics.sendEvent("settings", afterLastPeriod(showBazelIosRunNotificationKey));
-    }
   }
 
   public void addListener(Listener listener) {

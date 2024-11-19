@@ -13,7 +13,6 @@ import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import icons.FlutterIcons;
-import io.flutter.FlutterInitializer;
 import io.flutter.ObservatoryConnector;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.devtools.DevToolsIdeFeature;
@@ -64,13 +63,10 @@ public class OpenDevToolsAction extends DumbAwareAction {
 
   @Override
   public void actionPerformed(@NotNull final AnActionEvent event) {
-    FlutterInitializer.sendAnalyticsAction(this);
-
     Project project = event.getProject();
     if (project == null) {
       return;
     }
-
 
     AsyncUtils.whenCompleteUiThread(DevToolsService.getInstance(project).getDevToolsInstance(), (instance, ex) -> {
       if (project.isDisposed()) {

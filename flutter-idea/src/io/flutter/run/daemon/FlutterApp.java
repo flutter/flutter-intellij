@@ -28,7 +28,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
-import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
@@ -268,11 +267,6 @@ public class FlutterApp implements Disposable {
     final ProcessHandler process = new MostlySilentColoredProcessHandler(command, onTextAvailable);
     Disposer.register(project, process::destroyProcess);
 
-    // Send analytics for the start and stop events.
-    if (analyticsStart != null) {
-      FlutterInitializer.sendAnalyticsAction(analyticsStart);
-    }
-
     final DaemonApi api = new DaemonApi(process);
     final FlutterApp app = new FlutterApp(project, module, mode, device, process, env, api, command);
 
@@ -280,21 +274,6 @@ public class FlutterApp implements Disposable {
       @Override
       public void processTerminated(@NotNull ProcessEvent event) {
         LOG.info(analyticsStop + " " + project.getName() + " (" + mode.mode() + ")");
-        if (analyticsStop != null) {
-          FlutterInitializer.sendAnalyticsAction(analyticsStop);
-        }
-
-        // Send analytics about whether this session used the reload workflow, the restart workflow, or neither.
-        final String workflowType = app.reloadCount > 0 ? "reload" : (app.restartCount > 0 ? "restart" : "none");
-        FlutterInitializer.getAnalytics().sendEvent("workflow", workflowType);
-
-        // Send the ratio of reloads to restarts.
-        int reloadfraction = 0;
-        if ((app.reloadCount + app.restartCount) > 0) {
-          final double fraction = (app.reloadCount * 100.0) / (app.reloadCount + app.restartCount);
-          reloadfraction = (int)Math.round(fraction);
-        }
-        FlutterInitializer.getAnalytics().sendEventMetric("workflow", "reloadFraction", reloadfraction);
 
         Disposer.dispose(app);
       }
@@ -919,23 +898,6 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
   @Override
   public void onAppProgressFinished(@NotNull DaemonEvent.AppProgress event) {
     progress.done();
-    final Stopwatch watch = stopwatch.getAndSet(null);
-    if (watch != null) {
-      watch.stop();
-      switch (event.getType()) {
-        case "hot.reload":
-          reportElapsed(watch, "Reloaded", "reload");
-          break;
-        case "hot.restart":
-          reportElapsed(watch, "Restarted", "restart");
-          break;
-      }
-    }
-  }
-
-  private void reportElapsed(@NotNull Stopwatch watch, String verb, String analyticsName) {
-    final long elapsedMs = watch.elapsed(TimeUnit.MILLISECONDS);
-    FlutterInitializer.getAnalytics().sendTiming("run", analyticsName, elapsedMs);
   }
 
   @Override
