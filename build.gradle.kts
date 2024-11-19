@@ -130,9 +130,20 @@ intellijPlatform {
     // https://github.com/JetBrains/intellij-plugin-verifier
     cliPath = file("../third_party/lib/verifier-cli-1.379-all.jar")
     failureLevel = listOf(
+      // TODO(team) Ideally all of the following FailureLevels should be enabled:
+      // TODO(team) Create a tracking issue for each of the following validations
+//      VerifyPluginTask.FailureLevel.COMPATIBILITY_WARNINGS,
+//      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+//      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES,
+//      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
       VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
-//      VerifyPluginTask.FailureLevel.PLUGIN_STRUCTURE_WARNINGS,
+//      VerifyPluginTask.FailureLevel.INTERNAL_API_USAGES,
+//      VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
+      VerifyPluginTask.FailureLevel.NON_EXTENDABLE_API_USAGES,
+      VerifyPluginTask.FailureLevel.PLUGIN_STRUCTURE_WARNINGS,
+//      VerifyPluginTask.FailureLevel.MISSING_DEPENDENCIES,
       VerifyPluginTask.FailureLevel.INVALID_PLUGIN,
+//      VerifyPluginTask.FailureLevel.NOT_DYNAMIC,
     )
     verificationReportsFormats = VerifyPluginTask.VerificationReportsFormats.ALL
     subsystemsToCheck = VerifyPluginTask.Subsystems.ALL
