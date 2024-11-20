@@ -8,7 +8,6 @@ package io.flutter.sdk;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.ide.actionsOnSave.ActionsOnSaveConfigurable;
-import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -30,7 +29,6 @@ import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.JBLabel;
-import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.util.PlatformIcons;
 import icons.FlutterIcons;
 import io.flutter.*;
@@ -48,8 +46,6 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
 import java.awt.datatransfer.StringSelection;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
@@ -70,11 +66,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myOrganizeImportsOnSaveCheckBox;
   private JCheckBox myShowStructuredErrors;
   private JCheckBox myIncludeAllStackTraces;
-  private JCheckBox mySyncAndroidLibrariesCheckBox;
-  private JCheckBox myEnableHotUiCheckBox;
   private JCheckBox myEnableBazelHotRestartCheckBox;
-
-  private JCheckBox myShowAllRunConfigurationsInContextCheckBox;
 
   private JCheckBox myEnableJcefBrowserCheckBox;
 
@@ -142,13 +134,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       (e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
     myShowStructuredErrors.addChangeListener(
       (e) -> myIncludeAllStackTraces.setEnabled(myShowStructuredErrors.isSelected()));
-
-    // There are other experiments so it is alright to show the experiments
-    // panel even if the syncAndroidLibraries experiment is hidden.
-    // If there are only experiments available on Android studio then add back
-    // the following statement:
-    // experimentsPanel.setVisible(FlutterUtils.isAndroidStudio());
-    mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
 
     myEnableBazelHotRestartCheckBox.setVisible(WorkspaceCache.getInstance(myProject).isBazel());
   }
@@ -228,14 +213,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isSyncingAndroidLibraries() != mySyncAndroidLibrariesCheckBox.isSelected()) {
-      return true;
-    }
-
-    if (settings.isEnableHotUi() != myEnableHotUiCheckBox.isSelected()) {
-      return true;
-    }
-
     if (settings.isEnableBazelHotRestart() != myEnableBazelHotRestartCheckBox.isSelected()) {
       return true;
     }
@@ -245,11 +222,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     }
 
     if (!settings.getFontPackages().equals(myFontPackagesTextArea.getText())) {
-      return true;
-    }
-
-    //noinspection RedundantIfStatement
-    if (settings.showAllRunConfigurationsInContext() != myShowAllRunConfigurationsInContextCheckBox.isSelected()) {
       return true;
     }
 
@@ -303,11 +275,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setPerserveLogsDuringHotReloadAndRestart(myEnableLogsPreserveAfterHotReloadOrRestart.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
-    settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
-    settings.setEnableHotUi(myEnableHotUiCheckBox.isSelected());
     settings.setEnableBazelHotRestart(myEnableBazelHotRestartCheckBox.isSelected());
     settings.setAllowTestsInSourcesRoot(myAllowTestsInSourcesRoot.isSelected());
-    settings.setShowAllRunConfigurationsInContext(myShowAllRunConfigurationsInContextCheckBox.isSelected());
     settings.setFontPackages(myFontPackagesTextArea.getText());
     settings.setEnableJcefBrowser(myEnableJcefBrowserCheckBox.isSelected());
 
@@ -368,9 +337,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
     myEnableLogsPreserveAfterHotReloadOrRestart.setSelected(settings.isPerserveLogsDuringHotReloadAndRestart());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
-    mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
-
-    myEnableHotUiCheckBox.setSelected(settings.isEnableHotUi());
 
     myEnableBazelHotRestartCheckBox.setSelected(settings.isEnableBazelHotRestart());
     myAllowTestsInSourcesRoot.setSelected(settings.isAllowTestsInSourcesRoot());
@@ -378,7 +344,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
     myIncludeAllStackTraces.setEnabled(myShowStructuredErrors.isSelected());
 
-    myShowAllRunConfigurationsInContextCheckBox.setSelected(settings.showAllRunConfigurationsInContext());
     myEnableJcefBrowserCheckBox.setSelected(settings.isEnableJcefBrowser());
     myFontPackagesTextArea.setText(settings.getFontPackages());
   }

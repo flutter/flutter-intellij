@@ -18,10 +18,8 @@ public class FlutterSearchableOptionContributor extends SearchableOptionContribu
   public void processOptions(@NotNull SearchableOptionProcessor processor) {
     // Keep these in the same order as FlutterBundle.properties
     add(processor, FlutterBundle.message("settings.try.out.features.still.under.development"));
-    add(processor, FlutterBundle.message("settings.enable.android.gradle.sync"));
     // For some reason the word "report" is ignored by the search feature, but the other words work.
     add(processor, FlutterBundle.message("settings.report.google.analytics"));
-    add(processor, FlutterBundle.message("settings.enable.hot.ui"));
     add(processor, FlutterBundle.message("settings.enable.verbose.logging"));
     add(processor, FlutterBundle.message("settings.format.code.on.save"));
     add(processor, FlutterBundle.message("settings.organize.imports.on.save"));
@@ -32,7 +30,6 @@ public class FlutterSearchableOptionContributor extends SearchableOptionContribu
     add(processor, FlutterBundle.message("settings.allow.tests.in.sources"));
     add(processor, FlutterBundle.message("settings.allow.tests.tooltip"));
     add(processor, FlutterBundle.message("settings.font.packages"));
-    add(processor, FlutterBundle.message("settings.show.all.configs"));
     add(processor, FlutterBundle.message("settings.show.all.configs.tooltip"));
     add(processor, FlutterBundle.message("settings.enable.androi.gradle.sync.tooltip"));
     add(processor, FlutterBundle.message("settings.experiments"));
