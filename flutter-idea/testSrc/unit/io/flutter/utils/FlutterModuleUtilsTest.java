@@ -22,11 +22,6 @@ public class FlutterModuleUtilsTest {
   public final ProjectFixture<IdeaProjectTestFixture> fixture = Testing.makeEmptyModule();
 
   @Test
-  public void isDeprecatedFlutterModuleType_false_empty_module() {
-    assertFalse(FlutterModuleUtils.isDeprecatedFlutterModuleType(fixture.getModule()));
-  }
-
-  @Test
   public void isFlutterModule_null() {
     assertFalse(FlutterModuleUtils.isFlutterModule(null));
   }
