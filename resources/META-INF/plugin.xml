@@ -557,14 +557,6 @@
             description="Refresh current tool window contents">
     </action>
 
-    <!-- action
-      id="DeveloperServices.FlutterNewsAssistant"
-      class="io.flutter.actions.OpenFlutterNewsSidePanelAction"
-      icon="/icons/flutter.png"
-      text="What's New in Flutter">
-      <add-to-group group-id="HelpMenu" />
-    </action -->
-
   </actions>
 
   <applicationListeners>
