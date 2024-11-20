@@ -6,18 +6,20 @@
 
 package io.flutter;
 
-import java.util.Arrays;
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
 
-public class FlutterConstants {
+import java.util.Set;
 
-  // From: https://github.com/dart-lang/sdk/blob/master/pkg/front_end/lib/src/scanner/token.dart
-  public static final List<String> DART_KEYWORDS = Arrays.asList(
+public final class FlutterConstants {
+
+  // From: https://github.com/dart-lang/sdk/blob/main/pkg/_fe_analyzer_shared/lib/src/scanner/token.dart
+  public static final Set<String> DART_KEYWORDS = Set.of(
     "abstract",
     "as",
     "assert",
     "async",
     "await",
+    "base",
     "break",
     "case",
     "catch",
@@ -33,6 +35,7 @@ public class FlutterConstants {
     "enum",
     "export",
     "extends",
+    "extension",
     "external",
     "factory",
     "false",
@@ -48,6 +51,7 @@ public class FlutterConstants {
     "in",
     "interface",
     "is",
+    "late",
     "library",
     "mixin",
     "native",
@@ -58,8 +62,10 @@ public class FlutterConstants {
     "operator",
     "part",
     "patch",
+    "required",
     "rethrow",
     "return",
+    "sealed",
     "set",
     "show",
     "source",
@@ -74,13 +80,15 @@ public class FlutterConstants {
     "typedef",
     "var",
     "void",
+    "when",
     "while",
     "with",
     "yield"
   );
 
-  // From: https://github.com/flutter/flutter/blob/master/packages/flutter_tools/lib/src/commands/create.dart
-  public final static List<String> FLUTTER_PACKAGE_DEPENDENCIES = Arrays.asList(
+  // From: https://github.com/flutter/flutter/blob/main/packages/flutter_tools/lib/src/commands/create_base.dart
+  @NotNull
+  public final static Set<String> FLUTTER_PACKAGE_DEPENDENCIES = Set.of(
     "analyzer",
     "args",
     "async",
@@ -106,12 +114,13 @@ public class FlutterConstants {
     "test",
     "utf",
     "watcher",
-    "yaml");
+    "yaml"
+  );
 
   // Aligned w/ VSCode (https://github.com/flutter/flutter-intellij/issues/2682)
-  public static String RELOAD_REASON_MANUAL = "manual";
-  public static String RELOAD_REASON_SAVE = "save";
-  public static String RELOAD_REASON_TOOL = "tool";
+  public static final String RELOAD_REASON_MANUAL = "manual";
+  public static final String RELOAD_REASON_SAVE = "save";
+  public static final String RELOAD_REASON_TOOL = "tool";
 
   public static final String FLUTTER_SETTINGS_PAGE_ID = "flutter.settings";
   public static final String INDEPENDENT_PATH_SEPARATOR = "/";
