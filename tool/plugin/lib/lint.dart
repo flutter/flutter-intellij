@@ -49,9 +49,7 @@ class LintCommand extends Command<int> {
     final usages = <String, List<String>>{};
 
     imports.split('\n').forEach((String line) {
-      if (line
-          .trim()
-          .isEmpty) {
+      if (line.trim().isEmpty) {
         return;
       }
 
@@ -106,6 +104,9 @@ class LintCommand extends Command<int> {
 
       // gnu.trove. classes seem to all be deprecated, avoid into the future
       'gnu.trove.',
+
+      // Prefer to use built-in Java collections or fastutil.
+      'com.android.tools.idea.io.netty.util.collection.',
     ];
 
     for (var import in proscribedImports) {
