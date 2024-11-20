@@ -9,17 +9,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.CommonActionsManager;
-import com.intellij.ide.DefaultTreeExpander;
-import com.intellij.ide.TreeExpander;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.editor.Caret;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.event.CaretEvent;
-import com.intellij.openapi.editor.event.CaretListener;
 import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
@@ -28,9 +23,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.*;
-import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.speedSearch.SpeedSearchUtil;
@@ -38,7 +31,6 @@ import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
-import io.flutter.dart.FlutterOutlineListener;
 import io.flutter.editor.PropertyEditorPanel;
 import io.flutter.inspector.InspectorGroupManagerService;
 import io.flutter.settings.FlutterSettings;
@@ -62,10 +54,6 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.*;
 
@@ -106,34 +94,34 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
   private final EventStream<List<FlutterOutline>> activeOutlines;
 
   private final WidgetEditToolbar widgetEditToolbar;
-  private final FlutterOutlineListener outlineListener = new FlutterOutlineListener() {
-    @Override
-    public void outlineUpdated(@NotNull String filePath, @NotNull FlutterOutline outline, @Nullable String instrumentedCode) {
+  //private final FlutterOutlineListener outlineListener = new FlutterOutlineListener() {
+  //  @Override
+  //  public void outlineUpdated(@NotNull String filePath, @NotNull FlutterOutline outline, @Nullable String instrumentedCode) {
+  //
+  //    final String filePathOrUri = flutterAnalysisServer.getAnalysisService().getLocalFileUri(currentFilePath);
+  //    if (Objects.equals(filePathOrUri, filePath)) {
+  //      ApplicationManager.getApplication().invokeLater(() -> updateOutline(outline));
+  //    }
+  //  }
+  //};
 
-      final String filePathOrUri = flutterAnalysisServer.getAnalysisService().getLocalFileUri(currentFilePath);
-      if (Objects.equals(filePathOrUri, filePath)) {
-        ApplicationManager.getApplication().invokeLater(() -> updateOutline(outline));
-      }
-    }
-  };
-
-  private final CaretListener caretListener = new CaretListener() {
-    @Override
-    public void caretPositionChanged(CaretEvent e) {
-      final Caret caret = e.getCaret();
-      if (caret != null) {
-        ApplicationManager.getApplication().invokeLater(() -> applyEditorSelectionToTree(caret));
-      }
-    }
-
-    @Override
-    public void caretAdded(@NotNull CaretEvent e) {
-    }
-
-    @Override
-    public void caretRemoved(@NotNull CaretEvent e) {
-    }
-  };
+  //private final CaretListener caretListener = new CaretListener() {
+  //  @Override
+  //  public void caretPositionChanged(CaretEvent e) {
+  //    final Caret caret = e.getCaret();
+  //    if (caret != null) {
+  //      ApplicationManager.getApplication().invokeLater(() -> applyEditorSelectionToTree(caret));
+  //    }
+  //  }
+  //
+  //  @Override
+  //  public void caretAdded(@NotNull CaretEvent e) {
+  //  }
+  //
+  //  @Override
+  //  public void caretRemoved(@NotNull CaretEvent e) {
+  //  }
+  //};
 
   private final TreeSelectionListener treeSelectionListener = this::handleTreeSelectionEvent;
   private PropertyEditorPanel propertyEditPanel;
@@ -216,9 +204,9 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
     //
     //windowPanel.setToolbar(widgetEditToolbar.getToolbar().getComponent());
     //
-    //final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
-    //
-    //tree = new OutlineTree(rootNode);
+    final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
+
+    tree = new OutlineTree(rootNode);
     //tree.setCellRenderer(new OutlineTreeCellRenderer());
     //tree.expandAll();
     //
@@ -340,15 +328,15 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
     final int offset = outline.getDartElement() != null ? outline.getDartElement().getLocation().getOffset() : outline.getOffset();
     final int editorOffset = getOutlineOffsetConverter().getConvertedFileOffset(offset);
 
-    if (currentFile != null) {
-      currentEditor.getCaretModel().removeCaretListener(caretListener);
-      try {
-        new OpenFileDescriptor(project, currentFile.getValue(), editorOffset).navigate(focusEditor);
-      }
-      finally {
-        currentEditor.getCaretModel().addCaretListener(caretListener);
-      }
-    }
+    //if (currentFile != null) {
+    //  currentEditor.getCaretModel().removeCaretListener(caretListener);
+    //  try {
+    //    new OpenFileDescriptor(project, currentFile.getValue(), editorOffset).navigate(focusEditor);
+    //  }
+    //  finally {
+    //    currentEditor.getCaretModel().addCaretListener(caretListener);
+    //  }
+    //}
   }
 
   // TODO: Add parent relationship info to FlutterOutline instead of this O(n^2) traversal.
@@ -517,7 +505,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
 
   private void setSelectedFile(VirtualFile newFile) {
     if (currentFile.getValue() != null) {
-      flutterAnalysisServer.removeOutlineListener(currentFilePath, outlineListener);
+      //flutterAnalysisServer.removeOutlineListener(currentFilePath, outlineListener);
       currentFile.setValue(null);
       currentFilePath = null;
     }
@@ -548,19 +536,19 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState> {
     if (newFile != null) {
       currentFile.setValue(newFile);
       currentFilePath = FileUtil.toSystemDependentName(newFile.getPath());
-      flutterAnalysisServer.addOutlineListener(currentFilePath, outlineListener);
+      //flutterAnalysisServer.addOutlineListener(currentFilePath, outlineListener);
     }
   }
 
   private void setSelectedEditor(FileEditor newEditor) {
-    if (currentEditor != null) {
-      currentEditor.getCaretModel().removeCaretListener(caretListener);
-    }
-    if (newEditor instanceof TextEditor) {
-      currentFileEditor = newEditor;
-      currentEditor = ((TextEditor)newEditor).getEditor();
-      currentEditor.getCaretModel().addCaretListener(caretListener);
-    }
+    //if (currentEditor != null) {
+    //  currentEditor.getCaretModel().removeCaretListener(caretListener);
+    //}
+    //if (newEditor instanceof TextEditor) {
+    //  currentFileEditor = newEditor;
+    //  currentEditor = ((TextEditor)newEditor).getEditor();
+    //  currentEditor.getCaretModel().addCaretListener(caretListener);
+    //}
   }
 
   private void applyEditorSelectionToTree(Caret caret) {
