@@ -81,16 +81,6 @@ public class FlutterInitializer implements StartupActivity {
 
   @Override
   public void runActivity(@NotNull Project project) {
-    // Convert all modules of deprecated type FlutterModuleType.
-    if (FlutterModuleUtils.convertFromDeprecatedModuleType(project)) {
-      // If any modules were converted over, create a notification
-      FlutterMessages.showInfo(
-        FlutterBundle.message("flutter.initializer.module.converted.title"),
-        "Converted from '" + FlutterModuleUtils.DEPRECATED_FLUTTER_MODULE_TYPE_ID +
-        "' to '" + FlutterModuleUtils.getModuleTypeIDForFlutter() + "'.",
-        project);
-    }
-
     // Disable the 'Migrate Project to Gradle' notification.
     FlutterUtils.disableGradleProjectMigrationNotification(project);
 

@@ -349,22 +349,6 @@ public class FlutterModuleUtils {
     return CollectionUtils.filter(getModules(project), module -> isFlutterModule(module) || declaresFlutter(module));
   }
 
-  public static boolean convertFromDeprecatedModuleType(@NotNull Project project) {
-    boolean modulesConverted = false;
-
-    // Only automatically convert from older module types to JAVA_MODULE types if we're running in Android Studio.
-    if (FlutterUtils.isAndroidStudio()) {
-      for (Module module : getModules(project)) {
-        if (isDeprecatedFlutterModuleType(module)) {
-          setFlutterModuleType(module);
-          modulesConverted = true;
-        }
-      }
-    }
-
-    return modulesConverted;
-  }
-
   // Return true if there is a module with the same name as the project plus the Android suffix.
   public static boolean hasAndroidModule(@NotNull Project project) {
     for (PubRoot root : PubRoots.forProject(project)) {
@@ -378,15 +362,6 @@ public class FlutterModuleUtils {
       }
     }
     return false;
-  }
-
-  public static boolean isDeprecatedFlutterModuleType(@NotNull Module module) {
-    if (!DEPRECATED_FLUTTER_MODULE_TYPE_ID.equals(module.getOptionValue("type"))) {
-      return false;
-    }
-
-    // Validate that the pubspec references flutter.
-    return declaresFlutter(module);
   }
 
   public static boolean isInFlutterAndroidModule(@NotNull Project project, @NotNull VirtualFile file) {
