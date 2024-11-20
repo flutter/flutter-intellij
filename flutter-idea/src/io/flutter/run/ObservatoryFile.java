@@ -5,7 +5,6 @@
  */
 package io.flutter.run;
 
-import com.android.tools.idea.io.netty.util.collection.IntObjectHashMap;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.PathUtil;
@@ -13,6 +12,8 @@ import com.intellij.xdebugger.XDebuggerUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.DartFileType;
 import io.flutter.vmService.DartVmServiceDebugProcess;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.dartlang.vm.service.element.Script;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,7 +37,7 @@ class ObservatoryFile {
    * Maps an observatory token id to its line and column.
    */
   @Nullable
-  private final IntObjectHashMap<Position> positionMap;
+  private final Int2ObjectMap<Position> positionMap;
 
   /**
    * User-visible source code downloaded from Observatory.
@@ -92,8 +93,8 @@ class ObservatoryFile {
    * <p>See <a href="https://github.com/dart-lang/vm_service_drivers/blob/master/dart/tool/service.md#scrip">docs</a>.
    */
   @NotNull
-  private static IntObjectHashMap<Position> createPositionMap(@NotNull final List<List<Integer>> table) {
-    final IntObjectHashMap<Position> result = new IntObjectHashMap<>();
+  private static Int2ObjectMap<Position> createPositionMap(@NotNull final List<List<Integer>> table) {
+    final Int2ObjectMap<Position> result = new Int2ObjectOpenHashMap<>();
 
     for (List<Integer> line : table) {
       // Each line consists of a line number followed by (tokenId, columnNumber) pairs.
