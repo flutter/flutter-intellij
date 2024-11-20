@@ -70,9 +70,10 @@ class VerifyCommand extends ProductCommand {
         return result;
       }
     }
-    // TODO (jwren) improve logging by listing out the idea versions verified:
-    log('\nSummary: verification of all ${buildSpecs
-        .length} build specifications was successful.');
+
+    var verifiedVersions = specs.map((spec) => spec.name).toList().join(', ');
+    log('\nVerification of the ${buildSpecs.length} builds was '
+        'successful: $verifiedVersions.');
     return result;
   }
 }
