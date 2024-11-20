@@ -8,6 +8,7 @@ package io.flutter.actions;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.impl.NewProjectUtil;
 import com.intellij.ide.projectWizard.NewProjectWizard;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAware;
@@ -43,6 +44,12 @@ public class FlutterNewProjectAction extends AnAction implements DumbAware {
     }
     NewProjectWizard wizard = new NewProjectWizard(null, ModulesProvider.EMPTY_MODULES_PROVIDER, null);
     NewProjectUtil.createNewProject(wizard);
+  }
+
+  @Override
+  @NotNull
+  public ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
   }
 
   @NotNull
