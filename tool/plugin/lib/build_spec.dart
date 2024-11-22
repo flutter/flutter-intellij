@@ -12,6 +12,7 @@ class BuildSpec {
   // Build targets
   // TODO (jwren) can we get rid of "name"
   final String name;
+
   // TODO (jwren) these two can be consilidated
 
   final String version;
@@ -100,8 +101,14 @@ class BuildSpec {
 
   @override
   String toString() {
-    return 'BuildSpec($ideaProduct $ideaVersion $dartPluginVersion $sinceBuild '
-        '$untilBuild version: "$release")';
+    return 'BuildSpec('
+        'ideaProduct: $ideaProduct, '
+        'ideaVersion: $ideaVersion, '
+        'baseVersion: $baseVersion, '
+        'dartPluginVersion: $dartPluginVersion, '
+        'since: $sinceBuild, '
+        'until: $untilBuild, '
+        'version: "$release")';
   }
 
   Future<BuildSpec> initChangeLog() async {
@@ -131,9 +138,11 @@ class BuildSpec {
 class SyntheticBuildSpec extends BuildSpec {
   late final BuildSpec alternate;
 
-  SyntheticBuildSpec.fromJson(super.json,
-      super.releaseNum,
-      List<BuildSpec> specs,) : super.fromJson() {
+  SyntheticBuildSpec.fromJson(
+    super.json,
+    super.releaseNum,
+    List<BuildSpec> specs,
+  ) : super.fromJson() {
     try {
       // 'isUnitTestTarget' should always be in the spec for the latest IntelliJ (not AS).
       alternate = specs.firstWhere((s) => s.isUnitTestTarget);
