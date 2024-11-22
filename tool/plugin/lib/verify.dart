@@ -71,7 +71,7 @@ class VerifyCommand extends ProductCommand {
       }
     }
 
-    var verifiedVersions = specs.map((spec) => spec.name).toList().join(', ');
+    var verifiedVersions = buildSpecs.map((spec) => spec.name).toList().join(', ');
     log('\nVerification of the ${buildSpecs.length} builds was '
         'successful: $verifiedVersions.');
     return result;
