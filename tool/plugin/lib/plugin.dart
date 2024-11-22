@@ -371,7 +371,7 @@ class GradleBuildCommand extends ProductCommand {
       separator('Building flutter-intellij.jar');
       await removeAll('build');
 
-      log('spec.version: ${spec.version}');
+      log('$spec');
 
       result = await applyEdits(spec, () async {
         return await externalBuildCommand(spec);
@@ -400,7 +400,11 @@ class GradleBuildCommand extends ProductCommand {
     if (argResults.option('only-version') == null) {
       checkAndClearAppliedEditCommands();
     }
-    return 0;
+    // Print a summary of the collection of plugin versions built:
+    var builtVersions = buildSpecs.map((spec) => spec.name).toList().join(', ');
+    log('\nMake of the ${buildSpecs.length} builds was '
+        'successful: $builtVersions.');
+    return result;
   }
 
   Future<int> externalBuildCommand(BuildSpec spec) async {
