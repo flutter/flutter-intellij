@@ -22,6 +22,7 @@ import com.jetbrains.lang.dart.util.DartResolveUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.pub.PubRoot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -135,7 +136,7 @@ public class MainFile {
   private static boolean isAppDir(@NotNull VirtualFile dir, @NotNull Project project) {
     assert(!WorkspaceCache.getInstance(project).isBazel());
     return dir.isDirectory() && (
-      dir.findChild("pubspec.yaml") != null ||
+      dir.findChild(PubRoot.PUBSPEC_YAML) != null ||
       dir.findChild(".dart_tool") != null ||
       dir.findChild(".packages") != null
     );

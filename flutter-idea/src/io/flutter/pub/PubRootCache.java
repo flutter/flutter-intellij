@@ -96,7 +96,7 @@ public class PubRootCache {
     }
 
     if (file.isDirectory()) {
-      final VirtualFile pubspec = file.findChild("pubspec.yaml");
+      final VirtualFile pubspec = file.findChild(PubRoot.PUBSPEC_YAML);
       if (pubspec != null && pubspec.exists() && !pubspec.isDirectory()) {
         return file;
       }

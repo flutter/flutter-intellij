@@ -346,7 +346,7 @@ public class OpenInAndroidStudioAction extends AnAction {
     boolean hasAndroid = false;
     for (VirtualFile candidate : file.getChildren()) {
       if (isAndroidWithApp(candidate)) hasAndroid = true;
-      if (candidate.getName().equals("pubspec.yaml")) hasPubspec = true;
+      if (candidate.getName().equals(PubRoot.PUBSPEC_YAML)) hasPubspec = true;
       if (hasAndroid && hasPubspec) {
         return true;
       }

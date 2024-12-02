@@ -34,6 +34,8 @@ import java.util.Map;
  * That is, a directory containing (at a minimum) a pubspec.yaml file.
  */
 public class PubRoot {
+  public static final String PUBSPEC_YAML = "pubspec.yaml";
+
   private static final Logger LOG = Logger.getInstance(PubRoot.class);
 
   @NotNull
@@ -138,7 +140,7 @@ public class PubRoot {
       return null;
     }
 
-    final VirtualFile pubspec = dir.findChild("pubspec.yaml");
+    final VirtualFile pubspec = dir.findChild(PUBSPEC_YAML);
     if (pubspec == null || !pubspec.exists() || pubspec.isDirectory()) {
       return null;
     }
@@ -460,6 +462,6 @@ public class PubRoot {
   }
 
   public static boolean isPubspec(@NotNull VirtualFile file) {
-    return !file.isDirectory() && file.getName().equals("pubspec.yaml");
+    return !file.isDirectory() && file.exists() && file.getName().equals(PUBSPEC_YAML);
   }
 }
