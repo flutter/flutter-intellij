@@ -10,6 +10,7 @@ import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotificationPanel;
@@ -19,8 +20,6 @@ import io.flutter.FlutterBundle;
 import io.flutter.utils.UIUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-// TODO(devoncarew): Are we showing the 'Open in Xcode' editor action on non-mac platforms?
 
 public class NativeEditorNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
   private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.native.editor.notification");
@@ -77,15 +76,15 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     //  return "flutter.androidstudio.open";
     //}
     //else
-    if (root.getName().equals("ios")) {
-      return "flutter.xcode.open";
+    if (SystemInfo.isMac) {
+      if (root.getName().equals("ios")) {
+        return "flutter.xcode.open";
+      }
+      else if (root.getName().equals("macos")) {
+        return "flutter.xcode.open";
+      }
     }
-    else if (root.getName().equals("macos")) {
-      return "flutter.xcode.open";
-    }
-    else {
-      return null;
-    }
+    return null;
   }
 
   @Nullable
