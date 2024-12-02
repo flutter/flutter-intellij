@@ -9,14 +9,12 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
-import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.ui.EditorNotificationPanel;
-import com.intellij.ui.EditorNotifications;
+import com.intellij.ui.EditorNotificationProvider;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.DartLanguage;
 import icons.FlutterIcons;
@@ -25,39 +23,24 @@ import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class SdkConfigurationNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel>
-  implements DumbAware {
-  private static final Key<EditorNotificationPanel> KEY = Key.create("FlutterWrongDartSdkNotification");
+import javax.swing.*;
+import java.util.function.Function;
 
+public class SdkConfigurationNotificationProvider implements EditorNotificationProvider {
   private static final Logger LOG = Logger.getInstance(SdkConfigurationNotificationProvider.class);
 
-  @NotNull private final Project project;
+  @NotNull
+  private final Project project;
 
   public SdkConfigurationNotificationProvider(@NotNull Project project) {
     this.project = project;
   }
 
-  @SuppressWarnings("SameReturnValue")
-  private static EditorNotificationPanel createNoFlutterSdkPanel(Project project) {
-    final EditorNotificationPanel panel = new EditorNotificationPanel();
-    panel.icon(FlutterIcons.Flutter);
-    panel.setText(FlutterBundle.message("flutter.no.sdk.warning"));
-    panel.createActionLabel("Dismiss", () -> panel.setVisible(false));
-    panel.createActionLabel("Open Flutter settings", () -> FlutterUtils.openFlutterSettings(project));
-    return panel;
-  }
-
-  @NotNull
   @Override
-  public Key<EditorNotificationPanel> getKey() {
-    return KEY;
-  }
-
-  @Override
-  public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file,
-                                                         @NotNull FileEditor fileEditor,
-                                                         @NotNull Project project) {
+  public @Nullable Function<? super @NotNull FileEditor, ? extends @Nullable JComponent> collectNotificationData(@NotNull Project project,
+                                                                                                                 @NotNull VirtualFile file) {
     // If this is a Bazel configured Flutter project, exit immediately, neither of the notifications should be shown for this project type.
     if (FlutterModuleUtils.isFlutterBazelProject(project)) return null;
 
@@ -71,9 +54,17 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
 
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk == null) {
-      return createNoFlutterSdkPanel(project);
+      return fileEditor -> createNoFlutterSdkPanel(fileEditor, project);
     }
-
     return null;
+  }
+
+  private static EditorNotificationPanel createNoFlutterSdkPanel(@NotNull FileEditor fileEditor, @NotNull Project project) {
+    final EditorNotificationPanel panel = new EditorNotificationPanel();
+    panel.icon(FlutterIcons.Flutter);
+    panel.setText(FlutterBundle.message("flutter.no.sdk.warning"));
+    panel.createActionLabel("Dismiss", () -> panel.setVisible(false));
+    panel.createActionLabel("Open Flutter settings", () -> FlutterUtils.openFlutterSettings(project));
+    return panel;
   }
 }
