@@ -6,6 +6,7 @@
 
 package io.flutter.tests.gui
 
+import io.flutter.pub.PubRoot
 import com.intellij.ide.fileTemplates.impl.UrlUtil
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.io.StreamUtil
@@ -55,7 +56,7 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
                 flutterMessagesFixture!!.findMessageContainingText("Process finished")
               }
               // TODO(messick) Close pubspec.yaml once editor tab fixtures are working.
-              //closeTab("pubspec.yaml")
+              //closeTab(PubRoot.PUBSPEC_YAML)
             }
           }
         }
@@ -147,7 +148,7 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
     ideFrame {
       projectView {
         step("Open pubspec.yaml") {
-          path(project.name, "pubspec.yaml").doubleClick()
+          path(project.name, PubRoot.PUBSPEC_YAML).doubleClick()
         }
       }
     }

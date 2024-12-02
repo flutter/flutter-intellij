@@ -14,6 +14,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
+import io.flutter.pub.PubRoot;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -38,7 +39,7 @@ abstract public class FlutterCodeInsightFixtureTestCase extends BasePlatformTest
         if (rootManager != null) {
           final VirtualFile[] allContentRoots = rootManager.getContentRoots();
           final VirtualFile contentRoot = allContentRoots[0];
-          final VirtualFile pubspec = contentRoot.createChildData(this, "pubspec.yaml");
+          final VirtualFile pubspec = contentRoot.createChildData(this, PubRoot.PUBSPEC_YAML);
           pubspec.setBinaryContent(SamplePubspec.getBytes(StandardCharsets.UTF_8));
           final VirtualFile dartTool = contentRoot.createChildDirectory(this, ".dart_tool");
           final VirtualFile config = dartTool.createChildData(this, "package_config.json");
@@ -56,7 +57,7 @@ abstract public class FlutterCodeInsightFixtureTestCase extends BasePlatformTest
     try {
       final VirtualFile root = Objects.requireNonNull(ModuleRootManager.getInstance(getModule())).getContentRoots()[0];
       assert root != null;
-      final VirtualFile pubspec = root.findChild("pubspec.yaml");
+      final VirtualFile pubspec = root.findChild(PubRoot.PUBSPEC_YAML);
       final VirtualFile dartTool = root.findChild(".dart_tool");
       if (pubspec != null && dartTool != null) {
         final VirtualFile config = dartTool.findChild("package_config.json");
