@@ -7,13 +7,12 @@ package io.flutter.editor;
 
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.fileEditor.FileEditor;
-import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotificationPanel;
+import com.intellij.ui.EditorNotificationProvider;
 import com.intellij.ui.EditorNotifications;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
@@ -21,9 +20,10 @@ import io.flutter.utils.UIUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class NativeEditorNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
-  private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.native.editor.notification");
+import javax.swing.*;
+import java.util.function.Function;
 
+public class NativeEditorNotificationProvider implements EditorNotificationProvider {
   private final Project project;
   private boolean showNotification = true;
 
@@ -31,37 +31,26 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     this.project = project;
   }
 
-  @NotNull
   @Override
-  public Key<EditorNotificationPanel> getKey() {
-    return KEY;
-  }
-
-  @Nullable
-  @Override
-  public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file,
-                                                         @NotNull FileEditor fileEditor,
-                                                         @NotNull Project project) {
+  public @Nullable Function<? super @NotNull FileEditor, ? extends @Nullable JComponent> collectNotificationData(@NotNull Project project,
+                                                                                                                 @NotNull VirtualFile file) {
     if (!file.isInLocalFileSystem() || !showNotification) {
       return null;
     }
-    return createPanelForFile(file, findRootDir(file, project.getBaseDir()));
-  }
 
-  @Nullable
-  private EditorNotificationPanel createPanelForFile(@NotNull VirtualFile file, @Nullable VirtualFile root) {
+    VirtualFile root = project.getBaseDir();
     if (root == null) {
       return null;
     }
-    return createPanelForAction(file, root, getActionName(root));
+    return fileEditor -> createPanelForAction(fileEditor, root, getActionName(root));
   }
 
   @Nullable
-  private EditorNotificationPanel createPanelForAction(@NotNull VirtualFile file, @NotNull VirtualFile root, @Nullable String actionName) {
+  private EditorNotificationPanel createPanelForAction(@NotNull FileEditor fileEditor, @NotNull VirtualFile root, @Nullable String actionName) {
     if (actionName == null) {
       return null;
     }
-    final NativeEditorActionsPanel panel = new NativeEditorActionsPanel(file, root, actionName);
+    final NativeEditorActionsPanel panel = new NativeEditorActionsPanel(fileEditor, root, actionName);
     return panel.isValidForFile() ? panel : null;
   }
 
@@ -114,9 +103,9 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     final AnAction myAction;
     final boolean isVisible;
 
-    NativeEditorActionsPanel(VirtualFile file, VirtualFile root, String actionName) {
+    NativeEditorActionsPanel(@NotNull FileEditor fileEditor, @NotNull VirtualFile root, @NotNull String actionName) {
       super(UIUtils.getEditorNotificationBackgroundColor());
-      myFile = file;
+      myFile = fileEditor.getFile();
       myRoot = root;
       myAction = ActionManager.getInstance().getAction(actionName);
 
