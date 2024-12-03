@@ -41,7 +41,7 @@ abstract public class FlutterCodeInsightFixtureTestCase extends BasePlatformTest
           final VirtualFile contentRoot = allContentRoots[0];
           final VirtualFile pubspec = contentRoot.createChildData(this, PubRoot.PUBSPEC_YAML);
           pubspec.setBinaryContent(SamplePubspec.getBytes(StandardCharsets.UTF_8));
-          final VirtualFile dartTool = contentRoot.createChildDirectory(this, ".dart_tool");
+          final VirtualFile dartTool = contentRoot.createChildDirectory(this, PubRoot.DOT_DART_TOOL);
           final VirtualFile config = dartTool.createChildData(this, "package_config.json");
           config.setBinaryContent(SampleConfig.getBytes(StandardCharsets.UTF_8));
         }
@@ -58,7 +58,7 @@ abstract public class FlutterCodeInsightFixtureTestCase extends BasePlatformTest
       final VirtualFile root = Objects.requireNonNull(ModuleRootManager.getInstance(getModule())).getContentRoots()[0];
       assert root != null;
       final VirtualFile pubspec = root.findChild(PubRoot.PUBSPEC_YAML);
-      final VirtualFile dartTool = root.findChild(".dart_tool");
+      final VirtualFile dartTool = root.findChild(PubRoot.DOT_DART_TOOL);
       if (pubspec != null && dartTool != null) {
         final VirtualFile config = dartTool.findChild("package_config.json");
         WriteAction.run(() -> {
@@ -66,7 +66,8 @@ abstract public class FlutterCodeInsightFixtureTestCase extends BasePlatformTest
           if (config != null) config.delete(this);
           dartTool.delete(this);
         });
-        final List<String> toUnexclude = Arrays.asList(root.getUrl() + "/build", root.getUrl() + "/.pub", root.getUrl() + "/.dart_tool");
+        final List<String> toUnexclude =
+          Arrays.asList(root.getUrl() + "/build", root.getUrl() + "/.pub", root.getUrl() + "/" + PubRoot.DOT_DART_TOOL);
         ModuleRootModificationUtil.updateExcludedFolders(getModule(), root, toUnexclude, Collections.emptyList());
       }
     }
