@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.Dimension;
+import java.util.Objects;
 
 class EmbeddedJcefBrowserTab implements EmbeddedTab {
   private JBCefBrowser browser;
@@ -48,8 +49,8 @@ public class EmbeddedJcefBrowser extends EmbeddedBrowser {
   }
 
   @NotNull
-  public static EmbeddedJcefBrowser getInstance(Project project) {
-    return ServiceManager.getService(project, EmbeddedJcefBrowser.class);
+  public static EmbeddedJcefBrowser getInstance(@NotNull Project project) {
+    return Objects.requireNonNull(project.getService(EmbeddedJcefBrowser.class));
   }
 
   public Logger logger() {
