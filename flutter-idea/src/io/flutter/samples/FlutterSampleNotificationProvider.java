@@ -6,72 +6,81 @@
 package io.flutter.samples;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.colors.EditorColors;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.TextEditor;
-import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
-import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.EditorNotificationPanel;
-import com.intellij.ui.EditorNotifications;
+import com.intellij.ui.EditorNotificationProvider;
+import com.intellij.ui.HyperlinkLabel;
 import com.jetbrains.lang.dart.psi.DartClass;
+import icons.FlutterIcons;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
-public class FlutterSampleNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
-  private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.sample");
-
+public class FlutterSampleNotificationProvider implements EditorNotificationProvider {
   @NotNull final Project project;
 
   public FlutterSampleNotificationProvider(@NotNull Project project) {
     this.project = project;
   }
 
-  @NotNull
-  @Override
-  public Key<EditorNotificationPanel> getKey() {
-    return KEY;
-  }
-
   @Nullable
   @Override
-  public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file,
-                                                         @NotNull FileEditor fileEditor,
-                                                         @NotNull Project project) {
-    if (!(fileEditor instanceof TextEditor textEditor)) {
-      return null;
-    }
-
+  public Function<? super @NotNull FileEditor, ? extends @Nullable JComponent> collectNotificationData(@NotNull Project project,
+                                                                                                       @NotNull VirtualFile file) {
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     if (sdk == null) {
       return null;
     }
 
     final String flutterPackagePath = sdk.getHomePath() + "/packages/flutter/lib/src/";
-    final String filePath = file.getPath();
 
     // Only show for files in the flutter sdk.
+    final String filePath = file.getPath();
     if (!filePath.startsWith(flutterPackagePath)) {
+      return null;
+    }
+
+    return fileEditor -> createPanelForSamples(fileEditor, project, file, filePath, sdk, flutterPackagePath);
+  }
+
+  @Nullable
+  private EditorNotificationPanel createPanelForSamples(@NotNull FileEditor fileEditor,
+                                                        @NotNull Project project,
+                                                        @NotNull VirtualFile file,
+                                                        @NotNull String filePath,
+                                                        @NotNull FlutterSdk sdk,
+                                                        @NotNull String flutterPackagePath) {
+    if (!(fileEditor instanceof TextEditor textEditor)) {
       return null;
     }
 
     final Editor editor = textEditor.getEditor();
     final Document document = editor.getDocument();
+    final PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
+    if (psiDocumentManager == null) {
+      return null;
+    }
 
-    final PsiFile psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document);
+    final PsiFile psiFile = psiDocumentManager.getPsiFile(document);
     if (psiFile == null || !psiFile.isValid()) {
       return null;
     }
@@ -79,14 +88,17 @@ public class FlutterSampleNotificationProvider extends EditorNotifications.Provi
     // Run the code to query the document in a read action.
     final List<FlutterSample> samples = ApplicationManager.getApplication().
       runReadAction((Computable<List<FlutterSample>>)() -> {
-        //noinspection CodeBlock2Expr
         return getSamplesFromDoc(flutterPackagePath, document, filePath);
       });
 
-    return samples.isEmpty() ? null : new FlutterSampleActionsPanel(samples);
+    if (samples != null && !samples.isEmpty()) {
+      return new FlutterSampleActionsPanel(samples);
+    }
+    return null;
   }
 
-  private List<FlutterSample> getSamplesFromDoc(String flutterPackagePath, Document document, String filePath) {
+  @NotNull
+  private List<FlutterSample> getSamplesFromDoc(@NotNull String flutterPackagePath, @NotNull Document document, @NotNull String filePath) {
     final List<FlutterSample> samples = new ArrayList<>();
 
     // Find all candidate class definitions.
@@ -111,7 +123,8 @@ public class FlutterSampleNotificationProvider extends EditorNotifications.Provi
       try {
         // Context: https://github.com/flutter/flutter-intellij/issues/5634
         dartdoc = DartDocumentUtils.getDartdocFor(document, declaration);
-      }catch (IndexOutOfBoundsException e) {
+      }
+      catch (IndexOutOfBoundsException e) {
         // ignore
       }
       if (dartdoc != null && containsDartdocFlutterSample(dartdoc)) {
@@ -127,7 +140,6 @@ public class FlutterSampleNotificationProvider extends EditorNotifications.Provi
         }
       }
     }
-
     return samples;
   }
 
@@ -153,3 +165,28 @@ public class FlutterSampleNotificationProvider extends EditorNotifications.Provi
     return false;
   }
 }
+
+class FlutterSampleActionsPanel extends EditorNotificationPanel {
+  FlutterSampleActionsPanel(@NotNull List<FlutterSample> samples) {
+    super(EditorColors.GUTTER_BACKGROUND);
+
+    icon(FlutterIcons.Flutter);
+    text("View example on flutter.dev");
+
+    for (int i = 0; i < samples.size(); i++) {
+      if (i != 0) {
+        myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
+      }
+
+      final FlutterSample sample = samples.get(i);
+
+      final HyperlinkLabel label = createActionLabel(sample.getClassName(), () -> browseTo(sample));
+      label.setToolTipText(sample.getHostedDocsUrl());
+    }
+  }
+
+  private void browseTo(FlutterSample sample) {
+    BrowserUtil.browse(sample.getHostedDocsUrl());
+  }
+}
+
