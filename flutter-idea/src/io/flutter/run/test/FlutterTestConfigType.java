@@ -8,7 +8,6 @@ package io.flutter.run.test;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationTypeBase;
 import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import icons.FlutterIcons;
 import io.flutter.run.FlutterRunConfigurationType;
@@ -26,7 +25,7 @@ public class FlutterTestConfigType extends ConfigurationTypeBase {
   }
 
   public static FlutterTestConfigType getInstance() {
-    return Extensions.findExtension(CONFIGURATION_TYPE_EP, FlutterTestConfigType.class);
+    return CONFIGURATION_TYPE_EP.findExtensionOrFail(FlutterTestConfigType.class);
   }
 
   private static class Factory extends ConfigurationFactory {

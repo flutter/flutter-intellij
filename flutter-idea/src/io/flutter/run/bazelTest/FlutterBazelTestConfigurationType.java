@@ -8,7 +8,6 @@ package io.flutter.run.bazelTest;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationTypeBase;
 import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
@@ -35,7 +34,7 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
   }
 
   public static FlutterBazelTestConfigurationType getInstance() {
-    return Extensions.findExtension(CONFIGURATION_TYPE_EP, FlutterBazelTestConfigurationType.class);
+    return CONFIGURATION_TYPE_EP.findExtensionOrFail(FlutterBazelTestConfigurationType.class);
   }
 
   /**
