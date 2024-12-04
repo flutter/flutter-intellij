@@ -9,7 +9,6 @@ import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationTypeBase;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunConfigurationSingletonPolicy;
-import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -44,7 +43,7 @@ public class FlutterRunConfigurationType extends ConfigurationTypeBase {
   }
 
   public static FlutterRunConfigurationType getInstance() {
-    return Extensions.findExtension(CONFIGURATION_TYPE_EP, FlutterRunConfigurationType.class);
+    return CONFIGURATION_TYPE_EP.findExtensionOrFail(FlutterRunConfigurationType.class);
   }
 
   public static class Factory extends ConfigurationFactory {
