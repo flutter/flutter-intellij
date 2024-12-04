@@ -21,9 +21,10 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
 
 import java.awt.event.InputEvent;
+import java.nio.file.Path;
 
 import static com.android.tools.idea.gradle.project.ProjectImportUtil.findGradleTarget;
-import static com.intellij.ide.impl.ProjectUtil.*;
+import static com.intellij.ide.impl.ProjectUtil.openOrImport;
 import static com.intellij.openapi.fileChooser.impl.FileChooserUtil.setLastOpenedFile;
 
 /**
@@ -74,7 +75,7 @@ public class OpenAndroidModule extends OpenInAndroidStudioAction implements Dumb
     }
     Project newProject = openOrImport(projectFile.getPath(), project, false);
     if (newProject != null) {
-      setLastOpenedFile(newProject, projectFile);
+      setLastOpenedFile(newProject, Path.of(projectFile.getPath()));
       if (sourceFile != null && !sourceFile.isDirectory()) {
         OpenFileAction.openFile(sourceFile, newProject);
       }
