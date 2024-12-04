@@ -61,10 +61,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -263,7 +260,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
 
   @NotNull
   public static AndroidModuleLibraryManager getInstance(@NotNull final Project project) {
-    return ServiceManager.getService(project, AndroidModuleLibraryManager.class);
+    return Objects.requireNonNull(project.getService(AndroidModuleLibraryManager.class));
   }
 
   public static void startWatching(@NotNull Project project) {

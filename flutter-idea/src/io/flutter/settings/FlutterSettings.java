@@ -7,12 +7,14 @@ package io.flutter.settings;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
 
 import java.util.EventListener;
+import java.util.Objects;
 
 public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
@@ -62,7 +64,7 @@ public class FlutterSettings {
       return testInstance;
     }
 
-    return ServiceManager.getService(FlutterSettings.class);
+    return Objects.requireNonNull(ApplicationManager.getApplication()).getService(FlutterSettings.class);
   }
 
   protected static PropertiesComponent getPropertiesComponent() {

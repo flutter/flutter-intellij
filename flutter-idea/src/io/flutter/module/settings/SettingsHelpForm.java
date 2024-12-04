@@ -6,7 +6,6 @@
 package io.flutter.module.settings;
 
 import com.intellij.ide.browsers.BrowserLauncher;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.ui.components.labels.LinkLabel;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
@@ -35,10 +34,6 @@ public class SettingsHelpForm {
 
   @SuppressWarnings("rawtypes")
   private LinkLabel gettingStartedUrl;
-
-  public static SettingsHelpForm getInstance() {
-    return ServiceManager.getService(SettingsHelpForm.class);
-  }
 
   public SettingsHelpForm() {
     projectTypeLabel.setText(FlutterBundle.message("flutter.module.create.settings.help.project_type.label"));

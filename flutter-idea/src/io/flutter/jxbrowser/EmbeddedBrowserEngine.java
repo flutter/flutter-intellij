@@ -25,7 +25,7 @@ public class EmbeddedBrowserEngine {
   private final Engine engine;
 
   public static EmbeddedBrowserEngine getInstance() {
-    return ServiceManager.getService(EmbeddedBrowserEngine.class);
+    return ApplicationManager.getApplication().getService(EmbeddedBrowserEngine.class);
   }
 
   public EmbeddedBrowserEngine() {

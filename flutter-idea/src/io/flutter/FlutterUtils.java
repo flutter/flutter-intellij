@@ -550,7 +550,12 @@ public class FlutterUtils {
       return null;
     }
 
-    return FlutterSettings.getInstance().isEnableJcefBrowser()
+    FlutterSettings settings = FlutterSettings.getInstance();
+    if (settings == null) {
+      return null;
+    }
+
+    return settings.isEnableJcefBrowser()
            ? EmbeddedJcefBrowser.getInstance(project)
            : EmbeddedJxBrowser.getInstance(project);
   }
