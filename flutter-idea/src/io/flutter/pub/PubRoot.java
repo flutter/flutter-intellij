@@ -6,10 +6,9 @@
 package io.flutter.pub;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
-import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -34,9 +33,10 @@ import java.util.Map;
  * That is, a directory containing (at a minimum) a pubspec.yaml file.
  */
 public class PubRoot {
+  public static final String ANALYSIS_OPTIONS_YAML = "analysis_options.yaml";
+  public static final String DOT_DART_TOOL = ".dart_tool";
+  public static final String DOT_PACKAGES = ".packages";
   public static final String PUBSPEC_YAML = "pubspec.yaml";
-
-  private static final Logger LOG = Logger.getInstance(PubRoot.class);
 
   @NotNull
   private final VirtualFile root;
@@ -176,7 +176,7 @@ public class PubRoot {
     return path.substring(root.length() + 1);
   }
 
-  private static final String /*@NotNull*/ [] TEST_DIRS = new String[] { // TODO 2022.1
+  private static final String /*@NotNull*/[] TEST_DIRS = new String[]{ // TODO 2022.1
     "/test/",
     "/integration_test/",
     "/test_driver/",
@@ -266,7 +266,7 @@ public class PubRoot {
 
   @Nullable
   public VirtualFile getPackageConfigFile() {
-    final VirtualFile tools = root.findChild(".dart_tool");
+    final VirtualFile tools = root.findChild(DOT_DART_TOOL);
     if (tools == null || !tools.isDirectory()) {
       return null;
     }
@@ -280,7 +280,7 @@ public class PubRoot {
   @Nullable
   public VirtualFile getPackagesFile() {
     // Obsolete by Flutter 2.0
-    final VirtualFile packages = root.findChild(".packages");
+    final VirtualFile packages = root.findChild(DOT_PACKAGES);
     if (packages != null && !packages.isDirectory()) {
       return packages;
     }
