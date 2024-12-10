@@ -245,8 +245,6 @@
 
   <projectListeners>
     <listener class="io.flutter.view.FlutterViewFactory$FlutterViewListener" topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
-    <listener class="io.flutter.performance.FlutterPerformanceViewFactory$FlutterPerformanceViewListener"
-              topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
     <listener class="io.flutter.preview.PreviewViewFactory$PreviewViewListener"
               topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
   </projectListeners>
@@ -326,10 +324,6 @@
                 factoryClass="io.flutter.view.FlutterViewFactory"/>
     <projectService serviceImplementation="io.flutter.view.FlutterView" overrides="false"/>
 
-    <toolWindow id="Flutter Performance" anchor="right" icon="FlutterIcons.FlutterDefault"
-                factoryClass="io.flutter.performance.FlutterPerformanceViewFactory"/>
-    <projectService serviceImplementation="io.flutter.performance.FlutterPerformanceView" overrides="false"/>
-
     <toolWindow id="Flutter Deep Links" anchor="right" icon="FlutterIcons.DevToolsDeepLinks" factoryClass="io.flutter.deeplinks.DeepLinksViewFactory" />
     <toolWindow id="Flutter DevTools" anchor="right" icon="FlutterIcons.DevTools" factoryClass="io.flutter.devtools.RemainingDevToolsViewFactory" />
     <toolWindow id="Flutter DevTools Extensions" anchor="right" icon="FlutterIcons.DevToolsExtensions" factoryClass="io.flutter.devtools.DevToolsExtensionsViewFactory" />
@@ -353,9 +347,6 @@
                     overrides="false"/>
     <projectService serviceInterface="io.flutter.run.FlutterAppManager"
                     serviceImplementation="io.flutter.run.FlutterAppManager"
-                    overrides="false"/>
-    <projectService serviceInterface="io.flutter.perf.FlutterWidgetPerfManager"
-                    serviceImplementation="io.flutter.perf.FlutterWidgetPerfManager"
                     overrides="false"/>
 
     <projectService serviceInterface="io.flutter.editor.ActiveEditorsOutlineService"
