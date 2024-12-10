@@ -338,6 +338,7 @@
     <editorNotificationProvider implementation="io.flutter.inspections.SdkConfigurationNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.editor.NativeEditorNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.samples.FlutterSampleNotificationProvider"/>
+    <editorNotificationProvider implementation="io.flutter.inspections.AnalysisOptionsNotificationProvider"/>
 
     <projectService serviceInterface="io.flutter.run.FlutterReloadManager"
                     serviceImplementation="io.flutter.run.FlutterReloadManager"
