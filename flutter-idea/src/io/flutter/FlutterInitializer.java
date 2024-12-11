@@ -38,7 +38,6 @@ import io.flutter.devtools.RemainingDevToolsViewFactory;
 import io.flutter.editor.FlutterSaveActionsManager;
 import io.flutter.logging.FlutterConsoleLogManager;
 import io.flutter.module.FlutterModuleBuilder;
-import io.flutter.preview.PreviewViewFactory;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterReloadManager;
@@ -320,7 +319,6 @@ public class FlutterInitializer implements StartupActivity {
   private void initializeToolWindows(@NotNull Project project) {
     // Start watching for Flutter debug active events.
     FlutterViewFactory.init(project);
-    PreviewViewFactory.init(project);
     RemainingDevToolsViewFactory.init(project);
     DevToolsExtensionsViewFactory.init(project);
     toolWindowsInitialized = true;
