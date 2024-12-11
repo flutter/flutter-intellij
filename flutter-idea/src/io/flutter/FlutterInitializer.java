@@ -8,7 +8,6 @@ package io.flutter;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.intellij.ProjectTopics;
-import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.ui.UISettingsListener;
 import com.intellij.notification.*;
@@ -39,8 +38,6 @@ import io.flutter.devtools.RemainingDevToolsViewFactory;
 import io.flutter.editor.FlutterSaveActionsManager;
 import io.flutter.logging.FlutterConsoleLogManager;
 import io.flutter.module.FlutterModuleBuilder;
-import io.flutter.perf.FlutterWidgetPerfManager;
-import io.flutter.performance.FlutterPerformanceViewFactory;
 import io.flutter.preview.PreviewViewFactory;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -164,9 +161,6 @@ public class FlutterInitializer implements StartupActivity {
 
     // Start watching for survey triggers.
     FlutterSurveyNotifications.init(project);
-
-    // Start the widget perf manager.
-    FlutterWidgetPerfManager.init(project);
 
     // Watch save actions for reload on save.
     FlutterReloadManager.init(project);
@@ -326,7 +320,6 @@ public class FlutterInitializer implements StartupActivity {
   private void initializeToolWindows(@NotNull Project project) {
     // Start watching for Flutter debug active events.
     FlutterViewFactory.init(project);
-    FlutterPerformanceViewFactory.init(project);
     PreviewViewFactory.init(project);
     RemainingDevToolsViewFactory.init(project);
     DevToolsExtensionsViewFactory.init(project);
