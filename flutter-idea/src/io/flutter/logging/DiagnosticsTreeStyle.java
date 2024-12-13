@@ -1,9 +1,9 @@
 /*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.inspector;
+package io.flutter.logging;
 
 /**
  * Styles for displaying a node in a [DiagnosticsNode] tree.

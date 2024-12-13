@@ -1,9 +1,9 @@
 /*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.inspector;
+package io.flutter.logging;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -56,9 +56,7 @@ public class DiagnosticsNode {
   private static final Logger LOG = Logger.getInstance(DiagnosticsNode.class);
 
   private static final CustomIconMaker iconMaker = new CustomIconMaker();
-  private final FlutterApp app;
 
-  private InspectorSourceLocation location;
   private DiagnosticsNode parent;
 
   private CompletableFuture<String> propertyDocFuture;
@@ -66,24 +64,18 @@ public class DiagnosticsNode {
   private ArrayList<DiagnosticsNode> cachedProperties;
 
   public DiagnosticsNode(JsonObject json,
-                         InspectorService.ObjectGroup inspectorService,
                          boolean isProperty,
                          DiagnosticsNode parent) {
     this.json = json;
-    this.inspectorService = CompletableFuture.completedFuture(inspectorService);
     this.isProperty = isProperty;
-    this.app = inspectorService.getApp();
   }
 
   public DiagnosticsNode(JsonObject json,
-                         @NotNull CompletableFuture<InspectorService.ObjectGroup> inspectorService,
                          FlutterApp app,
                          boolean isProperty,
                          DiagnosticsNode parent) {
     this.json = json;
-    this.inspectorService = inspectorService;
     this.isProperty = isProperty;
-    this.app = app;
   }
 
   @Override
@@ -102,18 +94,6 @@ public class DiagnosticsNode {
     }
 
     return name + getSeparator() + ' ' + getDescription();
-  }
-
-  public boolean isDisposed() {
-    try {
-      final InspectorService.ObjectGroup service = inspectorService.getNow(null);
-      // If the service isn't created yet it can't have been disposed.
-      return service != null && service.isDisposed();
-    }
-    catch (Exception e) {
-      // If the service can't be acquired then it is disposed.
-      return false;
-    }
   }
 
   /**
@@ -442,23 +422,8 @@ public class DiagnosticsNode {
     return json.has("exception");
   }
 
-  public boolean hasCreationLocation() {
-    return location != null || json.has("creationLocation");
-  }
-
   public int getLocationId() {
     return JsonUtils.getIntMember(json, "locationId");
-  }
-
-  public InspectorSourceLocation getCreationLocation() {
-    if (location != null) {
-      return location;
-    }
-    if (!hasCreationLocation()) {
-      return null;
-    }
-    location = new InspectorSourceLocation(json.getAsJsonObject("creationLocation"), null, app.getProject());
-    return location;
   }
 
   /**
@@ -503,12 +468,6 @@ public class DiagnosticsNode {
   public boolean getIsDiagnosticableValue() {
     return getBooleanMember("isDiagnosticableValue", false);
   }
-
-  /**
-   * Service used to retrieve more detailed information about the value of the property and its children and properties.
-   */
-  @NotNull
-  private final CompletableFuture<InspectorService.ObjectGroup> inspectorService;
 
   /**
    * JSON describing the diagnostic node.
@@ -580,58 +539,6 @@ public class DiagnosticsNode {
     return type != null && type.startsWith("EnumProperty<");
   }
 
-  /**
-   * Returns a list of raw Dart property values of the Dart value of this
-   * property that are useful for custom display of the property value.
-   * For example, get the red, green, and blue components of color.
-   * <p>
-   * Unfortunately we cannot just use the list of fields from the Observatory
-   * Instance object for the Dart value because much of the relevant
-   * information to display good visualizations of Flutter values is stored
-   * in properties not in fields.
-   */
-  public CompletableFuture<Map<String, InstanceRef>> getValueProperties() {
-    final InspectorInstanceRef valueRef = getValueRef();
-    if (valueProperties == null) {
-      if (getPropertyType() == null || valueRef == null || valueRef.getId() == null) {
-        valueProperties = CompletableFuture.completedFuture(null);
-        return valueProperties;
-      }
-      if (isEnumProperty()) {
-        // Populate all the enum property values.
-        valueProperties = inspectorService.thenComposeAsync((service) -> {
-          if (service == null) {
-            return null;
-          }
-          return service.getEnumPropertyValues(getValueRef());
-        });
-        return valueProperties;
-      }
-
-      final String[] propertyNames;
-      // Add more cases here as visual displays for additional Dart objects
-      // are added.
-      switch (getPropertyType()) {
-        case "Color":
-          propertyNames = new String[]{"red", "green", "blue", "alpha"};
-          break;
-        case "IconData":
-          propertyNames = new String[]{"codePoint"};
-          break;
-        default:
-          valueProperties = CompletableFuture.completedFuture(null);
-          return valueProperties;
-      }
-      valueProperties = inspectorService.thenComposeAsync((service) -> {
-        if (service == null) {
-          return null;
-        }
-        return service.getDartObjectProperties(getValueRef(), propertyNames);
-      });
-    }
-    return valueProperties;
-  }
-
   public JsonObject getValuePropertiesJson() {
     return json.getAsJsonObject("valueProperties");
   }
@@ -675,19 +582,11 @@ public class DiagnosticsNode {
         final JsonArray jsonArray = json.get("children").getAsJsonArray();
         final ArrayList<DiagnosticsNode> nodes = new ArrayList<>();
         for (JsonElement element : jsonArray) {
-          final DiagnosticsNode child = new DiagnosticsNode(element.getAsJsonObject(), inspectorService, app, false, parent);
+          final DiagnosticsNode child = new DiagnosticsNode(element.getAsJsonObject(), false, parent);
           child.setParent(this);
           nodes.add(child);
         }
         children = CompletableFuture.completedFuture(nodes);
-      }
-      else if (hasChildren()) {
-        children = inspectorService.thenComposeAsync((service) -> {
-          if (service == null) {
-            return null;
-          }
-          return service.getChildren(getDartDiagnosticRef(), isSummaryTree(), this);
-        });
       }
       else {
         // Known to have no children so we can provide the children immediately.
@@ -722,71 +621,11 @@ public class DiagnosticsNode {
       if (json.has("properties")) {
         final JsonArray jsonArray = json.get("properties").getAsJsonArray();
         for (JsonElement element : jsonArray) {
-          cachedProperties.add(new DiagnosticsNode(element.getAsJsonObject(), inspectorService, app, true, parent));
+          cachedProperties.add(new DiagnosticsNode(element.getAsJsonObject(), true, parent));
         }
       }
     }
     return cachedProperties;
-  }
-
-  public CompletableFuture<ArrayList<DiagnosticsNode>> getProperties(InspectorService.ObjectGroup objectGroup) {
-    return objectGroup.getProperties(getDartDiagnosticRef());
-  }
-
-  @NotNull
-  public CompletableFuture<String> getPropertyDoc() {
-    if (propertyDocFuture == null) {
-      propertyDocFuture = createPropertyDocFuture();
-    }
-    return propertyDocFuture;
-  }
-
-  private CompletableFuture<String> createPropertyDocFuture() {
-    final DiagnosticsNode parent = getParent();
-    if (parent != null) {
-      return inspectorService.thenComposeAsync((service) -> service.toDartVmServiceValueForSourceLocation(parent.getValueRef())
-        .thenComposeAsync((DartVmServiceValue vmValue) -> {
-          if (vmValue == null) {
-            return CompletableFuture.completedFuture(null);
-          }
-          return inspectorService.getNow(null).getPropertyLocation(vmValue.getInstanceRef(), getName())
-            .thenApplyAsync((XSourcePosition sourcePosition) -> {
-              if (sourcePosition != null) {
-                final VirtualFile file = sourcePosition.getFile();
-                final int offset = sourcePosition.getOffset();
-
-                final Project project = getProject(file);
-                if (project != null) {
-                  final List<HoverInformation> hovers =
-                    DartAnalysisServerService.getInstance(project).analysis_getHover(file, offset);
-                  if (!hovers.isEmpty()) {
-                    return hovers.get(0).getDartdoc();
-                  }
-                }
-              }
-              return "Unable to find property source";
-            });
-        })).exceptionally(t -> {
-        LOG.info("ignoring exception from toObjectForSourceLocation: " + t.toString());
-        return null;
-      });
-    }
-
-    return CompletableFuture.completedFuture("Unable to find property source");
-  }
-
-  @Nullable
-  private Project getProject(@NotNull VirtualFile file) {
-    return app != null ? app.getProject() : ProjectUtil.guessProjectForFile(file);
-  }
-
-  private void setCreationLocation(InspectorSourceLocation location) {
-    this.location = location;
-  }
-
-  @NotNull
-  public CompletableFuture<InspectorService.ObjectGroup> getInspectorService() {
-    return inspectorService;
   }
 
   @Nullable
@@ -822,37 +661,5 @@ public class DiagnosticsNode {
       }
     }
     return true;
-  }
-
-  /**
-   * Await a Future invoking the callback on completion on the UI thread only if the
-   * InspectorService group is still alive when the Future completes.
-   */
-  public <T> void safeWhenComplete(CompletableFuture<T> future, BiConsumer<? super T, ? super Throwable> action) {
-    try {
-      final InspectorService.ObjectGroup service = inspectorService.getNow(null);
-      if (service != null) {
-        service.safeWhenComplete(future, action);
-        return;
-      }
-      inspectorService.whenCompleteAsync((group, t) -> {
-        if (group == null || t != null) {
-          return;
-        }
-        group.safeWhenComplete(future, action);
-      });
-    }
-    catch (Exception ignored) {
-      // Nothing to do if the service can't be acquired.
-    }
-  }
-
-  public void setSelection(InspectorInstanceRef ref, boolean uiAlreadyUpdated) {
-    inspectorService.thenAcceptAsync((service) -> {
-      if (service == null) {
-        return;
-      }
-      service.setSelection(ref, uiAlreadyUpdated, false);
-    });
   }
 }

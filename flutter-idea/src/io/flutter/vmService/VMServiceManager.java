@@ -12,7 +12,6 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
-import io.flutter.inspector.EvalOnDartLibrary;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.StreamSubscription;
@@ -145,30 +144,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
   }
 
   public void addRegisteredExtensionRPCs(Isolate isolate, boolean attach) {
-    // If attach was called, there is a risk we may never receive a
-    // Flutter.Frame or Flutter.FirstFrame event so we need to query the
-    // framework to determine if a frame has already been rendered.
-    // This check would be safe to do outside of attach mode but is not needed.
-    if (attach && isolate.getExtensionRPCs() != null && !firstFrameEventReceived) {
-      final Set<String> bindingLibraryNames = new HashSet<>();
-      bindingLibraryNames.add("package:flutter/src/widgets/binding.dart");
-
-      final EvalOnDartLibrary flutterLibrary = new EvalOnDartLibrary(
-        bindingLibraryNames,
-        vmService,
-        this
-      );
-      flutterLibrary.eval("WidgetsBinding.instance.debugDidSendFirstFrameEvent", null, null).whenCompleteAsync((v, e) -> {
-        // If there is an error we assume the first frame has been received.
-        final boolean didSendFirstFrameEvent = e == null ||
-                                               v == null ||
-                                               Objects.equals(v.getValueAsString(), "true");
-        if (didSendFirstFrameEvent) {
-          onFrameEventReceived();
-        }
-        Disposer.dispose(flutterLibrary);
-      });
-    }
     if (isolate.getExtensionRPCs() != null) {
       for (String extension : isolate.getExtensionRPCs()) {
         addServiceExtension(extension);
