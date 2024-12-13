@@ -7,7 +7,6 @@ package io.flutter.jxbrowser;
 
 import com.intellij.openapi.application.ApplicationListener;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.SystemInfo;
 import com.teamdev.jxbrowser.engine.Engine;

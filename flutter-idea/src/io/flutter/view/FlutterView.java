@@ -592,12 +592,3 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     return null;
   }
 }
-
-class AppState {
-  ArrayList<FlutterViewAction> flutterViewActions = new ArrayList<>();
-
-  FlutterViewAction registerAction(FlutterViewAction action) {
-    flutterViewActions.add(action);
-    return action;
-  }
-}
