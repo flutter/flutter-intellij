@@ -330,7 +330,7 @@ public class FlutterSdkUtil {
       // parse it
       try {
         final String contents = new String(configFile.contentsToByteArray(true /* cache contents */));
-        final JsonElement element = new JsonParser().parse(contents);
+        final JsonElement element = JsonParser.parseString(contents);
         if (element == null) {
           continue;
         }

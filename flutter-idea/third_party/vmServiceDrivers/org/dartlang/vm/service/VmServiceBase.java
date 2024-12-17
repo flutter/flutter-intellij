@@ -394,7 +394,7 @@ abstract class VmServiceBase implements VmServiceConst {
     // Decode the JSON
     JsonObject json;
     try {
-      json = (JsonObject) new JsonParser().parse(jsonText);
+      json = (JsonObject) JsonParser.parseString(jsonText);
     } catch (Exception e) {
       Logging.getLogger().logError("Parse message failed: " + jsonText, e);
       return;
