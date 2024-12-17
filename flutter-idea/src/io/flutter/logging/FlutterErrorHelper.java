@@ -7,8 +7,6 @@ package io.flutter.logging;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.openapi.util.text.StringUtil;
-import io.flutter.inspector.DiagnosticLevel;
-import io.flutter.inspector.DiagnosticsNode;
 
 import java.util.regex.Pattern;
 

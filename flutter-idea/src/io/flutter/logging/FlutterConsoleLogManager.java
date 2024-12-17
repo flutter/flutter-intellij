@@ -22,7 +22,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.ex.EditorSettingsExternalizable;
 import com.intellij.openapi.editor.impl.softwrap.SoftWrapAppliancePlaces;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -31,10 +30,6 @@ import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.concurrency.QueueProcessor;
 import io.flutter.FlutterUtils;
 import io.flutter.devtools.DevToolsUtils;
-import io.flutter.inspector.DiagnosticLevel;
-import io.flutter.inspector.DiagnosticsNode;
-import io.flutter.inspector.DiagnosticsTreeStyle;
-import io.flutter.inspector.InspectorService;
 import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
@@ -95,8 +90,6 @@ public class FlutterConsoleLogManager {
 
   private int frameErrorCount = 0;
 
-  private CompletableFuture<InspectorService.ObjectGroup> objectGroup;
-
   public FlutterConsoleLogManager(@NotNull ConsoleView console, @NotNull FlutterApp app) {
     this.console = console;
     this.app = app;
@@ -128,40 +121,11 @@ public class FlutterConsoleLogManager {
     }
   }
 
-  /**
-   * This method is used to delay construction of the InspectorService ObjectGroup instance until its first used.
-   * <p>
-   * This ensures that the app's VMService field has been populated.
-   */
-  @Nullable
-  private CompletableFuture<InspectorService.ObjectGroup> getCreateInspectorGroup() {
-    if (objectGroup == null) {
-      if (app.getFlutterDebugProcess() == null || app.getVmService() == null) {
-        return null;
-      }
-
-      // TODO(devoncarew): This creates a new InspectorService but may not dispose of it.
-      objectGroup = InspectorService.createGroup(app, app.getFlutterDebugProcess(), app.getVmService(), "console-group");
-      objectGroup.whenCompleteAsync((group, error) -> {
-        if (group != null) {
-          Disposer.register(app, group.getInspectorService());
-        }
-      });
-    }
-
-    return objectGroup;
-  }
-
   public void handleFlutterErrorEvent(@NotNull Event event) {
-    final CompletableFuture<InspectorService.ObjectGroup> objectGroup = getCreateInspectorGroup();
-    if (objectGroup == null) {
-      return;
-    }
-
     try {
       final ExtensionData extensionData = event.getExtensionData();
       final JsonObject jsonObject = extensionData.getJson().getAsJsonObject();
-      final DiagnosticsNode diagnosticsNode = new DiagnosticsNode(jsonObject, objectGroup, app, false, null);
+      final DiagnosticsNode diagnosticsNode = new DiagnosticsNode(jsonObject, app, false, null);
 
       if (FlutterSettings.getInstance().isShowStructuredErrors()) {
         queueLength.incrementAndGet();
@@ -256,8 +220,9 @@ public class FlutterConsoleLogManager {
 
         if (StringUtil.equals("ErrorSummary", property.getType())) {
           errorSummary = property.getDescription();
-        } else if (StringUtil.equals("DevToolsDeepLinkProperty", property.getType()) &&
-                FlutterUtils.embeddedBrowserAvailable(JxBrowserManager.getInstance().getStatus())) {
+        }
+        else if (StringUtil.equals("DevToolsDeepLinkProperty", property.getType()) &&
+                 FlutterUtils.embeddedBrowserAvailable(JxBrowserManager.getInstance().getStatus())) {
           showDeepLinkNotification(property, errorSummary);
           continue;
         }

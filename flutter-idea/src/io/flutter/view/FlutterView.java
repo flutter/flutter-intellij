@@ -27,17 +27,12 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
-import com.intellij.xdebugger.XSourcePosition;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.RefreshToolWindowAction;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.devtools.DevToolsUrl;
-import io.flutter.inspector.DiagnosticsNode;
-import io.flutter.inspector.InspectorGroupManagerService;
-import io.flutter.inspector.InspectorService;
-import io.flutter.inspector.InspectorSourceLocation;
 import io.flutter.jxbrowser.FailureType;
 import io.flutter.jxbrowser.InstallationFailedReason;
 import io.flutter.jxbrowser.JxBrowserManager;
@@ -55,7 +50,6 @@ import io.flutter.utils.EventStream;
 import io.flutter.utils.JxBrowserUtils;
 import io.flutter.utils.LabelInput;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -103,42 +97,18 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private final JxBrowserManager jxBrowserManager;
 
   public FlutterView(@NotNull Project project) {
-    this(project, JxBrowserManager.getInstance(), new JxBrowserUtils(), InspectorGroupManagerService.getInstance(project));
+    this(project, JxBrowserManager.getInstance(), new JxBrowserUtils());
   }
 
   @VisibleForTesting
   @NonInjectable
-  protected FlutterView(@NotNull Project project, @NotNull JxBrowserManager jxBrowserManager, JxBrowserUtils jxBrowserUtils, InspectorGroupManagerService inspectorGroupManagerService) {
+  protected FlutterView(@NotNull Project project, @NotNull JxBrowserManager jxBrowserManager, JxBrowserUtils jxBrowserUtils) {
     myProject = project;
     this.jxBrowserUtils = jxBrowserUtils;
     this.jxBrowserManager = jxBrowserManager;
 
     shouldAutoHorizontalScroll.listen(state::setShouldAutoScroll);
     highlightNodesShownInBothTrees.listen(state::setHighlightNodesShownInBothTrees);
-
-    inspectorGroupManagerService.addListener(new InspectorGroupManagerService.Listener() {
-      @Override
-      public void onInspectorAvailable(InspectorService service) { }
-
-      @Override
-      public void onSelectionChanged(DiagnosticsNode selection) {
-        if (selection != null) {
-          final InspectorSourceLocation location = selection.getCreationLocation();
-          if (location != null) {
-            final XSourcePosition sourcePosition = location.getXSourcePosition();
-            if (sourcePosition != null) {
-              sourcePosition.createNavigatable(project).navigate(true);
-            }
-          }
-          if (selection.isCreatedByLocalProject()) {
-            final XSourcePosition position = selection.getCreationLocation().getXSourcePosition();
-            if (position != null) {
-              position.createNavigatable(project).navigate(false);
-            }
-          }
-        }
-      }
-    }, this);
   }
 
   @Override
@@ -176,7 +146,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
                                               boolean isEmbedded,
                                               DevToolsIdeFeature ideFeature,
                                               DevToolsInstance devToolsInstance) {
-    assert(SwingUtilities.isEventDispatchThread());
+    assert (SwingUtilities.isEventDispatchThread());
 
     final ContentManager contentManager = toolWindow.getContentManager();
 
@@ -226,7 +196,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
 
       toolWindow.setTitleActions(List.of(new RefreshToolWindowAction(TOOL_WINDOW_ID)));
-    } else {
+    }
+    else {
       BrowserLauncher.getInstance().browse(
         new DevToolsUrl.Builder()
           .setDevToolsHost(devToolsInstance.host)
@@ -256,25 +227,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
    */
   public void debugActive(@NotNull FlutterViewMessages.FlutterDebugEvent event) {
     final FlutterApp app = event.app;
-    if (app.getFlutterDebugProcess() == null || app.getFlutterDebugProcess().getInspectorService() == null) {
+    if (app.getFlutterDebugProcess() == null) {
       return;
     }
-
-    if (app.getMode().isProfiling() || app.getLaunchMode().isProfiling()) {
-      ApplicationManager.getApplication().invokeLater(() -> debugActiveHelper(app, null));
-    }
-    else {
-      AsyncUtils.whenCompleteUiThread(
-        app.getFlutterDebugProcess().getInspectorService(),
-        (InspectorService inspectorService, Throwable throwable) -> {
-          if (throwable != null) {
-            FlutterUtils.warn(LOG, throwable);
-            return;
-          }
-
-          debugActiveHelper(app, inspectorService);
-        });
-    }
+    ApplicationManager.getApplication().invokeLater(() -> debugActiveHelper(app));
   }
 
   protected void handleJxBrowserInstalled(FlutterApp app, ToolWindow toolWindow, DevToolsIdeFeature ideFeature) {
@@ -294,7 +250,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   @VisibleForTesting
   protected void verifyEventDispatchThread() {
-    assert(SwingUtilities.isEventDispatchThread());
+    assert (SwingUtilities.isEventDispatchThread());
   }
 
   @VisibleForTesting
@@ -320,10 +276,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private void openInspectorWithDevTools(FlutterApp app,
-                                           ToolWindow toolWindow,
-                                           boolean isEmbedded,
-                                           DevToolsIdeFeature ideFeature,
-                                           boolean forceDevToolsRestart) {
+                                         ToolWindow toolWindow,
+                                         boolean isEmbedded,
+                                         DevToolsIdeFeature ideFeature,
+                                         boolean forceDevToolsRestart) {
     AsyncUtils.whenCompleteUiThread(
       forceDevToolsRestart
       ? DevToolsService.getInstance(myProject).getDevToolsInstanceWithForcedRestart()
@@ -389,23 +345,25 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   protected void handleUpdatedJxBrowserStatusOnEventThread(
-          FlutterApp app,
-          ToolWindow toolWindow,
-          JxBrowserStatus jxBrowserStatus,
-          DevToolsIdeFeature ideFeature) {
+    FlutterApp app,
+    ToolWindow toolWindow,
+    JxBrowserStatus jxBrowserStatus,
+    DevToolsIdeFeature ideFeature) {
     AsyncUtils.invokeLater(() -> handleUpdatedJxBrowserStatus(app, toolWindow, jxBrowserStatus, ideFeature));
   }
 
   protected void handleUpdatedJxBrowserStatus(
-          FlutterApp app,
-          ToolWindow toolWindow,
-          JxBrowserStatus jxBrowserStatus,
-          DevToolsIdeFeature ideFeature) {
+    FlutterApp app,
+    ToolWindow toolWindow,
+    JxBrowserStatus jxBrowserStatus,
+    DevToolsIdeFeature ideFeature) {
     if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {
       handleJxBrowserInstalled(app, toolWindow, ideFeature);
-    } else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
+    }
+    else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
       handleJxBrowserInstallationFailed(app, toolWindow, ideFeature);
-    } else {
+    }
+    else {
       // newStatus can be null if installation is interrupted or stopped for another reason.
       presentOpenDevToolsOptionWithMessage(app, toolWindow, INSTALLATION_WAIT_FAILED, ideFeature);
     }
@@ -422,7 +380,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       // If the license isn't available, allow the user to open the equivalent page in a non-embedded browser window.
       inputs.add(new LabelInput("The JxBrowser license could not be found."));
       inputs.add(openDevToolsLabel);
-    } else if (latestFailureReason != null && latestFailureReason.failureType.equals(FailureType.SYSTEM_INCOMPATIBLE)) {
+    }
+    else if (latestFailureReason != null && latestFailureReason.failureType.equals(FailureType.SYSTEM_INCOMPATIBLE)) {
       // If we know the system is incompatible, skip retry link and offer to open in browser.
       inputs.add(new LabelInput(latestFailureReason.detail));
       inputs.add(openDevToolsLabel);
@@ -455,7 +414,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         descriptionLabel.setBorder(JBUI.Borders.empty(5));
         descriptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(descriptionLabel, BorderLayout.NORTH);
-      } else {
+      }
+      else {
         final LinkLabel<String> linkLabel = new LinkLabel<>("<html>" + input.text + "</html>", null);
         linkLabel.setBorder(JBUI.Borders.empty(5));
         linkLabel.setListener(input.listener, null);
@@ -494,7 +454,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     });
   }
 
-  private void debugActiveHelper(FlutterApp app, @Nullable InspectorService inspectorService) {
+  private void debugActiveHelper(FlutterApp app) {
     final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
     if (!(toolWindowManager instanceof ToolWindowManagerEx)) {
       return;
@@ -538,7 +498,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private void displayEmbeddedBrowser(FlutterApp app, ToolWindow toolWindow, DevToolsIdeFeature ideFeature) {
     if (FlutterSettings.getInstance().isEnableJcefBrowser()) {
       presentDevTools(app, toolWindow, true, ideFeature);
-    } else {
+    }
+    else {
       displayEmbeddedBrowserIfJxBrowser(app, toolWindow, ideFeature);
     }
   }
@@ -555,8 +516,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       handleJxBrowserInstallationInProgress(app, toolWindow, ideFeature);
     }
     else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
-      handleJxBrowserInstallationFailed(app, toolWindow,  ideFeature);
-    } else if (jxBrowserStatus.equals(JxBrowserStatus.NOT_INSTALLED) || jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_SKIPPED)) {
+      handleJxBrowserInstallationFailed(app, toolWindow, ideFeature);
+    }
+    else if (jxBrowserStatus.equals(JxBrowserStatus.NOT_INSTALLED) || jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_SKIPPED)) {
       manager.setUp(myProject.getName());
       handleJxBrowserInstallationInProgress(app, toolWindow, ideFeature);
     }

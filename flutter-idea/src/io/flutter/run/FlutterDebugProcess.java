@@ -23,7 +23,6 @@ import io.flutter.actions.ReloadAllFlutterApps;
 import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.actions.RestartAllFlutterApps;
 import io.flutter.actions.RestartFlutterApp;
-import io.flutter.inspector.InspectorService;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.view.FlutterViewMessages;
@@ -35,7 +34,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * A debug process that handles hot reloads for Flutter.
@@ -61,15 +59,6 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
   @NotNull
   public FlutterApp getApp() {
     return app;
-  }
-
-  CompletableFuture<InspectorService> inspectorService;
-
-  public CompletableFuture<InspectorService> getInspectorService() {
-    if (inspectorService == null && getVmConnected() && app.getVmService() != null) {
-      inspectorService = InspectorService.create(app, this, app.getVmService());
-    }
-    return inspectorService;
   }
 
   @Override
