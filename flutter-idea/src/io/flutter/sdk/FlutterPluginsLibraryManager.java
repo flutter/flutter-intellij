@@ -5,7 +5,6 @@
  */
 package io.flutter.sdk;
 
-import com.intellij.ProjectTopics;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.DumbService;
@@ -51,7 +50,7 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
       }
     }, getProject());
 
-    getProject().getMessageBus().connect().subscribe(ProjectTopics.PROJECT_ROOTS, new ModuleRootListener() {
+    getProject().getMessageBus().connect().subscribe(ModuleRootListener.TOPIC, new ModuleRootListener() {
       @Override
       public void rootsChanged(@NotNull ModuleRootEvent event) {
         scheduleUpdate();

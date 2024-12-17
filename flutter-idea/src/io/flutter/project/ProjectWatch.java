@@ -5,7 +5,6 @@
  */
 package io.flutter.project;
 
-import com.intellij.ProjectTopics;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -44,7 +43,7 @@ public class ProjectWatch implements Closeable {
     manager.addProjectManagerListener(project, listener);
 
     final MessageBusConnection bus = project.getMessageBus().connect();
-    bus.subscribe(ProjectTopics.PROJECT_ROOTS, new ModuleRootListener() {
+    bus.subscribe(ModuleRootListener.TOPIC, new ModuleRootListener() {
       @Override
       public void rootsChanged(@NotNull ModuleRootEvent event) {
         fireEvent();
