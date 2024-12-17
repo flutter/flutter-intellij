@@ -29,6 +29,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * This LocalInspectionTool provides the banner on the top of the editor that
+ * <p>
+ * TODO(jwren) resolve and document why this is a LocalInspectionTool instead of a EditorNotificationProvider, the UX to the end user seems
+ *  to be the same, and not require a PsiFile.
+ */
 public class FlutterDependencyInspection extends LocalInspectionTool {
   private final Set<String> myIgnoredPubspecPaths = new HashSet<>(); // remember for the current session only, do not serialize
 
