@@ -22,9 +22,10 @@ repositories {
 plugins {
   // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
   // https://github.com/JetBrains/intellij-platform-gradle-plugin/releases
+  // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("java")
   id("org.jetbrains.intellij.platform.module")
-  id("org.jetbrains.kotlin.jvm") version "2.0.0"
+  id("org.jetbrains.kotlin.jvm") version "2.1.0"
 }
 
 val flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()
