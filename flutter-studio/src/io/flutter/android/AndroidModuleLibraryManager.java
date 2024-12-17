@@ -12,7 +12,6 @@ import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_NAME;
 
 import com.android.tools.idea.gradle.project.sync.GradleSyncInvoker;
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
-import com.intellij.ProjectTopics;
 import com.intellij.facet.FacetManager;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
@@ -27,7 +26,6 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
-//import com.intellij.openapi.project.impl.ProjectExImpl;
 import com.intellij.openapi.project.impl.ProjectImpl;
 import com.intellij.openapi.project.impl.ProjectManagerImpl;
 import com.intellij.openapi.projectRoots.Sdk;
@@ -280,7 +278,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
         }
       }, project);
 
-      project.getMessageBus().connect().subscribe(ProjectTopics.PROJECT_ROOTS, new ModuleRootListener() {
+      project.getMessageBus().connect().subscribe(ModuleRootListener.TOPIC, new ModuleRootListener() {
         @Override
         public void rootsChanged(@NotNull ModuleRootEvent event) {
           manager.scheduleUpdate();

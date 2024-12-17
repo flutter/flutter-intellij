@@ -13,7 +13,6 @@ import static io.flutter.actions.AttachDebuggerAction.findRunConfig;
 
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.android.tools.idea.gradle.project.sync.GradleSyncState;
-import com.intellij.ProjectTopics;
 import com.intellij.debugger.engine.DebugProcess;
 import com.intellij.debugger.engine.DebugProcessListener;
 import com.intellij.debugger.impl.DebuggerManagerListener;
@@ -57,7 +56,7 @@ public class AddToAppUtils {
     }
 
     if (!FlutterModuleUtils.hasFlutterModule(project)) {
-      connection.subscribe(ProjectTopics.MODULES, new ModuleListener() {
+      connection.subscribe(ModuleListener.TOPIC, new ModuleListener() {
         @Override
         public void moduleAdded(@NotNull Project proj, @NotNull Module mod) {
           if (AndroidUtils.FLUTTER_MODULE_NAME.equals(mod.getName()) ||

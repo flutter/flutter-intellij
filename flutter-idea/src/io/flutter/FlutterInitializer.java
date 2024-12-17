@@ -7,7 +7,6 @@ package io.flutter;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.intellij.ProjectTopics;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.ui.UISettingsListener;
 import com.intellij.notification.*;
@@ -122,7 +121,7 @@ public class FlutterInitializer implements StartupActivity {
       initializeToolWindows(project);
     }
     else {
-      project.getMessageBus().connect().subscribe(ProjectTopics.MODULES, new ModuleListener() {
+      project.getMessageBus().connect().subscribe(ModuleListener.TOPIC, new ModuleListener() {
         @Override
         public void moduleAdded(@NotNull Project project, @NotNull Module module) {
           if (!toolWindowsInitialized && FlutterModuleUtils.isFlutterModule(module)) {
