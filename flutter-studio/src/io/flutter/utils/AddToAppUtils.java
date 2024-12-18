@@ -35,6 +35,7 @@ import io.flutter.sdk.FlutterSdk;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Collection;
 
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -71,10 +72,12 @@ public class AddToAppUtils {
       return false;
     }
     else {
-      @Nullable ProjectType projectType = ProjectTypeService.getProjectType(project);
-      if (projectType != null && "Android".equals(projectType.getId())) {
-        // This is an add-to-app project.
-        connection.subscribe(DebuggerManagerListener.TOPIC, makeAddToAppAttachListener(project));
+      Collection<ProjectType> projectTypes = ProjectTypeService.getProjectTypes(project);
+      for(ProjectType projectType : projectTypes) {
+        if (projectType != null && "Android".equals(projectType.getId())) {
+          // This is an add-to-app project.
+          connection.subscribe(DebuggerManagerListener.TOPIC, makeAddToAppAttachListener(project));
+        }
       }
     }
     return true;
