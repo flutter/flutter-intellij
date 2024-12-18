@@ -16,6 +16,8 @@ import com.intellij.psi.tree.java.IKeywordElementType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+
 // based on: org.jetbrains.android.util.AndroidUtils
 @SuppressWarnings("LocalCanBeFinal")
 public class AndroidUtils {
@@ -127,7 +129,10 @@ public class AndroidUtils {
     // IntelliJ-created Android project we need to set it. We need to allow an alternative
     // name. GradleResourceCompilerConfigurationGenerator depends on "Android".
     // TODO(messick) Recognize both native Android Studio and IntelliJ Android projects.
-    ProjectType projectType = ProjectTypeService.getProjectType(project);
-    return projectType != null && "Android".equals(projectType.getId());
+    Collection<ProjectType> projectTypes = ProjectTypeService.getProjectTypes(project);
+    for (ProjectType projectType : projectTypes) {
+      return projectType != null && "Android".equals(projectType.getId());
+    }
+    return false;
   }
 }

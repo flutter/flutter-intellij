@@ -34,6 +34,8 @@ import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.android.facet.AndroidFrameworkDetector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
+
 /**
  * Runs startup actions just after a project is opened, before it's indexed.
  *
@@ -69,9 +71,12 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       sdk.queryFlutterConfig("android-studio-dir", false);
     });
-    if (FlutterUtils.isAndroidStudio() && !FLUTTER_PROJECT_TYPE.equals(ProjectTypeService.getProjectType(project))) {
-      if (!AndroidUtils.isAndroidProject(project)) {
-        ProjectTypeService.setProjectType(project, FLUTTER_PROJECT_TYPE);
+    Collection<ProjectType> projectTypes = ProjectTypeService.getProjectTypes(project);
+    for (ProjectType projectType : projectTypes) {
+      if (projectType != null && FlutterUtils.isAndroidStudio() && !FLUTTER_PROJECT_TYPE.equals(projectType)) {
+        if (!AndroidUtils.isAndroidProject(project)) {
+          ProjectTypeService.setProjectType(project, FLUTTER_PROJECT_TYPE);
+        }
       }
     }
 
@@ -102,10 +107,12 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
         if (!excludesConfiguration.isExcludedFromDetection(type)) {
           excludesConfiguration.addExcludedFramework(type);
         }
-      } catch (NullPointerException ignored) {
+      }
+      catch (NullPointerException ignored) {
         // If the Android facet has not been configured then getFrameworkType() throws a NPE.
       }
-    } catch (NoClassDefFoundError ignored) {
+    }
+    catch (NoClassDefFoundError ignored) {
       // This should never happen. But just in case ...
     }
   }
