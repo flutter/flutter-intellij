@@ -238,11 +238,6 @@
 
   </actions>
 
-  <applicationListeners>
-    <listener class="io.flutter.font.ProjectOpenListener"
-              topic="com.intellij.openapi.project.ProjectManagerListener"/>
-  </applicationListeners>
-
   <extensionPoints>
     <extensionPoint name="gradleSyncProvider" interface="io.flutter.android.GradleSyncProvider"/>
     <extensionPoint name="colorPickerProvider" interface="io.flutter.editor.ColorPickerProvider"/>
@@ -266,6 +261,10 @@
     <projectService serviceInterface="io.flutter.bazel.WorkspaceCache"
                     serviceImplementation="io.flutter.bazel.WorkspaceCache"/>
     <projectService serviceImplementation="io.flutter.pub.PubRootCache"/>
+
+    <backgroundPostStartupActivity id="FontPreviewStartupActivity"
+                                   implementation="io.flutter.font.FontPreviewStartupActivity"
+                                   order="last"/>
 
     <configurationType implementation="io.flutter.run.FlutterRunConfigurationType"/>
     <runConfigurationProducer implementation="io.flutter.run.FlutterRunConfigurationProducer"/>
