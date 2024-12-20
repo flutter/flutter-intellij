@@ -28,7 +28,7 @@
       "androidPluginVersion": "",
       "sinceBuild": "241",
       "untilBuild": "241.*",
-      "isUnitTestTarget": "true"
+      "isUnitTestTarget": "false"
     },
     {
       "channel": "stable",
@@ -58,7 +58,7 @@
       "androidPluginVersion": "",
       "sinceBuild": "243",
       "untilBuild": "253.*",
-      "isUnitTestTarget": "false"
+      "isUnitTestTarget": "true"
     }
   ]
 }
