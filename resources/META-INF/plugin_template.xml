@@ -96,8 +96,8 @@
               description="Run 'flutter clean'"/>
       <separator/>
       <action id="flutter.devtools.open" class="io.flutter.run.OpenDevToolsAction"
-              text="Open Flutter DevTools"
-              description="Open Flutter DevTools"/>
+              text="Open Flutter DevTools in Browser"
+              description="Open Flutter DevTools in Browser"/>
       <separator/>
 <!--      <action id="flutter.androidstudio.open" class="io.flutter.actions.OpenInAndroidStudioAction"-->
 <!--              text="Open Android module in Android Studio"-->
@@ -229,7 +229,7 @@
     </action>
 
     <action id="io.flutter.OpenDevToolsAction" class="io.flutter.run.OpenDevToolsAction"
-            text="Open Flutter DevTools" description="Open Flutter DevTools" icon="FlutterIcons.Dart_16">
+            text="Open Flutter DevTools in Browser" description="Open Flutter DevTools in Browser" icon="FlutterIcons.Dart_16">
     </action>
 
     <action id="io.flutter.RefreshToolWindow" class="io.flutter.actions.RefreshToolWindowAction" text="Refresh Tool Window"
