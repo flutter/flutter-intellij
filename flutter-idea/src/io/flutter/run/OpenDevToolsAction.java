@@ -26,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class OpenDevToolsAction extends DumbAwareAction {
   private static final Logger LOG = Logger.getInstance(OpenDevToolsAction.class);
-  private static final String title = "Open Flutter DevTools";
+  private static final String title = "Open Flutter DevTools in Browser";
   private final @Nullable ObservatoryConnector myConnector;
   private final Computable<Boolean> myIsApplicable;
 
