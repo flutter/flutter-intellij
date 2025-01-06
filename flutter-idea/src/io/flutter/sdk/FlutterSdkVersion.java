@@ -17,103 +17,19 @@ import java.util.Objects;
 
 public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   /**
-   * The version for which the distributed icons can be used.
+   * The minimum version that will trigger a notification that the Flutter SDK needs to be updated, otherwise support may be lost in the
+   * Flutter Plugin.
+   * <p>
+   * Note, this is for the Flutter SDK version, not the Dart SDK version, this mapping can be found:
+   * <a href="https://docs.flutter.dev/release/archive">Flutter SDK Release Archive list</a>.
+   * <p>
+   * The Flutter version `3.7.12` maps to the Dart SDK version in before NNBD (early 2023 stable).
+   * <p>
+   * This version was updated last on November 4th, 2024, and in coordination with the VS Code support.
    */
   @VisibleForTesting
   @NotNull
-  public static final FlutterSdkVersion DISTRIBUTED_ICONS = new FlutterSdkVersion("3.1.0");
-
-  /**
-   * The minimum version we suggest people use.
-   */
-  @NotNull
-  private static final FlutterSdkVersion MIN_SUPPORTED_SDK = new FlutterSdkVersion("0.0.12");
-
-  /**
-   * The minimum version we suggest people use to enable track-widget-creation.
-   * <p>
-   * Before this version there were issues if you ran the app from the command
-   * line without the flag after running
-   */
-  @NotNull
-  private static final FlutterSdkVersion MIN_SAFE_TRACK_WIDGET_CREATION_SDK = new FlutterSdkVersion("0.10.2");
-
-  /**
-   * The version that supports --dart-define in the run command.
-   */
-  @NotNull
-  private static final FlutterSdkVersion MIN_DART_DEFINE_SDK = new FlutterSdkVersion("1.12.0");
-
-  /**
-   * The version of the stable channel that supports --androidx in the create command.
-   */
-  @NotNull
-  private static final FlutterSdkVersion MIN_PUB_OUTDATED_SDK = new FlutterSdkVersion("1.16.4");
-
-  /**
-   * The version that supports --platform in flutter create.
-   */
-  @NotNull
-  private static final FlutterSdkVersion MIN_CREATE_PLATFORMS_SDK = new FlutterSdkVersion("1.20.0");
-
-  /**
-   * The version that supports --config-only when configuring Xcode for opening a project.
-   */
-  @NotNull
-  private static final FlutterSdkVersion MIN_XCODE_CONFIG_ONLY = new FlutterSdkVersion("1.22.0-12.0.pre");
-
-  /**
-   * The last version of stable that does not support --platform in flutter create.
-   */
-  @NotNull
-  private static final FlutterSdkVersion MAX_STABLE_NO_PLATFORMS_SDK = new FlutterSdkVersion("1.22.6");
-
-  /**
-   * The version that supports --devtools-server-address in flutter run.
-   */
-  @NotNull
-  private static final FlutterSdkVersion MIN_PASS_DEVTOOLS_SDK = new FlutterSdkVersion("1.26.0-11.0.pre");
-  @NotNull
-  private static final FlutterSdkVersion MIN_OPTIONAL_PASS_DEVTOOLS_SDK = new FlutterSdkVersion("2.7.0-3.0.pre");
-
-  /**
-   * Past this version we want to use the daemon to start DevTools.
-   */
-  @NotNull
-  private static final FlutterSdkVersion MIN_USE_DAEMON_FOR_DEVTOOLS = new FlutterSdkVersion("1.26.0-11.0.pre");
-
-  /**
-   * The version that includes the skeleton template.
-   */
-  @NotNull
-  private static final FlutterSdkVersion MIN_SKELETON_TEMPLATE = new FlutterSdkVersion("2.5.0");
-
-  /**
-   * The version that includes the skeleton template.
-   */
-  @NotNull
-  private static final FlutterSdkVersion MIN_PLUGIN_FFI_TEMPLATE = new FlutterSdkVersion("3.0.0");
-
-  /**
-   * The version that includes the skeleton template.
-   */
-  @NotNull
-  private static final FlutterSdkVersion MIN_EMPTY_PROJECT = new FlutterSdkVersion("3.6.0-0.1.pre");
-
-  /**
-   * The version that implements URI mapping for web.
-   */
-  @NotNull
-  private static final FlutterSdkVersion MIN_URI_MAPPING_FOR_WEB = new FlutterSdkVersion("2.13.0-0.1.pre");
-
-  @NotNull
-  private static final FlutterSdkVersion MIN_STABLE_WEB_PLATFORM = new FlutterSdkVersion("2.0.0");
-  @NotNull
-  private static final FlutterSdkVersion MIN_STABLE_WINDOWS_PLATFORM = new FlutterSdkVersion("2.10.0");
-  @NotNull
-  private static final FlutterSdkVersion MIN_STABLE_LINUX_PLATFORM = new FlutterSdkVersion("3.0.0");
-  @NotNull
-  private static final FlutterSdkVersion MIN_STABLE_MACOS_PLATFORM = new FlutterSdkVersion("3.0.0");
+  public static final FlutterSdkVersion MIN_SDK_SUPPORTED = new FlutterSdkVersion("3.10.0");
 
   @NotNull
   private static final FlutterSdkVersion MIN_SUPPORTS_DEVTOOLS_PATH_URLS = new FlutterSdkVersion("3.3.0");
@@ -129,20 +45,6 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   @NotNull
   private static final FlutterSdkVersion MIN_SUPPORTS_DTD = new FlutterSdkVersion("3.22.0");
-
-  /**
-   * The minimum version that will trigger a notification that the Flutter SDK needs to be updated, otherwise support may be lost in the
-   * Flutter Plugin.
-   * <p>
-   * Note, this is for the Flutter SDK version, not the Dart SDK version, this mapping can be found:
-   * <a href="https://docs.flutter.dev/release/archive">Flutter SDK Release Archive list</a>.
-   * <p>
-   * The Flutter version `3.7.12` maps to the Dart SDK version in before NNBD (early 2023 stable).
-   * <p>
-   * This version was updated last on November 4th, 2024, and in coordination with the VS Code support.
-   */
-  @NotNull
-  private static final FlutterSdkVersion MIN_SDK_SUPPORTED = new FlutterSdkVersion("3.10.0");
 
   @Nullable
   private final Version version;
@@ -186,13 +88,7 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
     if (file == null) {
       return new FlutterSdkVersion(null);
     }
-
-    final String versionString = readVersionString(file);
-    if (versionString == null) {
-      return new FlutterSdkVersion(null);
-    }
-
-    return new FlutterSdkVersion(versionString);
+    return new FlutterSdkVersion(readVersionString(file));
   }
 
   @Nullable
@@ -219,86 +115,6 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
     return this.compareTo(otherVersion) >= 0;
   }
 
-  public boolean isMinRecommendedSupported() {
-    return supportsVersion(MIN_SUPPORTED_SDK);
-  }
-
-  public boolean isTrackWidgetCreationRecommended() {
-    return supportsVersion(MIN_SAFE_TRACK_WIDGET_CREATION_SDK);
-  }
-
-  public boolean isDartDefineSupported() {
-    return supportsVersion(MIN_DART_DEFINE_SDK);
-  }
-
-  public boolean isXcodeConfigOnlySupported() {
-    return supportsVersion(MIN_XCODE_CONFIG_ONLY);
-  }
-
-  public boolean flutterCreateSupportsPlatforms() {
-    return supportsVersion(MIN_CREATE_PLATFORMS_SDK);
-  }
-
-  public boolean stableChannelSupportsPlatforms() {
-    return supportsVersion(MAX_STABLE_NO_PLATFORMS_SDK);
-  }
-
-  public boolean flutterRunSupportsDevToolsUrl() {
-    return this.compareTo(MIN_PASS_DEVTOOLS_SDK) >= 0 && this.compareTo(MIN_OPTIONAL_PASS_DEVTOOLS_SDK) < 0;
-  }
-
-  public boolean useDaemonForDevTools() {
-    return supportsVersion(MIN_PASS_DEVTOOLS_SDK);
-  }
-
-  public boolean flutterTestSupportsMachineMode() {
-    return isMinRecommendedSupported();
-  }
-
-  public boolean flutterTestSupportsFiltering() {
-    return isMinRecommendedSupported();
-  }
-
-  public boolean isPubOutdatedSupported() {
-    return supportsVersion(MIN_PUB_OUTDATED_SDK);
-  }
-
-  public boolean isSkeletonTemplateAvailable() {
-    return supportsVersion(MIN_SKELETON_TEMPLATE);
-  }
-
-  public boolean isPluginFfiTemplateAvailable() {
-    return supportsVersion(MIN_PLUGIN_FFI_TEMPLATE);
-  }
-
-  public boolean isEmptyProjectAvailable() {
-    return supportsVersion(MIN_EMPTY_PROJECT);
-  }
-
-  public boolean isUriMappingSupportedForWeb() {
-    return supportsVersion(MIN_URI_MAPPING_FOR_WEB);
-  }
-
-  public boolean isWebPlatformStable() {
-    return supportsVersion(MIN_STABLE_WEB_PLATFORM);
-  }
-
-  public boolean isWindowsPlatformStable() {
-    return supportsVersion(MIN_STABLE_WINDOWS_PLATFORM);
-  }
-
-  public boolean isLinuxPlatformStable() {
-    return supportsVersion(MIN_STABLE_LINUX_PLATFORM);
-  }
-
-  public boolean isMacOSPlatformStable() {
-    return supportsVersion(MIN_STABLE_MACOS_PLATFORM);
-  }
-
-  public boolean canUseDistributedIcons() {
-    return supportsVersion(DISTRIBUTED_ICONS);
-  }
-
   public boolean canUseDevToolsPathUrls() {
     return supportsVersion(MIN_SUPPORTS_DEVTOOLS_PATH_URLS);
   }
@@ -320,7 +136,7 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
     return supportsVersion(MIN_SUPPORTS_DTD);
   }
 
-  public boolean sdkIsSupported() {
+  public boolean isSDKSupported() {
     return supportsVersion(MIN_SDK_SUPPORTED);
   }
 

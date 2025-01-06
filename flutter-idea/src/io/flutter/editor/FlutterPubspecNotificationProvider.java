@@ -75,12 +75,9 @@ public final class FlutterPubspecNotificationProvider implements EditorNotificat
       label = createActionLabel("Pub upgrade", () -> runPubGet(true));
       label.setToolTipText("Upgrade referenced packages to the latest versions");
 
-      // If the SDK is the right version, add a 'flutter pub outdated' command.
-      if (myFlutterSdk.getVersion().isPubOutdatedSupported()) {
-        // "flutter.pub.outdated"
-        label = createActionLabel("Pub outdated", this::runPubOutdated);
-        label.setToolTipText("Analyze packages to determine which ones can be upgraded");
-      }
+     // "flutter.pub.outdated"
+      label = createActionLabel("Pub outdated", this::runPubOutdated);
+      label.setToolTipText("Analyze packages to determine which ones can be upgraded");
 
       if (myLinksPanel != null) {
         myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));

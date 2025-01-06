@@ -18,16 +18,13 @@ public class FlutterSdkVersionTest {
 
   @Test
   public void trackWidgetCreationRecommendedRange() {
-    assertFalse(new FlutterSdkVersion("0.0.12").isTrackWidgetCreationRecommended());
-    assertFalse(new FlutterSdkVersion("0.10.1").isTrackWidgetCreationRecommended());
-    assertFalse(new FlutterSdkVersion("0.10.1.pre").isTrackWidgetCreationRecommended());
-    assertFalse(new FlutterSdkVersion("0.10.1.pre").isTrackWidgetCreationRecommended());
-    assertTrue(new FlutterSdkVersion( "0.10.2.pre.1").isTrackWidgetCreationRecommended());
-    assertTrue(new FlutterSdkVersion( "0.10.2-pre.121").isTrackWidgetCreationRecommended());
-    assertTrue(new FlutterSdkVersion( "0.10.2").isTrackWidgetCreationRecommended());
-    assertTrue(new FlutterSdkVersion( "0.10.3").isTrackWidgetCreationRecommended());
-    assertTrue(new FlutterSdkVersion( "1.0.0").isTrackWidgetCreationRecommended());
-    assertFalse(new FlutterSdkVersion( "unknown").isTrackWidgetCreationRecommended());
+    assertFalse(new FlutterSdkVersion("3.9.0").isSDKSupported());
+    assertFalse(new FlutterSdkVersion("3.9.0").isSDKSupported());
+    assertFalse(new FlutterSdkVersion("3.9.0.pre").isSDKSupported());
+    assertTrue(new FlutterSdkVersion( "3.10.0.pre").isSDKSupported());
+    assertTrue(new FlutterSdkVersion( "3.10.1").isSDKSupported());
+    assertTrue(new FlutterSdkVersion( "3.10.2").isSDKSupported());
+    assertFalse(new FlutterSdkVersion( "unknown").isSDKSupported());
   }
 
   @Test

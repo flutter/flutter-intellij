@@ -135,25 +135,9 @@ public class ProjectType {
   }
 
   public void updateProjectTypes() {
-    FlutterSdkVersion version = getSdk.get().getVersion();
     ProjectTypeComboBoxModel model = (ProjectTypeComboBoxModel)projectTypeCombo.getModel();
-    if (version.isSkeletonTemplateAvailable()) {
-      model.addSkeleton();
-    }
-    else {
-      model.removeSkeleton();
-    }
-    if (version.isPluginFfiTemplateAvailable()) {
-      model.addPluginFfi();
-    }
-    else {
-      model.removePluginFfi();
-    }
-    if (version.isEmptyProjectAvailable()) {
-      model.addEmptyProject();
-    }
-    else {
-      model.removeEmptyProject();
-    }
+    model.addSkeleton();
+    model.addPluginFfi();
+    model.addEmptyProject();
   }
 }

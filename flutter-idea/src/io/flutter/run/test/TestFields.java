@@ -316,9 +316,7 @@ public class TestFields {
       @Override
       public void checkRunnable(@NotNull TestFields fields, @NotNull Project project) throws RuntimeConfigurationError {
         final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-        if (sdk != null && !sdk.getVersion().flutterTestSupportsFiltering()) {
-          throw new RuntimeConfigurationError("Flutter SDK is too old to filter tests by name");
-        }
+        assert sdk != null;
         FILE.checkRunnable(fields, project);
       }
     },

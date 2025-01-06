@@ -23,12 +23,6 @@ import java.util.Objects;
  */
 public class DartPlugin {
 
-  /**
-   * Tracks the minimum required Dart Plugin version.
-   */
-  @NotNull
-  private static final Version MINIMUM_VERSION = Objects.requireNonNull(Version.parseVersion("171.3780.79"));
-
   @NotNull
   private static final DartPlugin INSTANCE = new DartPlugin();
 

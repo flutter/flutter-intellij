@@ -57,19 +57,13 @@ public class FlutterTestConfigProducer extends RunConfigurationProducer<TestConf
       return false;
     }
 
-    if (supportsFiltering(config.getSdk())) {
-      final String testName = testConfigUtils.findTestName(elt);
-      if (testName != null && elt != null) {
-        final boolean hasVariant = "testWidgets".equals(elt.getText());
-        return setupForSingleTest(config, context, file, testName, hasVariant);
-      }
+    final String testName = testConfigUtils.findTestName(elt);
+    if (testName != null && elt != null) {
+      final boolean hasVariant = "testWidgets".equals(elt.getText());
+      return setupForSingleTest(config, context, file, testName, hasVariant);
     }
 
     return setupForDartFile(config, context, file);
-  }
-
-  private boolean supportsFiltering(@Nullable FlutterSdk sdk) {
-    return sdk != null && sdk.getVersion().flutterTestSupportsFiltering();
   }
 
   private boolean setupForSingleTest(TestConfig config, ConfigurationContext context, DartFile file, String testName, boolean hasVariant) {
