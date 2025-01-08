@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -18,6 +19,7 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.util.DotPackagesFileUtil;
 import io.flutter.FlutterUtils;
 import org.jetbrains.annotations.NotNull;
@@ -139,13 +141,20 @@ public class PubRoot {
     if (dir == null || !dir.isDirectory() || dir.getPath().endsWith("/")) {
       return null;
     }
-
-    final VirtualFile pubspec = dir.findChild(PUBSPEC_YAML);
-    if (pubspec == null || !pubspec.exists() || pubspec.isDirectory()) {
-      return null;
+    VirtualFile pubspec = null;
+    try {
+      pubspec = ReadAction.nonBlocking(() -> {
+        return dir.findChild(PUBSPEC_YAML);
+      }).submit(AppExecutorUtil.getAppExecutorService()).get();
+    } catch (Exception e) {
+      // do nothing
     }
 
-    return new PubRoot(dir, pubspec);
+    if (pubspec == null || !pubspec.exists() || pubspec.isDirectory()) {
+      return null;
+    } else {
+      return new PubRoot(dir, pubspec);
+    }
   }
 
   /**
