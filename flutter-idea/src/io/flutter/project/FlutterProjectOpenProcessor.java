@@ -7,7 +7,6 @@ package io.flutter.project;
 
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -22,7 +21,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.Arrays;
 import java.util.Objects;
 
 public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
@@ -76,7 +74,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
 
   @Nullable
   protected ProjectOpenProcessor getDelegateImportProvider(@NotNull VirtualFile file) {
-    return Arrays.stream(Extensions.getExtensions(EXTENSION_POINT_NAME)).filter(
+    return EXTENSION_POINT_NAME.getExtensionList().stream().filter(
       processor -> processor.canOpenProject(file) && !Objects.equals(processor.getName(), getName())
     ).findFirst().orElse(null);
   }
