@@ -82,9 +82,8 @@ class TestLaunchState extends CommandLineState {
 
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(env.getProject());
     assert (sdk != null);
-    final boolean testConsoleEnabled = sdk.getVersion().flutterTestSupportsMachineMode();
 
-    final TestLaunchState launcher = new TestLaunchState(env, config, fileOrDir, pubRoot, testConsoleEnabled);
+    final TestLaunchState launcher = new TestLaunchState(env, config, fileOrDir, pubRoot, true);
     DaemonConsoleView.install(launcher, env, pubRoot.getRoot());
     return launcher;
   }

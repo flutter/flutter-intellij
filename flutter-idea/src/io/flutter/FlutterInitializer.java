@@ -279,7 +279,7 @@ public class FlutterInitializer implements StartupActivity {
     final FlutterSdkVersion version = sdk.getVersion();
 
     // See FlutterSdkVersion.MIN_SDK_SUPPORTED.
-    if (version.isValid() && !version.sdkIsSupported()) {
+    if (version.isValid() && !version.isSDKSupported()) {
       final FlutterSettings settings = FlutterSettings.getInstance();
       if (settings == null || settings.isSdkVersionOutdatedWarningAcknowledged(version.getVersionText())) return;
 

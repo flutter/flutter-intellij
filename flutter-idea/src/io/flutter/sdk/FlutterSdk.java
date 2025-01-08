@@ -213,20 +213,18 @@ public class FlutterSdk {
     final List<String> args = new ArrayList<>();
     if (additionalSettings != null) {
       args.addAll(additionalSettings.getArgs());
-      if (FlutterProjectType.PLUGIN.equals(additionalSettings.getType()) && getVersion().flutterCreateSupportsPlatforms()) {
+      if (FlutterProjectType.PLUGIN.equals(additionalSettings.getType())) {
         // TODO(messick): Remove this after the wizard UI is updated.
         if (!args.contains("--platforms")) {
           args.add("--platforms");
           args.add("android,ios");
         }
       }
-      if (getVersion().stableChannelSupportsPlatforms()) {
-        // The --project-name arg was actually introduced before --platforms but everyone should be on 2.0 by now anyway.
-        final String projectName = additionalSettings.getProjectName();
-        if (projectName != null) {
-          args.add("--project-name");
-          args.add(projectName);
-        }
+      // The --project-name arg was actually introduced before --platforms but everyone should be on 2.0 by now anyway.
+      final String projectName = additionalSettings.getProjectName();
+      if (projectName != null) {
+        args.add("--project-name");
+        args.add(projectName);
       }
     }
 
@@ -280,11 +278,9 @@ public class FlutterSdk {
     }
 
     if (flutterLaunchMode == FlutterLaunchMode.DEBUG) {
-      if (getVersion().isTrackWidgetCreationRecommended()) {
-        // Ensure additionalArgs doesn't have any arg like 'track-widget-creation'.
-        if (Arrays.stream(additionalArgs).noneMatch(s -> s.contains("track-widget-creation"))) {
-          args.add("--track-widget-creation");
-        }
+      // Ensure additionalArgs doesn't have any arg like 'track-widget-creation'.
+      if (Arrays.stream(additionalArgs).noneMatch(s -> s.contains("track-widget-creation"))) {
+        args.add("--track-widget-creation");
       }
     }
 
@@ -360,15 +356,8 @@ public class FlutterSdk {
                                     @NotNull RunMode mode, @Nullable String additionalArgs, TestFields.Scope scope, boolean useRegexp) {
 
     final List<String> args = new ArrayList<>();
-    if (myVersion.flutterTestSupportsMachineMode()) {
-      args.add("--machine");
-      // Otherwise, just run it normally and show the output in a non-test console.
-    }
-    if (mode == RunMode.DEBUG) {
-      if (!myVersion.flutterTestSupportsMachineMode()) {
-        throw new IllegalStateException("Flutter SDK is too old to debug tests");
-      }
-    }
+    args.add("--machine");
+
     // Starting the app paused so the IDE can catch early errors is ideal. However, we don't have a way to resume for multiple test files
     // yet, so we want to exclude directory scope tests from starting paused. See https://github.com/flutter/flutter-intellij/issues/4737.
     if (mode == RunMode.DEBUG || (mode == RunMode.RUN && !scope.equals(TestFields.Scope.DIRECTORY))) {
@@ -378,9 +367,6 @@ public class FlutterSdk {
       args.add("--verbose");
     }
     if (testNameSubstring != null) {
-      if (!myVersion.flutterTestSupportsFiltering()) {
-        throw new IllegalStateException("Flutter SDK is too old to select tests by name");
-      }
       if (useRegexp) {
         args.add("--name");
         args.add(StringUtil.escapeToRegexp(testNameSubstring) + "(\\s*\\(variant: .*\\))?$");

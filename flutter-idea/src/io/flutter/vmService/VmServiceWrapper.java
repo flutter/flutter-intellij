@@ -474,7 +474,7 @@ public class VmServiceWrapper implements Disposable {
     }
 
     FlutterSdk sdk = FlutterSdk.getFlutterSdk(myDebugProcess.getSession().getProject());
-    return VmServiceVersion.hasMapping(version) && sdk.getVersion().isUriMappingSupportedForWeb();
+    return VmServiceVersion.hasMapping(version);
   }
 
   // This is the old way of mapping breakpoints, which uses analyzer.
@@ -1022,8 +1022,7 @@ class VmServiceVersion {
   // VM service protocol versions: https://github.com/dart-lang/sdk/blob/master/runtime/vm/service/service.md#revision-history.
   @NotNull private static Version URI_MAPPING_VERSION = new Version(VmService.versionMajor, VmService.versionMinor, 0);
 
-  public static boolean hasMapping(org.dartlang.vm.service.element.Version version) {
-    assert version != null;
+  public static boolean hasMapping(@NotNull org.dartlang.vm.service.element.Version version) {
     return (new Version(version.getMajor(), version.getMinor(), 0)).isOrGreaterThan(URI_MAPPING_VERSION.major, URI_MAPPING_VERSION.minor);
   }
 }

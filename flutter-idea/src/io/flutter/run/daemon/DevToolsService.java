@@ -11,16 +11,19 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.*;
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessHandler;
+import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.Version;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.registry.Registry;
 import com.jetbrains.lang.dart.ide.devtools.DartDevToolsService;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import com.jetbrains.lang.dart.sdk.DartSdk;
@@ -185,12 +188,8 @@ public class DevToolsService {
                                       ImmutableList.of("devtools", "--machine")));
         }
       }
-      else if (sdk != null && sdk.getVersion().useDaemonForDevTools()) {
-        setUpWithDaemon();
-      }
       else {
-        // For earlier flutter versions we need to use pub directly to run the latest DevTools server.
-        setUpWithPub();
+        setUpWithDaemon();
       }
     });
   }
@@ -306,76 +305,6 @@ public class DevToolsService {
             process.destroyProcess();
           }
         }
-      }
-    });
-  }
-
-  private void setUpWithPub() {
-    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    if (sdk == null) {
-      logExceptionAndComplete("Flutter SDK is null");
-      return;
-    }
-
-    pubActivateDevTools(sdk).thenAccept(success -> {
-      if (success) {
-        pubRunDevTools(sdk);
-      }
-      else {
-        logExceptionAndComplete("pub activate of DevTools failed");
-      }
-    });
-  }
-
-  private void pubRunDevTools(FlutterSdk sdk) {
-    final FlutterCommand command = sdk.flutterPub(null, "global", "run", "devtools", "--machine", "--port=0");
-
-    final ColoredProcessHandler handler = command.startProcessOrShowError(project);
-    if (handler == null) {
-      logExceptionAndComplete("Handler was null for pub global run command");
-      return;
-    }
-
-    handler.addProcessListener(new ProcessAdapter() {
-      @Override
-      public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
-        final String text = event.getText().trim();
-
-        if (text.startsWith("{") && text.endsWith("}")) {
-          // {"event":"server.started","params":{"host":"127.0.0.1","port":9100}}
-
-          try {
-            final JsonElement element = JsonUtils.parseString(text);
-
-            // params.port
-            final JsonObject obj = element.getAsJsonObject();
-            final JsonObject params = obj.getAsJsonObject("params");
-            final String host = JsonUtils.getStringMember(params, "host");
-            final int port = JsonUtils.getIntMember(params, "port");
-
-            if (port != -1) {
-              devToolsFutureRef.get().complete(new DevToolsInstance(host, port));
-            }
-            else {
-              logExceptionAndComplete("DevTools port was invalid");
-              handler.destroyProcess();
-            }
-          }
-          catch (JsonSyntaxException e) {
-            logExceptionAndComplete(e);
-            handler.destroyProcess();
-          }
-        }
-      }
-    });
-
-    handler.startNotify();
-
-    ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
-      @Override
-      public void projectClosing(@NotNull Project project) {
-        devToolsFutureRef.set(null);
-        handler.destroyProcess();
       }
     });
   }

@@ -177,27 +177,10 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
         final String selector = AstBufferUtil.getTextSkippingWhitespaceComments(selectorNode.getNode());
         final Icon icon;
         if (name.equals("Icons")) {
-          if (sdk.getVersion().canUseDistributedIcons()) {
-            icon = FlutterMaterialIcons.getIconForName(selector);
-          }
-          else {
-            final IconInfo iconDef = findStandardDefinition(name, selector, element.getProject(), knownPath, sdk);
-            if (iconDef == null) return null;
-            // <flutter-sdk>/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf
-            icon = findStandardIconFromDef(name, iconDef, sdk.getHomePath() + MaterialRelativeAssetPath);
-          }
+          icon = FlutterMaterialIcons.getIconForName(selector);
         }
         else if (name.equals("CupertinoIcons")) {
-          if (sdk.getVersion().canUseDistributedIcons()) {
-            icon = FlutterCupertinoIcons.getIconForName(selector);
-          }
-          else {
-            final IconInfo iconDef = findStandardDefinition(name, selector, element.getProject(), knownPath, sdk);
-            if (iconDef == null) return null;
-            final String path = FlutterSdkUtil.getPathToCupertinoIconsPackage(element.getProject());
-            // <pub_cache>/hosted/pub.dartlang.org/cupertino_icons-v.m.n/assets/CupertinoIcons.ttf
-            icon = findStandardIconFromDef(name, iconDef, path + CupertinoRelativeAssetPath);
-          }
+          icon = FlutterCupertinoIcons.getIconForName(selector);
         }
         else {
           // Note: I want to keep this code until I'm sure we won't use pubspec.yaml.

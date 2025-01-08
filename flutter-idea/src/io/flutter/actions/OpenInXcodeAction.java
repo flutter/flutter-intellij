@@ -72,10 +72,7 @@ public class OpenInXcodeAction extends AnAction {
       final ProgressHelper progressHelper = new ProgressHelper(project);
       progressHelper.start("Building for iOS");
 
-      String buildArg = "--config-only";
-      if (!sdk.getVersion().isXcodeConfigOnlySupported()) {
-        buildArg = "--simulator";
-      }
+      String buildArg = "--simulator";
       // TODO(pq): consider a popup explaining why we're doing a build.
       // Note: we build only for the simulator to bypass device provisioning issues.
       final ColoredProcessHandler processHandler = sdk.flutterBuild(pubRoot, "ios", buildArg).startInConsole(project);
@@ -106,19 +103,14 @@ public class OpenInXcodeAction extends AnAction {
   }
 
   private static boolean hasBeenBuilt(@NotNull PubRoot pubRoot, @NotNull FlutterSdk sdk) {
-    if (sdk.getVersion().isXcodeConfigOnlySupported()) {
-      // Derived from packages/flutter_tools/test/integration.shard/build_ios_config_only_test.dart
-      final VirtualFile ios = pubRoot.getRoot().findChild("ios");
-      if (ios == null || !ios.isDirectory()) return false;
-      final VirtualFile flutter = ios.findChild("Flutter");
-      if (flutter == null || !flutter.isDirectory()) return false;
-      final VirtualFile gen = flutter.findChild("Generated.xcconfig");
-      if (gen == null || gen.isDirectory()) return false;
-      return sdk.isOlderThanToolsStamp(gen);
-    } else {
-      final VirtualFile buildDir = pubRoot.getRoot().findChild("build");
-      return buildDir != null && buildDir.isDirectory() && buildDir.findChild("ios") != null;
-    }
+    // Derived from packages/flutter_tools/test/integration.shard/build_ios_config_only_test.dart
+    final VirtualFile ios = pubRoot.getRoot().findChild("ios");
+    if (ios == null || !ios.isDirectory()) return false;
+    final VirtualFile flutter = ios.findChild("Flutter");
+    if (flutter == null || !flutter.isDirectory()) return false;
+    final VirtualFile gen = flutter.findChild("Generated.xcconfig");
+    if (gen == null || gen.isDirectory()) return false;
+    return sdk.isOlderThanToolsStamp(gen);
   }
 
   private static void openWithXcode(@Nullable Project project, String path) {

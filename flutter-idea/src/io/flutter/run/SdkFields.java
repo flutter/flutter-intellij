@@ -195,44 +195,42 @@ public class SdkFields {
     if (buildFlavor != null) {
       args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
     }
-    if (FlutterSettings.getInstance().isShowStructuredErrors() && flutterSdk.getVersion().isDartDefineSupported()) {
+    if (FlutterSettings.getInstance().isShowStructuredErrors()) {
       args = ArrayUtil.append(args, "--dart-define=flutter.inspector.structuredErrors=true");
     }
 
-    if (flutterSdk.getVersion().flutterRunSupportsDevToolsUrl()) {
-      try {
-        final ProgressManager progress = ProgressManager.getInstance();
+    try {
+      final ProgressManager progress = ProgressManager.getInstance();
 
-        final CompletableFuture<DevToolsInstance> devToolsFuture = new CompletableFuture<>();
-        progress.runProcessWithProgressSynchronously(() -> {
-          progress.getProgressIndicator().setIndeterminate(true);
-          try {
-            final CompletableFuture<DevToolsInstance> futureInstance = DevToolsService.getInstance(project).getDevToolsInstance();
-            if (firstRun) {
-              devToolsFuture.complete(futureInstance.get(30, TimeUnit.SECONDS));
+      final CompletableFuture<DevToolsInstance> devToolsFuture = new CompletableFuture<>();
+      progress.runProcessWithProgressSynchronously(() -> {
+        progress.getProgressIndicator().setIndeterminate(true);
+        try {
+          final CompletableFuture<DevToolsInstance> futureInstance = DevToolsService.getInstance(project).getDevToolsInstance();
+          if (firstRun) {
+            devToolsFuture.complete(futureInstance.get(30, TimeUnit.SECONDS));
+          }
+          else {
+            // Skip waiting if this isn't the first time running this project. If DevTools isn't available by now, there's likely to be
+            // something wrong that won't be fixed by restarting, so we don't want to keep delaying run.
+            final DevToolsInstance instance = futureInstance.getNow(null);
+            if (instance == null) {
+              devToolsFuture.completeExceptionally(new Exception("DevTools instance not available after first run."));
             }
             else {
-              // Skip waiting if this isn't the first time running this project. If DevTools isn't available by now, there's likely to be
-              // something wrong that won't be fixed by restarting, so we don't want to keep delaying run.
-              final DevToolsInstance instance = futureInstance.getNow(null);
-              if (instance == null) {
-                devToolsFuture.completeExceptionally(new Exception("DevTools instance not available after first run."));
-              }
-              else {
-                devToolsFuture.complete(instance);
-              }
+              devToolsFuture.complete(instance);
             }
           }
-          catch (Exception e) {
-            devToolsFuture.completeExceptionally(e);
-          }
-        }, "Starting DevTools", false, project);
-        final DevToolsInstance instance = devToolsFuture.get();
-        args = ArrayUtil.append(args, "--devtools-server-address=http://" + instance.host + ":" + instance.port);
-      }
-      catch (Exception e) {
-        LOG.info(e);
-      }
+        }
+        catch (Exception e) {
+          devToolsFuture.completeExceptionally(e);
+        }
+      }, "Starting DevTools", false, project);
+      final DevToolsInstance instance = devToolsFuture.get();
+      args = ArrayUtil.append(args, "--devtools-server-address=http://" + instance.host + ":" + instance.port);
+    }
+    catch (Exception e) {
+      LOG.info(e);
     }
     command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
     final GeneralCommandLine commandLine = command.createGeneralCommandLine(project);
