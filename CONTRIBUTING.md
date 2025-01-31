@@ -54,7 +54,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
 
 ## Setting environments
 
-The current Java Developmenet Kit version is: **20**.
+The current Java Development Kit version is: **20**.
 
 1. Set your `JAVA_HOME` directory in your environment.
     - For example, on macOS, the following works:
@@ -75,7 +75,7 @@ The current Java Developmenet Kit version is: **20**.
    export PATH=$DART_SDK/bin:$FLUTTER_SDK/bin:$JAVA_HOME/bin:$PATH
    ```
 5. Make sure you're using the latest stable release of IntelliJ,
-   or sownload and install the latest version of IntelliJ (2023.1 or later).
+   or download and install the latest version of IntelliJ (2023.1 or later).
     - [IntelliJ Downloads](https://www.jetbrains.com/idea/download/)
     - Either the community edition (free) or Ultimate will work.
     - Determine the directory of your downloaded IntelliJ IDEA installation. e.g.
