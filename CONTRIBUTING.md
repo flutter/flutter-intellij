@@ -84,10 +84,11 @@ The current Java Development Kit version is: **20**.
         * `~/idea-IC-231.8109.175` (Linux)
         * `X:\path\to\your\IDEA-U\ch-0\231.8109.175` (Windows after installed)
 6. Start the IntelliJ IDEA with the `flutter-intellij` project.
-   If you see a popup with "Gradle build scripts found",
-   **confirm loading the Gradle project, and wait until syncing is done.**
-   If you didn't see the popup at the first start, **delete & re-clone the repo** and try again.
-    - Ignore suggestion for `protobuf-java` plugin, unless you want it.
+   - If you see a popup with "Gradle build scripts found",
+     **confirm loading the Gradle project, and wait until syncing is done.**
+     - If you didn't see the popup at the first start, **delete & re-clone the repo** and try again.
+   - Install DevKit plugin when prompted (this is required for later steps)
+   - Ignore suggestion for `protobuf-java` plugin, unless you want it.
 7. Prepare other dependencies from the command line:
     - `cd path/to/flutter-intellij`
     - `dart pub get`
@@ -100,6 +101,7 @@ The current Java Development Kit version is: **20**.
         - Change the name to `IDEA JBR 17` (or any names that your can easily identify).
     - Select "Platform Settings > SDKs", click the "+" sign at the top "Add New SDK (Alt+Insert)",
       then select "Add IntelliJ Platform Plugin SDK...".
+        - If you don't see this option, ensure you have the DevKit plugin installed.
         - Point it to the directory of the content which is under the IDEA's installation.
         - Remember the generated name (probably `IntelliJ IDEA IU-231.8109.175`) or change to name to format like this.
         - Change the "Internal Java Platform" to the previous `IDEA JBR 17`.
