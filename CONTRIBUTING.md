@@ -50,7 +50,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
 4. `git clone -c core.symlinks=true https://github.com/<your_name_here>/flutter-intellij`
 5. `cd flutter-intellij`
 6. `git remote add upstream https://github.com/flutter/flutter-intellij`
-   The name `upsteram` can be whatever you want.
+   The name `upstream` can be whatever you want.
 
 ## Setting environments
 
