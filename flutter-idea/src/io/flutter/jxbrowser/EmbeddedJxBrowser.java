@@ -28,6 +28,7 @@ import io.flutter.utils.JxBrowserUtils;
 import io.flutter.view.EmbeddedBrowser;
 import io.flutter.view.EmbeddedTab;
 import io.flutter.utils.LabelInput;
+import org.gradle.wrapper.Install;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -158,11 +159,49 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
     }
     final Engine engine = engineRef.get();
     if (engine == null) {
-      showMessageWithUrlLink("JX Browser engine failed to start", contentManager);
+      showMessageWithUrlLink(jxBrowserErrorMessage(), contentManager);
       return null;
     } else {
       return new EmbeddedJxBrowserTab(engine);
     }
+  }
+
+  private @NotNull String jxBrowserErrorMessage() {
+    final String defaultError = "JX Browser engine failed to start";
+    if (jxBrowserManager == null) {
+      return defaultError;
+    }
+    switch (jxBrowserManager.getStatus()) {
+      case NOT_INSTALLED:
+        return "JX Browser is not installed";
+      case INSTALLATION_IN_PROGRESS:
+        return "JX Browser installation in progress";
+      case INSTALLATION_SKIPPED:
+        return "JX Browser installation skipped";
+      case INSTALLATION_FAILED:
+        final InstallationFailedReason failedReason = jxBrowserManager.getLatestFailureReason();
+        final @Nullable String errorFromFailedMessage = jxBrowserErrorFromFailedReason(failedReason);
+        return errorFromFailedMessage != null ? errorFromFailedMessage : defaultError;
+      default:
+        return defaultError;
+    }
+  }
+
+  private @Nullable String jxBrowserErrorFromFailedReason(@Nullable InstallationFailedReason failedReason) {
+    if (failedReason == null) return null;
+    final FailureType failureType = failedReason.failureType;
+    if (failureType == null)  return null;
+    return switch (failureType) {
+      case SYSTEM_INCOMPATIBLE -> "System is incompatible with JX Browser";
+      case FILE_DOWNLOAD_FAILED -> "JX Browser file download failed";
+      case MISSING_KEY -> "JX Browser lisence key is missing";
+      case DIRECTORY_CREATION_FAILED -> "JX Browser directory creation failed";
+      case MISSING_PLATFORM_FILES -> "JX Browser platform files are missing";
+      case CLASS_LOAD_FAILED -> "JX Browser class load failed";
+      case CLASS_NOT_FOUND -> "JX Browser class not found";
+      default -> null;
+    };
+
   }
 
   private void manageJxBrowserDownload(ContentManager contentManager) {
