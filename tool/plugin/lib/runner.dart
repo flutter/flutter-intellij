@@ -78,7 +78,9 @@ org.gradle.parallel=true
 org.gradle.jvmargs=-Xms1024m -Xmx4048m
 ''';
     final propertiesFile = File("$rootPath/gradle.properties");
-    final source = propertiesFile.readAsStringSync();
+    final source = propertiesFile.existsSync()
+        ? propertiesFile.readAsStringSync()
+        : null;
     propertiesFile.writeAsStringSync(contents);
     int result;
     // Using the Gradle daemon causes a strange problem.
@@ -99,7 +101,7 @@ org.gradle.jvmargs=-Xms1024m -Xmx4048m
         }
       }
     } finally {
-      propertiesFile.writeAsStringSync(source);
+      if (source != null) propertiesFile.writeAsStringSync(source);
     }
     return result;
   }
