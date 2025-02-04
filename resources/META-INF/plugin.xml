@@ -149,7 +149,7 @@
       <separator/>
       <action id="flutter.pub.add" class="io.flutter.actions.FlutterPackagesAddAction"
               text="Flutter Pub Add"
-              description="Run 'flutter pub add [package]'"/>
+              description="Run 'flutter pub add'"/>
       <action id="flutter.pub.get" class="io.flutter.actions.FlutterPackagesGetAction"
               text="Flutter Pub Get"
               description="Run 'flutter pub get'"/>
