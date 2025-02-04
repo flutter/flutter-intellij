@@ -24,6 +24,8 @@ import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 public class OpenDevToolsAction extends DumbAwareAction {
   private static final Logger LOG = Logger.getInstance(OpenDevToolsAction.class);
   private static final String title = "Open Flutter DevTools in Browser";
