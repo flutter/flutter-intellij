@@ -238,7 +238,7 @@ public class FlutterSdk {
 
   public FlutterCommand flutterPackagesAdd(@NotNull PubRoot root, @NotNull String name, boolean devOnly) {
     if (devOnly) name = "dev:" + name;
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PUB_Add, name);
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PUB_ADD, name);
   }
 
   public FlutterCommand flutterPackagesGet(@NotNull PubRoot root) {
