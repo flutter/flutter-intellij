@@ -19,6 +19,7 @@ public class RestartFlutterDaemonAction extends AnAction {
 
   @Override
   public void actionPerformed(AnActionEvent event) {
+    assert event != null;
     final Project project = event.getProject();
     if (project == null) {
       return;
