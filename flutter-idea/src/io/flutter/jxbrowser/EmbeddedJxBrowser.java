@@ -28,7 +28,6 @@ import io.flutter.utils.JxBrowserUtils;
 import io.flutter.view.EmbeddedBrowser;
 import io.flutter.view.EmbeddedTab;
 import io.flutter.utils.LabelInput;
-import org.gradle.wrapper.Install;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
