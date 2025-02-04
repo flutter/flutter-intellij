@@ -65,8 +65,8 @@ public class RemainingDevToolsViewFactory implements ToolWindowFactory {
         }
 
         final DevToolsUrl devToolsUrl = new DevToolsUrl.Builder()
-          .setDevToolsHost(instance.host)
-          .setDevToolsPort(instance.port)
+          .setDevToolsHost(instance.host())
+          .setDevToolsPort(instance.port())
           .setHide("home,inspector,deep-links,extensions")
           .setEmbed(true).setFlutterSdkVersion(sdkVersion)
           .setWorkspaceCache(WorkspaceCache.getInstance(project))

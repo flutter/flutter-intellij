@@ -227,7 +227,7 @@ public class SdkFields {
         }
       }, "Starting DevTools", false, project);
       final DevToolsInstance instance = devToolsFuture.get();
-      args = ArrayUtil.append(args, "--devtools-server-address=http://" + instance.host + ":" + instance.port);
+      args = ArrayUtil.append(args, "--devtools-server-address=http://" + instance.host() + ":" + instance.port());
     }
     catch (Exception e) {
       LOG.info(e);

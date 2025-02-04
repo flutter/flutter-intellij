@@ -56,8 +56,8 @@ public class DeepLinksViewFactory implements ToolWindowFactory {
         }
 
         final DevToolsUrl devToolsUrl = new DevToolsUrl.Builder()
-          .setDevToolsHost(instance.host)
-          .setDevToolsPort(instance.port)
+          .setDevToolsHost(instance.host())
+          .setDevToolsPort(instance.port())
           .setPage("deep-links")
           .setEmbed(true)
           .setFlutterSdkVersion(sdkVersion)

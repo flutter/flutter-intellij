@@ -65,8 +65,8 @@ public class DevToolsExtensionsViewFactory implements ToolWindowFactory {
         }
 
         final DevToolsUrl devToolsUrl = new DevToolsUrl.Builder()
-          .setDevToolsHost(instance.host)
-          .setDevToolsPort(instance.port)
+          .setDevToolsHost(instance.host())
+          .setDevToolsPort(instance.port())
           .setHide("all-except-extensions")
           .setEmbed(true).setFlutterSdkVersion(sdkVersion)
           .setWorkspaceCache(WorkspaceCache.getInstance(project))
