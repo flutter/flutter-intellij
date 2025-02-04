@@ -193,7 +193,7 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
     return switch (failureType) {
       case SYSTEM_INCOMPATIBLE -> "System is incompatible with JX Browser";
       case FILE_DOWNLOAD_FAILED -> "JX Browser file download failed";
-      case MISSING_KEY -> "JX Browser lisence key is missing";
+      case MISSING_KEY -> "JX Browser license key is missing";
       case DIRECTORY_CREATION_FAILED -> "JX Browser directory creation failed";
       case MISSING_PLATFORM_FILES -> "JX Browser platform files are missing";
       case CLASS_LOAD_FAILED -> "JX Browser class load failed";
