@@ -272,6 +272,7 @@ public class FlutterCommand {
     CONFIG("Flutter config", "config"),
     CREATE("Flutter create", "create"),
     DOCTOR("Flutter doctor", "doctor", "--verbose"),
+    PUB_Add("Flutter pub add", "pub", "add"),
     PUB_GET("Flutter pub get", "pub", "get"),
     PUB_UPGRADE("Flutter pub upgrade", "pub", "upgrade"),
     PUB_OUTDATED("Flutter pub outdated", "pub", "outdated"),
