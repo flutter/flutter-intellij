@@ -16,6 +16,8 @@ import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 /**
  * Action that reloads all running Flutter apps.
  */
@@ -28,7 +30,7 @@ public class ReloadAllFlutterApps extends FlutterAppAction {
   public ReloadAllFlutterApps(@NotNull FlutterApp app, @NotNull Computable<Boolean> isApplicable) {
     super(app, TEXT, DESCRIPTION, FlutterIcons.HotReload, isApplicable, ID);
     // Shortcut is associated with toolbar action.
-    copyShortcutFrom(ActionManager.getInstance().getAction("Flutter.Toolbar.ReloadAllAction"));
+    copyShortcutFrom(Objects.requireNonNull(Objects.requireNonNull(ActionManager.getInstance()).getAction("Flutter.Toolbar.ReloadAllAction")));
   }
 
   @Override
