@@ -43,3 +43,6 @@ lib/kotlin*
 gradle
 gradlew
 gradlew.bat
+# User specific configuration based on current Intellij SDKs.
+gradle.properties
+.idea/misc.xml
