@@ -24,8 +24,7 @@ void checkUrls() async {
         log('checking: $url...');
         if (response.statusCode != 200) {
           fail(
-              '$url GET failed: [${response.statusCode}] ${response
-                  .reasonPhrase}');
+              '$url GET failed: [${response.statusCode}] ${response.reasonPhrase}');
         }
       }
     }
@@ -55,18 +54,19 @@ void outlineIcons() async {
   }
 }
 
-void _createPng(File sourceSvg,
-    String targetName, {
-      required int? size,
-      bool forLight = false,
-    }) {
+void _createPng(
+  File sourceSvg,
+  String targetName, {
+  required int? size,
+  bool forLight = false,
+}) {
   File targetFile = joinFile(sourceSvg.parent, [targetName]);
 
   String color = forLight ? '#7a7a7a' : '#9e9e9e';
 
   String originalContent = sourceSvg.readAsStringSync();
   String newContent =
-  originalContent.replaceAll('<svg ', '<svg fill="$color" ');
+      originalContent.replaceAll('<svg ', '<svg fill="$color" ');
 
   sourceSvg.writeAsStringSync(newContent);
 
@@ -80,8 +80,7 @@ void _createPng(File sourceSvg,
 
     if (result.exitCode != 0) {
       print(
-          'Error resizing image with imagemagick: ${result.stdout}\n${result
-              .stderr}');
+          'Error resizing image with imagemagick: ${result.stdout}\n${result.stderr}');
       exit(1);
     }
   } finally {

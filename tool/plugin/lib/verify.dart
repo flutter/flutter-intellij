@@ -65,13 +65,14 @@ class VerifyCommand extends ProductCommand {
       }
       log('\nverifyPlugin for $spec:');
       result =
-      await runner.runGradleCommand(['verifyPlugin'], spec, '1', 'false');
+          await runner.runGradleCommand(['verifyPlugin'], spec, '1', 'false');
       if (result != 0) {
         return result;
       }
     }
 
-    var verifiedVersions = buildSpecs.map((spec) => spec.name).toList().join(', ');
+    var verifiedVersions =
+        buildSpecs.map((spec) => spec.name).toList().join(', ');
     log('\nVerification of the ${buildSpecs.length} builds was '
         'successful: $verifiedVersions.');
     return result;

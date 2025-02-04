@@ -85,12 +85,11 @@ Future<void> genPluginXml(BuildSpec spec, String destDir, String path) async {
   var templatePath =
       '${path.substring(0, path.length - '.xml'.length)}_template.xml';
   var file =
-  await File(p.join(rootPath, destDir, path)).create(recursive: true);
+      await File(p.join(rootPath, destDir, path)).create(recursive: true);
   log('writing ${p.relative(file.path)}');
   var dest = file.openWrite();
   dest.writeln(
-      "<!-- Do not edit; instead, modify ${p.basename(
-          templatePath)}, and run './bin/plugin generate'. -->");
+      "<!-- Do not edit; instead, modify ${p.basename(templatePath)}, and run './bin/plugin generate'. -->");
   dest.writeln();
   await utf8.decoder
       .bind(File(p.join(rootPath, 'resources', templatePath)).openRead())
@@ -111,7 +110,7 @@ bool genPresubmitYaml(List<BuildSpec> specs) {
   }
 
   var templateFile =
-  File(p.join(rootPath, '.github', 'workflows', 'presubmit.yaml.template'));
+      File(p.join(rootPath, '.github', 'workflows', 'presubmit.yaml.template'));
   var templateContents = templateFile.readAsStringSync();
   // If we need to make many changes consider something like genPluginXml().
   templateContents =
@@ -170,8 +169,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
       return false;
     }
     if (!cmd.isReleaseValid) {
-      log('the release identifier ("${cmd
-          .release}") must be of the form xx.x (major.minor)');
+      log('the release identifier ("${cmd.release}") must be of the form xx.x (major.minor)');
       return false;
     }
     var gitDir = await GitDir.fromExisting(rootPath);
@@ -180,7 +178,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
       var branch = await gitDir.currentBranch();
       var name = branch.branchName;
       var expectedName =
-      cmd.isDevChannel ? 'master' : "release_${cmd.releaseMajor}";
+          cmd.isDevChannel ? 'master' : "release_${cmd.releaseMajor}";
       var result = name == expectedName;
       if (!result) {
         result = name.startsWith("release_${cmd.releaseMajor}") &&
@@ -203,7 +201,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
   }
   // Finally, check that a jxbrowser.properties exists
   var jxBrowserFile =
-  File(p.join(rootPath, 'resources', 'jxbrowser', 'jxbrowser.properties'));
+      File(p.join(rootPath, 'resources', 'jxbrowser', 'jxbrowser.properties'));
   var jxBrowserFileContents = jxBrowserFile.readAsStringSync();
   if (jxBrowserFile.existsSync() &&
       jxBrowserFileContents.isNotEmpty &&
@@ -211,15 +209,14 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
       !jxBrowserFileContents.contains('jxbrowser.license.key=<KEY>')) {
     return true;
   } else {
-    log(
-        'Release mode requires the jxbrowser.properties file to exist and include a key.');
+    log('Release mode requires the jxbrowser.properties file to exist and include a key.');
   }
   return false;
 }
 
 List<Map<String, Object?>> readProductMatrix() {
   var contents =
-  File(p.join(rootPath, 'product-matrix.json')).readAsStringSync();
+      File(p.join(rootPath, 'product-matrix.json')).readAsStringSync();
   var map = json.decode(contents);
   return (map['list'] as List<Object?>).cast<Map<String, Object?>>();
 }
@@ -239,8 +236,8 @@ String substituteTemplateVariables(String line, BuildSpec spec) {
       case 'CHANGELOG':
         return spec.changeLog;
       case 'DEPEND':
-      // If found, this is the module that triggers loading the Android Studio
-      // support. The public sources and the installable plugin use different ones.
+        // If found, this is the module that triggers loading the Android Studio
+        // support. The public sources and the installable plugin use different ones.
         return spec.isSynthetic
             ? 'com.intellij.modules.androidstudio'
             : 'com.android.tools.apk';
@@ -523,11 +520,7 @@ https://plugins.jetbrains.com/plugin/uploadPlugin
       log('Upload failed: ${processResult.stderr} for file: $filePath');
     }
     final out = processResult.stdout as String;
-    var message = out
-        .trim()
-        .split('\n')
-        .last
-        .trim();
+    var message = out.trim().split('\n').last.trim();
     log(message);
     return processResult.exitCode;
   }
@@ -548,9 +541,9 @@ class GenerateCommand extends ProductCommand {
   @override
   String get description =>
       'Generate plugin.xml, .github/workflows/presubmit.yaml, '
-          'and resources/liveTemplates/flutter_miscellaneous.xml files for the '
-          'Flutter plugin.\nThe plugin.xml.template and product-matrix.json are '
-          'used as input.';
+      'and resources/liveTemplates/flutter_miscellaneous.xml files for the '
+      'Flutter plugin.\nThe plugin.xml.template and product-matrix.json are '
+      'used as input.';
 
   @override
   Future<int> doit() async {
@@ -578,7 +571,7 @@ class GenerateCommand extends ProductCommand {
         .cast<File>()
         .toList();
     final templateFile =
-    File(p.join('resources', 'liveTemplates', 'flutter_miscellaneous.xml'));
+        File(p.join('resources', 'liveTemplates', 'flutter_miscellaneous.xml'));
     var contents = templateFile.readAsStringSync();
 
     log('writing ${p.relative(templateFile.path)}');
@@ -596,8 +589,7 @@ class GenerateCommand extends ProductCommand {
       final regexp = RegExp('<template name="$name" value="([^"]+)"');
       final match = regexp.firstMatch(contents);
       if (match == null) {
-        throw 'No entry found for "$name" live template in ${templateFile
-            .path}';
+        throw 'No entry found for "$name" live template in ${templateFile.path}';
       }
 
       // Replace the existing content in the xml live template file with the
