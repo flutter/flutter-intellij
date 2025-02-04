@@ -5,11 +5,16 @@
  */
 package io.flutter.editor;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.awt.*;
 
 public class ExpressionParsingUtils {
-  public static Integer parseNumberFromCallParam(String callText, String prefix) {
-    if (callText.startsWith(prefix) && callText.endsWith(")")) {
+  public static @Nullable Integer parseNumberFromCallParam(String callText, String prefix) {
+    if (prefix == null) {
+      return null;
+    }
+    if (callText != null && callText.startsWith(prefix) && callText.endsWith(")")) {
       String val = callText.substring(prefix.length(), callText.length() - 1).trim();
       final int index = val.indexOf(',');
       if (index != -1) {
@@ -23,32 +28,40 @@ public class ExpressionParsingUtils {
       catch (NumberFormatException ignored) {
       }
     }
-
     return null;
   }
 
-  public static Color parseColor(String text) {
+  public static @Nullable Color parseColor(String text) {
+    if (text == null) {
+      return null;
+    }
     final Color color = parseColor(text, "const Color(");
     if (color != null) return color;
 
     return parseColor(text, "Color(");
   }
 
-  public static Color parseColor(String text, String colorText) {
+  public static @Nullable Color parseColor(String text, String colorText) {
+    if (text == null || colorText == null) {
+      return null;
+    }
     final Integer val = parseNumberFromCallParam(text, colorText);
     if (val == null) return null;
 
     try {
       final int value = val;
       //noinspection UseJBColor
-      return new Color((int)(value >> 16) & 0xFF, (int)(value >> 8) & 0xFF, (int)value & 0xFF, (int)(value >> 24) & 0xFF);
+      return new Color((value >> 16) & 0xFF, (value >> 8) & 0xFF, value & 0xFF, (value >> 24) & 0xFF);
     }
     catch (IllegalArgumentException e) {
       return null;
     }
   }
 
-  public static Color parseColorComponents(String callText, String prefix, boolean isARGB) {
+  public static @Nullable Color parseColorComponents(String callText, String prefix, boolean isARGB) {
+    if (callText == null || prefix == null) {
+      return null;
+    }
     if (callText.startsWith(prefix) && callText.endsWith(")")) {
       final String colorString = callText.substring(prefix.length(), callText.length() - 1).trim();
       final String[] maybeNumbers = colorString.split(",");
@@ -60,8 +73,8 @@ public class ExpressionParsingUtils {
     return null;
   }
 
-  private static Color parseARGBColorComponents(String[] maybeNumbers) {
-    if (maybeNumbers.length < 4) {
+  private static @Nullable Color parseARGBColorComponents(String[] maybeNumbers) {
+    if (maybeNumbers == null || maybeNumbers.length < 4) {
       return null;
     }
 
@@ -90,7 +103,10 @@ public class ExpressionParsingUtils {
     }
   }
 
-  private static Color parseRGBOColorComponents(String[] maybeNumbers) {
+  private static @Nullable Color parseRGBOColorComponents(String[] maybeNumbers) {
+    if (maybeNumbers == null) {
+      return null;
+    }
     final float[] rgbo = new float[4];
     for (int i = 0; i < 4; ++i) {
       final String maybeNumber = maybeNumbers[i].trim();
