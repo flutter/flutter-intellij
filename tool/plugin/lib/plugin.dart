@@ -39,8 +39,11 @@ Future<int> main(List<String> args) async {
 
 void addProductFlags(ArgParser argParser, String verb) {
   argParser.addFlag('ij', help: '$verb the IntelliJ plugin', defaultsTo: true);
-  argParser.addFlag('as',
-      help: '$verb the Android Studio plugin', defaultsTo: true);
+  argParser.addFlag(
+    'as',
+    help: '$verb the Android Studio plugin',
+    defaultsTo: true,
+  );
 }
 
 void copyResources({required String from, required String to}) {
@@ -84,13 +87,14 @@ Future<bool> genPluginFiles(BuildSpec spec, String destDir) async {
 Future<void> genPluginXml(BuildSpec spec, String destDir, String path) async {
   var templatePath =
       '${path.substring(0, path.length - '.xml'.length)}_template.xml';
-  var file =
-  await File(p.join(rootPath, destDir, path)).create(recursive: true);
+  var file = await File(
+    p.join(rootPath, destDir, path),
+  ).create(recursive: true);
   log('writing ${p.relative(file.path)}');
   var dest = file.openWrite();
   dest.writeln(
-      "<!-- Do not edit; instead, modify ${p.basename(
-          templatePath)}, and run './bin/plugin generate'. -->");
+    "<!-- Do not edit; instead, modify ${p.basename(templatePath)}, and run './bin/plugin generate'. -->",
+  );
   dest.writeln();
   await utf8.decoder
       .bind(File(p.join(rootPath, 'resources', templatePath)).openRead())
@@ -110,12 +114,15 @@ bool genPresubmitYaml(List<BuildSpec> specs) {
     }
   }
 
-  var templateFile =
-  File(p.join(rootPath, '.github', 'workflows', 'presubmit.yaml.template'));
+  var templateFile = File(
+    p.join(rootPath, '.github', 'workflows', 'presubmit.yaml.template'),
+  );
   var templateContents = templateFile.readAsStringSync();
   // If we need to make many changes consider something like genPluginXml().
-  templateContents =
-      templateContents.replaceFirst('@VERSIONS@', versions.join(', '));
+  templateContents = templateContents.replaceFirst(
+    '@VERSIONS@',
+    versions.join(', '),
+  );
   var header =
       "# Do not edit; instead, modify ${p.basename(templateFile.path)},"
       " and run './bin/plugin generate'.\n\n";
@@ -150,9 +157,11 @@ bool isTravisFileValid() {
 
 Future<int> jar(String directory, String outFile) async {
   var args = ['cf', p.absolute(outFile)];
-  args.addAll(Directory(directory)
-      .listSync(followLinks: false)
-      .map((f) => p.basename(f.path)));
+  args.addAll(
+    Directory(
+      directory,
+    ).listSync(followLinks: false).map((f) => p.basename(f.path)),
+  );
   args.remove('.DS_Store');
   return await exec('jar', args, cwd: directory);
 }
@@ -170,8 +179,9 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
       return false;
     }
     if (!cmd.isReleaseValid) {
-      log('the release identifier ("${cmd
-          .release}") must be of the form xx.x (major.minor)');
+      log(
+        'the release identifier ("${cmd.release}") must be of the form xx.x (major.minor)',
+      );
       return false;
     }
     var gitDir = await GitDir.fromExisting(rootPath);
@@ -180,10 +190,11 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
       var branch = await gitDir.currentBranch();
       var name = branch.branchName;
       var expectedName =
-      cmd.isDevChannel ? 'master' : "release_${cmd.releaseMajor}";
+          cmd.isDevChannel ? 'master' : "release_${cmd.releaseMajor}";
       var result = name == expectedName;
       if (!result) {
-        result = name.startsWith("release_${cmd.releaseMajor}") &&
+        result =
+            name.startsWith("release_${cmd.releaseMajor}") &&
             name.lastIndexOf(RegExp(r"\.[0-9]")) == name.length - 2;
       }
       if (result) {
@@ -202,8 +213,9 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
     log('the current working directory is not managed by git: $rootPath');
   }
   // Finally, check that a jxbrowser.properties exists
-  var jxBrowserFile =
-  File(p.join(rootPath, 'resources', 'jxbrowser', 'jxbrowser.properties'));
+  var jxBrowserFile = File(
+    p.join(rootPath, 'resources', 'jxbrowser', 'jxbrowser.properties'),
+  );
   var jxBrowserFileContents = jxBrowserFile.readAsStringSync();
   if (jxBrowserFile.existsSync() &&
       jxBrowserFileContents.isNotEmpty &&
@@ -212,14 +224,15 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
     return true;
   } else {
     log(
-        'Release mode requires the jxbrowser.properties file to exist and include a key.');
+      'Release mode requires the jxbrowser.properties file to exist and include a key.',
+    );
   }
   return false;
 }
 
 List<Map<String, Object?>> readProductMatrix() {
   var contents =
-  File(p.join(rootPath, 'product-matrix.json')).readAsStringSync();
+      File(p.join(rootPath, 'product-matrix.json')).readAsStringSync();
   var map = json.decode(contents);
   return (map['list'] as List<Object?>).cast<Map<String, Object?>>();
 }
@@ -239,8 +252,8 @@ String substituteTemplateVariables(String line, BuildSpec spec) {
       case 'CHANGELOG':
         return spec.changeLog;
       case 'DEPEND':
-      // If found, this is the module that triggers loading the Android Studio
-      // support. The public sources and the installable plugin use different ones.
+        // If found, this is the module that triggers loading the Android Studio
+        // support. The public sources and the installable plugin use different ones.
         return spec.isSynthetic
             ? 'com.intellij.modules.androidstudio'
             : 'com.android.tools.apk';
@@ -303,23 +316,33 @@ class GradleBuildCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
   GradleBuildCommand(this.runner) : super('make') {
-    argParser.addOption('only-version',
-        abbr: 'o',
-        help: 'Only build the specified IntelliJ version; useful for sharding '
-            'builds on CI systems.');
-    argParser.addFlag('unpack',
-        abbr: 'u',
-        help: 'Unpack the artifact files during provisioning, '
-            'even if the cache appears fresh.\n'
-            'This flag is ignored if --release is given.',
-        defaultsTo: false);
-    argParser.addOption('minor',
-        abbr: 'm', help: 'Set the minor version number.');
+    argParser.addOption(
+      'only-version',
+      abbr: 'o',
+      help:
+          'Only build the specified IntelliJ version; useful for sharding '
+          'builds on CI systems.',
+    );
+    argParser.addFlag(
+      'unpack',
+      abbr: 'u',
+      help:
+          'Unpack the artifact files during provisioning, '
+          'even if the cache appears fresh.\n'
+          'This flag is ignored if --release is given.',
+      defaultsTo: false,
+    );
+    argParser.addOption(
+      'minor',
+      abbr: 'm',
+      help: 'Set the minor version number.',
+    );
     argParser.addFlag('setup', abbr: 's', defaultsTo: true);
   }
 
   @override
-  String get description => 'Build a deployable version of the Flutter plugin, '
+  String get description =>
+      'Build a deployable version of the Flutter plugin, '
       'compiled against the specified artifacts.';
 
   @override
@@ -402,8 +425,10 @@ class GradleBuildCommand extends ProductCommand {
     }
     // Print a summary of the collection of plugin versions built:
     var builtVersions = buildSpecs.map((spec) => spec.name).toList().join(', ');
-    log('\nMake of the ${buildSpecs.length} builds was '
-        'successful: $builtVersions.');
+    log(
+      '\nMake of the ${buildSpecs.length} builds was '
+      'successful: $builtVersions.',
+    );
     return result;
   }
 
@@ -426,21 +451,18 @@ class GradleBuildCommand extends ProductCommand {
 
     // Log the contents of ./build/distributions, this is useful in debugging
     // in general and especially useful for the Kokoro bot which is run remotely
-    final result = Process.runSync(
-      'ls',
-      ['-laf', '-laf', 'build/distributions'],
-    );
+    final result = Process.runSync('ls', [
+      '-laf',
+      '-laf',
+      'build/distributions',
+    ]);
     log('Content generated in ./build/distributions:\n${result.stdout}');
 
     var source = File('build/distributions/flutter-intellij.zip');
     if (!source.existsSync()) {
       source = File('build/distributions/flutter-intellij-kokoro.zip');
     }
-    _copyFile(
-      source,
-      file.parent,
-      filename: p.basename(file.path),
-    );
+    _copyFile(source, file.parent, filename: p.basename(file.path));
     await _stopDaemon();
     return 0;
   }
@@ -487,7 +509,11 @@ class DeployCommand extends ProductCommand {
       changeDirectory(file.parent);
       var pluginNumber = pluginRegistryIds[spec.pluginId];
       value = await upload(
-          p.basename(file.path), pluginNumber!, token, spec.channel);
+        p.basename(file.path),
+        pluginNumber!,
+        token,
+        spec.channel,
+      );
       if (value != 0) {
         return value;
       }
@@ -500,8 +526,12 @@ class DeployCommand extends ProductCommand {
     Directory.current = dir.path;
   }
 
-  Future<int> upload(String filePath, String pluginNumber, String token,
-      String channel) async {
+  Future<int> upload(
+    String filePath,
+    String pluginNumber,
+    String token,
+    String channel,
+  ) async {
     if (!File(filePath).existsSync()) {
       throw 'File not found: $filePath';
     }
@@ -523,11 +553,7 @@ https://plugins.jetbrains.com/plugin/uploadPlugin
       log('Upload failed: ${processResult.stderr} for file: $filePath');
     }
     final out = processResult.stdout as String;
-    var message = out
-        .trim()
-        .split('\n')
-        .last
-        .trim();
+    var message = out.trim().split('\n').last.trim();
     log(message);
     return processResult.exitCode;
   }
@@ -548,9 +574,9 @@ class GenerateCommand extends ProductCommand {
   @override
   String get description =>
       'Generate plugin.xml, .github/workflows/presubmit.yaml, '
-          'and resources/liveTemplates/flutter_miscellaneous.xml files for the '
-          'Flutter plugin.\nThe plugin.xml.template and product-matrix.json are '
-          'used as input.';
+      'and resources/liveTemplates/flutter_miscellaneous.xml files for the '
+      'Flutter plugin.\nThe plugin.xml.template and product-matrix.json are '
+      'used as input.';
 
   @override
   Future<int> doit() async {
@@ -571,14 +597,16 @@ class GenerateCommand extends ProductCommand {
 
   void generateLiveTemplates() {
     // Find all the live templates.
-    final templateFragments = Directory(p.join('resources', 'liveTemplates'))
-        .listSync()
-        .whereType<File>()
-        .where((file) => p.extension(file.path) == '.txt')
-        .cast<File>()
-        .toList();
-    final templateFile =
-    File(p.join('resources', 'liveTemplates', 'flutter_miscellaneous.xml'));
+    final templateFragments =
+        Directory(p.join('resources', 'liveTemplates'))
+            .listSync()
+            .whereType<File>()
+            .where((file) => p.extension(file.path) == '.txt')
+            .cast<File>()
+            .toList();
+    final templateFile = File(
+      p.join('resources', 'liveTemplates', 'flutter_miscellaneous.xml'),
+    );
     var contents = templateFile.readAsStringSync();
 
     log('writing ${p.relative(templateFile.path)}');
@@ -596,15 +624,15 @@ class GenerateCommand extends ProductCommand {
       final regexp = RegExp('<template name="$name" value="([^"]+)"');
       final match = regexp.firstMatch(contents);
       if (match == null) {
-        throw 'No entry found for "$name" live template in ${templateFile
-            .path}';
+        throw 'No entry found for "$name" live template in ${templateFile.path}';
       }
 
       // Replace the existing content in the xml live template file with the
       // content from the template $name.txt file.
       final matchString = match.group(1);
       final matchStart = contents.indexOf(matchString!);
-      contents = contents.substring(0, matchStart) +
+      contents =
+          contents.substring(0, matchStart) +
           replaceContents +
           contents.substring(matchStart + matchString.length);
     }
@@ -656,10 +684,12 @@ abstract class ProductCommand extends Command<int> {
 
   ProductCommand(this.name) {
     addProductFlags(argParser, name[0].toUpperCase() + name.substring(1));
-    argParser.addOption('channel',
-        abbr: 'c',
-        help: 'Select the channel to build: stable or dev',
-        defaultsTo: 'stable');
+    argParser.addOption(
+      'channel',
+      abbr: 'c',
+      help: 'Select the channel to build: stable or dev',
+      defaultsTo: 'stable',
+    );
   }
 
   String get channel => argResults!.option('channel')!;
@@ -715,11 +745,17 @@ abstract class ProductCommand extends Command<int> {
   }
 
   String releasesFilePath(BuildSpec spec) {
-    var subDir = isReleaseMode
-        ? 'release_$releaseMajor'
-        : (spec.channel == "stable" ? 'release_master' : 'release_dev');
+    var subDir =
+        isReleaseMode
+            ? 'release_$releaseMajor'
+            : (spec.channel == "stable" ? 'release_master' : 'release_dev');
     var filePath = p.join(
-        rootPath, 'releases', subDir, spec.version, 'flutter-intellij.zip');
+      rootPath,
+      'releases',
+      subDir,
+      spec.version,
+      'flutter-intellij.zip',
+    );
     return filePath;
   }
 
@@ -810,14 +846,22 @@ class RenamePackageCommand extends ProductCommand {
   late String newName;
 
   RenamePackageCommand(this.runner) : super('rename') {
-    argParser.addOption('package',
-        defaultsTo: 'com.android.tools.idea.npw',
-        help: 'Package to be renamed');
-    argParser.addOption('append',
-        defaultsTo: 'Old', help: 'Suffix to be appended to package name');
+    argParser.addOption(
+      'package',
+      defaultsTo: 'com.android.tools.idea.npw',
+      help: 'Package to be renamed',
+    );
+    argParser.addOption(
+      'append',
+      defaultsTo: 'Old',
+      help: 'Suffix to be appended to package name',
+    );
     argParser.addOption('new-name', help: 'Name of package after renaming');
-    argParser.addFlag('studio',
-        negatable: true, help: 'The package is in the flutter-studio module');
+    argParser.addFlag(
+      'studio',
+      negatable: true,
+      help: 'The package is in the flutter-studio module',
+    );
   }
 
   @override
@@ -830,9 +874,10 @@ class RenamePackageCommand extends ProductCommand {
       baseDir = p.join(baseDir, 'flutter-studio/src');
     }
     oldName = argResults.option('package')!;
-    newName = argResults.wasParsed('new-name')
-        ? argResults.option('new-name')!
-        : oldName + argResults.option('append')!;
+    newName =
+        argResults.wasParsed('new-name')
+            ? argResults.option('new-name')!
+            : oldName + argResults.option('append')!;
     if (oldName == newName) {
       log('Nothing to do; new name is same as old name');
       return 1;
@@ -887,8 +932,11 @@ class RenamePackageCommand extends ProductCommand {
     }
   }
 
-  void _editAll(Directory src,
-      {required Directory skipOld, required Directory skipNew}) {
+  void _editAll(
+    Directory src, {
+    required Directory skipOld,
+    required Directory skipNew,
+  }) {
     if (src.path == skipOld.path || src.path == skipNew.path) return;
     for (var entity in src.listSync(followLinks: false)) {
       if (entity is File) {
@@ -906,10 +954,12 @@ class TestCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
   TestCommand(this.runner) : super('test') {
-    argParser.addFlag('skip',
-        negatable: false,
-        help: 'Do not run tests, just unpack artifaccts',
-        abbr: 's');
+    argParser.addFlag(
+      'skip',
+      negatable: false,
+      help: 'Do not run tests, just unpack artifaccts',
+      abbr: 's',
+    );
     argParser.addFlag('setup', abbr: 'p', defaultsTo: true);
   }
 
