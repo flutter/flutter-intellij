@@ -28,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class RunFlutterAction extends AnAction {
   private final @NotNull String myDetailedTextKey;
@@ -62,6 +63,7 @@ public abstract class RunFlutterAction extends AnAction {
     }
 
     final SdkRunConfig sdkRunConfig = (SdkRunConfig)configuration.clone();
+    assert sdkRunConfig != null;
     final SdkFields fields = sdkRunConfig.getFields();
     final String additionalArgs = fields.getAdditionalArgs();
 
@@ -153,7 +155,8 @@ public abstract class RunFlutterAction extends AnAction {
 
   @Nullable
   public static Executor getExecutor(@NotNull String executorId) {
-    for (Executor executor : Executor.EXECUTOR_EXTENSION_NAME.getExtensions()) {
+    for (Executor executor : Objects.requireNonNull(Executor.EXECUTOR_EXTENSION_NAME.getExtensions())) {
+      assert executor != null;
       if (executorId.equals(executor.getId())) {
         return executor;
       }

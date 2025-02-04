@@ -8,7 +8,7 @@ package io.flutter.actions;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 
 /**
- * A keystroke or tool-bar invoked {@link RestartFlutterApp} action.
+ * A keystroke or toolbar invoked {@link RestartFlutterApp} action.
  */
 public class RestartFlutterAppRetarget extends FlutterRetargetAppAction {
   public RestartFlutterAppRetarget() {
