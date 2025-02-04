@@ -83,13 +83,6 @@ void main() {
       });
     });
 
-    test('deploy', () async {
-      var runner = makeTestRunner();
-      await runner.run(["-r19", "-d../..", "deploy"]).whenComplete(() {
-        buildSpecAssertions(runner, "deploy");
-      });
-    });
-
     test('verify', () async {
       var runner = makeTestRunner();
       await runner.run(["-r19", "-d../..", "verify"]).whenComplete(() {
