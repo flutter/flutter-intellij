@@ -236,6 +236,11 @@ public class FlutterSdk {
     return new FlutterCommand(this, appDir.getParent(), FlutterCommand.Type.CREATE, vargs);
   }
 
+  public FlutterCommand flutterPackagesAdd(@NotNull PubRoot root, @NotNull String name, boolean devOnly) {
+    if (devOnly) name = "dev:" + name;
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PUB_ADD, name);
+  }
+
   public FlutterCommand flutterPackagesGet(@NotNull PubRoot root) {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PUB_GET);
   }
@@ -439,6 +444,22 @@ public class FlutterSdk {
       baseDir.refresh(false, true); // The current thread must NOT be in a read action.
     }
     return PubRoot.forDirectory(baseDir);
+  }
+
+  /**
+   * Starts running 'flutter pub add' on the given pub root provided it's in one of this project's modules.
+   * <p>
+   * Shows output in the console associated with the given module.
+   * <p>
+   * Returns the process if successfully started.
+   */
+  public Process startPubAdd(@NotNull PubRoot root, @NotNull Project project, @NotNull String pkg, boolean devOnly) {
+    final Module module = root.getModule(project);
+    if (module == null) return null;
+    // Ensure pubspec is saved.
+    FileDocumentManager.getInstance().saveAllDocuments();
+    // Refresh afterwards to ensure Dart Plugin doesn't mistakenly nag to run pub.
+    return flutterPackagesAdd(root, pkg, devOnly).startInModuleConsole(module, root::refresh, null);
   }
 
   /**
