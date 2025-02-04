@@ -46,7 +46,7 @@ Future<int> applyEdits(BuildSpec spec, Future<int> Function() compileFn) async {
   // Handle skipped files.
   for (String file in spec.filesToSkip) {
     final entity =
-    FileSystemEntity.isFileSync(file) ? File(file) : Directory(file);
+        FileSystemEntity.isFileSync(file) ? File(file) : Directory(file);
     if (entity.existsSync()) {
       await entity.rename('$file~');
       log('renamed $file');
@@ -82,7 +82,7 @@ Future<int> applyEdits(BuildSpec spec, Future<int> Function() compileFn) async {
     for (final file in spec.filesToSkip) {
       final name = '$file~';
       final entity =
-      FileSystemEntity.isFileSync(name) ? File(name) : Directory(name);
+          FileSystemEntity.isFileSync(name) ? File(name) : Directory(name);
       if (entity.existsSync()) {
         await entity.rename(file);
       }
@@ -97,12 +97,11 @@ class EditCommand {
     required List<String> initials,
     required List<String> replacements,
     this.versions = const [],
-  })
-      : assert(initials.length == replacements.length),
-        assert(initials.isNotEmpty),
-        assert(versions.isNotEmpty),
-        initials = initials.map(_platformAdaptiveString).toList(),
-        replacements = replacements.map(_platformAdaptiveString).toList();
+  }) : assert(initials.length == replacements.length),
+       assert(initials.isNotEmpty),
+       assert(versions.isNotEmpty),
+       initials = initials.map(_platformAdaptiveString).toList(),
+       replacements = replacements.map(_platformAdaptiveString).toList();
 
   /// The target file path.
   final String path;

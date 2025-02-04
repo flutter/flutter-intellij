@@ -144,15 +144,11 @@ void main() {
     test('clean', () async {
       var dir = Directory.current;
       var runner = makeTestRunner();
-      await runner.run([
-        "-r=19",
-        "-d../..",
-        "deploy",
-        "--no-as",
-        "--no-ij"
-      ]).whenComplete(() {
-        expect(Directory.current.path, equals(dir.path));
-      });
+      await runner
+          .run(["-r=19", "-d../..", "deploy", "--no-as", "--no-ij"])
+          .whenComplete(() {
+            expect(Directory.current.path, equals(dir.path));
+          });
     });
 
     test('without --release', () async {
@@ -283,7 +279,11 @@ class TestDeployCommand extends DeployCommand {
 
   @override
   Future<int> upload(
-      String filePath, String pluginNumber, String token, String channel) {
+    String filePath,
+    String pluginNumber,
+    String token,
+    String channel,
+  ) {
     paths.add(filePath);
     plugins.add(pluginNumber);
     return Future(() => 0);

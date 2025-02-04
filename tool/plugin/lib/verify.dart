@@ -12,10 +12,13 @@ class VerifyCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
   VerifyCommand(this.runner) : super('verify') {
-    argParser.addOption('only-version',
-        abbr: 'o',
-        help: 'Only verify the specified IntelliJ version; useful for sharding '
-            'builds on CI systems.');
+    argParser.addOption(
+      'only-version',
+      abbr: 'o',
+      help:
+          'Only verify the specified IntelliJ version; useful for sharding '
+          'builds on CI systems.',
+    );
   }
 
   @override
@@ -47,33 +50,54 @@ class VerifyCommand extends ProductCommand {
     for (var spec in buildSpecs) {
       log('\nverifyPluginProjectConfiguration for $spec:');
       result = await runner.runGradleCommand(
-          ['verifyPluginProjectConfiguration'], spec, '1', 'false');
+        ['verifyPluginProjectConfiguration'],
+        spec,
+        '1',
+        'false',
+      );
       if (result != 0) {
         return result;
       }
       log('\nverifyPluginStructure for $spec:');
-      result = await runner
-          .runGradleCommand(['verifyPluginStructure'], spec, '1', 'false');
+      result = await runner.runGradleCommand(
+        ['verifyPluginStructure'],
+        spec,
+        '1',
+        'false',
+      );
       if (result != 0) {
         return result;
       }
       log('\nverifyPluginSignature for $spec:');
-      result = await runner
-          .runGradleCommand(['verifyPluginSignature'], spec, '1', 'false');
+      result = await runner.runGradleCommand(
+        ['verifyPluginSignature'],
+        spec,
+        '1',
+        'false',
+      );
       if (result != 0) {
         return result;
       }
       log('\nverifyPlugin for $spec:');
-      result =
-      await runner.runGradleCommand(['verifyPlugin'], spec, '1', 'false');
+      result = await runner.runGradleCommand(
+        ['verifyPlugin'],
+        spec,
+        '1',
+        'false',
+      );
       if (result != 0) {
         return result;
       }
     }
 
-    var verifiedVersions = buildSpecs.map((spec) => spec.name).toList().join(', ');
-    log('\nVerification of the ${buildSpecs.length} builds was '
-        'successful: $verifiedVersions.');
+    var verifiedVersions = buildSpecs
+        .map((spec) => spec.name)
+        .toList()
+        .join(', ');
+    log(
+      '\nVerification of the ${buildSpecs.length} builds was '
+      'successful: $verifiedVersions.',
+    );
     return result;
   }
 }

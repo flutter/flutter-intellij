@@ -37,20 +37,20 @@ class BuildSpec {
   String? _changeLog;
 
   BuildSpec.fromJson(Map<String, Object?> json, this.release)
-      : name = json['name'] as String,
-        channel = json['channel'] as String,
-        version = json['version'] as String,
-        ijVersion = json['ijVersion'] as String?,
-        ideaProduct = json['ideaProduct'] as String,
-        ideaVersion = json['ideaVersion'] as String,
-        baseVersion = (json['baseVersion'] ?? json['ideaVersion']) as String,
-        androidPluginVersion = json['androidPluginVersion'] as String,
-        dartPluginVersion = json['dartPluginVersion'] as String,
-        sinceBuild = json['sinceBuild'] as String,
-        untilBuild = json['untilBuild'] as String,
-        filesToSkip = json['filesToSkip'] as List<String>? ?? [],
-        isUnitTestTarget = json['isUnitTestTarget'] == 'true',
-        isTestTarget = json['isTestTarget'] == 'true';
+    : name = json['name'] as String,
+      channel = json['channel'] as String,
+      version = json['version'] as String,
+      ijVersion = json['ijVersion'] as String?,
+      ideaProduct = json['ideaProduct'] as String,
+      ideaVersion = json['ideaVersion'] as String,
+      baseVersion = (json['baseVersion'] ?? json['ideaVersion']) as String,
+      androidPluginVersion = json['androidPluginVersion'] as String,
+      dartPluginVersion = json['dartPluginVersion'] as String,
+      sinceBuild = json['sinceBuild'] as String,
+      untilBuild = json['untilBuild'] as String,
+      filesToSkip = json['filesToSkip'] as List<String>? ?? [],
+      isUnitTestTarget = json['isUnitTestTarget'] == 'true',
+      isTestTarget = json['isTestTarget'] == 'true';
 
   bool get copyIjVersion => isAndroidStudio && ijVersion != null;
 

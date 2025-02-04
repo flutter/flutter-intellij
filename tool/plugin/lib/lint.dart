@@ -41,7 +41,11 @@ class LintCommand extends Command<int> {
     final result = Process.runSync(
       'git',
       // Note: extra quotes added so grep doesn't match this file.
-      ['grep', 'import com.jetbrains.' 'lang.dart.'],
+      [
+        'grep',
+        'import com.jetbrains.'
+            'lang.dart.',
+      ],
     );
     final String imports = (result.stdout as String).trim();
 
@@ -112,10 +116,7 @@ class LintCommand extends Command<int> {
     for (var import in proscribedImports) {
       print('Checking for import of "$import"...');
 
-      final result = Process.runSync(
-        'git',
-        ['grep', 'import $import'],
-      );
+      final result = Process.runSync('git', ['grep', 'import $import']);
 
       final String results = (result.stdout as String).trim();
       if (results.isNotEmpty) {
@@ -127,17 +128,12 @@ class LintCommand extends Command<int> {
       }
     }
 
-    final partialImports = [
-      'com.sun.',
-    ];
+    final partialImports = ['com.sun.'];
 
     for (var import in partialImports) {
       print('Checking for import of "$import"...');
 
-      final result = Process.runSync(
-        'git',
-        ['grep', 'import $import'],
-      );
+      final result = Process.runSync('git', ['grep', 'import $import']);
 
       final String results = (result.stdout as String).trim();
       if (results.isNotEmpty) {
