@@ -282,35 +282,3 @@ To set up the license key:
 1. Copy the template at resources/jxbrowser/jxbrowser.properties.template
    and save it as resources/jxbrowser/jxbrowser.properties.
 2. Replace `<KEY>` with the actual key.
-
-## Signing commits
-
-We require that all commits to the repository are signed with GPG or SSH, see [GitHub's documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification).
-
-If you are on macOS, and choose to sign with GPG, here are some additonal notes:
-
-- Download GPG's tarball along with its dependencies from [here](https://www.gnupg.org/download/).
-  GPG is the first item, the dependencies are in the block below (Libgpg-error, Libgcrypt, etc.).
-- To install these tarballs on macOS, follow these instructions:
-    - Download the desired `.tar.gz` or (`.tar.bz2`) file
-    - Open Terminal
-    - Extract the `.tar.gz` or (`.tar.bz2`) file with the following commands (Follow these steps for the dependencies first, then for GPG):
-    ```bash
-    tar xvjf PACKAGENAME.tar.bz2
-    # Navigate to the extracted folder using cd command
-    cd PACKAGENAME
-    # Now run the following command to install the tarball
-    ./configure
-    make
-    sudo make install
-    ```
-- You may need to install pinentry (`brew install pinentry`)
-- If the Pinentry continues to not work, check its path (`which pinentry`) and add it to the file `~/.gnupg/gpg-agent.conf`, i.e.:
-  ```bash
-  pinentry-program /path/to/pinentry
-  ```
-- You may need to set the tty `export GPG_TTY=$(tty)` if you get this error when trying to commit:
-  ```bash
-  error: gpg failed to sign the data
-  fatal: failed to write commit object
-  ```
