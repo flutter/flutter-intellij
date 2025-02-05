@@ -333,7 +333,7 @@ public class BazelFields {
         }
       }, "Starting DevTools", false, project);
       final DevToolsInstance instance = devToolsFuture.get();
-      commandLine.addParameter("--devtools-server-address=http://" + instance.host + ":" + instance.port);
+      commandLine.addParameter("--devtools-server-address=http://" + instance.host() + ":" + instance.port());
     }
     catch (Exception e) {
       LOG.info(e);

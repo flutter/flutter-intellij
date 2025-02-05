@@ -5,12 +5,5 @@
  */
 package io.flutter.run.daemon;
 
-public class DevToolsInstance {
-  final public String host;
-  final public int port;
-
-  public DevToolsInstance(String host, int port) {
-    this.host = host;
-    this.port = port;
-  }
+public record DevToolsInstance(String host, int port) {
 }

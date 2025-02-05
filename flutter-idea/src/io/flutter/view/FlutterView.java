@@ -165,8 +165,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     if (isEmbedded) {
       final DevToolsUrl devToolsUrl = new DevToolsUrl.Builder()
-        .setDevToolsHost(devToolsInstance.host)
-        .setDevToolsPort(devToolsInstance.port)
+        .setDevToolsHost(devToolsInstance.host())
+        .setDevToolsPort(devToolsInstance.port())
         .setVmServiceUri(browserUrl)
         .setPage("inspector")
         .setEmbed(true)
@@ -200,8 +200,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     else {
       BrowserLauncher.getInstance().browse(
         new DevToolsUrl.Builder()
-          .setDevToolsHost(devToolsInstance.host)
-          .setDevToolsPort(devToolsInstance.port)
+          .setDevToolsHost(devToolsInstance.host())
+          .setDevToolsPort(devToolsInstance.port())
           .setVmServiceUri(browserUrl)
           .setPage("inspector")
           .setFlutterSdkVersion(flutterSdkVersion)

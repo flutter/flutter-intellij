@@ -24,6 +24,8 @@ import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 public class OpenDevToolsAction extends DumbAwareAction {
   private static final Logger LOG = Logger.getInstance(OpenDevToolsAction.class);
   private static final String title = "Open Flutter DevTools in Browser";
@@ -68,7 +70,7 @@ public class OpenDevToolsAction extends DumbAwareAction {
       return;
     }
 
-    AsyncUtils.whenCompleteUiThread(DevToolsService.getInstance(project).getDevToolsInstance(), (instance, ex) -> {
+    AsyncUtils.whenCompleteUiThread(Objects.requireNonNull(DevToolsService.getInstance(project).getDevToolsInstance()), (instance, ex) -> {
       if (project.isDisposed()) {
         return;
       }
@@ -81,18 +83,16 @@ public class OpenDevToolsAction extends DumbAwareAction {
       final String serviceUrl = myConnector != null && myConnector.getBrowserUrl() != null ? myConnector.getBrowserUrl() : null;
 
       FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
-      BrowserLauncher.getInstance().browse(
-        new DevToolsUrl.Builder()
-          .setDevToolsHost(instance.host)
-          .setDevToolsPort(instance.port)
-          .setVmServiceUri(serviceUrl)
-          .setFlutterSdkVersion(flutterSdk == null ? null : flutterSdk.getVersion())
-          .setWorkspaceCache(WorkspaceCache.getInstance(project))
-          .setIdeFeature(DevToolsIdeFeature.RUN_CONSOLE)
-          .build()
-          .getUrlString(),
-        null
-      );
+      assert instance != null;
+      final String devToolsUrl = new DevToolsUrl.Builder().setDevToolsHost(instance.host())
+        .setDevToolsPort(instance.port())
+        .setVmServiceUri(serviceUrl)
+        .setFlutterSdkVersion(flutterSdk == null ? null : flutterSdk.getVersion())
+        .setWorkspaceCache(WorkspaceCache.getInstance(project))
+        .setIdeFeature(DevToolsIdeFeature.RUN_CONSOLE)
+        .build()
+        .getUrlString();
+      BrowserLauncher.getInstance().browse(devToolsUrl,null);
     });
   }
 }
