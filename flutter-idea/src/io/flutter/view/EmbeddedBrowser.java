@@ -17,7 +17,6 @@ import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.util.ui.JBUI;
-import com.intellij.ide.ui.UISettingsUtils;
 import icons.FlutterIcons;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.utils.AsyncUtils;

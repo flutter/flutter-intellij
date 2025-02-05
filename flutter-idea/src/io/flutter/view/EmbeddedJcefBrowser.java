@@ -9,8 +9,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.jcef.JBCefBrowser;
-import com.teamdev.jxbrowser.zoom.Zoom;
-import com.teamdev.jxbrowser.zoom.ZoomLevel;
 import io.flutter.jxbrowser.JxBrowserManager;
 import org.jetbrains.annotations.NotNull;
 
