@@ -17,6 +17,7 @@ import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.util.ui.JBUI;
+import com.intellij.ide.ui.UISettingsUtils;
 import icons.FlutterIcons;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.utils.AsyncUtils;
@@ -140,6 +141,7 @@ public abstract class EmbeddedBrowser {
       tab.content.setIcon(FlutterIcons.Phone);
       tab.contentManager.addContent(tab.content);
       tab.contentManager.setSelectedContent(tab.content, true);
+      matchIdeZoom(tab);
     });
   }
 
@@ -262,8 +264,8 @@ public abstract class EmbeddedBrowser {
       tab.devToolsUrlFuture.thenAccept(devToolsUrl -> {
         if (devToolsUrl == null) return;
         devToolsUrl.maybeUpdateColor();
-        devToolsUrl.maybeUpdateFontSize();
         tab.embeddedTab.loadUrl(devToolsUrl.getUrlString());
+        matchIdeZoom(tab);
       });
     });
   }
@@ -290,8 +292,25 @@ public abstract class EmbeddedBrowser {
             return;
           }
           tab.embeddedTab.loadUrl(devToolsUrl.getUrlString());
+          matchIdeZoom(tab);
         });
       });
     });
+  }
+
+  /**
+   * Zoom the browser tab to match the IDE zoom level.
+   * Note: This needs to be called after the tab content has loaded.
+   */
+  private void matchIdeZoom(@NotNull BrowserTab tab) {
+    final EmbeddedTab embeddedTab  = tab.embeddedTab;
+    if (embeddedTab == null) return;
+    embeddedTab.zoom(getIdeZoomPercent());
+  }
+
+  private int getIdeZoomPercent() {
+    final UISettingsUtils uiSettingsUtils = UISettingsUtils.getInstance();
+    final float ideScale = uiSettingsUtils.getCurrentIdeScale();
+    return Math.round(ideScale * 100);
   }
 }

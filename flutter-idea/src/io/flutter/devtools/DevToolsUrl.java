@@ -25,7 +25,6 @@ public class DevToolsUrl {
   public String colorHexCode;
   public Boolean isBright;
   public String widgetId;
-  public Float fontSize;
   public String hide;
   private final FlutterSdkVersion flutterSdkVersion;
   private final FlutterSdkUtil sdkUtil;
@@ -45,7 +44,6 @@ public class DevToolsUrl {
     private String page;
     private Boolean embed;
     private String widgetId;
-    private Float fontSize;
     private String hide;
 
     private FlutterSdkVersion flutterSdkVersion;
@@ -85,11 +83,6 @@ public class DevToolsUrl {
 
     public Builder setWidgetId(String widgetId) {
       this.widgetId = widgetId;
-      return this;
-    }
-
-    public Builder setFontSize(Float fontSize) {
-      this.fontSize = fontSize;
       return this;
     }
 
@@ -147,7 +140,6 @@ public class DevToolsUrl {
     if (builder.embed) {
       this.colorHexCode = builder.devToolsUtils.getColorHexCode();
       this.isBright = builder.devToolsUtils.getIsBackgroundBright();
-      this.fontSize = builder.devToolsUtils.getFontSize();
     }
     this.hide = builder.hide;
     this.widgetId = builder.widgetId;
@@ -196,9 +188,6 @@ public class DevToolsUrl {
         }
       }
     }
-    if (fontSize != null) {
-      params.add("fontSize=" + fontSize);
-    }
     if (ideFeature != null) {
       params.add("ideFeature=" + ideFeature.value);
     }
@@ -225,12 +214,5 @@ public class DevToolsUrl {
 
     colorHexCode = newColor;
     isBright = devToolsUtils.getIsBackgroundBright();
-  }
-
-  public void maybeUpdateFontSize() {
-    final Float newFontSize = devToolsUtils.getFontSize();
-    if (fontSize == null || !fontSize.equals(newFontSize)) {
-      fontSize = newFontSize;
-    }
   }
 }
