@@ -32,6 +32,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import com.teamdev.jxbrowser.zoom.Zoom;
 import com.teamdev.jxbrowser.zoom.ZoomLevel;
+import com.intellij.ide.ui.UISettingsUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -83,12 +84,17 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
   }
 
   @Override
-  public void zoom(int zoomPercent) {
-    final Zoom zoom = this.browser.zoom();
-    if (zoom != null) {
-      final ZoomLevel zoomLevel = zoomSelector.getClosestZoomLevel(zoomPercent);
-      zoom.level(zoomLevel);
+  public void matchIdeZoom() {
+    if (this.zoom != null) {
+      final ZoomLevel zoomLevel = zoomSelector.getClosestZoomLevel(getIdeZoomPercent());
+      this.zoom.level(zoomLevel);
     }
+  }
+
+  private int getIdeZoomPercent() {
+    final UISettingsUtils uiSettingsUtils = UISettingsUtils.getInstance();
+    final float ideScale = uiSettingsUtils.getCurrentIdeScale();
+    return Math.round(ideScale * 100);
   }
 
   @Override

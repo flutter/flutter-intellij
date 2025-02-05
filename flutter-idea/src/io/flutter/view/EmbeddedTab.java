@@ -14,7 +14,7 @@ public interface EmbeddedTab {
 
   void close();
 
-  void zoom(int zoomPercent);
+  void matchIdeZoom();
 
   JComponent getTabComponent(ContentManager contentManager);
 }

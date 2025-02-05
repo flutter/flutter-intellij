@@ -36,7 +36,7 @@ class EmbeddedJcefBrowserTab implements EmbeddedTab {
   }
 
   @Override
-  public void zoom(int zoomPercent) {
+  public void matchIdeZoom() {
 
   }
 

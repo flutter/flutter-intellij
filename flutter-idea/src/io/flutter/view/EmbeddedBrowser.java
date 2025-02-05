@@ -141,7 +141,7 @@ public abstract class EmbeddedBrowser {
       tab.content.setIcon(FlutterIcons.Phone);
       tab.contentManager.addContent(tab.content);
       tab.contentManager.setSelectedContent(tab.content, true);
-      matchIdeZoom(tab);
+      tab.embeddedTab.matchIdeZoom();
     });
   }
 
@@ -265,7 +265,7 @@ public abstract class EmbeddedBrowser {
         if (devToolsUrl == null) return;
         devToolsUrl.maybeUpdateColor();
         tab.embeddedTab.loadUrl(devToolsUrl.getUrlString());
-        matchIdeZoom(tab);
+        tab.embeddedTab.matchIdeZoom();
       });
     });
   }
@@ -292,25 +292,9 @@ public abstract class EmbeddedBrowser {
             return;
           }
           tab.embeddedTab.loadUrl(devToolsUrl.getUrlString());
-          matchIdeZoom(tab);
+          tab.embeddedTab.matchIdeZoom();
         });
       });
     });
-  }
-
-  /**
-   * Zoom the browser tab to match the IDE zoom level.
-   * Note: This needs to be called after the tab content has loaded.
-   */
-  private void matchIdeZoom(@NotNull BrowserTab tab) {
-    final EmbeddedTab embeddedTab  = tab.embeddedTab;
-    if (embeddedTab == null) return;
-    embeddedTab.zoom(getIdeZoomPercent());
-  }
-
-  private int getIdeZoomPercent() {
-    final UISettingsUtils uiSettingsUtils = UISettingsUtils.getInstance();
-    final float ideScale = uiSettingsUtils.getCurrentIdeScale();
-    return Math.round(ideScale * 100);
   }
 }
