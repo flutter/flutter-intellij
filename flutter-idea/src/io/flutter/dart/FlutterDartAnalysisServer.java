@@ -70,6 +70,7 @@ public class FlutterDartAnalysisServer implements Disposable {
     return getAnalysisService().getSdkVersion();
   }
 
+  /** @noinspection BooleanMethodIsAlwaysInverted*/
   public boolean isServerConnected() {
     return !getSdkVersion().isEmpty();
   }

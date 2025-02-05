@@ -131,7 +131,7 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
     return supportsVersion(MIN_SUPPORTS_DEVTOOLS_MULTI_EMBED);
   }
 
-  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+  /** @noinspection BooleanMethodIsAlwaysInverted*/
   public boolean canUseDtd() {
     return supportsVersion(MIN_SUPPORTS_DTD);
   }

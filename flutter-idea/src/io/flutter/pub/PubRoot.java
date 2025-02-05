@@ -194,6 +194,7 @@ public class PubRoot {
 
   /**
    * Returns true if the given file is a directory that contains tests.
+   * @noinspection BooleanMethodIsAlwaysInverted
    */
   public boolean hasTests(@NotNull VirtualFile dir) {
     if (!dir.isDirectory()) return false;
@@ -313,6 +314,7 @@ public class PubRoot {
   /**
    * Returns true if the packages are up-to-date with regard to the `pubspec.yaml`. The `.packages` file is used if no
    * `.tool/package_config.json` is found.  The default value returned is to return false.
+   * @noinspection BooleanMethodIsAlwaysInverted
    */
   public boolean hasUpToDatePackages() {
     // See context at these URLs for the reason we can't use VirtualFile#getTimeStamp()
