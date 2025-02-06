@@ -34,6 +34,11 @@ class EmbeddedJcefBrowserTab implements EmbeddedTab {
   }
 
   @Override
+  public void matchIdeZoom() {
+
+  }
+
+  @Override
   public JComponent getTabComponent(ContentManager contentManager) {
     browser.getComponent().setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
     return browser.getComponent();

@@ -140,6 +140,7 @@ public abstract class EmbeddedBrowser {
       tab.content.setIcon(FlutterIcons.Phone);
       tab.contentManager.addContent(tab.content);
       tab.contentManager.setSelectedContent(tab.content, true);
+      tab.embeddedTab.matchIdeZoom();
     });
   }
 
@@ -262,8 +263,8 @@ public abstract class EmbeddedBrowser {
       tab.devToolsUrlFuture.thenAccept(devToolsUrl -> {
         if (devToolsUrl == null) return;
         devToolsUrl.maybeUpdateColor();
-        devToolsUrl.maybeUpdateFontSize();
         tab.embeddedTab.loadUrl(devToolsUrl.getUrlString());
+        tab.embeddedTab.matchIdeZoom();
       });
     });
   }
@@ -290,6 +291,7 @@ public abstract class EmbeddedBrowser {
             return;
           }
           tab.embeddedTab.loadUrl(devToolsUrl.getUrlString());
+          tab.embeddedTab.matchIdeZoom();
         });
       });
     });

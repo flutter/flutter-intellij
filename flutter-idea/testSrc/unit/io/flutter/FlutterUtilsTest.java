@@ -5,11 +5,14 @@
  */
 package io.flutter;
 
+import com.teamdev.jxbrowser.zoom.ZoomLevel;
+import io.flutter.utils.ZoomLevelSelector;
 import org.junit.Test;
 
 import static io.flutter.FlutterUtils.isValidDartIdentifier;
 import static io.flutter.FlutterUtils.isValidPackageName;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 public class FlutterUtilsTest {
@@ -38,5 +41,20 @@ public class FlutterUtilsTest {
     for (String name : invalidNames) {
       assertFalse("expected " + name + " to be invalid", isValidPackageName(name));
     }
+  }
+
+  @Test
+  public void zoomLevelSelector() {
+    final ZoomLevelSelector zoomLevelSelector = new ZoomLevelSelector();
+    assertSame(zoomLevelSelector.getClosestZoomLevel(-70), ZoomLevel.P_25);
+    assertSame(zoomLevelSelector.getClosestZoomLevel(-10), ZoomLevel.P_25);
+    assertSame(zoomLevelSelector.getClosestZoomLevel(0), ZoomLevel.P_25);
+    assertSame(zoomLevelSelector.getClosestZoomLevel(1), ZoomLevel.P_25);
+    assertSame(zoomLevelSelector.getClosestZoomLevel(20), ZoomLevel.P_25);
+    assertSame(zoomLevelSelector.getClosestZoomLevel(28), ZoomLevel.P_25);
+    assertSame(zoomLevelSelector.getClosestZoomLevel(35), ZoomLevel.P_33);
+    assertSame(zoomLevelSelector.getClosestZoomLevel(222), ZoomLevel.P_200);
+    assertSame(zoomLevelSelector.getClosestZoomLevel(226), ZoomLevel.P_250);
+    assertSame(zoomLevelSelector.getClosestZoomLevel(700), ZoomLevel.P_500);
   }
 }

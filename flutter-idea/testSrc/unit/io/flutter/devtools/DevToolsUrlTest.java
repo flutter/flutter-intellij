@@ -34,7 +34,6 @@ public class DevToolsUrlTest {
     final DevToolsUtils noColorUtils = mock(DevToolsUtils.class);
     when(noColorUtils.getColorHexCode()).thenReturn(null);
     when(noColorUtils.getIsBackgroundBright()).thenReturn(null);
-    when(noColorUtils.getFontSize()).thenReturn(null);
 
     assertEquals(
       "http://127.0.0.1:9100/timeline?ide=IntelliJ-IDEA&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
@@ -163,27 +162,9 @@ public class DevToolsUrlTest {
     final DevToolsUtils lightUtils = mock(DevToolsUtils.class);
     when(lightUtils.getColorHexCode()).thenReturn("ffffff");
     when(lightUtils.getIsBackgroundBright()).thenReturn(true);
-    when(lightUtils.getFontSize()).thenReturn(null);
 
     assertEquals(
       "http://127.0.0.1:9100/timeline?ide=IntelliJ-IDEA&backgroundColor=ffffff&theme=light&embed=true&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
-      new DevToolsUrl.Builder()
-        .setDevToolsHost(devtoolsHost)
-        .setDevToolsPort(devtoolsPort)
-        .setVmServiceUri(serviceProtocolUri)
-        .setEmbed(true)
-        .setPage(page)
-        .setFlutterSdkVersion(newVersion)
-        .setWorkspaceCache(notBazelWorkspaceCache)
-        .setFlutterSdkUtil(mockSdkUtil)
-        .setDevToolsUtils(lightUtils)
-        .build()
-        .getUrlString()
-    );
-
-    when(lightUtils.getFontSize()).thenReturn(12f);
-    assertEquals(
-      "http://127.0.0.1:9100/timeline?ide=IntelliJ-IDEA&backgroundColor=ffffff&theme=light&embed=true&fontSize=12.0&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
       new DevToolsUrl.Builder()
         .setDevToolsHost(devtoolsHost)
         .setDevToolsPort(devtoolsPort)
@@ -203,7 +184,6 @@ public class DevToolsUrlTest {
     final DevToolsUtils darkUtils = mock(DevToolsUtils.class);
     when(darkUtils.getColorHexCode()).thenReturn("3c3f41");
     when(darkUtils.getIsBackgroundBright()).thenReturn(false);
-    when(darkUtils.getFontSize()).thenReturn(null);
 
     assertEquals(
       "http://127.0.0.1:9100/timeline?ide=Android-Studio&backgroundColor=3c3f41&theme=dark&embed=true&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",

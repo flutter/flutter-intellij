@@ -25,11 +25,15 @@ import com.teamdev.jxbrowser.view.swing.callback.DefaultConfirmCallback;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.JxBrowserUtils;
+import io.flutter.utils.ZoomLevelSelector;
 import io.flutter.view.EmbeddedBrowser;
 import io.flutter.view.EmbeddedTab;
 import io.flutter.utils.LabelInput;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import com.teamdev.jxbrowser.zoom.Zoom;
+import com.teamdev.jxbrowser.zoom.ZoomLevel;
+import com.intellij.ide.ui.UISettingsUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,6 +47,8 @@ import java.util.concurrent.atomic.AtomicReference;
 class EmbeddedJxBrowserTab implements EmbeddedTab {
   private final Engine engine;
   private Browser browser;
+  private Zoom zoom;
+  private final ZoomLevelSelector zoomSelector = new ZoomLevelSelector();
   private static final Logger LOG = Logger.getInstance(EmbeddedJxBrowserTab.class);
 
   public EmbeddedJxBrowserTab(Engine engine) {
@@ -50,6 +56,7 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
 
     try {
       this.browser = engine.newBrowser();
+      this.zoom = this.browser.zoom();
       this.browser.settings().enableTransparentBackground();
       this.browser.on(ConsoleMessageReceived.class, event -> {
         final ConsoleMessage consoleMessage = event.consoleMessage();
@@ -72,6 +79,20 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
   @Override
   public void close() {
     this.browser.close();
+  }
+
+  @Override
+  public void matchIdeZoom() {
+    if (this.zoom != null) {
+      final ZoomLevel zoomLevel = zoomSelector.getClosestZoomLevel(getIdeZoomPercent());
+      this.zoom.level(zoomLevel);
+    }
+  }
+
+  private int getIdeZoomPercent() {
+    final UISettingsUtils uiSettingsUtils = UISettingsUtils.getInstance();
+    final float ideScale = uiSettingsUtils.getCurrentIdeScale();
+    return Math.round(ideScale * 100);
   }
 
   @Override
