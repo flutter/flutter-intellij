@@ -85,6 +85,11 @@ dependencies {
     bundledPlugins(bundledPluginList)
     plugins(pluginList)
 
+    if (sinceBuildInput == "243" || sinceBuildInput == "251") {
+      bundledModule("intellij.platform.coverage")
+      bundledModule("intellij.platform.coverage.agent")
+    }
+
     // The warning that "instrumentationTools()" is deprecated might be valid, however, this error is produced by Gradle IJ plugin version
     // 2.1.0 if this isn't included:
     //  Caused by: org.gradle.api.GradleException: No Java Compiler dependency found.
