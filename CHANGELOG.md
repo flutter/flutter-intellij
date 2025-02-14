@@ -1,3 +1,11 @@
+# 84
+- Fix the slow operation notification associated with PubRoot (#7885)
+- Cleanup: removal of pre Dart SDK 3.0 code (#7882)
+- Cleanup: removal of the deprecated Swing-based Inspector window (#7861)
+- Cleanup: removal of the deprecated Outline window (#7816)
+- Cleanup: removal of the deprecated Performance page window (#7816)
+- Migrated all instances of EditorNotifications.Provider to the new API (#7830)
+
 # 83
 - First version for Meerkat, Android Studio 2024.3 (#7799)
 - Message in the Flutter Outline window that the window is now deprecated (#7778)
