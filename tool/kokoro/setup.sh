@@ -20,7 +20,7 @@ setup() {
   java -version
 
   # Clone and configure Flutter to the latest stable release
-  git clone --depth 1 -b stable --single-branch https://github.com/flutter/flutter.git ../flutter
+  git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
   export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
   flutter config --no-analytics
   flutter doctor
