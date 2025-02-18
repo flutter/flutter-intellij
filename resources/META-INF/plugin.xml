@@ -384,6 +384,9 @@
     <codeInsight.lineMarkerProvider language="Dart" implementationClass="io.flutter.editor.FlutterIconLineMarkerProvider"/>
     <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
 
+    <toolWindow id="Flutter Inspector" anchor="right" icon="FlutterIcons.DevToolsInspector"
+                factoryClass="io.flutter.view.FlutterViewFactory"/>
+    <projectService serviceImplementation="io.flutter.view.FlutterView" overrides="false"/>
     <toolWindow id="Flutter Deep Links" anchor="right" icon="FlutterIcons.DevToolsDeepLinks" factoryClass="io.flutter.deeplinks.DeepLinksViewFactory" />
     <toolWindow id="Flutter DevTools" anchor="right" icon="FlutterIcons.DevTools" factoryClass="io.flutter.devtools.RemainingDevToolsViewFactory" />
     <toolWindow id="Flutter DevTools Extensions" anchor="right" icon="FlutterIcons.DevToolsExtensions" factoryClass="io.flutter.devtools.DevToolsExtensionsViewFactory" />
