@@ -50,6 +50,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -156,13 +158,30 @@ public class LaunchState extends CommandLineState {
     else {
       descriptor = new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
     }
+    final String nameWithDeviceName = descriptor.getDisplayName() + " (" + device.deviceName() + ")";
+    boolean displayNameUpdated = false;
     try {
-      final Field f = descriptor.getClass().getDeclaredField("myDisplayName");
+      final Field f = descriptor.getClass().getDeclaredField("myDisplayNameView");
       f.setAccessible(true);
-      f.set(descriptor, descriptor.getDisplayName() + " (" + device.deviceName() + ")");
+      Object viewInstance = f.get(descriptor);
+      if (viewInstance != null) {
+        final Method setValueMethod = viewInstance.getClass().getMethod("setValue", Object.class);
+        setValueMethod.invoke(viewInstance, nameWithDeviceName);
+        displayNameUpdated = true;
+      }
     }
-    catch (IllegalAccessException | NoSuchFieldException e) {
+    catch (IllegalAccessException | InvocationTargetException | NoSuchFieldException | NoSuchMethodException e) {
       LOG.info(e);
+    }
+    if (!displayNameUpdated) {
+      try {
+        final Field f = descriptor.getClass().getDeclaredField("myDisplayName");
+        f.setAccessible(true);
+        f.set(descriptor, nameWithDeviceName);
+      }
+      catch (IllegalAccessException | NoSuchFieldException e) {
+        LOG.info(e);
+      }
     }
     return descriptor;
   }
