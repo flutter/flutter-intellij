@@ -3,8 +3,9 @@
 [![Latest plugin version](https://img.shields.io/jetbrains/plugin/v/9212)](https://plugins.jetbrains.com/plugin/9212-flutter)
 [![Build Status](https://github.com/flutter/flutter-intellij/workflows/presubmit/badge.svg)](https://github.com/flutter/flutter-intellij/actions?query=branch%3Amaster+workflow%3Apresubmit)
 
-An IntelliJ plugin for [Flutter](https://flutter.dev/) development. Flutter is a multi-platform
-app SDK to help developers and designers build modern apps for iOS, Android and the web.
+An IntelliJ plugin for [Flutter](https://flutter.dev/) development.
+Flutter is a multi-platformFlutter is Google's SDK for crafting beautiful,
+fast user experiences for mobile, web, and desktop from a single codebase.
 
 ## Documentation
 
@@ -14,9 +15,8 @@ app SDK to help developers and designers build modern apps for iOS, Android and 
 
 ## Fast development
 
-Flutter's <em>hot reload</em> helps you quickly and easily experiment, build UIs, add features,
-and fix bugs faster. Experience sub-second reload times, without losing state, on emulators,
-simulators, and hardware for iOS and Android.
+Flutter offers [stateful hot reload][Hot reload], allowing you to make changes to your code
+and see the results instantly without restarting your app or losing its state.
 
 <img src="https://user-images.githubusercontent.com/919717/28131204-0f8c3cda-66ee-11e7-9428-6a0513eac75d.gif" alt="Make a change in your code, and your app is changed instantly.">
 
@@ -66,3 +66,5 @@ If you like getting new features as soon as they've been added to the code then 
 might want to try out the dev channel. It is updated weekly with the latest contents
 from the "master" branch. It has minimal testing. Set up instructions are in the wiki's
 [dev channel page](./docs/Dev-Channel.md).
+
+[Hot reload]: https://docs.flutter.dev/development/tools/hot-reload

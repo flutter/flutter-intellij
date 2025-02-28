@@ -25,7 +25,7 @@
   <depends>com.intellij.modules.lang</depends>
   <depends>com.intellij.modules.xdebugger</depends>
   <depends>org.jetbrains.plugins.yaml</depends>
-  <depends>org.jetbrains.android</depends>
+  <depends optional="true" config-file="android-contribs.xml">org.jetbrains.android</depends>
   <depends>Dart</depends>
   <depends>Git4Idea</depends>
 
