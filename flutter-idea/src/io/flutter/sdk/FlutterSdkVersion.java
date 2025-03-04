@@ -46,6 +46,9 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   @NotNull
   private static final FlutterSdkVersion MIN_SUPPORTS_DTD = new FlutterSdkVersion("3.22.0");
 
+  @NotNull
+  private static final FlutterSdkVersion MIN_SUPPORTS_PROPERTY_EDITOR = new FlutterSdkVersion("3.29.0");
+
   @Nullable
   private final Version version;
   @Nullable
@@ -125,6 +128,10 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   public boolean canUseDeepLinksTool() {
     return supportsVersion(MIN_SUPPORTS_DEEP_LINKS_TOOL);
+  }
+
+  public boolean canUsePropertyEditor() {
+    return supportsVersion(MIN_SUPPORTS_PROPERTY_EDITOR);
   }
 
   public boolean canUseDevToolsMultiEmbed() {
