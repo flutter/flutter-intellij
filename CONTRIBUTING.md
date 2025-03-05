@@ -212,14 +212,20 @@ name and contact info to the [AUTHORS](AUTHORS) file.
 1. One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin.
     - Find `Plugins` (in "File | Settings | Plugins") and install the Dart plugin, then restart the IDE if needed.
 
-2. Build the project using `Build` | `Build Project`.
+2. Add a license key for JX Browser
+    - **[Note]** This is only required if you are making changes to the embedded views.
+    - Make a copy of `jxbrowser.properties.template` and rename it as `jxbrowser.properties`
+    - Add a [license key](https://teamdev.com/jxbrowser/docs/guides/introduction/licensing/) for JX Browser
+    - ** [Googlers only]** License key can be found in Valentine.
 
-3. Try running the plugin; select the `flutter-intellij [runIde]` run config then click the Debug icon.
+3. Build the project using `Build` | `Build Project`.
+
+4. Try running the plugin; select the `flutter-intellij [runIde]` run config then click the Debug icon.
     This should open the "runtime workbench", a new instance of IntelliJ IDEA with the plugin installed.
 
-4. If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install".
+5. If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install".
 
-5. Verify installation of the Flutter plugin:
+6. Verify installation of the Flutter plugin:
     - Select `flutter-intellij [runIde]` in the Run Configuration drop-down list.
     - Click Debug button (to the right of that drop-down).
     - In the new IntelliJ process that spawns, open the `path/to/flutter/examples/hello_world` project.
