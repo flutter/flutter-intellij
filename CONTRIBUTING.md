@@ -112,7 +112,26 @@ name and contact info to the [AUTHORS](AUTHORS) file.
     - [IntelliJ Downloads](https://www.jetbrains.com/idea/download/)
     - Either the community edition (free) or Ultimate will work.
 
-2. [PLACHOLDER] Run [command?] to generate the `gradle.properties` file.
+2. Create a `gradle.properties` file.
+   - In the root directory, create an empty `gradle.properties` file (`touch gradle.properties`)
+   - Add the following to the file:
+   ```
+    name = "flutter-intellij
+    buildSpec=2024.3
+    flutterPluginVersion=1
+    ideaProduct=android-studio
+    ideaVersion=2024.3.1.7
+    baseVersion=243.22562.59
+    dartPluginVersion= 243.21565.120
+    androidPluginVersion=
+    sinceBuild=243
+    untilBuild=253.*
+    testing=true
+    kotlin.stdlib.default.dependency=false
+    org.gradle.parallel=true
+    org.gradle.jvmargs=-Xms1024m -Xmx4048m`
+    ```
+    - **[Note]** If you want, you can manually change these properties to target different versions of IntelliJ. See `product-matrix.json` to find which configurations are supported.
 
 3. Start the IntelliJ IDEA with the `flutter-intellij` project.
    - If you see a popup with "Gradle build scripts found",
@@ -212,11 +231,8 @@ name and contact info to the [AUTHORS](AUTHORS) file.
 1. One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin.
     - Find `Plugins` (in "File | Settings | Plugins") and install the Dart plugin, then restart the IDE if needed.
 
-2. Add a license key for JX Browser
+2. [Optional] Add a key for JX Browser (see **Working with Embedded DevTools (JxBrowser)** below)
     - **[Note]** This is only required if you are making changes to the embedded views.
-    - Make a copy of `jxbrowser.properties.template` and rename it as `jxbrowser.properties`
-    - Add a [license key](https://teamdev.com/jxbrowser/docs/guides/introduction/licensing/) for JX Browser
-    - ** [Googlers only]** License key can be found in Valentine.
 
 3. Build the project using `Build` | `Build Project`.
 
