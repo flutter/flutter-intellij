@@ -14,7 +14,6 @@ Contributing to Flutter Plugin for IntelliJ
   * [Adding platform sources](#adding-platform-sources)
   * [Working with Android Studio](#working-with-android-studio)
   * [Working with Embedded DevTools (JxBrowser)](#working-with-embedded-devtools-jxbrowser)
-  * [Signing commits](#signing-commits)
 <!-- TOC -->
 
 ## Contributing code
