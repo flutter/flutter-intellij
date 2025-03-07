@@ -13,7 +13,8 @@
       "androidPluginVersion": "",
       "sinceBuild": "233",
       "untilBuild": "233.*",
-      "isUnitTestTarget": "false"
+      "isUnitTestTarget": "false",
+      "javaVersion": "17"
     },
     {
       "channel": "stable",
@@ -28,7 +29,8 @@
       "androidPluginVersion": "",
       "sinceBuild": "241",
       "untilBuild": "241.*",
-      "isUnitTestTarget": "false"
+      "isUnitTestTarget": "false",
+      "javaVersion": "17"
     },
     {
       "channel": "stable",
@@ -43,7 +45,8 @@
       "androidPluginVersion": "",
       "sinceBuild": "242",
       "untilBuild": "242.*",
-      "isUnitTestTarget": "false"
+      "isUnitTestTarget": "false",
+      "javaVersion": "17"
     },
     {
       "channel": "stable",
@@ -54,11 +57,28 @@
       "ideaProduct": "android-studio",
       "ideaVersion": "2024.3.1.10",
       "baseVersion": "243.22562.59",
-      "dartPluginVersion": " 243.21565.120",
+      "dartPluginVersion": "243.21565.120",
       "androidPluginVersion": "",
       "sinceBuild": "243",
       "untilBuild": "253.*",
-      "isUnitTestTarget": "true"
+      "isUnitTestTarget": "true",
+      "javaVersion": "17"
+    },
+    {
+      "channel": "stable",
+      "comments": "IntelliJ 2025.1 Beta, Android Studio Meerkat 2024.3 EAP",
+      "name": "2025.1",
+      "version": "2025.1",
+      "ijVersion": "2025.1",
+      "ideaProduct": "IC",
+      "ideaVersion": "251.23774.16",
+      "baseVersion": "251.23774.16",
+      "dartPluginVersion": "251.23774.16",
+      "androidPluginVersion": "251.23774.16",
+      "sinceBuild": "243",
+      "untilBuild": "253.*",
+      "isUnitTestTarget": "true",
+      "javaVersion": "21"
     }
   ]
 }

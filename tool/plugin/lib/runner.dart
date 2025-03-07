@@ -73,6 +73,7 @@ androidPluginVersion=${spec.androidPluginVersion}
 sinceBuild=${spec.sinceBuild}
 untilBuild=${spec.untilBuild}
 testing=$testing
+javaVersion=${spec.javaVersion}
 kotlin.stdlib.default.dependency=false
 org.gradle.parallel=true
 org.gradle.jvmargs=-Xms1024m -Xmx4048m
