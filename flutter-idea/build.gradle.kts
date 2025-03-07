@@ -35,28 +35,38 @@ val dartPluginVersion = providers.gradleProperty("dartPluginVersion").get()
 val androidPluginVersion = providers.gradleProperty("androidPluginVersion").get()
 val sinceBuildInput = providers.gradleProperty("sinceBuild").get()
 val untilBuildInput = providers.gradleProperty("untilBuild").get()
+val javaVersion = providers.gradleProperty("javaVersion").get()
 group = "io.flutter"
 
+var jvmVersion = JvmTarget.JVM_17
+if (javaVersion == "21") {
+  jvmVersion = JvmTarget.JVM_21
+}
 kotlin {
   compilerOptions {
     apiVersion.set(KotlinVersion.KOTLIN_1_9)
-    jvmTarget = JvmTarget.JVM_17
+    jvmTarget = jvmVersion
   }
 }
-val javaCompatibilityVersion = JavaVersion.VERSION_17
+
+var javaCompatibilityVersion = JavaVersion.VERSION_17
+if (javaVersion == "21") {
+  javaCompatibilityVersion = JavaVersion.VERSION_21
+}
 java {
   sourceCompatibility = javaCompatibilityVersion
   targetCompatibility = javaCompatibilityVersion
 }
 
+
 dependencies {
   intellijPlatform {
-    // Documentation on the create(...) methods:
-    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#custom-target-platforms
+    // Documentation on the default target platform methods:
+    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
     if (ideaProduct == "android-studio") {
-      create(IntelliJPlatformType.AndroidStudio, ideaVersion)
+      androidStudio(ideaVersion)
     } else { // if (ideaProduct == "IC") {
-      create(IntelliJPlatformType.IntellijIdeaCommunity, ideaVersion)
+      intellijIdeaCommunity(ideaVersion)
     }
     testFramework(TestFrameworkType.Platform)
 

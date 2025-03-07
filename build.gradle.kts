@@ -37,6 +37,7 @@ plugins {
   id("org.jetbrains.kotlin.jvm") version "2.1.0"
 }
 
+// TODO(mossmana) These properties are duplicated in flutter-idea/build.gradle.kts and flutter-studio/build.gradle.kts. Should be consolidated.
 val flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()
 val ideaProduct = providers.gradleProperty("ideaProduct").get()
 val ideaVersion = providers.gradleProperty("ideaVersion").get()
@@ -45,6 +46,7 @@ val dartPluginVersion = providers.gradleProperty("dartPluginVersion").get()
 val androidPluginVersion = providers.gradleProperty("androidPluginVersion").get()
 val sinceBuildInput = providers.gradleProperty("sinceBuild").get()
 val untilBuildInput = providers.gradleProperty("untilBuild").get()
+val javaVersion = providers.gradleProperty("javaVersion").get()
 group = "io.flutter"
 
 // For debugging purposes:
@@ -55,15 +57,24 @@ println("dartPluginVersion: $dartPluginVersion")
 println("androidPluginVersion: $androidPluginVersion")
 println("sinceBuild: $sinceBuildInput")
 println("untilBuild: $untilBuildInput")
+println("javaVersion: $javaVersion")
 println("group: $group")
 
+var jvmVersion = JvmTarget.JVM_17
+if (javaVersion == "21") {
+  jvmVersion = JvmTarget.JVM_21
+}
 kotlin {
   compilerOptions {
     apiVersion.set(KotlinVersion.KOTLIN_1_9)
-    jvmTarget = JvmTarget.JVM_17
+    jvmTarget = jvmVersion
   }
 }
-val javaCompatibilityVersion = JavaVersion.VERSION_17
+
+var javaCompatibilityVersion = JavaVersion.VERSION_17
+if (javaVersion == "21") {
+  javaCompatibilityVersion = JavaVersion.VERSION_21
+}
 java {
   sourceCompatibility = javaCompatibilityVersion
   targetCompatibility = javaCompatibilityVersion
@@ -71,12 +82,12 @@ java {
 
 dependencies {
   intellijPlatform {
-    // Documentation on the create(...) methods:
-    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#custom-target-platforms
+    // Documentation on the default target platform methods:
+    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
     if (ideaProduct == "android-studio") {
-      create(IntelliJPlatformType.AndroidStudio, ideaVersion)
-    } else {//if (ide == "ideaIC") {
-      create(IntelliJPlatformType.IntellijIdeaCommunity, ideaVersion)
+      androidStudio(ideaVersion)
+    } else { // if (ideaProduct == "IC") {
+      intellijIdeaCommunity(ideaVersion)
     }
     testFramework(TestFrameworkType.Platform)
 
