@@ -5,7 +5,11 @@ Contributing to Flutter Plugin for IntelliJ
 * [Contributing to Flutter Plugin for IntelliJ](#contributing-to-flutter-plugin-for-intellij)
   * [Contributing code](#contributing-code)
   * [Getting started](#getting-started)
-  * [Setting environments](#setting-environments)
+  * [Environment set-up](#environment-set-up)
+  * [IntelliJ set-up](#intellij-set-up)
+    * [Configure "Project Structure" settings](#configure-project-structure-settings)
+    * [Configure the Gradle settings](#configure-the-gradle-settings)
+    * [Build and run the plugin](#build-and-run-the-plugin)
     * [Handle symlinks](#handle-symlinks)
   * [Provision Tool](#provision-tool)
   * [Running plugin tests](#running-plugin-tests)
@@ -176,7 +180,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
     Internal Java Platform: IDEA JBR 21
     ``` 
 
-3. Set the SDK for the Project
+4. Set the SDK for the Project
     - Select "Project Settings > Project"
     - Change the "SDK" selection to the **IntelliJ Platform Plugin SDK** you added in step 3.
     - When you are done, your settings should look something like:
@@ -184,13 +188,13 @@ name and contact info to the [AUTHORS](AUTHORS) file.
     SDK: IntelliJ IDEA Community Edition IC-243.23654.189
     ```
 
-4. Configure the modules for the Project
+5. Configure the modules for the Project
     - Select "Project Settings > Modules"
     - Select the `flutter-intellij > flutter-idea` module
     - Switch to the "Paths" window
     - Select the **Inherit project compile output path** option then apply.
 
-5. Change the modules SDK to the Project SDK
+6. Change the modules SDK to the Project SDK
     - Select "Project Settings > Modules"
     - Select all the sub-directories under the `flutter-intellij > flutter-idea` module
     - Switch to the "Dependencies" window
