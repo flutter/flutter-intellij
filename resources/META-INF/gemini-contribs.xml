@@ -1,0 +1,6 @@
+<!-- Defines Gemini Code Assist extensions. -->
+<!--    https://developers.google.com/gemini-code-assist/docs/overview-->
+<!--    https://plugins.jetbrains.com/plugin/24198-gemini-code-assist-->
+<!--    https://developer.android.com/studio/preview/gemini-->
+<idea-plugin>
+</idea-plugin>
