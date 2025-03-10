@@ -2,21 +2,6 @@
   "list": [
     {
       "channel": "stable",
-      "comments": "IntelliJ 2023.3, Android Studio Jellyfish 2023.3",
-      "name": "2023.3",
-      "version": "2023.3",
-      "ijVersion": "2023.3",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "2023.3.1.16",
-      "baseVersion": "233.14808.21",
-      "dartPluginVersion": "233.15271",
-      "androidPluginVersion": "",
-      "sinceBuild": "233",
-      "untilBuild": "233.*",
-      "isUnitTestTarget": "false"
-    },
-    {
-      "channel": "stable",
       "comments": "IntelliJ 2024.1, Android Studio Koala 2024.1",
       "name": "2024.1",
       "version": "2024.1",

@@ -90,6 +90,7 @@ dependencies {
       "org.jetbrains.kotlin",
       "org.jetbrains.plugins.gradle",
       "org.intellij.intelliLang",
+      "com.google.tools.ij.aiplugin",
     )
     if (ideaProduct == "android-studio") {
       bundledPluginList.add("org.jetbrains.android")
