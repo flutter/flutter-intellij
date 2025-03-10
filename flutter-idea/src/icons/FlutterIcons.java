@@ -14,6 +14,7 @@ public class FlutterIcons {
   public static final Icon DevTools = load("/icons/expui/devTools.svg");
   public static final Icon DevToolsExtensions = load("/icons/expui/extensions.svg");
   public static final Icon DevToolsInspector = load("icons/expui/inspector.svg");
+  public static final Icon PropertyEditor = load("/icons/expui/propertyEditor.svg");
 
   public static final Icon Flutter_13_2x = load("/icons/flutter_13@2x.png");
   public static final Icon Flutter_64 = load("/icons/flutter_64.png");
