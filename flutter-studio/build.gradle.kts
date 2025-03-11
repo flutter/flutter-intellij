@@ -70,7 +70,7 @@ dependencies {
     }
     testFramework(TestFrameworkType.Platform)
 
-    // Plugin dependnecy documentation:
+    // Plugin dependency documentation:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
     val bundledPluginList = mutableListOf(
       "com.intellij.java",
@@ -80,8 +80,11 @@ dependencies {
       "org.jetbrains.kotlin",
       "org.jetbrains.plugins.gradle",
       "org.intellij.intelliLang",
-      "com.google.tools.ij.aiplugin",
-    )
+      "org.intellij.intelliLang")
+    // TODO(mossman) - this check should be removed when 2025.1 supports the Gemini Code Assist plugin (https://github.com/flutter/flutter-intellij/issues/7965)
+    if (ideaVersion.startsWith("225.")) {
+      bundledPluginList.add("com.google.tools.ij.aiplugin")
+    }
     if (ideaProduct == "android-studio") {
       bundledPluginList.add("org.jetbrains.android")
       bundledPluginList.add("com.android.tools.idea.smali")
