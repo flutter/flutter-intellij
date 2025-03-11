@@ -7,7 +7,8 @@
 # Fast fail the script on failures.
 set -e
 
-export JAVA_HOME=$JAVA_HOME_17_X64
+export JAVA_HOME=$JAVA_HOME_21_X64
+echo "\$JAVA_HOME = $JAVA_HOME"
 
 # Clone and configure Flutter to the latest stable release
 git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
