@@ -7,7 +7,18 @@
 # Fast fail the script on failures.
 set -e
 
-echo "JAVA_HOME=$JAVA_HOME"
+echo "ls /usr/lib/jvm"
+ls /usr/lib/jvm
+echo "System Java version:"
+java --version
+echo "export JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64"
+export JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64
+echo "ls $JAVA_HOME"
+ls $JAVA_HOME
+echo "export PATH=$JAVA_HOME/jre/bin:\$PATH"
+export PATH=$JAVA_HOME/jre/bin:$PATH
+echo "Updated Java version:"
+java --version
 
 # Clone and configure Flutter to the latest stable release
 git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
@@ -27,10 +38,6 @@ if [ "$IDEA_VERSION" = "4.0" -o "$IDEA_VERSION" = "4.1" ] ; then
 
 fi
 
-echo "ls /user/lib/jvm"
-ls /usr/lib/jvm
-echo "ls /Library/Java"
-ls /Library/Java
 echo "java --version"
 java --version
 
