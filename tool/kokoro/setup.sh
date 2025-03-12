@@ -10,6 +10,8 @@ setup() {
   # set -x
 
   export JAVA_HOME_OLD=$JAVA_HOME
+  echo "\$JAVA_HOME_OLD=$JAVA_HOME"
+  echo "curl https://download.oracle.com/java/17/archive/jdk-17.0.4.1_macos-x64_bin.tar.gz > ../java.tar.gz"
   curl https://download.oracle.com/java/17/archive/jdk-17.0.4.1_macos-x64_bin.tar.gz > ../java.tar.gz
   (cd ..; tar fx java.tar.gz)
 
