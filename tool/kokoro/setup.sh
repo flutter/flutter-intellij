@@ -9,8 +9,8 @@ setup() {
   # that no confidential information is displayed.
   # set -x
 
-  export JAVA_VERSION_OLD=`java -version`
-  echo "\$JAVA_VERSION_OLD=$JAVA_VERSION"
+  echo "Old java version:"
+  java -version
   export JAVA_HOME_OLD=$JAVA_HOME
   echo "\$JAVA_HOME_OLD=$JAVA_HOME"
   echo "curl https://download.oracle.com/java/17/archive/jdk-17.0.4.1_macos-x64_bin.tar.gz > ../java.tar.gz"
@@ -23,6 +23,7 @@ setup() {
   export PATH=$PATH:$JAVA_HOME/bin
   export JAVA_OPTS=" -Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true"
   echo "JAVA_HOME=$JAVA_HOME"
+  echo "New java version:"
   java -version
 
   # Clone and configure Flutter to the latest stable release
