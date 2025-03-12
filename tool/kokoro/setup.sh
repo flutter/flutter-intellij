@@ -9,22 +9,28 @@ setup() {
   # that no confidential information is displayed.
   # set -x
 
-  echo "Old java version:"
+  # Set to 0 to use the system java, 1 to download/install a different version of java
+  export USE_CUSTOM_JAVA = 0
+
+  echo "System Java version:"
   java --version
+  # JAVA_HOME_OLD is used by runner.dart
   export JAVA_HOME_OLD=$JAVA_HOME
   echo "\$JAVA_HOME_OLD=$JAVA_HOME"
-  echo "curl https://download.oracle.com/java/17/archive/jdk-17.0.4.1_macos-x64_bin.tar.gz > ../java.tar.gz"
-  curl https://download.oracle.com/java/17/archive/jdk-17.0.4.1_macos-x64_bin.tar.gz > ../java.tar.gz
-  (cd ..; tar fx java.tar.gz)
-  export JAVA_VERSION=`java --version`
-  echo "\$JAVA_VERSION=$JAVA_VERSION"
 
-  export JAVA_HOME=`pwd`/../jdk-17.0.4.1.jdk/Contents/Home
-  export PATH=$PATH:$JAVA_HOME/bin
+  if [ "$USE_CUSTOM_JAVA" = 1 ] ; then
+    echo "curl https://download.oracle.com/java/17/archive/jdk-17.0.4.1_macos-x64_bin.tar.gz > ../java.tar.gz"
+    curl https://download.oracle.com/java/17/archive/jdk-17.0.4.1_macos-x64_bin.tar.gz > ../java.tar.gz
+    (cd ..; tar fx java.tar.gz)
+    echo "Custom java version:"
+    java --version
+
+    export JAVA_HOME=`pwd`/../jdk-17.0.4.1.jdk/Contents/Home
+    echo "JAVA_HOME=$JAVA_HOME"
+    export PATH=$PATH:$JAVA_HOME/bin
+  fi
+
   export JAVA_OPTS=" -Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true"
-  echo "JAVA_HOME=$JAVA_HOME"
-  echo "New java version:"
-  java --version
 
   # Clone and configure Flutter to the latest stable release
   git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
