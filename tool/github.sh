@@ -7,6 +7,7 @@
 # Fast fail the script on failures.
 set -e
 
+# Log Java information that can be used whenever Java needs to be updated
 echo "ls /usr/lib/jvm"
 ls /usr/lib/jvm
 echo "System Java version:"
@@ -15,10 +16,9 @@ echo "export JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64"
 export JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64
 echo "ls $JAVA_HOME"
 ls $JAVA_HOME
-echo "export PATH=$JAVA_HOME/jre/bin:\$PATH"
-export PATH=$JAVA_HOME/jre/bin:$PATH
-echo "Updated Java version:"
-java --version
+# Path is not used by the build, only by java --version
+echo "export PATH=$JAVA_HOME/bin:\$PATH"
+export PATH=$JAVA_HOME/bin:$PATH
 
 # Clone and configure Flutter to the latest stable release
 git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
@@ -27,7 +27,8 @@ flutter config --no-analytics
 flutter doctor
 export FLUTTER_SDK=`pwd`/../flutter
 
-echo "IDEA_VERSION = $IDEA_VERSION"
+echo "IDEA_VERSION=$IDEA_VERSION"
+# TODO(mossmana): https://github.com/flutter/flutter-intellij/issues/7967
 if [ "$IDEA_VERSION" = "4.0" -o "$IDEA_VERSION" = "4.1" ] ; then
 
   # Install Java 8 if running on 4.0 or 4.1.
