@@ -12,8 +12,6 @@ setup() {
   # Set to 0 to use the system java, 1 to download/install a different version of java
   export USE_CUSTOM_JAVA=0
 
-  echo "Installed versions of java:"
-  /usr/libexec/java_home -V
   echo "System Java version:"
   java --version
   # JAVA_HOME_OLD is used by runner.dart

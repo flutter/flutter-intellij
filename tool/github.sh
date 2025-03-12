@@ -27,8 +27,10 @@ if [ "$IDEA_VERSION" = "4.0" -o "$IDEA_VERSION" = "4.1" ] ; then
 
 fi
 
-echo "Installed versions of java:"
-/usr/libexec/java_home -V
+echo "ls /user/lib/jvm"
+ls /user/lib/jvm
+echo "ls /Library/Java"
+ls /Library/Java
 echo "java --version"
 java --version
 
