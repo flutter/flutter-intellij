@@ -7,7 +7,7 @@
 # Fast fail the script on failures.
 set -e
 
-export JAVA_HOME=$JAVA_HOME_21_X64
+export JAVA_HOME=$JAVA_HOME_21_arm64
 echo "\$JAVA_HOME = $JAVA_HOME"
 
 # Clone and configure Flutter to the latest stable release
@@ -17,6 +17,7 @@ flutter config --no-analytics
 flutter doctor
 export FLUTTER_SDK=`pwd`/../flutter
 
+echo "\$IDEA_VERSION = $IDEA_VERSION"
 if [ "$IDEA_VERSION" = "4.0" -o "$IDEA_VERSION" = "4.1" ] ; then
 
   # Install Java 8 if running on 4.0 or 4.1.
