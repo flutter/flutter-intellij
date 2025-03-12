@@ -10,7 +10,7 @@ setup() {
   # set -x
 
   # Set to 0 to use the system java, 1 to download/install a different version of java
-  export USE_CUSTOM_JAVA = 0
+  export USE_CUSTOM_JAVA=0
 
   echo "System Java version:"
   java --version
