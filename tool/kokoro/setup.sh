@@ -12,11 +12,13 @@ setup() {
   # Set to 0 to use the system java, 1 to download/install a different version of java
   export USE_CUSTOM_JAVA=0
 
+  echo "Installed versions of java:"
+  /usr/libexec/java_home -V
   echo "System Java version:"
   java --version
   # JAVA_HOME_OLD is used by runner.dart
   export JAVA_HOME_OLD=$JAVA_HOME
-  echo "\$JAVA_HOME_OLD=$JAVA_HOME"
+  echo "export JAVA_HOME_OLD=$JAVA_HOME"
 
   if [ "$USE_CUSTOM_JAVA" = 1 ] ; then
     echo "curl https://download.oracle.com/java/17/archive/jdk-17.0.4.1_macos-x64_bin.tar.gz > ../java.tar.gz"

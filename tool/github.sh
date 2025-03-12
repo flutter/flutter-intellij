@@ -7,7 +7,7 @@
 # Fast fail the script on failures.
 set -e
 
-echo "\$JAVA_HOME=$JAVA_HOME"
+echo "JAVA_HOME=$JAVA_HOME"
 
 # Clone and configure Flutter to the latest stable release
 git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
@@ -16,7 +16,7 @@ flutter config --no-analytics
 flutter doctor
 export FLUTTER_SDK=`pwd`/../flutter
 
-echo "\$IDEA_VERSION = $IDEA_VERSION"
+echo "IDEA_VERSION = $IDEA_VERSION"
 if [ "$IDEA_VERSION" = "4.0" -o "$IDEA_VERSION" = "4.1" ] ; then
 
   # Install Java 8 if running on 4.0 or 4.1.
@@ -27,7 +27,10 @@ if [ "$IDEA_VERSION" = "4.0" -o "$IDEA_VERSION" = "4.1" ] ; then
 
 fi
 
-java -version
+echo "Installed versions of java:"
+/usr/libexec/java_home -V
+echo "java --version"
+java --version
 
 # Get packages for the top-level grind script utilities.
 echo "pub get `pwd`"
