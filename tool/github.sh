@@ -28,7 +28,7 @@ if [ "$IDEA_VERSION" = "4.0" -o "$IDEA_VERSION" = "4.1" ] ; then
 fi
 
 echo "ls /user/lib/jvm"
-ls /user/lib/jvm
+ls /usr/lib/jvm
 echo "ls /Library/Java"
 ls /Library/Java
 echo "java --version"
