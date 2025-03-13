@@ -7,7 +7,18 @@
 # Fast fail the script on failures.
 set -e
 
-export JAVA_HOME=$JAVA_HOME_17_X64
+# Log Java information that can be used whenever Java needs to be updated
+echo "ls /usr/lib/jvm"
+ls /usr/lib/jvm
+echo "System Java version:"
+java --version
+echo "export JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64"
+export JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64
+echo "ls $JAVA_HOME"
+ls $JAVA_HOME
+# Path is not used by the build, only by java --version
+echo "export PATH=$JAVA_HOME/bin:\$PATH"
+export PATH=$JAVA_HOME/bin:$PATH
 
 # Clone and configure Flutter to the latest stable release
 git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
@@ -16,6 +27,8 @@ flutter config --no-analytics
 flutter doctor
 export FLUTTER_SDK=`pwd`/../flutter
 
+echo "IDEA_VERSION=$IDEA_VERSION"
+# TODO(mossmana): https://github.com/flutter/flutter-intellij/issues/7967
 if [ "$IDEA_VERSION" = "4.0" -o "$IDEA_VERSION" = "4.1" ] ; then
 
   # Install Java 8 if running on 4.0 or 4.1.
@@ -26,7 +39,8 @@ if [ "$IDEA_VERSION" = "4.0" -o "$IDEA_VERSION" = "4.1" ] ; then
 
 fi
 
-java -version
+echo "java --version"
+java --version
 
 # Get packages for the top-level grind script utilities.
 echo "pub get `pwd`"

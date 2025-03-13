@@ -35,32 +35,42 @@ val dartPluginVersion = providers.gradleProperty("dartPluginVersion").get()
 val androidPluginVersion = providers.gradleProperty("androidPluginVersion").get()
 val sinceBuildInput = providers.gradleProperty("sinceBuild").get()
 val untilBuildInput = providers.gradleProperty("untilBuild").get()
+val javaVersion = providers.gradleProperty("javaVersion").get()
 group = "io.flutter"
 
+var jvmVersion = JvmTarget.JVM_17
+if (javaVersion == "21") {
+  jvmVersion = JvmTarget.JVM_21
+}
 kotlin {
   compilerOptions {
     apiVersion.set(KotlinVersion.KOTLIN_1_9)
-    jvmTarget = JvmTarget.JVM_17
+    jvmTarget = jvmVersion
   }
 }
-val javaCompatibilityVersion = JavaVersion.VERSION_17
+
+var javaCompatibilityVersion = JavaVersion.VERSION_17
+if (javaVersion == "21") {
+  javaCompatibilityVersion = JavaVersion.VERSION_21
+}
 java {
   sourceCompatibility = javaCompatibilityVersion
   targetCompatibility = javaCompatibilityVersion
 }
 
+
 dependencies {
   intellijPlatform {
-    // Documentation on the create(...) methods:
-    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#custom-target-platforms
+    // Documentation on the default target platform methods:
+    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
     if (ideaProduct == "android-studio") {
-      create(IntelliJPlatformType.AndroidStudio, ideaVersion)
+      androidStudio(ideaVersion)
     } else { // if (ideaProduct == "IC") {
-      create(IntelliJPlatformType.IntellijIdeaCommunity, ideaVersion)
+      intellijIdeaCommunity(ideaVersion)
     }
     testFramework(TestFrameworkType.Platform)
 
-    // Plugin dependnecy documentation:
+    // Plugin dependency documentation:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
     val bundledPluginList = mutableListOf(
       "com.intellij.java",
@@ -69,9 +79,11 @@ dependencies {
       "Git4Idea",
       "org.jetbrains.kotlin",
       "org.jetbrains.plugins.gradle",
-      "org.intellij.intelliLang",
-      "com.google.tools.ij.aiplugin",
-    )
+      "org.intellij.intelliLang")
+    // TODO(mossman) - this check should be removed when 2025.1 supports the Gemini Code Assist plugin (https://github.com/flutter/flutter-intellij/issues/7965)
+    if (ideaVersion.startsWith("225.")) {
+      bundledPluginList.add("com.google.tools.ij.aiplugin")
+    }
     if (ideaProduct == "android-studio") {
       bundledPluginList.add("org.jetbrains.android")
       bundledPluginList.add("com.android.tools.idea.smali")
