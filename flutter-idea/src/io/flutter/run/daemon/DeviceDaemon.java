@@ -54,7 +54,7 @@ class DeviceDaemon {
   /**
    * Attempt to start the daemon this many times before showing the user a warning that the daemon is having trouble starting up.
    */
-  private static final int RESTART_ATTEMPTS_BEFORE_WARNING = 1;
+  private static final int RESTART_ATTEMPTS_BEFORE_WARNING = 3;
 
   /**
    * A unique id used to log device daemon actions.

@@ -227,12 +227,9 @@ public class Refreshable<T> implements Closeable {
           // This is normal.
         }
         catch (Exception e) {
-          if (!Objects.equal(e.getMessage(), "expected failure in test")) {
-            FlutterUtils.warn(LOG, "Callback threw an exception while updating a Refreshable", e);
+          if (!Objects.equals(e.getMessage(), "expected failure in test")) {
+            FlutterUtils.warn(LOG, "Callback threw an exception while updating a Refreshable: " + e.getClass().getSimpleName() + " - " + e.getMessage(), e);
           }
-        }
-        finally {
-          schedule.done(request);
         }
 
         try {
@@ -582,3 +579,5 @@ public class Refreshable<T> implements Closeable {
     }
   }
 }
+
+[end of flutter-idea/src/io/flutter/utils/Refreshable.java]

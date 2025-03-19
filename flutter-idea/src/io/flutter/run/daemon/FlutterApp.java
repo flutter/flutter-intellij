@@ -595,19 +595,11 @@ public class FlutterApp implements Disposable {
       else {
         stopDone = myDaemonApi.stopApp(appId);
       }
-      final Stopwatch watch = Stopwatch.createStarted();
-      while (watch.elapsed(TimeUnit.SECONDS) < 10 && getState() == State.TERMINATING) {
-        try {
-          stopDone.get(100, TimeUnit.MILLISECONDS);
-          break;
-        }
-        catch (TimeoutException e) {
-          // continue
-        }
-        catch (Exception e) {
-          // Ignore errors from app.stop.
-          break;
-        }
+      try {
+        // We wait for a maximum of 10 seconds to allow the process to shut down gracefully
+        stopDone.get(10, TimeUnit.SECONDS);
+      } catch (Exception e) {
+        // Ignore errors from app.stop.
       }
 
       // If it didn't work, shut down abruptly.
@@ -839,7 +831,7 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
   public void onAppDebugPort(@NotNull DaemonEvent.AppDebugPort debugInfo) {
     app.setWsUrl(debugInfo.wsUri);
 
-    // Print the conneciton info to the console.
+    // Print the connection info to the console.
     final ConsoleView console = app.getConsole();
     if (console != null) {
       console.print("Debug service listening on " + debugInfo.wsUri + "\n", ConsoleViewContentType.NORMAL_OUTPUT);

@@ -44,6 +44,7 @@ public class FlutterDoctorAction extends FlutterSdkAction {
     }
     else {
       FlutterUtils.warn(LOG, "No \"doctorScript\" script in the flutter.json file.");
+      // TODO: Update the Bazel workspace's flutter.json file to include the correct path to the doctorScript.
     }
   }
 

@@ -128,7 +128,7 @@ public class AndroidSdk {
       return emulators;
     }
     catch (ExecutionException | RuntimeException e) {
-      FlutterUtils.warn(LOG, "Error listing android emulators", e);
+      FlutterUtils.warn(LOG, "Error listing android emulators. Please check your Android SDK configuration.", e);
       return Collections.emptyList();
     }
   }
