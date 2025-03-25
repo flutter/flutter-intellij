@@ -33,8 +33,8 @@ plugins {
   // https://github.com/JetBrains/intellij-platform-gradle-plugin/releases
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   // TODO(jwren) "2.2.0" can't be used to build 2023.3, as soon as we don't support this version, update the version here and elsewhere:
-  id("org.jetbrains.intellij.platform") version "2.1.0"
-  id("org.jetbrains.kotlin.jvm") version "2.1.0"
+  id("org.jetbrains.intellij.platform") version "2.4.0"
+  id("org.jetbrains.kotlin.jvm") version "2.1.20"
 }
 
 // TODO(mossmana) These properties are duplicated in flutter-idea/build.gradle.kts and flutter-studio/build.gradle.kts. Should be consolidated.
@@ -119,13 +119,6 @@ dependencies {
     // https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html#project-setup
     bundledPlugins(bundledPluginList)
     plugins(pluginList)
-
-    // The warning that "instrumentationTools()" is deprecated might be valid, however, this error is produced by Gradle IJ plugin version
-    // 2.1.0 if this isn't included:
-    //  Caused by: org.gradle.api.GradleException: No Java Compiler dependency found.
-    //  Please ensure the `instrumentationTools()` entry is present in the project dependencies section along with the `intellijDependencies()` entry in the repositories section.
-    //  See: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
-    instrumentationTools()
     pluginVerifier()
   }
 }
