@@ -50,7 +50,7 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2025.1 Beta, Android Studio Meerkat 2024.3 EAP",
+      "comments": "IntelliJ 2025.1 Beta, Android Studio Narwhal 2025.1 Canary",
       "name": "2025.1",
       "version": "2025.1",
       "ijVersion": "2025.1",
