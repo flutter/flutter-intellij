@@ -9,7 +9,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -19,7 +18,6 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.util.DotPackagesFileUtil;
 import io.flutter.FlutterUtils;
 import org.jetbrains.annotations.NotNull;
@@ -141,18 +139,11 @@ public class PubRoot {
     if (dir == null || !dir.isDirectory() || dir.getPath().endsWith("/")) {
       return null;
     }
-    VirtualFile pubspec = null;
-    try {
-      pubspec = ReadAction.nonBlocking(() -> {
-        return dir.findChild(PUBSPEC_YAML);
-      }).submit(AppExecutorUtil.getAppExecutorService()).get();
-    } catch (Exception e) {
-      // do nothing
-    }
-
+    final VirtualFile pubspec = dir.findChild(PUBSPEC_YAML);
     if (pubspec == null || !pubspec.exists() || pubspec.isDirectory()) {
       return null;
-    } else {
+    }
+    else {
       return new PubRoot(dir, pubspec);
     }
   }
@@ -194,6 +185,7 @@ public class PubRoot {
 
   /**
    * Returns true if the given file is a directory that contains tests.
+   *
    * @noinspection BooleanMethodIsAlwaysInverted
    */
   public boolean hasTests(@NotNull VirtualFile dir) {
@@ -314,6 +306,7 @@ public class PubRoot {
   /**
    * Returns true if the packages are up-to-date with regard to the `pubspec.yaml`. The `.packages` file is used if no
    * `.tool/package_config.json` is found.  The default value returned is to return false.
+   *
    * @noinspection BooleanMethodIsAlwaysInverted
    */
   public boolean hasUpToDatePackages() {
