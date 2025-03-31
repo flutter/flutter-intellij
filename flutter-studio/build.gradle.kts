@@ -25,7 +25,7 @@ plugins {
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("java")
   id("org.jetbrains.intellij.platform.module")
-  id("org.jetbrains.kotlin.jvm") version "2.1.0"
+  id("org.jetbrains.kotlin.jvm") version "2.1.20"
 }
 
 val flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()
@@ -98,13 +98,6 @@ dependencies {
     // https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html#project-setup
     bundledPlugins(bundledPluginList)
     plugins(pluginList)
-
-    // The warning that "instrumentationTools()" is deprecated might be valid, however, this error is produced by Gradle IJ plugin version
-    // 2.1.0 if this isn't included:
-    //  Caused by: org.gradle.api.GradleException: No Java Compiler dependency found.
-    //  Please ensure the `instrumentationTools()` entry is present in the project dependencies section along with the `intellijDependencies()` entry in the repositories section.
-    //  See: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
-    instrumentationTools()
   }
 }
 
