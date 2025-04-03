@@ -116,7 +116,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
    - In the root directory, create an empty `gradle.properties` file (`touch gradle.properties`)
    - Add the following to the file:
    ```
-    name = "flutter-intellij
+    name = "flutter-intellij"
     buildSpec=2024.3
     flutterPluginVersion=1
     ideaProduct=android-studio
@@ -129,7 +129,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
     testing=true
     kotlin.stdlib.default.dependency=false
     org.gradle.parallel=true
-    org.gradle.jvmargs=-Xms1024m -Xmx4048m`
+    org.gradle.jvmargs=-Xms1024m -Xmx4048m
     ```
     - **[Note]** If you want, you can manually change these properties to target different versions of IntelliJ. See `product-matrix.json` to find which configurations are supported.
 
