@@ -423,7 +423,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
     final Font font = getBaseFont();
 
-    width += computeTextWidth(font, mainTextOnly);
+    width += (int)computeTextWidth(font, mainTextOnly);
     width += myIpad.right + borderInsets.right;
 
     // Take into account that the component itself can have a border
