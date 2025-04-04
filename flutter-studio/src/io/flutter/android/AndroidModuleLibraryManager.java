@@ -134,7 +134,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
       if (library.getName() != null && !knownLibraryNames.contains(library.getName())) {
 
         List<String> roots = Arrays.asList(library.getRootProvider().getUrls(OrderRootType.CLASSES));
-        Set<String> filteredRoots = roots.stream().filter(s -> shouldIncludeRoot(s)).collect(Collectors.toSet());
+        Set<String> filteredRoots = roots.stream().filter(AndroidModuleLibraryManager::shouldIncludeRoot).collect(Collectors.toSet());
         if (filteredRoots.isEmpty()) continue;
 
         HashSet<String> sources = new HashSet<>(Arrays.asList(library.getRootProvider().getUrls(OrderRootType.SOURCES)));

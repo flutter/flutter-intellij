@@ -171,8 +171,7 @@ public class ActiveEditorsOutlineServiceTest {
 
     @Override
     public void onOutlineChanged(@NotNull String path, FlutterOutline outline) {
-      final Integer changes = outlineChanged.get(path);
-      outlineChanged.put(path, changes == null ? 1 : changes + 1);
+      outlineChanged.compute(path, (k, changes) -> changes == null ? 1 : changes + 1);
       mostRecentPath = path;
       mostRecentOutline = outline;
     }
