@@ -81,10 +81,6 @@ dependencies {
       "org.jetbrains.plugins.gradle",
       "org.intellij.intelliLang",
       "org.intellij.intelliLang")
-    // TODO(mossman) - this check should be removed when 2025.1 supports the Gemini Code Assist plugin (https://github.com/flutter/flutter-intellij/issues/7965)
-    if (ideaVersion.startsWith("225.")) {
-      bundledPluginList.add("com.google.tools.ij.aiplugin")
-    }
     if (ideaProduct == "android-studio") {
       bundledPluginList.add("org.jetbrains.android")
       bundledPluginList.add("com.android.tools.idea.smali")
