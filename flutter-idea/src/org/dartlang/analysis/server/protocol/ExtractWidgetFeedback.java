@@ -63,8 +63,7 @@ public class ExtractWidgetFeedback extends RefactoringFeedback {
   }
 
   public JsonObject toJson() {
-    JsonObject jsonObject = new JsonObject();
-    return jsonObject;
+    return new JsonObject();
   }
 
   @Override
