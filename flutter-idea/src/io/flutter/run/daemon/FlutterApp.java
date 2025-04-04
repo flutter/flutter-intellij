@@ -780,8 +780,6 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
   private final @NotNull FlutterApp app;
   private final @NotNull ProgressHelper progress;
 
-  private final AtomicReference<Stopwatch> stopwatch = new AtomicReference<>();
-
   FlutterAppDaemonEventListener(@NotNull FlutterApp app, @NotNull Project project) {
     this.app = app;
     this.progress = new ProgressHelper(project);
@@ -887,8 +885,6 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
           app.getConsole().clear();
         }
       }
-
-      stopwatch.set(Stopwatch.createStarted());
     }
 
     if (app.getConsole() != null) {
