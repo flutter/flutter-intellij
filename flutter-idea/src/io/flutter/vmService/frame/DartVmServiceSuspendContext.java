@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public class DartVmServiceSuspendContext extends XSuspendContext {
   @NotNull private final DartVmServiceDebugProcess myDebugProcess;
@@ -47,7 +48,7 @@ public class DartVmServiceSuspendContext extends XSuspendContext {
       final Collection<IsolatesInfo.IsolateInfo> isolateInfos = myDebugProcess.getIsolateInfos();
       myExecutionStacks = new ArrayList<>(isolateInfos.size());
       for (IsolatesInfo.IsolateInfo isolateInfo : isolateInfos) {
-        if (isolateInfo.getIsolateId().equals(myActiveExecutionStack.getIsolateId())) {
+        if (Objects.equals(isolateInfo.getIsolateId(), myActiveExecutionStack.getIsolateId())) {
           myExecutionStacks.add(myActiveExecutionStack);
         }
         else {

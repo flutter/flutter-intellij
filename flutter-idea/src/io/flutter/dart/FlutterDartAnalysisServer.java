@@ -287,7 +287,7 @@ public class FlutterDartAnalysisServer implements Disposable {
   private void processNotification(JsonObject response, @NotNull JsonElement eventName) {
     // If we add code to handle more event types below, update the filter in processString().
     final String event = eventName.getAsString();
-    if (event.equals(FLUTTER_NOTIFICATION_OUTLINE)) {
+    if (Objects.equals(event, FLUTTER_NOTIFICATION_OUTLINE)) {
       final JsonObject paramsObject = response.get("params").getAsJsonObject();
       final String file = paramsObject.get("file").getAsString();
 

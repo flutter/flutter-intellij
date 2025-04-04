@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -170,7 +171,7 @@ public class FlutterConsoleFilter implements Filter {
           highlightLength = pathPart.length();
           break;
         }
-        else if (split.length == 4 && split[0].equals("file")) {
+        else if (split.length == 4 && Objects.equals(split[0], "file")) {
           // part = file:///Users/user/AndroidStudioProjects/flutter_app/test/widget_test.dart:23:18
           try {
             // Reconcile line number indexing.

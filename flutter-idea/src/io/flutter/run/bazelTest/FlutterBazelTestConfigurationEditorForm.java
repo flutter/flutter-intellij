@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.Objects;
 
 import static io.flutter.run.bazelTest.BazelTestFields.Scope.*;
 
@@ -163,7 +164,7 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
 
     // Because the scope of the underlying fields is calculated based on which parameters are assigned,
     // we remove fields that aren't part of the selected scope.
-    if (next.equals(Scope.TARGET_PATTERN)) {
+    if (Objects.equals(next, Scope.TARGET_PATTERN)) {
       myTestName.setText("");
       myEntryFile.setText("");
     }

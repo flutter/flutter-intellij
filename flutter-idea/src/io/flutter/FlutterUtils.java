@@ -222,7 +222,7 @@ public class FlutterUtils {
   }
 
   public static boolean isIntegrationTestingMode() {
-    return System.getProperty("idea.required.plugins.id", "").equals("io.flutter.tests.gui.flutter-gui-tests");
+    return Objects.equals(System.getProperty("idea.required.plugins.id", ""), "io.flutter.tests.gui.flutter-gui-tests");
   }
 
   @Nullable
@@ -561,7 +561,7 @@ public class FlutterUtils {
   }
 
   public static boolean embeddedBrowserAvailable(JxBrowserStatus status) {
-    return status.equals(JxBrowserStatus.INSTALLED) || status.equals(JxBrowserStatus.INSTALLATION_SKIPPED) && FlutterSettings.getInstance()
+    return Objects.equals(status, JxBrowserStatus.INSTALLED) || status.equals(JxBrowserStatus.INSTALLATION_SKIPPED) && FlutterSettings.getInstance()
       .isEnableJcefBrowser();
   }
 }

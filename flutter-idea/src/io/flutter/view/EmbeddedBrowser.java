@@ -25,10 +25,8 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -126,7 +124,7 @@ public abstract class EmbeddedBrowser {
       tab.contentManager.removeAllContents(false);
 
       for (final String otherTabName : tabs.keySet()) {
-        if (otherTabName.equals(tabName)) {
+        if (Objects.equals(otherTabName, tabName)) {
           continue;
         }
         final BrowserTab browserTab = tabs.get(otherTabName);

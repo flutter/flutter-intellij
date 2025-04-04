@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * An Android SDK and its home directory; this references an IntelliJ @{@link Sdk} instance.
@@ -90,7 +91,7 @@ public class IntelliJAndroidSdk {
   @Nullable
   public static IntelliJAndroidSdk fromHome(VirtualFile file) {
     for (IntelliJAndroidSdk candidate : findAll()) {
-      if (file.equals(candidate.getHome())) {
+      if (Objects.equals(file, candidate.getHome())) {
         return candidate;
       }
     }

@@ -386,7 +386,7 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
     myIsolatesInfo.deleteIsolate(isolateRef);
     mySuspendedIsolateIds.remove(isolateRef.getId());
 
-    if (isolateRef.getId().equals(myLatestCurrentIsolateId)) {
+    if (Objects.equals(isolateRef.getId(), myLatestCurrentIsolateId)) {
       resume(getSession().getSuspendContext()); // otherwise no way no resume them from UI
     }
   }

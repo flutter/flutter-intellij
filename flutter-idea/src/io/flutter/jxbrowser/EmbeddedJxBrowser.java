@@ -160,7 +160,7 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
     }
 
     JxBrowserManager.installation.thenAccept((JxBrowserStatus status) -> {
-      if (status.equals(JxBrowserStatus.INSTALLED)) {
+      if (Objects.equals(status, JxBrowserStatus.INSTALLED)) {
         engineRef.compareAndSet(null, EmbeddedBrowserEngine.getInstance().getEngine());
       }
     });
@@ -268,7 +268,7 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
   }
 
   protected void handleUpdatedJxBrowserStatus(JxBrowserStatus jxBrowserStatus, ContentManager contentManager) {
-    if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {
+    if (Objects.equals(jxBrowserStatus, JxBrowserStatus.INSTALLED)) {
       return;
     } else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
       handleJxBrowserInstallationFailed(contentManager);
@@ -286,7 +286,7 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
     if (!jxBrowserUtils.licenseIsSet()) {
       // If the license isn't available, allow the user to open the equivalent page in a non-embedded browser window.
       inputs.add(new LabelInput("The JxBrowser license could not be found."));
-    } else if (latestFailureReason != null && latestFailureReason.failureType.equals(FailureType.SYSTEM_INCOMPATIBLE)) {
+    } else if (latestFailureReason != null && Objects.equals(latestFailureReason.failureType, FailureType.SYSTEM_INCOMPATIBLE)) {
       // If we know the system is incompatible, skip retry link and offer to open in browser.
       inputs.add(new LabelInput(latestFailureReason.detail));
     }

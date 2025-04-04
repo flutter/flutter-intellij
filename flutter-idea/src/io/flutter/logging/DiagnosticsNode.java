@@ -26,10 +26,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 
@@ -81,7 +78,7 @@ public class DiagnosticsNode {
   @Override
   public boolean equals(Object other) {
     if (other instanceof DiagnosticsNode otherNode) {
-      return getDartDiagnosticRef().equals(otherNode.getDartDiagnosticRef());
+      return Objects.equals(getDartDiagnosticRef(), otherNode.getDartDiagnosticRef());
     }
     return false;
   }
@@ -653,10 +650,10 @@ public class DiagnosticsNode {
     }
     for (Map.Entry<String, JsonElement> entry : entries) {
       final String key = entry.getKey();
-      if (key.equals("objectId") || key.equals("valueId")) {
+      if (Objects.equals(key, "objectId") || key.equals("valueId")) {
         continue;
       }
-      if (!entry.getValue().equals(node.json.get(key))) {
+      if (!Objects.equals(entry.getValue(), node.json.get(key))) {
         return false;
       }
     }

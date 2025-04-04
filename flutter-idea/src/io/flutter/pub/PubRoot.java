@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * A snapshot of the root directory of a pub package.
@@ -427,7 +428,7 @@ public class PubRoot {
 
     for (Module module : ModuleManager.getInstance(project).getModules()) {
       for (VirtualFile contentRoot : ModuleRootManager.getInstance(module).getContentRoots()) {
-        if (contentRoot.equals(androidDir)) {
+        if (Objects.equals(contentRoot, androidDir)) {
           return true;
         }
       }
