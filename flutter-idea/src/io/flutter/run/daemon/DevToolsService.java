@@ -162,10 +162,7 @@ public class DevToolsService {
               setUpInDevMode(createCommand(localDevToolsDir, "devtools_tool",
                                            args));
             }
-            catch (InterruptedException e) {
-              throw new RuntimeException(e);
-            }
-            catch (java.util.concurrent.ExecutionException e) {
+            catch (InterruptedException | java.util.concurrent.ExecutionException e) {
               throw new RuntimeException(e);
             }
             return;
