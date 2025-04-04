@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@SuppressWarnings("Duplicates")
 public class DartTestLocationProviderZ implements SMTestLocator, DumbAware {
   @SuppressWarnings("rawtypes")
   private static final List<Location> NONE = Collections.emptyList();

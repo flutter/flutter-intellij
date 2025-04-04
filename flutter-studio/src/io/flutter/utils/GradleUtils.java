@@ -276,7 +276,6 @@ public class GradleUtils {
 
   // Copied from org.jetbrains.plugins.gradle.execution.GradleRunAnythingProvider.
   @NotNull
-  @SuppressWarnings("DuplicatedCode")
   private static Map<ProjectData, MultiMap<String, String>> getTasksMap(Project project) {
     Map<ProjectData, MultiMap<String, String>> tasks = new LinkedHashMap<>();
     for (GradleProjectSettings setting : GradleSettings.getInstance(project).getLinkedProjectsSettings()) {
@@ -458,7 +457,6 @@ public class GradleUtils {
       try {
         requireNonNull(pathToModule);
         requireNonNull(settingsFile);
-        @SuppressWarnings({"IOResourceOpenedButNotSafelyClosed", "resource"})
         BufferedInputStream str = new BufferedInputStream(settingsFile.getInputStream());
         return FileUtil.loadTextAndClose(new InputStreamReader(str, CharsetToolkit.UTF8_CHARSET));
       }

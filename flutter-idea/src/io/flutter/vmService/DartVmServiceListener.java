@@ -40,7 +40,6 @@ public class DartVmServiceListener implements VmServiceListener {
 
   }
 
-  @SuppressWarnings("DuplicateBranchesInSwitch")
   @Override
   public void received(@NotNull final String streamId, @NotNull final Event event) {
     switch (event.getKind()) {

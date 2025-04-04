@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
  * event followed some time later by an 'error' event for that same test. That should
  * convert a successful test into a failure. That case is not being handled.
  */
-@SuppressWarnings({"Duplicates", "FieldMayBeFinal", "LocalCanBeFinal", "SameReturnValue"})
+@SuppressWarnings({"FieldMayBeFinal", "LocalCanBeFinal", "SameReturnValue"})
 public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter {
   private static final Logger LOG = Logger.getInstance(DartTestEventsConverterZ.class);
 
@@ -156,7 +156,6 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     return super.processServiceMessages(text, myCurrentOutputType, myCurrentVisitor);
   }
 
-  @SuppressWarnings("SimplifiableIfStatement")
   private boolean process(JsonObject obj) throws JsonSyntaxException, ParseException {
     String type = obj.get(JSON_TYPE).getAsString();
     if (TYPE_TEST_START.equals(type)) {
