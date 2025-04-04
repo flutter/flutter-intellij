@@ -218,13 +218,11 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     Disposer.register(flutterProject, androidProject);
 
     GradleSyncListener listener = new GradleSyncListener() {
-      @SuppressWarnings("override")
       public void syncTaskCreated(@NotNull Project project, @NotNull GradleSyncInvoker.Request request) {}
 
       // TODO(messick) Remove when 3.6 is stable.
       public void syncStarted(@NotNull Project project, boolean skipped, boolean sourceGenerationRequested) {}
 
-      @SuppressWarnings("override")
       public void setupStarted(@NotNull Project project) {}
 
       @Override

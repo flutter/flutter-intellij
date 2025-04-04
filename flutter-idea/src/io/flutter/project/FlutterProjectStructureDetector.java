@@ -111,7 +111,6 @@ public class FlutterProjectStructureDetector extends ProjectStructureDetector {
         }
         //noinspection ConstantConditions
         StartupManager.getInstance(project).runAfterOpened(() -> {
-          //noinspection ConstantConditions
           DumbService.getInstance(project).smartInvokeLater(() -> {
             for (ModuleDescriptor module : modules) {
               assert module != null;

@@ -97,7 +97,6 @@ public class FlutterSurveyNotifications {
       null
     );
 
-    //noinspection DialogTitleCapitalization
     notification.addAction(new AnAction(SURVEY_ACTION_TEXT) {
       @Override
       public void actionPerformed(@NotNull AnActionEvent event) {
@@ -109,7 +108,6 @@ public class FlutterSurveyNotifications {
       }
     });
 
-    //noinspection DialogTitleCapitalization
     notification.addAction(new AnAction(SURVEY_DISMISSAL_TEXT) {
       @Override
       public void actionPerformed(@NotNull AnActionEvent event) {

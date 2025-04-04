@@ -157,7 +157,6 @@ public class JxBrowserManager {
       final FlutterSettings settings = FlutterSettings.getInstance();
 
       // Set up JxBrowser files if the embedded inspector option has been turned on and the files aren't already loaded.
-      //noinspection ConstantConditions
       if (getStatus().equals(JxBrowserStatus.NOT_INSTALLED)) {
         setUp(projectName);
       }

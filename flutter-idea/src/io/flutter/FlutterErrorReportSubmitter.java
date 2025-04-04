@@ -226,7 +226,6 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
   }
 
   private static byte[] readFully(InputStream in) throws IOException {
-    //noinspection resource
     final ByteArrayOutputStream out = new ByteArrayOutputStream();
     final byte[] temp = new byte[4096];
     int count = in.read(temp);
