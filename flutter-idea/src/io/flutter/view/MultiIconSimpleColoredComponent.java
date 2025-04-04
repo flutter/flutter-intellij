@@ -546,7 +546,6 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     Font currentFont = basefont;
     int currentIndex = start;
     for (char c = it.first(); c != CharacterIterator.DONE; c = it.next()) {
-      final Font font = basefont;
       // TODO(jacobr): SuitableFontProvider is a private class so we can't
       // easily use it. How important is supporting this use case?
       /*
@@ -558,11 +557,11 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
       }
       */
       final int i = it.getIndex();
-      if (!Comparing.equal(currentFont, font)) {
+      if (!Comparing.equal(currentFont, basefont)) {
         if (i > currentIndex) {
           string.addAttribute(TextAttribute.FONT, currentFont, currentIndex, i);
         }
-        currentFont = font;
+        currentFont = basefont;
         currentIndex = i;
       }
     }
