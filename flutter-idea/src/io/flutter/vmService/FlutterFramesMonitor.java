@@ -75,10 +75,6 @@ public class FlutterFramesMonitor {
       public void received(String streamId, Event event) {
         onVmServiceReceived(streamId, event);
       }
-
-      @Override
-      public void connectionClosed() {
-      }
     });
   }
 
