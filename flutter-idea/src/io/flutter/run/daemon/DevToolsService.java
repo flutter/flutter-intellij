@@ -242,7 +242,7 @@ public class DevToolsService {
 
         final JsonObject obj = element.getAsJsonObject();
 
-        if (JsonUtils.getStringMember(obj, "event").equals("server.started")) {
+        if (Objects.equals(JsonUtils.getStringMember(obj, "event"), "server.started")) {
           final JsonObject params = obj.getAsJsonObject("params");
           final String host = JsonUtils.getStringMember(params, "host");
           final int port = JsonUtils.getIntMember(params, "port");

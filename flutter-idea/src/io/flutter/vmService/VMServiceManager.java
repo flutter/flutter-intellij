@@ -248,7 +248,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
           if (extension != null) {
             final Object value = getExtensionValueFromEventJson(name, valueFromJson);
             if (extension instanceof ToggleableServiceExtensionDescription toggleableExtension) {
-              setServiceExtensionState(name, value.equals(toggleableExtension.getEnabledValue()), value);
+              setServiceExtensionState(name, Objects.equals(value, toggleableExtension.getEnabledValue()), value);
             }
             else {
               setServiceExtensionState(name, true, value);
@@ -291,7 +291,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
       ServiceExtensions.toggleableExtensionsAllowList.get(name).getValueClass();
 
     if (valueClass == Boolean.class) {
-      return valueFromJson.equals("true");
+      return Objects.equals(valueFromJson, "true");
     }
     else if (valueClass == Double.class) {
       return Double.valueOf(valueFromJson);
@@ -365,7 +365,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
       Object value = null;
       if (obj != null) {
         if (valueClass == Boolean.class) {
-          value = obj.get("enabled").getAsString().equals("true");
+          value = Objects.equals(obj.get("enabled").getAsString(), "true");
           maybeRestoreExtension(name, value);
         }
         else if (valueClass == String.class) {
@@ -383,7 +383,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
   private void maybeRestoreExtension(String name, Object value) {
     if (ServiceExtensions.toggleableExtensionsAllowList.get(name) instanceof ToggleableServiceExtensionDescription extensionDescription) {
-      if (value.equals(extensionDescription.getEnabledValue())) {
+      if (Objects.equals(value, extensionDescription.getEnabledValue())) {
         setServiceExtensionState(name, true, value);
       }
     }
@@ -527,7 +527,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
       final JsonArray viewsList = element.getAsJsonObject().get("views").getAsJsonArray();
       for (JsonElement jsonElement : viewsList) {
         final JsonObject view = jsonElement.getAsJsonObject();
-        if (view.get("type").getAsString().equals("FlutterView")) {
+        if (Objects.equals(view.get("type").getAsString(), "FlutterView")) {
           return view.get("id").getAsString();
         }
       }

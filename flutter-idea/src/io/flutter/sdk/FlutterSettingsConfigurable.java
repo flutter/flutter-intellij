@@ -47,6 +47,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
 import java.awt.datatransfer.StringSelection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 
 // Note: when updating the settings here, update FlutterSearchableOptionContributor as well.
@@ -221,7 +222,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (!settings.getFontPackages().equals(myFontPackagesTextArea.getText())) {
+    if (!Objects.equals(settings.getFontPackages(), myFontPackagesTextArea.getText())) {
       return true;
     }
 

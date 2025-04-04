@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -37,7 +38,7 @@ public class IconPreviewGeneratorTest {
     // The list is not sorted and there's no need to sort it.
     // We just want to verify that a specific file exists.
     for (String each : list) {
-      if (each.equals("add.png")) {
+      if (Objects.equals(each, "add.png")) {
         found = true;
         break;
       }

@@ -18,10 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -246,9 +243,9 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     final Group group = test.getParent();
     return group == null && (test.getName().startsWith(LOADING_PREFIX) || test.getName().startsWith(COMPILING_PREFIX))
            ||
-           group != null && group.getDoneTestsCount() == 0 && test.getBaseName().equals(SET_UP_ALL_VIRTUAL_TEST_NAME)
+           group != null && group.getDoneTestsCount() == 0 && Objects.equals(test.getBaseName(), SET_UP_ALL_VIRTUAL_TEST_NAME)
            ||
-           group != null && group.getDoneTestsCount() > 0 && test.getBaseName().equals(TEAR_DOWN_ALL_VIRTUAL_TEST_NAME);
+           group != null && group.getDoneTestsCount() > 0 && Objects.equals(test.getBaseName(), TEAR_DOWN_ALL_VIRTUAL_TEST_NAME);
   }
 
   private boolean handleTestDone(JsonObject obj) throws ParseException {
@@ -381,7 +378,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     boolean result = true;
 
     if (!test.myTestStartReported) {
-      if (test.getBaseName().equals(SET_UP_ALL_VIRTUAL_TEST_NAME) || test.getBaseName().equals(TEAR_DOWN_ALL_VIRTUAL_TEST_NAME)) {
+      if (Objects.equals(test.getBaseName(), SET_UP_ALL_VIRTUAL_TEST_NAME) || Objects.equals(test.getBaseName(), TEAR_DOWN_ALL_VIRTUAL_TEST_NAME)) {
         return true; // output in successfully passing setUpAll/tearDownAll is not important enough to make these nodes visible
       }
 

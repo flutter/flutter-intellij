@@ -365,7 +365,7 @@ public class FlutterSdk {
 
     // Starting the app paused so the IDE can catch early errors is ideal. However, we don't have a way to resume for multiple test files
     // yet, so we want to exclude directory scope tests from starting paused. See https://github.com/flutter/flutter-intellij/issues/4737.
-    if (mode == RunMode.DEBUG || (mode == RunMode.RUN && !scope.equals(TestFields.Scope.DIRECTORY))) {
+    if (mode == RunMode.DEBUG || (mode == RunMode.RUN && !Objects.equals(scope, TestFields.Scope.DIRECTORY))) {
       args.add("--start-paused");
     }
     if (FlutterSettings.getInstance().isVerboseLogging()) {
