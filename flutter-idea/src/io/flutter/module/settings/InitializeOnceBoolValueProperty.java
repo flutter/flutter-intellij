@@ -45,7 +45,7 @@ public final class InitializeOnceBoolValueProperty {
     myValue = value;
   }
 
-  public final void initialize(@NotNull Boolean value) {
+  public void initialize(@NotNull Boolean value) {
     if (isSet) {
       return;
     }
@@ -53,7 +53,7 @@ public final class InitializeOnceBoolValueProperty {
     isSet = true;
   }
 
-  public final void set(@NotNull Boolean value) {
+  public void set(@NotNull Boolean value) {
     if (!isValueEqual(value)) {
       //setNotificationsEnabled(false);
       setDirectly(value);
@@ -71,12 +71,12 @@ public final class InitializeOnceBoolValueProperty {
     return get().toString();
   }
 
-  public final void addConstraint(Object constraint) {
+  public void addConstraint(Object constraint) {
     // This is only a partial implementation of the Android Studio class. If someone tries to use constraints more implementation is needed.
     throw new Error("constraints not supported");
   }
 
-  public final void addListener(Object listener) {
+  public void addListener(Object listener) {
     // This is only a partial implementation of the Android Studio class. If someone tries to use listeners more implementation is needed.
     throw new Error("listeners not supported");
   }
