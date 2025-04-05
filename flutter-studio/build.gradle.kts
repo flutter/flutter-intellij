@@ -94,6 +94,11 @@ dependencies {
     // https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html#project-setup
     bundledPlugins(bundledPluginList)
     plugins(pluginList)
+
+    if (sinceBuildInput == "243" || sinceBuildInput == "251") {
+      bundledModule("intellij.platform.coverage")
+      bundledModule("intellij.platform.coverage.agent")
+    }
   }
 }
 

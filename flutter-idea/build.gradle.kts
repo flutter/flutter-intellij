@@ -79,7 +79,8 @@ dependencies {
       "Git4Idea",
       "org.jetbrains.kotlin",
       "org.jetbrains.plugins.gradle",
-      "org.intellij.intelliLang")
+      "org.intellij.intelliLang",
+    )
     if (ideaProduct == "android-studio") {
       bundledPluginList.add("org.jetbrains.android")
       bundledPluginList.add("com.android.tools.idea.smali")
@@ -93,6 +94,11 @@ dependencies {
     // https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html#project-setup
     bundledPlugins(bundledPluginList)
     plugins(pluginList)
+
+    if (sinceBuildInput == "243" || sinceBuildInput == "251") {
+      bundledModule("intellij.platform.coverage")
+      bundledModule("intellij.platform.coverage.agent")
+    }
     pluginVerifier()
   }
 }
