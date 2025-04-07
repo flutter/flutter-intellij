@@ -364,8 +364,8 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
         GRADLE_SYSTEM_ID.getReadableName() + " sync",
         "Gradle sync disabled",
         "An internal error prevents Gradle from analyzing the Android module at " + path,
-        NotificationType.WARNING,
-        null);
+        NotificationType.WARNING);
+
       Notifications.Bus.notify(notification, this);
     }
   }
