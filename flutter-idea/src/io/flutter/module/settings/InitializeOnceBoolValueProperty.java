@@ -38,10 +38,11 @@ public final class InitializeOnceBoolValueProperty {
 
   @NotNull
   public Boolean get() {
+    assert myValue != null;
     return myValue;
   }
 
-  protected void setDirectly(@NotNull Boolean value) {
+  void setDirectly(@NotNull Boolean value) {
     myValue = value;
   }
 
@@ -62,7 +63,7 @@ public final class InitializeOnceBoolValueProperty {
     }
   }
 
-  protected boolean isValueEqual(@Nullable Boolean value) {
+  boolean isValueEqual(@Nullable Boolean value) {
     return Objects.equal(get(), value);
   }
 
