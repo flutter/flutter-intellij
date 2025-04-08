@@ -140,11 +140,8 @@ public class DevToolsService {
           final String localDevToolsDir = Registry.stringValue(LOCAL_DEVTOOLS_DIR);
           if (!localDevToolsDir.isEmpty()) {
             // This is only for development to check integration with a locally run DevTools server.
-            // The plugin will run `devtools_tool serve` and assumes that setup from
-            // https://github.com/flutter/devtools/blob/master/CONTRIBUTING.md has been done.
-            // To use this option, go to Help > Find action > Registry > Set "flutter.local.devtools.dir" to your local DevTools directory,
-            // e.g. "/Users/username/Documents/devtools".
-            // To go back to using DevTools from the SDK (the standard way), clear out the registry setting.
+            // To enable, follow the instructions in:
+            // https://github.com/flutter/flutter-intellij/blob/master/CONTRIBUTING.md#developing-with-local-devtools
             final DtdUtils dtdUtils = new DtdUtils();
             try {
               final DartToolingDaemonService dtdService = dtdUtils.readyDtdService(project).get();
@@ -159,8 +156,7 @@ public class DevToolsService {
                 args.addAll(Arrays.stream(localDevToolsArgs.split(" ")).toList());
               }
 
-              setUpInDevMode(createCommand(localDevToolsDir, "devtools_tool",
-                                           args));
+              setUpInDevMode(createCommand(localDevToolsDir, "dt", args));
             }
             catch (InterruptedException | java.util.concurrent.ExecutionException e) {
               throw new RuntimeException(e);
