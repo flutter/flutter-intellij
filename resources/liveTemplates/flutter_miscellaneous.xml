@@ -1,3 +1,4 @@
+<!--suppress LiveTemplateI18n -->
 <templateSet group="Flutter">
   <template name="stless" value="class $NAME$ extends StatelessWidget {&#10;  const $NAME$({super.key});&#10;&#10;  @override&#10;  Widget build(BuildContext context) {&#10;    return const Placeholder($END$);&#10;  }&#10;}&#10;" description="New Stateless widget" toReformat="false" toShortenFQNames="true">
     <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
