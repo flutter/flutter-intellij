@@ -48,14 +48,22 @@
 
   <change-notes>
     <![CDATA[
-<h1>84</h1>
+<h1>85</h1>
 <ul>
-  <li>Fix the slow operation notification associated with PubRoot (#7885)</li>
+  <li>Restored Test with coverage run configuration feature (#7810)</li>
+  <li>Upgrade <code>org.jetbrains.intellij.platform</code> to 2.2.1 from 2.1.0 (#7936)</li>
+  <li>Fix for DevTool windows not appearing (#8029)</li>
+  <li>Support for Narwhal, Android Studio 2025.1 (#7963)</li>
+  <li>Build changes to support newer required versions of Java to build the plugin (#7963)</li>
   <li>Cleanup: removal of pre Dart SDK 3.0 code (#7882)</li>
   <li>Cleanup: removal of the deprecated Swing-based Inspector window (#7861)</li>
   <li>Cleanup: removal of the deprecated Outline window (#7816)</li>
   <li>Cleanup: removal of the deprecated Performance page window (#7816)</li>
   <li>Migrated all instances of EditorNotifications.Provider to the new API (#7830)</li>
+</ul>
+<h1>84</h1>
+<ul>
+  <li>This version was not shipped due to issue #7968</li>
 </ul>
 <h1>83</h1>
 <ul>
