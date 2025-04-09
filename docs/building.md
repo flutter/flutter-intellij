@@ -8,7 +8,7 @@ Update the [product-matrix.json](../product-matrix.json):
 - IntelliJ IDEA versions can be found here: https://www.jetbrains.com/idea/download/other.html
   - Version numbers for the `product-matrix.json` should be taken from the name of the downloaded file, not versions listed on the website.
 - Dart Plugin versions can be found here: https://plugins.jetbrains.com/plugin/6351-dart
-- Android Studio versions can be found here: https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
+- Android Studio versions can be found here: https://developer.android.com/studio/archive & https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
   - To view the current sources from Android Studio, use https://cs.android.com/android-studio
 - To get versions of the Android plugin for IntelliJ, versions can be pulled from https://plugins.jetbrains.com/plugin/22989-android
 
