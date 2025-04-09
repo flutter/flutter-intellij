@@ -6,6 +6,7 @@
 package io.flutter.sdk;
 
 import com.intellij.execution.process.ProcessOutput;
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.ide.actionsOnSave.ActionsOnSaveConfigurable;
 import com.intellij.notification.Notification;
@@ -14,6 +15,8 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.fileChooser.FileChooser;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.options.ConfigurationException;
@@ -21,17 +24,20 @@ import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.FixedSizeButton;
-import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.ui.ComboboxWithBrowseButton;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.intellij.ui.components.fields.ExtendableTextField;
 import com.intellij.util.PlatformIcons;
 import icons.FlutterIcons;
-import io.flutter.*;
+import io.flutter.FlutterBundle;
+import io.flutter.FlutterConstants;
+import io.flutter.FlutterMessages;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.font.FontPreviewProcessor;
@@ -44,6 +50,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
+import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.text.JTextComponent;
 import java.awt.datatransfer.StringSelection;
 import java.util.List;
@@ -58,7 +65,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private static final String FLUTTER_SETTINGS_HELP_TOPIC = "flutter.settings.help";
 
   private JPanel mainPanel;
-  private ComboboxWithBrowseButton mySdkCombo;
+  private ComboBox<String> mySdkCombo;
   private JBLabel myVersionLabel;
   private JCheckBox myHotReloadOnSaveCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
@@ -105,7 +112,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     if (sdk != null) {
       previousSdkVersion = sdk.getVersion();
     }
-    mySdkCombo.getComboBox().setEditable(true);
+    mySdkCombo.setEditable(true);
 
     myCopyButton.setSize(ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE);
     myCopyButton.setIcon(PlatformIcons.COPY_ICON);
@@ -115,7 +122,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       }
     });
 
-    final JTextComponent sdkEditor = (JTextComponent)mySdkCombo.getComboBox().getEditor().getEditorComponent();
+    final JTextComponent sdkEditor = (JTextComponent)mySdkCombo.getEditor().getEditorComponent();
     sdkEditor.getDocument().addDocumentListener(new DocumentAdapter() {
       @Override
       protected void textChanged(@NotNull final DocumentEvent e) {
@@ -124,13 +131,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
         }
       }
     });
-
     workspaceCache.subscribe(this::onVersionChanged);
-
-    mySdkCombo.addBrowseFolderListener("Select Flutter SDK Path", null, null,
-                                       FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-                                       TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
-
     myFormatCodeOnSaveCheckBox.addChangeListener(
       (e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
     myShowStructuredErrors.addChangeListener(
@@ -140,7 +141,26 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   }
 
   private void createUIComponents() {
-    mySdkCombo = new ComboboxWithBrowseButton(new ComboBox<>());
+    ExtendableTextComponent.Extension browseExtension =
+      ExtendableTextComponent.Extension.create(
+        AllIcons.General.OpenDisk,
+        AllIcons.General.OpenDiskHover,
+        "Select Flutter SDK Path",
+        () -> {
+          FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();
+          VirtualFile file = FileChooser.chooseFile(descriptor, mySdkCombo, null, null);
+          mySdkCombo.setItem(file.getPath());
+        });
+    mySdkCombo = new ComboBox<>();
+    mySdkCombo.setEditor(new BasicComboBoxEditor() {
+      @Override
+      protected JTextField createEditorComponent() {
+        ExtendableTextField ecbEditor = new ExtendableTextField();
+        ecbEditor.addExtension(browseExtension);
+        ecbEditor.setBorder(null);
+        return ecbEditor;
+      }
+    });
     settingsLink = ActionsOnSaveConfigurable.createGoToActionsOnSavePageLink();
   }
 
@@ -294,8 +314,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     // (This can happen if the user changed the Dart SDK.)
     try {
       ignoringSdkChanges = true;
-      FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkCombo.getComboBox());
-      mySdkCombo.getComboBox().getEditor().setItem(FileUtil.toSystemDependentName(path));
+      FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkCombo);
+      mySdkCombo.getEditor().setItem(FileUtil.toSystemDependentName(path));
     }
     finally {
       ignoringSdkChanges = false;
@@ -357,7 +377,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
         assert (workspace != null);
 
         mySdkCombo.setEnabled(false);
-        mySdkCombo.getComboBox().getEditor()
+        mySdkCombo.getEditor()
           .setItem(workspace.getRoot().getPath() + '/' + workspace.getSdkHome() + " <set by bazel project>");
       }
     }
@@ -443,7 +463,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @NotNull
   private String getSdkPathText() {
-    return FileUtilRt.toSystemIndependentName(mySdkCombo.getComboBox().getEditor().getItem().toString().trim());
+    return FileUtilRt.toSystemIndependentName(mySdkCombo.getEditor().getItem().toString().trim());
   }
 
   private void checkFontPackages(String value, String previous) {
