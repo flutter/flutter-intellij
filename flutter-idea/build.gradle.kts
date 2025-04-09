@@ -23,7 +23,7 @@ plugins {
   // https://github.com/JetBrains/intellij-platform-gradle-plugin/releases
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("java")
-  id("org.jetbrains.intellij.platform") version "2.4.0"
+  id("org.jetbrains.intellij.platform") version "2.5.0"
   id("org.jetbrains.kotlin.jvm") version "2.1.20"
 }
 
