@@ -388,14 +388,16 @@
     <codeInsight.lineMarkerProvider language="Dart" implementationClass="io.flutter.editor.FlutterIconLineMarkerProvider"/>
     <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
 
-    <toolWindow id="Flutter Inspector" anchor="right" icon="FlutterIcons.DevToolsInspector"
-                factoryClass="io.flutter.view.FlutterViewFactory"/>
-    <projectService serviceImplementation="io.flutter.view.FlutterView" overrides="false"/>
-    <!-- Do not uncomment until ready to release the Property Editor. -->
-    <!-- <toolWindow id="Flutter Property Editor" anchor="right" icon="FlutterIcons.PropertyEditor" factoryClass="io.flutter.propertyeditor.PropertyEditorViewFactory" /> -->
+    <toolWindow id="Flutter Inspector" anchor="right" icon="FlutterIcons.DevToolsInspector" factoryClass="io.flutter.view.FlutterViewFactory"/>
     <toolWindow id="Flutter Deep Links" anchor="right" icon="FlutterIcons.DevToolsDeepLinks" factoryClass="io.flutter.deeplinks.DeepLinksViewFactory" />
     <toolWindow id="Flutter DevTools" anchor="right" icon="FlutterIcons.DevTools" factoryClass="io.flutter.devtools.RemainingDevToolsViewFactory" />
     <toolWindow id="Flutter DevTools Extensions" anchor="right" icon="FlutterIcons.DevToolsExtensions" factoryClass="io.flutter.devtools.DevToolsExtensionsViewFactory" />
+    <!-- Do not uncomment until ready to release the Property Editor. -->
+    <!-- <toolWindow id="Flutter Property Editor" anchor="right" icon="FlutterIcons.PropertyEditor" factoryClass="io.flutter.propertyeditor.PropertyEditorViewFactory" /> -->
+
+    <!-- Having the projectService defined after the toolWindows allows them to all be picked up by the platform -->
+    <!-- See https://github.com/flutter/flutter-intellij/issues/8029 -->
+    <projectService serviceImplementation="io.flutter.view.FlutterView" overrides="false"/>
 
     <projectOpenProcessor id="flutter" implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
 
