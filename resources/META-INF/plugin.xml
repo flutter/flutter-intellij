@@ -21,7 +21,7 @@
 
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
-  <idea-version since-build="243" until-build="253.*"/>
+  <idea-version since-build="243" until-build="243.*"/>
 
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.lang</depends>
