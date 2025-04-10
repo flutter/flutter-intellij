@@ -12,6 +12,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 class TextRangeTracker {
   private final TextRange rawRange;
   private RangeMarker marker;
@@ -96,7 +98,7 @@ class TextRangeTracker {
       // to update marker locations has hit a bad edge case as sometimes
       // happens when there is a large document edit due to running a
       // code formatter.
-      endingWord.equals(TextRangeTracker.getCurrentWord(marker.getDocument(), marker.getEndOffset() - 1));
+      Objects.equals(endingWord, TextRangeTracker.getCurrentWord(marker.getDocument(), marker.getEndOffset() - 1));
   }
 }
 

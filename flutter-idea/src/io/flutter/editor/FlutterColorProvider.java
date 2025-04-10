@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static io.flutter.dart.DartPsiUtil.getNewExprFromType;
 import static io.flutter.dart.DartPsiUtil.topmostReferenceExpression;
@@ -136,7 +137,7 @@ public class FlutterColorProvider implements ElementColorProvider {
 
   @Nullable
   private PsiElement resolveReferencedElement(@NotNull PsiElement element) {
-    if (element instanceof DartCallExpression && element.getFirstChild().getText().equals("Color")) {
+    if (element instanceof DartCallExpression && Objects.equals(element.getFirstChild().getText(), "Color")) {
       return element;
     }
     final PsiElement symbol = element.getLastChild();
@@ -216,7 +217,7 @@ public class FlutterColorProvider implements ElementColorProvider {
   public void setColorTo(@NotNull PsiElement element, @NotNull Color color) {
     // Not trying to look up Material or Cupertino colors.
     // Unfortunately, there is no way to prevent the color picker from showing (if clicked) for those expressions.
-    if (!element.getText().equals("Color")) return;
+    if (!Objects.equals(element.getText(), "Color")) return;
     final Document document = PsiDocumentManager.getInstance(element.getProject()).getDocument(element.getContainingFile());
     final Runnable command = () -> {
       final PsiElement refExpr = topmostReferenceExpression(element);

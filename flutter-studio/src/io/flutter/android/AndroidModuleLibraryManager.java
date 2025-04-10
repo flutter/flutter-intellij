@@ -134,7 +134,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
       if (library.getName() != null && !knownLibraryNames.contains(library.getName())) {
 
         List<String> roots = Arrays.asList(library.getRootProvider().getUrls(OrderRootType.CLASSES));
-        Set<String> filteredRoots = roots.stream().filter(s -> shouldIncludeRoot(s)).collect(Collectors.toSet());
+        Set<String> filteredRoots = roots.stream().filter(AndroidModuleLibraryManager::shouldIncludeRoot).collect(Collectors.toSet());
         if (filteredRoots.isEmpty()) continue;
 
         HashSet<String> sources = new HashSet<>(Arrays.asList(library.getRootProvider().getUrls(OrderRootType.SOURCES)));
@@ -218,13 +218,11 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     Disposer.register(flutterProject, androidProject);
 
     GradleSyncListener listener = new GradleSyncListener() {
-      @SuppressWarnings("override")
       public void syncTaskCreated(@NotNull Project project, @NotNull GradleSyncInvoker.Request request) {}
 
       // TODO(messick) Remove when 3.6 is stable.
       public void syncStarted(@NotNull Project project, boolean skipped, boolean sourceGenerationRequested) {}
 
-      @SuppressWarnings("override")
       public void setupStarted(@NotNull Project project) {}
 
       @Override
@@ -366,8 +364,8 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
         GRADLE_SYSTEM_ID.getReadableName() + " sync",
         "Gradle sync disabled",
         "An internal error prevents Gradle from analyzing the Android module at " + path,
-        NotificationType.WARNING,
-        null);
+        NotificationType.WARNING);
+
       Notifications.Bus.notify(notification, this);
     }
   }

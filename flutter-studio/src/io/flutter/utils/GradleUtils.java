@@ -276,7 +276,6 @@ public class GradleUtils {
 
   // Copied from org.jetbrains.plugins.gradle.execution.GradleRunAnythingProvider.
   @NotNull
-  @SuppressWarnings("DuplicatedCode")
   private static Map<ProjectData, MultiMap<String, String>> getTasksMap(Project project) {
     Map<ProjectData, MultiMap<String, String>> tasks = new LinkedHashMap<>();
     for (GradleProjectSettings setting : GradleSettings.getInstance(project).getLinkedProjectsSettings()) {
@@ -340,7 +339,7 @@ public class GradleUtils {
   private static boolean matchesName(PsiElement expr, String name) {
     if (expr == null) return false;
     String text = expr.getText();
-    return name.equals(text.substring(2, text.length() - 1));
+    return Objects.equals(name, text.substring(2, text.length() - 1));
   }
 
   private static class CoEditHelper {
@@ -381,7 +380,7 @@ public class GradleUtils {
         addCoeditTransformedProject(project);
         // We may have multiple Gradle sync listeners. Write the files to disk synchronously so we won't edit them twice.
         projectRoot.refresh(false, true);
-        if (!projectRoot.equals(flutterModuleDir.getParent())) {
+        if (!Objects.equals(projectRoot, flutterModuleDir.getParent())) {
           flutterModuleDir.refresh(false, true);
         }
         AppExecutorUtil.getAppExecutorService().execute(() -> scheduleGradleSyncAfterSyncFinishes(project));
@@ -453,12 +452,11 @@ public class GradleUtils {
     }
 
     private String readSettingsFile() {
-      inSameDir = flutterModuleDir.getParent().equals(projectRoot);
+      inSameDir = Objects.equals(flutterModuleDir.getParent(), projectRoot);
       pathToModule = FileUtilRt.getRelativePath(new File(projectRoot.getPath()), flutterModuleRoot);
       try {
         requireNonNull(pathToModule);
         requireNonNull(settingsFile);
-        @SuppressWarnings({"IOResourceOpenedButNotSafelyClosed", "resource"})
         BufferedInputStream str = new BufferedInputStream(settingsFile.getInputStream());
         return FileUtil.loadTextAndClose(new InputStreamReader(str, CharsetToolkit.UTF8_CHARSET));
       }

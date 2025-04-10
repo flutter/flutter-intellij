@@ -10,7 +10,6 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkVersion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

@@ -23,6 +23,7 @@ class BuildSpec {
   final String ideaVersion;
   final String androidPluginVersion;
   final String dartPluginVersion;
+  final String javaVersion;
 
   // TODO (jwren) can baseVersion be removed?
   final String baseVersion;
@@ -50,7 +51,8 @@ class BuildSpec {
       untilBuild = json['untilBuild'] as String,
       filesToSkip = json['filesToSkip'] as List<String>? ?? [],
       isUnitTestTarget = json['isUnitTestTarget'] == 'true',
-      isTestTarget = json['isTestTarget'] == 'true';
+      isTestTarget = json['isTestTarget'] == 'true',
+      javaVersion = json['javaVersion'] as String;
 
   bool get copyIjVersion => isAndroidStudio && ijVersion != null;
 
@@ -106,6 +108,7 @@ class BuildSpec {
         'ideaVersion: $ideaVersion, '
         'baseVersion: $baseVersion, '
         'dartPluginVersion: $dartPluginVersion, '
+        'javaVersion: $javaVersion, '
         'since: $sinceBuild, '
         'until: $untilBuild, '
         'version: "$release")';

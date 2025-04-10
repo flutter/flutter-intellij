@@ -20,6 +20,8 @@ import io.flutter.FlutterBundle;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
   @VisibleForTesting final Factory factory = new Factory(this);
 
@@ -75,7 +77,7 @@ public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
       // This is a hack based on what the code does in RunConfigurable.createUniqueName().
       // If it fails to match, the new run config still works, just without any defaults set.
       final String baseName = ExecutionBundle.message("run.configuration.unnamed.name.prefix");
-      return name.equals(baseName) || name.startsWith(baseName + " (");
+      return Objects.equals(name, baseName) || name.startsWith(baseName + " (");
     }
 
     @Override

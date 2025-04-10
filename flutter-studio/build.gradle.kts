@@ -25,7 +25,7 @@ plugins {
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("java")
   id("org.jetbrains.intellij.platform.module")
-  id("org.jetbrains.kotlin.jvm") version "2.1.0"
+  id("org.jetbrains.kotlin.jvm") version "2.1.20"
 }
 
 val flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()
@@ -36,15 +36,32 @@ val dartPluginVersion = providers.gradleProperty("dartPluginVersion").get()
 val androidPluginVersion = providers.gradleProperty("androidPluginVersion").get()
 val sinceBuildInput = providers.gradleProperty("sinceBuild").get()
 val untilBuildInput = providers.gradleProperty("untilBuild").get()
+val javaVersion = providers.gradleProperty("javaVersion").get()
 group = "io.flutter"
 
+var jvmVersion: JvmTarget
+if (javaVersion == "17") {
+  jvmVersion = JvmTarget.JVM_17
+} else if (javaVersion == "21") {
+  jvmVersion = JvmTarget.JVM_21
+} else {
+  throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
+}
 kotlin {
   compilerOptions {
     apiVersion.set(KotlinVersion.KOTLIN_1_9)
-    jvmTarget = JvmTarget.JVM_17
+    jvmTarget = jvmVersion
   }
 }
-val javaCompatibilityVersion = JavaVersion.VERSION_17
+
+var javaCompatibilityVersion: JavaVersion
+if (javaVersion == "17") {
+  javaCompatibilityVersion = JavaVersion.VERSION_17
+} else if (javaVersion == "21") {
+  javaCompatibilityVersion = JavaVersion.VERSION_21
+} else {
+  throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
+}
 java {
   sourceCompatibility = javaCompatibilityVersion
   targetCompatibility = javaCompatibilityVersion
@@ -52,12 +69,17 @@ java {
 
 dependencies {
   intellijPlatform {
+    // Documentation on the default target platform methods:
+    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
     if (ideaProduct == "android-studio") {
-      create(IntelliJPlatformType.AndroidStudio, ideaVersion)
+      androidStudio(ideaVersion)
     } else { // if (ideaProduct == "IC") {
-      create(IntelliJPlatformType.IntellijIdeaCommunity, ideaVersion)
+      intellijIdeaCommunity(ideaVersion)
     }
     testFramework(TestFrameworkType.Platform)
+
+    // Plugin dependency documentation:
+    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
     val bundledPluginList = mutableListOf(
       "com.intellij.java",
       "com.intellij.properties",
@@ -66,7 +88,7 @@ dependencies {
       "org.jetbrains.kotlin",
       "org.jetbrains.plugins.gradle",
       "org.intellij.intelliLang",
-    )
+      "org.intellij.intelliLang")
     if (ideaProduct == "android-studio") {
       bundledPluginList.add("org.jetbrains.android")
       bundledPluginList.add("com.android.tools.idea.smali")
@@ -81,12 +103,10 @@ dependencies {
     bundledPlugins(bundledPluginList)
     plugins(pluginList)
 
-    // The warning that "instrumentationTools()" is deprecated might be valid, however, this error is produced by Gradle IJ plugin version
-    // 2.1.0 if this isn't included:
-    //  Caused by: org.gradle.api.GradleException: No Java Compiler dependency found.
-    //  Please ensure the `instrumentationTools()` entry is present in the project dependencies section along with the `intellijDependencies()` entry in the repositories section.
-    //  See: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
-    instrumentationTools()
+    if (sinceBuildInput == "243" || sinceBuildInput == "251") {
+      bundledModule("intellij.platform.coverage")
+      bundledModule("intellij.platform.coverage.agent")
+    }
   }
 }
 

@@ -67,7 +67,7 @@ public class RemainingDevToolsViewFactory implements ToolWindowFactory {
         final DevToolsUrl devToolsUrl = new DevToolsUrl.Builder()
           .setDevToolsHost(instance.host())
           .setDevToolsPort(instance.port())
-          .setHide("home,inspector,deep-links,extensions")
+          .setHide("home,inspector,deep-links,extensions,debugger")
           .setEmbed(true).setFlutterSdkVersion(sdkVersion)
           .setWorkspaceCache(WorkspaceCache.getInstance(project))
           .setIdeFeature(DevToolsIdeFeature.TOOL_WINDOW)
@@ -77,9 +77,7 @@ public class RemainingDevToolsViewFactory implements ToolWindowFactory {
           Optional.ofNullable(
               FlutterUtils.embeddedBrowser(project))
             .ifPresent(embeddedBrowser -> {
-              embeddedBrowser.openPanel(window, "Flutter DevTools", devToolsUrl, (String err) -> {
-                System.out.println(err);
-              });
+              embeddedBrowser.openPanel(window, "Flutter DevTools", devToolsUrl, System.out::println);
               service.setEmbeddedBrowser(embeddedBrowser);
             });
         });

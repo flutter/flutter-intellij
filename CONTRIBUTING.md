@@ -14,7 +14,6 @@ Contributing to Flutter Plugin for IntelliJ
   * [Adding platform sources](#adding-platform-sources)
   * [Working with Android Studio](#working-with-android-studio)
   * [Working with Embedded DevTools (JxBrowser)](#working-with-embedded-devtools-jxbrowser)
-  * [Signing commits](#signing-commits)
 <!-- TOC -->
 
 ## Contributing code
@@ -52,79 +51,196 @@ name and contact info to the [AUTHORS](AUTHORS) file.
 6. `git remote add upstream https://github.com/flutter/flutter-intellij`
    The name `upstream` can be whatever you want.
 
-## Setting environments
+## Environment set-up
 
-The current Java Development Kit version is: **20**.
+1. Install the lastest [Java Development Kit](https://www.java.com/en/download/).
+    - The current Java Development Kit version is: **23**.
+    - **[Googlers only]** Install Java from go/softwarecenter instead.
 
-1. Set your `JAVA_HOME` directory in your environment.
+2. Set your `JAVA_HOME` directory in the configuration file for your shell environment.
     - For example, on macOS, the following works:
       Check what version of java you have:
       ```shell
       /usr/libexec/java_home -V
       ```
-      Set your `JAVA_HOME` env variable to match that version.
+      This should print out a Java version such as:
       ```shell
-      export JAVA_HOME=`/usr/libexec/java_home -v 20`
+      Matching Java Virtual Machines (1):
+      23.0.2 (arm64) "Azul Systems, Inc." - "Zulu 23.32.11" /Library/Java/JavaVirtualMachines/zulu-23.jdk/Contents/Home
+      /Library/Java/JavaVirtualMachines/zulu-23.jdk/Contents/Home
       ```
-2. Set your `FLUTTER_SDK` directory to point to `/path/to/flutter`.
-3. Also set your `DART_SDK` directory to `/path/to/flutter/bin/cache/dart-sdk`.
-4. Ensure both `DART_SDK`, `FLUTTER_SDK` and `JAVA_HOME` are added to the `PATH`
-   in the shell initialization script that runs at login.
-   (not just for the one used for every interactive shell).
-   ```shell
-   export PATH=$DART_SDK/bin:$FLUTTER_SDK/bin:$JAVA_HOME/bin:$PATH
-   ```
-5. Make sure you're using the latest stable release of IntelliJ,
-   or download and install the latest version of IntelliJ (2023.1 or later).
+      In your shell configuration file (e.g. `.bashrc` or `.zshrc`), set your `JAVA_HOME` env variable to match that version.
+      ```shell
+      export JAVA_HOME=`/usr/libexec/java_home -v 23.0.2
+      ```
+
+3. Set your `FLUTTER_SDK` path in the configuration file for your shell environment.
+    - For example, on macOS, the following works:
+      Check where your Flutter SDK is installed:
+      ```shell
+      which flutter
+      ```
+      This should print out a path to the Flutter SDK such as:
+      ```shell
+      home/path/to/flutter/bin/flutter
+      ```
+      In your shell configuration file (e.g. `.bashrc` or `.zshrc`), set your `FLUTTER_SDK` env variable to match the path.
+      ```shell
+      export FLUTTER_SDK="$HOME/path/to/flutter"
+      ```
+
+4. Set your `DARK_SDK` path in the configuration file for your shell environment.
+    - In your shell configuration file (e.g. `.bashrc` or `.zshrc`), set your `DART_SDK` env variable to match the Dart SDK in your Flutter SDK. This should look like the `FLUTTER_SDK` path (added above) with `/bin/cache/dart-sdk` appened to the end. 
+    ```shell
+    export DART_SDK="$HOME/path/to/flutter/bin/cache/dart-sdk`"
+    ```
+
+5. Add `DART_SDK`, `FLUTTER_SDK` and `JAVA_HOME` to your `PATH`.
+    - In your shell configuration file (e.g. `.bashrc` or `.zshrc`), below where your `JAVA_HOME`, `FLUTTER_SDK`, `DART_SDK` env variables were set, add the following line:
+    ```shell
+    export PATH=$DART_SDK/bin:$FLUTTER_SDK/bin:$JAVA_HOME/bin:$PATH"
+    ```
+
+6. Update your current `PATH`.
+    - Either re-start your terminal or run `source ~/.zshrc` / `source ~/.bashrc` to add the new environment variables to your `PATH`.
+
+## IntelliJ set-up
+
+1. Make sure you're using the latest stable release of IntelliJ,
+   or download and install the latest version of IntelliJ (2023.1 or later). 
     - [IntelliJ Downloads](https://www.jetbrains.com/idea/download/)
     - Either the community edition (free) or Ultimate will work.
-    - Determine the directory of your downloaded IntelliJ IDEA installation. e.g.
-        * `IntelliJ IDEA CE.app` (macOS)
-        * `~/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-0/231.8109.175/IntelliJ IDEA.app` (macOS)
-        * `~/idea-IC-231.8109.175` (Linux)
-        * `X:\path\to\your\IDEA-U\ch-0\231.8109.175` (Windows after installed)
-6. Start the IntelliJ IDEA with the `flutter-intellij` project.
+
+2. Create a `gradle.properties` file.
+   - In the root directory, create an empty `gradle.properties` file (`touch gradle.properties`)
+   - Add the following to the file:
+   ```
+    name = "flutter-intellij"
+    buildSpec=2024.3
+    flutterPluginVersion=1
+    ideaProduct=android-studio
+    ideaVersion=2024.3.1.7
+    baseVersion=243.22562.59
+    dartPluginVersion= 243.21565.120
+    androidPluginVersion=
+    sinceBuild=243
+    untilBuild=253.*
+    testing=true
+    kotlin.stdlib.default.dependency=false
+    org.gradle.parallel=true
+    org.gradle.jvmargs=-Xms1024m -Xmx4048m
+    ```
+    - **[Note]** If you want, you can manually change these properties to target different versions of IntelliJ. See `product-matrix.json` to find which configurations are supported.
+
+3. Start the IntelliJ IDEA with the `flutter-intellij` project.
    - If you see a popup with "Gradle build scripts found",
      **confirm loading the Gradle project, and wait until syncing is done.**
      - If you didn't see the popup at the first start, **delete & re-clone the repo** and try again.
    - Install DevKit plugin when prompted (this is required for later steps)
    - Ignore suggestion for `protobuf-java` plugin, unless you want it.
-7. Prepare other dependencies from the command line:
+
+4. Prepare other dependencies from the command line:
     - `cd path/to/flutter-intellij`
     - `dart pub get`
     - `(cd tool/plugin; dart pub get)`
     - `bin/plugin test`
-8. In the "Project Structure" dialog (`File | Project Structure`):
-    - Select "Platform Settings > SDKs", click the "+" sign at the top "Add New SDK (Alt+Insert)",
-      then select "Add JDK...".
-        - Point it to the directory of the jbr which is under the IDEA's content (e.g. `IntelliJ IDEA CE.app/Contents/jbr`).
-        - Change the name to `IDEA JBR 17` (or any names that your can easily identify).
-    - Select "Platform Settings > SDKs", click the "+" sign at the top "Add New SDK (Alt+Insert)",
-      then select "Add IntelliJ Platform Plugin SDK...".
-        - If you don't see this option, ensure you have the DevKit plugin installed.
-        - Point it to the directory of the content which is under the IDEA's installation.
-        - Remember the generated name (probably `IntelliJ IDEA IU-231.8109.175`) or change to name to format like this.
-        - Change the "Internal Java Platform" to the previous `IDEA JBR 17`.
-    - Select "Platform Settings > Project", change the "SDK" selection to **the previous IntelliJ Platform Plugin SDK**
-      (probably `IntelliJ IDEA IU-231.8109.175 java version 17`).
-    - Select "Platform Settings > Modules".
-        - Select "flutter-intellij > flutter-idea > main" module, switch to the "Paths" window,
-          select the **Inherit project compile output path** option then apply.
-          This step can be repeated after everytime the project is open.
-        - Select every module from the top (flutter-intellij) to the bottom (test) (could be 6 modules in summary),
-          switch to the "Dependencies" window, change the "Module SDK" selection to `Project SDK`.
-9. In the "File | Settings | Build, Execution, Deployment | Build Tools | Gradle" setting:
+
+### Configure "Project Structure" settings
+
+1. From IntelliJ, Open the "Project Structure" dialog (`File | Project Structure`).
+
+2. Add the IntelliJ JBR from disk:
+    - Select "Platform Settings > SDKs"
+    - Click the "+" sign at the top "Add New SDK (Alt+Insert)", then select "Add JDK from disk...".
+    - Select your IntelliJ application (most likely under `Applications`) and from there, select the `Contents/jbr/Contents/Home` directory
+    - **[For macos]** You won't be able to select the `Contents` directory from Finder without right-clicking on the IntelliJ application, and selecting "Quick Look" from the dropdown that opens. From there, you can select the `Contents` directory.
+    - Change the name so that you can easily identify it, e.g. `IDEA JBR 21`.
+    - When you are done, your settings should look something like:
+    ```
+    Name: IDEA JBR 21
+    JDK home path: /Applications/IntelliJ IDEA CE.app/Contents/jbr/Contents/Home
+    ```
+
+3. Add the IntelliJ Platform Plugin SDK
+    - Select "Platform Settings > SDKs"
+    - Click the "+" sign at the top "Add New SDK (Alt+Insert)", then select "Add IntelliJ Platform Plugin SDK...".
+    - **[Note]** If you don't see this option, ensure you have the DevKit plugin installed.
+    - Select your IntelliJ application (most likely under `Applications`) and from there, select the `Contents` directory
+    - **[For macos]** You won't be able to select the `Contents` directory from Finder without right-clicking on the IntelliJ application, and selecting "Quick Look" from the dropdown that opens. 
+    - Remember the generated name (probably `IntelliJ IDEA IU-231.8109.175`) or change to name to format like this.
+    - Change the **Internal Java Platform** to the JBR you added in step 2. (e.g. `IDEA JBR 21`).
+    - When you are done, your settings should look something like:
+    ```
+    Name: IntelliJ IDEA Community Edition IC-243.23654.189
+    IntelliJ Platform Plugin SDK home path: /Applications/IntelliJ IDEA CE.app/Contents
+    Internal Java Platform: IDEA JBR 21
+    ``` 
+
+3. Set the SDK for the Project
+    - Select "Project Settings > Project"
+    - Change the "SDK" selection to the **IntelliJ Platform Plugin SDK** you added in step 3.
+    - When you are done, your settings should look something like:
+    ```
+    SDK: IntelliJ IDEA Community Edition IC-243.23654.189
+    ```
+
+4. Configure the modules for the Project
+    - Select "Project Settings > Modules"
+    - Select the `flutter-intellij > flutter-idea` module
+    - Switch to the "Paths" window
+    - Select the **Inherit project compile output path** option then apply.
+
+5. Change the modules SDK to the Project SDK
+    - Select "Project Settings > Modules"
+    - Select all the sub-directories under the `flutter-intellij > flutter-idea` module
+    - Switch to the "Dependencies" window
+    - Change the "Module SDK" selection to `Project SDK`.
+
+### Configure the Gradle settings
+
+1. From IntelliJ, Open the "Settings" dialog (`IntelliJ IDEA | Settings`).
+
+2. Change the Gradle JVM to the Project SDK 
+    - Select "Build, Execution, Deployment > Build Tools > Gradle"
     - Change "Gradle JVM" selection to "Project SDK".
-10. In the "File | Settings | Build, Execution, Deployment | Compiler" setting:
-    - In "Java Compiler", change the "Project bytecode version" to the same version of the JDK.
-    - In "Kotlin Compiler", change the "Target JVM version" to the same version of the JDK.
-11. One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin.
+    - When you are done, your settings should look something like:
+    ```
+    Gradle JVM: Project SDK IDEA JBR 21 
+    ```   
+
+3. Configure the Java compiler
+    - Select "Build, Execution, Deployment > Compiler > Java Compiler"
+    - Change the "Project bytecode version" to the major version of your Java version. 
+    - For example, if your Java version is `23.0.2 `, set it to `23`.
+    - When you are done, your settings should look something like:
+    ```
+    Project bytecode version: 23
+    ```
+
+4. Configure the Kotlin compiler
+    - Select "Build, Execution, Deployment > Compiler > Java Compiler"
+    - Change the "Target JVM version" to the same version as the Java compiler (step 3). 
+    - When you are done, your settings should look something like:
+    ```
+    Target JVM version: 23
+    ```
+
+### Build and run the plugin
+
+1. One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin.
     - Find `Plugins` (in "File | Settings | Plugins") and install the Dart plugin, then restart the IDE if needed.
-12. Build the project using `Build` | `Build Project`.
-13. Try running the plugin; select the `flutter-intellij [runIde]` run config then click the Debug icon.
+
+2. [Optional] Add a key for JX Browser (see **Working with Embedded DevTools (JxBrowser)** below)
+    - **[Note]** This is only required if you are making changes to the embedded views.
+
+3. Build the project using `Build` | `Build Project`.
+
+4. Try running the plugin; select the `flutter-intellij [runIde]` run config then click the Debug icon.
     This should open the "runtime workbench", a new instance of IntelliJ IDEA with the plugin installed.
-14. If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install".
-15. Verify installation of the Flutter plugin:
+
+5. If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install".
+
+6. Verify installation of the Flutter plugin:
     - Select `flutter-intellij [runIde]` in the Run Configuration drop-down list.
     - Click Debug button (to the right of that drop-down).
     - In the new IntelliJ process that spawns, open the `path/to/flutter/examples/hello_world` project.
@@ -263,7 +379,9 @@ Obviously, unit tests can only be run from the command line.
    then adjust it to point to `flutter-intellij/third_party/lib/dart-plugin/xxx.yyyy/Dart.jar`.
    Delete the Dart module from the Project Structure modules list.
 
-## Working with Embedded DevTools (JxBrowser)
+## Flutter DevTools Integration
+
+### Working with Embedded DevTools (JxBrowser)
 
 We use [JxBrowser](https://www.teamdev.com/jxbrowser),
 a commercial product, to embed DevTools within IntelliJ.
@@ -282,3 +400,17 @@ To set up the license key:
 1. Copy the template at resources/jxbrowser/jxbrowser.properties.template
    and save it as resources/jxbrowser/jxbrowser.properties.
 2. Replace `<KEY>` with the actual key.
+
+### Developing with local DevTools
+
+By default, the DevTools version in IntelliJ will match the DevTools version shipped with Flutter. To instead use a local DevTools version (which will be launched with `dt serve`), the following steps are required:
+
+1. Make sure you have `dt` installed
+    - Follow instructions in the [DevTools set-up guide](https://github.com/flutter/devtools/blob/master/CONTRIBUTING.md#set-up-your-devtools-environment)
+2. Set the registry key to your DevTools directory
+    - Go to Help > Find action > Registry > Find "flutter.local.devtools.dir" and set to your DevTools directory. (e.g. Users/user/dev/devtools)
+    - Optional: If you want to pass additional arguments to `dt serve`, put these in the option "flutter.local.devtools.args"
+3. Restart IntelliJ
+4. Open Help > Show log in finder > Open idea.log
+    - Verify you see output like see output `"DevTools startup: <various messages that come from running dt serve>"`
+5. To stop using local DevTools, go back to the registry key set in step 2 and remove it
