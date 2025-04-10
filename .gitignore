@@ -13,7 +13,6 @@ flutter-gui-tests/.gradle/
 flutter-gui-tests/guitest.log
 flutter-intellij.jar
 flutter-intellij.zip
-third_party/lib/*.jar
 third_party/lib/jxbrowser/*
 !third_party/lib/jxbrowser/jxbrowser-7.41.2.jar
 !third_party/lib/jxbrowser/jxbrowser-swing-7.41.2.jar
