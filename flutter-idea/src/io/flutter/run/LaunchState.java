@@ -158,9 +158,15 @@ public class LaunchState extends CommandLineState {
     else {
       descriptor = new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
     }
+
+    // Add the device name for the run descriptor.
+    // The descriptor shows the run configuration name (e.g., `main.dart`) by default;
+    // adding the device name will help users identify the instance when trying to operate a specific one.
     final String nameWithDeviceName = descriptor.getDisplayName() + " (" + device.deviceName() + ")";
     boolean displayNameUpdated = false;
     try {
+      // Find "myDisplayNameView" for 2024+ builds.
+      // https://github.com/JetBrains/intellij-community/blob/idea/241.14494.240/platform/execution/src/com/intellij/execution/ui/RunContentDescriptor.java#L33
       final Field f = descriptor.getClass().getDeclaredField("myDisplayNameView");
       f.setAccessible(true);
       Object viewInstance = f.get(descriptor);
@@ -175,6 +181,8 @@ public class LaunchState extends CommandLineState {
     }
     if (!displayNameUpdated) {
       try {
+        // Find "myDisplayName" for 2023 builds.
+        // https://github.com/JetBrains/intellij-community/blob/idea/231.8109.175/platform/execution/src/com/intellij/execution/ui/RunContentDescriptor.java#L30
         final Field f = descriptor.getClass().getDeclaredField("myDisplayName");
         f.setAccessible(true);
         f.set(descriptor, nameWithDeviceName);
@@ -183,6 +191,7 @@ public class LaunchState extends CommandLineState {
         LOG.info(e);
       }
     }
+
     return descriptor;
   }
 
