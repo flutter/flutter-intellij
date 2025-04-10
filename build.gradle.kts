@@ -32,8 +32,7 @@ plugins {
   // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
   // https://github.com/JetBrains/intellij-platform-gradle-plugin/releases
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
-  // TODO(jwren) "2.2.0" can't be used to build 2023.3, as soon as we don't support this version, update the version here and elsewhere:
-  id("org.jetbrains.intellij.platform") version "2.4.0"
+  id("org.jetbrains.intellij.platform") version "2.5.0"
   id("org.jetbrains.kotlin.jvm") version "2.1.20"
 }
 
