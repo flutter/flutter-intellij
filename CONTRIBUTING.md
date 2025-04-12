@@ -14,7 +14,6 @@ Contributing to Flutter Plugin for IntelliJ
   * [Adding platform sources](#adding-platform-sources)
   * [Working with Android Studio](#working-with-android-studio)
   * [Working with Embedded DevTools (JxBrowser)](#working-with-embedded-devtools-jxbrowser)
-  * [Signing commits](#signing-commits)
 <!-- TOC -->
 
 ## Contributing code
@@ -116,7 +115,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
    - In the root directory, create an empty `gradle.properties` file (`touch gradle.properties`)
    - Add the following to the file:
    ```
-    name = "flutter-intellij
+    name = "flutter-intellij"
     buildSpec=2024.3
     flutterPluginVersion=1
     ideaProduct=android-studio
@@ -129,7 +128,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
     testing=true
     kotlin.stdlib.default.dependency=false
     org.gradle.parallel=true
-    org.gradle.jvmargs=-Xms1024m -Xmx4048m`
+    org.gradle.jvmargs=-Xms1024m -Xmx4048m
     ```
     - **[Note]** If you want, you can manually change these properties to target different versions of IntelliJ. See `product-matrix.json` to find which configurations are supported.
 
@@ -380,7 +379,9 @@ Obviously, unit tests can only be run from the command line.
    then adjust it to point to `flutter-intellij/third_party/lib/dart-plugin/xxx.yyyy/Dart.jar`.
    Delete the Dart module from the Project Structure modules list.
 
-## Working with Embedded DevTools (JxBrowser)
+## Flutter DevTools Integration
+
+### Working with Embedded DevTools (JxBrowser)
 
 We use [JxBrowser](https://www.teamdev.com/jxbrowser),
 a commercial product, to embed DevTools within IntelliJ.
@@ -399,3 +400,17 @@ To set up the license key:
 1. Copy the template at resources/jxbrowser/jxbrowser.properties.template
    and save it as resources/jxbrowser/jxbrowser.properties.
 2. Replace `<KEY>` with the actual key.
+
+### Developing with local DevTools
+
+By default, the DevTools version in IntelliJ will match the DevTools version shipped with Flutter. To instead use a local DevTools version (which will be launched with `dt serve`), the following steps are required:
+
+1. Make sure you have `dt` installed
+    - Follow instructions in the [DevTools set-up guide](https://github.com/flutter/devtools/blob/master/CONTRIBUTING.md#set-up-your-devtools-environment)
+2. Set the registry key to your DevTools directory
+    - Go to Help > Find action > Registry > Find "flutter.local.devtools.dir" and set to your DevTools directory. (e.g. Users/user/dev/devtools)
+    - Optional: If you want to pass additional arguments to `dt serve`, put these in the option "flutter.local.devtools.args"
+3. Restart IntelliJ
+4. Open Help > Show log in finder > Open idea.log
+    - Verify you see output like see output `"DevTools startup: <various messages that come from running dt serve>"`
+5. To stop using local DevTools, go back to the registry key set in step 2 and remove it

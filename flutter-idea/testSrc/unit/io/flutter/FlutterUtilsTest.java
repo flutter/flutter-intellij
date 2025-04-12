@@ -46,15 +46,15 @@ public class FlutterUtilsTest {
   @Test
   public void zoomLevelSelector() {
     final ZoomLevelSelector zoomLevelSelector = new ZoomLevelSelector();
-    assertSame(zoomLevelSelector.getClosestZoomLevel(-70), ZoomLevel.P_25);
-    assertSame(zoomLevelSelector.getClosestZoomLevel(-10), ZoomLevel.P_25);
-    assertSame(zoomLevelSelector.getClosestZoomLevel(0), ZoomLevel.P_25);
-    assertSame(zoomLevelSelector.getClosestZoomLevel(1), ZoomLevel.P_25);
-    assertSame(zoomLevelSelector.getClosestZoomLevel(20), ZoomLevel.P_25);
-    assertSame(zoomLevelSelector.getClosestZoomLevel(28), ZoomLevel.P_25);
-    assertSame(zoomLevelSelector.getClosestZoomLevel(35), ZoomLevel.P_33);
-    assertSame(zoomLevelSelector.getClosestZoomLevel(222), ZoomLevel.P_200);
-    assertSame(zoomLevelSelector.getClosestZoomLevel(226), ZoomLevel.P_250);
-    assertSame(zoomLevelSelector.getClosestZoomLevel(700), ZoomLevel.P_500);
+    assertSame(ZoomLevel.P_25, zoomLevelSelector.getClosestZoomLevel(-70));
+    assertSame(ZoomLevel.P_25, zoomLevelSelector.getClosestZoomLevel(-10));
+    assertSame(ZoomLevel.P_25, zoomLevelSelector.getClosestZoomLevel(0));
+    assertSame(ZoomLevel.P_25, zoomLevelSelector.getClosestZoomLevel(1));
+    assertSame(ZoomLevel.P_25, zoomLevelSelector.getClosestZoomLevel(20));
+    assertSame(ZoomLevel.P_25, zoomLevelSelector.getClosestZoomLevel(28));
+    assertSame(ZoomLevel.P_33, zoomLevelSelector.getClosestZoomLevel(35));
+    assertSame(ZoomLevel.P_200, zoomLevelSelector.getClosestZoomLevel(222));
+    assertSame(ZoomLevel.P_250, zoomLevelSelector.getClosestZoomLevel(226));
+    assertSame(ZoomLevel.P_500, zoomLevelSelector.getClosestZoomLevel(700));
   }
 }

@@ -42,7 +42,7 @@ public class FlutterFramesMonitor {
       frameId = json.get("number").getAsInt();
       startTimeMicros = json.get("startTime").getAsLong();
       elapsedMicros = json.get("elapsed").getAsLong();
-      frameSetStart = (startTimeMicros - lastEventFinished) > (displayRefreshRateManager.getTargetMicrosPerFrame() * 2);
+      frameSetStart = (startTimeMicros - lastEventFinished) > (displayRefreshRateManager.getTargetMicrosPerFrame() * 2L);
     }
 
     public long getFrameFinishedMicros() {
@@ -74,10 +74,6 @@ public class FlutterFramesMonitor {
       @Override
       public void received(String streamId, Event event) {
         onVmServiceReceived(streamId, event);
-      }
-
-      @Override
-      public void connectionClosed() {
       }
     });
   }

@@ -18,10 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,7 +29,7 @@ import java.util.regex.Pattern;
  * event followed some time later by an 'error' event for that same test. That should
  * convert a successful test into a failure. That case is not being handled.
  */
-@SuppressWarnings({"Duplicates", "FieldMayBeFinal", "LocalCanBeFinal", "SameReturnValue"})
+@SuppressWarnings({"FieldMayBeFinal", "LocalCanBeFinal", "SameReturnValue"})
 public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter {
   private static final Logger LOG = Logger.getInstance(DartTestEventsConverterZ.class);
 
@@ -156,7 +153,6 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     return super.processServiceMessages(text, myCurrentOutputType, myCurrentVisitor);
   }
 
-  @SuppressWarnings("SimplifiableIfStatement")
   private boolean process(JsonObject obj) throws JsonSyntaxException, ParseException {
     String type = obj.get(JSON_TYPE).getAsString();
     if (TYPE_TEST_START.equals(type)) {
@@ -247,9 +243,9 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     final Group group = test.getParent();
     return group == null && (test.getName().startsWith(LOADING_PREFIX) || test.getName().startsWith(COMPILING_PREFIX))
            ||
-           group != null && group.getDoneTestsCount() == 0 && test.getBaseName().equals(SET_UP_ALL_VIRTUAL_TEST_NAME)
+           group != null && group.getDoneTestsCount() == 0 && Objects.equals(test.getBaseName(), SET_UP_ALL_VIRTUAL_TEST_NAME)
            ||
-           group != null && group.getDoneTestsCount() > 0 && test.getBaseName().equals(TEAR_DOWN_ALL_VIRTUAL_TEST_NAME);
+           group != null && group.getDoneTestsCount() > 0 && Objects.equals(test.getBaseName(), TEAR_DOWN_ALL_VIRTUAL_TEST_NAME);
   }
 
   private boolean handleTestDone(JsonObject obj) throws ParseException {
@@ -382,7 +378,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     boolean result = true;
 
     if (!test.myTestStartReported) {
-      if (test.getBaseName().equals(SET_UP_ALL_VIRTUAL_TEST_NAME) || test.getBaseName().equals(TEAR_DOWN_ALL_VIRTUAL_TEST_NAME)) {
+      if (Objects.equals(test.getBaseName(), SET_UP_ALL_VIRTUAL_TEST_NAME) || Objects.equals(test.getBaseName(), TEAR_DOWN_ALL_VIRTUAL_TEST_NAME)) {
         return true; // output in successfully passing setUpAll/tearDownAll is not important enough to make these nodes visible
       }
 

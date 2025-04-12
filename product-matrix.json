@@ -34,7 +34,7 @@
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2024.3, Android Studio Meerkat 2024.3 EAP",
+      "comments": "IntelliJ 2024.3, Android Studio Meerkat 2024.3",
       "name": "2024.3",
       "version": "2024.3",
       "ijVersion": "2024.3",
@@ -44,13 +44,13 @@
       "dartPluginVersion": "243.21565.120",
       "androidPluginVersion": "",
       "sinceBuild": "243",
-      "untilBuild": "253.*",
+      "untilBuild": "243.*",
       "isUnitTestTarget": "true",
       "javaVersion": "17"
     },
     {
       "channel": "stable",
-      "comments": "IntelliJ 2025.1 Beta, Android Studio Meerkat 2024.3 EAP",
+      "comments": "IntelliJ 2025.1 Beta, Android Studio Narwhal 2025.1 Canary",
       "name": "2025.1",
       "version": "2025.1",
       "ijVersion": "2025.1",

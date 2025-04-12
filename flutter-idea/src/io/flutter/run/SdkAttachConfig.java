@@ -42,7 +42,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class SdkAttachConfig extends SdkRunConfig {
 
-  public PubRoot pubRoot;
+  public @Nullable PubRoot pubRoot;
 
   public SdkAttachConfig(SdkRunConfig config) {
     //noinspection ConstantConditions

@@ -65,7 +65,7 @@ public abstract class TestLineMarkerContributor extends RunLineMarkerContributor
             final Icon icon = getTestStateIcon(element, testCall.getIcon());
             final Function<PsiElement, String> tooltipProvider =
               psiElement -> testCall.getTooltip(psiElement, testConfigUtils);
-            return new RunLineMarkerContributor.Info(icon, tooltipProvider, ExecutorAction.getActions());
+            return new RunLineMarkerContributor.Info(icon, ExecutorAction.getActions(), tooltipProvider);
           }
         }
         else if (dartId.getParent().getParent() instanceof DartFunctionDeclarationWithBodyOrNative) {
@@ -83,7 +83,7 @@ public abstract class TestLineMarkerContributor extends RunLineMarkerContributor
             final Icon icon = getTestStateIcon(element, testCall.getIcon());
             final Function<PsiElement, String> tooltipProvider =
               psiElement -> testCall.getTooltip(psiElement, testConfigUtils);
-            return new RunLineMarkerContributor.Info(icon, tooltipProvider, ExecutorAction.getActions());
+            return new RunLineMarkerContributor.Info(icon, ExecutorAction.getActions(), tooltipProvider);
           }
         }
       }

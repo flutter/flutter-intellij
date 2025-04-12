@@ -28,10 +28,7 @@ import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -136,7 +133,7 @@ public class DartVmServiceEvaluator extends XDebuggerEvaluator {
           public void received(Obj response) {
             final Library library = (Library)response;
             for (ClassRef classRef : library.getClasses()) {
-              if (classRef.getName().equals(dartClassName)) {
+              if (Objects.equals(classRef.getName(), dartClassName)) {
                 vmService.evaluateInTargetContext(isolateId, classRef.getId(), expression, wrappedCallback);
                 return;
               }
@@ -204,7 +201,7 @@ public class DartVmServiceEvaluator extends XDebuggerEvaluator {
     final List<String> lines = StringUtil.split(StringUtil.convertLineSeparators(rawError), "\n");
 
     if (!lines.isEmpty()) {
-      if ((lines.get(0).equals("Error: Unhandled exception:") || lines.get(0).equals("Unhandled exception:")) && lines.size() > 1) {
+      if ((Objects.equals(lines.get(0), "Error: Unhandled exception:") || Objects.equals(lines.get(0), "Unhandled exception:")) && lines.size() > 1) {
         return lines.get(1);
       }
       final Matcher matcher = ERROR_PATTERN.matcher(lines.get(0));

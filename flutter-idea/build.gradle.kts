@@ -23,8 +23,8 @@ plugins {
   // https://github.com/JetBrains/intellij-platform-gradle-plugin/releases
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("java")
-  id("org.jetbrains.intellij.platform") version "2.1.0"
-  id("org.jetbrains.kotlin.jvm") version "2.1.0"
+  id("org.jetbrains.intellij.platform") version "2.5.0"
+  id("org.jetbrains.kotlin.jvm") version "2.1.20"
 }
 
 val flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()
@@ -38,9 +38,13 @@ val untilBuildInput = providers.gradleProperty("untilBuild").get()
 val javaVersion = providers.gradleProperty("javaVersion").get()
 group = "io.flutter"
 
-var jvmVersion = JvmTarget.JVM_17
-if (javaVersion == "21") {
+var jvmVersion: JvmTarget
+if (javaVersion == "17") {
+  jvmVersion = JvmTarget.JVM_17
+} else if (javaVersion == "21") {
   jvmVersion = JvmTarget.JVM_21
+} else {
+  throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
 }
 kotlin {
   compilerOptions {
@@ -49,9 +53,13 @@ kotlin {
   }
 }
 
-var javaCompatibilityVersion = JavaVersion.VERSION_17
-if (javaVersion == "21") {
+var javaCompatibilityVersion: JavaVersion
+if (javaVersion == "17") {
+  javaCompatibilityVersion = JavaVersion.VERSION_17
+} else if (javaVersion == "21") {
   javaCompatibilityVersion = JavaVersion.VERSION_21
+} else {
+  throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
 }
 java {
   sourceCompatibility = javaCompatibilityVersion
@@ -79,11 +87,8 @@ dependencies {
       "Git4Idea",
       "org.jetbrains.kotlin",
       "org.jetbrains.plugins.gradle",
-      "org.intellij.intelliLang")
-    // TODO(mossman) - this check should be removed when 2025.1 supports the Gemini Code Assist plugin (https://github.com/flutter/flutter-intellij/issues/7965)
-    if (ideaVersion.startsWith("225.")) {
-      bundledPluginList.add("com.google.tools.ij.aiplugin")
-    }
+      "org.intellij.intelliLang",
+    )
     if (ideaProduct == "android-studio") {
       bundledPluginList.add("org.jetbrains.android")
       bundledPluginList.add("com.android.tools.idea.smali")
@@ -98,12 +103,10 @@ dependencies {
     bundledPlugins(bundledPluginList)
     plugins(pluginList)
 
-    // The warning that "instrumentationTools()" is deprecated might be valid, however, this error is produced by Gradle IJ plugin version
-    // 2.1.0 if this isn't included:
-    //  Caused by: org.gradle.api.GradleException: No Java Compiler dependency found.
-    //  Please ensure the `instrumentationTools()` entry is present in the project dependencies section along with the `intellijDependencies()` entry in the repositories section.
-    //  See: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
-    instrumentationTools()
+    if (sinceBuildInput == "243" || sinceBuildInput == "251") {
+      bundledModule("intellij.platform.coverage")
+      bundledModule("intellij.platform.coverage.agent")
+    }
     pluginVerifier()
   }
 }
@@ -123,7 +126,7 @@ intellijPlatform {
   pluginVerification {
     // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
     // https://github.com/JetBrains/intellij-plugin-verifier
-    cliPath = file("../third_party/lib/verifier-cli-1.381-all.jar")
+    cliPath = file("../third_party/lib/verifier-cli-1.379-all.jar")
     failureLevel = listOf(
       // TODO(team) Ideally all of the following FailureLevels should be enabled:
       // TODO(team) Create a tracking issue for each of the following validations

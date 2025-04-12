@@ -295,7 +295,6 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
   private LineMarkerInfo<PsiElement> createLineMarker(@Nullable PsiElement element, @NotNull Icon icon) {
     if (element == null) return null;
     assert element.getTextRange() != null;
-    //noinspection MissingRecentApi
     return new LineMarkerInfo<>(element, element.getTextRange(), icon, null, null,
                                 GutterIconRenderer.Alignment.LEFT, () -> "");
   }

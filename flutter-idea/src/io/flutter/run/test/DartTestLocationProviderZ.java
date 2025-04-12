@@ -33,8 +33,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
-@SuppressWarnings("Duplicates")
 public class DartTestLocationProviderZ implements SMTestLocator, DumbAware {
   @SuppressWarnings("rawtypes")
   private static final List<Location> NONE = Collections.emptyList();
@@ -123,11 +123,11 @@ public class DartTestLocationProviderZ implements SMTestLocator, DumbAware {
         public boolean execute(@NotNull final PsiElement element) {
           if (element instanceof DartCallExpression expression) {
             if (isTest(expression) || TestUtil.isGroup(expression)) {
-              if (nodes.get(nodes.size() - 1).equals(getTestLabel(expression))) {
+              if (Objects.equals(nodes.get(nodes.size() - 1), getTestLabel(expression))) {
                 boolean matches = true;
                 for (int i = nodes.size() - 2; i >= 0 && matches; --i) {
                   expression = getGroup(expression);
-                  if (expression == null || !nodes.get(i).equals(getTestLabel(expression))) {
+                  if (expression == null || !Objects.equals(nodes.get(i), getTestLabel(expression))) {
                     matches = false;
                   }
                 }

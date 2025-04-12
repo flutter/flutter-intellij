@@ -105,7 +105,7 @@ public class AndroidEmulatorManager {
     if (project.isDisposed()) return;
 
     // Don't fire if the list of devices is unchanged.
-    if (cachedEmulators.equals(newEmulators)) {
+    if (Objects.equals(cachedEmulators, newEmulators)) {
       return;
     }
 

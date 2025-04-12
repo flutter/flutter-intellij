@@ -10,28 +10,17 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.xdebugger.XSourcePosition;
-import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.CustomIconMaker;
 import io.flutter.utils.JsonUtils;
-import io.flutter.vmService.frame.DartVmServiceValue;
-import org.dartlang.analysis.server.protocol.HoverInformation;
 import org.dartlang.vm.service.element.InstanceRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
 
 /**
  * Defines diagnostics data for a [value].
@@ -81,7 +70,7 @@ public class DiagnosticsNode {
   @Override
   public boolean equals(Object other) {
     if (other instanceof DiagnosticsNode otherNode) {
-      return getDartDiagnosticRef().equals(otherNode.getDartDiagnosticRef());
+      return Objects.equals(getDartDiagnosticRef(), otherNode.getDartDiagnosticRef());
     }
     return false;
   }
@@ -653,10 +642,10 @@ public class DiagnosticsNode {
     }
     for (Map.Entry<String, JsonElement> entry : entries) {
       final String key = entry.getKey();
-      if (key.equals("objectId") || key.equals("valueId")) {
+      if (Objects.equals(key, "objectId") || key.equals("valueId")) {
         continue;
       }
-      if (!entry.getValue().equals(node.json.get(key))) {
+      if (!Objects.equals(entry.getValue(), node.json.get(key))) {
         return false;
       }
     }

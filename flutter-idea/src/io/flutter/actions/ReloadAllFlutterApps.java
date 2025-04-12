@@ -21,7 +21,6 @@ import java.util.Objects;
 /**
  * Action that reloads all running Flutter apps.
  */
-@SuppressWarnings("ComponentNotRegistered")
 public class ReloadAllFlutterApps extends FlutterAppAction {
   public static final String ID = "Flutter.ReloadAllFlutterApps"; //NON-NLS
   public static final String TEXT = FlutterBundle.message("app.reload.all.action.text");

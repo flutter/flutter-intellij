@@ -384,7 +384,8 @@ class DeviceDaemon {
       final FlutterDevice newDevice = new FlutterDevice(event.id,
                                                         event.emulatorId == null
                                                         ? (event.name == null ? event.id : event.name)
-                                                        : (event.platformType.equals("android") ? event.emulatorId : event.name),
+                                                        : (java.util.Objects.equals(event.platformType, "android")
+                                                           ? event.emulatorId : event.name),
                                                         event.platform,
                                                         event.emulator,
                                                         event.category,

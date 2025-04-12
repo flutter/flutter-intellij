@@ -51,7 +51,7 @@ public class DartSyntax {
     });
   }
 
-  private static <T> DartCallExpression findEnclosingFunctionCall(
+  private static <T> @Nullable DartCallExpression findEnclosingFunctionCall(
     @NotNull PsiElement elt, @NotNull T functionDescriptor, @NotNull Equator<T, String> equator) {
     while (elt != null) {
       if (elt instanceof DartCallExpression call) {
@@ -109,7 +109,7 @@ public class DartSyntax {
   /**
    * Gets an argument to a function call, provided that the expression has the given type.
    * <p>
-   * Returns null if the argument doesn't exist or it's not the given type.
+   * Returns null if the argument doesn't exist, or it's not the given type.
    */
   @Nullable
   public static <E extends DartExpression> E getArgument(@NotNull DartCallExpression call, int index, @NotNull Class<E> expectedClass) {
@@ -178,7 +178,7 @@ public class DartSyntax {
     // We expect a quote, string part, quote.
     if (lit.getFirstChild() == null) return null;
     final PsiElement second = lit.getFirstChild().getNextSibling();
-    if (second.getNextSibling() != lit.getLastChild()) return null; // not three items
+    if (second != null && (second.getNextSibling() != lit.getLastChild())) return null; // not three items
     if (!(second instanceof LeafPsiElement leaf)) return null;
 
     if (leaf.getElementType() != DartTokenTypes.REGULAR_STRING_PART) return null;
