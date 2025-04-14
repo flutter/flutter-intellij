@@ -33,6 +33,7 @@ import io.flutter.actions.RefreshToolWindowAction;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.devtools.DevToolsUrl;
+import io.flutter.devtools.DevToolsUtils;
 import io.flutter.jxbrowser.FailureType;
 import io.flutter.jxbrowser.InstallationFailedReason;
 import io.flutter.jxbrowser.JxBrowserManager;
@@ -49,6 +50,7 @@ import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.JxBrowserUtils;
 import io.flutter.utils.LabelInput;
+import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -160,6 +162,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final String browserUrl = app.getConnector().getBrowserUrl();
     FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(app.getProject());
     FlutterSdkVersion flutterSdkVersion = flutterSdk == null ? null : flutterSdk.getVersion();
+
+
+    // Register for devtools events (required for inspector->editor source linking)
+    // See: https://github.com/flutter/flutter-intellij/issues/8041
+    VmService vmService = app.getVmService();
+    if (vmService != null) {
+      DevToolsUtils.registerDevToolsVmServiceListener(app);
+    }
 
     if (isEmbedded) {
       final DevToolsUrl devToolsUrl = new DevToolsUrl.Builder()
