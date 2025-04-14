@@ -48,6 +48,14 @@
 
   <change-notes>
     <![CDATA[
+<h1>85.1</h1>
+<ul>
+  <li>Fix the disappearance of the New Flutter Project menu item (#8040)</li>
+  <li>Add back the device name with the running tab (#7948)</li>
+  <li>Update the <code>org.jetbrains.intellij.platform</code> version to <code>2.5.0</code> (#8038)</li>
+  <li>Replace deprecated ComboBoxWithBrowserButton (#7931)</li>
+  <li>Fix Flutter Outline View event over-subscriptions (#7980)</li>
+</ul>
 <h1>85</h1>
 <ul>
   <li>Restored Test with coverage run configuration feature (#7810)</li>
