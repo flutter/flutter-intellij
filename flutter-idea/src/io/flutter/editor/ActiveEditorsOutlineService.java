@@ -132,8 +132,7 @@ public class ActiveEditorsOutlineService implements Disposable {
       }
 
       for (final String path : obsoletePaths) {
-        final String filePathOrUri = getAnalysisServer().getAnalysisService().getLocalFileUri(path);
-        final FlutterOutlineListener listener = outlineListeners.remove(filePathOrUri);
+        final FlutterOutlineListener listener = outlineListeners.remove(path);
         if (listener != null) {
           getAnalysisServer().removeOutlineListener(FileUtil.toSystemDependentName(path), listener);
         }
