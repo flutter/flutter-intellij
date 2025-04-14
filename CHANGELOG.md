@@ -1,3 +1,10 @@
+# 85.1
+- Fix the disappearance of the New Flutter Project menu item (#8040)
+- Add back the device name with the running tab (#7948)
+- Update the `org.jetbrains.intellij.platform` version to `2.5.0` (#8038)
+- Replace deprecated ComboBoxWithBrowserButton (#7931)
+- Fix Flutter Outline View event over-subscriptions (#7980)
+
 # 85
 - Restored Test with coverage run configuration feature (#7810)
 - Upgrade `org.jetbrains.intellij.platform` to 2.2.1 from 2.1.0 (#7936)
