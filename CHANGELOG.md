@@ -1,3 +1,6 @@
+# 85.2
+- Fix broken devtools inspector source navigation (#8041)
+
 # 85.1
 - Fix the disappearance of the New Flutter Project menu item (#8040)
 - Add back the device name with the running tab (#7948)
