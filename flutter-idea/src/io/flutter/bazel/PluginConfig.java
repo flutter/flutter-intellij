@@ -10,11 +10,11 @@ import com.google.common.base.Objects;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterUtils;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,6 +43,7 @@ public class PluginConfig {
   String getDevToolsScript() {
     return fields.devToolsScript;
   }
+
   @Nullable
   String getDoctorScript() {
     return fields.doctorScript;
@@ -137,7 +138,7 @@ public class PluginConfig {
       }
     };
 
-    return ApplicationManager.getApplication().runReadAction(readAction);
+    return OpenApiUtils.safeRunReadAction(readAction);
   }
 
   @VisibleForTesting

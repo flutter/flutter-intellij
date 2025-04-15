@@ -27,14 +27,15 @@ import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
+import io.flutter.utils.OpenApiUtils;
 import io.flutter.vmService.frame.DartAsyncMarkerFrame;
 import io.flutter.vmService.frame.DartVmServiceEvaluator;
 import io.flutter.vmService.frame.DartVmServiceStackFrame;
 import io.flutter.vmService.frame.DartVmServiceValue;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.*;
-import org.dartlang.vm.service.element.Stack;
 import org.dartlang.vm.service.element.*;
+import org.dartlang.vm.service.element.Stack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -295,7 +296,7 @@ public class VmServiceWrapper implements Disposable {
     // Just to make sure that the main isolate is not handled twice, both from handleDebuggerConnected() and DartVmServiceListener.received(PauseStart)
     if (newIsolate) {
       XDebugSessionImpl session = (XDebugSessionImpl)myDebugProcess.getSession();
-      ApplicationManager.getApplication().runReadAction(() -> {
+      OpenApiUtils.safeRunReadAction(() -> {
         session.reset();
         session.initBreakpoints();
       });
