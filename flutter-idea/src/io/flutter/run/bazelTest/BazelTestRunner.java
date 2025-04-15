@@ -19,17 +19,15 @@ import com.intellij.execution.process.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.GenericProgramRunner;
 import com.intellij.execution.ui.RunContentDescriptor;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
@@ -46,6 +44,7 @@ import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.run.test.FlutterTestRunner;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
+import io.flutter.utils.OpenApiUtils;
 import io.flutter.utils.StdoutJsonParser;
 import io.flutter.utils.UrlUtils;
 import org.jetbrains.annotations.NotNull;
@@ -284,7 +283,7 @@ public class BazelTestRunner extends GenericProgramRunner {
       final String pathFromWorkspace = uri.substring(workspaceDirName.length() + 1);
 
       // For each root in each module, look for a bazel workspace path, if found attempt to compute the VirtualFile, return when found.
-      return ApplicationManager.getApplication().runReadAction((Computable<VirtualFile>)() -> {
+      return OpenApiUtils.safeRunReadAction(() -> {
         for (Module module : DartSdkLibUtil.getModulesWithDartSdkEnabled(getProject())) {
           for (ContentEntry contentEntry : ModuleRootManager.getInstance(module).getContentEntries()) {
             final VirtualFile includedRoot = contentEntry.getFile();

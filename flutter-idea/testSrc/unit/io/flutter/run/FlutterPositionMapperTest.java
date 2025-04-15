@@ -17,6 +17,7 @@ import com.jetbrains.lang.dart.util.DartUrlResolverImpl;
 import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.TestDir;
 import io.flutter.testing.Testing;
+import io.flutter.utils.OpenApiUtils;
 import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.element.LibraryRef;
 import org.dartlang.vm.service.element.Script;
@@ -96,7 +97,7 @@ public class FlutterPositionMapperTest {
   @NotNull
   private FlutterPositionMapper setUpMapper(VirtualFile contextFile, String remoteBaseUri) {
     final FlutterPositionMapper[] mapper = new FlutterPositionMapper[1];
-    ApplicationManager.getApplication().runReadAction(() -> {
+    OpenApiUtils.safeRunReadAction(() -> {
       final DartUrlResolver resolver = new DartUrlResolverImpl(fixture.getProject(), contextFile);
       mapper[0] = new FlutterPositionMapper(fixture.getProject(), sourceRoot, resolver, null);
       mapper[0].onConnect(scripts, remoteBaseUri);
