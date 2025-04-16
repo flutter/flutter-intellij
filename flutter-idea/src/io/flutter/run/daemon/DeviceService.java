@@ -154,7 +154,11 @@ public class DeviceService {
     deviceSelection.updateAndGet((old) -> {
       final DeviceDaemon daemon = deviceDaemon.getNow();
       final List<FlutterDevice> newDevices = daemon == null ? ImmutableList.of() : daemon.getDevices();
-      return old.withDevices(newDevices);
+      FlutterDevice oldSelection = old.getSelection();
+      String selection = oldSelection != null
+                         ? oldSelection.deviceId()
+                         : newDevices.isEmpty() ? null : newDevices.getFirst().deviceId();
+      return old.withDevices(newDevices).withSelection(selection);
     });
     fireChangeEvent();
   }
