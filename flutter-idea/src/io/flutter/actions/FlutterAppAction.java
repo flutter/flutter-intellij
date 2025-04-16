@@ -23,10 +23,15 @@ abstract public class FlutterAppAction extends DumbAwareAction {
   @NotNull private final Computable<Boolean> myIsApplicable;
   @NotNull private final String myActionId;
 
+  // The current action event.
+  private AnActionEvent myEvent;
   private final FlutterApp.FlutterAppListener myListener = new FlutterApp.FlutterAppListener() {
     @Override
     public void stateChanged(FlutterApp.State newState) {
-      getTemplatePresentation().setEnabled(myApp.isStarted() && myIsApplicable.compute());
+      // Access the action presentation through the most recently cached action event.
+      if (myEvent != null) {
+        myEvent.getPresentation().setEnabled(myApp.isStarted() && Boolean.TRUE.equals(myIsApplicable.compute()));
+      }
     }
   };
   private boolean myIsListening = false;
@@ -71,9 +76,12 @@ abstract public class FlutterAppAction extends DumbAwareAction {
   public void update(@NotNull final AnActionEvent e) {
     updateActionRegistration(myApp.isConnected());
 
-    final boolean isConnected = myIsApplicable.compute();
+    final boolean isConnected = Boolean.TRUE.equals(myIsApplicable.compute());
     final boolean supportsReload = myApp.getMode().supportsReload();
     e.getPresentation().setEnabled(myApp.isStarted() && isConnected && supportsReload);
+
+    // Cache the current event so that listeners can access its presentation.
+    myEvent = e;
 
     if (isConnected) {
       if (!myIsListening) {
