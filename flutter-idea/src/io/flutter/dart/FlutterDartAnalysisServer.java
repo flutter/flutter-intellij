@@ -7,35 +7,29 @@ package io.flutter.dart;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.dart.server.AnalysisServerListenerAdapter;
 import com.google.dart.server.ResponseListener;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.utils.JsonUtils;
-import org.dartlang.analysis.server.protocol.*;
+import org.dartlang.analysis.server.protocol.AnalysisError;
+import org.dartlang.analysis.server.protocol.FlutterOutline;
+import org.dartlang.analysis.server.protocol.FlutterService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class FlutterDartAnalysisServer implements Disposable {
   private static final String FLUTTER_NOTIFICATION_OUTLINE = "flutter.outline";
-  private static final String FLUTTER_NOTIFICATION_OUTLINE_KEY = "\"flutter.outline\"";
 
   @NotNull final Project project;
 
@@ -70,7 +64,9 @@ public class FlutterDartAnalysisServer implements Disposable {
     return getAnalysisService().getSdkVersion();
   }
 
-  /** @noinspection BooleanMethodIsAlwaysInverted*/
+  /**
+   * @noinspection BooleanMethodIsAlwaysInverted
+   */
   public boolean isServerConnected() {
     return !getSdkVersion().isEmpty();
   }
@@ -108,18 +104,19 @@ public class FlutterDartAnalysisServer implements Disposable {
   }
 
   public void addOutlineListener(@NotNull final String filePath, @NotNull final FlutterOutlineListener listener) {
-    if(!isServerConnected()) {
+    if (!isServerConnected()) {
       return;
     }
     synchronized (fileOutlineListeners) {
-      final List<FlutterOutlineListener> listeners = fileOutlineListeners.computeIfAbsent(getAnalysisService().getLocalFileUri(filePath), k -> new ArrayList<>());
+      final List<FlutterOutlineListener> listeners =
+        fileOutlineListeners.computeIfAbsent(getAnalysisService().getLocalFileUri(filePath), k -> new ArrayList<>());
       listeners.add(listener);
     }
     addSubscription(FlutterService.OUTLINE, filePath);
   }
 
   public void removeOutlineListener(@NotNull final String filePath, @NotNull final FlutterOutlineListener listener) {
-    if(!isServerConnected()) {
+    if (!isServerConnected()) {
       return;
     }
     final boolean removeSubscription;
@@ -138,7 +135,7 @@ public class FlutterDartAnalysisServer implements Disposable {
    * Note that <code>filePath</code> must be an absolute path.
    */
   private void addSubscription(@NotNull final String service, @NotNull final String filePath) {
-    if(!isServerConnected()) {
+    if (!isServerConnected()) {
       return;
     }
     final List<String> files = subscriptions.computeIfAbsent(service, k -> new ArrayList<>());
@@ -155,7 +152,7 @@ public class FlutterDartAnalysisServer implements Disposable {
    * Note that <code>filePath</code> must be an absolute path.
    */
   private void removeSubscription(@NotNull final String service, @NotNull final String filePath) {
-    if(!isServerConnected()) {
+    if (!isServerConnected()) {
       return;
     }
     final String filePathOrUri = getAnalysisService().getLocalFileUri(filePath);
@@ -166,89 +163,39 @@ public class FlutterDartAnalysisServer implements Disposable {
   }
 
   private void sendSubscriptions() {
-    if(!isServerConnected()) {
+    if (!isServerConnected()) {
       return;
     }
     DartAnalysisServerService analysisService = getAnalysisService();
     final String id = analysisService.generateUniqueId();
-    analysisService.sendRequest(id, FlutterRequestUtilities.generateAnalysisSetSubscriptions(id, subscriptions));
-  }
-
-  @NotNull
-  public List<SourceChange> edit_getAssists(@NotNull VirtualFile file, int offset, int length) {
-    DartAnalysisServerService analysisService = getAnalysisService();
-    return analysisService.edit_getAssists(file, offset, length);
-  }
-
-  @Nullable
-  public CompletableFuture<List<FlutterWidgetProperty>> getWidgetDescription(@NotNull VirtualFile file, int _offset) {
-    final CompletableFuture<List<FlutterWidgetProperty>> result = new CompletableFuture<>();
-    final String filePath = FileUtil.toSystemDependentName(file.getPath());
-    DartAnalysisServerService analysisService = getAnalysisService();
-    final int offset = analysisService.getOriginalOffset(file, _offset);
-
-    final String id = analysisService.generateUniqueId();
-    synchronized (responseConsumers) {
-      responseConsumers.put(id, (resultObject) -> {
-        try {
-          final JsonArray propertiesObject = resultObject.getAsJsonArray("properties");
-          final ArrayList<FlutterWidgetProperty> properties = new ArrayList<>();
-          for (JsonElement propertyObject : propertiesObject) {
-            properties.add(FlutterWidgetProperty.fromJson(propertyObject.getAsJsonObject()));
-          }
-          result.complete(properties);
-        }
-        catch (Throwable ignored) {
-        }
-      });
+    if (id != null) {
+      analysisService.sendRequest(id, FlutterRequestUtilities.generateAnalysisSetSubscriptions(id, subscriptions));
     }
-
-    final JsonObject request = FlutterRequestUtilities.generateFlutterGetWidgetDescription(id, filePath, offset);
-    analysisService.sendRequest(id, request);
-
-    return result;
   }
 
-
-  @Nullable
-  public SourceChange setWidgetPropertyValue(int propertyId, FlutterWidgetPropertyValue value) {
-    final CountDownLatch latch = new CountDownLatch(1);
-    final AtomicReference<SourceChange> result = new AtomicReference<>();
-    DartAnalysisServerService analysisService = getAnalysisService();
-    final String id = analysisService.generateUniqueId();
-    synchronized (responseConsumers) {
-      responseConsumers.put(id, (resultObject) -> {
-        try {
-          final JsonObject propertiesObject = resultObject.getAsJsonObject("change");
-          result.set(SourceChange.fromJson(propertiesObject));
-        }
-        catch (Throwable ignored) {
-        }
-        latch.countDown();
-      });
-    }
-
-    final JsonObject request = FlutterRequestUtilities.generateFlutterSetWidgetPropertyValue(id, propertyId, value);
-    analysisService.sendRequest(id, request);
-
-    Uninterruptibles.awaitUninterruptibly(latch, 100, TimeUnit.MILLISECONDS);
-    return result.get();
-  }
-
-  private void processString(String jsonString) {
+  private void processString(@Nullable String jsonString) {
+    if (jsonString == null) return;
     if (isDisposed) return;
-    ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      // Short circuit just in case we have been disposed in the time it took
-      // for us to get around to listening for the response.
-      if (isDisposed) return;
-      processResponse(JsonUtils.parseString(jsonString).getAsJsonObject());
-    });
+    Application application = ApplicationManager.getApplication();
+    if (application != null) {
+      application.executeOnPooledThread(() -> {
+        // Short circuit just in case we have been disposed in the time it took
+        // for us to get around to listening for the response.
+        if (isDisposed) return;
+        JsonElement jsonElement = JsonUtils.parseString(jsonString);
+        if (jsonElement != null) {
+          processResponse(jsonElement.getAsJsonObject());
+        }
+      });
+    }
   }
 
   /**
    * Handle the given {@link JsonObject} response.
    */
-  private void processResponse(JsonObject response) {
+  private void processResponse(@Nullable JsonObject response) {
+    if (response == null) return;
+
     final JsonElement eventName = response.get("event");
     if (eventName != null && eventName.isJsonPrimitive()) {
       processNotification(response, eventName);
@@ -284,6 +231,7 @@ public class FlutterDartAnalysisServer implements Disposable {
   /**
    * Attempts to handle the given {@link JsonObject} as a notification.
    */
+  @SuppressWarnings("DataFlowIssue") // Ignore for de-marshalling JSON objects.
   private void processNotification(JsonObject response, @NotNull JsonElement eventName) {
     // If we add code to handle more event types below, update the filter in processString().
     final String event = eventName.getAsString();
@@ -304,7 +252,9 @@ public class FlutterDartAnalysisServer implements Disposable {
       }
       if (listenersUpdated != null) {
         for (FlutterOutlineListener listener : listenersUpdated) {
-          listener.outlineUpdated(file, outline, instrumentedCode);
+          if (listener != null && file != null) {
+            listener.outlineUpdated(file, outline, instrumentedCode);
+          }
         }
       }
     }
