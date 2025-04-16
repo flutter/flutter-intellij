@@ -434,7 +434,7 @@ class DeviceDaemon {
     private JTextPane myTextPane;
 
     DaemonCrashReporter() {
-      super(null, false, false);
+      super(null, false, DialogWrapper.IdeModalityType.IDE);
       setTitle("Flutter Device Daemon Crash");
       myPanel = new JPanel();
       myTextPane = new JTextPane();
