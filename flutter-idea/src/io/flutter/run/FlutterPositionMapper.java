@@ -6,10 +6,8 @@
 package io.flutter.run;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -24,6 +22,7 @@ import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
+import io.flutter.utils.OpenApiUtils;
 import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.element.LibraryRef;
 import org.dartlang.vm.service.element.Script;
@@ -150,7 +149,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
     if (project == null || project.isDisposed()) return null;
 
     // Find files with the same filename (matching the suffix after the last slash).
-    final PsiFile[] localFilesWithSameName = ApplicationManager.getApplication().runReadAction((Computable<PsiFile[]>)() -> {
+    final PsiFile[] localFilesWithSameName = OpenApiUtils.safeRunReadAction(() -> {
       final String remoteFileName = PathUtil.getFileName(remotePath);
       final GlobalSearchScope scope = GlobalSearchScopesCore.directoryScope(project, sourceRoot, true);
       return FilenameIndex.getFilesByName(project, remoteFileName, scope);
@@ -304,7 +303,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
    */
   @Nullable
   protected VirtualFile findLocalFile(@NotNull String uri, CompletableFuture<String> fileFuture) {
-    return ApplicationManager.getApplication().runReadAction((Computable<VirtualFile>)() -> {
+    return OpenApiUtils.safeRunReadAction(() -> {
       // This can be a remote file or URI.
       if (remoteSourceRoot != null && uri.startsWith(remoteSourceRoot)) {
         final String rootUri = StringUtil.trimEnd(resolver.getDartUrlForFile(sourceRoot), '/');

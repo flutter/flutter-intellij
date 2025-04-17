@@ -97,6 +97,7 @@ public class FlutterCreateAdditionalSettings {
     kotlin = value;
   }
 
+  @NotNull
   @NonNls
   public List<String> getArgs() {
     final List<String> args = new ArrayList<>();

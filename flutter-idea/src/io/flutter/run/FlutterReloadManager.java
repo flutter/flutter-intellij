@@ -14,8 +14,14 @@ import com.intellij.concurrency.JobScheduler;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.ide.actions.SaveAllAction;
-import com.intellij.notification.*;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationGroup;
+import com.intellij.notification.NotificationGroupManager;
+import com.intellij.notification.NotificationType;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.ex.AnActionListener;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -30,7 +36,6 @@ import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.Balloon;
-import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -59,6 +64,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -194,7 +200,7 @@ public class FlutterReloadManager {
 
         ApplicationManager.getApplication().invokeLater(() -> {
           // Find a Dart editor to trigger the reload.
-          final Editor anEditor = ApplicationManager.getApplication().runReadAction((Computable<Editor>)() -> {
+          final Editor anEditor = OpenApiUtils.safeRunReadAction(() -> {
             Editor someEditor = null;
             final EditorFactory editorFactory = EditorFactory.getInstance();
             if(editorFactory != null) {
@@ -479,7 +485,7 @@ public class FlutterReloadManager {
     // are analysis issues in other files; the compilation errors from the flutter tool
     // will indicate to the user where the problems are.
 
-    final PsiErrorElement firstError = ApplicationManager.getApplication().runReadAction((Computable<PsiErrorElement>)() -> {
+    final PsiErrorElement firstError = OpenApiUtils.safeRunReadAction(() -> {
       final PsiFile psiFile = PsiDocumentManager.getInstance(myProject).getPsiFile(document);
       if (psiFile instanceof DartFile) {
         return PsiTreeUtil.findChildOfType(psiFile, PsiErrorElement.class, false);

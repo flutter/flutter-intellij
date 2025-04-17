@@ -8,7 +8,6 @@ package io.flutter.run;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XSourcePosition;
@@ -17,6 +16,7 @@ import com.jetbrains.lang.dart.util.DartUrlResolverImpl;
 import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.TestDir;
 import io.flutter.testing.Testing;
+import io.flutter.utils.OpenApiUtils;
 import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.element.LibraryRef;
 import org.dartlang.vm.service.element.Script;
@@ -73,7 +73,7 @@ public class FlutterPositionMapperTest {
     final XSourcePosition pos = mapper.getSourcePosition("1", makeScriptRef("2", "some/stuff/to/ignore/lib/hello.dart"), 123, null);
     assertNotNull(pos);
     assertEquals(pos.getFile(), hello);
-    assertEquals(pos.getLine(), 9); // zero-based
+    assertEquals(9, pos.getLine()); // zero-based
   }
 
   @Test
@@ -90,13 +90,13 @@ public class FlutterPositionMapperTest {
     final XSourcePosition pos = mapper.getSourcePosition("1", makeScriptRef("2", "remote:root/lib/hello.dart"), 123, null);
     assertNotNull(pos);
     assertEquals(pos.getFile(), hello);
-    assertEquals(pos.getLine(), 9); // zero-based
+    assertEquals(9, pos.getLine()); // zero-based
   }
 
   @NotNull
   private FlutterPositionMapper setUpMapper(VirtualFile contextFile, String remoteBaseUri) {
     final FlutterPositionMapper[] mapper = new FlutterPositionMapper[1];
-    ApplicationManager.getApplication().runReadAction(() -> {
+    OpenApiUtils.safeRunReadAction(() -> {
       final DartUrlResolver resolver = new DartUrlResolverImpl(fixture.getProject(), contextFile);
       mapper[0] = new FlutterPositionMapper(fixture.getProject(), sourceRoot, resolver, null);
       mapper[0].onConnect(scripts, remoteBaseUri);

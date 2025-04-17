@@ -8,18 +8,17 @@ package io.flutter.pub;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.util.DotPackagesFileUtil;
 import io.flutter.FlutterUtils;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -74,6 +73,7 @@ public class PubRoot {
    */
   @Nullable
   public static PubRoot forEventWithRefresh(@NotNull final AnActionEvent event) {
+    assert CommonDataKeys.PSI_FILE != null;
     final PsiFile psiFile = CommonDataKeys.PSI_FILE.getData(event.getDataContext());
     if (psiFile != null) {
       final PubRoot root = forPsiFile(psiFile);
@@ -82,6 +82,7 @@ public class PubRoot {
       }
     }
 
+    assert LangDataKeys.MODULE != null;
     final Module module = LangDataKeys.MODULE.getData(event.getDataContext());
     if (module != null) {
       final List<PubRoot> roots = PubRoots.forModule(module);
@@ -121,8 +122,10 @@ public class PubRoot {
    */
   @Nullable
   public static PubRoot forDescendant(@NotNull VirtualFile fileOrDir, @NotNull Project project) {
-    final ProjectFileIndex index = ProjectRootManager.getInstance(project).getFileIndex();
-    return ApplicationManager.getApplication().runReadAction((Computable<PubRoot>)() -> {
+    ProjectRootManager manager = ProjectRootManager.getInstance(project);
+    if (manager == null) return null;
+    final ProjectFileIndex index = manager.getFileIndex();
+    return OpenApiUtils.safeRunReadAction(() -> {
       final VirtualFile root = index.getContentRootForFile(fileOrDir);
       return forDirectory(root);
     });

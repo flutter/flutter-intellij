@@ -23,7 +23,7 @@ plugins {
   // https://github.com/JetBrains/intellij-platform-gradle-plugin/releases
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("java")
-  id("org.jetbrains.intellij.platform") version "2.4.0"
+  id("org.jetbrains.intellij.platform") version "2.5.0"
   id("org.jetbrains.kotlin.jvm") version "2.1.20"
 }
 
@@ -38,9 +38,13 @@ val untilBuildInput = providers.gradleProperty("untilBuild").get()
 val javaVersion = providers.gradleProperty("javaVersion").get()
 group = "io.flutter"
 
-var jvmVersion = JvmTarget.JVM_17
-if (javaVersion == "21") {
+var jvmVersion: JvmTarget
+if (javaVersion == "17") {
+  jvmVersion = JvmTarget.JVM_17
+} else if (javaVersion == "21") {
   jvmVersion = JvmTarget.JVM_21
+} else {
+  throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
 }
 kotlin {
   compilerOptions {
@@ -49,9 +53,13 @@ kotlin {
   }
 }
 
-var javaCompatibilityVersion = JavaVersion.VERSION_17
-if (javaVersion == "21") {
+var javaCompatibilityVersion: JavaVersion
+if (javaVersion == "17") {
+  javaCompatibilityVersion = JavaVersion.VERSION_17
+} else if (javaVersion == "21") {
   javaCompatibilityVersion = JavaVersion.VERSION_21
+} else {
+  throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
 }
 java {
   sourceCompatibility = javaCompatibilityVersion
@@ -118,7 +126,7 @@ intellijPlatform {
   pluginVerification {
     // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
     // https://github.com/JetBrains/intellij-plugin-verifier
-    cliPath = file("../third_party/lib/verifier-cli-1.381-all.jar")
+    cliPath = file("../third_party/lib/verifier-cli-1.379-all.jar")
     failureLevel = listOf(
       // TODO(team) Ideally all of the following FailureLevels should be enabled:
       // TODO(team) Create a tracking issue for each of the following validations

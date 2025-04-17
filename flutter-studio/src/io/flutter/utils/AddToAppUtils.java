@@ -36,6 +36,7 @@ import io.flutter.sdk.FlutterSdk;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
+import java.util.List;
 
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -59,24 +60,30 @@ public class AddToAppUtils {
     if (!FlutterModuleUtils.hasFlutterModule(project)) {
       connection.subscribe(ModuleListener.TOPIC, new ModuleListener() {
         @Override
-        public void moduleAdded(@NotNull Project proj, @NotNull Module mod) {
-          if (AndroidUtils.FLUTTER_MODULE_NAME.equals(mod.getName()) ||
-              (FlutterUtils.flutterGradleModuleName(project)).equals(mod.getName())) {
-            //connection.disconnect(); TODO(messick) Test this deletion!
-            AppExecutorUtil.getAppExecutorService().execute(() -> {
-              GradleUtils.enableCoeditIfAddToAppDetected(project);
-            });
+        public void modulesAdded(@NotNull Project proj, @NotNull List<? extends Module> modules) {
+          for (Module module : modules) {
+            if (module == null) continue;
+            if (AndroidUtils.FLUTTER_MODULE_NAME.equals(module.getName()) ||
+                (FlutterUtils.flutterGradleModuleName(project)).equals(module.getName())) {
+              //connection.disconnect(); TODO(messick) Test this deletion!
+              AppExecutorUtil.getAppExecutorService().execute(() -> {
+                GradleUtils.enableCoeditIfAddToAppDetected(project);
+              });
+            }
           }
+
         }
       });
       return false;
     }
     else {
       Collection<ProjectType> projectTypes = ProjectTypeService.getProjectTypes(project);
-      for(ProjectType projectType : projectTypes) {
-        if (projectType != null && "Android".equals(projectType.getId())) {
-          // This is an add-to-app project.
-          connection.subscribe(DebuggerManagerListener.TOPIC, makeAddToAppAttachListener(project));
+      if (projectTypes != null) {
+        for (ProjectType projectType : projectTypes) {
+          if (projectType != null && "Android".equals(projectType.getId())) {
+            // This is an add-to-app project.
+            connection.subscribe(DebuggerManagerListener.TOPIC, makeAddToAppAttachListener(project));
+          }
         }
       }
     }
@@ -84,7 +91,8 @@ public class AddToAppUtils {
   }
 
   // Derived from the method in ReflectionUtil, with the addition of setAccessible().
-  public static <T> T getStaticFieldValue(@NotNull Class objectClass,
+  @Nullable
+  public static <T> T getStaticFieldValue(@NotNull Class<?> objectClass,
                                           @Nullable("null means any type") Class<T> fieldType,
                                           @NotNull @NonNls String fieldName) {
     try {
@@ -161,6 +169,7 @@ public class AddToAppUtils {
           PubRoot pubRoot = ((SdkAttachConfig)runConfig).pubRoot;
           Application app = ApplicationManager.getApplication();
           project.putUserData(ATTACH_IS_ACTIVE, ThreeState.fromBoolean(true));
+          if (app == null) return;
           // Note: Using block comments to preserve formatting.
           app.invokeLater( /* After the Android launch completes, */
             () -> app.executeOnPooledThread( /* but not on the EDT, */
@@ -171,12 +180,16 @@ public class AddToAppUtils {
 
       @Override
       public void sessionCreated(DebuggerSession session) {
-        session.getProcess().addDebugProcessListener(dpl);
+        if (session != null) {
+          session.getProcess().addDebugProcessListener(dpl);
+        }
       }
 
       @Override
       public void sessionRemoved(DebuggerSession session) {
-        session.getProcess().removeDebugProcessListener(dpl);
+        if (session != null) {
+          session.getProcess().removeDebugProcessListener(dpl);
+        }
       }
     };
   }

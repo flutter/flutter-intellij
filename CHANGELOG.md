@@ -1,10 +1,27 @@
-# 84
-- Fix the slow operation notification associated with PubRoot (#7885)
+# 85.2
+- Fix broken devtools inspector source navigation (#8041)
+
+# 85.1
+- Fix the disappearance of the New Flutter Project menu item (#8040)
+- Add back the device name with the running tab (#7948)
+- Update the `org.jetbrains.intellij.platform` version to `2.5.0` (#8038)
+- Replace deprecated ComboBoxWithBrowserButton (#7931)
+- Fix Flutter Outline View event over-subscriptions (#7980)
+
+# 85
+- Restored Test with coverage run configuration feature (#7810)
+- Upgrade `org.jetbrains.intellij.platform` to 2.2.1 from 2.1.0 (#7936)
+- Fix for DevTool windows not appearing (#8029)
+- Support for Narwhal, Android Studio 2025.1 (#7963)
+- Build changes to support newer required versions of Java to build the plugin (#7963)
 - Cleanup: removal of pre Dart SDK 3.0 code (#7882)
 - Cleanup: removal of the deprecated Swing-based Inspector window (#7861)
 - Cleanup: removal of the deprecated Outline window (#7816)
 - Cleanup: removal of the deprecated Performance page window (#7816)
 - Migrated all instances of EditorNotifications.Provider to the new API (#7830)
+
+# 84
+- This version was not shipped due to issue #7968
 
 # 83
 - First version for Meerkat, Android Studio 2024.3 (#7799)
