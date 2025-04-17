@@ -23,6 +23,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.module.settings.SettingsHelpForm;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
+
 import javax.swing.ComboBoxEditor;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -31,6 +32,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,9 +66,8 @@ public class FlutterGeneratorPeer {
     mySdkPathComboWithBrowse.getComboBox().setEditable(true);
     FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkPathComboWithBrowse.getComboBox());
 
-    mySdkPathComboWithBrowse.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
-                                                     FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-                                                     TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
+    mySdkPathComboWithBrowse.addBrowseFolderListener(null, FileChooserDescriptorFactory.createSingleFolderDescriptor()
+      .withTitle(FlutterBundle.message("flutter.sdk.browse.path.label")), TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
     mySdkPathComboWithBrowse.getComboBox().addActionListener(e -> fillSdkCache());
     fillSdkCache();
 
