@@ -2,38 +2,6 @@
   "list": [
     {
       "channel": "stable",
-      "comments": "IntelliJ 2024.1, Android Studio Koala 2024.1",
-      "name": "2024.1",
-      "version": "2024.1",
-      "ijVersion": "2024.1",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "2024.1.2.10",
-      "baseVersion": "241.18034.62",
-      "dartPluginVersion": "241.17502",
-      "androidPluginVersion": "",
-      "sinceBuild": "241",
-      "untilBuild": "241.*",
-      "isUnitTestTarget": "false",
-      "javaVersion": "17"
-    },
-    {
-      "channel": "stable",
-      "comments": "IntelliJ 2024.2, Android Studio Ladybug 2024.2",
-      "name": "2024.2",
-      "version": "2024.2",
-      "ijVersion": "2024.2",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "2024.1.2.13",
-      "baseVersion": "242.23339.11",
-      "dartPluginVersion": "241.17502",
-      "androidPluginVersion": "",
-      "sinceBuild": "242",
-      "untilBuild": "242.*",
-      "isUnitTestTarget": "false",
-      "javaVersion": "17"
-    },
-    {
-      "channel": "stable",
       "comments": "IntelliJ 2024.3, Android Studio Meerkat 2024.3",
       "name": "2024.3",
       "version": "2024.3",
