@@ -9,6 +9,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.ListCellRendererWrapper;
 import io.flutter.run.test.TestFields.Scope;
@@ -64,8 +65,8 @@ public class TestForm extends SettingsEditor<TestConfig> {
     });
 
     initDartFileTextWithBrowse(project, testFile);
-    testDir.addBrowseFolderListener("Test Directory", null, project,
-                                    FileChooserDescriptorFactory.createSingleFolderDescriptor());
+    testDir.addBrowseFolderListener(project, FileChooserDescriptorFactory.createSingleFolderDescriptor()
+      .withTitle("Test Directory"));
   }
 
   @NotNull
