@@ -67,15 +67,14 @@ java {
   targetCompatibility = javaCompatibilityVersion
 }
 
-
 dependencies {
   intellijPlatform {
     // Documentation on the default target platform methods:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
     if (ideaProduct == "android-studio") {
-      create(IntelliJPlatformType.AndroidStudio, ideaVersion)
+      androidStudio(ideaVersion)
     } else { // if (ideaProduct == "IC") {
-      create(IntelliJPlatformType.IntellijIdeaCommunity, ideaVersion)
+      intellijIdeaCommunity(ideaVersion)
     }
     testFramework(TestFrameworkType.Platform)
 
