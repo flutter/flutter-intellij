@@ -164,7 +164,7 @@ intellijPlatform {
       VerifyPluginTask.FailureLevel.INVALID_PLUGIN,
 //      VerifyPluginTask.FailureLevel.NOT_DYNAMIC,
     )
-    verificationReportsFormats = VerifyPluginTask.VerificationReportsFormats.ALL
+    //verificationReportsFormats = VerifyPluginTask.VerificationReportsFormats.ALL
     subsystemsToCheck = VerifyPluginTask.Subsystems.ALL
     // Mute and freeArgs documentation
     // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
