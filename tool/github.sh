@@ -43,7 +43,6 @@ dart pub get
 (cd tool/plugin; echo "dart pub get `pwd`"; dart pub get)
 
 if [ "DART_BOT" = "$BOT" ] ; then
-
   # Analyze the Dart code in the repo.
   echo "dart analyze"
   (cd flutter-idea/src; dart analyze)
@@ -63,7 +62,6 @@ if [ "DART_BOT" = "$BOT" ] ; then
   (cd tool/plugin; dart test/plugin_test.dart)
 
 elif [ "CHECK_BOT" = "$BOT" ] ; then
-
   # Run some validations on the repo code.
   ./bin/plugin lint
 
@@ -71,12 +69,14 @@ elif [ "CHECK_BOT" = "$BOT" ] ; then
   dart tool/grind.dart check-urls
 
 elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
-
   # Run unit tests.
   ./bin/plugin test --no-setup
 
-else
+elif [ "VERIFY_BOT" = "$BOT" ] ; then
+    # Run the verifier for this version
+    ./bin/plugin verify
 
+else
   # Run the build.
   ./bin/plugin make --channel=stable --only-version=$IDEA_VERSION --no-setup
 
