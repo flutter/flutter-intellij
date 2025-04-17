@@ -37,7 +37,7 @@ public class FlutterMessages {
         FLUTTER_NOTIFICATION_GROUP_ID,
         title,
         message,
-        NotificationType.WARNING, NotificationListener.URL_OPENING_LISTENER), project);
+        NotificationType.WARNING).setListener(NotificationListener.URL_OPENING_LISTENER), project);
   }
 
   public static void showInfo(String title, String message, @Nullable Project project) {
