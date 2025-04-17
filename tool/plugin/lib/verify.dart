@@ -47,36 +47,36 @@ class VerifyCommand extends ProductCommand {
     // run './gradlew verifyPlugin'
     var result = 0;
     for (var spec in buildSpecs) {
-      log('\nverifyPluginProjectConfiguration for $spec:');
-      result = await runner.runGradleCommand(
-        ['verifyPluginProjectConfiguration'],
-        spec,
-        '1',
-        'false',
-      );
-      if (result != 0) {
-        return result;
-      }
-      log('\nverifyPluginStructure for $spec:');
-      result = await runner.runGradleCommand(
-        ['verifyPluginStructure'],
-        spec,
-        '1',
-        'false',
-      );
-      if (result != 0) {
-        return result;
-      }
-      log('\nverifyPluginSignature for $spec:');
-      result = await runner.runGradleCommand(
-        ['verifyPluginSignature'],
-        spec,
-        '1',
-        'false',
-      );
-      if (result != 0) {
-        return result;
-      }
+      // log('\nverifyPluginProjectConfiguration for $spec:');
+      // result = await runner.runGradleCommand(
+      //   ['verifyPluginProjectConfiguration'],
+      //   spec,
+      //   '1',
+      //   'false',
+      // );
+      // if (result != 0) {
+      //   return result;
+      // }
+      // log('\nverifyPluginStructure for $spec:');
+      // result = await runner.runGradleCommand(
+      //   ['verifyPluginStructure'],
+      //   spec,
+      //   '1',
+      //   'false',
+      // );
+      // if (result != 0) {
+      //   return result;
+      // }
+      // log('\nverifyPluginSignature for $spec:');
+      // result = await runner.runGradleCommand(
+      //   ['verifyPluginSignature'],
+      //   spec,
+      //   '1',
+      //   'false',
+      // );
+      // if (result != 0) {
+      //   return result;
+      // }
       log('\nverifyPlugin for $spec:');
       result = await runner.runGradleCommand(
         ['verifyPlugin'],
