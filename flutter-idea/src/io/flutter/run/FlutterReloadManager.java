@@ -18,10 +18,7 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationGroup;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.AnActionListener;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -133,11 +130,8 @@ public class FlutterReloadManager {
       private @Nullable Project eventProject;
       private @Nullable Editor eventEditor;
 
-      /**
-       * WARNING on the deprecation of this API: the modification of this file was made at one point to resolve this error, but Flutter
-       * Hot Reload was broken, see https://github.com/flutter/flutter-intellij/issues/6996, the change had to be rolled back.
-       */
-      public void beforeActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
+      public void beforeActionPerformed(@NotNull AnAction action, @NotNull AnActionEvent event) {
+        // In case of hot-reload breakages, see: https://github.com/flutter/flutter-intellij/issues/6996
         if (!(action instanceof SaveAllAction)) {
           return;
         }
@@ -154,10 +148,8 @@ public class FlutterReloadManager {
         }
       }
 
-      /**
-       * See note above on {{@link #beforeActionPerformed(AnAction, DataContext, AnActionEvent)}}.
-       */
-      public void afterActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
+      public void afterActionPerformed(@NotNull AnAction action, @NotNull AnActionEvent event,  @NotNull AnActionResult result) {
+        // In case of hot-reload breakages, see: https://github.com/flutter/flutter-intellij/issues/6996
         if (!(action instanceof SaveAllAction)) {
           return;
         }
