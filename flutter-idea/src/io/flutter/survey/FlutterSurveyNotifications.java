@@ -88,14 +88,8 @@ public class FlutterSurveyNotifications {
     if (properties.getBoolean(survey.uniqueId)) return;
 
     final Notification notification = new Notification(
-      FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
-      FlutterIcons.Flutter,
-      survey.title,
-      null,
-      null,
-      NotificationType.INFORMATION,
-      null
-    );
+      FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID, survey.title, "", NotificationType.INFORMATION
+    ).setIcon(FlutterIcons.Flutter);
 
     notification.addAction(new AnAction(SURVEY_ACTION_TEXT) {
       @Override
