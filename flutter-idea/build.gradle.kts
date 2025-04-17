@@ -7,6 +7,7 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
@@ -65,7 +66,6 @@ java {
   sourceCompatibility = javaCompatibilityVersion
   targetCompatibility = javaCompatibilityVersion
 }
-
 
 dependencies {
   intellijPlatform {
@@ -126,13 +126,13 @@ intellijPlatform {
   pluginVerification {
     // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
     // https://github.com/JetBrains/intellij-plugin-verifier
-    cliPath = file("../third_party/lib/verifier-cli-1.379-all.jar")
+    cliPath = file("../third_party/lib/verifier-cli-1.384-all.jar")
     failureLevel = listOf(
       // TODO(team) Ideally all of the following FailureLevels should be enabled:
       // TODO(team) Create a tracking issue for each of the following validations
 //      VerifyPluginTask.FailureLevel.COMPATIBILITY_WARNINGS,
 //      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
-//      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES,
+//      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES, // https://github.com/flutter/flutter-intellij/issues/7718
 //      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
       VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
 //      VerifyPluginTask.FailureLevel.INTERNAL_API_USAGES,
@@ -153,18 +153,9 @@ intellijPlatform {
       "TemplateWordInPluginId,ForbiddenPluginIdPrefix,TemplateWordInPluginName"
     )
     ides {
-      if (ideaProduct == "android-studio") {
-        ide(IntelliJPlatformType.AndroidStudio, ideaVersion)
-      } else {
-          ide(IntelliJPlatformType.IntellijIdeaCommunity, ideaVersion)
-        }
-      recommended()
-//      select {
-//        types = listOf(IntelliJPlatformType.AndroidStudio)
-//        channels = listOf(ProductRelease.Channel.RELEASE)
-//        sinceBuild = sinceBuildInput
-//        untilBuild = untilBuildInput
-//      }
+      ide(IntelliJPlatformType.AndroidStudio, ideaVersion)
+      // Note, ideally we would have additional targets identified here, however we have been unsuccessful in adding
+      // "recomended()" or select {} support with current versions of gradle & the verifier tool.
     }
   }
 }
