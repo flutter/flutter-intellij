@@ -43,7 +43,7 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig>
   }
 
   @Override
-  protected void applyEditorTo(@NotNull final SdkRunConfig config) throws ConfigurationException {
+  protected void applyEditorTo(@NotNull final SdkRunConfig config) {
     final SdkFields fields = new SdkFields();
     fields.setFilePath(StringUtil.nullize(FileUtil.toSystemIndependentName(myFileField.getText().trim()), true));
     fields.setBuildFlavor(StringUtil.nullize(myBuildFlavorField.getText().trim()));

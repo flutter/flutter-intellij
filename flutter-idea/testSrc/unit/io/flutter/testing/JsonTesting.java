@@ -25,7 +25,7 @@ public class JsonTesting {
     for (String pair : pairs) {
       final int colon = pair.indexOf(":");
       if (!first) out.append(",");
-      out.append('"').append(pair.substring(0, colon)).append("\":").append(pair.substring(colon + 1));
+      out.append('"').append(pair, 0, colon).append("\":").append(pair.substring(colon + 1));
       first = false;
     }
     out.append('}');

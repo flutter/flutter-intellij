@@ -106,7 +106,6 @@ abstract class VmServiceBase implements VmServiceConst {
     });
 
     // Establish WebSocket Connection
-    //noinspection TryWithIdenticalCatches
     try {
       webSocket.connect();
     } catch (WebSocketException e) {

@@ -43,7 +43,7 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
   }
 
   @Override
-  protected void applyEditorTo(@NotNull final BazelRunConfig configuration) throws ConfigurationException {
+  protected void applyEditorTo(@NotNull final BazelRunConfig configuration) {
     String target = myTarget.getText().trim();
     final BazelFields fields = new BazelFields(
       StringUtil.nullize(target.endsWith("dart") ? FileUtil.toSystemIndependentName(target) : target, true),
