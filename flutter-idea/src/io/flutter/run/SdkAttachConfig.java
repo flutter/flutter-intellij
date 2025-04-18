@@ -81,22 +81,7 @@ public class SdkAttachConfig extends SdkRunConfig {
       if (device == null) return null;
 
       final GeneralCommandLine command = getCommand(env, device);
-
-      final FlutterApp app = FlutterApp.start(env, project, module, mode, device, command,
-                                              StringUtil.capitalize(mode.mode()) + "App",
-                                              "StopApp");
-
-      // Stop the app if the Flutter SDK changes.
-      final FlutterSdkManager.Listener sdkListener = new FlutterSdkManager.Listener() {
-        @Override
-        public void flutterSdkRemoved() {
-          app.shutdownAsync();
-        }
-      };
-      FlutterSdkManager.getInstance(project).addListener(sdkListener);
-      Disposer.register(app, () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
-
-      return app;
+      return getFlutterApp(env, device, project, module, mode, command);
     };
 
     final LaunchState launcher = new AttachState(env, mainFile.getAppDir(), mainFile.getFile(), this, createAppCallback);
