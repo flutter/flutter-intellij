@@ -227,6 +227,7 @@ public class SdkFields {
         }
       }, "Starting DevTools", false, project);
       final DevToolsInstance instance = devToolsFuture.get();
+      //noinspection HttpUrlsUsage
       args = ArrayUtil.append(args, "--devtools-server-address=http://" + instance.host() + ":" + instance.port());
     }
     catch (Exception e) {
