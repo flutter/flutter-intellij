@@ -15,8 +15,6 @@ import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.VmServiceListener;
 import org.jetbrains.annotations.NotNull;
 
-import org.dartlang.vm.service.element.Event;
-
 import com.google.gson.JsonObject;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.vfs.LocalFileSystem;

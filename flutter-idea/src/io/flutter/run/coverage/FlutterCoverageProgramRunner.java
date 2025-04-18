@@ -62,7 +62,7 @@ public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSet
   @Override
   @Nullable
   protected RunContentDescriptor doExecute(final @NotNull RunProfileState state,
-                                           final @NotNull ExecutionEnvironment env) throws ExecutionException {
+                                           final @NotNull ExecutionEnvironment env) {
     final RunContentDescriptor result = DefaultProgramRunnerKt.executeState(state, env, this);
     if (result == null) {
       return null;

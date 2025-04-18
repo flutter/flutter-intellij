@@ -234,7 +234,7 @@ public class FlutterReloadManager {
     if (file == null) {
       return;
     }
-    if (file.getPath().startsWith(configPath.toString())) {
+    if (file.getPath().startsWith(configPath)) {
       return; // Ignore changes to scratch files.
     }
     if (System.currentTimeMillis() - file.getTimeStamp() > 500) {
