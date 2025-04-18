@@ -112,7 +112,7 @@ public class FlutterColors {
     return value;
   }
 
-  private static Color parseColor(String hexValue) {
+  static @Nullable Color parseColor(String hexValue) {
     if (hexValue == null) {
       return null;
     }
