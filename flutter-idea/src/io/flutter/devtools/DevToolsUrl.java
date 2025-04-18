@@ -159,6 +159,7 @@ public class DevToolsUrl {
     }
   }
 
+  @SuppressWarnings("HttpUrlsUsage")
   @NotNull
   public String getUrlString() {
     final List<String> params = new ArrayList<>();

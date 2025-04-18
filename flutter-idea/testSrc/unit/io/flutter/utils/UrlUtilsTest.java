@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
+@SuppressWarnings("HttpUrlsUsage")
 public class UrlUtilsTest {
   @Test
   public void testGenerateHtmlFragmentWithHrefTags() {
