@@ -4,7 +4,6 @@
  * found in the LICENSE file.
  */
 
-import org.jetbrains.intellij.platform.gradle.IntelliJPlatform
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.models.ProductRelease
@@ -94,8 +93,12 @@ dependencies {
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
     if (ideaProduct == "android-studio") {
       androidStudio(ideaVersion)
-    } else { // if (ideaProduct == "IC") {
-      intellijIdeaCommunity(ideaVersion)
+    } else {
+      when (ideaProduct) {
+        "IU" -> intellijIdeaUltimate(ideaVersion)
+        "IC" -> intellijIdeaCommunity(ideaVersion)
+        else -> throw IllegalArgumentException("ideaProduct must be defined in the product matrix as either \"IU\" or \"IC\", but is not for $ideaVersion")
+      }
     }
     testFramework(TestFrameworkType.Platform)
 
@@ -109,12 +112,11 @@ dependencies {
       "org.jetbrains.kotlin",
       "org.jetbrains.plugins.gradle",
       "org.intellij.intelliLang")
+    val pluginList = mutableListOf("Dart:$dartPluginVersion")
     if (ideaProduct == "android-studio") {
       bundledPluginList.add("org.jetbrains.android")
       bundledPluginList.add("com.android.tools.idea.smali")
-    }
-    val pluginList = mutableListOf("Dart:$dartPluginVersion")
-    if (ideaProduct == "IC") {
+    } else {
       pluginList.add("org.jetbrains.android:$androidPluginVersion")
     }
 
