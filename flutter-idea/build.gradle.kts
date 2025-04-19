@@ -74,7 +74,11 @@ dependencies {
     if (ideaProduct == "android-studio") {
       androidStudio(ideaVersion)
     } else { // if (ideaProduct == "IC") {
-      intellijIdeaCommunity(ideaVersion)
+      when (ideaProduct) {
+        "IU" -> intellijIdeaUltimate(ideaVersion)
+        "IC" -> intellijIdeaCommunity(ideaVersion)
+        else -> throw IllegalArgumentException("ideaProduct must be defined in the product matrix as either \"IU\" or \"IC\", but is not for $ideaVersion")
+      }
     }
     testFramework(TestFrameworkType.Platform)
 
@@ -89,12 +93,11 @@ dependencies {
       "org.jetbrains.plugins.gradle",
       "org.intellij.intelliLang",
     )
+    val pluginList = mutableListOf("Dart:$dartPluginVersion")
     if (ideaProduct == "android-studio") {
       bundledPluginList.add("org.jetbrains.android")
       bundledPluginList.add("com.android.tools.idea.smali")
-    }
-    val pluginList = mutableListOf("Dart:$dartPluginVersion")
-    if (ideaProduct == "IC") {
+    } else {
       pluginList.add("org.jetbrains.android:$androidPluginVersion")
     }
 
