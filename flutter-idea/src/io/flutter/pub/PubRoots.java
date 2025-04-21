@@ -48,7 +48,7 @@ public class PubRoots {
    * (Based on the filesystem cache; doesn't refresh anything.)
    */
   @NotNull
-  public static List<PubRoot> forProject(@NotNull Project project) {
+  public static List<@NotNull PubRoot> forProject(@NotNull Project project) {
     final List<PubRoot> result = new ArrayList<>();
     if (project.isDisposed()) return result;
 
