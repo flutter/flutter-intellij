@@ -102,8 +102,6 @@ dependencies {
     // Plugin dependency documentation:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
     val bundledPluginList = mutableListOf(
-      "com.intellij.java",
-      "com.intellij.properties",
       "JUnit",
       "Git4Idea",
       "org.jetbrains.kotlin",
@@ -151,8 +149,8 @@ intellijPlatform {
     failureLevel = listOf(
       // TODO(team) Ideally all of the following FailureLevels should be enabled:
       // TODO(team) Create a tracking issue for each of the following validations
-//      VerifyPluginTask.FailureLevel.COMPATIBILITY_WARNINGS,
-//      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+      VerifyPluginTask.FailureLevel.COMPATIBILITY_WARNINGS,
+      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
 //      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES, // https://github.com/flutter/flutter-intellij/issues/7718
 //      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
       VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
