@@ -84,6 +84,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   @NotNull
   private final FlutterViewState state = new FlutterViewState();
 
+  @VisibleForTesting
+  @NotNull
+  public final ViewUtils viewUtils = new ViewUtils();
+
   @NotNull
   private final Project myProject;
 
@@ -184,7 +188,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
                 new LabelInput("The embedded browser failed to load. Error: " + error),
                 openDevToolsLabel(app, toolWindow, ideFeature)
               );
-              presentClickableLabel(toolWindow, inputs);
+              viewUtils.presentClickableLabel(toolWindow, inputs);
             });
           }));
       };
@@ -209,7 +213,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           .getUrlString(),
         null
       );
-      presentLabel(toolWindow, "DevTools inspector has been opened in the browser.");
+      viewUtils.presentLabel(toolWindow, "DevTools inspector has been opened in the browser.");
     }
   }
 
@@ -239,7 +243,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     verifyEventDispatchThread();
 
     devToolsInstallCount += 1;
-    presentLabel(toolWindow, getInstallingDevtoolsLabel());
+    viewUtils.presentLabel(toolWindow, getInstallingDevtoolsLabel());
 
     openInspectorWithDevTools(app, toolWindow, isEmbedded, ideFeature);
 
@@ -258,7 +262,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
     this.toolWindowListener.updateOnWindowOpen(() -> {
       devToolsInstallCount += 1;
-      presentLabel(toolWindow, getInstallingDevtoolsLabel());
+      viewUtils.presentLabel(toolWindow, getInstallingDevtoolsLabel());
       openInspectorWithDevTools(app, toolWindow, isEmbedded, ideFeature, true);
     });
   }
@@ -291,12 +295,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         // TODO(helinx): Restart DevTools server if there's an error.
         if (error != null) {
           LOG.error(error);
-          presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
+          viewUtils.presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
           return;
         }
 
         if (instance == null) {
-          presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
+          viewUtils.presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
           return;
         }
 
@@ -394,39 +398,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       inputs.add(openDevToolsLabel);
     }
 
-    presentClickableLabel(toolWindow, inputs);
+    viewUtils.presentClickableLabel(toolWindow, inputs);
   }
-
-  protected void presentLabel(ToolWindow toolWindow, String text) {
-    final JBLabel label = new JBLabel(text, SwingConstants.CENTER);
-    label.setForeground(UIUtil.getLabelDisabledForeground());
-    replacePanelLabel(toolWindow, label);
-  }
-
-  protected void presentClickableLabel(ToolWindow toolWindow, List<LabelInput> labels) {
-    final JPanel panel = new JPanel(new GridLayout(0, 1));
-
-    for (LabelInput input : labels) {
-      if (input.listener == null) {
-        final JLabel descriptionLabel = new JLabel("<html>" + input.text + "</html>");
-        descriptionLabel.setBorder(JBUI.Borders.empty(5));
-        descriptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        panel.add(descriptionLabel, BorderLayout.NORTH);
-      }
-      else {
-        final LinkLabel<String> linkLabel = new LinkLabel<>("<html>" + input.text + "</html>", null);
-        linkLabel.setBorder(JBUI.Borders.empty(5));
-        linkLabel.setListener(input.listener, null);
-        linkLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        panel.add(linkLabel, BorderLayout.SOUTH);
-      }
-    }
-
-    final JPanel center = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER));
-    center.add(panel);
-    replacePanelLabel(toolWindow, center);
-  }
-
   protected void presentOpenDevToolsOptionWithMessage(FlutterApp app,
                                                       ToolWindow toolWindow,
                                                       String message,
@@ -434,7 +407,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final List<LabelInput> inputs = new ArrayList<>();
     inputs.add(new LabelInput(message));
     inputs.add(openDevToolsLabel(app, toolWindow, ideFeature));
-    presentClickableLabel(toolWindow, inputs);
+    viewUtils.presentClickableLabel(toolWindow, inputs);
   }
 
   private void replacePanelLabel(ToolWindow toolWindow, JComponent label) {

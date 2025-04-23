@@ -20,15 +20,7 @@ public class DartPluginVersion implements Comparable<DartPluginVersion> {
   public DartPluginVersion(@Nullable String versionString) {
     rawVersionString = versionString;
     version = Version.parseVersion(versionString);
-
-    System.out.println("major:");
-    System.out.println(version.major);
-    System.out.println("minor:");
-    System.out.println(version.minor);
-    System.out.println("bug fix:");
-    System.out.println(version.bugfix);
   }
-
 
   @Override
   public int compareTo(@NotNull DartPluginVersion otherVersion) {

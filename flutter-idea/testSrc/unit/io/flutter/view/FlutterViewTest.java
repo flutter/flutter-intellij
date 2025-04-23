@@ -55,13 +55,14 @@ public class FlutterViewTest {
     // If JxBrowser failed to install, we should show a failure message that allows the user to manually retry.
     final FlutterView flutterView = new FlutterView(mockProject, mockJxBrowserManager, mockJxBrowserUtils);
     final FlutterView spy = spy(flutterView);
-    doNothing().when(spy).presentClickableLabel(
+    final ViewUtils utilsSpy = spy(flutterView.viewUtils);
+    doNothing().when(utilsSpy).presentClickableLabel(
       eq(mockToolWindow),
       anyList()
     );
 
     spy.handleJxBrowserInstallationFailed(mockApp, mockToolWindow, DevToolsIdeFeature.TOOL_WINDOW);
-    verify(spy, times(1)).presentClickableLabel(
+    verify(utilsSpy, times(1)).presentClickableLabel(
       eq(mockToolWindow),
       anyList()
     );
