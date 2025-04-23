@@ -47,7 +47,7 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   private static final FlutterSdkVersion MIN_SUPPORTS_DTD = new FlutterSdkVersion("3.22.0");
 
   @NotNull
-  private static final FlutterSdkVersion MIN_SUPPORTS_PROPERTY_EDITOR = new FlutterSdkVersion("3.29.0");
+  public static final FlutterSdkVersion MIN_SUPPORTS_PROPERTY_EDITOR = new FlutterSdkVersion("3.32.0-0.1.pre");
 
   @Nullable
   private final Version version;
