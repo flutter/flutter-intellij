@@ -8,7 +8,6 @@ package io.flutter.run.coverage;
 import com.intellij.coverage.CoverageDataManager;
 import com.intellij.coverage.CoverageExecutor;
 import com.intellij.coverage.CoverageRunnerData;
-import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.ConfigurationInfoProvider;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;

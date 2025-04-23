@@ -6,7 +6,6 @@
 package io.flutter.run;
 
 import com.intellij.execution.configuration.EnvironmentVariablesTextFieldWithBrowseButton;
-import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
