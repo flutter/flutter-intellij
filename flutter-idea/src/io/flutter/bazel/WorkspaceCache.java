@@ -7,16 +7,18 @@ package io.flutter.bazel;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.registry.Registry;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import io.flutter.FlutterUtils;
+import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.project.ProjectWatch;
 import io.flutter.utils.FileWatch;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -35,7 +37,7 @@ public class WorkspaceCache {
 
   private boolean refreshScheduled = false;
 
-  private final Set<Runnable> subscribers = new LinkedHashSet<>();
+  private final @NotNull Set<@NotNull Runnable> subscribers = new LinkedHashSet<>();
 
   private WorkspaceCache(@NotNull final Project project) {
     this.project = project;
@@ -44,7 +46,7 @@ public class WorkspaceCache {
     // dartProjectsWithoutPubspecRegistryKey registry key.
     //
     // https://github.com/flutter/flutter-intellij/issues/7333
-    if(Registry.is(dartProjectsWithoutPubspecRegistryKey, false)) {
+    if (Registry.is(dartProjectsWithoutPubspecRegistryKey, false)) {
       this.cache = null;
       return;
     }
@@ -78,13 +80,15 @@ public class WorkspaceCache {
       return;
     }
     refreshScheduled = true;
-    SwingUtilities.invokeLater(() -> {
-      refreshScheduled = false;
-      if (project.isDisposed()) {
-        return;
-      }
-      refresh();
-    });
+    ReadAction.nonBlocking(() -> {
+        refreshScheduled = false;
+        if (!project.isDisposed()) {
+          refresh();
+        }
+        return null;
+      })
+      .expireWith(FlutterDartAnalysisServer.getInstance(project))
+      .submit(AppExecutorUtil.getAppExecutorService());
   }
 
   @NotNull
@@ -112,7 +116,7 @@ public class WorkspaceCache {
   /**
    * Runs a callback each time the current Workspace changes.
    */
-  public void subscribe(Runnable callback) {
+  public void subscribe(@NotNull Runnable callback) {
     synchronized (subscribers) {
       subscribers.add(callback);
     }
@@ -152,7 +156,7 @@ public class WorkspaceCache {
     notifyListeners();
   }
 
-  private Set<Runnable> getSubscribers() {
+  private Set<@NotNull Runnable> getSubscribers() {
     synchronized (subscribers) {
       return ImmutableSet.copyOf(subscribers);
     }
