@@ -141,6 +141,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   }
 
   private void createUIComponents() {
+    //noinspection DialogTitleCapitalization
     ExtendableTextComponent.Extension browseExtension =
       ExtendableTextComponent.Extension.create(
         AllIcons.General.OpenDisk,
@@ -149,7 +150,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
         () -> {
           FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();
           VirtualFile file = FileChooser.chooseFile(descriptor, mySdkCombo, null, null);
-          mySdkCombo.setItem(file.getPath());
+          if (file != null) {
+            //noinspection DataFlowIssue (sure to be set before the extension is invoked)
+            mySdkCombo.setItem(file.getPath());
+          }
         });
     mySdkCombo = new ComboBox<>();
     mySdkCombo.setEditor(new BasicComboBoxEditor() {
