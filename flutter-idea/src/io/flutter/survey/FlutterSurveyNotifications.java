@@ -111,12 +111,13 @@ public class FlutterSurveyNotifications {
     });
 
     // Display the prompt after a short delay.
-    final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    scheduler.schedule(() -> {
-      if (!myProject.isDisposed()) {
-        Notifications.Bus.notify(notification, myProject);
-      }
-    }, NOTIFICATION_DELAY_IN_SECS, TimeUnit.SECONDS);
-    scheduler.shutdown();
+    try (var scheduler = Executors.newSingleThreadScheduledExecutor()) {
+      scheduler.schedule(() -> {
+        if (!myProject.isDisposed()) {
+          Notifications.Bus.notify(notification, myProject);
+        }
+      }, NOTIFICATION_DELAY_IN_SECS, TimeUnit.SECONDS);
+      scheduler.shutdown();
+    }
   }
 }
