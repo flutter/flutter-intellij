@@ -126,9 +126,6 @@ public class AddToAppUtils {
       public void syncSkipped(@NotNull Project project) {
         GradleUtils.checkDartSupport(project);
       }
-
-      public void sourceGenerationFinished(@NotNull Project project) {
-      }
     };
   }
 

@@ -48,12 +48,13 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileContentsChangedAdapter;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.serviceContainer.ComponentManagerImpl;
- import com.intellij.util.ReflectionUtil;
+import com.intellij.util.ReflectionUtil;
 import com.intellij.util.modules.CircularModuleDependenciesDetector;
 import io.flutter.sdk.AbstractLibraryManager;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
@@ -62,6 +63,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -91,7 +93,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   }
 
   public void update() {
-    doGradleSync(getProject(), this::scheduleAddAndroidLibraryDeps);
+    doGradleSync(getProject(), androidProject -> androidProject != null ? scheduleAddAndroidLibraryDeps(androidProject) : null);
   }
 
   private Void scheduleAddAndroidLibraryDeps(@NotNull Project androidProject) {
@@ -198,7 +200,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     }
 
     final Runnable runnable = this::updateAndroidLibraries;
-    DumbService.getInstance(getProject()).smartInvokeLater(runnable, ModalityState.NON_MODAL);
+    DumbService.getInstance(getProject()).smartInvokeLater(runnable, ModalityState.nonModal());
   }
 
   private void updateAndroidLibraries() {
@@ -208,7 +210,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     update();
   }
 
-  private void doGradleSync(Project flutterProject, Function<Project, Void> callback) {
+  private void doGradleSync(@NotNull Project flutterProject, @NotNull Function<Project, Void> callback) {
     // TODO(messick): Collect URLs for all Android modules, including those within plugins.
     VirtualFile dir = flutterProject.getBaseDir().findChild("android");
     if (dir == null) dir = flutterProject.getBaseDir().findChild(".android"); // For modules.
@@ -218,13 +220,6 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     Disposer.register(flutterProject, androidProject);
 
     GradleSyncListener listener = new GradleSyncListener() {
-      public void syncTaskCreated(@NotNull Project project, @NotNull GradleSyncInvoker.Request request) {}
-
-      // TODO(messick) Remove when 3.6 is stable.
-      public void syncStarted(@NotNull Project project, boolean skipped, boolean sourceGenerationRequested) {}
-
-      public void setupStarted(@NotNull Project project) {}
-
       @Override
       public void syncSucceeded(@NotNull Project project) {
         if (isUpdating.get()) {
@@ -315,8 +310,8 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     private Path path;
 
     protected EmbeddedAndroidProject(@NotNull Path filePath) {
-      super((ComponentManagerImpl) ApplicationManager.getApplication(), filePath, TEMPLATE_PROJECT_NAME);
-       path = filePath;
+      super((ComponentManagerImpl)ApplicationManager.getApplication(), filePath, TEMPLATE_PROJECT_NAME);
+      path = filePath;
     }
 
     static final String TEMPLATE_PROJECT_NAME = "_android";
