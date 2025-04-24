@@ -21,18 +21,20 @@ public class FlutterSurveyService {
   private static final String FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY = "FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY";
   private static final long CHECK_INTERVAL_IN_MS = TimeUnit.HOURS.toMillis(40);
   private static final String CONTENT_URL = "https://storage.googleapis.com/flutter-uxr/surveys/flutter-survey-metadata.json";
-  private static final PropertiesComponent properties = PropertiesComponent.getInstance();
   private static final Logger LOG = Logger.getInstance(FlutterSurveyService.class);
-  private static FlutterSurvey cachedSurvey;
+  private static @Nullable FlutterSurvey cachedSurvey;
 
   private static boolean timeToUpdateCachedContent() {
     // Don't check more often than daily.
     final long currentTimeMillis = System.currentTimeMillis();
-    final long lastCheckedMillis = properties.getLong(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, 0);
-    final boolean timeToUpdateCache = currentTimeMillis - lastCheckedMillis >= CHECK_INTERVAL_IN_MS;
-    if (timeToUpdateCache) {
-      properties.setValue(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, String.valueOf(currentTimeMillis));
-      return true;
+    final PropertiesComponent properties = PropertiesComponent.getInstance();
+    if (properties != null) {
+      final long lastCheckedMillis = properties.getLong(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, 0);
+      final boolean timeToUpdateCache = currentTimeMillis - lastCheckedMillis >= CHECK_INTERVAL_IN_MS;
+      if (timeToUpdateCache) {
+        properties.setValue(FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY, String.valueOf(currentTimeMillis));
+        return true;
+      }
     }
     return false;
   }
