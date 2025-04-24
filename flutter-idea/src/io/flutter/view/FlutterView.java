@@ -86,7 +86,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   @VisibleForTesting
   @NotNull
-  public final ViewUtils viewUtils = new ViewUtils();
+  public final ViewUtils viewUtils;
 
   @NotNull
   private final Project myProject;
@@ -99,15 +99,16 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   private final JxBrowserManager jxBrowserManager;
 
   public FlutterView(@NotNull Project project) {
-    this(project, JxBrowserManager.getInstance(), new JxBrowserUtils());
+    this(project, JxBrowserManager.getInstance(), new JxBrowserUtils(), new ViewUtils());
   }
 
   @VisibleForTesting
   @NonInjectable
-  protected FlutterView(@NotNull Project project, @NotNull JxBrowserManager jxBrowserManager, JxBrowserUtils jxBrowserUtils) {
+  protected FlutterView(@NotNull Project project, @NotNull JxBrowserManager jxBrowserManager, JxBrowserUtils jxBrowserUtils, ViewUtils viewUtils) {
     myProject = project;
     this.jxBrowserUtils = jxBrowserUtils;
     this.jxBrowserManager = jxBrowserManager;
+    this.viewUtils = viewUtils != null ? viewUtils : new ViewUtils();
 
     shouldAutoHorizontalScroll.listen(state::setShouldAutoScroll);
     highlightNodesShownInBothTrees.listen(state::setHighlightNodesShownInBothTrees);
