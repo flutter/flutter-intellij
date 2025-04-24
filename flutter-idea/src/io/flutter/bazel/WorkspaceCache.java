@@ -69,10 +69,10 @@ public class WorkspaceCache {
     });
 
     // Detect module root changes.
-    ProjectWatch.subscribe(project, this::scheduleRefresh);
-
-    // Load initial value.
-    refresh();
+    try (var projectWatch = ProjectWatch.subscribe(project, this::scheduleRefresh)) {
+      // Load initial value.
+      refresh();
+    }
   }
 
   private void scheduleRefresh() {
