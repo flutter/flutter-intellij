@@ -142,7 +142,7 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
       }
 
       for (String packagePath : packagesMap.values()) {
-        if (packagePath == null) continue;;
+        if (packagePath == null) continue;
         final VirtualFile libFolder = LocalFileSystem.getInstance().findFileByPath(packagePath);
         if (libFolder == null) {
           continue;

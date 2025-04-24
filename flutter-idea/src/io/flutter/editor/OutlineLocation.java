@@ -139,9 +139,6 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
     this.indent = indent;
   }
 
-  public void dispose() {
-  }
-
   /**
    * This method must be called if the location is set to update to reflect
    * edits to the document.

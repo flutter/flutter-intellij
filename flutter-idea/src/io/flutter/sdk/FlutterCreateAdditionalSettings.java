@@ -127,7 +127,7 @@ public class FlutterCreateAdditionalSettings {
       args.add(org);
     }
 
-    if (kotlin == null || Boolean.FALSE.equals(kotlin)) {
+    if (kotlin == null || !kotlin) {
       args.add("--android-language");
       args.add("java");
     }
