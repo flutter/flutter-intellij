@@ -191,7 +191,7 @@ public class FlutterInitializer implements StartupActivity {
     //Thread t1 = new Thread(() -> {
     //  UnifiedAnalytics unifiedAnalytics = new UnifiedAnalytics(project);
     //   TODO(helin24): Turn on after adding some unified analytics reporting.
-      //unifiedAnalytics.manageConsent();
+    //unifiedAnalytics.manageConsent();
     //});
     //t1.start();
   }
@@ -222,55 +222,57 @@ public class FlutterInitializer implements StartupActivity {
     lastScheduledThemeChangeTime.set(requestTime);
 
     // Schedule event to be sent in a second if nothing more recent has come in.
-    Executors.newSingleThreadScheduledExecutor().schedule(() -> {
-      if (lastScheduledThemeChangeTime.get() != requestTime) {
-        // A more recent request has been set, so drop this request.
-        return;
-      }
-
-      final JsonObject params = new JsonObject();
-      params.addProperty("eventKind", "themeChanged");
-      params.addProperty("streamId", "Editor");
-
-      final JsonObject themeData = new JsonObject();
-      final DevToolsUtils utils = new DevToolsUtils();
-      themeData.addProperty("isDarkMode", Boolean.FALSE.equals(utils.getIsBackgroundBright()));
-      themeData.addProperty("backgroundColor", utils.getColorHexCode());
-      themeData.addProperty("fontSize", utils.getFontSize().intValue());
-
-      final JsonObject eventData = new JsonObject();
-      eventData.add("theme", themeData);
-      params.add("eventData", eventData);
-
-      try {
-        final DtdUtils dtdUtils = new DtdUtils();
-        final DartToolingDaemonService dtdService = dtdUtils.readyDtdService(project).get();
-        if (dtdService == null) {
-          LOG.error("Unable to send theme changed event because DTD service is null");
+    try (var executor = Executors.newSingleThreadScheduledExecutor()) {
+      executor.schedule(() -> {
+        if (lastScheduledThemeChangeTime.get() != requestTime) {
+          // A more recent request has been set, so drop this request.
           return;
         }
 
-        dtdService.sendRequest("postEvent", params, false, object -> {
-                                 JsonObject result = object.getAsJsonObject("result");
-                                 if (result == null) {
-                                   LOG.error("Theme changed event returned null result");
-                                   return;
+        final JsonObject params = new JsonObject();
+        params.addProperty("eventKind", "themeChanged");
+        params.addProperty("streamId", "Editor");
+
+        final JsonObject themeData = new JsonObject();
+        final DevToolsUtils utils = new DevToolsUtils();
+        themeData.addProperty("isDarkMode", Boolean.FALSE.equals(utils.getIsBackgroundBright()));
+        themeData.addProperty("backgroundColor", utils.getColorHexCode());
+        themeData.addProperty("fontSize", utils.getFontSize().intValue());
+
+        final JsonObject eventData = new JsonObject();
+        eventData.add("theme", themeData);
+        params.add("eventData", eventData);
+
+        try {
+          final DtdUtils dtdUtils = new DtdUtils();
+          final DartToolingDaemonService dtdService = dtdUtils.readyDtdService(project).get();
+          if (dtdService == null) {
+            LOG.error("Unable to send theme changed event because DTD service is null");
+            return;
+          }
+
+          dtdService.sendRequest("postEvent", params, false, object -> {
+                                   JsonObject result = object.getAsJsonObject("result");
+                                   if (result == null) {
+                                     LOG.error("Theme changed event returned null result");
+                                     return;
+                                   }
+                                   JsonPrimitive type = result.getAsJsonPrimitive("type");
+                                   if (type == null) {
+                                     LOG.error("Theme changed event result type is null");
+                                     return;
+                                   }
+                                   if (!"Success".equals(type.getAsString())) {
+                                     LOG.error("Theme changed event result: " + type.getAsString());
+                                   }
                                  }
-                                 JsonPrimitive type = result.getAsJsonPrimitive("type");
-                                 if (type == null) {
-                                   LOG.error("Theme changed event result type is null");
-                                   return;
-                                 }
-                                 if (!"Success".equals(type.getAsString())) {
-                                   LOG.error("Theme changed event result: " + type.getAsString());
-                                 }
-                               }
-        );
-      }
-      catch (WebSocketException | InterruptedException | ExecutionException e) {
-        LOG.error("Unable to send theme changed event", e);
-      }
-    }, 1, TimeUnit.SECONDS);
+          );
+        }
+        catch (WebSocketException | InterruptedException | ExecutionException e) {
+          LOG.error("Unable to send theme changed event", e);
+        }
+      }, 1, TimeUnit.SECONDS);
+    }
   }
 
   private void checkSdkVersionNotification(@NotNull Project project) {

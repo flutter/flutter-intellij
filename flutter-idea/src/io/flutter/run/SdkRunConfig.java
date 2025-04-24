@@ -15,6 +15,7 @@ import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.filters.UrlFilter;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
@@ -32,11 +33,13 @@ import com.intellij.psi.PsiFileSystemItem;
 import com.intellij.refactoring.listeners.RefactoringElementListener;
 import com.intellij.refactoring.listeners.UndoRefactoringElementAdapter;
 import com.intellij.util.PathUtil;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
 import com.intellij.util.xmlb.XmlSerializer;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import io.flutter.FlutterUtils;
 import io.flutter.console.FlutterConsoleFilter;
+import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdkManager;
@@ -187,21 +190,7 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
         }
       }
 
-      final FlutterApp app = FlutterApp.start(env, project, module, mode, device, command,
-                                              StringUtil.capitalize(mode.mode()) + "App",
-                                              "StopApp");
-
-      // Stop the app if the Flutter SDK changes.
-      final FlutterSdkManager.Listener sdkListener = new FlutterSdkManager.Listener() {
-        @Override
-        public void flutterSdkRemoved() {
-          app.shutdownAsync();
-        }
-      };
-      FlutterSdkManager.getInstance(project).addListener(sdkListener);
-      Disposer.register(app, () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
-
-      return app;
+      return getFlutterApp(env, device, project, module, mode, command);
     };
 
     final LaunchState launcher = new LaunchState(env, mainFile.getAppDir(), mainFile.getFile(), this, createAppCallback);
@@ -209,22 +198,53 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
     return launcher;
   }
 
+  static @NotNull FlutterApp getFlutterApp(@NotNull ExecutionEnvironment env,
+                                            @NotNull FlutterDevice device,
+                                            Project project,
+                                            Module module,
+                                            RunMode mode,
+                                            GeneralCommandLine command) throws ExecutionException {
+    final FlutterApp app = FlutterApp.start(env, project, module, mode, device, command,
+                                            StringUtil.capitalize(mode.mode()) + "App",
+                                            "StopApp");
+
+    // Stop the app if the Flutter SDK changes.
+    final FlutterSdkManager.Listener sdkListener = new FlutterSdkManager.Listener() {
+      @Override
+      public void flutterSdkRemoved() {
+        app.shutdownAsync();
+      }
+    };
+    FlutterSdkManager.getInstance(project).addListener(sdkListener);
+    Disposer.register(app, () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
+
+    return app;
+  }
+
   protected void addConsoleFilters(@NotNull LaunchState launcher,
                                    @NotNull ExecutionEnvironment env,
                                    @NotNull MainFile mainFile,
                                    @Nullable Module module) {
-    // Set up additional console filters.
-    final TextConsoleBuilder builder = launcher.getConsoleBuilder();
-    // file:, package:, and dart: references
-    builder.addFilter(new DartConsoleFilter(env.getProject(), mainFile.getFile()));
-    //// links often found when running tests
-    //builder.addFilter(new DartRelativePathsConsoleFilter(env.getProject(), mainFile.getAppDir().getPath()));
-    if (module != null) {
-      // various flutter run links
-      builder.addFilter(new FlutterConsoleFilter(module));
-    }
-    // general urls
-    builder.addFilter(new UrlFilter());
+    // Creating console filters is expensive so we want to make sure we are not blocking.
+    // See: https://github.com/flutter/flutter-intellij/issues/8089
+    ReadAction.nonBlocking(() -> {
+        // Set up additional console filters.
+        final TextConsoleBuilder builder = launcher.getConsoleBuilder();
+        if (builder == null) return null;
+        // file:, package:, and dart: references
+        builder.addFilter(new DartConsoleFilter(env.getProject(), mainFile.getFile()));
+        //// links often found when running tests
+        //builder.addFilter(new DartRelativePathsConsoleFilter(env.getProject(), mainFile.getAppDir().getPath()));
+        if (module != null) {
+          // various flutter run links
+          builder.addFilter(new FlutterConsoleFilter(module));
+        }
+        // general urls
+        builder.addFilter(new UrlFilter());
+        return null;
+      })
+      .expireWith(FlutterDartAnalysisServer.getInstance(getProject()))
+      .submit(AppExecutorUtil.getAppExecutorService());
   }
 
   @NotNull

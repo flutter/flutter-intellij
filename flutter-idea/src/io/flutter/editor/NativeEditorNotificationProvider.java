@@ -46,7 +46,9 @@ public class NativeEditorNotificationProvider implements EditorNotificationProvi
   }
 
   @Nullable
-  private EditorNotificationPanel createPanelForAction(@NotNull FileEditor fileEditor, @NotNull VirtualFile root, @Nullable String actionName) {
+  private EditorNotificationPanel createPanelForAction(@NotNull FileEditor fileEditor,
+                                                       @NotNull VirtualFile root,
+                                                       @Nullable String actionName) {
     if (actionName == null) {
       return null;
     }
@@ -113,7 +115,9 @@ public class NativeEditorNotificationProvider implements EditorNotificationProvi
       text("Flutter commands");
 
       // Ensure this project is a Flutter project by updating the menu action. It will only be visible for Flutter projects.
-      myAction.update(AnActionEvent.createFromDataContext(ActionPlaces.EDITOR_TOOLBAR, myAction.getTemplatePresentation(), makeContext()));
+      myAction.update(
+        AnActionEvent.createEvent(makeContext(), myAction.getTemplatePresentation(), ActionPlaces.EDITOR_TOOLBAR, ActionUiKind.NONE, null));
+
       isVisible = myAction.getTemplatePresentation().isVisible();
       createActionLabel(myAction.getTemplatePresentation().getText(), this::performAction)
         .setToolTipText(myAction.getTemplatePresentation().getDescription());
@@ -134,7 +138,7 @@ public class NativeEditorNotificationProvider implements EditorNotificationProvi
     private void performAction() {
       // Open Xcode or Android Studio. If already running AS then just open a new window.
       myAction.actionPerformed(
-        AnActionEvent.createFromDataContext(ActionPlaces.EDITOR_TOOLBAR, myAction.getTemplatePresentation(), makeContext()));
+        AnActionEvent.createEvent(makeContext(), myAction.getTemplatePresentation(), ActionPlaces.EDITOR_TOOLBAR, ActionUiKind.NONE, null));
     }
 
     private DataContext makeContext() {

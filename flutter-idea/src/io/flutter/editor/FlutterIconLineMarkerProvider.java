@@ -55,8 +55,16 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
   private static final String CupertinoRelativeAssetPath = "/assets/CupertinoIcons.ttf";
   private static final String CupertinoRelativeIconsPath = "/packages/flutter/lib/src/cupertino/icons.dart";
 
-  static {
-    initialize();
+  private static boolean instantiated = false;
+
+  FlutterIconLineMarkerProvider() {
+    // Extension point implementations can't use static initializers so we keep track of the
+    // first instantiation to make sure #initialize is called to set up initial state. (Note that this state
+    // may get reset with a subsequent explicit call to #initialize.)
+    if (!instantiated) {
+      initialize();
+    }
+    instantiated = true;
   }
 
   public static void initialize() {

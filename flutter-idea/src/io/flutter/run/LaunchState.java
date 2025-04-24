@@ -137,12 +137,11 @@ public class LaunchState extends CommandLineState {
     device.bringToFront();
 
     // Check for and display any analysis errors when we launch an app.
-    if (env.getRunProfile() instanceof SdkRunConfig) {
+    if (env.getRunProfile() instanceof SdkRunConfig config) {
       final Class dartExecutionHelper = classForName("com.jetbrains.lang.dart.ide.runner.DartExecutionHelper");
       if (dartExecutionHelper != null) {
         final String message = ("<a href='open.dart.analysis'>Analysis issues</a> may affect " +
                                 "the execution of '" + env.getRunProfile().getName() + "'.");
-        final SdkRunConfig config = (SdkRunConfig)env.getRunProfile();
         final SdkFields sdkFields = config.getFields();
         final MainFile mainFile = MainFile.verify(sdkFields.getFilePath(), env.getProject()).get();
 

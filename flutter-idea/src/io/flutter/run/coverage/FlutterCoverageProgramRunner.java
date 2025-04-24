@@ -8,7 +8,6 @@ package io.flutter.run.coverage;
 import com.intellij.coverage.CoverageDataManager;
 import com.intellij.coverage.CoverageExecutor;
 import com.intellij.coverage.CoverageRunnerData;
-import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.ConfigurationInfoProvider;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
@@ -62,7 +61,7 @@ public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSet
   @Override
   @Nullable
   protected RunContentDescriptor doExecute(final @NotNull RunProfileState state,
-                                           final @NotNull ExecutionEnvironment env) throws ExecutionException {
+                                           final @NotNull ExecutionEnvironment env) {
     final RunContentDescriptor result = DefaultProgramRunnerKt.executeState(state, env, this);
     if (result == null) {
       return null;

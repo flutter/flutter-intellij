@@ -219,7 +219,6 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
       case MISSING_PLATFORM_FILES -> "JX Browser platform files are missing";
       case CLASS_LOAD_FAILED -> "JX Browser class load failed";
       case CLASS_NOT_FOUND -> "JX Browser class not found";
-      default -> null;
     };
 
   }

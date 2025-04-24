@@ -14,7 +14,10 @@ import com.intellij.concurrency.JobScheduler;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.ide.actions.SaveAllAction;
-import com.intellij.notification.*;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationGroup;
+import com.intellij.notification.NotificationGroupManager;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.AnActionListener;
 import com.intellij.openapi.application.ApplicationManager;
@@ -30,7 +33,6 @@ import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.Balloon;
-import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -59,6 +61,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -127,11 +130,8 @@ public class FlutterReloadManager {
       private @Nullable Project eventProject;
       private @Nullable Editor eventEditor;
 
-      /**
-       * WARNING on the deprecation of this API: the modification of this file was made at one point to resolve this error, but Flutter
-       * Hot Reload was broken, see https://github.com/flutter/flutter-intellij/issues/6996, the change had to be rolled back.
-       */
-      public void beforeActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
+      public void beforeActionPerformed(@NotNull AnAction action, @NotNull AnActionEvent event) {
+        // In case of hot-reload breakages, see: https://github.com/flutter/flutter-intellij/issues/6996
         if (!(action instanceof SaveAllAction)) {
           return;
         }
@@ -148,10 +148,8 @@ public class FlutterReloadManager {
         }
       }
 
-      /**
-       * See note above on {{@link #beforeActionPerformed(AnAction, DataContext, AnActionEvent)}}.
-       */
-      public void afterActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
+      public void afterActionPerformed(@NotNull AnAction action, @NotNull AnActionEvent event,  @NotNull AnActionResult result) {
+        // In case of hot-reload breakages, see: https://github.com/flutter/flutter-intellij/issues/6996
         if (!(action instanceof SaveAllAction)) {
           return;
         }
@@ -194,7 +192,7 @@ public class FlutterReloadManager {
 
         ApplicationManager.getApplication().invokeLater(() -> {
           // Find a Dart editor to trigger the reload.
-          final Editor anEditor = ApplicationManager.getApplication().runReadAction((Computable<Editor>)() -> {
+          final Editor anEditor = OpenApiUtils.safeRunReadAction(() -> {
             Editor someEditor = null;
             final EditorFactory editorFactory = EditorFactory.getInstance();
             if(editorFactory != null) {
@@ -236,7 +234,7 @@ public class FlutterReloadManager {
     if (file == null) {
       return;
     }
-    if (file.getPath().startsWith(configPath.toString())) {
+    if (file.getPath().startsWith(configPath)) {
       return; // Ignore changes to scratch files.
     }
     if (System.currentTimeMillis() - file.getTimeStamp() > 500) {
@@ -479,7 +477,7 @@ public class FlutterReloadManager {
     // are analysis issues in other files; the compilation errors from the flutter tool
     // will indicate to the user where the problems are.
 
-    final PsiErrorElement firstError = ApplicationManager.getApplication().runReadAction((Computable<PsiErrorElement>)() -> {
+    final PsiErrorElement firstError = OpenApiUtils.safeRunReadAction(() -> {
       final PsiFile psiFile = PsiDocumentManager.getInstance(myProject).getPsiFile(document);
       if (psiFile instanceof DartFile) {
         return PsiTreeUtil.findChildOfType(psiFile, PsiErrorElement.class, false);

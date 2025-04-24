@@ -88,14 +88,8 @@ public class FlutterSurveyNotifications {
     if (properties.getBoolean(survey.uniqueId)) return;
 
     final Notification notification = new Notification(
-      FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
-      FlutterIcons.Flutter,
-      survey.title,
-      null,
-      null,
-      NotificationType.INFORMATION,
-      null
-    );
+      FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID, survey.title, "", NotificationType.INFORMATION
+    ).setIcon(FlutterIcons.Flutter);
 
     notification.addAction(new AnAction(SURVEY_ACTION_TEXT) {
       @Override
@@ -117,12 +111,13 @@ public class FlutterSurveyNotifications {
     });
 
     // Display the prompt after a short delay.
-    final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    scheduler.schedule(() -> {
-      if (!myProject.isDisposed()) {
-        Notifications.Bus.notify(notification, myProject);
-      }
-    }, NOTIFICATION_DELAY_IN_SECS, TimeUnit.SECONDS);
-    scheduler.shutdown();
+    try (var scheduler = Executors.newSingleThreadScheduledExecutor()) {
+      scheduler.schedule(() -> {
+        if (!myProject.isDisposed()) {
+          Notifications.Bus.notify(notification, myProject);
+        }
+      }, NOTIFICATION_DELAY_IN_SECS, TimeUnit.SECONDS);
+      scheduler.shutdown();
+    }
   }
 }

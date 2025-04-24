@@ -70,7 +70,7 @@ public class FlutterTestRunner extends GenericProgramRunner {
       return false;
     }
 
-    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(((TestConfig)profile).getProject());
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(config.getProject());
     if (sdk == null) {
       return false;
     }

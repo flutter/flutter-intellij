@@ -122,11 +122,10 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     @NotNull private final PubRoot myRoot;
 
     public PackagesOutOfDateNotification(@NotNull Project project, @NotNull PubRoot root) {
-      super("Flutter Packages", FlutterIcons.Flutter, "Flutter pub get.",
-            null, "The pubspec.yaml file has been modified since " +
-                  "the last time 'flutter pub get' was run.",
-            NotificationType.INFORMATION, null);
-
+      super("Flutter Packages", "The pubspec.yaml file has been modified since " +
+                                "the last time 'flutter pub get' was run.", NotificationType.INFORMATION);
+      setIcon(FlutterIcons.Flutter);
+      
       myProject = project;
       myRoot = root;
 

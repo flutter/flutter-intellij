@@ -47,11 +47,9 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
     };
     final Module module = pubRoot.getModule(project);
     if (module != null) {
-      //noinspection ConstantConditions
       sdk.flutterBuild(pubRoot, buildType.type).startInModuleConsole(module, pubRoot::refresh, processAdapter);
     }
     else {
-      //noinspection ConstantConditions
       final ColoredProcessHandler processHandler = sdk.flutterBuild(pubRoot, buildType.type).startInConsole(project);
       if (processHandler == null) {
         progressHelper.done();

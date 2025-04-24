@@ -48,6 +48,10 @@
 
   <change-notes>
     <![CDATA[
+<h1>85.2</h1>
+<ul>
+  <li>Fix broken devtools inspector source navigation (#8041)</li>
+</ul>
 <h1>85.1</h1>
 <ul>
   <li>Fix the disappearance of the New Flutter Project menu item (#8040)</li>

@@ -53,7 +53,7 @@ public class SdkFields {
   /**
    * Creates SDK fields from a Dart file containing a main method.
    */
-  public SdkFields(VirtualFile launchFile) {
+  public SdkFields(@NotNull VirtualFile launchFile) {
     filePath = launchFile.getPath();
   }
 
@@ -227,6 +227,7 @@ public class SdkFields {
         }
       }, "Starting DevTools", false, project);
       final DevToolsInstance instance = devToolsFuture.get();
+      //noinspection HttpUrlsUsage
       args = ArrayUtil.append(args, "--devtools-server-address=http://" + instance.host() + ":" + instance.port());
     }
     catch (Exception e) {

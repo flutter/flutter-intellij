@@ -19,7 +19,7 @@ import java.util.Objects;
 class EmbeddedJcefBrowserTab implements EmbeddedTab {
   private JBCefBrowser browser;
 
-  public EmbeddedJcefBrowserTab() throws Exception {
+  public EmbeddedJcefBrowserTab() {
     this.browser = new JBCefBrowser();
   }
 

@@ -37,7 +37,7 @@ public class FlutterCupertinoColors {
     for (Map.Entry<Object, Object> entry : colors.entrySet()) {
       final String name = (String)entry.getKey();
       final String value = (String)entry.getValue();
-      final Color color = parseColor(value);
+      final Color color = FlutterColors.parseColor(value);
       if (color != null) {
         colorToName.put(color, name);
       }
@@ -90,25 +90,8 @@ public class FlutterCupertinoColors {
     return value;
   }
 
-  private static Color parseColor(String hexValue) {
-    if (hexValue == null) {
-      return null;
-    }
-
-    try {
-      // argb to r, g, b, a
-      final long value = Long.parseLong(hexValue, 16);
-
-      //noinspection UseJBColor
-      return new Color((int)(value >> 16) & 0xFF, (int)(value >> 8) & 0xFF, (int)value & 0xFF, (int)(value >> 24) & 0xFF);
-    }
-    catch (IllegalArgumentException e) {
-      return null;
-    }
-  }
-
-  private static Color getColorValue(String name) {
+  private static @Nullable Color getColorValue(String name) {
     final String hexValue = colors.getProperty(name);
-    return parseColor(hexValue);
+    return FlutterColors.parseColor(hexValue);
   }
 }

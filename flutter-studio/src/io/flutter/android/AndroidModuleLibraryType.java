@@ -22,7 +22,7 @@ public class AndroidModuleLibraryType extends LibraryType<AndroidModuleLibraryPr
   public static final String LIBRARY_NAME = "Android Libraries";
 
   public static final PersistentLibraryKind<AndroidModuleLibraryProperties> LIBRARY_KIND =
-    new PersistentLibraryKind<AndroidModuleLibraryProperties>("AndroidModuleLibraryType") {
+    new PersistentLibraryKind<>("AndroidModuleLibraryType") {
       @Override
       @NotNull
       public AndroidModuleLibraryProperties createDefaultProperties() {

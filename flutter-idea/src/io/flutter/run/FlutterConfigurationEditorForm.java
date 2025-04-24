@@ -6,7 +6,6 @@
 package io.flutter.run;
 
 import com.intellij.execution.configuration.EnvironmentVariablesTextFieldWithBrowseButton;
-import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
@@ -43,7 +42,7 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig>
   }
 
   @Override
-  protected void applyEditorTo(@NotNull final SdkRunConfig config) throws ConfigurationException {
+  protected void applyEditorTo(@NotNull final SdkRunConfig config) {
     final SdkFields fields = new SdkFields();
     fields.setFilePath(StringUtil.nullize(FileUtil.toSystemIndependentName(myFileField.getText().trim()), true));
     fields.setBuildFlavor(StringUtil.nullize(myBuildFlavorField.getText().trim()));

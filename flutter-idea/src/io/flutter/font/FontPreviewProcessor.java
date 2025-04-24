@@ -576,7 +576,7 @@ public class FontPreviewProcessor {
       classesToAnalyze.addAll(
         names.stream()
           .map((each) -> new ClassInfo(packageName, filePath, each))
-          .collect(Collectors.toList()));
+          .toList());
     }
 
     void addFilesToRewrite(@NotNull String packageName, @NotNull Collection<VirtualFile> files) {
@@ -588,7 +588,7 @@ public class FontPreviewProcessor {
             return !(packageIndex < 0 || isInSdk(path));
           })
           .map((each) -> new FileInfo(packageName, each.getPath(), each))
-          .collect(Collectors.toList()));
+          .toList());
     }
   }
 

@@ -45,10 +45,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -166,7 +163,7 @@ public class FlutterConsoleLogManager {
         }
       }
       catch (InterruptedException e) {
-        e.printStackTrace();
+        LOG.error(e);
       }
     }
   }
@@ -391,7 +388,9 @@ public class FlutterConsoleLogManager {
       }
     });
     Notifications.Bus.notify(notification, app.getProject());
-    Executors.newSingleThreadScheduledExecutor().schedule(notification::expire, 25, TimeUnit.SECONDS);
+    try (var executor = Executors.newSingleThreadScheduledExecutor()) {
+      executor.schedule(notification::expire, 25, TimeUnit.SECONDS);
+    }
   }
 
   private String getChildIndent(String indent, DiagnosticsNode property) {

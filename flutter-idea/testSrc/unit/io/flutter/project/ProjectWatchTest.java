@@ -43,14 +43,14 @@ public class ProjectWatchTest {
   public void shouldSendEventWhenModuleRootsChange() throws Exception {
     Testing.runOnDispatchThread(() -> {
       final AtomicInteger callCount = new AtomicInteger();
-      final ProjectWatch listen = ProjectWatch.subscribe(fixture.getProject(), callCount::incrementAndGet);
-
-      VirtualFile[] contentRoots = ModuleRootManager.getInstance(fixture.getModule()).getContentRoots();
-      VirtualFile dir = contentRoots[0].createChildDirectory(this, "testDir");
-      ModuleRootModificationUtil.addContentRoot(fixture.getModule(), dir);
-      PlatformTestUtil.dispatchAllEventsInIdeEventQueue();
-      // The number of events fired is an implementation detail of the project manager. We just need at least one.
-      assertNotEquals(0, callCount.get());
+      try (var listen = ProjectWatch.subscribe(fixture.getProject(), callCount::incrementAndGet)) {
+        VirtualFile[] contentRoots = ModuleRootManager.getInstance(fixture.getModule()).getContentRoots();
+        VirtualFile dir = contentRoots[0].createChildDirectory(this, "testDir");
+        ModuleRootModificationUtil.addContentRoot(fixture.getModule(), dir);
+        PlatformTestUtil.dispatchAllEventsInIdeEventQueue();
+        // The number of events fired is an implementation detail of the project manager. We just need at least one.
+        assertNotEquals(0, callCount.get());
+      }
     });
   }
 

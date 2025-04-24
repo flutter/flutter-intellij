@@ -93,8 +93,12 @@ dependencies {
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
     if (ideaProduct == "android-studio") {
       androidStudio(ideaVersion)
-    } else { // if (ideaProduct == "IC") {
-      intellijIdeaCommunity(ideaVersion)
+    } else {
+      when (ideaProduct) {
+        "IU" -> intellijIdeaUltimate(ideaVersion)
+        "IC" -> intellijIdeaCommunity(ideaVersion)
+        else -> throw IllegalArgumentException("ideaProduct must be defined in the product matrix as either \"IU\" or \"IC\", but is not for $ideaVersion")
+      }
     }
     testFramework(TestFrameworkType.Platform)
 
@@ -108,12 +112,11 @@ dependencies {
       "org.jetbrains.kotlin",
       "org.jetbrains.plugins.gradle",
       "org.intellij.intelliLang")
+    val pluginList = mutableListOf("Dart:$dartPluginVersion")
     if (ideaProduct == "android-studio") {
       bundledPluginList.add("org.jetbrains.android")
       bundledPluginList.add("com.android.tools.idea.smali")
-    }
-    val pluginList = mutableListOf("Dart:$dartPluginVersion")
-    if (ideaProduct == "IC") {
+    } else {
       pluginList.add("org.jetbrains.android:$androidPluginVersion")
     }
 
@@ -130,6 +133,7 @@ dependencies {
   }
 }
 
+
 intellijPlatform {
   pluginConfiguration {
     version = flutterPluginVersion
@@ -138,8 +142,46 @@ intellijPlatform {
       untilBuild = untilBuildInput
     }
   }
-}
 
+  // Verifier documentation
+  // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html#intellijPlatform-pluginVerification
+  // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html#intellijPlatform-pluginVerification-ides
+  pluginVerification {
+    // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
+    // https://github.com/JetBrains/intellij-plugin-verifier
+    cliPath = file("./third_party/lib/verifier-cli-1.384-all.jar")
+    failureLevel = listOf(
+      // TODO(team) Ideally all of the following FailureLevels should be enabled:
+      // TODO(team) Create a tracking issue for each of the following validations
+//      VerifyPluginTask.FailureLevel.COMPATIBILITY_WARNINGS,
+//      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+//      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES, // https://github.com/flutter/flutter-intellij/issues/7718
+//      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
+      VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
+//      VerifyPluginTask.FailureLevel.INTERNAL_API_USAGES,
+//      VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
+      VerifyPluginTask.FailureLevel.NON_EXTENDABLE_API_USAGES,
+      VerifyPluginTask.FailureLevel.PLUGIN_STRUCTURE_WARNINGS,
+//      VerifyPluginTask.FailureLevel.MISSING_DEPENDENCIES,
+      VerifyPluginTask.FailureLevel.INVALID_PLUGIN,
+//      VerifyPluginTask.FailureLevel.NOT_DYNAMIC,
+    )
+    verificationReportsFormats = VerifyPluginTask.VerificationReportsFormats.ALL
+    subsystemsToCheck = VerifyPluginTask.Subsystems.ALL
+    // Mute and freeArgs documentation
+    // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
+    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-faq.html#mutePluginVerifierProblems
+    freeArgs = listOf(
+      "-mute",
+      "TemplateWordInPluginId,ForbiddenPluginIdPrefix,TemplateWordInPluginName"
+    )
+    ides {
+      ide(IntelliJPlatformType.AndroidStudio, ideaVersion)
+      // Note, ideally we would have additional targets identified here, however we have been unsuccessful in adding
+      // "recomended()" or select {} support with current versions of gradle & the verifier tool.
+    }
+  }
+}
 // Documentation for printProductsReleases:
 // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-faq.html#how-to-check-the-latest-available-eap-release
 tasks {
