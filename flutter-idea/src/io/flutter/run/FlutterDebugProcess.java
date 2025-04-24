@@ -138,12 +138,16 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
 
     final String name = XDebuggerBundle.message("debugger.session.tab.console.content.name");
     for (Content c : ui.getContents()) {
-      if (!Objects.equals(c.getTabName(), name)) {
+      if (c != null && !Objects.equals(c.getTabName(), name)) {
         try {
-          ApplicationManager.getApplication().invokeAndWait(() -> ui.removeContent(c, false /* dispose? */));
+          var application = ApplicationManager.getApplication();
+          if (application != null) {
+            application.invokeAndWait(() -> ui.removeContent(c, false /* dispose? */));
+          }
         }
         catch (ProcessCanceledException e) {
           FlutterUtils.warn(LOG, e);
+          throw e;
         }
       }
     }
