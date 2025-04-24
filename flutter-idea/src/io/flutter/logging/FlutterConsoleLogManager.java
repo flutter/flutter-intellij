@@ -163,7 +163,7 @@ public class FlutterConsoleLogManager {
         }
       }
       catch (InterruptedException e) {
-        e.printStackTrace();
+        LOG.error(e);
       }
     }
   }
