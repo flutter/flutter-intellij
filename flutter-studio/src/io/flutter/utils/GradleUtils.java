@@ -26,7 +26,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
-import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ReflectionUtil;
@@ -458,7 +457,7 @@ public class GradleUtils {
         requireNonNull(pathToModule);
         requireNonNull(settingsFile);
         BufferedInputStream str = new BufferedInputStream(settingsFile.getInputStream());
-        return FileUtil.loadTextAndClose(new InputStreamReader(str, CharsetToolkit.UTF8_CHARSET));
+        return FileUtil.loadTextAndClose(new InputStreamReader(str, StandardCharsets.UTF_8));
       }
       catch (NullPointerException | IOException e) {
         cleanupAfterError();
