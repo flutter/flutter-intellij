@@ -198,10 +198,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
             });
           }));
       };
-      final ProgressManager progressManager = ProgressManager.getInstanceOrNull();
-      if (progressManager != null) {
-        progressManager.runProcess(task, new EmptyProgressIndicator());
-      }
+      final ProgressManager progressManager = ProgressManager.getInstance();
+      progressManager.runProcess(task, new EmptyProgressIndicator());
 
       toolWindow.setTitleActions(List.of(new RefreshToolWindowAction(TOOL_WINDOW_ID)));
     }
