@@ -49,6 +49,12 @@
 
   <change-notes>
     <![CDATA[
+<h1>85.3</h1>
+<ul>
+  <li>Add Property Editor side panel (#7957)</li>
+  <li>Support removed for IDEA 2024.1 (Koala) and 2024.2 (Ladybug) (#8073)</li>
+  <li>Various cleanups including migrating slow operations to non-blocking calls (#8089)</li>
+</ul>
 <h1>85.2</h1>
 <ul>
   <li>Fix broken devtools inspector source navigation (#8041)</li>
