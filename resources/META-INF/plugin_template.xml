@@ -269,7 +269,7 @@
                     serviceImplementation="io.flutter.bazel.WorkspaceCache"/>
     <projectService serviceImplementation="io.flutter.pub.PubRootCache"/>
 
-    <backgroundPostStartupActivity implementation="io.flutter.sdk.FlutterSdkManagerStartupActivity"/>
+    <backgroundPostStartupActivity implementation="io.flutter.sdk.FlutterprojectActivity"/>
     <backgroundPostStartupActivity id="FontPreviewStartupActivity"
                                    implementation="io.flutter.font.FontPreviewStartupActivity"
                                    order="last"/>
