@@ -246,7 +246,7 @@ class DeviceDaemon {
                 FlutterMessages.showError("Flutter device daemon", failureMessage, null);
               }
               else if (attempts == DeviceDaemon.RESTART_ATTEMPTS_BEFORE_WARNING + 4) {
-                ApplicationManager.getApplication().invokeLater(() -> new DaemonCrashReporter().show(), ModalityState.NON_MODAL);
+                ApplicationManager.getApplication().invokeLater(() -> new DaemonCrashReporter().show(), ModalityState.nonModal());
                 return null;
               }
             }

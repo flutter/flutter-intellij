@@ -200,7 +200,7 @@ public class AttachDebuggerAction extends FlutterSdkAction {
   }
 
   private static void showSelectConfigDialog() {
-    ApplicationManager.getApplication().invokeLater(() -> new SelectConfigDialog().show(), ModalityState.NON_MODAL);
+    ApplicationManager.getApplication().invokeLater(() -> new SelectConfigDialog().show(), ModalityState.nonModal());
   }
 
   private static class SelectConfigDialog extends DialogWrapper {

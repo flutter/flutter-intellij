@@ -99,7 +99,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   private Void scheduleAddAndroidLibraryDeps(@NotNull Project androidProject) {
     ApplicationManager.getApplication().invokeLater(
       () -> addAndroidLibraryDependencies(androidProject),
-      ModalityState.NON_MODAL);
+      ModalityState.nonModal());
     return null;
   }
 
