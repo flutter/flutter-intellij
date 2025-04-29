@@ -1,3 +1,8 @@
+# 85.3
+- Add Property Editor side panel (#7957)
+- Support removed for IDEA 2024.1 (Koala) and 2024.2 (Ladybug) (#8073)
+- Various cleanups including migrating slow operations to non-blocking calls (#8089)
+
 # 85.2
 - Fix broken devtools inspector source navigation (#8041)
 
