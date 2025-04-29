@@ -6,7 +6,6 @@
 package io.flutter.run;
 
 import com.google.common.collect.ImmutableMap;
-import com.intellij.AppTopics;
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.hint.HintManagerImpl;
 import com.intellij.codeInsight.hint.HintUtil;
@@ -171,7 +170,7 @@ public class FlutterReloadManager {
         }
       }
     });
-    connection.subscribe(AppTopics.FILE_DOCUMENT_SYNC, new FileDocumentManagerListener() {
+    connection.subscribe(FileDocumentManagerListener.TOPIC, new FileDocumentManagerListener() {
       @Override
       public void beforeAllDocumentsSaving() {
         if (!FlutterSettings.getInstance().isReloadOnSave()) return;
