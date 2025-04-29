@@ -22,6 +22,7 @@
 
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
+  <!--suppress PluginXmlValidity -->
   <idea-version since-build="243" until-build="243.*"/>
 
   <depends>com.intellij.modules.platform</depends>
@@ -222,7 +223,7 @@
     <group id="FlutterPackagesExplorerActionGroup" class="io.flutter.actions.FlutterPackagesExplorerActionGroup">
       <separator/>
       <!--suppress PluginXmlCapitalization -->
-      <group text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">
+      <group id="FlutterToolsGroup" text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">
         <separator/>
         <reference ref="flutter.pub.get"/>
         <reference ref="flutter.pub.upgrade"/>
@@ -250,7 +251,7 @@
 <!--    </group>-->
     <group id="FlutterBuildActionGroup" class="io.flutter.actions.FlutterBuildActionGroup">
       <separator/>
-      <group text="Flutter" popup="true">
+      <group id="FlutterBuildGroup" text="Flutter" popup="true">
         <action id="flutter.build.aar" text="Build AAR" description="Building a Flutter module for Android add-to-app"
                 class="io.flutter.actions.FlutterBuildActionGroup$AAR"/>
         <action id="flutter.build.apk" text="Build APK" description="Building a Flutter app for general distribution"
@@ -268,7 +269,7 @@
     </group>
 
     <!-- main toolbar run actions -->
-    <group>
+    <group id="MainToolBarRunActionsGroup">
       <action id="AttachDebuggerAction"
               class="io.flutter.actions.AttachDebuggerAction"
               text="Flutter Attach"
@@ -393,7 +394,7 @@
     <runLineMarkerContributor language="Dart" implementationClass="io.flutter.run.bazelTest.FlutterBazelTestLineMarkerContributor"/>
 
     <defaultLiveTemplatesProvider implementation="io.flutter.template.FlutterLiveTemplatesProvider"/>
-    <liveTemplateContext implementation="io.flutter.template.DartToplevelTemplateContextType"/>
+    <liveTemplateContext contextId="DART_TOPLEVEL" implementation="io.flutter.template.DartToplevelTemplateContextType"/>
 
     <!-- IDEA only -->
     <moduleBuilder builderClass="io.flutter.module.FlutterModuleBuilder"/>
