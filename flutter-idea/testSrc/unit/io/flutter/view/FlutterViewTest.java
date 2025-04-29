@@ -48,27 +48,28 @@ public class FlutterViewTest {
   ViewUtils viewUtilsSpy;
 
   @Before
-  public void setUp() {
-    MockitoAnnotations.openMocks(this);
+  public void setUp() throws Exception {
+    try (var mocks = MockitoAnnotations.openMocks(this)) {
 
-    // Static mocking for ApplicationManager.
-    mockedStaticApplicationManager = Mockito.mockStatic(ApplicationManager.class);
-    mockedStaticApplicationManager.when(ApplicationManager::getApplication).thenReturn(mockApplication);
-    doAnswer(invocation -> {
-      Runnable runnable = invocation.getArgument(0);
-      if (runnable != null) {
-        runnable.run();
-      }
-      return null;
-    }).when(mockApplication).invokeLater(any(Runnable.class));
+      // Static mocking for ApplicationManager.
+      mockedStaticApplicationManager = Mockito.mockStatic(ApplicationManager.class);
+      mockedStaticApplicationManager.when(ApplicationManager::getApplication).thenReturn(mockApplication);
+      doAnswer(invocation -> {
+        Runnable runnable = invocation.getArgument(0);
+        if (runnable != null) {
+          runnable.run();
+        }
+        return null;
+      }).when(mockApplication).invokeLater(any(Runnable.class));
 
-    // Mocking for ContentManager.
-    when(mockToolWindow.getContentManager()).thenReturn(mockContentManager);
-    when(mockContentManager.getFactory()).thenReturn(mockContentFactory);
+      // Mocking for ContentManager.
+      when(mockToolWindow.getContentManager()).thenReturn(mockContentManager);
+      when(mockContentManager.getFactory()).thenReturn(mockContentFactory);
 
-    // Spy on the ViewUtils class.
-    final ViewUtils viewUtils = new ViewUtils();
-     viewUtilsSpy = spy(viewUtils);
+      // Spy on the ViewUtils class.
+      final ViewUtils viewUtils = new ViewUtils();
+      viewUtilsSpy = spy(viewUtils);
+    }
   }
 
   @After
