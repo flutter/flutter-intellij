@@ -5,7 +5,6 @@
  */
 package io.flutter.editor;
 
-import com.intellij.AppTopics;
 import com.intellij.application.options.CodeStyle;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -63,7 +62,7 @@ public class FlutterSaveActionsManager {
 
     final MessageBus bus = project.getMessageBus();
     final MessageBusConnection connection = bus.connect();
-    connection.subscribe(AppTopics.FILE_DOCUMENT_SYNC, new FileDocumentManagerListener() {
+    connection.subscribe(FileDocumentManagerListener.TOPIC, new FileDocumentManagerListener() {
       @Override
       public void beforeDocumentSaving(@NotNull Document document) {
         // Don't try and format read only docs.
