@@ -12,12 +12,15 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.RefreshToolWindowAction;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.dart.DartPlugin;
+import io.flutter.dart.DartPluginVersion;
 import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.AsyncUtils;
+import io.flutter.view.ViewUtils;
 import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,6 +29,9 @@ import java.util.Optional;
 
 public class PropertyEditorViewFactory implements ToolWindowFactory {
   @NotNull private static String TOOL_WINDOW_ID = "Flutter Property Editor";
+
+  @NotNull
+  private final ViewUtils viewUtils = new ViewUtils();
 
   @Override
   public Object isApplicableAsync(@NotNull Project project, @NotNull Continuation<? super Boolean> $completion) {
@@ -38,6 +44,12 @@ public class PropertyEditorViewFactory implements ToolWindowFactory {
   public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
     FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
+
+    DartPluginVersion dartPluginVersion = DartPlugin.getDartPluginVersion();
+    if (!dartPluginVersion.supportsPropertyEditor()) {
+      viewUtils.presentLabel(toolWindow, "Flutter Property Editor requires a newer version of the Dart plugin.");
+      return;
+    }
 
     AsyncUtils.whenCompleteUiThread(
       DevToolsService.getInstance(project).getDevToolsInstance(),

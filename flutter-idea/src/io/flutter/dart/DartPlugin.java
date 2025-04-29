@@ -6,6 +6,9 @@
 package io.flutter.dart;
 
 import com.intellij.execution.configurations.ConfigurationType;
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginManagerCore;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
@@ -59,6 +62,12 @@ public class DartPlugin {
 
   public static boolean isDartTestConfiguration(@NotNull ConfigurationType type) {
     return type.getId().equals("DartTestRunConfigurationType");
+  }
+
+  public static DartPluginVersion getDartPluginVersion() {
+    final IdeaPluginDescriptor dartPlugin = PluginManagerCore.getPlugin(PluginId.getId("Dart"));
+    final String versionString = dartPlugin.getVersion();
+    return new DartPluginVersion(versionString);
   }
 
   /**
