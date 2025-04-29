@@ -15,8 +15,8 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.search.ExecutionSearchScopes;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.search.GlobalSearchScopes;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
@@ -36,7 +36,7 @@ public class DaemonConsoleView extends ConsoleViewImpl {
     // Create our own console builder.
     //
     // We need to filter input to this console without affecting other consoles, so we cannot use a consoleFilterInputProvider.
-    final GlobalSearchScope searchScope = GlobalSearchScopes.executionScope(env.getProject(), env.getRunProfile());
+    final GlobalSearchScope searchScope = ExecutionSearchScopes.executionScope(env.getProject(), env.getRunProfile());
     final TextConsoleBuilder builder = new TextConsoleBuilderImpl(env.getProject(), searchScope) {
       @NotNull
       @Override
