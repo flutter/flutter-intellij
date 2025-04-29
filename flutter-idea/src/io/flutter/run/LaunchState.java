@@ -208,7 +208,7 @@ public class LaunchState extends CommandLineState {
       project,
       "No connected devices found; please connect a device, or see flutter.dev/setup for getting started instructions.",
       "No Connected Devices Found",
-      new String[]{Messages.OK_BUTTON}, 0, AllIcons.General.InformationDialog);
+      new String[]{Messages.getOkButton()}, 0, AllIcons.General.InformationDialog);
   }
 
   @NotNull
