@@ -227,7 +227,7 @@ public abstract class EmbeddedBrowser {
     return tab;
   }
 
-  public abstract EmbeddedTab openEmbeddedTab(ContentManager contentManager) throws Exception;
+  public abstract EmbeddedTab openEmbeddedTab(ContentManager contentManager);
 
   public void updatePanelToWidget(String widgetId) {
     updateUrlAndReload(devToolsUrl -> {

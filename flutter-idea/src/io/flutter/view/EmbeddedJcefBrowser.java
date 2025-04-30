@@ -40,7 +40,8 @@ class EmbeddedJcefBrowserTab implements EmbeddedTab {
 
   @Override
   public JComponent getTabComponent(ContentManager contentManager) {
-    browser.getComponent().setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
+    browser.getComponent()
+      .setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
     return browser.getComponent();
   }
 }
@@ -62,7 +63,7 @@ public class EmbeddedJcefBrowser extends EmbeddedBrowser {
   }
 
   @Override
-  public EmbeddedTab openEmbeddedTab(ContentManager contentManager) throws Exception {
+  public EmbeddedTab openEmbeddedTab(ContentManager contentManager) {
     return new EmbeddedJcefBrowserTab();
   }
 }
