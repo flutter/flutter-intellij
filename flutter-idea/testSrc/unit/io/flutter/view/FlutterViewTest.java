@@ -10,6 +10,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.ContentFactory;
+import com.intellij.ui.content.ContentManager;
 import io.flutter.ObservatoryConnector;
 import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.jxbrowser.FailureType;
@@ -22,8 +23,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.*;
-import com.intellij.ui.content.ContentManager;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import java.util.concurrent.TimeoutException;
 
@@ -53,6 +56,7 @@ public class FlutterViewTest {
 
       // Static mocking for ApplicationManager.
       mockedStaticApplicationManager = Mockito.mockStatic(ApplicationManager.class);
+      //noinspection ResultOfMethodCallIgnored
       mockedStaticApplicationManager.when(ApplicationManager::getApplication).thenReturn(mockApplication);
       doAnswer(invocation -> {
         Runnable runnable = invocation.getArgument(0);
@@ -167,7 +171,8 @@ public class FlutterViewTest {
 
     spy.waitForJxBrowserInstallation(mockApp, mockToolWindow, DevToolsIdeFeature.TOOL_WINDOW);
     verify(spy, times(1))
-      .handleUpdatedJxBrowserStatusOnEventThread(mockApp, mockToolWindow, JxBrowserStatus.INSTALLATION_FAILED, DevToolsIdeFeature.TOOL_WINDOW);
+      .handleUpdatedJxBrowserStatusOnEventThread(mockApp, mockToolWindow, JxBrowserStatus.INSTALLATION_FAILED,
+                                                 DevToolsIdeFeature.TOOL_WINDOW);
   }
 
   @Ignore
@@ -193,7 +198,8 @@ public class FlutterViewTest {
     final FlutterView partialMockFlutterView = mock(FlutterView.class);
     doCallRealMethod().when(partialMockFlutterView)
       .handleUpdatedJxBrowserStatus(mockApp, mockToolWindow, JxBrowserStatus.INSTALLATION_FAILED, DevToolsIdeFeature.TOOL_WINDOW);
-    partialMockFlutterView.handleUpdatedJxBrowserStatus(mockApp, mockToolWindow, JxBrowserStatus.INSTALLATION_FAILED, DevToolsIdeFeature.TOOL_WINDOW);
+    partialMockFlutterView.handleUpdatedJxBrowserStatus(mockApp, mockToolWindow, JxBrowserStatus.INSTALLATION_FAILED,
+                                                        DevToolsIdeFeature.TOOL_WINDOW);
     verify(partialMockFlutterView, times(1)).handleJxBrowserInstallationFailed(mockApp, mockToolWindow, DevToolsIdeFeature.TOOL_WINDOW);
   }
 
@@ -213,7 +219,8 @@ public class FlutterViewTest {
     final FlutterView partialMockFlutterView = mock(FlutterView.class);
     doCallRealMethod().when(partialMockFlutterView)
       .handleUpdatedJxBrowserStatus(mockApp, mockToolWindow, JxBrowserStatus.NOT_INSTALLED, DevToolsIdeFeature.TOOL_WINDOW);
-    partialMockFlutterView.handleUpdatedJxBrowserStatus(mockApp, mockToolWindow, JxBrowserStatus.NOT_INSTALLED, DevToolsIdeFeature.TOOL_WINDOW);
+    partialMockFlutterView.handleUpdatedJxBrowserStatus(mockApp, mockToolWindow, JxBrowserStatus.NOT_INSTALLED,
+                                                        DevToolsIdeFeature.TOOL_WINDOW);
     verify(partialMockFlutterView, times(1))
       .presentOpenDevToolsOptionWithMessage(mockApp, mockToolWindow, INSTALLATION_WAIT_FAILED, DevToolsIdeFeature.TOOL_WINDOW);
   }

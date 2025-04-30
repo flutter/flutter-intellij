@@ -19,7 +19,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -488,7 +491,7 @@ public class DiagnosticsNode {
     return value.getAsBoolean();
   }
 
-  private DiagnosticLevel getLevelMember(String memberName, DiagnosticLevel defaultValue) {
+  private DiagnosticLevel getLevelMember(String memberName, @NotNull DiagnosticLevel defaultValue) {
     if (!json.has(memberName)) {
       return defaultValue;
     }

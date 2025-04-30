@@ -45,7 +45,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -516,8 +519,8 @@ public class FlutterConsoleLogManager {
     return ref.getValueAsString() + "...";
   }
 
-  private String getFullStringValue(@NotNull VmService service, String isolateId, @Nullable InstanceRef ref) {
-    if (ref == null) return null;
+  private @Nullable String getFullStringValue(@NotNull VmService service, @Nullable String isolateId, @Nullable InstanceRef ref) {
+    if (ref == null || isolateId == null) return null;
 
     if (!ref.getValueAsStringIsTruncated()) {
       return ref.getValueAsString();
@@ -553,10 +556,12 @@ public class FlutterConsoleLogManager {
     });
 
     try {
+      // The return can be safely ignored. An unset result will just return 0.
+      //noinspection ResultOfMethodCallIgnored
       latch.await(1, TimeUnit.SECONDS);
     }
     catch (InterruptedException e) {
-      return null;
+      // Fall through to returning an empty result.
     }
 
     return result[0];
