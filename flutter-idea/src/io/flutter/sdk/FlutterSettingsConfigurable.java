@@ -176,12 +176,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Nullable
   @Override
-  public Runnable enableSearch(String s) {
-    return null;
-  }
-
-  @Nullable
-  @Override
   public JComponent createComponent() {
     return mainPanel;
   }
@@ -446,11 +440,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     else {
       myVersionLabel.setText(value);
     }
-  }
-
-  @Override
-  public void disposeUIResources() {
-
   }
 
   @Override
