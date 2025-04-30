@@ -163,14 +163,14 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   private String validateSettings(FlutterCreateAdditionalSettings settings) {
     final String description = settings.getDescription();
     if (description != null && description.contains(": ")) {
-      return FlutterBundle.message("npw_invalid_desc_error");
+      return FlutterBundle.message("npw_invalid_desc_error", description);
     }
     final String org = settings.getOrg();
     if (org == null) {
       return null;
     }
     if (StringUtil.endsWith(org, ".")) {
-      return FlutterBundle.message("npw_invalid_org_error");
+      return FlutterBundle.message("npw_invalid_org_error", org);
     }
     if (mySettingsFields.shouldIncludePlatforms() && !settings.isSomePlatformSelected()) {
       return FlutterBundle.message("npw_none_selected_error");
