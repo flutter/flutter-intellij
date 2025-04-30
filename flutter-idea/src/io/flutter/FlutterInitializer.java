@@ -9,7 +9,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.ui.UISettingsListener;
-import com.intellij.notification.*;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -123,8 +125,8 @@ public class FlutterInitializer implements StartupActivity {
     else {
       project.getMessageBus().connect().subscribe(ModuleListener.TOPIC, new ModuleListener() {
         @Override
-        public void moduleAdded(@NotNull Project project, @NotNull Module module) {
-          if (!toolWindowsInitialized && FlutterModuleUtils.isFlutterModule(module)) {
+        public void modulesAdded(@NotNull Project project, @NotNull List<? extends Module> modules) {
+          if (!toolWindowsInitialized && modules.stream().anyMatch(FlutterModuleUtils::isFlutterModule)) {
             initializeToolWindows(project);
           }
         }
