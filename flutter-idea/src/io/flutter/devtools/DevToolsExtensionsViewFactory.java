@@ -5,7 +5,6 @@
  */
 package io.flutter.devtools;
 
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -81,7 +80,7 @@ public class DevToolsExtensionsViewFactory implements ToolWindowFactory {
               embeddedBrowser.openPanel(window, "Flutter DevTools", devToolsUrl, System.out::println);
               service.setEmbeddedBrowser(embeddedBrowser);
             });
-        }, ModalityState.defaultModalityState(), project.getDisposed());
+        });
       }
     );
 

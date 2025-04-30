@@ -5,7 +5,6 @@
  */
 package io.flutter.propertyeditor;
 
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -82,7 +81,7 @@ public class PropertyEditorViewFactory implements ToolWindowFactory {
           Optional.ofNullable(
               FlutterUtils.embeddedBrowser(project))
             .ifPresent(embeddedBrowser -> embeddedBrowser.openPanel(toolWindow, "Property Editor", devToolsUrl, System.out::println));
-        }, ModalityState.defaultModalityState(), project.getDisposed());
+        });
       }
     );
 

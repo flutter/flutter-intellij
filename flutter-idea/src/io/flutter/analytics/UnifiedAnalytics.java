@@ -12,7 +12,6 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
@@ -162,7 +161,7 @@ public class UnifiedAnalytics {
       });
       Notifications.Bus.notify(notification, project);
       System.out.println("Ran notification");
-    }, ModalityState.defaultModalityState(), project.getDisposed());
+    });
     return finalResult;
   }
 

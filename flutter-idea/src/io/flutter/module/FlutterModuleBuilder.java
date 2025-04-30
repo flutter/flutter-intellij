@@ -14,7 +14,6 @@ import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.*;
@@ -151,9 +150,9 @@ public class FlutterModuleBuilder extends ModuleBuilder {
           ProjectView view = ProjectView.getInstance(project);
           if (view == null) return;
           view.changeView(ProjectViewPane.ID);
-        }, ModalityState.defaultModalityState(), project.getDisposed());
+        });
       });
-    }, ModalityState.defaultModalityState(), project.getDisposed());
+    });
   }
 
   private String validateSettings(FlutterCreateAdditionalSettings settings) {
@@ -220,7 +219,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
           if (ModuleManager.getInstance(project).findModuleByName(newModule.getName()) == null) {
             WriteAction.run(toCommit::commit);
           }
-        }, ModalityState.defaultModalityState(), project.getDisposed());
+        });
       }
     }
     catch (ModuleWithNameAlreadyExists | IOException e) {

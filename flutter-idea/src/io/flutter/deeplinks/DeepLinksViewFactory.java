@@ -5,7 +5,6 @@
  */
 package io.flutter.deeplinks;
 
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -70,7 +69,7 @@ public class DeepLinksViewFactory implements ToolWindowFactory {
           Optional.ofNullable(
               FlutterUtils.embeddedBrowser(project))
             .ifPresent(embeddedBrowser -> embeddedBrowser.openPanel(toolWindow, "Deep Links", devToolsUrl, System.out::println));
-        }, ModalityState.defaultModalityState(), project.getDisposed());
+        });
       }
     );
 
