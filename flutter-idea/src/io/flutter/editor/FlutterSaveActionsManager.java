@@ -6,7 +6,6 @@
 package io.flutter.editor;
 
 import com.intellij.application.options.CodeStyle;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
@@ -150,10 +149,10 @@ public class FlutterSaveActionsManager {
             //noinspection CodeBlock2Expr
             OpenApiUtils.safeInvokeLater(() -> {
               performFormat(document, file, true, psiFile);
-            }, ModalityState.defaultModalityState(), project.getDisposed());
+            });
           }
         }.execute();
-      }, ModalityState.defaultModalityState(), project.getDisposed());
+      });
     }
   }
 
@@ -200,11 +199,11 @@ public class FlutterSaveActionsManager {
             //noinspection CodeBlock2Expr
             OpenApiUtils.safeInvokeLater(() -> {
               FileDocumentManager.getInstance().saveDocument(document);
-            }, ModalityState.defaultModalityState(), project.getDisposed());
+            });
           }
         }
       }.execute();
-    }, ModalityState.defaultModalityState(), project.getDisposed());
+    });
   }
 
   private static int getRightMargin(@NotNull PsiFile psiFile) {
