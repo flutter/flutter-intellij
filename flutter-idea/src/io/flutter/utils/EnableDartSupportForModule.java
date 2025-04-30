@@ -28,8 +28,8 @@ class EnableDartSupportForModule implements Runnable {
     final Project project = myModule.getProject();
 
     EdtInvocationManager.getInstance().invokeLater(() -> {
-      ApplicationManager.getApplication().invokeLater(() -> {
-        ApplicationManager.getApplication().runWriteAction(() -> {
+      OpenApiUtils.safeInvokeLater(() -> {
+        OpenApiUtils.safeRunWriteAction(() -> {
           if (DartSdk.getDartSdk(project) == null || !DartSdkLibUtil.isDartSdkEnabled(myModule)) {
             final String sdkPath = DartSdkUtil.getFirstKnownDartSdkPath();
             if (DartSdkUtil.isDartSdkHome(sdkPath)) {

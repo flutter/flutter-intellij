@@ -7,12 +7,13 @@ package io.flutter.console;
 
 import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.MessageView;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,7 +38,7 @@ public class FlutterConsoles {
                                          @NotNull Runnable onReady) {
 
     // Getting a MessageView has to happen on the UI thread.
-    ApplicationManager.getApplication().invokeLater(() -> {
+    OpenApiUtils.safeInvokeLater(() -> {
       final MessageView messageView = MessageView.getInstance(project);
       messageView.runWhenInitialized(() -> {
         final FlutterConsole console = findOrCreate(project, module);
@@ -45,7 +46,7 @@ public class FlutterConsoles {
         console.bringToFront();
         onReady.run();
       });
-    });
+    }, ModalityState.defaultModalityState(), project.getDisposed());
   }
 
   public static void displayMessage(@NotNull Project project, @Nullable Module module, @NotNull String message) {
@@ -54,7 +55,7 @@ public class FlutterConsoles {
 
   public static void displayMessage(@NotNull Project project, @Nullable Module module, @NotNull String message, boolean clearContent) {
     // Getting a MessageView has to happen on the UI thread.
-    ApplicationManager.getApplication().invokeLater(() -> {
+    OpenApiUtils.safeInvokeLater(() -> {
       final MessageView messageView = MessageView.getInstance(project);
       messageView.runWhenInitialized(() -> {
         final FlutterConsole console = findOrCreate(project, module);
@@ -64,7 +65,7 @@ public class FlutterConsoles {
         console.view.print(message, ConsoleViewContentType.NORMAL_OUTPUT);
         console.bringToFront();
       });
-    });
+    }, ModalityState.defaultModalityState(), project.getDisposed());
   }
 
   @NotNull

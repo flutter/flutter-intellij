@@ -5,12 +5,8 @@
  */
 package io.flutter.run.common;
 
-import static org.dartlang.analysis.server.protocol.ElementKind.UNIT_TEST_GROUP;
-import static org.dartlang.analysis.server.protocol.ElementKind.UNIT_TEST_TEST;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
@@ -21,12 +17,17 @@ import com.jetbrains.lang.dart.psi.DartCallExpression;
 import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
 import io.flutter.dart.DartSyntax;
 import io.flutter.editor.ActiveEditorsOutlineService;
-import java.util.HashMap;
-import java.util.Map;
+import io.flutter.utils.OpenApiUtils;
 import org.dartlang.analysis.server.protocol.ElementKind;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.dartlang.analysis.server.protocol.ElementKind.UNIT_TEST_GROUP;
+import static org.dartlang.analysis.server.protocol.ElementKind.UNIT_TEST_TEST;
 
 /**
  * Common utilities for processing Flutter tests.
@@ -266,7 +267,7 @@ public abstract class CommonTestConfigUtils {
       // but it will cache RemoteAnalysisServerImpl$ServerResponseReaderThread in FileStatusMap.threads and as a result,
       // DartAnalysisServerService.myProject will be leaked in tests
 
-      ApplicationManager.getApplication().invokeLater(
+      OpenApiUtils.safeInvokeLater(
         () -> DaemonCodeAnalyzer.getInstance(project).restart(),
         ModalityState.defaultModalityState(),
         project.getDisposed()

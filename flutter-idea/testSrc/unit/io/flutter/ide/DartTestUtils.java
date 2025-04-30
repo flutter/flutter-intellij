@@ -6,7 +6,6 @@
 package io.flutter.ide;
 
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.*;
@@ -17,6 +16,7 @@ import com.intellij.psi.PsiFileFactory;
 import com.intellij.util.SmartList;
 import com.jetbrains.lang.dart.DartLanguage;
 import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.OpenApiUtils;
 import junit.framework.TestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -68,7 +68,7 @@ public class DartTestUtils {
    */
   public static void resetModuleRoots(@NotNull final Module module) {
     //noinspection ConstantConditions
-    ApplicationManager.getApplication().runWriteAction(() -> {
+    OpenApiUtils.safeRunWriteAction(() -> {
       final ModifiableRootModel modifiableModel = Objects.requireNonNull(ModuleRootManager.getInstance(module)).getModifiableModel();
 
       try {

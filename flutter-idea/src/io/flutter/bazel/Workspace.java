@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableSet;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.InvalidVirtualFileAccessException;
@@ -90,7 +89,7 @@ public class Workspace {
   @NotNull
   public ImmutableSet<String> getContentPaths(@NotNull final Module module) {
     // Find all the content roots within this workspace.
-    final VirtualFile[] contentRoots = ModuleRootManager.getInstance(module).getContentRoots();
+    final VirtualFile[] contentRoots = OpenApiUtils.getContentRoots(module);
     final ImmutableSet.Builder<String> result = ImmutableSet.builder();
     for (VirtualFile root : contentRoots) {
       final String path = getRelativePath(root);

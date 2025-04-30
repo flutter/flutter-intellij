@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableList;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessHandler;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -29,6 +28,7 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -246,7 +246,7 @@ class DeviceDaemon {
                 FlutterMessages.showError("Flutter device daemon", failureMessage, null);
               }
               else if (attempts == DeviceDaemon.RESTART_ATTEMPTS_BEFORE_WARNING + 4) {
-                ApplicationManager.getApplication().invokeLater(() -> new DaemonCrashReporter().show(), ModalityState.nonModal());
+                OpenApiUtils.safeInvokeLater(() -> new DaemonCrashReporter().show(), ModalityState.nonModal());
                 return null;
               }
             }

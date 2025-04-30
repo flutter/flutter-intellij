@@ -21,6 +21,7 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.ReflectionUtil;
 import io.flutter.FlutterMessages;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
@@ -119,7 +120,7 @@ public class AndroidEmulator {
     }
 
     assert ApplicationManager.getApplication() != null;
-    ApplicationManager.getApplication().invokeLater(() -> {
+    OpenApiUtils.safeInvokeLater(() -> {
       tw.setAutoHide(false);
       tw.show();
     }, ModalityState.stateForComponent(tw.getComponent()));
