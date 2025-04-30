@@ -7,6 +7,7 @@ package io.flutter;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.ui.UISettingsListener;
 import com.intellij.notification.*;
@@ -52,6 +53,7 @@ import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.view.FlutterViewFactory;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -180,6 +182,8 @@ public class FlutterInitializer implements StartupActivity {
     //  is not supported, i.e. match VS Code implementation.
     // Send unsupported SDK notifications if relevant.
     checkSdkVersionNotification(project);
+
+    showAndroidStudioBotNotification(project);
 
     setUpDtdAnalytics(project);
   }
@@ -315,6 +319,47 @@ public class FlutterInitializer implements StartupActivity {
         Notifications.Bus.notify(notification, project);
       });
     }
+  }
+
+  private void showAndroidStudioBotNotification(@NotNull Project project) {
+    // Return if not a Flutter project
+    FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+    if (sdk == null) return;
+
+    // Return if not in Android Studio
+    if (!FlutterUtils.isAndroidStudio()) return;
+
+    // Return if notification has been shown already
+    final FlutterSettings settings = FlutterSettings.getInstance();
+    if (settings == null || settings.isAndroidStudioBotAcknowledged()) return;
+
+    // Return if the current date is not after May 16th, 2025
+    LocalDate targetLocalDate = LocalDate.of(2025, 5, 16);
+    LocalDate nowLocalDate = LocalDate.now();
+    if (nowLocalDate.isBefore(targetLocalDate)) return;
+
+    ApplicationManager.getApplication().invokeLater(() -> {
+      final Notification notification = new Notification(FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
+                                                         "Try Gemini in Android Studio",
+                                                         "",
+                                                         NotificationType.INFORMATION);
+      notification.addAction(new AnAction("More Info") {
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent event) {
+          BrowserLauncher.getInstance().browse("https://developer.android.com/gemini-in-android", null);
+          settings.setAndroidStudioBotAcknowledgedKey(true);
+          notification.expire();
+        }
+      });
+      notification.addAction(new AnAction("Dismiss") {
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent event) {
+          settings.setAndroidStudioBotAcknowledgedKey(true);
+          notification.expire();
+        }
+      });
+      Notifications.Bus.notify(notification, project);
+    });
   }
 
   private void initializeToolWindows(@NotNull Project project) {

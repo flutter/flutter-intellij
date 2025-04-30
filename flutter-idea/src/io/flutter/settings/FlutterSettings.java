@@ -35,6 +35,7 @@ public class FlutterSettings {
   private static final String allowTestsInSourcesRootKey = "io.flutter.allowTestsInSources";
   private static final String showBazelIosRunNotificationKey = "io.flutter.hideBazelIosRunNotification";
   private static final String sdkVersionOutdatedWarningAcknowledgedKey = "io.flutter.sdkVersionOutdatedWarningAcknowledged";
+  private static final String androidStudioBotAcknowledgedKey = "io.flutter.androidStudioBotAcknowledgedKey";
 
   // TODO(helin24): This is to change the embedded browser setting back to true only once for Big Sur users. If we
   // switch to enabling the embedded browser for everyone, then delete this key.
@@ -316,5 +317,13 @@ public class FlutterSettings {
 
   private String getSdkVersionKey(String versionText) {
     return sdkVersionOutdatedWarningAcknowledgedKey + "_" + versionText;
+  }
+
+  public boolean isAndroidStudioBotAcknowledged() {
+    return getPropertiesComponent().getBoolean(androidStudioBotAcknowledgedKey, false);
+  }
+
+  public void setAndroidStudioBotAcknowledgedKey(boolean value) {
+    getPropertiesComponent().setValue(androidStudioBotAcknowledgedKey, value);
   }
 }
