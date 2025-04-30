@@ -60,12 +60,16 @@ println("javaVersion: $javaVersion")
 println("group: $group")
 
 var jvmVersion: JvmTarget
-if (javaVersion == "17") {
-  jvmVersion = JvmTarget.JVM_17
-} else if (javaVersion == "21") {
-  jvmVersion = JvmTarget.JVM_21
-} else {
-  throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
+jvmVersion = when (javaVersion) {
+  "17" -> {
+    JvmTarget.JVM_17
+  }
+  "21" -> {
+    JvmTarget.JVM_21
+  }
+  else -> {
+    throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
+  }
 }
 kotlin {
   compilerOptions {
@@ -75,12 +79,18 @@ kotlin {
 }
 
 var javaCompatibilityVersion: JavaVersion
-if (javaVersion == "17") {
-  javaCompatibilityVersion = JavaVersion.VERSION_17
-} else if (javaVersion == "21") {
-  javaCompatibilityVersion = JavaVersion.VERSION_21
-} else {
-  throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
+javaCompatibilityVersion = when (javaVersion) {
+  "17" -> {
+    JavaVersion.VERSION_17
+  }
+
+  "21" -> {
+    JavaVersion.VERSION_21
+  }
+
+  else -> {
+    throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
+  }
 }
 java {
   sourceCompatibility = javaCompatibilityVersion
