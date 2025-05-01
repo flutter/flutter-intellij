@@ -6,8 +6,8 @@
 package io.flutter.run;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.BaseProjectDirectories;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -79,9 +79,13 @@ public class MainFile {
    * If there is an error, {@link Result#canLaunch} will return false and the error is available via {@link Result#getError}
    */
   @NotNull
-  public static MainFile.Result verify(@Nullable String path, Project project) {
+  public static MainFile.Result verify(@Nullable String path, @Nullable Project project) {
     if (!ApplicationManager.getApplication().isReadAccessAllowed()) {
       throw new IllegalStateException("need read access");
+    }
+
+    if (project == null) {
+      return error("Project is not set.");
     }
 
     if (StringUtil.isEmptyOrSpaces(path)) {
@@ -123,7 +127,7 @@ public class MainFile {
   private static VirtualFile findAppDir(@Nullable VirtualFile file, @NotNull Project project) {
     if (WorkspaceCache.getInstance(project).isBazel()) {
       final Workspace workspace = WorkspaceCache.getInstance(project).get();
-      assert(workspace != null);
+      assert (workspace != null);
       return workspace.getRoot();
     }
 
@@ -134,7 +138,7 @@ public class MainFile {
   }
 
   private static boolean isAppDir(@NotNull VirtualFile dir, @NotNull Project project) {
-    assert(!WorkspaceCache.getInstance(project).isBazel());
+    assert (!WorkspaceCache.getInstance(project).isBazel());
     return dir.isDirectory() && (
       dir.findChild(PubRoot.PUBSPEC_YAML) != null ||
       dir.findChild(PubRoot.DOT_DART_TOOL) != null ||
@@ -143,7 +147,10 @@ public class MainFile {
   }
 
   private static boolean inProject(@Nullable VirtualFile file, @NotNull Project project) {
-    return file != null && ProjectRootManager.getInstance(project).getFileIndex().isInContent(file);
+    // Do a speedy check for containment over accessing the file index (which we did historically)
+    // but is very slow and unacceptably blocks the UI thread.
+    // See: https://github.com/flutter/flutter-intellij/issues/8089
+    return file != null && BaseProjectDirectories.getInstance(project).contains(file);
   }
 
   /**
