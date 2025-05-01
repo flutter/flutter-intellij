@@ -33,7 +33,7 @@ import static com.intellij.openapi.fileChooser.impl.FileChooserUtil.setLastOpene
  */
 public class OpenAndroidModule extends OpenInAndroidStudioAction implements DumbAware {
   @Override
-  public void actionPerformed(AnActionEvent e) {
+  public void actionPerformed(@NotNull AnActionEvent e) {
     final VirtualFile projectFile = findProjectFile(e);
     if (projectFile == null) {
       FlutterMessages.showError("Error Opening Android Studio", "Project not found.", e.getProject());

@@ -109,7 +109,8 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
 
   @NotNull
   public Project getProject() {
-    return project;
+    // Project may be null after shutdown but clients have no business accessing it after that so it's reasonable to fail here.
+    return Objects.requireNonNull(project);
   }
 
   public void onConnect(@NotNull DartVmServiceDebugProcess.ScriptProvider provider, @Nullable String remoteBaseUri) {
@@ -330,9 +331,10 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
       if (analyzer != null && !isDartPatchUri(remoteUri)) {
         final String path = analyzer.getAbsolutePath(remoteUri);
         if (path != null) {
-          if(path.startsWith("file://")) {
+          if (path.startsWith("file://")) {
             LocalFileSystem.getInstance().findFileByPath(path.substring(7));
-          } else {
+          }
+          else {
             LocalFileSystem.getInstance().findFileByPath(path);
           }
         }

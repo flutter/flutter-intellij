@@ -96,7 +96,7 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
     }
 
     @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+    public @NotNull FileVisitResult visitFile(Path file, @NotNull BasicFileAttributes attrs) {
       final Path name = file.getFileName();
       if (name != null && matcher.matches(name)) {
         try {
@@ -111,12 +111,12 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
     }
 
     @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+    public @NotNull FileVisitResult preVisitDirectory(@NotNull Path dir, @NotNull BasicFileAttributes attrs) {
       return CONTINUE;
     }
 
     @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+    public @NotNull FileVisitResult visitFileFailed(@NotNull Path file, @NotNull IOException exc) {
       FlutterUtils.warn(LOG, exc);
       return CONTINUE;
     }
@@ -199,11 +199,11 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
   }
 
   static @NotNull FlutterApp getFlutterApp(@NotNull ExecutionEnvironment env,
-                                            @NotNull FlutterDevice device,
-                                            Project project,
-                                            Module module,
-                                            RunMode mode,
-                                            GeneralCommandLine command) throws ExecutionException {
+                                           @NotNull FlutterDevice device,
+                                           Project project,
+                                           Module module,
+                                           RunMode mode,
+                                           GeneralCommandLine command) throws ExecutionException {
     final FlutterApp app = FlutterApp.start(env, project, module, mode, device, command,
                                             StringUtil.capitalize(mode.mode()) + "App",
                                             "StopApp");

@@ -5,11 +5,6 @@
  */
 package io.flutter.android;
 
-import static com.android.tools.idea.gradle.util.GradleProjectSystemUtil.GRADLE_SYSTEM_ID;
-import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED;
-import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_KIND;
-import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_NAME;
-
 import com.android.tools.idea.gradle.project.sync.GradleSyncInvoker;
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.intellij.facet.FacetManager;
@@ -29,12 +24,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.impl.ProjectImpl;
 import com.intellij.openapi.project.impl.ProjectManagerImpl;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.roots.DependencyScope;
-import com.intellij.openapi.roots.JavaProjectModelModifier;
-import com.intellij.openapi.roots.ModuleRootEvent;
-import com.intellij.openapi.roots.ModuleRootListener;
-import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.*;
 import com.intellij.openapi.roots.impl.IdeaProjectModelModifier;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
@@ -42,11 +32,7 @@ import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.roots.libraries.PersistentLibraryKind;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtilRt;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VfsUtilCore;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileContentsChangedAdapter;
-import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.*;
 import com.intellij.serviceContainer.ComponentManagerImpl;
 import com.intellij.util.ReflectionUtil;
 import com.intellij.util.modules.CircularModuleDependenciesDetector;
@@ -54,6 +40,9 @@ import io.flutter.sdk.AbstractLibraryManager;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
+import org.jetbrains.android.facet.AndroidFacet;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -64,9 +53,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.jetbrains.android.facet.AndroidFacet;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import static com.android.tools.idea.gradle.util.GradleProjectSystemUtil.GRADLE_SYSTEM_ID;
+import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED;
+import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_KIND;
+import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_NAME;
 
 /**
  * Manages the Android libraries. Add the libraries used by Android modules referenced in a project
@@ -316,7 +306,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
 
     static final String TEMPLATE_PROJECT_NAME = "_android";
 
-    public String getLocationHash() {
+    public @NotNull String getLocationHash() {
       return "";
     }
 
