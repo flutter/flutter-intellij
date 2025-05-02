@@ -6,13 +6,13 @@
 package io.flutter.view;
 
 import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
+import io.flutter.utils.OpenApiUtils;
 import io.flutter.utils.ViewListener;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,7 +40,7 @@ public class FlutterViewFactory implements ToolWindowFactory, DumbAware {
   }
 
   private static void initFlutterView(@NotNull Project project, FlutterViewMessages.FlutterDebugEvent event) {
-    ApplicationManager.getApplication().invokeLater(() -> {
+    OpenApiUtils.safeInvokeLater(() -> {
       final FlutterView flutterView = project.getService(FlutterView.class);
       flutterView.debugActive(event);
     });

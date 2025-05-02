@@ -6,7 +6,6 @@
 package io.flutter.view;
 
 import com.intellij.ide.browsers.BrowserLauncher;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -21,6 +20,7 @@ import icons.FlutterIcons;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.LabelInput;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -116,7 +116,7 @@ public abstract class EmbeddedBrowser {
 
     JComponent component = tab.embeddedTab.getTabComponent(tab.contentManager);
 
-    ApplicationManager.getApplication().invokeLater(() -> {
+    OpenApiUtils.safeInvokeLater(() -> {
       if (tab.contentManager.isDisposed()) {
         return;
       }
@@ -206,7 +206,7 @@ public abstract class EmbeddedBrowser {
   }
 
   private void replacePanelLabel(JComponent label, ContentManager contentManager) {
-    ApplicationManager.getApplication().invokeLater(() -> {
+    OpenApiUtils.safeInvokeLater(() -> {
       if (contentManager.isDisposed()) {
         return;
       }

@@ -6,10 +6,10 @@
 package io.flutter.vmService;
 
 import com.google.gson.JsonObject;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import io.flutter.FlutterMessages;
 import io.flutter.utils.EventStream;
+import io.flutter.utils.OpenApiUtils;
 import io.flutter.utils.StreamSubscription;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.ServiceExtensionConsumer;
@@ -37,7 +37,7 @@ public class DisplayRefreshRateManager {
   public void queryRefreshRate() {
     // This needs to happen on the UI thread.
     //noinspection CodeBlock2Expr
-    ApplicationManager.getApplication().invokeLater(() -> {
+    OpenApiUtils.safeInvokeLater(() -> {
       getDisplayRefreshRate().thenAcceptAsync(displayRefreshRateStream::setValue);
     });
   }

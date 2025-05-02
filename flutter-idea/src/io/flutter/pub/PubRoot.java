@@ -9,9 +9,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -423,14 +421,14 @@ public class PubRoot {
   /**
    * Returns true if the project has a module for the "android" directory.
    */
-  public boolean hasAndroidModule(Project project) {
+  public boolean hasAndroidModule(@NotNull Project project) {
     final VirtualFile androidDir = getAndroidDir();
     if (androidDir == null) {
       return false;
     }
 
-    for (Module module : ModuleManager.getInstance(project).getModules()) {
-      for (VirtualFile contentRoot : ModuleRootManager.getInstance(module).getContentRoots()) {
+    for (Module module : OpenApiUtils.getModules(project)) {
+      for (VirtualFile contentRoot : OpenApiUtils.getContentRoots(module)) {
         if (Objects.equals(contentRoot, androidDir)) {
           return true;
         }

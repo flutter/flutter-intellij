@@ -6,11 +6,11 @@
 package io.flutter.pub;
 
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -61,10 +61,10 @@ public class PubRootCache {
   }
 
   @NotNull
-  public List<PubRoot> getRoots(Module module) {
+  public List<@NotNull PubRoot> getRoots(@NotNull Module module) {
     final List<PubRoot> result = new ArrayList<>();
 
-    for (VirtualFile dir : ModuleRootManager.getInstance(module).getContentRoots()) {
+    for (VirtualFile dir : OpenApiUtils.getContentRoots(module)) {
       PubRoot root = cache.get(dir);
 
       if (root == null) {
@@ -83,7 +83,7 @@ public class PubRootCache {
   @NotNull
   public List<PubRoot> getRoots(@NotNull Project project) {
     final List<PubRoot> result = new ArrayList<>();
-    for (Module module : ModuleManager.getInstance(project).getModules()) {
+    for (Module module : OpenApiUtils.getModules(project)) {
       result.addAll(getRoots(module));
     }
     return result;

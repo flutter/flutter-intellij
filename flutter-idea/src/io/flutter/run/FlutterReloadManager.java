@@ -17,7 +17,10 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationGroup;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.AnActionResult;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.ex.AnActionListener;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -147,7 +150,7 @@ public class FlutterReloadManager {
         }
       }
 
-      public void afterActionPerformed(@NotNull AnAction action, @NotNull AnActionEvent event,  @NotNull AnActionResult result) {
+      public void afterActionPerformed(@NotNull AnAction action, @NotNull AnActionEvent event, @NotNull AnActionResult result) {
         // In case of hot-reload breakages, see: https://github.com/flutter/flutter-intellij/issues/6996
         if (!(action instanceof SaveAllAction)) {
           return;
@@ -163,7 +166,8 @@ public class FlutterReloadManager {
         }
         catch (Throwable t) {
           FlutterUtils.warn(LOG, "Exception from hot reload on save", t);
-        } finally {
+        }
+        finally {
           // Context: "Released EditorImpl held by lambda in FlutterReloadManager" (https://github.com/flutter/flutter-intellij/issues/7507)
           eventProject = null;
           eventEditor = null;
@@ -179,7 +183,7 @@ public class FlutterReloadManager {
         // The "Save files if the IDE is idle ..." option runs whether there are any changes or not.
         boolean isModified = false;
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(myProject);
-        if(fileEditorManager != null) {
+        if (fileEditorManager != null) {
           for (FileEditor fileEditor : fileEditorManager.getAllEditors()) {
             if (fileEditor != null && fileEditor.isModified()) {
               isModified = true;
@@ -189,12 +193,12 @@ public class FlutterReloadManager {
           if (!isModified) return;
         }
 
-        ApplicationManager.getApplication().invokeLater(() -> {
+        OpenApiUtils.safeInvokeLater(() -> {
           // Find a Dart editor to trigger the reload.
           final Editor anEditor = OpenApiUtils.safeRunReadAction(() -> {
             Editor someEditor = null;
             final EditorFactory editorFactory = EditorFactory.getInstance();
-            if(editorFactory != null) {
+            if (editorFactory != null) {
               for (Editor editor : editorFactory.getAllEditors()) {
                 if (editor == null || editor.isDisposed() || editor.getProject() != myProject) {
                   continue;
@@ -437,7 +441,10 @@ public class FlutterReloadManager {
     lastNotification = notification;
   }
 
-  private @Nullable Notification showRunNotification(@NotNull FlutterApp app, @Nullable String title, @NotNull String content, boolean isError) {
+  private @Nullable Notification showRunNotification(@NotNull FlutterApp app,
+                                                     @Nullable String title,
+                                                     @NotNull String content,
+                                                     boolean isError) {
     final String toolWindowId = app.getMode() == RunMode.DEBUG ? ToolWindowId.DEBUG : ToolWindowId.RUN;
     final NotificationGroup notificationGroup = getNotificationGroup(toolWindowId);
     if (notificationGroup == null) {
@@ -445,7 +452,8 @@ public class FlutterReloadManager {
       return null;
     }
 
-    final Notification notification = notificationGroup.createNotification(content, isError ? NotificationType.ERROR : NotificationType.INFORMATION);
+    final Notification notification =
+      notificationGroup.createNotification(content, isError ? NotificationType.ERROR : NotificationType.INFORMATION);
     notification.setIcon(FlutterIcons.Flutter);
     notification.notify(myProject);
 
@@ -491,7 +499,7 @@ public class FlutterReloadManager {
   private LightweightHint showEditorHint(@NotNull Editor editor, String message, boolean isError) {
     final AtomicReference<LightweightHint> ref = new AtomicReference<>();
 
-    ApplicationManager.getApplication().invokeAndWait(() -> {
+    OpenApiUtils.safeInvokeAndWait(() -> {
       final JComponent component = isError
                                    ? HintUtil.createErrorLabel(message)
                                    : HintUtil.createInformationLabel(message);

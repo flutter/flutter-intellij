@@ -20,12 +20,12 @@ import com.intellij.execution.runners.DefaultProgramRunnerKt;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.GenericProgramRunner;
 import com.intellij.execution.ui.RunContentDescriptor;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.run.test.TestConfig;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -71,7 +71,7 @@ public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSet
       listener = new ProcessAdapter() {
         @Override
         public void processTerminated(@NotNull ProcessEvent event) {
-          ApplicationManager.getApplication().invokeLater(() -> processCoverage(env));
+          OpenApiUtils.safeInvokeLater(() -> processCoverage(env));
         }
       };
       handler.addProcessListener(listener);

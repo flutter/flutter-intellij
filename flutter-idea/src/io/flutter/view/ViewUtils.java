@@ -5,7 +5,6 @@
  */
 package io.flutter.view;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.components.JBLabel;
@@ -15,6 +14,7 @@ import com.intellij.ui.content.ContentManager;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.utils.LabelInput;
+import io.flutter.utils.OpenApiUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -52,7 +52,7 @@ public class ViewUtils {
   }
 
   private void replacePanelLabel(ToolWindow toolWindow, JComponent label) {
-    ApplicationManager.getApplication().invokeLater(() -> {
+    OpenApiUtils.safeInvokeLater(() -> {
       final ContentManager contentManager = toolWindow.getContentManager();
       if (contentManager.isDisposed()) {
         return;

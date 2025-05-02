@@ -5,7 +5,6 @@
  */
 package io.flutter.devtools;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -17,6 +16,7 @@ import io.flutter.run.daemon.DevToolsService;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.AsyncUtils;
+import io.flutter.utils.OpenApiUtils;
 import io.flutter.view.FlutterViewMessages;
 import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
@@ -27,6 +27,7 @@ import java.util.Optional;
 
 public class RemainingDevToolsViewFactory implements ToolWindowFactory {
   @NotNull private static String TOOL_WINDOW_ID = "Flutter DevTools";
+
   public static void init(Project project) {
     project.getMessageBus().connect().subscribe(
       FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (FlutterViewMessages.FlutterDebugNotifier)event -> initView(project, event)
@@ -73,7 +74,7 @@ public class RemainingDevToolsViewFactory implements ToolWindowFactory {
           .setIdeFeature(DevToolsIdeFeature.TOOL_WINDOW)
           .build();
 
-        ApplicationManager.getApplication().invokeLater(() -> {
+        OpenApiUtils.safeInvokeLater(() -> {
           Optional.ofNullable(
               FlutterUtils.embeddedBrowser(project))
             .ifPresent(embeddedBrowser -> {

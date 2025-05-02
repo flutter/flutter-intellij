@@ -44,6 +44,7 @@ import io.flutter.font.FontPreviewProcessor;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -260,7 +261,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       final String sdkHomePath = getSdkPathText();
       if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
 
-        ApplicationManager.getApplication().runWriteAction(() -> {
+        OpenApiUtils.safeRunWriteAction(() -> {
           FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath);
           FlutterSdkUtil.enableDartSdk(myProject);
 
@@ -406,14 +407,14 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
         Thread.sleep(100L);
         lock.acquire();
 
-        ApplicationManager.getApplication().invokeLater(() -> {
+        OpenApiUtils.safeInvokeLater(() -> {
           // "flutter --version" can take a long time on a slow network.
           updater = sdk.flutterVersion().start((ProcessOutput output) -> {
             fullVersionString = output.getStdout();
             final String[] lines = StringUtil.splitByLines(fullVersionString);
             final String singleLineVersion = lines.length > 0 ? lines[0] : "";
 
-            ApplicationManager.getApplication().invokeLater(() -> {
+            OpenApiUtils.safeInvokeLater(() -> {
               updater = null;
               lock.release();
               updateVersionTextIfCurrent(sdk, singleLineVersion);
