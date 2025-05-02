@@ -6,93 +6,63 @@
 package io.flutter.devtools;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowFactory;
-import com.intellij.ui.content.ContentManager;
-import io.flutter.FlutterUtils;
-import io.flutter.actions.RefreshToolWindowAction;
 import io.flutter.bazel.WorkspaceCache;
-import io.flutter.run.daemon.DevToolsService;
-import io.flutter.sdk.FlutterSdk;
+import io.flutter.run.daemon.DevToolsInstance;
 import io.flutter.sdk.FlutterSdkVersion;
-import io.flutter.utils.AsyncUtils;
-import io.flutter.utils.OpenApiUtils;
+import io.flutter.view.EmbeddedBrowser;
 import io.flutter.view.FlutterViewMessages;
-import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.Optional;
+public class RemainingDevToolsViewFactory extends AbstractDevToolsViewFactory {
+  @NotNull public static String TOOL_WINDOW_ID = "Flutter DevTools";
 
-public class RemainingDevToolsViewFactory implements ToolWindowFactory {
-  @NotNull private static String TOOL_WINDOW_ID = "Flutter DevTools";
-
-  public static void init(Project project) {
-    project.getMessageBus().connect().subscribe(
-      FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (FlutterViewMessages.FlutterDebugNotifier)event -> initView(project, event)
-    );
+  public static void init(@NotNull final Project project) {
+    project.getMessageBus().connect()
+      .subscribe(FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (FlutterViewMessages.FlutterDebugNotifier)event -> initView(project, event));
   }
 
-  private static void initView(Project project, FlutterViewMessages.FlutterDebugEvent event) {
+  private static void initView(@NotNull final Project project, FlutterViewMessages.FlutterDebugEvent event) {
     RemainingDevToolsViewService service = project.getService(RemainingDevToolsViewService.class);
     String vmServiceUri = event.app.getConnector().getBrowserUrl();
-    if (vmServiceUri == null) return;
+    if (service == null || vmServiceUri == null) return;
     service.updateVmServiceUri(vmServiceUri);
   }
 
-
   @Override
-  public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow window) {
-    final ContentManager contentManager = window.getContentManager();
-    FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
-    RemainingDevToolsViewService service = project.getService(RemainingDevToolsViewService.class);
-
-    AsyncUtils.whenCompleteUiThread(
-      DevToolsService.getInstance(project).getDevToolsInstance(),
-      (instance, error) -> {
-        // Skip displaying if the project has been closed.
-        if (!project.isOpen()) {
-          return;
-        }
-
-        if (error != null) {
-          return;
-        }
-
-        if (instance == null) {
-          return;
-        }
-
-        final DevToolsUrl devToolsUrl = new DevToolsUrl.Builder()
-          .setDevToolsHost(instance.host())
-          .setDevToolsPort(instance.port())
-          .setHide("home,inspector,deep-links,extensions,debugger")
-          .setEmbed(true).setFlutterSdkVersion(sdkVersion)
-          .setWorkspaceCache(WorkspaceCache.getInstance(project))
-          .setIdeFeature(DevToolsIdeFeature.TOOL_WINDOW)
-          .build();
-
-        OpenApiUtils.safeInvokeLater(() -> {
-          Optional.ofNullable(
-              FlutterUtils.embeddedBrowser(project))
-            .ifPresent(embeddedBrowser -> {
-              embeddedBrowser.openPanel(window, "Flutter DevTools", devToolsUrl, System.out::println);
-              service.setEmbeddedBrowser(embeddedBrowser);
-            });
-        });
-      }
-    );
-
-    window.setTitleActions(List.of(new RefreshToolWindowAction(TOOL_WINDOW_ID)));
+  public boolean versionSupportsThisTool(@NotNull final FlutterSdkVersion flutterSdkVersion) {
+    return flutterSdkVersion.canUseDevToolsMultiEmbed();
   }
 
-  @Nullable
   @Override
-  public Object isApplicableAsync(@NotNull Project project, @NotNull Continuation<? super Boolean> $completion) {
-    FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
-    return sdkVersion != null && sdkVersion.canUseDevToolsMultiEmbed();
+  @NotNull
+  public String getToolWindowId() {
+    return TOOL_WINDOW_ID;
+  }
+
+  @NotNull
+  public String getToolWindowTitle() {
+    return "Flutter DevTools";
+  }
+
+  @Override
+  protected void doAfterBrowserOpened(@NotNull final Project project, @NotNull final EmbeddedBrowser embeddedBrowser) {
+    RemainingDevToolsViewService service = project.getService(RemainingDevToolsViewService.class);
+    if (service == null) return;
+    service.setEmbeddedBrowser(embeddedBrowser);
+  }
+
+  @Override
+  @NotNull
+  public DevToolsUrl getDevToolsUrl(@NotNull final Project project,
+                                    @NotNull final FlutterSdkVersion flutterSdkVersion,
+                                    @NotNull final DevToolsInstance instance) {
+    return new DevToolsUrl.Builder()
+      .setDevToolsHost(instance.host())
+      .setDevToolsPort(instance.port())
+      .setHide("home,inspector,deep-links,extensions,debugger")
+      .setEmbed(true).setFlutterSdkVersion(flutterSdkVersion)
+      .setWorkspaceCache(WorkspaceCache.getInstance(project))
+      .setIdeFeature(DevToolsIdeFeature.TOOL_WINDOW)
+      .build();
   }
 }

@@ -364,7 +364,7 @@ public class FlutterInitializer implements StartupActivity {
     });
   }
 
-  private void initializeToolWindows(@NotNull Project project) {
+  private void initializeToolWindows(@NotNull final Project project) {
     // Start watching for Flutter debug active events.
     FlutterViewFactory.init(project);
     RemainingDevToolsViewFactory.init(project);

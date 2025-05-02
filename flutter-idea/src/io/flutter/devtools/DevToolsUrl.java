@@ -56,66 +56,79 @@ public class DevToolsUrl {
 
     public Builder() {}
 
+    @NotNull
     public Builder setDevToolsHost(String devToolsHost) {
       this.devToolsHost = devToolsHost;
       return this;
     }
 
+    @NotNull
     public Builder setDevToolsPort(int devToolsPort) {
       this.devToolsPort = devToolsPort;
       return this;
     }
 
+    @NotNull
     public Builder setVmServiceUri(String vmServiceUri) {
       this.vmServiceUri = vmServiceUri;
       return this;
     }
 
+    @NotNull
     public Builder setPage(String page) {
       this.page = page;
       return this;
     }
 
+    @NotNull
     public Builder setEmbed(Boolean embed) {
       this.embed = embed;
       return this;
     }
 
+    @NotNull
     public Builder setWidgetId(String widgetId) {
       this.widgetId = widgetId;
       return this;
     }
 
+    @NotNull
     public Builder setHide(String hide) {
       this.hide = hide;
       return this;
     }
 
+    @NotNull
     public Builder setDevToolsUtils(DevToolsUtils devToolsUtils) {
       this.devToolsUtils = devToolsUtils;
       return this;
     }
 
+    @NotNull
     public Builder setFlutterSdkVersion(FlutterSdkVersion sdkVersion) {
       this.flutterSdkVersion = sdkVersion;
       return this;
     }
 
+    @NotNull
     public Builder setWorkspaceCache(WorkspaceCache workspaceCache) {
       this.workspaceCache = workspaceCache;
       return this;
     }
 
+    @NotNull
     public Builder setIdeFeature(DevToolsIdeFeature ideFeature) {
       this.ideFeature = ideFeature;
       return this;
     }
 
+    @NotNull
     public Builder setFlutterSdkUtil(FlutterSdkUtil flutterSdkUtil) {
       this.flutterSdkUtil = flutterSdkUtil;
       return this;
     }
 
+    @NotNull
     public DevToolsUrl build() {
       if (devToolsUtils == null) {
         devToolsUtils = new DevToolsUtils();
