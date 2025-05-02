@@ -26,9 +26,8 @@ import java.util.Objects;
 public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
   private static final Logger LOG = Logger.getInstance(FlutterProjectOpenProcessor.class);
 
-  @NotNull
   @Override
-  public String getName() {
+  public @NotNull String getName() {
     return FlutterBundle.message("flutter.module.name");
   }
 

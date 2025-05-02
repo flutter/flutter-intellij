@@ -307,7 +307,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
 
     static final String TEMPLATE_PROJECT_NAME = "_android";
 
-    public String getLocationHash() {
+    public @NotNull String getLocationHash() {
       return "";
     }
 

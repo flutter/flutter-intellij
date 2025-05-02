@@ -51,7 +51,7 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
   }
 
   //@Override
-  public boolean submit(@NotNull IdeaLoggingEvent[] events,
+  public boolean submit(@NotNull IdeaLoggingEvent @NotNull [] events,
                         @Nullable String additionalInfo,
                         @NotNull Component parentComponent,
                         @NotNull Consumer<? super SubmittedReportInfo> consumer) {
