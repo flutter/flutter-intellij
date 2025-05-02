@@ -10,8 +10,9 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
-import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -30,6 +31,7 @@ import io.flutter.run.bazel.BazelAttachConfig;
 import io.flutter.run.bazel.BazelRunConfig;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -200,7 +202,7 @@ public class AttachDebuggerAction extends FlutterSdkAction {
   }
 
   private static void showSelectConfigDialog() {
-    ApplicationManager.getApplication().invokeLater(() -> new SelectConfigDialog().show(), ModalityState.nonModal());
+    OpenApiUtils.safeInvokeLater(() -> new SelectConfigDialog().show(), ModalityState.nonModal());
   }
 
   private static class SelectConfigDialog extends DialogWrapper {

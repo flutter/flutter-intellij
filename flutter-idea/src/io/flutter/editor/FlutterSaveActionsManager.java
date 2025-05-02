@@ -6,7 +6,6 @@
 package io.flutter.editor;
 
 import com.intellij.application.options.CodeStyle;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
@@ -28,6 +27,7 @@ import com.jetbrains.lang.dart.assists.AssistUtils;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.OpenApiUtils;
 import org.dartlang.analysis.server.protocol.SourceEdit;
 import org.dartlang.analysis.server.protocol.SourceFileEdit;
 import org.jetbrains.annotations.NotNull;
@@ -128,7 +128,7 @@ public class FlutterSaveActionsManager {
     final SourceFileEdit fileEdit = DartAnalysisServerService.getInstance(myProject).edit_organizeDirectives(filePath);
 
     if (fileEdit != null) {
-      ApplicationManager.getApplication().invokeLater(() -> {
+      OpenApiUtils.safeInvokeLater(() -> {
         if (myProject.isDisposed()) {
           return;
         }
@@ -147,7 +147,7 @@ public class FlutterSaveActionsManager {
 
             // Run this in an invoke later so that we don't exeucte the initial part of performFormat in a write action.
             //noinspection CodeBlock2Expr
-            ApplicationManager.getApplication().invokeLater(() -> {
+            OpenApiUtils.safeInvokeLater(() -> {
               performFormat(document, file, true, psiFile);
             });
           }
@@ -171,7 +171,7 @@ public class FlutterSaveActionsManager {
       return;
     }
 
-    ApplicationManager.getApplication().invokeLater(() -> {
+    OpenApiUtils.safeInvokeLater(() -> {
       if (myProject.isDisposed()) {
         return;
       }
@@ -197,7 +197,7 @@ public class FlutterSaveActionsManager {
           // Don't perform the save in a write action - it could invoke EDT work.
           if (reSave || didFormat) {
             //noinspection CodeBlock2Expr
-            ApplicationManager.getApplication().invokeLater(() -> {
+            OpenApiUtils.safeInvokeLater(() -> {
               FileDocumentManager.getInstance().saveDocument(document);
             });
           }

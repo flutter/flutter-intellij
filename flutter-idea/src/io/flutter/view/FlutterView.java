@@ -43,10 +43,7 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.toolwindow.FlutterViewToolWindowManagerListener;
-import io.flutter.utils.AsyncUtils;
-import io.flutter.utils.EventStream;
-import io.flutter.utils.JxBrowserUtils;
-import io.flutter.utils.LabelInput;
+import io.flutter.utils.*;
 import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
 
@@ -103,7 +100,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   @VisibleForTesting
   @NonInjectable
-  protected FlutterView(@NotNull Project project, @NotNull JxBrowserManager jxBrowserManager, JxBrowserUtils jxBrowserUtils, ViewUtils viewUtils) {
+  protected FlutterView(@NotNull Project project,
+                        @NotNull JxBrowserManager jxBrowserManager,
+                        JxBrowserUtils jxBrowserUtils,
+                        ViewUtils viewUtils) {
     myProject = project;
     this.jxBrowserUtils = jxBrowserUtils;
     this.jxBrowserManager = jxBrowserManager;
@@ -189,7 +189,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
       Runnable task = () -> {
         embeddedBrowserOptional().ifPresent(
-          embeddedBrowser -> ApplicationManager.getApplication().invokeLater(() -> {
+          embeddedBrowser -> OpenApiUtils.safeInvokeLater(() -> {
             embeddedBrowser.openPanel(toolWindow, tabName, devToolsUrl, (String error) -> {
               // If the embedded browser doesn't work, offer a link to open in the regular browser.
               final List<LabelInput> inputs = Arrays.asList(
@@ -238,7 +238,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (app.getFlutterDebugProcess() == null) {
       return;
     }
-    ApplicationManager.getApplication().invokeLater(() -> debugActiveHelper(app));
+    OpenApiUtils.safeInvokeLater(() -> debugActiveHelper(app));
   }
 
   protected void handleJxBrowserInstalled(FlutterApp app, ToolWindow toolWindow, DevToolsIdeFeature ideFeature) {
@@ -406,6 +406,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     viewUtils.presentClickableLabel(toolWindow, inputs);
   }
+
   protected void presentOpenDevToolsOptionWithMessage(FlutterApp app,
                                                       ToolWindow toolWindow,
                                                       String message,
@@ -417,7 +418,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private void replacePanelLabel(ToolWindow toolWindow, JComponent label) {
-    ApplicationManager.getApplication().invokeLater(() -> {
+    OpenApiUtils.safeInvokeLater(() -> {
       final ContentManager contentManager = toolWindow.getContentManager();
       if (contentManager.isDisposed()) {
         return;

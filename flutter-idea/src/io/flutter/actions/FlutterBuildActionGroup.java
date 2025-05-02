@@ -12,7 +12,6 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterMessages;
@@ -20,6 +19,7 @@ import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.OpenApiUtils;
 import io.flutter.utils.ProgressHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -105,7 +105,7 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
       return module;
     }
     // We may get here if the file is in the Android module of a Flutter module project.
-    final VirtualFile parent = ModuleRootManager.getInstance(module).getContentRoots()[0].getParent();
+    final VirtualFile parent = OpenApiUtils.getContentRoots(module)[0].getParent();
     module = ModuleUtilCore.findModuleForFile(parent, project);
     if (module == null) {
       return null;

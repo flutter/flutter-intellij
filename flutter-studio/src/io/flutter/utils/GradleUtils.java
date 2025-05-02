@@ -14,7 +14,6 @@ import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslLiteral;
 import com.android.tools.idea.gradle.dsl.parser.files.GradleSettingsFile;
 import com.android.tools.idea.gradle.project.sync.GradleSyncState;
 import com.android.tools.idea.gradle.util.GradleProjectSystemUtil;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalProjectInfo;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
@@ -126,7 +125,7 @@ public class GradleUtils {
       }
       if (!col.isEmpty()) {
         if (col.parallelStream().anyMatch((x) -> x.startsWith(FLUTTER_TASK_PREFIX))) {
-          ApplicationManager.getApplication().invokeLater(() -> enableCoEditing(project));
+          OpenApiUtils.safeInvokeLater(() -> enableCoEditing(project));
         }
       }
     }
@@ -418,7 +417,7 @@ public class GradleUtils {
     }
 
     private void createBuildFile() {
-      ApplicationManager.getApplication().runWriteAction(() -> {
+      OpenApiUtils.safeRunWriteAction(() -> {
         try {
           buildFile = flutterModuleDir.findOrCreateChildData(this, SdkConstants.FN_BUILD_GRADLE);
         }
@@ -429,7 +428,7 @@ public class GradleUtils {
     }
 
     private void writeBuildFile() {
-      ApplicationManager.getApplication().runWriteAction(() -> {
+      OpenApiUtils.safeRunWriteAction(() -> {
         try (OutputStream out = new BufferedOutputStream(buildFile.getOutputStream(this))) {
           out.write("buildscript {}".getBytes(StandardCharsets.UTF_8));
         }
@@ -484,7 +483,7 @@ public class GradleUtils {
     }
 
     private void writeSettingsFile(String newContent, String originalContent) {
-      ApplicationManager.getApplication().runWriteAction(() -> {
+      OpenApiUtils.safeRunWriteAction(() -> {
         try (OutputStream out = new BufferedOutputStream(settingsFile.getOutputStream(this))) {
           out.write(newContent.getBytes(StandardCharsets.UTF_8));
         }

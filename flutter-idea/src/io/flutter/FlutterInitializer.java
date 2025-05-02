@@ -10,7 +10,9 @@ import com.google.gson.JsonPrimitive;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.ui.UISettingsListener;
-import com.intellij.notification.*;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -20,7 +22,6 @@ import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
@@ -50,6 +51,7 @@ import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.survey.FlutterSurveyNotifications;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.OpenApiUtils;
 import io.flutter.view.FlutterViewFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -90,7 +92,7 @@ public class FlutterInitializer implements StartupActivity {
     // If the project declares a Flutter dependency, do some extra initialization.
     boolean hasFlutterModule = false;
 
-    for (Module module : ModuleManager.getInstance(project).getModules()) {
+    for (Module module : OpenApiUtils.getModules(project)) {
       final boolean declaresFlutter = FlutterModuleUtils.declaresFlutter(module);
 
       hasFlutterModule = hasFlutterModule || declaresFlutter;
@@ -289,7 +291,7 @@ public class FlutterInitializer implements StartupActivity {
       final FlutterSettings settings = FlutterSettings.getInstance();
       if (settings == null || settings.isSdkVersionOutdatedWarningAcknowledged(version.getVersionText())) return;
 
-      ApplicationManager.getApplication().invokeLater(() -> {
+      OpenApiUtils.safeInvokeLater(() -> {
         final Notification notification = new Notification(FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
                                                            "Flutter SDK requires update",
                                                            "Support for v" +
@@ -383,6 +385,6 @@ public class FlutterInitializer implements StartupActivity {
       return; // ANDROID_HOME not set or Android SDK not created in IDEA; not clear what to do.
     }
 
-    ApplicationManager.getApplication().runWriteAction(() -> wanted.setCurrent(project));
+    OpenApiUtils.safeRunWriteAction(() -> wanted.setCurrent(project));
   }
 }

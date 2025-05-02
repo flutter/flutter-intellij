@@ -6,10 +6,9 @@
 package io.flutter.pub;
 
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -29,11 +28,11 @@ public class PubRoots {
    * (Based on the filesystem cache; doesn't refresh anything.)
    */
   @NotNull
-  public static List<PubRoot> forModule(@NotNull Module module) {
+  public static List<@NotNull PubRoot> forModule(@NotNull Module module) {
     final List<PubRoot> result = new ArrayList<>();
     if (module.isDisposed()) return result;
 
-    for (VirtualFile dir : ModuleRootManager.getInstance(module).getContentRoots()) {
+    for (VirtualFile dir : OpenApiUtils.getContentRoots(module)) {
       final PubRoot root = PubRoot.forDirectory(dir);
       if (root != null) {
         result.add(root);
@@ -52,7 +51,7 @@ public class PubRoots {
     final List<PubRoot> result = new ArrayList<>();
     if (project.isDisposed()) return result;
 
-    for (Module module : ModuleManager.getInstance(project).getModules()) {
+    for (Module module : OpenApiUtils.getModules(project)) {
       result.addAll(forModule(module));
     }
     return result;

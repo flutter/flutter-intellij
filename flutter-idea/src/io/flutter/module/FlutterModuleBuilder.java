@@ -5,8 +5,6 @@
  */
 package io.flutter.module;
 
-import static java.util.Arrays.asList;
-
 import com.intellij.execution.OutputListener;
 import com.intellij.execution.process.ProcessListener;
 import com.intellij.ide.projectView.ProjectView;
@@ -16,14 +14,10 @@ import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.module.ModifiableModuleModel;
+import com.intellij.openapi.module.*;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.module.ModuleType;
-import com.intellij.openapi.module.ModuleWithNameAlreadyExists;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.DumbService;
@@ -48,16 +42,17 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.OpenApiUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.ComboBoxEditor;
-import javax.swing.Icon;
-import javax.swing.JComponent;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import static java.util.Arrays.asList;
 
 public class FlutterModuleBuilder extends ModuleBuilder {
   private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
@@ -149,9 +144,9 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   }
 
   private void showProjectInProjectWindow(@NotNull Project project) {
-    ApplicationManager.getApplication().invokeLater(() -> {
+    OpenApiUtils.safeInvokeLater(() -> {
       DumbService.getInstance(project).runWhenSmart(() -> {
-        ApplicationManager.getApplication().invokeLater(() -> {
+        OpenApiUtils.safeInvokeLater(() -> {
           ProjectView view = ProjectView.getInstance(project);
           if (view == null) return;
           view.changeView(ProjectViewPane.ID);
@@ -180,10 +175,10 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   }
 
   public static void addAndroidModule(@NotNull Project project,
-                                       @Nullable ModifiableModuleModel model,
-                                       @NotNull String baseDirPath,
-                                       @NotNull String flutterModuleName,
-                                       boolean isTopLevel) {
+                                      @Nullable ModifiableModuleModel model,
+                                      @NotNull String baseDirPath,
+                                      @NotNull String flutterModuleName,
+                                      boolean isTopLevel) {
     final VirtualFile baseDir = LocalFileSystem.getInstance().refreshAndFindFileByPath(baseDirPath);
     if (baseDir == null) {
       return;
@@ -213,7 +208,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       Module newModule = model.loadModule(androidFile.getPath());
 
       if (toCommit != null) {
-        ApplicationManager.getApplication().invokeLater(() -> {
+        OpenApiUtils.safeInvokeLater(() -> {
           // This check was due to https://github.com/flutter/flutter-intellij/issues/7306:
           if (project.isDisposed()) {
             return;

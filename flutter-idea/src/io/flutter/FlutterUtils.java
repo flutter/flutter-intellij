@@ -12,7 +12,6 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.*;
@@ -34,6 +33,7 @@ import io.flutter.pub.PubRootCache;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.OpenApiUtils;
 import io.flutter.view.EmbeddedBrowser;
 import io.flutter.view.EmbeddedJcefBrowser;
 import org.jetbrains.annotations.NotNull;
@@ -479,8 +479,7 @@ public class FlutterUtils {
 
   @Nullable
   public static Module findModuleNamed(@NotNull Project project, @NotNull String name) {
-    final Module[] modules = ModuleManager.getInstance(project).getModules();
-    assert modules != null;
+    final Module[] modules = OpenApiUtils.getModules(project);
     for (Module module : modules) {
       assert module != null;
       if (module.getName().equals(name)) {

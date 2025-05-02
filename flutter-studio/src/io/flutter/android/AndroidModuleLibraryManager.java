@@ -17,7 +17,6 @@ import com.intellij.openapi.application.TransactionGuard;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
@@ -28,7 +27,6 @@ import com.intellij.openapi.roots.*;
 import com.intellij.openapi.roots.impl.IdeaProjectModelModifier;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
-import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.roots.libraries.PersistentLibraryKind;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtilRt;
@@ -40,6 +38,7 @@ import io.flutter.sdk.AbstractLibraryManager;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -87,7 +86,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   }
 
   private Void scheduleAddAndroidLibraryDeps(@NotNull Project androidProject) {
-    ApplicationManager.getApplication().invokeLater(
+    OpenApiUtils.safeInvokeLater(
       () -> addAndroidLibraryDependencies(androidProject),
       ModalityState.nonModal());
     return null;
@@ -96,7 +95,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   private void addAndroidLibraryDependencies(@NotNull Project androidProject) {
     for (Module flutterModule : FlutterModuleUtils.getModules(getProject())) {
       if (FlutterModuleUtils.isFlutterModule(flutterModule)) {
-        for (Module module : ModuleManager.getInstance(androidProject).getModules()) {
+        for (Module module : OpenApiUtils.getModules(androidProject)) {
           addAndroidLibraryDependencies(androidProject, module, flutterModule);
         }
       }
@@ -112,9 +111,11 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     if (currentSdk != null) {
       // TODO(messick) Add sdk dependency on currentSdk if not already set
     }
-    LibraryTable androidProjectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(androidProject);
+    LibraryTable androidProjectLibraryTable = OpenApiUtils.getLibraryTable(androidProject);
+    if (androidProjectLibraryTable == null) return;
     Library[] androidProjectLibraries = androidProjectLibraryTable.getLibraries();
-    LibraryTable flutterProjectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(getProject());
+    LibraryTable flutterProjectLibraryTable = OpenApiUtils.getLibraryTable(getProject());
+    if (flutterProjectLibraryTable == null) return;
     Library[] flutterProjectLibraries = flutterProjectLibraryTable.getLibraries();
     Set<String> knownLibraryNames = new HashSet<>(flutterProjectLibraries.length);
     for (Library lib : flutterProjectLibraries) {
@@ -139,7 +140,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
 
   @Override
   protected void updateModuleLibraryDependencies(@NotNull Library library) {
-    for (final Module module : ModuleManager.getInstance(getProject()).getModules()) {
+    for (final Module module : OpenApiUtils.getModules(getProject())) {
       // The logic is inverted wrt superclass.
       if (!FlutterModuleUtils.declaresFlutter(module)) {
         addFlutterLibraryDependency(module, library);
@@ -151,7 +152,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   }
 
   private void updateAndroidModuleLibraryDependencies(Module flutterModule) {
-    for (final Module module : ModuleManager.getInstance(getProject()).getModules()) {
+    for (final Module module : OpenApiUtils.getModules(getProject())) {
       if (module != flutterModule) {
         if (null != FacetManager.getInstance(module).findFacet(AndroidFacet.ID, "Android")) {
           Object circularModules = CircularModuleDependenciesDetector.addingDependencyFormsCircularity(module, flutterModule);
@@ -306,7 +307,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
 
     static final String TEMPLATE_PROJECT_NAME = "_android";
 
-    public @NotNull String getLocationHash() {
+    public String getLocationHash() {
       return "";
     }
 

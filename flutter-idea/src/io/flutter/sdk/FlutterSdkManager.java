@@ -11,9 +11,9 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
-import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.util.EventDispatcher;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,8 +38,10 @@ public class FlutterSdkManager {
   private FlutterSdkManager(@NotNull Project project) {
     myProject = project;
 
+    final LibraryTable libraryTable = OpenApiUtils.getLibraryTable(project);
+    if (libraryTable == null) return;
+
     final LibraryTableListener libraryTableListener = new LibraryTableListener();
-    final LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
     libraryTable.addListener(libraryTableListener);
 
     // TODO(devoncarew): We should replace this polling solution with listeners to project structure changes.
@@ -47,7 +49,7 @@ public class FlutterSdkManager {
       this::checkForFlutterSdkChange, 1, 1, TimeUnit.SECONDS);
 
     Disposer.register(project, () -> {
-      LibraryTablesRegistrar.getInstance().getLibraryTable(project).removeListener(libraryTableListener);
+      libraryTable.removeListener(libraryTableListener);
       timer.cancel(false);
     });
 

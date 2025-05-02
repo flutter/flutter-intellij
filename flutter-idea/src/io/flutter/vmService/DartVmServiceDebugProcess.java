@@ -36,14 +36,15 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
 import io.flutter.run.FlutterLaunchMode;
+import io.flutter.utils.OpenApiUtils;
 import io.flutter.vmService.frame.DartVmServiceEvaluator;
 import io.flutter.vmService.frame.DartVmServiceStackFrame;
 import io.flutter.vmService.frame.DartVmServiceSuspendContext;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
 import org.dartlang.vm.service.consumer.VMConsumer;
-import org.dartlang.vm.service.element.Event;
 import org.dartlang.vm.service.element.*;
+import org.dartlang.vm.service.element.Event;
 import org.dartlang.vm.service.logging.Logging;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -502,14 +503,14 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
                 final Event event = isolate.getPauseEvent();
                 final EventKind eventKind = event.getKind();
                 if (eventKind == EventKind.PauseStart) {
-                  ApplicationManager.getApplication().invokeLater(() -> {
+                  OpenApiUtils.safeInvokeLater(() -> {
                     // We are assuming it is safe to call handleIsolate multiple times.
                     myVmServiceWrapper.handleIsolate(isolateRef, true);
                   });
                 }
                 else if (eventKind == EventKind.Resume) {
                   // Currently true if we got here via 'flutter attach'
-                  ApplicationManager.getApplication().invokeLater(() -> {
+                  OpenApiUtils.safeInvokeLater(() -> {
                     myVmServiceWrapper.attachIsolate(isolateRef, isolate);
                   });
                 }
@@ -552,7 +553,7 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
               final Project project = getSession().getProject();
               final OpenFileHyperlinkInfo
                 info = new OpenFileHyperlinkInfo(project, source.getFile(), source.getLine());
-              ApplicationManager.getApplication().invokeLater(() -> ApplicationManager.getApplication().runWriteAction(() -> {
+              OpenApiUtils.safeInvokeLater(() -> OpenApiUtils.safeRunWriteAction(() -> {
                 info.navigate(project);
 
                 ProjectUtil.focusProjectWindow(project, true);
@@ -635,7 +636,7 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
 
         @Override
         public void windowActivated(WindowEvent e) {
-          if(projectFrame.isDisplayable()) {
+          if (projectFrame.isDisplayable()) {
             projectFrame.setVisible(true);
           }
           anchor.dispose();

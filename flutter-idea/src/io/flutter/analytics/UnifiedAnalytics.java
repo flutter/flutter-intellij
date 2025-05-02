@@ -12,13 +12,13 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import de.roderick.weberknecht.WebSocketException;
 import io.flutter.dart.DtdUtils;
 import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -118,7 +118,9 @@ public class UnifiedAnalytics {
     });
   }
 
-  private @Nullable CompletableFuture<Boolean> setTelemetry(@NotNull DartToolingDaemonService service, @NotNull JsonObject params, Boolean canSendAnalytics) {
+  private @Nullable CompletableFuture<Boolean> setTelemetry(@NotNull DartToolingDaemonService service,
+                                                            @NotNull JsonObject params,
+                                                            Boolean canSendAnalytics) {
     params.addProperty("enable", canSendAnalytics);
     return makeUnifiedAnalyticsRequest("setTelemetry", service, params).thenCompose(result -> {
       assert result != null;
@@ -135,7 +137,7 @@ public class UnifiedAnalytics {
 
   private CompletableFuture<Boolean> showMessage(@NotNull String message) {
     CompletableFuture<Boolean> finalResult = new CompletableFuture<>();
-    ApplicationManager.getApplication().invokeLater(() -> {
+    OpenApiUtils.safeInvokeLater(() -> {
       final Notification notification = new Notification(
         "Flutter Usage Statistics", // Analytics.GROUP_DISPLAY_ID,
         "Welcome to Flutter!",
