@@ -16,5 +16,5 @@ dependencies:
   string_validator: 1.1.0
 
 dev_dependencies:
-  lints: ^5.0.0
+  lints: ^6.0.0
   test: ^1.22.0
