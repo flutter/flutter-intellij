@@ -24,6 +24,7 @@ Future<int> main(List<String> args) async {
   runner.addCommand(LintCommand(runner));
   runner.addCommand(GradleBuildCommand(runner));
   runner.addCommand(TestCommand(runner));
+  runner.addCommand(DeployCommand(runner));
   runner.addCommand(GenerateCommand(runner));
   runner.addCommand(VerifyCommand(runner));
   runner.addCommand(RunIdeCommand(runner));
@@ -472,6 +473,89 @@ class GradleBuildCommand extends ProductCommand {
     } else {
       return await exec('./third_party/gradlew', ['--stop']);
     }
+  }
+}
+
+/// Either the --release or --channel options must be provided.
+/// The permanent token is read from the file specified by Kokoro.
+class DeployCommand extends ProductCommand {
+  @override
+  final BuildCommandRunner runner;
+
+  DeployCommand(this.runner) : super('deploy');
+
+  @override
+  String get description => 'Upload the Flutter plugin to the JetBrains site.';
+
+  @override
+  Future<int> doit() async {
+    if (isReleaseMode) {
+      if (!await performReleaseChecks(this)) {
+        return 1;
+      }
+    } else if (!isDevChannel) {
+      log('Deploy must have a --release or --channel=dev argument');
+      return 1;
+    }
+
+    var token = readTokenFromKeystore('FLUTTER_KEYSTORE_NAME');
+    var value = 0;
+    var originalDir = Directory.current;
+    for (var spec in specs) {
+      if (spec.channel != channel) continue;
+      var filePath = releasesFilePath(spec);
+      log("uploading $filePath");
+      var file = File(filePath);
+      changeDirectory(file.parent);
+      var pluginNumber = pluginRegistryIds[spec.pluginId];
+      value = await upload(
+        p.basename(file.path),
+        pluginNumber!,
+        token,
+        spec.channel,
+      );
+      if (value != 0) {
+        return value;
+      }
+    }
+    changeDirectory(originalDir);
+    return value;
+  }
+
+  void changeDirectory(Directory dir) {
+    Directory.current = dir.path;
+  }
+
+  Future<int> upload(
+    String filePath,
+    String pluginNumber,
+    String token,
+    String channel,
+  ) async {
+    if (!File(filePath).existsSync()) {
+      throw 'File not found: $filePath';
+    }
+    // See https://plugins.jetbrains.com/docs/marketplace/plugin-upload.html#PluginUploadAPI-POST
+    // Trying to run curl directly doesn't work; something odd happens to the quotes.
+    var cmd = '''
+curl
+-i
+--header "Authorization: Bearer $token"
+-F pluginId=$pluginNumber
+-F file=@$filePath
+-F channel=$channel
+https://plugins.jetbrains.com/plugin/uploadPlugin
+''';
+
+    var args = ['-c', cmd.split('\n').join(' ')];
+    final processResult = await Process.run('sh', args);
+    if (processResult.exitCode != 0) {
+      log('Upload failed: ${processResult.stderr} for file: $filePath');
+    }
+    final out = processResult.stdout as String;
+    var message = out.trim().split('\n').last.trim();
+    log(message);
+    return processResult.exitCode;
   }
 }
 

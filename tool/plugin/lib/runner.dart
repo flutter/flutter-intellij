@@ -12,10 +12,10 @@ import 'util.dart';
 
 class BuildCommandRunner extends CommandRunner<int> {
   BuildCommandRunner()
-      : super(
-          'plugin',
-          'A script to build and test the Flutter IntelliJ plugin.',
-        ) {
+    : super(
+        'plugin',
+        'A script to build, test, and deploy the Flutter IntelliJ plugin.',
+      ) {
     argParser.addOption(
       'release',
       abbr: 'r',
