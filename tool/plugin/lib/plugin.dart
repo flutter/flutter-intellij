@@ -478,6 +478,7 @@ class GradleBuildCommand extends ProductCommand {
 
 /// Either the --release or --channel options must be provided.
 /// The permanent token is read from the file specified by Kokoro.
+/// This is used by Kokoro to build and upload the dev version of the plugin.
 class DeployCommand extends ProductCommand {
   @override
   final BuildCommandRunner runner;
