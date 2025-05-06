@@ -12,10 +12,10 @@ import 'util.dart';
 
 class BuildCommandRunner extends CommandRunner<int> {
   BuildCommandRunner()
-    : super(
-        'plugin',
-        'A script to build, test, and deploy the Flutter IntelliJ plugin.',
-      ) {
+      : super(
+          'plugin',
+          'A script to build, test, and deploy the Flutter IntelliJ plugin.',
+        ) {
     argParser.addOption(
       'release',
       abbr: 'r',
@@ -79,9 +79,8 @@ org.gradle.parallel=true
 org.gradle.jvmargs=-Xms1024m -Xmx4048m
 ''';
     final propertiesFile = File("$rootPath/gradle.properties");
-    final source = propertiesFile.existsSync()
-        ? propertiesFile.readAsStringSync()
-        : null;
+    final source =
+        propertiesFile.existsSync() ? propertiesFile.readAsStringSync() : null;
     propertiesFile.writeAsStringSync(contents);
     int result;
     // Using the Gradle daemon causes a strange problem.
