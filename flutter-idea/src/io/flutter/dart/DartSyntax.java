@@ -17,9 +17,25 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * Finds Dart PSI elements in IntelliJ's syntax tree.
+ * Constants and utility methods for working with Dart language syntax.
+ * <p>
+ * This class provides a collection of common Dart syntax elements, patterns,
+ * and keywords used throughout the plugin. It serves as a central repository
+ * for syntax-related constants and helper methods to ensure consistency in
+ * Dart code analysis and manipulation.
+ * <p>
+ * The class includes regular expressions, common syntax patterns, and utility
+ * methods for identifying and working with various Dart language constructs.
+ * This helps maintain consistency across the plugin when dealing with Dart
+ * syntax elements.
+ * <p>
+ * All members in this class are static as this is a utility class.
  */
 public class DartSyntax {
+
+  private DartSyntax() {
+    throw new AssertionError("No instances.");
+  }
 
   /**
    * Finds the enclosing function call where the function being called has the given name.

@@ -9,6 +9,15 @@ import com.intellij.openapi.util.Version;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Represents and manages Dart plugin version information.
+ * This class provides functionality to parse, compare, and check compatibility
+ * of different Dart plugin versions. It supports version-specific feature
+ * detection, such as determining if a particular version supports the property editor.
+ * <p>
+ * Versions can be compared using standard comparison operators through the
+ * {@link Comparable} interface implementation.
+ */
 public class DartPluginVersion implements Comparable<DartPluginVersion> {
 
   @Nullable
@@ -19,28 +28,27 @@ public class DartPluginVersion implements Comparable<DartPluginVersion> {
 
   public DartPluginVersion(@Nullable String versionString) {
     rawVersionString = versionString;
-    version = Version.parseVersion(versionString);
+    version = versionString == null ? null : Version.parseVersion(versionString);
   }
 
   @Override
   public int compareTo(@NotNull DartPluginVersion otherVersion) {
-    if (rawVersionString == null) return -1;
-    if (otherVersion.rawVersionString == null) return 1;
+    if (rawVersionString == null || version == null) return -1;
+    if (otherVersion.rawVersionString == null || otherVersion.version == null) return 1;
     return version.compareTo(otherVersion.version);
   }
 
   public boolean supportsPropertyEditor() {
-    if (version == null) return false;
+    if (version == null) {
+      return false;
+    }
     final int major = version.major;
-
     if (major == 243) {
       return this.compareTo(new DartPluginVersion("243.26753.1")) >= 0;
-    }
-
-    if (major == 251) {
+    } else if (major == 251) {
       return this.compareTo(new DartPluginVersion("251.23774.318")) >= 0;
+    } else {
+      return major >= 244;
     }
-
-    return major >= 244;
   }
 }
