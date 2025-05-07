@@ -44,7 +44,7 @@ public class SdkConfigurationNotificationProvider implements EditorNotificationP
     // If this is a Bazel configured Flutter project, exit immediately, neither of the notifications should be shown for this project type.
     if (FlutterModuleUtils.isFlutterBazelProject(project)) return null;
 
-    if (file.getFileType() != DartFileType.INSTANCE) return null;
+    if (!FlutterUtils.isDartFile(file)) return null;
 
     final PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
     if (psiFile == null || psiFile.getLanguage() != DartLanguage.INSTANCE) return null;
