@@ -75,17 +75,6 @@ public class FlutterIcons {
   public static final Icon ExpandProperty = load("/icons/inspector/expand_property.png");
   public static final Icon CollapseProperty = load("/icons/inspector/collapse_property.png");
 
-  // Flutter Outline Widget Icons.
-  public static final Icon Column = load("/icons/preview/column.png");
-  public static final Icon Padding = load("/icons/preview/padding.png");
-  public static final Icon RemoveWidget = load("/icons/preview/remove_widget.png");
-  public static final Icon Row = load("/icons/preview/row.png");
-  public static final Icon Center = load("/icons/preview/center.png");
-  public static final Icon Container = load("/icons/preview/container.png");
-  public static final Icon Up = load("/icons/preview/up.png");
-  public static final Icon Down = load("/icons/preview/down.png");
-  public static final Icon ExtractMethod = load("/icons/preview/extract_method.png");
-
   // Flutter profiler
   public static final Icon Snapshot = load("/icons/profiler/snapshot_color_1x_24dp.png");
   public static final Icon ResetMemoryStats = load("/icons/profiler/reset_icon.png");
