@@ -49,6 +49,7 @@ public class FlutterModuleUtils {
   public static final String DEPRECATED_FLUTTER_MODULE_TYPE_ID = "WEB_MODULE";
 
   private FlutterModuleUtils() {
+    throw new AssertionError("No instances.");
   }
 
   /**

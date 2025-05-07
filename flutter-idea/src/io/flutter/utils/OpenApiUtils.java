@@ -23,6 +23,10 @@ import org.jetbrains.annotations.Nullable;
 
 public class OpenApiUtils {
 
+  private OpenApiUtils() {
+    throw new AssertionError("No instances.");
+  }
+
   public static @NotNull VirtualFile @NotNull [] getContentRoots(@NotNull Module module) {
     var moduleRootManager = ModuleRootManager.getInstance(module);
     return moduleRootManager == null ? VirtualFile.EMPTY_ARRAY : moduleRootManager.getContentRoots();

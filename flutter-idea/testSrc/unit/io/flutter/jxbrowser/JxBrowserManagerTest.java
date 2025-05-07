@@ -34,7 +34,7 @@ public class JxBrowserManagerTest {
     when(mockUtils.getJxBrowserKey()).thenThrow(new FileNotFoundException("Key not found"));
 
     // If the directory for JxBrowser files cannot be created, the installation should fail.
-    final JxBrowserManager manager = new JxBrowserManager(mockUtils, mock(FileUtils.class));
+    final JxBrowserManager manager = new JxBrowserManager(mockUtils);
 
     manager.setUp(projectName);
     Assert.assertEquals(JxBrowserStatus.INSTALLATION_FAILED, manager.getStatus());
@@ -49,7 +49,7 @@ public class JxBrowserManagerTest {
     when(mockFileUtils.makeDirectory(DOWNLOAD_PATH)).thenReturn(false);
 
     // If the directory for JxBrowser files cannot be created, the installation should fail.
-    final JxBrowserManager manager = new JxBrowserManager(mockUtils, mockFileUtils);
+    final JxBrowserManager manager = new JxBrowserManager(mockUtils);
 
     manager.setUp(projectName);
     Assert.assertEquals(JxBrowserStatus.INSTALLATION_FAILED, manager.getStatus());
@@ -65,7 +65,7 @@ public class JxBrowserManagerTest {
     when(mockFileUtils.makeDirectory(DOWNLOAD_PATH)).thenReturn(true);
 
     // If the system platform is not found among JxBrowser files, then the installation should fail.
-    final JxBrowserManager manager = new JxBrowserManager(mockUtils, mockFileUtils);
+    final JxBrowserManager manager = new JxBrowserManager(mockUtils);
 
     manager.setUp(projectName);
     Assert.assertEquals(JxBrowserStatus.INSTALLATION_FAILED, manager.getStatus());
@@ -84,7 +84,7 @@ public class JxBrowserManagerTest {
     when(mockFileUtils.fileExists(anyString())).thenReturn(true);
 
     // If all of the files are already downloaded, we should load the existing files.
-    final JxBrowserManager manager = new JxBrowserManager(mockUtils, mockFileUtils);
+    final JxBrowserManager manager = new JxBrowserManager(mockUtils);
 
     manager.setUp(projectName);
     final String[] expectedFileNames = {PLATFORM_FILE_NAME, API_FILE_NAME, SWING_FILE_NAME};
@@ -108,7 +108,7 @@ public class JxBrowserManagerTest {
     when(mockFileUtils.deleteFile(anyString())).thenReturn(true);
 
     // If any of our required files do not exist, we want to delete any existing files and start a download of all of the required files.
-    final JxBrowserManager manager = new JxBrowserManager(mockUtils, mockFileUtils);
+    final JxBrowserManager manager = new JxBrowserManager(mockUtils);
     final JxBrowserManager spy = spy(manager);
     final String[] expectedFileNames = {PLATFORM_FILE_NAME, API_FILE_NAME, SWING_FILE_NAME};
     doNothing().when(spy).downloadJxBrowser(expectedFileNames);

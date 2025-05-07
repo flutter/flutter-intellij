@@ -16,6 +16,11 @@ import java.util.Map;
  * Utilities for reading and writing IntelliJ run configurations to and from the disk.
  */
 public class ElementIO {
+
+  private ElementIO() {
+    throw new AssertionError("No instances.");
+  }
+
   public static void addOption(@NotNull Element element, @NotNull String name, @Nullable String value) {
     if (value == null) return;
 
@@ -25,7 +30,7 @@ public class ElementIO {
     element.addContent(child);
   }
 
-  public static Map<String, String> readOptions(Element element) {
+  public static Map<String, String> readOptions(@NotNull Element element) {
     final Map<String, String> result = new HashMap<>();
     for (Element child : element.getChildren()) {
       if ("option".equals(child.getName())) {
