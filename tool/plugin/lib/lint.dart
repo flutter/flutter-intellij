@@ -111,6 +111,9 @@ class LintCommand extends Command<int> {
 
       // Prefer to use built-in Java collections or fastutil.
       'com.android.tools.idea.io.netty.util.collection.',
+
+      // Internal APIs that shouldn't be used by 3p plugins:
+      'com.intellij.util.PlatformUtils',
     ];
 
     for (var import in proscribedImports) {

@@ -5,6 +5,7 @@
  */
 package io.flutter;
 
+import com.android.tools.idea.IdeInfo;
 import com.google.common.base.Charsets;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.ide.impl.ProjectUtil;
@@ -23,7 +24,6 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.LightVirtualFile;
-import com.intellij.util.PlatformUtils;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.jxbrowser.EmbeddedJxBrowser;
@@ -101,7 +101,7 @@ public class FlutterUtils {
   }
 
   public static boolean isAndroidStudio() {
-    return StringUtil.equals(PlatformUtils.getPlatformPrefix(), "AndroidStudio");
+    return IdeInfo.getInstance().isAndroidStudio();
   }
 
   /**
