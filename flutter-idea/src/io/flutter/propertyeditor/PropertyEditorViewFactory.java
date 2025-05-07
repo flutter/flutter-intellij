@@ -45,8 +45,8 @@ public class PropertyEditorViewFactory implements ToolWindowFactory {
     FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
 
-    DartPluginVersion dartPluginVersion = DartPlugin.getDartPluginVersion();
-    if (!dartPluginVersion.supportsPropertyEditor()) {
+    final DartPluginVersion dartPluginVersion = DartPlugin.getDartPluginVersion();
+    if (dartPluginVersion == null || !dartPluginVersion.supportsPropertyEditor()) {
       viewUtils.presentLabel(toolWindow, "Flutter Property Editor requires a newer version of the Dart plugin.");
       return;
     }

@@ -81,7 +81,7 @@ public class FlutterDartAnalysisServer implements Disposable {
 
       @Override
       public void serverConnected(String s) {
-        // If the server reconnected we need to let it know that we still care
+        // If the server reconnected, we need to let it know that we still care
         // about our subscriptions.
         if (!subscriptions.isEmpty()) {
           sendSubscriptions();
@@ -233,7 +233,7 @@ public class FlutterDartAnalysisServer implements Disposable {
    */
   @SuppressWarnings("DataFlowIssue") // Ignore for de-marshalling JSON objects.
   private void processNotification(JsonObject response, @NotNull JsonElement eventName) {
-    // If we add code to handle more event types below, update the filter in processString().
+    // If we add code to handle the more event types below, update the filter in processString().
     final String event = eventName.getAsString();
     if (Objects.equals(event, FLUTTER_NOTIFICATION_OUTLINE)) {
       final JsonObject paramsObject = response.get("params").getAsJsonObject();
