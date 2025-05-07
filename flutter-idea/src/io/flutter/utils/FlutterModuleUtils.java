@@ -23,7 +23,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.serviceContainer.AlreadyDisposedException;
 import com.intellij.ui.EditorNotifications;
-import com.intellij.util.PlatformUtils;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.util.PubspecYamlUtil;
@@ -79,17 +78,11 @@ public class FlutterModuleUtils {
   public static boolean isFlutterModule(@Nullable final Module module) {
     if (module == null || module.isDisposed()) return false;
 
-    if (PlatformUtils.isIntelliJ() || FlutterUtils.isAndroidStudio()) {
-      // [Flutter support enabled for a module] ===
-      //   [Dart support enabled && referenced Dart SDK is the one inside a Flutter SDK]
-      final DartSdk dartSdk = DartPlugin.getDartSdk(module.getProject());
-      final String dartSdkPath = dartSdk != null ? dartSdk.getHomePath() : null;
-      return validDartSdkPath(dartSdkPath) && DartPlugin.isDartSdkEnabled(module);
-    }
-    else {
-      // If not IntelliJ, assume a small IDE (no multi-module project support).
-      return declaresFlutter(module);
-    }
+    // [Flutter support enabled for a module] ===
+    //   [Dart support enabled && referenced Dart SDK is the one inside a Flutter SDK]
+    final DartSdk dartSdk = DartPlugin.getDartSdk(module.getProject());
+    final String dartSdkPath = dartSdk != null ? dartSdk.getHomePath() : null;
+    return validDartSdkPath(dartSdkPath) && DartPlugin.isDartSdkEnabled(module);
   }
 
   private static boolean validDartSdkPath(String path) {
@@ -216,7 +209,7 @@ public class FlutterModuleUtils {
   }
 
 
-  public static @NotNull Module @NotNull[] getModules(@NotNull Project project) {
+  public static @NotNull Module @NotNull [] getModules(@NotNull Project project) {
     // A disposed project has no modules.
     if (project.isDisposed()) return Module.EMPTY_ARRAY;
 
@@ -334,7 +327,8 @@ public class FlutterModuleUtils {
       }
 
       return false;
-    } catch (AlreadyDisposedException ignored) {
+    }
+    catch (AlreadyDisposedException ignored) {
       return false;
     }
   }
