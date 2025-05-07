@@ -303,7 +303,7 @@ public class FlutterModuleUtils {
           return;
         }
         VirtualFile file = editor.getFile();
-        if (file != null && file.equals(main) && file.getFileType().equals(DartFileType.INSTANCE)) {
+        if (file != null && file.equals(main) && FlutterUtils.isDartFile(file)) {
           return;
         }
       }

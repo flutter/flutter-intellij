@@ -20,6 +20,7 @@ import com.jetbrains.lang.dart.psi.DartFile;
 import com.jetbrains.lang.dart.psi.DartImportStatement;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.pub.PubRoot;
@@ -92,7 +93,7 @@ public class MainFile {
     if (file == null) {
       return error(FlutterBundle.message("entrypoint.not.found", FileUtil.toSystemDependentName(path)));
     }
-    if (file.getFileType() != DartFileType.INSTANCE) {
+    if (!FlutterUtils.isDartFile(file)) {
       return error(FlutterBundle.message("entrypoint.not.dart"));
     }
 
