@@ -5,7 +5,6 @@
  */
 package io.flutter.inspections;
 
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
@@ -15,7 +14,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotificationProvider;
-import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.DartLanguage;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
@@ -29,7 +27,6 @@ import javax.swing.*;
 import java.util.function.Function;
 
 public class SdkConfigurationNotificationProvider implements EditorNotificationProvider {
-  private static final Logger LOG = Logger.getInstance(SdkConfigurationNotificationProvider.class);
 
   @NotNull
   private final Project project;

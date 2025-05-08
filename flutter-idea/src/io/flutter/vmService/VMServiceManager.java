@@ -9,7 +9,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.run.daemon.FlutterApp;
@@ -33,7 +32,6 @@ import java.util.function.Consumer;
 import static io.flutter.vmService.ServiceExtensions.enableOnDeviceInspector;
 
 public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposable {
-  private static final Logger LOG = Logger.getInstance(VMServiceManager.class);
 
   @NotNull private final FlutterApp app;
   @NotNull private final HeapMonitor heapMonitor;

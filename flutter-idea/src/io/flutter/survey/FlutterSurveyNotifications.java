@@ -17,7 +17,6 @@ import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.jetbrains.lang.dart.DartFileType;
 import icons.FlutterIcons;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;

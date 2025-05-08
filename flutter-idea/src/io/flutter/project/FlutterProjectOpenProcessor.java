@@ -6,7 +6,6 @@
 package io.flutter.project;
 
 import com.intellij.openapi.application.ApplicationInfo;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -24,7 +23,6 @@ import javax.swing.*;
 import java.util.Objects;
 
 public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
-  private static final Logger LOG = Logger.getInstance(FlutterProjectOpenProcessor.class);
 
   @Override
   public @NotNull String getName() {
