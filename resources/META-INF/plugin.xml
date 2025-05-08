@@ -446,8 +446,6 @@
 
     <projectService serviceImplementation="io.flutter.run.FlutterReloadManager" overrides="false"/>
     <projectService serviceImplementation="io.flutter.editor.FlutterSaveActionsManager" overrides="false"/>
-    <projectService serviceImplementation="io.flutter.run.FlutterAppManager" overrides="false"/>
-
     <projectService serviceImplementation="io.flutter.editor.ActiveEditorsOutlineService" overrides="false"/>
 
     <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>
