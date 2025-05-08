@@ -6,75 +6,49 @@
 package io.flutter.deeplinks;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowFactory;
-import io.flutter.FlutterUtils;
-import io.flutter.actions.RefreshToolWindowAction;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.devtools.AbstractDevToolsViewFactory;
 import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.devtools.DevToolsUrl;
-import io.flutter.run.daemon.DevToolsService;
-import io.flutter.sdk.FlutterSdk;
+import io.flutter.run.daemon.DevToolsInstance;
 import io.flutter.sdk.FlutterSdkVersion;
-import io.flutter.utils.AsyncUtils;
-import io.flutter.utils.OpenApiUtils;
-import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-import java.util.Optional;
+public class DeepLinksViewFactory extends AbstractDevToolsViewFactory {
+  @NotNull public static String TOOL_WINDOW_ID = "Flutter Deep Links";
 
-public class DeepLinksViewFactory implements ToolWindowFactory {
-  @NotNull private static String TOOL_WINDOW_ID = "Flutter Deep Links";
+  @NotNull public static String DEVTOOLS_PAGE_ID = "deep-links";
 
   @Override
-  public Object isApplicableAsync(@NotNull Project project, @NotNull Continuation<? super Boolean> $completion) {
-    FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
-    return sdkVersion != null && sdkVersion.canUseDeepLinksTool();
+  public boolean versionSupportsThisTool(@NotNull final FlutterSdkVersion flutterSdkVersion) {
+    return flutterSdkVersion.canUseDeepLinksTool();
   }
 
   @Override
-  public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-    FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
+  @NotNull
+  public String getToolWindowId() {
+    return TOOL_WINDOW_ID;
+  }
 
-    AsyncUtils.whenCompleteUiThread(
-      DevToolsService.getInstance(project).getDevToolsInstance(),
-      (instance, error) -> {
-        // Skip displaying if the project has been closed.
-        if (!project.isOpen()) {
-          return;
-        }
+  @Override
+  @NotNull
+  public String getToolWindowTitle() {
+    return "Deep Links";
+  }
 
-        if (error != null) {
-          return;
-        }
-
-        if (instance == null) {
-          return;
-        }
-
-        final DevToolsUrl devToolsUrl = new DevToolsUrl.Builder()
-          .setDevToolsHost(instance.host())
-          .setDevToolsPort(instance.port())
-          .setPage("deep-links")
-          .setEmbed(true)
-          .setFlutterSdkVersion(sdkVersion)
-          .setWorkspaceCache(WorkspaceCache.getInstance(project))
-          .setIdeFeature(DevToolsIdeFeature.TOOL_WINDOW)
-          .build();
-
-        OpenApiUtils.safeInvokeLater(() -> {
-          Optional.ofNullable(
-              FlutterUtils.embeddedBrowser(project))
-            .ifPresent(embeddedBrowser -> embeddedBrowser.openPanel(toolWindow, "Deep Links", devToolsUrl, System.out::println));
-        });
-      }
-    );
-
-    // TODO(helin24): It may be better to add this to the gear actions or to attach as a mouse event on individual tabs within a tool
-    //  window, but I wasn't able to get either working immediately.
-    toolWindow.setTitleActions(List.of(new RefreshToolWindowAction(TOOL_WINDOW_ID)));
+  @Override
+  @NotNull
+  public DevToolsUrl getDevToolsUrl(@NotNull final Project project,
+                                    @NotNull final FlutterSdkVersion flutterSdkVersion,
+                                    @NotNull final DevToolsInstance instance) {
+    return new DevToolsUrl.Builder()
+      .setDevToolsHost(instance.host())
+      .setDevToolsPort(instance.port())
+      .setPage(DEVTOOLS_PAGE_ID)
+      .setEmbed(true)
+      .setFlutterSdkVersion(flutterSdkVersion)
+      .setWorkspaceCache(WorkspaceCache.getInstance(project))
+      .setIdeFeature(DevToolsIdeFeature.TOOL_WINDOW)
+      .build();
   }
 }
