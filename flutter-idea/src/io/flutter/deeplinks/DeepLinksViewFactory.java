@@ -46,7 +46,7 @@ public class DeepLinksViewFactory implements ToolWindowFactory {
     AsyncUtils.whenCompleteUiThread(
       DevToolsService.getInstance(project).getDevToolsInstance(),
       (instance, error) -> {
-        final boolean inValidState = viewUtils.checkDevToolsPanelInValidState(toolWindow, project, instance, error);
+        final boolean inValidState = viewUtils.verifyDevToolsPanelStateIsValid(toolWindow, project, instance, error);
         if (!inValidState) {
           return;
         }

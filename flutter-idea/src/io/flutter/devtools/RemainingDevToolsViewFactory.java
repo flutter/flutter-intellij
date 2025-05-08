@@ -55,7 +55,7 @@ public class RemainingDevToolsViewFactory implements ToolWindowFactory {
     AsyncUtils.whenCompleteUiThread(
       DevToolsService.getInstance(project).getDevToolsInstance(),
       (instance, error) -> {
-        final boolean inValidState = viewUtils.checkDevToolsPanelInValidState(window, project, instance, error);
+        final boolean inValidState = viewUtils.verifyDevToolsPanelStateIsValid(window, project, instance, error);
         if (!inValidState) {
           return;
         }

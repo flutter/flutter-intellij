@@ -53,7 +53,7 @@ public class ViewUtils {
     replacePanelLabel(toolWindow, center);
   }
 
-  public boolean checkDevToolsPanelInValidState(ToolWindow toolWindow, Project project, DevToolsInstance instance, Throwable error) {
+  public boolean verifyDevToolsPanelStateIsValid(ToolWindow toolWindow, Project project, DevToolsInstance instance, Throwable error) {
     if (!project.isOpen()) {
       presentLabel(toolWindow, "<h1>Project is not open.</h1>");
       return false;
