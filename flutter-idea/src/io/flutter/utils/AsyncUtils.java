@@ -15,13 +15,21 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 
+import org.jetbrains.annotations.NotNull;
+
 public class AsyncUtils {
+
+  private AsyncUtils() {
+    throw new AssertionError("No instances.");
+  }
+
   /**
    * Helper to get the value of a future on the UI thread.
    * <p>
    * The action will never be called if the future is cancelled.
    */
-  public static <T> void whenCompleteUiThread(CompletableFuture<T> future, BiConsumer<? super T, ? super Throwable> action) {
+  public static <T> void whenCompleteUiThread(@NotNull CompletableFuture<T> future,
+                                              @NotNull BiConsumer<? super T, ? super Throwable> action) {
     future.whenCompleteAsync(
       (T value, Throwable throwable) -> {
         // Exceptions due to the Future being cancelled need to be treated
@@ -39,7 +47,7 @@ public class AsyncUtils {
     );
   }
 
-  public static void invokeLater(Runnable runnable) {
+  public static void invokeLater(@NotNull Runnable runnable) {
     final Application app = ApplicationManager.getApplication();
     if (app == null || app.isUnitTestMode()) {
       // This case existing to support unit testing.
@@ -50,7 +58,7 @@ public class AsyncUtils {
     }
   }
 
-  public static void invokeAndWait(Runnable runnable) throws ProcessCanceledException {
+  public static void invokeAndWait(@NotNull Runnable runnable) throws ProcessCanceledException {
     final Application app = ApplicationManager.getApplication();
     if (app == null || app.isUnitTestMode()) {
       try {
