@@ -102,6 +102,8 @@ public class DevToolsService {
       if (devToolsServerProgressIndicator != null) {
         if (devToolsServerProgressIndicator.isRunning() || devToolsInstanceExists()) {
           return;
+        } else {
+          devToolsServerProgressIndicator.cancel();
         }
       }
     }
