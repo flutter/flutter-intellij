@@ -42,10 +42,11 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterSettings;
-import io.flutter.toolwindow.FlutterViewToolWindowManagerListener;
+import io.flutter.toolwindow.InspectorViewToolWindowManagerListener;
 import io.flutter.utils.*;
 import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -55,17 +56,14 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 @com.intellij.openapi.components.State(
-  name = "FlutterView",
+  name = "InspectorView",
   storages = {@Storage("$WORKSPACE_FILE$")}
 )
-public class FlutterView implements PersistentStateComponent<FlutterViewState>, Disposable {
-  private static final Logger LOG = Logger.getInstance(FlutterView.class);
+public class InspectorView implements PersistentStateComponent<InspectorViewState>, Disposable {
+  private static final Logger LOG = Logger.getInstance(InspectorView.class);
 
-  public static final String TOOL_WINDOW_ID = "Flutter Inspector";
+  public static final @NotNull String TOOL_WINDOW_ID = "Flutter Inspector";
 
-  public static final String WIDGET_TAB_LABEL = "Widgets";
-  public static final String RENDER_TAB_LABEL = "Render Tree";
-  public static final String PERFORMANCE_TAB_LABEL = "Performance";
   protected static final String INSTALLATION_IN_PROGRESS_LABEL = "Installing JxBrowser and DevTools...";
   protected static final String INSTALLATION_TIMED_OUT_LABEL =
     "Waiting for JxBrowser installation timed out. Restart your IDE to try again.";
@@ -73,12 +71,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   protected static final String DEVTOOLS_FAILED_LABEL = "Setting up DevTools failed.";
   protected static final int INSTALLATION_WAIT_LIMIT_SECONDS = 2000;
 
-  protected final EventStream<Boolean> shouldAutoHorizontalScroll = new EventStream<>(FlutterViewState.AUTO_SCROLL_DEFAULT);
-  protected final EventStream<Boolean> highlightNodesShownInBothTrees =
-    new EventStream<>(FlutterViewState.HIGHLIGHT_NODES_SHOWN_IN_BOTH_TREES_DEFAULT);
+  protected final @NotNull EventStream<Boolean> shouldAutoHorizontalScroll = new EventStream<>(InspectorViewState.AUTO_SCROLL_DEFAULT);
+  protected final @NotNull EventStream<Boolean> highlightNodesShownInBothTrees =
+    new EventStream<>(InspectorViewState.HIGHLIGHT_NODES_SHOWN_IN_BOTH_TREES_DEFAULT);
 
   @NotNull
-  private final FlutterViewState state = new FlutterViewState();
+  private final InspectorViewState state = new InspectorViewState();
 
   @VisibleForTesting
   @NotNull
@@ -87,23 +85,23 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   @NotNull
   private final Project myProject;
 
-  private Content emptyContent;
+  private @Nullable Content emptyContent;
 
-  private FlutterViewToolWindowManagerListener toolWindowListener;
+  private InspectorViewToolWindowManagerListener toolWindowListener;
   private int devToolsInstallCount = 0;
   private final JxBrowserUtils jxBrowserUtils;
   private final JxBrowserManager jxBrowserManager;
 
-  public FlutterView(@NotNull Project project) {
+  public InspectorView(@NotNull Project project) {
     this(project, JxBrowserManager.getInstance(), new JxBrowserUtils(), new ViewUtils());
   }
 
   @VisibleForTesting
   @NonInjectable
-  protected FlutterView(@NotNull Project project,
-                        @NotNull JxBrowserManager jxBrowserManager,
-                        JxBrowserUtils jxBrowserUtils,
-                        ViewUtils viewUtils) {
+  protected InspectorView(@NotNull Project project,
+                          @NotNull JxBrowserManager jxBrowserManager,
+                          JxBrowserUtils jxBrowserUtils,
+                          ViewUtils viewUtils) {
     myProject = project;
     this.jxBrowserUtils = jxBrowserUtils;
     this.jxBrowserManager = jxBrowserManager;
@@ -120,7 +118,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   @NotNull
   @Override
-  public FlutterViewState getState() {
+  public InspectorViewState getState() {
     return state;
   }
 
@@ -130,14 +128,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   @Override
-  public void loadState(@NotNull FlutterViewState state) {
+  public void loadState(@NotNull InspectorViewState state) {
     this.state.copyFrom(state);
 
     shouldAutoHorizontalScroll.setValue(this.state.getShouldAutoScroll());
     highlightNodesShownInBothTrees.setValue(this.state.getHighlightNodesShownInBothTrees());
   }
 
-  void initToolWindow(ToolWindow window) {
+  void initToolWindow(@NotNull ToolWindow window) {
     if (window.isDisposed()) return;
 
     updateForEmptyContent(window);
@@ -264,7 +262,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   @VisibleForTesting
   protected void setUpToolWindowListener(FlutterApp app, ToolWindow toolWindow, boolean isEmbedded, DevToolsIdeFeature ideFeature) {
     if (this.toolWindowListener == null) {
-      this.toolWindowListener = new FlutterViewToolWindowManagerListener(myProject, toolWindow);
+      this.toolWindowListener = new InspectorViewToolWindowManagerListener(myProject, toolWindow);
     }
     this.toolWindowListener.updateOnWindowOpen(() -> {
       devToolsInstallCount += 1;
@@ -432,13 +430,13 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     });
   }
 
-  private void debugActiveHelper(FlutterApp app) {
+  private void debugActiveHelper(@NotNull FlutterApp app) {
     final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
     if (!(toolWindowManager instanceof ToolWindowManagerEx)) {
       return;
     }
 
-    final ToolWindow toolWindow = toolWindowManager.getToolWindow(FlutterView.TOOL_WINDOW_ID);
+    final ToolWindow toolWindow = toolWindowManager.getToolWindow(InspectorView.TOOL_WINDOW_ID);
     if (toolWindow == null) {
       return;
     }
@@ -464,7 +462,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
     else {
       if (toolWindowListener == null) {
-        toolWindowListener = new FlutterViewToolWindowManagerListener(myProject, toolWindow);
+        toolWindowListener = new InspectorViewToolWindowManagerListener(myProject, toolWindow);
       }
       // If the window isn't visible yet, only executed embedded browser steps when it becomes visible.
       toolWindowListener.updateOnWindowFirstVisible(() -> {

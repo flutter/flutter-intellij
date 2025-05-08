@@ -7,18 +7,19 @@ package io.flutter.view;
 
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.xmlb.annotations.Attribute;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * State for the Flutter view.
+ * State for the Inspector view.
  */
-public class FlutterViewState {
+public class InspectorViewState {
   public static final boolean AUTO_SCROLL_DEFAULT = false;
   public static final boolean HIGHLIGHT_NODES_SHOWN_IN_BOTH_TREES_DEFAULT = false;
 
-  private final EventDispatcher<ChangeListener> dispatcher = EventDispatcher.create(ChangeListener.class);
+  private final @NotNull EventDispatcher<ChangeListener> dispatcher = EventDispatcher.create(ChangeListener.class);
 
   @Attribute(value = "splitter-proportion")
   public float splitterProportion;
@@ -29,7 +30,7 @@ public class FlutterViewState {
   @Attribute(value = "highlight-nodes-shown-in-both-trees")
   public boolean highlightNodesShownInBothTrees = HIGHLIGHT_NODES_SHOWN_IN_BOTH_TREES_DEFAULT;
 
-  public FlutterViewState() {
+  public InspectorViewState() {
   }
 
   public float getSplitterProportion() {
@@ -58,7 +59,7 @@ public class FlutterViewState {
     dispatcher.removeListener(listener);
   }
 
-  void copyFrom(FlutterViewState other) {
+  void copyFrom(InspectorViewState other) {
     splitterProportion = other.splitterProportion;
   }
 
