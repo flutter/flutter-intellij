@@ -18,6 +18,7 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.OpenApiUtils;
+import io.flutter.view.ViewUtils;
 import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,6 +27,9 @@ import java.util.Optional;
 
 public class DeepLinksViewFactory implements ToolWindowFactory {
   @NotNull private static String TOOL_WINDOW_ID = "Flutter Deep Links";
+
+  @NotNull
+  private final ViewUtils viewUtils = new ViewUtils();
 
   @Override
   public Object isApplicableAsync(@NotNull Project project, @NotNull Continuation<? super Boolean> $completion) {
@@ -42,16 +46,8 @@ public class DeepLinksViewFactory implements ToolWindowFactory {
     AsyncUtils.whenCompleteUiThread(
       DevToolsService.getInstance(project).getDevToolsInstance(),
       (instance, error) -> {
-        // Skip displaying if the project has been closed.
-        if (!project.isOpen()) {
-          return;
-        }
-
-        if (error != null) {
-          return;
-        }
-
-        if (instance == null) {
+        final boolean inValidState = viewUtils.checkDevToolsPanelInValidState(toolWindow, project, instance, error);
+        if (!inValidState) {
           return;
         }
 

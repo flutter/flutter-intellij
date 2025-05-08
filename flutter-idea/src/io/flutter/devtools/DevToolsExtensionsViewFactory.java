@@ -18,6 +18,7 @@ import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.OpenApiUtils;
 import io.flutter.view.FlutterViewMessages;
+import io.flutter.view.ViewUtils;
 import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,6 +28,9 @@ import java.util.Optional;
 
 public class DevToolsExtensionsViewFactory implements ToolWindowFactory {
   @NotNull private static String TOOL_WINDOW_ID = "Flutter DevTools Extensions";
+
+  @NotNull
+  private final ViewUtils viewUtils = new ViewUtils();
 
   public static void init(Project project) {
     project.getMessageBus().connect().subscribe(
@@ -51,16 +55,8 @@ public class DevToolsExtensionsViewFactory implements ToolWindowFactory {
     AsyncUtils.whenCompleteUiThread(
       DevToolsService.getInstance(project).getDevToolsInstance(),
       (instance, error) -> {
-        // Skip displaying if the project has been closed.
-        if (!project.isOpen()) {
-          return;
-        }
-
-        if (error != null) {
-          return;
-        }
-
-        if (instance == null) {
+        final boolean inValidState = viewUtils.checkDevToolsPanelInValidState(window, project, instance, error);
+        if (!inValidState) {
           return;
         }
 

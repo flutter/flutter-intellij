@@ -54,16 +54,8 @@ public class PropertyEditorViewFactory implements ToolWindowFactory {
     AsyncUtils.whenCompleteUiThread(
       DevToolsService.getInstance(project).getDevToolsInstance(),
       (instance, error) -> {
-        // Skip displaying if the project has been closed.
-        if (!project.isOpen()) {
-          return;
-        }
-
-        if (error != null) {
-          return;
-        }
-
-        if (instance == null) {
+        final boolean inValidState = viewUtils.checkDevToolsPanelInValidState(toolWindow, project, instance, error);
+        if (!inValidState) {
           return;
         }
 
