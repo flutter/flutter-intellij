@@ -52,7 +52,7 @@ import io.flutter.settings.FlutterSettings;
 import io.flutter.survey.FlutterSurveyNotifications;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.OpenApiUtils;
-import io.flutter.view.FlutterViewFactory;
+import io.flutter.view.InspectorViewFactory;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
@@ -366,7 +366,7 @@ public class FlutterInitializer implements StartupActivity {
 
   private void initializeToolWindows(@NotNull final Project project) {
     // Start watching for Flutter debug active events.
-    FlutterViewFactory.init(project);
+    InspectorViewFactory.init(project);
     RemainingDevToolsViewFactory.init(project);
     DevToolsExtensionsViewFactory.init(project);
     toolWindowsInitialized = true;

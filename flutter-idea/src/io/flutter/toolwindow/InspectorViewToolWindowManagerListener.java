@@ -9,15 +9,15 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerListener;
-import io.flutter.view.FlutterView;
+import io.flutter.view.InspectorView;
 import org.jetbrains.annotations.NotNull;
 
-public class FlutterViewToolWindowManagerListener implements ToolWindowManagerListener {
+public class InspectorViewToolWindowManagerListener implements ToolWindowManagerListener {
   private boolean inspectorIsOpen;
   private Runnable onWindowOpen;
   private Runnable onWindowFirstVisible;
 
-  public FlutterViewToolWindowManagerListener(Project project, ToolWindow toolWindow) {
+  public InspectorViewToolWindowManagerListener(Project project, ToolWindow toolWindow) {
     project.getMessageBus().connect().subscribe(ToolWindowManagerListener.TOPIC, this);
 
     inspectorIsOpen = toolWindow.isShowStripeButton();
@@ -33,7 +33,7 @@ public class FlutterViewToolWindowManagerListener implements ToolWindowManagerLi
 
   @Override
   public void stateChanged(@NotNull ToolWindowManager toolWindowManager) {
-    final ToolWindow inspectorWindow = toolWindowManager.getToolWindow(FlutterView.TOOL_WINDOW_ID);
+    final ToolWindow inspectorWindow = toolWindowManager.getToolWindow(InspectorView.TOOL_WINDOW_ID);
     if (inspectorWindow == null) {
       return;
     }

@@ -35,7 +35,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
 import io.flutter.view.EmbeddedBrowser;
-import io.flutter.view.FlutterView;
+import io.flutter.view.InspectorView;
 import io.flutter.vmService.VmServiceConsumers;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
@@ -372,7 +372,7 @@ public class FlutterConsoleLogManager {
           return;
         }
 
-        final ToolWindow toolWindow = toolWindowManager.getToolWindow(FlutterView.TOOL_WINDOW_ID);
+        final ToolWindow toolWindow = toolWindowManager.getToolWindow(InspectorView.TOOL_WINDOW_ID);
         if (toolWindow != null && !toolWindow.isVisible()) {
           toolWindow.show();
         }
