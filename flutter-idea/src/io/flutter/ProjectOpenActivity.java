@@ -15,7 +15,6 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -43,7 +42,6 @@ import java.util.Collection;
  */
 public class ProjectOpenActivity implements StartupActivity, DumbAware {
   public static final ProjectType FLUTTER_PROJECT_TYPE = new ProjectType("io.flutter");
-  private static final Logger LOG = Logger.getInstance(ProjectOpenActivity.class);
 
   public ProjectOpenActivity() {
   }
@@ -125,7 +123,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       super("Flutter Packages", "The pubspec.yaml file has been modified since " +
                                 "the last time 'flutter pub get' was run.", NotificationType.INFORMATION);
       setIcon(FlutterIcons.Flutter);
-      
+
       myProject = project;
       myRoot = root;
 

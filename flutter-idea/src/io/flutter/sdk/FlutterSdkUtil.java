@@ -14,7 +14,6 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ApplicationNamesInfo;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -51,7 +50,6 @@ public class FlutterSdkUtil {
   public static final String FLUTTER_HOST_ENV = "FLUTTER_HOST";
 
   private static final String FLUTTER_SDK_KNOWN_PATHS = "FLUTTER_SDK_KNOWN_PATHS";
-  private static final Logger LOG = Logger.getInstance(FlutterSdkUtil.class);
   private static final String FLUTTER_SNAP_SDK_PATH = "/snap/flutter/common/flutter";
 
   public FlutterSdkUtil() {

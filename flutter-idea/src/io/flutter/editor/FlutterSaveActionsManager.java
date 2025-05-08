@@ -7,7 +7,6 @@ package io.flutter.editor;
 
 import com.intellij.application.options.CodeStyle;
 import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileDocumentManagerListener;
@@ -40,7 +39,6 @@ import java.util.List;
  * A manager class to run actions on save (formatting, organize imports, ...).
  */
 public class FlutterSaveActionsManager {
-  private static final Logger LOG = Logger.getInstance(FlutterSaveActionsManager.class);
 
   /**
    * Initialize the save actions manager for the given project.
