@@ -9,7 +9,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.EmptyProgressIndicator;
@@ -43,7 +42,10 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.toolwindow.InspectorViewToolWindowManagerListener;
-import io.flutter.utils.*;
+import io.flutter.utils.AsyncUtils;
+import io.flutter.utils.JxBrowserUtils;
+import io.flutter.utils.LabelInput;
+import io.flutter.utils.OpenApiUtils;
 import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -59,7 +61,7 @@ import java.util.concurrent.atomic.AtomicReference;
   name = "InspectorView",
   storages = {@Storage("$WORKSPACE_FILE$")}
 )
-public class InspectorView implements PersistentStateComponent<InspectorViewState>, Disposable {
+public class InspectorView implements Disposable {
   private static final Logger LOG = Logger.getInstance(InspectorView.class);
 
   public static final @NotNull String TOOL_WINDOW_ID = "Flutter Inspector";
@@ -70,13 +72,6 @@ public class InspectorView implements PersistentStateComponent<InspectorViewStat
   protected static final String INSTALLATION_WAIT_FAILED = "The JxBrowser installation failed unexpectedly. Restart your IDE to try again.";
   protected static final String DEVTOOLS_FAILED_LABEL = "Setting up DevTools failed.";
   protected static final int INSTALLATION_WAIT_LIMIT_SECONDS = 2000;
-
-  protected final @NotNull EventStream<Boolean> shouldAutoHorizontalScroll = new EventStream<>(InspectorViewState.AUTO_SCROLL_DEFAULT);
-  protected final @NotNull EventStream<Boolean> highlightNodesShownInBothTrees =
-    new EventStream<>(InspectorViewState.HIGHLIGHT_NODES_SHOWN_IN_BOTH_TREES_DEFAULT);
-
-  @NotNull
-  private final InspectorViewState state = new InspectorViewState();
 
   @VisibleForTesting
   @NotNull
@@ -106,9 +101,6 @@ public class InspectorView implements PersistentStateComponent<InspectorViewStat
     this.jxBrowserUtils = jxBrowserUtils;
     this.jxBrowserManager = jxBrowserManager;
     this.viewUtils = viewUtils != null ? viewUtils : new ViewUtils();
-
-    shouldAutoHorizontalScroll.listen(state::setShouldAutoScroll);
-    highlightNodesShownInBothTrees.listen(state::setHighlightNodesShownInBothTrees);
   }
 
   @Override
@@ -117,22 +109,8 @@ public class InspectorView implements PersistentStateComponent<InspectorViewStat
   }
 
   @NotNull
-  @Override
-  public InspectorViewState getState() {
-    return state;
-  }
-
-  @NotNull
   public Project getProject() {
     return myProject;
-  }
-
-  @Override
-  public void loadState(@NotNull InspectorViewState state) {
-    this.state.copyFrom(state);
-
-    shouldAutoHorizontalScroll.setValue(this.state.getShouldAutoScroll());
-    highlightNodesShownInBothTrees.setValue(this.state.getHighlightNodesShownInBothTrees());
   }
 
   void initToolWindow(@NotNull ToolWindow window) {
