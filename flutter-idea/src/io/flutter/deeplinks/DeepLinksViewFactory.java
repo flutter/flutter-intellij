@@ -19,9 +19,6 @@ public class DeepLinksViewFactory extends AbstractDevToolsViewFactory {
 
   @NotNull public static String DEVTOOLS_PAGE_ID = "deep-links";
 
-  @NotNull
-  private final ViewUtils viewUtils = new ViewUtils();
-
   @Override
   public boolean versionSupportsThisTool(@NotNull final FlutterSdkVersion flutterSdkVersion) {
     return flutterSdkVersion.canUseDeepLinksTool();
