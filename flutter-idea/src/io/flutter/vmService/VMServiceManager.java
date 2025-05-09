@@ -14,7 +14,9 @@ import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.StreamSubscription;
+import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
+import org.dartlang.vm.service.VmServiceListener;
 import org.dartlang.vm.service.consumer.GetIsolateConsumer;
 import org.dartlang.vm.service.consumer.ServiceExtensionConsumer;
 import org.dartlang.vm.service.consumer.VMConsumer;
@@ -71,6 +73,14 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
     vmService.streamListen(VmService.SERVICE_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
 
+    final VmServiceListener myVmServiceListener = new VmServiceListenerAdapter() {
+      @Override
+      public void received(String streamId, Event event) {
+        onVmServiceReceived(streamId, event);
+      }
+    };
+    vmService.addVmServiceListener(myVmServiceListener);
+
     // Populate the service extensions info and look for any Flutter views.
     // TODO(devoncarew): This currently returns the first Flutter view found as the
     // current Flutter isolate, and ignores any other Flutter views running in the app.
@@ -122,7 +132,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
       }
     }
   }
-  
+
   /**
    * Return the current Flutter IsolateRef, if any.
    * <p>
