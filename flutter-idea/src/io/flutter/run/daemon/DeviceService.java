@@ -20,6 +20,7 @@ import com.intellij.openapi.util.Disposer;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.run.FlutterDevice;
 import io.flutter.sdk.AndroidEmulatorManager;
 import io.flutter.sdk.FlutterSdkManager;
@@ -63,7 +64,7 @@ public class DeviceService {
   private DeviceService(@NotNull final Project project) {
     this.project = project;
 
-    deviceDaemon.setDisposeParent(project);
+    deviceDaemon.setDisposeParent(FlutterDartAnalysisServer.getInstance(project));
     deviceDaemon.subscribe(this::refreshDeviceSelection);
     refreshDeviceDaemon();
 
@@ -80,7 +81,8 @@ public class DeviceService {
       }
     };
     FlutterSdkManager.getInstance(project).addListener(sdkListener);
-    Disposer.register(project, () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
+    Disposer.register(FlutterDartAnalysisServer.getInstance(project),
+                      () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
 
     // Watch for Bazel workspace changes.
     WorkspaceCache.getInstance(project).subscribe(this::refreshDeviceDaemon);

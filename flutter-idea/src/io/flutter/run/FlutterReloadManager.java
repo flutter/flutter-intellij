@@ -58,6 +58,7 @@ import io.flutter.actions.ProjectActions;
 import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
@@ -127,7 +128,8 @@ public class FlutterReloadManager {
   private FlutterReloadManager(@NotNull Project project) {
     this.myProject = project;
 
-    final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect(project);
+    final MessageBusConnection connection =
+      ApplicationManager.getApplication().getMessageBus().connect(FlutterDartAnalysisServer.getInstance(project));
     connection.subscribe(AnActionListener.TOPIC, new AnActionListener() {
       private @Nullable Project eventProject;
       private @Nullable Editor eventEditor;
