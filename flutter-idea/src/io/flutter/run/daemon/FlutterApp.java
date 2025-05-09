@@ -33,6 +33,7 @@ import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.logging.FlutterConsoleLogManager;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -260,7 +261,7 @@ public class FlutterApp implements Disposable {
     }
 
     final ProcessHandler process = new MostlySilentColoredProcessHandler(command, onTextAvailable);
-    Disposer.register(project, process::destroyProcess);
+    Disposer.register(FlutterDartAnalysisServer.getInstance(project), process::destroyProcess);
 
     final DaemonApi api = new DaemonApi(process);
     final FlutterApp app = new FlutterApp(project, module, mode, device, process, env, api, command);

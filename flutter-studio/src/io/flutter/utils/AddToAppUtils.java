@@ -7,10 +7,6 @@ package io.flutter.utils;
 
 //import static com.android.tools.idea.gradle.project.importing.GradleProjectImporter.ANDROID_PROJECT_TYPE;
 
-import static com.intellij.util.ReflectionUtil.findAssignableField;
-import static io.flutter.actions.AttachDebuggerAction.ATTACH_IS_ACTIVE;
-import static io.flutter.actions.AttachDebuggerAction.findRunConfig;
-
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.android.tools.idea.gradle.project.sync.GradleSyncState;
 import com.intellij.debugger.engine.DebugProcess;
@@ -22,25 +18,32 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.*;
+import com.intellij.openapi.project.ModuleListener;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectType;
+import com.intellij.openapi.project.ProjectTypeService;
 import com.intellij.util.ThreeState;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.messages.Topic;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.AttachDebuggerAction;
+import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.SdkAttachConfig;
 import io.flutter.sdk.FlutterSdk;
+import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
 
-import org.jetbrains.annotations.NonNls;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import static com.intellij.util.ReflectionUtil.findAssignableField;
+import static io.flutter.actions.AttachDebuggerAction.ATTACH_IS_ACTIVE;
+import static io.flutter.actions.AttachDebuggerAction.findRunConfig;
 
 public class AddToAppUtils {
   //private static final Logger LOG = Logger.getInstance(AddToAppUtils.class);
@@ -49,7 +52,7 @@ public class AddToAppUtils {
   }
 
   public static boolean initializeAndDetectFlutter(@NotNull Project project) {
-    MessageBusConnection connection = project.getMessageBus().connect(project);
+    MessageBusConnection connection = project.getMessageBus().connect(FlutterDartAnalysisServer.getInstance(project));
     // GRADLE_SYNC_TOPIC is not public in Android Studio 3.5. It is in 3.6. It isn't defined in 3.4.
     //noinspection unchecked
     Topic<GradleSyncListener> topic = getStaticFieldValue(GradleSyncState.class, Topic.class, "GRADLE_SYNC_TOPIC");
@@ -71,7 +74,6 @@ public class AddToAppUtils {
               });
             }
           }
-
         }
       });
       return false;
