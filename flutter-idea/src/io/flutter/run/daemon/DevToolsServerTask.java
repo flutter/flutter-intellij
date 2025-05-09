@@ -56,7 +56,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.Optional;
 
 class DevToolsServerTask extends Task.Backgroundable {
   private static final Logger LOG = Logger.getInstance(DevToolsServerTask.class);
@@ -123,18 +122,19 @@ class DevToolsServerTask extends Task.Backgroundable {
                                     ImmutableList.of("devtools", "--machine")));
       }
 
-      final Optional<DevToolsInstance> devToolsOptional = checkForDartPluginInitiatedDevToolsWithRetries(progressIndicator).get();
-      if (devToolsOptional.isEmpty() || devToolsOptional.get() == null) {
-        System.out.println("DevTools is null!");
-        cancelWithError(new TimeoutException("Timed-out waiting for the Dart Plugin to start DevTools."));
-        return;
-      }
-
-      devToolsFutureRef.get().complete(devToolsOptional.get());
+      // Otherwise, wait for the Dart Plugin to start the DevTools server.
+      final CompletableFuture<DevToolsInstance> devToolsFuture = checkForDartPluginInitiatedDevToolsWithRetries(progressIndicator);
+      devToolsFuture.whenComplete((devTools, error) -> {
+        if (error != null) {
+          cancelWithError(new Exception(error));
+        }
+        else {
+          devToolsFutureRef.get().complete(devTools);
+        }
+      });
     }
     catch (java.util.concurrent.ExecutionException | InterruptedException e) {
       cancelWithError(e);
-      return;
     }
   }
 
@@ -260,30 +260,31 @@ class DevToolsServerTask extends Task.Backgroundable {
     });
   }
 
-  private CompletableFuture<Optional<DevToolsInstance>> checkForDartPluginInitiatedDevToolsWithRetries(ProgressIndicator progressIndicator) throws InterruptedException {
+  private CompletableFuture<DevToolsInstance> checkForDartPluginInitiatedDevToolsWithRetries(ProgressIndicator progressIndicator)
+    throws InterruptedException {
     progressIndicator.setText2("Waiting for Dart Plugin");
-    final CompletableFuture<Optional<DevToolsInstance>> devToolsFuture = new CompletableFuture<>();
+    final CompletableFuture<DevToolsInstance> devToolsFuture = new CompletableFuture<>();
 
     final long msBetweenRetries = 1500;
-    int retries = 10;
-    while (retries >= 0) {
+    int retries = 0;
+    while (retries < 10) {
+      retries++;
       final double currentProgress = progressIndicator.getFraction();
       progressIndicator.setFraction(Math.min(currentProgress + 10, 95));
 
       final @Nullable DevToolsInstance devTools = createDevToolsInstanceFromDartPluginUri();
       if (devTools != null) {
-        System.out.println("DevTools ready! retry number " + retries);
-        devToolsFuture.complete(Optional.of(devTools));
+        LOG.debug("Dart Plugin DevTools ready after " + retries + " tries.");
+        devToolsFuture.complete(devTools);
         return devToolsFuture;
       }
       else {
-        System.out.println("DevTools not ready yet, retry number " + retries);
+        LOG.debug("Dart Plugin DevTools not ready after " + retries + " tries.");
         Thread.sleep(msBetweenRetries);
-        retries--;
       }
     }
 
-    devToolsFuture.complete(Optional.ofNullable(null));
+    devToolsFuture.completeExceptionally(new Exception("Timed out waiting for Dart Plugin to start DevTools."));
     return devToolsFuture;
   }
 
