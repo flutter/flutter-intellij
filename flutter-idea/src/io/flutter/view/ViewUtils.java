@@ -23,7 +23,7 @@ import java.util.List;
 
 public class ViewUtils {
   public void presentLabel(ToolWindow toolWindow, String text) {
-    final JBLabel label = new JBLabel(text, SwingConstants.CENTER);
+    final JBLabel label = new JBLabel(wrapWithHtml(text), SwingConstants.CENTER);
     label.setForeground(UIUtil.getLabelDisabledForeground());
     replacePanelLabel(toolWindow, label);
   }
@@ -39,7 +39,7 @@ public class ViewUtils {
     labelsPanel.setBorder(JBUI.Borders.empty()); // Use padding on individual labels if needed
 
     for (String text : labels) {
-      final JBLabel label = new JBLabel(text, SwingConstants.CENTER);
+      final JBLabel label = new JBLabel(wrapWithHtml(text), SwingConstants.CENTER);
       label.setForeground(UIUtil.getLabelDisabledForeground());
       // Add padding to each label for spacing
       label.setBorder(JBUI.Borders.empty(2, 0));
@@ -59,13 +59,13 @@ public class ViewUtils {
 
     for (LabelInput input : labels) {
       if (input.listener == null) {
-        final JLabel descriptionLabel = new JLabel("<html>" + input.text + "</html>");
+        final JLabel descriptionLabel = new JLabel(wrapWithHtml(input.text));
         descriptionLabel.setBorder(JBUI.Borders.empty(5));
         descriptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(descriptionLabel, BorderLayout.NORTH);
       }
       else {
-        final LinkLabel<String> linkLabel = new LinkLabel<>("<html>" + input.text + "</html>", null);
+        final LinkLabel<String> linkLabel = new LinkLabel<>(wrapWithHtml(input.text), null);
         linkLabel.setBorder(JBUI.Borders.empty(5));
         linkLabel.setListener(input.listener, null);
         linkLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -91,5 +91,10 @@ public class ViewUtils {
       contentManager.removeAllContents(true);
       contentManager.addContent(content);
     });
+  }
+
+  private String wrapWithHtml(String text) {
+    // Wrapping with HTML tags ensures the text wraps and is not cut off.
+    return "<html>" + text + "</html>";
   }
 }
