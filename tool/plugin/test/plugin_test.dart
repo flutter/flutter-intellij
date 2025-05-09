@@ -21,6 +21,10 @@ void main() {
       expect(TestCommand(BuildCommandRunner()).name, "test");
     });
 
+    test('deploy', () {
+      expect(DeployCommand(BuildCommandRunner()).name, "deploy");
+    });
+
     test('generate', () {
       expect(GenerateCommand(BuildCommandRunner()).name, "generate");
     });
@@ -83,11 +87,87 @@ void main() {
       });
     });
 
+    test('deploy', () async {
+      var runner = makeTestRunner();
+      await runner.run(["-r19", "-d../..", "deploy"]).whenComplete(() {
+        buildSpecAssertions(runner, "deploy");
+      });
+    });
+
     test('verify', () async {
       var runner = makeTestRunner();
       await runner.run(["-r19", "-d../..", "verify"]).whenComplete(() {
         buildSpecAssertions(runner, "verify");
       });
+    });
+  });
+
+  group('release', () {
+    test('simple', () async {
+      var runner = makeTestRunner();
+      late TestDeployCommand cmd;
+      await runner.run(["-r19", "-d../..", "deploy"]).whenComplete(() {
+        cmd = (runner.commands['deploy'] as TestDeployCommand);
+      });
+      expect(cmd.isReleaseValid, true);
+    });
+
+    test('minor', () async {
+      var runner = makeTestRunner();
+      late TestDeployCommand cmd;
+      await runner.run(["-r19.2", "-d../..", "deploy"]).whenComplete(() {
+        cmd = (runner.commands['deploy'] as TestDeployCommand);
+      });
+      expect(cmd.isReleaseValid, true);
+    });
+
+    test('patch invalid', () async {
+      var runner = makeTestRunner();
+      late TestDeployCommand cmd;
+      await runner.run(["-r19.2.1", "-d../..", "deploy"]).whenComplete(() {
+        cmd = (runner.commands['deploy'] as TestDeployCommand);
+      });
+      expect(cmd.isReleaseValid, false);
+    });
+
+    test('non-numeric', () async {
+      var runner = makeTestRunner();
+      late TestDeployCommand cmd;
+      await runner.run(["-rx19.2", "-d../..", "deploy"]).whenComplete(() {
+        cmd = (runner.commands['deploy'] as TestDeployCommand);
+      });
+      expect(cmd.isReleaseValid, false);
+    });
+  });
+
+  group('deploy', () {
+    test('clean', () async {
+      var dir = Directory.current;
+      var runner = makeTestRunner();
+      await runner
+          .run(["-r=19", "-d../..", "deploy", "--no-as", "--no-ij"])
+          .whenComplete(() {
+            expect(Directory.current.path, equals(dir.path));
+          });
+    });
+
+    test('without --release', () async {
+      var runner = makeTestRunner();
+      late TestDeployCommand cmd;
+      await runner.run(["-d../..", "deploy"]).whenComplete(() {
+        cmd = (runner.commands['deploy'] as TestDeployCommand);
+      });
+      expect(cmd.paths, orderedEquals([]));
+    });
+
+    test('release paths', () async {
+      var runner = makeTestRunner();
+      late TestDeployCommand cmd;
+      await runner.run(["--release=19", "-d../..", "deploy"]).whenComplete(() {
+        cmd = (runner.commands['deploy'] as TestDeployCommand);
+      });
+      var specs = cmd.specs.where((s) => s.isStableChannel).toList();
+      expect(cmd.paths.length, specs.length);
     });
   });
 
@@ -175,9 +255,39 @@ BuildCommandRunner makeTestRunner() {
   var runner = BuildCommandRunner();
   runner.addCommand(TestMakeCommand(runner));
   runner.addCommand(TestTestCommand(runner));
+  runner.addCommand(TestDeployCommand(runner));
   runner.addCommand(TestGenCommand(runner));
   runner.addCommand(TestVerifyCommand(runner));
   return runner;
+}
+
+class TestDeployCommand extends DeployCommand {
+  List<String> paths = <String>[];
+  List<String> plugins = <String>[];
+
+  TestDeployCommand(super.runner);
+
+  @override
+  bool get isTesting => true;
+
+  @override
+  void changeDirectory(Directory dir) {}
+
+  String readTokenFile() {
+    return "token";
+  }
+
+  @override
+  Future<int> upload(
+    String filePath,
+    String pluginNumber,
+    String token,
+    String channel,
+  ) {
+    paths.add(filePath);
+    plugins.add(pluginNumber);
+    return Future(() => 0);
+  }
 }
 
 class TestGenCommand extends GenerateCommand {

@@ -13,18 +13,17 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
 import io.flutter.utils.OpenApiUtils;
-import io.flutter.utils.ViewListener;
 import org.jetbrains.annotations.NotNull;
 
-public class FlutterViewFactory implements ToolWindowFactory, DumbAware {
+public class InspectorViewFactory implements ToolWindowFactory, DumbAware {
   private static final String TOOL_WINDOW_VISIBLE_PROPERTY = "flutter.view.tool.window.visible";
 
   public static void init(@NotNull Project project) {
     project.getMessageBus().connect().subscribe(
-      FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (FlutterViewMessages.FlutterDebugNotifier)(event) -> initFlutterView(project, event)
+      FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (FlutterViewMessages.FlutterDebugNotifier)(event) -> initInspectorView(project, event)
     );
 
-    final ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(FlutterView.TOOL_WINDOW_ID);
+    final ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(InspectorView.TOOL_WINDOW_ID);
     if (window != null) {
       window.setAvailable(true);
 
@@ -39,10 +38,10 @@ public class FlutterViewFactory implements ToolWindowFactory, DumbAware {
     return false;
   }
 
-  private static void initFlutterView(@NotNull Project project, FlutterViewMessages.FlutterDebugEvent event) {
+  private static void initInspectorView(@NotNull Project project, FlutterViewMessages.FlutterDebugEvent event) {
     OpenApiUtils.safeInvokeLater(() -> {
-      final FlutterView flutterView = project.getService(FlutterView.class);
-      flutterView.debugActive(event);
+      final InspectorView inspectorView = project.getService(InspectorView.class);
+      inspectorView.debugActive(event);
     });
   }
 
@@ -50,13 +49,7 @@ public class FlutterViewFactory implements ToolWindowFactory, DumbAware {
   public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
     //noinspection CodeBlock2Expr
     DumbService.getInstance(project).runWhenSmart(() -> {
-      project.getService(FlutterView.class).initToolWindow(toolWindow);
+      project.getService(InspectorView.class).initToolWindow(toolWindow);
     });
-  }
-
-  public static class FlutterViewListener extends ViewListener {
-    public FlutterViewListener(@NotNull Project project) {
-      super(project, FlutterView.TOOL_WINDOW_ID, TOOL_WINDOW_VISIBLE_PROPERTY);
-    }
   }
 }

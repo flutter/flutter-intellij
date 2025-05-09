@@ -5,6 +5,7 @@
  */
 package io.flutter;
 
+import com.android.tools.idea.IdeInfo;
 import com.google.common.base.Charsets;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.ide.impl.ProjectUtil;
@@ -15,7 +16,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.*;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -23,7 +23,6 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.LightVirtualFile;
-import com.intellij.util.PlatformUtils;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.jxbrowser.EmbeddedJxBrowser;
@@ -101,7 +100,7 @@ public class FlutterUtils {
   }
 
   public static boolean isAndroidStudio() {
-    return StringUtil.equals(PlatformUtils.getPlatformPrefix(), "AndroidStudio");
+    return IdeInfo.getInstance().isAndroidStudio();
   }
 
   /**
@@ -560,7 +559,8 @@ public class FlutterUtils {
   }
 
   public static boolean embeddedBrowserAvailable(JxBrowserStatus status) {
-    return Objects.equals(status, JxBrowserStatus.INSTALLED) || status.equals(JxBrowserStatus.INSTALLATION_SKIPPED) && FlutterSettings.getInstance()
-      .isEnableJcefBrowser();
+    return Objects.equals(status, JxBrowserStatus.INSTALLED) ||
+           status.equals(JxBrowserStatus.INSTALLATION_SKIPPED) && FlutterSettings.getInstance()
+             .isEnableJcefBrowser();
   }
 }

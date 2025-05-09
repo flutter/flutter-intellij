@@ -79,7 +79,7 @@ public class DisplayRefreshRateManager {
 
   private CompletableFuture<Double> getDisplayRefreshRate() {
     final CompletableFuture<Double> displayRefreshRate = new CompletableFuture<>();
-    vmServiceManager.getFlutterViewId().whenComplete((String id, Throwable throwable) -> {
+    vmServiceManager.getInspectorViewId().whenComplete((String id, Throwable throwable) -> {
       if (throwable != null) {
         // We often see "java.lang.RuntimeException: Method not found" from here; perhaps a race condition?
         LOG.warn(throwable.getMessage());
@@ -102,11 +102,11 @@ public class DisplayRefreshRateManager {
     return displayRefreshRate;
   }
 
-  private CompletableFuture<Double> invokeGetDisplayRefreshRate(String flutterViewId) {
+  private CompletableFuture<Double> invokeGetDisplayRefreshRate(String inspectorViewId) {
     final CompletableFuture<Double> ret = new CompletableFuture<>();
 
     final JsonObject params = new JsonObject();
-    params.addProperty("viewId", flutterViewId);
+    params.addProperty("viewId", inspectorViewId);
 
     vmService.callServiceExtension(
       vmServiceManager.getCurrentFlutterIsolateRaw().getId(), ServiceExtensions.displayRefreshRate, params,

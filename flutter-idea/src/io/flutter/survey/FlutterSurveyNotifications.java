@@ -17,9 +17,9 @@ import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.jetbrains.lang.dart.DartFileType;
 import icons.FlutterIcons;
 import io.flutter.FlutterMessages;
+import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
 import org.jetbrains.annotations.NotNull;
 
@@ -61,7 +61,7 @@ public class FlutterSurveyNotifications {
       }
 
       private void check(@NotNull VirtualFile file) {
-        if (PubRoot.isPubspec(file) || file.getFileType() == DartFileType.INSTANCE) {
+        if (PubRoot.isPubspec(file) || FlutterUtils.isDartFile(file)) {
           new FlutterSurveyNotifications(project).checkForDisplaySurvey();
         }
       }

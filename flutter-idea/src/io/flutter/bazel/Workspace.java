@@ -9,7 +9,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
@@ -309,7 +308,8 @@ public class Workspace {
 
     final String updatedIosRunMessage = config == null ? null : config.getUpdatedIosRunMessage();
 
-    return new Workspace(root, config, daemonScript, devToolsScript, doctorScript, testScript, runScript, syncScript, toolsScript, sdkHome, requiredIJPluginID, requiredIJPluginMessage, configWarningPrefix, updatedIosRunMessage);
+    return new Workspace(root, config, daemonScript, devToolsScript, doctorScript, testScript, runScript, syncScript, toolsScript, sdkHome,
+                         requiredIJPluginID, requiredIJPluginMessage, configWarningPrefix, updatedIosRunMessage);
   }
 
   @VisibleForTesting
@@ -393,7 +393,8 @@ public class Workspace {
           return child;
         }
         dir = dir.getParent();
-      } catch (InvalidVirtualFileAccessException ex) {
+      }
+      catch (InvalidVirtualFileAccessException ex) {
         // The VFS is out of sync.
         return null;
       }
@@ -402,8 +403,6 @@ public class Workspace {
     // not found
     return null;
   }
-
-  private static final Logger LOG = Logger.getInstance(Workspace.class);
 
   public String convertPath(String path) {
     if (path.startsWith(Workspace.BAZEL_URI_SCHEME)) {

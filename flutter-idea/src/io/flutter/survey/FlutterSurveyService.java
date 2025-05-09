@@ -9,7 +9,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.io.HttpRequests;
 import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.Nullable;
@@ -21,7 +20,6 @@ public class FlutterSurveyService {
   private static final String FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY = "FLUTTER_LAST_SURVEY_CONTENT_CHECK_KEY";
   private static final long CHECK_INTERVAL_IN_MS = TimeUnit.HOURS.toMillis(40);
   private static final String CONTENT_URL = "https://storage.googleapis.com/flutter-uxr/surveys/flutter-survey-metadata.json";
-  private static final Logger LOG = Logger.getInstance(FlutterSurveyService.class);
   private static @Nullable FlutterSurvey cachedSurvey;
 
   private static boolean timeToUpdateCachedContent() {

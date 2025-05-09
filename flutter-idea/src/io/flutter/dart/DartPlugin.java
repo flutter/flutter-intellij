@@ -19,7 +19,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Provides access to the Dart Plugin for IntelliJ.
+ * A service component that manages Dart plugin functionality within IntelliJ IDEA.
+ * <p>
+ * This class provides project-level services for Dart integration, including version
+ * management and feature compatibility checks. It acts as a central point for
+ * accessing Dart plugin capabilities and configurations within a project.
+ * <p>
+ * The service is automatically instantiated by the IntelliJ Platform on a per-project
+ * basis and can be accessed via getInstance(Project).
  */
 public class DartPlugin {
 
@@ -64,9 +71,13 @@ public class DartPlugin {
     return type.getId().equals("DartTestRunConfigurationType");
   }
 
+  /**
+   * Returns the version of the Dart plugin installed in the IDE.
+   */
+  @NotNull
   public static DartPluginVersion getDartPluginVersion() {
     final IdeaPluginDescriptor dartPlugin = PluginManagerCore.getPlugin(PluginId.getId("Dart"));
-    final String versionString = dartPlugin.getVersion();
+    final String versionString = dartPlugin != null ? dartPlugin.getVersion() : null;
     return new DartPluginVersion(versionString);
   }
 

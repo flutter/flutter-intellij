@@ -11,7 +11,6 @@ import com.intellij.ide.util.projectWizard.importSources.DetectedProjectRoot;
 import com.intellij.ide.util.projectWizard.importSources.ProjectFromSourcesBuilder;
 import com.intellij.ide.util.projectWizard.importSources.ProjectStructureDetector;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
@@ -32,7 +31,6 @@ import java.io.File;
 import java.util.*;
 
 public class FlutterProjectStructureDetector extends ProjectStructureDetector {
-  private static final Logger LOG = Logger.getInstance(ProjectStructureDetector.class);
 
   @NotNull
   @Override

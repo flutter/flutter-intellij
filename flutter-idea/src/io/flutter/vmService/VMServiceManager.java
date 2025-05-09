@@ -9,7 +9,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.run.daemon.FlutterApp;
@@ -33,7 +32,6 @@ import java.util.function.Consumer;
 import static io.flutter.vmService.ServiceExtensions.enableOnDeviceInspector;
 
 public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposable {
-  private static final Logger LOG = Logger.getInstance(VMServiceManager.class);
 
   @NotNull private final FlutterApp app;
   @NotNull private final HeapMonitor heapMonitor;
@@ -520,14 +518,14 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
     }
   }
 
-  public CompletableFuture<String> getFlutterViewId() {
+  public CompletableFuture<String> getInspectorViewId() {
     return getFlutterViewsList().exceptionally(exception -> {
       throw new RuntimeException(exception.getMessage());
     }).thenApplyAsync((JsonElement element) -> {
       final JsonArray viewsList = element.getAsJsonObject().get("views").getAsJsonArray();
       for (JsonElement jsonElement : viewsList) {
         final JsonObject view = jsonElement.getAsJsonObject();
-        if (Objects.equals(view.get("type").getAsString(), "FlutterView")) {
+        if (Objects.equals(view.get("type").getAsString(), "InspectorView")) {
           return view.get("id").getAsString();
         }
       }

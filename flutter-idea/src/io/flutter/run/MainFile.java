@@ -15,11 +15,11 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import com.jetbrains.lang.dart.psi.DartImportStatement;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.pub.PubRoot;
@@ -92,7 +92,7 @@ public class MainFile {
     if (file == null) {
       return error(FlutterBundle.message("entrypoint.not.found", FileUtil.toSystemDependentName(path)));
     }
-    if (file.getFileType() != DartFileType.INSTANCE) {
+    if (!FlutterUtils.isDartFile(file)) {
       return error(FlutterBundle.message("entrypoint.not.dart"));
     }
 
@@ -123,7 +123,7 @@ public class MainFile {
   private static VirtualFile findAppDir(@Nullable VirtualFile file, @NotNull Project project) {
     if (WorkspaceCache.getInstance(project).isBazel()) {
       final Workspace workspace = WorkspaceCache.getInstance(project).get();
-      assert(workspace != null);
+      assert (workspace != null);
       return workspace.getRoot();
     }
 
@@ -134,7 +134,7 @@ public class MainFile {
   }
 
   private static boolean isAppDir(@NotNull VirtualFile dir, @NotNull Project project) {
-    assert(!WorkspaceCache.getInstance(project).isBazel());
+    assert (!WorkspaceCache.getInstance(project).isBazel());
     return dir.isDirectory() && (
       dir.findChild(PubRoot.PUBSPEC_YAML) != null ||
       dir.findChild(PubRoot.DOT_DART_TOOL) != null ||

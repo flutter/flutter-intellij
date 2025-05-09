@@ -49,6 +49,9 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   @NotNull
   public static final FlutterSdkVersion MIN_SUPPORTS_PROPERTY_EDITOR = new FlutterSdkVersion("3.32.0-0.1.pre");
 
+  @NotNull
+  public static final String UNKNOWN_VERSION = "unknown version";
+
   @Nullable
   private final Version version;
   @Nullable
@@ -153,7 +156,7 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   @NotNull
   public String fullVersion() {
-    return version == null ? "unknown version" : Objects.requireNonNull(version.toString());
+    return version == null ? UNKNOWN_VERSION : Objects.requireNonNull(version.toString());
   }
 
   /**
@@ -167,7 +170,7 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   @Override
   @NotNull
   public String toString() {
-    return version == null ? "unknown version" : Objects.requireNonNull(version.toCompactString());
+    return version == null ? UNKNOWN_VERSION : Objects.requireNonNull(version.toCompactString());
   }
 
   @Override

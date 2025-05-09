@@ -5,7 +5,6 @@
  */
 package io.flutter.vmService;
 
-import com.intellij.openapi.diagnostic.Logger;
 import org.dartlang.vm.service.consumer.GetMemoryUsageConsumer;
 import org.dartlang.vm.service.element.IsolateRef;
 import org.dartlang.vm.service.element.MemoryUsage;
@@ -18,7 +17,6 @@ import java.util.List;
 import java.util.concurrent.*;
 
 public class HeapMonitor {
-  private static final Logger LOG = Logger.getInstance(HeapMonitor.class);
 
   private static final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 

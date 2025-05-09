@@ -17,6 +17,7 @@ import com.intellij.util.ui.UIUtil;
 import io.flutter.run.daemon.DevToolsInstance;
 import io.flutter.utils.LabelInput;
 import io.flutter.utils.OpenApiUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,6 +29,32 @@ public class ViewUtils {
     label.setForeground(UIUtil.getLabelDisabledForeground());
     replacePanelLabel(toolWindow, label);
   }
+
+  /**
+   * Displays multiple labels vertically centered in the tool window.
+   *
+   * @param toolWindow The target tool window.
+   * @param labels     A list of strings to display as labels.
+   */
+  public void presentLabels(@NotNull ToolWindow toolWindow, @NotNull List<String> labels) {
+    final JPanel labelsPanel = new JPanel(new GridLayout(0, 1));
+    labelsPanel.setBorder(JBUI.Borders.empty()); // Use padding on individual labels if needed
+
+    for (String text : labels) {
+      final JBLabel label = new JBLabel(text, SwingConstants.CENTER);
+      label.setForeground(UIUtil.getLabelDisabledForeground());
+      // Add padding to each label for spacing
+      label.setBorder(JBUI.Borders.empty(2, 0));
+      labelsPanel.add(label);
+    }
+
+    // Use VerticalFlowLayout to center the block of labels vertically
+    final JPanel centerPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER));
+    centerPanel.add(labelsPanel);
+
+    replacePanelLabel(toolWindow, centerPanel);
+  }
+
 
   public void presentClickableLabel(ToolWindow toolWindow, List<LabelInput> labels) {
     final JPanel panel = new JPanel(new GridLayout(0, 1));
@@ -73,7 +100,7 @@ public class ViewUtils {
     return true;
   }
 
-  private void replacePanelLabel(ToolWindow toolWindow, JComponent label) {
+  public void replacePanelLabel(ToolWindow toolWindow, JComponent label) {
     OpenApiUtils.safeInvokeLater(() -> {
       final ContentManager contentManager = toolWindow.getContentManager();
       if (contentManager.isDisposed()) {

@@ -24,7 +24,7 @@ plugins {
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("java")
   id("org.jetbrains.intellij.platform.module")
-  id("org.jetbrains.kotlin.jvm") version "2.1.20"
+  id("org.jetbrains.kotlin.jvm") version "2.1.21-RC2"
 }
 
 val flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()

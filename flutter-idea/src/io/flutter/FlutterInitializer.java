@@ -52,7 +52,7 @@ import io.flutter.settings.FlutterSettings;
 import io.flutter.survey.FlutterSurveyNotifications;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.OpenApiUtils;
-import io.flutter.view.FlutterViewFactory;
+import io.flutter.view.InspectorViewFactory;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
@@ -127,8 +127,8 @@ public class FlutterInitializer implements StartupActivity {
     else {
       project.getMessageBus().connect().subscribe(ModuleListener.TOPIC, new ModuleListener() {
         @Override
-        public void moduleAdded(@NotNull Project project, @NotNull Module module) {
-          if (!toolWindowsInitialized && FlutterModuleUtils.isFlutterModule(module)) {
+        public void modulesAdded(@NotNull Project project, @NotNull List<? extends Module> modules) {
+          if (!toolWindowsInitialized && modules.stream().anyMatch(FlutterModuleUtils::isFlutterModule)) {
             initializeToolWindows(project);
           }
         }
@@ -364,9 +364,9 @@ public class FlutterInitializer implements StartupActivity {
     });
   }
 
-  private void initializeToolWindows(@NotNull Project project) {
+  private void initializeToolWindows(@NotNull final Project project) {
     // Start watching for Flutter debug active events.
-    FlutterViewFactory.init(project);
+    InspectorViewFactory.init(project);
     RemainingDevToolsViewFactory.init(project);
     DevToolsExtensionsViewFactory.init(project);
     toolWindowsInitialized = true;

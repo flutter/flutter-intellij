@@ -77,7 +77,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
       ```
       In your shell configuration file (e.g. `.bashrc` or `.zshrc`), set your `JAVA_HOME` env variable to match that version.
       ```shell
-      export JAVA_HOME=`/usr/libexec/java_home -v 23.0.2
+      export JAVA_HOME=`/usr/libexec/java_home -v 23.0.2`
       ```
 
 3. Set your `FLUTTER_SDK` path in the configuration file for your shell environment.
@@ -98,13 +98,13 @@ name and contact info to the [AUTHORS](AUTHORS) file.
 4. Set your `DARK_SDK` path in the configuration file for your shell environment.
     - In your shell configuration file (e.g. `.bashrc` or `.zshrc`), set your `DART_SDK` env variable to match the Dart SDK in your Flutter SDK. This should look like the `FLUTTER_SDK` path (added above) with `/bin/cache/dart-sdk` appened to the end. 
     ```shell
-    export DART_SDK="$HOME/path/to/flutter/bin/cache/dart-sdk`"
+    export DART_SDK="$HOME/path/to/flutter/bin/cache/dart-sdk"
     ```
 
 5. Add `DART_SDK`, `FLUTTER_SDK` and `JAVA_HOME` to your `PATH`.
     - In your shell configuration file (e.g. `.bashrc` or `.zshrc`), below where your `JAVA_HOME`, `FLUTTER_SDK`, `DART_SDK` env variables were set, add the following line:
     ```shell
-    export PATH=$DART_SDK/bin:$FLUTTER_SDK/bin:$JAVA_HOME/bin:$PATH"
+    export PATH=$DART_SDK/bin:$FLUTTER_SDK/bin:$JAVA_HOME/bin:$PATH
     ```
 
 6. Update your current `PATH`.
@@ -150,6 +150,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
     - `dart pub get`
     - `(cd tool/plugin; dart pub get)`
     - `bin/plugin test`
+    - Note: If there are Dart errors during build originating in the `tool/plugin` directory, try deleting the contents of the `pubspec.lock` file and re-running the pub get steps. This will allow you to get a fresh set of pub packages.
 
 ### Configure "Project Structure" settings
 
@@ -263,7 +264,7 @@ A problem occurred configuring project ':flutter-idea'.
 > Source directory 'X:\path\to\your\flutter-intellij\flutter-idea\resources' is not a directory.
 ```
 
-Check out if the directory is a symlink by open the link in IDEA, and it'll display as:
+Check if the directory is a symlink by opening the link in IDEA, and it'll display as:
 
 ```symlink
 ../resources
@@ -275,8 +276,8 @@ Delete the file, then re-clone the repo using the below command:
 git clone -c core.symlinks=true https://github.com/<your_name_here>/flutter-intellij
 ```
 
-**NOTE**: Avoid symlinks addition during development as possible as you can,
-since they can lead to various of file-based issues during the development.
+**NOTE**: Avoid adding symlinks during development if you can,
+since they can lead to various file-based issues during development.
 
 ## Provision Tool
 
