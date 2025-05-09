@@ -61,7 +61,6 @@ class DevToolsServerTask extends Task.Backgroundable {
   private static final Logger LOG = Logger.getInstance(DevToolsServerTask.class);
   public static final String LOCAL_DEVTOOLS_DIR = "flutter.local.devtools.dir";
   public static final String LOCAL_DEVTOOLS_ARGS = "flutter.local.devtools.args";
-  public @Nullable String failureMessage = null;
   private @NotNull Project project;
   private final AtomicReference<CompletableFuture<DevToolsInstance>> devToolsFutureRef;
 
