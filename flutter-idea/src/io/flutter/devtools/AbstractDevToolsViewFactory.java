@@ -45,7 +45,8 @@ public abstract class AbstractDevToolsViewFactory implements ToolWindowFactory {
                                              @NotNull FlutterSdkVersion flutterSdkVersion,
                                              @NotNull DevToolsInstance instance);
 
-  protected void doAfterBrowserOpened(@NotNull Project project, @NotNull EmbeddedBrowser browser) {}
+  protected void doAfterBrowserOpened(@NotNull Project project, @NotNull EmbeddedBrowser browser) {
+  }
 
   private boolean devToolsLoadedInBrowser = false;
 
@@ -112,11 +113,11 @@ public abstract class AbstractDevToolsViewFactory implements ToolWindowFactory {
   private void loadDevToolsInEmbeddedBrowser(@NotNull Project project,
                                              @NotNull ToolWindow toolWindow,
                                              @NotNull FlutterSdkVersion flutterSdkVersion) {
+    viewUtils.presentLabel(toolWindow, "Loading " + getToolWindowTitle() + "...");
+
     AsyncUtils.whenCompleteUiThread(
       DevToolsService.getInstance(project).getDevToolsInstance(),
       (instance, error) -> {
-        viewUtils.presentLabel(toolWindow, "Loading " + getToolWindowTitle() + "...");
-
         // Skip displaying if the project has been closed.
         if (!project.isOpen()) {
           viewUtils.presentLabel(toolWindow, "Project is closed.");

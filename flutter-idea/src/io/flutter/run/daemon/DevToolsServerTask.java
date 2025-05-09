@@ -58,18 +58,18 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 class DevToolsServerTask extends Task.Backgroundable {
-  private static final Logger LOG = Logger.getInstance(DevToolsServerTask.class);
-  public static final String LOCAL_DEVTOOLS_DIR = "flutter.local.devtools.dir";
-  public static final String LOCAL_DEVTOOLS_ARGS = "flutter.local.devtools.args";
-  private @NotNull Project project;
-  private final AtomicReference<CompletableFuture<DevToolsInstance>> devToolsFutureRef;
+  private @NotNull static final Logger LOG = Logger.getInstance(DevToolsServerTask.class);
+  public @NotNull static final String LOCAL_DEVTOOLS_DIR = "flutter.local.devtools.dir";
+  public @NotNull static final String LOCAL_DEVTOOLS_ARGS = "flutter.local.devtools.args";
+  private @NotNull final Project project;
+  private @NotNull final AtomicReference<CompletableFuture<DevToolsInstance>> devToolsFutureRef;
 
-  private DaemonApi daemonApi;
-  private ProcessHandler process;
+  private @Nullable DaemonApi daemonApi;
+  private @Nullable ProcessHandler process;
 
   public DevToolsServerTask(@NotNull Project project,
                             @NotNull String title,
-                            AtomicReference<CompletableFuture<DevToolsInstance>> devToolsFutureRef) {
+                            @NotNull AtomicReference<CompletableFuture<DevToolsInstance>> devToolsFutureRef) {
     super(project, title, true);
     this.project = project;
     this.devToolsFutureRef = devToolsFutureRef;
@@ -84,6 +84,7 @@ class DevToolsServerTask extends Task.Backgroundable {
       // If DevTools is not supported, start the daemon instead.
       final boolean dartDevToolsSupported = dartSdkSupportsDartDevTools();
       if (!dartDevToolsSupported) {
+        LOG.info("Starting the DevTools daemon.");
         progressIndicator.setFraction(60);
         progressIndicator.setText2("Daemon set-up");
         setUpWithDaemon();
@@ -106,13 +107,14 @@ class DevToolsServerTask extends Task.Backgroundable {
       // https://github.com/flutter/flutter-intellij/blob/master/CONTRIBUTING.md#developing-with-local-devtools
       final String localDevToolsDir = Registry.stringValue(LOCAL_DEVTOOLS_DIR);
       if (!localDevToolsDir.isEmpty()) {
+        LOG.info("Starting local DevTools server at: " + localDevToolsDir);
         progressIndicator.setFraction(60);
         progressIndicator.setText2("Starting local server");
         setUpLocalServer(localDevToolsDir);
       }
 
       // If the Dart plugin does not start DevTools, then call `dart devtools` to start the server.
-      final Boolean dartPluginStartsDevTools = true;
+      final boolean dartPluginStartsDevTools = true;
       if (!dartPluginStartsDevTools) {
         progressIndicator.setFraction(60);
         progressIndicator.setText2("Starting server");
@@ -149,11 +151,10 @@ class DevToolsServerTask extends Task.Backgroundable {
 
   @Override
   public void onThrowable(@NotNull Throwable error) {
-    super.onThrowable(error);
     cancelWithError(new Exception(error));
   }
 
-  private void setUpLocalServer(String localDevToolsDir) throws java.util.concurrent.ExecutionException, InterruptedException {
+  private void setUpLocalServer(@NotNull String localDevToolsDir) throws java.util.concurrent.ExecutionException, InterruptedException {
     final DtdUtils dtdUtils = new DtdUtils();
     final DartToolingDaemonService dtdService = dtdUtils.readyDtdService(project).get();
     final String dtdUri = dtdService.getUri();
@@ -170,7 +171,7 @@ class DevToolsServerTask extends Task.Backgroundable {
     setUpInDevMode(createCommand(localDevToolsDir, "dt", args));
   }
 
-  private void setUpInDevMode(GeneralCommandLine command) {
+  private void setUpInDevMode(@NotNull GeneralCommandLine command) {
     try {
       this.process = new MostlySilentColoredProcessHandler(command);
       this.process.addProcessListener(new ProcessAdapter() {
@@ -259,9 +260,9 @@ class DevToolsServerTask extends Task.Backgroundable {
     });
   }
 
-  private CompletableFuture<DevToolsInstance> checkForDartPluginInitiatedDevToolsWithRetries(ProgressIndicator progressIndicator)
+  private CompletableFuture<DevToolsInstance> checkForDartPluginInitiatedDevToolsWithRetries(@NotNull ProgressIndicator progressIndicator)
     throws InterruptedException {
-    progressIndicator.setText2("Waiting for Dart Plugin");
+    progressIndicator.setText2("Waiting for Dart plugin");
     final CompletableFuture<DevToolsInstance> devToolsFuture = new CompletableFuture<>();
 
     final long msBetweenRetries = 1500;
@@ -273,17 +274,17 @@ class DevToolsServerTask extends Task.Backgroundable {
 
       final @Nullable DevToolsInstance devTools = createDevToolsInstanceFromDartPluginUri();
       if (devTools != null) {
-        LOG.debug("Dart Plugin DevTools ready after " + retries + " tries.");
+        LOG.debug("Dart plugin DevTools ready after " + retries + " tries.");
         devToolsFuture.complete(devTools);
         return devToolsFuture;
       }
       else {
-        LOG.debug("Dart Plugin DevTools not ready after " + retries + " tries.");
+        LOG.debug("Dart plugin DevTools not ready after " + retries + " tries.");
         Thread.sleep(msBetweenRetries);
       }
     }
 
-    devToolsFuture.completeExceptionally(new Exception("Timed out waiting for Dart Plugin to start DevTools."));
+    devToolsFuture.completeExceptionally(new Exception("Timed out waiting for Dart plugin to start DevTools."));
     return devToolsFuture;
   }
 
@@ -355,7 +356,7 @@ class DevToolsServerTask extends Task.Backgroundable {
     }
   }
 
-  private static GeneralCommandLine createCommand(String workDir, String command, List<String> arguments) {
+  private static @NotNull GeneralCommandLine createCommand(String workDir, String command, List<String> arguments) {
     final GeneralCommandLine result = new GeneralCommandLine().withWorkDirectory(workDir);
     result.setCharset(StandardCharsets.UTF_8);
     result.setExePath(FileUtil.toSystemDependentName(command));

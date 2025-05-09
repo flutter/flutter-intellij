@@ -31,7 +31,7 @@ public class DevToolsService {
 
   @Nullable private BackgroundableProcessIndicator devToolsServerProgressIndicator;
 
-  private AtomicReference<CompletableFuture<DevToolsInstance>> devToolsFutureRef = new AtomicReference<>(null);
+  @NotNull private AtomicReference<CompletableFuture<DevToolsInstance>> devToolsFutureRef = new AtomicReference<>(null);
 
   @NotNull
   public static DevToolsService getInstance(@NotNull final Project project) {
