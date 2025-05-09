@@ -6,8 +6,11 @@
 package io.flutter.devtools;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
+import com.intellij.openapi.wm.ex.ToolWindowManagerListener;
+import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.RefreshToolWindowAction;
 import io.flutter.run.daemon.DevToolsInstance;
@@ -43,6 +46,8 @@ public abstract class AbstractDevToolsViewFactory implements ToolWindowFactory {
                                              @NotNull DevToolsInstance instance);
 
   protected void doAfterBrowserOpened(@NotNull Project project, @NotNull EmbeddedBrowser browser) {}
+
+  private boolean devToolsLoadedInBrowser = false;
 
   @Override
   public Object isApplicableAsync(@NotNull Project project, @NotNull Continuation<? super Boolean> $completion) {
@@ -98,19 +103,36 @@ public abstract class AbstractDevToolsViewFactory implements ToolWindowFactory {
     }
 
     // Final case:
+    loadDevToolsInEmbeddedBrowser(project, toolWindow, flutterSdkVersion);
+
+    // Finally, listen for the panel to be reopened and potentially reload DevTools.
+    maybeReloadDevToolsWhenVisible(project, toolWindow, flutterSdkVersion);
+  }
+
+  private void loadDevToolsInEmbeddedBrowser(@NotNull Project project,
+                                             @NotNull ToolWindow toolWindow,
+                                             @NotNull FlutterSdkVersion flutterSdkVersion) {
     AsyncUtils.whenCompleteUiThread(
       DevToolsService.getInstance(project).getDevToolsInstance(),
       (instance, error) -> {
+        viewUtils.presentLabel(toolWindow, "Loading " + getToolWindowTitle() + "...");
+
         // Skip displaying if the project has been closed.
         if (!project.isOpen()) {
+          viewUtils.presentLabel(toolWindow, "Project is closed.");
           return;
         }
 
+        // Show a message if DevTools started with an error.
+        final String restartDevToolsMessage = "Try switching to another Flutter panel and back again to restart the server.";
         if (error != null) {
+          viewUtils.presentLabels(toolWindow, List.of("Flutter DevTools start-up failed.", restartDevToolsMessage));
           return;
         }
 
+        // Show a message if there is no DevTools yet.
         if (instance == null) {
+          viewUtils.presentLabels(toolWindow, List.of("Flutter DevTools does not exist.", restartDevToolsMessage));
           return;
         }
 
@@ -122,14 +144,30 @@ public abstract class AbstractDevToolsViewFactory implements ToolWindowFactory {
             .ifPresent(embeddedBrowser ->
                        {
                          embeddedBrowser.openPanel(toolWindow, getToolWindowTitle(), devToolsUrl, System.out::println);
+                         devToolsLoadedInBrowser = true;
                          doAfterBrowserOpened(project, embeddedBrowser);
+                         // The "refresh" action refreshes the embedded browser, not the panel.
+                         // Therefore, we only show it once we have an embedded browser.
+                         toolWindow.setTitleActions(List.of(new RefreshToolWindowAction(getToolWindowId())));
                        });
         });
       }
     );
+  }
 
-    // TODO(helin24): It may be better to add this to the gear actions or to attach as a mouse event on individual tabs within a tool
-    //  window, but I wasn't able to get either working immediately.
-    toolWindow.setTitleActions(List.of(new RefreshToolWindowAction(getToolWindowId())));
+  private void maybeReloadDevToolsWhenVisible(@NotNull Project project,
+                                              @NotNull ToolWindow toolWindow, @NotNull FlutterSdkVersion flutterSdkVersion) {
+    MessageBusConnection connection = project.getMessageBus().connect();
+    connection.subscribe(ToolWindowManagerListener.TOPIC, new ToolWindowManagerListener() {
+      @Override
+      public void toolWindowShown(@NotNull ToolWindow activatedToolWindow) {
+        if (activatedToolWindow.getId().equals(getToolWindowId())) {
+          if (!devToolsLoadedInBrowser) {
+            loadDevToolsInEmbeddedBrowser(project, toolWindow, flutterSdkVersion);
+          }
+        }
+      }
+    });
+    Disposer.register(toolWindow.getDisposable(), connection);
   }
 }
