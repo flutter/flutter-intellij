@@ -33,7 +33,7 @@ plugins {
   // https://github.com/JetBrains/intellij-platform-gradle-plugin/releases
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("org.jetbrains.intellij.platform") version "2.5.0"
-  id("org.jetbrains.kotlin.jvm") version "2.1.20"
+  id("org.jetbrains.kotlin.jvm") version "2.1.21-RC2"
 }
 
 // TODO(mossmana) These properties are duplicated in flutter-idea/build.gradle.kts and flutter-studio/build.gradle.kts. Should be consolidated.
