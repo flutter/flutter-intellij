@@ -54,7 +54,6 @@ public class ViewUtils {
   }
 
 
-
   public void presentClickableLabel(ToolWindow toolWindow, List<LabelInput> labels) {
     final JPanel panel = new JPanel(new GridLayout(0, 1));
 
@@ -79,7 +78,7 @@ public class ViewUtils {
     replacePanelLabel(toolWindow, center);
   }
 
-  private void replacePanelLabel(ToolWindow toolWindow, JComponent label) {
+  public void replacePanelLabel(ToolWindow toolWindow, JComponent label) {
     OpenApiUtils.safeInvokeLater(() -> {
       final ContentManager contentManager = toolWindow.getContentManager();
       if (contentManager.isDisposed()) {

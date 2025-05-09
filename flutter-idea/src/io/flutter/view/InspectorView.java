@@ -8,7 +8,6 @@ package io.flutter.view;
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.EmptyProgressIndicator;
@@ -84,8 +83,8 @@ public class InspectorView implements Disposable {
 
   private InspectorViewToolWindowManagerListener toolWindowListener;
   private int devToolsInstallCount = 0;
-  private final JxBrowserUtils jxBrowserUtils;
-  private final JxBrowserManager jxBrowserManager;
+  private final @NotNull JxBrowserUtils jxBrowserUtils;
+  private final @NotNull JxBrowserManager jxBrowserManager;
 
   public InspectorView(@NotNull Project project) {
     this(project, JxBrowserManager.getInstance(), new JxBrowserUtils(), new ViewUtils());
@@ -95,7 +94,7 @@ public class InspectorView implements Disposable {
   @NonInjectable
   protected InspectorView(@NotNull Project project,
                           @NotNull JxBrowserManager jxBrowserManager,
-                          JxBrowserUtils jxBrowserUtils,
+                          @NotNull JxBrowserUtils jxBrowserUtils,
                           ViewUtils viewUtils) {
     myProject = project;
     this.jxBrowserUtils = jxBrowserUtils;
@@ -119,11 +118,11 @@ public class InspectorView implements Disposable {
     updateForEmptyContent(window);
   }
 
-  private void addBrowserInspectorViewContent(FlutterApp app,
-                                              ToolWindow toolWindow,
+  private void addBrowserInspectorViewContent(@NotNull FlutterApp app,
+                                              @NotNull ToolWindow toolWindow,
                                               boolean isEmbedded,
                                               DevToolsIdeFeature ideFeature,
-                                              DevToolsInstance devToolsInstance) {
+                                              @NotNull DevToolsInstance devToolsInstance) {
     assert (SwingUtilities.isEventDispatchThread());
 
     final ContentManager contentManager = toolWindow.getContentManager();
@@ -199,7 +198,7 @@ public class InspectorView implements Disposable {
     }
   }
 
-  private Optional<EmbeddedBrowser> embeddedBrowserOptional() {
+  private @NotNull Optional<EmbeddedBrowser> embeddedBrowserOptional() {
     if (myProject.isDisposed()) {
       return Optional.empty();
     }
@@ -264,6 +263,10 @@ public class InspectorView implements Disposable {
                                          boolean isEmbedded,
                                          DevToolsIdeFeature ideFeature,
                                          boolean forceDevToolsRestart) {
+    if (toolWindow == null) {
+      LOG.error("Unable to open Inspector with DevTools: toolwindow is null");
+      return;
+    }
     AsyncUtils.whenCompleteUiThread(
       forceDevToolsRestart
       ? DevToolsService.getInstance(myProject).getDevToolsInstanceWithForcedRestart()
@@ -281,7 +284,7 @@ public class InspectorView implements Disposable {
           return;
         }
 
-        if (instance == null) {
+        if (instance == null || app == null) {
           viewUtils.presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
           return;
         }
@@ -311,7 +314,7 @@ public class InspectorView implements Disposable {
 
   protected void startJxBrowserInstallationWaitingThread(FlutterApp app, ToolWindow toolWindow,
                                                          DevToolsIdeFeature ideFeature) {
-    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+    OpenApiUtils.safeExecuteOnPooledThread(() -> {
       waitForJxBrowserInstallation(app, toolWindow, ideFeature);
     });
   }
@@ -393,21 +396,6 @@ public class InspectorView implements Disposable {
     viewUtils.presentClickableLabel(toolWindow, inputs);
   }
 
-  private void replacePanelLabel(ToolWindow toolWindow, JComponent label) {
-    OpenApiUtils.safeInvokeLater(() -> {
-      final ContentManager contentManager = toolWindow.getContentManager();
-      if (contentManager.isDisposed()) {
-        return;
-      }
-
-      final JPanel panel = new JPanel(new BorderLayout());
-      panel.add(label, BorderLayout.CENTER);
-      final Content content = contentManager.getFactory().createContent(panel, null, false);
-      contentManager.removeAllContents(true);
-      contentManager.addContent(content);
-    });
-  }
-
   private void debugActiveHelper(@NotNull FlutterApp app) {
     final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
     if (!(toolWindowManager instanceof ToolWindowManagerEx)) {
@@ -478,7 +466,7 @@ public class InspectorView implements Disposable {
     }
   }
 
-  private void updateForEmptyContent(ToolWindow toolWindow) {
+  private void updateForEmptyContent(@NotNull ToolWindow toolWindow) {
     // There's a possible race here where the tool window gets disposed while we're displaying contents.
     if (toolWindow.isDisposed()) {
       return;
@@ -495,7 +483,7 @@ public class InspectorView implements Disposable {
   }
 
   // Returns true if the toolWindow was initially closed but opened automatically on app launch.
-  private DevToolsIdeFeature updateToolWindowVisibility(ToolWindow flutterToolWindow) {
+  private @Nullable DevToolsIdeFeature updateToolWindowVisibility(@NotNull ToolWindow flutterToolWindow) {
     if (flutterToolWindow.isVisible()) {
       return DevToolsIdeFeature.TOOL_WINDOW_RELOAD;
     }
