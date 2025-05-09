@@ -11,6 +11,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.EventListener;
 import java.util.Objects;
@@ -59,12 +60,12 @@ public class FlutterSettings {
     testInstance = instance;
   }
 
-  public static FlutterSettings getInstance() {
+  public static @NotNull FlutterSettings getInstance() {
     if (testInstance != null) {
       return testInstance;
     }
 
-    return Objects.requireNonNull(ApplicationManager.getApplication()).getService(FlutterSettings.class);
+    return Objects.requireNonNull(Objects.requireNonNull(ApplicationManager.getApplication()).getService(FlutterSettings.class));
   }
 
   protected static PropertiesComponent getPropertiesComponent() {

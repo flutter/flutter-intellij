@@ -38,6 +38,12 @@ public class OpenApiUtils {
     return modules == null ? Module.EMPTY_ARRAY : modules;
   }
 
+  public static void safeExecuteOnPooledThread(@NotNull Runnable action) {
+    var application = ApplicationManager.getApplication();
+    if (application == null) return;
+    application.executeOnPooledThread(action);
+  }
+
   public static void safeRunReadAction(@NotNull Runnable runnable) {
     Application application = ApplicationManager.getApplication();
     if (application == null) return;
