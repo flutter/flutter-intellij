@@ -41,12 +41,7 @@ import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.common.RunMode;
 import io.flutter.settings.FlutterSettings;
-import io.flutter.utils.MostlySilentColoredProcessHandler;
-import io.flutter.utils.ProgressHelper;
-import io.flutter.utils.StreamSubscription;
-import io.flutter.utils.UrlUtils;
-import io.flutter.utils.VmServiceListenerAdapter;
-import io.flutter.vmService.DisplayRefreshRateManager;
+import io.flutter.utils.*;
 import io.flutter.vmService.ServiceExtensions;
 import io.flutter.vmService.VMServiceManager;
 import org.dartlang.vm.service.VmService;
@@ -302,7 +297,9 @@ public class FlutterApp implements Disposable {
     return myConnector;
   }
 
-  /** @noinspection BooleanMethodIsAlwaysInverted*/
+  /**
+   * @noinspection BooleanMethodIsAlwaysInverted
+   */
   public boolean appSupportsHotReload() {
     // Introspect based on registered services.
     if (myVMServiceManager != null && myVMServiceManager.hasAnyRegisteredServices()) {
@@ -684,11 +681,6 @@ public class FlutterApp implements Disposable {
   @Nullable
   public VMServiceManager getVMServiceManager() {
     return myVMServiceManager;
-  }
-
-  @Nullable
-  public DisplayRefreshRateManager getDisplayRefreshRateManager() {
-    return myVMServiceManager != null ? myVMServiceManager.displayRefreshRateManager : null;
   }
 
   @NotNull
