@@ -113,17 +113,7 @@ class DevToolsServerTask extends Task.Backgroundable {
         setUpLocalServer(localDevToolsDir);
       }
 
-      // If the Dart plugin does not start DevTools, then call `dart devtools` to start the server.
-      final boolean dartPluginStartsDevTools = true;
-      if (!dartPluginStartsDevTools) {
-        progressIndicator.setFraction(60);
-        progressIndicator.setText2("Starting server");
-        setUpWithDart(createCommand(DartSdk.getDartSdk(project).getHomePath(),
-                                    DartSdk.getDartSdk(project).getHomePath() + File.separatorChar + "bin" + File.separatorChar + "dart",
-                                    ImmutableList.of("devtools", "--machine")));
-      }
-
-      // Otherwise, wait for the Dart Plugin to start the DevTools server.
+      // Wait for the Dart Plugin to start the DevTools server.
       final CompletableFuture<DevToolsInstance> devToolsFuture = checkForDartPluginInitiatedDevToolsWithRetries(progressIndicator);
       devToolsFuture.whenComplete((devTools, error) -> {
         if (error != null) {
@@ -262,7 +252,7 @@ class DevToolsServerTask extends Task.Backgroundable {
 
   private CompletableFuture<DevToolsInstance> checkForDartPluginInitiatedDevToolsWithRetries(@NotNull ProgressIndicator progressIndicator)
     throws InterruptedException {
-    progressIndicator.setText2("Waiting for Dart plugin");
+    progressIndicator.setText2("Waiting for server with DTD");
     final CompletableFuture<DevToolsInstance> devToolsFuture = new CompletableFuture<>();
 
     final long msBetweenRetries = 1500;
