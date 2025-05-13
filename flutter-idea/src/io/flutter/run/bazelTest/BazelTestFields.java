@@ -146,7 +146,7 @@ public class BazelTestFields {
    * This will be called while the user is typing into a non-template run config.
    * (See RunConfiguration.checkConfiguration.)
    *
-   * @throws RuntimeConfigurationError for an error that that the user must correct before running.
+   * @throws RuntimeConfigurationError for an error that the user must correct before running.
    */
   void checkRunnable(@NotNull final Project project) throws RuntimeConfigurationError {
     // The UI only shows one error message at a time.

@@ -153,7 +153,7 @@ public class SdkFields {
    * Reports any errors that the user should correct.
    * <p>This will be called while the user is typing; see RunConfiguration.checkConfiguration.
    *
-   * @throws RuntimeConfigurationError for an error that that the user must correct before running.
+   * @throws RuntimeConfigurationError for an error that the user must correct before running.
    */
   void checkRunnable(@NotNull Project project) throws RuntimeConfigurationError {
     // TODO(pq): consider validating additional args values

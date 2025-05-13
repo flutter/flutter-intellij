@@ -344,7 +344,7 @@ public class FlutterApp implements Disposable {
   }
 
   /**
-   * Perform a hot restart of the the app.
+   * Perform a hot restart of the app.
    */
   public CompletableFuture<DaemonApi.RestartResult> performRestartApp(@NotNull String reason) {
     if (myAppId == null) {
@@ -577,7 +577,7 @@ public class FlutterApp implements Disposable {
 
     final String appId = myAppId;
     if (appId == null) {
-      // If it it didn't finish starting up, shut down abruptly.
+      // If it didn't finish starting up, shut down abruptly.
       myProcessHandler.destroyProcess();
       done.run();
       return done;
