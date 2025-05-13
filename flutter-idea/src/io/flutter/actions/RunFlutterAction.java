@@ -25,7 +25,6 @@ import io.flutter.run.SdkRunConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -35,14 +34,10 @@ public abstract class RunFlutterAction extends AnAction {
   private final @NotNull FlutterLaunchMode myLaunchMode;
   private final @NotNull String myExecutorId;
 
-  public RunFlutterAction(@NotNull String text,
-                          @NotNull String detailedTextKey,
-                          @NotNull String description,
-                          @NotNull Icon icon,
-                          @NotNull FlutterLaunchMode launchMode,
-                          @NotNull String executorId) {
-    super(text, description, icon);
-
+  public RunFlutterAction(
+    @NotNull String detailedTextKey,
+    @NotNull FlutterLaunchMode launchMode,
+    @NotNull String executorId) {
     myDetailedTextKey = detailedTextKey;
     myLaunchMode = launchMode;
     myExecutorId = executorId;

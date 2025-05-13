@@ -5,18 +5,15 @@
  */
 package io.flutter.actions;
 
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
-import icons.FlutterIcons;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class DeviceSelectorRefresherAction extends AnAction {
-  public DeviceSelectorRefresherAction() {
-    super(FlutterIcons.RefreshItems);
-  }
-
   @Override
   public void actionPerformed(@NotNull AnActionEvent e) {
     final Project project = e.getProject();
