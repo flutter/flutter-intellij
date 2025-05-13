@@ -7,7 +7,6 @@ package io.flutter.utils;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.swing.*;
@@ -19,8 +18,8 @@ import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.fail;
 
 public class EventStreamTest {
@@ -83,34 +82,6 @@ public class EventStreamTest {
       addLogValueListener(true);
     });
     checkLog("42");
-  }
-
-  @Ignore
-  @Test
-  public void duplicateValues() throws Exception {
-    expectedEvents = 6;
-    SwingUtilities.invokeAndWait(() -> {
-      addLogValueListener(true);
-      eventStream.setValue(100);
-      eventStream.setValue(100);
-      eventStream.setValue(100);
-      eventStream.setValue(200);
-      eventStream.setValue(200);
-    });
-    checkLog("42", "200");
-  }
-
-  @Ignore
-  @Test
-  public void nullInitialValue() throws Exception {
-    expectedEvents = 3;
-    SwingUtilities.invokeAndWait(() -> {
-      eventStream = new EventStream<>();
-      addLogValueListener(true);
-      eventStream.setValue(100);
-      eventStream.setValue(200);
-    });
-    checkLog("null", "200");
   }
 
   @Test
