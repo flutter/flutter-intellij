@@ -280,7 +280,7 @@ public class LaunchState extends CommandLineState {
   @Override
   public @NotNull
   ExecutionResult execute(@NotNull Executor executor, @NotNull ProgramRunner runner) throws ExecutionException {
-    throw new ExecutionException("not implemented"); // Not used; launch() does this.
+    throw new ExecutionException("Not implemented"); // Not used; launch() does this.
   }
 
   @Override

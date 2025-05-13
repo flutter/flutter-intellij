@@ -245,7 +245,6 @@ public class FlutterSdkUtil {
    * Enable Dart support for the given project.
    */
   public static void enableDartSdk(@NotNull final Project project) {
-    //noinspection ConstantConditions
     for (Module module : OpenApiUtils.getModules(project)) {
       if (!PubRoots.forModule(module).isEmpty()) {
         DartPlugin.enableDartSdk(module);

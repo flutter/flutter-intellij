@@ -356,6 +356,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
     FlutterUtils.disableGradleProjectMigrationNotification(project);
 
+    //noinspection DialogTitleCapitalization
     progress.runProcessWithProgressSynchronously(() -> {
       progress.getProgressIndicator().setIndeterminate(true);
       result.set(sdk.createFiles(baseDir, null, processListener, additionalSettings));

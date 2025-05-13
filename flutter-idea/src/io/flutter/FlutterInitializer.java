@@ -341,6 +341,7 @@ public class FlutterInitializer implements StartupActivity {
     if (nowLocalDate.isBefore(targetLocalDate)) return;
 
     ApplicationManager.getApplication().invokeLater(() -> {
+      //noinspection DialogTitleCapitalization
       final Notification notification = new Notification(FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
                                                          "Try Gemini in Android Studio",
                                                          "",

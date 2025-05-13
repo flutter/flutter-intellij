@@ -219,7 +219,7 @@ public abstract class EmbeddedBrowser {
     });
   }
 
-  private BrowserTab openBrowserTabFor(String tabName, ToolWindow toolWindow) throws Exception {
+  private BrowserTab openBrowserTabFor(String tabName, ToolWindow toolWindow) {
     BrowserTab tab = new BrowserTab();
     tab.devToolsUrlFuture = new CompletableFuture<>();
     tab.embeddedTab = openEmbeddedTab(toolWindow.getContentManager());
