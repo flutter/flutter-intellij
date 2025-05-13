@@ -66,7 +66,8 @@ public class JxBrowserManager {
       else if (Objects.equals(info.getMajorVersion(), "2020")) {
         return "flutter-intellij";
       }
-    } catch (NullPointerException ex) {
+    }
+    catch (NullPointerException ex) {
       // ignored; unit tests
     }
     return "flutter-idea";
@@ -144,9 +145,9 @@ public class JxBrowserManager {
 
   private class SettingsListener implements FlutterSettings.Listener {
 
-   // Instead of holding onto a project here, only hold onto the Project name.
-   // See https://github.com/flutter/flutter-intellij/issues/7377
-   @NotNull private String projectName;
+    // Instead of holding onto a project here, only hold onto the Project name.
+    // See https://github.com/flutter/flutter-intellij/issues/7377
+    @NotNull private String projectName;
 
     public SettingsListener(@NotNull Project project) {
       this.projectName = project.getName();
@@ -187,7 +188,6 @@ public class JxBrowserManager {
       return;
     }
 
-    //noinspection ConstantConditions
     FlutterSettings.getInstance().addListener(new SettingsListener(project));
   }
 
@@ -291,17 +291,18 @@ public class JxBrowserManager {
     // A project is needed to instantiate the Task, find a non-disposed Project using the ProjectManager
     ProjectManager projectManager = ProjectManager.getInstance();
     Project projectTmp = null;
-    if(projectManager != null) {
+    if (projectManager != null) {
       projectTmp = projectManager.getDefaultProject();
-     if (projectTmp.isDisposed()) {
-       Optional<Project> optionalProject = Arrays.stream(projectManager.getOpenProjects()).filter(p -> !p.isDisposed()).findFirst();
-       if (optionalProject.isPresent()) {
-         projectTmp = optionalProject.get();
-       }
+      if (projectTmp.isDisposed()) {
+        Optional<Project> optionalProject = Arrays.stream(projectManager.getOpenProjects()).filter(p -> !p.isDisposed()).findFirst();
+        if (optionalProject.isPresent()) {
+          projectTmp = optionalProject.get();
+        }
       }
     }
     final Project project = projectTmp;
-    if(project != null && !project.isDisposed()) {
+    if (project != null && !project.isDisposed()) {
+      //noinspection DialogTitleCapitalization
       final Task.Backgroundable task = new Task.Backgroundable(project, "Downloading JxBrowser") {
         @Override
         public void run(@NotNull ProgressIndicator indicator) {
@@ -366,12 +367,14 @@ public class JxBrowserManager {
         //noinspection ThrowableNotThrown
         final UnsupportedRenderingModeException test = new UnsupportedRenderingModeException(RenderingMode.HARDWARE_ACCELERATED);
       }
-      catch (NoClassDefFoundError | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+      catch (NoClassDefFoundError | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException |
+             InvocationTargetException e) {
         LOG.info("Failed to find JxBrowser class: ", e);
         setStatusFailed(new InstallationFailedReason(FailureType.CLASS_NOT_FOUND));
         return;
       }
-    } finally {
+    }
+    finally {
       Thread.currentThread().setContextClassLoader(current);
     }
     status.set(JxBrowserStatus.INSTALLED);
