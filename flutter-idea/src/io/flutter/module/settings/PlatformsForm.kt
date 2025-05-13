@@ -6,14 +6,15 @@
 package io.flutter.module.settings
 
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.ui.dsl.builder.*
+import com.intellij.ui.dsl.builder.Row
+import com.intellij.ui.dsl.builder.actionListener
+import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.builder.selected
 import com.intellij.ui.layout.ComponentPredicate
 import io.flutter.FlutterBundle
 import io.flutter.sdk.FlutterCreateAdditionalSettings
-import io.flutter.sdk.FlutterSdkChannel
 
 class PlatformsForm {
-  var channel: FlutterSdkChannel? = null
   private var configAndroid: Boolean = true
   private var configIos: Boolean = true
   private var configLinux: Boolean = true
