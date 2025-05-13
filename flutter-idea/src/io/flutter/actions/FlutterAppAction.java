@@ -7,7 +7,6 @@ package io.flutter.actions;
 
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
@@ -17,8 +16,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 
 abstract public class FlutterAppAction extends DumbAwareAction {
-  private static final Logger LOG = Logger.getInstance(FlutterAppAction.class);
-
   @NotNull private final FlutterApp myApp;
   @NotNull private final Computable<Boolean> myIsApplicable;
   @NotNull private final String myActionId;

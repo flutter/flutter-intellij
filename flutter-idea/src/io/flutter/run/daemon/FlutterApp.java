@@ -25,7 +25,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import io.flutter.FlutterMessages;
@@ -35,8 +34,6 @@ import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.logging.FlutterConsoleLogManager;
-import io.flutter.pub.PubRoot;
-import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
@@ -88,8 +85,6 @@ public class FlutterApp implements Disposable {
    * Should be "run" if the app was `flutter run` and "attach" if the app was `flutter attach`.
    */
   private @Nullable String myLaunchMode;
-
-  private @Nullable List<PubRoot> myPubRoots;
 
   private int reloadCount;
   private int userReloadCount;
@@ -186,23 +181,6 @@ public class FlutterApp implements Disposable {
   @Nullable
   public static FlutterApp fromProcess(@NotNull ProcessHandler process) {
     return process.getUserData(FLUTTER_APP_KEY);
-  }
-
-  @Nullable
-  public static FlutterApp firstFromProjectProcess(@NotNull Project project) {
-    final List<RunContentDescriptor> runningProcesses =
-      ExecutionManager.getInstance(project).getContentManager().getAllDescriptors();
-    for (RunContentDescriptor descriptor : runningProcesses) {
-      final ProcessHandler process = descriptor.getProcessHandler();
-      if (process != null) {
-        final FlutterApp app = FlutterApp.fromProcess(process);
-        if (app != null) {
-          return app;
-        }
-      }
-    }
-
-    return null;
   }
 
   @NotNull
@@ -378,17 +356,6 @@ public class FlutterApp implements Disposable {
     listenersDispatcher.getMulticaster().notifyAppRestarted();
   }
 
-  public boolean isSameModule(@Nullable final Module other) {
-    return Objects.equals(myModule, other);
-  }
-
-  /**
-   * @return whether the latest of the version of the file is running.
-   */
-  public boolean isLatestVersionRunning(VirtualFile file) {
-    return file != null && file.getTimeStamp() <= maxFileTimestamp;
-  }
-
   /**
    * Indicate that we are about the start hot reload for this app.
    * <p>
@@ -450,33 +417,6 @@ public class FlutterApp implements Disposable {
     return myDaemonApi.devToolsServe();
   }
 
-  public CompletableFuture<String> togglePlatform() {
-    if (myAppId == null) {
-      FlutterUtils.warn(LOG, "cannot invoke togglePlatform on Flutter app because app id is not set");
-      return CompletableFuture.completedFuture(null);
-    }
-
-    final CompletableFuture<JsonObject> result = callServiceExtension(ServiceExtensions.togglePlatformMode.getExtension());
-    return result.thenApply(obj -> {
-      //noinspection CodeBlock2Expr
-      return obj.get("value").getAsString();
-    });
-  }
-
-  public CompletableFuture<String> togglePlatform(String platform) {
-    if (myAppId == null) {
-      FlutterUtils.warn(LOG, "cannot invoke togglePlatform on Flutter app because app id is not set");
-      return CompletableFuture.completedFuture(null);
-    }
-
-    final Map<String, Object> params = new HashMap<>();
-    params.put("value", platform);
-    return callServiceExtension(ServiceExtensions.togglePlatformMode.getExtension(), params).thenApply(obj -> {
-      //noinspection CodeBlock2Expr
-      return obj != null ? obj.get("value").getAsString() : null;
-    });
-  }
-
   public CompletableFuture<JsonObject> callServiceExtension(String methodName) {
     return callServiceExtension(methodName, new HashMap<>());
   }
@@ -529,13 +469,7 @@ public class FlutterApp implements Disposable {
     }
     return getVMServiceManager().hasServiceExtension(name, onData);
   }
-
-  public void hasServiceExtension(String name, Consumer<Boolean> onData, Disposable parentDisposable) {
-    if (getVMServiceManager() != null) {
-      getVMServiceManager().hasServiceExtension(name, onData, parentDisposable);
-    }
-  }
-
+  
   public void setConsole(@Nullable ConsoleView console) {
     myConsole = console;
   }
@@ -687,19 +621,6 @@ public class FlutterApp implements Disposable {
   @NotNull
   public Project getProject() {
     return myProject;
-  }
-
-  @NotNull
-  public List<PubRoot> getPubRoots() {
-    if (myPubRoots == null) {
-      myPubRoots = PubRoots.forProject(myProject);
-    }
-    return myPubRoots;
-  }
-
-  @Nullable
-  public Module getModule() {
-    return myModule;
   }
 
   public FlutterConsoleLogManager getFlutterConsoleLogManager() {

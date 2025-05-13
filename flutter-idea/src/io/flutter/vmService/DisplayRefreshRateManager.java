@@ -10,13 +10,11 @@ import com.intellij.openapi.diagnostic.Logger;
 import io.flutter.FlutterMessages;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.OpenApiUtils;
-import io.flutter.utils.StreamSubscription;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.ServiceExtensionConsumer;
 import org.dartlang.vm.service.element.RPCError;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 public class DisplayRefreshRateManager {
   private static final Logger LOG = Logger.getInstance(DisplayRefreshRateManager.class);
@@ -40,24 +38,6 @@ public class DisplayRefreshRateManager {
     OpenApiUtils.safeInvokeLater(() -> {
       getDisplayRefreshRate().thenAcceptAsync(displayRefreshRateStream::setValue);
     });
-  }
-
-  public int getTargetMicrosPerFrame() {
-    Double fps = getCurrentDisplayRefreshRateRaw();
-    if (fps == null) {
-      fps = defaultRefreshRate;
-    }
-    return (int)Math.round((Math.floor(1000000.0f / fps)));
-  }
-
-  /**
-   * Returns a StreamSubscription providing the queried display refresh rate.
-   * <p>
-   * The current value of the subscription can be null occasionally during initial application startup and for a brief time when doing a
-   * hot restart.
-   */
-  public StreamSubscription<Double> getCurrentDisplayRefreshRate(Consumer<Double> onValue, boolean onUIThread) {
-    return displayRefreshRateStream.listen(onValue, onUIThread);
   }
 
   /**

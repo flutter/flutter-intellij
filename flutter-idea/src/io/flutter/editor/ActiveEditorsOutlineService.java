@@ -7,9 +7,11 @@ package io.flutter.editor;
 
 import com.google.common.collect.Lists;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.ex.EditorEx;
-import com.intellij.openapi.fileEditor.*;
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
+import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -76,30 +78,6 @@ public class ActiveEditorsOutlineService implements Disposable {
   @NotNull
   private FlutterDartAnalysisServer getAnalysisServer() {
     return FlutterDartAnalysisServer.getInstance(project);
-  }
-
-  /**
-   * Gets all of the {@link EditorEx} editors open to Dart files.
-   */
-  public List<EditorEx> getActiveDartEditors() {
-    if (project.isDisposed()) {
-      return Collections.emptyList();
-    }
-    final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-    if (fileEditorManager == null) {
-      return Collections.emptyList();
-    }
-
-    final FileEditor[] editors = fileEditorManager.getSelectedEditors();
-    final List<EditorEx> dartEditors = new ArrayList<>();
-    for (FileEditor fileEditor : editors) {
-      if (!(fileEditor instanceof TextEditor textEditor)) continue;
-      final Editor editor = textEditor.getEditor();
-      if (editor instanceof EditorEx && !editor.isDisposed() && FlutterUtils.isDartFile(editor.getVirtualFile())) {
-        dartEditors.add((EditorEx)editor);
-      }
-    }
-    return dartEditors;
   }
 
   private void updateActiveEditors() {
@@ -187,7 +165,7 @@ public class ActiveEditorsOutlineService implements Disposable {
    */
   @Nullable
   public FlutterOutline getOutline(@Nullable String path) {
-    if(path != null) {
+    if (path != null) {
       final String filePathOrUri = path.contains("://") ? path : getAnalysisServer().getAnalysisService().getLocalFileUri(path);
       return pathToOutline.get(filePathOrUri);
     }
