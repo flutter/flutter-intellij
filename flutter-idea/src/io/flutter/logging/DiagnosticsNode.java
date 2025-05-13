@@ -380,7 +380,7 @@ public class DiagnosticsNode {
    * <p>
    * Example tooltip: 'physical pixels per logical pixel'
    * <p>
-   * If present, the tooltip is added in parenthesis after the raw value when
+   * If present, the tooltip is added in parentheses after the raw value when
    * generating the string description.
    */
   public String getTooltip() {

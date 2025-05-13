@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsNot.not;
 
 /**
  * Verifies that named test targets can be identified correctly as part of a group or as an individual test target.
@@ -49,7 +49,8 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
       CUSTOM_TEST_LOCAL_PATH,
       new String(Files.readAllBytes(Paths.get(FakeActiveEditorsOutlineService.CUSTOM_TEST_PATH)))
     );
-    service = new FakeActiveEditorsOutlineService(fixture.getProject(), "/" + CUSTOM_TEST_LOCAL_PATH, FakeActiveEditorsOutlineService.CUSTOM_OUTLINE_PATH);
+    service = new FakeActiveEditorsOutlineService(fixture.getProject(), "/" + CUSTOM_TEST_LOCAL_PATH,
+                                                  FakeActiveEditorsOutlineService.CUSTOM_OUTLINE_PATH);
     utils = new CommonTestConfigUtils() {
       @Override
       protected ActiveEditorsOutlineService getActiveEditorsOutlineService(@NotNull Project project) {
@@ -58,7 +59,8 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     };
   }
 
-  @Test @Ignore
+  @Test
+  @Ignore
   public void shouldMatchGroup() throws Exception {
     run(() -> {
       final PsiElement group0 = getTestCallWithName("group", "group 0");
@@ -68,7 +70,8 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
   }
 
 
-  @Test @Ignore
+  @Test
+  @Ignore
   public void shouldMatchTest0() throws Exception {
     run(() -> {
       final PsiElement test0 = getTestCallWithName("test", "test 0");
@@ -77,7 +80,8 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
-  @Test @Ignore
+  @Test
+  @Ignore
   public void shouldMatchTestWidgets0() throws Exception {
     run(() -> {
       final PsiElement testWidgets0 = getTestCallWithName("testWidgets", "test widgets 0");
@@ -86,7 +90,8 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
-  @Test @Ignore
+  @Test
+  @Ignore
   public void shouldMatchTest1() throws Exception {
     run(() -> {
       final PsiElement test1 = getTestCallWithName("test", "test 1");
@@ -95,7 +100,8 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
-  @Test @Ignore
+  @Test
+  @Ignore
   public void shouldNotMatchNonTest() throws Exception {
     run(() -> {
       final PsiElement nonTest = getTestCallWithName("nonTest", "not a test");
@@ -108,7 +114,8 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
-  @Test @Ignore
+  @Test
+  @Ignore
   public void shouldNotMatchNonGroup() throws Exception {
     run(() -> {
       final PsiElement nonGroup = getTestCallWithName("nonGroup", "not a group");
@@ -117,7 +124,8 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
-  @Test @Ignore
+  @Test
+  @Ignore
   public void shouldMatchCustomGroup() throws Exception {
     run(() -> {
       final PsiElement customGroup = getTestCallWithName("g", "custom group");
@@ -126,7 +134,8 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
-  @Test @Ignore
+  @Test
+  @Ignore
   public void shouldMatchCustomTest() throws Exception {
     run(() -> {
       final PsiElement customTest = getTestCallWithName("t", "custom test");
@@ -135,7 +144,8 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
-  @Test @Ignore
+  @Test
+  @Ignore
   public void shouldMatchWhenMultipleFilesLoad() throws Exception {
     run(() -> {
       fileContents.put(
@@ -154,7 +164,8 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
-  @Test @Ignore
+  @Test
+  @Ignore
   public void shouldNotMatchWhenAOutlineIsOutOfDate() throws Exception {
     run(() -> {
       // We'll replace the correct outline with an incorrect outline, which will flag the outline as invalid.
@@ -170,7 +181,7 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
   /**
    * Gets a specific test or test group call.
    *
-   * @param functionName The name of the function being called, eg test() or testWidgets()
+   * @param functionName The name of the function being called, e.g. test() or testWidgets()
    * @param testName     The name of the test desired, such as 'test 0' or 'test widgets 0'
    * @param filePath     The file containing the desired test.
    */
@@ -188,7 +199,7 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
   /**
    * Gets a specific test or test group call from {@code CUSTOM_TEST_LOCAL_PATH}.
    *
-   * @param functionName The name of the function being called, eg test() or testWidgets()
+   * @param functionName The name of the function being called, e.g. test() or testWidgets()
    * @param testName     The name of the test desired, such as 'test 0' or 'test widgets 0'
    */
   @NotNull

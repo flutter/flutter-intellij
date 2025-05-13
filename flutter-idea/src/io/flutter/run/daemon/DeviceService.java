@@ -260,7 +260,7 @@ public class DeviceService {
     catch (ExecutionException executionException) {
       LOG.info("Error starting up the Flutter device daemon", executionException);
 
-      // Couldn't start a new instance; don't shut down down any previous instance.
+      // Couldn't start a new instance; don't shut down any previous instance.
       return previous;
     }
   }
