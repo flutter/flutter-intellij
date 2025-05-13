@@ -13,7 +13,6 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.diagnostic.ErrorReportSubmitter;
 import com.intellij.openapi.diagnostic.IdeaLoggingEvent;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.diagnostic.SubmittedReportInfo;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
@@ -41,7 +40,6 @@ import static io.flutter.run.daemon.DaemonApi.COMPLETION_EXCEPTION_PREFIX;
 // Add this line at the top of getPluginByClassName():
 // if (true) return getPlugins()[getPlugins().length-1].getPluginId(); // DEBUG do not merge
 public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
-  private static final Logger LOG = Logger.getInstance(FlutterErrorReportSubmitter.class);
   private static final String[] KNOWN_ERRORS = new String[]{"Bad state: No element"};
 
   @NotNull

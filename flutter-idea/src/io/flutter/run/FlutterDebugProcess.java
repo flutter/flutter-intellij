@@ -55,12 +55,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
     super(executionEnvironment, session, executionResult, dartUrlResolver, app.getConnector(), mapper);
     this.app = app;
   }
-
-  @NotNull
-  public FlutterApp getApp() {
-    return app;
-  }
-
+  
   @Override
   protected void onVmConnected(@NotNull VmService vmService) {
     app.setFlutterDebugProcess(this);

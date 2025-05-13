@@ -45,7 +45,6 @@ public class FakeActiveEditorsOutlineService extends ActiveEditorsOutlineService
       flutterOutline = FlutterOutline.fromJson(JsonUtils.parseString(outlineContents).getAsJsonObject());
     }
     pathToFlutterOutline.put(filePath, flutterOutline);
-
   }
 
   @Nullable
@@ -60,7 +59,4 @@ public class FakeActiveEditorsOutlineService extends ActiveEditorsOutlineService
 
   public static final String CUSTOM_TEST_PATH = "testData/sample_tests/test/custom_test.dart";
   public static final String CUSTOM_OUTLINE_PATH = "testData/sample_tests/test/custom_outline.txt";
-
-  public static final String NO_TESTS_PATH = "testData/sample_tests/test/no_tests.dart";
-  public static final String NO_TESTS_OUTLINE_PATH = "testData/sample_tests/test/no_tests_outline.txt";
 }

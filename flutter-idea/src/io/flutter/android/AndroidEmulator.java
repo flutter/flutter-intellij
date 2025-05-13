@@ -13,7 +13,6 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
@@ -28,8 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class AndroidEmulator {
-  private static final Logger LOG = Logger.getInstance(AndroidEmulator.class);
-
+  
   @NotNull final AndroidSdk androidSdk;
   @NotNull final String id;
   ProcessAdapter listener;
