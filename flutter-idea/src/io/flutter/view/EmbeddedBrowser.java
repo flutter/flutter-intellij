@@ -200,7 +200,7 @@ public abstract class EmbeddedBrowser {
       }
     }
 
-    final JPanel center = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER));
+    final JPanel center = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.MIDDLE));
     center.add(panel);
     replacePanelLabel(center, contentManager);
   }

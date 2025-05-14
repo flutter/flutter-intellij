@@ -47,7 +47,7 @@ public class ViewUtils {
     }
 
     // Use VerticalFlowLayout to center the block of labels vertically
-    final JPanel centerPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER));
+    final JPanel centerPanel = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.MIDDLE));
     centerPanel.add(labelsPanel);
 
     replacePanelLabel(toolWindow, centerPanel);
@@ -73,7 +73,7 @@ public class ViewUtils {
       }
     }
 
-    final JPanel center = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER));
+    final JPanel center = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.MIDDLE));
     center.add(panel);
     replacePanelLabel(toolWindow, center);
   }
