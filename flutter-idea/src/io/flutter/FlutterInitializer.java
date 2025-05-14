@@ -55,7 +55,6 @@ import io.flutter.utils.OpenApiUtils;
 import io.flutter.view.InspectorViewFactory;
 import org.jetbrains.annotations.NotNull;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -333,12 +332,7 @@ public class FlutterInitializer implements StartupActivity {
 
     // Return if notification has been shown already
     final FlutterSettings settings = FlutterSettings.getInstance();
-    if (settings == null || settings.isAndroidStudioBotAcknowledged()) return;
-
-    // Return if the current date is not after May 16th, 2025
-    LocalDate targetLocalDate = LocalDate.of(2025, 5, 16);
-    LocalDate nowLocalDate = LocalDate.now();
-    if (nowLocalDate.isBefore(targetLocalDate)) return;
+    if (settings.isAndroidStudioBotAcknowledged()) return;
 
     ApplicationManager.getApplication().invokeLater(() -> {
       //noinspection DialogTitleCapitalization
