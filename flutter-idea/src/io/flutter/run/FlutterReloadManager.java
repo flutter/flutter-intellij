@@ -80,7 +80,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Handle the mechanics of performing a hot reload on file save.
  */
 public class FlutterReloadManager {
-  private static final Logger LOG = Logger.getInstance(FlutterReloadManager.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterReloadManager.class);
 
   private static final Map<String, NotificationGroup> toolWindowNotificationGroups = new HashMap<>();
 

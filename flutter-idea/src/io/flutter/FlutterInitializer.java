@@ -69,7 +69,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * may run when a project is being imported.
  */
 public class FlutterInitializer implements StartupActivity {
-  private static final Logger LOG = Logger.getInstance(FlutterInitializer.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterInitializer.class);
 
   private boolean toolWindowsInitialized = false;
 

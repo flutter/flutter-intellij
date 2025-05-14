@@ -61,7 +61,7 @@ import java.util.function.Consumer;
  * A running Flutter app.
  */
 public class FlutterApp implements Disposable {
-  private static final Logger LOG = Logger.getInstance(FlutterApp.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterApp.class);
   private static final Key<FlutterApp> FLUTTER_APP_KEY = new Key<>("FLUTTER_APP_KEY");
 
   private final @NotNull Project myProject;
@@ -689,7 +689,7 @@ public class FlutterApp implements Disposable {
  * Listens for events while running or debugging an app.
  */
 class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
-  private static final Logger LOG = Logger.getInstance(FlutterAppDaemonEventListener.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterAppDaemonEventListener.class);
 
   private final @NotNull FlutterApp app;
   private final @NotNull ProgressHelper progress;

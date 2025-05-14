@@ -59,7 +59,7 @@ import static java.nio.file.FileVisitResult.CONTINUE;
 public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
   implements LaunchState.RunConfig, RefactoringListenerProvider, RunConfigurationWithSuppressedDefaultRunAction {
 
-  private static final Logger LOG = Logger.getInstance(SdkRunConfig.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(SdkRunConfig.class);
   private boolean firstRun = true;
 
   private @NotNull SdkFields fields = new SdkFields();

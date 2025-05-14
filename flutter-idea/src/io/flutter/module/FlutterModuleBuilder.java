@@ -55,7 +55,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static java.util.Arrays.asList;
 
 public class FlutterModuleBuilder extends ModuleBuilder {
-  private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
 
   protected FlutterModuleWizardStep myStep;
   private FlutterCreateAdditionalSettingsFields mySettingsFields;

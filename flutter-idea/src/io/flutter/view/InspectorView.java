@@ -61,7 +61,7 @@ import java.util.concurrent.atomic.AtomicReference;
   storages = {@Storage("$WORKSPACE_FILE$")}
 )
 public class InspectorView implements Disposable {
-  private static final Logger LOG = Logger.getInstance(InspectorView.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(InspectorView.class);
 
   public static final @NotNull String TOOL_WINDOW_ID = "Flutter Inspector";
 

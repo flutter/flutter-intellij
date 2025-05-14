@@ -66,7 +66,8 @@ public class FlutterTestRunner extends GenericProgramRunner {
 
   @Override
   public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
-    if (!(DefaultDebugExecutor.EXECUTOR_ID.equals(executorId) || ToolWindowId.RUN.equals(executorId)) || !(profile instanceof TestConfig config)) {
+    if (!(DefaultDebugExecutor.EXECUTOR_ID.equals(executorId) || ToolWindowId.RUN.equals(executorId)) ||
+        !(profile instanceof TestConfig config)) {
       return false;
     }
 
@@ -330,5 +331,5 @@ public class FlutterTestRunner extends GenericProgramRunner {
     }
   }
 
-  private static final Logger LOG = Logger.getInstance(FlutterTestRunner.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterTestRunner.class);
 }

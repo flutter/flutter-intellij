@@ -45,7 +45,7 @@ import java.util.concurrent.CompletableFuture;
  * also available via the getValue() method.
  */
 public class DiagnosticsNode {
-  private static final Logger LOG = Logger.getInstance(DiagnosticsNode.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(DiagnosticsNode.class);
 
   private static final CustomIconMaker iconMaker = new CustomIconMaker();
 

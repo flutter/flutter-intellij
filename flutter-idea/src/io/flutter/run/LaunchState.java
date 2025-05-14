@@ -470,5 +470,5 @@ public class LaunchState extends CommandLineState {
 
   private static final Key<RunConfig> FLUTTER_RUN_CONFIG_KEY = new Key<>("FLUTTER_RUN_CONFIG_KEY");
 
-  private static final Logger LOG = Logger.getInstance(LaunchState.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(LaunchState.class);
 }
