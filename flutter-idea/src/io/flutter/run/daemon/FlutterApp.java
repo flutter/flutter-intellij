@@ -8,7 +8,6 @@ package io.flutter.run.daemon;
 import com.google.common.base.Stopwatch;
 import com.google.gson.JsonObject;
 import com.intellij.execution.ExecutionException;
-import com.intellij.execution.ExecutionManager;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
@@ -17,6 +16,7 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.ui.RunContentDescriptor;
+import com.intellij.execution.ui.RunContentManager;
 import com.intellij.history.LocalHistory;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
@@ -187,7 +187,7 @@ public class FlutterApp implements Disposable {
   public static List<FlutterApp> allFromProjectProcess(@NotNull Project project) {
     final List<FlutterApp> allRunningApps = new ArrayList<>();
     final List<RunContentDescriptor> runningProcesses =
-      ExecutionManager.getInstance(project).getContentManager().getAllDescriptors();
+      RunContentManager.getInstance(project).getAllDescriptors();
     for (RunContentDescriptor descriptor : runningProcesses) {
       final ProcessHandler process = descriptor.getProcessHandler();
       if (process != null) {
@@ -469,7 +469,7 @@ public class FlutterApp implements Disposable {
     }
     return getVMServiceManager().hasServiceExtension(name, onData);
   }
-  
+
   public void setConsole(@Nullable ConsoleView console) {
     myConsole = console;
   }
