@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Properties;
 
 public class FlutterColors {
-  private static final Logger LOG = Logger.getInstance(FlutterColors.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterColors.class);
 
   public static class FlutterColor {
     @NotNull

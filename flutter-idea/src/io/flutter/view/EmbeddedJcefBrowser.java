@@ -47,7 +47,7 @@ class EmbeddedJcefBrowserTab implements EmbeddedTab {
 }
 
 public class EmbeddedJcefBrowser extends EmbeddedBrowser {
-  private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(JxBrowserManager.class);
 
   public EmbeddedJcefBrowser(Project project) {
     super(project);

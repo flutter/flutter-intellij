@@ -49,7 +49,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
 
   public static final Map<String, Set<String>> KnownPaths = new HashMap<>();
   private static final Map<String, String> BuiltInPaths = new HashMap<>();
-  private static final Logger LOG = Logger.getInstance(FlutterIconLineMarkerProvider.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterIconLineMarkerProvider.class);
   private static final String MaterialRelativeAssetPath = "/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf";
   private static final String MaterialRelativeIconsPath = "/packages/flutter/lib/src/material/icons.dart";
   private static final String CupertinoRelativeAssetPath = "/assets/CupertinoIcons.ttf";

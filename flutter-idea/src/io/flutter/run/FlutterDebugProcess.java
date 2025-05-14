@@ -42,7 +42,7 @@ import java.util.Objects;
  * when not debugging in order to support hot reload.)
  */
 public class FlutterDebugProcess extends DartVmServiceDebugProcess {
-  private static final Logger LOG = Logger.getInstance(FlutterDebugProcess.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterDebugProcess.class);
 
   private final @NotNull FlutterApp app;
 
@@ -55,7 +55,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
     super(executionEnvironment, session, executionResult, dartUrlResolver, app.getConnector(), mapper);
     this.app = app;
   }
-  
+
   @Override
   protected void onVmConnected(@NotNull VmService vmService) {
     app.setFlutterDebugProcess(this);

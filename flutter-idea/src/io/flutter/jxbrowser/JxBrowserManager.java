@@ -81,7 +81,7 @@ public class JxBrowserManager {
   @NotNull
   private static final AtomicBoolean listeningForSetting = new AtomicBoolean(false);
   @NotNull
-  private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(JxBrowserManager.class);
   @NotNull
   public static CompletableFuture<JxBrowserStatus> installation = new CompletableFuture<>();
   @NotNull

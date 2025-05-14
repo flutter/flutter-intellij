@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * as notifying interested parties when the list changes.
  */
 public class AndroidEmulatorManager {
-  private static final Logger LOG = Logger.getInstance(AndroidEmulatorManager.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(AndroidEmulatorManager.class);
 
   @NotNull
   public static AndroidEmulatorManager getInstance(@NotNull Project project) {

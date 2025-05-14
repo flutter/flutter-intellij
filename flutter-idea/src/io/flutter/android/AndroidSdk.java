@@ -29,7 +29,7 @@ import java.util.List;
  * A wrapper around an Android SDK on disk.
  */
 public class AndroidSdk {
-  private static final Logger LOG = Logger.getInstance(AndroidSdk.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(AndroidSdk.class);
 
   @Nullable
   public static AndroidSdk createFromProject(@NotNull Project project) {

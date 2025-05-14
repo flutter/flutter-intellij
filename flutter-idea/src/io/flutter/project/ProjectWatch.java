@@ -87,5 +87,5 @@ public class ProjectWatch implements Closeable {
     }
   }
 
-  private static final Logger LOG = Logger.getInstance(ProjectWatch.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(ProjectWatch.class);
 }

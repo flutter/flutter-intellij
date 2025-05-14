@@ -27,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
  * A console view that filters out JSON messages sent in --machine mode.
  */
 public class DaemonConsoleView extends ConsoleViewImpl {
-  private static final Logger LOG = Logger.getInstance(DaemonConsoleView.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(DaemonConsoleView.class);
 
   /**
    * Sets up a launcher to use a DaemonConsoleView.

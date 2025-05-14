@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class FlutterCupertinoIcons {
-  private static final Logger LOG = Logger.getInstance(FlutterCupertinoIcons.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterCupertinoIcons.class);
 
   private static final Properties icons;
 

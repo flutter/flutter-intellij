@@ -59,7 +59,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class DartVmServiceDebugProcess extends XDebugProcess {
-  private static final Logger LOG = Logger.getInstance(DartVmServiceDebugProcess.class.getName());
+  private static final @NotNull Logger LOG = Logger.getInstance(DartVmServiceDebugProcess.class.getName());
 
   @NotNull private final ExecutionResult myExecutionResult;
   @NotNull private final DartUrlResolver myDartUrlResolver;

@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class FlutterMaterialIcons {
-  private static final Logger LOG = Logger.getInstance(FlutterMaterialIcons.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterMaterialIcons.class);
 
   private static final Properties icons;
 

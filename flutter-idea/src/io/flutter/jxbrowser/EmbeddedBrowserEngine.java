@@ -20,7 +20,7 @@ import static com.teamdev.jxbrowser.engine.RenderingMode.HARDWARE_ACCELERATED;
 import static com.teamdev.jxbrowser.engine.RenderingMode.OFF_SCREEN;
 
 public class EmbeddedBrowserEngine {
-  private static final Logger LOG = Logger.getInstance(EmbeddedBrowserEngine.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(EmbeddedBrowserEngine.class);
   private final Engine engine;
 
   public static EmbeddedBrowserEngine getInstance() {
@@ -46,7 +46,8 @@ public class EmbeddedBrowserEngine {
     Engine temp;
     try {
       temp = Engine.newInstance(options);
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       temp = null;
       LOG.info(ex);
     }
@@ -59,7 +60,8 @@ public class EmbeddedBrowserEngine {
           if (engine != null && !engine.isClosed()) {
             engine.close();
           }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
           LOG.info(ex);
         }
         return true;

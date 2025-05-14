@@ -17,7 +17,7 @@ import org.dartlang.vm.service.element.RPCError;
 import java.util.concurrent.CompletableFuture;
 
 public class DisplayRefreshRateManager {
-  private static final Logger LOG = Logger.getInstance(DisplayRefreshRateManager.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(DisplayRefreshRateManager.class);
   private static boolean notificationDisplayedAlready = false;
 
   public static final double defaultRefreshRate = 60.0;
