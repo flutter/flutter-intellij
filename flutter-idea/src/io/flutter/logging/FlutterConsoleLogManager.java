@@ -56,7 +56,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * console.
  */
 public class FlutterConsoleLogManager {
-  private static final Logger LOG = Logger.getInstance(FlutterConsoleLogManager.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterConsoleLogManager.class);
 
   private static final String consolePreferencesSetKey = "io.flutter.console.preferencesSet";
   private static final String DEEP_LINK_GROUP_ID = "deeplink";

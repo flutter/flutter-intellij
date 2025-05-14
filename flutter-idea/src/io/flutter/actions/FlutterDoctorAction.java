@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 
 public class FlutterDoctorAction extends FlutterSdkAction {
 
-  private static final Logger LOG = Logger.getInstance(FlutterDoctorAction.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterDoctorAction.class);
 
   public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root) {
     sdk.flutterDoctor().startInConsole(project);

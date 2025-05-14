@@ -178,5 +178,5 @@ public class WorkspaceCache {
     }
   }
 
-  private static final Logger LOG = Logger.getInstance(WorkspaceCache.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(WorkspaceCache.class);
 }

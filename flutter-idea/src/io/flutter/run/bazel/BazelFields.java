@@ -52,7 +52,7 @@ import static io.flutter.run.common.RunMode.PROFILE;
  * This class is immutable.
  */
 public class BazelFields {
-  private static final Logger LOG = Logger.getInstance(BazelFields.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(BazelFields.class);
 
   /**
    * The Bazel target or Dart file to invoke.

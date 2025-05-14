@@ -21,7 +21,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class DevToolsService {
-  private static final Logger LOG = Logger.getInstance(DevToolsService.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(DevToolsService.class);
+
   protected static class DevToolsServiceListener implements DaemonEvent.Listener {
   }
 
@@ -96,13 +97,15 @@ public class DevToolsService {
       if (devToolsServerProgressIndicator != null && devToolsServerProgressIndicator.isRunning()) {
         devToolsServerProgressIndicator.cancel();
       }
-    } else {
+    }
+    else {
       // If this is not a force-restart request, do not start a new DevTools server if one is already running, or if we have a
       // DevTools instance.
       if (devToolsServerProgressIndicator != null) {
         if (devToolsServerProgressIndicator.isRunning() || devToolsInstanceExists()) {
           return;
-        } else {
+        }
+        else {
           devToolsServerProgressIndicator.cancel();
         }
       }
@@ -123,6 +126,7 @@ public class DevToolsService {
     }
     return false;
   }
+
   private CompletableFuture<Boolean> pubActivateDevTools(FlutterSdk sdk) {
     final FlutterCommand command = sdk.flutterPub(null, "global", "activate", "devtools");
 

@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Properties;
 
 public class FlutterCupertinoColors {
-  private static final Logger LOG = Logger.getInstance(FlutterCupertinoColors.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterCupertinoColors.class);
 
   private static final Properties colors;
 

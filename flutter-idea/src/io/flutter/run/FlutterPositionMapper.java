@@ -40,7 +40,7 @@ import java.util.concurrent.CompletableFuture;
  * Used when setting breakpoints, stepping through code, and so on while debugging.
  */
 public class FlutterPositionMapper implements DartVmServiceDebugProcess.PositionMapper {
-  private static final Logger LOG = Logger.getInstance(FlutterPositionMapper.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterPositionMapper.class);
 
   /**
    * This Project can't be non-null as we set it to null {@link #shutdown()} so the Project isn't held onto.
