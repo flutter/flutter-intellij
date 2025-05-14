@@ -9,7 +9,6 @@ import com.intellij.util.xmlb.XmlSerializer;
 import io.flutter.run.daemon.DevToolsInstance;
 import org.jdom.Element;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Set;
@@ -43,24 +42,7 @@ public class BazelFieldsTest {
     assertEquals("--android_cpu=x86", fields.getAdditionalArgs());
     assertFalse(fields.getEnableReleaseMode());
   }
-
-  @Test @Ignore
-  public void shouldUpgradeFieldsFromOldXml() {
-    final Element elt = new Element("test");
-    addOption(elt, "entryFile", "/tmp/test/dir/lib/main.dart"); // obsolete
-    addOption(elt, "launchingScript", "path/to/bazel-run.sh"); // obsolete
-    addOption(elt, "bazelTarget", "//path/to/flutter/app:hello"); // obsolete
-    addOption(elt, "enableReleaseMode", "true");
-    addOption(elt, "additionalArgs", "--android_cpu=x86");
-
-    final BazelFields fields = BazelFields.readFrom(elt);
-    XmlSerializer.deserializeInto(fields, elt);
-    assertEquals("//path/to/flutter/app:hello", fields.getTarget());
-    assertNull(fields.getBazelArgs());
-    assertEquals("--android_cpu=x86", fields.getAdditionalArgs());
-    assertTrue(fields.getEnableReleaseMode());
-  }
-
+  
   @Test
   public void roundTripShouldPreserveFields() {
     final BazelFields before = new BazelFields(
