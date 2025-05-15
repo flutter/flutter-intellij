@@ -26,7 +26,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
-import com.intellij.util.ui.EdtInvocationManager;
+import com.intellij.util.ui.EDT;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import git4idea.config.GitExecutableManager;
 import io.flutter.FlutterBundle;
@@ -159,7 +159,7 @@ public class FlutterSdk {
   @Nullable
   private static Library getDartSdkLibrary(@NotNull Project project) {
     LibraryTablesRegistrar registrar = LibraryTablesRegistrar.getInstance();
-    if (registrar == null) return  null;
+    if (registrar == null) return null;
     final LibraryTable libraryTable = registrar.getLibraryTable(project);
     for (Library lib : libraryTable.getLibraries()) {
       if (lib != null && "Dart SDK".equals(lib.getName())) {
@@ -458,7 +458,7 @@ public class FlutterSdk {
       return null;
     }
 
-    if (EdtInvocationManager.getInstance().isEventDispatchThread()) {
+    if (EDT.isCurrentThreadEdt()) {
       VfsUtil.markDirtyAndRefresh(false, true, true, baseDir); // Need this for AS.
     }
     else {
@@ -670,7 +670,7 @@ public class FlutterSdk {
         }
 
         final JsonObject obj = elem.getAsJsonObject();
-        if (obj == null) return  null;
+        if (obj == null) return null;
 
         for (String jsonKey : JsonUtils.getKeySet(obj)) {
           final JsonElement element = obj.get(jsonKey);
