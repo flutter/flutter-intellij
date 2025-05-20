@@ -43,9 +43,11 @@ jvmVersion = when (javaVersion) {
   "17" -> {
     JvmTarget.JVM_17
   }
+
   "21" -> {
     JvmTarget.JVM_21
   }
+
   else -> {
     throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
   }
@@ -62,9 +64,11 @@ javaCompatibilityVersion = when (javaVersion) {
   "17" -> {
     JavaVersion.VERSION_17
   }
+
   "21" -> {
     JavaVersion.VERSION_21
   }
+
   else -> {
     throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
   }
@@ -98,6 +102,7 @@ dependencies {
       "Git4Idea",
       "org.jetbrains.kotlin",
       "org.jetbrains.plugins.gradle",
+      "org.jetbrains.plugins.yaml",
       "org.intellij.intelliLang",
     )
     val pluginList = mutableListOf("Dart:$dartPluginVersion")
@@ -178,62 +183,136 @@ dependencies {
   testImplementation(mapOf("group" to "org.mockito", "name" to "mockito-core", "version" to "5.2.0"))
   if (ideaProduct == "android-studio") {
     testImplementation(project(":flutter-studio"))
-    testRuntimeOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins",
-      "include" to listOf("**/*.jar"),
-      "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar", "**/kotlin-stdlib-jdk8.jar"))))
-    compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/lib",
-      "include" to listOf("*.jar"),
-      "exclude" to listOf("**/annotations.jar"))))
-    testRuntimeOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/lib",
-      "include" to listOf("*.jar"))))
-    compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins/git4idea/lib",
-      "include" to listOf("*.jar"))))
-    testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins/git4idea/lib",
-      "include" to listOf("*.jar"))))
+    testRuntimeOnly(
+      fileTree(
+        mapOf(
+          "dir" to "${project.rootDir}/artifacts/android-studio/plugins",
+          "include" to listOf("**/*.jar"),
+          "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar", "**/kotlin-stdlib-jdk8.jar")
+        )
+      )
+    )
+    compileOnly(
+      fileTree(
+        mapOf(
+          "dir" to "${project.rootDir}/artifacts/android-studio/lib",
+          "include" to listOf("*.jar"),
+          "exclude" to listOf("**/annotations.jar")
+        )
+      )
+    )
+    testRuntimeOnly(
+      fileTree(
+        mapOf(
+          "dir" to "${project.rootDir}/artifacts/android-studio/lib",
+          "include" to listOf("*.jar")
+        )
+      )
+    )
+    compileOnly(
+      fileTree(
+        mapOf(
+          "dir" to "${project.rootDir}/artifacts/android-studio/plugins/git4idea/lib",
+          "include" to listOf("*.jar")
+        )
+      )
+    )
+    testImplementation(
+      fileTree(
+        mapOf(
+          "dir" to "${project.rootDir}/artifacts/android-studio/plugins/git4idea/lib",
+          "include" to listOf("*.jar")
+        )
+      )
+    )
   } else {
-    compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/ideaIC/plugins/git4idea/lib",
-      "include" to listOf("*.jar"))))
-    compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/ideaIC/plugins/java/lib",
-      "include" to listOf("*.jar"))))
-    testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/ideaIC/plugins/git4idea/lib",
-      "include" to listOf("*.jar"))))
+    compileOnly(
+      fileTree(
+        mapOf(
+          "dir" to "${project.rootDir}/artifacts/ideaIC/plugins/git4idea/lib",
+          "include" to listOf("*.jar")
+        )
+      )
+    )
+    compileOnly(
+      fileTree(
+        mapOf(
+          "dir" to "${project.rootDir}/artifacts/ideaIC/plugins/java/lib",
+          "include" to listOf("*.jar")
+        )
+      )
+    )
+    testImplementation(
+      fileTree(
+        mapOf(
+          "dir" to "${project.rootDir}/artifacts/ideaIC/plugins/git4idea/lib",
+          "include" to listOf("*.jar")
+        )
+      )
+    )
   }
   compileOnly("com.google.guava:guava:32.0.1-android")
   compileOnly("com.google.code.gson:gson:2.10.1")
   testImplementation("com.google.guava:guava:32.0.1-jre")
   testImplementation("com.google.code.gson:gson:2.10.1")
   testImplementation("junit:junit:4.13.2")
-  runtimeOnly(fileTree(mapOf("dir" to "${project.rootDir}/third_party/lib/jxbrowser",
-    "include" to listOf("*.jar"))))
-  compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/third_party/lib/jxbrowser",
-    "include" to listOf("*.jar"))))
-  testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/third_party/lib/jxbrowser",
-    "include" to listOf("*.jar"))))
+  runtimeOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/third_party/lib/jxbrowser",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+  compileOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/third_party/lib/jxbrowser",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+  testImplementation(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/third_party/lib/jxbrowser",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
 }
 
 sourceSets {
   main {
-    java.srcDirs(listOf(
-      "src",
-      "third_party/vmServiceDrivers"
-    ))
+    java.srcDirs(
+      listOf(
+        "src",
+        "third_party/vmServiceDrivers"
+      )
+    )
     // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
-    resources.srcDirs(listOf(
-      "src",
-      "resources"
-    ))
+    resources.srcDirs(
+      listOf(
+        "src",
+        "resources"
+      )
+    )
   }
   test {
-    java.srcDirs(listOf(
-      "src",
-      "testSrc/unit",
-      "third_party/vmServiceDrivers"
-    ))
-    resources.srcDirs(listOf(
-      "resources",
-      "testData",
-      "testSrc/unit"
-    ))
+    java.srcDirs(
+      listOf(
+        "src",
+        "testSrc/unit",
+        "third_party/vmServiceDrivers"
+      )
+    )
+    resources.srcDirs(
+      listOf(
+        "resources",
+        "testData",
+        "testSrc/unit"
+      )
+    )
   }
 }
 
