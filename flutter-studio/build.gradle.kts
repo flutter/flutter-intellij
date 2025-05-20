@@ -43,9 +43,11 @@ jvmVersion = when (javaVersion) {
   "17" -> {
     JvmTarget.JVM_17
   }
+
   "21" -> {
     JvmTarget.JVM_21
   }
+
   else -> {
     throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
   }
@@ -62,9 +64,11 @@ javaCompatibilityVersion = when (javaVersion) {
   "17" -> {
     JavaVersion.VERSION_17
   }
+
   "21" -> {
     JavaVersion.VERSION_21
   }
+
   else -> {
     throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
   }
@@ -88,14 +92,16 @@ dependencies {
     // Plugin dependency documentation:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
     val bundledPluginList = mutableListOf(
+      "com.google.tools.ij.aiplugin",
       "com.intellij.java",
       "com.intellij.properties",
       "JUnit",
       "Git4Idea",
       "org.jetbrains.kotlin",
       "org.jetbrains.plugins.gradle",
-      "org.intellij.intelliLang",
-      "org.intellij.intelliLang")
+      "org.jetbrains.plugins.yaml",
+      "org.intellij.intelliLang"
+    )
     if (ideaProduct == "android-studio") {
       bundledPluginList.add("org.jetbrains.android")
       bundledPluginList.add("com.android.tools.idea.smali")
@@ -130,23 +136,49 @@ intellijPlatform {
 dependencies {
   compileOnly(project(":flutter-idea"))
   testImplementation(project(":flutter-idea"))
-  compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/lib",
-    "include" to listOf("*.jar"))))
-  testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/lib",
-    "include" to listOf("*.jar"))))
-  compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins",
-    "include" to listOf("**/*.jar"),
-    "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar"))))
-  testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins",
-    "include" to listOf("**/*.jar"),
-    "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar"))))
+  compileOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio/lib",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+  testImplementation(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio/lib",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+  compileOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio/plugins",
+        "include" to listOf("**/*.jar"),
+        "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar")
+      )
+    )
+  )
+  testImplementation(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio/plugins",
+        "include" to listOf("**/*.jar"),
+        "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar")
+      )
+    )
+  )
 }
 
 sourceSets {
   main {
-    java.srcDirs(listOf(
-      "src",
-      "third_party/vmServiceDrivers"
-    ))
+    java.srcDirs(
+      listOf(
+        "src",
+        "third_party/vmServiceDrivers"
+      )
+    )
   }
 }

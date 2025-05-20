@@ -25,7 +25,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.messages.MessageBusConnection;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
@@ -68,7 +67,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @see io.flutter.project.FlutterProjectOpenProcessor for additional actions that
  * may run when a project is being imported.
  */
-public class FlutterInitializer implements StartupActivity {
+public class FlutterInitializer extends FlutterProjectActivity {
   private static final @NotNull Logger LOG = Logger.getInstance(FlutterInitializer.class);
 
   private boolean toolWindowsInitialized = false;
@@ -78,7 +77,7 @@ public class FlutterInitializer implements StartupActivity {
   private @NotNull AtomicLong lastScheduledThemeChangeTime = new AtomicLong();
 
   @Override
-  public void runActivity(@NotNull Project project) {
+  public void executeProjectStartup(@NotNull Project project) {
     // Disable the 'Migrate Project to Gradle' notification.
     FlutterUtils.disableGradleProjectMigrationNotification(project);
 

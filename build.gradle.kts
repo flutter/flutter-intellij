@@ -64,9 +64,11 @@ jvmVersion = when (javaVersion) {
   "17" -> {
     JvmTarget.JVM_17
   }
+
   "21" -> {
     JvmTarget.JVM_21
   }
+
   else -> {
     throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
   }
@@ -115,13 +117,16 @@ dependencies {
     // Plugin dependency documentation:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
     val bundledPluginList = mutableListOf(
+      "com.google.tools.ij.aiplugin",
       "com.intellij.java",
       "com.intellij.properties",
       "JUnit",
       "Git4Idea",
       "org.jetbrains.kotlin",
       "org.jetbrains.plugins.gradle",
-      "org.intellij.intelliLang")
+      "org.jetbrains.plugins.yaml",
+      "org.intellij.intelliLang"
+    )
     val pluginList = mutableListOf("Dart:$dartPluginVersion")
     if (ideaProduct == "android-studio") {
       bundledPluginList.add("org.jetbrains.android")
