@@ -117,6 +117,7 @@ dependencies {
     // Plugin dependency documentation:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
     val bundledPluginList = mutableListOf(
+      "com.google.tools.ij.aiplugin",
       "com.intellij.java",
       "com.intellij.properties",
       "JUnit",
