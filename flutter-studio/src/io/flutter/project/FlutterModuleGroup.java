@@ -26,7 +26,7 @@ public abstract class FlutterModuleGroup extends FlutterModuleBuilder {
   public ModuleWizardStep getCustomOptionsStep(final WizardContext context, final Disposable parentDisposable) {
     // This runs each time the project type selection changes.
     FlutterModuleWizardStep step = (FlutterModuleWizardStep)super.getCustomOptionsStep(context, parentDisposable);
-    assert step != null;
+    assert step!= null;
     getSettingsField().linkHelpForm(step.getHelpForm());
     setProjectTypeInSettings();
     return step;
