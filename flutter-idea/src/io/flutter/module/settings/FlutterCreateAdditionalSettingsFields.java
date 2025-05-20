@@ -142,6 +142,10 @@ public class FlutterCreateAdditionalSettingsFields {
     });
   }
 
+  public void updateProjectType(FlutterProjectType projectType) {
+    // TODO(messick) Remove this method and its caller, which is in the flutter-studio module.
+  }
+
   public FlutterCreateAdditionalSettings getAdditionalSettings() {
     return new FlutterCreateAdditionalSettings.Builder()
       .setDescription(!descriptionField.getText().trim().isEmpty() ? descriptionField.getText().trim() : null)
