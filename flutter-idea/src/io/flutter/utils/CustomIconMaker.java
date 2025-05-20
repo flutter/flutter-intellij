@@ -46,8 +46,8 @@ public class CustomIconMaker {
 
     if (!iconCache.containsKey(mapKey)) {
       final Icon baseIcon = isAbstract ? kind.abstractIcon : kind.icon;
-
-      final Icon icon = new LayeredIcon(baseIcon, new Icon() {
+      
+      final Icon icon = LayeredIcon.layeredIcon(() -> new Icon[]{baseIcon, new Icon() {
         public void paintIcon(Component c, Graphics g, int x, int y) {
           final Graphics2D g2 = (Graphics2D)g.create();
 
@@ -78,7 +78,7 @@ public class CustomIconMaker {
         public int getIconHeight() {
           return baseIcon != null ? baseIcon.getIconHeight() : 13;
         }
-      });
+      }});
 
       iconCache.put(mapKey, icon);
     }
