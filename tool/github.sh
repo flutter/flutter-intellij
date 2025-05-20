@@ -76,6 +76,8 @@ elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
   ./bin/plugin test --no-setup
 
 else
+  # Run the vefifier for this version
+  ./bin/plugin verify --only-version=$IDEA_VERSION
 
   # Run the build.
   ./bin/plugin make --channel=stable --only-version=$IDEA_VERSION --no-setup
