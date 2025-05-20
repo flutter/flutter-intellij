@@ -5,8 +5,6 @@
  */
 package io.flutter.utils;
 
-//import static com.android.tools.idea.gradle.project.importing.GradleProjectImporter.ANDROID_PROJECT_TYPE;
-
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.android.tools.idea.gradle.project.sync.GradleSyncState;
 import com.intellij.debugger.engine.DebugProcess;
@@ -46,7 +44,6 @@ import static io.flutter.actions.AttachDebuggerAction.ATTACH_IS_ACTIVE;
 import static io.flutter.actions.AttachDebuggerAction.findRunConfig;
 
 public class AddToAppUtils {
-  //private static final Logger LOG = Logger.getInstance(AddToAppUtils.class);
 
   private AddToAppUtils() {
   }
