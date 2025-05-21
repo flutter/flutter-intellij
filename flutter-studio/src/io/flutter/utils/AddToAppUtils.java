@@ -5,8 +5,6 @@
  */
 package io.flutter.utils;
 
-//import static com.android.tools.idea.gradle.project.importing.GradleProjectImporter.ANDROID_PROJECT_TYPE;
-
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.android.tools.idea.gradle.project.sync.GradleSyncState;
 import com.intellij.debugger.engine.DebugProcess;
@@ -46,7 +44,6 @@ import static io.flutter.actions.AttachDebuggerAction.ATTACH_IS_ACTIVE;
 import static io.flutter.actions.AttachDebuggerAction.findRunConfig;
 
 public class AddToAppUtils {
-  //private static final Logger LOG = Logger.getInstance(AddToAppUtils.class);
 
   private AddToAppUtils() {
   }
@@ -57,7 +54,7 @@ public class AddToAppUtils {
     //noinspection unchecked
     Topic<GradleSyncListener> topic = getStaticFieldValue(GradleSyncState.class, Topic.class, "GRADLE_SYNC_TOPIC");
     if (topic != null) {
-      connection.subscribe(topic, makeSyncListener(project));
+      connection.subscribe(topic, makeSyncListener());
     }
 
     if (!FlutterModuleUtils.hasFlutterModule(project)) {
@@ -103,8 +100,16 @@ public class AddToAppUtils {
         throw new IllegalArgumentException("Field " + objectClass + "." + fieldName + " is not static");
       }
       field.setAccessible(true);
-      //noinspection unchecked
-      return (T)field.get(null);
+
+      var value = field.get(null);
+      if (value == null) return null;
+
+      if (fieldType.isInstance(value)) {
+        return fieldType.cast(value); // Type-safe cast
+      }
+
+      // If `fieldType` is too broad, we might get here.
+      return null;
     }
     catch (NoSuchFieldException | IllegalAccessException e) {
       return null;
@@ -112,7 +117,7 @@ public class AddToAppUtils {
   }
 
   @NotNull
-  private static GradleSyncListener makeSyncListener(@NotNull Project project) {
+  private static GradleSyncListener makeSyncListener() {
     return new GradleSyncListener() {
       @Override
       public void syncSucceeded(@NotNull Project project) {
