@@ -15,12 +15,10 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.module.ModuleTypeManager;
-import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiElement;
 import com.intellij.serviceContainer.AlreadyDisposedException;
 import com.intellij.ui.EditorNotifications;
 import com.jetbrains.lang.dart.sdk.DartSdk;
@@ -44,8 +42,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class FlutterModuleUtils {
-  public static final String DEPRECATED_FLUTTER_MODULE_TYPE_ID = "WEB_MODULE";
-
   private FlutterModuleUtils() {
   }
 
@@ -102,10 +98,6 @@ public class FlutterModuleUtils {
     if (project.isDisposed()) return false;
 
     return CollectionUtils.anyMatch(getModules(project), FlutterModuleUtils::isFlutterModule);
-  }
-
-  public static boolean isInFlutterModule(@NotNull PsiElement element) {
-    return isFlutterModule(ModuleUtilCore.findModuleForPsiElement(element));
   }
 
   /**

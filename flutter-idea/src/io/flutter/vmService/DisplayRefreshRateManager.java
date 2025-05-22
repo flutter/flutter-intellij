@@ -40,24 +40,7 @@ public class DisplayRefreshRateManager {
       getDisplayRefreshRate().thenAcceptAsync(displayRefreshRateStream::setValue);
     });
   }
-
-  /**
-   * Return the current display refresh rate, if any.
-   * <p>
-   * Note that this may not be immediately populated at app startup for Flutter apps. In that case, this will return
-   * the default value (defaultRefreshRate). Clients that wish to be notified when the refresh rate is discovered
-   * should prefer the StreamSubscription variant of this method (getCurrentDisplayRefreshRate()).
-   */
-  public Double getCurrentDisplayRefreshRateRaw() {
-    synchronized (displayRefreshRateStream) {
-      Double fps = displayRefreshRateStream.getValue();
-      if (fps == null) {
-        fps = defaultRefreshRate;
-      }
-      return fps;
-    }
-  }
-
+  
   private CompletableFuture<Double> getDisplayRefreshRate() {
     final CompletableFuture<Double> displayRefreshRate = new CompletableFuture<>();
     vmServiceManager.getInspectorViewId().whenComplete((String id, Throwable throwable) -> {
