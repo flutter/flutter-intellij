@@ -24,8 +24,6 @@ import java.util.List;
  * context required to execute.
  */
 public abstract class FlutterRetargetAppAction extends DumbAwareAction {
-  public static final String RELOAD_DISPLAY_ID = "Flutter Commands"; //NON-NLS
-
   @NotNull
   private final String myActionId;
 

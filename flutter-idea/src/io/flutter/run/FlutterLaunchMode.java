@@ -37,10 +37,6 @@ public enum FlutterLaunchMode {
     this.myCliCommand = cliCommand;
   }
 
-  public String getCliCommand() {
-    return myCliCommand;
-  }
-
   /**
    * This mode supports a debug connection (but, doesn't necessarily support breakpoints and debugging).
    */
@@ -51,11 +47,7 @@ public enum FlutterLaunchMode {
   public boolean supportsReload() {
     return this == DEBUG;
   }
-
-  public boolean isProfiling() {
-    return this == PROFILE;
-  }
-
+  
   @Override
   public String toString() {
     return myCliCommand;
