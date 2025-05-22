@@ -16,6 +16,8 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.EditorColorsListener;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
@@ -26,12 +28,14 @@ import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.messages.MessageBusConnection;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import de.roderick.weberknecht.WebSocketException;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DtdUtils;
+import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.devtools.DevToolsExtensionsViewFactory;
 import io.flutter.devtools.DevToolsUtils;
 import io.flutter.devtools.RemainingDevToolsViewFactory;
@@ -54,6 +58,7 @@ import io.flutter.utils.OpenApiUtils;
 import io.flutter.view.InspectorViewFactory;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -90,6 +95,9 @@ public class FlutterInitializer extends FlutterProjectActivity {
     // If the project declares a Flutter dependency, do some extra initialization.
     boolean hasFlutterModule = false;
 
+
+    var roots = new ArrayList<PubRoot>();
+
     for (Module module : OpenApiUtils.getModules(project)) {
       final boolean declaresFlutter = FlutterModuleUtils.declaresFlutter(module);
 
@@ -108,8 +116,8 @@ public class FlutterInitializer extends FlutterProjectActivity {
           ensureAndroidSdk(project);
         }
 
-        // Set up a default run configuration for 'main.dart' (if it's not there already and the file exists).
-        FlutterModuleUtils.autoCreateRunConfig(project, root);
+        // Collect the root for later processing in a read context.
+        roots.add(root);
 
         // If there are no open editors, show main.
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
@@ -119,6 +127,27 @@ public class FlutterInitializer extends FlutterProjectActivity {
       }
     }
 
+
+    // Lambdas need final vars.
+    boolean finalHasFlutterModule = hasFlutterModule;
+    ReadAction.nonBlocking(() -> {
+        for (var root : roots) {
+          // Set up a default run configuration for 'main.dart' (if it's not there already and the file exists).
+          FlutterModuleUtils.autoCreateRunConfig(project, root);
+        }
+        return null;
+      })
+      .expireWith(FlutterDartAnalysisServer.getInstance(project))
+      .finishOnUiThread(ModalityState.defaultModalityState(), result -> {
+        edtInitialization(finalHasFlutterModule, project);
+      })
+      .submit(AppExecutorUtil.getAppExecutorService());
+  }
+
+  /***
+   * Initialization that needs to complete on the EDT thread.
+   */
+  private void edtInitialization(boolean hasFlutterModule, @NotNull Project project) {
     if (hasFlutterModule || WorkspaceCache.getInstance(project).isBazel()) {
       initializeToolWindows(project);
     }
