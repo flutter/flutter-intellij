@@ -24,7 +24,6 @@ import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import com.jetbrains.lang.dart.DartFileType;
 import io.flutter.bazel.WorkspaceCache;
-import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.OpenApiUtils;
@@ -93,15 +92,6 @@ public class VmServiceWrapper implements Disposable {
     }
   }
 
-  @NotNull
-  public List<IsolateRef> getExistingIsolates() {
-    List<IsolateRef> isolateRefs = new ArrayList<>();
-    for (IsolatesInfo.IsolateInfo isolateInfo : myIsolatesInfo.getIsolateInfos()) {
-      isolateRefs.add(isolateInfo.getIsolateRef());
-    }
-    return isolateRefs;
-  }
-
   @Nullable
   public StepOption getLatestStep() {
     return myLatestStep;
@@ -145,7 +135,7 @@ public class VmServiceWrapper implements Disposable {
 
                       // This is the entry point for attaching a debugger to a running app.
                       if (eventKind == EventKind.Resume) {
-                        attachIsolate(isolateRef, isolate);
+                        attachIsolate(isolateRef);
                         return;
                       }
                       // if event is not PauseStart it means that PauseStart event will follow later and will be handled by listener
@@ -291,13 +281,16 @@ public class VmServiceWrapper implements Disposable {
     }
   }
 
-  public void attachIsolate(@NotNull IsolateRef isolateRef, @NotNull Isolate isolate) {
+  public void attachIsolate(@NotNull IsolateRef isolateRef) {
     boolean newIsolate = myIsolatesInfo.addIsolate(isolateRef);
     // Just to make sure that the main isolate is not handled twice, both from handleDebuggerConnected() and DartVmServiceListener.received(PauseStart)
     if (newIsolate) {
-      XDebugSessionImpl session = (XDebugSessionImpl)myDebugProcess.getSession();
+      var session = myDebugProcess.getSession();
       OpenApiUtils.safeRunReadAction(() -> {
-        session.reset();
+        // Only the impl class supports reset so we need to cast.
+        // Note that `XDebugSessionImpl` is marked internal, so this may not be safe long-run.
+        // See: https://github.com/flutter/flutter-intellij/issues/7718
+        ((XDebugSessionImpl)session).reset();
         session.initBreakpoints();
       });
       setIsolatePauseMode(isolateRef.getId(), myDebugProcess.getBreakOnExceptionMode(), isolateRef);
@@ -326,20 +319,6 @@ public class VmServiceWrapper implements Disposable {
     }
     else {
       doSetInitialBreakpointsAndResume(isolateRef);
-    }
-  }
-
-  private void setInitialBreakpointsAndCheckExtensions(@NotNull IsolateRef isolateRef, @NotNull Isolate isolate) {
-    doSetBreakpointsForIsolate(myBreakpointHandler.getXBreakpoints(), isolateRef.getId(), () -> {
-      myIsolatesInfo.setBreakpointsSet(isolateRef);
-    });
-    FlutterApp app = FlutterApp.fromEnv(myDebugProcess.getExecutionEnvironment());
-    // TODO(messick) Consider replacing this test with an assert; could interfere with setExceptionPauseMode().
-    if (app != null) {
-      VMServiceManager service = app.getVMServiceManager();
-      if (service != null) {
-        service.addRegisteredExtensionRPCs(isolate, true);
-      }
     }
   }
 
@@ -474,7 +453,6 @@ public class VmServiceWrapper implements Disposable {
       return true;
     }
 
-    FlutterSdk sdk = FlutterSdk.getFlutterSdk(myDebugProcess.getSession().getProject());
     return VmServiceVersion.hasMapping(version);
   }
 
