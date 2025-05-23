@@ -277,23 +277,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
   String getRemoteSourceRoot() {
     return remoteSourceRoot;
   }
-
-  /**
-   * Attempt to find a local Dart file corresponding to a script in Observatory.
-   */
-  @Nullable
-  private VirtualFile findLocalFile(@NotNull ScriptRef scriptRef) {
-    return findLocalFile(scriptRef.getUri());
-  }
-
-  /**
-   * Attempt to find a local Dart file corresponding to a script in Observatory.
-   */
-  @Nullable
-  private VirtualFile findLocalFile(@NotNull Script script) {
-    return findLocalFile(script.getUri());
-  }
-
+  
   @Nullable
   protected VirtualFile findLocalFile(@NotNull String uri) {
     return findLocalFile(uri, null);

@@ -53,8 +53,6 @@ import java.util.*;
 import static java.util.Arrays.asList;
 
 public class FlutterSdk {
-  public static final @NotNull String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
-
   public static final @NotNull String DART_SDK_SUFFIX = "/bin/cache/dart-sdk";
   public static final @NotNull String LINUX_DART_SUFFIX = "/google-dartlang";
   public static final @NotNull String LOCAL_DART_SUFFIX = "/google-dartlang-local";
@@ -366,15 +364,6 @@ public class FlutterSdk {
     args.add(FileUtil.toSystemDependentName(mainPath));
 
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.ATTACH, args.toArray(new String[]{ }));
-  }
-
-  @NotNull
-  public FlutterCommand flutterRunOnTester(@NotNull PubRoot root, @NotNull String mainPath) {
-    final List<String> args = new ArrayList<>();
-    args.add("--machine");
-    args.add("--device-id=flutter-tester");
-    args.add(mainPath);
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{ }));
   }
 
   @NotNull

@@ -106,12 +106,7 @@ public class InspectorView implements Disposable {
   public void dispose() {
     Disposer.dispose(this);
   }
-
-  @NotNull
-  public Project getProject() {
-    return myProject;
-  }
-
+  
   void initToolWindow(@NotNull ToolWindow window) {
     if (window.isDisposed()) return;
 

@@ -14,9 +14,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.lang.dart.psi.DartFile;
-import com.jetbrains.lang.dart.psi.DartImportStatement;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
@@ -25,9 +23,6 @@ import io.flutter.bazel.WorkspaceCache;
 import io.flutter.pub.PubRoot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Arrays;
-import java.util.stream.Stream;
 
 /**
  * The location of a Dart file containing a main() method for launching a Flutter app.
@@ -42,12 +37,9 @@ public class MainFile {
   @NotNull
   private final VirtualFile appDir;
 
-  private final boolean flutterImports;
-
-  private MainFile(@NotNull VirtualFile file, @NotNull VirtualFile appDir, boolean flutterImports) {
+  private MainFile(@NotNull VirtualFile file, @NotNull VirtualFile appDir) {
     this.file = file;
     this.appDir = appDir;
-    this.flutterImports = flutterImports;
   }
 
   /**
@@ -64,13 +56,6 @@ public class MainFile {
   @NotNull
   public VirtualFile getAppDir() {
     return appDir;
-  }
-
-  /**
-   * Returns true if the file has any direct flutter imports.
-   */
-  public boolean hasFlutterImports() {
-    return flutterImports;
   }
 
   /**
@@ -118,9 +103,7 @@ public class MainFile {
       return error(FlutterBundle.message("entrypoint.not.in.app.dir"));
     }
 
-    final boolean hasFlutterImports = findImportUrls(dart).anyMatch((url) -> url.startsWith("package:flutter/"));
-
-    return new MainFile.Result(new MainFile(file, dir, hasFlutterImports), null);
+    return new MainFile.Result(new MainFile(file, dir), null);
   }
 
   @Nullable
@@ -151,17 +134,6 @@ public class MainFile {
     // but is very slow and unacceptably blocks the UI thread.
     // See: https://github.com/flutter/flutter-intellij/issues/8089
     return file != null && BaseProjectDirectories.getInstance(project).contains(file);
-  }
-
-  /**
-   * Returns the import URL's in a Dart file.
-   */
-  @NotNull
-  private static Stream<String> findImportUrls(@NotNull DartFile file) {
-    final DartImportStatement[] imports = PsiTreeUtil.getChildrenOfType(file, DartImportStatement.class);
-    if (imports == null) return Stream.empty();
-
-    return Arrays.stream(imports).map(DartImportStatement::getUriString);
   }
 
   private static MainFile.Result error(@NotNull String message) {

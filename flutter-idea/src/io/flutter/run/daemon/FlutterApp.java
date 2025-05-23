@@ -65,7 +65,6 @@ public class FlutterApp implements Disposable {
   private static final Key<FlutterApp> FLUTTER_APP_KEY = new Key<>("FLUTTER_APP_KEY");
 
   private final @NotNull Project myProject;
-  private final @Nullable Module myModule;
   private final @NotNull RunMode myMode;
   private final @NotNull FlutterDevice myDevice;
   private final @NotNull ProcessHandler myProcessHandler;
@@ -89,8 +88,6 @@ public class FlutterApp implements Disposable {
   private int reloadCount;
   private int userReloadCount;
   private int restartCount;
-
-  private long maxFileTimestamp;
 
   /**
    * Non-null when the debugger is paused.
@@ -117,7 +114,6 @@ public class FlutterApp implements Disposable {
   }
 
   FlutterApp(@NotNull Project project,
-             @Nullable Module module,
              @NotNull RunMode mode,
              @NotNull FlutterDevice device,
              @NotNull ProcessHandler processHandler,
@@ -125,7 +121,6 @@ public class FlutterApp implements Disposable {
              @NotNull DaemonApi daemonApi,
              @NotNull GeneralCommandLine command) {
     myProject = project;
-    myModule = module;
     myMode = mode;
     myDevice = device;
     myProcessHandler = processHandler;
@@ -133,7 +128,6 @@ public class FlutterApp implements Disposable {
     myExecutionEnvironment = executionEnvironment;
     myDaemonApi = daemonApi;
     myCommand = command;
-    maxFileTimestamp = System.currentTimeMillis();
     myConnector = new ObservatoryConnector() {
       @Override
       public @Nullable
@@ -242,7 +236,7 @@ public class FlutterApp implements Disposable {
     Disposer.register(FlutterDartAnalysisServer.getInstance(project), process::destroyProcess);
 
     final DaemonApi api = new DaemonApi(process);
-    final FlutterApp app = new FlutterApp(project, module, mode, device, process, env, api, command);
+    final FlutterApp app = new FlutterApp(project, mode, device, process, env, api, command);
 
     process.addProcessListener(new ProcessAdapter() {
       @Override
@@ -338,7 +332,6 @@ public class FlutterApp implements Disposable {
 
     LocalHistory.getInstance().putSystemLabel(getProject(), "Flutter hot restart");
 
-    maxFileTimestamp = System.currentTimeMillis();
     changeState(State.RESTARTING);
 
     final CompletableFuture<DaemonApi.RestartResult> future =
@@ -403,7 +396,6 @@ public class FlutterApp implements Disposable {
 
     LocalHistory.getInstance().putSystemLabel(getProject(), "hot reload #" + userReloadCount);
 
-    maxFileTimestamp = System.currentTimeMillis();
     changeState(State.RELOADING);
 
     final CompletableFuture<DaemonApi.RestartResult> future =
