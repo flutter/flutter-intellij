@@ -18,8 +18,16 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.util.Objects;
 import javax.swing.Icon;
+
 public class ToolWindowBadgeUpdater {
   public static final Paint BADGE_PAINT = Color.decode("#5ca963");
+
+  /**
+   * Updates the tool window icons for RUN or DEBUG mode with a green badge.
+   *
+   * @param app The FlutterApp instance running in a given mode.
+   * @param project The current IntelliJ project context.
+   */
   public static void updateBadgedIcon(FlutterApp app, Project project) {
     final ToolWindowManager manager = ToolWindowManager.getInstance(Objects.requireNonNull(project));
     final ToolWindow runToolWindow = manager.getToolWindow(ToolWindowId.RUN);
