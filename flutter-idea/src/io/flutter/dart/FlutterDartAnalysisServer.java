@@ -16,7 +16,6 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.util.Consumer;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.utils.JsonUtils;
@@ -100,7 +99,6 @@ public class FlutterDartAnalysisServer implements Disposable {
         super.computedErrors(file, errors);
       }
     });
-    Disposer.register(project, this);
   }
 
   public void addOutlineListener(@NotNull final String filePath, @NotNull final FlutterOutlineListener listener) {

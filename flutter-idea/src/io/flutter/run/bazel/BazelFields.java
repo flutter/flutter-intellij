@@ -52,7 +52,7 @@ import static io.flutter.run.common.RunMode.PROFILE;
  * This class is immutable.
  */
 public class BazelFields {
-  private static final Logger LOG = Logger.getInstance(BazelFields.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(BazelFields.class);
 
   /**
    * The Bazel target or Dart file to invoke.
@@ -178,7 +178,7 @@ public class BazelFields {
    * This will be called while the user is typing into a non-template run config.
    * (See RunConfiguration.checkConfiguration.)
    *
-   * @throws RuntimeConfigurationError for an error that that the user must correct before running.
+   * @throws RuntimeConfigurationError for an error that the user must correct before running.
    */
   void checkRunnable(@NotNull final Project project) throws RuntimeConfigurationError {
 
@@ -324,7 +324,8 @@ public class BazelFields {
           final DevToolsInstance instance = service.getDevToolsInstance().get(30, TimeUnit.SECONDS);
           if (instance != null) {
             devToolsFuture.complete(instance);
-          } else {
+          }
+          else {
             devToolsFuture.completeExceptionally(new Exception("DevTools instance not available."));
           }
         }

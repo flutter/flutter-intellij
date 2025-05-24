@@ -119,9 +119,9 @@ public class FlutterCreateAdditionalSettingsFields {
     addBorder(androidLanguageRadios.getComponent(), false);
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.android.label"),
                                   androidLanguageRadios.getComponent());
-      panel = platformsForm.panel(settings);
-      addBorder(panel, true);
-      settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.platforms.label"), panel);
+    panel = platformsForm.panel(settings);
+    addBorder(panel, true);
+    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.platforms.label"), panel);
 
 
     if (!FlutterUtils.isAndroidStudio()) {
@@ -134,16 +134,12 @@ public class FlutterCreateAdditionalSettingsFields {
 
   private void addBorder(JComponent c, boolean left) {
     // #addSettingsField() moves the second item up by 5.
-    // We also add a bit to the left of the panel to make the check box line up with the radio button.
+    // We also add a bit to the left of the panel to make the checkbox line up with the radio button.
     c.setBorder(new AbstractBorder() {
       public Insets getBorderInsets(Component c, Insets insets) {
         return JBUI.insets(5, left ? 3 : 0, 0, 0);
       }
     });
-  }
-
-  public void updateProjectType(FlutterProjectType projectType) {
-    // TODO(messick) Remove this method and its caller, which is in the flutter-studio module.
   }
 
   public FlutterCreateAdditionalSettings getAdditionalSettings() {
@@ -158,7 +154,8 @@ public class FlutterCreateAdditionalSettingsFields {
       .setPlatformIos(shouldIncludePlatforms() ? settings.getPlatformIos() : null)
       .setPlatformLinux(shouldIncludePlatforms() ? settings.getPlatformLinux() : null)
       .setPlatformMacos(shouldIncludePlatforms() ? settings.getPlatformMacos() : null)
-      .setPlatformWeb(shouldIncludePlatforms() && projectTypeForm.getType() != FlutterProjectType.PLUGIN_FFI ? settings.getPlatformWeb() : null)
+      .setPlatformWeb(
+        shouldIncludePlatforms() && projectTypeForm.getType() != FlutterProjectType.PLUGIN_FFI ? settings.getPlatformWeb() : null)
       .setPlatformWindows(shouldIncludePlatforms() ? settings.getPlatformWindows() : null)
       .build();
   }

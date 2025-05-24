@@ -54,7 +54,7 @@ import org.jetbrains.annotations.Nullable;
  * The Bazel version of the {@link FlutterTestRunner}. Runs a Bazel Flutter test configuration in the debugger.
  */
 public class BazelTestRunner extends GenericProgramRunner {
-  private static final Logger LOG = Logger.getInstance(BazelTestRunner.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(BazelTestRunner.class);
 
   @NotNull
   @Override
@@ -121,7 +121,7 @@ public class BazelTestRunner extends GenericProgramRunner {
 
     public Connector(ProcessHandler handler, Project project) {
       Workspace workspace = WorkspaceCache.getInstance(project).get();
-      assert(workspace != null);
+      assert (workspace != null);
       String configWarningPrefix = workspace.getConfigWarningPrefix();
       listener = new ProcessAdapter() {
         @Override
@@ -129,9 +129,9 @@ public class BazelTestRunner extends GenericProgramRunner {
           final String text = event.getText();
           if (configWarningPrefix != null && text.startsWith(configWarningPrefix)) {
             FlutterMessages.showWarning(
-                    "Configuration warning",
-                    UrlUtils.generateHtmlFragmentWithHrefTags(text.substring(configWarningPrefix.length())),
-                    null
+              "Configuration warning",
+              UrlUtils.generateHtmlFragmentWithHrefTags(text.substring(configWarningPrefix.length())),
+              null
             );
           }
 

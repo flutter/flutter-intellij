@@ -532,7 +532,8 @@ public class DartVmServiceValue extends XNamedValue {
             final String n;
             if (name instanceof String) {
               n = (String)name;
-            } else {
+            }
+            else {
               n = "$" + (int)name;
             }
             childrenList.add(new DartVmServiceValue(myDebugProcess, myIsolateId, n, value, null, null, false));
@@ -599,7 +600,7 @@ public class DartVmServiceValue extends XNamedValue {
     return myInstanceRef;
   }
 
-  static class LocalVarSourceLocation {
+  public static class LocalVarSourceLocation {
     @NotNull private final ScriptRef myScriptRef;
     private final int myTokenPos;
 

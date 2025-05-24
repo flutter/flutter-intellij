@@ -35,7 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSettings> {
-  private static final Logger LOG = Logger.getInstance(FlutterCoverageProgramRunner.class.getName());
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterCoverageProgramRunner.class.getName());
 
   private static final String ID = "FlutterCoverageProgramRunner";
   private ProcessHandler handler;

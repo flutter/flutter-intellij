@@ -26,7 +26,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
-import com.intellij.util.ui.EdtInvocationManager;
+import com.intellij.util.ui.EDT;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import git4idea.config.GitExecutableManager;
 import io.flutter.FlutterBundle;
@@ -53,8 +53,6 @@ import java.util.*;
 import static java.util.Arrays.asList;
 
 public class FlutterSdk {
-  public static final @NotNull String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
-
   public static final @NotNull String DART_SDK_SUFFIX = "/bin/cache/dart-sdk";
   public static final @NotNull String LINUX_DART_SUFFIX = "/google-dartlang";
   public static final @NotNull String LOCAL_DART_SUFFIX = "/google-dartlang-local";
@@ -159,7 +157,7 @@ public class FlutterSdk {
   @Nullable
   private static Library getDartSdkLibrary(@NotNull Project project) {
     LibraryTablesRegistrar registrar = LibraryTablesRegistrar.getInstance();
-    if (registrar == null) return  null;
+    if (registrar == null) return null;
     final LibraryTable libraryTable = registrar.getLibraryTable(project);
     for (Library lib : libraryTable.getLibraries()) {
       if (lib != null && "Dart SDK".equals(lib.getName())) {
@@ -369,15 +367,6 @@ public class FlutterSdk {
   }
 
   @NotNull
-  public FlutterCommand flutterRunOnTester(@NotNull PubRoot root, @NotNull String mainPath) {
-    final List<String> args = new ArrayList<>();
-    args.add("--machine");
-    args.add("--device-id=flutter-tester");
-    args.add(mainPath);
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{ }));
-  }
-
-  @NotNull
   public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir, @Nullable String testNameSubstring,
                                     @NotNull RunMode mode, @Nullable String additionalArgs, TestFields.Scope scope, boolean useRegexp) {
 
@@ -458,7 +447,7 @@ public class FlutterSdk {
       return null;
     }
 
-    if (EdtInvocationManager.getInstance().isEventDispatchThread()) {
+    if (EDT.isCurrentThreadEdt()) {
       VfsUtil.markDirtyAndRefresh(false, true, true, baseDir); // Need this for AS.
     }
     else {
@@ -670,7 +659,7 @@ public class FlutterSdk {
         }
 
         final JsonObject obj = elem.getAsJsonObject();
-        if (obj == null) return  null;
+        if (obj == null) return null;
 
         for (String jsonKey : JsonUtils.getKeySet(obj)) {
           final JsonElement element = obj.get(jsonKey);

@@ -21,7 +21,9 @@ import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.jetbrains.lang.dart.util.PubspecYamlUtil.PUBSPEC_YAML;
@@ -42,6 +44,7 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
   }
 
   public void startWatching() {
+    var project = getProject();
     VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileContentsChangedAdapter() {
       @Override
       protected void onFileChange(@NotNull VirtualFile file) {
@@ -51,9 +54,9 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
       @Override
       protected void onBeforeFileChange(@NotNull VirtualFile file) {
       }
-    }, getProject());
+    }, FlutterDartAnalysisServer.getInstance(project));
 
-    getProject().getMessageBus().connect().subscribe(ModuleRootListener.TOPIC, new ModuleRootListener() {
+    project.getMessageBus().connect().subscribe(ModuleRootListener.TOPIC, new ModuleRootListener() {
       @Override
       public void rootsChanged(@NotNull ModuleRootEvent event) {
         scheduleUpdate();

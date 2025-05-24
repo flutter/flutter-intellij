@@ -64,7 +64,7 @@ public class FlutterRunNotifications {
         FlutterBundle.message("flutter.reload.firstRun.content"),
         NotificationType.INFORMATION);
       notification.setIcon(FlutterIcons.HotReload);
-      notification.addAction(new AnAction("Learn more") {
+      notification.addAction(new AnAction("Learn More") {
         @Override
         public void actionPerformed(@NotNull AnActionEvent event) {
           BrowserUtil.browse(FlutterBundle.message("flutter.reload.firstRun.url"));

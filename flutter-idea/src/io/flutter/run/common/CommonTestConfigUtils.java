@@ -16,6 +16,7 @@ import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
 import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
 import io.flutter.dart.DartSyntax;
+import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.editor.ActiveEditorsOutlineService;
 import io.flutter.utils.OpenApiUtils;
 import org.dartlang.analysis.server.protocol.ElementKind;
@@ -173,7 +174,8 @@ public abstract class CommonTestConfigUtils {
     final ActiveEditorsOutlineService service = getActiveEditorsOutlineService(file.getProject());
     if (!listenerCache.containsKey(path) && service != null) {
       listenerCache.put(path, new LineMarkerUpdatingListener(this, file.getProject(), service));
-      Disposer.register(file.getProject(), () -> {
+      var disposableParent = FlutterDartAnalysisServer.getInstance(file.getProject());
+      Disposer.register(disposableParent, () -> {
         listenerCache.remove(path);
       });
     }

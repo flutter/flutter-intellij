@@ -160,7 +160,8 @@
               icon="FlutterIcons.Phone"/>
       <action id="Flutter.DeviceSelectorRefresher" class="io.flutter.actions.DeviceSelectorRefresherAction"
               text="Refresh Device List"
-              description="Refresh device list" />
+              description="Refresh device list"
+              icon="FlutterIcons.RefreshItems"/>
       <add-to-group anchor="before" group-id="RunToolbarMainActionGroup" relative-to-action="RedesignedRunConfigurationSelector"/>
     </group>
 
@@ -316,12 +317,14 @@
       <separator/>
       <!--suppress PluginXmlCapitalization -->
       <action id="Flutter.Menu.RunProfileAction" class="io.flutter.actions.RunProfileFlutterApp"
-              description="Flutter Run Profile Mode"
+              description="Run Flutter app in profile mode"
+              text="Run in Flutter Profile Mode"
               icon="AllIcons.Actions.Execute">
       </action>
       <!--suppress PluginXmlCapitalization -->
       <action id="Flutter.Menu.RunReleaseAction" class="io.flutter.actions.RunReleaseFlutterApp"
-              description="Flutter Run Release Mode"
+              description="Run Flutter app in release mode"
+              text="Run in Flutter release mode"
               icon="AllIcons.Actions.Execute">
       </action>
       <reference ref="AttachDebuggerAction"/>

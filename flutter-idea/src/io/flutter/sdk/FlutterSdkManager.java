@@ -13,6 +13,7 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.util.EventDispatcher;
+import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -48,7 +49,7 @@ public class FlutterSdkManager {
     final ScheduledFuture timer = JobScheduler.getScheduler().scheduleWithFixedDelay(
       this::checkForFlutterSdkChange, 1, 1, TimeUnit.SECONDS);
 
-    Disposer.register(project, () -> {
+    Disposer.register(FlutterDartAnalysisServer.getInstance(project), () -> {
       libraryTable.removeListener(libraryTableListener);
       timer.cancel(false);
     });

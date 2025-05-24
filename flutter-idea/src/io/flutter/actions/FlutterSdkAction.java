@@ -76,7 +76,7 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
   }
 
   /**
-   * By default this method returns false. For actions which can be used in the Bazel context this method should return true.
+   * By default, this method returns false. For actions which can be used in the Bazel context this method should return true.
    */
   public boolean enableActionInBazelContext() {
     return false;

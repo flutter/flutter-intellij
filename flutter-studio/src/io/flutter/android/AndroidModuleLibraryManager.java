@@ -15,7 +15,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.TransactionGuard;
 import com.intellij.openapi.application.WriteAction;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.DumbService;
@@ -72,7 +71,6 @@ import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_NAME;
  * @see AndroidModuleLibraryProperties
  */
 public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidModuleLibraryProperties> {
-  private static final Logger LOG = Logger.getInstance(AndroidModuleLibraryManager.class);
   private static final String BUILD_FILE_NAME = "build.gradle";
   private final AtomicBoolean isUpdating = new AtomicBoolean(false);
   private final AtomicBoolean isDisabled = new AtomicBoolean(false);

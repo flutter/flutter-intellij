@@ -6,17 +6,15 @@
 package io.flutter.run;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.BaseProjectDirectories;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.lang.dart.psi.DartFile;
-import com.jetbrains.lang.dart.psi.DartImportStatement;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
@@ -25,9 +23,6 @@ import io.flutter.bazel.WorkspaceCache;
 import io.flutter.pub.PubRoot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Arrays;
-import java.util.stream.Stream;
 
 /**
  * The location of a Dart file containing a main() method for launching a Flutter app.
@@ -42,12 +37,9 @@ public class MainFile {
   @NotNull
   private final VirtualFile appDir;
 
-  private final boolean flutterImports;
-
-  private MainFile(@NotNull VirtualFile file, @NotNull VirtualFile appDir, boolean flutterImports) {
+  private MainFile(@NotNull VirtualFile file, @NotNull VirtualFile appDir) {
     this.file = file;
     this.appDir = appDir;
-    this.flutterImports = flutterImports;
   }
 
   /**
@@ -67,21 +59,18 @@ public class MainFile {
   }
 
   /**
-   * Returns true if the file has any direct flutter imports.
-   */
-  public boolean hasFlutterImports() {
-    return flutterImports;
-  }
-
-  /**
    * Verifies that the given path points to an entrypoint file within a Flutter app.
    * <p>
    * If there is an error, {@link Result#canLaunch} will return false and the error is available via {@link Result#getError}
    */
   @NotNull
-  public static MainFile.Result verify(@Nullable String path, Project project) {
+  public static MainFile.Result verify(@Nullable String path, @Nullable Project project) {
     if (!ApplicationManager.getApplication().isReadAccessAllowed()) {
       throw new IllegalStateException("need read access");
+    }
+
+    if (project == null) {
+      return error("Project is not set.");
     }
 
     if (StringUtil.isEmptyOrSpaces(path)) {
@@ -114,9 +103,7 @@ public class MainFile {
       return error(FlutterBundle.message("entrypoint.not.in.app.dir"));
     }
 
-    final boolean hasFlutterImports = findImportUrls(dart).anyMatch((url) -> url.startsWith("package:flutter/"));
-
-    return new MainFile.Result(new MainFile(file, dir, hasFlutterImports), null);
+    return new MainFile.Result(new MainFile(file, dir), null);
   }
 
   @Nullable
@@ -143,18 +130,10 @@ public class MainFile {
   }
 
   private static boolean inProject(@Nullable VirtualFile file, @NotNull Project project) {
-    return file != null && ProjectRootManager.getInstance(project).getFileIndex().isInContent(file);
-  }
-
-  /**
-   * Returns the import URL's in a Dart file.
-   */
-  @NotNull
-  private static Stream<String> findImportUrls(@NotNull DartFile file) {
-    final DartImportStatement[] imports = PsiTreeUtil.getChildrenOfType(file, DartImportStatement.class);
-    if (imports == null) return Stream.empty();
-
-    return Arrays.stream(imports).map(DartImportStatement::getUriString);
+    // Do a speedy check for containment over accessing the file index (which we did historically)
+    // but is very slow and unacceptably blocks the UI thread.
+    // See: https://github.com/flutter/flutter-intellij/issues/8089
+    return file != null && BaseProjectDirectories.getInstance(project).contains(file);
   }
 
   private static MainFile.Result error(@NotNull String message) {

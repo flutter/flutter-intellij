@@ -49,7 +49,7 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
   private Browser browser;
   private Zoom zoom;
   private final ZoomLevelSelector zoomSelector = new ZoomLevelSelector();
-  private static final Logger LOG = Logger.getInstance(EmbeddedJxBrowserTab.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(EmbeddedJxBrowserTab.class);
 
   public EmbeddedJxBrowserTab(Engine engine) {
     this.engine = engine;
@@ -122,7 +122,7 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
 }
 
 public class EmbeddedJxBrowser extends EmbeddedBrowser {
-  private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(JxBrowserManager.class);
   private static final String INSTALLATION_IN_PROGRESS_LABEL = "Installing JxBrowser...";
   private static final String INSTALLATION_TIMED_OUT_LABEL =
     "Waiting for JxBrowser installation timed out. Restart your IDE to try again.";
@@ -181,7 +181,8 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
     if (engine == null) {
       showMessageWithUrlLink(jxBrowserErrorMessage(), contentManager);
       return null;
-    } else {
+    }
+    else {
       return new EmbeddedJxBrowserTab(engine);
     }
   }
@@ -210,7 +211,7 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
   private @Nullable String jxBrowserErrorFromFailedReason(@Nullable InstallationFailedReason failedReason) {
     if (failedReason == null) return null;
     final FailureType failureType = failedReason.failureType;
-    if (failureType == null)  return null;
+    if (failureType == null) return null;
     return switch (failureType) {
       case SYSTEM_INCOMPATIBLE -> "System is incompatible with JX Browser";
       case FILE_DOWNLOAD_FAILED -> "JX Browser file download failed";
@@ -220,7 +221,6 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
       case CLASS_LOAD_FAILED -> "JX Browser class load failed";
       case CLASS_NOT_FOUND -> "JX Browser class not found";
     };
-
   }
 
   private void manageJxBrowserDownload(ContentManager contentManager) {
@@ -234,7 +234,8 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
     }
     else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
       handleJxBrowserInstallationFailed(contentManager);
-    } else if (jxBrowserStatus.equals(JxBrowserStatus.NOT_INSTALLED) || jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_SKIPPED)) {
+    }
+    else if (jxBrowserStatus.equals(JxBrowserStatus.NOT_INSTALLED) || jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_SKIPPED)) {
       jxBrowserManager.setUp(project.getName());
       handleJxBrowserInstallationInProgress(contentManager);
     }
@@ -269,9 +270,11 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
   protected void handleUpdatedJxBrowserStatus(JxBrowserStatus jxBrowserStatus, ContentManager contentManager) {
     if (Objects.equals(jxBrowserStatus, JxBrowserStatus.INSTALLED)) {
       return;
-    } else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
+    }
+    else if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLATION_FAILED)) {
       handleJxBrowserInstallationFailed(contentManager);
-    } else {
+    }
+    else {
       // newStatus can be null if installation is interrupted or stopped for another reason.
       showMessageWithUrlLink(INSTALLATION_WAIT_FAILED, contentManager);
     }
@@ -285,7 +288,8 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
     if (!jxBrowserUtils.licenseIsSet()) {
       // If the license isn't available, allow the user to open the equivalent page in a non-embedded browser window.
       inputs.add(new LabelInput("The JxBrowser license could not be found."));
-    } else if (latestFailureReason != null && Objects.equals(latestFailureReason.failureType, FailureType.SYSTEM_INCOMPATIBLE)) {
+    }
+    else if (latestFailureReason != null && Objects.equals(latestFailureReason.failureType, FailureType.SYSTEM_INCOMPATIBLE)) {
       // If we know the system is incompatible, skip retry link and offer to open in browser.
       inputs.add(new LabelInput(latestFailureReason.detail));
     }

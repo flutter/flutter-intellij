@@ -257,7 +257,7 @@ public class Refreshable<T> implements Closeable {
     }
   }
 
-  private static final Logger LOG = Logger.getInstance(Refreshable.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(Refreshable.class);
 
   /**
    * A value indicating whether the Refreshable is being updated or not.

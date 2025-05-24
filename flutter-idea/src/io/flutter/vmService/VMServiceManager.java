@@ -15,7 +15,6 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
-import io.flutter.vmService.HeapMonitor.HeapListener;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.VmServiceListener;
 import org.dartlang.vm.service.consumer.GetIsolateConsumer;
@@ -32,10 +31,7 @@ import java.util.function.Consumer;
 import static io.flutter.vmService.ServiceExtensions.enableOnDeviceInspector;
 
 public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposable {
-
   @NotNull private final FlutterApp app;
-  @NotNull private final HeapMonitor heapMonitor;
-  @NotNull private final FlutterFramesMonitor flutterFramesMonitor;
   @NotNull private final Map<String, EventStream<Boolean>> serviceExtensions = new HashMap<>();
 
   /**
@@ -66,9 +62,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
     assert (app.getFlutterDebugProcess() != null);
 
-    this.heapMonitor = new HeapMonitor(app.getFlutterDebugProcess().getVmServiceWrapper());
     this.displayRefreshRateManager = new DisplayRefreshRateManager(this, vmService);
-    this.flutterFramesMonitor = new FlutterFramesMonitor(displayRefreshRateManager, vmService);
     flutterIsolateRefStream = new EventStream<>();
 
     // The VM Service depends on events from the Extension event stream to determine when Flutter.Frame
@@ -83,11 +77,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
       @Override
       public void received(String streamId, Event event) {
         onVmServiceReceived(streamId, event);
-      }
-
-      @Override
-      public void connectionClosed() {
-        onVmConnectionClosed();
       }
     };
     vmService.addVmServiceListener(myVmServiceListener);
@@ -136,35 +125,12 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
     setServiceExtensionState(enableOnDeviceInspector.getExtension(), true, true);
   }
 
-  @NotNull
-  public HeapMonitor getHeapMonitor() {
-    return heapMonitor;
-  }
-
   public void addRegisteredExtensionRPCs(Isolate isolate, boolean attach) {
     if (isolate.getExtensionRPCs() != null) {
       for (String extension : isolate.getExtensionRPCs()) {
         addServiceExtension(extension);
       }
     }
-  }
-
-  /**
-   * Start the Perf service.
-   */
-  private void startHeapMonitor() {
-    // Start polling.
-    heapMonitor.start();
-  }
-
-  /**
-   * Returns a StreamSubscription providing the current Flutter isolate.
-   * <p>
-   * The current value of the subscription can be null occasionally during initial application startup and for a brief time when doing a
-   * hot restart.
-   */
-  public StreamSubscription<IsolateRef> getCurrentFlutterIsolate(Consumer<IsolateRef> onValue, boolean onUIThread) {
-    return flutterIsolateRefStream.listen(onValue, onUIThread);
   }
 
   /**
@@ -180,21 +146,10 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
     }
   }
 
-  /**
-   * Stop the Perf service.
-   */
-  private void stopHeapMonitor() {
-    heapMonitor.stop();
-  }
-
   @Override
   public void dispose() {
-    onVmConnectionClosed();
   }
 
-  private void onVmConnectionClosed() {
-    heapMonitor.stop();
-  }
 
   private void setFlutterIsolate(IsolateRef ref) {
     synchronized (flutterIsolateRefStream) {
@@ -415,32 +370,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
         params.put(name.substring(name.lastIndexOf(".") + 1), value);
         app.callServiceExtension(name, params);
       }
-    }
-  }
-
-  @NotNull
-  public FlutterFramesMonitor getFlutterFramesMonitor() {
-    return flutterFramesMonitor;
-  }
-
-  /**
-   * Add a listener for heap state updates.
-   */
-  public void addHeapListener(@NotNull HeapListener listener) {
-    final boolean hadListeners = heapMonitor.hasListeners();
-    heapMonitor.addListener(listener);
-    if (!hadListeners) {
-      startHeapMonitor();
-    }
-  }
-
-  /**
-   * Remove a heap listener.
-   */
-  public void removeHeapListener(@NotNull HeapListener listener) {
-    heapMonitor.removeListener(listener);
-    if (!heapMonitor.hasListeners()) {
-      stopHeapMonitor();
     }
   }
 

@@ -22,7 +22,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.testFramework.LightVirtualFile;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.jxbrowser.EmbeddedJxBrowser;
@@ -83,16 +82,6 @@ public class FlutterUtils {
   private static final Pattern VALID_PACKAGE = Pattern.compile("^([a-z]++([_]?[a-z0-9]+)*)++$");
 
   private FlutterUtils() {
-  }
-
-  public static boolean couldContainWidgets(@Nullable Project project, @Nullable VirtualFile file) {
-    // Skip nulls, temp file used to show things like files downloaded from the VM, non-local files
-    return file != null &&
-           project != null &&
-           !(file instanceof LightVirtualFile) &&
-           isDartFile(file) &&
-           file.isInLocalFileSystem() &&
-           ProjectFileIndex.getInstance(project).isInProject(file);
   }
 
   public static boolean isDartFile(@NotNull VirtualFile file) {
@@ -427,12 +416,7 @@ public class FlutterUtils {
       return null;
     }
   }
-
-  @Nullable
-  private static VirtualFile getAndroidProjectDir(VirtualFile dir) {
-    return (dir.findChild("app") == null) ? null : dir;
-  }
-
+  
   @Nullable
   private static VirtualFile getFlutterManagedAndroidDir(VirtualFile dir) {
     final VirtualFile meta = dir.findChild(".metadata");

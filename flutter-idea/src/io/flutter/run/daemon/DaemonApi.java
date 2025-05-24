@@ -41,7 +41,7 @@ public class DaemonApi {
 
   private static final int STDERR_LINES_TO_KEEP = 100;
   private static final Gson GSON = new Gson();
-  private static final Logger LOG = Logger.getInstance(DaemonApi.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(DaemonApi.class);
   @NotNull private final Consumer<String> callback;
   private final AtomicInteger nextId = new AtomicInteger();
   private final Map<Integer, Command> pending = new LinkedHashMap<>();

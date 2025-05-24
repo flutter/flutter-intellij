@@ -299,5 +299,5 @@ public class PluginConfig {
   }
 
   private static final Gson GSON = new Gson();
-  private static final Logger LOG = Logger.getInstance(PluginConfig.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(PluginConfig.class);
 }

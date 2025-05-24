@@ -32,18 +32,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-class BrowserTab {
-  protected EmbeddedTab embeddedTab;
-  protected Content content;
-  protected CompletableFuture<DevToolsUrl> devToolsUrlFuture;
-  public ContentManager contentManager;
-}
 
 /**
  * There is one instance of embedded browser across the project, but it manages tabs across multiple tool
  * windows. Each tab can display contents of an independent URL.
  */
 public abstract class EmbeddedBrowser {
+  static public class BrowserTab {
+    protected EmbeddedTab embeddedTab;
+    protected Content content;
+    protected CompletableFuture<DevToolsUrl> devToolsUrlFuture;
+    public ContentManager contentManager;
+  }
+
   public static final String ANALYTICS_CATEGORY = "embedded-browser";
 
   protected final Map<@NotNull String, Map<@NotNull String, @NotNull BrowserTab>> windows = new HashMap<>();
@@ -200,7 +201,7 @@ public abstract class EmbeddedBrowser {
       }
     }
 
-    final JPanel center = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER));
+    final JPanel center = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.MIDDLE));
     center.add(panel);
     replacePanelLabel(center, contentManager);
   }
@@ -219,7 +220,7 @@ public abstract class EmbeddedBrowser {
     });
   }
 
-  private BrowserTab openBrowserTabFor(String tabName, ToolWindow toolWindow) throws Exception {
+  private BrowserTab openBrowserTabFor(String tabName, ToolWindow toolWindow) {
     BrowserTab tab = new BrowserTab();
     tab.devToolsUrlFuture = new CompletableFuture<>();
     tab.embeddedTab = openEmbeddedTab(toolWindow.getContentManager());
