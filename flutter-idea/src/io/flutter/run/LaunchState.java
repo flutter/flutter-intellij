@@ -32,6 +32,10 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowId;
+import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.BadgeIcon;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
@@ -49,6 +53,8 @@ import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
+import java.awt.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -152,6 +158,30 @@ public class LaunchState extends CommandLineState {
     final FlutterLaunchMode launchMode = FlutterLaunchMode.fromEnv(env);
     final RunContentDescriptor descriptor;
     if (launchMode.supportsDebugConnection()) {
+      ToolWindowManager manager = ToolWindowManager.getInstance(project);
+      ToolWindow runToolWindow = manager.getToolWindow(ToolWindowId.RUN);
+      ToolWindow debugToolWindow = manager.getToolWindow(ToolWindowId.DEBUG);
+      Paint badgePaint = Color.decode("#5ca963");
+
+      if(app.getMode() == RunMode.RUN) {
+        if (runToolWindow != null) {
+          manager.invokeLater(() -> {
+            Icon baseIcon = AllIcons.Toolwindows.ToolWindowRun;
+            BadgeIcon iconWithBadge = new BadgeIcon(baseIcon, badgePaint);
+
+            runToolWindow.setIcon(iconWithBadge);
+          });
+        }
+      }
+      else if(app.getMode() == RunMode.DEBUG) {
+        manager.invokeLater(() -> {
+          Icon baseIcon = AllIcons.Toolwindows.ToolWindowDebugger;
+          BadgeIcon iconWithBadge = new BadgeIcon(baseIcon, badgePaint);
+
+          debugToolWindow.setIcon(iconWithBadge);
+        });
+      }
+
       descriptor = createDebugSession(env, app, result).getRunContentDescriptor();
     }
     else {
