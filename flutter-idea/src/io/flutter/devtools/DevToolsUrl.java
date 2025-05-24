@@ -9,6 +9,7 @@ import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.sdk.FlutterSdkVersion;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -37,16 +38,16 @@ public class DevToolsUrl {
   @NotNull private final DevToolsUtils devToolsUtils;
 
   public static class Builder {
-    private String devToolsHost;
+    private @Nullable String devToolsHost;
 
     private int devToolsPort;
-    private String vmServiceUri;
+    private @Nullable String vmServiceUri;
     private String page;
     private Boolean embed;
     private String widgetId;
     private String hide;
 
-    private FlutterSdkVersion flutterSdkVersion;
+    private @Nullable FlutterSdkVersion flutterSdkVersion;
     private WorkspaceCache workspaceCache;
     private DevToolsIdeFeature ideFeature;
 
@@ -54,10 +55,11 @@ public class DevToolsUrl {
 
     private FlutterSdkUtil flutterSdkUtil;
 
-    public Builder() {}
+    public Builder() {
+    }
 
     @NotNull
-    public Builder setDevToolsHost(String devToolsHost) {
+    public Builder setDevToolsHost(@Nullable String devToolsHost) {
       this.devToolsHost = devToolsHost;
       return this;
     }
@@ -69,7 +71,7 @@ public class DevToolsUrl {
     }
 
     @NotNull
-    public Builder setVmServiceUri(String vmServiceUri) {
+    public Builder setVmServiceUri(@Nullable String vmServiceUri) {
       this.vmServiceUri = vmServiceUri;
       return this;
     }
@@ -105,7 +107,7 @@ public class DevToolsUrl {
     }
 
     @NotNull
-    public Builder setFlutterSdkVersion(FlutterSdkVersion sdkVersion) {
+    public Builder setFlutterSdkVersion(@Nullable FlutterSdkVersion sdkVersion) {
       this.flutterSdkVersion = sdkVersion;
       return this;
     }
@@ -163,10 +165,12 @@ public class DevToolsUrl {
     if (builder.workspaceCache != null && builder.workspaceCache.isBazel()) {
       this.canUseDevToolsPathUrl = true;
       this.canUseMultiEmbed = true;
-    } else if (flutterSdkVersion != null) {
+    }
+    else if (flutterSdkVersion != null) {
       this.canUseDevToolsPathUrl = flutterSdkVersion.canUseDevToolsPathUrls();
       this.canUseMultiEmbed = flutterSdkVersion.canUseDevToolsMultiEmbed();
-    } else {
+    }
+    else {
       this.canUseDevToolsPathUrl = false;
       this.canUseMultiEmbed = false;
     }
@@ -192,12 +196,14 @@ public class DevToolsUrl {
       if (!this.canUseMultiEmbed) {
         // This is for older versions of DevTools that do not support embed= one vs. many.
         params.add("embed=true");
-      } else {
+      }
+      else {
         if (hide != null) {
           // If we are using the hide param, we can assume that we are trying to embed multiple tabs.
           params.add("embedMode=many");
           params.add("hide=" + hide);
-        } else {
+        }
+        else {
           params.add("embedMode=one");
         }
       }

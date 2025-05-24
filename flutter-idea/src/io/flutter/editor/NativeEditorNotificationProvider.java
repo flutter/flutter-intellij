@@ -119,6 +119,7 @@ public class NativeEditorNotificationProvider implements EditorNotificationProvi
         AnActionEvent.createEvent(makeContext(), myAction.getTemplatePresentation(), ActionPlaces.EDITOR_TOOLBAR, ActionUiKind.NONE, null));
 
       isVisible = myAction.getTemplatePresentation().isVisible();
+      //noinspection DialogTitleCapitalization
       createActionLabel(myAction.getTemplatePresentation().getText(), this::performAction)
         .setToolTipText(myAction.getTemplatePresentation().getDescription());
       createActionLabel(FlutterBundle.message("flutter.androidstudio.open.hide.notification.text"), () -> {

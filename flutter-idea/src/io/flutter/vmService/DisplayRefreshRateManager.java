@@ -10,16 +10,15 @@ import com.intellij.openapi.diagnostic.Logger;
 import io.flutter.FlutterMessages;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.OpenApiUtils;
-import io.flutter.utils.StreamSubscription;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.ServiceExtensionConsumer;
 import org.dartlang.vm.service.element.RPCError;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 public class DisplayRefreshRateManager {
-  private static final Logger LOG = Logger.getInstance(DisplayRefreshRateManager.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(DisplayRefreshRateManager.class);
   private static boolean notificationDisplayedAlready = false;
 
   public static final double defaultRefreshRate = 60.0;
@@ -41,42 +40,7 @@ public class DisplayRefreshRateManager {
       getDisplayRefreshRate().thenAcceptAsync(displayRefreshRateStream::setValue);
     });
   }
-
-  public int getTargetMicrosPerFrame() {
-    Double fps = getCurrentDisplayRefreshRateRaw();
-    if (fps == null) {
-      fps = defaultRefreshRate;
-    }
-    return (int)Math.round((Math.floor(1000000.0f / fps)));
-  }
-
-  /**
-   * Returns a StreamSubscription providing the queried display refresh rate.
-   * <p>
-   * The current value of the subscription can be null occasionally during initial application startup and for a brief time when doing a
-   * hot restart.
-   */
-  public StreamSubscription<Double> getCurrentDisplayRefreshRate(Consumer<Double> onValue, boolean onUIThread) {
-    return displayRefreshRateStream.listen(onValue, onUIThread);
-  }
-
-  /**
-   * Return the current display refresh rate, if any.
-   * <p>
-   * Note that this may not be immediately populated at app startup for Flutter apps. In that case, this will return
-   * the default value (defaultRefreshRate). Clients that wish to be notified when the refresh rate is discovered
-   * should prefer the StreamSubscription variant of this method (getCurrentDisplayRefreshRate()).
-   */
-  public Double getCurrentDisplayRefreshRateRaw() {
-    synchronized (displayRefreshRateStream) {
-      Double fps = displayRefreshRateStream.getValue();
-      if (fps == null) {
-        fps = defaultRefreshRate;
-      }
-      return fps;
-    }
-  }
-
+  
   private CompletableFuture<Double> getDisplayRefreshRate() {
     final CompletableFuture<Double> displayRefreshRate = new CompletableFuture<>();
     vmServiceManager.getInspectorViewId().whenComplete((String id, Throwable throwable) -> {

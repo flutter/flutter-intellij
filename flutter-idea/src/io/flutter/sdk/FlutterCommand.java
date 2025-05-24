@@ -31,7 +31,7 @@ import java.util.function.Consumer;
  * A Flutter command to run, with its arguments.
  */
 public class FlutterCommand {
-  private static final Logger LOG = Logger.getInstance(FlutterCommand.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterCommand.class);
 
   private static final Set<Type> pubRelatedCommands = new HashSet<>(
     Arrays.asList(Type.PUB_GET, Type.PUB_UPGRADE, Type.PUB_OUTDATED, Type.UPGRADE));

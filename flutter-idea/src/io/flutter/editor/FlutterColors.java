@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Properties;
 
 public class FlutterColors {
-  private static final Logger LOG = Logger.getInstance(FlutterColors.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterColors.class);
 
   public static class FlutterColor {
     @NotNull
@@ -93,7 +93,7 @@ public class FlutterColors {
   }
 
   /**
-   * Returns the the shortest material color name matching a color if one exists.
+   * Returns the shortest material color name matching a color if one exists.
    */
   @Nullable
   public static String getColorName(@Nullable Color color) {

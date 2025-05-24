@@ -13,10 +13,6 @@ import io.flutter.run.daemon.DeviceService;
 import org.jetbrains.annotations.NotNull;
 
 public class RestartFlutterDaemonAction extends AnAction {
-  public RestartFlutterDaemonAction() {
-    super("Refresh");
-  }
-
   @Override
   public void actionPerformed(AnActionEvent event) {
     final Project project = event.getProject();

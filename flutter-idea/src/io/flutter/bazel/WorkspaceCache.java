@@ -61,7 +61,7 @@ public class WorkspaceCache {
       FileWatch nextWatch = null;
       if (next != null) {
         nextWatch = FileWatch.subscribe(next.getRoot(), next.getDependencies(), this::scheduleRefresh);
-        nextWatch.setDisposeParent(project);
+        nextWatch.setDisposeParent(FlutterDartAnalysisServer.getInstance(project));
       }
 
       final FileWatch prevWatch = fileWatch.getAndSet(nextWatch);
@@ -178,5 +178,5 @@ public class WorkspaceCache {
     }
   }
 
-  private static final Logger LOG = Logger.getInstance(WorkspaceCache.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(WorkspaceCache.class);
 }

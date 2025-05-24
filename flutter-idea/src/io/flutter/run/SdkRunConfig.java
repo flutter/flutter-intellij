@@ -59,7 +59,7 @@ import static java.nio.file.FileVisitResult.CONTINUE;
 public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
   implements LaunchState.RunConfig, RefactoringListenerProvider, RunConfigurationWithSuppressedDefaultRunAction {
 
-  private static final Logger LOG = Logger.getInstance(SdkRunConfig.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(SdkRunConfig.class);
   private boolean firstRun = true;
 
   private @NotNull SdkFields fields = new SdkFields();
@@ -136,9 +136,10 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
     final MainFile mainFile = MainFile.verify(launchFields.getFilePath(), env.getProject()).get();
     final Project project = env.getProject();
     final RunMode mode = RunMode.fromEnv(env);
-    final Module module = ModuleUtilCore.findModuleForFile(mainFile.getFile(), env.getProject());
+
     final LaunchState.CreateAppCallback createAppCallback = (@Nullable FlutterDevice device) -> {
       if (device == null) return null;
+      if (mainFile == null) return null;
 
       final GeneralCommandLine command = getCommand(env, device);
 
@@ -190,11 +191,14 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
         }
       }
 
+      var module = ModuleUtilCore.findModuleForFile(mainFile.getFile(), env.getProject());
+      if (module == null) return null;
+
       return getFlutterApp(env, device, project, module, mode, command);
     };
 
     final LaunchState launcher = new LaunchState(env, mainFile.getAppDir(), mainFile.getFile(), this, createAppCallback);
-    addConsoleFilters(launcher, env, mainFile, module);
+    addConsoleFilters(launcher, env, mainFile, null /* look up the module in an async read context */);
     return launcher;
   }
 
@@ -224,10 +228,18 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
   protected void addConsoleFilters(@NotNull LaunchState launcher,
                                    @NotNull ExecutionEnvironment env,
                                    @NotNull MainFile mainFile,
+                                   // If unspecified, we'll try and find it in a non-blocking read context.
                                    @Nullable Module module) {
     // Creating console filters is expensive so we want to make sure we are not blocking.
     // See: https://github.com/flutter/flutter-intellij/issues/8089
     ReadAction.nonBlocking(() -> {
+        // Make a copy of the module reference, since we may update it in this lambda.
+        var moduleReference = module;
+        // If no module was passed in, try and find one.
+        if (moduleReference == null) {
+          moduleReference = ModuleUtilCore.findModuleForFile(mainFile.getFile(), env.getProject());
+        }
+
         // Set up additional console filters.
         final TextConsoleBuilder builder = launcher.getConsoleBuilder();
         if (builder == null) return null;
@@ -235,9 +247,9 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
         builder.addFilter(new DartConsoleFilter(env.getProject(), mainFile.getFile()));
         //// links often found when running tests
         //builder.addFilter(new DartRelativePathsConsoleFilter(env.getProject(), mainFile.getAppDir().getPath()));
-        if (module != null) {
+        if (moduleReference != null) {
           // various flutter run links
-          builder.addFilter(new FlutterConsoleFilter(module));
+          builder.addFilter(new FlutterConsoleFilter(moduleReference));
         }
         // general urls
         builder.addFilter(new UrlFilter());

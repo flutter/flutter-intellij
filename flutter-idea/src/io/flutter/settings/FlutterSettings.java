@@ -8,9 +8,9 @@ package io.flutter.settings;
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.EventListener;
 import java.util.Objects;
@@ -27,7 +27,6 @@ public class FlutterSettings {
   private static final String showStructuredErrorsKey = "io.flutter.showStructuredErrors";
   private static final String includeAllStackTracesKey = "io.flutter.includeAllStackTraces";
   private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
-  private static final String enableHotUiKey = "io.flutter.editor.enableHotUi";
   private static final String enableBazelHotRestartKey = "io.flutter.editor.enableBazelHotRestart";
   private static final String showBazelHotRestartWarningKey = "io.flutter.showBazelHotRestartWarning";
   private static final String enableJcefBrowserKey = "io.flutter.enableJcefBrowser";
@@ -36,18 +35,6 @@ public class FlutterSettings {
   private static final String showBazelIosRunNotificationKey = "io.flutter.hideBazelIosRunNotification";
   private static final String sdkVersionOutdatedWarningAcknowledgedKey = "io.flutter.sdkVersionOutdatedWarningAcknowledged";
   private static final String androidStudioBotAcknowledgedKey = "io.flutter.androidStudioBotAcknowledgedKey";
-
-  // TODO(helin24): This is to change the embedded browser setting back to true only once for Big Sur users. If we
-  // switch to enabling the embedded browser for everyone, then delete this key.
-  private static final String changeBigSurToTrueKey = "io.flutter.setBigSurToTrueKey2";
-
-  /**
-   * Registry key to suggest all run configurations instead of just one.
-   * <p>
-   * Useful for {@link io.flutter.run.bazelTest.FlutterBazelTestConfigurationType} to show both watch and regular configurations
-   * in the left-hand gutter.
-   */
-  private static final String suggestAllRunConfigurationsFromContextKey = "suggest.all.run.configurations.from.context";
 
   private static FlutterSettings testInstance;
 
@@ -59,12 +46,12 @@ public class FlutterSettings {
     testInstance = instance;
   }
 
-  public static FlutterSettings getInstance() {
+  public static @NotNull FlutterSettings getInstance() {
     if (testInstance != null) {
       return testInstance;
     }
 
-    return Objects.requireNonNull(ApplicationManager.getApplication()).getService(FlutterSettings.class);
+    return Objects.requireNonNull(Objects.requireNonNull(ApplicationManager.getApplication()).getService(FlutterSettings.class));
   }
 
   protected static PropertiesComponent getPropertiesComponent() {
@@ -77,15 +64,8 @@ public class FlutterSettings {
 
   private final EventDispatcher<Listener> dispatcher = EventDispatcher.create(Listener.class);
 
-  public FlutterSettings() {
-  }
-
   public void addListener(Listener listener) {
     dispatcher.addListener(listener);
-  }
-
-  public void removeListener(Listener listener) {
-    dispatcher.removeListener(listener);
   }
 
   public boolean isReloadOnSave() {
@@ -114,16 +94,6 @@ public class FlutterSettings {
 
   public void setOrganizeImportsOnSave(boolean value) {
     getPropertiesComponent().setValue(organizeImportsOnSaveKey, value, false);
-
-    fireEvent();
-  }
-
-  public boolean isShowOnlyWidgets() {
-    return getPropertiesComponent().getBoolean(showOnlyWidgetsKey, false);
-  }
-
-  public void setShowOnlyWidgets(boolean value) {
-    getPropertiesComponent().setValue(showOnlyWidgetsKey, value, false);
 
     fireEvent();
   }
@@ -177,22 +147,6 @@ public class FlutterSettings {
     fireEvent();
   }
 
-  /**
-   * Tells IntelliJ to show all run configurations possible when the user clicks on the left-hand green arrow to run a test.
-   * <p>
-   * Useful for {@link io.flutter.run.bazelTest.FlutterBazelTestConfigurationType} to show both watch and regular configurations
-   * in the left-hand gutter.
-   */
-  public boolean showAllRunConfigurationsInContext() {
-    return Registry.is(suggestAllRunConfigurationsFromContextKey, false);
-  }
-
-  public void setShowAllRunConfigurationsInContext(boolean value) {
-    Registry.get(suggestAllRunConfigurationsFromContextKey).setValue(value);
-
-    fireEvent();
-  }
-
   public boolean isEnableJcefBrowser() {
     return getPropertiesComponent().getBoolean(enableJcefBrowserKey, false);
   }
@@ -243,22 +197,6 @@ public class FlutterSettings {
     dispatcher.getMulticaster().settingsChanged();
   }
 
-  private static String afterLastPeriod(String str) {
-    final int index = str.lastIndexOf('.');
-    return index == -1 ? str : str.substring(index + 1);
-  }
-
-  public boolean isEnableHotUi() {
-    return getPropertiesComponent().getBoolean(enableHotUiKey, false);
-  }
-
-  public void setEnableHotUi(boolean value) {
-    getPropertiesComponent().setValue(enableHotUiKey, value, false);
-
-    fireEvent();
-  }
-
-
   public boolean isEnableBazelHotRestart() {
     return getPropertiesComponent().getBoolean(enableBazelHotRestartKey, false);
   }
@@ -274,15 +212,6 @@ public class FlutterSettings {
 
   public void setShowBazelHotRestartWarning(boolean value) {
     getPropertiesComponent().setValue(showBazelHotRestartWarningKey, value, true);
-    fireEvent();
-  }
-
-  public boolean isChangeBigSurToTrue() {
-    return getPropertiesComponent().getBoolean(changeBigSurToTrueKey, true);
-  }
-
-  public void setChangeBigSurToTrue(boolean value) {
-    getPropertiesComponent().setValue(changeBigSurToTrueKey, value, true);
     fireEvent();
   }
 

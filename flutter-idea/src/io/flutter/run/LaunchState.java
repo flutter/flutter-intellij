@@ -5,7 +5,10 @@
  */
 package io.flutter.run;
 
-import com.intellij.execution.*;
+import com.intellij.execution.DefaultExecutionResult;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.ExecutionResult;
+import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.CommandLineState;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RunProfile;
@@ -21,6 +24,7 @@ import com.intellij.execution.runners.RunContentBuilder;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.ui.RunContentDescriptor;
+import com.intellij.execution.ui.RunContentManager;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.Separator;
@@ -310,7 +314,7 @@ public class LaunchState extends CommandLineState {
   @Override
   public @NotNull
   ExecutionResult execute(@NotNull Executor executor, @NotNull ProgramRunner runner) throws ExecutionException {
-    throw new ExecutionException("not implemented"); // Not used; launch() does this.
+    throw new ExecutionException("Not implemented"); // Not used; launch() does this.
   }
 
   @Override
@@ -419,7 +423,7 @@ public class LaunchState extends CommandLineState {
 
       // See if we should issue a hot-reload.
       final List<RunContentDescriptor> runningProcesses =
-        ExecutionManager.getInstance(env.getProject()).getContentManager().getAllDescriptors();
+        RunContentManager.getInstance(env.getProject()).getAllDescriptors();
 
       final ProcessHandler process = getRunningAppProcess(launchState.runConfig);
       if (process != null) {
@@ -476,15 +480,18 @@ public class LaunchState extends CommandLineState {
    * Returns the currently running app for the given RunConfig, if any.
    */
   @Nullable
-  public static ProcessHandler getRunningAppProcess(RunConfig config) {
+  public static ProcessHandler getRunningAppProcess(@NotNull RunConfig config) {
     final Project project = config.getProject();
-    final List<RunContentDescriptor> runningProcesses =
-      ExecutionManager.getInstance(project).getContentManager().getAllDescriptors();
+    if (project != null) {
+      final List<RunContentDescriptor> runningProcesses =
+        RunContentManager.getInstance(project).getAllDescriptors();
 
-    for (RunContentDescriptor descriptor : runningProcesses) {
-      final ProcessHandler process = descriptor.getProcessHandler();
-      if (process != null && !process.isProcessTerminated() && process.getUserData(FLUTTER_RUN_CONFIG_KEY) == config) {
-        return process;
+      for (RunContentDescriptor descriptor : runningProcesses) {
+        if (descriptor == null) continue;
+        final ProcessHandler process = descriptor.getProcessHandler();
+        if (process != null && !process.isProcessTerminated() && process.getUserData(FLUTTER_RUN_CONFIG_KEY) == config) {
+          return process;
+        }
       }
     }
 
@@ -493,5 +500,5 @@ public class LaunchState extends CommandLineState {
 
   private static final Key<RunConfig> FLUTTER_RUN_CONFIG_KEY = new Key<>("FLUTTER_RUN_CONFIG_KEY");
 
-  private static final Logger LOG = Logger.getInstance(LaunchState.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(LaunchState.class);
 }

@@ -423,7 +423,7 @@ class DeviceDaemon {
     }
   }
 
-  private static final Logger LOG = Logger.getInstance(DeviceDaemon.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(DeviceDaemon.class);
 
   // If the daemon cannot be started, display a modal dialog with hopefully helpful
   // instructions on how to fix the problem. This is a big problem; we really do

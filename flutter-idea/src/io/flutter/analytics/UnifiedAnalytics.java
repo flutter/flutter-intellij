@@ -28,7 +28,7 @@ import java.util.concurrent.CompletableFuture;
  * Facilitates sending information to unified analytics.
  */
 public class UnifiedAnalytics {
-  private static final Logger LOG = Logger.getInstance(UnifiedAnalytics.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(UnifiedAnalytics.class);
 
   @Nullable Boolean enabled = null;
   final Project project;

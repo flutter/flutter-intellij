@@ -9,6 +9,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.TripleFunction;
 import io.flutter.FlutterUtils;
+
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Font;
@@ -29,12 +30,13 @@ import java.util.Properties;
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("UseJBColor")
 public class IconPreviewGenerator {
-  private static final Logger LOG = Logger.getInstance(IconPreviewGenerator.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(IconPreviewGenerator.class);
 
   @NotNull final String fontFilePath;
   int iconSize = 16;

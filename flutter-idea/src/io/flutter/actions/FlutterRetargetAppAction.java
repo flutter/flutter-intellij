@@ -5,7 +5,10 @@
  */
 package io.flutter.actions;
 
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import io.flutter.utils.FlutterModuleUtils;
@@ -17,12 +20,10 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * A "retargeting" action that redirects to another action that is setup elsewhere with
+ * A "retargeting" action that redirects to another action that is set up elsewhere with
  * context required to execute.
  */
 public abstract class FlutterRetargetAppAction extends DumbAwareAction {
-  public static final String RELOAD_DISPLAY_ID = "Flutter Commands"; //NON-NLS
-
   @NotNull
   private final String myActionId;
 

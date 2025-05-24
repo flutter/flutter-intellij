@@ -269,5 +269,5 @@ public class FileWatch {
     }
   }
 
-  private static final Logger LOG = Logger.getInstance(FileWatch.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FileWatch.class);
 }

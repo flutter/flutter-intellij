@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Properties;
 
 public class FlutterCupertinoColors {
-  private static final Logger LOG = Logger.getInstance(FlutterCupertinoColors.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterCupertinoColors.class);
 
   private static final Properties colors;
 
@@ -71,7 +71,7 @@ public class FlutterCupertinoColors {
   }
 
   /**
-   * Returns the the shortest material color name matching a color if one exists.
+   * Returns the shortest material color name matching a color if one exists.
    */
   @Nullable
   public static String getColorName(@Nullable Color color) {

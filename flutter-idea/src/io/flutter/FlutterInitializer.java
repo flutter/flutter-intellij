@@ -16,6 +16,8 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.EditorColorsListener;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
@@ -25,14 +27,15 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.messages.MessageBusConnection;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import de.roderick.weberknecht.WebSocketException;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DtdUtils;
+import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.devtools.DevToolsExtensionsViewFactory;
 import io.flutter.devtools.DevToolsUtils;
 import io.flutter.devtools.RemainingDevToolsViewFactory;
@@ -55,7 +58,7 @@ import io.flutter.utils.OpenApiUtils;
 import io.flutter.view.InspectorViewFactory;
 import org.jetbrains.annotations.NotNull;
 
-import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -69,8 +72,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * @see io.flutter.project.FlutterProjectOpenProcessor for additional actions that
  * may run when a project is being imported.
  */
-public class FlutterInitializer implements StartupActivity {
-  private static final Logger LOG = Logger.getInstance(FlutterInitializer.class);
+public class FlutterInitializer extends FlutterProjectActivity {
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterInitializer.class);
 
   private boolean toolWindowsInitialized = false;
 
@@ -79,7 +82,7 @@ public class FlutterInitializer implements StartupActivity {
   private @NotNull AtomicLong lastScheduledThemeChangeTime = new AtomicLong();
 
   @Override
-  public void runActivity(@NotNull Project project) {
+  public void executeProjectStartup(@NotNull Project project) {
     // Disable the 'Migrate Project to Gradle' notification.
     FlutterUtils.disableGradleProjectMigrationNotification(project);
 
@@ -91,6 +94,9 @@ public class FlutterInitializer implements StartupActivity {
 
     // If the project declares a Flutter dependency, do some extra initialization.
     boolean hasFlutterModule = false;
+
+
+    var roots = new ArrayList<PubRoot>();
 
     for (Module module : OpenApiUtils.getModules(project)) {
       final boolean declaresFlutter = FlutterModuleUtils.declaresFlutter(module);
@@ -110,8 +116,8 @@ public class FlutterInitializer implements StartupActivity {
           ensureAndroidSdk(project);
         }
 
-        // Setup a default run configuration for 'main.dart' (if it's not there already and the file exists).
-        FlutterModuleUtils.autoCreateRunConfig(project, root);
+        // Collect the root for later processing in a read context.
+        roots.add(root);
 
         // If there are no open editors, show main.
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
@@ -121,6 +127,27 @@ public class FlutterInitializer implements StartupActivity {
       }
     }
 
+
+    // Lambdas need final vars.
+    boolean finalHasFlutterModule = hasFlutterModule;
+    ReadAction.nonBlocking(() -> {
+        for (var root : roots) {
+          // Set up a default run configuration for 'main.dart' (if it's not there already and the file exists).
+          FlutterModuleUtils.autoCreateRunConfig(project, root);
+        }
+        return null;
+      })
+      .expireWith(FlutterDartAnalysisServer.getInstance(project))
+      .finishOnUiThread(ModalityState.defaultModalityState(), result -> {
+        edtInitialization(finalHasFlutterModule, project);
+      })
+      .submit(AppExecutorUtil.getAppExecutorService());
+  }
+
+  /***
+   * Initialization that needs to complete on the EDT thread.
+   */
+  private void edtInitialization(boolean hasFlutterModule, @NotNull Project project) {
     if (hasFlutterModule || WorkspaceCache.getInstance(project).isBazel()) {
       initializeToolWindows(project);
     }
@@ -333,14 +360,10 @@ public class FlutterInitializer implements StartupActivity {
 
     // Return if notification has been shown already
     final FlutterSettings settings = FlutterSettings.getInstance();
-    if (settings == null || settings.isAndroidStudioBotAcknowledged()) return;
-
-    // Return if the current date is not after May 16th, 2025
-    LocalDate targetLocalDate = LocalDate.of(2025, 5, 16);
-    LocalDate nowLocalDate = LocalDate.now();
-    if (nowLocalDate.isBefore(targetLocalDate)) return;
+    if (settings.isAndroidStudioBotAcknowledged()) return;
 
     ApplicationManager.getApplication().invokeLater(() -> {
+      //noinspection DialogTitleCapitalization
       final Notification notification = new Notification(FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
                                                          "Try Gemini in Android Studio",
                                                          "",

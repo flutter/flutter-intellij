@@ -45,7 +45,7 @@ import java.util.concurrent.CompletableFuture;
  * also available via the getValue() method.
  */
 public class DiagnosticsNode {
-  private static final Logger LOG = Logger.getInstance(DiagnosticsNode.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(DiagnosticsNode.class);
 
   private static final CustomIconMaker iconMaker = new CustomIconMaker();
 
@@ -380,7 +380,7 @@ public class DiagnosticsNode {
    * <p>
    * Example tooltip: 'physical pixels per logical pixel'
    * <p>
-   * If present, the tooltip is added in parenthesis after the raw value when
+   * If present, the tooltip is added in parentheses after the raw value when
    * generating the string description.
    */
   public String getTooltip() {

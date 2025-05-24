@@ -16,6 +16,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.ModalityUiUtil;
 import icons.FlutterIcons;
@@ -132,10 +133,10 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     updateVisibility(project, presentation);
   }
 
-  private static void updateVisibility(final Project project, final Presentation presentation) {
+  private static void updateVisibility(final Project project, final @NotNull Presentation presentation) {
     final boolean visible = isSelectorVisible(project);
 
-    final JComponent component = (JComponent)presentation.getClientProperty("customComponent");
+    final JComponent component = presentation.getClientProperty(new Key<>("customComponent"));
     if (component != null) {
       component.setVisible(visible);
       if (component.getParent() != null) {

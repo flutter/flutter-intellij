@@ -67,7 +67,6 @@ public class DartTestUtils {
    * Use this method in finally{} clause if the test modifies excluded roots or configures module libraries
    */
   public static void resetModuleRoots(@NotNull final Module module) {
-    //noinspection ConstantConditions
     OpenApiUtils.safeRunWriteAction(() -> {
       final ModifiableRootModel modifiableModel = Objects.requireNonNull(ModuleRootManager.getInstance(module)).getModifiableModel();
 
