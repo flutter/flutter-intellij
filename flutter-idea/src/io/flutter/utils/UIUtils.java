@@ -10,6 +10,11 @@ import com.intellij.openapi.editor.colors.EditorColors;
 import org.jetbrains.annotations.NotNull;
 
 public class UIUtils {
+
+  private UIUtils() {
+    throw new AssertionError("No instances.");
+  }
+
   /**
    * All editor notifications in the Flutter plugin should get and set the background color from this method, which will ensure if any are
    * changed, they are all changed.
