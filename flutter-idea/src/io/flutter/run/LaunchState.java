@@ -50,6 +50,7 @@ import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.DaemonConsoleView;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.toolwindow.ToolWindowBadgeUpdater;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -156,6 +157,7 @@ public class LaunchState extends CommandLineState {
     final FlutterLaunchMode launchMode = FlutterLaunchMode.fromEnv(env);
     final RunContentDescriptor descriptor;
     if (launchMode.supportsDebugConnection()) {
+      ToolWindowBadgeUpdater.updateBadgedIcon(app, project);
       descriptor = createDebugSession(env, app, result).getRunContentDescriptor();
     }
     else {
