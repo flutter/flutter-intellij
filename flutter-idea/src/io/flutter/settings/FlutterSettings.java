@@ -22,6 +22,7 @@ public class FlutterSettings {
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
   private static final String formatCodeOnSaveKey = "io.flutter.formatCodeOnSave";
   private static final String organizeImportsOnSaveKey = "io.flutter.organizeImportsOnSave";
+  private static final String showOnlyWidgetsKey = "io.flutter.showOnlyWidgets";
   private static final String syncAndroidLibrariesKey = "io.flutter.syncAndroidLibraries";
   private static final String showStructuredErrorsKey = "io.flutter.showStructuredErrors";
   private static final String includeAllStackTracesKey = "io.flutter.includeAllStackTraces";

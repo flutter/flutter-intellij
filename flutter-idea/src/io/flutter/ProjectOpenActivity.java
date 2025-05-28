@@ -115,10 +115,16 @@ public class ProjectOpenActivity extends FlutterProjectActivity implements DumbA
   }
 
   private static class PackagesOutOfDateNotification extends Notification {
+    @NotNull private final Project myProject;
+    @NotNull private final PubRoot myRoot;
+
     public PackagesOutOfDateNotification(@NotNull Project project, @NotNull PubRoot root) {
       super("Flutter Packages", "The pubspec.yaml file has been modified since " +
                                 "the last time 'flutter pub get' was run.", NotificationType.INFORMATION);
       setIcon(FlutterIcons.Flutter);
+
+      myProject = project;
+      myRoot = root;
 
       //noinspection DialogTitleCapitalization
       addAction(new AnAction("Run 'flutter pub get'") {

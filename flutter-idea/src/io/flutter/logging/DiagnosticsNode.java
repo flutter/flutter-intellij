@@ -9,6 +9,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.CustomIconMaker;
@@ -44,6 +45,8 @@ import java.util.concurrent.CompletableFuture;
  * also available via the getValue() method.
  */
 public class DiagnosticsNode {
+  private static final @NotNull Logger LOG = Logger.getInstance(DiagnosticsNode.class);
+
   private static final CustomIconMaker iconMaker = new CustomIconMaker();
 
   private DiagnosticsNode parent;
@@ -138,7 +141,18 @@ public class DiagnosticsNode {
   public String getDescription() {
     return getStringMember("description");
   }
-  
+
+  /**
+   * Returns a transformed rect that describes the bounding box for an element
+   * <p>
+   */
+  public TransformedRect getTransformToRoot() {
+    if (!json.has("transformToRoot")) {
+      return null;
+    }
+    return new TransformedRect(json.getAsJsonObject("transformToRoot"));
+  }
+
   /**
    * Priority level of the diagnostic used to control which diagnostics should
    * be shown and filtered.

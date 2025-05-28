@@ -28,6 +28,7 @@ public class FlutterRequestUtilities {
   private static final String OFFSET = "offset";
   private static final String SUBSCRIPTIONS = "subscriptions";
 
+  private static final String METHOD_FLUTTER_GET_CHANGE_ADD_FOR_DESIGN_TIME_CONSTRUCTOR = "flutter.getChangeAddForDesignTimeConstructor";
   private static final String METHOD_FLUTTER_SET_SUBSCRIPTIONS = "flutter.setSubscriptions";
   private static final String METHOD_FLUTTER_GET_WIDGET_DESCRIPTION = "flutter.getWidgetDescription";
   private static final String METHOD_FLUTTER_SET_WIDGET_PROPERTY_VALUE = "flutter.setWidgetPropertyValue";
