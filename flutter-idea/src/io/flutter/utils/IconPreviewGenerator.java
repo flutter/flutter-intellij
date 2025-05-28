@@ -6,33 +6,21 @@
 package io.flutter.utils;
 
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.TripleFunction;
 import io.flutter.FlutterUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontFormatException;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Properties;
-import javax.imageio.ImageIO;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("UseJBColor")
 public class IconPreviewGenerator {
@@ -150,28 +138,5 @@ public class IconPreviewGenerator {
     graphics.setComposite(AlphaComposite.Src);
     graphics.setColor(fontColor);
     graphics.drawString(codepoint, x0, y0);
-  }
-
-  @Nullable
-  public static VirtualFile findAssetMapIn(@NotNull VirtualFile dartClass) {
-    VirtualFile dir = dartClass.getParent();
-    VirtualFile preview = null;
-    while (dir != null && !dir.getName().equals("lib")) {
-      preview = dir.findChild("ide_preview");
-      if (preview == null) {
-        dir = dir.getParent();
-      }
-      else {
-        dir = null;
-      }
-    }
-    if (preview == null && dir != null && dir.getName().equals("lib")) {
-      dir = dir.getParent();
-      preview = dir.findChild("ide_preview");
-      if (preview == null) {
-        return null;
-      }
-    }
-    return preview == null ? null : preview.findChild("asset_map.yaml");
   }
 }

@@ -31,7 +31,6 @@ import java.util.Objects;
  * That is, a directory containing (at a minimum) a pubspec.yaml file.
  */
 public class PubRoot {
-  public static final String ANALYSIS_OPTIONS_YAML = "analysis_options.yaml";
   public static final String DOT_DART_TOOL = ".dart_tool";
   public static final String DOT_PACKAGES = ".packages";
   public static final String PUBSPEC_YAML = "pubspec.yaml";
@@ -447,7 +446,7 @@ public class PubRoot {
     }
     return ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(pubspec);
   }
-  
+
   @Override
   public String toString() {
     return "PubRoot(" + root.getName() + ")";

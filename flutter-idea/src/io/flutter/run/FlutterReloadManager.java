@@ -6,9 +6,6 @@
 package io.flutter.run;
 
 import com.google.common.collect.ImmutableMap;
-import com.intellij.codeInsight.hint.HintManager;
-import com.intellij.codeInsight.hint.HintManagerImpl;
-import com.intellij.codeInsight.hint.HintUtil;
 import com.intellij.concurrency.JobScheduler;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
@@ -45,7 +42,6 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiErrorElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.ui.LightweightHint;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.UIUtil;
 import com.jetbrains.lang.dart.ide.errorTreeView.DartProblemsView;
@@ -68,13 +64,11 @@ import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Handle the mechanics of performing a hot reload on file save.
@@ -496,23 +490,5 @@ public class FlutterReloadManager {
       }
     });
     return firstError != null;
-  }
-
-  private LightweightHint showEditorHint(@NotNull Editor editor, String message, boolean isError) {
-    final AtomicReference<LightweightHint> ref = new AtomicReference<>();
-
-    OpenApiUtils.safeInvokeAndWait(() -> {
-      final JComponent component = isError
-                                   ? HintUtil.createErrorLabel(message)
-                                   : HintUtil.createInformationLabel(message);
-      final LightweightHint hint = new LightweightHint(component);
-      ref.set(hint);
-      HintManagerImpl.getInstanceImpl().showEditorHint(
-        hint, editor, HintManager.UNDER,
-        HintManager.HIDE_BY_ANY_KEY | HintManager.HIDE_BY_TEXT_CHANGE | HintManager.HIDE_BY_SCROLLING | HintManager.HIDE_BY_OTHER_HINT,
-        isError ? 0 : 3000, false);
-    });
-
-    return ref.get();
   }
 }
