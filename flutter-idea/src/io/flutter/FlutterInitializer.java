@@ -57,6 +57,7 @@ import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.OpenApiUtils;
 import io.flutter.view.InspectorViewFactory;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -316,7 +317,32 @@ public class FlutterInitializer extends FlutterProjectActivity {
     // See FlutterSdkVersion.MIN_SDK_SUPPORTED.
     if (version.isValid() && !version.isSDKSupported()) {
       final FlutterSettings settings = FlutterSettings.getInstance();
-      if (settings == null || settings.isSdkVersionOutdatedWarningAcknowledged(version.getVersionText())) return;
+      if (settings == null || settings.isSdkVersionOutdatedWarningAcknowledged(version.getVersionText(), false)) return;
+      OpenApiUtils.safeInvokeLater(() -> {
+        final Notification notification = new Notification(FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
+                                                           "Flutter SDK requires update",
+                                                           "Support for v" +
+                                                           version.getVersionText() +
+                                                           " of the Flutter SDK has been removed and we are no longer fixing issues that" +
+                                                           " result from this version. Consider updating to a more recent Flutter SDK.",
+                                                           NotificationType.WARNING);
+
+        notification.addAction(new AnAction("Dismiss") {
+          @Override
+          public void actionPerformed(@NotNull AnActionEvent event) {
+            settings.setSdkVersionOutdatedWarningAcknowledged(version.getVersionText(), false, true);
+            notification.expire();
+          }
+        });
+        Notifications.Bus.notify(notification, project);
+      });
+      return;
+    }
+
+    // See FlutterSdkVersion.MIN_SDK_WITHOUT_SUNSET_WARNING.
+    if (version.isValid() && version.isSDKAboutToSunset()) {
+      final FlutterSettings settings = FlutterSettings.getInstance();
+      if (settings == null || settings.isSdkVersionOutdatedWarningAcknowledged(version.getVersionText(), true)) return;
 
       OpenApiUtils.safeInvokeLater(() -> {
         final Notification notification = new Notification(FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
@@ -341,7 +367,7 @@ public class FlutterInitializer extends FlutterProjectActivity {
         notification.addAction(new AnAction("Dismiss") {
           @Override
           public void actionPerformed(@NotNull AnActionEvent event) {
-            settings.setSdkVersionOutdatedWarningAcknowledged(version.getVersionText(), true);
+            settings.setSdkVersionOutdatedWarningAcknowledged(version.getVersionText(), true, true);
             notification.expire();
           }
         });

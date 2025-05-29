@@ -17,14 +17,25 @@ public class FlutterSdkVersionTest {
   }
 
   @Test
-  public void trackWidgetCreationRecommendedRange() {
+  public void trackSdkVersionSupport() {
     assertFalse(new FlutterSdkVersion("3.9.0").isSDKSupported());
     assertFalse(new FlutterSdkVersion("3.9.0").isSDKSupported());
     assertFalse(new FlutterSdkVersion("3.9.0.pre").isSDKSupported());
-    assertTrue(new FlutterSdkVersion( "3.10.0.pre").isSDKSupported());
-    assertTrue(new FlutterSdkVersion( "3.10.1").isSDKSupported());
-    assertTrue(new FlutterSdkVersion( "3.10.2").isSDKSupported());
+    assertFalse(new FlutterSdkVersion( "3.10.0.pre").isSDKSupported());
+    assertFalse(new FlutterSdkVersion( "3.10.1").isSDKSupported());
+    assertFalse(new FlutterSdkVersion( "3.10.2").isSDKSupported());
+    assertTrue(new FlutterSdkVersion( "3.10.3").isSDKSupported());
+    assertTrue(new FlutterSdkVersion( "3.10.4").isSDKSupported());
     assertFalse(new FlutterSdkVersion( "unknown").isSDKSupported());
+
+    assertTrue(new FlutterSdkVersion("3.10.3").isSDKAboutToSunset());
+    assertTrue(new FlutterSdkVersion("3.10.4").isSDKAboutToSunset());
+    assertTrue(new FlutterSdkVersion("3.10.5").isSDKAboutToSunset());
+    assertTrue(new FlutterSdkVersion("3.10.6").isSDKAboutToSunset());
+    assertTrue(new FlutterSdkVersion("3.13.0").isSDKAboutToSunset());
+    assertTrue(new FlutterSdkVersion("3.13.1").isSDKAboutToSunset());
+    assertFalse(new FlutterSdkVersion("3.13.2").isSDKAboutToSunset());
+    assertFalse(new FlutterSdkVersion("3.13.3").isSDKAboutToSunset());
   }
 
   @Test
