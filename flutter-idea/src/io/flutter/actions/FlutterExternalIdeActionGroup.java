@@ -5,10 +5,7 @@
  */
 package io.flutter.actions;
 
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterUtils;
@@ -34,6 +31,11 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
       isProjectDirectory(file, project) ||
       isWithinIOsDirectory(file, project) ||
       FlutterUtils.isXcodeProjectFileName(file.getName()) || OpenInAndroidStudioAction.isProjectFileName(file.getName());
+  }
+
+  @Override
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.EDT;
   }
 
   public static boolean isAndroidDirectory(@NotNull VirtualFile file) {
