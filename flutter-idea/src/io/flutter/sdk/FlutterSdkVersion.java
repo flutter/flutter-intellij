@@ -17,19 +17,30 @@ import java.util.Objects;
 
 public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   /**
-   * The minimum version that will trigger a notification that the Flutter SDK needs to be updated, otherwise support may be lost in the
-   * Flutter Plugin.
+   * The minimum version of the Flutter SDK that is still supported. A version less than this should trigger a warning to users that
+   * the Flutter plugin no longer supports the SDK version and we will not be fixing issues resulting from using this version.
    * <p>
    * Note, this is for the Flutter SDK version, not the Dart SDK version, this mapping can be found:
    * <a href="https://docs.flutter.dev/release/archive">Flutter SDK Release Archive list</a>.
    * <p>
-   * The Flutter version `3.7.12` maps to the Dart SDK version in before NNBD (early 2023 stable).
-   * <p>
-   * This version was updated last on November 4th, 2024, and in coordination with the VS Code support.
+   * This version was updated last on May 29, 2024.
    */
   @VisibleForTesting
   @NotNull
-  public static final FlutterSdkVersion MIN_SDK_SUPPORTED = new FlutterSdkVersion("3.10.0");
+  public static final FlutterSdkVersion MIN_SDK_SUPPORTED = new FlutterSdkVersion("3.10.3");
+
+  /**
+   * The minimum version of the Flutter SDK that will be supported for 3 more months. A version less than this is either not supported or
+   * should trigger a warning to users that support for the version will be gone in an upcoming plugin version.
+   * <p>
+   * Note, this is for the Flutter SDK version, not the Dart SDK version, this mapping can be found:
+   * <a href="https://docs.flutter.dev/release/archive">Flutter SDK Release Archive list</a>.
+   * <p>
+   * This version was updated last on May 29, 2024.
+   */
+  @VisibleForTesting
+  @NotNull
+  public static final FlutterSdkVersion MIN_SDK_WITHOUT_SUNSET_WARNING = new FlutterSdkVersion("3.13.2");
 
   @NotNull
   private static final FlutterSdkVersion MIN_SUPPORTS_DEVTOOLS_PATH_URLS = new FlutterSdkVersion("3.3.0");
@@ -148,6 +159,10 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   public boolean isSDKSupported() {
     return supportsVersion(MIN_SDK_SUPPORTED);
+  }
+
+  public boolean isSDKAboutToSunset() {
+    return this.compareTo(MIN_SDK_SUPPORTED) >= 0 && this.compareTo(MIN_SDK_WITHOUT_SUNSET_WARNING) < 0;
   }
 
   public boolean isValid() {

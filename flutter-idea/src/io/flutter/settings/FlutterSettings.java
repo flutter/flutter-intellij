@@ -308,16 +308,16 @@ public class FlutterSettings {
   /**
    * See {FlutterSdkVersion#MIN_SDK_SUPPORTED}.
    */
-  public boolean isSdkVersionOutdatedWarningAcknowledged(String versionText) {
-    return getPropertiesComponent().getBoolean(getSdkVersionKey(versionText));
+  public boolean isSdkVersionOutdatedWarningAcknowledged(String versionText, boolean isBeforeSunset) {
+    return getPropertiesComponent().getBoolean(getSdkVersionKey(versionText, isBeforeSunset));
   }
 
-  public void setSdkVersionOutdatedWarningAcknowledged(String versionText, boolean value) {
-    getPropertiesComponent().setValue(getSdkVersionKey(versionText), value);
+  public void setSdkVersionOutdatedWarningAcknowledged(String versionText, boolean isBeforeSunset, boolean value) {
+    getPropertiesComponent().setValue(getSdkVersionKey(versionText, isBeforeSunset), value);
   }
 
-  private String getSdkVersionKey(String versionText) {
-    return sdkVersionOutdatedWarningAcknowledgedKey + "_" + versionText;
+  private String getSdkVersionKey(String versionText, boolean isBeforeSunset) {
+    return sdkVersionOutdatedWarningAcknowledgedKey + "_" + versionText + "_" + (isBeforeSunset ? "beforeSunset" : "afterSunset");
   }
 
   public boolean isAndroidStudioBotAcknowledged() {
