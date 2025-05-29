@@ -6,6 +6,7 @@
 package io.flutter.editor;
 
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
@@ -143,15 +144,7 @@ public class NativeEditorNotificationProvider implements EditorNotificationProvi
     }
 
     private DataContext makeContext() {
-      return dataId -> {
-        if (CommonDataKeys.VIRTUAL_FILE.is(dataId)) {
-          return myFile;
-        }
-        if (CommonDataKeys.PROJECT.is(dataId)) {
-          return project;
-        }
-        return null;
-      };
+      return SimpleDataContext.builder().add(CommonDataKeys.VIRTUAL_FILE, myFile).add(CommonDataKeys.PROJECT, project).build();
     }
   }
 }

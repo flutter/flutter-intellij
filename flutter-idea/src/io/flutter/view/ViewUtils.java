@@ -79,8 +79,11 @@ public class ViewUtils {
   }
 
   public void replacePanelLabel(ToolWindow toolWindow, JComponent label) {
+    replacePanelLabel(toolWindow.getContentManager(), label);
+  }
+
+  public void replacePanelLabel(ContentManager contentManager, JComponent label) {
     OpenApiUtils.safeInvokeLater(() -> {
-      final ContentManager contentManager = toolWindow.getContentManager();
       if (contentManager.isDisposed()) {
         return;
       }
