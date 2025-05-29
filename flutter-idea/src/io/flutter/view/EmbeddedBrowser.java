@@ -207,17 +207,7 @@ public abstract class EmbeddedBrowser {
   }
 
   private void replacePanelLabel(JComponent label, ContentManager contentManager) {
-    OpenApiUtils.safeInvokeLater(() -> {
-      if (contentManager.isDisposed()) {
-        return;
-      }
-
-      final JPanel panel = new JPanel(new BorderLayout());
-      panel.add(label, BorderLayout.CENTER);
-      final Content content = contentManager.getFactory().createContent(panel, null, false);
-      contentManager.removeAllContents(true);
-      contentManager.addContent(content);
-    });
+    new ViewUtils().replacePanelLabel(contentManager, label);
   }
 
   private BrowserTab openBrowserTabFor(String tabName, ToolWindow toolWindow) {
