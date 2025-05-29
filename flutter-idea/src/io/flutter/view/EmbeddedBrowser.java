@@ -22,6 +22,7 @@ import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.LabelInput;
 import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,7 +36,7 @@ import java.util.function.Function;
 
 /**
  * There is one instance of embedded browser across the project, but it manages tabs across multiple tool
- * windows. Each tab can display contents of an independent URL.
+ * windows. Each tab can display the contents of an independent URL.
  */
 public abstract class EmbeddedBrowser {
   static public class BrowserTab {
@@ -78,6 +79,10 @@ public abstract class EmbeddedBrowser {
   }
 
   public void openPanel(ToolWindow toolWindow, String tabName, DevToolsUrl devToolsUrl, Consumer<String> onBrowserUnavailable) {
+    openPanel(toolWindow, tabName, devToolsUrl, onBrowserUnavailable, null);
+  }
+
+  public void openPanel(ToolWindow toolWindow, String tabName, DevToolsUrl devToolsUrl, Consumer<String> onBrowserUnavailable, @Nullable String warningMessage) {
     this.url = devToolsUrl;
     Map<String, BrowserTab> tabs = windows.computeIfAbsent(toolWindow.getId(), k -> new HashMap<>());
 
@@ -137,7 +142,17 @@ public abstract class EmbeddedBrowser {
       tab.content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
       // TODO(helin24): Use differentiated icons for each tab and copy from devtools toolbar.
       tab.content.setIcon(FlutterIcons.Phone);
-      tab.contentManager.addContent(tab.content);
+
+      final JPanel panel = new JPanel(new BorderLayout());
+
+      if (warningMessage != null) {
+        panel.add(new ViewUtils().warningLabel(warningMessage), BorderLayout.NORTH);
+      }
+
+      panel.add(tab.content.getComponent(), BorderLayout.CENTER);
+      final Content panelContent = tab.contentManager.getFactory().createContent(panel, null, false);
+
+      tab.contentManager.addContent(panelContent);
       tab.contentManager.setSelectedContent(tab.content, true);
       tab.embeddedTab.matchIdeZoom();
     });

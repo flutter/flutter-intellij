@@ -80,7 +80,7 @@ class DevToolsServerTask extends Task.Backgroundable {
       progressIndicator.setFraction(30);
       progressIndicator.setText2("Init");
 
-      // If DevTools is not supported, start the daemon instead.
+      // If the `dart devtools` command is not supported, start the daemon instead.
       final boolean dartDevToolsSupported = dartSdkSupportsDartDevTools();
       if (!dartDevToolsSupported) {
         LOG.info("Starting the DevTools daemon.");
