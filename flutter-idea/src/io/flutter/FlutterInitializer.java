@@ -303,7 +303,7 @@ public class FlutterInitializer implements StartupActivity {
         notification.addAction(new AnAction("Dismiss") {
           @Override
           public void actionPerformed(@NotNull AnActionEvent event) {
-            settings.setSdkVersionOutdatedWarningAcknowledged(version.getVersionText(), true, true);
+            settings.setSdkVersionOutdatedWarningAcknowledged(version.getVersionText(), false, true);
             notification.expire();
           }
         });
