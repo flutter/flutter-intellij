@@ -53,8 +53,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
   private final Set<String> registeredServices = new HashSet<>();
 
-  @NotNull public final DisplayRefreshRateManager displayRefreshRateManager;
-
   public VMServiceManager(@NotNull FlutterApp app, @NotNull VmService vmService) {
     this.app = app;
     this.vmService = vmService;
@@ -62,7 +60,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
     assert (app.getFlutterDebugProcess() != null);
 
-    this.displayRefreshRateManager = new DisplayRefreshRateManager(this, vmService);
     flutterIsolateRefStream = new EventStream<>();
 
     // The VM Service depends on events from the Extension event stream to determine when Flutter.Frame
@@ -107,7 +104,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
                   }
                 }
               }
-              addRegisteredExtensionRPCs(isolate, false);
+              addRegisteredExtensionRPCs(isolate);
             }
 
             @Override
@@ -125,7 +122,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
     setServiceExtensionState(enableOnDeviceInspector.getExtension(), true, true);
   }
 
-  public void addRegisteredExtensionRPCs(Isolate isolate, boolean attach) {
+  public void addRegisteredExtensionRPCs(Isolate isolate) {
     if (isolate.getExtensionRPCs() != null) {
       for (String extension : isolate.getExtensionRPCs()) {
         addServiceExtension(extension);
@@ -278,9 +275,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
         addServiceExtension(extensionName);
       }
       pendingServiceExtensions.clear();
-
-      // Query for display refresh rate and add the value to the stream.
-      displayRefreshRateManager.queryRefreshRate();
     }
   }
 
