@@ -16,10 +16,7 @@ import java.util.Objects;
  * InspectorInstanceRef id. The tradeoff is the consumer of
  * InspectorInstanceRef objects is responsible for managing their lifecycles.
  */
-public class InspectorInstanceRef {
-  public InspectorInstanceRef(String id) {
-    this.id = id;
-  }
+public record InspectorInstanceRef(String id) {
 
   @Override
   public boolean equals(Object other) {
@@ -30,18 +27,7 @@ public class InspectorInstanceRef {
   }
 
   @Override
-  public int hashCode() {
-    return id != null ? id.hashCode() : 0;
-  }
-
-  @Override
   public String toString() {
     return "instance-" + id;
   }
-
-  public String getId() {
-    return id;
-  }
-
-  private final String id;
 }
