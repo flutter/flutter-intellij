@@ -382,18 +382,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     return jw.similarity(t, p);
   }
 
-  static class IconInfo {
-    final @NotNull String iconName;
-    final @NotNull String className;
-    final @Nullable String familyName;
-    final @NotNull String codepoint;
-
-    IconInfo(@NotNull String className, @NotNull String iconName, @Nullable String familyName, @NotNull String codepoint) {
-      this.className = className;
-      this.iconName = iconName;
-      this.familyName = familyName;
-      this.codepoint = codepoint;
-    }
+  record IconInfo(@NotNull String className, @NotNull String iconName, @Nullable String familyName, @NotNull String codepoint) {
   }
 
   static class IconInfoVisitor extends DartRecursiveVisitor {

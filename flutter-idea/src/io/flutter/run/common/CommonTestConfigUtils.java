@@ -242,18 +242,8 @@ public abstract class CommonTestConfigUtils {
    * <p>
    * Used to ensure that we don't get stuck with out-of-date line markers.
    */
-  private static class LineMarkerUpdatingListener implements ActiveEditorsOutlineService.Listener {
-    @NotNull final CommonTestConfigUtils commonTestConfigUtils;
-    @NotNull final Project project;
-    @NotNull final ActiveEditorsOutlineService service;
-
-    private LineMarkerUpdatingListener(@NotNull CommonTestConfigUtils commonTestConfigUtils,
-                                       @NotNull Project project,
-                                       @NotNull ActiveEditorsOutlineService service) {
-      this.commonTestConfigUtils = commonTestConfigUtils;
-      this.project = project;
-      this.service = service;
-    }
+  private record LineMarkerUpdatingListener(@NotNull CommonTestConfigUtils commonTestConfigUtils, @NotNull Project project,
+                                            @NotNull ActiveEditorsOutlineService service) implements ActiveEditorsOutlineService.Listener {
 
     @Override
     public void onOutlineChanged(@NotNull String filePath, @Nullable FlutterOutline outline) {

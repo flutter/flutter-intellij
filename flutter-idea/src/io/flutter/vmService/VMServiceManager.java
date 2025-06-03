@@ -294,7 +294,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
       restoreExtensionFromDevice(name);
 
       // Restore any previously true states by calling their service extensions.
-      if (getServiceExtensionState(name).getValue().isEnabled()) {
+      if (getServiceExtensionState(name).getValue().enabled()) {
         restoreServiceExtensionState(name);
       }
     }
@@ -347,7 +347,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
         return;
       }
 
-      @Nullable final Object value = getServiceExtensionState(name).getValue().getValue();
+      @Nullable final Object value = getServiceExtensionState(name).getValue().value();
 
       if (value instanceof Boolean) {
         app.callBooleanExtension(name, (Boolean)value);
