@@ -25,4 +25,4 @@ The inbox tracker should do the following initial triage:
 * Edit the issue's title to best represent our new understanding of the issue; this will save time for every other person who needs to skim the issue titles in the future.
 
 ## PR Bots
-- if an issue with the `waiting for customer response` label is not responded to in 14 days, it's automatically closed with an appropriate message
+- if an issue with the `waiting for customer response` label is not responded to in 14 days, it's automatically closed with an appropriate message.
