@@ -89,7 +89,8 @@ public class PropertyEditorViewFactory extends AbstractDevToolsViewFactory {
 
       @Override
       public void stateChanged(@NotNull ToolWindowManager toolWindowManager, @NotNull ToolWindowManagerEventType changeType) {
-        if (changeType.equals(ToolWindowManagerEventType.SetToolWindowAutoHide) || changeType.equals(ToolWindowManagerEventType.SetToolWindowType)) {
+        if (changeType.equals(ToolWindowManagerEventType.SetToolWindowAutoHide) ||
+            changeType.equals(ToolWindowManagerEventType.SetToolWindowType)) {
           checkDockedUnpinnedAndCreateContent(project, toolWindow);
         }
       }
@@ -102,9 +103,9 @@ public class PropertyEditorViewFactory extends AbstractDevToolsViewFactory {
     if (!isDockedUnpinned.equals(PREVIOUS_DOCKED_UNPINNED)) {
       PREVIOUS_DOCKED_UNPINNED = isDockedUnpinned;
       super.createToolWindowContent(project, toolWindow, isDockedUnpinned
-                                                         ? "This tool window is in \"Docked Unpinned\" mode, which means it will " +
-                                                           "disappear during normal use of the property editor. Select Options (three dots) >"
-                                                           + " View Mode > Docked Pinned instead."
+                                                         ? "This tool window is in \"Docked Unpinned\" mode, which means it will disappear "
+                                                           + "during normal use of the property editor. Select Options (three dots) > View "
+                                                           + "Mode > Docked Pinned instead."
                                                          : null);
     }
   }
