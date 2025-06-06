@@ -38,6 +38,8 @@ import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DtdUtils;
+import io.flutter.logging.PluginLogHandler;
+import io.flutter.logging.PluginLogger;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.JsonUtils;
@@ -57,7 +59,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 class DevToolsServerTask extends Task.Backgroundable {
-  private @NotNull static final Logger LOG = Logger.getInstance(DevToolsServerTask.class);
+  private @NotNull static final Logger LOG = PluginLogger.createLogger(DevToolsServerTask.class);
   public @NotNull static final String LOCAL_DEVTOOLS_DIR = "flutter.local.devtools.dir";
   public @NotNull static final String LOCAL_DEVTOOLS_ARGS = "flutter.local.devtools.args";
   private @NotNull final Project project;
@@ -79,6 +81,7 @@ class DevToolsServerTask extends Task.Backgroundable {
     try {
       progressIndicator.setFraction(30);
       progressIndicator.setText2("Init");
+      LOG.info("Here we are in DevTools run");
 
       // If DevTools is not supported, start the daemon instead.
       final boolean dartDevToolsSupported = dartSdkSupportsDartDevTools();
