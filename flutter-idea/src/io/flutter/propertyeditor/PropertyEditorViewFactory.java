@@ -20,18 +20,16 @@ import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.run.daemon.DevToolsInstance;
 import io.flutter.sdk.FlutterSdkVersion;
-import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.tools.*;
 import java.util.List;
 
 public class PropertyEditorViewFactory extends AbstractDevToolsViewFactory {
-  @NotNull public static String TOOL_WINDOW_ID = "Flutter Property Editor";
+  @NotNull public final static String TOOL_WINDOW_ID = "Flutter Property Editor";
 
-  @NotNull public static String DEVTOOLS_PAGE_ID = "propertyEditor";
-  @Nullable private static Boolean PREVIOUS_DOCKED_UNPINNED = null;
+  @NotNull public final static String DEVTOOLS_PAGE_ID = "propertyEditor";
+  @Nullable private static Boolean previousDockedUnpinned = null;
 
   @Override
   public boolean versionSupportsThisTool(@NotNull final FlutterSdkVersion flutterSdkVersion) {
@@ -100,8 +98,8 @@ public class PropertyEditorViewFactory extends AbstractDevToolsViewFactory {
 
   private void checkDockedUnpinnedAndCreateContent(@NotNull Project project, ToolWindow toolWindow) {
     final Boolean isDockedUnpinned = toolWindow.getType().equals(ToolWindowType.DOCKED) && toolWindow.isAutoHide();
-    if (!isDockedUnpinned.equals(PREVIOUS_DOCKED_UNPINNED)) {
-      PREVIOUS_DOCKED_UNPINNED = isDockedUnpinned;
+    if (!isDockedUnpinned.equals(previousDockedUnpinned)) {
+      previousDockedUnpinned = isDockedUnpinned;
       super.createToolWindowContent(project, toolWindow, isDockedUnpinned
                                                          ? "This tool window is in \"Docked Unpinned\" mode, which means it will disappear "
                                                            + "during normal use of the property editor. Select Options (three dots) > View "
