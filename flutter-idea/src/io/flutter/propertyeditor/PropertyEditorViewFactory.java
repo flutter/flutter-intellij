@@ -6,7 +6,12 @@
 package io.flutter.propertyeditor;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.ToolWindowType;
+import com.intellij.openapi.wm.ex.ToolWindowManagerListener;
+import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.dart.DartPluginVersion;
@@ -16,13 +21,15 @@ import io.flutter.devtools.DevToolsUrl;
 import io.flutter.run.daemon.DevToolsInstance;
 import io.flutter.sdk.FlutterSdkVersion;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public class PropertyEditorViewFactory extends AbstractDevToolsViewFactory {
-  @NotNull public static String TOOL_WINDOW_ID = "Flutter Property Editor";
+  @NotNull public final static String TOOL_WINDOW_ID = "Flutter Property Editor";
 
-  @NotNull public static String DEVTOOLS_PAGE_ID = "propertyEditor";
+  @NotNull public final static String DEVTOOLS_PAGE_ID = "propertyEditor";
+  @Nullable private static Boolean previousDockedUnpinned = null;
 
   @Override
   public boolean versionSupportsThisTool(@NotNull final FlutterSdkVersion flutterSdkVersion) {
@@ -65,6 +72,39 @@ public class PropertyEditorViewFactory extends AbstractDevToolsViewFactory {
                                                         "newer version of the Dart plugin."));
       return;
     }
-    super.createToolWindowContent(project, toolWindow);
+
+    checkDockedUnpinnedAndCreateContent(project, toolWindow);
+
+    final PropertyEditorViewFactory self = this;
+    MessageBusConnection connection = project.getMessageBus().connect();
+    connection.subscribe(ToolWindowManagerListener.TOPIC, new ToolWindowManagerListener() {
+      @Override
+      public void toolWindowShown(@NotNull ToolWindow activatedToolWindow) {
+        if (activatedToolWindow.getId().equals(getToolWindowId())) {
+          checkDockedUnpinnedAndCreateContent(project, toolWindow);
+        }
+      }
+
+      @Override
+      public void stateChanged(@NotNull ToolWindowManager toolWindowManager, @NotNull ToolWindowManagerEventType changeType) {
+        if (changeType.equals(ToolWindowManagerEventType.SetToolWindowAutoHide) ||
+            changeType.equals(ToolWindowManagerEventType.SetToolWindowType)) {
+          checkDockedUnpinnedAndCreateContent(project, toolWindow);
+        }
+      }
+    });
+    Disposer.register(toolWindow.getDisposable(), connection);
+  }
+
+  private void checkDockedUnpinnedAndCreateContent(@NotNull Project project, ToolWindow toolWindow) {
+    final Boolean isDockedUnpinned = toolWindow.getType().equals(ToolWindowType.DOCKED) && toolWindow.isAutoHide();
+    if (!isDockedUnpinned.equals(previousDockedUnpinned)) {
+      previousDockedUnpinned = isDockedUnpinned;
+      super.createToolWindowContent(project, toolWindow, isDockedUnpinned
+                                                         ? "This tool window is in \"Docked Unpinned\" mode, which means it will disappear "
+                                                           + "during normal use of the property editor. Select Options (three dots) > View "
+                                                           + "Mode > Docked Pinned instead."
+                                                         : null);
+    }
   }
 }

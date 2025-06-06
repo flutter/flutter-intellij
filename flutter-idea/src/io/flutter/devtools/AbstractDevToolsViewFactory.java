@@ -23,6 +23,7 @@ import io.flutter.view.EmbeddedBrowser;
 import io.flutter.view.ViewUtils;
 import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -63,6 +64,10 @@ public abstract class AbstractDevToolsViewFactory implements ToolWindowFactory {
 
   @Override
   public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+    createToolWindowContent(project, toolWindow, null);
+  }
+
+  public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow, @Nullable String warningMessage) {
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     final FlutterSdkVersion flutterSdkVersion = flutterSdk == null ? null : flutterSdk.getVersion();
 
@@ -104,15 +109,16 @@ public abstract class AbstractDevToolsViewFactory implements ToolWindowFactory {
     }
 
     // Final case:
-    loadDevToolsInEmbeddedBrowser(project, toolWindow, flutterSdkVersion);
+    loadDevToolsInEmbeddedBrowser(project, toolWindow, flutterSdkVersion, warningMessage);
 
     // Finally, listen for the panel to be reopened and potentially reload DevTools.
-    maybeReloadDevToolsWhenVisible(project, toolWindow, flutterSdkVersion);
+    maybeReloadDevToolsWhenVisible(project, toolWindow, flutterSdkVersion, warningMessage);
   }
 
   private void loadDevToolsInEmbeddedBrowser(@NotNull Project project,
                                              @NotNull ToolWindow toolWindow,
-                                             @NotNull FlutterSdkVersion flutterSdkVersion) {
+                                             @NotNull FlutterSdkVersion flutterSdkVersion,
+                                             @Nullable String warningMessage) {
     viewUtils.presentLabel(toolWindow, "Loading " + getToolWindowTitle() + "...");
 
     AsyncUtils.whenCompleteUiThread(
@@ -144,7 +150,7 @@ public abstract class AbstractDevToolsViewFactory implements ToolWindowFactory {
               FlutterUtils.embeddedBrowser(project))
             .ifPresent(embeddedBrowser ->
                        {
-                         embeddedBrowser.openPanel(toolWindow, getToolWindowTitle(), devToolsUrl, System.out::println);
+                         embeddedBrowser.openPanel(toolWindow, getToolWindowTitle(), devToolsUrl, System.out::println, warningMessage);
                          devToolsLoadedInBrowser = true;
                          doAfterBrowserOpened(project, embeddedBrowser);
                          // The "refresh" action refreshes the embedded browser, not the panel.
@@ -157,14 +163,15 @@ public abstract class AbstractDevToolsViewFactory implements ToolWindowFactory {
   }
 
   private void maybeReloadDevToolsWhenVisible(@NotNull Project project,
-                                              @NotNull ToolWindow toolWindow, @NotNull FlutterSdkVersion flutterSdkVersion) {
+                                              @NotNull ToolWindow toolWindow, @NotNull FlutterSdkVersion flutterSdkVersion,
+                                              @Nullable String warningMessage) {
     MessageBusConnection connection = project.getMessageBus().connect();
     connection.subscribe(ToolWindowManagerListener.TOPIC, new ToolWindowManagerListener() {
       @Override
       public void toolWindowShown(@NotNull ToolWindow activatedToolWindow) {
         if (activatedToolWindow.getId().equals(getToolWindowId())) {
           if (!devToolsLoadedInBrowser) {
-            loadDevToolsInEmbeddedBrowser(project, toolWindow, flutterSdkVersion);
+            loadDevToolsInEmbeddedBrowser(project, toolWindow, flutterSdkVersion, warningMessage);
           }
         }
       }
