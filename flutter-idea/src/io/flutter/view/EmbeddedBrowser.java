@@ -78,11 +78,18 @@ public abstract class EmbeddedBrowser {
     });
   }
 
-  public void openPanel(ToolWindow toolWindow, String tabName, DevToolsUrl devToolsUrl, Consumer<String> onBrowserUnavailable) {
+  public void openPanel(@NotNull ToolWindow toolWindow,
+                        @NotNull String tabName,
+                        @NotNull DevToolsUrl devToolsUrl,
+                        @NotNull Consumer<String> onBrowserUnavailable) {
     openPanel(toolWindow, tabName, devToolsUrl, onBrowserUnavailable, null);
   }
 
-  public void openPanel(ToolWindow toolWindow, String tabName, DevToolsUrl devToolsUrl, Consumer<String> onBrowserUnavailable, @Nullable String warningMessage) {
+  public void openPanel(@NotNull ToolWindow toolWindow,
+                        @NotNull String tabName,
+                        @NotNull DevToolsUrl devToolsUrl,
+                        @NotNull Consumer<String> onBrowserUnavailable,
+                        @Nullable String warningMessage) {
     this.url = devToolsUrl;
     Map<String, BrowserTab> tabs = windows.computeIfAbsent(toolWindow.getId(), k -> new HashMap<>());
 

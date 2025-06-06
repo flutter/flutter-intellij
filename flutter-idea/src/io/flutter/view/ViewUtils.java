@@ -22,7 +22,7 @@ import java.awt.*;
 import java.util.List;
 
 public class ViewUtils {
-  public @NotNull JBLabel warningLabel(String warning) {
+  public @NotNull JBLabel warningLabel(@NotNull String warning) {
     final JBLabel descriptionLabel = new JBLabel(wrapWithHtml(warning));
     descriptionLabel.setBorder(JBUI.Borders.empty(5));
     descriptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
