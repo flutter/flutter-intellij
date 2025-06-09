@@ -39,9 +39,13 @@ flutter-idea/build/
 flutter-idea/.gradle/
 tool/plugin/.idea
 lib/kotlin*
-gradle
-gradlew
-gradlew.bat
+
+# Gradle
+.gradle
+/build/
+gradle-app.setting
+gradle/wrapper/gradle-wrapper.jar
+
 # User specific configuration based on current Intellij SDKs.
 gradle.properties
 .idea/misc.xml

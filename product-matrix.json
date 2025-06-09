@@ -14,7 +14,7 @@
       "sinceBuild": "243",
       "untilBuild": "243.*",
       "isUnitTestTarget": "true",
-      "javaVersion": "17"
+      "javaVersion": "21"
     },
     {
       "channel": "stable",
