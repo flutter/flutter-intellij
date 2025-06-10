@@ -103,15 +103,7 @@ dependencies {
   intellijPlatform {
     // Documentation on the default target platform methods:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
-    if (ideaProduct == "android-studio") {
-      androidStudio(ideaVersion)
-    } else {
-      when (ideaProduct) {
-        "IU" -> intellijIdeaUltimate(ideaVersion)
-        "IC" -> intellijIdeaCommunity(ideaVersion)
-        else -> throw IllegalArgumentException("ideaProduct must be defined in the product matrix as either \"IU\" or \"IC\", but is not for $ideaVersion")
-      }
-    }
+    androidStudio(ideaVersion)
     testFramework(TestFrameworkType.Platform)
 
     // Plugin dependency documentation:
@@ -128,12 +120,8 @@ dependencies {
       "org.intellij.intelliLang"
     )
     val pluginList = mutableListOf("Dart:$dartPluginVersion")
-    if (ideaProduct == "android-studio") {
-      bundledPluginList.add("org.jetbrains.android")
-      bundledPluginList.add("com.android.tools.idea.smali")
-    } else {
-      pluginList.add("org.jetbrains.android:$androidPluginVersion")
-    }
+    bundledPluginList.add("org.jetbrains.android")
+    bundledPluginList.add("com.android.tools.idea.smali")
 
     // Finally, add the plugins into their respective lists:
     // https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html#project-setup
@@ -211,9 +199,7 @@ tasks {
 
 dependencies {
   implementation(project("flutter-idea"))
-  if (ideaProduct == "android-studio") {
-    implementation(project("flutter-studio"))
-  }
+  implementation(project("flutter-studio"))
 }
 
 tasks {
@@ -225,9 +211,7 @@ tasks {
   }
   prepareSandbox {
     dependsOn(":flutter-idea:prepareSandbox")
-    if (ideaProduct == "android-studio") {
-      dependsOn(":flutter-studio:prepareSandbox")
-    }
+    dependsOn(":flutter-studio:prepareSandbox")
   }
 }
 
