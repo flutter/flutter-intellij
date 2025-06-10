@@ -258,7 +258,9 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   public boolean validate(@Nullable Project current, @NotNull Project dest) {
     final String settingsValidation = validateSettings(getAdditionalSettings());
     if (settingsValidation != null) {
-      Messages.showErrorDialog(settingsValidation, "Error");
+      OpenApiUtils.safeInvokeLater(() -> {
+        Messages.showErrorDialog(settingsValidation, "Error");
+      });
       try {
         Files.deleteIfExists(Path.of(dest.getBasePath()));
       }
