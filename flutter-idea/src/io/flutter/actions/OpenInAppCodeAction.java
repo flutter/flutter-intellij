@@ -22,19 +22,23 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterMessages;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static io.flutter.actions.OpenInXcodeAction.findProjectFile;
 
 public class OpenInAppCodeAction extends AnAction {
+  OpenInAppCodeAction() {
+    // Schedule initialization so that we can discover if `AppCode` is installed *before* we
+    // need to decide whether to make the action menu visible.
+    OpenApiUtils.safeInvokeLater(() -> {
+      initialize();
+    });
+  }
 
   private static boolean IS_INITIALIZED = false;
   private static boolean IS_APPCODE_INSTALLED = false;
-
-  static {
-    initialize();
-  }
 
   private static void initialize() {
     if (SystemInfo.isMac) {
@@ -78,6 +82,7 @@ public class OpenInAppCodeAction extends AnAction {
   public @NotNull ActionUpdateThread getActionUpdateThread() {
     return ActionUpdateThread.BGT;
   }
+
   @Override
   public void actionPerformed(@NotNull AnActionEvent event) {
     final VirtualFile projectFile = findProjectFile(event);
