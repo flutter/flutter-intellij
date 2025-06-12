@@ -50,6 +50,14 @@
 
   <change-notes>
     <![CDATA[
+<h1>86</h1>
+<ul>
+  <li>New message in DevTools windows for &quot;Dock unpinned&quot; IntelliJ feature (#8181)</li>
+  <li>Fixes for Slow Operation notifications in the IDEA platform (#7792)</li>
+  <li>Fix in Flutter project creation flow (#8259)</li>
+  <li>Many code health improvements and code cleanups (#8025, #8027, #8021)</li>
+  <li>Migration of deprecated API usages (#7718)</li>
+</ul>
 <h1>85.3</h1>
 <ul>
   <li>Add Property Editor side panel (#7957)</li>
