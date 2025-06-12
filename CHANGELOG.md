@@ -1,3 +1,10 @@
+# 86
+- New message in DevTools windows for "Dock unpinned" IntelliJ feature (#8181)
+- Fixes for Slow Operation notifications in the IDEA platform (#7792)
+- Fix in Flutter project creation flow (#8259)
+- Many code health improvements and code cleanups (#8025, #8027, #8021)
+- Migration of deprecated API usages (#7718)
+
 # 85.3
 - Add Property Editor side panel (#7957)
 - Support removed for IDEA 2024.1 (Koala) and 2024.2 (Ladybug) (#8073)
