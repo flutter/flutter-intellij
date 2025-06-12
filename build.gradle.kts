@@ -232,3 +232,15 @@ tasks {
     }
   }
 }
+
+// A task to print the classpath used for compiling an IntelliJ plugin
+// Run with `./third_party/gradlew printCompileClasspath --no-configuration-cache `
+tasks.register("printCompileClasspath") {
+  doLast {
+    println("--- Begin Compile Classpath ---")
+    configurations.getByName("compileClasspath").forEach { file ->
+      println(file.absolutePath)
+    }
+    println("--- End Compile Classpath ---")
+  }
+}
