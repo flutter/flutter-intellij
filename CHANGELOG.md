@@ -4,6 +4,7 @@
 - Fix in Flutter project creation flow (#8259)
 - Many code health improvements and code cleanups (#8025, #8027, #8021)
 - Migration of deprecated API usages (#7718)
+- Fix for empty menu item in the device selector (#8264)
 
 # 85.3
 - Add Property Editor side panel (#7957)

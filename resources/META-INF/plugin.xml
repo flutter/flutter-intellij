@@ -57,6 +57,7 @@
   <li>Fix in Flutter project creation flow (#8259)</li>
   <li>Many code health improvements and code cleanups (#8025, #8027, #8021)</li>
   <li>Migration of deprecated API usages (#7718)</li>
+  <li>Fix for empty menu item in the device selector (#8264)</li>
 </ul>
 <h1>85.3</h1>
 <ul>
