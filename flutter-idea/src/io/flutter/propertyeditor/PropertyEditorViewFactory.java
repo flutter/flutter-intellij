@@ -73,7 +73,7 @@ public class PropertyEditorViewFactory extends AbstractDevToolsViewFactory {
       return;
     }
 
-    checkDockedUnpinnedAndCreateContent(project, toolWindow);
+    checkDockedUnpinnedAndCreateContent(project, toolWindow, true);
 
     final PropertyEditorViewFactory self = this;
     MessageBusConnection connection = project.getMessageBus().connect();
@@ -81,7 +81,7 @@ public class PropertyEditorViewFactory extends AbstractDevToolsViewFactory {
       @Override
       public void toolWindowShown(@NotNull ToolWindow activatedToolWindow) {
         if (activatedToolWindow.getId().equals(getToolWindowId())) {
-          checkDockedUnpinnedAndCreateContent(project, toolWindow);
+          checkDockedUnpinnedAndCreateContent(project, toolWindow, false);
         }
       }
 
@@ -89,16 +89,19 @@ public class PropertyEditorViewFactory extends AbstractDevToolsViewFactory {
       public void stateChanged(@NotNull ToolWindowManager toolWindowManager, @NotNull ToolWindowManagerEventType changeType) {
         if (changeType.equals(ToolWindowManagerEventType.SetToolWindowAutoHide) ||
             changeType.equals(ToolWindowManagerEventType.SetToolWindowType)) {
-          checkDockedUnpinnedAndCreateContent(project, toolWindow);
+          checkDockedUnpinnedAndCreateContent(project, toolWindow, false);
         }
       }
     });
     Disposer.register(toolWindow.getDisposable(), connection);
   }
 
-  private void checkDockedUnpinnedAndCreateContent(@NotNull Project project, ToolWindow toolWindow) {
+  private void checkDockedUnpinnedAndCreateContent(@NotNull Project project, ToolWindow toolWindow, boolean forceLoad) {
     final Boolean isDockedUnpinned = toolWindow.getType().equals(ToolWindowType.DOCKED) && toolWindow.isAutoHide();
-    if (!isDockedUnpinned.equals(previousDockedUnpinned)) {
+
+    // If this is the first time we are loading the content, force a load even if docked unpinned state matches.
+    // Docked unpinned state is only null the first time application is opened (I think).
+    if (!isDockedUnpinned.equals(previousDockedUnpinned) || forceLoad) {
       previousDockedUnpinned = isDockedUnpinned;
       super.createToolWindowContent(project, toolWindow, isDockedUnpinned
                                                          ? "This tool window is in \"Docked Unpinned\" mode, which means it will disappear "
