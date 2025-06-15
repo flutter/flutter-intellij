@@ -1,0 +1,14 @@
+name: triage
+description: Triage report tools
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  github: ^9.0.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.22.0

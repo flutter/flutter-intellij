@@ -27,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 public class OpenDevToolsAction extends DumbAwareAction {
-  private static final Logger LOG = Logger.getInstance(OpenDevToolsAction.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(OpenDevToolsAction.class);
   private static final String title = "Open Flutter DevTools in Browser";
   private final @Nullable ObservatoryConnector myConnector;
   private final Computable<Boolean> myIsApplicable;
@@ -92,7 +92,7 @@ public class OpenDevToolsAction extends DumbAwareAction {
         .setIdeFeature(DevToolsIdeFeature.RUN_CONSOLE)
         .build()
         .getUrlString();
-      BrowserLauncher.getInstance().browse(devToolsUrl,null);
+      BrowserLauncher.getInstance().browse(devToolsUrl, null);
     });
   }
 }

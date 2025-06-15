@@ -37,7 +37,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * A launcher that starts a process to run flutter tests, created from a run configuration.
  */
-class TestLaunchState extends CommandLineState {
+public class TestLaunchState extends CommandLineState {
   @NotNull
   private final TestConfig config;
 

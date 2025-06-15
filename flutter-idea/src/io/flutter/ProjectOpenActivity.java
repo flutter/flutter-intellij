@@ -15,13 +15,11 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectType;
 import com.intellij.openapi.project.ProjectTypeService;
-import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.ui.Messages;
 import icons.FlutterIcons;
 import io.flutter.bazel.WorkspaceCache;
@@ -41,15 +39,14 @@ import java.util.Collection;
  *
  * @see FlutterInitializer for actions that run later.
  */
-public class ProjectOpenActivity implements StartupActivity, DumbAware {
+public class ProjectOpenActivity extends FlutterProjectActivity implements DumbAware {
   public static final ProjectType FLUTTER_PROJECT_TYPE = new ProjectType("io.flutter");
-  private static final Logger LOG = Logger.getInstance(ProjectOpenActivity.class);
 
   public ProjectOpenActivity() {
   }
 
   @Override
-  public void runActivity(@NotNull Project project) {
+  public void executeProjectStartup(@NotNull Project project) {
     // TODO(helinx): We don't have a good way to check whether a Bazel project is using Flutter. Look into whether we can
     // build a better Flutter Bazel check into `declaresFlutter` so we don't need the second condition.
     if (!FlutterModuleUtils.declaresFlutter(project) && !WorkspaceCache.getInstance(project).isBazel()) {
@@ -118,17 +115,10 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
   }
 
   private static class PackagesOutOfDateNotification extends Notification {
-    @NotNull private final Project myProject;
-    @NotNull private final PubRoot myRoot;
-
     public PackagesOutOfDateNotification(@NotNull Project project, @NotNull PubRoot root) {
-      super("Flutter Packages", FlutterIcons.Flutter, "Flutter pub get.",
-            null, "The pubspec.yaml file has been modified since " +
-                  "the last time 'flutter pub get' was run.",
-            NotificationType.INFORMATION, null);
-
-      myProject = project;
-      myRoot = root;
+      super("Flutter Packages", "The pubspec.yaml file has been modified since " +
+                                "the last time 'flutter pub get' was run.", NotificationType.INFORMATION);
+      setIcon(FlutterIcons.Flutter);
 
       //noinspection DialogTitleCapitalization
       addAction(new AnAction("Run 'flutter pub get'") {

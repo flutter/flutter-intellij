@@ -12,7 +12,6 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditor;
@@ -43,7 +42,6 @@ public class OpenInAndroidStudioAction extends AnAction {
   private static final String DESCR_FILE = FlutterBundle.message("flutter.androidstudio.open.file.description");
   private static final String LABEL_MODULE = FlutterBundle.message("flutter.androidstudio.open.module.text");
   private static final String DESCR_MODULE = FlutterBundle.message("flutter.androidstudio.open.module.description");
-  private static final Logger LOG = Logger.getInstance(OpenInAndroidStudioAction.class);
 
   @Override
   public void update(@NotNull AnActionEvent event) {
@@ -112,7 +110,7 @@ public class OpenInAndroidStudioAction extends AnAction {
       return null;
     }
     final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-    if(fileEditorManager == null) {
+    if (fileEditorManager == null) {
       return null;
     }
     final FileEditor fileEditor = fileEditorManager.getSelectedEditor(file);

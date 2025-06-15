@@ -11,6 +11,7 @@ import com.intellij.xdebugger.frame.*;
 import com.intellij.xdebugger.frame.presentation.XKeywordValuePresentation;
 import com.intellij.xdebugger.frame.presentation.XNumericValuePresentation;
 import com.intellij.xdebugger.frame.presentation.XStringValuePresentation;
+import io.flutter.utils.OpenApiUtils;
 import io.flutter.utils.TypedDataList;
 import io.flutter.vmService.DartVmServiceDebugProcess;
 import io.flutter.vmService.VmServiceConsumers;
@@ -145,7 +146,7 @@ public class DartVmServiceValue extends XNamedValue {
 
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       final XSourcePosition sourcePosition = debugProcess.getSourcePosition(isolateId, script, tokenPos);
-      ApplicationManager.getApplication().runReadAction(() -> navigatable.setSourcePosition(sourcePosition));
+      OpenApiUtils.safeRunReadAction(() -> navigatable.setSourcePosition(sourcePosition));
     });
   }
 
@@ -531,7 +532,8 @@ public class DartVmServiceValue extends XNamedValue {
             final String n;
             if (name instanceof String) {
               n = (String)name;
-            } else {
+            }
+            else {
               n = "$" + (int)name;
             }
             childrenList.add(new DartVmServiceValue(myDebugProcess, myIsolateId, n, value, null, null, false));
@@ -598,7 +600,7 @@ public class DartVmServiceValue extends XNamedValue {
     return myInstanceRef;
   }
 
-  static class LocalVarSourceLocation {
+  public static class LocalVarSourceLocation {
     @NotNull private final ScriptRef myScriptRef;
     private final int myTokenPos;
 

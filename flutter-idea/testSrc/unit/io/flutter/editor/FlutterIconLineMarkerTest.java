@@ -14,7 +14,6 @@ import com.jetbrains.lang.dart.psi.DartReferenceExpression;
 import io.flutter.dart.DartSyntax;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.mockito.Mockito.mock;
@@ -45,37 +44,7 @@ public class FlutterIconLineMarkerTest extends io.flutter.ide.FlutterCodeInsight
     final DartReferenceExpression element = DartSyntax.findEnclosingReferenceExpression(testIdentifier);
     assertNotNull(element);
   }
-
-  @Test @Ignore
-  public void testLocatesIconCtor() throws Exception {
-    final PsiElement testIdentifier =
-      setUpDartElement("main() { IconData(0xe190, fontFamily: 'MaterialIcons'); }", "IconData", LeafPsiElement.class);
-    final LineMarkerInfo<?> marker = new FlutterIconLineMarkerProvider().getLineMarkerInfo(testIdentifier, getSdk());
-    assertNotNull(marker);
-    final DartCallExpression element = DartSyntax.findEnclosingFunctionCall(testIdentifier, "IconData");
-    assertNotNull(element);
-  }
-
-  //@Test @Ignore("file not found")
-  //public void testLocatesCupertinoIconCtor() throws Exception {
-  //  final PsiElement testIdentifier =
-  //    setUpDartElement("main() { IconData(0xe190, fontFamily: 'CupertinoIcons'); }", "IconData", LeafPsiElement.class);
-  //  final LineMarkerInfo<?> marker = new FlutterIconLineMarkerProvider().getLineMarkerInfo(testIdentifier, getSdk());
-  //  assertNotNull(marker);
-  //  final DartCallExpression element = DartSyntax.findEnclosingFunctionCall(testIdentifier, "IconData");
-  //  assertNotNull(element);
-  //}
-
-  @Test @Ignore
-  public void testLocatesConstIconCtor() throws Exception {
-    final PsiElement testIdentifier =
-      setUpDartElement("main() { const IconData(0xe190, fontFamily: 'MaterialIcons'); }", "IconData", LeafPsiElement.class);
-    final LineMarkerInfo<?> marker = new FlutterIconLineMarkerProvider().getLineMarkerInfo(testIdentifier, getSdk());
-    assertNotNull(marker);
-    final DartNewExpression element = DartSyntax.findEnclosingNewExpression(testIdentifier);
-    assertNotNull(element);
-  }
-
+  
   @Test
   public void testLocatesCupertinoIconsReference() throws Exception {
     final PsiElement testIdentifier = setUpDartElement("main() { CupertinoIcons.book; }", "CupertinoIcons", LeafPsiElement.class);

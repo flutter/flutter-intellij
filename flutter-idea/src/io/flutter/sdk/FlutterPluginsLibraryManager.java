@@ -7,18 +7,23 @@ package io.flutter.sdk;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
 import com.intellij.openapi.roots.libraries.PersistentLibraryKind;
 import com.intellij.openapi.vfs.*;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.util.DotPackagesFileUtil;
+import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.jetbrains.lang.dart.util.PubspecYamlUtil.PUBSPEC_YAML;
@@ -39,6 +44,7 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
   }
 
   public void startWatching() {
+    var project = getProject();
     VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileContentsChangedAdapter() {
       @Override
       protected void onFileChange(@NotNull VirtualFile file) {
@@ -48,9 +54,9 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
       @Override
       protected void onBeforeFileChange(@NotNull VirtualFile file) {
       }
-    }, getProject());
+    }, FlutterDartAnalysisServer.getInstance(project));
 
-    getProject().getMessageBus().connect().subscribe(ModuleRootListener.TOPIC, new ModuleRootListener() {
+    project.getMessageBus().connect().subscribe(ModuleRootListener.TOPIC, new ModuleRootListener() {
       @Override
       public void rootsChanged(@NotNull ModuleRootEvent event) {
         scheduleUpdate();
@@ -97,7 +103,7 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
     }
 
     final Runnable runnable = this::updateFlutterPlugins;
-    DumbService.getInstance(getProject()).smartInvokeLater(runnable, ModalityState.NON_MODAL);
+    DumbService.getInstance(getProject()).smartInvokeLater(runnable, ModalityState.nonModal());
   }
 
   private void updateFlutterPlugins() {
@@ -114,15 +120,22 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
   }
 
   private void updateFlutterPluginsImpl() {
-    final Set<String> flutterPluginPaths = getFlutterPluginPaths(PubRoots.forProject(getProject()));
-    final Set<String> flutterPluginUrls = new HashSet<>();
-    for (String path : flutterPluginPaths) {
-      flutterPluginUrls.add(VfsUtilCore.pathToUrl(path));
-    }
-    updateLibraryContent(flutterPluginUrls);
+    Project project = getProject();
+
+    ReadAction.nonBlocking(() -> getFlutterPluginPaths(PubRoots.forProject(project)))
+      .expireWith(FlutterDartAnalysisServer.getInstance(project))
+      .finishOnUiThread(ModalityState.nonModal(), flutterPluginPaths -> {
+        if (flutterPluginPaths == null) return;
+        final Set<String> flutterPluginUrls = new HashSet<>();
+        for (String path : flutterPluginPaths) {
+          flutterPluginUrls.add(VfsUtilCore.pathToUrl(path));
+        }
+        updateLibraryContent(flutterPluginUrls);
+      })
+      .submit(AppExecutorUtil.getAppExecutorService());
   }
 
-  private static Set<String> getFlutterPluginPaths(List<PubRoot> roots) {
+  private static @NotNull Set<@NotNull String> getFlutterPluginPaths(@NotNull List<@NotNull PubRoot> roots) {
     final Set<String> paths = new HashSet<>();
 
     for (PubRoot pubRoot : roots) {
@@ -132,6 +145,7 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
       }
 
       for (String packagePath : packagesMap.values()) {
+        if (packagePath == null) continue;
         final VirtualFile libFolder = LocalFileSystem.getInstance().findFileByPath(packagePath);
         if (libFolder == null) {
           continue;

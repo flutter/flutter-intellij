@@ -33,6 +33,7 @@ import com.jetbrains.lang.dart.util.DartResolveUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.editor.FlutterIconLineMarkerProvider;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -352,7 +353,7 @@ public class FontPreviewProcessor {
   private void deleteNextFile(Project project, WorkItem item) {
     final VirtualFile filteredFile = item.getFileToDelete();
     if (filteredFile != null) {
-      ApplicationManager.getApplication().runWriteAction(() -> {
+      OpenApiUtils.safeRunWriteAction(() -> {
         try {
           log("Deleting file ", filteredFile.getName());
           filteredFile.delete(this); // need write access
@@ -576,7 +577,7 @@ public class FontPreviewProcessor {
       classesToAnalyze.addAll(
         names.stream()
           .map((each) -> new ClassInfo(packageName, filePath, each))
-          .collect(Collectors.toList()));
+          .toList());
     }
 
     void addFilesToRewrite(@NotNull String packageName, @NotNull Collection<VirtualFile> files) {
@@ -588,7 +589,7 @@ public class FontPreviewProcessor {
             return !(packageIndex < 0 || isInSdk(path));
           })
           .map((each) -> new FileInfo(packageName, each.getPath(), each))
-          .collect(Collectors.toList()));
+          .toList());
     }
   }
 

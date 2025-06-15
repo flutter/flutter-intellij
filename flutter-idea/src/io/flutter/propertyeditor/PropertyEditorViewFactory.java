@@ -5,74 +5,109 @@
  */
 package io.flutter.propertyeditor;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowFactory;
-import io.flutter.FlutterUtils;
-import io.flutter.actions.RefreshToolWindowAction;
+import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.ToolWindowType;
+import com.intellij.openapi.wm.ex.ToolWindowManagerListener;
+import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.dart.DartPlugin;
+import io.flutter.dart.DartPluginVersion;
+import io.flutter.devtools.AbstractDevToolsViewFactory;
 import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.devtools.DevToolsUrl;
-import io.flutter.run.daemon.DevToolsService;
-import io.flutter.sdk.FlutterSdk;
+import io.flutter.run.daemon.DevToolsInstance;
 import io.flutter.sdk.FlutterSdkVersion;
-import io.flutter.utils.AsyncUtils;
-import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Optional;
 
-public class PropertyEditorViewFactory implements ToolWindowFactory {
-  @NotNull private static String TOOL_WINDOW_ID = "Flutter Property Editor";
+public class PropertyEditorViewFactory extends AbstractDevToolsViewFactory {
+  @NotNull public final static String TOOL_WINDOW_ID = "Flutter Property Editor";
+
+  @NotNull public final static String DEVTOOLS_PAGE_ID = "propertyEditor";
+  @Nullable private static Boolean previousDockedUnpinned = null;
 
   @Override
-  public Object isApplicableAsync(@NotNull Project project, @NotNull Continuation<? super Boolean> $completion) {
-    FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
-    return sdkVersion != null && sdkVersion.canUsePropertyEditor();
+  public boolean versionSupportsThisTool(@NotNull final FlutterSdkVersion flutterSdkVersion) {
+    return flutterSdkVersion.canUsePropertyEditor();
+  }
+
+  @Override
+  @NotNull
+  public String getToolWindowId() {
+    return TOOL_WINDOW_ID;
+  }
+
+  @Override
+  @NotNull
+  public String getToolWindowTitle() {
+    return "Property Editor";
+  }
+
+  @Override
+  @NotNull
+  public DevToolsUrl getDevToolsUrl(@NotNull final Project project,
+                                    @NotNull final FlutterSdkVersion flutterSdkVersion,
+                                    @NotNull final DevToolsInstance instance) {
+    return new DevToolsUrl.Builder()
+      .setDevToolsHost(instance.host())
+      .setDevToolsPort(instance.port())
+      .setPage(DEVTOOLS_PAGE_ID)
+      .setEmbed(true)
+      .setFlutterSdkVersion(flutterSdkVersion)
+      .setWorkspaceCache(WorkspaceCache.getInstance(project))
+      .setIdeFeature(DevToolsIdeFeature.TOOL_WINDOW)
+      .build();
   }
 
   @Override
   public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-    FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    FlutterSdkVersion sdkVersion = sdk == null ? null : sdk.getVersion();
+    final DartPluginVersion dartPluginVersion = DartPlugin.getDartPluginVersion();
+    if (!dartPluginVersion.supportsPropertyEditor()) {
+      super.viewUtils.presentLabels(toolWindow, List.of("The Flutter Property Editor requires a",
+                                                        "newer version of the Dart plugin."));
+      return;
+    }
 
-    AsyncUtils.whenCompleteUiThread(
-      DevToolsService.getInstance(project).getDevToolsInstance(),
-      (instance, error) -> {
-        // Skip displaying if the project has been closed.
-        if (!project.isOpen()) {
-          return;
+    checkDockedUnpinnedAndCreateContent(project, toolWindow, true);
+
+    final PropertyEditorViewFactory self = this;
+    MessageBusConnection connection = project.getMessageBus().connect();
+    connection.subscribe(ToolWindowManagerListener.TOPIC, new ToolWindowManagerListener() {
+      @Override
+      public void toolWindowShown(@NotNull ToolWindow activatedToolWindow) {
+        if (activatedToolWindow.getId().equals(getToolWindowId())) {
+          checkDockedUnpinnedAndCreateContent(project, toolWindow, false);
         }
-
-        if (error != null) {
-          return;
-        }
-
-        if (instance == null) {
-          return;
-        }
-
-        final DevToolsUrl devToolsUrl = new DevToolsUrl.Builder()
-          .setDevToolsHost(instance.host())
-          .setDevToolsPort(instance.port())
-          .setPage("propertyEditor")
-          .setEmbed(true)
-          .setFlutterSdkVersion(sdkVersion)
-          .setWorkspaceCache(WorkspaceCache.getInstance(project))
-          .setIdeFeature(DevToolsIdeFeature.TOOL_WINDOW)
-          .build();
-
-        ApplicationManager.getApplication().invokeLater(() -> {
-          Optional.ofNullable(
-              FlutterUtils.embeddedBrowser(project))
-            .ifPresent(embeddedBrowser -> embeddedBrowser.openPanel(toolWindow, "Property Editor", devToolsUrl, System.out::println));
-        });
       }
-    );
 
-    toolWindow.setTitleActions(List.of(new RefreshToolWindowAction(TOOL_WINDOW_ID)));
+      @Override
+      public void stateChanged(@NotNull ToolWindowManager toolWindowManager, @NotNull ToolWindowManagerEventType changeType) {
+        if (changeType.equals(ToolWindowManagerEventType.SetToolWindowAutoHide) ||
+            changeType.equals(ToolWindowManagerEventType.SetToolWindowType)) {
+          checkDockedUnpinnedAndCreateContent(project, toolWindow, false);
+        }
+      }
+    });
+    Disposer.register(toolWindow.getDisposable(), connection);
+  }
+
+  private void checkDockedUnpinnedAndCreateContent(@NotNull Project project, ToolWindow toolWindow, boolean forceLoad) {
+    final Boolean isDockedUnpinned = toolWindow.getType().equals(ToolWindowType.DOCKED) && toolWindow.isAutoHide();
+
+    // If this is the first time we are loading the content, force a load even if docked unpinned state matches.
+    // Docked unpinned state is only null the first time application is opened (I think).
+    if (!isDockedUnpinned.equals(previousDockedUnpinned) || forceLoad) {
+      previousDockedUnpinned = isDockedUnpinned;
+      super.createToolWindowContent(project, toolWindow, isDockedUnpinned
+                                                         ? "This tool window is in \"Docked Unpinned\" mode, which means it will disappear "
+                                                           + "during normal use of the property editor. Select Options (three dots) > View "
+                                                           + "Mode > Docked Pinned instead."
+                                                         : null);
+    }
   }
 }

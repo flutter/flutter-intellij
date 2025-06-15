@@ -49,14 +49,22 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
 
   public static final Map<String, Set<String>> KnownPaths = new HashMap<>();
   private static final Map<String, String> BuiltInPaths = new HashMap<>();
-  private static final Logger LOG = Logger.getInstance(FlutterIconLineMarkerProvider.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterIconLineMarkerProvider.class);
   private static final String MaterialRelativeAssetPath = "/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf";
   private static final String MaterialRelativeIconsPath = "/packages/flutter/lib/src/material/icons.dart";
   private static final String CupertinoRelativeAssetPath = "/assets/CupertinoIcons.ttf";
   private static final String CupertinoRelativeIconsPath = "/packages/flutter/lib/src/cupertino/icons.dart";
 
-  static {
-    initialize();
+  private static boolean instantiated = false;
+
+  FlutterIconLineMarkerProvider() {
+    // Extension point implementations can't use static initializers so we keep track of the
+    // first instantiation to make sure #initialize is called to set up initial state. (Note that this state
+    // may get reset with a subsequent explicit call to #initialize.)
+    if (!instantiated) {
+      initialize();
+    }
+    instantiated = true;
   }
 
   public static void initialize() {
@@ -374,18 +382,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
     return jw.similarity(t, p);
   }
 
-  static class IconInfo {
-    final @NotNull String iconName;
-    final @NotNull String className;
-    final @Nullable String familyName;
-    final @NotNull String codepoint;
-
-    IconInfo(@NotNull String className, @NotNull String iconName, @Nullable String familyName, @NotNull String codepoint) {
-      this.className = className;
-      this.iconName = iconName;
-      this.familyName = familyName;
-      this.codepoint = codepoint;
-    }
+  record IconInfo(@NotNull String className, @NotNull String iconName, @Nullable String familyName, @NotNull String codepoint) {
   }
 
   static class IconInfoVisitor extends DartRecursiveVisitor {

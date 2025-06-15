@@ -7,7 +7,6 @@ package io.flutter.run.bazel;
 
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
-import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
@@ -43,7 +42,7 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
   }
 
   @Override
-  protected void applyEditorTo(@NotNull final BazelRunConfig configuration) throws ConfigurationException {
+  protected void applyEditorTo(@NotNull final BazelRunConfig configuration) {
     String target = myTarget.getText().trim();
     final BazelFields fields = new BazelFields(
       StringUtil.nullize(target.endsWith("dart") ? FileUtil.toSystemIndependentName(target) : target, true),

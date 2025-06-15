@@ -5,6 +5,7 @@
  */
 package io.flutter.editor;
 
+import com.intellij.ui.Gray;
 import com.intellij.ui.colorpicker.ColorPickerBuilder;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.ui.popup.BalloonBuilder;
@@ -38,7 +39,7 @@ public class AndroidStudioColorPickerProvider implements ColorPickerProvider {
     popup = null;
 
     final LightCalloutPopup colorPanel = new ColorPickerBuilder()
-      .setOriginalColor(initialColor != null ? initialColor : new Color(255, 255, 255))
+      .setOriginalColor(initialColor != null ? initialColor : Gray._255)
       .addSaturationBrightnessComponent()
       .addColorAdjustPanel()
       .addColorValuePanel().withFocus()

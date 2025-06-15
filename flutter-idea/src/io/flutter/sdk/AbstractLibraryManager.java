@@ -5,10 +5,8 @@
  */
 package io.flutter.sdk;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.*;
@@ -16,6 +14,7 @@ import com.intellij.openapi.roots.impl.libraries.LibraryEx;
 import com.intellij.openapi.roots.libraries.*;
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,7 +41,8 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
   protected void updateLibraryContent(@NotNull Set<String> contentUrls) {
     if (!FlutterModuleUtils.declaresFlutter(project)) {
       // If we have a Flutter library, remove it.
-      final LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
+      final LibraryTable libraryTable = OpenApiUtils.getLibraryTable(project);
+      if (libraryTable == null) return;
       final Library existingLibrary = getLibraryByName(getLibraryName());
       if (existingLibrary != null) {
         WriteAction.compute(() -> {
@@ -61,7 +61,9 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
                                       @NotNull Set<String> contentUrls,
                                       @Nullable Set<String> sourceUrls) {
     // TODO(messick) Add support for source URLs.
-    final LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
+    final LibraryTable libraryTable = OpenApiUtils.getLibraryTable(project);
+    if (libraryTable == null) return;
+
     final Library existingLibrary = getLibraryByName(name);
 
     final Library library = existingLibrary != null
@@ -81,7 +83,7 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
       return;
     }
 
-    ApplicationManager.getApplication().runWriteAction(() -> {
+    OpenApiUtils.safeRunWriteAction(() -> {
       final LibraryEx.ModifiableModelEx model = (LibraryEx.ModifiableModelEx)library.getModifiableModel();
 
       final Set<String> existingCopy = new HashSet<>(existingUrls);
@@ -97,7 +99,7 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
       }
 
       DumbService.getInstance(project).runWhenSmart(() -> {
-        ApplicationManager.getApplication().runWriteAction(model::commit);
+        OpenApiUtils.safeRunWriteAction(model::commit);
       });
     });
 
@@ -105,7 +107,7 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
   }
 
   protected void updateModuleLibraryDependencies(@NotNull Library library) {
-    for (final Module module : ModuleManager.getInstance(project).getModules()) {
+    for (final Module module : OpenApiUtils.getModules(project)) {
       if (FlutterModuleUtils.declaresFlutter(module)) {
         addFlutterLibraryDependency(module, library);
       }
@@ -140,7 +142,7 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
 
       modifiableModel.addLibraryEntry(library);
 
-      ApplicationManager.getApplication().invokeAndWait(() -> WriteAction.run(modifiableModel::commit));
+      OpenApiUtils.safeInvokeAndWait(() -> WriteAction.run(modifiableModel::commit));
     }
     finally {
       if (!modifiableModel.isDisposed()) {
@@ -165,7 +167,7 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
       }
 
       if (wasFound) {
-        ApplicationManager.getApplication().invokeAndWait(() -> WriteAction.run(modifiableModel::commit));
+        OpenApiUtils.safeInvokeAndWait(() -> WriteAction.run(modifiableModel::commit));
       }
     }
     finally {
@@ -176,7 +178,8 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
   }
 
   @Nullable
-  private Library getLibraryByName(String name) {
-    return LibraryTablesRegistrar.getInstance().getLibraryTable(project).getLibraryByName(name);
+  private Library getLibraryByName(@NotNull String name) {
+    var libraryTable = OpenApiUtils.getLibraryTable(project);
+    return libraryTable == null ? null : libraryTable.getLibraryByName(name);
   }
 }

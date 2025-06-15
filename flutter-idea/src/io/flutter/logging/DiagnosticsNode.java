@@ -9,7 +9,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.CustomIconMaker;
@@ -19,7 +18,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -42,8 +44,6 @@ import java.util.concurrent.CompletableFuture;
  * also available via the getValue() method.
  */
 public class DiagnosticsNode {
-  private static final Logger LOG = Logger.getInstance(DiagnosticsNode.class);
-
   private static final CustomIconMaker iconMaker = new CustomIconMaker();
 
   private DiagnosticsNode parent;
@@ -138,18 +138,7 @@ public class DiagnosticsNode {
   public String getDescription() {
     return getStringMember("description");
   }
-
-  /**
-   * Returns a transformed rect that describes the bounding box for an element
-   * <p>
-   */
-  public TransformedRect getTransformToRoot() {
-    if (!json.has("transformToRoot")) {
-      return null;
-    }
-    return new TransformedRect(json.getAsJsonObject("transformToRoot"));
-  }
-
+  
   /**
    * Priority level of the diagnostic used to control which diagnostics should
    * be shown and filtered.
@@ -377,7 +366,7 @@ public class DiagnosticsNode {
    * <p>
    * Example tooltip: 'physical pixels per logical pixel'
    * <p>
-   * If present, the tooltip is added in parenthesis after the raw value when
+   * If present, the tooltip is added in parentheses after the raw value when
    * generating the string description.
    */
   public String getTooltip() {
@@ -488,7 +477,7 @@ public class DiagnosticsNode {
     return value.getAsBoolean();
   }
 
-  private DiagnosticLevel getLevelMember(String memberName, DiagnosticLevel defaultValue) {
+  private DiagnosticLevel getLevelMember(String memberName, @NotNull DiagnosticLevel defaultValue) {
     if (!json.has(memberName)) {
       return defaultValue;
     }

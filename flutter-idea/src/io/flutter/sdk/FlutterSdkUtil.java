@@ -14,9 +14,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ApplicationNamesInfo;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.SystemInfo;
@@ -33,6 +31,7 @@ import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.JsonUtils;
+import io.flutter.utils.OpenApiUtils;
 import io.flutter.utils.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -51,7 +50,6 @@ public class FlutterSdkUtil {
   public static final String FLUTTER_HOST_ENV = "FLUTTER_HOST";
 
   private static final String FLUTTER_SDK_KNOWN_PATHS = "FLUTTER_SDK_KNOWN_PATHS";
-  private static final Logger LOG = Logger.getInstance(FlutterSdkUtil.class);
   private static final String FLUTTER_SNAP_SDK_PATH = "/snap/flutter/common/flutter";
 
   public FlutterSdkUtil() {
@@ -229,7 +227,7 @@ public class FlutterSdkUtil {
   public static void setFlutterSdkPath(@NotNull final Project project, @NotNull final String flutterSdkPath) {
     // In reality this method sets Dart SDK (that is inside the Flutter SDK).
     final String dartSdk = flutterSdkPath + "/bin/cache/dart-sdk";
-    ApplicationManager.getApplication().runWriteAction(() -> DartPlugin.ensureDartSdkConfigured(project, dartSdk));
+    OpenApiUtils.safeRunWriteAction(() -> DartPlugin.ensureDartSdkConfigured(project, dartSdk));
 
     // Checking for updates doesn't make sense since the channels don't correspond to Flutter...
     DartSdkUpdateOption.setDartSdkUpdateOption(DartSdkUpdateOption.DoNotCheck);
@@ -247,9 +245,8 @@ public class FlutterSdkUtil {
    * Enable Dart support for the given project.
    */
   public static void enableDartSdk(@NotNull final Project project) {
-    //noinspection ConstantConditions
-    for (Module module : ModuleManager.getInstance(project).getModules()) {
-      if (module != null && !PubRoots.forModule(module).isEmpty()) {
+    for (Module module : OpenApiUtils.getModules(project)) {
+      if (!PubRoots.forModule(module).isEmpty()) {
         DartPlugin.enableDartSdk(module);
       }
     }

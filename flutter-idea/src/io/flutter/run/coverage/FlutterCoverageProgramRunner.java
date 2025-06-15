@@ -8,7 +8,6 @@ package io.flutter.run.coverage;
 import com.intellij.coverage.CoverageDataManager;
 import com.intellij.coverage.CoverageExecutor;
 import com.intellij.coverage.CoverageRunnerData;
-import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.ConfigurationInfoProvider;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
@@ -21,12 +20,12 @@ import com.intellij.execution.runners.DefaultProgramRunnerKt;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.GenericProgramRunner;
 import com.intellij.execution.ui.RunContentDescriptor;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.run.test.TestConfig;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,7 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSettings> {
-  private static final Logger LOG = Logger.getInstance(FlutterCoverageProgramRunner.class.getName());
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterCoverageProgramRunner.class.getName());
 
   private static final String ID = "FlutterCoverageProgramRunner";
   private ProcessHandler handler;
@@ -62,7 +61,7 @@ public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSet
   @Override
   @Nullable
   protected RunContentDescriptor doExecute(final @NotNull RunProfileState state,
-                                           final @NotNull ExecutionEnvironment env) throws ExecutionException {
+                                           final @NotNull ExecutionEnvironment env) {
     final RunContentDescriptor result = DefaultProgramRunnerKt.executeState(state, env, this);
     if (result == null) {
       return null;
@@ -72,7 +71,7 @@ public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSet
       listener = new ProcessAdapter() {
         @Override
         public void processTerminated(@NotNull ProcessEvent event) {
-          ApplicationManager.getApplication().invokeLater(() -> processCoverage(env));
+          OpenApiUtils.safeInvokeLater(() -> processCoverage(env));
         }
       };
       handler.addProcessListener(listener);

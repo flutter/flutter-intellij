@@ -1,5 +1,6 @@
 <!-- Do not edit; instead, modify plugin_template.xml, and run './bin/plugin generate'. -->
 
+<!--suppress PluginXmlI18n -->
 <idea-plugin>
   <id>io.flutter</id>
   <name>Flutter</name>
@@ -21,6 +22,7 @@
 
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
+  <!--suppress PluginXmlValidity -->
   <idea-version since-build="243" until-build="243.*"/>
 
   <depends>com.intellij.modules.platform</depends>
@@ -48,6 +50,33 @@
 
   <change-notes>
     <![CDATA[
+<h1>86</h1>
+<ul>
+  <li>New message in DevTools windows for &quot;Dock unpinned&quot; IntelliJ feature (#8181)</li>
+  <li>Fixes for Slow Operation notifications in the IDEA platform (#7792)</li>
+  <li>Fix in Flutter project creation flow (#8259)</li>
+  <li>Many code health improvements and code cleanups (#8025, #8027, #8021)</li>
+  <li>Migration of deprecated API usages (#7718)</li>
+  <li>Fix for empty menu item in the device selector (#8264)</li>
+</ul>
+<h1>85.3</h1>
+<ul>
+  <li>Add Property Editor side panel (#7957)</li>
+  <li>Support removed for IDEA 2024.1 (Koala) and 2024.2 (Ladybug) (#8073)</li>
+  <li>Various cleanups including migrating slow operations to non-blocking calls (#8089)</li>
+</ul>
+<h1>85.2</h1>
+<ul>
+  <li>Fix broken devtools inspector source navigation (#8041)</li>
+</ul>
+<h1>85.1</h1>
+<ul>
+  <li>Fix the disappearance of the New Flutter Project menu item (#8040)</li>
+  <li>Add back the device name with the running tab (#7948)</li>
+  <li>Update the <code>org.jetbrains.intellij.platform</code> version to <code>2.5.0</code> (#8038)</li>
+  <li>Replace deprecated ComboBoxWithBrowserButton (#7931)</li>
+  <li>Fix Flutter Outline View event over-subscriptions (#7980)</li>
+</ul>
 <h1>85</h1>
 <ul>
   <li>Restored Test with coverage run configuration feature (#7810)</li>
@@ -134,17 +163,20 @@
 
   <actions>
     <group id="Flutter.MainToolbarActions">
+      <!--suppress PluginXmlCapitalization -->
       <action id="Flutter.DeviceSelector" class="io.flutter.actions.DeviceSelectorAction"
               description="Flutter Device Selection"
               icon="FlutterIcons.Phone"/>
       <action id="Flutter.DeviceSelectorRefresher" class="io.flutter.actions.DeviceSelectorRefresherAction"
               text="Refresh Device List"
-              description="Refresh device list" />
+              description="Refresh device list"
+              icon="FlutterIcons.RefreshItems"/>
       <add-to-group anchor="before" group-id="RunToolbarMainActionGroup" relative-to-action="RedesignedRunConfigurationSelector"/>
     </group>
 
     <!--    This is to keep device selector in old UI -->
     <group id="Flutter.MainToolbarActionsLegacy">
+      <!--suppress PluginXmlCapitalization -->
       <action id="Flutter.DeviceSelectorLegacy" class="io.flutter.actions.DeviceSelectorAction"
               description="Flutter Device Selection"
               icon="FlutterIcons.Phone"/>
@@ -154,6 +186,7 @@
       <add-to-group anchor="before" group-id="ToolbarRunGroup" relative-to-action="RunConfiguration"/>
     </group>
 
+    <!--suppress PluginXmlCapitalization -->
     <group id="FlutterToolsActionGroup" class="io.flutter.actions.FlutterToolsActionGroup" popup="true"
            text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter">
       <add-to-group group-id="ToolsMenu" anchor="last"/>
@@ -182,6 +215,7 @@
               text="Flutter Clean"
               description="Run 'flutter clean'"/>
       <separator/>
+      <!--suppress PluginXmlCapitalization -->
       <action id="flutter.devtools.open" class="io.flutter.run.OpenDevToolsAction"
               text="Open Flutter DevTools in Browser"
               description="Open Flutter DevTools in Browser"/>
@@ -190,10 +224,10 @@
 <!--              text="Open Android module in Android Studio"-->
 <!--              description="Launch Android Studio to edit the Android module as a top-level project"/>-->
       <action id="flutter.xcode.open" class="io.flutter.actions.OpenInXcodeAction"
-              text="Open iOS/macOS module in Xcode"
+              text="Open iOS/macOS Module in Xcode"
               description="Launch Xcode to edit the iOS module as a top-level project"/>
       <action id="flutter.appcode.open" class="io.flutter.actions.OpenInAppCodeAction"
-              text="Open iOS module in AppCode"
+              text="Open iOS Module in AppCode"
               description="Launch AppCode to edit the iOS module as a top-level project"/>
       <separator/>
       <action id="flutter.submitFeedback" class="io.flutter.actions.FlutterSubmitFeedback"
@@ -204,7 +238,8 @@
     <!-- project explorer actions -->
     <group id="FlutterPackagesExplorerActionGroup" class="io.flutter.actions.FlutterPackagesExplorerActionGroup">
       <separator/>
-      <group text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">
+      <!--suppress PluginXmlCapitalization -->
+      <group id="FlutterToolsGroup" text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">
         <separator/>
         <reference ref="flutter.pub.get"/>
         <reference ref="flutter.pub.upgrade"/>
@@ -232,7 +267,7 @@
 <!--    </group>-->
     <group id="FlutterBuildActionGroup" class="io.flutter.actions.FlutterBuildActionGroup">
       <separator/>
-      <group text="Flutter" popup="true">
+      <group id="FlutterBuildGroup" text="Flutter" popup="true">
         <action id="flutter.build.aar" text="Build AAR" description="Building a Flutter module for Android add-to-app"
                 class="io.flutter.actions.FlutterBuildActionGroup$AAR"/>
         <action id="flutter.build.apk" text="Build APK" description="Building a Flutter app for general distribution"
@@ -250,7 +285,7 @@
     </group>
 
     <!-- main toolbar run actions -->
-    <group>
+    <group id="MainToolBarRunActionsGroup">
       <action id="AttachDebuggerAction"
               class="io.flutter.actions.AttachDebuggerAction"
               text="Flutter Attach"
@@ -276,23 +311,29 @@
               icon="FlutterIcons.HotRestart">
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift BACK_SLASH"/>
       </action>
+      <!--suppress PluginXmlCapitalization -->
       <action id="Flutter.Toolbar.ReloadAllAction" class="io.flutter.actions.ReloadAllFlutterAppsRetarget"
               description="Reload All Devices"
               icon="FlutterIcons.HotReload">
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt BACK_SLASH"/>
       </action>
+      <!--suppress PluginXmlCapitalization -->
       <action id="Flutter.Toolbar.RestartAllAction" class="io.flutter.actions.RestartAllFlutterAppsRetarget"
               description="Restart All Devices"
               icon="FlutterIcons.HotRestart">
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt shift BACK_SLASH"/>
       </action>
       <separator/>
+      <!--suppress PluginXmlCapitalization -->
       <action id="Flutter.Menu.RunProfileAction" class="io.flutter.actions.RunProfileFlutterApp"
-              description="Flutter Run Profile Mode"
+              description="Run Flutter app in profile mode"
+              text="Run in Flutter Profile Mode"
               icon="AllIcons.Actions.Execute">
       </action>
+      <!--suppress PluginXmlCapitalization -->
       <action id="Flutter.Menu.RunReleaseAction" class="io.flutter.actions.RunReleaseFlutterApp"
-              description="Flutter Run Release Mode"
+              description="Run Flutter app in release mode"
+              text="Run in Flutter release mode"
               icon="AllIcons.Actions.Execute">
       </action>
       <reference ref="AttachDebuggerAction"/>
@@ -311,10 +352,12 @@
       <add-to-group group-id="HelpMenu" anchor="after" relative-to-action="HelpTopics"/>
     </action>
 
+    <!--suppress PluginXmlCapitalization -->
     <action id="io.flutter.RestartDaemon" class="io.flutter.actions.RestartFlutterDaemonAction"
             text="Restart Flutter Daemon" description="Restart Flutter Daemon" icon="FlutterIcons.Flutter">
     </action>
 
+    <!--suppress PluginXmlCapitalization -->
     <action id="io.flutter.OpenDevToolsAction" class="io.flutter.run.OpenDevToolsAction"
             text="Open Flutter DevTools in Browser" description="Open Flutter DevTools in Browser" icon="FlutterIcons.Dart_16">
     </action>
@@ -339,16 +382,13 @@
     <iconMapper mappingFile="FlutterIconMappings.json"/>
     <postStartupActivity implementation="io.flutter.ProjectOpenActivity"/>
     <postStartupActivity implementation="io.flutter.FlutterInitializer"/>
-    <projectService serviceInterface="io.flutter.run.daemon.DeviceService"
-                    serviceImplementation="io.flutter.run.daemon.DeviceService"/>
-    <projectService serviceInterface="io.flutter.run.daemon.DevToolsService"
-                    serviceImplementation="io.flutter.run.daemon.DevToolsService"/>
-    <projectService serviceInterface="io.flutter.dart.FlutterDartAnalysisServer"
-                    serviceImplementation="io.flutter.dart.FlutterDartAnalysisServer"/>
-    <projectService serviceInterface="io.flutter.bazel.WorkspaceCache"
-                    serviceImplementation="io.flutter.bazel.WorkspaceCache"/>
+    <projectService serviceImplementation="io.flutter.run.daemon.DeviceService"/>
+    <projectService serviceImplementation="io.flutter.run.daemon.DevToolsService"/>
+    <projectService serviceImplementation="io.flutter.dart.FlutterDartAnalysisServer"/>
+    <projectService serviceImplementation="io.flutter.bazel.WorkspaceCache"/>
     <projectService serviceImplementation="io.flutter.pub.PubRootCache"/>
 
+    <backgroundPostStartupActivity implementation="io.flutter.sdk.FlutterProjectActivity"/>
     <backgroundPostStartupActivity id="FontPreviewStartupActivity"
                                    implementation="io.flutter.font.FontPreviewStartupActivity"
                                    order="last"/>
@@ -372,7 +412,7 @@
     <runLineMarkerContributor language="Dart" implementationClass="io.flutter.run.bazelTest.FlutterBazelTestLineMarkerContributor"/>
 
     <defaultLiveTemplatesProvider implementation="io.flutter.template.FlutterLiveTemplatesProvider"/>
-    <liveTemplateContext implementation="io.flutter.template.DartToplevelTemplateContextType"/>
+    <liveTemplateContext contextId="DART_TOPLEVEL" implementation="io.flutter.template.DartToplevelTemplateContextType"/>
 
     <!-- IDEA only -->
     <moduleBuilder builderClass="io.flutter.module.FlutterModuleBuilder"/>
@@ -380,9 +420,7 @@
     <projectService serviceImplementation="io.flutter.sdk.FlutterSdkManager"/>
     <projectService serviceImplementation="io.flutter.sdk.AndroidEmulatorManager"/>
 
-    <applicationService serviceInterface="io.flutter.settings.FlutterSettings"
-                        serviceImplementation="io.flutter.settings.FlutterSettings"
-                        overrides="false"/>
+    <applicationService serviceImplementation="io.flutter.settings.FlutterSettings" overrides="false"/>
 
     <applicationService serviceImplementation="io.flutter.jxbrowser.EmbeddedBrowserEngine" overrides="false" />
     <applicationService serviceImplementation="io.flutter.font.FontPreviewProcessor"/>
@@ -396,16 +434,16 @@
     <codeInsight.lineMarkerProvider language="Dart" implementationClass="io.flutter.editor.FlutterIconLineMarkerProvider"/>
     <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
 
-    <toolWindow id="Flutter Inspector" anchor="right" icon="FlutterIcons.DevToolsInspector" factoryClass="io.flutter.view.FlutterViewFactory"/>
+    <toolWindow id="Flutter Inspector" anchor="right" icon="FlutterIcons.DevToolsInspector" factoryClass="io.flutter.view.InspectorViewFactory"/>
     <toolWindow id="Flutter Deep Links" anchor="right" icon="FlutterIcons.DevToolsDeepLinks" factoryClass="io.flutter.deeplinks.DeepLinksViewFactory" />
     <toolWindow id="Flutter DevTools" anchor="right" icon="FlutterIcons.DevTools" factoryClass="io.flutter.devtools.RemainingDevToolsViewFactory" />
     <toolWindow id="Flutter DevTools Extensions" anchor="right" icon="FlutterIcons.DevToolsExtensions" factoryClass="io.flutter.devtools.DevToolsExtensionsViewFactory" />
     <!-- Do not uncomment until ready to release the Property Editor. -->
-    <!-- <toolWindow id="Flutter Property Editor" anchor="right" icon="FlutterIcons.PropertyEditor" factoryClass="io.flutter.propertyeditor.PropertyEditorViewFactory" /> -->
+    <toolWindow id="Flutter Property Editor" anchor="right" icon="FlutterIcons.PropertyEditor" factoryClass="io.flutter.propertyeditor.PropertyEditorViewFactory" />
 
     <!-- Having the projectService defined after the toolWindows allows them to all be picked up by the platform -->
     <!-- See https://github.com/flutter/flutter-intellij/issues/8029 -->
-    <projectService serviceImplementation="io.flutter.view.FlutterView" overrides="false"/>
+    <projectService serviceImplementation="io.flutter.view.InspectorView" overrides="false"/>
 
     <projectOpenProcessor id="flutter" implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
 
@@ -418,22 +456,9 @@
     <editorNotificationProvider implementation="io.flutter.editor.NativeEditorNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.samples.FlutterSampleNotificationProvider"/>
 
-    <projectService serviceInterface="io.flutter.run.FlutterReloadManager"
-                    serviceImplementation="io.flutter.run.FlutterReloadManager"
-                    overrides="false"/>
-    <projectService serviceInterface="io.flutter.editor.FlutterSaveActionsManager"
-                    serviceImplementation="io.flutter.editor.FlutterSaveActionsManager"
-                    overrides="false"/>
-    <projectService serviceInterface="io.flutter.run.FlutterAppManager"
-                    serviceImplementation="io.flutter.run.FlutterAppManager"
-                    overrides="false"/>
-
-    <projectService serviceInterface="io.flutter.editor.ActiveEditorsOutlineService"
-                    serviceImplementation="io.flutter.editor.ActiveEditorsOutlineService"
-                    overrides="false"/>
-    <projectService serviceInterface="io.flutter.inspector.InspectorGroupManagerService"
-                    serviceImplementation="io.flutter.inspector.InspectorGroupManagerService"
-                    overrides="false"/>
+    <projectService serviceImplementation="io.flutter.run.FlutterReloadManager" overrides="false"/>
+    <projectService serviceImplementation="io.flutter.editor.FlutterSaveActionsManager" overrides="false"/>
+    <projectService serviceImplementation="io.flutter.editor.ActiveEditorsOutlineService" overrides="false"/>
 
     <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>
 
@@ -445,12 +470,8 @@
     <search.optionContributor implementation="io.flutter.sdk.FlutterSearchableOptionContributor"/>
     <readerModeMatcher implementation="io.flutter.editor.FlutterReaderModeMatcher"/>
 
-    <projectService serviceInterface="io.flutter.jxbrowser.EmbeddedJxBrowser"
-                    serviceImplementation="io.flutter.jxbrowser.EmbeddedJxBrowser"
-                    overrides="false"/>
-    <projectService serviceInterface="io.flutter.view.EmbeddedJcefBrowser"
-                    serviceImplementation="io.flutter.view.EmbeddedJcefBrowser"
-                    overrides="false"/>
+    <projectService serviceImplementation="io.flutter.jxbrowser.EmbeddedJxBrowser" overrides="false"/>
+    <projectService serviceImplementation="io.flutter.view.EmbeddedJcefBrowser" overrides="false"/>
     <notificationGroup displayType="STICKY_BALLOON" id="deeplink"/>
     <notificationGroup displayType="TOOL_WINDOW" id="flutter-run" toolWindowId="Run" />
     <notificationGroup displayType="TOOL_WINDOW" id="flutter-debug" toolWindowId="Debug" />

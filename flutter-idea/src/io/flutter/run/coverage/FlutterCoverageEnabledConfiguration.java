@@ -10,7 +10,6 @@ import com.intellij.coverage.CoverageRunner;
 import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.coverage.CoverageEnabledConfiguration;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ModalityUiUtil;
 import io.flutter.pub.PubRoot;
@@ -19,7 +18,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FlutterCoverageEnabledConfiguration extends CoverageEnabledConfiguration {
-  private static final Logger LOG = Logger.getInstance(FlutterCoverageEnabledConfiguration.class.getName());
 
   public FlutterCoverageEnabledConfiguration(@NotNull RunConfigurationBase<?> configuration) {
     super(configuration);

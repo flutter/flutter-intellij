@@ -6,10 +6,8 @@
 package io.flutter.run;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -24,6 +22,7 @@ import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
+import io.flutter.utils.OpenApiUtils;
 import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.element.LibraryRef;
 import org.dartlang.vm.service.element.Script;
@@ -41,7 +40,7 @@ import java.util.concurrent.CompletableFuture;
  * Used when setting breakpoints, stepping through code, and so on while debugging.
  */
 public class FlutterPositionMapper implements DartVmServiceDebugProcess.PositionMapper {
-  private static final Logger LOG = Logger.getInstance(FlutterPositionMapper.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterPositionMapper.class);
 
   /**
    * This Project can't be non-null as we set it to null {@link #shutdown()} so the Project isn't held onto.
@@ -110,7 +109,8 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
 
   @NotNull
   public Project getProject() {
-    return project;
+    // Project may be null after shutdown but clients have no business accessing it after that so it's reasonable to fail here.
+    return Objects.requireNonNull(project);
   }
 
   public void onConnect(@NotNull DartVmServiceDebugProcess.ScriptProvider provider, @Nullable String remoteBaseUri) {
@@ -150,7 +150,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
     if (project == null || project.isDisposed()) return null;
 
     // Find files with the same filename (matching the suffix after the last slash).
-    final PsiFile[] localFilesWithSameName = ApplicationManager.getApplication().runReadAction((Computable<PsiFile[]>)() -> {
+    final PsiFile[] localFilesWithSameName = OpenApiUtils.safeRunReadAction(() -> {
       final String remoteFileName = PathUtil.getFileName(remotePath);
       final GlobalSearchScope scope = GlobalSearchScopesCore.directoryScope(project, sourceRoot, true);
       return FilenameIndex.getFilesByName(project, remoteFileName, scope);
@@ -277,23 +277,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
   String getRemoteSourceRoot() {
     return remoteSourceRoot;
   }
-
-  /**
-   * Attempt to find a local Dart file corresponding to a script in Observatory.
-   */
-  @Nullable
-  private VirtualFile findLocalFile(@NotNull ScriptRef scriptRef) {
-    return findLocalFile(scriptRef.getUri());
-  }
-
-  /**
-   * Attempt to find a local Dart file corresponding to a script in Observatory.
-   */
-  @Nullable
-  private VirtualFile findLocalFile(@NotNull Script script) {
-    return findLocalFile(script.getUri());
-  }
-
+  
   @Nullable
   protected VirtualFile findLocalFile(@NotNull String uri) {
     return findLocalFile(uri, null);
@@ -304,7 +288,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
    */
   @Nullable
   protected VirtualFile findLocalFile(@NotNull String uri, CompletableFuture<String> fileFuture) {
-    return ApplicationManager.getApplication().runReadAction((Computable<VirtualFile>)() -> {
+    return OpenApiUtils.safeRunReadAction(() -> {
       // This can be a remote file or URI.
       if (remoteSourceRoot != null && uri.startsWith(remoteSourceRoot)) {
         final String rootUri = StringUtil.trimEnd(resolver.getDartUrlForFile(sourceRoot), '/');
@@ -331,9 +315,10 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
       if (analyzer != null && !isDartPatchUri(remoteUri)) {
         final String path = analyzer.getAbsolutePath(remoteUri);
         if (path != null) {
-          if(path.startsWith("file://")) {
+          if (path.startsWith("file://")) {
             LocalFileSystem.getInstance().findFileByPath(path.substring(7));
-          } else {
+          }
+          else {
             LocalFileSystem.getInstance().findFileByPath(path);
           }
         }

@@ -5,21 +5,14 @@
  */
 package io.flutter.run.coverage;
 
-import com.intellij.coverage.CoverageAnnotator;
-import com.intellij.coverage.CoverageEngine;
-import com.intellij.coverage.CoverageFileProvider;
-import com.intellij.coverage.CoverageRunner;
-import com.intellij.coverage.CoverageSuite;
-import com.intellij.coverage.CoverageSuitesBundle;
+import com.intellij.coverage.*;
 import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.WrappingRunConfiguration;
 import com.intellij.execution.configurations.coverage.CoverageEnabledConfiguration;
-import com.intellij.execution.testframework.AbstractTestProxy;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
@@ -27,14 +20,12 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.test.TestConfig;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class FlutterCoverageEngine extends CoverageEngine {
 
@@ -132,16 +123,6 @@ public class FlutterCoverageEngine extends CoverageEngine {
     final Set<String> qualifiedNames = new HashSet<>();
     qualifiedNames.add(getQName(sourceFile));
     return qualifiedNames;
-  }
-
-  @Override
-  public List<PsiElement> findTestsByNames(@NotNull String[] testNames, @NotNull Project project) {
-    return null;
-  }
-
-  @Override
-  public @Nullable String getTestMethodName(@NotNull PsiElement element, @NotNull AbstractTestProxy testProxy) {
-    return null;
   }
 
   @Override

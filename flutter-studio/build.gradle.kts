@@ -4,7 +4,6 @@
  * found in the LICENSE file.
  */
 
-import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
@@ -25,7 +24,7 @@ plugins {
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("java")
   id("org.jetbrains.intellij.platform.module")
-  id("org.jetbrains.kotlin.jvm") version "2.1.20"
+  id("org.jetbrains.kotlin.jvm") version "2.1.21-RC2"
 }
 
 val flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()
@@ -40,12 +39,18 @@ val javaVersion = providers.gradleProperty("javaVersion").get()
 group = "io.flutter"
 
 var jvmVersion: JvmTarget
-if (javaVersion == "17") {
-  jvmVersion = JvmTarget.JVM_17
-} else if (javaVersion == "21") {
-  jvmVersion = JvmTarget.JVM_21
-} else {
-  throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
+jvmVersion = when (javaVersion) {
+  "17" -> {
+    JvmTarget.JVM_17
+  }
+
+  "21" -> {
+    JvmTarget.JVM_21
+  }
+
+  else -> {
+    throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
+  }
 }
 kotlin {
   compilerOptions {
@@ -55,12 +60,18 @@ kotlin {
 }
 
 var javaCompatibilityVersion: JavaVersion
-if (javaVersion == "17") {
-  javaCompatibilityVersion = JavaVersion.VERSION_17
-} else if (javaVersion == "21") {
-  javaCompatibilityVersion = JavaVersion.VERSION_21
-} else {
-  throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
+javaCompatibilityVersion = when (javaVersion) {
+  "17" -> {
+    JavaVersion.VERSION_17
+  }
+
+  "21" -> {
+    JavaVersion.VERSION_21
+  }
+
+  else -> {
+    throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
+  }
 }
 java {
   sourceCompatibility = javaCompatibilityVersion
@@ -81,14 +92,16 @@ dependencies {
     // Plugin dependency documentation:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
     val bundledPluginList = mutableListOf(
+      "com.google.tools.ij.aiplugin",
       "com.intellij.java",
       "com.intellij.properties",
       "JUnit",
       "Git4Idea",
       "org.jetbrains.kotlin",
       "org.jetbrains.plugins.gradle",
-      "org.intellij.intelliLang",
-      "org.intellij.intelliLang")
+      "org.jetbrains.plugins.yaml",
+      "org.intellij.intelliLang"
+    )
     if (ideaProduct == "android-studio") {
       bundledPluginList.add("org.jetbrains.android")
       bundledPluginList.add("com.android.tools.idea.smali")
@@ -123,23 +136,49 @@ intellijPlatform {
 dependencies {
   compileOnly(project(":flutter-idea"))
   testImplementation(project(":flutter-idea"))
-  compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/lib",
-    "include" to listOf("*.jar"))))
-  testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/lib",
-    "include" to listOf("*.jar"))))
-  compileOnly(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins",
-    "include" to listOf("**/*.jar"),
-    "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar"))))
-  testImplementation(fileTree(mapOf("dir" to "${project.rootDir}/artifacts/android-studio/plugins",
-    "include" to listOf("**/*.jar"),
-    "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar"))))
+  compileOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio/lib",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+  testImplementation(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio/lib",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+  compileOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio/plugins",
+        "include" to listOf("**/*.jar"),
+        "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar")
+      )
+    )
+  )
+  testImplementation(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio/plugins",
+        "include" to listOf("**/*.jar"),
+        "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar")
+      )
+    )
+  )
 }
 
 sourceSets {
   main {
-    java.srcDirs(listOf(
-      "src",
-      "third_party/vmServiceDrivers"
-    ))
+    java.srcDirs(
+      listOf(
+        "src",
+        "third_party/vmServiceDrivers"
+      )
+    )
   }
 }

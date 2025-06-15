@@ -175,13 +175,10 @@ class ObservatoryFile {
     }
   }
 
-  private static class Position {
-    final int line; // zero-based
-    final int column; // zero-based
-
-    Position(int line, int column) {
-      this.line = line;
-      this.column = column;
-    }
+  /**
+   * @param line   zero-based
+   * @param column zero-based
+   */
+  private record Position(int line, int column) {
   }
 }

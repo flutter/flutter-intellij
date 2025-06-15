@@ -1,3 +1,26 @@
+# 86
+- New message in DevTools windows for "Dock unpinned" IntelliJ feature (#8181)
+- Fixes for Slow Operation notifications in the IDEA platform (#7792)
+- Fix in Flutter project creation flow (#8259)
+- Many code health improvements and code cleanups (#8025, #8027, #8021)
+- Migration of deprecated API usages (#7718)
+- Fix for empty menu item in the device selector (#8264)
+
+# 85.3
+- Add Property Editor side panel (#7957)
+- Support removed for IDEA 2024.1 (Koala) and 2024.2 (Ladybug) (#8073)
+- Various cleanups including migrating slow operations to non-blocking calls (#8089)
+
+# 85.2
+- Fix broken devtools inspector source navigation (#8041)
+
+# 85.1
+- Fix the disappearance of the New Flutter Project menu item (#8040)
+- Add back the device name with the running tab (#7948)
+- Update the `org.jetbrains.intellij.platform` version to `2.5.0` (#8038)
+- Replace deprecated ComboBoxWithBrowserButton (#7931)
+- Fix Flutter Outline View event over-subscriptions (#7980)
+
 # 85
 - Restored Test with coverage run configuration feature (#7810)
 - Upgrade `org.jetbrains.intellij.platform` to 2.2.1 from 2.1.0 (#7936)

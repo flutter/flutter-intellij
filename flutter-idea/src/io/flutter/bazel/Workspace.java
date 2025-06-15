@@ -9,15 +9,13 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.InvalidVirtualFileAccessException;
 import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -90,7 +88,7 @@ public class Workspace {
   @NotNull
   public ImmutableSet<String> getContentPaths(@NotNull final Module module) {
     // Find all the content roots within this workspace.
-    final VirtualFile[] contentRoots = ModuleRootManager.getInstance(module).getContentRoots();
+    final VirtualFile[] contentRoots = OpenApiUtils.getContentRoots(module);
     final ImmutableSet.Builder<String> result = ImmutableSet.builder();
     for (VirtualFile root : contentRoots) {
       final String path = getRelativePath(root);
@@ -310,7 +308,8 @@ public class Workspace {
 
     final String updatedIosRunMessage = config == null ? null : config.getUpdatedIosRunMessage();
 
-    return new Workspace(root, config, daemonScript, devToolsScript, doctorScript, testScript, runScript, syncScript, toolsScript, sdkHome, requiredIJPluginID, requiredIJPluginMessage, configWarningPrefix, updatedIosRunMessage);
+    return new Workspace(root, config, daemonScript, devToolsScript, doctorScript, testScript, runScript, syncScript, toolsScript, sdkHome,
+                         requiredIJPluginID, requiredIJPluginMessage, configWarningPrefix, updatedIosRunMessage);
   }
 
   @VisibleForTesting
@@ -379,7 +378,7 @@ public class Workspace {
       // not found
       return null;
     };
-    return ApplicationManager.getApplication().runReadAction(readAction);
+    return OpenApiUtils.safeRunReadAction(readAction);
   }
 
   /**
@@ -394,7 +393,8 @@ public class Workspace {
           return child;
         }
         dir = dir.getParent();
-      } catch (InvalidVirtualFileAccessException ex) {
+      }
+      catch (InvalidVirtualFileAccessException ex) {
         // The VFS is out of sync.
         return null;
       }
@@ -403,8 +403,6 @@ public class Workspace {
     // not found
     return null;
   }
-
-  private static final Logger LOG = Logger.getInstance(Workspace.class);
 
   public String convertPath(String path) {
     if (path.startsWith(Workspace.BAZEL_URI_SCHEME)) {

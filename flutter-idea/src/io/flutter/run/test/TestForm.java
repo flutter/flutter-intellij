@@ -6,7 +6,6 @@
 package io.flutter.run.test;
 
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
-import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
@@ -64,8 +63,8 @@ public class TestForm extends SettingsEditor<TestConfig> {
     });
 
     initDartFileTextWithBrowse(project, testFile);
-    testDir.addBrowseFolderListener("Test Directory", null, project,
-                                    FileChooserDescriptorFactory.createSingleFolderDescriptor());
+    testDir.addBrowseFolderListener(project, FileChooserDescriptorFactory.createSingleFolderDescriptor()
+      .withTitle("Test Directory"));
   }
 
   @NotNull
@@ -95,12 +94,11 @@ public class TestForm extends SettingsEditor<TestConfig> {
   }
 
   @Override
-  protected void applyEditorTo(@NotNull TestConfig config) throws ConfigurationException {
+  protected void applyEditorTo(@NotNull TestConfig config) {
     final TestFields fields = switch (getScope()) {
       case NAME -> TestFields.forTestName(testName.getText(), testFile.getText());
       case FILE -> TestFields.forFile(testFile.getText());
       case DIRECTORY -> TestFields.forDir(testDir.getText());
-      default -> throw new ConfigurationException("unexpected scope: " + scope.getSelectedItem());
     };
     fields.setAdditionalArgs(additionalArgs.getText().trim());
     config.setFields(fields);

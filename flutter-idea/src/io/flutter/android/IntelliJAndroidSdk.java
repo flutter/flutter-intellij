@@ -6,7 +6,6 @@
 package io.flutter.android;
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
@@ -26,7 +25,6 @@ import java.util.Objects;
  * An Android SDK and its home directory; this references an IntelliJ @{@link Sdk} instance.
  */
 public class IntelliJAndroidSdk {
-  private static final Logger LOG = Logger.getInstance(IntelliJAndroidSdk.class);
 
   @NotNull
   private final Sdk sdk;

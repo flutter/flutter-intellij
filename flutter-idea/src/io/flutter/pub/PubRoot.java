@@ -8,18 +8,15 @@ package io.flutter.pub;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.util.DotPackagesFileUtil;
 import io.flutter.FlutterUtils;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,7 +31,6 @@ import java.util.Objects;
  * That is, a directory containing (at a minimum) a pubspec.yaml file.
  */
 public class PubRoot {
-  public static final String ANALYSIS_OPTIONS_YAML = "analysis_options.yaml";
   public static final String DOT_DART_TOOL = ".dart_tool";
   public static final String DOT_PACKAGES = ".packages";
   public static final String PUBSPEC_YAML = "pubspec.yaml";
@@ -74,6 +70,7 @@ public class PubRoot {
    */
   @Nullable
   public static PubRoot forEventWithRefresh(@NotNull final AnActionEvent event) {
+    assert CommonDataKeys.PSI_FILE != null;
     final PsiFile psiFile = CommonDataKeys.PSI_FILE.getData(event.getDataContext());
     if (psiFile != null) {
       final PubRoot root = forPsiFile(psiFile);
@@ -82,6 +79,7 @@ public class PubRoot {
       }
     }
 
+    assert LangDataKeys.MODULE != null;
     final Module module = LangDataKeys.MODULE.getData(event.getDataContext());
     if (module != null) {
       final List<PubRoot> roots = PubRoots.forModule(module);
@@ -121,8 +119,10 @@ public class PubRoot {
    */
   @Nullable
   public static PubRoot forDescendant(@NotNull VirtualFile fileOrDir, @NotNull Project project) {
-    final ProjectFileIndex index = ProjectRootManager.getInstance(project).getFileIndex();
-    return ApplicationManager.getApplication().runReadAction((Computable<PubRoot>)() -> {
+    ProjectRootManager manager = ProjectRootManager.getInstance(project);
+    if (manager == null) return null;
+    final ProjectFileIndex index = manager.getFileIndex();
+    return OpenApiUtils.safeRunReadAction(() -> {
       final VirtualFile root = index.getContentRootForFile(fileOrDir);
       return forDirectory(root);
     });
@@ -420,14 +420,14 @@ public class PubRoot {
   /**
    * Returns true if the project has a module for the "android" directory.
    */
-  public boolean hasAndroidModule(Project project) {
+  public boolean hasAndroidModule(@NotNull Project project) {
     final VirtualFile androidDir = getAndroidDir();
     if (androidDir == null) {
       return false;
     }
 
-    for (Module module : ModuleManager.getInstance(project).getModules()) {
-      for (VirtualFile contentRoot : ModuleRootManager.getInstance(module).getContentRoots()) {
+    for (Module module : OpenApiUtils.getModules(project)) {
+      for (VirtualFile contentRoot : OpenApiUtils.getContentRoots(module)) {
         if (Objects.equals(contentRoot, androidDir)) {
           return true;
         }
@@ -445,20 +445,6 @@ public class PubRoot {
       return null;
     }
     return ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(pubspec);
-  }
-
-  /**
-   * Returns true if the PubRoot is an ancestor of the given file.
-   */
-  public boolean contains(@NotNull VirtualFile file) {
-    VirtualFile dir = file.getParent();
-    while (dir != null) {
-      if (dir.equals(root)) {
-        return true;
-      }
-      dir = dir.getParent();
-    }
-    return false;
   }
 
   @Override

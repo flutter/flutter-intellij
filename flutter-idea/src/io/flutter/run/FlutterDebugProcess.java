@@ -42,7 +42,7 @@ import java.util.Objects;
  * when not debugging in order to support hot reload.)
  */
 public class FlutterDebugProcess extends DartVmServiceDebugProcess {
-  private static final Logger LOG = Logger.getInstance(FlutterDebugProcess.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterDebugProcess.class);
 
   private final @NotNull FlutterApp app;
 
@@ -54,11 +54,6 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
                              @NotNull PositionMapper mapper) {
     super(executionEnvironment, session, executionResult, dartUrlResolver, app.getConnector(), mapper);
     this.app = app;
-  }
-
-  @NotNull
-  public FlutterApp getApp() {
-    return app;
   }
 
   @Override
@@ -138,12 +133,16 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
 
     final String name = XDebuggerBundle.message("debugger.session.tab.console.content.name");
     for (Content c : ui.getContents()) {
-      if (!Objects.equals(c.getTabName(), name)) {
+      if (c != null && !Objects.equals(c.getTabName(), name)) {
         try {
-          ApplicationManager.getApplication().invokeAndWait(() -> ui.removeContent(c, false /* dispose? */));
+          var application = ApplicationManager.getApplication();
+          if (application != null) {
+            application.invokeAndWait(() -> ui.removeContent(c, false /* dispose? */));
+          }
         }
         catch (ProcessCanceledException e) {
           FlutterUtils.warn(LOG, e);
+          throw e;
         }
       }
     }

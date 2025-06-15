@@ -5,11 +5,6 @@
  */
 package io.flutter.android;
 
-import static com.android.tools.idea.gradle.util.GradleProjectSystemUtil.GRADLE_SYSTEM_ID;
-import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED;
-import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_KIND;
-import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_NAME;
-
 import com.android.tools.idea.gradle.project.sync.GradleSyncInvoker;
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.intellij.facet.FacetManager;
@@ -20,40 +15,33 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.TransactionGuard;
 import com.intellij.openapi.application.WriteAction;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.impl.ProjectImpl;
 import com.intellij.openapi.project.impl.ProjectManagerImpl;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.roots.DependencyScope;
-import com.intellij.openapi.roots.JavaProjectModelModifier;
-import com.intellij.openapi.roots.ModuleRootEvent;
-import com.intellij.openapi.roots.ModuleRootListener;
-import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.*;
 import com.intellij.openapi.roots.impl.IdeaProjectModelModifier;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
-import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.roots.libraries.PersistentLibraryKind;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtilRt;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VfsUtilCore;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileContentsChangedAdapter;
-import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.*;
 import com.intellij.serviceContainer.ComponentManagerImpl;
- import com.intellij.util.ReflectionUtil;
+import com.intellij.util.ReflectionUtil;
 import com.intellij.util.modules.CircularModuleDependenciesDetector;
 import io.flutter.sdk.AbstractLibraryManager;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.OpenApiUtils;
+import org.jetbrains.android.facet.AndroidFacet;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
@@ -62,9 +50,11 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.jetbrains.android.facet.AndroidFacet;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import static com.android.tools.idea.gradle.util.GradleProjectSystemUtil.GRADLE_SYSTEM_ID;
+import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED;
+import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_KIND;
+import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_NAME;
 
 /**
  * Manages the Android libraries. Add the libraries used by Android modules referenced in a project
@@ -81,7 +71,6 @@ import org.jetbrains.annotations.Nullable;
  * @see AndroidModuleLibraryProperties
  */
 public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidModuleLibraryProperties> {
-  private static final Logger LOG = Logger.getInstance(AndroidModuleLibraryManager.class);
   private static final String BUILD_FILE_NAME = "build.gradle";
   private final AtomicBoolean isUpdating = new AtomicBoolean(false);
   private final AtomicBoolean isDisabled = new AtomicBoolean(false);
@@ -91,20 +80,20 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   }
 
   public void update() {
-    doGradleSync(getProject(), this::scheduleAddAndroidLibraryDeps);
+    doGradleSync(getProject(), androidProject -> androidProject != null ? scheduleAddAndroidLibraryDeps(androidProject) : null);
   }
 
   private Void scheduleAddAndroidLibraryDeps(@NotNull Project androidProject) {
-    ApplicationManager.getApplication().invokeLater(
+    OpenApiUtils.safeInvokeLater(
       () -> addAndroidLibraryDependencies(androidProject),
-      ModalityState.NON_MODAL);
+      ModalityState.nonModal());
     return null;
   }
 
   private void addAndroidLibraryDependencies(@NotNull Project androidProject) {
     for (Module flutterModule : FlutterModuleUtils.getModules(getProject())) {
       if (FlutterModuleUtils.isFlutterModule(flutterModule)) {
-        for (Module module : ModuleManager.getInstance(androidProject).getModules()) {
+        for (Module module : OpenApiUtils.getModules(androidProject)) {
           addAndroidLibraryDependencies(androidProject, module, flutterModule);
         }
       }
@@ -120,9 +109,11 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     if (currentSdk != null) {
       // TODO(messick) Add sdk dependency on currentSdk if not already set
     }
-    LibraryTable androidProjectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(androidProject);
+    LibraryTable androidProjectLibraryTable = OpenApiUtils.getLibraryTable(androidProject);
+    if (androidProjectLibraryTable == null) return;
     Library[] androidProjectLibraries = androidProjectLibraryTable.getLibraries();
-    LibraryTable flutterProjectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(getProject());
+    LibraryTable flutterProjectLibraryTable = OpenApiUtils.getLibraryTable(getProject());
+    if (flutterProjectLibraryTable == null) return;
     Library[] flutterProjectLibraries = flutterProjectLibraryTable.getLibraries();
     Set<String> knownLibraryNames = new HashSet<>(flutterProjectLibraries.length);
     for (Library lib : flutterProjectLibraries) {
@@ -147,7 +138,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
 
   @Override
   protected void updateModuleLibraryDependencies(@NotNull Library library) {
-    for (final Module module : ModuleManager.getInstance(getProject()).getModules()) {
+    for (final Module module : OpenApiUtils.getModules(getProject())) {
       // The logic is inverted wrt superclass.
       if (!FlutterModuleUtils.declaresFlutter(module)) {
         addFlutterLibraryDependency(module, library);
@@ -159,7 +150,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   }
 
   private void updateAndroidModuleLibraryDependencies(Module flutterModule) {
-    for (final Module module : ModuleManager.getInstance(getProject()).getModules()) {
+    for (final Module module : OpenApiUtils.getModules(getProject())) {
       if (module != flutterModule) {
         if (null != FacetManager.getInstance(module).findFacet(AndroidFacet.ID, "Android")) {
           Object circularModules = CircularModuleDependenciesDetector.addingDependencyFormsCircularity(module, flutterModule);
@@ -198,7 +189,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     }
 
     final Runnable runnable = this::updateAndroidLibraries;
-    DumbService.getInstance(getProject()).smartInvokeLater(runnable, ModalityState.NON_MODAL);
+    DumbService.getInstance(getProject()).smartInvokeLater(runnable, ModalityState.nonModal());
   }
 
   private void updateAndroidLibraries() {
@@ -208,7 +199,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     update();
   }
 
-  private void doGradleSync(Project flutterProject, Function<Project, Void> callback) {
+  private void doGradleSync(@NotNull Project flutterProject, @NotNull Function<Project, Void> callback) {
     // TODO(messick): Collect URLs for all Android modules, including those within plugins.
     VirtualFile dir = flutterProject.getBaseDir().findChild("android");
     if (dir == null) dir = flutterProject.getBaseDir().findChild(".android"); // For modules.
@@ -218,13 +209,6 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     Disposer.register(flutterProject, androidProject);
 
     GradleSyncListener listener = new GradleSyncListener() {
-      public void syncTaskCreated(@NotNull Project project, @NotNull GradleSyncInvoker.Request request) {}
-
-      // TODO(messick) Remove when 3.6 is stable.
-      public void syncStarted(@NotNull Project project, boolean skipped, boolean sourceGenerationRequested) {}
-
-      public void setupStarted(@NotNull Project project) {}
-
       @Override
       public void syncSucceeded(@NotNull Project project) {
         if (isUpdating.get()) {
@@ -315,13 +299,13 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     private Path path;
 
     protected EmbeddedAndroidProject(@NotNull Path filePath) {
-      super((ComponentManagerImpl) ApplicationManager.getApplication(), filePath, TEMPLATE_PROJECT_NAME);
-       path = filePath;
+      super((ComponentManagerImpl)ApplicationManager.getApplication(), filePath, TEMPLATE_PROJECT_NAME);
+      path = filePath;
     }
 
     static final String TEMPLATE_PROJECT_NAME = "_android";
 
-    public String getLocationHash() {
+    public @NotNull String getLocationHash() {
       return "";
     }
 

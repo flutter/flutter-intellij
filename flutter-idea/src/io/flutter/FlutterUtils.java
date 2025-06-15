@@ -5,6 +5,7 @@
  */
 package io.flutter;
 
+import com.android.tools.idea.IdeInfo;
 import com.google.common.base.Charsets;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.ide.impl.ProjectUtil;
@@ -12,19 +13,15 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.*;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.testFramework.LightVirtualFile;
-import com.intellij.util.PlatformUtils;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.jxbrowser.EmbeddedJxBrowser;
@@ -34,6 +31,7 @@ import io.flutter.pub.PubRootCache;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.OpenApiUtils;
 import io.flutter.view.EmbeddedBrowser;
 import io.flutter.view.EmbeddedJcefBrowser;
 import org.jetbrains.annotations.NotNull;
@@ -86,22 +84,12 @@ public class FlutterUtils {
   private FlutterUtils() {
   }
 
-  public static boolean couldContainWidgets(@Nullable Project project, @Nullable VirtualFile file) {
-    // Skip nulls, temp file used to show things like files downloaded from the VM, non-local files
-    return file != null &&
-           project != null &&
-           !(file instanceof LightVirtualFile) &&
-           isDartFile(file) &&
-           file.isInLocalFileSystem() &&
-           ProjectFileIndex.getInstance(project).isInProject(file);
-  }
-
   public static boolean isDartFile(@NotNull VirtualFile file) {
     return Objects.equals(file.getFileType(), DartFileType.INSTANCE);
   }
 
   public static boolean isAndroidStudio() {
-    return StringUtil.equals(PlatformUtils.getPlatformPrefix(), "AndroidStudio");
+    return IdeInfo.getInstance().isAndroidStudio();
   }
 
   /**
@@ -428,12 +416,7 @@ public class FlutterUtils {
       return null;
     }
   }
-
-  @Nullable
-  private static VirtualFile getAndroidProjectDir(VirtualFile dir) {
-    return (dir.findChild("app") == null) ? null : dir;
-  }
-
+  
   @Nullable
   private static VirtualFile getFlutterManagedAndroidDir(VirtualFile dir) {
     final VirtualFile meta = dir.findChild(".metadata");
@@ -479,8 +462,7 @@ public class FlutterUtils {
 
   @Nullable
   public static Module findModuleNamed(@NotNull Project project, @NotNull String name) {
-    final Module[] modules = ModuleManager.getInstance(project).getModules();
-    assert modules != null;
+    final Module[] modules = OpenApiUtils.getModules(project);
     for (Module module : modules) {
       assert module != null;
       if (module.getName().equals(name)) {
@@ -561,7 +543,8 @@ public class FlutterUtils {
   }
 
   public static boolean embeddedBrowserAvailable(JxBrowserStatus status) {
-    return Objects.equals(status, JxBrowserStatus.INSTALLED) || status.equals(JxBrowserStatus.INSTALLATION_SKIPPED) && FlutterSettings.getInstance()
-      .isEnableJcefBrowser();
+    return Objects.equals(status, JxBrowserStatus.INSTALLED) ||
+           status.equals(JxBrowserStatus.INSTALLATION_SKIPPED) && FlutterSettings.getInstance()
+             .isEnableJcefBrowser();
   }
 }

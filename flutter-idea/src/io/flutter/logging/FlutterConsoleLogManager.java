@@ -35,7 +35,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
 import io.flutter.view.EmbeddedBrowser;
-import io.flutter.view.FlutterView;
+import io.flutter.view.InspectorView;
 import io.flutter.vmService.VmServiceConsumers;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
@@ -56,7 +56,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * console.
  */
 public class FlutterConsoleLogManager {
-  private static final Logger LOG = Logger.getInstance(FlutterConsoleLogManager.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterConsoleLogManager.class);
 
   private static final String consolePreferencesSetKey = "io.flutter.console.preferencesSet";
   private static final String DEEP_LINK_GROUP_ID = "deeplink";
@@ -166,7 +166,7 @@ public class FlutterConsoleLogManager {
         }
       }
       catch (InterruptedException e) {
-        e.printStackTrace();
+        LOG.error(e);
       }
     }
   }
@@ -372,7 +372,7 @@ public class FlutterConsoleLogManager {
           return;
         }
 
-        final ToolWindow toolWindow = toolWindowManager.getToolWindow(FlutterView.TOOL_WINDOW_ID);
+        final ToolWindow toolWindow = toolWindowManager.getToolWindow(InspectorView.TOOL_WINDOW_ID);
         if (toolWindow != null && !toolWindow.isVisible()) {
           toolWindow.show();
         }
@@ -391,7 +391,9 @@ public class FlutterConsoleLogManager {
       }
     });
     Notifications.Bus.notify(notification, app.getProject());
-    Executors.newSingleThreadScheduledExecutor().schedule(notification::expire, 25, TimeUnit.SECONDS);
+    try (var executor = Executors.newSingleThreadScheduledExecutor()) {
+      executor.schedule(notification::expire, 25, TimeUnit.SECONDS);
+    }
   }
 
   private String getChildIndent(String indent, DiagnosticsNode property) {
@@ -517,8 +519,8 @@ public class FlutterConsoleLogManager {
     return ref.getValueAsString() + "...";
   }
 
-  private String getFullStringValue(@NotNull VmService service, String isolateId, @Nullable InstanceRef ref) {
-    if (ref == null) return null;
+  private @Nullable String getFullStringValue(@NotNull VmService service, @Nullable String isolateId, @Nullable InstanceRef ref) {
+    if (ref == null || isolateId == null) return null;
 
     if (!ref.getValueAsStringIsTruncated()) {
       return ref.getValueAsString();
@@ -554,10 +556,12 @@ public class FlutterConsoleLogManager {
     });
 
     try {
+      // The return can be safely ignored. An unset result will just return 0.
+      //noinspection ResultOfMethodCallIgnored
       latch.await(1, TimeUnit.SECONDS);
     }
     catch (InterruptedException e) {
-      return null;
+      // Fall through to returning an empty result.
     }
 
     return result[0];

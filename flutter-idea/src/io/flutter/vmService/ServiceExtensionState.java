@@ -7,21 +7,5 @@ package io.flutter.vmService;
 
 import org.jetbrains.annotations.Nullable;
 
-public final class ServiceExtensionState {
-  private final boolean enabled;
-  @Nullable private final Object value;
-
-  public ServiceExtensionState(boolean enabled, @Nullable Object value) {
-    this.enabled = enabled;
-    this.value = value;
-  }
-
-  public boolean isEnabled() {
-    return enabled;
-  }
-
-  @Nullable
-  public Object getValue() {
-    return value;
-  }
+public record ServiceExtensionState(boolean enabled, @Nullable Object value) {
 }

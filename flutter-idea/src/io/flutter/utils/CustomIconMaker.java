@@ -28,10 +28,6 @@ public class CustomIconMaker {
 
   }
 
-  public Icon getCustomIcon(String fromText) {
-    return getCustomIcon(fromText, IconKind.kClass, false);
-  }
-
   public Icon getCustomIcon(String fromText, IconKind kind) {
     return getCustomIcon(fromText, kind, false);
   }
@@ -47,7 +43,7 @@ public class CustomIconMaker {
     if (!iconCache.containsKey(mapKey)) {
       final Icon baseIcon = isAbstract ? kind.abstractIcon : kind.icon;
 
-      final Icon icon = new LayeredIcon(baseIcon, new Icon() {
+      final Icon icon = LayeredIcon.layeredIcon(() -> new Icon[]{baseIcon, new Icon() {
         public void paintIcon(Component c, Graphics g, int x, int y) {
           final Graphics2D g2 = (Graphics2D)g.create();
 
@@ -78,7 +74,7 @@ public class CustomIconMaker {
         public int getIconHeight() {
           return baseIcon != null ? baseIcon.getIconHeight() : 13;
         }
-      });
+      }});
 
       iconCache.put(mapKey, icon);
     }
@@ -104,24 +100,9 @@ public class CustomIconMaker {
     return getCustomIcon(name, isPrivate ? CustomIconMaker.IconKind.kMethod : CustomIconMaker.IconKind.kClass);
   }
 
-  public Icon fromInfo(String name) {
-    if (name == null) {
-      return null;
-    }
-
-    if (name.isEmpty()) {
-      return null;
-    }
-
-    return getCustomIcon(name, CustomIconMaker.IconKind.kInfo);
-  }
-
   public enum IconKind {
     kClass("class", FlutterIcons.CustomClass, FlutterIcons.CustomClassAbstract),
-    kField("fields", FlutterIcons.CustomFields),
-    kInterface("interface", FlutterIcons.CustomInterface),
     kMethod("method", FlutterIcons.CustomMethod, FlutterIcons.CustomMethodAbstract),
-    kProperty("property", FlutterIcons.CustomProperty),
     kInfo("info", FlutterIcons.CustomInfo);
 
     public final String name;

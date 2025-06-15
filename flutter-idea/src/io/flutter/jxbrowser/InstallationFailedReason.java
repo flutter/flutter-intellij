@@ -1,15 +1,18 @@
 package io.flutter.jxbrowser;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 public class InstallationFailedReason {
-    public FailureType failureType;
-    public String detail;
+  public final @NotNull FailureType failureType;
+  public final @Nullable String detail;
 
-    public InstallationFailedReason(FailureType failureType) {
-        this(failureType, null);
-    }
+  public InstallationFailedReason(@NotNull FailureType failureType) {
+    this(failureType, null);
+  }
 
-    InstallationFailedReason(FailureType failureType, String detail) {
-        this.failureType = failureType;
-        this.detail = detail;
-    }
+  InstallationFailedReason(@NotNull FailureType failureType, @Nullable String detail) {
+    this.failureType = failureType;
+    this.detail = detail;
+  }
 }

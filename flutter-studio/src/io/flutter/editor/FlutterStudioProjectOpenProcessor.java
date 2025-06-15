@@ -11,7 +11,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.projectImport.ProjectOpenProcessor;
 import com.intellij.ui.EditorNotifications;
 import io.flutter.FlutterUtils;
-//import io.flutter.project.FlutterProjectCreator;
 import io.flutter.project.FlutterProjectOpenProcessor;
 import io.flutter.pub.PubRoot;
 import io.flutter.utils.FlutterModuleUtils;
@@ -20,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class FlutterStudioProjectOpenProcessor extends FlutterProjectOpenProcessor {
   @Override
-  public String getName() {
+  public @NotNull String getName() {
     return "Flutter Studio";
   }
 

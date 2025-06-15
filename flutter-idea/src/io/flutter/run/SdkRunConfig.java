@@ -15,6 +15,7 @@ import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.filters.UrlFilter;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
@@ -32,11 +33,13 @@ import com.intellij.psi.PsiFileSystemItem;
 import com.intellij.refactoring.listeners.RefactoringElementListener;
 import com.intellij.refactoring.listeners.UndoRefactoringElementAdapter;
 import com.intellij.util.PathUtil;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
 import com.intellij.util.xmlb.XmlSerializer;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import io.flutter.FlutterUtils;
 import io.flutter.console.FlutterConsoleFilter;
+import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdkManager;
@@ -56,7 +59,7 @@ import static java.nio.file.FileVisitResult.CONTINUE;
 public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
   implements LaunchState.RunConfig, RefactoringListenerProvider, RunConfigurationWithSuppressedDefaultRunAction {
 
-  private static final Logger LOG = Logger.getInstance(SdkRunConfig.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(SdkRunConfig.class);
   private boolean firstRun = true;
 
   private @NotNull SdkFields fields = new SdkFields();
@@ -93,7 +96,7 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
     }
 
     @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+    public @NotNull FileVisitResult visitFile(Path file, @NotNull BasicFileAttributes attrs) {
       final Path name = file.getFileName();
       if (name != null && matcher.matches(name)) {
         try {
@@ -108,12 +111,12 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
     }
 
     @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+    public @NotNull FileVisitResult preVisitDirectory(@NotNull Path dir, @NotNull BasicFileAttributes attrs) {
       return CONTINUE;
     }
 
     @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+    public @NotNull FileVisitResult visitFileFailed(@NotNull Path file, @NotNull IOException exc) {
       FlutterUtils.warn(LOG, exc);
       return CONTINUE;
     }
@@ -133,9 +136,10 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
     final MainFile mainFile = MainFile.verify(launchFields.getFilePath(), env.getProject()).get();
     final Project project = env.getProject();
     final RunMode mode = RunMode.fromEnv(env);
-    final Module module = ModuleUtilCore.findModuleForFile(mainFile.getFile(), env.getProject());
+
     final LaunchState.CreateAppCallback createAppCallback = (@Nullable FlutterDevice device) -> {
       if (device == null) return null;
+      if (mainFile == null) return null;
 
       final GeneralCommandLine command = getCommand(env, device);
 
@@ -187,44 +191,72 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
         }
       }
 
-      final FlutterApp app = FlutterApp.start(env, project, module, mode, device, command,
-                                              StringUtil.capitalize(mode.mode()) + "App",
-                                              "StopApp");
+      var module = ModuleUtilCore.findModuleForFile(mainFile.getFile(), env.getProject());
+      if (module == null) return null;
 
-      // Stop the app if the Flutter SDK changes.
-      final FlutterSdkManager.Listener sdkListener = new FlutterSdkManager.Listener() {
-        @Override
-        public void flutterSdkRemoved() {
-          app.shutdownAsync();
-        }
-      };
-      FlutterSdkManager.getInstance(project).addListener(sdkListener);
-      Disposer.register(app, () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
-
-      return app;
+      return getFlutterApp(env, device, project, module, mode, command);
     };
 
     final LaunchState launcher = new LaunchState(env, mainFile.getAppDir(), mainFile.getFile(), this, createAppCallback);
-    addConsoleFilters(launcher, env, mainFile, module);
+    addConsoleFilters(launcher, env, mainFile, null /* look up the module in an async read context */);
     return launcher;
+  }
+
+  static @NotNull FlutterApp getFlutterApp(@NotNull ExecutionEnvironment env,
+                                           @NotNull FlutterDevice device,
+                                           Project project,
+                                           Module module,
+                                           RunMode mode,
+                                           GeneralCommandLine command) throws ExecutionException {
+    final FlutterApp app = FlutterApp.start(env, project, module, mode, device, command,
+                                            StringUtil.capitalize(mode.mode()) + "App",
+                                            "StopApp");
+
+    // Stop the app if the Flutter SDK changes.
+    final FlutterSdkManager.Listener sdkListener = new FlutterSdkManager.Listener() {
+      @Override
+      public void flutterSdkRemoved() {
+        app.shutdownAsync();
+      }
+    };
+    FlutterSdkManager.getInstance(project).addListener(sdkListener);
+    Disposer.register(app, () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
+
+    return app;
   }
 
   protected void addConsoleFilters(@NotNull LaunchState launcher,
                                    @NotNull ExecutionEnvironment env,
                                    @NotNull MainFile mainFile,
+                                   // If unspecified, we'll try and find it in a non-blocking read context.
                                    @Nullable Module module) {
-    // Set up additional console filters.
-    final TextConsoleBuilder builder = launcher.getConsoleBuilder();
-    // file:, package:, and dart: references
-    builder.addFilter(new DartConsoleFilter(env.getProject(), mainFile.getFile()));
-    //// links often found when running tests
-    //builder.addFilter(new DartRelativePathsConsoleFilter(env.getProject(), mainFile.getAppDir().getPath()));
-    if (module != null) {
-      // various flutter run links
-      builder.addFilter(new FlutterConsoleFilter(module));
-    }
-    // general urls
-    builder.addFilter(new UrlFilter());
+    // Creating console filters is expensive so we want to make sure we are not blocking.
+    // See: https://github.com/flutter/flutter-intellij/issues/8089
+    ReadAction.nonBlocking(() -> {
+        // Make a copy of the module reference, since we may update it in this lambda.
+        var moduleReference = module;
+        // If no module was passed in, try and find one.
+        if (moduleReference == null) {
+          moduleReference = ModuleUtilCore.findModuleForFile(mainFile.getFile(), env.getProject());
+        }
+
+        // Set up additional console filters.
+        final TextConsoleBuilder builder = launcher.getConsoleBuilder();
+        if (builder == null) return null;
+        // file:, package:, and dart: references
+        builder.addFilter(new DartConsoleFilter(env.getProject(), mainFile.getFile()));
+        //// links often found when running tests
+        //builder.addFilter(new DartRelativePathsConsoleFilter(env.getProject(), mainFile.getAppDir().getPath()));
+        if (moduleReference != null) {
+          // various flutter run links
+          builder.addFilter(new FlutterConsoleFilter(moduleReference));
+        }
+        // general urls
+        builder.addFilter(new UrlFilter());
+        return null;
+      })
+      .expireWith(FlutterDartAnalysisServer.getInstance(getProject()))
+      .submit(AppExecutorUtil.getAppExecutorService());
   }
 
   @NotNull

@@ -11,10 +11,12 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
-import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.util.EventDispatcher;
+import io.flutter.dart.FlutterDartAnalysisServer;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.EventListener;
 import java.util.Objects;
@@ -37,34 +39,22 @@ public class FlutterSdkManager {
   private FlutterSdkManager(@NotNull Project project) {
     myProject = project;
 
+    final LibraryTable libraryTable = OpenApiUtils.getLibraryTable(project);
+    if (libraryTable == null) return;
+
     final LibraryTableListener libraryTableListener = new LibraryTableListener();
-    final LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
     libraryTable.addListener(libraryTableListener);
 
     // TODO(devoncarew): We should replace this polling solution with listeners to project structure changes.
     final ScheduledFuture timer = JobScheduler.getScheduler().scheduleWithFixedDelay(
       this::checkForFlutterSdkChange, 1, 1, TimeUnit.SECONDS);
 
-    Disposer.register(project, () -> {
-      LibraryTablesRegistrar.getInstance().getLibraryTable(project).removeListener(libraryTableListener);
+    Disposer.register(FlutterDartAnalysisServer.getInstance(project), () -> {
+      libraryTable.removeListener(libraryTableListener);
       timer.cancel(false);
     });
 
     ProjectManager.getInstance().addProjectManagerListener(myProject, new ProjectManagerListener() {
-      //See https://plugins.jetbrains.com/docs/intellij/plugin-components.html#comintellijpoststartupactivity
-      // for notice and documentation on the deprecation intentions of
-      // Components from JetBrains.
-      //
-      // Migration forward has different directions before and after
-      // 2023.1, if we can, it would be prudent to wait until we are
-      // only supporting this major platform as a minimum version.
-      //
-      // https://github.com/flutter/flutter-intellij/issues/6953
-      @Override
-      public void projectOpened(@NotNull Project project) {
-        checkForFlutterSdkChange();
-      }
-
       @Override
       public void projectClosed(@NotNull Project project) {
         checkForFlutterSdkChange();
@@ -124,7 +114,7 @@ public class FlutterSdkManager {
     }
 
     @Override
-    public void afterLibraryRenamed(@NotNull Library library) {
+    public void afterLibraryRenamed(@NotNull Library library, @Nullable String newName) {
       // Since we key off name, test to be safe.
       checkForFlutterSdkChange();
     }

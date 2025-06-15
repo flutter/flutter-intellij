@@ -2,7 +2,10 @@
 
 ### Simulating a fresh install
 
-To simulate a fresh install, you need to delete any accrued application state.  To do this, you'll want to delete select folders in your plugin sandbox (location found in the `Sandbox Home` field in `Project structure | SDKs | [your IntelliJ IDEA plugin SDK]`.
+To simulate a fresh install, you need to delete any accrued application state.  To do this, you'll want to delete select folders in your plugin sandbox.
+(To find your sandbox, launch the `runIde` run/debug configuration and in this newly launched IDE instance, open `Help > Show Log in Finder` (macOS) or 
+`Help > Show Log in Explorer` (Windows), or `Help > Show Log in Files` (Linux). The log directory is usually inside a system folder, which itself is
+inside your sandbox.)
 
 * **config** folder contains IDE app-level configuration, including app-level libraries, SDKs, recent projects, etc.
 * **system** folder contains indexes and caches, deleting it is similar to File | Invalidate Caches action.

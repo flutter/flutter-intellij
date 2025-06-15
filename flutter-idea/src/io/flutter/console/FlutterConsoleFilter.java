@@ -18,7 +18,6 @@ import com.intellij.openapi.editor.markup.EffectType;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -26,6 +25,7 @@ import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -91,7 +91,7 @@ public class FlutterConsoleFilter implements Filter {
       return null;
     }
 
-    final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
+    final VirtualFile[] roots = OpenApiUtils.getContentRoots(module);
     for (VirtualFile root : roots) {
       if (!pathPart.isEmpty()) {
         final String baseDirPath = root.getPath();
@@ -237,7 +237,7 @@ public class FlutterConsoleFilter implements Filter {
   }
 
   private String findRelativePath(String threeSlashFileName) {
-    final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
+    final VirtualFile[] roots = OpenApiUtils.getContentRoots(module);
     for (VirtualFile root : roots) {
       final String path = root.getPath();
       int index = threeSlashFileName.indexOf(path);

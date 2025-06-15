@@ -8,13 +8,14 @@ package io.flutter.editor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.IconLoader;
 import io.flutter.FlutterUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.io.IOException;
 import java.util.Properties;
 
 public class FlutterMaterialIcons {
-  private static final Logger LOG = Logger.getInstance(FlutterMaterialIcons.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterMaterialIcons.class);
 
   private static final Properties icons;
 

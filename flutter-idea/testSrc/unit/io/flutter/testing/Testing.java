@@ -12,6 +12,7 @@ import com.intellij.testFramework.builders.EmptyModuleFixtureBuilder;
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
 import com.intellij.testFramework.fixtures.TestFixtureBuilder;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -71,7 +72,7 @@ public class Testing {
       callback.run();
       return null;
     };
-    runOnDispatchThread(() -> ApplicationManager.getApplication().runWriteAction(action));
+    runOnDispatchThread(() -> OpenApiUtils.safeRunWriteAction(action));
   }
 
   public static <T> T computeOnDispatchThread(ThrowableComputable<T, Exception> callback) throws Exception {
@@ -85,7 +86,7 @@ public class Testing {
       final AtomicReference<Exception> ex = new AtomicReference<>();
       assert (!SwingUtilities.isEventDispatchThread());
 
-      ApplicationManager.getApplication().invokeAndWait(() -> {
+      OpenApiUtils.safeInvokeAndWait(() -> {
         try {
           callback.run();
         }

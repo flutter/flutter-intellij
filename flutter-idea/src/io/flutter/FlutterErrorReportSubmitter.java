@@ -13,7 +13,6 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.diagnostic.ErrorReportSubmitter;
 import com.intellij.openapi.diagnostic.IdeaLoggingEvent;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.diagnostic.SubmittedReportInfo;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
@@ -41,7 +40,6 @@ import static io.flutter.run.daemon.DaemonApi.COMPLETION_EXCEPTION_PREFIX;
 // Add this line at the top of getPluginByClassName():
 // if (true) return getPlugins()[getPlugins().length-1].getPluginId(); // DEBUG do not merge
 public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
-  private static final Logger LOG = Logger.getInstance(FlutterErrorReportSubmitter.class);
   private static final String[] KNOWN_ERRORS = new String[]{"Bad state: No element"};
 
   @NotNull
@@ -51,13 +49,12 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
   }
 
   //@Override
-  public boolean submit(@NotNull IdeaLoggingEvent[] events,
+  public boolean submit(@NotNull IdeaLoggingEvent @NotNull [] events,
                         @Nullable String additionalInfo,
                         @NotNull Component parentComponent,
                         @NotNull Consumer<? super SubmittedReportInfo> consumer) {
     if (events.length == 0) {
-      // Don't remove the cast until a later version of Android Studio.
-      fail(((Consumer<SubmittedReportInfo>)consumer));
+      fail(consumer);
       return false;
     }
 
@@ -97,8 +94,7 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     final DataContext dataContext = DataManager.getInstance().getDataContext(parentComponent);
     final Project project = PROJECT.getData(dataContext);
     if (project == null) {
-      // Don't remove the cast until a later version of Android Studio.
-      fail(((Consumer<SubmittedReportInfo>)consumer));
+      fail(consumer);
       return false;
     }
 
@@ -187,8 +183,7 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     final VirtualFile file = scratchRoot.createScratchFile(project, "bug-report.md", PlainTextLanguage.INSTANCE, text);
 
     if (file == null) {
-      // Don't remove the cast until a later version of Android Studio.
-      fail(((Consumer<SubmittedReportInfo>)consumer));
+      fail(consumer);
       return false;
     }
 
@@ -218,7 +213,7 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     }
   }
 
-  private static void fail(@NotNull Consumer<SubmittedReportInfo> consumer) {
+  private static void fail(@NotNull Consumer<? super SubmittedReportInfo> consumer) {
     consumer.consume(new SubmittedReportInfo(
       null,
       null,

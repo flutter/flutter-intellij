@@ -2,6 +2,7 @@ package org.dartlang.vm.service.element;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
 
@@ -27,7 +28,7 @@ public abstract class ElementList<T> implements Iterable<T> {
   }
 
   @Override
-  public Iterator<T> iterator() {
+  public @NotNull Iterator<T> iterator() {
     return new Iterator<T>() {
       int index = 0;
 

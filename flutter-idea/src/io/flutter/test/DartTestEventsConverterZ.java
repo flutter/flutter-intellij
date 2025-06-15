@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings({"FieldMayBeFinal", "LocalCanBeFinal", "SameReturnValue"})
 public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter {
-  private static final Logger LOG = Logger.getInstance(DartTestEventsConverterZ.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(DartTestEventsConverterZ.class);
 
   private static final String TYPE_START = "start";
   private static final String TYPE_SUITE = "suite";
@@ -378,7 +378,8 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     boolean result = true;
 
     if (!test.myTestStartReported) {
-      if (Objects.equals(test.getBaseName(), SET_UP_ALL_VIRTUAL_TEST_NAME) || Objects.equals(test.getBaseName(), TEAR_DOWN_ALL_VIRTUAL_TEST_NAME)) {
+      if (Objects.equals(test.getBaseName(), SET_UP_ALL_VIRTUAL_TEST_NAME) ||
+          Objects.equals(test.getBaseName(), TEAR_DOWN_ALL_VIRTUAL_TEST_NAME)) {
         return true; // output in successfully passing setUpAll/tearDownAll is not important enough to make these nodes visible
       }
 

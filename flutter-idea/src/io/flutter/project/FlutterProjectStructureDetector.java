@@ -11,14 +11,11 @@ import com.intellij.ide.util.projectWizard.importSources.DetectedProjectRoot;
 import com.intellij.ide.util.projectWizard.importSources.ProjectFromSourcesBuilder;
 import com.intellij.ide.util.projectWizard.importSources.ProjectStructureDetector;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -27,13 +24,13 @@ import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.module.FlutterModuleBuilder;
 import io.flutter.pub.PubRoot;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.*;
 
 public class FlutterProjectStructureDetector extends ProjectStructureDetector {
-  private static final Logger LOG = Logger.getInstance(ProjectStructureDetector.class);
 
   @NotNull
   @Override
@@ -188,8 +185,8 @@ public class FlutterProjectStructureDetector extends ProjectStructureDetector {
     // Verify that the project has the given content root. If the import was cancelled and restarted
     // for the same project, but a content root was not selected the second time, then it might be absent.
     VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(root);
-    for (Module module : ModuleManager.getInstance(project).getModules()) {
-      for (VirtualFile file : ModuleRootManager.getInstance(module).getContentRoots()) {
+    for (Module module : OpenApiUtils.getModules(project)) {
+      for (VirtualFile file : OpenApiUtils.getContentRoots(module)) {
         if (file != null && file.equals(virtualFile)) {
           return true;
         }

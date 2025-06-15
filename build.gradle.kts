@@ -33,7 +33,7 @@ plugins {
   // https://github.com/JetBrains/intellij-platform-gradle-plugin/releases
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("org.jetbrains.intellij.platform") version "2.5.0"
-  id("org.jetbrains.kotlin.jvm") version "2.1.20"
+  id("org.jetbrains.kotlin.jvm") version "2.1.21-RC2"
 }
 
 // TODO(mossmana) These properties are duplicated in flutter-idea/build.gradle.kts and flutter-studio/build.gradle.kts. Should be consolidated.
@@ -60,12 +60,18 @@ println("javaVersion: $javaVersion")
 println("group: $group")
 
 var jvmVersion: JvmTarget
-if (javaVersion == "17") {
-  jvmVersion = JvmTarget.JVM_17
-} else if (javaVersion == "21") {
-  jvmVersion = JvmTarget.JVM_21
-} else {
-  throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
+jvmVersion = when (javaVersion) {
+  "17" -> {
+    JvmTarget.JVM_17
+  }
+
+  "21" -> {
+    JvmTarget.JVM_21
+  }
+
+  else -> {
+    throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
+  }
 }
 kotlin {
   compilerOptions {
@@ -75,12 +81,18 @@ kotlin {
 }
 
 var javaCompatibilityVersion: JavaVersion
-if (javaVersion == "17") {
-  javaCompatibilityVersion = JavaVersion.VERSION_17
-} else if (javaVersion == "21") {
-  javaCompatibilityVersion = JavaVersion.VERSION_21
-} else {
-  throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
+javaCompatibilityVersion = when (javaVersion) {
+  "17" -> {
+    JavaVersion.VERSION_17
+  }
+
+  "21" -> {
+    JavaVersion.VERSION_21
+  }
+
+  else -> {
+    throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
+  }
 }
 java {
   sourceCompatibility = javaCompatibilityVersion
@@ -93,27 +105,33 @@ dependencies {
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
     if (ideaProduct == "android-studio") {
       androidStudio(ideaVersion)
-    } else { // if (ideaProduct == "IC") {
-      intellijIdeaCommunity(ideaVersion)
+    } else {
+      when (ideaProduct) {
+        "IU" -> intellijIdeaUltimate(ideaVersion)
+        "IC" -> intellijIdeaCommunity(ideaVersion)
+        else -> throw IllegalArgumentException("ideaProduct must be defined in the product matrix as either \"IU\" or \"IC\", but is not for $ideaVersion")
+      }
     }
     testFramework(TestFrameworkType.Platform)
 
     // Plugin dependency documentation:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
     val bundledPluginList = mutableListOf(
+      "com.google.tools.ij.aiplugin",
       "com.intellij.java",
       "com.intellij.properties",
       "JUnit",
       "Git4Idea",
       "org.jetbrains.kotlin",
       "org.jetbrains.plugins.gradle",
-      "org.intellij.intelliLang")
+      "org.jetbrains.plugins.yaml",
+      "org.intellij.intelliLang"
+    )
+    val pluginList = mutableListOf("Dart:$dartPluginVersion")
     if (ideaProduct == "android-studio") {
       bundledPluginList.add("org.jetbrains.android")
       bundledPluginList.add("com.android.tools.idea.smali")
-    }
-    val pluginList = mutableListOf("Dart:$dartPluginVersion")
-    if (ideaProduct == "IC") {
+    } else {
       pluginList.add("org.jetbrains.android:$androidPluginVersion")
     }
 
@@ -130,6 +148,7 @@ dependencies {
   }
 }
 
+
 intellijPlatform {
   pluginConfiguration {
     version = flutterPluginVersion
@@ -138,8 +157,46 @@ intellijPlatform {
       untilBuild = untilBuildInput
     }
   }
-}
 
+  // Verifier documentation
+  // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html#intellijPlatform-pluginVerification
+  // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html#intellijPlatform-pluginVerification-ides
+  pluginVerification {
+    // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
+    // https://github.com/JetBrains/intellij-plugin-verifier
+    cliPath = file("./third_party/lib/verifier-cli-1.384-all.jar")
+    failureLevel = listOf(
+      // TODO(team) Ideally all of the following FailureLevels should be enabled:
+      // TODO(team) Create a tracking issue for each of the following validations
+//      VerifyPluginTask.FailureLevel.COMPATIBILITY_WARNINGS,
+//      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+//      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES, // https://github.com/flutter/flutter-intellij/issues/7718
+//      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
+      VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
+//      VerifyPluginTask.FailureLevel.INTERNAL_API_USAGES,
+//      VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
+      VerifyPluginTask.FailureLevel.NON_EXTENDABLE_API_USAGES,
+      VerifyPluginTask.FailureLevel.PLUGIN_STRUCTURE_WARNINGS,
+//      VerifyPluginTask.FailureLevel.MISSING_DEPENDENCIES,
+      VerifyPluginTask.FailureLevel.INVALID_PLUGIN,
+//      VerifyPluginTask.FailureLevel.NOT_DYNAMIC,
+    )
+    verificationReportsFormats = VerifyPluginTask.VerificationReportsFormats.ALL
+    subsystemsToCheck = VerifyPluginTask.Subsystems.ALL
+    // Mute and freeArgs documentation
+    // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
+    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-faq.html#mutePluginVerifierProblems
+    freeArgs = listOf(
+      "-mute",
+      "TemplateWordInPluginId,ForbiddenPluginIdPrefix,TemplateWordInPluginName"
+    )
+    ides {
+      ide(IntelliJPlatformType.AndroidStudio, ideaVersion)
+      // Note, ideally we would have additional targets identified here, however we have been unsuccessful in adding
+      // "recomended()" or select {} support with current versions of gradle & the verifier tool.
+    }
+  }
+}
 // Documentation for printProductsReleases:
 // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-faq.html#how-to-check-the-latest-available-eap-release
 tasks {
@@ -173,5 +230,17 @@ tasks {
     if (ideaProduct == "android-studio") {
       dependsOn(":flutter-studio:prepareSandbox")
     }
+  }
+}
+
+// A task to print the classpath used for compiling an IntelliJ plugin
+// Run with `./third_party/gradlew printCompileClasspath --no-configuration-cache `
+tasks.register("printCompileClasspath") {
+  doLast {
+    println("--- Begin Compile Classpath ---")
+    configurations.getByName("compileClasspath").forEach { file ->
+      println(file.absolutePath)
+    }
+    println("--- End Compile Classpath ---")
   }
 }

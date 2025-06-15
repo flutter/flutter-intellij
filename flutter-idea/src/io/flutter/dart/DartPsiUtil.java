@@ -17,7 +17,25 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+/**
+ * Utility class for working with Dart PSI (Program Structure Interface) elements.
+ * <p>
+ * This class provides helper methods for analyzing and manipulating the PSI tree
+ * of Dart files. It contains utility functions for common operations on Dart
+ * language constructs, making it easier to work with the syntactic and semantic
+ * structure of Dart code.
+ * <p>
+ * PSI elements represent the structure of the source code in the IntelliJ Platform,
+ * and this utility class helps plugin developers interact with Dart-specific PSI
+ * elements in a more convenient way.
+ * <p>
+ * All methods in this class are static as this is a utility class.
+ */
 public class DartPsiUtil {
+
+  private DartPsiUtil() {
+    throw new AssertionError("No instances.");
+  }
 
   public static int parseLiteralNumber(@NotNull String val) throws NumberFormatException {
     return val.startsWith("0x") || val.startsWith("0X")

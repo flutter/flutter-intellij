@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A utilities class for generating analysis server json requests.
+ * Utility class for generating analysis server json requests.
  */
 public class FlutterRequestUtilities {
   private static final String FILE = "file";
@@ -28,12 +28,12 @@ public class FlutterRequestUtilities {
   private static final String OFFSET = "offset";
   private static final String SUBSCRIPTIONS = "subscriptions";
 
-  private static final String METHOD_FLUTTER_GET_CHANGE_ADD_FOR_DESIGN_TIME_CONSTRUCTOR = "flutter.getChangeAddForDesignTimeConstructor";
   private static final String METHOD_FLUTTER_SET_SUBSCRIPTIONS = "flutter.setSubscriptions";
   private static final String METHOD_FLUTTER_GET_WIDGET_DESCRIPTION = "flutter.getWidgetDescription";
   private static final String METHOD_FLUTTER_SET_WIDGET_PROPERTY_VALUE = "flutter.setWidgetPropertyValue";
 
   private FlutterRequestUtilities() {
+    throw new AssertionError("No instances.");
   }
 
   public static JsonObject generateFlutterGetWidgetDescription(String id, String file, int offset) {
@@ -130,9 +130,10 @@ public class FlutterRequestUtilities {
   }
 
   /**
-   * Return the name of the given object, may be {@code "null"} string.
+   * Return the name of the given object, may be {@code "null"} String.
    */
+  @NotNull
   private static String getClassName(Object object) {
-    return object != null ? object.getClass().getName() : "null";
+    return object != null && object.getClass().getName() != null ? object.getClass().getName() : "null";
   }
 }

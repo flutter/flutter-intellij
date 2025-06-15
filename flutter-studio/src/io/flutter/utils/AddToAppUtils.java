@@ -5,14 +5,6 @@
  */
 package io.flutter.utils;
 
-//import static com.android.tools.idea.gradle.project.importing.GradleProjectImporter.ANDROID_PROJECT_TYPE;
-
-import static com.intellij.util.ReflectionUtil.findAssignableField;
-import static io.flutter.actions.AttachDebuggerAction.ATTACH_IS_ACTIVE;
-import static io.flutter.actions.AttachDebuggerAction.findRunConfig;
-
-import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
-import com.android.tools.idea.gradle.project.sync.GradleSyncState;
 import com.intellij.debugger.engine.DebugProcess;
 import com.intellij.debugger.engine.DebugProcessListener;
 import com.intellij.debugger.impl.DebuggerManagerListener;
@@ -22,40 +14,40 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.*;
+import com.intellij.openapi.project.ModuleListener;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectType;
+import com.intellij.openapi.project.ProjectTypeService;
 import com.intellij.util.ThreeState;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.messages.MessageBusConnection;
-import com.intellij.util.messages.Topic;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.AttachDebuggerAction;
+import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.SdkAttachConfig;
 import io.flutter.sdk.FlutterSdk;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.List;
-
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.List;
+
+import static io.flutter.actions.AttachDebuggerAction.ATTACH_IS_ACTIVE;
+import static io.flutter.actions.AttachDebuggerAction.findRunConfig;
+
 public class AddToAppUtils {
-  //private static final Logger LOG = Logger.getInstance(AddToAppUtils.class);
 
   private AddToAppUtils() {
   }
 
   public static boolean initializeAndDetectFlutter(@NotNull Project project) {
-    MessageBusConnection connection = project.getMessageBus().connect(project);
-    // GRADLE_SYNC_TOPIC is not public in Android Studio 3.5. It is in 3.6. It isn't defined in 3.4.
-    //noinspection unchecked
-    Topic<GradleSyncListener> topic = getStaticFieldValue(GradleSyncState.class, Topic.class, "GRADLE_SYNC_TOPIC");
-    if (topic != null) {
-      connection.subscribe(topic, makeSyncListener(project));
-    }
+    // In 2019, we added some logic to reflectively access a not-yet public GRADLE_SYNC_TOPIC on `GradleSyncState` subscribing
+    // a listener that called `GradleUtils.checkDartSupport()` on all sync events.
+    // Sometime since then, the field has gone away entirely and we are not getting these notifications.
+    // TODO(pq): 5/23/25  Asses whether we want to try and restore this logic
+
+    MessageBusConnection connection = project.getMessageBus().connect(FlutterDartAnalysisServer.getInstance(project));
 
     if (!FlutterModuleUtils.hasFlutterModule(project)) {
       connection.subscribe(ModuleListener.TOPIC, new ModuleListener() {
@@ -71,7 +63,6 @@ public class AddToAppUtils {
               });
             }
           }
-
         }
       });
       return false;
@@ -88,47 +79,6 @@ public class AddToAppUtils {
       }
     }
     return true;
-  }
-
-  // Derived from the method in ReflectionUtil, with the addition of setAccessible().
-  public static <T> T getStaticFieldValue(@NotNull Class objectClass,
-                                          @Nullable("null means any type") Class<T> fieldType,
-                                          @NotNull @NonNls String fieldName) {
-    try {
-      final Field field = findAssignableField(objectClass, fieldType, fieldName);
-      if (!Modifier.isStatic(field.getModifiers())) {
-        throw new IllegalArgumentException("Field " + objectClass + "." + fieldName + " is not static");
-      }
-      field.setAccessible(true);
-      //noinspection unchecked
-      return (T)field.get(null);
-    }
-    catch (NoSuchFieldException | IllegalAccessException e) {
-      return null;
-    }
-  }
-
-  @NotNull
-  private static GradleSyncListener makeSyncListener(@NotNull Project project) {
-    return new GradleSyncListener() {
-      @Override
-      public void syncSucceeded(@NotNull Project project) {
-        GradleUtils.checkDartSupport(project);
-      }
-
-      @Override
-      public void syncFailed(@NotNull Project project, @NotNull String errorMessage) {
-        GradleUtils.checkDartSupport(project);
-      }
-
-      @Override
-      public void syncSkipped(@NotNull Project project) {
-        GradleUtils.checkDartSupport(project);
-      }
-
-      public void sourceGenerationFinished(@NotNull Project project) {
-      }
-    };
   }
 
   @NotNull
@@ -168,6 +118,7 @@ public class AddToAppUtils {
           PubRoot pubRoot = ((SdkAttachConfig)runConfig).pubRoot;
           Application app = ApplicationManager.getApplication();
           project.putUserData(ATTACH_IS_ACTIVE, ThreeState.fromBoolean(true));
+          if (app == null) return;
           // Note: Using block comments to preserve formatting.
           app.invokeLater( /* After the Android launch completes, */
             () -> app.executeOnPooledThread( /* but not on the EDT, */
@@ -178,12 +129,16 @@ public class AddToAppUtils {
 
       @Override
       public void sessionCreated(DebuggerSession session) {
-        session.getProcess().addDebugProcessListener(dpl);
+        if (session != null) {
+          session.getProcess().addDebugProcessListener(dpl);
+        }
       }
 
       @Override
       public void sessionRemoved(DebuggerSession session) {
-        session.getProcess().removeDebugProcessListener(dpl);
+        if (session != null) {
+          session.getProcess().removeDebugProcessListener(dpl);
+        }
       }
     };
   }

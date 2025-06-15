@@ -13,7 +13,6 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
@@ -21,14 +20,14 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.ReflectionUtil;
 import io.flutter.FlutterMessages;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class AndroidEmulator {
-  private static final Logger LOG = Logger.getInstance(AndroidEmulator.class);
-
+  
   @NotNull final AndroidSdk androidSdk;
   @NotNull final String id;
   ProcessAdapter listener;
@@ -119,7 +118,7 @@ public class AndroidEmulator {
     }
 
     assert ApplicationManager.getApplication() != null;
-    ApplicationManager.getApplication().invokeLater(() -> {
+    OpenApiUtils.safeInvokeLater(() -> {
       tw.setAutoHide(false);
       tw.show();
     }, ModalityState.stateForComponent(tw.getComponent()));

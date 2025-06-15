@@ -285,7 +285,7 @@ public class RefreshableTest {
 
     SwingUtilities.invokeAndWait(() -> {
       SwingUtilities.invokeLater(() -> {
-        // Need to lose race with background tasks's call to reschedule(),
+        // Need to lose race with background task's call to reschedule(),
         // But win the race to publish().
         // So, schedule Swing event now, but make it slower.
         // (No suitable semaphore for this one.)
@@ -327,7 +327,8 @@ public class RefreshableTest {
       if (!s.tryAcquire(1, TimeUnit.SECONDS)) {
         log(error);
       }
-    } catch (InterruptedException e) {
+    }
+    catch (InterruptedException e) {
       log(error + " (interrupted)");
     }
   }

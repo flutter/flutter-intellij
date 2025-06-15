@@ -253,10 +253,6 @@ public class FileWatch {
     }
 
     @Override
-    public void before(@NotNull List<? extends VFileEvent> events) {
-    }
-
-    @Override
     public void after(@NotNull List<? extends VFileEvent> events) {
       final Set<FileWatch> todo = new LinkedHashSet<>();
       synchronized (subscriptions) {
@@ -273,5 +269,5 @@ public class FileWatch {
     }
   }
 
-  private static final Logger LOG = Logger.getInstance(FileWatch.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FileWatch.class);
 }

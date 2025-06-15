@@ -6,7 +6,6 @@
 package io.flutter.view;
 
 import com.intellij.ide.browsers.BrowserLauncher;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -21,7 +20,9 @@ import icons.FlutterIcons;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.LabelInput;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,18 +33,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-class BrowserTab {
-  protected EmbeddedTab embeddedTab;
-  protected Content content;
-  protected CompletableFuture<DevToolsUrl> devToolsUrlFuture;
-  public ContentManager contentManager;
-}
 
 /**
  * There is one instance of embedded browser across the project, but it manages tabs across multiple tool
- * windows. Each tab can display contents of an independent URL.
+ * windows. Each tab can display the contents of an independent URL.
  */
 public abstract class EmbeddedBrowser {
+  static public class BrowserTab {
+    protected EmbeddedTab embeddedTab;
+    protected Content content;
+    protected CompletableFuture<DevToolsUrl> devToolsUrlFuture;
+    public ContentManager contentManager;
+  }
+
   public static final String ANALYTICS_CATEGORY = "embedded-browser";
 
   protected final Map<@NotNull String, Map<@NotNull String, @NotNull BrowserTab>> windows = new HashMap<>();
@@ -76,7 +78,18 @@ public abstract class EmbeddedBrowser {
     });
   }
 
-  public void openPanel(ToolWindow toolWindow, String tabName, DevToolsUrl devToolsUrl, Consumer<String> onBrowserUnavailable) {
+  public void openPanel(@NotNull ToolWindow toolWindow,
+                        @NotNull String tabName,
+                        @NotNull DevToolsUrl devToolsUrl,
+                        @NotNull Consumer<String> onBrowserUnavailable) {
+    openPanel(toolWindow, tabName, devToolsUrl, onBrowserUnavailable, null);
+  }
+
+  public void openPanel(@NotNull ToolWindow toolWindow,
+                        @NotNull String tabName,
+                        @NotNull DevToolsUrl devToolsUrl,
+                        @NotNull Consumer<String> onBrowserUnavailable,
+                        @Nullable String warningMessage) {
     this.url = devToolsUrl;
     Map<String, BrowserTab> tabs = windows.computeIfAbsent(toolWindow.getId(), k -> new HashMap<>());
 
@@ -116,7 +129,7 @@ public abstract class EmbeddedBrowser {
 
     JComponent component = tab.embeddedTab.getTabComponent(tab.contentManager);
 
-    ApplicationManager.getApplication().invokeLater(() -> {
+    OpenApiUtils.safeInvokeLater(() -> {
       if (tab.contentManager.isDisposed()) {
         return;
       }
@@ -136,7 +149,17 @@ public abstract class EmbeddedBrowser {
       tab.content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
       // TODO(helin24): Use differentiated icons for each tab and copy from devtools toolbar.
       tab.content.setIcon(FlutterIcons.Phone);
-      tab.contentManager.addContent(tab.content);
+
+      final JPanel panel = new JPanel(new BorderLayout());
+
+      if (warningMessage != null) {
+        panel.add(new ViewUtils().warningLabel(warningMessage), BorderLayout.NORTH);
+      }
+
+      panel.add(tab.content.getComponent(), BorderLayout.CENTER);
+      final Content panelContent = tab.contentManager.getFactory().createContent(panel, null, false);
+
+      tab.contentManager.addContent(panelContent);
       tab.contentManager.setSelectedContent(tab.content, true);
       tab.embeddedTab.matchIdeZoom();
     });
@@ -200,26 +223,16 @@ public abstract class EmbeddedBrowser {
       }
     }
 
-    final JPanel center = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.CENTER));
+    final JPanel center = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.MIDDLE));
     center.add(panel);
     replacePanelLabel(center, contentManager);
   }
 
   private void replacePanelLabel(JComponent label, ContentManager contentManager) {
-    ApplicationManager.getApplication().invokeLater(() -> {
-      if (contentManager.isDisposed()) {
-        return;
-      }
-
-      final JPanel panel = new JPanel(new BorderLayout());
-      panel.add(label, BorderLayout.CENTER);
-      final Content content = contentManager.getFactory().createContent(panel, null, false);
-      contentManager.removeAllContents(true);
-      contentManager.addContent(content);
-    });
+    new ViewUtils().replacePanelLabel(contentManager, label);
   }
 
-  private BrowserTab openBrowserTabFor(String tabName, ToolWindow toolWindow) throws Exception {
+  private BrowserTab openBrowserTabFor(String tabName, ToolWindow toolWindow) {
     BrowserTab tab = new BrowserTab();
     tab.devToolsUrlFuture = new CompletableFuture<>();
     tab.embeddedTab = openEmbeddedTab(toolWindow.getContentManager());
@@ -227,7 +240,7 @@ public abstract class EmbeddedBrowser {
     return tab;
   }
 
-  public abstract EmbeddedTab openEmbeddedTab(ContentManager contentManager) throws Exception;
+  public abstract EmbeddedTab openEmbeddedTab(ContentManager contentManager);
 
   public void updatePanelToWidget(String widgetId) {
     updateUrlAndReload(devToolsUrl -> {

@@ -5,7 +5,6 @@
  */
 package io.flutter.run.coverage;
 
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.rt.coverage.data.ClassData;
 import com.intellij.rt.coverage.data.LineData;
@@ -25,7 +24,6 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 public class LcovInfo {
-  private static final Logger LOG = Logger.getInstance(LcovInfo.class.getName());
 
   private static final String FILE_LABEL = "SF:";
   private static final String DATA_LABEL = "DA:";

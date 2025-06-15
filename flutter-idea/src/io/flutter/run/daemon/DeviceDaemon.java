@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableList;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessHandler;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -29,6 +28,7 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -246,7 +246,7 @@ class DeviceDaemon {
                 FlutterMessages.showError("Flutter device daemon", failureMessage, null);
               }
               else if (attempts == DeviceDaemon.RESTART_ATTEMPTS_BEFORE_WARNING + 4) {
-                ApplicationManager.getApplication().invokeLater(() -> new DaemonCrashReporter().show(), ModalityState.NON_MODAL);
+                OpenApiUtils.safeInvokeLater(() -> new DaemonCrashReporter().show(), ModalityState.nonModal());
                 return null;
               }
             }
@@ -423,7 +423,7 @@ class DeviceDaemon {
     }
   }
 
-  private static final Logger LOG = Logger.getInstance(DeviceDaemon.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(DeviceDaemon.class);
 
   // If the daemon cannot be started, display a modal dialog with hopefully helpful
   // instructions on how to fix the problem. This is a big problem; we really do
@@ -434,7 +434,7 @@ class DeviceDaemon {
     private JTextPane myTextPane;
 
     DaemonCrashReporter() {
-      super(null, false, false);
+      super(null, false, DialogWrapper.IdeModalityType.IDE);
       setTitle("Flutter Device Daemon Crash");
       myPanel = new JPanel();
       myTextPane = new JTextPane();

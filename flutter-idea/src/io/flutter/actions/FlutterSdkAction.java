@@ -7,7 +7,6 @@ package io.flutter.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
@@ -28,8 +27,6 @@ import java.util.List;
  * Base class for Flutter commands.
  */
 public abstract class FlutterSdkAction extends DumbAwareAction {
-
-  private static final Logger LOG = Logger.getInstance(FlutterSdkAction.class);
 
   @Override
   public void actionPerformed(@NotNull AnActionEvent event) {
@@ -79,7 +76,7 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
   }
 
   /**
-   * By default this method returns false. For actions which can be used in the Bazel context this method should return true.
+   * By default, this method returns false. For actions which can be used in the Bazel context this method should return true.
    */
   public boolean enableActionInBazelContext() {
     return false;

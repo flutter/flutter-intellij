@@ -66,7 +66,8 @@ public class JxBrowserManager {
       else if (Objects.equals(info.getMajorVersion(), "2020")) {
         return "flutter-intellij";
       }
-    } catch (NullPointerException ex) {
+    }
+    catch (NullPointerException ex) {
       // ignored; unit tests
     }
     return "flutter-idea";
@@ -144,9 +145,9 @@ public class JxBrowserManager {
 
   private class SettingsListener implements FlutterSettings.Listener {
 
-   // Instead of holding onto a project here, only hold onto the Project name.
-   // See https://github.com/flutter/flutter-intellij/issues/7377
-   @NotNull private String projectName;
+    // Instead of holding onto a project here, only hold onto the Project name.
+    // See https://github.com/flutter/flutter-intellij/issues/7377
+    @NotNull private String projectName;
 
     public SettingsListener(@NotNull Project project) {
       this.projectName = project.getName();
@@ -168,14 +169,6 @@ public class JxBrowserManager {
   }
 
   private void setStatusFailed(@NotNull InstallationFailedReason reason, @Nullable Long time) {
-    final StringBuilder eventName = new StringBuilder();
-    eventName.append("installationFailed-");
-    eventName.append(reason.failureType);
-    if (reason.detail != null) {
-      eventName.append("-");
-      eventName.append(reason.detail);
-    }
-
     latestFailureReason = reason;
     status.set(JxBrowserStatus.INSTALLATION_FAILED);
     installation.complete(JxBrowserStatus.INSTALLATION_FAILED);
@@ -187,7 +180,6 @@ public class JxBrowserManager {
       return;
     }
 
-    //noinspection ConstantConditions
     FlutterSettings.getInstance().addListener(new SettingsListener(project));
   }
 
@@ -275,14 +267,13 @@ public class JxBrowserManager {
     downloadJxBrowser(fileNames);
   }
 
-  protected void downloadJxBrowser(@NotNull String[] fileNames) {
+  protected void downloadJxBrowser(@NotNull String @NotNull [] fileNames) {
     // The FileDownloader API is used by other plugins - e.g.
     // https://github.com/JetBrains/intellij-community/blob/b09f8151e0d189d70363266c3bb6edb5f6bfeca4/plugins/markdown/src/org/intellij/plugins/markdown/ui/preview/javafx/JavaFXInstallator.java#L48
     final List<FileDownloader> fileDownloaders = new ArrayList<>();
     final DownloadableFileService service = DownloadableFileService.getInstance();
     assert service != null;
     for (String fileName : fileNames) {
-      assert fileName != null;
       final DownloadableFileDescription
         description = service.createFileDescription(jxBrowserUtils.getDistributionLink(fileName), fileName);
       fileDownloaders.add(service.createDownloader(Collections.singletonList(description), fileName));
@@ -291,17 +282,18 @@ public class JxBrowserManager {
     // A project is needed to instantiate the Task, find a non-disposed Project using the ProjectManager
     ProjectManager projectManager = ProjectManager.getInstance();
     Project projectTmp = null;
-    if(projectManager != null) {
+    if (projectManager != null) {
       projectTmp = projectManager.getDefaultProject();
-     if (projectTmp.isDisposed()) {
-       Optional<Project> optionalProject = Arrays.stream(projectManager.getOpenProjects()).filter(p -> !p.isDisposed()).findFirst();
-       if (optionalProject.isPresent()) {
-         projectTmp = optionalProject.get();
-       }
+      if (projectTmp.isDisposed()) {
+        Optional<Project> optionalProject = Arrays.stream(projectManager.getOpenProjects()).filter(p -> !p.isDisposed()).findFirst();
+        if (optionalProject.isPresent()) {
+          projectTmp = optionalProject.get();
+        }
       }
     }
     final Project project = projectTmp;
-    if(project != null && !project.isDisposed()) {
+    if (project != null && !project.isDisposed()) {
+      //noinspection DialogTitleCapitalization
       final Task.Backgroundable task = new Task.Backgroundable(project, "Downloading JxBrowser") {
         @Override
         public void run(@NotNull ProgressIndicator indicator) {
@@ -339,14 +331,13 @@ public class JxBrowserManager {
     }
   }
 
-  private void loadClasses(@NotNull String[] fileNames) {
+  private void loadClasses(@NotNull String @NotNull [] fileNames) {
     final List<Path> paths = new ArrayList<>();
     final ClassLoader current = Thread.currentThread().getContextClassLoader();
     try {
       Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
       try {
         for (String fileName : fileNames) {
-          assert fileName != null;
           paths.add(Paths.get(getFilePath(fileName)));
         }
         //noinspection ConstantConditions
@@ -366,12 +357,14 @@ public class JxBrowserManager {
         //noinspection ThrowableNotThrown
         final UnsupportedRenderingModeException test = new UnsupportedRenderingModeException(RenderingMode.HARDWARE_ACCELERATED);
       }
-      catch (NoClassDefFoundError | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+      catch (NoClassDefFoundError | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException |
+             InvocationTargetException e) {
         LOG.info("Failed to find JxBrowser class: ", e);
         setStatusFailed(new InstallationFailedReason(FailureType.CLASS_NOT_FOUND));
         return;
       }
-    } finally {
+    }
+    finally {
       Thread.currentThread().setContextClassLoader(current);
     }
     status.set(JxBrowserStatus.INSTALLED);

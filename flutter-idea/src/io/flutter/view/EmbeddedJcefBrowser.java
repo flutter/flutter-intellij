@@ -19,7 +19,7 @@ import java.util.Objects;
 class EmbeddedJcefBrowserTab implements EmbeddedTab {
   private JBCefBrowser browser;
 
-  public EmbeddedJcefBrowserTab() throws Exception {
+  public EmbeddedJcefBrowserTab() {
     this.browser = new JBCefBrowser();
   }
 
@@ -40,13 +40,14 @@ class EmbeddedJcefBrowserTab implements EmbeddedTab {
 
   @Override
   public JComponent getTabComponent(ContentManager contentManager) {
-    browser.getComponent().setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
+    browser.getComponent()
+      .setPreferredSize(new Dimension(contentManager.getComponent().getWidth(), contentManager.getComponent().getHeight()));
     return browser.getComponent();
   }
 }
 
 public class EmbeddedJcefBrowser extends EmbeddedBrowser {
-  private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(JxBrowserManager.class);
 
   public EmbeddedJcefBrowser(Project project) {
     super(project);
@@ -62,7 +63,7 @@ public class EmbeddedJcefBrowser extends EmbeddedBrowser {
   }
 
   @Override
-  public EmbeddedTab openEmbeddedTab(ContentManager contentManager) throws Exception {
+  public EmbeddedTab openEmbeddedTab(ContentManager contentManager) {
     return new EmbeddedJcefBrowserTab();
   }
 }

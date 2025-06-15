@@ -8,7 +8,6 @@ package io.flutter.run.daemon;
 import com.google.common.base.Stopwatch;
 import com.google.gson.JsonObject;
 import com.intellij.execution.ExecutionException;
-import com.intellij.execution.ExecutionManager;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
@@ -17,6 +16,7 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.ui.RunContentDescriptor;
+import com.intellij.execution.ui.RunContentManager;
 import com.intellij.history.LocalHistory;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
@@ -25,7 +25,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import io.flutter.FlutterMessages;
@@ -33,20 +32,14 @@ import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.logging.FlutterConsoleLogManager;
-import io.flutter.pub.PubRoot;
-import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.common.RunMode;
 import io.flutter.settings.FlutterSettings;
-import io.flutter.utils.MostlySilentColoredProcessHandler;
-import io.flutter.utils.ProgressHelper;
-import io.flutter.utils.StreamSubscription;
-import io.flutter.utils.UrlUtils;
-import io.flutter.utils.VmServiceListenerAdapter;
-import io.flutter.vmService.DisplayRefreshRateManager;
+import io.flutter.utils.*;
 import io.flutter.vmService.ServiceExtensions;
 import io.flutter.vmService.VMServiceManager;
 import org.dartlang.vm.service.VmService;
@@ -68,11 +61,10 @@ import java.util.function.Consumer;
  * A running Flutter app.
  */
 public class FlutterApp implements Disposable {
-  private static final Logger LOG = Logger.getInstance(FlutterApp.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterApp.class);
   private static final Key<FlutterApp> FLUTTER_APP_KEY = new Key<>("FLUTTER_APP_KEY");
 
   private final @NotNull Project myProject;
-  private final @Nullable Module myModule;
   private final @NotNull RunMode myMode;
   private final @NotNull FlutterDevice myDevice;
   private final @NotNull ProcessHandler myProcessHandler;
@@ -93,13 +85,9 @@ public class FlutterApp implements Disposable {
    */
   private @Nullable String myLaunchMode;
 
-  private @Nullable List<PubRoot> myPubRoots;
-
   private int reloadCount;
   private int userReloadCount;
   private int restartCount;
-
-  private long maxFileTimestamp;
 
   /**
    * Non-null when the debugger is paused.
@@ -126,7 +114,6 @@ public class FlutterApp implements Disposable {
   }
 
   FlutterApp(@NotNull Project project,
-             @Nullable Module module,
              @NotNull RunMode mode,
              @NotNull FlutterDevice device,
              @NotNull ProcessHandler processHandler,
@@ -134,7 +121,6 @@ public class FlutterApp implements Disposable {
              @NotNull DaemonApi daemonApi,
              @NotNull GeneralCommandLine command) {
     myProject = project;
-    myModule = module;
     myMode = mode;
     myDevice = device;
     myProcessHandler = processHandler;
@@ -142,7 +128,6 @@ public class FlutterApp implements Disposable {
     myExecutionEnvironment = executionEnvironment;
     myDaemonApi = daemonApi;
     myCommand = command;
-    maxFileTimestamp = System.currentTimeMillis();
     myConnector = new ObservatoryConnector() {
       @Override
       public @Nullable
@@ -192,28 +177,11 @@ public class FlutterApp implements Disposable {
     return process.getUserData(FLUTTER_APP_KEY);
   }
 
-  @Nullable
-  public static FlutterApp firstFromProjectProcess(@NotNull Project project) {
-    final List<RunContentDescriptor> runningProcesses =
-      ExecutionManager.getInstance(project).getContentManager().getAllDescriptors();
-    for (RunContentDescriptor descriptor : runningProcesses) {
-      final ProcessHandler process = descriptor.getProcessHandler();
-      if (process != null) {
-        final FlutterApp app = FlutterApp.fromProcess(process);
-        if (app != null) {
-          return app;
-        }
-      }
-    }
-
-    return null;
-  }
-
   @NotNull
   public static List<FlutterApp> allFromProjectProcess(@NotNull Project project) {
     final List<FlutterApp> allRunningApps = new ArrayList<>();
     final List<RunContentDescriptor> runningProcesses =
-      ExecutionManager.getInstance(project).getContentManager().getAllDescriptors();
+      RunContentManager.getInstance(project).getAllDescriptors();
     for (RunContentDescriptor descriptor : runningProcesses) {
       final ProcessHandler process = descriptor.getProcessHandler();
       if (process != null) {
@@ -265,10 +233,10 @@ public class FlutterApp implements Disposable {
     }
 
     final ProcessHandler process = new MostlySilentColoredProcessHandler(command, onTextAvailable);
-    Disposer.register(project, process::destroyProcess);
+    Disposer.register(FlutterDartAnalysisServer.getInstance(project), process::destroyProcess);
 
     final DaemonApi api = new DaemonApi(process);
-    final FlutterApp app = new FlutterApp(project, module, mode, device, process, env, api, command);
+    final FlutterApp app = new FlutterApp(project, mode, device, process, env, api, command);
 
     process.addProcessListener(new ProcessAdapter() {
       @Override
@@ -302,7 +270,9 @@ public class FlutterApp implements Disposable {
     return myConnector;
   }
 
-  /** @noinspection BooleanMethodIsAlwaysInverted*/
+  /**
+   * @noinspection BooleanMethodIsAlwaysInverted
+   */
   public boolean appSupportsHotReload() {
     // Introspect based on registered services.
     if (myVMServiceManager != null && myVMServiceManager.hasAnyRegisteredServices()) {
@@ -346,7 +316,7 @@ public class FlutterApp implements Disposable {
   }
 
   /**
-   * Perform a hot restart of the the app.
+   * Perform a hot restart of the app.
    */
   public CompletableFuture<DaemonApi.RestartResult> performRestartApp(@NotNull String reason) {
     if (myAppId == null) {
@@ -362,7 +332,6 @@ public class FlutterApp implements Disposable {
 
     LocalHistory.getInstance().putSystemLabel(getProject(), "Flutter hot restart");
 
-    maxFileTimestamp = System.currentTimeMillis();
     changeState(State.RESTARTING);
 
     final CompletableFuture<DaemonApi.RestartResult> future =
@@ -378,17 +347,6 @@ public class FlutterApp implements Disposable {
 
   private void notifyAppRestarted() {
     listenersDispatcher.getMulticaster().notifyAppRestarted();
-  }
-
-  public boolean isSameModule(@Nullable final Module other) {
-    return Objects.equals(myModule, other);
-  }
-
-  /**
-   * @return whether the latest of the version of the file is running.
-   */
-  public boolean isLatestVersionRunning(VirtualFile file) {
-    return file != null && file.getTimeStamp() <= maxFileTimestamp;
   }
 
   /**
@@ -438,7 +396,6 @@ public class FlutterApp implements Disposable {
 
     LocalHistory.getInstance().putSystemLabel(getProject(), "hot reload #" + userReloadCount);
 
-    maxFileTimestamp = System.currentTimeMillis();
     changeState(State.RELOADING);
 
     final CompletableFuture<DaemonApi.RestartResult> future =
@@ -450,33 +407,6 @@ public class FlutterApp implements Disposable {
 
   public CompletableFuture<DaemonApi.DevToolsAddress> serveDevTools() {
     return myDaemonApi.devToolsServe();
-  }
-
-  public CompletableFuture<String> togglePlatform() {
-    if (myAppId == null) {
-      FlutterUtils.warn(LOG, "cannot invoke togglePlatform on Flutter app because app id is not set");
-      return CompletableFuture.completedFuture(null);
-    }
-
-    final CompletableFuture<JsonObject> result = callServiceExtension(ServiceExtensions.togglePlatformMode.getExtension());
-    return result.thenApply(obj -> {
-      //noinspection CodeBlock2Expr
-      return obj.get("value").getAsString();
-    });
-  }
-
-  public CompletableFuture<String> togglePlatform(String platform) {
-    if (myAppId == null) {
-      FlutterUtils.warn(LOG, "cannot invoke togglePlatform on Flutter app because app id is not set");
-      return CompletableFuture.completedFuture(null);
-    }
-
-    final Map<String, Object> params = new HashMap<>();
-    params.put("value", platform);
-    return callServiceExtension(ServiceExtensions.togglePlatformMode.getExtension(), params).thenApply(obj -> {
-      //noinspection CodeBlock2Expr
-      return obj != null ? obj.get("value").getAsString() : null;
-    });
   }
 
   public CompletableFuture<JsonObject> callServiceExtension(String methodName) {
@@ -532,12 +462,6 @@ public class FlutterApp implements Disposable {
     return getVMServiceManager().hasServiceExtension(name, onData);
   }
 
-  public void hasServiceExtension(String name, Consumer<Boolean> onData, Disposable parentDisposable) {
-    if (getVMServiceManager() != null) {
-      getVMServiceManager().hasServiceExtension(name, onData, parentDisposable);
-    }
-  }
-
   public void setConsole(@Nullable ConsoleView console) {
     myConsole = console;
   }
@@ -579,7 +503,7 @@ public class FlutterApp implements Disposable {
 
     final String appId = myAppId;
     if (appId == null) {
-      // If it it didn't finish starting up, shut down abruptly.
+      // If it didn't finish starting up, shut down abruptly.
       myProcessHandler.destroyProcess();
       done.run();
       return done;
@@ -686,27 +610,9 @@ public class FlutterApp implements Disposable {
     return myVMServiceManager;
   }
 
-  @Nullable
-  public DisplayRefreshRateManager getDisplayRefreshRateManager() {
-    return myVMServiceManager != null ? myVMServiceManager.displayRefreshRateManager : null;
-  }
-
   @NotNull
   public Project getProject() {
     return myProject;
-  }
-
-  @NotNull
-  public List<PubRoot> getPubRoots() {
-    if (myPubRoots == null) {
-      myPubRoots = PubRoots.forProject(myProject);
-    }
-    return myPubRoots;
-  }
-
-  @Nullable
-  public Module getModule() {
-    return myModule;
   }
 
   public FlutterConsoleLogManager getFlutterConsoleLogManager() {
@@ -775,7 +681,7 @@ public class FlutterApp implements Disposable {
  * Listens for events while running or debugging an app.
  */
 class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
-  private static final Logger LOG = Logger.getInstance(FlutterAppDaemonEventListener.class);
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterAppDaemonEventListener.class);
 
   private final @NotNull FlutterApp app;
   private final @NotNull ProgressHelper progress;

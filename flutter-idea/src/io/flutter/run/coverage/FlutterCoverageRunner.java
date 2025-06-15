@@ -19,7 +19,7 @@ import java.io.IOException;
 
 public class FlutterCoverageRunner extends CoverageRunner {
   private static final String ID = "FlutterCoverageRunner";
-  private static final Logger LOG = Logger.getInstance(FlutterCoverageRunner.class.getName());
+  private static final @NotNull Logger LOG = Logger.getInstance(FlutterCoverageRunner.class.getName());
 
   @Nullable
   @Override
