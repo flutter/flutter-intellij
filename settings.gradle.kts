@@ -11,9 +11,9 @@ pluginManagement {
   }
 }
 
-val ideaProduct: String by settings
-
-include("flutter-idea")
-if (ideaProduct == "android-studio") {
-  include("flutter-studio")
-}
+//val ideaProduct: String by settings
+//
+//include("flutter-idea")
+//if (ideaProduct == "android-studio") {
+//  include("flutter-studio")
+//}

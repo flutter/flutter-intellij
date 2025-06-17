@@ -49,6 +49,7 @@ jxbrowser.license.key=$jxBrowserKey
     writeJxBrowserKeyToFile();
     return await runGradleCommand(
       ['buildPlugin', '--stacktrace'],
+      // ['buildPlugin', '--info'],
       spec,
       version,
       'false',

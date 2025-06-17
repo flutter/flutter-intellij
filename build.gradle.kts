@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+import okhttp3.internal.immutableListOf
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.models.ProductRelease
@@ -58,6 +59,8 @@ println("sinceBuild: $sinceBuildInput")
 println("untilBuild: $untilBuildInput")
 println("javaVersion: $javaVersion")
 println("group: $group")
+println("project: $project")
+println("project.rootDir: ${project.rootDir}")
 
 var jvmVersion: JvmTarget
 jvmVersion = when (javaVersion) {
@@ -87,7 +90,7 @@ javaCompatibilityVersion = when (javaVersion) {
   }
 
   "21" -> {
-    JavaVersion.VERSION_21
+    JavaVersion.VERSION_21 // all later versions of java can build against the earlier versions
   }
 
   else -> {
@@ -108,7 +111,8 @@ dependencies {
 
     // Plugin dependency documentation:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
-    val bundledPluginList = mutableListOf(
+    // https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html#project-setup
+    bundledPlugins(immutableListOf(
       "com.google.tools.ij.aiplugin",
       "com.intellij.java",
       "com.intellij.properties",
@@ -117,16 +121,11 @@ dependencies {
       "org.jetbrains.kotlin",
       "org.jetbrains.plugins.gradle",
       "org.jetbrains.plugins.yaml",
-      "org.intellij.intelliLang"
-    )
-    val pluginList = mutableListOf("Dart:$dartPluginVersion")
-    bundledPluginList.add("org.jetbrains.android")
-    bundledPluginList.add("com.android.tools.idea.smali")
-
-    // Finally, add the plugins into their respective lists:
-    // https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html#project-setup
-    bundledPlugins(bundledPluginList)
-    plugins(pluginList)
+      "org.intellij.intelliLang",
+      "org.jetbrains.android",
+      "com.android.tools.idea.smali"
+    ))
+    plugin("Dart:$dartPluginVersion")
 
     if (sinceBuildInput == "243" || sinceBuildInput == "251") {
       bundledModule("intellij.platform.coverage")
@@ -134,6 +133,128 @@ dependencies {
     }
     pluginVerifier()
   }
+
+//  implementation(project("flutter-idea"))
+  // pulled over from flutter-idea - looks like only for compile and test
+  compileOnly("org.jetbrains:annotations:24.0.0")
+  testImplementation("org.jetbrains:annotations:24.0.0")
+  testImplementation("org.powermock:powermock-api-mockito2:2.0.9")
+  testImplementation("org.powermock:powermock-module-junit4:2.0.9")
+  testImplementation(mapOf("group" to "org.mockito", "name" to "mockito-core", "version" to "5.2.0"))
+
+//  testImplementation(project(":flutter-studio"))
+  testRuntimeOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio/plugins",
+        "include" to listOf("**/*.jar"),
+        "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar", "**/kotlin-stdlib-jdk8.jar")
+      )
+    )
+  )
+  compileOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio/lib",
+        "include" to listOf("*.jar"),
+        "exclude" to listOf("**/annotations.jar")
+      )
+    )
+  )
+  testRuntimeOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio/lib",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+  compileOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio/plugins/git4idea/lib",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+  testImplementation(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio/plugins/git4idea/lib",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+  compileOnly("com.google.guava:guava:32.0.1-android")
+  compileOnly("com.google.code.gson:gson:2.10.1")
+  testImplementation("com.google.guava:guava:32.0.1-jre")
+  testImplementation("com.google.code.gson:gson:2.10.1")
+  testImplementation("junit:junit:4.13.2")
+  runtimeOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/third_party/lib/jxbrowser",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+  compileOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/third_party/lib/jxbrowser",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+  testImplementation(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/third_party/lib/jxbrowser",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+
+  // copied from flutter-studio
+//  compileOnly(project(":flutter-idea"))
+//  testImplementation(project(":flutter-idea"))
+  compileOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio/lib",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+  testImplementation(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio/lib",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+  compileOnly(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio/plugins",
+        "include" to listOf("**/*.jar"),
+        "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar")
+      )
+    )
+  )
+  testImplementation(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/artifacts/android-studio/plugins",
+        "include" to listOf("**/*.jar"),
+        "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar")
+      )
+    )
+  )
+
+
+//  implementation(project("flutter-studio"))
 }
 
 
@@ -183,6 +304,50 @@ intellijPlatform {
     }
   }
 }
+
+sourceSets {
+  main {
+    // from flutter-idea
+    java.srcDirs(
+      listOf(
+        "flutter-idea/src",
+        "flutter-idea/third_party/vmServiceDrivers"
+      )
+    )
+    // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
+    resources.srcDirs(
+      listOf(
+        "flutter-idea/src",
+        "flutter-idea/resources"
+      )
+    )
+
+    // from flutter-studio
+    java.srcDirs(
+      listOf(
+        "flutter-studio/src",
+        "flutter-studio/third_party/vmServiceDrivers"
+      )
+    )
+  }
+  test {
+    java.srcDirs(
+      listOf(
+        "flutter-idea/src",
+        "flutter-idea/testSrc/unit",
+        "flutter-idea/third_party/vmServiceDrivers"
+      )
+    )
+    resources.srcDirs(
+      listOf(
+        "flutter-idea/resources",
+        "flutter-idea/testData",
+        "flutter-idea/testSrc/unit"
+      )
+    )
+  }
+}
+
 // Documentation for printProductsReleases:
 // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-faq.html#how-to-check-the-latest-available-eap-release
 tasks {
@@ -197,11 +362,6 @@ tasks {
   }
 }
 
-dependencies {
-  implementation(project("flutter-idea"))
-  implementation(project("flutter-studio"))
-}
-
 tasks {
   prepareJarSearchableOptions {
     enabled = false
@@ -209,10 +369,10 @@ tasks {
   buildSearchableOptions {
     enabled = false
   }
-  prepareSandbox {
-    dependsOn(":flutter-idea:prepareSandbox")
-    dependsOn(":flutter-studio:prepareSandbox")
-  }
+//  prepareSandbox {
+//    dependsOn(":flutter-idea:prepareSandbox")
+//    dependsOn(":flutter-studio:prepareSandbox")
+//  }
 }
 
 // A task to print the classpath used for compiling an IntelliJ plugin
