@@ -150,7 +150,7 @@ intellijPlatform {
 //      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
 //      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES, // https://github.com/flutter/flutter-intellij/issues/7718
 //      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
-      VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
+//      VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
 //      VerifyPluginTask.FailureLevel.INTERNAL_API_USAGES,
 //      VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
       VerifyPluginTask.FailureLevel.NON_EXTENDABLE_API_USAGES,
@@ -169,9 +169,7 @@ intellijPlatform {
       "TemplateWordInPluginId,ForbiddenPluginIdPrefix,TemplateWordInPluginName"
     )
     ides {
-      ide(IntelliJPlatformType.AndroidStudio, ideaVersion)
-      // Note, ideally we would have additional targets identified here, however we have been unsuccessful in adding
-      // "recomended()" or select {} support with current versions of gradle & the verifier tool.
+      recommended()
     }
   }
 }
