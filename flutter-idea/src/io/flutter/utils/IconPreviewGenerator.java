@@ -71,6 +71,7 @@ public class IconPreviewGenerator {
   // IconPreviewGenerator ipg = new IconPreviewGenerator("path-to-ttf-file", 32, 32, Color.black);
   // ipg.batchConvert("path-to-out-dir", "path-to-font-properties", "@2x");
   public void batchConvert(@NotNull String outPath, @NotNull String path, @NotNull String suffix) {
+    System.out.println("in IconPreviewGenerator::batchConvert");
     final String outputPath = outPath.endsWith("/") ? outPath : outPath + "/";
     //noinspection ResultOfMethodCallIgnored
     new File(outputPath).mkdirs();

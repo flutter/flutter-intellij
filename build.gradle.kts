@@ -11,6 +11,7 @@ import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 // Specify UTF-8 for all compilations so we avoid Windows-1252.
 allprojects {
@@ -368,6 +369,16 @@ tasks {
   }
   buildSearchableOptions {
     enabled = false
+  }
+  test {
+    useJUnit()
+    testLogging {
+      showCauses = true
+      showStackTraces = true
+      showStandardStreams = true
+      exceptionFormat = TestExceptionFormat.FULL
+      events("skipped", "failed")
+    }
   }
 //  prepareSandbox {
 //    dependsOn(":flutter-idea:prepareSandbox")
