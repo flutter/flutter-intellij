@@ -15,8 +15,7 @@ class VerifyCommand extends ProductCommand {
     argParser.addOption(
       'only-version',
       abbr: 'o',
-      help:
-          'Only verify the specified IntelliJ version; useful for sharding '
+      help: 'Only verify the specified IntelliJ version; useful for sharding '
           'builds on CI systems.',
     );
   }
@@ -90,10 +89,8 @@ class VerifyCommand extends ProductCommand {
       }
     }
 
-    var verifiedVersions = buildSpecs
-        .map((spec) => spec.name)
-        .toList()
-        .join(', ');
+    var verifiedVersions =
+        buildSpecs.map((spec) => spec.name).toList().join(', ');
     log(
       '\nVerification of the ${buildSpecs.length} builds was '
       'successful: $verifiedVersions.',

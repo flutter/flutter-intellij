@@ -193,8 +193,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
           cmd.isDevChannel ? 'master' : "release_${cmd.releaseMajor}";
       var result = name == expectedName;
       if (!result) {
-        result =
-            name.startsWith("release_${cmd.releaseMajor}") &&
+        result = name.startsWith("release_${cmd.releaseMajor}") &&
             name.lastIndexOf(RegExp(r"\.[0-9]")) == name.length - 2;
       }
       if (result) {
@@ -319,15 +318,13 @@ class GradleBuildCommand extends ProductCommand {
     argParser.addOption(
       'only-version',
       abbr: 'o',
-      help:
-          'Only build the specified IntelliJ version; useful for sharding '
+      help: 'Only build the specified IntelliJ version; useful for sharding '
           'builds on CI systems.',
     );
     argParser.addFlag(
       'unpack',
       abbr: 'u',
-      help:
-          'Unpack the artifact files during provisioning, '
+      help: 'Unpack the artifact files during provisioning, '
           'even if the cache appears fresh.\n'
           'This flag is ignored if --release is given.',
       defaultsTo: false,
@@ -341,8 +338,7 @@ class GradleBuildCommand extends ProductCommand {
   }
 
   @override
-  String get description =>
-      'Build a deployable version of the Flutter plugin, '
+  String get description => 'Build a deployable version of the Flutter plugin, '
       'compiled against the specified artifacts.';
 
   @override
@@ -598,13 +594,12 @@ class GenerateCommand extends ProductCommand {
 
   void generateLiveTemplates() {
     // Find all the live templates.
-    final templateFragments =
-        Directory(p.join('resources', 'liveTemplates'))
-            .listSync()
-            .whereType<File>()
-            .where((file) => p.extension(file.path) == '.txt')
-            .cast<File>()
-            .toList();
+    final templateFragments = Directory(p.join('resources', 'liveTemplates'))
+        .listSync()
+        .whereType<File>()
+        .where((file) => p.extension(file.path) == '.txt')
+        .cast<File>()
+        .toList();
     final templateFile = File(
       p.join('resources', 'liveTemplates', 'flutter_miscellaneous.xml'),
     );
@@ -632,8 +627,7 @@ class GenerateCommand extends ProductCommand {
       // content from the template $name.txt file.
       final matchString = match.group(1);
       final matchStart = contents.indexOf(matchString!);
-      contents =
-          contents.substring(0, matchStart) +
+      contents = contents.substring(0, matchStart) +
           replaceContents +
           contents.substring(matchStart + matchString.length);
     }
@@ -746,10 +740,9 @@ abstract class ProductCommand extends Command<int> {
   }
 
   String releasesFilePath(BuildSpec spec) {
-    var subDir =
-        isReleaseMode
-            ? 'release_$releaseMajor'
-            : (spec.channel == "stable" ? 'release_master' : 'release_dev');
+    var subDir = isReleaseMode
+        ? 'release_$releaseMajor'
+        : (spec.channel == "stable" ? 'release_master' : 'release_dev');
     var filePath = p.join(
       rootPath,
       'releases',
@@ -875,10 +868,9 @@ class RenamePackageCommand extends ProductCommand {
       baseDir = p.join(baseDir, 'flutter-studio/src');
     }
     oldName = argResults.option('package')!;
-    newName =
-        argResults.wasParsed('new-name')
-            ? argResults.option('new-name')!
-            : oldName + argResults.option('append')!;
+    newName = argResults.wasParsed('new-name')
+        ? argResults.option('new-name')!
+        : oldName + argResults.option('append')!;
     if (oldName == newName) {
       log('Nothing to do; new name is same as old name');
       return 1;
