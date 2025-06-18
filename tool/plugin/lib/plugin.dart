@@ -963,17 +963,37 @@ class TestCommand extends ProductCommand {
   Future<int> doit() async {
     final javaHome = Platform.environment['JAVA_HOME'];
     if (javaHome == null) {
-      log('JAVA_HOME environment variable not set - this is needed by gradle.');
+      log('ERROR: JAVA_HOME environment variable not set - this is needed by gradle.');
       return 1;
     }
 
     log('JAVA_HOME=$javaHome');
 
-    final spec = specs.firstWhere((s) => s.isUnitTestTarget);
-    if (!argResults!.flag('skip')) {
-      return await _runUnitTests(spec);
+    // Case 1: Handle skipping tests
+    if (argResults != null && argResults!.flag('skip')) {
+      log('Skipping unit tests as requested.');
+      return 0;
     }
-    return 0;
+
+    // Filter for all unit test targets
+    final unitTestTargets = specs.where((s) => s.isUnitTestTarget).toList();
+
+    // Case 2: Zero unit test targets
+    if (unitTestTargets.isEmpty) {
+      log('ERROR: No unit test target found in the specifications. Cannot run tests.');
+      return 1;
+    }
+
+    // Case 3: More than one unit test target
+    if (unitTestTargets.length > 1) {
+      final targetNames = unitTestTargets.map((s) => s.name).join(', ');
+      log('ERROR: More than one unit test target found: $targetNames. Please specify which one to run, or ensure only one exists.');
+      return 1;
+    }
+
+    // Happy Case: Exactly one unit test target
+    final spec = unitTestTargets.first;
+    return await _runUnitTests(spec);
   }
 
   Future<int> _runUnitTests(BuildSpec spec) async {
