@@ -88,19 +88,17 @@ public class JxBrowserManager {
   public static final String ANALYTICS_CATEGORY = "jxbrowser";
   private static InstallationFailedReason latestFailureReason;
   private final JxBrowserUtils jxBrowserUtils;
-  private final FileUtils fileUtils;
 
   @VisibleForTesting
-  protected JxBrowserManager(@NotNull JxBrowserUtils jxBrowserUtils, @NotNull FileUtils fileUtils) {
+  protected JxBrowserManager(@NotNull JxBrowserUtils jxBrowserUtils) {
     this.jxBrowserUtils = jxBrowserUtils;
-    this.fileUtils = fileUtils;
   }
 
   @NotNull
   public static JxBrowserManager getInstance() {
     if (manager == null) {
       //noinspection ConstantConditions
-      manager = new JxBrowserManager(new JxBrowserUtils(), FileUtils.getInstance());
+      manager = new JxBrowserManager(new JxBrowserUtils());
     }
     return manager;
   }
@@ -221,7 +219,7 @@ public class JxBrowserManager {
 
     LOG.info(projectName + ": Installing JxBrowser");
 
-    final boolean directoryExists = fileUtils.makeDirectory(DOWNLOAD_PATH);
+    final boolean directoryExists = FileUtils.makeDirectory(DOWNLOAD_PATH);
     if (!directoryExists) {
       LOG.info(projectName + ": Unable to create directory for JxBrowser files");
       setStatusFailed(new InstallationFailedReason(FailureType.DIRECTORY_CREATION_FAILED));
@@ -243,7 +241,7 @@ public class JxBrowserManager {
     boolean allDownloaded = true;
     for (String fileName : fileNames) {
       assert fileName != null;
-      if (!fileUtils.fileExists(getFilePath(fileName))) {
+      if (!FileUtils.fileExists(getFilePath(fileName))) {
         allDownloaded = false;
         break;
       }
@@ -260,7 +258,7 @@ public class JxBrowserManager {
     for (String fileName : fileNames) {
       assert fileName != null;
       final String filePath = getFilePath(fileName);
-      if (!fileUtils.deleteFile(filePath)) {
+      if (!FileUtils.deleteFile(filePath)) {
         LOG.info(projectName + ": Existing file could not be deleted - " + filePath);
       }
     }
@@ -341,7 +339,7 @@ public class JxBrowserManager {
           paths.add(Paths.get(getFilePath(fileName)));
         }
         //noinspection ConstantConditions
-        fileUtils.loadPaths(this.getClass().getClassLoader(), paths);
+        FileUtils.loadPaths(this.getClass().getClassLoader(), paths);
       }
       catch (Exception ex) {
         LOG.info("Failed to load JxBrowser file", ex);

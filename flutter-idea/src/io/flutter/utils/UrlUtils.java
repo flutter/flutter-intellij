@@ -4,19 +4,25 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class UrlUtils {
-    public static String generateHtmlFragmentWithHrefTags(String input) {
-        StringBuilder builder = new StringBuilder();
-        for (String token : input.split(" ")) {
-            if (!builder.isEmpty()) {
-                builder.append(" ");
-            }
-            try {
-                URL url = new URL(token);
-                builder.append("<a href=\"").append(url).append("\">").append(url).append("</a>");
-            } catch(MalformedURLException e) {
-                builder.append(token);
-            }
-        }
-        return builder.toString();
+
+  private UrlUtils() {
+    throw new AssertionError("No instances.");
+  }
+
+  public static String generateHtmlFragmentWithHrefTags(String input) {
+    StringBuilder builder = new StringBuilder();
+    for (String token : input.split(" ")) {
+      if (!builder.isEmpty()) {
+        builder.append(" ");
+      }
+      try {
+        URL url = new URL(token);
+        builder.append("<a href=\"").append(url).append("\">").append(url).append("</a>");
+      }
+      catch (MalformedURLException e) {
+        builder.append(token);
+      }
     }
+    return builder.toString();
+  }
 }
