@@ -60,8 +60,6 @@ println("sinceBuild: $sinceBuildInput")
 println("untilBuild: $untilBuildInput")
 println("javaVersion: $javaVersion")
 println("group: $group")
-println("project: $project")
-println("project.rootDir: ${project.rootDir}")
 
 var jvmVersion: JvmTarget
 jvmVersion = when (javaVersion) {
@@ -361,9 +359,6 @@ tasks {
       productsReleases.get().max()
     }
   }
-}
-
-tasks {
   prepareJarSearchableOptions {
     enabled = false
   }
