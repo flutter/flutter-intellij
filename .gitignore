@@ -1,8 +1,21 @@
+### See https://www.toptal.com/developers/gitignore ###
+### See https://github.com/JetBrains/intellij-platform-plugin-template/blob/main/.gitignore ###
+
+### IntelliJ ###
+# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
+# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
+
+.idea
+**/.idea
+.intellijPlatform/
+**/.intellijPlatform/
+
+# Kotlin build cache
+.kotlin
+
 .dart_tool/
 .DS_Store
 .gradle/
-**/.idea/workspace.xml
-.idea/libraries/Dart_*.xml
 .packages
 .pub/
 .vscode/
@@ -22,17 +35,7 @@ out/
 pubspec.lock
 releases/
 resources/jxbrowser/jxbrowser.properties
-.idea/encodings.xml
-**/.idea/gradle.xml
-.idea/jarRepositories.xml
-.idea/kotlinc.xml
-.idea/runConfigurations.xml
-**/.idea/modules/
-.idea/libraries/Gradle_*.xml
-**/.idea/modules.xml
 .kotlin/
-.intellijPlatform/
-**/.intellijPlatform/
 flutter-studio/build/
 flutter-studio/.gradle/
 flutter-idea/build/
@@ -48,4 +51,3 @@ gradle/wrapper/gradle-wrapper.jar
 
 # User specific configuration based on current Intellij SDKs.
 gradle.properties
-.idea/misc.xml
