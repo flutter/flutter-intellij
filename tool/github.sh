@@ -75,8 +75,21 @@ elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
   # Run unit tests.
   ./bin/plugin test --no-setup
 
-else
+elif [ "VERIFY_BOT" = "$BOT" ] ; then
 
+    # Before running gradlew verifyPlugin
+    echo "Checking permissions for /home/runner/"
+    ls -ld /home/runner/
+    echo "Creating .pluginVerifier/extracted-plugins directory if it doesn't exist..."
+    #mkdir -p /home/runner/.pluginVerifier
+    rm /home/runner/.pluginVerifier/extracted-plugins
+    echo "Checking permissions for /home/runner/.pluginVerifier"
+    ls -ld /home/runner/.pluginVerifier
+
+    # Run the vefifier for this version
+    ./bin/plugin verify
+
+else
   # Run the build.
   ./bin/plugin make --channel=stable --only-version=$IDEA_VERSION --no-setup
 
