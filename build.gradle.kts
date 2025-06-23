@@ -38,13 +38,9 @@ plugins {
   id("org.jetbrains.kotlin.jvm") version "2.1.21-RC2"
 }
 
-// TODO(mossmana) These properties are duplicated in flutter-idea/build.gradle.kts and flutter-studio/build.gradle.kts. Should be consolidated.
 val flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()
-val ideaProduct = providers.gradleProperty("ideaProduct").get()
 val ideaVersion = providers.gradleProperty("ideaVersion").get()
 val dartPluginVersion = providers.gradleProperty("dartPluginVersion").get()
-// The Android Plugin version is only used if the ideaProduct is not "android-studio"
-val androidPluginVersion = providers.gradleProperty("androidPluginVersion").get()
 val sinceBuildInput = providers.gradleProperty("sinceBuild").get()
 val untilBuildInput = providers.gradleProperty("untilBuild").get()
 val javaVersion = providers.gradleProperty("javaVersion").get()
@@ -52,10 +48,8 @@ group = "io.flutter"
 
 // For debugging purposes:
 println("flutterPluginVersion: $flutterPluginVersion")
-println("ideaProduct: $ideaProduct")
 println("ideaVersion: $ideaVersion")
 println("dartPluginVersion: $dartPluginVersion")
-println("androidPluginVersion: $androidPluginVersion")
 println("sinceBuild: $sinceBuildInput")
 println("untilBuild: $untilBuildInput")
 println("javaVersion: $javaVersion")
@@ -133,7 +127,6 @@ dependencies {
     pluginVerifier()
   }
 
-//  implementation(project("flutter-idea"))
   // pulled over from flutter-idea - looks like only for compile and test
   compileOnly("org.jetbrains:annotations:24.0.0")
   testImplementation("org.jetbrains:annotations:24.0.0")
@@ -141,7 +134,6 @@ dependencies {
   testImplementation("org.powermock:powermock-module-junit4:2.0.9")
   testImplementation(mapOf("group" to "org.mockito", "name" to "mockito-core", "version" to "5.2.0"))
 
-//  testImplementation(project(":flutter-studio"))
   testRuntimeOnly(
     fileTree(
       mapOf(
@@ -214,9 +206,6 @@ dependencies {
     )
   )
 
-  // copied from flutter-studio
-//  compileOnly(project(":flutter-idea"))
-//  testImplementation(project(":flutter-idea"))
   compileOnly(
     fileTree(
       mapOf(
@@ -251,9 +240,6 @@ dependencies {
       )
     )
   )
-
-
-//  implementation(project("flutter-studio"))
 }
 
 
@@ -306,7 +292,6 @@ intellijPlatform {
 
 sourceSets {
   main {
-    // from flutter-idea
     java.srcDirs(
       listOf(
         "flutter-idea/src",
@@ -320,8 +305,6 @@ sourceSets {
         "flutter-idea/resources"
       )
     )
-
-    // from flutter-studio
     java.srcDirs(
       listOf(
         "flutter-studio/src",
@@ -375,10 +358,6 @@ tasks {
       events("skipped", "failed")
     }
   }
-//  prepareSandbox {
-//    dependsOn(":flutter-idea:prepareSandbox")
-//    dependsOn(":flutter-studio:prepareSandbox")
-//  }
 }
 
 // A task to print the classpath used for compiling an IntelliJ plugin

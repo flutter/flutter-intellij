@@ -10,10 +10,3 @@ pluginManagement {
     gradlePluginPortal()
   }
 }
-
-//val ideaProduct: String by settings
-//
-//include("flutter-idea")
-//if (ideaProduct == "android-studio") {
-//  include("flutter-studio")
-//}
