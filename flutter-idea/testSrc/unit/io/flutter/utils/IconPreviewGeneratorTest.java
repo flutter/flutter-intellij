@@ -22,8 +22,8 @@ public class IconPreviewGeneratorTest {
   @Test
   @SuppressWarnings("ResultOfMethodCallIgnored")
   public void generateCupertino() throws IOException {
-    final String fontPath = "testData/utils/CupertinoIcons.ttf";
-    final String propertiesPath = "testData/utils/cupertino.properties";
+    final String fontPath = "flutter-idea/testData/utils/CupertinoIcons.ttf";
+    final String propertiesPath = "flutter-idea/testData/utils/cupertino.properties";
     final Path tempDir = Files.createTempDirectory("preview");
     final String outputPath = tempDir.toAbsolutePath().toString();
     File preview = new File(outputPath);
