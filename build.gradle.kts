@@ -127,7 +127,7 @@ dependencies {
     pluginVerifier()
   }
 
-  // pulled over from flutter-idea - looks like only for compile and test
+  // TODO(helin24): The rest in this block was pulled over from flutter-idea; potentially parts could be deleted.
   compileOnly("org.jetbrains:annotations:24.0.0")
   testImplementation("org.jetbrains:annotations:24.0.0")
   testImplementation("org.powermock:powermock-api-mockito2:2.0.9")
