@@ -12,12 +12,17 @@ import com.intellij.execution.process.ProcessOutput;
 import com.intellij.execution.util.ExecUtil;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.concurrency.AppExecutorUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
 
 public class SystemUtils {
+
+  private SystemUtils() {
+    throw new AssertionError("No instances.");
+  }
 
   /**
    * Locate a given command-line tool given its name.
@@ -26,7 +31,7 @@ public class SystemUtils {
    * binaries it will require more work, especially on Windows.
    */
   @Nullable
-  public static String which(String toolName) {
+  public static String which(@NotNull String toolName) {
     final File gitExecutableFromPath =
       PathEnvironmentVariableUtil.findInPath(SystemInfo.isWindows ? toolName + ".exe" : toolName, getPath(), null);
     if (gitExecutableFromPath != null) {
@@ -45,7 +50,7 @@ public class SystemUtils {
    * <p>
    * This is a non-blocking equivalient to {@link ExecUtil#execAndGetOutput(GeneralCommandLine)}.
    */
-  public static CompletableFuture<ProcessOutput> execAndGetOutput(GeneralCommandLine cmd) {
+  public static CompletableFuture<ProcessOutput> execAndGetOutput(@NotNull GeneralCommandLine cmd) {
     final CompletableFuture<ProcessOutput> future = new CompletableFuture<>();
 
     AppExecutorUtil.getAppExecutorService().submit(() -> {

@@ -43,6 +43,7 @@ import java.util.List;
 
 public class FlutterModuleUtils {
   private FlutterModuleUtils() {
+    throw new AssertionError("No instances.");
   }
 
   /**

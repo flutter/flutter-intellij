@@ -14,7 +14,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CollectionUtils {
+
   private CollectionUtils() {
+    throw new AssertionError("No instances.");
   }
 
   public static <T> boolean anyMatch(@NotNull T[] in, @NotNull final Predicate<T> predicate) {
