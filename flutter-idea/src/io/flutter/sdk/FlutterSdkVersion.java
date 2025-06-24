@@ -23,7 +23,7 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
    * Note, this is for the Flutter SDK version, not the Dart SDK version, this mapping can be found:
    * <a href="https://docs.flutter.dev/release/archive">Flutter SDK Release Archive list</a>.
    * <p>
-   * This version was updated last on June 24, 2024.
+   * This version was updated last on June 24, 2025.
    */
   @VisibleForTesting
   @NotNull
@@ -36,7 +36,7 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
    * Note, this is for the Flutter SDK version, not the Dart SDK version, this mapping can be found:
    * <a href="https://docs.flutter.dev/release/archive">Flutter SDK Release Archive list</a>.
    * <p>
-   * This version was updated last on June 24, 2024.
+   * This version was updated last on June 24, 2025.
    */
   @VisibleForTesting
   @NotNull
