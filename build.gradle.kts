@@ -258,7 +258,7 @@ intellijPlatform {
   pluginVerification {
     // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
     // https://github.com/JetBrains/intellij-plugin-verifier
-    cliPath = file("./third_party/lib/verifier-cli-1.384-all.jar")
+    cliPath = file("./third_party/lib/verifier-cli-1.388-all.jar")
     failureLevel = listOf(
       // TODO(team) Ideally all of the following FailureLevels should be enabled:
       // TODO(team) Create a tracking issue for each of the following validations
