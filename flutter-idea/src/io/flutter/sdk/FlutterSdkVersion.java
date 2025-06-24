@@ -23,11 +23,11 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
    * Note, this is for the Flutter SDK version, not the Dart SDK version, this mapping can be found:
    * <a href="https://docs.flutter.dev/release/archive">Flutter SDK Release Archive list</a>.
    * <p>
-   * This version was updated last on May 29, 2024.
+   * This version was updated last on June 24, 2024.
    */
   @VisibleForTesting
   @NotNull
-  public static final FlutterSdkVersion MIN_SDK_SUPPORTED = new FlutterSdkVersion("3.10.3");
+  public static final FlutterSdkVersion MIN_SDK_SUPPORTED = new FlutterSdkVersion("3.13");
 
   /**
    * The minimum version of the Flutter SDK that will be supported for 3 more months. A version less than this is either not supported or
@@ -36,11 +36,11 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
    * Note, this is for the Flutter SDK version, not the Dart SDK version, this mapping can be found:
    * <a href="https://docs.flutter.dev/release/archive">Flutter SDK Release Archive list</a>.
    * <p>
-   * This version was updated last on May 29, 2024.
+   * This version was updated last on June 24, 2024.
    */
   @VisibleForTesting
   @NotNull
-  public static final FlutterSdkVersion MIN_SDK_WITHOUT_SUNSET_WARNING = new FlutterSdkVersion("3.13.2");
+  public static final FlutterSdkVersion MIN_SDK_WITHOUT_SUNSET_WARNING = new FlutterSdkVersion("3.16");
 
   @NotNull
   private static final FlutterSdkVersion MIN_SUPPORTS_DEVTOOLS_PATH_URLS = new FlutterSdkVersion("3.3.0");
