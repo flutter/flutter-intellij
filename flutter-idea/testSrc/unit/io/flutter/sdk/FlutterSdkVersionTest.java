@@ -24,18 +24,37 @@ public class FlutterSdkVersionTest {
     assertFalse(new FlutterSdkVersion( "3.10.0.pre").isSDKSupported());
     assertFalse(new FlutterSdkVersion( "3.10.1").isSDKSupported());
     assertFalse(new FlutterSdkVersion( "3.10.2").isSDKSupported());
-    assertTrue(new FlutterSdkVersion( "3.10.3").isSDKSupported());
-    assertTrue(new FlutterSdkVersion( "3.10.4").isSDKSupported());
+    assertFalse(new FlutterSdkVersion( "3.10.3").isSDKSupported());
+    assertFalse(new FlutterSdkVersion( "3.10.4").isSDKSupported());
+    assertFalse(new FlutterSdkVersion("3.10.3").isSDKSupported());
+    assertFalse(new FlutterSdkVersion("3.10.4").isSDKSupported());
+    assertFalse(new FlutterSdkVersion("3.10.5").isSDKSupported());
+    assertFalse(new FlutterSdkVersion("3.10.6").isSDKSupported());
+    assertTrue(new FlutterSdkVersion("3.13.0").isSDKSupported());
+    assertTrue(new FlutterSdkVersion("3.13.1").isSDKSupported());
+    assertTrue(new FlutterSdkVersion("3.13.2").isSDKSupported());
+    assertTrue(new FlutterSdkVersion("3.13.3").isSDKSupported());
+    assertTrue(new FlutterSdkVersion("3.13.4").isSDKSupported());
+    assertTrue(new FlutterSdkVersion("3.13.5").isSDKSupported());
+    assertTrue(new FlutterSdkVersion("3.13.6").isSDKSupported());
+    assertTrue(new FlutterSdkVersion("3.13.7").isSDKSupported());
+    assertTrue(new FlutterSdkVersion("3.13.8").isSDKSupported());
+    assertTrue(new FlutterSdkVersion("3.13.9").isSDKSupported());
     assertFalse(new FlutterSdkVersion( "unknown").isSDKSupported());
 
-    assertTrue(new FlutterSdkVersion("3.10.3").isSDKAboutToSunset());
-    assertTrue(new FlutterSdkVersion("3.10.4").isSDKAboutToSunset());
-    assertTrue(new FlutterSdkVersion("3.10.5").isSDKAboutToSunset());
-    assertTrue(new FlutterSdkVersion("3.10.6").isSDKAboutToSunset());
     assertTrue(new FlutterSdkVersion("3.13.0").isSDKAboutToSunset());
     assertTrue(new FlutterSdkVersion("3.13.1").isSDKAboutToSunset());
-    assertFalse(new FlutterSdkVersion("3.13.2").isSDKAboutToSunset());
-    assertFalse(new FlutterSdkVersion("3.13.3").isSDKAboutToSunset());
+    assertTrue(new FlutterSdkVersion("3.13.2").isSDKAboutToSunset());
+    assertTrue(new FlutterSdkVersion("3.13.3").isSDKAboutToSunset());
+    assertTrue(new FlutterSdkVersion("3.13.4").isSDKAboutToSunset());
+    assertTrue(new FlutterSdkVersion("3.13.5").isSDKAboutToSunset());
+    assertTrue(new FlutterSdkVersion("3.13.6").isSDKAboutToSunset());
+    assertTrue(new FlutterSdkVersion("3.13.7").isSDKAboutToSunset());
+    assertTrue(new FlutterSdkVersion("3.13.8").isSDKAboutToSunset());
+    assertTrue(new FlutterSdkVersion("3.13.9").isSDKAboutToSunset());
+    assertFalse(new FlutterSdkVersion("3.16.0").isSDKAboutToSunset());
+    assertFalse(new FlutterSdkVersion("3.16.1").isSDKAboutToSunset());
+    assertFalse(new FlutterSdkVersion("3.16.2").isSDKAboutToSunset());
   }
 
   @Test
