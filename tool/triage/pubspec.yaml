@@ -8,6 +8,7 @@ environment:
 
 dependencies:
   github: ^9.0.0
+  intl: ^0.20.0
 
 dev_dependencies:
   lints: ^6.0.0
