@@ -15,44 +15,6 @@ Future<List<Issue>> getFlutterPluginIssues({Authentication? auth}) async {
   }
 }
 
-void printCreationTimeCounts(Iterable<Issue> issues) {
-  var seven = 0;
-  var fourteen = 0;
-  var twentyEight = 0;
-  var ninety = 0;
-  var threeSixty = 0;
-  var tenEighty = 0;
-  var beyond = 0;
-
-  var now = DateTime.timestamp();
-  for (var issue in issues) {
-    var updated = issue.createdAt!;
-    var daysSinceUpdate = now.difference(updated).inDays;
-    switch (daysSinceUpdate) {
-      case <= 7:
-        ++seven;
-      case > 7 && <= 14:
-        ++fourteen;
-      case > 14 && <= 28:
-        ++twentyEight;
-      case > 28 && <= 90:
-        ++ninety;
-      case > 90 && <= 360:
-        ++threeSixty;
-      case > 360 && <= 1080:
-        ++tenEighty;
-      case _:
-        ++beyond;
-    }
-  }
-
-  print(
-      '| 1 week | 2 weeks | 1 month | 3 months | 1 year | 3 years | longer |');
-  print('| --- | --- | --- | --- | --- | --- | --- |');
-  print(
-      '| $seven | $fourteen | $twentyEight | $ninety | $threeSixty | $tenEighty | $beyond |');
-}
-
 extension IssueExtension on Issue {
   bool get prioritized =>
       labels.map((l) => l.name).any((n) => n.startsWith('P'));
