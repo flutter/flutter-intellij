@@ -156,7 +156,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/third_party/lib/jxbrowser/jxbrowser-8.6.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/third_party/lib/jxbrowser/jxbrowser-8.9.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -165,7 +165,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/third_party/lib/jxbrowser/jxbrowser-swing-8.6.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/third_party/lib/jxbrowser/jxbrowser-swing-8.9.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
