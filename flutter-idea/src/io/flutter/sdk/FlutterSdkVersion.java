@@ -43,9 +43,6 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   public static final FlutterSdkVersion MIN_SDK_WITHOUT_SUNSET_WARNING = new FlutterSdkVersion("3.16");
 
   @NotNull
-  private static final FlutterSdkVersion MIN_SUPPORTS_DEVTOOLS_PATH_URLS = new FlutterSdkVersion("3.3.0");
-
-  @NotNull
   private static final FlutterSdkVersion MIN_SUPPORTS_TOOL_EVENT_STREAM = new FlutterSdkVersion("3.7.1");
 
   @NotNull
@@ -130,10 +127,6 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   private boolean supportsVersion(@NotNull FlutterSdkVersion otherVersion) {
     return this.compareTo(otherVersion) >= 0;
-  }
-
-  public boolean canUseDevToolsPathUrls() {
-    return supportsVersion(MIN_SUPPORTS_DEVTOOLS_PATH_URLS);
   }
 
   public boolean canUseToolEventStream() {
