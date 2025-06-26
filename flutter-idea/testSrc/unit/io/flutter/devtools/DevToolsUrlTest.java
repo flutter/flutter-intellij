@@ -96,24 +96,9 @@ public class DevToolsUrlTest {
         .getUrlString()
     );
 
-    FlutterSdkVersion oldVersion = new FlutterSdkVersion("3.0.0");
+    // No Flutter SDK version set
     assertEquals(
-      "http://127.0.0.1:9100/#/?ide=Android-Studio&page=timeline&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
-      new DevToolsUrl.Builder()
-        .setDevToolsHost(devtoolsHost)
-        .setDevToolsPort(devtoolsPort)
-        .setVmServiceUri(serviceProtocolUri)
-        .setPage(page)
-        .setFlutterSdkVersion(oldVersion)
-        .setWorkspaceCache(notBazelWorkspaceCache)
-        .setFlutterSdkUtil(mockSdkUtil)
-        .setDevToolsUtils(noColorUtils)
-        .build()
-        .getUrlString()
-    );
-
-    assertEquals(
-      "http://127.0.0.1:9100/#/?ide=Android-Studio&page=timeline&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
+      "http://127.0.0.1:9100/timeline?ide=Android-Studio&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F",
       new DevToolsUrl.Builder()
         .setDevToolsHost(devtoolsHost)
         .setDevToolsPort(devtoolsPort)

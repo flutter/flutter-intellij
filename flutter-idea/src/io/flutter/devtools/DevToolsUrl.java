@@ -30,7 +30,6 @@ public class DevToolsUrl {
   private final FlutterSdkVersion flutterSdkVersion;
   private final FlutterSdkUtil sdkUtil;
 
-  private final boolean canUseDevToolsPathUrl;
   private final boolean canUseMultiEmbed;
 
   public final DevToolsIdeFeature ideFeature;
@@ -163,15 +162,12 @@ public class DevToolsUrl {
     this.sdkUtil = builder.flutterSdkUtil;
 
     if (builder.workspaceCache != null && builder.workspaceCache.isBazel()) {
-      this.canUseDevToolsPathUrl = true;
       this.canUseMultiEmbed = true;
     }
     else if (flutterSdkVersion != null) {
-      this.canUseDevToolsPathUrl = flutterSdkVersion.canUseDevToolsPathUrls();
       this.canUseMultiEmbed = flutterSdkVersion.canUseDevToolsMultiEmbed();
     }
     else {
-      this.canUseDevToolsPathUrl = false;
       this.canUseMultiEmbed = false;
     }
   }
@@ -183,9 +179,6 @@ public class DevToolsUrl {
 
     String ideValue = sdkUtil.getFlutterHostEnvValue();
     params.add("ide=" + (ideValue == null ? "IntelliJPluginUnknown" : ideValue));
-    if (page != null && !this.canUseDevToolsPathUrl) {
-      params.add("page=" + page);
-    }
     if (colorHexCode != null) {
       params.add("backgroundColor=" + colorHexCode);
     }
@@ -218,12 +211,7 @@ public class DevToolsUrl {
     if (widgetId != null) {
       params.add("inspectorRef=" + widgetId);
     }
-    if (this.canUseDevToolsPathUrl) {
-      return "http://" + devToolsHost + ":" + devToolsPort + "/" + (page != null ? page : "") + "?" + String.join("&", params);
-    }
-    else {
-      return "http://" + devToolsHost + ":" + devToolsPort + "/#/?" + String.join("&", params);
-    }
+    return "http://" + devToolsHost + ":" + devToolsPort + "/" + (page != null ? page : "") + "?" + String.join("&", params);
   }
 
   public void maybeUpdateColor() {
