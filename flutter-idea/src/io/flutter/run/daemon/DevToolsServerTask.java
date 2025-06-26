@@ -80,16 +80,6 @@ class DevToolsServerTask extends Task.Backgroundable {
       progressIndicator.setFraction(30);
       progressIndicator.setText2("Init");
 
-      // If the `dart devtools` command is not supported, start the daemon instead.
-      final boolean dartDevToolsSupported = dartSdkSupportsDartDevTools();
-      if (!dartDevToolsSupported) {
-        LOG.info("Starting the DevTools daemon.");
-        progressIndicator.setFraction(60);
-        progressIndicator.setText2("Daemon set-up");
-        setUpWithDaemon();
-        return;
-      }
-
       // If we are in a Bazel workspace, start the server.
       // Note: This is only for internal usages.
       final WorkspaceCache workspaceCache = WorkspaceCache.getInstance(project);
@@ -126,16 +116,6 @@ class DevToolsServerTask extends Task.Backgroundable {
     catch (java.util.concurrent.ExecutionException | InterruptedException e) {
       cancelWithError(e);
     }
-  }
-
-  private Boolean dartSdkSupportsDartDevTools() {
-    final DartSdk dartSdk = DartSdk.getDartSdk(project);
-    if (dartSdk != null) {
-      final Version version = Version.parseVersion(dartSdk.getVersion());
-      assert version != null;
-      return version.compareTo(2, 15, 0) >= 0;
-    }
-    return false;
   }
 
   @Override
@@ -202,51 +182,6 @@ class DevToolsServerTask extends Task.Backgroundable {
     catch (ExecutionException e) {
       cancelWithError(e);
     }
-  }
-
-  private void setUpWithDaemon() {
-    try {
-      final GeneralCommandLine command = chooseCommand(project);
-      if (command == null) {
-        cancelWithError("Unable to find daemon command for project");
-        return;
-      }
-      this.process = new MostlySilentColoredProcessHandler(command);
-      daemonApi = new DaemonApi(process);
-      daemonApi.listen(process, new DevToolsService.DevToolsServiceListener());
-      daemonApi.devToolsServe().thenAccept((DaemonApi.DevToolsAddress address) -> {
-        if (!project.isOpen()) {
-          // We should skip starting DevTools (and doing any UI work) if the project has been closed.
-          return;
-        }
-        if (address == null) {
-          cancelWithError("DevTools address was null");
-        }
-        else {
-          devToolsFutureRef.get().complete(new DevToolsInstance(address.host, address.port));
-        }
-      });
-    }
-    catch (ExecutionException e) {
-      cancelWithError(e);
-    }
-
-    ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
-      @Override
-      public void projectClosing(@NotNull Project project) {
-        devToolsFutureRef.set(null);
-
-        try {
-          daemonApi.daemonShutdown().get(5, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | java.util.concurrent.ExecutionException | TimeoutException e) {
-          LOG.error("DevTools daemon did not shut down normally: " + e);
-          if (!process.isProcessTerminated()) {
-            process.destroyProcess();
-          }
-        }
-      }
-    });
   }
 
   private CompletableFuture<DevToolsInstance> checkForDartPluginInitiatedDevToolsWithRetries(@NotNull ProgressIndicator progressIndicator)
@@ -316,32 +251,6 @@ class DevToolsServerTask extends Task.Backgroundable {
       catch (JsonSyntaxException e) {
         cancelWithError(e);
       }
-    }
-  }
-
-  private static GeneralCommandLine chooseCommand(@NotNull final Project project) {
-    // Use daemon script if this is a bazel project.
-    final Workspace workspace = WorkspaceCache.getInstance(project).get();
-    if (workspace != null) {
-      final String script = workspace.getDaemonScript();
-      if (script != null) {
-        return createCommand(workspace.getRoot().getPath(), script, ImmutableList.of());
-      }
-    }
-
-    // Otherwise, use the Flutter SDK.
-    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    if (sdk == null) {
-      return null;
-    }
-
-    try {
-      final String path = FlutterSdkUtil.pathToFlutterTool(sdk.getHomePath());
-      return createCommand(sdk.getHomePath(), path, ImmutableList.of("daemon"));
-    }
-    catch (ExecutionException e) {
-      FlutterUtils.warn(LOG, "Unable to calculate command to start Flutter daemon", e);
-      return null;
     }
   }
 
