@@ -405,10 +405,6 @@ public class FlutterApp implements Disposable {
     return future;
   }
 
-  public CompletableFuture<DaemonApi.DevToolsAddress> serveDevTools() {
-    return myDaemonApi.devToolsServe();
-  }
-
   public CompletableFuture<JsonObject> callServiceExtension(String methodName) {
     return callServiceExtension(methodName, new HashMap<>());
   }
