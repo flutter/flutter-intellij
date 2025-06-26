@@ -47,6 +47,7 @@ if [ "DART_BOT" = "$BOT" ] ; then
   echo "dart analyze"
   (cd flutter-idea/src; dart analyze)
   (cd tool/plugin; dart analyze)
+  (cd tool/triage; dart pub upgrade && dart analyze)
 
   # Ensure that the edits have been applied to template files (and their target
   # files have been regenerated).
