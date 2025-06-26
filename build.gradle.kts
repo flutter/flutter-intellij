@@ -263,7 +263,7 @@ intellijPlatform {
       // TODO(team) Ideally all of the following FailureLevels should be enabled:
       // TODO(team) Create a tracking issue for each of the following validations
 //      VerifyPluginTask.FailureLevel.COMPATIBILITY_WARNINGS,
-//      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
 //      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES, // https://github.com/flutter/flutter-intellij/issues/7718
 //      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
 //      VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
