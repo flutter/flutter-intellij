@@ -65,10 +65,10 @@ public class IntelliJAndroidSdk {
   @Nullable
   public static IntelliJAndroidSdk fromProject(@NotNull Project project) {
     var manager = ProjectRootManager.getInstance(project);
-    if (manager != null) {
-      final Sdk candidate = manager.getProjectSdk();
-      return fromSdk(candidate);
-    }
+    if (manager == null) return null;
+
+    final Sdk candidate = manager.getProjectSdk();
+    return fromSdk(candidate);
   }
 
   /**
