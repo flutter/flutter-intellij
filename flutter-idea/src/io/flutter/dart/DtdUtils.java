@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.CompletableFuture;
 
 public class DtdUtils {
-  public CompletableFuture<DartToolingDaemonService> readyDtdService(@NotNull Project project) {
+  public @NotNull CompletableFuture<DartToolingDaemonService> readyDtdService(@NotNull Project project) {
     final DartToolingDaemonService dtdService = DartToolingDaemonService.getInstance(project);
     CompletableFuture<DartToolingDaemonService> readyService = new CompletableFuture<>();
     int attemptsRemaining = 10;
