@@ -33,7 +33,7 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
   FlutterRetargetAppAction(@NotNull String actionId,
                            @Nullable String text,
                            @Nullable String description,
-                           @SuppressWarnings("SameParameterValue") @NotNull String... places) {
+                           @SuppressWarnings("SameParameterValue") @NotNull String @NotNull ... places) {
     super(text, description, null);
     myActionId = actionId;
     myPlaces.addAll(Arrays.asList(places));
@@ -44,7 +44,7 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
   }
 
   @Override
-  public void actionPerformed(AnActionEvent e) {
+  public void actionPerformed(@NotNull AnActionEvent e) {
     final AnAction action = getAction(e.getProject());
     if (action != null) {
       action.actionPerformed(e);
@@ -52,7 +52,7 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
   }
 
   @Override
-  public void update(AnActionEvent e) {
+  public void update(@NotNull AnActionEvent e) {
     final Presentation presentation = e.getPresentation();
 
     final Project project = e.getProject();
@@ -76,7 +76,7 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
     }
   }
 
-  private AnAction getAction(@Nullable Project project) {
+  private @Nullable AnAction getAction(@Nullable Project project) {
     return project == null ? null : ProjectActions.getAction(project, myActionId);
   }
 }

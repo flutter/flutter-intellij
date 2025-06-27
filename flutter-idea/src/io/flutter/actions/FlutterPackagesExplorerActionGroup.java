@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public class FlutterPackagesExplorerActionGroup extends DefaultActionGroup {
 
   private static boolean isFlutterPubspec(@NotNull AnActionEvent e) {
-    final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
+    @SuppressWarnings("DataFlowIssue") final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
     final PubRoot root = file == null ? null : PubRoot.forDirectory(file.getParent());
     return root != null && root.getPubspec().equals(file) && root.declaresFlutter();
   }

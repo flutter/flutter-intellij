@@ -262,7 +262,7 @@ public abstract class EmbeddedBrowser {
   // This will refresh all the browser tabs within a tool window (e.g. if there are multiple apps running and the inspector tool window is
   // refreshed, an inspector tab will refresh for each app.)
   // TODO(helin24): Consider allowing refresh for single browser tabs within tool windows.
-  public void refresh(String toolWindowId) {
+  public void refresh(@Nullable String toolWindowId) {
     Map<String, BrowserTab> tabs = windows.get(toolWindowId);
 
     if (tabs == null) {

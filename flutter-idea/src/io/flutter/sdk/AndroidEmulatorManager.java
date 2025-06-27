@@ -36,7 +36,7 @@ public class AndroidEmulatorManager {
   private final @NotNull Project project;
   private final AtomicReference<ImmutableSet<Runnable>> listeners = new AtomicReference<>(ImmutableSet.of());
 
-  private List<AndroidEmulator> cachedEmulators = new ArrayList<>();
+  private @NotNull List<AndroidEmulator> cachedEmulators = new ArrayList<>();
 
   private AndroidEmulatorManager(@NotNull Project project) {
     this.project = project;
@@ -60,7 +60,7 @@ public class AndroidEmulatorManager {
 
   private CompletableFuture<List<AndroidEmulator>> inProgressRefresh;
 
-  public CompletableFuture<List<AndroidEmulator>> refresh() {
+  public CompletableFuture<@NotNull List<AndroidEmulator>> refresh() {
     // We don't need to refresh if one is in progress.
     synchronized (this) {
       if (inProgressRefresh != null) {
@@ -97,11 +97,11 @@ public class AndroidEmulatorManager {
     return future;
   }
 
-  public List<AndroidEmulator> getCachedEmulators() {
+  public @NotNull List<@NotNull AndroidEmulator> getCachedEmulators() {
     return cachedEmulators;
   }
 
-  private void fireChangeEvent(final List<AndroidEmulator> newEmulators, final List<AndroidEmulator> oldEmulators) {
+  private void fireChangeEvent(final @NotNull List<AndroidEmulator> newEmulators, final List<AndroidEmulator> oldEmulators) {
     if (project.isDisposed()) return;
 
     // Don't fire if the list of devices is unchanged.

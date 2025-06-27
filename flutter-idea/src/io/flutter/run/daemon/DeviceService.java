@@ -133,7 +133,7 @@ public class DeviceService {
   /**
    * Returns the currently connected devices, sorted by device name.
    */
-  public Collection<FlutterDevice> getConnectedDevices() {
+  public @NotNull Collection<FlutterDevice> getConnectedDevices() {
     return deviceSelection.get().getDevices();
   }
 

@@ -18,8 +18,8 @@ import org.jetbrains.annotations.Nullable;
  * See https://github.com/flutter/flutter-intellij/issues/7103
  */
 public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
-  private static boolean isExternalIdeFile(AnActionEvent e) {
-    final VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
+  private static boolean isExternalIdeFile(@NotNull AnActionEvent e) {
+    @SuppressWarnings("DataFlowIssue") final VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
     if (file == null || !file.exists()) {
       return false;
     }
@@ -86,7 +86,7 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
   }
 
   @Override
-  public void update(AnActionEvent event) {
+  public void update(@NotNull AnActionEvent event) {
     final Presentation presentation = event.getPresentation();
     final boolean enabled = isExternalIdeFile(event);
     presentation.setEnabled(enabled);

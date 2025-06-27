@@ -29,7 +29,8 @@ public class ReloadAllFlutterApps extends FlutterAppAction {
   public ReloadAllFlutterApps(@NotNull FlutterApp app, @NotNull Computable<Boolean> isApplicable) {
     super(app, TEXT, DESCRIPTION, FlutterIcons.HotReload, isApplicable, ID);
     // Shortcut is associated with toolbar action.
-    copyShortcutFrom(Objects.requireNonNull(Objects.requireNonNull(ActionManager.getInstance()).getAction("Flutter.Toolbar.ReloadAllAction")));
+    copyShortcutFrom(
+      Objects.requireNonNull(Objects.requireNonNull(ActionManager.getInstance()).getAction("Flutter.Toolbar.ReloadAllAction")));
   }
 
   @Override
@@ -38,7 +39,9 @@ public class ReloadAllFlutterApps extends FlutterAppAction {
     if (project == null) {
       return;
     }
-    FlutterReloadManager.getInstance(project)
-      .saveAllAndReloadAll(FlutterApp.allFromProjectProcess(project), FlutterConstants.RELOAD_REASON_MANUAL);
+    FlutterReloadManager reloadManager = FlutterReloadManager.getInstance(project);
+    if (reloadManager != null) {
+      reloadManager.saveAllAndReloadAll(FlutterApp.allFromProjectProcess(project), FlutterConstants.RELOAD_REASON_MANUAL);
+    }
   }
 }

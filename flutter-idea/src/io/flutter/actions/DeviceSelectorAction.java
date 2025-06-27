@@ -35,7 +35,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   private final List<AnAction> actions = new ArrayList<>();
   private final List<Project> knownProjects = Collections.synchronizedList(new ArrayList<>());
 
-  private SelectDeviceAction selectedDeviceAction;
+  private @Nullable SelectDeviceAction selectedDeviceAction;
 
   DeviceSelectorAction() {
     setSmallVariant(true);
@@ -73,24 +73,29 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     if (!knownProjects.contains(project)) {
       knownProjects.add(project);
       final Application application = ApplicationManager.getApplication();
-      application.getMessageBus().connect().subscribe(ProjectManager.TOPIC, new ProjectManagerListener() {
-        @Override
-        public void projectClosed(@NotNull Project closedProject) {
-          knownProjects.remove(closedProject);
-        }
-      });
+      if (application != null) {
+        application.getMessageBus().connect().subscribe(ProjectManager.TOPIC, new ProjectManagerListener() {
+          @Override
+          public void projectClosed(@NotNull Project closedProject) {
+            knownProjects.remove(closedProject);
+          }
+        });
+      }
       Runnable deviceListener = () -> queueUpdate(project, e.getPresentation());
       DeviceService.getInstance(project).addListener(deviceListener);
 
       // Listen for android device changes, and rebuild the menu if necessary.
       Runnable emulatorListener = () -> queueUpdate(project, e.getPresentation());
       AndroidEmulatorManager.getInstance(project).addListener(emulatorListener);
-      ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
-        public void projectClosing(@NotNull Project project) {
-          DeviceService.getInstance(project).removeListener(deviceListener);
-          AndroidEmulatorManager.getInstance(project).removeListener(emulatorListener);
-        }
-      });
+      var projectManager = ProjectManager.getInstance();
+      if (projectManager != null) {
+        projectManager.addProjectManagerListener(project, new ProjectManagerListener() {
+          public void projectClosing(@NotNull Project project) {
+            DeviceService.getInstance(project).removeListener(deviceListener);
+            AndroidEmulatorManager.getInstance(project).removeListener(emulatorListener);
+          }
+        });
+      }
       update(project, presentation);
     }
 
@@ -139,9 +144,10 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     final JComponent component = presentation.getClientProperty(new Key<>("customComponent"));
     if (component != null) {
       component.setVisible(visible);
-      if (component.getParent() != null) {
-        component.getParent().doLayout();
-        component.getParent().repaint();
+      var parent = component.getParent();
+      if (parent != null) {
+        parent.doLayout();
+        parent.repaint();
       }
     }
   }
@@ -165,6 +171,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     selectedDeviceAction = null;
 
     for (FlutterDevice device : devices) {
+      if (device == null) continue;
+
       final SelectDeviceAction deviceAction = new SelectDeviceAction(device, devices);
       actions.add(deviceAction);
 
@@ -172,6 +180,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
         selectedDeviceAction = deviceAction;
 
         final Presentation template = deviceAction.getTemplatePresentation();
+        //noinspection DataFlowIssue
         presentation.setIcon(template.getIcon());
         //presentation.setText(deviceAction.presentationName());
         presentation.setEnabled(true);
@@ -196,7 +205,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     // Add Open Android emulators actions.
     final List<OpenEmulatorAction> emulatorActions = OpenEmulatorAction.getEmulatorActions(project);
-    if (!emulatorActions.isEmpty()) {
+    if (emulatorActions != null && !emulatorActions.isEmpty()) {
       actions.add(new Separator());
       actions.addAll(emulatorActions);
     }
@@ -204,7 +213,11 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       actions.add(new Separator());
       actions.add(RestartFlutterDaemonAction.forDeviceSelector());
     }
-    ActivityTracker.getInstance().inc();
+
+    var tracker = ActivityTracker.getInstance();
+    if (tracker != null) {
+      tracker.inc();
+    }
   }
 
   // Show the current device as selected when the combo box menu opens.
@@ -222,12 +235,12 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       this.device = device;
     }
 
-    public String presentationName() {
+    public @NotNull String presentationName() {
       return device.presentationName();
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent e) {
       final Project project = e.getProject();
       final DeviceService service = project == null ? null : DeviceService.getInstance(project);
       if (service != null) {
