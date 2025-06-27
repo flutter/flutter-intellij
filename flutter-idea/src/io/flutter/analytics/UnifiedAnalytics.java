@@ -70,9 +70,9 @@ public class UnifiedAnalytics {
     }
   }
 
-  private CompletableFuture<JsonObject> makeUnifiedAnalyticsRequest(String requestName,
-                                                                    @NotNull DartToolingDaemonService service,
-                                                                    @NotNull JsonObject params) {
+  private @NotNull CompletableFuture<JsonObject> makeUnifiedAnalyticsRequest(String requestName,
+                                                                             @NotNull DartToolingDaemonService service,
+                                                                             @NotNull JsonObject params) {
     CompletableFuture<JsonObject> finalResult = new CompletableFuture<>();
     try {
       service.sendRequest("UnifiedAnalytics." + requestName, params, false, object -> {
@@ -90,7 +90,7 @@ public class UnifiedAnalytics {
     return finalResult;
   }
 
-  private @Nullable CompletableFuture<Boolean> telemetryEnabled(@NotNull DartToolingDaemonService service, @NotNull JsonObject params) {
+  private @NotNull CompletableFuture<Boolean> telemetryEnabled(@NotNull DartToolingDaemonService service, @NotNull JsonObject params) {
     return makeUnifiedAnalyticsRequest("telemetryEnabled", service, params).thenCompose(result -> {
       assert result != null;
       JsonPrimitive value = result.getAsJsonPrimitive("value");
@@ -104,7 +104,7 @@ public class UnifiedAnalytics {
     });
   }
 
-  private @Nullable CompletableFuture<Boolean> clientShowedMessage(@NotNull DartToolingDaemonService service, @NotNull JsonObject params) {
+  private @NotNull CompletableFuture<Boolean> clientShowedMessage(@NotNull DartToolingDaemonService service, @NotNull JsonObject params) {
     return makeUnifiedAnalyticsRequest("clientShowedMessage", service, params).thenCompose(result -> {
       assert result != null;
       JsonPrimitive type = result.getAsJsonPrimitive("type");
@@ -118,9 +118,9 @@ public class UnifiedAnalytics {
     });
   }
 
-  private @Nullable CompletableFuture<Boolean> setTelemetry(@NotNull DartToolingDaemonService service,
-                                                            @NotNull JsonObject params,
-                                                            Boolean canSendAnalytics) {
+  private @NotNull CompletableFuture<Boolean> setTelemetry(@NotNull DartToolingDaemonService service,
+                                                           @NotNull JsonObject params,
+                                                           Boolean canSendAnalytics) {
     params.addProperty("enable", canSendAnalytics);
     return makeUnifiedAnalyticsRequest("setTelemetry", service, params).thenCompose(result -> {
       assert result != null;
@@ -178,7 +178,7 @@ public class UnifiedAnalytics {
     }
   }
 
-  private @Nullable CompletableFuture<Boolean> shouldShowMessage(@NotNull DartToolingDaemonService service, @NotNull JsonObject params) {
+  private @NotNull CompletableFuture<Boolean> shouldShowMessage(@NotNull DartToolingDaemonService service, @NotNull JsonObject params) {
     return makeUnifiedAnalyticsRequest("shouldShowMessage", service, params).thenCompose(result -> {
       assert result != null;
       JsonPrimitive value = result.getAsJsonPrimitive("value");
@@ -192,7 +192,7 @@ public class UnifiedAnalytics {
     });
   }
 
-  private @Nullable CompletableFuture<String> getConsentMessage(@NotNull DartToolingDaemonService service, @NotNull JsonObject params) {
+  private @NotNull CompletableFuture<String> getConsentMessage(@NotNull DartToolingDaemonService service, @NotNull JsonObject params) {
     return makeUnifiedAnalyticsRequest("getConsentMessage", service, params).thenCompose(result -> {
       assert result != null;
       JsonPrimitive value = result.getAsJsonPrimitive("value");
