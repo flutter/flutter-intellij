@@ -41,6 +41,7 @@ import io.flutter.devtools.DevToolsUtils;
 import io.flutter.devtools.RemainingDevToolsViewFactory;
 import io.flutter.editor.FlutterSaveActionsManager;
 import io.flutter.logging.FlutterConsoleLogManager;
+import io.flutter.logging.PluginLogger;
 import io.flutter.module.FlutterModuleBuilder;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -74,8 +75,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * may run when a project is being imported.
  */
 public class FlutterInitializer extends FlutterProjectActivity {
-  private static final @NotNull Logger LOG = Logger.getInstance(FlutterInitializer.class);
-
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterInitializer.class);
   private boolean toolWindowsInitialized = false;
 
   private boolean busSubscribed = false;
@@ -84,6 +84,7 @@ public class FlutterInitializer extends FlutterProjectActivity {
 
   @Override
   public void executeProjectStartup(@NotNull Project project) {
+    LOG.info("Executing Flutter plugin startup for project: " + project.getName());
     // Disable the 'Migrate Project to Gradle' notification.
     FlutterUtils.disableGradleProjectMigrationNotification(project);
 
@@ -108,6 +109,7 @@ public class FlutterInitializer extends FlutterProjectActivity {
         continue;
       }
 
+      LOG.info("Flutter module has been found for project: " + project.getName());
       // Ensure SDKs are configured; needed for clean module import.
       FlutterModuleUtils.enableDartSDK(module);
 
