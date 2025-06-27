@@ -23,7 +23,7 @@ public class FlutterMessages {
   private FlutterMessages() {
   }
 
-  public static void showError(String title, String message, @Nullable Project project) {
+  public static void showError(String title, @NotNull String message, @Nullable Project project) {
     Notifications.Bus.notify(
       new Notification(FLUTTER_NOTIFICATION_GROUP_ID,
                        title,
