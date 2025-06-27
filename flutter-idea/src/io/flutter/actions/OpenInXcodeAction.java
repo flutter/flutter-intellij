@@ -28,7 +28,7 @@ public class OpenInXcodeAction extends AnAction {
 
   @Nullable
   static VirtualFile findProjectFile(@NotNull AnActionEvent event) {
-    final VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
+    @SuppressWarnings("DataFlowIssue") final VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
     final Project project = event.getProject();
     if (file != null && file.exists()) {
       if (FlutterUtils.isXcodeFileName(file.getName())) {
@@ -113,7 +113,7 @@ public class OpenInXcodeAction extends AnAction {
     return sdk.isOlderThanToolsStamp(gen);
   }
 
-  private static void openWithXcode(@Nullable Project project, String path) {
+  private static void openWithXcode(@Nullable Project project, @NotNull String path) {
     try {
       final GeneralCommandLine cmd = new GeneralCommandLine().withExePath("open").withParameters(path);
       final ColoredProcessHandler handler = new ColoredProcessHandler(cmd);

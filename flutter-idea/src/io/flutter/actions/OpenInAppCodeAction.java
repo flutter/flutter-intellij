@@ -102,7 +102,10 @@ public class OpenInAppCodeAction extends AnAction {
       FlutterSdkAction.showMissingSdkDialog(project);
       return;
     }
-    openInAppCode(project, file.getParent().getPath());
+    var parent = file.getParent();
+    if (parent != null) {
+      openInAppCode(project, parent.getPath());
+    }
   }
 
   private static void openInAppCode(@Nullable Project project, @NotNull String path) {

@@ -24,15 +24,13 @@ import io.flutter.utils.ProgressHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
 public class FlutterBuildActionGroup extends DefaultActionGroup {
 
   public static void build(@NotNull Project project,
-                                       @NotNull PubRoot pubRoot,
-                                       @NotNull FlutterSdk sdk,
-                                       @NotNull BuildType buildType,
-                                       @Nullable String desc) {
+                           @NotNull PubRoot pubRoot,
+                           @NotNull FlutterSdk sdk,
+                           @NotNull BuildType buildType,
+                           @Nullable String desc) {
     final ProgressHelper progressHelper = new ProgressHelper(project);
     progressHelper.start(desc == null ? "building" : desc);
     ProcessAdapter processAdapter = new ProcessAdapter() {
@@ -105,7 +103,12 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
       return module;
     }
     // We may get here if the file is in the Android module of a Flutter module project.
-    final VirtualFile parent = OpenApiUtils.getContentRoots(module)[0].getParent();
+    var root = OpenApiUtils.getContentRoots(module)[0];
+    if (root == null) return null;
+
+    final VirtualFile parent = root.getParent();
+    if (parent == null) return null;
+
     module = ModuleUtilCore.findModuleForFile(parent, project);
     if (module == null) {
       return null;
@@ -135,7 +138,7 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
         build(project, pubRoot, sdk, buildType, presentation.getDescription());
       }
       else {
-        List<PubRoot> roots = PubRoots.forProject(project);
+        var roots = PubRoots.forProject(project);
         for (PubRoot sub : roots) {
           build(project, sub, sdk, buildType, presentation.getDescription());
         }

@@ -11,7 +11,6 @@ import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditor;
@@ -27,6 +26,7 @@ import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -69,7 +69,7 @@ public class OpenInAndroidStudioAction extends AnAction {
       }
     }
 
-    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+    OpenApiUtils.safeExecuteOnPooledThread(() -> {
       final String androidStudioPath = findAndroidStudio(project);
       if (androidStudioPath == null) {
         FlutterMessages.showError(
@@ -85,6 +85,7 @@ public class OpenInAndroidStudioAction extends AnAction {
         return;
       }
 
+      //noinspection DataFlowIssue
       final VirtualFile sourceFile = event.getData(CommonDataKeys.VIRTUAL_FILE);
       final String sourceFilePath = sourceFile == null ? null : sourceFile.isDirectory() ? null : sourceFile.getPath();
 
@@ -123,11 +124,12 @@ public class OpenInAndroidStudioAction extends AnAction {
     return null;
   }
 
-  private static void updatePresentation(AnActionEvent event, Presentation state) {
+  private static void updatePresentation(AnActionEvent event, @NotNull Presentation state) {
     if (findProjectFile(event) == null) {
       state.setVisible(false);
     }
     else {
+      //noinspection DataFlowIssue
       final VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
       final String label;
       final String descr;
@@ -147,7 +149,7 @@ public class OpenInAndroidStudioAction extends AnAction {
     }
   }
 
-  protected static boolean isProjectFileName(String name) {
+  protected static boolean isProjectFileName(@NotNull String name) {
     // Note: If the project content is rearranged to have the android module file within the android directory, this will fail.
     return name.endsWith("_android.iml");
   }
@@ -155,8 +157,9 @@ public class OpenInAndroidStudioAction extends AnAction {
   // A plugin contains an example app, which needs to be opened when the native Android is to be edited.
   // In the case of an app that contains a plugin the flutter_app/flutter_plugin/example/android should be opened when
   // 'Open in Android Studio' is requested.
-  protected static VirtualFile findProjectFile(@Nullable AnActionEvent e) {
+  protected static @Nullable VirtualFile findProjectFile(@Nullable AnActionEvent e) {
     if (e != null) {
+      //noinspection DataFlowIssue
       final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
       if (file != null && file.exists()) {
         // We have a selection. Check if it is within a plugin.
@@ -172,11 +175,15 @@ public class OpenInAndroidStudioAction extends AnAction {
         for (PubRoot root : PubRoots.forProject(project)) {
           if (root.isFlutterPlugin()) {
             final VirtualFile rootFile = root.getRoot();
+            if (rootFile == null) continue;
             VirtualFile aFile = file;
             while (aFile != null) {
               if (aFile.equals(rootFile)) {
+                var children = rootFile.getChildren();
+                if (children == null) continue;
                 // We know a plugin resource is selected. Find the example app for it.
-                for (VirtualFile child : rootFile.getChildren()) {
+                for (VirtualFile child : children) {
+                  if (child == null) continue;
                   if (isExampleWithAndroidWithApp(child)) {
                     return child.findChild("android");
                   }
@@ -257,12 +264,18 @@ public class OpenInAndroidStudioAction extends AnAction {
   @Nullable
   private static VirtualFile findStudioProjectFile(@NotNull Project project) {
     for (PubRoot root : PubRoots.forProject(project)) {
-      for (VirtualFile child : root.getRoot().getChildren()) {
+      var children = root.getRoot().getChildren();
+      if (children == null) continue;
+      for (VirtualFile child : children) {
+        if (child == null) continue;
         if (isProjectFileName(child.getName())) {
           return child;
         }
         if (FlutterExternalIdeActionGroup.isAndroidDirectory(child)) {
-          for (VirtualFile androidChild : child.getChildren()) {
+          var androidChildren = child.getChildren();
+          if (androidChildren == null) continue;
+          for (VirtualFile androidChild : androidChildren) {
+            if (androidChild == null) continue;
             if (isProjectFileName(androidChild.getName())) {
               return androidChild;
             }
@@ -287,6 +300,7 @@ public class OpenInAndroidStudioAction extends AnAction {
       }
       if (androidSdkLocation != null) {
         if (androidSdkLocation.contains("/Android Studio 2.")) {
+          //noinspection DataFlowIssue
           Messages.showErrorDialog(FlutterBundle.message("old.android.studio.message", File.separator),
                                    FlutterBundle.message("old.android.studio.title"));
           return null;
@@ -317,6 +331,8 @@ public class OpenInAndroidStudioAction extends AnAction {
       return isAndroidWithApp(file) ? file : null;
     }
     final VirtualFile dir = file.getParent();
+    if (dir == null) return null;
+
     if (isAndroidWithApp(dir)) {
       // In case someone moves the .iml file, or the project organization gets rationalized.
       return dir;
@@ -340,9 +356,13 @@ public class OpenInAndroidStudioAction extends AnAction {
   // Return true if the directory has the structure of a plugin example application: a pubspec.yaml and an
   // android directory with an app. The example app directory name is not specified in case it gets renamed.
   private static boolean isExampleWithAndroidWithApp(@NotNull VirtualFile file) {
+    var children = file.getChildren();
+    if (children == null) return false;
+
     boolean hasPubspec = false;
     boolean hasAndroid = false;
-    for (VirtualFile candidate : file.getChildren()) {
+    for (VirtualFile candidate : children) {
+      if (candidate == null) continue;
       if (isAndroidWithApp(candidate)) hasAndroid = true;
       if (candidate.getName().equals(PubRoot.PUBSPEC_YAML)) hasPubspec = true;
       if (hasAndroid && hasPubspec) {

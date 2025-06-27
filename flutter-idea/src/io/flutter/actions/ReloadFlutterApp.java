@@ -26,7 +26,13 @@ public class ReloadFlutterApp extends FlutterAppAction {
   public ReloadFlutterApp(@NotNull FlutterApp app, @NotNull Computable<Boolean> isApplicable) {
     super(app, TEXT, DESCRIPTION, FlutterIcons.HotReload, isApplicable, ID);
     // Shortcut is associated with toolbar action.
-    copyShortcutFrom(ActionManager.getInstance().getAction("Flutter.Toolbar.ReloadAction"));
+    var actionManager = ActionManager.getInstance();
+    if (actionManager != null) {
+      var action = actionManager.getAction("Flutter.Toolbar.ReloadAction");
+      if (action != null) {
+        copyShortcutFrom(action);
+      }
+    }
   }
 
   @Override
@@ -40,12 +46,15 @@ public class ReloadFlutterApp extends FlutterAppAction {
     // 'GoToAction' dialog. If so, the modifiers are for the command that opened the go-to action dialog.
     final boolean shouldRestart = (e.getModifiers() & InputEvent.SHIFT_MASK) != 0 && !"GoToAction".equals(e.getPlace());
 
+    var reloadManager = FlutterReloadManager.getInstance(project);
+    if (reloadManager == null) return;
+
     if (shouldRestart) {
-      FlutterReloadManager.getInstance(project).saveAllAndRestart(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
+      reloadManager.saveAllAndRestart(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
     }
     else {
       // Else perform a hot reload.
-      FlutterReloadManager.getInstance(project).saveAllAndReload(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
+      reloadManager.saveAllAndReload(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
     }
   }
 

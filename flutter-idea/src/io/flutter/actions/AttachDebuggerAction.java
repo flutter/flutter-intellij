@@ -125,7 +125,7 @@ public class AttachDebuggerAction extends FlutterSdkAction {
   }
 
   @Override
-  public void update(AnActionEvent e) {
+  public void update(@NotNull AnActionEvent e) {
     final Project project = e.getProject();
     if (project == null || project.isDefault()) {
       super.update(e);
@@ -159,7 +159,7 @@ public class AttachDebuggerAction extends FlutterSdkAction {
   }
 
   @Nullable
-  public static RunConfiguration findRunConfig(Project project) {
+  public static RunConfiguration findRunConfig(@NotNull Project project) {
     // Look for a Flutter run config. If exactly one is found then return it otherwise return null.
     final RunManagerEx mgr = RunManagerEx.getInstanceEx(project);
     final List<RunConfiguration> configs = mgr.getAllConfigurationsList();
@@ -174,7 +174,7 @@ public class AttachDebuggerAction extends FlutterSdkAction {
     return count == 1 ? sdkConfig : null;
   }
 
-  private static void onAttachTermination(@NotNull Project project, @NotNull Consumer<Project> runner) {
+  private static void onAttachTermination(@NotNull Project project, @NotNull Consumer<@NotNull Project> runner) {
     final MessageBusConnection connection = project.getMessageBus().connect();
 
     // Need an ExecutionListener to clean up project-scoped state when the Stop button is clicked.
@@ -221,7 +221,9 @@ public class AttachDebuggerAction extends FlutterSdkAction {
                                   "module was created. See <a href=\"" +
                                   FlutterConstants.URL_RUN_AND_DEBUG +
                                   "\">the Flutter documentation</a> for more information.</body></html>";
+      //noinspection DataFlowIssue
       myTextPane.setText(selectConfig);
+      //noinspection DataFlowIssue
       myPanel.add(myTextPane);
       init();
       //noinspection ConstantConditions

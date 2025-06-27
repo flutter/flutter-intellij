@@ -30,7 +30,13 @@ public class RestartFlutterApp extends FlutterAppAction {
   public RestartFlutterApp(@NotNull FlutterApp app, @NotNull Computable<Boolean> isApplicable) {
     super(app, TEXT, DESCRIPTION, FlutterIcons.HotRestart, isApplicable, ID);
     // Shortcut is associated with toolbar action.
-    copyShortcutFrom(ActionManager.getInstance().getAction("Flutter.Toolbar.RestartAction"));
+    ActionManager actionManager = ActionManager.getInstance();
+    if (actionManager != null) {
+      var action = actionManager.getAction("Flutter.Toolbar.RestartAction");
+      if (action != null) {
+        copyShortcutFrom(action);
+      }
+    }
   }
 
   @Override
@@ -39,8 +45,10 @@ public class RestartFlutterApp extends FlutterAppAction {
     if (project == null) {
       return;
     }
-
-    FlutterReloadManager.getInstance(project).saveAllAndRestart(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
+    var reloadManager = FlutterReloadManager.getInstance(project);
+    if (reloadManager != null) {
+      reloadManager.saveAllAndRestart(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
+    }
 
     if (WorkspaceCache.getInstance(project).isBazel() &&
         FlutterSettings.getInstance().isShowBazelHotRestartWarning() &&

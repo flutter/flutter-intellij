@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static java.util.stream.Collectors.toList;
 
@@ -33,12 +34,12 @@ public class OpenEmulatorAction extends AnAction {
     final AndroidEmulatorManager emulatorManager = AndroidEmulatorManager.getInstance(project);
 
     final List<AndroidEmulator> emulators = emulatorManager.getCachedEmulators();
-    return emulators.stream().map(OpenEmulatorAction::new).collect(toList());
+    return emulators.stream().filter(Objects::nonNull).map(OpenEmulatorAction::new).collect(toList());
   }
 
-  final AndroidEmulator emulator;
+  final @NotNull AndroidEmulator emulator;
 
-  public OpenEmulatorAction(AndroidEmulator emulator) {
+  public OpenEmulatorAction(@NotNull AndroidEmulator emulator) {
     super("Open Android Emulator: " + emulator.getName());
 
     this.emulator = emulator;
