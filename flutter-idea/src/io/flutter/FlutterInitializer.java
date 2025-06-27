@@ -84,15 +84,13 @@ public class FlutterInitializer extends FlutterProjectActivity {
 
   @Override
   public void executeProjectStartup(@NotNull Project project) {
-    LOG.info("starting executeProjectStartup");
+    LOG.info("Executing Flutter plugin startup for project: " + project.getName());
     // Disable the 'Migrate Project to Gradle' notification.
     FlutterUtils.disableGradleProjectMigrationNotification(project);
 
-    LOG.info("Starting watching for devices");
     // Start watching for devices.
     DeviceService.getInstance(project);
 
-    LOG.info("Starting a DevTools server");
     // Start a DevTools server
     DevToolsService.getInstance(project);
 
@@ -111,7 +109,7 @@ public class FlutterInitializer extends FlutterProjectActivity {
         continue;
       }
 
-      LOG.info("This is a Flutter module");
+      LOG.info("Flutter module has been found for project: " + project.getName());
       // Ensure SDKs are configured; needed for clean module import.
       FlutterModuleUtils.enableDartSDK(module);
 

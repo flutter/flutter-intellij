@@ -81,7 +81,7 @@ class DevToolsServerTask extends Task.Backgroundable {
     try {
       progressIndicator.setFraction(30);
       progressIndicator.setText2("Init");
-      LOG.info("Here we are in DevTools run");
+      LOG.info("Finding or starting DevTools");
 
       // If we are in a Bazel workspace, start the server.
       // Note: This is only for internal usages.
