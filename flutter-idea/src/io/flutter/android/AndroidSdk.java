@@ -110,7 +110,7 @@ public class AndroidSdk {
       }
 
       final Integer exitCode = process.getExitCode();
-      if (exitCode == null || process.getExitCode() != 0) {
+      if (exitCode == null || exitCode != 0) {
         return Collections.emptyList();
       }
 
