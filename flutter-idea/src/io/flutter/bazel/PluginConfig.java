@@ -113,10 +113,11 @@ public class PluginConfig {
     final Computable<PluginConfig> readAction = () -> {
       try (
         // Create the input stream in a try-with-resources statement. This will automatically close the stream
-        // in an implicit finally section; this addresses a file handle leak issue we had on MacOS.
+        // in an implicit finally section; this addresses a file handle leak issue we had on macOS.
         final InputStreamReader input = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)
       ) {
         final Fields fields = GSON.fromJson(input, Fields.class);
+        assert fields != null;
         return new PluginConfig(fields);
       }
       catch (FileNotFoundException e) {
@@ -142,7 +143,7 @@ public class PluginConfig {
   }
 
   @VisibleForTesting
-  public static PluginConfig forTest(
+  public static @NotNull PluginConfig forTest(
     @Nullable String daemonScript,
     @Nullable String devToolsScript,
     @Nullable String doctorScript,
@@ -181,67 +182,67 @@ public class PluginConfig {
      * The script to run to start 'flutter daemon'.
      */
     @SerializedName("daemonScript")
-    private String daemonScript;
+    private @Nullable String daemonScript;
 
     @SerializedName("devToolsScript")
-    private String devToolsScript;
+    private @Nullable String devToolsScript;
 
     /**
      * The script to run to start 'flutter doctor'.
      */
     @SerializedName("doctorScript")
-    private String doctorScript;
+    private @Nullable String doctorScript;
 
     /**
      * The script to run to start 'flutter test'
      */
     @SerializedName("testScript")
-    private String testScript;
+    private @Nullable String testScript;
 
     /**
      * The script to run to start 'flutter run'
      */
     @SerializedName("runScript")
-    private String runScript;
+    private @Nullable String runScript;
 
     /**
      * The script to run to start 'flutter sync'
      */
     @SerializedName("syncScript")
-    private String syncScript;
+    private @Nullable String syncScript;
 
     @SerializedName("toolsScript")
-    private String toolsScript;
+    private @Nullable String toolsScript;
 
     /**
      * The directory containing the SDK tools.
      */
     @SerializedName("sdkHome")
-    private String sdkHome;
+    private @Nullable String sdkHome;
 
     /**
      * The file containing the Flutter version.
      */
     @SerializedName("requiredIJPluginID")
-    private String requiredIJPluginID;
+    private @Nullable String requiredIJPluginID;
 
     /**
      * The file containing the message to install the required IJ Plugin.
      */
     @SerializedName("requiredIJPluginMessage")
-    private String requiredIJPluginMessage;
+    private @Nullable String requiredIJPluginMessage;
 
     /**
      * The prefix that indicates a configuration warning message.
      */
     @SerializedName("configWarningPrefix")
-    private String configWarningPrefix;
+    private @Nullable String configWarningPrefix;
 
     /**
      * The prefix that indicates a message about iOS run being updated.
      */
     @SerializedName("updatedIosRunMessage")
-    private String updatedIosRunMessage;
+    private @Nullable String updatedIosRunMessage;
 
     Fields() {
     }
@@ -249,18 +250,18 @@ public class PluginConfig {
     /**
      * Convenience constructor that takes all parameters.
      */
-    Fields(String daemonScript,
-           String devToolsScript,
-           String doctorScript,
-           String testScript,
-           String runScript,
-           String syncScript,
-           String toolsScript,
-           String sdkHome,
-           String requiredIJPluginID,
-           String requiredIJPluginMessage,
-           String configWarningPrefix,
-           String updatedIosRunMessage) {
+    Fields(@Nullable String daemonScript,
+           @Nullable String devToolsScript,
+           @Nullable String doctorScript,
+           @Nullable String testScript,
+           @Nullable String runScript,
+           @Nullable String syncScript,
+           @Nullable String toolsScript,
+           @Nullable String sdkHome,
+           @Nullable String requiredIJPluginID,
+           @Nullable String requiredIJPluginMessage,
+           @Nullable String configWarningPrefix,
+           @Nullable String updatedIosRunMessage) {
       this.daemonScript = daemonScript;
       this.devToolsScript = devToolsScript;
       this.doctorScript = doctorScript;
@@ -298,6 +299,6 @@ public class PluginConfig {
     }
   }
 
-  private static final Gson GSON = new Gson();
+  private static final @NotNull Gson GSON = new Gson();
   private static final @NotNull Logger LOG = Logger.getInstance(PluginConfig.class);
 }
