@@ -38,6 +38,7 @@ import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DtdUtils;
+import io.flutter.logging.PluginLogger;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.JsonUtils;
@@ -57,7 +58,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 class DevToolsServerTask extends Task.Backgroundable {
-  private @NotNull static final Logger LOG = Logger.getInstance(DevToolsServerTask.class);
+  private @NotNull static final Logger LOG = PluginLogger.createLogger(DevToolsServerTask.class);
   public @NotNull static final String LOCAL_DEVTOOLS_DIR = "flutter.local.devtools.dir";
   public @NotNull static final String LOCAL_DEVTOOLS_ARGS = "flutter.local.devtools.args";
   private @NotNull final Project project;
@@ -79,6 +80,7 @@ class DevToolsServerTask extends Task.Backgroundable {
     try {
       progressIndicator.setFraction(30);
       progressIndicator.setText2("Init");
+      LOG.info("Finding or starting DevTools");
 
       // If we are in a Bazel workspace, start the server.
       // Note: This is only for internal usages.
