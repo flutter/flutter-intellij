@@ -27,7 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class AndroidEmulator {
-  
+
   @NotNull final AndroidSdk androidSdk;
   @NotNull final String id;
   ProcessAdapter listener;
@@ -86,7 +86,9 @@ public class AndroidEmulator {
         }
 
         public void processTerminated(@NotNull ProcessEvent event) {
-          process.removeProcessListener(listener);
+          if (listener != null) {
+            process.removeProcessListener(listener);
+          }
           final int exitCode = event.getExitCode();
           if (exitCode != 0) {
             final String message = stdout.isEmpty()
@@ -100,6 +102,7 @@ public class AndroidEmulator {
       process.startNotify();
     }
     catch (ExecutionException | RuntimeException e) {
+      //noinspection DataFlowIssue
       FlutterMessages.showError("Error Opening Emulator", e.toString(), androidSdk.project);
     }
   }
