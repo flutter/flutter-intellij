@@ -274,6 +274,7 @@ public class Workspace {
     if (workspaceFile == null) return null;
 
     final VirtualFile root = workspaceFile.getParent();
+    if (root == null) return null;
     final String readonlyPath = "../READONLY/" + root.getName();
     final VirtualFile readonlyRoot = root.findFileByRelativePath(readonlyPath);
     VirtualFile configFile = root.findFileByRelativePath(PLUGIN_CONFIG_PATH);
@@ -313,7 +314,7 @@ public class Workspace {
   }
 
   @VisibleForTesting
-  public static Workspace forTest(VirtualFile workspaceRoot, PluginConfig pluginConfig) {
+  public static Workspace forTest(@NotNull VirtualFile workspaceRoot, @NotNull PluginConfig pluginConfig) {
     return new Workspace(
       workspaceRoot,
       pluginConfig,
@@ -339,7 +340,9 @@ public class Workspace {
    * @param relativeScriptPath the relative path to the desired script inside of the workspace.
    * @return the script's path relative to the workspace, or null if it was not found.
    */
-  private static String getScriptFromPath(@NotNull VirtualFile root, @NotNull String readonlyPath, @Nullable String relativeScriptPath) {
+  private static @Nullable String getScriptFromPath(@NotNull VirtualFile root,
+                                                    @NotNull String readonlyPath,
+                                                    @Nullable String relativeScriptPath) {
     if (relativeScriptPath == null) {
       return null;
     }
@@ -363,8 +366,12 @@ public class Workspace {
   @Nullable
   private static VirtualFile findWorkspaceFile(@NotNull Project p) {
     final Computable<VirtualFile> readAction = () -> {
+      ProjectRootManager rootManager = ProjectRootManager.getInstance(p);
+      if (rootManager == null) return null;
+      
       final Map<String, VirtualFile> candidates = new HashMap<>();
-      for (VirtualFile contentRoot : ProjectRootManager.getInstance(p).getContentRoots()) {
+      for (VirtualFile contentRoot : rootManager.getContentRoots()) {
+        if (contentRoot == null) continue;
         final VirtualFile wf = findContainingWorkspaceFile(contentRoot);
         if (wf != null) {
           candidates.put(wf.getPath(), wf);
@@ -404,7 +411,7 @@ public class Workspace {
     return null;
   }
 
-  public String convertPath(String path) {
+  public String convertPath(@NotNull String path) {
     if (path.startsWith(Workspace.BAZEL_URI_SCHEME)) {
       return getRoot().getPath() + path.substring(Workspace.BAZEL_URI_SCHEME.length());
     }
