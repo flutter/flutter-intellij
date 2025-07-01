@@ -7,14 +7,12 @@ package io.flutter.samples;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.ide.BrowserUtil;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.colors.EditorColors;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
@@ -25,6 +23,7 @@ import com.intellij.ui.HyperlinkLabel;
 import com.jetbrains.lang.dart.psi.DartClass;
 import icons.FlutterIcons;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -86,10 +85,9 @@ public class FlutterSampleNotificationProvider implements EditorNotificationProv
     }
 
     // Run the code to query the document in a read action.
-    final List<FlutterSample> samples = ApplicationManager.getApplication().
-      runReadAction((Computable<List<FlutterSample>>)() -> {
-        return getSamplesFromDoc(flutterPackagePath, document, filePath);
-      });
+    final List<FlutterSample> samples = OpenApiUtils.safeRunReadAction(() -> {
+      return getSamplesFromDoc(flutterPackagePath, document, filePath);
+    });
 
     if (samples != null && !samples.isEmpty()) {
       return new FlutterSampleActionsPanel(samples);
@@ -101,8 +99,11 @@ public class FlutterSampleNotificationProvider implements EditorNotificationProv
   private List<FlutterSample> getSamplesFromDoc(@NotNull String flutterPackagePath, @NotNull Document document, @NotNull String filePath) {
     final List<FlutterSample> samples = new ArrayList<>();
 
+    PsiDocumentManager documentManager = PsiDocumentManager.getInstance(project);
+    if (documentManager == null) return samples;
+
     // Find all candidate class definitions.
-    final PsiFile psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document);
+    final PsiFile psiFile = documentManager.getPsiFile(document);
     assert (psiFile != null);
 
     final DartClass[] classes = PsiTreeUtil.getChildrenOfType(psiFile, DartClass.class);
@@ -114,6 +115,7 @@ public class FlutterSampleNotificationProvider implements EditorNotificationProv
     // "/// {@tool dartpad ...}".
 
     for (DartClass declaration : classes) {
+      if (declaration == null) continue;
       final String name = declaration.getName();
       if (name == null || name.startsWith("_")) {
         continue;
@@ -157,7 +159,7 @@ public class FlutterSampleNotificationProvider implements EditorNotificationProv
     }
 
     for (String line : lines) {
-      if (DARTPAD_TOOL_PATTERN.matcher(line).find()) {
+      if (line != null && DARTPAD_TOOL_PATTERN.matcher(line).find()) {
         return true;
       }
     }
@@ -168,6 +170,7 @@ public class FlutterSampleNotificationProvider implements EditorNotificationProv
 
 class FlutterSampleActionsPanel extends EditorNotificationPanel {
   FlutterSampleActionsPanel(@NotNull List<FlutterSample> samples) {
+    //noinspection DataFlowIssue
     super(EditorColors.GUTTER_BACKGROUND);
 
     icon(FlutterIcons.Flutter);
@@ -175,17 +178,19 @@ class FlutterSampleActionsPanel extends EditorNotificationPanel {
 
     for (int i = 0; i < samples.size(); i++) {
       if (i != 0) {
+        //noinspection DataFlowIssue
         myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
       }
 
       final FlutterSample sample = samples.get(i);
+      assert sample != null;
 
       final HyperlinkLabel label = createActionLabel(sample.getClassName(), () -> browseTo(sample));
       label.setToolTipText(sample.getHostedDocsUrl());
     }
   }
 
-  private void browseTo(FlutterSample sample) {
+  private void browseTo(@NotNull FlutterSample sample) {
     BrowserUtil.browse(sample.getHostedDocsUrl());
   }
 }
