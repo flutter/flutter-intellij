@@ -72,7 +72,7 @@ public class DartDocumentUtils {
     return lines;
   }
 
-  private static String getLine(Document document, int line) {
+  private static String getLine(@NotNull Document document, int line) {
     return document.getText(new TextRange(document.getLineStartOffset(line - 1), document.getLineEndOffset(line - 1)));
   }
 }
