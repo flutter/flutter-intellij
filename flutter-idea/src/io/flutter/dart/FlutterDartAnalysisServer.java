@@ -36,7 +36,7 @@ public class FlutterDartAnalysisServer implements Disposable {
    * Each key is a notification identifier.
    * Each value is the set of files subscribed to the notification.
    */
-  private final Map<String, List<String>> subscriptions = new HashMap<>();
+  private final @NotNull Map<String, List<String>> subscriptions = new HashMap<>();
 
   @VisibleForTesting
   protected final Map<String, List<FlutterOutlineListener>> fileOutlineListeners = new HashMap<>();
