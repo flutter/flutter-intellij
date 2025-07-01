@@ -9,7 +9,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import org.dartlang.analysis.server.protocol.FlutterWidgetPropertyValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,28 +28,9 @@ public class FlutterRequestUtilities {
   private static final String SUBSCRIPTIONS = "subscriptions";
 
   private static final String METHOD_FLUTTER_SET_SUBSCRIPTIONS = "flutter.setSubscriptions";
-  private static final String METHOD_FLUTTER_GET_WIDGET_DESCRIPTION = "flutter.getWidgetDescription";
-  private static final String METHOD_FLUTTER_SET_WIDGET_PROPERTY_VALUE = "flutter.setWidgetPropertyValue";
 
   private FlutterRequestUtilities() {
     throw new AssertionError("No instances.");
-  }
-
-  public static JsonObject generateFlutterGetWidgetDescription(String id, String file, int offset) {
-    final JsonObject params = new JsonObject();
-    params.addProperty(FILE, file);
-    params.addProperty(OFFSET, offset);
-    return buildJsonObjectRequest(id, METHOD_FLUTTER_GET_WIDGET_DESCRIPTION, params);
-  }
-
-  public static JsonObject generateFlutterSetWidgetPropertyValue(String id, int propertyId, @Nullable FlutterWidgetPropertyValue value) {
-    final JsonObject params = new JsonObject();
-    params.addProperty(ID, propertyId);
-    // An omitted value indicates that the property should be removed.
-    if (value != null) {
-      params.add(VALUE, value.toJson());
-    }
-    return buildJsonObjectRequest(id, METHOD_FLUTTER_SET_WIDGET_PROPERTY_VALUE, params);
   }
 
   /**
@@ -66,15 +46,15 @@ public class FlutterRequestUtilities {
    * }
    * </pre>
    */
-  public static JsonObject generateAnalysisSetSubscriptions(String id,
-                                                            Map<String, List<String>> subscriptions) {
+  public static JsonObject generateAnalysisSetSubscriptions(@NotNull String id,
+                                                            Map<String, @NotNull List<String>> subscriptions) {
     final JsonObject params = new JsonObject();
     params.add(SUBSCRIPTIONS, buildJsonElement(subscriptions));
     return buildJsonObjectRequest(id, METHOD_FLUTTER_SET_SUBSCRIPTIONS, params);
   }
 
   @NotNull
-  private static JsonElement buildJsonElement(Object object) {
+  private static JsonElement buildJsonElement(@Nullable Object object) {
     if (object instanceof Boolean) {
       return new JsonPrimitive((Boolean)object);
     }
@@ -87,14 +67,17 @@ public class FlutterRequestUtilities {
     else if (object instanceof List<?> list) {
       final JsonArray jsonArray = new JsonArray();
       for (Object item : list) {
-        final JsonElement jsonItem = buildJsonElement(item);
-        jsonArray.add(jsonItem);
+        if (item != null) {
+          final JsonElement jsonItem = buildJsonElement(item);
+          jsonArray.add(jsonItem);
+        }
       }
       return jsonArray;
     }
     else if (object instanceof Map<?, ?> map) {
       final JsonObject jsonObject = new JsonObject();
       for (Map.Entry<?, ?> entry : map.entrySet()) {
+        if (entry == null) continue;
         final Object key = entry.getKey();
         // Prepare the string key.
         final String keyString;
@@ -114,10 +97,6 @@ public class FlutterRequestUtilities {
     throw new IllegalArgumentException("Unable to convert to JSON: " + object);
   }
 
-  private static JsonObject buildJsonObjectRequest(String idValue, String methodValue) {
-    return buildJsonObjectRequest(idValue, methodValue, null);
-  }
-
   private static JsonObject buildJsonObjectRequest(String idValue, String methodValue,
                                                    JsonObject params) {
     final JsonObject jsonObject = new JsonObject();
@@ -133,7 +112,7 @@ public class FlutterRequestUtilities {
    * Return the name of the given object, may be {@code "null"} String.
    */
   @NotNull
-  private static String getClassName(Object object) {
+  private static String getClassName(@Nullable Object object) {
     return object != null && object.getClass().getName() != null ? object.getClass().getName() : "null";
   }
 }
