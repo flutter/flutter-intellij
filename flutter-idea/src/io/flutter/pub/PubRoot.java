@@ -177,7 +177,7 @@ public class PubRoot {
     return path.substring(root.length() + 1);
   }
 
-  private static final String /*@NotNull*/[] TEST_DIRS = new String[]{ // TODO 2022.1
+  private static final String @NotNull [] TEST_DIRS = new String[]{ // TODO 2022.1
     "/test/",
     "/integration_test/",
     "/test_driver/",
@@ -237,6 +237,7 @@ public class PubRoot {
    */
   public boolean declaresFlutter() {
     validateUpdateCachedPubspecInfo();
+    assert cachedPubspecInfo != null;
     return cachedPubspecInfo.declaresFlutter();
   }
 
@@ -444,7 +445,10 @@ public class PubRoot {
     if (project.isDisposed()) {
       return null;
     }
-    return ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(pubspec);
+    var manager = ProjectRootManager.getInstance(project);
+    if (manager == null) return null;
+
+    return manager.getFileIndex().getModuleForFile(pubspec);
   }
 
   @Override
