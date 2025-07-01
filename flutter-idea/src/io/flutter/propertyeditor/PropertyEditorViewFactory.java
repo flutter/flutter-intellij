@@ -96,7 +96,7 @@ public class PropertyEditorViewFactory extends AbstractDevToolsViewFactory {
     Disposer.register(toolWindow.getDisposable(), connection);
   }
 
-  private void checkDockedUnpinnedAndCreateContent(@NotNull Project project, ToolWindow toolWindow, boolean forceLoad) {
+  private void checkDockedUnpinnedAndCreateContent(@NotNull Project project, @NotNull ToolWindow toolWindow, boolean forceLoad) {
     final Boolean isDockedUnpinned = toolWindow.getType().equals(ToolWindowType.DOCKED) && toolWindow.isAutoHide();
 
     // If this is the first time we are loading the content, force a load even if docked unpinned state matches.
