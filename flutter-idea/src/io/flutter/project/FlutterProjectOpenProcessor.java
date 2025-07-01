@@ -71,6 +71,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
 
   @Nullable
   protected ProjectOpenProcessor getDelegateImportProvider(@NotNull VirtualFile file) {
+    //noinspection DataFlowIssue
     return EXTENSION_POINT_NAME.getExtensionList().stream().filter(
       processor -> processor.canOpenProject(file) && !Objects.equals(processor.getName(), getName())
     ).findFirst().orElse(null);
