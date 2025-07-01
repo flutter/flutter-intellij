@@ -5,18 +5,20 @@
  */
 package io.flutter.settings;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Persists Flutter settings for a session.
  */
 public class FlutterUIConfig {
-  private static final FlutterUIConfig INSTANCE = new FlutterUIConfig();
+  private static final @NotNull FlutterUIConfig INSTANCE = new FlutterUIConfig();
 
   private boolean ignoreOutOfDateFlutterSdks;
 
   private FlutterUIConfig() {
   }
 
-  public static FlutterUIConfig getInstance() {
+  public static @NotNull FlutterUIConfig getInstance() {
     return INSTANCE;
   }
 

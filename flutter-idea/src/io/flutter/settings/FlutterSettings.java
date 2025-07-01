@@ -11,6 +11,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.EventListener;
 import java.util.Objects;
@@ -35,13 +36,13 @@ public class FlutterSettings {
   private static final String sdkVersionOutdatedWarningAcknowledgedKey = "io.flutter.sdkVersionOutdatedWarningAcknowledged";
   private static final String androidStudioBotAcknowledgedKey = "io.flutter.androidStudioBotAcknowledgedKey";
 
-  private static FlutterSettings testInstance;
+  private static @Nullable FlutterSettings testInstance;
 
   /**
    * This is only used for testing.
    */
   @VisibleForTesting
-  public static void setInstance(FlutterSettings instance) {
+  public static void setInstance(@Nullable FlutterSettings instance) {
     testInstance = instance;
   }
 
@@ -53,8 +54,10 @@ public class FlutterSettings {
     return Objects.requireNonNull(Objects.requireNonNull(ApplicationManager.getApplication()).getService(FlutterSettings.class));
   }
 
-  protected static PropertiesComponent getPropertiesComponent() {
-    return PropertiesComponent.getInstance();
+  protected static @NotNull PropertiesComponent getPropertiesComponent() {
+    var component = PropertiesComponent.getInstance();
+    assert component != null;
+    return component;
   }
 
   public interface Listener extends EventListener {
@@ -63,7 +66,7 @@ public class FlutterSettings {
 
   private final EventDispatcher<Listener> dispatcher = EventDispatcher.create(Listener.class);
 
-  public void addListener(Listener listener) {
+  public void addListener(@NotNull Listener listener) {
     dispatcher.addListener(listener);
   }
 
@@ -177,11 +180,15 @@ public class FlutterSettings {
   }
 
   public boolean isShowClosingLabels() {
-    return DartClosingLabelManager.getInstance().getShowClosingLabels();
+    var labelManager = DartClosingLabelManager.getInstance();
+    return labelManager != null && labelManager.getShowClosingLabels();
   }
 
   public void setShowClosingLabels(boolean value) {
-    DartClosingLabelManager.getInstance().setShowClosingLabels(value);
+    var labelManager = DartClosingLabelManager.getInstance();
+    if (labelManager != null) {
+      labelManager.setShowClosingLabels(value);
+    }
   }
 
   public String getFontPackages() {
@@ -235,15 +242,15 @@ public class FlutterSettings {
   /**
    * See {FlutterSdkVersion#MIN_SDK_SUPPORTED}.
    */
-  public boolean isSdkVersionOutdatedWarningAcknowledged(String versionText, boolean isBeforeSunset) {
+  public boolean isSdkVersionOutdatedWarningAcknowledged(@Nullable String versionText, boolean isBeforeSunset) {
     return getPropertiesComponent().getBoolean(getSdkVersionKey(versionText, isBeforeSunset));
   }
 
-  public void setSdkVersionOutdatedWarningAcknowledged(String versionText, boolean isBeforeSunset, boolean value) {
+  public void setSdkVersionOutdatedWarningAcknowledged(@Nullable String versionText, boolean isBeforeSunset, boolean value) {
     getPropertiesComponent().setValue(getSdkVersionKey(versionText, isBeforeSunset), value);
   }
 
-  private String getSdkVersionKey(String versionText, boolean isBeforeSunset) {
+  private String getSdkVersionKey(@Nullable String versionText, boolean isBeforeSunset) {
     return sdkVersionOutdatedWarningAcknowledgedKey + "_" + versionText + "_" + (isBeforeSunset ? "beforeSunset" : "afterSunset");
   }
 
