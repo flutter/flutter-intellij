@@ -54,7 +54,11 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
     // If the project should use bazel instead of pub, don't surface this warning.
     if (WorkspaceCache.getInstance(project).isBazel()) return null;
 
-    if (!ProjectRootManager.getInstance(project).getFileIndex().isInContent(file)) return null;
+
+    var projectRootManager = ProjectRootManager.getInstance(project);
+    if (projectRootManager == null) return null;
+
+    if (!projectRootManager.getFileIndex().isInContent(file)) return null;
 
     final Module module = ModuleUtilCore.findModuleForFile(file, project);
     if (!FlutterModuleUtils.isFlutterModule(module)) return null;
@@ -83,6 +87,7 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
                                                        @NotNull final PsiFile psiFile,
                                                        @NotNull final PubRoot root,
                                                        @NotNull final String errorMessage) {
+    //noinspection DataFlowIssue
     final LocalQuickFix[] fixes = new LocalQuickFix[]{
       new PackageUpdateFix(FlutterBundle.message("get.dependencies"), FlutterSdk::startPubGet),
       new PackageUpdateFix(FlutterBundle.message("upgrade.dependencies"), FlutterSdk::startPubUpgrade),
@@ -133,7 +138,7 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
       // TODO(skybrian) analytics?
       mySdkAction.run(sdk, root, project);
 
-      DaemonCodeAnalyzer.getInstance(project).restart(psiFile);
+      restartCodeAnalyzer(project, psiFile);
     }
   }
 
@@ -166,7 +171,17 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
     @Override
     public void applyFix(@NotNull final Project project, @NotNull final PsiFile psiFile, @Nullable final Editor editor) {
       myIgnoredPubspecPaths.add(myPubspecPath);
-      DaemonCodeAnalyzer.getInstance(project).restart(psiFile);
+
+      restartCodeAnalyzer(project, psiFile);
+    }
+  }
+
+  private static void restartCodeAnalyzer(@NotNull final Project project, @NotNull final PsiFile psiFile) {
+    var codeAnalyzer = DaemonCodeAnalyzer.getInstance(project);
+    if (codeAnalyzer != null) {
+      codeAnalyzer.restart(psiFile);
     }
   }
 }
+
+
