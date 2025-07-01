@@ -40,6 +40,7 @@ public class ProjectWatch implements Closeable {
     };
 
     final ProjectManager manager = ProjectManager.getInstance();
+    assert manager != null;
     manager.addProjectManagerListener(project, listener);
 
     final MessageBusConnection bus = project.getMessageBus().connect();

@@ -43,7 +43,7 @@ public class PubRootCache {
   }
 
   @Nullable
-  public PubRoot getRoot(VirtualFile file) {
+  public PubRoot getRoot(@Nullable VirtualFile file) {
     file = findPubspecDir(file);
     if (file == null) {
       return null;
