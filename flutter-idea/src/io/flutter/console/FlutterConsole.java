@@ -47,7 +47,9 @@ class FlutterConsole {
 
   @NotNull
   static FlutterConsole create(@NotNull Project project, @Nullable Module module) {
-    final TextConsoleBuilder builder = TextConsoleBuilderFactory.getInstance().createBuilder(project);
+    var builderFactory = TextConsoleBuilderFactory.getInstance();
+    assert builderFactory != null;
+    final TextConsoleBuilder builder = builderFactory.createBuilder(project);
     builder.setViewer(true);
     if (module != null) {
       builder.addFilter(new FlutterConsoleFilter(module));
@@ -58,7 +60,9 @@ class FlutterConsole {
     panel.setContent(view.getComponent());
 
     final String title = module != null ? "[" + module.getName() + "] Flutter" : "Flutter";
-    final Content content = ContentFactory.getInstance().createContent(panel.getComponent(), title, true);
+    ContentFactory contentFactory = ContentFactory.getInstance();
+    assert contentFactory != null;
+    final Content content = contentFactory.createContent(panel.getComponent(), title, true);
     Disposer.register(content, view);
 
     return new FlutterConsole(view, content, project, module);
@@ -79,7 +83,7 @@ class FlutterConsole {
     // Print exit code.
     final ProcessAdapter listener = new ProcessAdapter() {
       @Override
-      public void processTerminated(final ProcessEvent event) {
+      public void processTerminated(final @NotNull ProcessEvent event) {
         view.print(
           "Process finished with exit code " + event.getExitCode(),
           ConsoleViewContentType.SYSTEM_OUTPUT);

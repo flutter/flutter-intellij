@@ -70,6 +70,7 @@ public class FlutterConsoles {
   @NotNull
   static FlutterConsole findOrCreate(@NotNull Project project, @Nullable Module module) {
     for (Content content : MessageView.getInstance(project).getContentManager().getContents()) {
+      if (content == null) continue;
       final FlutterConsole console = content.getUserData(KEY);
       if (console != null && console.module == module) {
         assert (project == console.project);
