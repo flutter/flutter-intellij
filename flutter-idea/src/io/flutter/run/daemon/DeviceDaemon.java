@@ -18,6 +18,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.android.IntelliJAndroidSdk;
@@ -361,14 +362,16 @@ class DeviceDaemon {
 
     @Override
     public void onDaemonShowMessage(@NotNull DaemonEvent.DaemonShowMessage event) {
-      if ("error".equals(event.level)) {
-        FlutterMessages.showError(event.title, event.message, null);
-      }
-      else if ("warning".equals(event.level)) {
-        FlutterMessages.showWarning(event.title, event.message, null);
-      }
-      else {
-        FlutterMessages.showInfo(event.title, event.message, null);
+      if (StringUtil.isNotEmpty(event.level) && StringUtil.isNotEmpty(event.title) && StringUtil.isNotEmpty(event.message)) {
+        if ("error".equals(event.level)) {
+          FlutterMessages.showError(event.title, event.message, null);
+        }
+        else if ("warning".equals(event.level)) {
+          FlutterMessages.showWarning(event.title, event.message, null);
+        }
+        else {
+          FlutterMessages.showInfo(event.title, event.message, null);
+        }
       }
     }
 
