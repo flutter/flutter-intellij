@@ -1,7 +1,7 @@
 package io.flutter.utils;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class UrlUtils {
     public static String generateHtmlFragmentWithHrefTags(String input) {
@@ -11,9 +11,10 @@ public class UrlUtils {
                 builder.append(" ");
             }
             try {
-                URL url = new URL(token);
-                builder.append("<a href=\"").append(url).append("\">").append(url).append("</a>");
-            } catch(MalformedURLException e) {
+                final URI uri = new URI(token);
+                builder.append("<a href=\"").append(uri).append("\">").append(uri).append("</a>");
+            }
+            catch (URISyntaxException e) {
                 builder.append(token);
             }
         }

@@ -48,8 +48,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -748,14 +748,14 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
     String uri = debugInfo.baseUri;
     if (uri != null) {
       if (uri.startsWith("file:")) {
-        // Convert the file: url to a path.
+        // Convert the file: uri to a path.
         try {
-          uri = new URL(uri).getPath();
+          uri = (new URI(uri).getPath());
           if (uri.endsWith(File.separator)) {
             uri = uri.substring(0, uri.length() - 1);
           }
         }
-        catch (MalformedURLException e) {
+        catch (URISyntaxException e) {
           // ignore
         }
       }
