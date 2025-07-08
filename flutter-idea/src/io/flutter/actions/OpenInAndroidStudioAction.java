@@ -17,6 +17,7 @@ import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -171,7 +172,7 @@ public class OpenInAndroidStudioAction extends AnAction {
           return null;
         }
 
-        final VirtualFile projectDir = project.getBaseDir();
+        final VirtualFile projectDir = ProjectUtil.guessProjectDir(project);
         for (PubRoot root : PubRoots.forProject(project)) {
           if (root.isFlutterPlugin()) {
             final VirtualFile rootFile = root.getRoot();

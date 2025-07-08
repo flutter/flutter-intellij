@@ -19,6 +19,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
@@ -136,7 +137,7 @@ public class TestLaunchState extends CommandLineState {
     if (root != null) {
       return root.getPath();
     }
-    final VirtualFile baseDir = config.getProject().getBaseDir();
+    final VirtualFile baseDir = ProjectUtil.guessProjectDir(config.getProject());
     return baseDir == null ? null : baseDir.getPath();
   }
 

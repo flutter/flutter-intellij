@@ -13,6 +13,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.BitUtil;
 import io.flutter.FlutterMessages;
@@ -63,7 +64,7 @@ public class OpenAndroidModule extends OpenInAndroidStudioAction implements Dumb
         GradleProjectImporter gradleImporter = GradleProjectImporter.getInstance();
         gradleImporter.importAndOpenProjectCore(null, true, projectFile);
         for (Project proj : ProjectManager.getInstance().getOpenProjects()) {
-          if (projectFile.equals(proj.getBaseDir()) || projectFile.equals(proj.getProjectFile())) {
+          if (projectFile.equals(ProjectUtil.guessProjectDir(proj)) || projectFile.equals(proj.getProjectFile())) {
             if (sourceFile != null && !sourceFile.isDirectory()) {
               OpenFileAction.openFile(sourceFile, proj);
             }

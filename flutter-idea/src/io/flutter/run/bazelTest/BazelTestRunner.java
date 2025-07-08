@@ -22,6 +22,7 @@ import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Key;
@@ -89,7 +90,7 @@ public class BazelTestRunner extends GenericProgramRunner {
     final FlutterPositionMapper.Analyzer analyzer = FlutterPositionMapper.Analyzer.create(env.getProject(), launcher.getTestFile());
 
     final BazelPositionMapper mapper =
-      new BazelPositionMapper(env.getProject(), env.getProject().getBaseDir()/*this is different, incorrect?*/, resolver, analyzer,
+      new BazelPositionMapper(env.getProject(), ProjectUtil.guessProjectDir(env.getProject()), resolver, analyzer,
                               connector);
 
     // Create the debug session.

@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -39,7 +40,7 @@ public class NativeEditorNotificationProvider implements EditorNotificationProvi
       return null;
     }
 
-    VirtualFile root = project.getBaseDir();
+    VirtualFile root = ProjectUtil.guessProjectDir(project);
     if (root == null) {
       return null;
     }

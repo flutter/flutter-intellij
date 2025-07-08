@@ -19,6 +19,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.project.impl.ProjectImpl;
 import com.intellij.openapi.project.impl.ProjectManagerImpl;
 import com.intellij.openapi.projectRoots.Sdk;
@@ -201,8 +202,10 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
 
   private void doGradleSync(@NotNull Project flutterProject, @NotNull Function<Project, Void> callback) {
     // TODO(messick): Collect URLs for all Android modules, including those within plugins.
-    VirtualFile dir = flutterProject.getBaseDir().findChild("android");
-    if (dir == null) dir = flutterProject.getBaseDir().findChild(".android"); // For modules.
+    final VirtualFile baseDir = ProjectUtil.guessProjectDir(flutterProject);
+    if (baseDir == null) return;
+    VirtualFile dir = baseDir.findChild("android");
+    if (dir == null) dir = baseDir.findChild(".android"); // For modules.
     if (dir == null) return;
     EmbeddedAndroidProject androidProject = new EmbeddedAndroidProject(Paths.get(FileUtilRt.toSystemIndependentName(dir.getPath())));
     androidProject.init42(null);
@@ -270,9 +273,9 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     }
   }
 
-  private static boolean hasAndroidDir(Project project) {
+  private static boolean hasAndroidDir(@NotNull Project project) {
     if (FlutterSdkUtil.hasFlutterModules(project)) {
-      VirtualFile base = project.getBaseDir();
+      VirtualFile base = ProjectUtil.guessProjectDir(project);
       VirtualFile dir = base.findChild("android");
       if (dir == null) dir = base.findChild(".android");
       return dir != null;
@@ -289,7 +292,11 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     if (LocalFileSystem.getInstance() != file.getFileSystem() && !ApplicationManager.getApplication().isUnitTestMode()) {
       return;
     }
-    if (!VfsUtilCore.isAncestor(project.getBaseDir(), file, true)) {
+    final VirtualFile baseDir = ProjectUtil.guessProjectDir(project);
+    if (baseDir == null) {
+      return;
+    }
+    if (!VfsUtilCore.isAncestor(baseDir, file, true)) {
       return;
     }
     getInstance(project).scheduleUpdate();
