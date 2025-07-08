@@ -72,7 +72,7 @@ jvmVersion = when (javaVersion) {
 }
 kotlin {
   compilerOptions {
-    apiVersion.set(KotlinVersion.KOTLIN_1_9)
+    apiVersion.set(KotlinVersion.KOTLIN_2_1)
     jvmTarget = jvmVersion
   }
 }
