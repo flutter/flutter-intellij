@@ -23,6 +23,7 @@ import com.intellij.util.download.DownloadableFileService;
 import com.intellij.util.download.FileDownloader;
 import com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException;
 import com.teamdev.jxbrowser.engine.RenderingMode;
+import io.flutter.logging.PluginLogger;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
@@ -81,7 +82,7 @@ public class JxBrowserManager {
   @NotNull
   private static final AtomicBoolean listeningForSetting = new AtomicBoolean(false);
   @NotNull
-  private static final Logger LOG = Logger.getInstance(JxBrowserManager.class);
+  private static final Logger LOG = PluginLogger.createLogger(JxBrowserManager.class);
   @NotNull
   public static CompletableFuture<JxBrowserStatus> installation = new CompletableFuture<>();
   @NotNull
@@ -261,7 +262,7 @@ public class JxBrowserManager {
       assert fileName != null;
       final String filePath = getFilePath(fileName);
       if (!fileUtils.deleteFile(filePath)) {
-        LOG.info(projectName + ": Existing file could not be deleted - " + filePath);
+        LOG.info(projectName + ": Existing file could not be deleted - " + fileName);
       }
     }
     downloadJxBrowser(fileNames);
@@ -311,7 +312,7 @@ public class JxBrowserManager {
                 ContainerUtil.getFirstItem(downloader.download(new File(DOWNLOAD_PATH)));
               final File file = download != null ? download.first : null;
               if (file != null) {
-                LOG.info(project.getName() + ": JxBrowser file downloaded: " + file.getAbsolutePath());
+                LOG.info(project.getName() + ": JxBrowser file downloaded: " + file.getName());
               }
             }
 
@@ -344,11 +345,11 @@ public class JxBrowserManager {
         fileUtils.loadPaths(this.getClass().getClassLoader(), paths);
       }
       catch (Exception ex) {
-        LOG.info("Failed to load JxBrowser file", ex);
+        LOG.info("Failed to load JxBrowser paths");
         setStatusFailed(new InstallationFailedReason(FailureType.CLASS_LOAD_FAILED));
         return;
       }
-      LOG.info("Loaded JxBrowser files successfully: " + paths);
+      LOG.info("Loaded JxBrowser files successfully");
 
       try {
         final Class<?> clazz = Class.forName("com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException");
