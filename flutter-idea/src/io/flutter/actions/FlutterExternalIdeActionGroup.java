@@ -7,6 +7,7 @@ package io.flutter.actions;
 
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterUtils;
 import org.jetbrains.annotations.NotNull;
@@ -47,7 +48,7 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
   }
 
   protected static boolean isWithinAndroidDirectory(@NotNull VirtualFile file, @NotNull Project project) {
-    final VirtualFile baseDir = project.getBaseDir();
+    final VirtualFile baseDir = ProjectUtil.guessProjectDir(project);
     if (baseDir == null) {
       return false;
     }
@@ -62,7 +63,7 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
   }
 
   protected static boolean isWithinIOsDirectory(@NotNull VirtualFile file, @NotNull Project project) {
-    final VirtualFile baseDir = project.getBaseDir();
+    final VirtualFile baseDir = ProjectUtil.guessProjectDir(project);
     if (baseDir == null) {
       return false;
     }
@@ -81,7 +82,7 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
       return false;
     }
 
-    final VirtualFile baseDir = project.getBaseDir();
+    final VirtualFile baseDir = ProjectUtil.guessProjectDir(project);
     return baseDir != null && baseDir.getPath().equals(file.getPath());
   }
 
