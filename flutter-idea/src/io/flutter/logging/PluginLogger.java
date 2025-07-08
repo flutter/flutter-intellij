@@ -30,7 +30,7 @@ public class PluginLogger {
     fileHandler.setFormatter(new SimpleFormatter());
   }
 
-  public static Logger createLogger(@NotNull Class<?> logClass) {
+  public static @NotNull Logger createLogger(@NotNull Class<?> logClass) {
     java.util.logging.Logger.getLogger(logClass.getName()).addHandler(fileHandler);
     return Logger.getInstance(logClass.getName());
   }

@@ -18,7 +18,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.ReadAction;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.EditorColorsListener;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.extensions.PluginId;
@@ -41,7 +40,6 @@ import io.flutter.devtools.DevToolsUtils;
 import io.flutter.devtools.RemainingDevToolsViewFactory;
 import io.flutter.editor.FlutterSaveActionsManager;
 import io.flutter.logging.FlutterConsoleLogManager;
-import io.flutter.logging.PluginLogger;
 import io.flutter.module.FlutterModuleBuilder;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -58,7 +56,6 @@ import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.OpenApiUtils;
 import io.flutter.view.InspectorViewFactory;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +72,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * may run when a project is being imported.
  */
 public class FlutterInitializer extends FlutterProjectActivity {
-  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterInitializer.class);
   private boolean toolWindowsInitialized = false;
 
   private boolean busSubscribed = false;
@@ -84,7 +80,7 @@ public class FlutterInitializer extends FlutterProjectActivity {
 
   @Override
   public void executeProjectStartup(@NotNull Project project) {
-    LOG.info("Executing Flutter plugin startup for project: " + project.getName());
+    log().info("Executing Flutter plugin startup for project: " + project.getName());
     // Disable the 'Migrate Project to Gradle' notification.
     FlutterUtils.disableGradleProjectMigrationNotification(project);
 
@@ -109,7 +105,7 @@ public class FlutterInitializer extends FlutterProjectActivity {
         continue;
       }
 
-      LOG.info("Flutter module has been found for project: " + project.getName());
+      log().info("Flutter module has been found for project: " + project.getName());
       // Ensure SDKs are configured; needed for clean module import.
       FlutterModuleUtils.enableDartSDK(module);
 
@@ -130,7 +126,9 @@ public class FlutterInitializer extends FlutterProjectActivity {
       }
     }
 
-
+    if (true) {
+      throw new RuntimeException("just for fun");
+    }
     // Lambdas need final vars.
     boolean finalHasFlutterModule = hasFlutterModule;
     ReadAction.nonBlocking(() -> {
@@ -283,29 +281,29 @@ public class FlutterInitializer extends FlutterProjectActivity {
           final DtdUtils dtdUtils = new DtdUtils();
           final DartToolingDaemonService dtdService = dtdUtils.readyDtdService(project).get();
           if (dtdService == null) {
-            LOG.error("Unable to send theme changed event because DTD service is null");
+            log().error("Unable to send theme changed event because DTD service is null");
             return;
           }
 
           dtdService.sendRequest("postEvent", params, false, object -> {
                                    JsonObject result = object.getAsJsonObject("result");
                                    if (result == null) {
-                                     LOG.error("Theme changed event returned null result");
+                                     log().error("Theme changed event returned null result");
                                      return;
                                    }
                                    JsonPrimitive type = result.getAsJsonPrimitive("type");
                                    if (type == null) {
-                                     LOG.error("Theme changed event result type is null");
+                                     log().error("Theme changed event result type is null");
                                      return;
                                    }
                                    if (!"Success".equals(type.getAsString())) {
-                                     LOG.error("Theme changed event result: " + type.getAsString());
+                                     log().error("Theme changed event result: " + type.getAsString());
                                    }
                                  }
           );
         }
         catch (WebSocketException | InterruptedException | ExecutionException e) {
-          LOG.error("Unable to send theme changed event", e);
+          log().error("Unable to send theme changed event", e);
         }
       }, 1, TimeUnit.SECONDS);
     }
