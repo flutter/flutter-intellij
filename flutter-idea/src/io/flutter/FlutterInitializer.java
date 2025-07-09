@@ -126,9 +126,6 @@ public class FlutterInitializer extends FlutterProjectActivity {
       }
     }
 
-    if (true) {
-      throw new RuntimeException("just for fun");
-    }
     // Lambdas need final vars.
     boolean finalHasFlutterModule = hasFlutterModule;
     ReadAction.nonBlocking(() -> {
