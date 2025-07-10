@@ -136,23 +136,7 @@ dependencies {
   testImplementation("com.google.guava:guava:32.0.1-jre")
   testImplementation("com.google.code.gson:gson:2.10.1")
   testImplementation("junit:junit:4.13.2")
-  runtimeOnly(
-    fileTree(
-      mapOf(
-        "dir" to "${project.rootDir}/third_party/lib/jxbrowser",
-        "include" to listOf("*.jar")
-      )
-    )
-  )
-  compileOnly(
-    fileTree(
-      mapOf(
-        "dir" to "${project.rootDir}/third_party/lib/jxbrowser",
-        "include" to listOf("*.jar")
-      )
-    )
-  )
-  testImplementation(
+  implementation(
     fileTree(
       mapOf(
         "dir" to "${project.rootDir}/third_party/lib/jxbrowser",
