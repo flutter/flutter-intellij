@@ -300,7 +300,7 @@ sourceSets {
     resources.srcDirs(
       listOf(
         "flutter-idea/src",
-        "flutter-idea/resources"
+        "resources"
       )
     )
     java.srcDirs(
@@ -320,7 +320,7 @@ sourceSets {
     )
     resources.srcDirs(
       listOf(
-        "flutter-idea/resources",
+        "resources",
         "flutter-idea/testData",
         "flutter-idea/testSrc/unit"
       )
