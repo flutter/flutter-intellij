@@ -6,7 +6,6 @@
 package io.flutter;
 
 import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.project.Project;
@@ -23,7 +22,7 @@ public class FlutterMessages {
   private FlutterMessages() {
   }
 
-  public static void showError(String title, @NotNull String message, @Nullable Project project) {
+  public static void showError(@NotNull String title, @NotNull String message, @Nullable Project project) {
     Notifications.Bus.notify(
       new Notification(FLUTTER_NOTIFICATION_GROUP_ID,
                        title,
@@ -31,16 +30,16 @@ public class FlutterMessages {
                        NotificationType.ERROR), project);
   }
 
-  public static void showWarning(String title, String message, @Nullable Project project) {
+  public static void showWarning(@NotNull String title, @NotNull String message, @Nullable Project project) {
     Notifications.Bus.notify(
       new Notification(
         FLUTTER_NOTIFICATION_GROUP_ID,
         title,
         message,
-        NotificationType.WARNING).setListener(NotificationListener.URL_OPENING_LISTENER), project);
+        NotificationType.WARNING), project);
   }
 
-  public static void showInfo(String title, String message, @Nullable Project project) {
+  public static void showInfo(@NotNull String title, @NotNull String message, @Nullable Project project) {
     final Notification notification = new Notification(
       FLUTTER_NOTIFICATION_GROUP_ID,
       title,
