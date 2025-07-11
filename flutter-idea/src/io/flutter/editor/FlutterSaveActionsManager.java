@@ -131,25 +131,22 @@ public class FlutterSaveActionsManager {
           return;
         }
 
-        new WriteCommandAction.Simple(myProject) {
-          @Override
-          protected void run() {
-            if (myProject.isDisposed()) {
-              return;
-            }
-
-            AssistUtils.applySourceEdits(myProject, file, document, fileEdit.getEdits(), Collections.emptySet());
-
-            // Committing a document here is required in order to guarantee that DartPostFormatProcessor.processText() is called afterwards.
-            PsiDocumentManager.getInstance(myProject).commitDocument(document);
-
-            // Run this in an invoke later so that we don't exeucte the initial part of performFormat in a write action.
-            //noinspection CodeBlock2Expr
-            OpenApiUtils.safeInvokeLater(() -> {
-              performFormat(document, file, true, psiFile);
-            });
+        WriteCommandAction.writeCommandAction(myProject).run(() -> {
+          if (myProject.isDisposed()) {
+            return;
           }
-        }.execute();
+
+          AssistUtils.applySourceEdits(myProject, file, document, fileEdit.getEdits(), Collections.emptySet());
+
+          // Committing a document here is required in order to guarantee that DartPostFormatProcessor.processText() is called afterwards.
+          PsiDocumentManager.getInstance(myProject).commitDocument(document);
+
+          // Run this in an invoke later so that we don't exeucte the initial part of performFormat in a write action.
+          //noinspection CodeBlock2Expr
+          OpenApiUtils.safeInvokeLater(() -> {
+            performFormat(document, file, true, psiFile);
+          });
+        });
       });
     }
   }
@@ -174,33 +171,30 @@ public class FlutterSaveActionsManager {
         return;
       }
 
-      new WriteCommandAction.Simple(myProject) {
-        @Override
-        protected void run() {
-          if (myProject.isDisposed()) {
-            return;
-          }
-
-          boolean didFormat = false;
-
-          final List<SourceEdit> edits = formatResult.getEdits();
-          if (edits != null && edits.size() == 1) {
-            final String replacement = StringUtil.convertLineSeparators(edits.get(0).getReplacement());
-            document.replaceString(0, document.getTextLength(), replacement);
-            PsiDocumentManager.getInstance(myProject).commitDocument(document);
-
-            didFormat = true;
-          }
-
-          // Don't perform the save in a write action - it could invoke EDT work.
-          if (reSave || didFormat) {
-            //noinspection CodeBlock2Expr
-            OpenApiUtils.safeInvokeLater(() -> {
-              FileDocumentManager.getInstance().saveDocument(document);
-            });
-          }
+      WriteCommandAction.writeCommandAction(myProject).run(() -> {
+        if (myProject.isDisposed()) {
+          return;
         }
-      }.execute();
+
+        boolean didFormat = false;
+
+        final List<SourceEdit> edits = formatResult.getEdits();
+        if (edits != null && edits.size() == 1) {
+          final String replacement = StringUtil.convertLineSeparators(edits.get(0).getReplacement());
+          document.replaceString(0, document.getTextLength(), replacement);
+          PsiDocumentManager.getInstance(myProject).commitDocument(document);
+
+          didFormat = true;
+        }
+
+        // Don't perform the save in a write action - it could invoke EDT work.
+        if (reSave || didFormat) {
+          //noinspection CodeBlock2Expr
+          OpenApiUtils.safeInvokeLater(() -> {
+            FileDocumentManager.getInstance().saveDocument(document);
+          });
+        }
+      });
     });
   }
 
