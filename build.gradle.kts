@@ -131,110 +131,16 @@ dependencies {
   // TODO(helin24): The rest in this block was pulled over from flutter-idea; potentially parts could be deleted.
   compileOnly("org.jetbrains:annotations:24.0.0")
   testImplementation("org.jetbrains:annotations:24.0.0")
-
-  testRuntimeOnly(
-    fileTree(
-      mapOf(
-        "dir" to "${project.rootDir}/artifacts/android-studio/plugins",
-        "include" to listOf("**/*.jar"),
-        "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar", "**/kotlin-stdlib-jdk8.jar")
-      )
-    )
-  )
-  compileOnly(
-    fileTree(
-      mapOf(
-        "dir" to "${project.rootDir}/artifacts/android-studio/lib",
-        "include" to listOf("*.jar"),
-        "exclude" to listOf("**/annotations.jar")
-      )
-    )
-  )
-  testRuntimeOnly(
-    fileTree(
-      mapOf(
-        "dir" to "${project.rootDir}/artifacts/android-studio/lib",
-        "include" to listOf("*.jar")
-      )
-    )
-  )
-  compileOnly(
-    fileTree(
-      mapOf(
-        "dir" to "${project.rootDir}/artifacts/android-studio/plugins/git4idea/lib",
-        "include" to listOf("*.jar")
-      )
-    )
-  )
-  testImplementation(
-    fileTree(
-      mapOf(
-        "dir" to "${project.rootDir}/artifacts/android-studio/plugins/git4idea/lib",
-        "include" to listOf("*.jar")
-      )
-    )
-  )
   compileOnly("com.google.guava:guava:32.0.1-android")
   compileOnly("com.google.code.gson:gson:2.10.1")
   testImplementation("com.google.guava:guava:32.0.1-jre")
   testImplementation("com.google.code.gson:gson:2.10.1")
   testImplementation("junit:junit:4.13.2")
-  runtimeOnly(
+  implementation(
     fileTree(
       mapOf(
         "dir" to "${project.rootDir}/third_party/lib/jxbrowser",
         "include" to listOf("*.jar")
-      )
-    )
-  )
-  compileOnly(
-    fileTree(
-      mapOf(
-        "dir" to "${project.rootDir}/third_party/lib/jxbrowser",
-        "include" to listOf("*.jar")
-      )
-    )
-  )
-  testImplementation(
-    fileTree(
-      mapOf(
-        "dir" to "${project.rootDir}/third_party/lib/jxbrowser",
-        "include" to listOf("*.jar")
-      )
-    )
-  )
-
-  compileOnly(
-    fileTree(
-      mapOf(
-        "dir" to "${project.rootDir}/artifacts/android-studio/lib",
-        "include" to listOf("*.jar")
-      )
-    )
-  )
-  testImplementation(
-    fileTree(
-      mapOf(
-        "dir" to "${project.rootDir}/artifacts/android-studio/lib",
-        "include" to listOf("*.jar")
-      )
-    )
-  )
-  compileOnly(
-    fileTree(
-      mapOf(
-        "dir" to "${project.rootDir}/artifacts/android-studio/plugins",
-        "include" to listOf("**/*.jar"),
-        "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar")
-      )
-    )
-  )
-  testImplementation(
-    fileTree(
-      mapOf(
-        "dir" to "${project.rootDir}/artifacts/android-studio/plugins",
-        "include" to listOf("**/*.jar"),
-        "exclude" to listOf("**/kotlin-compiler.jar", "**/kotlin-plugin.jar")
       )
     )
   )
