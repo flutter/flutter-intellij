@@ -323,7 +323,7 @@ public class FlutterTestRunner extends GenericProgramRunner {
       }
 
       if (eventName.equals("test.startedProcess")) {
-        final JsonPrimitive primUri = params.getAsJsonPrimitive("observatoryUri");
+        final JsonPrimitive primUri = params.getAsJsonPrimitive("vmServiceUri");
         if (primUri != null) {
           observatoryUri = primUri.getAsString();
         }
