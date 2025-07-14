@@ -54,8 +54,10 @@ public class FlutterTestEventsConverter extends DartTestEventsConverterZ {
 
   @Override
   protected boolean process(@NotNull JsonArray array) {
-    // Consume (and don't print) vmServiceUri output, e.g.,
-    //     [{"event":"test.startedProcess","params":{"vmServiceUri":"http://127.0.0.1:51770/"}}]
+    // Consume (and don't print) observatoryUri/vmServiceUri output, e.g.,
+    //     [{"event":"test.startedProcess","params":{"vmServiceUri":"http://127.0.0.1:62047/VFPfi0PrluM=/"}}]
+    //     [{"event":"test.startedProcess","params":{"observatoryUri":"http://127.0.0.1:51770/"}}] (deprecated)
+    // Both fields may be present on Flutter versions older than 3.34.
     if (array.size() == 1) {
       final JsonElement element = array.get(0);
       final JsonElement event = getValue(element, "event");
@@ -63,8 +65,8 @@ public class FlutterTestEventsConverter extends DartTestEventsConverterZ {
         if (Objects.equals(event.getAsString(), "test.startedProcess")) {
           final JsonElement params = getValue(element, "params");
           if (params != null) {
-            final JsonElement uri = getValue(params, "vmServiceUri");
-            return uri != null;
+            return getValue(params, "vmServiceUri") != null
+                || getValue(params, "observatoryUri") != null;
           }
         }
       }

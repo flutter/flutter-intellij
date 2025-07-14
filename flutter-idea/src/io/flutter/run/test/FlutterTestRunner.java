@@ -323,9 +323,20 @@ public class FlutterTestRunner extends GenericProgramRunner {
       }
 
       if (eventName.equals("test.startedProcess")) {
-        final JsonPrimitive primUri = params.getAsJsonPrimitive("vmServiceUri");
-        if (primUri != null) {
-          observatoryUri = primUri.getAsString();
+        // Since Flutter release 3.34, "observatoryUri" is no longer available due to the removal of
+        // Observatory in favor of DevTools/VM Service.
+        // Since then, only the field "vmServiceUri" is given in this event (contrary to both fields
+        // on earlier versions).
+        final JsonPrimitive primVmServiceUri = params.getAsJsonPrimitive("vmServiceUri");
+
+        if (primVmServiceUri != null) {
+          observatoryUri = primVmServiceUri.getAsString();
+        } else {
+          final JsonPrimitive primObservatoryUri = params.getAsJsonPrimitive("observatoryUri");
+
+          if (primObservatoryUri != null) {
+            observatoryUri = primObservatoryUri.getAsString();
+          }
         }
       }
     }
