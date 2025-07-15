@@ -12,6 +12,7 @@ import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.kotlin.dsl.register
 
 // Specify UTF-8 for all compilations so we avoid Windows-1252.
 allprojects {
@@ -102,23 +103,26 @@ dependencies {
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
     androidStudio(ideaVersion)
     testFramework(TestFrameworkType.Platform)
+    testFramework(TestFrameworkType.Starter)
 
     // Plugin dependency documentation:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
     // https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html#project-setup
-    bundledPlugins(immutableListOf(
-      "com.google.tools.ij.aiplugin",
-      "com.intellij.java",
-      "com.intellij.properties",
-      "JUnit",
-      "Git4Idea",
-      "org.jetbrains.kotlin",
-      "org.jetbrains.plugins.gradle",
-      "org.jetbrains.plugins.yaml",
-      "org.intellij.intelliLang",
-      "org.jetbrains.android",
-      "com.android.tools.idea.smali"
-    ))
+    bundledPlugins(
+      immutableListOf(
+        "com.google.tools.ij.aiplugin",
+        "com.intellij.java",
+        "com.intellij.properties",
+        "JUnit",
+        "Git4Idea",
+        "org.jetbrains.kotlin",
+        "org.jetbrains.plugins.gradle",
+        "org.jetbrains.plugins.yaml",
+        "org.intellij.intelliLang",
+        "org.jetbrains.android",
+        "com.android.tools.idea.smali"
+      )
+    )
     plugin("Dart:$dartPluginVersion")
 
     if (sinceBuildInput == "243" || sinceBuildInput == "251") {
@@ -136,6 +140,16 @@ dependencies {
   testImplementation("com.google.guava:guava:32.0.1-jre")
   testImplementation("com.google.code.gson:gson:2.10.1")
   testImplementation("junit:junit:4.13.2")
+
+  // Starter Framework
+  testImplementation("com.jetbrains.intellij.tools:ide-starter-squashed:LATEST-EAP-SNAPSHOT")
+  testImplementation("com.jetbrains.intellij.tools:ide-starter-junit5:LATEST-EAP-SNAPSHOT")
+
+  testImplementation("com.jetbrains.intellij.tools:ide-starter-driver:LATEST-EAP-SNAPSHOT")
+  testImplementation("com.jetbrains.intellij.driver:driver-client:LATEST-EAP-SNAPSHOT")
+  testImplementation("com.jetbrains.intellij.driver:driver-sdk:LATEST-EAP-SNAPSHOT")
+  testImplementation("com.jetbrains.intellij.driver:driver-model:LATEST-EAP-SNAPSHOT")
+
   implementation(
     fileTree(
       mapOf(
@@ -146,6 +160,89 @@ dependencies {
   )
 }
 
+sourceSets {
+  main {
+    java.srcDirs(
+      listOf(
+        "flutter-idea/src",
+        "flutter-idea/third_party/vmServiceDrivers"
+      )
+    )
+    // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
+    resources.srcDirs(
+      listOf(
+        "flutter-idea/src",
+        "resources"
+      )
+    )
+    java.srcDirs(
+      listOf(
+        "flutter-studio/src",
+        "flutter-studio/third_party/vmServiceDrivers"
+      )
+    )
+  }
+  test {
+//    kotlin.srcDir("src/integrationTest/kotlin")
+    java.srcDirs(
+      listOf(
+        "flutter-idea/src",
+        "flutter-idea/testSrc/unit",
+        "flutter-idea/third_party/vmServiceDrivers"
+      )
+    )
+    resources.srcDirs(
+      listOf(
+        "resources",
+        "flutter-idea/testData",
+        "flutter-idea/testSrc/unit"
+      )
+    )
+  }
+
+  create("integrationTest") {
+//    kotlin.srcDir("src/integrationTest/kotlin")
+//    java.srcDirs(
+//      listOf(
+//        "flutter-idea/src",
+//        "flutter-idea/testSrc/unit",
+//        "flutter-idea/third_party/vmServiceDrivers"
+//      )
+//    )
+//    // It's good practice to also have a resources directory
+//    resources.srcDir("src/integrationTest/resources")
+//
+//
+//    // This gives your tests access to your main app's code.
+//    compileClasspath += sourceSets.main.get().output
+//    compileClasspath += sourceSets.test.get().output
+//    runtimeClasspath += sourceSets.main.get().output
+//    runtimeClasspath += sourceSets.test.get().output
+    compileClasspath += configurations.getByName("testCompileClasspath")
+    runtimeClasspath += configurations.getByName("testRuntimeClasspath")
+//    compileClasspath += configurations.getByName("integrationTestImplementation")
+
+  }
+}
+
+//configurations {
+//  // Get the configuration that was automatically created for the 'integrationTest' source set...
+//  getByName("integrationTestImplementation") {
+//    // ...and tell it to inherit all dependencies from the regular 'testImplementation'.
+//    // This is the crucial link that provides the IntelliJ test framework.
+//    extendsFrom(getByName("testImplementation"))
+//  }
+//}
+
+val integrationTestImplementation by configurations.getting {
+  extendsFrom(configurations.testImplementation.get())
+}
+
+dependencies {
+  integrationTestImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
+  integrationTestImplementation("org.kodein.di:kodein-di-jvm:7.20.2")
+  integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.1")
+}
 
 intellijPlatform {
   pluginConfiguration {
@@ -194,44 +291,13 @@ intellijPlatform {
   }
 }
 
-sourceSets {
-  main {
-    java.srcDirs(
-      listOf(
-        "flutter-idea/src",
-        "flutter-idea/third_party/vmServiceDrivers"
-      )
-    )
-    // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
-    resources.srcDirs(
-      listOf(
-        "flutter-idea/src",
-        "resources"
-      )
-    )
-    java.srcDirs(
-      listOf(
-        "flutter-studio/src",
-        "flutter-studio/third_party/vmServiceDrivers"
-      )
-    )
-  }
-  test {
-    java.srcDirs(
-      listOf(
-        "flutter-idea/src",
-        "flutter-idea/testSrc/unit",
-        "flutter-idea/third_party/vmServiceDrivers"
-      )
-    )
-    resources.srcDirs(
-      listOf(
-        "resources",
-        "flutter-idea/testData",
-        "flutter-idea/testSrc/unit"
-      )
-    )
-  }
+val integrationTest = tasks.register<Test>("integrationTest") {
+  val integrationTestSourceSet = sourceSets.getByName("integrationTest")
+  testClassesDirs = integrationTestSourceSet.output.classesDirs
+  classpath = integrationTestSourceSet.runtimeClasspath
+  systemProperty("path.to.build.plugin", tasks.prepareSandbox.get().pluginDirectory.get().asFile)
+  useJUnitPlatform()
+  dependsOn(tasks.prepareSandbox)
 }
 
 // Documentation for printProductsReleases:
@@ -269,9 +335,39 @@ tasks {
 tasks.register("printCompileClasspath") {
   doLast {
     println("--- Begin Compile Classpath ---")
-    configurations.getByName("compileClasspath").forEach { file ->
-      println(file.absolutePath)
+//    configurations.getByName("compileClasspath").forEach { file ->
+//      println(file.absolutePath)
+//    }
+    println("\n--- Integration Test Compile Classpath ---")
+    sourceSets.getByName("integrationTest").compileClasspath.forEach { file ->
+      println(file.name)
     }
+//
+//    println("\n--- Main Compile Classpath ---")
+//    sourceSets.main.get().compileClasspath.forEach { file ->
+//      println(file.name)
+//    }
+
+//    println("\n--- Test Compile Classpath ---")
+//    sourceSets.test.get().compileClasspath.forEach { file ->
+//      println(file.name)
+//    }
+
     println("--- End Compile Classpath ---")
+  }
+}
+
+tasks.register("printAllConfigurations") {
+  group = "help"
+  description = "Prints all configurations and their properties."
+
+  doLast {
+    println("--- All Project Configurations ---")
+    project.configurations.all {
+      println("Name: ${this.name}")
+      println("  - Can be resolved: ${this.isCanBeResolved}")
+      println("  - Extends from: ${this.extendsFrom.map { it.name }}")
+      println("")
+    }
   }
 }

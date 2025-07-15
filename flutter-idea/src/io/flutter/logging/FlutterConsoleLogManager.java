@@ -177,7 +177,7 @@ public class FlutterConsoleLogManager {
   private static final ArrayList<DiagnosticsNode> emptyList = new ArrayList<>();
 
   /**
-   * Pretty print the error using the available console syling attributes.
+   * Pretty print the error using the available console styling attributes.
    */
   private void processFlutterErrorEvent(@NotNull DiagnosticsNode diagnosticsNode) {
     final String description = " " + diagnosticsNode + " ";

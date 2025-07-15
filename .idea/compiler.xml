@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="17" />
+    <bytecodeTargetLevel target="17">
+      <module name="flutter-intellij" target="21" />
+      <module name="flutter-intellij.main" target="21" />
+      <module name="flutter-intellij.test" target="21" />
+    </bytecodeTargetLevel>
   </component>
 </project>
