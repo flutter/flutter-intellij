@@ -17,10 +17,13 @@ import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.jetbrains.lang.dart.sdk.DartSdk;
 import icons.FlutterIcons;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
+import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkVersion;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.Executors;
@@ -96,7 +99,20 @@ public class FlutterSurveyNotifications {
         properties.setValue(survey.uniqueId, true);
         notification.expire();
 
-        String url = survey.urlPrefix + "?Source=IntelliJ";
+        StringBuilder stringBuilder = new StringBuilder(survey.urlPrefix + "?Source=IntelliJ");
+
+        final DartSdk dartSdk = DartSdk.getDartSdk(myProject);
+        if (dartSdk != null) {
+          stringBuilder.append("&DartVersion=").append(dartSdk.getVersion());
+        }
+
+        final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(myProject);
+        final FlutterSdkVersion flutterSdkVersion = flutterSdk == null ? null : flutterSdk.getVersion();
+        if (flutterSdkVersion != null) {
+          stringBuilder.append("&FlutterVersion=").append(flutterSdkVersion.getVersionText());
+        }
+
+        String url = stringBuilder.toString();
         BrowserUtil.browse(url);
       }
     });
