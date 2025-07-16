@@ -19,11 +19,14 @@ import io.flutter.FlutterMessages;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.console.FlutterConsoles;
 import io.flutter.dart.DartPlugin;
+import io.flutter.logging.PluginLogger;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -31,7 +34,7 @@ import java.util.function.Consumer;
  * A Flutter command to run, with its arguments.
  */
 public class FlutterCommand {
-  private static final @NotNull Logger LOG = Logger.getInstance(FlutterCommand.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterCommand.class);
 
   private static final Set<Type> pubRelatedCommands = new HashSet<>(
     Arrays.asList(Type.PUB_GET, Type.PUB_UPGRADE, Type.PUB_OUTDATED, Type.UPGRADE));
@@ -166,7 +169,7 @@ public class FlutterCommand {
   public ColoredProcessHandler startProcess(boolean sendAnalytics) {
     try {
       final GeneralCommandLine commandLine = createGeneralCommandLine(null);
-      LOG.info(commandLine.toString());
+      LOG.info(safeCommandLog(commandLine));
       return new ColoredProcessHandler(commandLine);
     }
     catch (ExecutionException e) {
@@ -194,7 +197,7 @@ public class FlutterCommand {
     final ColoredProcessHandler handler;
     try {
       final GeneralCommandLine commandLine = createGeneralCommandLine(project);
-      LOG.info(commandLine.toString());
+      LOG.info(safeCommandLog(commandLine));
       handler = new MostlySilentColoredProcessHandler(commandLine);
       handler.addProcessListener(new ProcessAdapter() {
         @Override
@@ -289,5 +292,15 @@ public class FlutterCommand {
       this.title = title;
       this.subCommand = ImmutableList.copyOf(subCommand);
     }
+  }
+
+  private @NotNull String safeCommandLog(@NotNull GeneralCommandLine commandLine) {
+    if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+      final String fullString = commandLine.toString();
+      return fullString != null ? fullString : "";
+    }
+
+    final Path path = Path.of(commandLine.getExePath());
+    return path.getFileName() + commandLine.getParametersList().toString();
   }
 }
