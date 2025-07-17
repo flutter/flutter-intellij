@@ -35,6 +35,7 @@ public class FlutterSettings {
   private static final String showBazelIosRunNotificationKey = "io.flutter.hideBazelIosRunNotification";
   private static final String sdkVersionOutdatedWarningAcknowledgedKey = "io.flutter.sdkVersionOutdatedWarningAcknowledged";
   private static final String androidStudioBotAcknowledgedKey = "io.flutter.androidStudioBotAcknowledgedKey";
+  private static final String enableFilePathLoggingKey = "io.flutter.enableFilePathLogging";
 
   private static @Nullable FlutterSettings testInstance;
 
@@ -260,5 +261,13 @@ public class FlutterSettings {
 
   public void setAndroidStudioBotAcknowledgedKey(boolean value) {
     getPropertiesComponent().setValue(androidStudioBotAcknowledgedKey, value);
+  }
+
+  public boolean isFilePathLoggingEnabled() {
+    return getPropertiesComponent().getBoolean(enableFilePathLoggingKey, false);
+  }
+
+  public void setFilePathLoggingEnabled(boolean value) {
+    getPropertiesComponent().setValue(enableFilePathLoggingKey, value);
   }
 }

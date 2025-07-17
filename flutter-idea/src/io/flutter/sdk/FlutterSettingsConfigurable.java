@@ -86,6 +86,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myAllowTestsInSourcesRoot;
   private ActionLink settingsLink;
   private JCheckBox myEnableLogsPreserveAfterHotReloadOrRestart;
+  private @NotNull JCheckBox myEnableFilePathLogging;
 
   private final @NotNull Project myProject;
   private final WorkspaceCache workspaceCache;
@@ -245,6 +246,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isFilePathLoggingEnabled() != myEnableFilePathLogging.isSelected()) {
+      return true;
+    }
+
     return settings.isEnableJcefBrowser() != myEnableJcefBrowserCheckBox.isSelected();
   }
 
@@ -299,6 +304,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setAllowTestsInSourcesRoot(myAllowTestsInSourcesRoot.isSelected());
     settings.setFontPackages(myFontPackagesTextArea.getText());
     settings.setEnableJcefBrowser(myEnableJcefBrowserCheckBox.isSelected());
+    settings.setFilePathLoggingEnabled(myEnableFilePathLogging.isSelected());
 
     reset(); // because we rely on remembering initial state
     checkFontPackages(settings.getFontPackages(), oldFontPackages);
@@ -366,6 +372,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myEnableJcefBrowserCheckBox.setSelected(settings.isEnableJcefBrowser());
     myFontPackagesTextArea.setText(settings.getFontPackages());
+    myEnableFilePathLogging.setSelected(settings.isFilePathLoggingEnabled());
   }
 
   private void onVersionChanged() {

@@ -59,7 +59,7 @@
           </component>
         </children>
       </grid>
-      <grid id="e885c" layout-manager="GridLayoutManager" row-count="2" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="e885c" layout-manager="GridLayoutManager" row-count="3" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -83,6 +83,15 @@
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.allow.tests.in.sources"/>
               <toolTipText resource-bundle="io/flutter/FlutterBundle" key="settings.allow.tests.tooltip"/>
+            </properties>
+          </component>
+          <component id="1a5b8" class="javax.swing.JCheckBox" binding="myEnableFilePathLogging">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.enable.file.path.logging"/>
+              <toolTipText resource-bundle="io/flutter/FlutterBundle" key="settings.enable.file.path.logging.tooltip"/>
             </properties>
           </component>
         </children>
