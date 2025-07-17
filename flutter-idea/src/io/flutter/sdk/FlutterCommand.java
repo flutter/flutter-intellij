@@ -301,6 +301,6 @@ public class FlutterCommand {
     }
 
     final Path path = Path.of(commandLine.getExePath());
-    return path.getFileName() + commandLine.getParametersList().toString();
+    return path.getFileName() + " " + commandLine.getParametersList();
   }
 }
