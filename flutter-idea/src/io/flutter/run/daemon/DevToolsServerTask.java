@@ -27,19 +27,15 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.Version;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.registry.Registry;
 import com.jetbrains.lang.dart.ide.devtools.DartDevToolsService;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
-import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
-import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DtdUtils;
 import io.flutter.logging.PluginLogger;
-import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.JsonUtils;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
@@ -53,8 +49,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 class DevToolsServerTask extends Task.Backgroundable {
