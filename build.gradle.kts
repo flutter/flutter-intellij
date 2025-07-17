@@ -198,37 +198,31 @@ sourceSets {
   main {
     java.srcDirs(
       listOf(
-        "flutter-idea/src",
-        "flutter-idea/third_party/vmServiceDrivers"
+        "src",
+        "third_party/vmServiceDrivers"
       )
     )
     // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
     resources.srcDirs(
       listOf(
-        "flutter-idea/src",
+        "src",
         "resources"
-      )
-    )
-    java.srcDirs(
-      listOf(
-        "flutter-studio/src",
-        "flutter-studio/third_party/vmServiceDrivers"
       )
     )
   }
   test {
     java.srcDirs(
       listOf(
-        "flutter-idea/src",
-        "flutter-idea/testSrc/unit",
-        "flutter-idea/third_party/vmServiceDrivers"
+        "src",
+        "testSrc/unit",
+        "third_party/vmServiceDrivers"
       )
     )
     resources.srcDirs(
       listOf(
         "resources",
-        "flutter-idea/testData",
-        "flutter-idea/testSrc/unit"
+        "testData",
+        "testSrc/unit"
       )
     )
   }
