@@ -114,7 +114,7 @@ public class VmServiceWrapper implements Disposable {
     if (ApplicationManager.getApplication().isReadAccessAllowed()) {
       LOG.error("Waiting for the answer from the Dart debugger under read action may lead to EDT freeze");
     }
-    if (myVmServiceReceiverThreadId == Thread.currentThread().getId()) {
+    if (myVmServiceReceiverThreadId == Thread.currentThread().threadId()) {
       LOG.error("Synchronous requests must not be made in Web Socket listening thread: answer will never be received");
     }
   }
@@ -123,7 +123,7 @@ public class VmServiceWrapper implements Disposable {
     streamListen(VmService.DEBUG_STREAM_ID, new VmServiceConsumers.SuccessConsumerWrapper() {
       @Override
       public void received(final Success success) {
-        myVmServiceReceiverThreadId = Thread.currentThread().getId();
+        myVmServiceReceiverThreadId = Thread.currentThread().threadId();
         streamListen(VmService.ISOLATE_STREAM_ID, new VmServiceConsumers.SuccessConsumerWrapper() {
           @Override
           public void received(final Success success) {
