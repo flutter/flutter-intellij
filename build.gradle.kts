@@ -128,7 +128,6 @@ dependencies {
     pluginVerifier()
   }
 
-  // TODO(helin24): The rest in this block was pulled over from flutter-idea; potentially parts could be deleted.
   compileOnly("org.jetbrains:annotations:24.0.0")
   testImplementation("org.jetbrains:annotations:24.0.0")
   compileOnly("com.google.guava:guava:32.0.1-android")

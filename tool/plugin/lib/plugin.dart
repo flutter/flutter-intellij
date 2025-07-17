@@ -771,7 +771,6 @@ abstract class ProductCommand extends Command<int> {
   Future<int> run() async {
     await _initGlobals();
     await _initSpecs();
-    _handleSymlinksOnWindows();
     try {
       return await doit();
     } catch (ex, stack) {
@@ -804,26 +803,6 @@ abstract class ProductCommand extends Command<int> {
       await specs[i].initChangeLog();
     }
     return specs.length;
-  }
-
-  void _handleSymlinksOnWindows() {
-    if (!Platform.isWindows) {
-      return;
-    }
-    const List<String> symlinks = [
-      r'flutter-idea\resources',
-      r'flutter-studio\resources',
-    ];
-    final currentPath = Directory.current.path;
-    for (final entityPath in symlinks) {
-      final path = '$currentPath\\$entityPath';
-      if (FileSystemEntity.isLinkSync(path)) {
-        continue;
-      }
-      final content = File(path).readAsStringSync();
-      File(path).deleteSync();
-      Link(path).createSync(content);
-    }
   }
 }
 
