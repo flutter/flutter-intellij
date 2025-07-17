@@ -23,7 +23,7 @@
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
   <!--suppress PluginXmlValidity -->
-  <idea-version since-build="243" until-build="243.*"/>
+  <idea-version since-build="251" until-build="253.*"/>
 
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.lang</depends>
@@ -45,7 +45,7 @@
 
   <!-- Contributes Android Studio-specific features and implementations. -->
   <!--suppress PluginXmlValidity -->
-  <depends optional="true" config-file="studio-contribs.xml">com.intellij.modules.androidstudio</depends>
+  <depends optional="true" config-file="studio-contribs.xml">com.android.tools.apk</depends>
 
 
   <change-notes>
