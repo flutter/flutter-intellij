@@ -128,7 +128,6 @@ dependencies {
     pluginVerifier()
   }
 
-  // TODO(helin24): The rest in this block was pulled over from flutter-idea; potentially parts could be deleted.
   compileOnly("org.jetbrains:annotations:24.0.0")
   testImplementation("org.jetbrains:annotations:24.0.0")
   compileOnly("com.google.guava:guava:32.0.1-android")
@@ -198,37 +197,31 @@ sourceSets {
   main {
     java.srcDirs(
       listOf(
-        "flutter-idea/src",
-        "flutter-idea/third_party/vmServiceDrivers"
+        "src",
+        "third_party/vmServiceDrivers"
       )
     )
     // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
     resources.srcDirs(
       listOf(
-        "flutter-idea/src",
+        "src",
         "resources"
-      )
-    )
-    java.srcDirs(
-      listOf(
-        "flutter-studio/src",
-        "flutter-studio/third_party/vmServiceDrivers"
       )
     )
   }
   test {
     java.srcDirs(
       listOf(
-        "flutter-idea/src",
-        "flutter-idea/testSrc/unit",
-        "flutter-idea/third_party/vmServiceDrivers"
+        "src",
+        "testSrc/unit",
+        "third_party/vmServiceDrivers"
       )
     )
     resources.srcDirs(
       listOf(
         "resources",
-        "flutter-idea/testData",
-        "flutter-idea/testSrc/unit"
+        "testData",
+        "testSrc/unit"
       )
     )
   }

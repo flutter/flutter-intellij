@@ -37,7 +37,7 @@ echo "pub get `pwd`"
 dart pub get
 
 # Get packages for the test data.
-(cd flutter-idea/testData/sample_tests; echo "dart pub get `pwd`"; dart pub get)
+(cd testData/sample_tests; echo "dart pub get `pwd`"; dart pub get)
 
 # Set up the plugin tool.
 (cd tool/plugin; echo "dart pub get `pwd`"; dart pub get)
@@ -45,7 +45,7 @@ dart pub get
 if [ "DART_BOT" = "$BOT" ] ; then
   # Analyze the Dart code in the repo.
   echo "dart analyze"
-  (cd flutter-idea/src; dart analyze)
+  (cd src; dart analyze)
   (cd tool/plugin; dart analyze)
   (cd tool/triage; dart pub upgrade && dart analyze)
 
