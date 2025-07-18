@@ -52,31 +52,9 @@ import java.util.concurrent.atomic.AtomicReference;
 public class JxBrowserManager {
   private static JxBrowserManager manager;
 
-  private static String getPluginLoaderDir() {
-    try {
-      final ApplicationInfo info = ApplicationInfo.getInstance();
-      assert info != null;
-      if (Objects.equals(info.getMajorVersion(), "2021")) {
-        if (Objects.equals(info.getMinorVersion(), "3")) {
-          return "flutter-idea";
-        }
-        else {
-          return "flutter-intellij";
-        }
-      }
-      else if (Objects.equals(info.getMajorVersion(), "2020")) {
-        return "flutter-intellij";
-      }
-    }
-    catch (NullPointerException ex) {
-      // ignored; unit tests
-    }
-    return "flutter-idea";
-  }
-
   @NotNull
   protected static final String DOWNLOAD_PATH =
-    PathManager.getPluginsPath() + File.separatorChar + getPluginLoaderDir() + File.separatorChar + "jxbrowser";
+    PathManager.getPluginsPath() + File.separatorChar + "flutter-intellij" + File.separatorChar + "jxbrowser";
   @NotNull
   private static final AtomicReference<JxBrowserStatus> status = new AtomicReference<>(JxBrowserStatus.NOT_INSTALLED);
   @NotNull
