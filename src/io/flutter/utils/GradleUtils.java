@@ -213,29 +213,7 @@ public class GradleUtils {
 
   @SuppressWarnings("rawtypes")
   private static BuildModelContext makeBuildModelContext(Project project) {
-    // return BuildModelContext.create(project);
-    Method method = ReflectionUtil.getDeclaredMethod(BuildModelContext.class, "create", Project.class);
-    if (method != null) {
-      try {
-        return (BuildModelContext)method.invoke(null, project);
-      }
-      catch (IllegalAccessException | InvocationTargetException e) {
-        throw new RuntimeException(e);
-      }
-    }
-    // If we get here we're using the 4.1 API.
-    // return BuildModelContext.create(project, new AndroidLocationProvider());
-    Class locationProviderClass = AndroidLocationProvider.class.getInterfaces()[0];
-    // Class.forName("com.android.tools.idea.gradle.dsl.model.BuildModelContext.ResolvedConfigurationFileLocationProvider");
-    // does not work in the debugger. That's why we get it from the interfaces of AndroidLocationProvider.
-    method = ReflectionUtil.getDeclaredMethod(BuildModelContext.class, "create", Project.class, locationProviderClass);
-    assert method != null;
-    try {
-      return (BuildModelContext)method.invoke(null, project, new AndroidLocationProvider());
-    }
-    catch (IllegalAccessException | InvocationTargetException e) {
-      throw new RuntimeException(e);
-    }
+    return BuildModelContext.create(project, new AndroidLocationProvider());
   }
 
   // The project is an Android project that contains a Flutter module.
