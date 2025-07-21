@@ -9,7 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.diagnostic.Logger;
+import io.flutter.logging.PluginLogger;
 import com.intellij.openapi.progress.EmptyProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
@@ -61,7 +61,7 @@ import java.util.concurrent.atomic.AtomicReference;
   storages = {@Storage("$WORKSPACE_FILE$")}
 )
 public class InspectorView implements Disposable {
-  private static final @NotNull Logger LOG = Logger.getInstance(InspectorView.class);
+  private static final @NotNull PluginLogger LOG = PluginLogger.getInstance(InspectorView.class);
 
   public static final @NotNull String TOOL_WINDOW_ID = "Flutter Inspector";
 
