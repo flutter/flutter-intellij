@@ -168,33 +168,19 @@ public class LaunchState extends CommandLineState {
     // The descriptor shows the run configuration name (e.g., `main.dart`) by default;
     // adding the device name will help users identify the instance when trying to operate a specific one.
     final String nameWithDeviceName = descriptor.getDisplayName() + " (" + device.deviceName() + ")";
-    boolean displayNameUpdated = false;
+
     try {
-      // Find "myDisplayNameView" for 2024+ builds.
-      // https://github.com/JetBrains/intellij-community/blob/idea/241.14494.240/platform/execution/src/com/intellij/execution/ui/RunContentDescriptor.java#L33
+      // There is no public way to set display name so we resort to reflection.
       final Field f = descriptor.getClass().getDeclaredField("myDisplayNameView");
       f.setAccessible(true);
       Object viewInstance = f.get(descriptor);
       if (viewInstance != null) {
         final Method setValueMethod = viewInstance.getClass().getMethod("setValue", Object.class);
         setValueMethod.invoke(viewInstance, nameWithDeviceName);
-        displayNameUpdated = true;
       }
     }
     catch (IllegalAccessException | InvocationTargetException | NoSuchFieldException | NoSuchMethodException e) {
       LOG.info(e);
-    }
-    if (!displayNameUpdated) {
-      try {
-        // Find "myDisplayName" for 2023 builds.
-        // https://github.com/JetBrains/intellij-community/blob/idea/231.8109.175/platform/execution/src/com/intellij/execution/ui/RunContentDescriptor.java#L30
-        final Field f = descriptor.getClass().getDeclaredField("myDisplayName");
-        f.setAccessible(true);
-        f.set(descriptor, nameWithDeviceName);
-      }
-      catch (IllegalAccessException | NoSuchFieldException e) {
-        LOG.info(e);
-      }
     }
 
     return descriptor;
