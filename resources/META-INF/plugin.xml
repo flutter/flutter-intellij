@@ -1,5 +1,3 @@
-<!-- Do not edit; instead, modify plugin_template.xml, and run './bin/plugin generate'. -->
-
 <!--suppress PluginXmlI18n -->
 <idea-plugin>
   <id>io.flutter</id>
@@ -21,9 +19,9 @@
   <vendor url="https://google.com">Google</vendor>
 
   <category>Custom Languages</category>
-  <version>SNAPSHOT</version>
+  <version>$VERSION</version>
   <!--suppress PluginXmlValidity -->
-  <idea-version since-build="243" until-build="243.*"/>
+  <idea-version />
 
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.lang</depends>
@@ -48,7 +46,6 @@
   <!-- Contributes Android Studio-specific features and implementations. -->
   <!--suppress PluginXmlValidity -->
   <depends optional="true" config-file="studio-contribs.xml">com.intellij.modules.androidstudio</depends>
-
 
   <change-notes></change-notes>
 
