@@ -5,13 +5,13 @@
  */
 
 import okhttp3.internal.immutableListOf
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 // Specify UTF-8 for all compilations so we avoid Windows-1252.
 allprojects {
@@ -106,19 +106,21 @@ dependencies {
     // Plugin dependency documentation:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
     // https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html#project-setup
-    bundledPlugins(immutableListOf(
-      "com.google.tools.ij.aiplugin",
-      "com.intellij.java",
-      "com.intellij.properties",
-      "JUnit",
-      "Git4Idea",
-      "org.jetbrains.kotlin",
-      "org.jetbrains.plugins.gradle",
-      "org.jetbrains.plugins.yaml",
-      "org.intellij.intelliLang",
-      "org.jetbrains.android",
-      "com.android.tools.idea.smali"
-    ))
+    bundledPlugins(
+      immutableListOf(
+        "com.google.tools.ij.aiplugin",
+        "com.intellij.java",
+        "com.intellij.properties",
+        "JUnit",
+        "Git4Idea",
+        "org.jetbrains.kotlin",
+        "org.jetbrains.plugins.gradle",
+        "org.jetbrains.plugins.yaml",
+        "org.intellij.intelliLang",
+        "org.jetbrains.android",
+        "com.android.tools.idea.smali"
+      )
+    )
     plugin("Dart:$dartPluginVersion")
 
     if (sinceBuildInput == "243" || sinceBuildInput == "251") {
@@ -164,8 +166,8 @@ intellijPlatform {
     cliPath = file("./third_party/lib/verifier-cli-1.388-all.jar")
     failureLevel = listOf(
       // TODO(team) Ideally all of the following FailureLevels should be enabled:
-      // TODO(team) Create a tracking issue for each of the following validations
-//      VerifyPluginTask.FailureLevel.COMPATIBILITY_WARNINGS,
+      // https://github.com/flutter/flutter-intellij/issues/8361
+      VerifyPluginTask.FailureLevel.COMPATIBILITY_WARNINGS,
       VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
 //      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES, // https://github.com/flutter/flutter-intellij/issues/7718
 //      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
@@ -174,7 +176,7 @@ intellijPlatform {
 //      VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
       VerifyPluginTask.FailureLevel.NON_EXTENDABLE_API_USAGES,
       VerifyPluginTask.FailureLevel.PLUGIN_STRUCTURE_WARNINGS,
-//      VerifyPluginTask.FailureLevel.MISSING_DEPENDENCIES,
+      VerifyPluginTask.FailureLevel.MISSING_DEPENDENCIES,
       VerifyPluginTask.FailureLevel.INVALID_PLUGIN,
 //      VerifyPluginTask.FailureLevel.NOT_DYNAMIC,
     )
