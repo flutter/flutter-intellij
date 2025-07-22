@@ -239,8 +239,6 @@ List<Map<String, Object?>> readProductMatrix() {
 String substituteTemplateVariables(String line, BuildSpec spec) {
   String valueOf(String name) {
     switch (name) {
-      case 'PLUGINID':
-        return spec.pluginId;
       case 'SINCE':
         return spec.sinceBuild;
       case 'UNTIL':
@@ -248,8 +246,6 @@ String substituteTemplateVariables(String line, BuildSpec spec) {
       case 'VERSION':
         var releaseNo = buildVersionNumber(spec);
         return '<version>$releaseNo</version>';
-      case 'CHANGELOG':
-        return spec.changeLog;
       case 'DEPEND':
         // If found, this is the module that triggers loading the Android Studio
         // support. The public sources and the installable plugin use different ones.

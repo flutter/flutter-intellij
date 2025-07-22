@@ -153,6 +153,9 @@ intellijPlatform {
       sinceBuild = sinceBuildInput
       untilBuild = untilBuildInput
     }
+    changeNotes = provider {
+      file("CHANGELOG.md").readText(Charsets.UTF_8)
+    }
   }
 
   // Verifier documentation
