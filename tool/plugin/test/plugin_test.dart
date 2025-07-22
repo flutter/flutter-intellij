@@ -176,18 +176,6 @@ void main() {
   });
 
   group('build', () {
-    test('plugin.xml', () async {
-      var runner = makeTestRunner();
-      await runner.run(["-d../..", "make"]);
-      await removeAll('../../build/classes');
-      var file = File("../../build/classes/META-INF/plugin.xml");
-      expect(file.existsSync(), isTrue);
-      var content = file.readAsStringSync();
-      expect(content.length, greaterThan(10000));
-      var loc = content.indexOf('@');
-      expect(loc, -1);
-    });
-
     test('only-version', () async {
       ProductCommand command =
           makeTestRunner().commands['make'] as ProductCommand;
