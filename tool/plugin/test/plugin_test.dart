@@ -178,10 +178,7 @@ void main() {
   group('build', () {
     test('plugin.xml', () async {
       var runner = makeTestRunner();
-      late TestMakeCommand cmd;
-      await runner.run(["-d../..", "make"]).whenComplete(() {
-        cmd = (runner.commands['make'] as TestMakeCommand);
-      });
+      await runner.run(["-d../..", "make"]);
       await removeAll('../../build/classes');
       var file = File("../../build/classes/META-INF/plugin.xml");
       expect(file.existsSync(), isTrue);
