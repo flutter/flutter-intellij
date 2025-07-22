@@ -182,7 +182,6 @@ void main() {
       await runner.run(["-d../..", "make"]).whenComplete(() {
         cmd = (runner.commands['make'] as TestMakeCommand);
       });
-      var spec = cmd.specs[0];
       await removeAll('../../build/classes');
       var file = File("../../build/classes/META-INF/plugin.xml");
       expect(file.existsSync(), isTrue);

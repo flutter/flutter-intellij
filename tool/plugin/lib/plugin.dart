@@ -509,8 +509,6 @@ class GenerateCommand extends ProductCommand {
 
   @override
   Future<int> doit() async {
-    var json = readProductMatrix();
-    var spec = SyntheticBuildSpec.fromJson(json.first, release, specs);
     if (!genPresubmitYaml(specs)) {
       return 1;
     }
