@@ -78,9 +78,9 @@ public class FlutterSdkUtil {
     final PropertiesComponent props = PropertiesComponent.getInstance();
 
     // Add the existing known paths.
-    final String[] oldPaths = props.getValues(propertyKey);
+    final List<String> oldPaths = props.getList(propertyKey);
     if (oldPaths != null) {
-      allPaths.addAll(Arrays.asList(oldPaths));
+      allPaths.addAll(oldPaths);
     }
 
     // Store the values back.
@@ -131,9 +131,9 @@ public class FlutterSdkUtil {
     }
 
     // use the list of paths they've entered in the past
-    final String[] knownPaths = PropertiesComponent.getInstance().getValues(FLUTTER_SDK_KNOWN_PATHS);
+    final List<String> knownPaths = PropertiesComponent.getInstance().getList(FLUTTER_SDK_KNOWN_PATHS);
     if (knownPaths != null) {
-      paths.addAll(Arrays.asList(knownPaths));
+      paths.addAll(knownPaths);
     }
 
     // search the user's path
