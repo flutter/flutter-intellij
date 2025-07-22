@@ -9,7 +9,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
-import com.intellij.ui.ListCellRendererWrapper;
+import com.intellij.ui.SimpleListCellRenderer;
 import io.flutter.run.test.TestFields.Scope;
 import org.jetbrains.annotations.NotNull;
 
@@ -51,7 +51,7 @@ public class TestForm extends SettingsEditor<TestConfig> {
       updateFields(next);
       render(next);
     });
-    scope.setRenderer(new ListCellRendererWrapper<>() {
+    scope.setRenderer(new SimpleListCellRenderer<>() {
       @Override
       public void customize(final JList list,
                             final Scope value,

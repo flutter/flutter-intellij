@@ -12,7 +12,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.ui.ListCellRendererWrapper;
+import com.intellij.ui.SimpleListCellRenderer;
 import com.jetbrains.lang.dart.ide.runner.server.ui.DartCommandLineConfigurationEditorForm;
 import io.flutter.run.bazelTest.BazelTestFields.Scope;
 import io.flutter.settings.FlutterSettings;
@@ -62,7 +62,7 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
       updateFields(next);
       render(next);
     });
-    scope.setRenderer(new ListCellRendererWrapper<>() {
+    scope.setRenderer(new SimpleListCellRenderer<>() {
       @Override
       public void customize(final JList list,
                             final Scope value,
