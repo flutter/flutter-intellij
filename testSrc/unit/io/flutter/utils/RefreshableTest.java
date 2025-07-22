@@ -6,6 +6,7 @@
 package io.flutter.utils;
 
 import com.google.common.collect.ImmutableList;
+import org.hamcrest.MatcherAssert;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
@@ -362,7 +363,7 @@ public class RefreshableTest {
   }
 
   private void checkLog(String... expectedEntries) {
-    assertThat("logEntries entries are different", getLogEntries(), is(ImmutableList.copyOf(expectedEntries)));
+    MatcherAssert.assertThat("logEntries entries are different", getLogEntries(), is(ImmutableList.copyOf(expectedEntries)));
     logEntries.clear();
   }
 }

@@ -21,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
 
-import java.awt.event.InputEvent;
+import java.awt.event.ActionEvent;
 import java.nio.file.Path;
 
 import static com.android.tools.idea.gradle.project.ProjectImportUtil.findGradleTarget;
@@ -42,8 +42,8 @@ public class OpenAndroidModule extends OpenInAndroidStudioAction implements Dumb
     }
     final int modifiers = e.getModifiers();
     // From ReopenProjectAction.
-    final boolean forceOpenInNewFrame = BitUtil.isSet(modifiers, InputEvent.CTRL_MASK)
-                                        || BitUtil.isSet(modifiers, InputEvent.SHIFT_MASK)
+    final boolean forceOpenInNewFrame = BitUtil.isSet(modifiers, ActionEvent.CTRL_MASK)
+                                        || BitUtil.isSet(modifiers, ActionEvent.SHIFT_MASK)
                                         || e.getPlace() == ActionPlaces.WELCOME_SCREEN;
 
     VirtualFile sourceFile = e.getData(CommonDataKeys.VIRTUAL_FILE);

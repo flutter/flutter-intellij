@@ -45,9 +45,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     return ActionUpdateThread.BGT;
   }
 
-  @NotNull
   @Override
-  protected DefaultActionGroup createPopupActionGroup(JComponent button) {
+  protected @NotNull DefaultActionGroup createPopupActionGroup(@NotNull JComponent button, @NotNull DataContext dataContext) {
     final DefaultActionGroup group = new DefaultActionGroup();
     group.addAll(actions);
     return group;
