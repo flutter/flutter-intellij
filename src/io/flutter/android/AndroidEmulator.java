@@ -140,7 +140,6 @@ public class AndroidEmulator {
   // This is: EmulatorSettings.getInstance().getLaunchInToolWindow();
   // Beginning in 2022.2, Android Studio moved this class to a different package.
   // IntelliJ did not adopt that change, and we cannot build separate plugins for the two.
-  @SuppressWarnings("ConstantConditions")
   private boolean getLaunchInToolWindow() {
     Class<?> aClass;
     try {
