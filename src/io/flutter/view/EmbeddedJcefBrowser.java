@@ -5,7 +5,7 @@
  */
 package io.flutter.view;
 
-import com.intellij.openapi.diagnostic.Logger;
+import io.flutter.logging.PluginLogger;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.jcef.JBCefBrowser;
@@ -47,7 +47,7 @@ class EmbeddedJcefBrowserTab implements EmbeddedTab {
 }
 
 public class EmbeddedJcefBrowser extends EmbeddedBrowser {
-  private static final @NotNull Logger LOG = Logger.getInstance(JxBrowserManager.class);
+  private static final @NotNull PluginLogger LOG = PluginLogger.getInstance(JxBrowserManager.class);
 
   public EmbeddedJcefBrowser(Project project) {
     super(project);
