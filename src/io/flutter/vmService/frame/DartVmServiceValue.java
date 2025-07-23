@@ -30,11 +30,12 @@ import java.util.Base64;
 // See https://youtrack.jetbrains.com/issue/WEB-17629.
 
 public class DartVmServiceValue extends XNamedValue {
-
-  private static final LayeredIcon FINAL_FIELD_ICON = new LayeredIcon(AllIcons.Nodes.Field, AllIcons.Nodes.FinalMark);
-  private static final LayeredIcon STATIC_FIELD_ICON = new LayeredIcon(AllIcons.Nodes.Field, AllIcons.Nodes.StaticMark);
+  private static final LayeredIcon FINAL_FIELD_ICON =
+    new LayeredIcon().layeredIcon(() -> new Icon[]{AllIcons.Nodes.Field, AllIcons.Nodes.FinalMark});
+  private static final LayeredIcon STATIC_FIELD_ICON =
+    new LayeredIcon().layeredIcon(() -> new Icon[]{AllIcons.Nodes.Field, AllIcons.Nodes.StaticMark});
   private static final LayeredIcon STATIC_FINAL_FIELD_ICON =
-    new LayeredIcon(AllIcons.Nodes.Field, AllIcons.Nodes.StaticMark, AllIcons.Nodes.FinalMark);
+    new LayeredIcon().layeredIcon(() -> new Icon[]{AllIcons.Nodes.Field, AllIcons.Nodes.StaticMark, AllIcons.Nodes.FinalMark});
   private static final String JSON_STRING_TEMPLATE =
     "'{'\"type\":\"@Instance\",\"class\":'{'\"type\":\"@Class\",\"fixedId\":\"true\",\"id\":\"classes/91\"," +
     "\"name\":\"_OneByteString\"'}',\"kind\":\"String\",\"length\":\"{0}\",\"valueAsString\":\"{1}\"'}'";
