@@ -33,7 +33,6 @@ import org.jetbrains.annotations.Nullable;
 /**
  * The Bazel version of the {@link io.flutter.run.test.TestLaunchState}.
  */
-@SuppressWarnings("JavadocReference")
 public class BazelTestLaunchState extends CommandLineState {
   @NotNull
   private final BazelTestConfig config;

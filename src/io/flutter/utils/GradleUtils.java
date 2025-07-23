@@ -211,7 +211,6 @@ public class GradleUtils {
     }
   }
 
-  @SuppressWarnings("rawtypes")
   private static BuildModelContext makeBuildModelContext(Project project) {
     return BuildModelContext.create(project, new AndroidLocationProvider());
   }

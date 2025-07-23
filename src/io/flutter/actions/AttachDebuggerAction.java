@@ -226,7 +226,6 @@ public class AttachDebuggerAction extends FlutterSdkAction {
       //noinspection DataFlowIssue
       myPanel.add(myTextPane);
       init();
-      //noinspection ConstantConditions
       getButton(getCancelAction()).setVisible(false);
     }
 
