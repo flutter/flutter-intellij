@@ -5,7 +5,7 @@
  */
 package io.flutter.editor;
 
-import com.intellij.openapi.diagnostic.Logger;
+import io.flutter.logging.PluginLogger;
 import io.flutter.FlutterUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Properties;
 
 public class FlutterCupertinoColors {
-  private static final @NotNull Logger LOG = Logger.getInstance(FlutterCupertinoColors.class);
+  private static final @NotNull PluginLogger LOG = PluginLogger.getInstance(FlutterCupertinoColors.class);
 
   private static final Properties colors;
 
