@@ -5,13 +5,13 @@
  */
 
 import okhttp3.internal.immutableListOf
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 // Specify UTF-8 for all compilations so we avoid Windows-1252.
 allprojects {
@@ -106,19 +106,21 @@ dependencies {
     // Plugin dependency documentation:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
     // https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html#project-setup
-    bundledPlugins(immutableListOf(
-      "com.google.tools.ij.aiplugin",
-      "com.intellij.java",
-      "com.intellij.properties",
-      "JUnit",
-      "Git4Idea",
-      "org.jetbrains.kotlin",
-      "org.jetbrains.plugins.gradle",
-      "org.jetbrains.plugins.yaml",
-      "org.intellij.intelliLang",
-      "org.jetbrains.android",
-      "com.android.tools.idea.smali"
-    ))
+    bundledPlugins(
+      immutableListOf(
+        "com.google.tools.ij.aiplugin",
+        "com.intellij.java",
+        "com.intellij.properties",
+        "JUnit",
+        "Git4Idea",
+        "org.jetbrains.kotlin",
+        "org.jetbrains.plugins.gradle",
+        "org.jetbrains.plugins.yaml",
+        "org.intellij.intelliLang",
+        "org.jetbrains.android",
+        "com.android.tools.idea.smali"
+      )
+    )
     plugin("Dart:$dartPluginVersion")
 
     if (sinceBuildInput == "243" || sinceBuildInput == "251") {
@@ -180,13 +182,7 @@ intellijPlatform {
     )
     verificationReportsFormats = VerifyPluginTask.VerificationReportsFormats.ALL
     subsystemsToCheck = VerifyPluginTask.Subsystems.ALL
-    // Mute and freeArgs documentation
-    // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
-    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-faq.html#mutePluginVerifierProblems
-    freeArgs = listOf(
-      "-mute",
-      "TemplateWordInPluginId,ForbiddenPluginIdPrefix,TemplateWordInPluginName"
-    )
+    
     ides {
       recommended()
     }
