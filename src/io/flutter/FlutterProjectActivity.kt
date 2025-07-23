@@ -25,6 +25,6 @@ abstract class FlutterProjectActivity : ProjectActivity {
   }
 
   protected fun log(): Logger {
-    return log;
+    return log
   }
 }
