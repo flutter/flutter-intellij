@@ -50,7 +50,7 @@ public abstract class EmbeddedBrowser {
 
   protected final Map<@NotNull String, Map<@NotNull String, @NotNull BrowserTab>> windows = new HashMap<>();
 
-  public abstract Logger logger();
+  public abstract @NotNull Logger logger();
 
   private DevToolsUrl url;
 
