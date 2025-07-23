@@ -22,6 +22,7 @@ import com.teamdev.jxbrowser.ui.event.KeyPressed;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
 import com.teamdev.jxbrowser.view.swing.callback.DefaultAlertCallback;
 import com.teamdev.jxbrowser.view.swing.callback.DefaultConfirmCallback;
+import io.flutter.logging.PluginLogger;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.JxBrowserUtils;
@@ -122,7 +123,7 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
 }
 
 public class EmbeddedJxBrowser extends EmbeddedBrowser {
-  private static final @NotNull Logger LOG = Logger.getInstance(JxBrowserManager.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(JxBrowserManager.class);
   private static final String INSTALLATION_IN_PROGRESS_LABEL = "Installing JxBrowser...";
   private static final String INSTALLATION_TIMED_OUT_LABEL =
     "Waiting for JxBrowser installation timed out. Restart your IDE to try again.";
@@ -167,7 +168,7 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
   }
 
   @Override
-  public Logger logger() {
+  public @NotNull Logger logger() {
     return LOG;
   }
 
