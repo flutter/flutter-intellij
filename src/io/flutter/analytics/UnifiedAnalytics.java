@@ -17,6 +17,7 @@ import com.intellij.openapi.project.Project;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import de.roderick.weberknecht.WebSocketException;
 import io.flutter.dart.DtdUtils;
+import io.flutter.logging.PluginLogger;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
@@ -28,7 +29,7 @@ import java.util.concurrent.CompletableFuture;
  * Facilitates sending information to unified analytics.
  */
 public class UnifiedAnalytics {
-  private static final @NotNull Logger LOG = Logger.getInstance(UnifiedAnalytics.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(UnifiedAnalytics.class);
 
   @Nullable Boolean enabled = null;
   final Project project;
