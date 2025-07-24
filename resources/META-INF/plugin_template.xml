@@ -1,6 +1,6 @@
 <!--suppress PluginXmlI18n -->
 <idea-plugin>
-  <id>@PLUGINID@</id>
+  <id>io.flutter</id>
   <name>Flutter</name>
   <description>
     <![CDATA[
@@ -48,10 +48,7 @@
   <depends optional="true" config-file="studio-contribs.xml">@DEPEND@</depends>
 
 
-  <change-notes>
-    <![CDATA[
-@CHANGELOG@]]>
-  </change-notes>
+  <change-notes></change-notes>
 
   <!-- Everything following should be SmallIDE-friendly.-->
   <!-- See: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
