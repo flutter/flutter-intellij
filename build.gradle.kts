@@ -182,13 +182,7 @@ intellijPlatform {
     )
     verificationReportsFormats = VerifyPluginTask.VerificationReportsFormats.ALL
     subsystemsToCheck = VerifyPluginTask.Subsystems.ALL
-    // Mute and freeArgs documentation
-    // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
-    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-faq.html#mutePluginVerifierProblems
-    freeArgs = listOf(
-      "-mute",
-      "TemplateWordInPluginId,ForbiddenPluginIdPrefix,TemplateWordInPluginName"
-    )
+    
     ides {
       recommended()
     }
