@@ -16,6 +16,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.console.FlutterConsoles;
+import io.flutter.logging.PluginLogger;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +26,7 @@ import java.nio.charset.StandardCharsets;
 
 public class FlutterDoctorAction extends FlutterSdkAction {
 
-  private static final @NotNull Logger LOG = Logger.getInstance(FlutterDoctorAction.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterDoctorAction.class);
 
   public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root) {
     sdk.flutterDoctor().startInConsole(project);
