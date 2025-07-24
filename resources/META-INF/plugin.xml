@@ -29,7 +29,6 @@
   <depends>com.intellij.modules.lang</depends>
   <depends>com.intellij.modules.xdebugger</depends>
   <depends>org.jetbrains.plugins.yaml</depends>
-  <depends>org.jetbrains.android</depends>
   <depends>Dart</depends>
   <depends>Git4Idea</depends>
 
@@ -42,6 +41,9 @@
 
   <!-- Contributes Gemini Code Assist extensions. -->
   <depends optional="true" config-file="gemini-contribs.xml">com.google.tools.ij.aiplugin</depends>
+
+  <!-- Contributes Android-supported features and implementations. -->
+  <depends optional="true" config-file="android-contribs.xml">org.jetbrains.android</depends>
 
   <!-- Contributes Android Studio-specific features and implementations. -->
   <!--suppress PluginXmlValidity -->
