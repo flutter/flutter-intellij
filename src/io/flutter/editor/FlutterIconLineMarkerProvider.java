@@ -30,6 +30,7 @@ import com.jetbrains.lang.dart.util.DartPsiImplUtil;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import info.debatty.java.stringsimilarity.JaroWinkler;
 import io.flutter.FlutterBundle;
+import io.flutter.logging.PluginLogger;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.IconPreviewGenerator;
@@ -49,7 +50,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
 
   public static final Map<String, Set<String>> KnownPaths = new HashMap<>();
   private static final Map<String, String> BuiltInPaths = new HashMap<>();
-  private static final @NotNull Logger LOG = Logger.getInstance(FlutterIconLineMarkerProvider.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterIconLineMarkerProvider.class);
   private static final String MaterialRelativeAssetPath = "/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf";
   private static final String MaterialRelativeIconsPath = "/packages/flutter/lib/src/material/icons.dart";
   private static final String CupertinoRelativeAssetPath = "/assets/CupertinoIcons.ttf";

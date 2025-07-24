@@ -1,6 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="flutter-intellij [runIde]" type="GradleRunConfiguration" factoryName="Gradle">
-    <log_file alias="flutter" path="$PROJECT_DIR$/build/idea-sandbox/AI-AI-251.23774.16.2511.13338727/log/flutter.log" />
+    <!--  TODO(helin24): This doesn't seem to work for now; even reading in idea.log doesn't work as expected. Further investigation needed.  -->
+    <log_file alias="flutter" path="$PROJECT_DIR$/build/idea-sandbox/*/log/flutter.log" show_all="true" skipped="false" />
     <ExternalSystemSettings>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
