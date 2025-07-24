@@ -78,32 +78,6 @@ List<String> findJavaFiles(String path) {
       .toList();
 }
 
-Future<bool> genPluginFiles(BuildSpec spec, String destDir) async {
-  await genPluginXml(spec, destDir, 'META-INF/plugin.xml');
-  await genPluginXml(spec, destDir, 'META-INF/studio-contribs.xml');
-  return true;
-}
-
-Future<void> genPluginXml(BuildSpec spec, String destDir, String path) async {
-  var templatePath =
-      '${path.substring(0, path.length - '.xml'.length)}_template.xml';
-  var file = await File(
-    p.join(rootPath, destDir, path),
-  ).create(recursive: true);
-  log('writing ${p.relative(file.path)}');
-  var dest = file.openWrite();
-  dest.writeln(
-    "<!-- Do not edit; instead, modify ${p.basename(templatePath)}, and run './bin/plugin generate'. -->",
-  );
-  dest.writeln();
-  await utf8.decoder
-      .bind(File(p.join(rootPath, 'resources', templatePath)).openRead())
-      .transform(LineSplitter())
-      .forEach((l) => dest.writeln(substituteTemplateVariables(l, spec)));
-  await dest.close();
-  await dest.done;
-}
-
 bool genPresubmitYaml(List<BuildSpec> specs) {
   // This assumes the file contains 'steps:', which seems reasonable.
   var file = File(p.join(rootPath, '.github', 'workflows', 'presubmit.yaml'));
@@ -234,43 +208,6 @@ List<Map<String, Object?>> readProductMatrix() {
       File(p.join(rootPath, 'product-matrix.json')).readAsStringSync();
   var map = json.decode(contents);
   return (map['list'] as List<Object?>).cast<Map<String, Object?>>();
-}
-
-String substituteTemplateVariables(String line, BuildSpec spec) {
-  String valueOf(String name) {
-    switch (name) {
-      case 'SINCE':
-        return spec.sinceBuild;
-      case 'UNTIL':
-        return spec.untilBuild;
-      case 'VERSION':
-        var releaseNo = buildVersionNumber(spec);
-        return '<version>$releaseNo</version>';
-      case 'DEPEND':
-        // If found, this is the module that triggers loading the Android Studio
-        // support. The public sources and the installable plugin use different ones.
-        return spec.isSynthetic
-            ? 'com.intellij.modules.androidstudio'
-            : 'com.android.tools.apk';
-      default:
-        throw 'unknown template variable: $name';
-    }
-  }
-
-  var start = line.indexOf('@');
-  while (start >= 0 && start < line.length) {
-    var end = line.indexOf('@', start + 1);
-    if (end > 0) {
-      var name = line.substring(start + 1, end);
-      line = line.replaceRange(start, end + 1, valueOf(name));
-      if (end < line.length - 1) {
-        start = line.indexOf('@', end + 1);
-      }
-    } else {
-      break; // Some commit message has a '@' in it.
-    }
-  }
-  return line;
 }
 
 void _copyFile(File file, Directory to, {String filename = ''}) {
@@ -430,7 +367,6 @@ class GradleBuildCommand extends ProductCommand {
     var pluginSrc = pluginFile.readAsStringSync();
     var studioSrc = studioFile.readAsStringSync();
     try {
-      await genPluginFiles(spec, 'resources');
       return await runner.buildPlugin(spec, buildVersionNumber(spec));
     } finally {
       pluginFile.writeAsStringSync(pluginSrc);
@@ -573,9 +509,6 @@ class GenerateCommand extends ProductCommand {
 
   @override
   Future<int> doit() async {
-    var json = readProductMatrix();
-    var spec = SyntheticBuildSpec.fromJson(json.first, release, specs);
-    await genPluginFiles(spec, 'resources');
     if (!genPresubmitYaml(specs)) {
       return 1;
     }

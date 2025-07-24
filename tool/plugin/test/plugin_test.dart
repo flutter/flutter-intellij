@@ -6,7 +6,6 @@ import 'dart:io';
 
 import 'package:plugin_tool/plugin.dart';
 import 'package:plugin_tool/runner.dart';
-import 'package:plugin_tool/util.dart';
 import 'package:plugin_tool/verify.dart';
 import 'package:string_validator/string_validator.dart' as validator;
 import 'package:test/test.dart';
@@ -176,23 +175,6 @@ void main() {
   });
 
   group('build', () {
-    test('plugin.xml', () async {
-      var runner = makeTestRunner();
-      late TestMakeCommand cmd;
-      await runner.run(["-d../..", "make"]).whenComplete(() {
-        cmd = (runner.commands['make'] as TestMakeCommand);
-      });
-      var spec = cmd.specs[0];
-      await removeAll('../../build/classes');
-      await genPluginFiles(spec, 'build/classes');
-      var file = File("../../build/classes/META-INF/plugin.xml");
-      expect(file.existsSync(), isTrue);
-      var content = file.readAsStringSync();
-      expect(content.length, greaterThan(10000));
-      var loc = content.indexOf('@');
-      expect(loc, -1);
-    });
-
     test('only-version', () async {
       ProductCommand command =
           makeTestRunner().commands['make'] as ProductCommand;
