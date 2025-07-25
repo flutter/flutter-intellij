@@ -9,7 +9,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.EventStream;
@@ -412,12 +411,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
     synchronized (serviceExtensions) {
       final EventStream<Boolean> stream = serviceExtensions.get(name);
       return stream != null && stream.getValue() == Boolean.TRUE;
-    }
-  }
-
-  public void hasServiceExtension(String name, Consumer<Boolean> onData, Disposable parentDisposable) {
-    if (!Disposer.isDisposed(parentDisposable)) {
-      Disposer.register(parentDisposable, hasServiceExtension(name, onData));
     }
   }
 
