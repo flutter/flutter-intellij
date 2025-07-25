@@ -32,6 +32,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * This action has been removed from the plugin.xml as a required dependent method call {GradleProjectImporter.importAndOpenProjectCore()
@@ -63,10 +64,11 @@ public class OpenInAndroidStudioAction extends AnAction {
         //noinspection unchecked
         final Class<OpenInAndroidStudioAction> opener =
           (Class<OpenInAndroidStudioAction>)Class.forName("io.flutter.actions.OpenAndroidModule");
-        opener.newInstance().actionPerformed(event);
+        opener.getDeclaredConstructor().newInstance().actionPerformed(event);
         return;
       }
-      catch (ClassNotFoundException | IllegalAccessException | InstantiationException ignored) {
+      catch (ClassNotFoundException | IllegalAccessException | InstantiationException | NoSuchMethodException |
+             InvocationTargetException ignored) {
       }
     }
 
