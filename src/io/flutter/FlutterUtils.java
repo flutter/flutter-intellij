@@ -5,11 +5,11 @@
  */
 package io.flutter;
 
-import com.android.tools.idea.IdeInfo;
 import com.google.common.base.Charsets;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
@@ -47,6 +47,8 @@ import org.yaml.snakeyaml.resolver.Resolver;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
@@ -89,7 +91,18 @@ public class FlutterUtils {
   }
 
   public static boolean isAndroidStudio() {
-    return IdeInfo.getInstance().isAndroidStudio();
+    try {
+      // Try to use `IdeInfo` first by reflecting on it.
+      final Class<?> ideInfoClass = Class.forName("com.android.tools.idea.IdeInfo");
+      final Method getInstance = ideInfoClass.getMethod("getInstance");
+      final Object instance = getInstance.invoke(null);
+      final Method isAndroidStudio = ideInfoClass.getMethod("isAndroidStudio");
+      return (Boolean)isAndroidStudio.invoke(instance);
+    } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
+      // Fall back to checking application name
+      // e.g., "Android Studio Meerkat | 2024.3.1"
+      return ApplicationInfo.getInstance().getFullApplicationName().startsWith("Android Studio");
+    }
   }
 
   /**
@@ -416,7 +429,7 @@ public class FlutterUtils {
       return null;
     }
   }
-  
+
   @Nullable
   private static VirtualFile getFlutterManagedAndroidDir(VirtualFile dir) {
     final VirtualFile meta = dir.findChild(".metadata");
