@@ -92,7 +92,7 @@ public class FlutterUtils {
 
   public static boolean isAndroidStudio() {
     try {
-      // Try to use `IdeInfo` first by reflecting on it.
+      // The class is available if the IDE has the "Android" plugin installed or is Android Studio.
       final Class<?> ideInfoClass = Class.forName("com.android.tools.idea.IdeInfo");
       final Method getInstance = ideInfoClass.getMethod("getInstance");
       final Object instance = getInstance.invoke(null);
