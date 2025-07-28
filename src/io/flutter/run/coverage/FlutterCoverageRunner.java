@@ -43,7 +43,6 @@ public class FlutterCoverageRunner extends CoverageRunner {
     }
     catch (IOException ex) {
       LOG.warn(FlutterBundle.message("coverage.data.not.read", sessionDataFile.getAbsolutePath()));
-      return new FailedCoverageLoadingResult("Flutter coverage data could not be read");
     }
     if (projectData == null) {
       return new FailedCoverageLoadingResult("Flutter coverage data could not be read");
