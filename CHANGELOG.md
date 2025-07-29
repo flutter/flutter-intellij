@@ -1,3 +1,8 @@
+# 87
+- Fixes to Flutter test execution (#8233, #8325)
+- Internal: support for logging to a dedicated plugin log file (#8253)
+- Fixes to ensure the Property Editor loads on all project opens (#8268)
+
 # 86
 - New message in DevTools windows for "Dock unpinned" IntelliJ feature (#8181)
 - Fixes for Slow Operation notifications in the IDEA platform (#7792)
