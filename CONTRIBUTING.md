@@ -52,7 +52,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
    If you already have a fork and are now installing a development environment on a new machine,
    make sure you've updated your fork with the master branch
    so that you don't use stale configuration options from long ago.
-4. `git clone -c core.symlinks=true https://github.com/<your_name_here>/flutter-intellij`
+4. `git clone https://github.com/<your_name_here>/flutter-intellij`
 5. `cd flutter-intellij`
 6. `git remote add upstream https://github.com/flutter/flutter-intellij`
    The name `upstream` can be whatever you want.
