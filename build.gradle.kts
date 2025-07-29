@@ -35,7 +35,7 @@ plugins {
   // https://plugins.gradle.org/plugin/org.jetbrains.intellij.platform
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("java") // Java support
-  id("org.jetbrains.intellij.platform") version "2.6.0" // IntelliJ Platform Gradle Plugin
+  id("org.jetbrains.intellij.platform") version "2.7.0" // IntelliJ Platform Gradle Plugin
   id("org.jetbrains.kotlin.jvm") version "2.2.0" // Kotlin support
 }
 
