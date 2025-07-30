@@ -1,54 +1,38 @@
-## The plugin tool
+## Building the plugin for release
 
-Building is done by the `plugin` tool. See [tool/plugin/README.md](../tool/plugin/README.md) for details.
+Update the `gradle.properties` file
 
-## Releasing the plugin
-
-Update the [product-matrix.json](../product-matrix.json):
 - IntelliJ IDEA versions can be found here: https://www.jetbrains.com/idea/download/other.html
-  - Version numbers for the `product-matrix.json` should be taken from the name of the downloaded file, not versions listed on the website.
+    - Version numbers for the `product-matrix.json` should be taken from the name of the downloaded file, not versions listed on the
+      website.
 - Dart Plugin versions can be found here: https://plugins.jetbrains.com/plugin/6351-dart
-- Android Studio versions can be found here: https://developer.android.com/studio/archive & https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
-  - To view the current sources from Android Studio, use https://cs.android.com/android-studio
-- To get versions of the Android plugin for IntelliJ, versions can be pulled from https://plugins.jetbrains.com/plugin/22989-android
+- Android Studio versions can be found
+  here: https://developer.android.com/studio/archive & https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
+    - To view the current sources from Android Studio, use https://cs.android.com/android-studio
 
-Update the changelog, then generate `plugin.xml` changes using `./bin/plugin generate`. Commit and submit these changes.
+Verify that the file `./resources/jxbrowser/jxbrowser.properties` has been copied from `./resources/jxbrowser/jxbrowser.properties.template`
+with the `<KEY>` replaced with a valid JXBrowser key to be used in the built Flutter plugin.
 
-Verify that the file `./resources/jxbrowser/jxbrowser.properties` has been copied from `./resources/jxbrowser/jxbrowser.properties.template` with the `<KEY>` replaced with a valid JXBrowser key to be used in the built Flutter plugin.
+Run gradle:
 
-For major releases:
-- Name the branch `release_<release number>` and push to GitHub
+- Make `flutterPluginVersion` in `gradle.properties` the release number, e.g. 87.0.1
 - Check that `$JAVA_HOME` is set (see CONTRIBUTING.md for instructions if not set)
-- Run `./bin/plugin make -r<release number>` to build the plugin for all supported versions
-
-For minor releases:
-- Fetch and checkout the branch `release_<release number>` from GitHub for the latest release (e.g. pull `release_64` if about to release 64.1)
-- Run `./bin/plugin make -r<release number>.<minor number>` (e.g. `-r64.1`) to build the plugin for all supported versions
-
-Push the updated branch `release_<release number>` to GitHub. The release branch will be on:
-- Releases 1 to 70 can be found at https://github.com/flutter/flutter-intellij/branches/all?query=release
-- Releases 71 to 75 can be found at https://github.com/stevemessick/flutter-intellij/branches/all?query=release
-- Releases from 76 can be found at https://github.com/jwren/flutter-intellij/branches/all?query=release
-
-### Some additional notes to build and test the Flutter Plugin
-
-To test that building works, the `-r` flag is not needed, just run `./bin/plugin make`.
-
-To build a specific version of the Flutter Plugin append `--only-version=`, i.e. `./bin/plugin make -r77 --only-version=2023.3`
+- Run `./gradlew buildPlugin` to build the plugin for the settings specified in `gradle.properties`
+- The output .zip file will be in `<flutter-intellij root>/build/distributions`
 
 ### Test and upload to the JetBrains Servers
 
 Once plugin files are generated, upload release files to Drive for manual testing.
 
-When ready to release to the public, go to the [Flutter plugin site](https://plugins.jetbrains.com/plugin/9212-flutter). You will need to be invited to the organization to upload plugin files.
+When ready to release to the public, go to the [Flutter plugin site](https://plugins.jetbrains.com/plugin/9212-flutter). You will need to be
+invited to the organization to upload plugin files.
 
-## The build pre-reqs
+## The plugin tool
 
-This section is obsolete.
+Building for releases was formerly done by the `plugin` tool when we wanted to run a script to generate multiple release versions at once.
+See [tool/plugin/README.md](../tool/plugin/README.md) for details.
 
-Several large files required for building the plugin are downloaded from Google Storage
-and cached in the `artifacts/` directory. We use timestamps to know if the local cached
-copies are up-to-date.
+The `plugin` tool is being retained currently for the dev build, linting, and verifying the plugin.
 
 ### install gs_util
 
