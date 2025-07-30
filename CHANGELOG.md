@@ -1,5 +1,6 @@
 # 87
 - Fixes to Flutter test execution (#8233, #8325)
+- Make android dependencies optional, allowing the plugin to be used in more Jetbrains products (Rider, etc) (#7949, #8375)
 - Internal: support for logging to a dedicated plugin log file (#8253)
 - Fixes to ensure the Property Editor loads on all project opens (#8268)
 
