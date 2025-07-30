@@ -1,3 +1,9 @@
+# 87
+- Fixes to Flutter test execution (#8233, #8325)
+- Make Android dependencies optional, allowing the plugin to be used in more Jetbrains products (Rider, etc) (#7949, #8375)
+- Internal: support for logging to a dedicated plugin log file (#8253)
+- Fixes to ensure the Property Editor loads on all project opens (#8268)
+
 # 86
 - New message in DevTools windows for "Dock unpinned" IntelliJ feature (#8181)
 - Fixes for Slow Operation notifications in the IDEA platform (#7792)
