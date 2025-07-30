@@ -121,21 +121,16 @@ name and contact info to the [AUTHORS](AUTHORS) file.
    - In the root directory, create an empty `gradle.properties` file (`touch gradle.properties`)
    - Add the following to the file:
    ```
-    name = "flutter-intellij"
-    buildSpec=2024.3
-    flutterPluginVersion=1
-    ideaProduct=android-studio
-    ideaVersion=2024.3.1.7
-    baseVersion=243.22562.59
-    dartPluginVersion= 243.21565.120
-    androidPluginVersion=
-    sinceBuild=243
-    untilBuild=253.*
-    testing=true
-    kotlin.stdlib.default.dependency=false
-    org.gradle.parallel=true
-    org.gradle.jvmargs=-Xms1024m -Xmx4048m
-    ```
+   flutterPluginVersion=SNAPSHOT
+   ideaVersion=2024.3.1.7
+   dartPluginVersion= 243.21565.120
+   sinceBuild=243
+   untilBuild=253.*
+   javaVersion=21
+   kotlin.stdlib.default.dependency=false
+   org.gradle.parallel=true
+   org.gradle.jvmargs=-Xms1024m -Xmx4048m
+   ```
     - **[Note]** If you want, you can manually change these properties to target different versions of IntelliJ. See `product-matrix.json` to find which configurations are supported.
 
 3. Start IntelliJ IDEA with the `flutter-intellij` project.
