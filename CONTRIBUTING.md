@@ -255,30 +255,6 @@ name and contact info to the [AUTHORS](AUTHORS) file.
     - Expand `Edit configuration templates...` and verify that Flutter is present.
     - Click [+] and verify that Flutter is present.
 
-### Handle symlinks
-
-If exceptions like these occurred:
-
-```
-A problem occurred configuring project ':flutter-idea'.
-> Source directory 'X:\path\to\your\flutter-intellij\flutter-idea\resources' is not a directory.
-```
-
-Check if the directory is a symlink by opening the link in IDEA, and it'll display as:
-
-```symlink
-../resources
-```
-
-Delete the file, then re-clone the repo using the below command:
-
-```shell
-git clone -c core.symlinks=true https://github.com/<your_name_here>/flutter-intellij
-```
-
-**NOTE**: Avoid adding symlinks during development if you can,
-since they can lead to various file-based issues during development.
-
 ## Provision Tool
 
 This is not currently required. However, for debugging unit tests, it may be handy; please ignore for now.
