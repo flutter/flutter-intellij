@@ -52,7 +52,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
    If you already have a fork and are now installing a development environment on a new machine,
    make sure you've updated your fork with the master branch
    so that you don't use stale configuration options from long ago.
-4. `git clone -c core.symlinks=true https://github.com/<your_name_here>/flutter-intellij`
+4. `git clone https://github.com/<your_name_here>/flutter-intellij`
 5. `cd flutter-intellij`
 6. `git remote add upstream https://github.com/flutter/flutter-intellij`
    The name `upstream` can be whatever you want.
@@ -121,21 +121,16 @@ name and contact info to the [AUTHORS](AUTHORS) file.
    - In the root directory, create an empty `gradle.properties` file (`touch gradle.properties`)
    - Add the following to the file:
    ```
-    name = "flutter-intellij"
-    buildSpec=2024.3
-    flutterPluginVersion=1
-    ideaProduct=android-studio
-    ideaVersion=2024.3.1.7
-    baseVersion=243.22562.59
-    dartPluginVersion= 243.21565.120
-    androidPluginVersion=
-    sinceBuild=243
-    untilBuild=253.*
-    testing=true
-    kotlin.stdlib.default.dependency=false
-    org.gradle.parallel=true
-    org.gradle.jvmargs=-Xms1024m -Xmx4048m
-    ```
+   flutterPluginVersion=SNAPSHOT
+   ideaVersion=2024.3.1.7
+   dartPluginVersion= 243.21565.120
+   sinceBuild=243
+   untilBuild=253.*
+   javaVersion=21
+   kotlin.stdlib.default.dependency=false
+   org.gradle.parallel=true
+   org.gradle.jvmargs=-Xms1024m -Xmx4048m
+   ```
     - **[Note]** If you want, you can manually change these properties to target different versions of IntelliJ. See `product-matrix.json` to find which configurations are supported.
 
 3. Start IntelliJ IDEA with the `flutter-intellij` project.
@@ -254,30 +249,6 @@ name and contact info to the [AUTHORS](AUTHORS) file.
     - Choose `Edit Configurations...` in the Run Configuration drop-down list.
     - Expand `Edit configuration templates...` and verify that Flutter is present.
     - Click [+] and verify that Flutter is present.
-
-### Handle symlinks
-
-If exceptions like these occurred:
-
-```
-A problem occurred configuring project ':flutter-idea'.
-> Source directory 'X:\path\to\your\flutter-intellij\flutter-idea\resources' is not a directory.
-```
-
-Check if the directory is a symlink by opening the link in IDEA, and it'll display as:
-
-```symlink
-../resources
-```
-
-Delete the file, then re-clone the repo using the below command:
-
-```shell
-git clone -c core.symlinks=true https://github.com/<your_name_here>/flutter-intellij
-```
-
-**NOTE**: Avoid adding symlinks during development if you can,
-since they can lead to various file-based issues during development.
 
 ## Provision Tool
 
