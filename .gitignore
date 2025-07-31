@@ -48,6 +48,3 @@ lib/kotlin*
 /build/
 gradle-app.setting
 gradle/wrapper/gradle-wrapper.jar
-
-# User specific configuration based on current Intellij SDKs.
-gradle.properties
