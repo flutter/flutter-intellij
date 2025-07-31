@@ -309,3 +309,12 @@ tasks.named("buildPlugin") {
 tasks.named("processResources") {
   dependsOn(writeLicenseKey)
 }
+
+// TODO(helin24): Find a better way to skip checking this file for tests.
+tasks.withType<ProcessResources>().configureEach {
+  if (name == "processTestResources") {
+    // This block will only execute for the 'processTestResources' task.
+    // The context here is unambiguously the task itself.
+    exclude("jxbrowser/jxbrowser.properties")
+  }
+}
