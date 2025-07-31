@@ -428,7 +428,7 @@ class DeployCommand extends ProductCommand {
     var originalDir = Directory.current;
     var filePath = p.join(
       rootPath,
-      'build/distributions/flutter-intellij.zip',
+      'build/distributions/flutter-intellij-kokoro.zip',
     );
     log("uploading $filePath");
     var file = File(filePath);
