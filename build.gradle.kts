@@ -275,7 +275,7 @@ tasks.register("printCompileClasspath") {
   }
 }
 
-// This finds the JX Browser license key from the environment and writes it to a file.
+// This finds the JxBrowser license key from the environment and writes it to a file.
 // This is only used by the dev build on kokoro for now.
 val writeLicenseKey = tasks.register("writeLicenseKey") {
   group = "build"
