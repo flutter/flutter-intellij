@@ -5,6 +5,6 @@ setup
 
 echo "kokoro build start"
 
-./gradlew buildPlugin
+./third_party/gradlew buildPlugin
 
 echo "kokoro build finished"
