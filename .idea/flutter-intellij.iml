@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module version="4">
-  <component name="AdditionalModuleElements">
-    <content url="file://$MODULE_DIR$" dumb="true">
-      <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/tool/plugin/build" />
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/tool/plugin/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/tool/plugin/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/tool/plugin/build" />
-      <excludeFolder url="file://$MODULE_DIR$/tool/triage/.dart_tool" />
-      <excludeFolder url="file://$MODULE_DIR$/tool/triage/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/tool/triage/build" />
+      <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/build" />
     </content>
   </component>
 </module>
