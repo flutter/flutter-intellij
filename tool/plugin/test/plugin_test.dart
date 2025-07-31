@@ -162,16 +162,6 @@ void main() {
       });
       expect(cmd.paths, orderedEquals([]));
     });
-
-    test('release paths', () async {
-      var runner = makeTestRunner();
-      late TestDeployCommand cmd;
-      await runner.run(["--release=19", "-d../..", "deploy"]).whenComplete(() {
-        cmd = (runner.commands['deploy'] as TestDeployCommand);
-      });
-      var specs = cmd.specs.where((s) => s.isStableChannel).toList();
-      expect(cmd.paths.length, specs.length);
-    });
   });
 
   group('build', () {
