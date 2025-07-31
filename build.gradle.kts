@@ -13,6 +13,8 @@ import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import java.io.File
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 // Specify UTF-8 for all compilations so we avoid Windows-1252.
 allprojects {
@@ -40,7 +42,11 @@ plugins {
   id("org.jetbrains.kotlin.jvm") version "2.2.0" // Kotlin support
 }
 
-val flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()
+var flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()
+if (project.hasProperty("dev-version")) {
+  val datestamp = DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now())
+  flutterPluginVersion = project.property("dev-version").toString() + "-dev." + datestamp
+}
 val ideaVersion = providers.gradleProperty("ideaVersion").get()
 val dartPluginVersion = providers.gradleProperty("dartPluginVersion").get()
 val sinceBuildInput = providers.gradleProperty("sinceBuild").get()
