@@ -282,7 +282,7 @@ val writeLicenseKey = tasks.register("writeLicenseKey") {
 
   // Use the output directory of the prepareSandbox task as the destination
   val outputDir = rootProject.file("resources/jxbrowser")
-  val licenseFile = outputDir.resolve("license.key")
+  val licenseFile = outputDir.resolve("jxbrowser.properties")
 
   // Define the output file for Gradle's up-to-date checks
   outputs.file(licenseFile)
@@ -311,7 +311,7 @@ val writeLicenseKey = tasks.register("writeLicenseKey") {
     if (readFile.isFile) {
       val licenseKey = readFile.readText(Charsets.UTF_8)
       println("Writing license key to ${licenseFile.absolutePath}")
-      licenseFile.writeText(licenseKey)
+      licenseFile.writeText("jxbrowser.license.key=$licenseKey")
     } else {
       println("$readFile is not a file")
     }
