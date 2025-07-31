@@ -275,42 +275,26 @@ tasks.register("printCompileClasspath") {
   }
 }
 
+// This finds the JX Browser license key from the environment and writes it to a file.
+// This is only used by the dev build on kokoro for now.
 val writeLicenseKey = tasks.register("writeLicenseKey") {
-  println("in write license key")
   group = "build"
   description = "Writes the license key from an environment variable to a file."
 
-  // Use the output directory of the prepareSandbox task as the destination
+  // Find the output file
   val outputDir = rootProject.file("resources/jxbrowser")
   val licenseFile = outputDir.resolve("jxbrowser.properties")
-
-  // Define the output file for Gradle's up-to-date checks
   outputs.file(licenseFile)
 
   doLast {
     // Read the license key from the environment variable
-    println("in doLast")
-
-    // To test, temporarily set
-    // export KOKORO_KEYSTORE_DIR="/Users/helinx/Documents/test/keystore"
-    // export FLUTTER_KEYSTORE_ID=74840
-    // export FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME=flutter-intellij-plugin-jxbrowser-license-key
-
     val base = System.getenv("KOKORO_KEYSTORE_DIR")
     val id = System.getenv("FLUTTER_KEYSTORE_ID")
     val name = System.getenv("FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME")
 
-    // Add these lines for debugging
-    println("---> Base dir inside Gradle: $base")
-    println("---> ID inside Gradle: $id")
-    println("---> Name inside Gradle: $name")
-
-    println("trying to read " + base + "/" + id + "_" + name)
     val readFile = File(base + "/" + id + "_" + name)
-    println(readFile)
     if (readFile.isFile) {
       val licenseKey = readFile.readText(Charsets.UTF_8)
-      println("Writing license key to ${licenseFile.absolutePath}")
       licenseFile.writeText("jxbrowser.license.key=$licenseKey")
     } else {
       println("$readFile is not a file")
