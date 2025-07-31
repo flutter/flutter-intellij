@@ -5,6 +5,6 @@ setup
 
 echo "kokoro build start"
 
-./bin/plugin make --channel=dev
+./third_party/gradlew buildPlugin
 
 echo "kokoro build finished"

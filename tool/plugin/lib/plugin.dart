@@ -418,34 +418,29 @@ class DeployCommand extends ProductCommand {
 
   @override
   Future<int> doit() async {
-    if (isReleaseMode) {
-      if (!await performReleaseChecks(this)) {
-        return 1;
-      }
-    } else if (!isDevChannel) {
-      log('Deploy must have a --release or --channel=dev argument');
+    if (!isDevChannel) {
+      log('Deploy must have --channel=dev argument');
       return 1;
     }
 
     var token = readTokenFromKeystore('FLUTTER_KEYSTORE_NAME');
     var value = 0;
     var originalDir = Directory.current;
-    for (var spec in specs) {
-      if (spec.channel != channel) continue;
-      var filePath = releasesFilePath(spec);
-      log("uploading $filePath");
-      var file = File(filePath);
-      changeDirectory(file.parent);
-      var pluginNumber = pluginRegistryIds[spec.pluginId];
-      value = await upload(
-        p.basename(file.path),
-        pluginNumber!,
-        token,
-        spec.channel,
-      );
-      if (value != 0) {
-        return value;
-      }
+    var filePath = p.join(
+      rootPath,
+      'build/distributions/flutter-intellij-kokoro.zip',
+    );
+    log("uploading $filePath");
+    var file = File(filePath);
+    changeDirectory(file.parent);
+    value = await upload(
+      p.basename(file.path),
+      '9212', // plugin registry ID for io.flutter
+      token,
+      'dev',
+    );
+    if (value != 0) {
+      return value;
     }
     changeDirectory(originalDir);
     return value;
