@@ -296,8 +296,6 @@ val writeLicenseKey = tasks.register("writeLicenseKey") {
     if (readFile.isFile) {
       val licenseKey = readFile.readText(Charsets.UTF_8)
       licenseFile.writeText("jxbrowser.license.key=$licenseKey")
-    } else {
-      println("$readFile is not a file")
     }
   }
 }
