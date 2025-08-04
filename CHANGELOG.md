@@ -3,6 +3,7 @@
 - Make Android dependencies optional, allowing the plugin to be used in more Jetbrains products (Rider, etc) (#7949, #8375)
 - Internal: support for logging to a dedicated plugin log file (#8253)
 - Fixes to ensure the Property Editor loads on all project opens (#8268)
+- Fix the hang after opening a new project in Android Studio (#8390)
 
 # 86
 - New message in DevTools windows for "Dock unpinned" IntelliJ feature (#8181)
