@@ -42,9 +42,12 @@ public class ToolWindowBadgeUpdater {
     }
     else if (app.getMode() == RunMode.DEBUG) {
       manager.invokeLater(() -> {
-        Icon baseIcon = AllIcons.Toolwindows.ToolWindowDebugger;
-        BadgeIcon iconWithBadge = new BadgeIcon(baseIcon, BADGE_PAINT);
-        Objects.requireNonNull(debugToolWindow).setIcon(iconWithBadge);
+        // https://github.com/flutter/flutter-intellij/issues/8391
+        if (debugToolWindow != null) {
+          Icon baseIcon = AllIcons.Toolwindows.ToolWindowDebugger;
+          BadgeIcon iconWithBadge = new BadgeIcon(baseIcon, BADGE_PAINT);
+          runToolWindow.setIcon(iconWithBadge);
+        }
       });
     }
   }
