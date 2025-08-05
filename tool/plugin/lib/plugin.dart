@@ -78,43 +78,6 @@ List<String> findJavaFiles(String path) {
       .toList();
 }
 
-bool genPresubmitYaml(List<BuildSpec> specs) {
-  // This assumes the file contains 'steps:', which seems reasonable.
-  var file = File(p.join(rootPath, '.github', 'workflows', 'presubmit.yaml'));
-  var versions = [];
-  for (var spec in specs) {
-    if (spec.channel == 'stable' && !spec.untilBuild.contains('SNAPSHOT')) {
-      versions.add(spec.version);
-    }
-  }
-
-  var templateFile = File(
-    p.join(rootPath, '.github', 'workflows', 'presubmit.yaml.template'),
-  );
-  var templateContents = templateFile.readAsStringSync();
-  // If we need to make many changes consider something like genPluginXml().
-  templateContents = templateContents.replaceFirst(
-    '@VERSIONS@',
-    versions.join(', '),
-  );
-  var header =
-      "# Do not edit; instead, modify ${p.basename(templateFile.path)},"
-      " and run './bin/plugin generate'.\n\n";
-  var contents = header + templateContents;
-  log('writing ${p.relative(file.path)}');
-  var templateIndex = contents.indexOf('steps:');
-  if (templateIndex < 0) {
-    log('presubmit template cannot be generated');
-    return false;
-  }
-  var fileContents = file.readAsStringSync();
-  var fileIndex = fileContents.indexOf('steps:');
-  var newContent =
-      contents.substring(0, templateIndex) + fileContents.substring(fileIndex);
-  file.writeAsStringSync(newContent, flush: true);
-  return true;
-}
-
 bool isTravisFileValid() {
   var travisPath = p.join(rootPath, '.github/workflows/presubmit.yaml');
   var travisFile = File(travisPath);
@@ -497,16 +460,11 @@ class GenerateCommand extends ProductCommand {
 
   @override
   String get description =>
-      'Generate plugin.xml, .github/workflows/presubmit.yaml, '
-      'and resources/liveTemplates/flutter_miscellaneous.xml files for the '
-      'Flutter plugin.\nThe plugin.xml.template and product-matrix.json are '
-      'used as input.';
+      'Generate resources/liveTemplates/flutter_miscellaneous.xml files for '
+      'the Flutter plugin.';
 
   @override
   Future<int> doit() async {
-    if (!genPresubmitYaml(specs)) {
-      return 1;
-    }
     generateLiveTemplates();
     if (isReleaseMode) {
       if (!await performReleaseChecks(this)) {
