@@ -282,7 +282,7 @@ tasks {
 }
 
 // A task to print the classpath used for compiling an IntelliJ plugin
-// Run with `./third_party/gradlew printCompileClasspath --no-configuration-cache `
+// Run with `./gradlew printCompileClasspath --no-configuration-cache `
 tasks.register("printCompileClasspath") {
   doLast {
     println("--- Begin Compile Classpath ---")
@@ -314,8 +314,6 @@ val writeLicenseKey = tasks.register("writeLicenseKey") {
     if (readFile.isFile) {
       val licenseKey = readFile.readText(Charsets.UTF_8)
       licenseFile.writeText("jxbrowser.license.key=$licenseKey")
-    } else {
-      println("$readFile is not a file")
     }
   }
 }

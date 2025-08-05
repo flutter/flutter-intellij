@@ -47,4 +47,3 @@ lib/kotlin*
 .gradle
 /build/
 gradle-app.setting
-gradle/wrapper/gradle-wrapper.jar
