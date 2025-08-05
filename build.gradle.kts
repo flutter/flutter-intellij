@@ -15,6 +15,18 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import java.io.File
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
+import org.intellij.markdown.html.HtmlGenerator
+import org.intellij.markdown.parser.MarkdownParser
+
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath("org.jetbrains:markdown:0.7.1")
+  }
+}
 
 // Specify UTF-8 for all compilations so we avoid Windows-1252.
 allprojects {
@@ -163,7 +175,13 @@ intellijPlatform {
       untilBuild = untilBuildInput
     }
     changeNotes = provider {
-      file("CHANGELOG.md").readText(Charsets.UTF_8)
+      // This is gemini-provided code to turn the changelog into HTML. Without it, the changelog will display properly on the jetbrains
+      // site, but not in the Plugins settings view.
+      val flavour = GFMFlavourDescriptor()
+      val parser = MarkdownParser(flavour)
+      val markdownText = file("CHANGELOG.md").readText(Charsets.UTF_8)
+      val parsedTree = parser.buildMarkdownTreeFromString(markdownText)
+      HtmlGenerator(markdownText, parsedTree, flavour).generateHtml()
     }
   }
 
