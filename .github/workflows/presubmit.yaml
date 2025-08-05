@@ -18,17 +18,11 @@ permissions:
 jobs:
   presubmit:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        version: [2024.3, 2025.1]
     steps:
       - name: checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - name: build ${{ matrix.version }}
+      - name: build
         run: ./tool/github.sh
-        env:
-          IDEA_VERSION: ${{ matrix.version }}
   checker:
     runs-on: ubuntu-latest
     strategy:
