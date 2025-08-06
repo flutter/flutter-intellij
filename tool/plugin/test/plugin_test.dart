@@ -11,10 +11,6 @@ import 'package:test/test.dart';
 
 void main() {
   group("create", () {
-    test('make', () {
-      expect(GradleBuildCommand(BuildCommandRunner()).name, "make");
-    });
-
     test('test', () {
       expect(TestCommand(BuildCommandRunner()).name, "test");
     });
@@ -208,7 +204,6 @@ void main() {
 
 BuildCommandRunner makeTestRunner() {
   var runner = BuildCommandRunner();
-  runner.addCommand(TestMakeCommand(runner));
   runner.addCommand(TestTestCommand(runner));
   runner.addCommand(TestDeployCommand(runner));
   runner.addCommand(TestGenCommand(runner));
@@ -246,16 +241,6 @@ class TestDeployCommand extends DeployCommand {
 
 class TestGenCommand extends GenerateCommand {
   TestGenCommand(super.runner);
-
-  @override
-  bool get isTesting => true;
-
-  @override
-  Future<int> doit() async => Future(() => 0);
-}
-
-class TestMakeCommand extends GradleBuildCommand {
-  TestMakeCommand(super.runner);
 
   @override
   bool get isTesting => true;
