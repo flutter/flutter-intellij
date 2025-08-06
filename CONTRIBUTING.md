@@ -144,7 +144,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
     - `cd path/to/flutter-intellij`
     - `dart pub get`
     - `(cd tool/plugin; dart pub get)`
-    - `bin/plugin test`
+    - `./gradlew test`
     - Note: If there are Dart errors during build originating in the `tool/plugin` directory, try deleting the contents of the `pubspec.lock` file and re-running the pub get steps. This will allow you to get a fresh set of pub packages.
 
 ### Configure "Project Structure" settings
@@ -302,22 +302,12 @@ The plugin tool (below) can be a more reliable way to run tests.
 To run unit tests on the command line:
 
 ```
-bin/plugin test
-```
-
-See `TestCommand` in `tool/plugin/lib/plugin.dart` for more options.
-
-It is also possible to run tests directly with Gradle, which would allow passing more command-line arguments:
-
-```
 ./gradlew test
 ```
 
 If you wanted to run a subset of the tests, you could do so this way.
 See the [Gradle docs](https://docs.gradle.org/current/userguide/java_testing.html)
 for more info about testing.
-*However*, you must have run the tests once using the plugin tool,
-to ensure all the dependencies have been configured.
 
 ## Adding platform sources
 
