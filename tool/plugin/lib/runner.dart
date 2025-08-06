@@ -30,31 +30,6 @@ class BuildCommandRunner extends CommandRunner<int> {
     );
   }
 
-  void writeJxBrowserKeyToFile() {
-    final jxBrowserKey = readTokenFromKeystore(
-      'FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME',
-    );
-    final propertiesFile = File(
-      "$rootPath/resources/jxbrowser/jxbrowser.properties",
-    );
-    if (jxBrowserKey.isNotEmpty) {
-      final contents = '''
-jxbrowser.license.key=$jxBrowserKey
-''';
-      propertiesFile.writeAsStringSync(contents);
-    }
-  }
-
-  Future<int> buildPlugin(BuildSpec spec, String version) async {
-    writeJxBrowserKeyToFile();
-    return await runGradleCommand(
-      ['buildPlugin', '--stacktrace'],
-      spec,
-      version,
-      'false',
-    );
-  }
-
   Future<int> runGradleCommand(
     List<String> command,
     BuildSpec spec,

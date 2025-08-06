@@ -11,10 +11,6 @@ import 'package:test/test.dart';
 
 void main() {
   group("create", () {
-    test('make', () {
-      expect(GradleBuildCommand(BuildCommandRunner()).name, "make");
-    });
-
     test('test', () {
       expect(TestCommand(BuildCommandRunner()).name, "test");
     });
@@ -66,13 +62,6 @@ void main() {
         expect(untilBuild.substring(0, 2), validator.isNumeric);
       }
     }
-
-    test('build', () async {
-      var runner = makeTestRunner();
-      await runner.run(["-r=19", "-d../..", "make"]).whenComplete(() {
-        buildSpecAssertions(runner, "make");
-      });
-    });
 
     test('test', () async {
       var runner = makeTestRunner();
@@ -151,64 +140,10 @@ void main() {
       expect(cmd.paths, orderedEquals([]));
     });
   });
-
-  group('build', () {
-    test('only-version', () async {
-      ProductCommand command =
-          makeTestRunner().commands['make'] as ProductCommand;
-      var results = command.argParser.parse(['--only-version=2023.1']);
-      expect(results['only-version'], '2023.1');
-    });
-  });
-
-  group('ProductCommand', () {
-    test('parses release', () async {
-      var runner = makeTestRunner();
-      late ProductCommand command;
-      await runner.run(["-d../..", '-r22.0', "make"]).whenComplete(() {
-        command = (runner.commands['make'] as ProductCommand);
-      });
-      expect(command.release, '22.0');
-    });
-    test('parses release partial number', () async {
-      var runner = makeTestRunner();
-      late ProductCommand command;
-      await runner.run(["-d../..", '-r22', "make"]).whenComplete(() {
-        command = (runner.commands['make'] as ProductCommand);
-      });
-      expect(command.release, '22.0');
-    });
-
-    test('isReleaseValid', () async {
-      var runner = makeTestRunner();
-      late ProductCommand command;
-      await runner.run(["-d../..", '-r22.0', "make"]).whenComplete(() {
-        command = (runner.commands['make'] as ProductCommand);
-      });
-      expect(command.isReleaseValid, true);
-    });
-    test('isReleaseValid partial version', () async {
-      var runner = makeTestRunner();
-      late ProductCommand command;
-      await runner.run(["-d../..", '-r22', "make"]).whenComplete(() {
-        command = (runner.commands['make'] as ProductCommand);
-      });
-      expect(command.isReleaseValid, true);
-    });
-    test('isReleaseValid bad version', () async {
-      var runner = makeTestRunner();
-      late ProductCommand command;
-      await runner.run(["-d../..", '-r22.0.0', "make"]).whenComplete(() {
-        command = (runner.commands['make'] as ProductCommand);
-      });
-      expect(command.isReleaseValid, false);
-    });
-  });
 }
 
 BuildCommandRunner makeTestRunner() {
   var runner = BuildCommandRunner();
-  runner.addCommand(TestMakeCommand(runner));
   runner.addCommand(TestTestCommand(runner));
   runner.addCommand(TestDeployCommand(runner));
   runner.addCommand(TestGenCommand(runner));
@@ -246,16 +181,6 @@ class TestDeployCommand extends DeployCommand {
 
 class TestGenCommand extends GenerateCommand {
   TestGenCommand(super.runner);
-
-  @override
-  bool get isTesting => true;
-
-  @override
-  Future<int> doit() async => Future(() => 0);
-}
-
-class TestMakeCommand extends GradleBuildCommand {
-  TestMakeCommand(super.runner);
 
   @override
   bool get isTesting => true;
