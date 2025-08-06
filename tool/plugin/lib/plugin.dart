@@ -24,7 +24,6 @@ Future<int> main(List<String> args) async {
   runner.addCommand(TestCommand(runner));
   runner.addCommand(DeployCommand(runner));
   runner.addCommand(GenerateCommand(runner));
-  runner.addCommand(RunIdeCommand(runner));
 
   try {
     return await runner.run(args) ?? 0;
@@ -348,42 +347,6 @@ class GenerateCommand extends ProductCommand {
     }
 
     templateFile.writeAsStringSync(contents);
-  }
-}
-
-/// Run the IDE using the gradle task "runIde"
-class RunIdeCommand extends ProductCommand {
-  @override
-  final BuildCommandRunner runner;
-
-  RunIdeCommand(this.runner) : super('run');
-
-  @override
-  String get description => 'Run the IDE plugin';
-
-  @override
-  Future<int> doit() async {
-    final javaHome = Platform.environment['JAVA_HOME'];
-    if (javaHome == null) {
-      log('JAVA_HOME environment variable not set - this is needed by Gradle.');
-      return 1;
-    }
-    log('JAVA_HOME=$javaHome');
-
-    // TODO(jwren) The IDE run is determined currently by the isUnitTestTarget
-    //  in the product-matrix.json, while useful, a new field should be added
-    //  into the product-matrix.json instead of re-using this field,
-    //  Or, the run IDE should be passed via the command line (I don't like this
-    //  as much.)
-    final spec = specs.firstWhere((s) => s.isUnitTestTarget);
-    return await _runIde(spec);
-  }
-
-  Future<int> _runIde(BuildSpec spec) async {
-    // run './gradlew runIde'
-    return await applyEdits(spec, () async {
-      return await runner.runGradleCommand(['runIde'], spec, '1', 'false');
-    });
   }
 }
 
