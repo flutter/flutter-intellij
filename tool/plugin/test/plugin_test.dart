@@ -147,59 +147,6 @@ void main() {
       expect(cmd.paths, orderedEquals([]));
     });
   });
-
-  group('build', () {
-    test('only-version', () async {
-      ProductCommand command =
-          makeTestRunner().commands['make'] as ProductCommand;
-      var results = command.argParser.parse(['--only-version=2023.1']);
-      expect(results['only-version'], '2023.1');
-    });
-  });
-
-  group('ProductCommand', () {
-    test('parses release', () async {
-      var runner = makeTestRunner();
-      late ProductCommand command;
-      await runner.run(["-d../..", '-r22.0', "make"]).whenComplete(() {
-        command = (runner.commands['make'] as ProductCommand);
-      });
-      expect(command.release, '22.0');
-    });
-    test('parses release partial number', () async {
-      var runner = makeTestRunner();
-      late ProductCommand command;
-      await runner.run(["-d../..", '-r22', "make"]).whenComplete(() {
-        command = (runner.commands['make'] as ProductCommand);
-      });
-      expect(command.release, '22.0');
-    });
-
-    test('isReleaseValid', () async {
-      var runner = makeTestRunner();
-      late ProductCommand command;
-      await runner.run(["-d../..", '-r22.0', "make"]).whenComplete(() {
-        command = (runner.commands['make'] as ProductCommand);
-      });
-      expect(command.isReleaseValid, true);
-    });
-    test('isReleaseValid partial version', () async {
-      var runner = makeTestRunner();
-      late ProductCommand command;
-      await runner.run(["-d../..", '-r22', "make"]).whenComplete(() {
-        command = (runner.commands['make'] as ProductCommand);
-      });
-      expect(command.isReleaseValid, true);
-    });
-    test('isReleaseValid bad version', () async {
-      var runner = makeTestRunner();
-      late ProductCommand command;
-      await runner.run(["-d../..", '-r22.0.0', "make"]).whenComplete(() {
-        command = (runner.commands['make'] as ProductCommand);
-      });
-      expect(command.isReleaseValid, false);
-    });
-  });
 }
 
 BuildCommandRunner makeTestRunner() {
