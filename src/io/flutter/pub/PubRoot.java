@@ -118,9 +118,13 @@ public class PubRoot {
    * Based on the filesystem cache; doesn't refresh anything.
    */
   @Nullable
-  public static PubRoot forDescendant(@NotNull VirtualFile fileOrDir, @NotNull Project project) {
+  public static PubRoot forDescendant(@Nullable VirtualFile fileOrDir, @NotNull Project project) {
+    // To be compatible w/ `flutter_enhancement_suite`, we allow a null `fileOrDir`.
+    // https://github.com/flutter/flutter-intellij/issues/8399
+    if (fileOrDir == null) return null;
     ProjectRootManager manager = ProjectRootManager.getInstance(project);
     if (manager == null) return null;
+    
     final ProjectFileIndex index = manager.getFileIndex();
     return OpenApiUtils.safeRunReadAction(() -> {
       final VirtualFile root = index.getContentRootForFile(fileOrDir);
