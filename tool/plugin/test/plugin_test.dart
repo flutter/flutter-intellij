@@ -6,7 +6,6 @@ import 'dart:io';
 
 import 'package:plugin_tool/plugin.dart';
 import 'package:plugin_tool/runner.dart';
-import 'package:plugin_tool/verify.dart';
 import 'package:string_validator/string_validator.dart' as validator;
 import 'package:test/test.dart';
 
@@ -26,10 +25,6 @@ void main() {
 
     test('generate', () {
       expect(GenerateCommand(BuildCommandRunner()).name, "generate");
-    });
-
-    test('verify', () {
-      expect(VerifyCommand(BuildCommandRunner()).name, "verify");
     });
   });
 
@@ -90,13 +85,6 @@ void main() {
       var runner = makeTestRunner();
       await runner.run(["-r19", "-d../..", "deploy"]).whenComplete(() {
         buildSpecAssertions(runner, "deploy");
-      });
-    });
-
-    test('verify', () async {
-      var runner = makeTestRunner();
-      await runner.run(["-r19", "-d../..", "verify"]).whenComplete(() {
-        buildSpecAssertions(runner, "verify");
       });
     });
   });
@@ -173,15 +161,6 @@ void main() {
     });
   });
 
-  group('verify', () {
-    test('only-version', () async {
-      ProductCommand command =
-          makeTestRunner().commands['verify'] as ProductCommand;
-      var results = command.argParser.parse(['--only-version=2023.1']);
-      expect(results['only-version'], '2023.1');
-    });
-  });
-
   group('ProductCommand', () {
     test('parses release', () async {
       var runner = makeTestRunner();
@@ -233,7 +212,6 @@ BuildCommandRunner makeTestRunner() {
   runner.addCommand(TestTestCommand(runner));
   runner.addCommand(TestDeployCommand(runner));
   runner.addCommand(TestGenCommand(runner));
-  runner.addCommand(TestVerifyCommand(runner));
   return runner;
 }
 
@@ -288,16 +266,6 @@ class TestMakeCommand extends GradleBuildCommand {
 
 class TestTestCommand extends TestCommand {
   TestTestCommand(super.runner);
-
-  @override
-  bool get isTesting => true;
-
-  @override
-  Future<int> doit() async => Future(() => 0);
-}
-
-class TestVerifyCommand extends VerifyCommand {
-  TestVerifyCommand(super.runner);
 
   @override
   bool get isTesting => true;
