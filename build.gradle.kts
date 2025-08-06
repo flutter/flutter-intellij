@@ -15,18 +15,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import java.io.File
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
-import org.intellij.markdown.html.HtmlGenerator
-import org.intellij.markdown.parser.MarkdownParser
-
-buildscript {
-  repositories {
-    mavenCentral()
-  }
-  dependencies {
-    classpath("org.jetbrains:markdown:0.7.1")
-  }
-}
+import org.jetbrains.changelog.Changelog
 
 // Specify UTF-8 for all compilations so we avoid Windows-1252.
 allprojects {
@@ -52,6 +41,7 @@ plugins {
   id("java") // Java support
   id("org.jetbrains.intellij.platform") version "2.7.0" // IntelliJ Platform Gradle Plugin
   id("org.jetbrains.kotlin.jvm") version "2.2.0" // Kotlin support
+  id("org.jetbrains.changelog") version "2.2.0" // Gradle Changelog Plugin
 }
 
 var flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()
@@ -166,6 +156,9 @@ dependencies {
   )
 }
 
+changelog {
+  headerParserRegex = """(\d+(\.\d+)*)""".toRegex()
+}
 
 intellijPlatform {
   pluginConfiguration {
@@ -175,13 +168,7 @@ intellijPlatform {
       untilBuild = untilBuildInput
     }
     changeNotes = provider {
-      // This is gemini-provided code to turn the changelog into HTML. Without it, the changelog will display properly on the jetbrains
-      // site, but not in the Plugins settings view.
-      val flavour = GFMFlavourDescriptor()
-      val parser = MarkdownParser(flavour)
-      val markdownText = file("CHANGELOG.md").readText(Charsets.UTF_8)
-      val parsedTree = parser.buildMarkdownTreeFromString(markdownText)
-      HtmlGenerator(markdownText, parsedTree, flavour).generateHtml()
+      project.changelog.render(Changelog.OutputType.HTML)
     }
   }
 
