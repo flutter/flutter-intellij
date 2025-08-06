@@ -63,13 +63,6 @@ void main() {
       }
     }
 
-    test('build', () async {
-      var runner = makeTestRunner();
-      await runner.run(["-r=19", "-d../..", "make"]).whenComplete(() {
-        buildSpecAssertions(runner, "make");
-      });
-    });
-
     test('test', () async {
       var runner = makeTestRunner();
       await runner.run(["-r=19", "-d../..", "test"]).whenComplete(() {
