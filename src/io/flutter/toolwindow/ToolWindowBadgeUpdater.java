@@ -46,7 +46,7 @@ public class ToolWindowBadgeUpdater {
         if (debugToolWindow != null) {
           Icon baseIcon = AllIcons.Toolwindows.ToolWindowDebugger;
           BadgeIcon iconWithBadge = new BadgeIcon(baseIcon, BADGE_PAINT);
-          runToolWindow.setIcon(iconWithBadge);
+          debugToolWindow.setIcon(iconWithBadge);
         }
       });
     }
