@@ -6,16 +6,15 @@
 
 import okhttp3.internal.immutableListOf
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.jetbrains.changelog.Changelog
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import java.io.File
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import org.jetbrains.changelog.Changelog
 
 // Specify UTF-8 for all compilations so we avoid Windows-1252.
 allprojects {
@@ -186,7 +185,8 @@ intellijPlatform {
       VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
 //      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES, // https://github.com/flutter/flutter-intellij/issues/7718
 //      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
-      VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
+// `BadgeIcon`:
+//      VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
 //      VerifyPluginTask.FailureLevel.INTERNAL_API_USAGES,
 //      VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
       VerifyPluginTask.FailureLevel.NON_EXTENDABLE_API_USAGES,
@@ -197,7 +197,7 @@ intellijPlatform {
     )
     verificationReportsFormats = VerifyPluginTask.VerificationReportsFormats.ALL
     subsystemsToCheck = VerifyPluginTask.Subsystems.ALL
-    
+
     ides {
       recommended()
     }
