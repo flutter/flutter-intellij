@@ -38,9 +38,8 @@ import java.util.Set;
 public class FlutterDependencyInspection extends LocalInspectionTool {
   private final Set<String> myIgnoredPubspecPaths = new HashSet<>(); // remember for the current session only, do not serialize
 
-  @Nullable
   @Override
-  public ProblemDescriptor[] checkFile(@NotNull final PsiFile psiFile, @NotNull final InspectionManager manager, final boolean isOnTheFly) {
+  public ProblemDescriptor @Nullable [] checkFile(@NotNull final PsiFile psiFile, @NotNull final InspectionManager manager, final boolean isOnTheFly) {
     if (!isOnTheFly) return null;
 
     if (!(psiFile instanceof DartFile)) return null;

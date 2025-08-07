@@ -246,6 +246,15 @@ public class PubRoot {
   }
 
   /**
+   * Returns true if the pubspec declares "resolution: workspace".
+   */
+  public boolean declaresResolutionWorkspace() {
+    validateUpdateCachedPubspecInfo();
+    assert cachedPubspecInfo != null;
+    return cachedPubspecInfo.isResolutionWorkspace();
+  }
+
+  /**
    * Check if the cache needs to be updated.
    */
   private void validateUpdateCachedPubspecInfo() {
@@ -274,7 +283,15 @@ public class PubRoot {
 
   @Nullable
   public VirtualFile getPackageConfigFile() {
-    final VirtualFile tools = root.findChild(DOT_DART_TOOL);
+    VirtualFile rootToExpectToolsDirectory = root;
+
+    // If this package.yaml file has resolution:workspace declared, check in the parent directory for
+    //  the .dart_tool/ directory.
+    //   https://github.com/flutter/flutter-intellij/issues/7623
+    if (cachedPubspecInfo.isResolutionWorkspace()) {
+      rootToExpectToolsDirectory = root.getParent();
+    }
+    final VirtualFile tools = rootToExpectToolsDirectory.findChild(DOT_DART_TOOL);
     if (tools == null || !tools.isDirectory()) {
       return null;
     }

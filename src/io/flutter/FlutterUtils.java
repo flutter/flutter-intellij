@@ -16,6 +16,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.*;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -61,6 +62,7 @@ public class FlutterUtils {
 
     private boolean flutter = false;
     private boolean plugin = false;
+    private boolean resolutionWorkspace = false;
 
     FlutterPubspecInfo(long modificationStamp) {
       this.modificationStamp = modificationStamp;
@@ -72,6 +74,10 @@ public class FlutterUtils {
 
     public boolean isFlutterPlugin() {
       return plugin;
+    }
+
+    public boolean isResolutionWorkspace() {
+      return resolutionWorkspace;
     }
 
     public long getModificationStamp() {
@@ -359,6 +365,13 @@ public class FlutterUtils {
         final Object flutterEntry = yamlMap.get("flutter");
         if (flutterEntry instanceof Map) {
           info.plugin = ((Map<?, ?>)flutterEntry).containsKey("plugin");
+        }
+
+        // Check for resolution configuration.
+        //  https://dart.dev/tools/pub/workspaces
+        final Object resolutionEntry = yamlMap.get("resolution");
+        if (resolutionEntry instanceof String) {
+          info.resolutionWorkspace = StringUtil.equals((String)resolutionEntry, "workspace");
         }
       }
     }
