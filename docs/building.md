@@ -3,8 +3,6 @@
 Update the `gradle.properties` file
 
 - IntelliJ IDEA versions can be found here: https://www.jetbrains.com/idea/download/other.html
-    - Version numbers for the `product-matrix.json` should be taken from the name of the downloaded file, not versions listed on the
-      website.
 - Dart Plugin versions can be found here: https://plugins.jetbrains.com/plugin/6351-dart
 - Android Studio versions can be found
   here: https://developer.android.com/studio/archive & https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
@@ -32,7 +30,7 @@ invited to the organization to upload plugin files.
 Building for releases was formerly done by the `plugin` tool when we wanted to run a script to generate multiple release versions at once.
 See [tool/plugin/README.md](../tool/plugin/README.md) for details.
 
-The `plugin` tool is being retained currently for the dev build, linting, and verifying the plugin.
+The `plugin` tool is being retained currently for deploying the dev build, linting, and generating live templates.
 
 ### install gs_util
 
