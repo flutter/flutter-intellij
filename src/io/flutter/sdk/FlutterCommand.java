@@ -64,7 +64,7 @@ public class FlutterCommand {
   /**
    * Returns a displayable version of the command that will be run.
    */
-  public String getDisplayCommand() {
+  public @NotNull String getDisplayCommand() {
     final List<String> words = new ArrayList<>();
     words.add("flutter");
     words.addAll(type.subCommand);
@@ -310,10 +310,11 @@ public class FlutterCommand {
     TEST("Flutter test", "test");
 
     final public String title;
-    final ImmutableList<String> subCommand;
+    final @NotNull ImmutableList<String> subCommand;
 
-    Type(String title, String... subCommand) {
+    Type(String title, @NotNull String... subCommand) {
       this.title = title;
+      assert subCommand != null;
       this.subCommand = ImmutableList.copyOf(subCommand);
     }
   }
