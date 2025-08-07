@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.BadgeIcon;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
 
@@ -49,45 +50,6 @@ public class ToolWindowBadgeUpdater {
           debugToolWindow.setIcon(iconWithBadge);
         }
       });
-    }
-  }
-
-  private static class BadgeIcon implements Icon {
-    private final Icon baseIcon;
-    private final Color overlayColor;
-    private static final float alpha = 1.0F;
-
-    public BadgeIcon(Icon baseIcon, Color overlayColor) {
-      this.baseIcon = baseIcon;
-      this.overlayColor = overlayColor;
-    }
-
-    @Override
-    public void paintIcon(Component c, Graphics g, int x, int y) {
-      baseIcon.paintIcon(c, g, x, y);
-
-      Graphics2D g2d = (Graphics2D)g.create();
-      try {
-        g2d.translate(x, y);
-
-        g2d.setComposite(AlphaComposite.SrcOver.derive(alpha));
-
-        g2d.setColor(overlayColor);
-        g2d.fillRect(0, 0, getIconWidth(), getIconHeight());
-      }
-      finally {
-        g2d.dispose();
-      }
-    }
-
-    @Override
-    public int getIconWidth() {
-      return baseIcon.getIconWidth();
-    }
-
-    @Override
-    public int getIconHeight() {
-      return baseIcon.getIconHeight();
     }
   }
 }
