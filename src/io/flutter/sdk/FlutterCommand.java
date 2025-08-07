@@ -64,11 +64,35 @@ public class FlutterCommand {
   /**
    * Returns a displayable version of the command that will be run.
    */
-  public String getDisplayCommand() {
+  public @NotNull String getDisplayCommand() {
     final List<String> words = new ArrayList<>();
     words.add("flutter");
     words.addAll(type.subCommand);
     words.addAll(args);
+    return String.join(" ", words);
+  }
+
+  /**
+   * Returns a displayable version of the command, with potential file paths redacted if path logging is disabled.
+   */
+  public String getSanitizedDisplayCommand() {
+    if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+      return getDisplayCommand();
+    }
+
+    final List<String> words = new ArrayList<>();
+    words.add("flutter");
+    words.addAll(type.subCommand);
+
+    final List<String> newArgs = new ArrayList<>(args);
+    // For run, attach, and test commands, the last argument is typically a file path.
+    // We redact it to avoid logging user-specific information.
+    if (!newArgs.isEmpty() && (type == Type.RUN || type == Type.ATTACH || type == Type.TEST)) {
+      final int lastIndex = newArgs.size() - 1;
+      newArgs.set(lastIndex, "<path>");
+    }
+
+    words.addAll(newArgs);
     return String.join(" ", words);
   }
 
@@ -286,10 +310,11 @@ public class FlutterCommand {
     TEST("Flutter test", "test");
 
     final public String title;
-    final ImmutableList<String> subCommand;
+    final @NotNull ImmutableList<String> subCommand;
 
-    Type(String title, String... subCommand) {
+    Type(String title, @NotNull String... subCommand) {
       this.title = title;
+      assert subCommand != null;
       this.subCommand = ImmutableList.copyOf(subCommand);
     }
   }

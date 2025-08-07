@@ -32,6 +32,7 @@ import git4idea.config.GitExecutableManager;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
+import io.flutter.logging.PluginLogger;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterDevice;
@@ -60,7 +61,7 @@ public class FlutterSdk {
 
   private static final @NotNull String DART_CORE_SUFFIX = DART_SDK_SUFFIX + "/lib/core";
 
-  private static final @NotNull Logger LOG = Logger.getInstance(FlutterSdk.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterSdk.class);
 
   private static final @NotNull Map<String, FlutterSdk> projectSdkCache = new HashMap<>();
 
@@ -443,7 +444,11 @@ public class FlutterSdk {
       }
     }
     catch (InterruptedException e) {
-      FlutterUtils.warn(LOG, e);
+      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+        LOG.warn(e);
+      } else {
+        LOG.warn(e.toString());
+      }
       return null;
     }
 
@@ -694,22 +699,21 @@ public class FlutterSdk {
       }
     });
 
-    LOG.info("Calling " + command.getDisplayCommand());
     final long start = System.currentTimeMillis();
     process.startNotify();
     if (process.waitFor(5000)) {
       final long duration = System.currentTimeMillis() - start;
-      LOG.info(command.getDisplayCommand() + ": " + duration + "ms");
+      LOG.info(command.getSanitizedDisplayCommand() + " (" + duration + "ms)");
       final Integer code = process.getExitCode();
       if (code != null && code == 0) {
         return stdout.toString();
       }
       else {
-        LOG.info("Exit code from " + command.getDisplayCommand() + ": " + code);
+        LOG.info("Exit code " + code + " from " + command.getSanitizedDisplayCommand());
       }
     }
     else {
-      LOG.info("Timeout when calling " + command.getDisplayCommand());
+      LOG.info("Timeout when calling " + command.getSanitizedDisplayCommand());
     }
     return null;
   }
