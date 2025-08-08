@@ -7,6 +7,7 @@ package io.flutter.run.daemon;
 
 import com.google.common.base.Stopwatch;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessAdapter;
@@ -27,13 +28,17 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
+import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
+import de.roderick.weberknecht.WebSocketException;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.dart.DtdUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.logging.FlutterConsoleLogManager;
+import io.flutter.logging.PluginLogger;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
@@ -677,10 +682,13 @@ public class FlutterApp implements Disposable {
  * Listens for events while running or debugging an app.
  */
 class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
-  private static final @NotNull Logger LOG = Logger.getInstance(FlutterAppDaemonEventListener.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterAppDaemonEventListener.class);
 
   private final @NotNull FlutterApp app;
   private final @NotNull ProgressHelper progress;
+  private String appVmServiceUri;
+  private final DtdUtils dtdUtils = new DtdUtils();
+
 
   FlutterAppDaemonEventListener(@NotNull FlutterApp app, @NotNull Project project) {
     this.app = app;
@@ -738,6 +746,12 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
   @Override
   public void onAppDebugPort(@NotNull DaemonEvent.AppDebugPort debugInfo) {
     app.setWsUrl(debugInfo.wsUri);
+    this.appVmServiceUri = debugInfo.wsUri;
+
+    final JsonObject params = new JsonObject();
+    params.addProperty("uri", debugInfo.wsUri);
+    params.addProperty("name", debugInfo.appId);
+    sendDtdRequest("ConnectedApp.registerVmService", params);
 
     // Print the conneciton info to the console.
     final ConsoleView console = app.getConsole();
@@ -804,7 +818,36 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
     if (stopped.error != null && app.getConsole() != null) {
       app.getConsole().print("Finished with error: " + stopped.error + "\n", ConsoleViewContentType.ERROR_OUTPUT);
     }
+
+    final JsonObject params = new JsonObject();
+    params.addProperty("uri", appVmServiceUri);
+    sendDtdRequest("ConnectedApp.unregisterVmService", params);
+
     progress.cancel();
     app.getProcessHandler().destroyProcess();
+  }
+
+  private void sendDtdRequest(@NotNull String requestName, @NotNull JsonObject params) {
+    try {
+      final DartToolingDaemonService dtdService = dtdUtils.readyDtdService(app.getProject()).get();
+      if (dtdService == null) {
+        return;
+      }
+      // This removes secret from params when we print out after receiving response.
+      JsonObject initialParams = params.deepCopy();
+      dtdService.sendRequest(requestName, params, true, object -> {
+        final JsonObject result = object.getAsJsonObject("result");
+        final JsonPrimitive type = result != null ? result.getAsJsonPrimitive("type") : null;
+        if (type != null && "Success".equals(type.getAsString())) {
+          LOG.info("Successful request " + requestName + " to DTD with params: " + initialParams);
+        } else {
+          LOG.warn("Failed request " + requestName + "to DTD with params: " + initialParams);
+          LOG.warn("Result: " + result);
+        }
+      });
+    }
+    catch (InterruptedException | java.util.concurrent.ExecutionException | WebSocketException e) {
+      LOG.error("Exception while sending DTD request", e);
+    }
   }
 }
