@@ -1,3 +1,9 @@
+## Unreleased
+
+- Register VM service with DTD (#8436)
+- Fix for ClassCastException: BadgeIcon on flutter runs (#8426)
+- Fix the FlutterDependencyInspection for the analyzer workspaces (#8428)
+
 ## 87
 
 - Fixes to Flutter test execution (#8233, #8325)
