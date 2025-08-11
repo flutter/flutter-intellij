@@ -32,6 +32,7 @@ import java.util.Objects;
  */
 public class PubRoot {
   public static final String DOT_DART_TOOL = ".dart_tool";
+  public static final String PACKAGE_CONFIG_JSON = "package_config.json";
   public static final String DOT_PACKAGES = ".packages";
   public static final String PUBSPEC_YAML = "pubspec.yaml";
 
@@ -288,14 +289,16 @@ public class PubRoot {
     // If this package.yaml file has resolution:workspace declared, check in the parent directory for
     //  the .dart_tool/ directory.
     //   https://github.com/flutter/flutter-intellij/issues/7623
-    if (cachedPubspecInfo.isResolutionWorkspace()) {
+    if (declaresResolutionWorkspace() && root.getParent() != null && root.getParent().isDirectory()) {
       rootToExpectToolsDirectory = root.getParent();
     }
+    assert rootToExpectToolsDirectory != null;
+    assert rootToExpectToolsDirectory.isDirectory();
     final VirtualFile tools = rootToExpectToolsDirectory.findChild(DOT_DART_TOOL);
     if (tools == null || !tools.isDirectory()) {
       return null;
     }
-    final VirtualFile config = tools.findChild("package_config.json");
+    final VirtualFile config = tools.findChild(PACKAGE_CONFIG_JSON);
     if (config != null && !config.isDirectory()) {
       return config;
     }
