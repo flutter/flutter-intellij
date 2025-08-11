@@ -108,6 +108,7 @@ dependencies {
   intellijPlatform {
     // Documentation on the default target platform methods:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
+    // Android Studio versions can be found at: https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
     androidStudio(ideaVersion)
     testFramework(TestFrameworkType.Platform)
 
