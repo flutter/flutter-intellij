@@ -35,6 +35,7 @@ import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.dart.DtdRequest;
 import io.flutter.dart.DtdUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.logging.FlutterConsoleLogManager;
@@ -686,8 +687,8 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
 
   private final @NotNull FlutterApp app;
   private final @NotNull ProgressHelper progress;
-  private String appVmServiceUri;
-  private final DtdUtils dtdUtils = new DtdUtils();
+  private @Nullable String appVmServiceUri;
+  private static final @NotNull DtdUtils dtdUtils = new DtdUtils();
 
 
   FlutterAppDaemonEventListener(@NotNull FlutterApp app, @NotNull Project project) {
@@ -751,7 +752,7 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
     final JsonObject params = new JsonObject();
     params.addProperty("uri", debugInfo.wsUri);
     params.addProperty("name", debugInfo.appId);
-    sendDtdRequest("ConnectedApp.registerVmService", params);
+    sendDtdRequest(DtdRequest.REGISTER_VM_SERVICE, params);
 
     // Print the conneciton info to the console.
     final ConsoleView console = app.getConsole();
@@ -821,27 +822,30 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
 
     final JsonObject params = new JsonObject();
     params.addProperty("uri", appVmServiceUri);
-    sendDtdRequest("ConnectedApp.unregisterVmService", params);
+    sendDtdRequest(DtdRequest.UNREGISTER_VM_SERVICE, params);
 
     progress.cancel();
     app.getProcessHandler().destroyProcess();
   }
 
-  private void sendDtdRequest(@NotNull String requestName, @NotNull JsonObject params) {
+  private void sendDtdRequest(@NotNull DtdRequest dtdRequest, @NotNull JsonObject params) {
     try {
       final DartToolingDaemonService dtdService = dtdUtils.readyDtdService(app.getProject()).get();
       if (dtdService == null) {
         return;
       }
-      // This removes secret from params when we print out after receiving response.
+      // Requests for this class require sending a secret to DTD to verify that this is a trusted client; however, we don't want to log the
+      // secret. The DTD service class in the Dart plugin automatically adds the secret to the params, so without making an initial copy of
+      // the input params, the secret would be logged.
+      // TODO(helin24 in Dart plugin): Add secret to a copy of the request params.
       JsonObject initialParams = params.deepCopy();
-      dtdService.sendRequest(requestName, params, true, object -> {
+      dtdService.sendRequest(dtdRequest.type, params, true, object -> {
         final JsonObject result = object.getAsJsonObject("result");
         final JsonPrimitive type = result != null ? result.getAsJsonPrimitive("type") : null;
         if (type != null && "Success".equals(type.getAsString())) {
-          LOG.info("Successful request " + requestName + " to DTD with params: " + initialParams);
+          LOG.info("Successful request " + dtdRequest.type + " to DTD with params: " + initialParams);
         } else {
-          LOG.warn("Failed request " + requestName + "to DTD with params: " + initialParams);
+          LOG.warn("Failed request " + dtdRequest.type + "to DTD with params: " + initialParams);
           LOG.warn("Result: " + result);
         }
       });
