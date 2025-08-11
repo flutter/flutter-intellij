@@ -20,6 +20,7 @@ import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
 import io.flutter.dart.DartPlugin;
+import io.flutter.logging.PluginLogger;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRootCache;
 import io.flutter.run.common.RunMode;
@@ -40,7 +41,7 @@ import java.util.concurrent.TimeUnit;
  * Fields used when launching an app using the Flutter SDK (non-bazel).
  */
 public class SdkFields {
-  private static final @NotNull Logger LOG = Logger.getInstance(SdkFields.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(SdkFields.class);
   private @Nullable String filePath;
   private @Nullable String buildFlavor;
   private @Nullable String additionalArgs;
@@ -231,7 +232,11 @@ public class SdkFields {
       args = ArrayUtil.append(args, "--devtools-server-address=http://" + instance.host() + ":" + instance.port());
     }
     catch (Exception e) {
-      LOG.info(e);
+      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+        LOG.info(e);
+      } else {
+        LOG.info(e.toString());
+      }
     }
     command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
     final GeneralCommandLine commandLine = command.createGeneralCommandLine(project);
