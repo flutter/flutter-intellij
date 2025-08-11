@@ -1,4 +1,4 @@
-## Unreleased
+## 87.1
 
 - Register VM service with DTD (#8436)
 - Fix for ClassCastException: BadgeIcon on flutter runs (#8426)
