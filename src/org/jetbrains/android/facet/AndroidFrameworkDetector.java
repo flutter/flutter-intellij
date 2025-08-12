@@ -47,7 +47,7 @@ public class AndroidFrameworkDetector extends FacetBasedFrameworkDetector<Androi
   }
 
   // TODO(jwren) Add this support back into the plugin or delete the code
-  //  Method is current dead when uncommented, commented out for the `./bin/plugin verify` command
+  //  Method is currently dead when uncommented, commented out for the `./gradlew verify*` commands
   //@NotNull
   //public static Notification showDexOptionNotification(@NotNull Module module, @NotNull String propertyName) {
   //  Project project = module.getProject();

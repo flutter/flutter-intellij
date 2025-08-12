@@ -21,3 +21,5 @@ To re-generate the flutter_miscellaneous.xml template file, run:
 ```
 ./bin/plugin generate
 ```
+
+Commit these at the time of making changes to live templates.

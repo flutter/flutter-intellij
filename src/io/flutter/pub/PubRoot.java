@@ -32,6 +32,7 @@ import java.util.Objects;
  */
 public class PubRoot {
   public static final String DOT_DART_TOOL = ".dart_tool";
+  public static final String PACKAGE_CONFIG_JSON = "package_config.json";
   public static final String DOT_PACKAGES = ".packages";
   public static final String PUBSPEC_YAML = "pubspec.yaml";
 
@@ -118,9 +119,13 @@ public class PubRoot {
    * Based on the filesystem cache; doesn't refresh anything.
    */
   @Nullable
-  public static PubRoot forDescendant(@NotNull VirtualFile fileOrDir, @NotNull Project project) {
+  public static PubRoot forDescendant(@Nullable VirtualFile fileOrDir, @NotNull Project project) {
+    // To be compatible w/ `flutter_enhancement_suite`, we allow a null `fileOrDir`.
+    // https://github.com/flutter/flutter-intellij/issues/8399
+    if (fileOrDir == null) return null;
     ProjectRootManager manager = ProjectRootManager.getInstance(project);
     if (manager == null) return null;
+    
     final ProjectFileIndex index = manager.getFileIndex();
     return OpenApiUtils.safeRunReadAction(() -> {
       final VirtualFile root = index.getContentRootForFile(fileOrDir);
@@ -242,6 +247,15 @@ public class PubRoot {
   }
 
   /**
+   * Returns true if the pubspec declares "resolution: workspace".
+   */
+  public boolean declaresResolutionWorkspace() {
+    validateUpdateCachedPubspecInfo();
+    assert cachedPubspecInfo != null;
+    return cachedPubspecInfo.isResolutionWorkspace();
+  }
+
+  /**
    * Check if the cache needs to be updated.
    */
   private void validateUpdateCachedPubspecInfo() {
@@ -270,11 +284,21 @@ public class PubRoot {
 
   @Nullable
   public VirtualFile getPackageConfigFile() {
-    final VirtualFile tools = root.findChild(DOT_DART_TOOL);
+    VirtualFile rootToExpectToolsDirectory = root;
+
+    // If this package.yaml file has resolution:workspace declared, check in the parent directory for
+    //  the .dart_tool/ directory.
+    //   https://github.com/flutter/flutter-intellij/issues/7623
+    if (declaresResolutionWorkspace() && root.getParent() != null && root.getParent().isDirectory()) {
+      rootToExpectToolsDirectory = root.getParent();
+    }
+    assert rootToExpectToolsDirectory != null;
+    assert rootToExpectToolsDirectory.isDirectory();
+    final VirtualFile tools = rootToExpectToolsDirectory.findChild(DOT_DART_TOOL);
     if (tools == null || !tools.isDirectory()) {
       return null;
     }
-    final VirtualFile config = tools.findChild("package_config.json");
+    final VirtualFile config = tools.findChild(PACKAGE_CONFIG_JSON);
     if (config != null && !config.isDirectory()) {
       return config;
     }

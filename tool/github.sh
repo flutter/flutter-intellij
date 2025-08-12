@@ -27,8 +27,6 @@ flutter config --no-analytics
 flutter doctor
 export FLUTTER_SDK=`pwd`/../flutter
 
-echo "IDEA_VERSION=$IDEA_VERSION"
-
 echo "java --version"
 java --version
 
@@ -71,14 +69,17 @@ elif [ "CHECK_BOT" = "$BOT" ] ; then
 
 elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
   # Run unit tests.
-  ./bin/plugin test --no-setup
+  ./gradlew test
 
 elif [ "VERIFY_BOT" = "$BOT" ] ; then
     # Run the verifier for this version
-    ./bin/plugin verify
+  ./gradlew verifyPluginProjectConfiguration
+  ./gradlew verifyPluginStructure
+  ./gradlew verifyPluginSignature
+  ./gradlew verifyPlugin
 
 else
   # Run the build.
-  ./bin/plugin make --channel=stable --only-version=$IDEA_VERSION --no-setup
+  ./gradlew buildPlugin
 
 fi

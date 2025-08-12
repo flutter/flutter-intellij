@@ -52,7 +52,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
    If you already have a fork and are now installing a development environment on a new machine,
    make sure you've updated your fork with the master branch
    so that you don't use stale configuration options from long ago.
-4. `git clone -c core.symlinks=true https://github.com/<your_name_here>/flutter-intellij`
+4. `git clone https://github.com/<your_name_here>/flutter-intellij`
 5. `cd flutter-intellij`
 6. `git remote add upstream https://github.com/flutter/flutter-intellij`
    The name `upstream` can be whatever you want.
@@ -117,27 +117,6 @@ name and contact info to the [AUTHORS](AUTHORS) file.
     - [IntelliJ Downloads](https://www.jetbrains.com/idea/download/)
     - Either the community edition (free) or Ultimate will work.
 
-2. Create a `gradle.properties` file.
-   - In the root directory, create an empty `gradle.properties` file (`touch gradle.properties`)
-   - Add the following to the file:
-   ```
-    name = "flutter-intellij"
-    buildSpec=2024.3
-    flutterPluginVersion=1
-    ideaProduct=android-studio
-    ideaVersion=2024.3.1.7
-    baseVersion=243.22562.59
-    dartPluginVersion= 243.21565.120
-    androidPluginVersion=
-    sinceBuild=243
-    untilBuild=253.*
-    testing=true
-    kotlin.stdlib.default.dependency=false
-    org.gradle.parallel=true
-    org.gradle.jvmargs=-Xms1024m -Xmx4048m
-    ```
-    - **[Note]** If you want, you can manually change these properties to target different versions of IntelliJ. See `product-matrix.json` to find which configurations are supported.
-
 3. Start IntelliJ IDEA with the `flutter-intellij` project.
    - If you see a popup with "Gradle build scripts found",
      **confirm loading the Gradle project, and wait until syncing is done.**
@@ -149,7 +128,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
     - `cd path/to/flutter-intellij`
     - `dart pub get`
     - `(cd tool/plugin; dart pub get)`
-    - `bin/plugin test`
+    - `./gradlew test`
     - Note: If there are Dart errors during build originating in the `tool/plugin` directory, try deleting the contents of the `pubspec.lock` file and re-running the pub get steps. This will allow you to get a fresh set of pub packages.
 
 ### Configure "Project Structure" settings
@@ -193,13 +172,14 @@ name and contact info to the [AUTHORS](AUTHORS) file.
 
 5. Configure the modules for the Project
     - Select "Project Settings > Modules"
-    - Select the `flutter-intellij > flutter-idea` module
+    - Select the `flutter-intellij` module
     - Switch to the "Paths" window
     - Select the **Inherit project compile output path** option, then apply.
+    - Do the same for the subdirectories, `main` and `test`.
 
 6. Change the modules SDK to the Project SDK
     - Select "Project Settings > Modules"
-    - Select all the sub-directories under the `flutter-intellij > flutter-idea` module
+    - Select all the subdirectories under the `flutter-intellij` module
     - Switch to the "Dependencies" window
     - Change the "Module SDK" selection to `Project SDK`.
 
@@ -255,30 +235,6 @@ name and contact info to the [AUTHORS](AUTHORS) file.
     - Expand `Edit configuration templates...` and verify that Flutter is present.
     - Click [+] and verify that Flutter is present.
 
-### Handle symlinks
-
-If exceptions like these occurred:
-
-```
-A problem occurred configuring project ':flutter-idea'.
-> Source directory 'X:\path\to\your\flutter-intellij\flutter-idea\resources' is not a directory.
-```
-
-Check if the directory is a symlink by opening the link in IDEA, and it'll display as:
-
-```symlink
-../resources
-```
-
-Delete the file, then re-clone the repo using the below command:
-
-```shell
-git clone -c core.symlinks=true https://github.com/<your_name_here>/flutter-intellij
-```
-
-**NOTE**: Avoid adding symlinks during development if you can,
-since they can lead to various file-based issues during development.
-
 ## Provision Tool
 
 This is not currently required. However, for debugging unit tests, it may be handy; please ignore for now.
@@ -326,17 +282,9 @@ To be able to debug a single test class or test method, you need to do the follo
 The test configuration can be tricky due to the IntelliJ platform versioning.
 The plugin tool (below) can be a more reliable way to run tests.
 
-### Using the plugin tool on the command line
+### Using the command line
 
 To run unit tests on the command line:
-
-```
-bin/plugin test
-```
-
-See `TestCommand` in `tool/plugin/lib/plugin.dart` for more options.
-
-It is also possible to run tests directly with Gradle, which would allow passing more command-line arguments:
 
 ```
 ./gradlew test
@@ -345,8 +293,6 @@ It is also possible to run tests directly with Gradle, which would allow passing
 If you wanted to run a subset of the tests, you could do so this way.
 See the [Gradle docs](https://docs.gradle.org/current/userguide/java_testing.html)
 for more info about testing.
-*However*, you must have run the tests once using the plugin tool,
-to ensure all the dependencies have been configured.
 
 ## Adding platform sources
 
@@ -360,31 +306,6 @@ Sometimes browsing the source code of IntelliJ helps understand platform details
   head over to the `Sourcepaths` tab and add the path to `intellij-community`.
   Accept all the root folders found by the IDE after scanning.
 - Do the same for the `intellij-plugins` repo to get Dart plugin sources. Sync to the same version as before.
-
-## Working with Android Studio
-
-Android Studio cannot use the Gradle-based project definition,
-so it still needs the `flutter-intellij-community.iml` file.
-Obviously, unit tests can only be run from the command line.
-
-1. Initialize Android Studio sources.
-2. Checkout Flutter plugin sources, tip of the tree.
-3. Follow the directions for setting up the Dart plugin sources in
-   `intellij-plugins/Dart/README.md` with these changes:
-    - you do not need to clone the intellij-community repo
-    - open studio-main/tools/adt/idea in IntelliJ
-    - possibly skip running `intellij-community/getPlugins.sh`
-4. Checkout Dart plugin sources.
-5. Using the Project Structure editor, import
-    - intellij-plugins/Dart/Dart-community.iml (if there are lots of errors, see step 7)
-    - flutter-intellij/flutter-intellij-community.iml
-6. Using the Project Structure editor, expand the tree to show `intellij > android > adt > ui`.
-   Select the `ui` module, then add a module dependency from it to `flutter-intellij-community`.
-   Also, add a dependency on the Dart module unless using step 7.
-7. (Optional, when Dart sources are not usable.) Make sure the `flutter-intellij-community` module
-   has a dependency on a library named `Dart`. It should be pre-defined, but if it is out of date,
-   then adjust it to point to `flutter-intellij/third_party/lib/dart-plugin/xxx.yyyy/Dart.jar`.
-   Delete the Dart module from the Project Structure modules list.
 
 ## Flutter DevTools Integration
 

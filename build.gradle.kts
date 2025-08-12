@@ -6,12 +6,15 @@
 
 import okhttp3.internal.immutableListOf
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.jetbrains.changelog.Changelog
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 // Specify UTF-8 for all compilations so we avoid Windows-1252.
 allprojects {
@@ -35,11 +38,16 @@ plugins {
   // https://plugins.gradle.org/plugin/org.jetbrains.intellij.platform
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("java") // Java support
-  id("org.jetbrains.intellij.platform") version "2.6.0" // IntelliJ Platform Gradle Plugin
+  id("org.jetbrains.intellij.platform") version "2.7.0" // IntelliJ Platform Gradle Plugin
   id("org.jetbrains.kotlin.jvm") version "2.2.0" // Kotlin support
+  id("org.jetbrains.changelog") version "2.2.0" // Gradle Changelog Plugin
 }
 
-val flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()
+var flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()
+if (project.hasProperty("dev-version")) {
+  val datestamp = DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now())
+  flutterPluginVersion = project.property("dev-version").toString() + "-dev." + datestamp
+}
 val ideaVersion = providers.gradleProperty("ideaVersion").get()
 val dartPluginVersion = providers.gradleProperty("dartPluginVersion").get()
 val sinceBuildInput = providers.gradleProperty("sinceBuild").get()
@@ -100,6 +108,7 @@ dependencies {
   intellijPlatform {
     // Documentation on the default target platform methods:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
+    // Android Studio versions can be found at: https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
     androidStudio(ideaVersion)
     testFramework(TestFrameworkType.Platform)
 
@@ -147,6 +156,9 @@ dependencies {
   )
 }
 
+changelog {
+  headerParserRegex = """(\d+(\.\d+)*)""".toRegex()
+}
 
 intellijPlatform {
   pluginConfiguration {
@@ -156,7 +168,7 @@ intellijPlatform {
       untilBuild = untilBuildInput
     }
     changeNotes = provider {
-      file("CHANGELOG.md").readText(Charsets.UTF_8)
+      project.changelog.render(Changelog.OutputType.HTML)
     }
   }
 
@@ -174,7 +186,8 @@ intellijPlatform {
       VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
 //      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES, // https://github.com/flutter/flutter-intellij/issues/7718
 //      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
-      VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
+// `BadgeIcon`:
+//      VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
 //      VerifyPluginTask.FailureLevel.INTERNAL_API_USAGES,
 //      VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
       VerifyPluginTask.FailureLevel.NON_EXTENDABLE_API_USAGES,
@@ -185,7 +198,7 @@ intellijPlatform {
     )
     verificationReportsFormats = VerifyPluginTask.VerificationReportsFormats.ALL
     subsystemsToCheck = VerifyPluginTask.Subsystems.ALL
-    
+
     ides {
       recommended()
     }
@@ -257,7 +270,7 @@ tasks {
 }
 
 // A task to print the classpath used for compiling an IntelliJ plugin
-// Run with `./third_party/gradlew printCompileClasspath --no-configuration-cache `
+// Run with `./gradlew printCompileClasspath --no-configuration-cache `
 tasks.register("printCompileClasspath") {
   doLast {
     println("--- Begin Compile Classpath ---")
@@ -265,5 +278,47 @@ tasks.register("printCompileClasspath") {
       println(file.absolutePath)
     }
     println("--- End Compile Classpath ---")
+  }
+}
+
+// This finds the JxBrowser license key from the environment and writes it to a file.
+// This is only used by the dev build on kokoro for now.
+val writeLicenseKey = tasks.register("writeLicenseKey") {
+  group = "build"
+  description = "Writes the license key from an environment variable to a file."
+
+  // Find the output file
+  val outputDir = rootProject.file("resources/jxbrowser")
+  val licenseFile = outputDir.resolve("jxbrowser.properties")
+  outputs.file(licenseFile)
+
+  doLast {
+    // Read the license key from the environment variable
+    val base = System.getenv("KOKORO_KEYSTORE_DIR")
+    val id = System.getenv("FLUTTER_KEYSTORE_ID")
+    val name = System.getenv("FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME")
+
+    val readFile = File(base + "/" + id + "_" + name)
+    if (readFile.isFile) {
+      val licenseKey = readFile.readText(Charsets.UTF_8)
+      licenseFile.writeText("jxbrowser.license.key=$licenseKey")
+    }
+  }
+}
+
+tasks.named("buildPlugin") {
+  dependsOn(writeLicenseKey)
+}
+
+tasks.named("processResources") {
+  dependsOn(writeLicenseKey)
+}
+
+// TODO(helin24): Find a better way to skip checking this file for tests.
+tasks.withType<ProcessResources>().configureEach {
+  if (name == "processTestResources") {
+    // This block will only execute for the 'processTestResources' task.
+    // The context here is unambiguously the task itself.
+    exclude("jxbrowser/jxbrowser.properties")
   }
 }
