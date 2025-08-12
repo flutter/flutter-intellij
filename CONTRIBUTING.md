@@ -10,13 +10,11 @@ Contributing to Flutter Plugin for IntelliJ
     * [Configure "Project Structure" settings](#configure-project-structure-settings)
     * [Configure the Gradle settings](#configure-the-gradle-settings)
     * [Build and run the plugin](#build-and-run-the-plugin)
-    * [Handle symlinks](#handle-symlinks)
   * [Provision Tool](#provision-tool)
   * [Running plugin tests](#running-plugin-tests)
     * [Using test run configurations in IntelliJ](#using-test-run-configurations-in-intellij)
-    * [Using the plugin tool on the command line](#using-the-plugin-tool-on-the-command-line)
+    * [Using the command line](#using-the-command-line)
   * [Adding platform sources](#adding-platform-sources)
-  * [Working with Android Studio](#working-with-android-studio)
   * [Flutter DevTools Integration](#flutter-devtools-integration)
     * [Working with Embedded DevTools (JxBrowser)](#working-with-embedded-devtools-jxbrowser)
     * [Developing with local DevTools](#developing-with-local-devtools)
@@ -117,14 +115,14 @@ name and contact info to the [AUTHORS](AUTHORS) file.
     - [IntelliJ Downloads](https://www.jetbrains.com/idea/download/)
     - Either the community edition (free) or Ultimate will work.
 
-3. Start IntelliJ IDEA with the `flutter-intellij` project.
+2. Start IntelliJ IDEA with the `flutter-intellij` project.
    - If you see a popup with "Gradle build scripts found",
      **confirm loading the Gradle project, and wait until syncing is done.**
      - If you didn't see the popup at the first start, **delete & re-clone the repo** and try again.
    - Install DevKit plugin when prompted (this is required for later steps)
    - Ignore suggestion for `protobuf-java` plugin, unless you want it.
 
-4. Prepare other dependencies from the command line:
+3. Prepare other dependencies from the command line:
     - `cd path/to/flutter-intellij`
     - `dart pub get`
     - `(cd tool/plugin; dart pub get)`
