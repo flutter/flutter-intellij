@@ -172,7 +172,7 @@ public class LaunchState extends CommandLineState {
 
     try {
       // There is no public way to set display name so we resort to reflection.
-      final Field f = descriptor.getClass().getDeclaredField("myDisplayNameView_INVALID");
+      final Field f = descriptor.getClass().getDeclaredField("myDisplayNameView");
       f.setAccessible(true);
       Object viewInstance = f.get(descriptor);
       if (viewInstance != null) {
