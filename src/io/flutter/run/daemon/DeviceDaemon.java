@@ -24,9 +24,11 @@ import io.flutter.FlutterUtils;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.logging.PluginLogger;
 import io.flutter.run.FlutterDevice;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import io.flutter.utils.OpenApiUtils;
@@ -34,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -114,7 +117,7 @@ class DeviceDaemon {
    */
   void shutdown() {
     if (!process.isProcessTerminated()) {
-      LOG.info("shutting down Flutter device daemon #" + id + ": " + command);
+      LOG.info("shutting down Flutter device daemon #" + id + ": " + command.toString(FlutterSettings.getInstance().isFilePathLoggingEnabled()));
     }
     listener.running.set(false);
     process.destroyProcess();
@@ -207,7 +210,7 @@ class DeviceDaemon {
                        Consumer<String> processStopped) throws ExecutionException {
       final int daemonId = nextDaemonId.incrementAndGet();
       //noinspection UnnecessaryToStringCall
-      LOG.info("starting Flutter device daemon #" + daemonId + ": " + toString());
+      LOG.info("starting Flutter device daemon #" + daemonId + ": " + toString(FlutterSettings.getInstance().isFilePathLoggingEnabled()));
       // The mostly silent process handler reduces CPU usage of the daemon process.
       final ProcessHandler process = new MostlySilentColoredProcessHandler(toCommandLine());
 
@@ -268,7 +271,7 @@ class DeviceDaemon {
           }
           catch (java.util.concurrent.ExecutionException e) {
             // This is not a user facing crash - we log (and no devices will be discovered).
-            FlutterUtils.warn(LOG, e.getCause());
+            FlutterUtils.warn(LOG, e, true);
           }
         }
       }
@@ -311,8 +314,12 @@ class DeviceDaemon {
 
     @Override
     public String toString() {
+      return toString(true);
+    }
+
+    public @NotNull String toString(boolean showFullPath) {
       final StringBuilder out = new StringBuilder();
-      out.append(command);
+      out.append(showFullPath ? command : command.substring(command.lastIndexOf(File.separatorChar) + 1));
       if (!parameters.isEmpty()) {
         out.append(' ');
         out.append(Joiner.on(' ').join(parameters));
@@ -426,7 +433,7 @@ class DeviceDaemon {
     }
   }
 
-  private static final @NotNull Logger LOG = Logger.getInstance(DeviceDaemon.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(DeviceDaemon.class);
 
   // If the daemon cannot be started, display a modal dialog with hopefully helpful
   // instructions on how to fix the problem. This is a big problem; we really do

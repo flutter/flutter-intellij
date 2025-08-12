@@ -142,17 +142,6 @@ public class FlutterUtils {
    *
    * This method is deprecated (as we are not decorating this behavior anywhere).
    */
-  public static void warn(@NotNull Logger logger, @NotNull Throwable t) {
-    logger.warn(t);
-  }
-
-  /**
-   * Write a warning message to the IntelliJ log.
-   * <p>
-   * This is separate from LOG.warn() to allow us to decorate the behavior.
-   *
-   * This method is deprecated (as we are not decorating this behavior anywhere).
-   */
   public static void warn(@NotNull Logger logger, @NotNull String message) {
     logger.warn(message);
   }
