@@ -19,6 +19,7 @@ import com.intellij.util.xmlb.annotations.XMap;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.logging.PluginLogger;
 import io.flutter.pub.PubRoot;
@@ -232,11 +233,7 @@ public class SdkFields {
       args = ArrayUtil.append(args, "--devtools-server-address=http://" + instance.host() + ":" + instance.port());
     }
     catch (Exception e) {
-      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-        LOG.info(e);
-      } else {
-        LOG.info(e.toString());
-      }
+      FlutterUtils.warn(LOG, e, true);
     }
     command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
     final GeneralCommandLine commandLine = command.createGeneralCommandLine(project);

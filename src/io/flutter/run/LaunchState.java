@@ -51,7 +51,6 @@ import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.DaemonConsoleView;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.toolwindow.ToolWindowBadgeUpdater;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -173,7 +172,7 @@ public class LaunchState extends CommandLineState {
 
     try {
       // There is no public way to set display name so we resort to reflection.
-      final Field f = descriptor.getClass().getDeclaredField("myDisplayNameView");
+      final Field f = descriptor.getClass().getDeclaredField("myDisplayNameView_INVALID");
       f.setAccessible(true);
       Object viewInstance = f.get(descriptor);
       if (viewInstance != null) {
@@ -182,11 +181,7 @@ public class LaunchState extends CommandLineState {
       }
     }
     catch (IllegalAccessException | InvocationTargetException | NoSuchFieldException | NoSuchMethodException e) {
-      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-        LOG.info(e);
-      } else {
-        LOG.info(e.toString());
-      }
+      FlutterUtils.info(LOG, e, true);
     }
 
     return descriptor;
@@ -407,11 +402,7 @@ public class LaunchState extends CommandLineState {
                   app.shutdownAsync().get();
                 }
                 catch (InterruptedException | java.util.concurrent.ExecutionException e) {
-                  if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-                    LOG.warn(e);
-                  } else {
-                    LOG.warn(e.toString());
-                  }
+                  FlutterUtils.warn(LOG, e, true);
                 }
                 return launchState.launch(env);
               }

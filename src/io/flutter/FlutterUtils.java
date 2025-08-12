@@ -111,10 +111,36 @@ public class FlutterUtils {
     }
   }
 
+  public static void info(@NotNull Logger logger, @NotNull Exception e) {
+    info(logger, e, false);
+  }
+
+  public static void info(@NotNull Logger logger, @NotNull Exception e, boolean sanitizePaths) {
+    if (sanitizePaths && FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+      logger.info(e);
+    } else {
+      logger.info(e.toString());
+    }
+  }
+
+  public static void warn(@NotNull Logger logger, @NotNull Exception e) {
+    warn(logger, e, false);
+  }
+
+  public static void warn(@NotNull Logger logger, @NotNull Exception e, boolean sanitizePaths) {
+    if (sanitizePaths && FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+      logger.warn(e);
+    } else {
+      logger.warn(e.toString());
+    }
+  }
+
   /**
    * Write a warning message to the IntelliJ log.
    * <p>
    * This is separate from LOG.warn() to allow us to decorate the behavior.
+   *
+   * This method is deprecated (as we are not decorating this behavior anywhere).
    */
   public static void warn(@NotNull Logger logger, @NotNull Throwable t) {
     logger.warn(t);
@@ -124,6 +150,8 @@ public class FlutterUtils {
    * Write a warning message to the IntelliJ log.
    * <p>
    * This is separate from LOG.warn() to allow us to decorate the behavior.
+   *
+   * This method is deprecated (as we are not decorating this behavior anywhere).
    */
   public static void warn(@NotNull Logger logger, @NotNull String message) {
     logger.warn(message);
@@ -133,6 +161,8 @@ public class FlutterUtils {
    * Write a warning message to the IntelliJ log.
    * <p>
    * This is separate from LOG.warn() to allow us to decorate the behavior.
+   *
+   * This method is deprecated (as we are not decorating this behavior anywhere).
    */
   public static void warn(@NotNull Logger logger, @NotNull String message, @NotNull Throwable t) {
     logger.warn(message, t);
