@@ -444,11 +444,7 @@ public class FlutterSdk {
       }
     }
     catch (InterruptedException e) {
-      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-        LOG.warn(e);
-      } else {
-        LOG.warn(e.toString());
-      }
+      FlutterUtils.warn(LOG, e, true);
       return null;
     }
 
