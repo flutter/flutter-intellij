@@ -45,11 +45,11 @@ plugins {
 
 var flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()
 if (project.hasProperty("dev")) {
-    val latestVersion = changelog.getLatest().version
-    val majorVersion = latestVersion.substringBefore('.').toInt()
-    val nextMajorVersion = majorVersion + 1
+  val latestVersion = changelog.getLatest().version
+  val majorVersion = latestVersion.substringBefore('.').toInt()
+  val nextMajorVersion = majorVersion + 1
   val datestamp = DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now())
-    flutterPluginVersion = "$nextMajorVersion.0-dev.$datestamp"
+  flutterPluginVersion = "$nextMajorVersion.0.0-dev.$datestamp"
 }
 val ideaVersion = providers.gradleProperty("ideaVersion").get()
 val dartPluginVersion = providers.gradleProperty("dartPluginVersion").get()
@@ -157,10 +157,6 @@ dependencies {
       )
     )
   )
-}
-
-changelog {
-  headerParserRegex = """(\d+(\.\d+)*)""".toRegex()
 }
 
 intellijPlatform {
