@@ -43,14 +43,23 @@ plugins {
   id("org.jetbrains.changelog") version "2.2.0" // Gradle Changelog Plugin
 }
 
-var flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()
-if (project.hasProperty("dev")) {
+// By default (e.g. when we call `runIde` during development), the plugin version is SNAPSHOT
+var flutterPluginVersion = "SNAPSHOT"
+
+// Otherwise, we will decide on the proper semver-formatted version from the CHANGELOG.
+// Note: The CHANGELOG follows the style from https://keepachangelog.com/en/1.0.0/ so that we can use the gradle changelog plugin.
+if (project.hasProperty("release")) {
+  // If we are building for a release, the changelog should be updated with the latest version.
+  flutterPluginVersion = changelog.getLatest().version
+} else if (project.hasProperty("dev")) {
+  // If we are building the dev version, the version label will increment the latest version from the changelog and append the date.
   val latestVersion = changelog.getLatest().version
   val majorVersion = latestVersion.substringBefore('.').toInt()
   val nextMajorVersion = majorVersion + 1
   val datestamp = DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now())
   flutterPluginVersion = "$nextMajorVersion.0.0-dev.$datestamp"
 }
+
 val ideaVersion = providers.gradleProperty("ideaVersion").get()
 val dartPluginVersion = providers.gradleProperty("dartPluginVersion").get()
 val sinceBuildInput = providers.gradleProperty("sinceBuild").get()
