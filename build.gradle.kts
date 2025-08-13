@@ -44,9 +44,12 @@ plugins {
 }
 
 var flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()
-if (project.hasProperty("dev-version")) {
+if (project.hasProperty("dev")) {
+    val latestVersion = changelog.getLatest().version
+    val majorVersion = latestVersion.substringBefore('.').toInt()
+    val nextMajorVersion = majorVersion + 1
   val datestamp = DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now())
-  flutterPluginVersion = project.property("dev-version").toString() + "-dev." + datestamp
+    flutterPluginVersion = "$nextMajorVersion.0-dev.$datestamp"
 }
 val ideaVersion = providers.gradleProperty("ideaVersion").get()
 val dartPluginVersion = providers.gradleProperty("dartPluginVersion").get()
