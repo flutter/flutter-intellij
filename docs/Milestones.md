@@ -5,4 +5,4 @@
 - any work done or issues fixed should be assigned to the current milestone
 - at the end of the milestone, we run through the [testing plan](https://github.com/flutter/flutter-intellij/blob/master/docs/testing.md) and validate the candidate release
 - before releasing, we update the [changelog](https://github.com/flutter/flutter-intellij/blob/master/resources/META-INF/plugin.xml#L22) (based on the work tracking in the milestone)
-- we then [ship](../docs/Releasing.md), and iterate
+- we then [build and release](../docs/building.md), and iterate
