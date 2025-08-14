@@ -8,7 +8,7 @@ The [Inbox Query](https://github.com/flutter/flutter-intellij/issues?q=is%3Aissu
 The inbox tracker should do the following initial triage:
 
 * Is the issue invalid? Close it, with a brief explanation.
-* Is the issue a general question, like _"How can I make a blinking button?"_ Close it and redirect to [discord](https://github.com/flutter/flutter/blob/master/docs/contributing/Chat.md); fodder for a redirecting response can be harvested from this [message](https://gist.github.com/pq/9c8293516b055b369e34e7410c52d2d8).
+* Is the issue a general question, like _"How can I make a blinking button?"_ Close it and redirect to [discord](https://github.com/flutter/flutter/blob/main/docs/contributing/Chat.md); fodder for a redirecting response can be harvested from this [message](https://gist.github.com/pq/9c8293516b055b369e34e7410c52d2d8).
 * Is the issue better filed against Flutter?  Move it using the GitHub [issue transfer UI](https://docs.github.com/en/issues/tracking-your-work-with-issues/administering-issues/transferring-an-issue-to-another-repository#transferring-an-open-issue-to-another-repository).
 * Is the issue better filed against the Dart SDK? Consider creating a new issue on the [Dart SDK](https://github.com/dart-lang/sdk/issues) or ask the author to do so (and close the original issue).
 * Is the issue an obvious duplicate?  Close it with a pointer to the duplicated issue.

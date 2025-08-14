@@ -48,7 +48,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
     - `flutter run`
 3. Fork `https://github.com/flutter/flutter-intellij` into your own GitHub account.
    If you already have a fork and are now installing a development environment on a new machine,
-   make sure you've updated your fork with the master branch
+   make sure you've updated your fork with the main branch
    so that you don't use stale configuration options from long ago.
 4. `git clone https://github.com/<your_name_here>/flutter-intellij`
 5. `cd flutter-intellij`
