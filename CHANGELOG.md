@@ -7,6 +7,7 @@
 ### Changed
 
 - Resolved a "Slow operations are prohibited on EDT" exception on Flutter Project creation (#8446, #8447, #8448)
+- Made dev release daily instead of weekly
 
 ## 87.1.0
 

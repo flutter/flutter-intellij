@@ -65,7 +65,7 @@ Please note the following known issues:
 ## Dev channel
 
 If you like getting new features as soon as they've been added to the code then you
-might want to try out the dev channel. It is updated weekly with the latest contents
+might want to try out the dev channel. It is updated daily with the latest contents
 from the "master" branch. It has minimal testing. Set up instructions are in the wiki's
 [dev channel page](./docs/Dev-Channel.md).
 
