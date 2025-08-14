@@ -96,26 +96,39 @@ public class FlutterSdkUtil {
    * Adds the current path and other known paths to the combo, most recently used first.
    */
   public static void addKnownSDKPathsToCombo(@NotNull JComboBox combo) {
-    final Set<String> pathsToShow = new LinkedHashSet<>();
-
+    // First, get the current path from the combo box on the EDT.
     final String currentPath = combo.getEditor().getItem().toString().trim();
+    final Set<String> pathsToShow = new LinkedHashSet<>();
     if (!currentPath.isEmpty()) {
       pathsToShow.add(currentPath);
     }
 
-    final String[] knownPaths = getKnownFlutterSdkPaths();
-    for (String path : knownPaths) {
-      if (FlutterSdk.forPath(path) != null) {
-        pathsToShow.add(FileUtil.toSystemDependentName(path));
+    // Now, run the slow operation (finding valid SDK paths) on a background thread.
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      final String[] knownPaths = getKnownFlutterSdkPaths();
+      final Set<String> validPaths = new LinkedHashSet<>();
+      for (String path : knownPaths) {
+        // The call to forPath() is on a background thread.
+        if (FlutterSdk.forPath(path) != null) {
+          validPaths.add(FileUtil.toSystemDependentName(path));
+        }
       }
-    }
 
-    //noinspection unchecked
-    combo.setModel(new DefaultComboBoxModel(ArrayUtil.toStringArray(pathsToShow)));
+      // After the slow operation is complete, switch back to the EDT to update the UI.
+      ApplicationManager.getApplication().invokeLater(() -> {
+        // This code runs on the EDT.
+        pathsToShow.addAll(validPaths);
 
-    if (combo.getSelectedIndex() == -1 && combo.getItemCount() > 0) {
-      combo.setSelectedIndex(0);
-    }
+        // Update the combo box model with the new paths.
+        //noinspection unchecked
+        combo.setModel(new DefaultComboBoxModel<>(ArrayUtil.toStringArray(pathsToShow)));
+
+        // Select the first item if none is selected.
+        if (combo.getSelectedIndex() == -1 && combo.getItemCount() > 0) {
+          combo.setSelectedIndex(0);
+        }
+      });
+    });
   }
 
   @NotNull
@@ -365,7 +378,6 @@ public class FlutterSdkUtil {
         return path;
       }
     }
-
     return null;
   }
 
