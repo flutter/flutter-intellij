@@ -1,3 +1,13 @@
+## Unreleased
+
+### Added
+
+### Removed
+
+### Changed
+
+- Resolved a "Slow operations are prohibited on EDT" exception on Flutter Project creation (#8446, #8447, #8448)
+
 ## 87.1
 
 - Register VM service with DTD (#8436)

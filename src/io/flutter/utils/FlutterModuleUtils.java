@@ -277,28 +277,31 @@ public class FlutterModuleUtils {
   public static void autoShowMain(@NotNull Project project, @NotNull PubRoot root) {
     if (project.isDisposed()) return;
 
-    final VirtualFile main = root.getFileToOpen();
-    if (main == null) return;
+    // Offload the slow file system lookup to a background thread.
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      final VirtualFile main = root.getFileToOpen();
 
-    DumbService.getInstance(project).runWhenSmart(() -> {
-      final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-      if (fileEditorManager == null) {
-        return;
+      // If the file is found, switch back to the EDT to safely update the UI.
+      if (main != null && main.exists() && !main.isDirectory()) {
+        DumbService.getInstance(project).runWhenSmart(() -> {
+          if (project.isDisposed()) return;
+
+          final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+          if (fileEditorManager == null) return;
+
+          FileEditor[] editors = fileEditorManager.getAllEditors();
+          if (editors.length > 1) return;
+
+          for (FileEditor editor : editors) {
+            if (editor == null) return;
+
+            VirtualFile file = editor.getFile();
+            if (file != null && file.equals(main) && FlutterUtils.isDartFile(file)) return;
+          }
+
+          fileEditorManager.openFile(main, editors.length == 0);
+        });
       }
-      FileEditor[] editors = fileEditorManager.getAllEditors();
-      if (editors.length > 1) {
-        return;
-      }
-      for (FileEditor editor : editors) {
-        if (editor == null) {
-          return;
-        }
-        VirtualFile file = editor.getFile();
-        if (file != null && file.equals(main) && FlutterUtils.isDartFile(file)) {
-          return;
-        }
-      }
-      fileEditorManager.openFile(main, editors.length == 0);
     });
   }
 
