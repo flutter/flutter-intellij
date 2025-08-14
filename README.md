@@ -1,7 +1,7 @@
 # <img src="https://raw.githubusercontent.com/dart-lang/site-shared/refs/heads/main/src/_assets/image/flutter/icon/64.png" alt="Flutter" width="26" height="26"/> Flutter Plugin for IntelliJ
 
 [![Latest plugin version](https://img.shields.io/jetbrains/plugin/v/9212)](https://plugins.jetbrains.com/plugin/9212-flutter)
-[![Build Status](https://github.com/flutter/flutter-intellij/workflows/presubmit/badge.svg)](https://github.com/flutter/flutter-intellij/actions?query=branch%3Amaster+workflow%3Apresubmit)
+[![Build Status](https://github.com/flutter/flutter-intellij/workflows/presubmit/badge.svg)](https://github.com/flutter/flutter-intellij/actions?query=branch%3Amain+workflow%3Apresubmit)
 
 An IntelliJ plugin for [Flutter](https://flutter.dev/) development. Flutter is a multi-platform
 app SDK to help developers and designers build modern apps for iOS, Android and the web.
@@ -66,7 +66,7 @@ Please note the following known issues:
 
 If you like getting new features as soon as they've been added to the code then you
 might want to try out the dev channel. It is updated daily with the latest contents
-from the "master" branch. It has minimal testing. Set up instructions are in the wiki's
+from the "main" branch. It has minimal testing. Set up instructions are in the wiki's
 [dev channel page](./docs/Dev-Channel.md).
 
 ## Flutter SDK compatibility
