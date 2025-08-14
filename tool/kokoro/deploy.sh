@@ -20,7 +20,7 @@ echo "kokoro test finished"
 
 echo "kokoro build start"
 
-./gradlew buildPlugin -Pdev-version=88.0
+./gradlew buildPlugin -Pdev
 
 echo "kokoro build finished"
 

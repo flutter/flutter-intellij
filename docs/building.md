@@ -8,14 +8,17 @@ Update the `gradle.properties` file
   here: https://developer.android.com/studio/archive & https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
     - To view the current sources from Android Studio, use https://cs.android.com/android-studio
 
+Edit `CHANGELOG.md` to include the new version number and associated release notes.
+
+Commit these changes.
+
 Verify that the file `./resources/jxbrowser/jxbrowser.properties` has been copied from `./resources/jxbrowser/jxbrowser.properties.template`
 with the `<KEY>` replaced with a valid JXBrowser key to be used in the built Flutter plugin.
 
 Run gradle:
 
-- Make `flutterPluginVersion` in `gradle.properties` the release number, e.g. 87.0.1
 - Check that `$JAVA_HOME` is set (see CONTRIBUTING.md for instructions if not set)
-- Run `./gradlew buildPlugin` to build the plugin for the settings specified in `gradle.properties`
+- Run `./gradlew buildPlugin -Prelease` to build the plugin for the settings specified in `gradle.properties`
 - The output .zip file will be in `<flutter-intellij root>/build/distributions`
 
 ### Test and upload to the JetBrains Servers
