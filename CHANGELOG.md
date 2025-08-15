@@ -4,6 +4,8 @@
 
 ### Removed
 
+- The Flutter version is now read from the file ./bin/cache/flutter.version.json, required in Flutter 3.33+ (#8465)
+
 ### Changed
 
 - Resolved a "Slow operations are prohibited on EDT" exception on Flutter Project creation (#8446, #8447, #8448)
