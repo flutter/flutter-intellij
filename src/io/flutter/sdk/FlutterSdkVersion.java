@@ -6,6 +6,8 @@
 package io.flutter.sdk;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import com.intellij.openapi.util.Version;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Objects;
 
 public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
@@ -94,6 +97,14 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   @NotNull
   public static FlutterSdkVersion readFromSdk(@NotNull VirtualFile sdkHome) {
+    // First check for the file at <sdkHome>/bin/cache/flutter.version.json
+    // https://github.com/flutter/flutter-intellij/issues/8465
+    final VirtualFile versionFile = sdkHome.findFileByRelativePath("bin/cache/flutter.version.json");
+    if (versionFile != null && versionFile.exists() && !versionFile.isDirectory()) {
+      return readFromFile(versionFile);
+    }
+
+    // Fallback to the old location at <sdkHome>/version
     return readFromFile(sdkHome.findChild("version"));
   }
 
@@ -109,14 +120,33 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   private static String readVersionString(@NotNull VirtualFile file) {
     try {
       final String data = new String(file.contentsToByteArray(), StandardCharsets.UTF_8);
-      for (String line : data.split("\n")) {
-        line = line.trim();
 
-        if (line.isEmpty() || line.startsWith("#")) {
-          continue;
+      // Check if the content is a JSON object.
+      // This tests to see if it is of the format provided by <sdkHome>/bin/cache/flutter.version.json files
+      // https://github.com/flutter/flutter-intellij/issues/8465
+      if (data.trim().startsWith("{")) {
+        try {
+          final Map<String, Object> json = new Gson().fromJson(data, new TypeToken<Map<String, Object>>() {
+          }.getType());
+          if (json != null && json.containsKey("frameworkVersion")) {
+            System.out.println("FlutterSdkVersion.readVersionString NEW " + json.get("frameworkVersion"));
+            return (String)json.get("frameworkVersion");
+          }
         }
+        catch (com.google.gson.JsonSyntaxException e) {
+          return null;
+        }
+      }
+      else {
+        // Otherwise, handle the old plain text format.
+        for (String line : data.split("\n")) {
+          line = line.trim();
 
-        return line;
+          if (line.isEmpty() || line.startsWith("#")) {
+            continue;
+          }
+          return line;
+        }
       }
       return null;
     }
@@ -145,7 +175,9 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
     return supportsVersion(MIN_SUPPORTS_DEVTOOLS_MULTI_EMBED);
   }
 
-  /** @noinspection BooleanMethodIsAlwaysInverted*/
+  /**
+   * @noinspection BooleanMethodIsAlwaysInverted
+   */
   public boolean canUseDtd() {
     return supportsVersion(MIN_SUPPORTS_DTD);
   }
