@@ -318,7 +318,7 @@ public class FlutterInitializer extends FlutterProjectActivity {
     // See FlutterSdkVersion.MIN_SDK_SUPPORTED.
     if (version.isValid() && !version.isSDKSupported()) {
       final FlutterSettings settings = FlutterSettings.getInstance();
-      if (settings == null || settings.isSdkVersionOutdatedWarningAcknowledged(version.getVersionText(), false)) return;
+      if (settings.isSdkVersionOutdatedWarningAcknowledged(version.getVersionText(), false)) return;
       OpenApiUtils.safeInvokeLater(() -> {
         final Notification notification = new Notification(FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
                                                            "Flutter SDK requires update",
@@ -343,7 +343,7 @@ public class FlutterInitializer extends FlutterProjectActivity {
     // See FlutterSdkVersion.MIN_SDK_WITHOUT_SUNSET_WARNING.
     if (version.isValid() && version.isSDKAboutToSunset()) {
       final FlutterSettings settings = FlutterSettings.getInstance();
-      if (settings == null || settings.isSdkVersionOutdatedWarningAcknowledged(version.getVersionText(), true)) return;
+      if (settings.isSdkVersionOutdatedWarningAcknowledged(version.getVersionText(), true)) return;
 
       OpenApiUtils.safeInvokeLater(() -> {
         final Notification notification = new Notification(FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,

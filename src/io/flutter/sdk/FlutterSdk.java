@@ -295,7 +295,7 @@ public class FlutterSdk {
     final List<String> args = new ArrayList<>();
     args.add("--machine");
     FlutterSettings settings = FlutterSettings.getInstance();
-    if (settings != null && settings.isVerboseLogging()) {
+    if (settings.isVerboseLogging()) {
       args.add("--verbose");
     }
 
