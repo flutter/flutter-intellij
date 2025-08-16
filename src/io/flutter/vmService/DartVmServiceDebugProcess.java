@@ -185,8 +185,11 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
 
       @Override
       public void logError(final String message, final Throwable exception) {
-        if (!getVmConnected() || getSession() == null) {
+        if (!getVmConnected()) {
           return;
+        }
+        else {
+          getSession();
         }
         if (message != null) {
           getSession().getConsoleView().print(message.trim() + "\n", ConsoleViewContentType.ERROR_OUTPUT);

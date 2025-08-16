@@ -29,8 +29,7 @@ public class FlutterStudioStartupActivity extends FlutterProjectActivity {
     //FlutterProjectCreator.disableUserConfig(project);
     // Monitor Android dependencies.
     FlutterSettings flutterSettings = FlutterSettings.getInstance();
-    if (flutterSettings != null && flutterSettings.isSyncingAndroidLibraries() ||
-        System.getProperty("flutter.android.library.sync", null) != null) {
+    if (flutterSettings.isSyncingAndroidLibraries() || System.getProperty("flutter.android.library.sync", null) != null) {
       // TODO(messick): Remove the flag once this sync mechanism is stable.
       AndroidModuleLibraryManager.startWatching(project);
     }
