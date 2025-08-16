@@ -372,9 +372,7 @@ public class FlutterReloadManager {
       });
 
       final FlutterDevice device = app.device();
-      if (device != null) {
-        device.bringToFront();
-      }
+      device.bringToFront();
     }
   }
 

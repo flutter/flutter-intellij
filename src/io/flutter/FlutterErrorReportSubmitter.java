@@ -72,23 +72,20 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
         if (stackTraceText.startsWith(DaemonApi.FLUTTER_ERROR_PREFIX)) {
           final String message = stackTraceText.substring(DaemonApi.FLUTTER_ERROR_PREFIX.length());
           final int start = message.indexOf(": ") + 2;
-          if (start == 0) continue;
           int end = message.indexOf('\n');
           if (end < 0) end = message.length();
           final String error = message.substring(start, end);
           stackTrace = message.substring(end + 1);
           for (String err : KNOWN_ERRORS) {
             if (error.contains(err)) {
-              if (end != message.length()) {
-                // Dart stack trace included so extract it and set the issue target to the Flutter repo.
-                errorMessage = err;
-                final int endOfDartStack = stackTrace.indexOf("\\n\"\n");
-                if (endOfDartStack > 0) {
-                  // Get only the part between quotes. If the format is wrong just use the whole thing.
-                  stackTrace = stackTrace.substring(1, endOfDartStack);
-                }
-                break;
+              // Dart stack trace included so extract it and set the issue target to the Flutter repo.
+              errorMessage = err;
+              final int endOfDartStack = stackTrace.indexOf("\\n\"\n");
+              if (endOfDartStack > 0) {
+                // Get only the part between quotes. If the format is wrong just use the whole thing.
+                stackTrace = stackTrace.substring(1, endOfDartStack);
               }
+              break;
             }
           }
         }

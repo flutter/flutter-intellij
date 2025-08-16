@@ -94,19 +94,17 @@ public class FlutterConsoleFilter implements Filter {
     final VirtualFile[] roots = OpenApiUtils.getContentRoots(module);
     for (VirtualFile root : roots) {
       if (root == null) continue;
-      if (!pathPart.isEmpty()) {
-        final String baseDirPath = root.getPath();
-        final String path = baseDirPath + "/" + pathPart;
-        VirtualFile file = findFile(path);
-        if (file == null) {
-          // check example dir too
-          // TODO(pq): remove when `example` is a content root: https://github.com/flutter/flutter-intellij/issues/2519
-          final String exampleDirRelativePath = baseDirPath + "/example/" + pathPart;
-          file = findFile(exampleDirRelativePath);
-        }
-        if (file != null) {
-          return file;
-        }
+      final String baseDirPath = root.getPath();
+      final String path = baseDirPath + "/" + pathPart;
+      VirtualFile file = findFile(path);
+      if (file == null) {
+        // check example dir too
+        // TODO(pq): remove when `example` is a content root: https://github.com/flutter/flutter-intellij/issues/2519
+        final String exampleDirRelativePath = baseDirPath + "/example/" + pathPart;
+        file = findFile(exampleDirRelativePath);
+      }
+      if (file != null) {
+        return file;
       }
     }
 
