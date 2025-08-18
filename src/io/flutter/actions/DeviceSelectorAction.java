@@ -47,7 +47,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
   @Override
   public @NotNull JComponent createCustomComponent(@NotNull Presentation presentation, @NotNull String place) {
-    JComponent component = super.createCustomComponent(presentation, place);
+    final JComponent component = super.createCustomComponent(presentation, place);
     // Set component to be transparent to match other toolbar actions
     component.setOpaque(false);
     return component;
