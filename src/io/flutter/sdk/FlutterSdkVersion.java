@@ -129,7 +129,6 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
           final Map<String, Object> json = new Gson().fromJson(data, new TypeToken<Map<String, Object>>() {
           }.getType());
           if (json != null && json.containsKey("frameworkVersion")) {
-            System.out.println("FlutterSdkVersion.readVersionString NEW " + json.get("frameworkVersion"));
             return (String)json.get("frameworkVersion");
           }
         }
