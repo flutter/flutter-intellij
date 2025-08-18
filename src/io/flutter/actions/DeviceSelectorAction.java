@@ -18,6 +18,7 @@ import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.ui.JBColor;
 import com.intellij.util.ModalityUiUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
@@ -29,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.Component;
 import java.util.*;
 
 public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
@@ -43,6 +45,39 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
   public @NotNull ActionUpdateThread getActionUpdateThread() {
     return ActionUpdateThread.BGT;
+  }
+
+  @Override
+  public @NotNull JComponent createCustomComponent(@NotNull Presentation presentation, @NotNull String place) {
+    final JComponent component = super.createCustomComponent(presentation, place);
+    // Set component to be transparent to match other toolbar actions
+    component.setOpaque(false);
+    // Update child components.
+    updateComponentChildrenStyles(component);
+    return component;
+  }
+
+  private void updateComponentChildrenStyles(@NotNull JComponent parent) {
+    final @Nullable Component[] children = parent.getComponents();
+    if (children == null) {
+      return;
+    }
+
+    for (Component child : children) {
+      if (child instanceof JComponent jComponent) {
+        jComponent.setOpaque(false);
+
+        if (child instanceof JButton jButton) {
+          jButton.setBorderPainted(false);
+          jButton.setRolloverEnabled(true);
+          // Make sure the button uses correct background & foreground.
+          jButton.setBackground(JBColor.background());
+          jButton.setForeground(JBColor.foreground());
+        }
+
+        updateComponentChildrenStyles(jComponent);
+      }
+    }
   }
 
   @Override
