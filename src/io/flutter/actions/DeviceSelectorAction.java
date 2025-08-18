@@ -68,6 +68,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
         jComponent.setOpaque(false);
 
         if (child instanceof JButton jButton) {
+          jButton.setBorderPainted(false);
+          jButton.setRolloverEnabled(true);
           // Make sure the button uses correct background & foreground.
           jButton.setBackground(JBColor.background());
           jButton.setForeground(JBColor.foreground());
