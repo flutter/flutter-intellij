@@ -23,6 +23,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.util.IconUtil;
 import com.intellij.util.ModalityUiUtil;
 import com.intellij.util.ui.JBUI;
 import icons.FlutterIcons;
@@ -86,13 +87,12 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
 
   @Override
   public @NotNull JComponent createCustomComponent(@NotNull Presentation presentation, @NotNull String place) {
-    final JBLabel iconLabel = new JBLabel();
-    iconLabel.setIcon(FlutterIcons.Phone);
+    final JBLabel iconLabel = new JBLabel(FlutterIcons.Mobile);
 
     final JBLabel textLabel = new JBLabel();
     textLabel.setForeground(JBColor.foreground());
 
-    final JBLabel arrowLabel = new JBLabel(AllIcons.General.ArrowDown);
+    final JBLabel arrowLabel = new JBLabel(IconUtil.scale(AllIcons.General.ArrowDown, null, 1.2f));
 
     // Create a wrapper button for hover effects
     final JButton button = new JButton() {
@@ -281,7 +281,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
     final Collection<FlutterDevice> devices = deviceService.getConnectedDevices();
 
     final String text;
-    Icon icon = FlutterIcons.Phone;
+    Icon icon = FlutterIcons.Mobile;
 
     if (devices.isEmpty()) {
       final boolean isLoading = deviceService.getStatus() == DeviceService.State.LOADING;
@@ -296,11 +296,8 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
       text = "<no device selected>";
     }
     else {
-      if (selectedDeviceAction != null) {
-        final Presentation template = selectedDeviceAction.getTemplatePresentation();
-        icon = template.getIcon();
-      }
       text = selectedDevice.presentationName();
+      icon = selectedDevice.getIcon();
       presentation.setEnabled(true);
     }
 
@@ -367,7 +364,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
     return deviceService.isRefreshInProgress() || deviceService.getStatus() != DeviceService.State.INACTIVE;
   }
 
-  private void updateActions(@NotNull Project project, Presentation presentation) {
+  private void updateActions(@NotNull Project project, @NotNull Presentation presentation) {
     actions.clear();
 
     final DeviceService deviceService = DeviceService.getInstance(project);
@@ -385,11 +382,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
 
       if (Objects.equals(device, selectedDevice)) {
         selectedDeviceAction = deviceAction;
-
-        final Presentation template = deviceAction.getTemplatePresentation();
-        //noinspection DataFlowIssue
-        presentation.setIcon(template.getIcon());
-        //presentation.setText(deviceAction.presentationName());
+        presentation.setIcon(device.getIcon());
         presentation.setEnabled(true);
       }
     }
@@ -432,7 +425,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
     @NotNull private final FlutterDevice device;
 
     SelectDeviceAction(@NotNull FlutterDevice device, @NotNull Collection<FlutterDevice> devices) {
-      super(device.getUniqueName(devices), null, FlutterIcons.Phone);
+      super(device.getUniqueName(devices), null, device.getIcon());
       this.device = device;
     }
 
