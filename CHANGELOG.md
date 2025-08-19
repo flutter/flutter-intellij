@@ -11,6 +11,7 @@
 - Resolved a "Slow operations are prohibited on EDT" exception on Flutter Project creation (#8446, #8447, #8448)
 - Made dev release daily instead of weekly
 - Set the device selector component to opaque during its creation to avoid an unexpected background color (#8471)
+- Refactored `DeviceSelectorAction` and add rich icons to different platform devices (#8475)
 
 ## 87.1.0
 
