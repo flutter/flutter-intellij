@@ -19,11 +19,11 @@ public class FlutterIcons {
   public static final Icon Flutter_test = load("/icons/flutter_test.png");
   public static final Icon RefreshItems = load("/icons/refresh_items.png");
 
-  public static final Icon Android = load("/icons/android.png");
-  public static final Icon IOS = load("/icons/ios.png");
-  public static final Icon Mobile = load("/icons/mobile.png");
-  public static final Icon Desktop = load("/icons/desktop.png");
-  public static final Icon Web = load("/icons/web.png");
+  public static final Icon Android = load("/icons/android.svg");
+  public static final Icon IOS = load("/icons/ios.svg");
+  public static final Icon Mobile = load("/icons/mobile.svg");
+  public static final Icon Desktop = load("/icons/desktop.svg");
+  public static final Icon Web = load("/icons/web.svg");
 
   public static final Icon Dart_16 = load("/icons/dart_16.svg");
 
