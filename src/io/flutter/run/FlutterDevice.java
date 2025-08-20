@@ -5,10 +5,12 @@
  */
 package io.flutter.run;
 
+import icons.FlutterIcons;
 import io.flutter.sdk.XcodeUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.Icon;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -83,6 +85,31 @@ public class FlutterDevice {
 
   public boolean isIOS() {
     return myPlatform != null && (myPlatform.equals("ios") || myPlatform.startsWith("darwin"));
+  }
+
+  public boolean isMobile() {
+    return myCategory != null && myCategory.equals("mobile");
+  }
+
+  public boolean isDesktop() {
+    return myCategory != null && myCategory.equals("desktop");
+  }
+
+  public boolean isWeb() {
+    return myCategory != null && (myCategory.equals("web"));
+  }
+
+  public Icon getIcon() {
+    if (isDesktop()) {
+      return FlutterIcons.Desktop;
+    }
+    else if (isWeb()) {
+      return FlutterIcons.Web;
+    }
+    // Use the mobile icon for all other devices.
+    else {
+      return FlutterIcons.Mobile;
+    }
   }
 
   @Override

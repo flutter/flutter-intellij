@@ -106,7 +106,7 @@ public class InspectorView implements Disposable {
   public void dispose() {
     Disposer.dispose(this);
   }
-  
+
   void initToolWindow(@NotNull ToolWindow window) {
     if (window.isDisposed()) return;
 
@@ -125,6 +125,7 @@ public class InspectorView implements Disposable {
     final FlutterDevice device = app.device();
     final List<FlutterDevice> existingDevices = new ArrayList<>();
     final String tabName = device.getUniqueName(existingDevices);
+    final Icon tabIcon = device.getIcon();
 
     if (emptyContent != null) {
       contentManager.removeContent(emptyContent, true);
@@ -160,7 +161,7 @@ public class InspectorView implements Disposable {
       Runnable task = () -> {
         embeddedBrowserOptional().ifPresent(
           embeddedBrowser -> OpenApiUtils.safeInvokeLater(() -> {
-            embeddedBrowser.openPanel(toolWindow, tabName, devToolsUrl, (String error) -> {
+            embeddedBrowser.openPanel(toolWindow, tabName, tabIcon, devToolsUrl, (String error) -> {
               // If the embedded browser doesn't work, offer a link to open in the regular browser.
               final List<LabelInput> inputs = Arrays.asList(
                 new LabelInput("The embedded browser failed to load. Error: " + error),
