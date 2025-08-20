@@ -129,6 +129,8 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
     "Waiting for JxBrowser installation timed out. Restart your IDE to try again.";
   private static final String INSTALLATION_WAIT_FAILED = "The JxBrowser installation failed unexpectedly. Restart your IDE to try again.";
   private static final int INSTALLATION_WAIT_LIMIT_SECONDS = 30;
+
+  @NotNull
   private final AtomicReference<Engine> engineRef = new AtomicReference<>(null);
 
   private final Project project;
@@ -173,19 +175,14 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
   }
 
   @Override
-  public @Nullable EmbeddedTab openEmbeddedTab(ContentManager contentManager) {
+  public @Nullable EmbeddedTab openEmbeddedTab(@NotNull ContentManager contentManager) {
     manageJxBrowserDownload(contentManager);
-    if (engineRef.get() == null) {
-      engineRef.compareAndSet(null, EmbeddedBrowserEngine.getInstance().getEngine());
-    }
     final Engine engine = engineRef.get();
     if (engine == null) {
-      showMessageWithUrlLink(jxBrowserErrorMessage(), contentManager);
+      handleJxBrowserInstallationInProgress(contentManager);
       return null;
     }
-    else {
-      return new EmbeddedJxBrowserTab(engine);
-    }
+    return new EmbeddedJxBrowserTab(engine);
   }
 
   private @NotNull String jxBrowserErrorMessage() {
