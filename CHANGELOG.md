@@ -5,6 +5,7 @@
 ### Removed
 
 - The Flutter version is now read from the file ./bin/cache/flutter.version.json, required in Flutter 3.33+ (#8465)
+- Notification of required pub actions at the top of Dart files (#7623, #8481)
 
 ### Changed
 
@@ -17,7 +18,6 @@
 
 - Register VM service with DTD (#8436)
 - Fix for ClassCastException: BadgeIcon on flutter runs (#8426)
-- Fix the FlutterDependencyInspection for the analyzer workspaces (#8428)
 
 ## 87.0.0
 
