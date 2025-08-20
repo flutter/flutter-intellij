@@ -6,34 +6,48 @@
 package io.flutter.dart;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
+import java.util.concurrent.*;
 
 public class DtdUtils {
+  private static final Map<Project, CompletableFuture<DartToolingDaemonService>> WAITERS = new ConcurrentHashMap<>();
+
   public @NotNull CompletableFuture<DartToolingDaemonService> readyDtdService(@NotNull Project project) {
-    final DartToolingDaemonService dtdService = DartToolingDaemonService.getInstance(project);
-    CompletableFuture<DartToolingDaemonService> readyService = new CompletableFuture<>();
-    int attemptsRemaining = 10;
-    final int TIME_IN_BETWEEN = 2;
-    while (attemptsRemaining > 0) {
-      attemptsRemaining--;
+    return WAITERS.computeIfAbsent(project, p -> {
+      final DartToolingDaemonService dtdService = DartToolingDaemonService.getInstance(project);
+      CompletableFuture<DartToolingDaemonService> readyService = new CompletableFuture<>();
+
       if (dtdService.getWebSocketReady()) {
         readyService.complete(dtdService);
-        break;
+        return readyService;
       }
-      try {
-        Thread.sleep(TIME_IN_BETWEEN * 1000);
-      }
-      catch (InterruptedException e) {
-        readyService.completeExceptionally(e);
-        break;
-      }
-    }
-    if (!readyService.isDone()) {
-      readyService.completeExceptionally(new Exception("Timed out waiting for DTD websocket to start"));
-    }
-    return readyService;
+
+      final ScheduledExecutorService scheduler = AppExecutorUtil.getAppScheduledExecutorService();
+
+      final ScheduledFuture<?> poll = scheduler.scheduleWithFixedDelay(() -> {
+        if (readyService.isDone()) return;
+        if (dtdService.getWebSocketReady()) {
+          readyService.complete(dtdService);
+        }
+      }, 0, 500, TimeUnit.MILLISECONDS);
+
+      final ScheduledFuture<?> timeout = scheduler.schedule(() -> {
+        readyService.completeExceptionally(new Exception("Timed out waiting for DTD websocket to start"));
+      }, 20, TimeUnit.SECONDS);
+
+      readyService.whenComplete((s, t) -> {
+        poll.cancel(false);
+        timeout.cancel(false);
+        if (t != null) {
+          WAITERS.remove(p);
+        }
+      });
+
+      return readyService;
+    });
   }
 }
