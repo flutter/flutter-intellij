@@ -12,6 +12,7 @@
 - Made dev release daily instead of weekly
 - Set the device selector component to opaque during its creation to avoid an unexpected background color (#8471)
 - Refactored `DeviceSelectorAction` and add rich icons to different platform devices (#8475)
+- Fix EDT freezes when opening embedded DevTools and on theme change (#8477)
 
 ## 87.1.0
 
