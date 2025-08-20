@@ -277,34 +277,39 @@ public class FlutterInitializer extends FlutterProjectActivity {
       eventData.add("theme", themeData);
       params.add("eventData", eventData);
 
-      try {
-        final DtdUtils dtdUtils = new DtdUtils();
-        final DartToolingDaemonService dtdService = dtdUtils.readyDtdService(project).get();
-        if (dtdService == null) {
-          log().error("Unable to send theme changed event because DTD service is null");
-          return;
-        }
-
-        dtdService.sendRequest("postEvent", params, false, object -> {
-                                 JsonObject result = object.getAsJsonObject("result");
-                                 if (result == null) {
-                                   log().error("Theme changed event returned null result");
-                                   return;
-                                 }
-                                 JsonPrimitive type = result.getAsJsonPrimitive("type");
-                                 if (type == null) {
-                                   log().error("Theme changed event result type is null");
-                                   return;
-                                 }
-                                 if (!"Success".equals(type.getAsString())) {
-                                   log().error("Theme changed event result: " + type.getAsString());
-                                 }
-                               }
-        );
-      }
-      catch (WebSocketException | InterruptedException | ExecutionException e) {
-        log().error("Unable to send theme changed event", e);
-      }
+      final DtdUtils dtdUtils = new DtdUtils();
+      dtdUtils.readyDtdService(project)
+        .thenAccept(dtdService -> {
+          if (dtdService == null) {
+            log().warn("Unable to send theme changed event because DTD service is null");
+            return;
+          }
+          try {
+            dtdService.sendRequest("postEvent", params, false, object -> {
+              JsonObject result = object.getAsJsonObject("result");
+              if (result == null) {
+                log().error("Theme changed event returned null result");
+                return;
+              }
+              JsonPrimitive type = result.getAsJsonPrimitive("type");
+              if (type == null) {
+                log().error("Theme changed event result type is null");
+                return;
+              }
+              if (!"Success".equals(type.getAsString())) {
+                log().error("Theme changed event result: " + type.getAsString());
+              }
+            });
+          }
+          catch (WebSocketException e) {
+            log().error("Unable to send theme changed event", e);
+          }
+        })
+        .exceptionally(e -> {
+          // DTD 未就绪或超时：降级为 debug，避免在启动期污染日志/打断流程
+          log().debug("DTD not ready; skipping themeChanged event", e);
+          return null;
+        });
     }, 1, TimeUnit.SECONDS);
   }
 
