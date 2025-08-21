@@ -72,11 +72,15 @@ elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
   ./gradlew test
 
 elif [ "VERIFY_BOT" = "$BOT" ] ; then
-    # Run the verifier for this version
+  # Run the verifier
   ./gradlew verifyPluginProjectConfiguration
   ./gradlew verifyPluginStructure
   ./gradlew verifyPluginSignature
   ./gradlew verifyPlugin
+
+elif [ "INTEGRATION_BOT" = "$BOT" ]; then
+  # Run the integration tests
+  ./gradlew integration --warning-mode all
 
 else
   # Run the build.
