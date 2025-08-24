@@ -58,6 +58,12 @@ if (project.hasProperty("release")) {
   val nextMajorVersion = majorVersion + 1
   val datestamp = DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now())
   flutterPluginVersion = "$nextMajorVersion.0.0-dev.$datestamp"
+
+  val commitHash = System.getenv("KOKORO_GITHUB_COMMIT")
+  if (commitHash is String) {
+    val shortCommitHash = commitHash.take(7)
+    flutterPluginVersion += "-$shortCommitHash"
+  }
 }
 
 val ideaVersion = providers.gradleProperty("ideaVersion").get()
