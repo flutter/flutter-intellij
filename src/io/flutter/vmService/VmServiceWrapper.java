@@ -176,11 +176,10 @@ public class VmServiceWrapper implements Disposable {
     });
 
     FlutterSdkVersion flutterSdkVersion = null;
-    if (myDebugProcess.getSession() != null) {
-      final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(myDebugProcess.getSession().getProject());
-      if (flutterSdk != null) {
-        flutterSdkVersion = flutterSdk.getVersion();
-      }
+    myDebugProcess.getSession();
+    final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(myDebugProcess.getSession().getProject());
+    if (flutterSdk != null) {
+      flutterSdkVersion = flutterSdk.getVersion();
     }
 
     if (flutterSdkVersion != null && flutterSdkVersion.canUseToolEventStream()) {
@@ -407,7 +406,6 @@ public class VmServiceWrapper implements Disposable {
                 }
 
                 Set<CanonicalBreakpoint> mappedCanonicalBreakpoints = new HashSet<>();
-                assert breakpoints != null;
                 for (Breakpoint breakpoint : breakpoints) {
                   Object location = breakpoint.getLocation();
                   // In JIT mode, locations will be unresolved at this time since files aren't compiled until they are used.
@@ -613,7 +611,6 @@ public class VmServiceWrapper implements Disposable {
 
   private String getResolvedUri(@NotNull XSourcePosition position) {
     XDebugSession session = myDebugProcess.getSession();
-    assert session != null;
     VirtualFile file =
       WorkspaceCache.getInstance(session.getProject()).isBazel() ? position.getFile() : position.getFile().getCanonicalFile();
     assert file != null;

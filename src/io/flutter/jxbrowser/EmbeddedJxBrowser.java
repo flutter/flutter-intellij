@@ -217,7 +217,6 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
   private @Nullable String jxBrowserErrorFromFailedReason(@Nullable InstallationFailedReason failedReason) {
     if (failedReason == null) return null;
     final FailureType failureType = failedReason.failureType;
-    if (failureType == null) return null;
     return switch (failureType) {
       case SYSTEM_INCOMPATIBLE -> "System is incompatible with JX Browser";
       case FILE_DOWNLOAD_FAILED -> "JX Browser file download failed";

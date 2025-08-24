@@ -185,7 +185,6 @@ public class BazelTestFields {
     final Workspace workspace = getWorkspace(project);
 
     final String launchingScript = getTestScriptFromWorkspace(project);
-    assert launchingScript != null; // already checked
 
     final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workspace.getRoot().getPath());
     commandLine.setCharset(StandardCharsets.UTF_8);

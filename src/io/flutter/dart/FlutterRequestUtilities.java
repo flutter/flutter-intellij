@@ -113,6 +113,6 @@ public class FlutterRequestUtilities {
    */
   @NotNull
   private static String getClassName(@Nullable Object object) {
-    return object != null && object.getClass().getName() != null ? object.getClass().getName() : "null";
+    return object != null ? object.getClass().getName() : "null";
   }
 }

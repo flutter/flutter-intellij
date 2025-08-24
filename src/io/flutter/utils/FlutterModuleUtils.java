@@ -342,7 +342,6 @@ public class FlutterModuleUtils {
   // Return true if there is a module with the same name as the project plus the Android suffix.
   public static boolean hasAndroidModule(@NotNull Project project) {
     for (PubRoot root : PubRoots.forProject(project)) {
-      assert root != null;
       String name = PubspecYamlUtil.getDartProjectName(root.getPubspec());
       String moduleName = name + "_android";
       for (Module module : FlutterModuleUtils.getModules(project)) {

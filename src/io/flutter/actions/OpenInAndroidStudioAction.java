@@ -178,7 +178,6 @@ public class OpenInAndroidStudioAction extends AnAction {
         for (PubRoot root : PubRoots.forProject(project)) {
           if (root.isFlutterPlugin()) {
             final VirtualFile rootFile = root.getRoot();
-            if (rootFile == null) continue;
             VirtualFile aFile = file;
             while (aFile != null) {
               if (aFile.equals(rootFile)) {
