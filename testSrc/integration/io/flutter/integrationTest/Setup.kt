@@ -16,6 +16,7 @@ import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.project.NoProject
+import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.ide.starter.utils.Git
 import com.intellij.openapi.util.SystemInfo
@@ -100,9 +101,9 @@ class Setup {
      *
      * @throws IllegalStateException if required system properties are not set
      */
-    fun setupTestContext(hyphenateWithClass: String, ideInfo: IdeInfo): IDETestContext {
+    fun setupTestContext(hyphenateWithClass: String, ideInfo: IdeInfo, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
 
-      val testCase = TestCase(ideInfo, NoProject)
+      val testCase = TestCase(ideInfo, projectInfoSpec)
 
       return Starter.newContext(testName = hyphenateWithClass, testCase = testCase).apply {
         // Install the plugin that was built by the buildPlugin task
