@@ -54,36 +54,36 @@ class Setup {
       }
     }
 
-    fun setupTestContextIC(hyphenateWithClass: String): IDETestContext {
+    fun setupTestContextIC(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
       return setupTestContext(
         "", IdeProductProvider.IC.copy(
           // Intellij Platform UI Platform Build Version -> https://plugins.jetbrains.com/docs/intellij/integration-tests-ui.html
 //          buildNumber = "243.26574.91", //System.getProperty("uiPlatformBuildVersion"),
           buildNumber = "252.23892.409",
           buildType = BuildType.RELEASE.type
-        )
+        ), projectInfoSpec
       )
     }
 
-    fun setupTestContextUE(hyphenateWithClass: String): IDETestContext {
+    fun setupTestContextUE(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
       return setupTestContext(
         "", IdeProductProvider.IU.copy(
           // Intellij Platform UI Platform Build Version -> https://plugins.jetbrains.com/docs/intellij/integration-tests-ui.html
 //          buildNumber = "243.26574.91", //System.getProperty("uiPlatformBuildVersion"),
           buildNumber = "252.23892.409",
           buildType = BuildType.RELEASE.type
-        )
+        ), projectInfoSpec
       )
     }
 
-    fun setupTestContextWS(hyphenateWithClass: String): IDETestContext {
+    fun setupTestContextWS(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
       return setupTestContext(
         "", IdeProductProvider.WS.copy(
           // Intellij Platform UI Platform Build Version -> https://plugins.jetbrains.com/docs/intellij/integration-tests-ui.html
 //          buildNumber = "243.26574.91", //System.getProperty("uiPlatformBuildVersion"),
           buildNumber = "252.23892.411",
           buildType = BuildType.RELEASE.type
-        )
+        ), projectInfoSpec
       )
     }
 
