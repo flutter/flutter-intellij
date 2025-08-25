@@ -24,12 +24,7 @@ import io.flutter.module.settings.SettingsHelpForm;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 
-import javax.swing.ComboBoxEditor;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
 
@@ -65,6 +60,16 @@ public class FlutterGeneratorPeer {
   private void init() {
     mySdkPathComboWithBrowse.getComboBox().setEditable(true);
     FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkPathComboWithBrowse.getComboBox());
+    if (mySdkPathComboWithBrowse.getComboBox().getModel().getSize() == 0) {
+      // If no SDKs are found, try to use the one from the FLUTTER_SDK environment variable.
+      // This ensures the SDK path is pre-filled when the combo box is empty, not requiring
+      // a running Application which is the case for users and bots on the initial startup
+      // experience.
+      final String flutterSDKPath = System.getenv("FLUTTER_SDK");
+      if (flutterSDKPath != null && !flutterSDKPath.isEmpty()) {
+        mySdkPathComboWithBrowse.getComboBox().setSelectedItem(flutterSDKPath);
+      }
+    }
 
     mySdkPathComboWithBrowse.addBrowseFolderListener(null, FileChooserDescriptorFactory.createSingleFolderDescriptor()
       .withTitle(FlutterBundle.message("flutter.sdk.browse.path.label")), TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
