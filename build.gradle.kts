@@ -99,11 +99,12 @@ kotlin {
     apiVersion.set(KotlinVersion.KOTLIN_2_1)
     jvmTarget = jvmVersion
   }
-  jvmToolchain {
-    languageVersion = JavaLanguageVersion.of(21)
-    @Suppress("UnstableApiUsage")
-    vendor = JvmVendorSpec.JETBRAINS
-  }
+  // This is how you specify the specific JVM requirements, this may be a requirement for the Starter test framework
+//  jvmToolchain {
+//    languageVersion = JavaLanguageVersion.of(21)
+//    @Suppress("UnstableApiUsage")
+//    vendor = JvmVendorSpec.JETBRAINS
+//  }
 }
 
 var javaCompatibilityVersion: JavaVersion
