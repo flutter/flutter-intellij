@@ -11,7 +11,6 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowManagerListener;
 import com.intellij.util.messages.MessageBusConnection;
-import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.RefreshToolWindowAction;
 import io.flutter.run.daemon.DevToolsInstance;
@@ -26,7 +25,7 @@ import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.Icon;
+import javax.swing.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -157,7 +156,8 @@ public abstract class AbstractDevToolsViewFactory implements ToolWindowFactory {
               FlutterUtils.embeddedBrowser(project))
             .ifPresent(embeddedBrowser ->
                        {
-                         embeddedBrowser.openPanel(toolWindow, getToolWindowTitle(), getToolWindowIcon(), devToolsUrl, System.out::println, warningMessage);
+                         embeddedBrowser.openPanel(toolWindow, getToolWindowTitle(), getToolWindowIcon(), devToolsUrl, System.out::println,
+                                                   warningMessage);
                          devToolsLoadedInBrowser = true;
                          doAfterBrowserOpened(project, embeddedBrowser);
                          // The "refresh" action refreshes the embedded browser, not the panel.
