@@ -279,7 +279,7 @@ tasks {
 
 // A task to print the classpath used for compiling an IntelliJ plugin
 // Run with `./gradlew printCompileClasspath --no-configuration-cache `
-tasks.register("printCompileClasspath") {
+tasks.register<Task>("printCompileClasspath") {
   doLast {
     println("--- Begin Compile Classpath ---")
     configurations.getByName("compileClasspath").forEach { file ->
@@ -291,7 +291,7 @@ tasks.register("printCompileClasspath") {
 
 // This finds the JxBrowser license key from the environment and writes it to a file.
 // This is only used by the dev build on kokoro for now.
-val writeLicenseKey = tasks.register("writeLicenseKey") {
+val writeLicenseKey = tasks.register<Task>("writeLicenseKey") {
   group = "build"
   description = "Writes the license key from an environment variable to a file."
 
