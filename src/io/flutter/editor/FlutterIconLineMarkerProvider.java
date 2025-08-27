@@ -239,7 +239,6 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
 
   @Nullable
   private Icon findStandardIconFromDef(@NotNull String name, @NotNull IconInfo iconDef, @NotNull String path) {
-    assert LocalFileSystem.getInstance() != null;
     final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
     if (virtualFile == null) return null;
     final IconPreviewGenerator generator = new IconPreviewGenerator(virtualFile.getPath());
@@ -310,7 +309,6 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
 
   @Nullable
   private IconInfo findDefinition(@NotNull String className, @NotNull String iconName, @NotNull Project project, @NotNull String path) {
-    assert LocalFileSystem.getInstance() != null;
     final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
     if (virtualFile == null) return null;
     final PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
@@ -324,7 +322,6 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
 
   @Nullable
   private Icon findIconFromDef(@NotNull String iconClassName, @NotNull IconInfo iconDef, @NotNull String path) {
-    assert LocalFileSystem.getInstance() != null;
     final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
     if (virtualFile == null) return null;
     VirtualFile parent = virtualFile;

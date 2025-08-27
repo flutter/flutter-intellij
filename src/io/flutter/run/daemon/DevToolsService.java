@@ -120,11 +120,8 @@ public class DevToolsService {
   }
 
   private boolean devToolsInstanceExists() {
-    if (devToolsFutureRef != null) {
-      final CompletableFuture<DevToolsInstance> devToolsFuture = devToolsFutureRef.get();
-      return devToolsFuture != null && devToolsFuture.isDone() && !devToolsFuture.isCompletedExceptionally();
-    }
-    return false;
+    final CompletableFuture<DevToolsInstance> devToolsFuture = devToolsFutureRef.get();
+    return devToolsFuture != null && devToolsFuture.isDone() && !devToolsFuture.isCompletedExceptionally();
   }
 
   private CompletableFuture<Boolean> pubActivateDevTools(FlutterSdk sdk) {

@@ -217,7 +217,7 @@ class DevToolsServerTask extends Task.Backgroundable {
     String[] parts = dartPluginUri.split(":");
     String host = parts[0];
     Integer port = Integer.parseInt(parts[1]);
-    if (host == null || port == null) {
+    if (host == null) {
       return null;
     }
 
