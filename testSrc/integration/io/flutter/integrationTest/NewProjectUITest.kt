@@ -14,7 +14,13 @@ import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.junit5.config.UseLatestDownloadedIdeBuild
 import io.flutter.integrationTest.utils.newProjectWelcomeScreen
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Tag
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Paths
 import kotlin.time.Duration.Companion.minutes
@@ -25,7 +31,6 @@ import kotlin.time.Duration.Companion.minutes
 class MyProjectUITest {
 
   companion object {
-    // Generate a unique folder name for the test project to avoid conflicts
     var testProjectName = ""
 
     /**
@@ -57,6 +62,7 @@ class MyProjectUITest {
    */
   @BeforeEach
   fun initContext() {
+    // Generate a unique folder name for the test project to avoid conflicts
     testProjectName = "my_test_project_${System.currentTimeMillis()}"
   }
 
