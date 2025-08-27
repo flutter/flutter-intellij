@@ -9,6 +9,7 @@ import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.facet.Facet;
 import com.intellij.facet.FacetManager;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -383,7 +384,7 @@ public class FlutterModuleUtils {
     ProjectManager.getInstance().reloadProject(project);
   }
 
-  public static void enableDartSDK(@NotNull Module module) {
+  public static void enableDartSDK(final @NotNull Module module) {
     if (FlutterSdk.getFlutterSdk(module.getProject()) != null) {
       return;
     }
@@ -417,10 +418,18 @@ public class FlutterModuleUtils {
       if (dartSdkPath == null) {
         return; // Not cached. TODO call flutterSdk.sync() here?
       }
-      OpenApiUtils.safeRunWriteAction(() -> {
-        DartPlugin.ensureDartSdkConfigured(module.getProject(), dartSdkPath);
-        DartPlugin.enableDartSdk(module);
-      });
+
+      // Wrap the write action in a thread-safe way
+      // See https://github.com/flutter/flutter-intellij/issues/8480
+      final Application application = ApplicationManager.getApplication();
+      if (application != null) {
+        application.invokeLater(() -> {
+          application.runWriteAction(() -> {
+            DartPlugin.ensureDartSdkConfigured(module.getProject(), dartSdkPath);
+            DartPlugin.enableDartSdk(module);
+          });
+        });
+      }
     }
   }
 }
