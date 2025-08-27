@@ -320,7 +320,6 @@ tasks {
     systemProperty(
       "allure.results.directory", project.layout.buildDirectory.get().asFile.absolutePath + "/allure-results"
     )
-//    systemProperty("uiPlatformBuildVersion", providers.gradleProperty("uiPlatformBuildVersion").get())
 
     // Disable IntelliJ test listener that conflicts with standard JUnit
     systemProperty("idea.test.cyclic.buffer.size", "0")
