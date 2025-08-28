@@ -5,8 +5,6 @@
  */
 package io.flutter.run.bazel;
 
-import com.intellij.openapi.fileChooser.FileChooserDescriptor;
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
@@ -28,7 +26,6 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
   private TextFieldWithBrowseButton myTarget;
 
   public FlutterBazelConfigurationEditorForm(final Project project) {
-    final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
     initDartFileTextWithBrowse(project, myTarget);
   }
 
