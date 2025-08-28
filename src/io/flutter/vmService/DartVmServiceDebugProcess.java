@@ -185,8 +185,11 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
 
       @Override
       public void logError(final String message, final Throwable exception) {
-        if (!getVmConnected() || getSession() == null) {
+        if (!getVmConnected()) {
           return;
+        }
+        else {
+          getSession();
         }
         if (message != null) {
           getSession().getConsoleView().print(message.trim() + "\n", ConsoleViewContentType.ERROR_OUTPUT);
@@ -511,7 +514,7 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
                 else if (eventKind == EventKind.Resume) {
                   // Currently true if we got here via 'flutter attach'
                   OpenApiUtils.safeInvokeLater(() -> {
-                    myVmServiceWrapper.attachIsolate(isolateRef, isolate);
+                    myVmServiceWrapper.attachIsolate(isolateRef);
                   });
                 }
               }

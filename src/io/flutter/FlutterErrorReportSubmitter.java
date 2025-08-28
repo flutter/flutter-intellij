@@ -9,6 +9,7 @@ import com.intellij.ide.DataManager;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.scratch.ScratchRootType;
+import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.diagnostic.ErrorReportSubmitter;
@@ -26,10 +27,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
+import java.io.File;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.intellij.openapi.actionSystem.CommonDataKeys.PROJECT;
@@ -68,23 +72,20 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
         if (stackTraceText.startsWith(DaemonApi.FLUTTER_ERROR_PREFIX)) {
           final String message = stackTraceText.substring(DaemonApi.FLUTTER_ERROR_PREFIX.length());
           final int start = message.indexOf(": ") + 2;
-          if (start == 0) continue;
           int end = message.indexOf('\n');
           if (end < 0) end = message.length();
           final String error = message.substring(start, end);
           stackTrace = message.substring(end + 1);
           for (String err : KNOWN_ERRORS) {
             if (error.contains(err)) {
-              if (end != message.length()) {
-                // Dart stack trace included so extract it and set the issue target to the Flutter repo.
-                errorMessage = err;
-                final int endOfDartStack = stackTrace.indexOf("\\n\"\n");
-                if (endOfDartStack > 0) {
-                  // Get only the part between quotes. If the format is wrong just use the whole thing.
-                  stackTrace = stackTrace.substring(1, endOfDartStack);
-                }
-                break;
+              // Dart stack trace included so extract it and set the issue target to the Flutter repo.
+              errorMessage = err;
+              final int endOfDartStack = stackTrace.indexOf("\\n\"\n");
+              if (endOfDartStack > 0) {
+                // Get only the part between quotes. If the format is wrong just use the whole thing.
+                stackTrace = stackTrace.substring(1, endOfDartStack);
               }
+              break;
             }
           }
         }
@@ -175,6 +176,29 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
       builder.append("```\n");
       builder.append("\n");
     }
+
+    builder.append("## Flutter log\n\n");
+    builder.append("```\n");
+    try {
+      final String logPath = PathManager.getLogPath();
+      final File logFile = new File(logPath, "flutter.log");
+      if (logFile.exists()) {
+        final List<String> lines = Files.readAllLines(logFile.toPath(), StandardCharsets.UTF_8);
+        final int count = 200;
+        final int start = Math.max(0, lines.size() - count);
+        if (start > 0) {
+          builder.append("...\n");
+        }
+        for (int i = start; i < lines.size(); i++) {
+          builder.append(lines.get(i)).append("\n");
+        }
+      } else {
+        builder.append("(flutter.log not found)\n");
+      }
+    } catch (Exception ex) {
+      builder.append("(exception trying to read log: ").append(ex.getMessage()).append(")\n");
+    }
+    builder.append("```\n\n");
 
     final String text = builder.toString().trim() + "\n";
 

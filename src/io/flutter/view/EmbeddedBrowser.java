@@ -16,7 +16,6 @@ import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.util.ui.JBUI;
-import icons.FlutterIcons;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.LabelInput;
@@ -26,8 +25,11 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -80,13 +82,15 @@ public abstract class EmbeddedBrowser {
 
   public void openPanel(@NotNull ToolWindow toolWindow,
                         @NotNull String tabName,
+                        @Nullable Icon tabIcon,
                         @NotNull DevToolsUrl devToolsUrl,
                         @NotNull Consumer<String> onBrowserUnavailable) {
-    openPanel(toolWindow, tabName, devToolsUrl, onBrowserUnavailable, null);
+    openPanel(toolWindow, tabName, tabIcon, devToolsUrl, onBrowserUnavailable, null);
   }
 
   public void openPanel(@NotNull ToolWindow toolWindow,
                         @NotNull String tabName,
+                        @Nullable Icon tabIcon,
                         @NotNull DevToolsUrl devToolsUrl,
                         @NotNull Consumer<String> onBrowserUnavailable,
                         @Nullable String warningMessage) {
@@ -146,9 +150,11 @@ public abstract class EmbeddedBrowser {
 
       tab.content = tab.contentManager.getFactory().createContent(null, tabName, false);
       tab.content.setComponent(component);
-      tab.content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
-      // TODO(helin24): Use differentiated icons for each tab and copy from devtools toolbar.
-      tab.content.setIcon(FlutterIcons.Phone);
+
+      tab.content.putUserData(ToolWindow.SHOW_CONTENT_ICON, tabIcon != null);
+      if (tabIcon != null) {
+        tab.content.setIcon(tabIcon);
+      }
 
       final JPanel panel = new JPanel(new BorderLayout());
 

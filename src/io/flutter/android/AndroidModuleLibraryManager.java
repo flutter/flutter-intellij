@@ -8,6 +8,7 @@ package io.flutter.android;
 import com.android.tools.idea.gradle.project.sync.GradleSyncInvoker;
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.intellij.facet.FacetManager;
+import com.intellij.facet.FacetTypeId;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -39,7 +40,6 @@ import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.OpenApiUtils;
-import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -153,7 +153,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   private void updateAndroidModuleLibraryDependencies(Module flutterModule) {
     for (final Module module : OpenApiUtils.getModules(getProject())) {
       if (module != flutterModule) {
-        if (null != FacetManager.getInstance(module).findFacet(AndroidFacet.ID, "Android")) {
+        if (null != FacetManager.getInstance(module).findFacet(new FacetTypeId<>("android"), "Android")) {
           Object circularModules = CircularModuleDependenciesDetector.addingDependencyFormsCircularity(module, flutterModule);
           if (circularModules == null) {
             ModuleRootManager rootManager = ModuleRootManager.getInstance(module);

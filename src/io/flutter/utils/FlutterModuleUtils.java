@@ -9,6 +9,7 @@ import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.facet.Facet;
 import com.intellij.facet.FacetManager;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -277,28 +278,31 @@ public class FlutterModuleUtils {
   public static void autoShowMain(@NotNull Project project, @NotNull PubRoot root) {
     if (project.isDisposed()) return;
 
-    final VirtualFile main = root.getFileToOpen();
-    if (main == null) return;
+    // Offload the slow file system lookup to a background thread.
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      final VirtualFile main = root.getFileToOpen();
 
-    DumbService.getInstance(project).runWhenSmart(() -> {
-      final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-      if (fileEditorManager == null) {
-        return;
+      // If the file is found, switch back to the EDT to safely update the UI.
+      if (main != null && main.exists() && !main.isDirectory()) {
+        DumbService.getInstance(project).runWhenSmart(() -> {
+          if (project.isDisposed()) return;
+
+          final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+          if (fileEditorManager == null) return;
+
+          FileEditor[] editors = fileEditorManager.getAllEditors();
+          if (editors.length > 1) return;
+
+          for (FileEditor editor : editors) {
+            if (editor == null) return;
+
+            VirtualFile file = editor.getFile();
+            if (file != null && file.equals(main) && FlutterUtils.isDartFile(file)) return;
+          }
+
+          fileEditorManager.openFile(main, editors.length == 0);
+        });
       }
-      FileEditor[] editors = fileEditorManager.getAllEditors();
-      if (editors.length > 1) {
-        return;
-      }
-      for (FileEditor editor : editors) {
-        if (editor == null) {
-          return;
-        }
-        VirtualFile file = editor.getFile();
-        if (file != null && file.equals(main) && FlutterUtils.isDartFile(file)) {
-          return;
-        }
-      }
-      fileEditorManager.openFile(main, editors.length == 0);
     });
   }
 
@@ -339,7 +343,6 @@ public class FlutterModuleUtils {
   // Return true if there is a module with the same name as the project plus the Android suffix.
   public static boolean hasAndroidModule(@NotNull Project project) {
     for (PubRoot root : PubRoots.forProject(project)) {
-      assert root != null;
       String name = PubspecYamlUtil.getDartProjectName(root.getPubspec());
       String moduleName = name + "_android";
       for (Module module : FlutterModuleUtils.getModules(project)) {
@@ -381,7 +384,7 @@ public class FlutterModuleUtils {
     ProjectManager.getInstance().reloadProject(project);
   }
 
-  public static void enableDartSDK(@NotNull Module module) {
+  public static void enableDartSDK(final @NotNull Module module) {
     if (FlutterSdk.getFlutterSdk(module.getProject()) != null) {
       return;
     }
@@ -415,10 +418,18 @@ public class FlutterModuleUtils {
       if (dartSdkPath == null) {
         return; // Not cached. TODO call flutterSdk.sync() here?
       }
-      OpenApiUtils.safeRunWriteAction(() -> {
-        DartPlugin.ensureDartSdkConfigured(module.getProject(), dartSdkPath);
-        DartPlugin.enableDartSdk(module);
-      });
+
+      // Wrap the write action in a thread-safe way
+      // See https://github.com/flutter/flutter-intellij/issues/8480
+      final Application application = ApplicationManager.getApplication();
+      if (application != null) {
+        application.invokeLater(() -> {
+          application.runWriteAction(() -> {
+            DartPlugin.ensureDartSdkConfigured(module.getProject(), dartSdkPath);
+            DartPlugin.enableDartSdk(module);
+          });
+        });
+      }
     }
   }
 }

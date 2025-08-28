@@ -24,7 +24,6 @@ import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import com.jetbrains.lang.dart.DartFileType;
 import io.flutter.bazel.WorkspaceCache;
-import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.OpenApiUtils;
@@ -33,13 +32,56 @@ import io.flutter.vmService.frame.DartVmServiceEvaluator;
 import io.flutter.vmService.frame.DartVmServiceStackFrame;
 import io.flutter.vmService.frame.DartVmServiceValue;
 import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.consumer.*;
-import org.dartlang.vm.service.element.*;
+import org.dartlang.vm.service.consumer.AddBreakpointWithScriptUriConsumer;
+import org.dartlang.vm.service.consumer.EvaluateConsumer;
+import org.dartlang.vm.service.consumer.EvaluateInFrameConsumer;
+import org.dartlang.vm.service.consumer.GetIsolateConsumer;
+import org.dartlang.vm.service.consumer.GetObjectConsumer;
+import org.dartlang.vm.service.consumer.GetStackConsumer;
+import org.dartlang.vm.service.consumer.InvokeConsumer;
+import org.dartlang.vm.service.consumer.PauseConsumer;
+import org.dartlang.vm.service.consumer.RemoveBreakpointConsumer;
+import org.dartlang.vm.service.consumer.SetExceptionPauseModeConsumer;
+import org.dartlang.vm.service.consumer.SetIsolatePauseModeConsumer;
+import org.dartlang.vm.service.consumer.SuccessConsumer;
+import org.dartlang.vm.service.consumer.UriListConsumer;
+import org.dartlang.vm.service.consumer.VMConsumer;
+import org.dartlang.vm.service.consumer.VersionConsumer;
+import org.dartlang.vm.service.element.Breakpoint;
+import org.dartlang.vm.service.element.ElementList;
+import org.dartlang.vm.service.element.ErrorRef;
+import org.dartlang.vm.service.element.Event;
+import org.dartlang.vm.service.element.EventKind;
+import org.dartlang.vm.service.element.ExceptionPauseMode;
+import org.dartlang.vm.service.element.Frame;
+import org.dartlang.vm.service.element.FrameKind;
+import org.dartlang.vm.service.element.InstanceRef;
+import org.dartlang.vm.service.element.Isolate;
+import org.dartlang.vm.service.element.IsolateRef;
+import org.dartlang.vm.service.element.LibraryRef;
+import org.dartlang.vm.service.element.Obj;
+import org.dartlang.vm.service.element.RPCError;
+import org.dartlang.vm.service.element.Script;
+import org.dartlang.vm.service.element.ScriptRef;
+import org.dartlang.vm.service.element.Sentinel;
 import org.dartlang.vm.service.element.Stack;
+import org.dartlang.vm.service.element.StepOption;
+import org.dartlang.vm.service.element.Success;
+import org.dartlang.vm.service.element.UnresolvedSourceLocation;
+import org.dartlang.vm.service.element.UriList;
+import org.dartlang.vm.service.element.VM;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -93,15 +135,6 @@ public class VmServiceWrapper implements Disposable {
     }
   }
 
-  @NotNull
-  public List<IsolateRef> getExistingIsolates() {
-    List<IsolateRef> isolateRefs = new ArrayList<>();
-    for (IsolatesInfo.IsolateInfo isolateInfo : myIsolatesInfo.getIsolateInfos()) {
-      isolateRefs.add(isolateInfo.getIsolateRef());
-    }
-    return isolateRefs;
-  }
-
   @Nullable
   public StepOption getLatestStep() {
     return myLatestStep;
@@ -114,7 +147,7 @@ public class VmServiceWrapper implements Disposable {
     if (ApplicationManager.getApplication().isReadAccessAllowed()) {
       LOG.error("Waiting for the answer from the Dart debugger under read action may lead to EDT freeze");
     }
-    if (myVmServiceReceiverThreadId == Thread.currentThread().getId()) {
+    if (myVmServiceReceiverThreadId == Thread.currentThread().threadId()) {
       LOG.error("Synchronous requests must not be made in Web Socket listening thread: answer will never be received");
     }
   }
@@ -123,7 +156,7 @@ public class VmServiceWrapper implements Disposable {
     streamListen(VmService.DEBUG_STREAM_ID, new VmServiceConsumers.SuccessConsumerWrapper() {
       @Override
       public void received(final Success success) {
-        myVmServiceReceiverThreadId = Thread.currentThread().getId();
+        myVmServiceReceiverThreadId = Thread.currentThread().threadId();
         streamListen(VmService.ISOLATE_STREAM_ID, new VmServiceConsumers.SuccessConsumerWrapper() {
           @Override
           public void received(final Success success) {
@@ -145,7 +178,7 @@ public class VmServiceWrapper implements Disposable {
 
                       // This is the entry point for attaching a debugger to a running app.
                       if (eventKind == EventKind.Resume) {
-                        attachIsolate(isolateRef, isolate);
+                        attachIsolate(isolateRef);
                         return;
                       }
                       // if event is not PauseStart it means that PauseStart event will follow later and will be handled by listener
@@ -176,11 +209,10 @@ public class VmServiceWrapper implements Disposable {
     });
 
     FlutterSdkVersion flutterSdkVersion = null;
-    if (myDebugProcess.getSession() != null) {
-      final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(myDebugProcess.getSession().getProject());
-      if (flutterSdk != null) {
-        flutterSdkVersion = flutterSdk.getVersion();
-      }
+    myDebugProcess.getSession();
+    final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(myDebugProcess.getSession().getProject());
+    if (flutterSdk != null) {
+      flutterSdkVersion = flutterSdk.getVersion();
     }
 
     if (flutterSdkVersion != null && flutterSdkVersion.canUseToolEventStream()) {
@@ -291,13 +323,16 @@ public class VmServiceWrapper implements Disposable {
     }
   }
 
-  public void attachIsolate(@NotNull IsolateRef isolateRef, @NotNull Isolate isolate) {
+  public void attachIsolate(@NotNull IsolateRef isolateRef) {
     boolean newIsolate = myIsolatesInfo.addIsolate(isolateRef);
     // Just to make sure that the main isolate is not handled twice, both from handleDebuggerConnected() and DartVmServiceListener.received(PauseStart)
     if (newIsolate) {
-      XDebugSessionImpl session = (XDebugSessionImpl)myDebugProcess.getSession();
+      var session = myDebugProcess.getSession();
       OpenApiUtils.safeRunReadAction(() -> {
-        session.reset();
+        // Only the impl class supports reset so we need to cast.
+        // Note that `XDebugSessionImpl` is marked internal, so this may not be safe long-run.
+        // See: https://github.com/flutter/flutter-intellij/issues/7718
+        ((XDebugSessionImpl)session).reset();
         session.initBreakpoints();
       });
       setIsolatePauseMode(isolateRef.getId(), myDebugProcess.getBreakOnExceptionMode(), isolateRef);
@@ -326,20 +361,6 @@ public class VmServiceWrapper implements Disposable {
     }
     else {
       doSetInitialBreakpointsAndResume(isolateRef);
-    }
-  }
-
-  private void setInitialBreakpointsAndCheckExtensions(@NotNull IsolateRef isolateRef, @NotNull Isolate isolate) {
-    doSetBreakpointsForIsolate(myBreakpointHandler.getXBreakpoints(), isolateRef.getId(), () -> {
-      myIsolatesInfo.setBreakpointsSet(isolateRef);
-    });
-    FlutterApp app = FlutterApp.fromEnv(myDebugProcess.getExecutionEnvironment());
-    // TODO(messick) Consider replacing this test with an assert; could interfere with setExceptionPauseMode().
-    if (app != null) {
-      VMServiceManager service = app.getVMServiceManager();
-      if (service != null) {
-        service.addRegisteredExtensionRPCs(isolate);
-      }
     }
   }
 
@@ -407,7 +428,6 @@ public class VmServiceWrapper implements Disposable {
                 }
 
                 Set<CanonicalBreakpoint> mappedCanonicalBreakpoints = new HashSet<>();
-                assert breakpoints != null;
                 for (Breakpoint breakpoint : breakpoints) {
                   Object location = breakpoint.getLocation();
                   // In JIT mode, locations will be unresolved at this time since files aren't compiled until they are used.
@@ -473,8 +493,7 @@ public class VmServiceWrapper implements Disposable {
     if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
       return true;
     }
-
-    FlutterSdk sdk = FlutterSdk.getFlutterSdk(myDebugProcess.getSession().getProject());
+    
     return VmServiceVersion.hasMapping(version);
   }
 
@@ -613,7 +632,6 @@ public class VmServiceWrapper implements Disposable {
 
   private String getResolvedUri(@NotNull XSourcePosition position) {
     XDebugSession session = myDebugProcess.getSession();
-    assert session != null;
     VirtualFile file =
       WorkspaceCache.getInstance(session.getProject()).isBazel() ? position.getFile() : position.getFile().getCanonicalFile();
     assert file != null;

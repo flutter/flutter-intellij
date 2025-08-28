@@ -38,16 +38,28 @@ plugins {
   // https://plugins.gradle.org/plugin/org.jetbrains.intellij.platform
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("java") // Java support
-  id("org.jetbrains.intellij.platform") version "2.7.0" // IntelliJ Platform Gradle Plugin
+  id("org.jetbrains.intellij.platform") version "2.7.2" // IntelliJ Platform Gradle Plugin
   id("org.jetbrains.kotlin.jvm") version "2.2.0" // Kotlin support
   id("org.jetbrains.changelog") version "2.2.0" // Gradle Changelog Plugin
 }
 
-var flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()
-if (project.hasProperty("dev-version")) {
+// By default (e.g. when we call `runIde` during development), the plugin version is SNAPSHOT
+var flutterPluginVersion = "SNAPSHOT"
+
+// Otherwise, we will decide on the proper semver-formatted version from the CHANGELOG.
+// Note: The CHANGELOG follows the style from https://keepachangelog.com/en/1.0.0/ so that we can use the gradle changelog plugin.
+if (project.hasProperty("release")) {
+  // If we are building for a release, the changelog should be updated with the latest version.
+  flutterPluginVersion = changelog.getLatest().version
+} else if (project.hasProperty("dev")) {
+  // If we are building the dev version, the version label will increment the latest version from the changelog and append the date.
+  val latestVersion = changelog.getLatest().version
+  val majorVersion = latestVersion.substringBefore('.').toInt()
+  val nextMajorVersion = majorVersion + 1
   val datestamp = DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now())
-  flutterPluginVersion = project.property("dev-version").toString() + "-dev." + datestamp
+  flutterPluginVersion = "$nextMajorVersion.0.0-dev.$datestamp"
 }
+
 val ideaVersion = providers.gradleProperty("ideaVersion").get()
 val dartPluginVersion = providers.gradleProperty("dartPluginVersion").get()
 val sinceBuildInput = providers.gradleProperty("sinceBuild").get()
@@ -156,10 +168,6 @@ dependencies {
   )
 }
 
-changelog {
-  headerParserRegex = """(\d+(\.\d+)*)""".toRegex()
-}
-
 intellijPlatform {
   pluginConfiguration {
     version = flutterPluginVersion
@@ -178,7 +186,7 @@ intellijPlatform {
   pluginVerification {
     // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
     // https://github.com/JetBrains/intellij-plugin-verifier
-    cliPath = file("./third_party/lib/verifier-cli-1.388-all.jar")
+    cliPath = file("./third_party/lib/verifier-cli-1.394-all.jar")
     failureLevel = listOf(
       // TODO(team) Ideally all of the following FailureLevels should be enabled:
       // https://github.com/flutter/flutter-intellij/issues/8361
@@ -271,7 +279,7 @@ tasks {
 
 // A task to print the classpath used for compiling an IntelliJ plugin
 // Run with `./gradlew printCompileClasspath --no-configuration-cache `
-tasks.register("printCompileClasspath") {
+tasks.register<Task>("printCompileClasspath") {
   doLast {
     println("--- Begin Compile Classpath ---")
     configurations.getByName("compileClasspath").forEach { file ->
@@ -283,7 +291,7 @@ tasks.register("printCompileClasspath") {
 
 // This finds the JxBrowser license key from the environment and writes it to a file.
 // This is only used by the dev build on kokoro for now.
-val writeLicenseKey = tasks.register("writeLicenseKey") {
+val writeLicenseKey = tasks.register<Task>("writeLicenseKey") {
   group = "build"
   description = "Writes the license key from an environment variable to a file."
 

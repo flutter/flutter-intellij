@@ -32,9 +32,7 @@ public class OpenInAppCodeAction extends AnAction {
   OpenInAppCodeAction() {
     // Schedule initialization so that we can discover if `AppCode` is installed *before* we
     // need to decide whether to make the action menu visible.
-    OpenApiUtils.safeInvokeLater(() -> {
-      initialize();
-    });
+    OpenApiUtils.safeInvokeLater(OpenInAppCodeAction::initialize);
   }
 
   private static boolean IS_INITIALIZED = false;

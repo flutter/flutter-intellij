@@ -69,12 +69,10 @@ public class AddToAppUtils {
     }
     else {
       Collection<ProjectType> projectTypes = ProjectTypeService.getProjectTypes(project);
-      if (projectTypes != null) {
-        for (ProjectType projectType : projectTypes) {
-          if (projectType != null && "Android".equals(projectType.getId())) {
-            // This is an add-to-app project.
-            connection.subscribe(DebuggerManagerListener.TOPIC, makeAddToAppAttachListener(project));
-          }
+      for (ProjectType projectType : projectTypes) {
+        if (projectType != null && "Android".equals(projectType.getId())) {
+          // This is an add-to-app project.
+          connection.subscribe(DebuggerManagerListener.TOPIC, makeAddToAppAttachListener(project));
         }
       }
     }

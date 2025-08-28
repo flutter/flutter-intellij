@@ -45,7 +45,11 @@ import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.common.RunMode;
 import io.flutter.settings.FlutterSettings;
-import io.flutter.utils.*;
+import io.flutter.utils.MostlySilentColoredProcessHandler;
+import io.flutter.utils.ProgressHelper;
+import io.flutter.utils.StreamSubscription;
+import io.flutter.utils.UrlUtils;
+import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.vmService.ServiceExtensions;
 import io.flutter.vmService.VMServiceManager;
 import org.dartlang.vm.service.VmService;
@@ -55,9 +59,18 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.*;
-import java.util.concurrent.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.EventListener;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -765,12 +778,12 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
       if (uri.startsWith("file:")) {
         // Convert the file: url to a path.
         try {
-          uri = new URL(uri).getPath();
+          uri = new URI(uri).toURL().getPath();
           if (uri.endsWith(File.separator)) {
             uri = uri.substring(0, uri.length() - 1);
           }
         }
-        catch (MalformedURLException e) {
+        catch (IllegalArgumentException | MalformedURLException | URISyntaxException e) {
           // ignore
         }
       }
@@ -844,7 +857,8 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
         final JsonPrimitive type = result != null ? result.getAsJsonPrimitive("type") : null;
         if (type != null && "Success".equals(type.getAsString())) {
           LOG.info("Successful request " + dtdRequest.type + " to DTD with params: " + initialParams);
-        } else {
+        }
+        else {
           LOG.warn("Failed request " + dtdRequest.type + "to DTD with params: " + initialParams);
           LOG.warn("Result: " + result);
         }

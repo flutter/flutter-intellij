@@ -5,9 +5,11 @@
  */
 package io.flutter.actions;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.ActivityTracker;
+import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
+import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -15,10 +17,15 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
-import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.openapi.ui.popup.ListPopup;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.scale.JBUIScale;
+import com.intellij.util.IconUtil;
 import com.intellij.util.ModalityUiUtil;
+import com.intellij.util.ui.JBUI;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.run.FlutterDevice;
@@ -29,16 +36,25 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.*;
+import java.util.List;
 
-public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
+public class DeviceSelectorAction extends AnAction implements CustomComponentAction, DumbAware {
+  private static final Key<JButton> CUSTOM_COMPONENT_KEY = Key.create("customComponent");
+  private static final Key<JBLabel> ICON_LABEL_KEY = Key.create("iconLabel");
+  private static final Key<JBLabel> TEXT_LABEL_KEY = Key.create("textLabel");
+  private static final Key<JBLabel> ARROW_LABEL_KEY = Key.create("arrowLabel");
+
   private final List<AnAction> actions = new ArrayList<>();
   private final List<Project> knownProjects = Collections.synchronizedList(new ArrayList<>());
 
   private @Nullable SelectDeviceAction selectedDeviceAction;
 
   DeviceSelectorAction() {
-    setSmallVariant(true);
+    super();
   }
 
   public @NotNull ActionUpdateThread getActionUpdateThread() {
@@ -46,27 +62,186 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   }
 
   @Override
-  protected @NotNull DefaultActionGroup createPopupActionGroup(@NotNull JComponent button, @NotNull DataContext dataContext) {
+  public void actionPerformed(@NotNull AnActionEvent e) {
+    final Project project = e.getProject();
+    if (!isSelectorVisible(project)) {
+      return;
+    }
+
     final DefaultActionGroup group = new DefaultActionGroup();
     group.addAll(actions);
-    return group;
+
+    final DataContext dataContext = e.getDataContext();
+    final JBPopupFactory factory = Objects.requireNonNull(JBPopupFactory.getInstance());
+    final ListPopup popup =
+      factory.createActionGroupPopup(null, group, dataContext, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, false);
+
+    final Component component = e.getData(Objects.requireNonNull(PlatformCoreDataKeys.CONTEXT_COMPONENT));
+    if (component != null) {
+      popup.showUnderneathOf(component);
+    }
+    else {
+      popup.showInBestPositionFor(dataContext);
+    }
   }
 
   @Override
-  protected boolean shouldShowDisabledActions() {
-    return true;
+  public @NotNull JComponent createCustomComponent(@NotNull Presentation presentation, @NotNull String place) {
+    final JBLabel iconLabel = new JBLabel(FlutterIcons.Mobile);
+    final JBLabel textLabel = new JBLabel();
+    final JBLabel arrowLabel = new JBLabel(IconUtil.scale(AllIcons.General.ChevronDown, null, 1.2f));
+
+    // Create a wrapper button for hover effects
+    final JButton button = new JButton() {
+      @Override
+      protected void paintComponent(@NotNull Graphics g) {
+        if (getModel() instanceof ButtonModel m && m.isRollover()) {
+          final @NotNull Graphics2D g2 = (Graphics2D)Objects.requireNonNull(g.create());
+          g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+          g2.setColor(JBUI.CurrentTheme.ActionButton.hoverBackground());
+          final int arc = JBUIScale.scale(JBUI.getInt("MainToolbar.Button.arc", 12));
+          g2.fillRoundRect(0, 0, getWidth(), getHeight(), arc, arc);
+          g2.dispose();
+        }
+        super.paintComponent(g);
+      }
+
+      @Override
+      public Dimension getPreferredSize() {
+        final @Nullable JBLabel iconLabel = (JBLabel)getClientProperty(ICON_LABEL_KEY);
+        final @Nullable JBLabel textLabel = (JBLabel)getClientProperty(TEXT_LABEL_KEY);
+        final @Nullable JBLabel arrowLabel = (JBLabel)getClientProperty(ARROW_LABEL_KEY);
+
+        int width = 0;
+        int height = JBUI.scale(22);
+
+        if (iconLabel instanceof JBLabel label && label.getIcon() instanceof Icon icon) {
+          width += icon.getIconWidth();
+          height = Math.max(height, icon.getIconHeight());
+        }
+
+        if (textLabel instanceof JBLabel label && label.getText() instanceof String text && !text.isEmpty()) {
+          final FontMetrics fm = label.getFontMetrics(label.getFont());
+          width += Objects.requireNonNull(fm).stringWidth(text);
+          height = Math.max(height, fm.getHeight());
+        }
+
+        if (arrowLabel instanceof JBLabel label && label.getIcon() instanceof Icon icon) {
+          width += icon.getIconWidth();
+          height = Math.max(height, icon.getIconHeight());
+        }
+
+        width += JBUI.scale(24);
+        height += JBUI.scale(8);
+
+        return new Dimension(width, height);
+      }
+    };
+
+    button.setLayout(new BorderLayout());
+    button.setBorder(JBUI.Borders.empty(4, 8));
+
+    final JPanel contentPanel = getContentPanel();
+
+    final JBLabel[] labels = {iconLabel, textLabel, arrowLabel};
+    for (JBLabel label : labels) {
+      Objects.requireNonNull(label).addMouseListener(new MouseAdapter() {
+        @Override
+        public void mouseClicked(@NotNull MouseEvent e) {
+          button.dispatchEvent(SwingUtilities.convertMouseEvent(label, e, button));
+        }
+
+        @Override
+        public void mousePressed(@NotNull MouseEvent e) {
+          button.dispatchEvent(SwingUtilities.convertMouseEvent(label, e, button));
+        }
+
+        @Override
+        public void mouseReleased(@NotNull MouseEvent e) {
+          button.dispatchEvent(SwingUtilities.convertMouseEvent(label, e, button));
+        }
+
+        @Override
+        public void mouseEntered(@NotNull MouseEvent e) {
+          button.dispatchEvent(SwingUtilities.convertMouseEvent(label, e, button));
+        }
+
+        @Override
+        public void mouseExited(@NotNull MouseEvent e) {
+          button.dispatchEvent(SwingUtilities.convertMouseEvent(label, e, button));
+        }
+      });
+    }
+
+    contentPanel.add(iconLabel, BorderLayout.WEST);
+    contentPanel.add(textLabel, BorderLayout.CENTER);
+    contentPanel.add(arrowLabel, BorderLayout.EAST);
+
+    button.add(contentPanel, BorderLayout.CENTER);
+    button.setOpaque(false);
+    button.setContentAreaFilled(false);
+    button.setBorderPainted(false);
+    button.setFocusPainted(false);
+    button.setRolloverEnabled(true);
+
+    // Store references for updating
+    button.putClientProperty(ICON_LABEL_KEY, iconLabel);
+    button.putClientProperty(TEXT_LABEL_KEY, textLabel);
+    button.putClientProperty(ARROW_LABEL_KEY, arrowLabel);
+    presentation.putClientProperty(CUSTOM_COMPONENT_KEY, button);
+
+    button.addActionListener(e -> {
+      final DataKey<Project> dataKey = Objects.requireNonNull(CommonDataKeys.PROJECT);
+      final DataManager dataManager = Objects.requireNonNull(DataManager.getInstance());
+      final DataContext dataContext = dataManager.getDataContext(button);
+      final Project project = dataKey.getData(dataContext);
+      if (isSelectorVisible(project)) {
+        final DefaultActionGroup group = new DefaultActionGroup();
+        group.addAll(actions);
+
+        final JBPopupFactory factory = Objects.requireNonNull(JBPopupFactory.getInstance());
+        final ListPopup popup =
+          factory.createActionGroupPopup(null, group, dataContext, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, false);
+        popup.showUnderneathOf(button);
+      }
+    });
+
+    return button;
+  }
+
+  private void showPopup(@NotNull AnActionEvent e) {
+  }
+
+  private @NotNull JPanel getContentPanel() {
+    final JPanel contentPanel = new JPanel(new BorderLayout(4, 0)) {
+      @Override
+      protected void processMouseEvent(@NotNull MouseEvent e) {
+        final Container parent = getParent();
+        if (parent != null) {
+          parent.dispatchEvent(SwingUtilities.convertMouseEvent(this, e, getParent()));
+        }
+      }
+
+      @Override
+      protected void processMouseMotionEvent(@NotNull MouseEvent e) {
+        final Container parent = getParent();
+        if (parent != null) {
+          parent.dispatchEvent(SwingUtilities.convertMouseEvent(this, e, getParent()));
+        }
+      }
+    };
+    contentPanel.setOpaque(false);
+    return contentPanel;
   }
 
   @Override
   public void update(@NotNull AnActionEvent e) {
-    // Only show device menu when the device daemon process is running.
+    // Only show the device menu when the device daemon process is running.
     final Project project = e.getProject();
     if (!isSelectorVisible(project)) {
       e.getPresentation().setVisible(false);
       return;
     }
-
-    super.update(e);
 
     final Presentation presentation = e.getPresentation();
     if (!knownProjects.contains(project)) {
@@ -83,7 +258,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       Runnable deviceListener = () -> queueUpdate(project, e.getPresentation());
       DeviceService.getInstance(project).addListener(deviceListener);
 
-      // Listen for android device changes, and rebuild the menu if necessary.
+      // Listen for android device changes and rebuild the menu if necessary.
       Runnable emulatorListener = () -> queueUpdate(project, e.getPresentation());
       AndroidEmulatorManager.getInstance(project).addListener(emulatorListener);
       var projectManager = ProjectManager.getInstance();
@@ -99,34 +274,61 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     }
 
     final DeviceService deviceService = DeviceService.getInstance(project);
-
     final FlutterDevice selectedDevice = deviceService.getSelectedDevice();
     final Collection<FlutterDevice> devices = deviceService.getConnectedDevices();
+
+    final String text;
+    Icon icon = FlutterIcons.Mobile;
 
     if (devices.isEmpty()) {
       final boolean isLoading = deviceService.getStatus() == DeviceService.State.LOADING;
       if (isLoading) {
-        presentation.setText(FlutterBundle.message("devicelist.loading"));
+        text = FlutterBundle.message("devicelist.loading");
       }
       else {
-        presentation.setText("<no devices>");
+        text = "<no devices>";
       }
     }
     else if (selectedDevice == null) {
-      presentation.setText("<no device selected>");
+      text = "<no device selected>";
     }
-    else if (selectedDeviceAction != null) {
-      final Presentation template = selectedDeviceAction.getTemplatePresentation();
-      presentation.setIcon(template.getIcon());
-      presentation.setText(selectedDevice.presentationName());
+    else {
+      text = selectedDevice.presentationName();
+      icon = selectedDevice.getIcon();
       presentation.setEnabled(true);
+    }
+
+    presentation.setText(text);
+    presentation.setIcon(icon);
+
+    // Update the custom component if it exists
+    final JButton customComponent = presentation.getClientProperty(CUSTOM_COMPONENT_KEY);
+    if (customComponent != null) {
+      final @Nullable JBLabel iconLabel = (JBLabel)customComponent.getClientProperty(ICON_LABEL_KEY);
+      final @Nullable JBLabel textLabel = (JBLabel)customComponent.getClientProperty(TEXT_LABEL_KEY);
+
+      if (iconLabel != null) {
+        iconLabel.setIcon(icon);
+      }
+      if (textLabel != null) {
+        textLabel.setText(text);
+        customComponent.invalidate();
+        Container parent = customComponent.getParent();
+        while (parent != null) {
+          parent.invalidate();
+          parent = parent.getParent();
+        }
+        customComponent.revalidate();
+        customComponent.repaint();
+      }
     }
   }
 
   private void queueUpdate(@NotNull Project project, @NotNull Presentation presentation) {
     ModalityUiUtil.invokeLaterIfNeeded(
       ModalityState.defaultModalityState(),
-      () -> update(project, presentation));
+      () -> update(project, presentation)
+    );
   }
 
   private void update(@NotNull Project project, @NotNull Presentation presentation) {
@@ -140,7 +342,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   private static void updateVisibility(final Project project, final @NotNull Presentation presentation) {
     final boolean visible = isSelectorVisible(project);
 
-    final JComponent component = presentation.getClientProperty(new Key<>("customComponent"));
+    final JComponent component = presentation.getClientProperty(CUSTOM_COMPONENT_KEY);
     if (component != null) {
       component.setVisible(visible);
       var parent = component.getParent();
@@ -159,7 +361,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     return deviceService.isRefreshInProgress() || deviceService.getStatus() != DeviceService.State.INACTIVE;
   }
 
-  private void updateActions(@NotNull Project project, Presentation presentation) {
+  private void updateActions(@NotNull Project project, @NotNull Presentation presentation) {
     actions.clear();
 
     final DeviceService deviceService = DeviceService.getInstance(project);
@@ -177,11 +379,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
       if (Objects.equals(device, selectedDevice)) {
         selectedDeviceAction = deviceAction;
-
-        final Presentation template = deviceAction.getTemplatePresentation();
-        //noinspection DataFlowIssue
-        presentation.setIcon(template.getIcon());
-        //presentation.setText(deviceAction.presentationName());
+        presentation.setIcon(device.getIcon());
         presentation.setEnabled(true);
       }
     }
@@ -219,18 +417,12 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     }
   }
 
-  // Show the current device as selected when the combo box menu opens.
-  @Override
-  protected Condition<AnAction> getPreselectCondition() {
-    return action -> action == selectedDeviceAction;
-  }
 
   private static class SelectDeviceAction extends AnAction {
-    @NotNull
-    private final FlutterDevice device;
+    @NotNull private final FlutterDevice device;
 
     SelectDeviceAction(@NotNull FlutterDevice device, @NotNull Collection<FlutterDevice> devices) {
-      super(device.getUniqueName(devices), null, FlutterIcons.Phone);
+      super(device.getUniqueName(devices), null, device.getIcon());
       this.device = device;
     }
 

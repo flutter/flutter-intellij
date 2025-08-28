@@ -45,6 +45,7 @@ import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
+import io.flutter.logging.PluginLogger;
 import io.flutter.run.bazel.BazelRunConfig;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.DaemonConsoleView;
@@ -180,7 +181,7 @@ public class LaunchState extends CommandLineState {
       }
     }
     catch (IllegalAccessException | InvocationTargetException | NoSuchFieldException | NoSuchMethodException e) {
-      LOG.info(e);
+      FlutterUtils.info(LOG, e, true);
     }
 
     return descriptor;
@@ -401,7 +402,7 @@ public class LaunchState extends CommandLineState {
                   app.shutdownAsync().get();
                 }
                 catch (InterruptedException | java.util.concurrent.ExecutionException e) {
-                  FlutterUtils.warn(LOG, e);
+                  FlutterUtils.warn(LOG, e, true);
                 }
                 return launchState.launch(env);
               }
@@ -458,5 +459,5 @@ public class LaunchState extends CommandLineState {
 
   private static final Key<RunConfig> FLUTTER_RUN_CONFIG_KEY = new Key<>("FLUTTER_RUN_CONFIG_KEY");
 
-  private static final @NotNull Logger LOG = Logger.getInstance(LaunchState.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(LaunchState.class);
 }

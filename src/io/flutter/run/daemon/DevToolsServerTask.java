@@ -89,7 +89,7 @@ class DevToolsServerTask extends Task.Backgroundable {
 
       // This is only for development to check integration with a locally run DevTools server.
       // To enable, follow the instructions in:
-      // https://github.com/flutter/flutter-intellij/blob/master/CONTRIBUTING.md#developing-with-local-devtools
+      // https://github.com/flutter/flutter-intellij/blob/main/CONTRIBUTING.md#developing-with-local-devtools
       final String localDevToolsDir = Registry.stringValue(LOCAL_DEVTOOLS_DIR);
       if (!localDevToolsDir.isEmpty()) {
         LOG.info("Starting local DevTools server at: " + localDevToolsDir);
@@ -217,7 +217,7 @@ class DevToolsServerTask extends Task.Backgroundable {
     String[] parts = dartPluginUri.split(":");
     String host = parts[0];
     Integer port = Integer.parseInt(parts[1]);
-    if (host == null || port == null) {
+    if (host == null) {
       return null;
     }
 

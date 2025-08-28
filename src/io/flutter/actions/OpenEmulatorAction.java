@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import icons.FlutterIcons;
 import io.flutter.android.AndroidEmulator;
 import io.flutter.sdk.AndroidEmulatorManager;
 import org.jetbrains.annotations.NotNull;
@@ -40,8 +41,7 @@ public class OpenEmulatorAction extends AnAction {
   final @NotNull AndroidEmulator emulator;
 
   public OpenEmulatorAction(@NotNull AndroidEmulator emulator) {
-    super("Open Android Emulator: " + emulator.getName());
-
+    super("Open Android Emulator: " + emulator.getName(), null, FlutterIcons.Android);
     this.emulator = emulator;
   }
 
