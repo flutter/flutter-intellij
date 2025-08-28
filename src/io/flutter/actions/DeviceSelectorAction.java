@@ -121,12 +121,10 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
           height = Math.max(height, icon.getIconHeight());
         }
         else if (iconLabel == null) {
-          // Fallback: use default mobile icon size when component is not fully initialized
+          // Fallback: use the default mobile icon size when the component is not fully initialized
           Icon defaultIcon = FlutterIcons.Mobile;
-          if (defaultIcon != null) {
-            width += defaultIcon.getIconWidth();
-            height = Math.max(height, defaultIcon.getIconHeight());
-          }
+          width += defaultIcon.getIconWidth();
+          height = Math.max(height, defaultIcon.getIconHeight());
         }
 
         if (textLabel instanceof JBLabel label && label.getText() instanceof String text && !text.isEmpty()) {
@@ -150,12 +148,10 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
           height = Math.max(height, icon.getIconHeight());
         }
         else if (arrowLabel == null) {
-          // Fallback: use default chevron down icon size
+          // Fallback: use the default chevron down icon size
           Icon defaultArrow = IconUtil.scale(AllIcons.General.ChevronDown, null, 1.2f);
-          if (defaultArrow != null) {
-            width += defaultArrow.getIconWidth();
-            height = Math.max(height, defaultArrow.getIconHeight());
-          }
+          width += defaultArrow.getIconWidth();
+          height = Math.max(height, defaultArrow.getIconHeight());
         }
 
         width += JBUI.scale(24);
