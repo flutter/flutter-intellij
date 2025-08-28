@@ -514,7 +514,7 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
                 else if (eventKind == EventKind.Resume) {
                   // Currently true if we got here via 'flutter attach'
                   OpenApiUtils.safeInvokeLater(() -> {
-                    myVmServiceWrapper.attachIsolate(isolateRef, isolate);
+                    myVmServiceWrapper.attachIsolate(isolateRef);
                   });
                 }
               }
