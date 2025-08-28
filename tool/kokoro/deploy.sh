@@ -3,9 +3,24 @@
 source ./tool/kokoro/setup.sh
 setup
 
+echo "kokoro verify start"
+
+./gradlew verifyPluginProjectConfiguration
+./gradlew verifyPluginStructure
+./gradlew verifyPluginSignature
+./gradlew verifyPlugin
+
+echo "kokoro verify finished"
+
+echo "kokoro test start"
+
+./gradlew test
+
+echo "kokoro test finished"
+
 echo "kokoro build start"
 
-./bin/plugin make --channel=dev
+./gradlew buildPlugin -Pdev
 
 echo "kokoro build finished"
 

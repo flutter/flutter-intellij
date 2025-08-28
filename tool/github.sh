@@ -27,8 +27,6 @@ flutter config --no-analytics
 flutter doctor
 export FLUTTER_SDK=`pwd`/../flutter
 
-echo "IDEA_VERSION=$IDEA_VERSION"
-
 echo "java --version"
 java --version
 
@@ -37,17 +35,17 @@ echo "pub get `pwd`"
 dart pub get
 
 # Get packages for the test data.
-(cd flutter-idea/testData/sample_tests; echo "dart pub get `pwd`"; dart pub get)
+(cd testData/sample_tests; echo "dart pub get `pwd`"; dart pub get)
 
 # Set up the plugin tool.
 (cd tool/plugin; echo "dart pub get `pwd`"; dart pub get)
 
 if [ "DART_BOT" = "$BOT" ] ; then
-
   # Analyze the Dart code in the repo.
   echo "dart analyze"
-  (cd flutter-idea/src; dart analyze)
+  (cd src; dart analyze)
   (cd tool/plugin; dart analyze)
+  (cd tool/triage; dart pub upgrade && dart analyze)
 
   # Ensure that the edits have been applied to template files (and their target
   # files have been regenerated).
@@ -63,7 +61,6 @@ if [ "DART_BOT" = "$BOT" ] ; then
   (cd tool/plugin; dart test/plugin_test.dart)
 
 elif [ "CHECK_BOT" = "$BOT" ] ; then
-
   # Run some validations on the repo code.
   ./bin/plugin lint
 
@@ -71,13 +68,18 @@ elif [ "CHECK_BOT" = "$BOT" ] ; then
   dart tool/grind.dart check-urls
 
 elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
-
   # Run unit tests.
-  ./bin/plugin test --no-setup
+  ./gradlew test
+
+elif [ "VERIFY_BOT" = "$BOT" ] ; then
+    # Run the verifier for this version
+  ./gradlew verifyPluginProjectConfiguration
+  ./gradlew verifyPluginStructure
+  ./gradlew verifyPluginSignature
+  ./gradlew verifyPlugin
 
 else
-
   # Run the build.
-  ./bin/plugin make --channel=stable --only-version=$IDEA_VERSION --no-setup
+  ./gradlew buildPlugin
 
 fi

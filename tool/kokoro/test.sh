@@ -3,9 +3,9 @@
 source ./tool/kokoro/setup.sh
 setup
 
-(cd flutter-idea/testData/sample_tests; echo "dart pub get `pwd`"; dart pub get --no-precompile)
+(cd testData/sample_tests; echo "dart pub get `pwd`"; dart pub get --no-precompile)
 
 echo "kokoro test start"
-./bin/plugin test
+./gradlew test
 
 echo "kokoro test finished"

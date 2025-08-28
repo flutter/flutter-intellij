@@ -97,11 +97,11 @@ class EditCommand {
     required List<String> initials,
     required List<String> replacements,
     this.versions = const [],
-  }) : assert(initials.length == replacements.length),
-       assert(initials.isNotEmpty),
-       assert(versions.isNotEmpty),
-       initials = initials.map(_platformAdaptiveString).toList(),
-       replacements = replacements.map(_platformAdaptiveString).toList();
+  })  : assert(initials.length == replacements.length),
+        assert(initials.isNotEmpty),
+        assert(versions.isNotEmpty),
+        initials = initials.map(_platformAdaptiveString).toList(),
+        replacements = replacements.map(_platformAdaptiveString).toList();
 
   /// The target file path.
   final String path;

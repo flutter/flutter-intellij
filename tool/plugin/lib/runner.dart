@@ -30,31 +30,6 @@ class BuildCommandRunner extends CommandRunner<int> {
     );
   }
 
-  void writeJxBrowserKeyToFile() {
-    final jxBrowserKey = readTokenFromKeystore(
-      'FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME',
-    );
-    final propertiesFile = File(
-      "$rootPath/resources/jxbrowser/jxbrowser.properties",
-    );
-    if (jxBrowserKey.isNotEmpty) {
-      final contents = '''
-jxbrowser.license.key=$jxBrowserKey
-''';
-      propertiesFile.writeAsStringSync(contents);
-    }
-  }
-
-  Future<int> buildPlugin(BuildSpec spec, String version) async {
-    writeJxBrowserKeyToFile();
-    return await runGradleCommand(
-      ['buildPlugin', '--stacktrace'],
-      spec,
-      version,
-      'false',
-    );
-  }
-
   Future<int> runGradleCommand(
     List<String> command,
     BuildSpec spec,
@@ -92,12 +67,12 @@ org.gradle.jvmargs=-Xms1024m -Xmx4048m
           log('CANNOT BUILD ${spec.version} ON WINDOWS');
           return 0;
         }
-        result = await exec('.\\third_party\\gradlew.bat', command);
+        result = await exec('.\\gradlew.bat', command);
       } else {
         if (spec.version == '4.1') {
           return await runShellScript(command, spec);
         } else {
-          result = await exec('./third_party/gradlew', command);
+          result = await exec('./gradlew', command);
         }
       }
     } finally {
@@ -110,7 +85,7 @@ org.gradle.jvmargs=-Xms1024m -Xmx4048m
     var script = '''
 #!/bin/bash
 export JAVA_HOME=\$JAVA_HOME_OLD
-./third_party/gradlew ${command.join(' ')}
+./gradlew ${command.join(' ')}
 ''';
     var systemTempDir = Directory.systemTemp;
     var dir = systemTempDir.createTempSync();

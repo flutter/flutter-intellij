@@ -4,12 +4,17 @@
  * found in the LICENSE file.
  */
 
+import okhttp3.internal.immutableListOf
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.jetbrains.changelog.Changelog
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 // Specify UTF-8 for all compilations so we avoid Windows-1252.
 allprojects {
@@ -30,19 +35,33 @@ repositories {
 
 plugins {
   // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
-  // https://github.com/JetBrains/intellij-platform-gradle-plugin/releases
+  // https://plugins.gradle.org/plugin/org.jetbrains.intellij.platform
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
-  id("org.jetbrains.intellij.platform") version "2.5.0"
-  id("org.jetbrains.kotlin.jvm") version "2.1.21-RC2"
+  id("java") // Java support
+  id("org.jetbrains.intellij.platform") version "2.7.2" // IntelliJ Platform Gradle Plugin
+  id("org.jetbrains.kotlin.jvm") version "2.2.0" // Kotlin support
+  id("org.jetbrains.changelog") version "2.2.0" // Gradle Changelog Plugin
 }
 
-// TODO(mossmana) These properties are duplicated in flutter-idea/build.gradle.kts and flutter-studio/build.gradle.kts. Should be consolidated.
-val flutterPluginVersion = providers.gradleProperty("flutterPluginVersion").get()
-val ideaProduct = providers.gradleProperty("ideaProduct").get()
+// By default (e.g. when we call `runIde` during development), the plugin version is SNAPSHOT
+var flutterPluginVersion = "SNAPSHOT"
+
+// Otherwise, we will decide on the proper semver-formatted version from the CHANGELOG.
+// Note: The CHANGELOG follows the style from https://keepachangelog.com/en/1.0.0/ so that we can use the gradle changelog plugin.
+if (project.hasProperty("release")) {
+  // If we are building for a release, the changelog should be updated with the latest version.
+  flutterPluginVersion = changelog.getLatest().version
+} else if (project.hasProperty("dev")) {
+  // If we are building the dev version, the version label will increment the latest version from the changelog and append the date.
+  val latestVersion = changelog.getLatest().version
+  val majorVersion = latestVersion.substringBefore('.').toInt()
+  val nextMajorVersion = majorVersion + 1
+  val datestamp = DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now())
+  flutterPluginVersion = "$nextMajorVersion.0.0-dev.$datestamp"
+}
+
 val ideaVersion = providers.gradleProperty("ideaVersion").get()
 val dartPluginVersion = providers.gradleProperty("dartPluginVersion").get()
-// The Android Plugin version is only used if the ideaProduct is not "android-studio"
-val androidPluginVersion = providers.gradleProperty("androidPluginVersion").get()
 val sinceBuildInput = providers.gradleProperty("sinceBuild").get()
 val untilBuildInput = providers.gradleProperty("untilBuild").get()
 val javaVersion = providers.gradleProperty("javaVersion").get()
@@ -50,10 +69,8 @@ group = "io.flutter"
 
 // For debugging purposes:
 println("flutterPluginVersion: $flutterPluginVersion")
-println("ideaProduct: $ideaProduct")
 println("ideaVersion: $ideaVersion")
 println("dartPluginVersion: $dartPluginVersion")
-println("androidPluginVersion: $androidPluginVersion")
 println("sinceBuild: $sinceBuildInput")
 println("untilBuild: $untilBuildInput")
 println("javaVersion: $javaVersion")
@@ -64,16 +81,18 @@ jvmVersion = when (javaVersion) {
   "17" -> {
     JvmTarget.JVM_17
   }
+
   "21" -> {
     JvmTarget.JVM_21
   }
+
   else -> {
     throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
   }
 }
 kotlin {
   compilerOptions {
-    apiVersion.set(KotlinVersion.KOTLIN_1_9)
+    apiVersion.set(KotlinVersion.KOTLIN_2_1)
     jvmTarget = jvmVersion
   }
 }
@@ -85,7 +104,7 @@ javaCompatibilityVersion = when (javaVersion) {
   }
 
   "21" -> {
-    JavaVersion.VERSION_21
+    JavaVersion.VERSION_21 // all later versions of java can build against the earlier versions
   }
 
   else -> {
@@ -101,39 +120,29 @@ dependencies {
   intellijPlatform {
     // Documentation on the default target platform methods:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
-    if (ideaProduct == "android-studio") {
-      androidStudio(ideaVersion)
-    } else {
-      when (ideaProduct) {
-        "IU" -> intellijIdeaUltimate(ideaVersion)
-        "IC" -> intellijIdeaCommunity(ideaVersion)
-        else -> throw IllegalArgumentException("ideaProduct must be defined in the product matrix as either \"IU\" or \"IC\", but is not for $ideaVersion")
-      }
-    }
+    // Android Studio versions can be found at: https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
+    androidStudio(ideaVersion)
     testFramework(TestFrameworkType.Platform)
 
     // Plugin dependency documentation:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
-    val bundledPluginList = mutableListOf(
-      "com.intellij.java",
-      "com.intellij.properties",
-      "JUnit",
-      "Git4Idea",
-      "org.jetbrains.kotlin",
-      "org.jetbrains.plugins.gradle",
-      "org.intellij.intelliLang")
-    val pluginList = mutableListOf("Dart:$dartPluginVersion")
-    if (ideaProduct == "android-studio") {
-      bundledPluginList.add("org.jetbrains.android")
-      bundledPluginList.add("com.android.tools.idea.smali")
-    } else {
-      pluginList.add("org.jetbrains.android:$androidPluginVersion")
-    }
-
-    // Finally, add the plugins into their respective lists:
     // https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html#project-setup
-    bundledPlugins(bundledPluginList)
-    plugins(pluginList)
+    bundledPlugins(
+      immutableListOf(
+        "com.google.tools.ij.aiplugin",
+        "com.intellij.java",
+        "com.intellij.properties",
+        "JUnit",
+        "Git4Idea",
+        "org.jetbrains.kotlin",
+        "org.jetbrains.plugins.gradle",
+        "org.jetbrains.plugins.yaml",
+        "org.intellij.intelliLang",
+        "org.jetbrains.android",
+        "com.android.tools.idea.smali"
+      )
+    )
+    plugin("Dart:$dartPluginVersion")
 
     if (sinceBuildInput == "243" || sinceBuildInput == "251") {
       bundledModule("intellij.platform.coverage")
@@ -141,8 +150,23 @@ dependencies {
     }
     pluginVerifier()
   }
-}
 
+  compileOnly("org.jetbrains:annotations:24.0.0")
+  testImplementation("org.jetbrains:annotations:24.0.0")
+  compileOnly("com.google.guava:guava:32.0.1-android")
+  compileOnly("com.google.code.gson:gson:2.10.1")
+  testImplementation("com.google.guava:guava:32.0.1-jre")
+  testImplementation("com.google.code.gson:gson:2.10.1")
+  testImplementation("junit:junit:4.13.2")
+  implementation(
+    fileTree(
+      mapOf(
+        "dir" to "${project.rootDir}/third_party/lib/jxbrowser",
+        "include" to listOf("*.jar")
+      )
+    )
+  )
+}
 
 intellijPlatform {
   pluginConfiguration {
@@ -150,6 +174,9 @@ intellijPlatform {
     ideaVersion {
       sinceBuild = sinceBuildInput
       untilBuild = untilBuildInput
+    }
+    changeNotes = provider {
+      project.changelog.render(Changelog.OutputType.HTML)
     }
   }
 
@@ -159,39 +186,67 @@ intellijPlatform {
   pluginVerification {
     // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
     // https://github.com/JetBrains/intellij-plugin-verifier
-    cliPath = file("./third_party/lib/verifier-cli-1.384-all.jar")
+    cliPath = file("./third_party/lib/verifier-cli-1.394-all.jar")
     failureLevel = listOf(
       // TODO(team) Ideally all of the following FailureLevels should be enabled:
-      // TODO(team) Create a tracking issue for each of the following validations
-//      VerifyPluginTask.FailureLevel.COMPATIBILITY_WARNINGS,
-//      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+      // https://github.com/flutter/flutter-intellij/issues/8361
+      VerifyPluginTask.FailureLevel.COMPATIBILITY_WARNINGS,
+      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
 //      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES, // https://github.com/flutter/flutter-intellij/issues/7718
 //      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
-      VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
+// `BadgeIcon`:
+//      VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
 //      VerifyPluginTask.FailureLevel.INTERNAL_API_USAGES,
 //      VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
       VerifyPluginTask.FailureLevel.NON_EXTENDABLE_API_USAGES,
       VerifyPluginTask.FailureLevel.PLUGIN_STRUCTURE_WARNINGS,
-//      VerifyPluginTask.FailureLevel.MISSING_DEPENDENCIES,
+      VerifyPluginTask.FailureLevel.MISSING_DEPENDENCIES,
       VerifyPluginTask.FailureLevel.INVALID_PLUGIN,
 //      VerifyPluginTask.FailureLevel.NOT_DYNAMIC,
     )
     verificationReportsFormats = VerifyPluginTask.VerificationReportsFormats.ALL
     subsystemsToCheck = VerifyPluginTask.Subsystems.ALL
-    // Mute and freeArgs documentation
-    // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
-    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-faq.html#mutePluginVerifierProblems
-    freeArgs = listOf(
-      "-mute",
-      "TemplateWordInPluginId,ForbiddenPluginIdPrefix,TemplateWordInPluginName"
-    )
+
     ides {
-      ide(IntelliJPlatformType.AndroidStudio, ideaVersion)
-      // Note, ideally we would have additional targets identified here, however we have been unsuccessful in adding
-      // "recomended()" or select {} support with current versions of gradle & the verifier tool.
+      recommended()
     }
   }
 }
+
+sourceSets {
+  main {
+    java.srcDirs(
+      listOf(
+        "src",
+        "third_party/vmServiceDrivers"
+      )
+    )
+    // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
+    resources.srcDirs(
+      listOf(
+        "src",
+        "resources"
+      )
+    )
+  }
+  test {
+    java.srcDirs(
+      listOf(
+        "src",
+        "testSrc/unit",
+        "third_party/vmServiceDrivers"
+      )
+    )
+    resources.srcDirs(
+      listOf(
+        "resources",
+        "testData",
+        "testSrc/unit"
+      )
+    )
+  }
+}
+
 // Documentation for printProductsReleases:
 // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-faq.html#how-to-check-the-latest-available-eap-release
 tasks {
@@ -204,26 +259,74 @@ tasks {
       productsReleases.get().max()
     }
   }
-}
-
-dependencies {
-  implementation(project("flutter-idea"))
-  if (ideaProduct == "android-studio") {
-    implementation(project("flutter-studio"))
-  }
-}
-
-tasks {
   prepareJarSearchableOptions {
     enabled = false
   }
   buildSearchableOptions {
     enabled = false
   }
-  prepareSandbox {
-    dependsOn(":flutter-idea:prepareSandbox")
-    if (ideaProduct == "android-studio") {
-      dependsOn(":flutter-studio:prepareSandbox")
+  test {
+    useJUnit()
+    testLogging {
+      showCauses = true
+      showStackTraces = true
+      showStandardStreams = true
+      exceptionFormat = TestExceptionFormat.FULL
+      events("skipped", "failed")
     }
+  }
+}
+
+// A task to print the classpath used for compiling an IntelliJ plugin
+// Run with `./gradlew printCompileClasspath --no-configuration-cache `
+tasks.register("printCompileClasspath") {
+  doLast {
+    println("--- Begin Compile Classpath ---")
+    configurations.getByName("compileClasspath").forEach { file ->
+      println(file.absolutePath)
+    }
+    println("--- End Compile Classpath ---")
+  }
+}
+
+// This finds the JxBrowser license key from the environment and writes it to a file.
+// This is only used by the dev build on kokoro for now.
+val writeLicenseKey = tasks.register("writeLicenseKey") {
+  group = "build"
+  description = "Writes the license key from an environment variable to a file."
+
+  // Find the output file
+  val outputDir = rootProject.file("resources/jxbrowser")
+  val licenseFile = outputDir.resolve("jxbrowser.properties")
+  outputs.file(licenseFile)
+
+  doLast {
+    // Read the license key from the environment variable
+    val base = System.getenv("KOKORO_KEYSTORE_DIR")
+    val id = System.getenv("FLUTTER_KEYSTORE_ID")
+    val name = System.getenv("FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME")
+
+    val readFile = File(base + "/" + id + "_" + name)
+    if (readFile.isFile) {
+      val licenseKey = readFile.readText(Charsets.UTF_8)
+      licenseFile.writeText("jxbrowser.license.key=$licenseKey")
+    }
+  }
+}
+
+tasks.named("buildPlugin") {
+  dependsOn(writeLicenseKey)
+}
+
+tasks.named("processResources") {
+  dependsOn(writeLicenseKey)
+}
+
+// TODO(helin24): Find a better way to skip checking this file for tests.
+tasks.withType<ProcessResources>().configureEach {
+  if (name == "processTestResources") {
+    // This block will only execute for the 'processTestResources' task.
+    // The context here is unambiguously the task itself.
+    exclude("jxbrowser/jxbrowser.properties")
   }
 }

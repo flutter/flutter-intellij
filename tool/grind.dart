@@ -14,7 +14,7 @@ void checkUrls() async {
   log('checking URLs in FlutterBundle.properties...');
   var lines =
       await File(
-        'flutter-idea/src/io/flutter/FlutterBundle.properties',
+        'src/io/flutter/FlutterBundle.properties',
       ).readAsLines();
   for (var line in lines) {
     var split = line.split('=');

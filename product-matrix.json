@@ -14,7 +14,7 @@
       "sinceBuild": "243",
       "untilBuild": "243.*",
       "isUnitTestTarget": "true",
-      "javaVersion": "17"
+      "javaVersion": "21"
     },
     {
       "channel": "stable",
@@ -23,7 +23,7 @@
       "version": "2025.1",
       "ijVersion": "2025.1",
       "ideaProduct": "android-studio",
-      "ideaVersion": "2025.1.1.6",
+      "ideaVersion": "2025.1.2.5",
       "baseVersion": "251.23774.16",
       "dartPluginVersion": "251.23774.16",
       "androidPluginVersion": "",

@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="io.flutter.sdk.FlutterSettingsConfigurable">
+  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="9" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="972" height="864"/>
+    </constraints>
+    <properties>
+      <autoscrolls value="true"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <grid id="7bd49" layout-manager="GridLayoutManager" row-count="2" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="2" bottom="1" right="0"/>
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="etched" title="SDK (current project only)"/>
+        <children>
+          <component id="a59e7" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.flutter.version"/>
+            </properties>
+          </component>
+          <component id="926fd" class="com.intellij.ui.components.JBLabel">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <labelFor value="83a87"/>
+              <text resource-bundle="io/flutter/FlutterBundle" key="flutter.sdk.path.label"/>
+            </properties>
+          </component>
+          <component id="83a87" class="com.intellij.openapi.ui.ComboBox" binding="mySdkCombo" custom-create="true">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+          </component>
+          <component id="6278f" class="com.intellij.ui.components.JBLabel" binding="myVersionLabel">
+            <constraints>
+              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="7" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="placeholder for version details"/>
+            </properties>
+          </component>
+          <component id="3285c" class="com.intellij.openapi.ui.FixedSizeButton" binding="myCopyButton">
+            <constraints>
+              <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="1" anchor="0" fill="0" indent="1" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <toolTipText resource-bundle="io/flutter/FlutterBundle" key="settings.sdk.copy.content"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <grid id="e885c" layout-manager="GridLayoutManager" row-count="3" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="etched" title="General"/>
+        <children>
+          <component id="be19f" class="javax.swing.JCheckBox" binding="myEnableVerboseLoggingCheckBox" default-binding="true">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.enable.verbose.logging"/>
+              <toolTipText resource-bundle="io/flutter/FlutterBundle" key="settings.enable.verbose.logging.tooltip"/>
+            </properties>
+          </component>
+          <component id="efbd7" class="javax.swing.JCheckBox" binding="myAllowTestsInSourcesRoot">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.allow.tests.in.sources"/>
+              <toolTipText resource-bundle="io/flutter/FlutterBundle" key="settings.allow.tests.tooltip"/>
+            </properties>
+          </component>
+          <component id="1a5b8" class="javax.swing.JCheckBox" binding="myEnableFilePathLogging">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.enable.file.path.logging"/>
+              <toolTipText resource-bundle="io/flutter/FlutterBundle" key="settings.enable.file.path.logging.tooltip"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <grid id="919ec" layout-manager="GridLayoutManager" row-count="6" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="etched" title="App Execution"/>
+        <children>
+          <component id="356a" class="javax.swing.JCheckBox" binding="myOpenInspectorOnAppLaunchCheckBox">
+            <constraints>
+              <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.open.inspector.on.launch"/>
+            </properties>
+          </component>
+          <component id="87b06" class="javax.swing.JCheckBox" binding="myHotReloadOnSaveCheckBox">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.hot.reload.on.save"/>
+              <toolTipText value="On a &quot;Save All&quot; action, hot reload changes into running Flutter apps."/>
+            </properties>
+          </component>
+          <component id="b1533" class="javax.swing.JCheckBox" binding="myShowStructuredErrors">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Show structured errors for Flutter framework issues"/>
+            </properties>
+          </component>
+          <component id="475be" class="javax.swing.JCheckBox" binding="myEnableBazelHotRestartCheckBox">
+            <constraints>
+              <grid row="4" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.enable.bazel.hot.restart"/>
+            </properties>
+          </component>
+          <component id="6cf1f" class="javax.swing.JCheckBox" binding="myIncludeAllStackTraces">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="3" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Include all stack traces"/>
+              <toolTipText value="If checked, only the first exception will include a stack trace."/>
+            </properties>
+          </component>
+          <component id="85c3d" class="javax.swing.JCheckBox" binding="myEnableLogsPreserveAfterHotReloadOrRestart">
+            <constraints>
+              <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.enable.logs.preserve.during.hot.reload.and.restart"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <grid id="32490" layout-manager="GridLayoutManager" row-count="4" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="etched" title-resource-bundle="io/flutter/FlutterBundle" title-key="settings.editor"/>
+        <children>
+          <component id="70775" class="javax.swing.JCheckBox" binding="myShowBuildMethodGuides">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.show.build.guides"/>
+              <toolTipText resource-bundle="io/flutter/FlutterBundle" key="settings.show.build.guides.tooltip"/>
+            </properties>
+          </component>
+          <component id="8bd46" class="javax.swing.JCheckBox" binding="myOrganizeImportsOnSaveCheckBox" default-binding="true">
+            <constraints>
+              <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="2" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.organize.imports.on.save"/>
+              <toolTipText resource-bundle="io/flutter/FlutterBundle" key="settings.organize.imports.tooltip"/>
+            </properties>
+          </component>
+          <component id="92f7c" class="javax.swing.JCheckBox" binding="myShowClosingLabels" default-binding="true">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.show.closing.labels"/>
+            </properties>
+          </component>
+          <grid id="596d1" layout-manager="GridLayoutManager" row-count="1" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="2" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="a0dd8" class="javax.swing.JCheckBox" binding="myFormatCodeOnSaveCheckBox" default-binding="true">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text resource-bundle="io/flutter/FlutterBundle" key="settings.format.code.on.save"/>
+                  <toolTipText resource-bundle="io/flutter/FlutterBundle" key="settings.format.code.tooltip"/>
+                </properties>
+              </component>
+              <component id="2bbb1" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="(For project-specific formatting, use"/>
+                </properties>
+              </component>
+              <component id="4b0d8" class="com.intellij.ui.components.ActionLink" binding="settingsLink" custom-create="true">
+                <constraints>
+                  <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="d9b3b" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="instead)"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
+        </children>
+      </grid>
+      <grid id="23e52" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="etched" title-resource-bundle="io/flutter/FlutterBundle" title-key="settings.experiments"/>
+        <children>
+          <component id="42d6c" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.try.out.features.still.under.development"/>
+            </properties>
+          </component>
+          <component id="909bb" class="javax.swing.JCheckBox" binding="myEnableJcefBrowserCheckBox">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.jcef.browser"/>
+              <toolTipText resource-bundle="io/flutter/FlutterBundle" key="settings.jcef.browser.tooltip"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <grid id="3bf2f" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="etched" title-resource-bundle="io/flutter/FlutterBundle" title-key="settings.font.packages"/>
+        <children>
+          <scrollpane id="4e51e">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <verticalScrollBarPolicy value="22"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="d4320" class="javax.swing.JTextArea" binding="myFontPackagesTextArea">
+                <constraints/>
+                <properties>
+                  <rows value="3"/>
+                  <toolTipText value="Names of font packages to show icon previews"/>
+                </properties>
+              </component>
+            </children>
+          </scrollpane>
+        </children>
+      </grid>
+      <grid id="3e8a7" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children/>
+      </grid>
+      <component id="8fe47" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font swing-font="CheckBoxMenuItem.acceleratorFont"/>
+          <text value="Settings below apply to all projects"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>
