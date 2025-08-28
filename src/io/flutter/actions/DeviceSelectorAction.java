@@ -115,20 +115,43 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
         int width = 0;
         int height = JBUI.scale(22);
 
+        // Provide fallback values if client properties are not yet set
         if (iconLabel instanceof JBLabel label && label.getIcon() instanceof Icon icon) {
           width += icon.getIconWidth();
           height = Math.max(height, icon.getIconHeight());
         }
+        else if (iconLabel == null) {
+          // Fallback: use the default mobile icon size when the component is not fully initialized
+          Icon defaultIcon = FlutterIcons.Mobile;
+          width += defaultIcon.getIconWidth();
+          height = Math.max(height, defaultIcon.getIconHeight());
+        }
 
         if (textLabel instanceof JBLabel label && label.getText() instanceof String text && !text.isEmpty()) {
           final FontMetrics fm = label.getFontMetrics(label.getFont());
-          width += Objects.requireNonNull(fm).stringWidth(text);
-          height = Math.max(height, fm.getHeight());
+          if (fm != null) {
+            width += fm.stringWidth(text);
+            height = Math.max(height, fm.getHeight());
+          }
+        }
+        else if (textLabel == null) {
+          // Fallback: estimate width for typical device name length
+          final FontMetrics fm = getFontMetrics(getFont());
+          if (fm != null) {
+            width += fm.stringWidth(FlutterBundle.message("devicelist.noDeviceSelected"));
+            height = Math.max(height, fm.getHeight());
+          }
         }
 
         if (arrowLabel instanceof JBLabel label && label.getIcon() instanceof Icon icon) {
           width += icon.getIconWidth();
           height = Math.max(height, icon.getIconHeight());
+        }
+        else if (arrowLabel == null) {
+          // Fallback: use the default chevron down icon size
+          Icon defaultArrow = IconUtil.scale(AllIcons.General.ChevronDown, null, 1.2f);
+          width += defaultArrow.getIconWidth();
+          height = Math.max(height, defaultArrow.getIconHeight());
         }
 
         width += JBUI.scale(24);
@@ -286,11 +309,11 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
         text = FlutterBundle.message("devicelist.loading");
       }
       else {
-        text = "<no devices>";
+        text = FlutterBundle.message("devicelist.noDevices");
       }
     }
     else if (selectedDevice == null) {
-      text = "<no device selected>";
+      text = FlutterBundle.message("devicelist.noDeviceSelected");
     }
     else {
       text = selectedDevice.presentationName();
