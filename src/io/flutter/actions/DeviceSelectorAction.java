@@ -140,7 +140,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
           // Fallback: estimate width for typical device name length
           final FontMetrics fm = getFontMetrics(getFont());
           if (fm != null) {
-            width += fm.stringWidth("No device selected");
+            width += fm.stringWidth(FlutterBundle.message("devicelist.noDeviceSelected"));
             height = Math.max(height, fm.getHeight());
           }
         }
@@ -313,11 +313,11 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
         text = FlutterBundle.message("devicelist.loading");
       }
       else {
-        text = "<no devices>";
+        text = FlutterBundle.message("devicelist.noDevices");
       }
     }
     else if (selectedDevice == null) {
-      text = "<no device selected>";
+      text = FlutterBundle.message("devicelist.noDeviceSelected");
     }
     else {
       text = selectedDevice.presentationName();
