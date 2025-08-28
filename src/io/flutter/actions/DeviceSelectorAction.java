@@ -115,20 +115,47 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
         int width = 0;
         int height = JBUI.scale(22);
 
+        // Provide fallback values if client properties are not yet set
         if (iconLabel instanceof JBLabel label && label.getIcon() instanceof Icon icon) {
           width += icon.getIconWidth();
           height = Math.max(height, icon.getIconHeight());
         }
+        else if (iconLabel == null) {
+          // Fallback: use default mobile icon size when component is not fully initialized
+          Icon defaultIcon = FlutterIcons.Mobile;
+          if (defaultIcon != null) {
+            width += defaultIcon.getIconWidth();
+            height = Math.max(height, defaultIcon.getIconHeight());
+          }
+        }
 
         if (textLabel instanceof JBLabel label && label.getText() instanceof String text && !text.isEmpty()) {
           final FontMetrics fm = label.getFontMetrics(label.getFont());
-          width += Objects.requireNonNull(fm).stringWidth(text);
-          height = Math.max(height, fm.getHeight());
+          if (fm != null) {
+            width += fm.stringWidth(text);
+            height = Math.max(height, fm.getHeight());
+          }
+        }
+        else if (textLabel == null) {
+          // Fallback: estimate width for typical device name length
+          final FontMetrics fm = getFontMetrics(getFont());
+          if (fm != null) {
+            width += fm.stringWidth("No device selected");
+            height = Math.max(height, fm.getHeight());
+          }
         }
 
         if (arrowLabel instanceof JBLabel label && label.getIcon() instanceof Icon icon) {
           width += icon.getIconWidth();
           height = Math.max(height, icon.getIconHeight());
+        }
+        else if (arrowLabel == null) {
+          // Fallback: use default chevron down icon size
+          Icon defaultArrow = IconUtil.scale(AllIcons.General.ChevronDown, null, 1.2f);
+          if (defaultArrow != null) {
+            width += defaultArrow.getIconWidth();
+            height = Math.max(height, defaultArrow.getIconHeight());
+          }
         }
 
         width += JBUI.scale(24);
