@@ -5,8 +5,6 @@
  */
 package io.flutter.run.bazelTest;
 
-import com.intellij.openapi.fileChooser.FileChooserDescriptor;
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
@@ -23,7 +21,9 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.Objects;
 
-import static io.flutter.run.bazelTest.BazelTestFields.Scope.*;
+import static io.flutter.run.bazelTest.BazelTestFields.Scope.FILE;
+import static io.flutter.run.bazelTest.BazelTestFields.Scope.NAME;
+import static io.flutter.run.bazelTest.BazelTestFields.Scope.TARGET_PATTERN;
 
 public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<BazelTestConfig> {
   private JPanel myMainPanel;
@@ -73,8 +73,6 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
       }
     });
     scope.setEnabled(true);
-
-    final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
 
     DartCommandLineConfigurationEditorForm.initDartFileTextWithBrowse(project, myEntryFile);
   }
