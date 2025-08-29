@@ -493,7 +493,7 @@ public class VmServiceWrapper implements Disposable {
     if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
       return true;
     }
-    
+
     return VmServiceVersion.hasMapping(version);
   }
 
@@ -621,7 +621,7 @@ public class VmServiceWrapper implements Disposable {
         public void onError(RPCError error) {
           LOG.error(error.toString());
           LOG.error(error.getMessage());
-          LOG.error(error.getRequest());
+          LOG.error(Objects.toString(error.getRequest()));
           LOG.error(error.getDetails());
           errorResponses.add(error);
           consumer.received(breakpointResponses, errorResponses);
