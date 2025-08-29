@@ -1,6 +1,10 @@
 package io.flutter.test;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.testframework.TestConsoleProperties;
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder;
 import com.intellij.execution.testframework.sm.runner.OutputToGeneralTestEventsConverter;
@@ -18,7 +22,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -263,7 +271,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     //if (test.getMetadata().skip) return true; // skipped tests are reported as ignored in handleTestStart(). testFinished signal must follow
 
     ServiceMessageBuilder testFinished = ServiceMessageBuilder.testFinished(test.getBaseName());
-    long duration = getTimestamp(obj) - (Long)myTestIdToTimestamp.get(test.getId());
+    long duration = getTimestamp(obj) - myTestIdToTimestamp.get(test.getId());
     testFinished.addAttribute("duration", Long.toString(duration));
 
     return finishMessage(testFinished, test.getId(), test.getValidParentId()) && checkGroupDone(test.getParent());
