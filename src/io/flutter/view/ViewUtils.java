@@ -7,6 +7,7 @@ package io.flutter.view;
 
 import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.ui.content.Content;
@@ -26,7 +27,7 @@ public class ViewUtils {
     final JBLabel descriptionLabel = new JBLabel(wrapWithHtml(warning));
     descriptionLabel.setBorder(JBUI.Borders.empty(5));
     descriptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
-    descriptionLabel.setForeground(Color.RED);
+    descriptionLabel.setForeground(JBColor.RED);
     return descriptionLabel;
   }
 
