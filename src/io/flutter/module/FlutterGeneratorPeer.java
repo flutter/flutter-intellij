@@ -13,8 +13,8 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBLabel;
@@ -23,6 +23,8 @@ import io.flutter.FlutterBundle;
 import io.flutter.module.settings.SettingsHelpForm;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.ComboBoxEditor;
 import javax.swing.JComponent;
@@ -32,9 +34,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class FlutterGeneratorPeer {
   private final WizardContext myContext;
@@ -65,6 +64,16 @@ public class FlutterGeneratorPeer {
   private void init() {
     mySdkPathComboWithBrowse.getComboBox().setEditable(true);
     FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkPathComboWithBrowse.getComboBox());
+    if (mySdkPathComboWithBrowse.getComboBox().getModel().getSize() == 0) {
+      // If no SDKs are found, try to use the one from the FLUTTER_SDK environment variable.
+      // This ensures the SDK path is pre-filled when the combo box is empty, not requiring
+      // a running Application which is the case for users and bots on the initial startup
+      // experience.
+      final String flutterSDKPath = System.getenv("FLUTTER_SDK");
+      if (StringUtil.isNotEmpty(flutterSDKPath)) {
+        mySdkPathComboWithBrowse.getComboBox().setSelectedItem(flutterSDKPath);
+      }
+    }
 
     mySdkPathComboWithBrowse.addBrowseFolderListener(null, FileChooserDescriptorFactory.createSingleFolderDescriptor()
       .withTitle(FlutterBundle.message("flutter.sdk.browse.path.label")), TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);

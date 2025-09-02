@@ -28,6 +28,8 @@ allprojects {
 
 repositories {
   mavenCentral()
+  maven("https://cache-redirector.jetbrains.com/packages.jetbrains.team/maven/p/ij/intellij-ide-starter")
+  maven("https://mvnrepository.com/artifact/com.jetbrains.intellij.tools/ide-starter-driver")
   intellijPlatform {
     defaultRepositories()
   }
@@ -41,6 +43,7 @@ plugins {
   id("org.jetbrains.intellij.platform") version "2.7.2" // IntelliJ Platform Gradle Plugin
   id("org.jetbrains.kotlin.jvm") version "2.2.0" // Kotlin support
   id("org.jetbrains.changelog") version "2.2.0" // Gradle Changelog Plugin
+  idea // IntelliJ IDEA support
 }
 
 // By default (e.g. when we call `runIde` during development), the plugin version is SNAPSHOT
@@ -96,11 +99,18 @@ jvmVersion = when (javaVersion) {
     throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
   }
 }
+
 kotlin {
   compilerOptions {
     apiVersion.set(KotlinVersion.KOTLIN_2_1)
     jvmTarget = jvmVersion
   }
+  // This is how you specify the specific JVM requirements, this may be a requirement for the Starter test framework
+//  jvmToolchain {
+//    languageVersion = JavaLanguageVersion.of(21)
+//    @Suppress("UnstableApiUsage")
+//    vendor = JvmVendorSpec.JETBRAINS
+//  }
 }
 
 var javaCompatibilityVersion: JavaVersion
@@ -117,9 +127,68 @@ javaCompatibilityVersion = when (javaVersion) {
     throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
   }
 }
+
 java {
   sourceCompatibility = javaCompatibilityVersion
   targetCompatibility = javaCompatibilityVersion
+}
+
+sourceSets {
+  main {
+    java.srcDirs(
+      listOf(
+        "src",
+        "third_party/vmServiceDrivers"
+      )
+    )
+    // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
+    resources.srcDirs(
+      listOf(
+        "src",
+        "resources"
+      )
+    )
+  }
+  test {
+    java.srcDirs(
+      listOf(
+        "src",
+        "testSrc/unit",
+        "third_party/vmServiceDrivers"
+      )
+    )
+    resources.srcDirs(
+      listOf(
+        "resources",
+        "testData",
+        "testSrc/unit"
+      )
+    )
+  }
+
+  create("integration", Action<SourceSet> {
+    java.srcDirs("testSrc/integration")
+    kotlin.srcDirs("testSrc/integration")
+    resources.srcDirs("testSrc/integration")
+    compileClasspath += sourceSets["main"].output + sourceSets["test"].output
+    runtimeClasspath += sourceSets["main"].output + sourceSets["test"].output
+  })
+}
+
+// Configure IntelliJ IDEA to recognize integration as test sources
+idea {
+  module {
+    testSources.from(sourceSets["integration"].kotlin.srcDirs)
+    testResources.from(sourceSets["integration"].resources.srcDirs)
+  }
+}
+
+val integrationImplementation: Configuration by configurations.getting {
+  extendsFrom(configurations.testImplementation.get())
+}
+
+val integrationRuntimeOnly: Configuration by configurations.getting {
+  extendsFrom(configurations.testRuntimeOnly.get())
 }
 
 dependencies {
@@ -129,6 +198,8 @@ dependencies {
     // Android Studio versions can be found at: https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
     androidStudio(ideaVersion)
     testFramework(TestFrameworkType.Platform)
+    testFramework(TestFrameworkType.Starter, configurationName = "integrationImplementation")
+    testFramework(TestFrameworkType.JUnit5, configurationName = "integrationImplementation")
 
     // Plugin dependency documentation:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
@@ -172,6 +243,14 @@ dependencies {
       )
     )
   )
+
+  // UI Test dependencies
+  integrationImplementation("org.kodein.di:kodein-di-jvm:7.26.1")
+  integrationImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+
+  // JUnit 5 is required for UI tests
+  integrationImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+  integrationRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 intellijPlatform {
@@ -219,37 +298,41 @@ intellijPlatform {
   }
 }
 
-sourceSets {
-  main {
-    java.srcDirs(
-      listOf(
-        "src",
-        "third_party/vmServiceDrivers"
-      )
+tasks {
+  register<Test>("integration") {
+    description = "Runs only the UI integration tests that start the IDE"
+    group = "verification"
+    testClassesDirs = sourceSets["integration"].output.classesDirs
+    classpath = sourceSets["integration"].runtimeClasspath
+    useJUnitPlatform {
+      includeTags("ui")
+    }
+
+    // UI tests should run sequentially (not in parallel) to avoid conflicts
+    maxParallelForks = 1
+
+    // Increase memory for UI tests
+    minHeapSize = "1g"
+    maxHeapSize = "4g"
+
+    systemProperty("path.to.build.plugin", buildPlugin.get().archiveFile.get().asFile.absolutePath)
+    systemProperty("idea.home.path", prepareTestSandbox.get().getDestinationDir().parentFile.absolutePath)
+    systemProperty(
+      "allure.results.directory", project.layout.buildDirectory.get().asFile.absolutePath + "/allure-results"
     )
-    // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
-    resources.srcDirs(
-      listOf(
-        "src",
-        "resources"
+
+    // Disable IntelliJ test listener that conflicts with standard JUnit
+    systemProperty("idea.test.cyclic.buffer.size", "0")
+
+    // Add required JVM arguments
+    jvmArgumentProviders += CommandLineArgumentProvider {
+      mutableListOf(
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.desktop/javax.swing=ALL-UNNAMED"
       )
-    )
-  }
-  test {
-    java.srcDirs(
-      listOf(
-        "src",
-        "testSrc/unit",
-        "third_party/vmServiceDrivers"
-      )
-    )
-    resources.srcDirs(
-      listOf(
-        "resources",
-        "testData",
-        "testSrc/unit"
-      )
-    )
+    }
+
+    dependsOn(buildPlugin)
   }
 }
 
