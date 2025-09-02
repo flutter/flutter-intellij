@@ -59,6 +59,13 @@ if (project.hasProperty("release")) {
   val datestamp = DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now())
   flutterPluginVersion = "$nextMajorVersion.0.0-dev.$datestamp"
 
+  println("--- Environment Variables ---")
+  // Sort by key for cleaner, predictable output
+  System.getenv().entries.sortedBy { it.key }.forEach { (key, value) ->
+    println("$key: $value")
+  }
+  println("---------------------------")
+
   val commitHash = System.getenv("KOKORO_GITHUB_COMMIT")
   if (commitHash is String) {
     val shortCommitHash = commitHash.take(7)
