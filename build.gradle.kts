@@ -66,7 +66,7 @@ if (project.hasProperty("release")) {
   }
   println("---------------------------")
 
-  val commitHash = System.getenv("KOKORO_GITHUB_COMMIT")
+  val commitHash = System.getenv("KOKORO_GIT_COMMIT")
   if (commitHash is String) {
     val shortCommitHash = commitHash.take(7)
     flutterPluginVersion += "-$shortCommitHash"
