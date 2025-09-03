@@ -260,8 +260,8 @@
   </actions>
 
   <extensionPoints>
-    <extensionPoint name="gradleSyncProvider" interface="io.flutter.android.GradleSyncProvider"/>
-    <extensionPoint name="colorPickerProvider" interface="io.flutter.editor.ColorPickerProvider"/>
+    <extensionPoint name="gradleSyncProvider" interface="io.flutter.android.GradleSyncProvider" dynamic="true"/>
+    <extensionPoint name="colorPickerProvider" interface="io.flutter.editor.ColorPickerProvider" dynamic="true"/>
   </extensionPoints>
 
   <extensions defaultExtensionNs="io.flutter">
