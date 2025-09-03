@@ -324,6 +324,10 @@ tasks {
     // Disable IntelliJ test listener that conflicts with standard JUnit
     systemProperty("idea.test.cyclic.buffer.size", "0")
 
+    // Pass properties from gradle.properties to the JVM as system properties
+    project.findProperty("dartPluginVersion")?.let { systemProperty("dartPluginVersion", it) }
+    project.findProperty("uiPlatformBuildVersion")?.let { systemProperty("uiPlatformBuildVersion", it) }
+
     // Add required JVM arguments
     jvmArgumentProviders += CommandLineArgumentProvider {
       mutableListOf(

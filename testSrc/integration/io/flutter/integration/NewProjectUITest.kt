@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-package io.flutter.integrationTest
+package io.flutter.integration
 
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.ideFrame
@@ -13,7 +13,7 @@ import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.junit5.config.UseLatestDownloadedIdeBuild
-import io.flutter.integrationTest.utils.newProjectWelcomeScreen
+import io.flutter.integration.utils.newProjectWelcomeScreen
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -83,7 +83,7 @@ class MyProjectUITest {
   }
 
   @Test
-  fun newProjectIC() {
+  fun testNewProjectIC() {
     println("Initializing IDE test context")
     println("Test project will be created as: $testProjectName")
     run = Setup.setupTestContextIC("MyProjectUITest").runIdeWithDriver()
@@ -94,7 +94,7 @@ class MyProjectUITest {
 
   @Test
   @Disabled("Need license configuration to test")
-  fun newProjectUE() {
+  fun testNewProjectUE() {
     println("Initializing IDE test context")
     println("Test project will be created as: $testProjectName")
     run = Setup.setupTestContextUE("MyProjectUITest").runIdeWithDriver()
@@ -111,7 +111,7 @@ class MyProjectUITest {
 
   @Test
   @Disabled("Need license configuration to test")
-  fun newProjectWS() {
+  fun testNewProjectWS() {
     println("Initializing IDE test context")
     println("Test project will be created as: $testProjectName")
     run = Setup.setupTestContextWS("MyProjectUITest").runIdeWithDriver()

@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-package io.flutter.integrationTest
+package io.flutter.integration
 
 import com.intellij.ide.starter.buildTool.GradleBuildTool
 import com.intellij.ide.starter.community.model.BuildType
@@ -45,7 +45,6 @@ class Setup {
 
 
   companion object {
-
     init {
       // Configure dependency injection to use our custom paths
       di = DI.Companion {
@@ -55,30 +54,30 @@ class Setup {
     }
 
     fun setupTestContextIC(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
+      val uiPlatformBuildVersion = System.getProperty("uiPlatformBuildVersion")
       return setupTestContext(
         "", IdeProductProvider.IC.copy(
-          // TODO(team) should the version be fetched from some setting, i.e. System.getProperty("uiPlatformBuildVersion")
-          buildNumber = "252.23892.409",
+          buildNumber = uiPlatformBuildVersion,
           buildType = BuildType.RELEASE.type
         ), projectInfoSpec
       )
     }
 
     fun setupTestContextUE(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
+      val uiPlatformBuildVersion = System.getProperty("uiPlatformBuildVersion")
       return setupTestContext(
         "", IdeProductProvider.IU.copy(
-          // TODO(team) should the version be fetched from some setting, i.e. System.getProperty("uiPlatformBuildVersion")
-          buildNumber = "252.23892.409",
+          buildNumber = uiPlatformBuildVersion,
           buildType = BuildType.RELEASE.type
         ), projectInfoSpec
       )
     }
 
     fun setupTestContextWS(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
+      val uiPlatformBuildVersion = System.getProperty("uiPlatformBuildVersion")
       return setupTestContext(
         "", IdeProductProvider.WS.copy(
-          // TODO(team) should the version be fetched from some setting, i.e. System.getProperty("uiPlatformBuildVersion")
-          buildNumber = "252.23892.411",
+          buildNumber = uiPlatformBuildVersion,
           buildType = BuildType.RELEASE.type
         ), projectInfoSpec
       )
@@ -105,9 +104,10 @@ class Setup {
       return Starter.newContext(testName = hyphenateWithClass, testCase = testCase).apply {
         // Install the plugin that was built by the buildPlugin task
         val pluginPath = System.getProperty("path.to.build.plugin")
+        val dartPluginVersion = System.getProperty("dartPluginVersion")
         PluginConfigurator(this)
           .installPluginFromPath(Paths.get(pluginPath))
-          .installPluginFromPluginManager("Dart", "252.24322.5")
+          .installPluginFromPluginManager("Dart", dartPluginVersion)
         withBuildTool<GradleBuildTool>()
       }.applyVMOptionsPatch {
 
