@@ -41,7 +41,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -117,7 +121,8 @@ class DeviceDaemon {
    */
   void shutdown() {
     if (!process.isProcessTerminated()) {
-      LOG.info("shutting down Flutter device daemon #" + id + ": " + command.toString(FlutterSettings.getInstance().isFilePathLoggingEnabled()));
+      LOG.info(
+        "shutting down Flutter device daemon #" + id + ": " + command.toString(FlutterSettings.getInstance().isFilePathLoggingEnabled()));
     }
     listener.running.set(false);
     process.destroyProcess();
@@ -209,7 +214,6 @@ class DeviceDaemon {
                        Runnable deviceChanged,
                        Consumer<String> processStopped) throws ExecutionException {
       final int daemonId = nextDaemonId.incrementAndGet();
-      //noinspection UnnecessaryToStringCall
       LOG.info("starting Flutter device daemon #" + daemonId + ": " + toString(FlutterSettings.getInstance().isFilePathLoggingEnabled()));
       // The mostly silent process handler reduces CPU usage of the daemon process.
       final ProcessHandler process = new MostlySilentColoredProcessHandler(toCommandLine());
