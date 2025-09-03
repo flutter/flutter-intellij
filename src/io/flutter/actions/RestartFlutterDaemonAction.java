@@ -23,7 +23,7 @@ public class RestartFlutterDaemonAction extends AnAction {
    * Create a `RestartFlutterDaemonAction` for presentation in the device selector.
    */
   public static RestartFlutterDaemonAction forDeviceSelector() {
-    return new RestartFlutterDaemonAction("Restart Flutter Daemon", FlutterIcons.Flutter);
+    return new RestartFlutterDaemonAction("Restart Flutter Daemon", "Restart Flutter Daemon", FlutterIcons.Flutter);
   }
 
   /**
@@ -38,8 +38,9 @@ public class RestartFlutterDaemonAction extends AnAction {
    */
   @SuppressWarnings("ActionPresentationInstantiatedInCtor")
   private RestartFlutterDaemonAction(@Nullable @NlsActions.ActionText String text,
+                                     @Nullable @NlsActions.ActionDescription String description,
                                      @Nullable Icon icon) {
-    super(text, text, icon);
+    super(text, description, icon);
   }
 
   @Override
