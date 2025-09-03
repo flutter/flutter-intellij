@@ -36,6 +36,7 @@ public class RestartFlutterDaemonAction extends AnAction {
   /**
    * A constructor for dynamic invocation.
    */
+  @SuppressWarnings("ActionPresentationInstantiatedInCtor")
   private RestartFlutterDaemonAction(@Nullable @NlsActions.ActionText String text,
                                      @Nullable Icon icon) {
     super(text, text, icon);
