@@ -14,6 +14,7 @@
 - Set the device selector component to opaque during its creation to avoid an unexpected background color (#8471)
 - Refactored `DeviceSelectorAction` and add rich icons to different platform devices (#8475)
 - Fix DTD freezes when opening projects, and EDT freezes when the theme is changed and opening embedded DevTools (#8477)
+- Fix `DeviceSelectorAction` `NoSuchElementException` in the toolbar layout (#8515)
 
 ## 87.1.0
 
