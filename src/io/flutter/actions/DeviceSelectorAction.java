@@ -286,11 +286,11 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
         text = FlutterBundle.message("devicelist.loading");
       }
       else {
-        text = "<no devices>";
+        text = FlutterBundle.message("devicelist.noDevices");
       }
     }
     else if (selectedDevice == null) {
-      text = "<no device selected>";
+      text = FlutterBundle.message("devicelist.noDeviceSelected");
     }
     else {
       text = selectedDevice.presentationName();
