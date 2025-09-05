@@ -11,6 +11,8 @@ import com.intellij.coverage.CoverageSuite;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.rt.coverage.data.ProjectData;
 import io.flutter.FlutterBundle;
+import io.flutter.logging.PluginLogger;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,7 +21,8 @@ import java.io.IOException;
 
 public class FlutterCoverageRunner extends CoverageRunner {
   private static final String ID = "FlutterCoverageRunner";
-  private static final @NotNull Logger LOG = Logger.getInstance(FlutterCoverageRunner.class.getName());
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterCoverageRunner.class);
+  private static @NotNull Logger log;
 
   @Nullable
   @Override
@@ -35,9 +38,15 @@ public class FlutterCoverageRunner extends CoverageRunner {
     final ProjectData projectData = new ProjectData();
     try {
       LcovInfo.readInto(projectData, sessionDataFile);
+      log.warn(FlutterBundle.message("coverage.data.not.read", "test_" + (FlutterSettings.getInstance().isFilePathLoggingEnabled()
+                                                               ? sessionDataFile.getAbsolutePath()
+                                                               : sessionDataFile.getName())));
+
     }
     catch (IOException ex) {
-      LOG.warn(FlutterBundle.message("coverage.data.not.read", sessionDataFile.getAbsolutePath()));
+      log.warn(FlutterBundle.message("coverage.data.not.read", FlutterSettings.getInstance().isFilePathLoggingEnabled()
+                                                               ? sessionDataFile.getAbsolutePath()
+                                                               : sessionDataFile.getName()));
       return null;
     }
     return projectData;

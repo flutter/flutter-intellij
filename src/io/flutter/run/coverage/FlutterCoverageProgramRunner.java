@@ -24,7 +24,9 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import io.flutter.FlutterBundle;
+import io.flutter.logging.PluginLogger;
 import io.flutter.run.test.TestConfig;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -33,9 +35,10 @@ import org.jetbrains.annotations.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSettings> {
-  private static final @NotNull Logger LOG = Logger.getInstance(FlutterCoverageProgramRunner.class.getName());
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterCoverageProgramRunner.class);
 
   private static final String ID = "FlutterCoverageProgramRunner";
   private ProcessHandler handler;
@@ -96,9 +99,20 @@ public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSet
         handler = null;
         listener = null;
       }
+      LOG.error(FlutterBundle.message("coverage.path.not.found", "test_" + getSafePath(path)));
     }
     else {
-      LOG.error(FlutterBundle.message("coverage.path.not.found", path));
+      LOG.error(FlutterBundle.message("coverage.path.not.found", getSafePath(path)));
     }
+  }
+
+  private @NotNull String getSafePath(@NotNull Path path) {
+    if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+      return path.toString();
+    }
+
+    if (path.getNameCount() == 0) return "";
+
+    return Objects.requireNonNull(path.getFileName()).toString();
   }
 }
