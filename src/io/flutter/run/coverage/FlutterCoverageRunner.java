@@ -22,7 +22,6 @@ import java.io.IOException;
 public class FlutterCoverageRunner extends CoverageRunner {
   private static final String ID = "FlutterCoverageRunner";
   private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterCoverageRunner.class);
-  private static @NotNull Logger log;
 
   @Nullable
   @Override
@@ -38,13 +37,9 @@ public class FlutterCoverageRunner extends CoverageRunner {
     final ProjectData projectData = new ProjectData();
     try {
       LcovInfo.readInto(projectData, sessionDataFile);
-      log.warn(FlutterBundle.message("coverage.data.not.read", "test_" + (FlutterSettings.getInstance().isFilePathLoggingEnabled()
-                                                               ? sessionDataFile.getAbsolutePath()
-                                                               : sessionDataFile.getName())));
-
     }
     catch (IOException ex) {
-      log.warn(FlutterBundle.message("coverage.data.not.read", FlutterSettings.getInstance().isFilePathLoggingEnabled()
+      LOG.warn(FlutterBundle.message("coverage.data.not.read", FlutterSettings.getInstance().isFilePathLoggingEnabled()
                                                                ? sessionDataFile.getAbsolutePath()
                                                                : sessionDataFile.getName()));
       return null;

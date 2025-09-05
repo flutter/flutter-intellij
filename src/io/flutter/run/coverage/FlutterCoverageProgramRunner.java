@@ -99,7 +99,6 @@ public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSet
         handler = null;
         listener = null;
       }
-      LOG.error(FlutterBundle.message("coverage.path.not.found", "test_" + getSafePath(path)));
     }
     else {
       LOG.error(FlutterBundle.message("coverage.path.not.found", getSafePath(path)));
