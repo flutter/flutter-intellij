@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-package io.flutter.integrationTest.utils
+package io.flutter.integration.utils
 
 import com.intellij.driver.sdk.ui.Finder
 import com.intellij.driver.sdk.ui.components.ComponentData
