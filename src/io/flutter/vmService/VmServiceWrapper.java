@@ -24,8 +24,10 @@ import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import com.jetbrains.lang.dart.DartFileType;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.logging.PluginLogger;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.OpenApiUtils;
 import io.flutter.vmService.frame.DartAsyncMarkerFrame;
 import io.flutter.vmService.frame.DartVmServiceEvaluator;
@@ -88,7 +90,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class VmServiceWrapper implements Disposable {
-  @NotNull private static final Logger LOG = Logger.getInstance(VmServiceWrapper.class.getName());
+  @NotNull private static final Logger LOG = PluginLogger.createLogger(VmServiceWrapper.class);
 
   private static final long RESPONSE_WAIT_TIMEOUT = 3000; // millis
 
@@ -560,7 +562,7 @@ public class VmServiceWrapper implements Disposable {
       int line = position.getLine() + 1;
 
       String resolvedUri = getResolvedUri(position);
-      LOG.info("Computed resolvedUri: " + resolvedUri);
+      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) LOG.info("Computed resolvedUri: " + resolvedUri);
       List<String> resolvedUriList = List.of(percentEscapeUri(resolvedUri));
 
       CanonicalBreakpoint canonicalBreakpoint =
@@ -636,7 +638,7 @@ public class VmServiceWrapper implements Disposable {
       WorkspaceCache.getInstance(session.getProject()).isBazel() ? position.getFile() : position.getFile().getCanonicalFile();
     assert file != null;
     String url = file.getUrl();
-    LOG.info("in getResolvedUri. url: " + url);
+    if (FlutterSettings.getInstance().isFilePathLoggingEnabled())  LOG.info("in getResolvedUri. url: " + url);
 
     if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
       String root = WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).get().getRoot().getPath();
