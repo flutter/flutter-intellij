@@ -35,6 +35,7 @@ import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
+import io.flutter.logging.PluginLogger;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.utils.OpenApiUtils;
 import io.flutter.vmService.frame.DartVmServiceEvaluator;
@@ -59,7 +60,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class DartVmServiceDebugProcess extends XDebugProcess {
-  private static final @NotNull Logger LOG = Logger.getInstance(DartVmServiceDebugProcess.class.getName());
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(DartVmServiceDebugProcess.class);
 
   @NotNull private final ExecutionResult myExecutionResult;
   @NotNull private final DartUrlResolver myDartUrlResolver;
