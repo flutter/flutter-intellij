@@ -47,6 +47,8 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
   private static final Key<JBLabel> ICON_LABEL_KEY = Key.create("iconLabel");
   private static final Key<JBLabel> TEXT_LABEL_KEY = Key.create("textLabel");
   private static final Key<JBLabel> ARROW_LABEL_KEY = Key.create("arrowLabel");
+  private static final @NotNull Icon DEFAULT_DEVICE_ICON = FlutterIcons.Mobile;
+  private static final @NotNull Icon DEFAULT_ARROW_ICON = IconUtil.scale(AllIcons.General.ChevronDown, null, 1.2f);
 
   private final List<AnAction> actions = new ArrayList<>();
   private final List<Project> knownProjects = Collections.synchronizedList(new ArrayList<>());
@@ -87,9 +89,9 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
 
   @Override
   public @NotNull JComponent createCustomComponent(@NotNull Presentation presentation, @NotNull String place) {
-    final JBLabel iconLabel = new JBLabel(FlutterIcons.Mobile);
+    final JBLabel iconLabel = new JBLabel(DEFAULT_DEVICE_ICON);
     final JBLabel textLabel = new JBLabel();
-    final JBLabel arrowLabel = new JBLabel(IconUtil.scale(AllIcons.General.ChevronDown, null, 1.2f));
+    final JBLabel arrowLabel = new JBLabel(DEFAULT_ARROW_ICON);
 
     // Create a wrapper button for hover effects
     final JButton button = new JButton() {
@@ -119,16 +121,38 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
           width += icon.getIconWidth();
           height = Math.max(height, icon.getIconHeight());
         }
+        else {
+          // Fallback: use the default mobile icon size when the component is not fully initialized
+          final Icon defaultIcon = DEFAULT_DEVICE_ICON;
+          width += defaultIcon.getIconWidth();
+          height = Math.max(height, defaultIcon.getIconHeight());
+        }
 
+        final @Nullable FontMetrics fm;
+        final @NotNull String textLabelText;
         if (textLabel instanceof JBLabel label && label.getText() instanceof String text && !text.isEmpty()) {
-          final FontMetrics fm = label.getFontMetrics(label.getFont());
-          width += Objects.requireNonNull(fm).stringWidth(text);
+          fm = label.getFontMetrics(label.getFont());
+          textLabelText = text;
+        }
+        else {
+          // Fallback: estimate width for typical device name length
+          fm = getFontMetrics(getFont());
+          textLabelText = FlutterBundle.message("devicelist.noDevices");
+        }
+        if (fm != null) {
+          width += fm.stringWidth(textLabelText);
           height = Math.max(height, fm.getHeight());
         }
 
         if (arrowLabel instanceof JBLabel label && label.getIcon() instanceof Icon icon) {
           width += icon.getIconWidth();
           height = Math.max(height, icon.getIconHeight());
+        }
+        else {
+          // Fallback: use the default arrow icon size
+          final Icon defaultArrow = DEFAULT_ARROW_ICON;
+          width += defaultArrow.getIconWidth();
+          height = Math.max(height, defaultArrow.getIconHeight());
         }
 
         width += JBUI.scale(24);
@@ -278,7 +302,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
     final Collection<FlutterDevice> devices = deviceService.getConnectedDevices();
 
     final String text;
-    Icon icon = FlutterIcons.Mobile;
+    Icon icon = DEFAULT_DEVICE_ICON;
 
     if (devices.isEmpty()) {
       final boolean isLoading = deviceService.getStatus() == DeviceService.State.LOADING;
@@ -286,11 +310,11 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
         text = FlutterBundle.message("devicelist.loading");
       }
       else {
-        text = "<no devices>";
+        text = FlutterBundle.message("devicelist.noDevices");
       }
     }
     else if (selectedDevice == null) {
-      text = "<no device selected>";
+      text = FlutterBundle.message("devicelist.noDeviceSelected");
     }
     else {
       text = selectedDevice.presentationName();
