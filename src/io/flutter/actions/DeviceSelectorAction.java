@@ -123,7 +123,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
         }
         else {
           // Fallback: use the default mobile icon size when the component is not fully initialized
-          Icon defaultIcon = DEFAULT_DEVICE_ICON;
+          final Icon defaultIcon = DEFAULT_DEVICE_ICON;
           width += defaultIcon.getIconWidth();
           height = Math.max(height, defaultIcon.getIconHeight());
         }
@@ -150,7 +150,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
         }
         else {
           // Fallback: use the default arrow icon size
-          Icon defaultArrow = DEFAULT_ARROW_ICON;
+          final Icon defaultArrow = DEFAULT_ARROW_ICON;
           width += defaultArrow.getIconWidth();
           height = Math.max(height, defaultArrow.getIconHeight());
         }
