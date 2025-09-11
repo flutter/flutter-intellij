@@ -12,6 +12,8 @@ import com.intellij.openapi.util.SystemInfo;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.engine.EngineOptions;
 import com.teamdev.jxbrowser.engine.PasswordStore;
+import io.flutter.logging.PluginLogger;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -21,7 +23,7 @@ import static com.teamdev.jxbrowser.engine.RenderingMode.HARDWARE_ACCELERATED;
 import static com.teamdev.jxbrowser.engine.RenderingMode.OFF_SCREEN;
 
 public class EmbeddedBrowserEngine {
-  private static final @NotNull Logger LOG = Logger.getInstance(EmbeddedBrowserEngine.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(EmbeddedBrowserEngine.class);
   private final Engine engine;
 
   public static EmbeddedBrowserEngine getInstance() {
@@ -30,7 +32,7 @@ public class EmbeddedBrowserEngine {
 
   public EmbeddedBrowserEngine() {
     final String dataPath = JxBrowserManager.DOWNLOAD_PATH + File.separatorChar + "user-data";
-    LOG.info("JxBrowser user data path: " + dataPath);
+    if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) LOG.info("JxBrowser user data path: " + dataPath);
 
     final EngineOptions.Builder optionsBuilder =
       EngineOptions.newBuilder(SystemInfo.isMac ? HARDWARE_ACCELERATED : OFF_SCREEN)
@@ -50,7 +52,11 @@ public class EmbeddedBrowserEngine {
     }
     catch (Exception ex) {
       temp = null;
-      LOG.info(ex);
+      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+        LOG.info(ex);
+      } else {
+        LOG.info("Exception when creating a new instance of JX Browser engine: " + ex.getMessage());
+      }
     }
     engine = temp;
 
@@ -63,7 +69,11 @@ public class EmbeddedBrowserEngine {
           }
         }
         catch (Exception ex) {
-          LOG.info(ex);
+          if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+            LOG.info(ex);
+          } else {
+            LOG.info("Exception when closing JX Browser engine: " + ex.getMessage());
+          }
         }
         return true;
       }
