@@ -40,6 +40,7 @@ import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.logging.PluginLogger;
 import io.flutter.run.FlutterPositionMapper;
 import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.run.test.FlutterTestRunner;
@@ -55,7 +56,7 @@ import org.jetbrains.annotations.Nullable;
  * The Bazel version of the {@link FlutterTestRunner}. Runs a Bazel Flutter test configuration in the debugger.
  */
 public class BazelTestRunner extends GenericProgramRunner {
-  private static final @NotNull Logger LOG = Logger.getInstance(BazelTestRunner.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(BazelTestRunner.class);
 
   @NotNull
   @Override
