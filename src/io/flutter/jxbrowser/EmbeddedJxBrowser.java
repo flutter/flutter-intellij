@@ -50,7 +50,7 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
   private Browser browser;
   private Zoom zoom;
   private final ZoomLevelSelector zoomSelector = new ZoomLevelSelector();
-  private static final @NotNull Logger LOG = Logger.getInstance(EmbeddedJxBrowserTab.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(EmbeddedJxBrowserTab.class);
 
   public EmbeddedJxBrowserTab(Engine engine) {
     this.engine = engine;
@@ -68,7 +68,11 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
       // Skip using a transparent background if an exception is thrown.
     }
     catch (Exception | Error ex) {
-      LOG.info(ex);
+      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+        LOG.info(ex);
+      } else {
+        LOG.info("Exception when creating a new browser instance: " + ex.getMessage());
+      }
     }
   }
 
