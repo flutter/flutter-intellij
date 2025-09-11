@@ -14,6 +14,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterUtils;
+import io.flutter.logging.PluginLogger;
 import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -300,5 +301,5 @@ public class PluginConfig {
   }
 
   private static final @NotNull Gson GSON = new Gson();
-  private static final @NotNull Logger LOG = Logger.getInstance(PluginConfig.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(PluginConfig.class);
 }

@@ -14,6 +14,7 @@ import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
+import io.flutter.logging.PluginLogger;
 import io.flutter.project.ProjectWatch;
 import io.flutter.utils.FileWatch;
 import org.jetbrains.annotations.NotNull;
@@ -178,5 +179,5 @@ public class WorkspaceCache {
     }
   }
 
-  private static final @NotNull Logger LOG = Logger.getInstance(WorkspaceCache.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(WorkspaceCache.class);
 }

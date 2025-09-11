@@ -27,6 +27,7 @@ import io.flutter.FlutterMessages;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
+import io.flutter.logging.PluginLogger;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.DevToolsInstance;
@@ -52,7 +53,7 @@ import static io.flutter.run.common.RunMode.PROFILE;
  * This class is immutable.
  */
 public class BazelFields {
-  private static final @NotNull Logger LOG = Logger.getInstance(BazelFields.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(BazelFields.class);
 
   /**
    * The Bazel target or Dart file to invoke.
