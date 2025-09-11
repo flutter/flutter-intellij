@@ -15,6 +15,7 @@ import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.frame.XSuspendContext;
 import com.intellij.xdebugger.frame.XValue;
 import com.jetbrains.lang.dart.ide.runner.DartExceptionBreakpointProperties;
+import io.flutter.logging.PluginLogger;
 import io.flutter.vmService.frame.DartVmServiceSuspendContext;
 import io.flutter.vmService.frame.DartVmServiceValue;
 import org.dartlang.vm.service.VmServiceListener;
@@ -23,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class DartVmServiceListener implements VmServiceListener {
-  private static final @NotNull Logger LOG = Logger.getInstance(DartVmServiceListener.class.getName());
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(DartVmServiceListener.class);
 
   @NotNull private final DartVmServiceDebugProcess myDebugProcess;
   @NotNull private final DartVmServiceBreakpointHandler myBreakpointHandler;
