@@ -13,6 +13,7 @@ import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import icons.FlutterIcons;
+import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.devtools.DevToolsIdeFeature;
@@ -78,11 +79,7 @@ public class OpenDevToolsAction extends DumbAwareAction {
       }
 
       if (ex != null) {
-        if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-          LOG.error(ex);
-        } else {
-          LOG.error("Exception in getDevToolsInstance: " + ex.getMessage());
-        }
+        FlutterUtils.error(LOG, "Exception in getDevToolsInstance", ex, true);
         return;
       }
 

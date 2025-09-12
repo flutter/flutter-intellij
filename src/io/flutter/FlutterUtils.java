@@ -111,19 +111,27 @@ public class FlutterUtils {
     }
   }
 
-  public static void info(@NotNull Logger logger, @NotNull String message, @NotNull Exception e, boolean sanitizePaths) {
+  public static void info(@NotNull Logger logger, @NotNull String message, @NotNull Throwable t, boolean sanitizePaths) {
     if (sanitizePaths && FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-      logger.info(message, e);
+      logger.info(message, t);
     } else {
       logger.info(message);
     }
   }
 
-  public static void warn(@NotNull Logger logger, @NotNull String message, @NotNull Exception e, boolean sanitizePaths) {
+  public static void warn(@NotNull Logger logger, @NotNull String message, @NotNull Throwable t, boolean sanitizePaths) {
     if (sanitizePaths && FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-      logger.warn(message, e);
+      logger.warn(message, t);
     } else {
       logger.warn(message);
+    }
+  }
+
+  public static void error(@NotNull Logger logger, @NotNull String message, @NotNull Throwable t, boolean sanitizePaths) {
+    if (sanitizePaths && FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+      logger.error(message, t);
+    } else {
+      logger.error(message);
     }
   }
 

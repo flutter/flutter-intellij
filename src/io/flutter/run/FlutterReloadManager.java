@@ -143,11 +143,7 @@ public class FlutterReloadManager {
         }
         catch (Throwable t) {
           // A catch-all, so any exceptions don't bubble through to the users.
-          if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-            LOG.warn("Exception from FlutterReloadManager", t);
-          } else {
-            LOG.warn("Exception from FlutterReloadManager: " + t.getMessage());
-          }
+          FlutterUtils.warn(LOG, "Exception from FlutterReloadManager", t, true);
         }
       }
 
@@ -166,11 +162,7 @@ public class FlutterReloadManager {
           handleSaveAllNotification(eventEditor);
         }
         catch (Throwable t) {
-          if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-            LOG.warn("Exception from hot reload on save", t);
-          } else {
-            LOG.warn("Exception from hot reload on save: " + t.getMessage());
-          }
+          FlutterUtils.warn(LOG, "Exception from hot reload on save", t, true);
         }
         finally {
           // Context: "Released EditorImpl held by lambda in FlutterReloadManager" (https://github.com/flutter/flutter-intellij/issues/7507)
@@ -334,11 +326,7 @@ public class FlutterReloadManager {
       }
     }
     catch (ExecutionException | InterruptedException e) {
-      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-        LOG.error("Unable to sync files", e);
-      } else {
-        LOG.error("Unable to sync files: " + e.getMessage());
-      }
+      FlutterUtils.error(LOG, "Unable to sync files", e, true);
     }
   }
 
