@@ -18,6 +18,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.search.ExecutionSearchScopes;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
+import io.flutter.logging.PluginLogger;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.StdoutJsonParser;
@@ -27,7 +28,7 @@ import org.jetbrains.annotations.NotNull;
  * A console view that filters out JSON messages sent in --machine mode.
  */
 public class DaemonConsoleView extends ConsoleViewImpl {
-  private static final @NotNull Logger LOG = Logger.getInstance(DaemonConsoleView.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(DaemonConsoleView.class);
 
   /**
    * Sets up a launcher to use a DaemonConsoleView.
