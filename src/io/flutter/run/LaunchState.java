@@ -181,7 +181,7 @@ public class LaunchState extends CommandLineState {
       }
     }
     catch (IllegalAccessException | InvocationTargetException | NoSuchFieldException | NoSuchMethodException e) {
-      FlutterUtils.info(LOG, e, true);
+      FlutterUtils.info(LOG, "Error setting display name", e, true);
     }
 
     return descriptor;

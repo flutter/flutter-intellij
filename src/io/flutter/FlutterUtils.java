@@ -111,15 +111,11 @@ public class FlutterUtils {
     }
   }
 
-  public static void info(@NotNull Logger logger, @NotNull Exception e) {
-    info(logger, e, false);
-  }
-
-  public static void info(@NotNull Logger logger, @NotNull Exception e, boolean sanitizePaths) {
+  public static void info(@NotNull Logger logger, @NotNull String message, @NotNull Exception e, boolean sanitizePaths) {
     if (sanitizePaths && FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-      logger.info(e);
+      logger.info(message, e);
     } else {
-      logger.info(e.toString());
+      logger.info(message);
     }
   }
 
