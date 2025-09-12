@@ -14,7 +14,6 @@ import com.intellij.openapi.roots.ModuleRootListener;
 import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.FlutterUtils;
 import io.flutter.logging.PluginLogger;
-import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Closeable;
