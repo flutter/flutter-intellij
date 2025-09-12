@@ -21,11 +21,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class DevToolsService {
-  private static final @NotNull Logger LOG = Logger.getInstance(DevToolsService.class);
-
-  protected static class DevToolsServiceListener implements DaemonEvent.Listener {
-  }
-
   @NotNull private final Project project;
 
   @Nullable private DevToolsServerTask devToolsServerTask;
@@ -123,43 +118,4 @@ public class DevToolsService {
     final CompletableFuture<DevToolsInstance> devToolsFuture = devToolsFutureRef.get();
     return devToolsFuture != null && devToolsFuture.isDone() && !devToolsFuture.isCompletedExceptionally();
   }
-
-  private CompletableFuture<Boolean> pubActivateDevTools(FlutterSdk sdk) {
-    final FlutterCommand command = sdk.flutterPub(null, "global", "activate", "devtools");
-
-    final CompletableFuture<Boolean> result = new CompletableFuture<>();
-
-    final Process process = command.start((ProcessOutput output) -> {
-      if (output.getExitCode() != 0) {
-        final String message = (output.getStdout() + "\n" + output.getStderr()).trim();
-        FlutterConsoles.displayMessage(project, null, message, true);
-      }
-    }, null);
-
-    try {
-      final int resultCode = process.waitFor();
-      result.complete(resultCode == 0);
-    }
-    catch (RuntimeException | InterruptedException re) {
-      if (!result.isDone()) {
-        result.complete(false);
-      }
-    }
-
-    return result;
-  }
-
-  private void logExceptionAndComplete(String message) {
-    logExceptionAndComplete(new Exception(message));
-  }
-
-  private void logExceptionAndComplete(Exception exception) {
-    LOG.info(exception);
-    final CompletableFuture<DevToolsInstance> future = devToolsFutureRef.get();
-    if (future != null) {
-      future.completeExceptionally(exception);
-    }
-  }
 }
-
-
