@@ -40,9 +40,11 @@ import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import io.flutter.FlutterUtils;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.dart.FlutterDartAnalysisServer;
+import io.flutter.logging.PluginLogger;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdkManager;
+import io.flutter.settings.FlutterSettings;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -59,7 +61,7 @@ import static java.nio.file.FileVisitResult.CONTINUE;
 public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
   implements LaunchState.RunConfig, RefactoringListenerProvider, RunConfigurationWithSuppressedDefaultRunAction {
 
-  private static final @NotNull Logger LOG = Logger.getInstance(SdkRunConfig.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(SdkRunConfig.class);
   private boolean firstRun = true;
 
   private @NotNull SdkFields fields = new SdkFields();
@@ -117,7 +119,7 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
 
     @Override
     public @NotNull FileVisitResult visitFileFailed(@NotNull Path file, @NotNull IOException exc) {
-      FlutterUtils.warn(LOG, "Unable to visit file", exc, true);
+      FlutterUtils.warn(LOG, "Unable to visit file in RecursiveDeleter", exc, true);
       return CONTINUE;
     }
   }
@@ -165,7 +167,8 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
           existingJson = Files.readString(cachedParametersPath);
         }
         catch (IOException e) {
-          FlutterUtils.warn(LOG, "Unable to get existing json from " + cachedParametersPath);
+          LOG.warn("Unable to get existing json from " +
+                   (FlutterSettings.getInstance().isFilePathLoggingEnabled() ? cachedParametersPath : cachedParametersPath.getFileName()));
         }
       }
       if (!StringUtil.equals(json, existingJson)) {
