@@ -80,7 +80,7 @@ import java.util.function.Consumer;
  * A running Flutter app.
  */
 public class FlutterApp implements Disposable {
-  private static final @NotNull Logger LOG = Logger.getInstance(FlutterApp.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterApp.class);
   private static final Key<FlutterApp> FLUTTER_APP_KEY = new Key<>("FLUTTER_APP_KEY");
 
   private final @NotNull Project myProject;
@@ -339,7 +339,7 @@ public class FlutterApp implements Disposable {
    */
   public CompletableFuture<DaemonApi.RestartResult> performRestartApp(@NotNull String reason) {
     if (myAppId == null) {
-      FlutterUtils.warn(LOG, "cannot restart Flutter app because app id is not set");
+      LOG.warn("cannot restart Flutter app because app id is not set");
 
       final CompletableFuture<DaemonApi.RestartResult> result = new CompletableFuture<>();
       result.completeExceptionally(new IllegalStateException("cannot restart Flutter app because app id is not set"));
@@ -399,7 +399,7 @@ public class FlutterApp implements Disposable {
    */
   public CompletableFuture<DaemonApi.RestartResult> performHotReload(boolean pauseAfterRestart, @NotNull String reason) {
     if (myAppId == null) {
-      FlutterUtils.warn(LOG, "cannot reload Flutter app because app id is not set");
+      LOG.warn("cannot reload Flutter app because app id is not set");
 
       if (getState() == State.RELOADING) {
         changeState(State.STARTED);
@@ -430,7 +430,7 @@ public class FlutterApp implements Disposable {
 
   public CompletableFuture<JsonObject> callServiceExtension(String methodName, Map<String, Object> params) {
     if (myAppId == null) {
-      FlutterUtils.warn(LOG, "cannot invoke " + methodName + " on Flutter app because app id is not set");
+      LOG.warn("cannot invoke " + methodName + " on Flutter app because app id is not set");
       return CompletableFuture.completedFuture(null);
     }
 

@@ -14,6 +14,7 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import io.flutter.FlutterUtils;
+import io.flutter.logging.PluginLogger;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
 import io.flutter.utils.StdoutJsonParser;
@@ -41,7 +42,7 @@ public class DaemonApi {
 
   private static final int STDERR_LINES_TO_KEEP = 100;
   private static final Gson GSON = new Gson();
-  private static final @NotNull Logger LOG = Logger.getInstance(DaemonApi.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(DaemonApi.class);
   @NotNull private final Consumer<String> callback;
   private final AtomicInteger nextId = new AtomicInteger();
   private final Map<Integer, Command> pending = new LinkedHashMap<>();
@@ -202,7 +203,7 @@ public class DaemonApi {
       cmd = pending.remove(id);
     }
     if (cmd == null) {
-      FlutterUtils.warn(LOG, "received a response for a request that wasn't sent: " + id);
+      LOG.warn("received a response for a request that wasn't sent: " + id);
       return null;
     }
     return cmd;
@@ -287,7 +288,7 @@ public class DaemonApi {
   private static void sendCommand(String json, ProcessHandler handler) {
     final PrintWriter stdin = getStdin(handler);
     if (stdin == null) {
-      FlutterUtils.warn(LOG, "can't write command to Flutter process: " + json);
+      LOG.warn("can't write command to Flutter process because stdin is null: " + json);
       return;
     }
     stdin.write('[');
@@ -299,7 +300,7 @@ public class DaemonApi {
     }
 
     if (stdin.checkError()) {
-      FlutterUtils.warn(LOG, "can't write command to Flutter process: " + json);
+      LOG.warn("can't write command to Flutter process due to error: " + json);
     }
   }
 
@@ -361,7 +362,7 @@ public class DaemonApi {
         done.complete(parseResult.apply(result));
       }
       catch (Exception e) {
-        FlutterUtils.warn(LOG, "Unable to parse response from Flutter daemon. Command was: " + this, e);
+        LOG.warn("Unable to parse response from Flutter daemon. Command was: " + this, e);
         done.completeExceptionally(e);
       }
     }

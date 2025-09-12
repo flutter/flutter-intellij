@@ -11,6 +11,7 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
+import io.flutter.logging.PluginLogger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -316,5 +317,5 @@ abstract class DaemonEvent {
   }
 
   private static final Gson GSON = new Gson();
-  private static final @NotNull Logger LOG = Logger.getInstance(DaemonEvent.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(DaemonEvent.class);
 }
