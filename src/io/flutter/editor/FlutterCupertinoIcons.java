@@ -27,7 +27,7 @@ public class FlutterCupertinoIcons {
       icons.load(FlutterCupertinoIcons.class.getResourceAsStream("/flutter/icons/cupertino.properties"));
     }
     catch (IOException e) {
-      FlutterUtils.warn(LOG, e);
+      FlutterUtils.warn(LOG, "Failed to load cupertino icons", e, true);
     }
   }
 

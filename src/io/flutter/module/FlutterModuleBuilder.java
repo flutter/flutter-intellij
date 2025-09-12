@@ -223,7 +223,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       }
     }
     catch (ModuleWithNameAlreadyExists | IOException e) {
-      FlutterUtils.warn(LOG, e);
+      FlutterUtils.warn(LOG, "Failed to add Android module", e, true);
     }
   }
 

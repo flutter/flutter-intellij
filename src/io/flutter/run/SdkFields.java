@@ -233,7 +233,7 @@ public class SdkFields {
       args = ArrayUtil.append(args, "--devtools-server-address=http://" + instance.host() + ":" + instance.port());
     }
     catch (Exception e) {
-      FlutterUtils.warn(LOG, e, true);
+      FlutterUtils.warn(LOG, "Error while starting DevTools", e, true);
     }
     command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
     final GeneralCommandLine commandLine = command.createGeneralCommandLine(project);

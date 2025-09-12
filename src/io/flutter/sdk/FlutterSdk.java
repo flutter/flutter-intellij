@@ -444,7 +444,7 @@ public class FlutterSdk {
       }
     }
     catch (InterruptedException e) {
-      FlutterUtils.warn(LOG, e, true);
+      FlutterUtils.warn(LOG, "Interruption while waiting for createFiles", e, true);
       return null;
     }
 

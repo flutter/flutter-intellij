@@ -103,7 +103,7 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
           Files.delete(file);
         }
         catch (IOException e) {
-          FlutterUtils.warn(LOG, e);
+          FlutterUtils.warn(LOG, "Unable to delete file: " + name, e, true);
           // TODO(jacobr): consider aborting.
         }
       }
@@ -117,7 +117,7 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
 
     @Override
     public @NotNull FileVisitResult visitFileFailed(@NotNull Path file, @NotNull IOException exc) {
-      FlutterUtils.warn(LOG, exc);
+      FlutterUtils.warn(LOG, "Unable to visit file", exc, true);
       return CONTINUE;
     }
   }
@@ -187,7 +187,7 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
           Files.writeString(cachedParametersPath, json);
         }
         catch (IOException e) {
-          FlutterUtils.warn(LOG, e);
+          FlutterUtils.warn(LOG, "Unable to delete dill or write params", e, true);
         }
       }
 

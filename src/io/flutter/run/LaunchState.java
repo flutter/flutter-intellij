@@ -181,7 +181,7 @@ public class LaunchState extends CommandLineState {
       }
     }
     catch (IllegalAccessException | InvocationTargetException | NoSuchFieldException | NoSuchMethodException e) {
-      FlutterUtils.info(LOG, e, true);
+      FlutterUtils.info(LOG, "Error setting display name", e, true);
     }
 
     return descriptor;
@@ -402,7 +402,7 @@ public class LaunchState extends CommandLineState {
                   app.shutdownAsync().get();
                 }
                 catch (InterruptedException | java.util.concurrent.ExecutionException e) {
-                  FlutterUtils.warn(LOG, e, true);
+                  FlutterUtils.warn(LOG, "Error while shutting down app", e, true);
                 }
                 return launchState.launch(env);
               }

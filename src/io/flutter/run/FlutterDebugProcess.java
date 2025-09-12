@@ -141,7 +141,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
           }
         }
         catch (ProcessCanceledException e) {
-          FlutterUtils.warn(LOG, e);
+          FlutterUtils.warn(LOG, "Failed to suppress debug views", e, true);
           throw e;
         }
       }

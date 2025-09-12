@@ -27,7 +27,7 @@ public class FlutterMaterialIcons {
       icons.load(FlutterMaterialIcons.class.getResourceAsStream("/flutter/icons/material.properties"));
     }
     catch (IOException e) {
-      FlutterUtils.warn(LOG, e);
+      FlutterUtils.warn(LOG, "Failed to load material icons", e, true);
     }
   }
 
