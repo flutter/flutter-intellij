@@ -13,6 +13,7 @@ import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
 import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.FlutterUtils;
+import io.flutter.logging.PluginLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Closeable;
@@ -83,10 +84,10 @@ public class ProjectWatch implements Closeable {
       callback.run();
     }
     catch (Exception e) {
-      FlutterUtils.warn(LOG, "Uncaught exception in ProjectWatch callback", e);
+      FlutterUtils.warn(LOG,"Uncaught exception in ProjectWatch callback", e, true);
       close(); // avoid further errors
     }
   }
 
-  private static final @NotNull Logger LOG = Logger.getInstance(ProjectWatch.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(ProjectWatch.class);
 }
