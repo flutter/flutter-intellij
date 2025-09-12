@@ -137,7 +137,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
     - Select "Platform Settings > SDKs"
     - Click the "+" sign at the top, click "Add New SDK (Alt+Insert)", then select "Add JDK from disk...".
     - Select your IntelliJ application (most likely under `Applications`) and from there, select the `Contents/jbr/Contents/Home` directory
-    - **[For macos]** You won't be able to select the `Contents` directory from Finder without right-clicking on the IntelliJ application, and selecting "Quick Look" from the dropdown that opens. From there, you can select the `Contents` directory.
+    - **[For macOS]** You won't be able to select the `Contents` directory from Finder without right-clicking on the IntelliJ application, and selecting "Quick Look" from the dropdown that opens. From there, you can select the `Contents` directory.
     - Change the name so that you can easily identify it, e.g. `IDEA JBR 21`.
     - When you are done, your settings should look something like:
     ```
@@ -150,7 +150,7 @@ name and contact info to the [AUTHORS](AUTHORS) file.
     - Click the "+" sign at the top, click "Add New SDK (Alt+Insert)", then select "Add IntelliJ Platform Plugin SDK...".
     - **[Note]** If you don't see this option, ensure you have the DevKit plugin installed.
     - Select your IntelliJ application (most likely under `Applications`) and from there, select the `Contents` directory
-    - **[For macos]** You won't be able to select the `Contents` directory from Finder without right-clicking on the IntelliJ application, and selecting "Quick Look" from the dropdown that opens. 
+    - **[For macOS]** You won't be able to select the `Contents` directory from Finder without right-clicking on the IntelliJ application, and selecting "Quick Look" from the dropdown that opens. 
     - Remember the generated name (probably `IntelliJ IDEA IU-231.8109.175`) or change to name to a format like this.
     - Change the **Internal Java Platform** to the JBR you added in step 2. (e.g. `IDEA JBR 21`).
     - When you are done, your settings should look something like:
