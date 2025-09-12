@@ -23,6 +23,7 @@ import io.flutter.actions.ReloadAllFlutterApps;
 import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.actions.RestartAllFlutterApps;
 import io.flutter.actions.RestartFlutterApp;
+import io.flutter.logging.PluginLogger;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.view.FlutterViewMessages;
@@ -42,7 +43,7 @@ import java.util.Objects;
  * when not debugging in order to support hot reload.)
  */
 public class FlutterDebugProcess extends DartVmServiceDebugProcess {
-  private static final @NotNull Logger LOG = Logger.getInstance(FlutterDebugProcess.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterDebugProcess.class);
 
   private final @NotNull FlutterApp app;
 
@@ -141,7 +142,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
           }
         }
         catch (ProcessCanceledException e) {
-          FlutterUtils.warn(LOG, "Failed to suppress debug views", e, true);
+          FlutterUtils.warn(LOG, "ProcessCanceledException in suppressDebugViews", e, true);
           throw e;
         }
       }

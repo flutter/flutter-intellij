@@ -13,13 +13,16 @@ import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import icons.FlutterIcons;
+import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.devtools.DevToolsUrl;
+import io.flutter.logging.PluginLogger;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,7 +30,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 public class OpenDevToolsAction extends DumbAwareAction {
-  private static final @NotNull Logger LOG = Logger.getInstance(OpenDevToolsAction.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(OpenDevToolsAction.class);
   private static final String title = "Open Flutter DevTools in Browser";
   private final @Nullable ObservatoryConnector myConnector;
   private final Computable<Boolean> myIsApplicable;
@@ -76,7 +79,7 @@ public class OpenDevToolsAction extends DumbAwareAction {
       }
 
       if (ex != null) {
-        LOG.error(ex);
+        FlutterUtils.error(LOG, "Exception in getDevToolsInstance", ex, true);
         return;
       }
 
