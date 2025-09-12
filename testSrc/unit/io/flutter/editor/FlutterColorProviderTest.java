@@ -43,9 +43,32 @@ public class FlutterColorProviderTest extends AbstractDartElementTest {
   }
 
   @Test
+  public void locatesColorCtor_digitSeparators() throws Exception {
+    run(() -> {
+      final PsiElement testIdentifier = setUpDartElement("main() { Color(0xFF_E3_F2_FD); }", "Color", LeafPsiElement.class);
+      final Color color = new FlutterColorProvider().getColorFrom(testIdentifier);
+      assertNotNull(color);
+      final DartCallExpression element = DartSyntax.findEnclosingFunctionCall(testIdentifier, "Color");
+      assertNotNull(element);
+    });
+  }
+
+
+  @Test
   public void locatesConstColorCtor() throws Exception {
     run(() -> {
       final PsiElement testIdentifier = setUpDartElement("main() { const Color(0xFFE3F2FD); }", "Color", LeafPsiElement.class);
+      final Color color = new FlutterColorProvider().getColorFrom(testIdentifier);
+      assertNotNull(color);
+      final DartNewExpression element = DartSyntax.findEnclosingNewExpression(testIdentifier);
+      assertNotNull(element);
+    });
+  }
+
+  @Test
+  public void locatesConstColorCtor_digitSeparators() throws Exception {
+    run(() -> {
+      final PsiElement testIdentifier = setUpDartElement("main() { const Color(0xFF_E3_F2_FD); }", "Color", LeafPsiElement.class);
       final Color color = new FlutterColorProvider().getColorFrom(testIdentifier);
       assertNotNull(color);
       final DartNewExpression element = DartSyntax.findEnclosingNewExpression(testIdentifier);
@@ -144,7 +167,8 @@ public class FlutterColorProviderTest extends AbstractDartElementTest {
   @Test
   public void locatesCuppertinoColorReference() throws Exception {
     run(() -> {
-      final PsiElement testIdentifier = setUpDartElement("main() { CupertinoColors.systemGreen; }", "CupertinoColors", LeafPsiElement.class);
+      final PsiElement testIdentifier =
+        setUpDartElement("main() { CupertinoColors.systemGreen; }", "CupertinoColors", LeafPsiElement.class);
       final Color color = new FlutterColorProvider().getColorFrom(testIdentifier);
       assertNotNull(color);
       final DartReferenceExpression element = DartSyntax.findEnclosingReferenceExpression(testIdentifier);
@@ -155,7 +179,8 @@ public class FlutterColorProviderTest extends AbstractDartElementTest {
   @Test
   public void locatesColorReferenceWithComment() throws Exception {
     run(() -> {
-      final PsiElement testIdentifier = setUpDartElement("main() { Colors . blue . /* darkish */ shade700; }", "shade700", LeafPsiElement.class);
+      final PsiElement testIdentifier =
+        setUpDartElement("main() { Colors . blue . /* darkish */ shade700; }", "shade700", LeafPsiElement.class);
       final Color color = new FlutterColorProvider().getColorFrom(testIdentifier);
       assertNotNull(color);
       final DartReferenceExpression element = DartSyntax.findEnclosingReferenceExpression(testIdentifier);
@@ -166,7 +191,8 @@ public class FlutterColorProviderTest extends AbstractDartElementTest {
   @Test
   public void locatesCuppertinoColorReferenceWithWitespace() throws Exception {
     run(() -> {
-      final PsiElement testIdentifier = setUpDartElement("main() { CupertinoColors . systemGreen; }", "CupertinoColors", LeafPsiElement.class);
+      final PsiElement testIdentifier =
+        setUpDartElement("main() { CupertinoColors . systemGreen; }", "CupertinoColors", LeafPsiElement.class);
       final Color color = new FlutterColorProvider().getColorFrom(testIdentifier);
       assertNotNull(color);
       final DartReferenceExpression element = DartSyntax.findEnclosingReferenceExpression(testIdentifier);
@@ -177,12 +203,12 @@ public class FlutterColorProviderTest extends AbstractDartElementTest {
   @Test
   public void locatesCuppertinoColorReferenceWithLineEndComment() throws Exception {
     run(() -> {
-      final PsiElement testIdentifier = setUpDartElement("main() { CupertinoColors . // comment\n systemGreen; }", "CupertinoColors", LeafPsiElement.class);
+      final PsiElement testIdentifier =
+        setUpDartElement("main() { CupertinoColors . // comment\n systemGreen; }", "CupertinoColors", LeafPsiElement.class);
       final Color color = new FlutterColorProvider().getColorFrom(testIdentifier);
       assertNotNull(color);
       final DartReferenceExpression element = DartSyntax.findEnclosingReferenceExpression(testIdentifier);
       assertNotNull(element);
     });
   }
-
 }

@@ -21,6 +21,8 @@ public class ExpressionParsingUtils {
         val = val.substring(0, index);
       }
       try {
+        // Handle digit-separators.
+        val = val.replaceAll("_", "");
         return val.startsWith("0x")
                ? Integer.parseUnsignedInt(val.substring(2), 16)
                : Integer.parseUnsignedInt(val);
