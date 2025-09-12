@@ -118,11 +118,7 @@ public class AndroidEmulatorManager {
         listener.run();
       }
       catch (Exception e) {
-        if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-          LOG.warn("AndroidEmulatorManager listener threw an exception", e);
-        } else {
-          LOG.warn("AndroidEmulatorManager listener threw an exception: " + e.getMessage());
-        }
+        FlutterUtils.warn(LOG, "AndroidEmulatorManager listener threw an exception", e);
       }
     }
   }
