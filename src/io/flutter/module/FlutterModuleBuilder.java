@@ -34,6 +34,7 @@ import io.flutter.FlutterConstants;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterDoctorAction;
+import io.flutter.logging.PluginLogger;
 import io.flutter.module.settings.FlutterCreateAdditionalSettingsFields;
 import io.flutter.module.settings.SettingsHelpForm;
 import io.flutter.pub.PubRoot;
@@ -55,7 +56,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static java.util.Arrays.asList;
 
 public class FlutterModuleBuilder extends ModuleBuilder {
-  private static final @NotNull Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterModuleBuilder.class);
 
   protected FlutterModuleWizardStep myStep;
   private FlutterCreateAdditionalSettingsFields mySettingsFields;
