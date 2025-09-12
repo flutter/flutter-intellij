@@ -25,7 +25,6 @@ import io.flutter.logging.PluginLogger;
 import io.flutter.run.FlutterDevice;
 import io.flutter.sdk.AndroidEmulatorManager;
 import io.flutter.sdk.FlutterSdkManager;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.Refreshable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -175,11 +174,7 @@ public class DeviceService {
           listener.run();
         }
         catch (Exception e) {
-          if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-            LOG.warn("DeviceDaemon listener threw an exception", e);
-          } else {
-            LOG.warn("DeviceDaemon listener threw an exception: " + e.getMessage());
-          }
+          FlutterUtils.warn(LOG, "DeviceDaemon listener threw an exception", e, true);
         }
       }
     });
@@ -264,11 +259,7 @@ public class DeviceService {
       return nextCommand.start(request::isCancelled, this::refreshDeviceSelection, this::daemonStopped);
     }
     catch (ExecutionException executionException) {
-      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-        LOG.info("Error starting up the Flutter device daemon", executionException);
-      } else {
-        LOG.info("Error starting up the Flutter device daemon: " + executionException);
-      }
+      FlutterUtils.info(LOG, "Error starting up the Flutter device daemon", executionException, true);
 
       // Couldn't start a new instance; don't shut down any previous instance.
       return previous;
