@@ -275,7 +275,7 @@ class DeviceDaemon {
           }
           catch (java.util.concurrent.ExecutionException e) {
             // This is not a user facing crash - we log (and no devices will be discovered).
-            FlutterUtils.warn(LOG, e, true);
+            FlutterUtils.warn(LOG, "Error while starting device daemon", e, true);
           }
         }
       }

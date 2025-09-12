@@ -53,7 +53,7 @@ public class FlutterColors {
       colors.load(FlutterUtils.class.getResourceAsStream("/flutter/colors/material.properties"));
     }
     catch (IOException e) {
-      FlutterUtils.warn(LOG, e);
+      FlutterUtils.warn(LOG, "Failed to load colors", e, true);
     }
 
     colorToName = new HashMap<>();

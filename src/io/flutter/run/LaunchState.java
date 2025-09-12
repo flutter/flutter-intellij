@@ -402,7 +402,7 @@ public class LaunchState extends CommandLineState {
                   app.shutdownAsync().get();
                 }
                 catch (InterruptedException | java.util.concurrent.ExecutionException e) {
-                  FlutterUtils.warn(LOG, e, true);
+                  FlutterUtils.warn(LOG, "Error while shutting down app", e, true);
                 }
                 return launchState.launch(env);
               }

@@ -94,7 +94,7 @@ public class IconPreviewGenerator {
         }
       }
       catch (IOException ex) {
-        FlutterUtils.warn(LOG, ex);
+        FlutterUtils.warn(LOG, "Unable to batch convert icons", ex, true);
       }
       return null;
     });
@@ -114,7 +114,7 @@ public class IconPreviewGenerator {
       result = callback.fun(image, graphics, frc);
     }
     catch (IOException | FontFormatException ex) {
-      FlutterUtils.warn(LOG, ex);
+      FlutterUtils.warn(LOG, "Unable to generate icon", ex, true);
     }
     finally {
       if (graphics != null) graphics.dispose();

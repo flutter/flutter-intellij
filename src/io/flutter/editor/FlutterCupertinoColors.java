@@ -31,7 +31,7 @@ public class FlutterCupertinoColors {
       colors.load(FlutterUtils.class.getResourceAsStream("/flutter/colors/cupertino.properties"));
     }
     catch (IOException e) {
-      FlutterUtils.warn(LOG, e);
+      FlutterUtils.warn(LOG, "Failed to load Cupertino colors", e, true);
     }
 
     colorToName = new HashMap<>();
