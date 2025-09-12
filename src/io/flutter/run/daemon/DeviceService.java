@@ -21,9 +21,11 @@ import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.FlutterDartAnalysisServer;
+import io.flutter.logging.PluginLogger;
 import io.flutter.run.FlutterDevice;
 import io.flutter.sdk.AndroidEmulatorManager;
 import io.flutter.sdk.FlutterSdkManager;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.Refreshable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -173,7 +175,11 @@ public class DeviceService {
           listener.run();
         }
         catch (Exception e) {
-          FlutterUtils.warn(LOG, "DeviceDaemon listener threw an exception", e);
+          if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+            LOG.warn("DeviceDaemon listener threw an exception", e);
+          } else {
+            LOG.warn("DeviceDaemon listener threw an exception: " + e.getMessage());
+          }
         }
       }
     });
@@ -258,7 +264,11 @@ public class DeviceService {
       return nextCommand.start(request::isCancelled, this::refreshDeviceSelection, this::daemonStopped);
     }
     catch (ExecutionException executionException) {
-      LOG.info("Error starting up the Flutter device daemon", executionException);
+      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+        LOG.info("Error starting up the Flutter device daemon", executionException);
+      } else {
+        LOG.info("Error starting up the Flutter device daemon: " + executionException);
+      }
 
       // Couldn't start a new instance; don't shut down any previous instance.
       return previous;
@@ -284,5 +294,5 @@ public class DeviceService {
 
   public enum State {INACTIVE, LOADING, READY}
 
-  private static final @NotNull Logger LOG = Logger.getInstance(DeviceService.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(DeviceService.class);
 }
