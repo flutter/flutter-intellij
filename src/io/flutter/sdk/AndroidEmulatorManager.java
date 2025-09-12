@@ -12,6 +12,8 @@ import com.intellij.util.concurrency.AppExecutorUtil;
 import io.flutter.FlutterUtils;
 import io.flutter.android.AndroidEmulator;
 import io.flutter.android.AndroidSdk;
+import io.flutter.logging.PluginLogger;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -26,7 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * as notifying interested parties when the list changes.
  */
 public class AndroidEmulatorManager {
-  private static final @NotNull Logger LOG = Logger.getInstance(AndroidEmulatorManager.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(AndroidEmulatorManager.class);
 
   @NotNull
   public static AndroidEmulatorManager getInstance(@NotNull Project project) {
