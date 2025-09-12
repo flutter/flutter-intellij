@@ -31,6 +31,7 @@ import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
+import io.flutter.logging.PluginLogger;
 import io.flutter.run.FlutterPositionMapper;
 import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.sdk.FlutterSdk;
@@ -293,7 +294,7 @@ public class FlutterTestRunner extends GenericProgramRunner {
         obj = elem.getAsJsonObject();
       }
       catch (JsonSyntaxException e) {
-        FlutterUtils.warn(LOG, "Unable to parse JSON from Flutter test", e);
+        FlutterUtils.warn(LOG, "Unable to parse JSON from Flutter test", e, true);
         return;
       }
 
@@ -342,5 +343,5 @@ public class FlutterTestRunner extends GenericProgramRunner {
     }
   }
 
-  private static final @NotNull Logger LOG = Logger.getInstance(FlutterTestRunner.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterTestRunner.class);
 }
