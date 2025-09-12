@@ -55,6 +55,7 @@ import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.FlutterDartAnalysisServer;
+import io.flutter.logging.PluginLogger;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
@@ -74,7 +75,7 @@ import java.util.concurrent.TimeUnit;
  * Handle the mechanics of performing a hot reload on file save.
  */
 public class FlutterReloadManager {
-  private static final @NotNull Logger LOG = Logger.getInstance(FlutterReloadManager.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterReloadManager.class);
 
   private static final Map<String, NotificationGroup> toolWindowNotificationGroups = new HashMap<>();
 
@@ -142,7 +143,11 @@ public class FlutterReloadManager {
         }
         catch (Throwable t) {
           // A catch-all, so any exceptions don't bubble through to the users.
-          LOG.warn("Exception from FlutterReloadManager", t);
+          if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+            LOG.warn("Exception from FlutterReloadManager", t);
+          } else {
+            LOG.warn("Exception from FlutterReloadManager: " + t.getMessage());
+          }
         }
       }
 
@@ -161,7 +166,11 @@ public class FlutterReloadManager {
           handleSaveAllNotification(eventEditor);
         }
         catch (Throwable t) {
-          FlutterUtils.warn(LOG, "Exception from hot reload on save", t);
+          if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+            LOG.warn("Exception from hot reload on save", t);
+          } else {
+            LOG.warn("Exception from hot reload on save: " + t.getMessage());
+          }
         }
         finally {
           // Context: "Released EditorImpl held by lambda in FlutterReloadManager" (https://github.com/flutter/flutter-intellij/issues/7507)
@@ -325,7 +334,11 @@ public class FlutterReloadManager {
       }
     }
     catch (ExecutionException | InterruptedException e) {
-      LOG.error("Unable to sync files: " + e);
+      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+        LOG.error("Unable to sync files", e);
+      } else {
+        LOG.error("Unable to sync files: " + e.getMessage());
+      }
     }
   }
 

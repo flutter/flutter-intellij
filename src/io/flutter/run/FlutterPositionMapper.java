@@ -22,6 +22,7 @@ import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
+import io.flutter.logging.PluginLogger;
 import io.flutter.utils.OpenApiUtils;
 import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.element.LibraryRef;
@@ -40,7 +41,7 @@ import java.util.concurrent.CompletableFuture;
  * Used when setting breakpoints, stepping through code, and so on while debugging.
  */
 public class FlutterPositionMapper implements DartVmServiceDebugProcess.PositionMapper {
-  private static final @NotNull Logger LOG = Logger.getInstance(FlutterPositionMapper.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterPositionMapper.class);
 
   /**
    * This Project can't be non-null as we set it to null {@link #shutdown()} so the Project isn't held onto.
@@ -257,7 +258,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
   private XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final String scriptId,
                                             @NotNull final String scriptUri, int tokenPos, CompletableFuture<String> fileFuture) {
     if (scriptProvider == null) {
-      FlutterUtils.warn(LOG, "attempted to get source position before connected to observatory");
+      LOG.warn("attempted to get source position before connected to observatory");
       return null;
     }
 
@@ -379,13 +380,13 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
       }
 
       if (!dartAnalysisServerService.serverReadyForRequest()) {
-        FlutterUtils.warn(LOG, "Dart analysis server is not running. Some breakpoints may not work.");
+        LOG.warn("Dart analysis server is not running. Some breakpoints may not work.");
         return null;
       }
 
       final String contextId = dartAnalysisServerService.execution_createContext(sourceLocation.getPath());
       if (contextId == null) {
-        FlutterUtils.warn(LOG, "Failed to get execution context from analysis server. Some breakpoints may not work.");
+        LOG.warn("Failed to get execution context from analysis server. Some breakpoints may not work.");
         return null;
       }
 
