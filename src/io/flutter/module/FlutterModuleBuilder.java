@@ -41,7 +41,6 @@ import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.OpenApiUtils;
