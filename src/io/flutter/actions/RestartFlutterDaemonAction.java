@@ -23,6 +23,7 @@ public class RestartFlutterDaemonAction extends AnAction {
    * Create a `RestartFlutterDaemonAction` for presentation in the device selector.
    */
   public static RestartFlutterDaemonAction forDeviceSelector() {
+    //noinspection DialogTitleCapitalization
     return new RestartFlutterDaemonAction("Restart Flutter Daemon", "Restart Flutter Daemon", FlutterIcons.Flutter);
   }
 
