@@ -17,7 +17,6 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import io.flutter.FlutterUtils;
 import io.flutter.logging.PluginLogger;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
@@ -132,7 +131,8 @@ public class AndroidSdk {
     catch (ExecutionException | RuntimeException e) {
       if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
         LOG.warn("Error listing android emulators", e);
-      } else {
+      }
+      else {
         LOG.warn("Error listing android emulators");
       }
       return Collections.emptyList();
