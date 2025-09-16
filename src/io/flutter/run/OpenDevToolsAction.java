@@ -22,7 +22,6 @@ import io.flutter.logging.PluginLogger;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

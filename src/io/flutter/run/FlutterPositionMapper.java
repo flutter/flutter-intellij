@@ -20,7 +20,6 @@ import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
-import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.logging.PluginLogger;
 import io.flutter.utils.OpenApiUtils;
@@ -32,7 +31,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -278,7 +282,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
   String getRemoteSourceRoot() {
     return remoteSourceRoot;
   }
-  
+
   @Nullable
   protected VirtualFile findLocalFile(@NotNull String uri) {
     return findLocalFile(uri, null);

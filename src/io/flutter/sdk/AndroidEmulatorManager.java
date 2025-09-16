@@ -13,7 +13,6 @@ import io.flutter.FlutterUtils;
 import io.flutter.android.AndroidEmulator;
 import io.flutter.android.AndroidSdk;
 import io.flutter.logging.PluginLogger;
-import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
