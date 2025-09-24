@@ -8,6 +8,7 @@ package io.flutter.utils;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.TripleFunction;
 import io.flutter.FlutterUtils;
+import io.flutter.logging.PluginLogger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,7 +25,7 @@ import java.util.Properties;
 
 @SuppressWarnings("UseJBColor")
 public class IconPreviewGenerator {
-  private static final @NotNull Logger LOG = Logger.getInstance(IconPreviewGenerator.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(IconPreviewGenerator.class);
 
   @NotNull final String fontFilePath;
   int iconSize = 16;
