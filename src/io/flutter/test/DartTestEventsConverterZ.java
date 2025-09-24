@@ -15,6 +15,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.PathUtil;
 import com.jetbrains.lang.dart.ide.runner.util.DartTestLocationProvider;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
+import io.flutter.logging.PluginLogger;
 import io.flutter.utils.JsonUtils;
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessageVisitor;
 import org.jetbrains.annotations.NotNull;
@@ -39,7 +40,7 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings({"FieldMayBeFinal", "LocalCanBeFinal", "SameReturnValue"})
 public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter {
-  private static final @NotNull Logger LOG = Logger.getInstance(DartTestEventsConverterZ.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(DartTestEventsConverterZ.class);
 
   private static final String TYPE_START = "start";
   private static final String TYPE_SUITE = "suite";
