@@ -143,9 +143,7 @@ public class DaemonApi {
         else if (outputType.equals(ProcessOutputTypes.STDOUT)) {
           final String text = event.getText();
 
-          if (FlutterSettings.getInstance().isVerboseLogging()) {
-            LOG.info("[<-- " + text.trim() + "]");
-          }
+          LOG.debug("[<-- " + text.trim() + "]");
 
           stdoutParser.appendOutput(text);
 
@@ -305,9 +303,7 @@ public class DaemonApi {
     stdin.write(json);
     stdin.write("]\n");
 
-    if (FlutterSettings.getInstance().isVerboseLogging()) {
-      LOG.info("[--> " + json + "]");
-    }
+    LOG.debug("[--> " + json + "]");
 
     if (stdin.checkError()) {
       LOG.warn("can't write command to Flutter process due to error: " + json);

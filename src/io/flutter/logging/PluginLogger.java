@@ -5,8 +5,11 @@
  */
 package io.flutter.logging;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
+import com.intellij.openapi.diagnostic.LogLevel;
 import com.intellij.openapi.diagnostic.Logger;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -16,7 +19,10 @@ import java.util.logging.SimpleFormatter;
 
 public class PluginLogger {
   private static final String LOG_FILE_NAME = "flutter.log";
+
+  // This handler specifies the logging format and location.
   private static final FileHandler fileHandler;
+
   static {
     final String logPath = PathManager.getLogPath();
     try {
@@ -30,8 +36,25 @@ public class PluginLogger {
     fileHandler.setFormatter(new SimpleFormatter());
   }
 
+  // Add the handler to the root logger so that all classes within `io.flutter` log to the file correctly. We can also update the log level
+  // of all classes at once by changing the root logger level.
+  private static final java.util.logging.Logger rootLogger = java.util.logging.Logger.getLogger("io.flutter");
+
+  static {
+    rootLogger.addHandler(fileHandler);
+    // This check prevents trying to access settings in test context.
+    if (ApplicationManager.getApplication() != null) {
+      updateLogLevel();
+      FlutterSettings.getInstance().addListener(PluginLogger::updateLogLevel);
+    }
+  }
+
+  private static void updateLogLevel() {
+    final Logger rootLoggerInstance = Logger.getInstance("io.flutter");
+    rootLoggerInstance.setLevel(FlutterSettings.getInstance().isVerboseLogging() ? LogLevel.ALL : LogLevel.INFO);
+  }
+
   public static @NotNull Logger createLogger(@NotNull Class<?> logClass) {
-    java.util.logging.Logger.getLogger(logClass.getName()).addHandler(fileHandler);
     return Logger.getInstance(logClass.getName());
   }
 }
