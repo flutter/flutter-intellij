@@ -5,6 +5,7 @@
  */
 package io.flutter.logging;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.LogLevel;
 import com.intellij.openapi.diagnostic.Logger;
@@ -41,8 +42,10 @@ public class PluginLogger {
 
   static {
     rootLogger.addHandler(fileHandler);
-    updateLogLevel();
-    FlutterSettings.getInstance().addListener(PluginLogger::updateLogLevel);
+    if (ApplicationManager.getApplication() != null) {
+      updateLogLevel();
+      FlutterSettings.getInstance().addListener(PluginLogger::updateLogLevel);
+    }
   }
 
   private static void updateLogLevel() {
