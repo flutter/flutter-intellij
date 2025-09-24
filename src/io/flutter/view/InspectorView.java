@@ -33,6 +33,7 @@ import io.flutter.jxbrowser.FailureType;
 import io.flutter.jxbrowser.InstallationFailedReason;
 import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.jxbrowser.JxBrowserStatus;
+import io.flutter.logging.PluginLogger;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.daemon.DevToolsInstance;
 import io.flutter.run.daemon.DevToolsService;
@@ -61,7 +62,7 @@ import java.util.concurrent.atomic.AtomicReference;
   storages = {@Storage("$WORKSPACE_FILE$")}
 )
 public class InspectorView implements Disposable {
-  private static final @NotNull Logger LOG = Logger.getInstance(InspectorView.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(InspectorView.class);
 
   public static final @NotNull String TOOL_WINDOW_ID = "Flutter Inspector";
 
@@ -275,7 +276,7 @@ public class InspectorView implements Disposable {
 
         // TODO(helinx): Restart DevTools server if there's an error.
         if (error != null) {
-          LOG.error(error);
+          FlutterUtils.error(LOG, "Error while starting DevTools server", error, true);
           viewUtils.presentLabel(toolWindow, DEVTOOLS_FAILED_LABEL);
           return;
         }
