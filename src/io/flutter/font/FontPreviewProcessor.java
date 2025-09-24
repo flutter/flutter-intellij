@@ -32,6 +32,7 @@ import com.jetbrains.lang.dart.resolve.DartPsiScopeProcessor;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.editor.FlutterIconLineMarkerProvider;
+import io.flutter.logging.PluginLogger;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
@@ -61,7 +62,7 @@ public class FontPreviewProcessor {
   private static final Pattern IMPORT_STATEMENT_PATTERN = Pattern.compile("^\\s*import\\s+[\"']([-_. $A-Za-z0-9/]+\\.dart)[\"'].*");
   private static final Map<String, Set<String>> ANALYZED_PROJECT_FILES = new HashMap<>();
   private static final Map<String, WorkItem> WORK_ITEMS = new HashMap<>();
-  private static Logger LOG = Logger.getInstance(FontPreviewProcessor.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(FontPreviewProcessor.class);
 
   static {
     UNSUPPORTED_PACKAGES.put("flutter_icons", FlutterBundle.message("icon.preview.disallow.flutter_icons"));
@@ -83,7 +84,6 @@ public class FontPreviewProcessor {
     if (ANALYZED_PROJECT_FILES.containsKey(project.getBasePath())) {
       return;
     }
-    LOG = FlutterSettings.getInstance().isVerboseLogging() ? Logger.getInstance(FontPreviewProcessor.class) : null;
     log("Analyzing project ", project.getName());
     ANALYZED_PROJECT_FILES.put(project.getBasePath(), new HashSet<>());
     ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
@@ -436,20 +436,16 @@ public class FontPreviewProcessor {
   }
 
   private static void log(String msg, String... msgs) {
-    if (LOG != null) {
-      final StringBuilder b = new StringBuilder("ICONS -- ");
-      b.append(msg);
-      for (String s : msgs) {
-        b.append(" ").append(s);
-      }
-      LOG.info(b.toString());
+    final StringBuilder b = new StringBuilder("ICONS -- ");
+    b.append(msg);
+    for (String s : msgs) {
+      b.append(" ").append(s);
     }
+    LOG.debug(b.toString());
   }
 
   private static void log(String msg, Exception ex) {
-    if (LOG != null) {
-      LOG.info("ICONS--" + msg, ex);
-    }
+    LOG.debug("ICONS--" + msg, ex);
   }
 
   static class WorkItem {
