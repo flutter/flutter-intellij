@@ -42,6 +42,7 @@ public class PluginLogger {
 
   static {
     rootLogger.addHandler(fileHandler);
+    // This check prevents trying to access settings in test context.
     if (ApplicationManager.getApplication() != null) {
       updateLogLevel();
       FlutterSettings.getInstance().addListener(PluginLogger::updateLogLevel);
