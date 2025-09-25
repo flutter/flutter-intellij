@@ -19,7 +19,6 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import io.flutter.logging.PluginLogger;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
 import io.flutter.utils.StdoutJsonParser;
 import org.jetbrains.annotations.NotNull;
