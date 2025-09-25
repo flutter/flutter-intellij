@@ -2,6 +2,8 @@
 
 ### Added
 
+- Add the ability to check dependencies' information in `pubspec.yaml`. (#8551)
+
 ### Removed
 
 - The Flutter version is now read from the file ./bin/cache/flutter.version.json, required in Flutter 3.33+ (#8465)
