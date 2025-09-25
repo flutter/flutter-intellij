@@ -323,6 +323,7 @@
                          id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle" nonDefaultProject="true"/>
     <colorProvider implementation="io.flutter.editor.FlutterColorProvider"/>
     <codeInsight.lineMarkerProvider language="Dart" implementationClass="io.flutter.editor.FlutterIconLineMarkerProvider"/>
+    <codeInsight.lineMarkerProvider language="yaml" implementationClass="io.flutter.editor.PubspecLineMarkerProvider"/>
     <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
 
     <toolWindow id="Flutter Inspector" anchor="right" icon="FlutterIcons.DevToolsInspector" factoryClass="io.flutter.view.InspectorViewFactory"/>
