@@ -13,6 +13,7 @@ import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -28,6 +29,7 @@ import com.intellij.util.ModalityUiUtil;
 import com.intellij.util.ui.JBUI;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.logging.PluginLogger;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.sdk.AndroidEmulatorManager;
@@ -43,6 +45,8 @@ import java.util.*;
 import java.util.List;
 
 public class DeviceSelectorAction extends AnAction implements CustomComponentAction, DumbAware {
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterDoctorAction.class);
+
   private static final Key<JButton> CUSTOM_COMPONENT_KEY = Key.create("customComponent");
   private static final Key<JBLabel> ICON_LABEL_KEY = Key.create("iconLabel");
   private static final Key<JBLabel> TEXT_LABEL_KEY = Key.create("textLabel");
@@ -386,6 +390,9 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
   }
 
   private void updateActions(@NotNull Project project, @NotNull Presentation presentation) {
+    final String projectName = project.getName();
+    LOG.debug("[" + projectName + "] Building device selector actions");
+
     // Create a new list instead of modifying the existing one
     final List<AnAction> newActions = new ArrayList<>();
 
@@ -401,6 +408,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
 
       final SelectDeviceAction deviceAction = new SelectDeviceAction(device, devices);
       newActions.add(deviceAction);
+      LOG.debug("[" + projectName + "] Device action added for " + device);
 
       if (Objects.equals(device, selectedDevice)) {
         selectedDeviceAction = deviceAction;
@@ -423,6 +431,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
       }
       newActions.add(new Separator());
       newActions.add(new OpenSimulatorAction(!simulatorOpen));
+      LOG.debug("[" + projectName + "] 'Open iOS Simulator' action added");
     }
 
     // Add Open Android emulators actions.
@@ -430,6 +439,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
     if (emulatorActions != null && !emulatorActions.isEmpty()) {
       newActions.add(new Separator());
       newActions.addAll(emulatorActions);
+      LOG.debug("[" + projectName + "] Emulator action added: " + emulatorActions);
     }
     if (!FlutterModuleUtils.hasInternalDartSdkPath(project)) {
       newActions.add(new Separator());
@@ -437,6 +447,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
     }
 
     // Atomically replace the action list
+    LOG.debug("[" + projectName + "] Replacing device selector actions");
     this.actions = newActions;
 
     var tracker = ActivityTracker.getInstance();
