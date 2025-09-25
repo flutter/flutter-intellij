@@ -45,7 +45,7 @@ import java.util.regex.Pattern;
  */
 public class PubspecLineMarkerProvider implements LineMarkerProvider {
 
-  // Pattern to extract version from various formats like ^1.0.0, >=1.0.0, 1.0.0, etc.
+  // Pattern to extract version from various formats like ^1.0.0, >=1.0.0, <2.0.0, 1.0.0, etc.
   private static final Pattern VERSION_PATTERN = Pattern.compile("([\\^>=<~]*)([0-9]+\\.[0-9]+\\.[0-9]+(?:-[a-zA-Z0-9.-]+)?)");
 
   // Pattern to extract Git URLs from various formats
@@ -449,17 +449,26 @@ public class PubspecLineMarkerProvider implements LineMarkerProvider {
       valueText = valueText.substring(1, valueText.length() - 1);
     }
 
-    // Extract version using regex - handle various prefixes
-    java.util.regex.Matcher matcher = VERSION_PATTERN.matcher(valueText);
-    if (matcher.find()) {
-      return matcher.group(2); // Return the version number without prefix
+    // Handle range versions like ">=1.0.0 <2.0.0" - these should not show version-specific actions
+    if (valueText.contains(" ") && (valueText.contains(">=") || valueText.contains("<"))) {
+      return null; // Don't show version-specific actions for ranges
     }
 
-    // Handle range versions like ">=1.0.0 <2.0.0" - extract first version
-    Pattern rangePattern = Pattern.compile(">=?\\s*([0-9]+\\.[0-9]+\\.[0-9]+(?:-[a-zA-Z0-9.-]+)?)");
-    java.util.regex.Matcher rangeMatcher = rangePattern.matcher(valueText);
-    if (rangeMatcher.find()) {
-      return rangeMatcher.group(1);
+    // Handle single constraint versions like "<2.0.0" or ">=1.0.0" - these should not show version-specific actions
+    if (valueText.startsWith("<") || valueText.startsWith(">=")) {
+      return null; // Don't show version-specific actions for constraints
+    }
+
+    // Extract version using regex - handle various prefixes for specific versions
+    java.util.regex.Matcher matcher = VERSION_PATTERN.matcher(valueText);
+    if (matcher.find()) {
+      String prefix = matcher.group(1);
+      String version = matcher.group(2);
+
+      // Only show version-specific actions for exact versions or caret/tilde constraints
+      if (prefix.isEmpty() || prefix.equals("^") || prefix.equals("~")) {
+        return version; // Return the version number without prefix
+      }
     }
 
     return null;
