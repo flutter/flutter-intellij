@@ -15,6 +15,7 @@
 - Refactored `DeviceSelectorAction` and add rich icons to different platform devices (#8475)
 - Fix DTD freezes when opening projects, and EDT freezes when the theme is changed and opening embedded DevTools (#8477)
 - Fix `DeviceSelectorAction` `NoSuchElementException` in the toolbar layout (#8515)
+- Fix `DeviceSelectorAction`'s concurrent modification exception. (#8550)
 
 ## 87.1.0
 
