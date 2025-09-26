@@ -45,7 +45,7 @@ import java.util.*;
 import java.util.List;
 
 public class DeviceSelectorAction extends AnAction implements CustomComponentAction, DumbAware {
-  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterDoctorAction.class);
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(DeviceSelectorAction.class);
 
   private static final Key<JButton> CUSTOM_COMPONENT_KEY = Key.create("customComponent");
   private static final Key<JBLabel> ICON_LABEL_KEY = Key.create("iconLabel");
