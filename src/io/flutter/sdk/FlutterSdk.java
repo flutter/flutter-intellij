@@ -582,7 +582,7 @@ public class FlutterSdk {
 
   @NotNull
   @NonNls
-  private static final String @NotNull [] PLATFORMS =
+  private static final String[] PLATFORMS =
     new String[]{"enable-android", "enable-ios", "enable-web", "enable-linux-desktop", "enable-macos-desktop", "enable-windows-desktop"};
 
   @NotNull

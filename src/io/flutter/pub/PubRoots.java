@@ -28,7 +28,7 @@ public class PubRoots {
    * (Based on the filesystem cache; doesn't refresh anything.)
    */
   @NotNull
-  public static List<@NotNull PubRoot> forModule(@NotNull Module module) {
+  public static List<PubRoot> forModule(@NotNull Module module) {
     final List<PubRoot> result = new ArrayList<>();
     if (module.isDisposed()) return result;
 
@@ -47,7 +47,7 @@ public class PubRoots {
    * (Based on the filesystem cache; doesn't refresh anything.)
    */
   @NotNull
-  public static List<@NotNull PubRoot> forProject(@NotNull Project project) {
+  public static List<PubRoot> forProject(@NotNull Project project) {
     final List<PubRoot> result = new ArrayList<>();
     if (project.isDisposed()) return result;
 

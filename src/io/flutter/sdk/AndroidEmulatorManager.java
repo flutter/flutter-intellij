@@ -61,7 +61,7 @@ public class AndroidEmulatorManager {
 
   private CompletableFuture<List<AndroidEmulator>> inProgressRefresh;
 
-  public CompletableFuture<@NotNull List<AndroidEmulator>> refresh() {
+  public CompletableFuture<List<AndroidEmulator>> refresh() {
     // We don't need to refresh if one is in progress.
     synchronized (this) {
       if (inProgressRefresh != null) {
@@ -98,7 +98,7 @@ public class AndroidEmulatorManager {
     return future;
   }
 
-  public @NotNull List<@NotNull AndroidEmulator> getCachedEmulators() {
+  public @NotNull List<AndroidEmulator> getCachedEmulators() {
     return cachedEmulators;
   }
 

@@ -43,7 +43,7 @@ public class FlutterSampleNotificationProvider implements EditorNotificationProv
 
   @Nullable
   @Override
-  public Function<? super @NotNull FileEditor, ? extends @Nullable JComponent> collectNotificationData(@NotNull Project project,
+  public Function<? super FileEditor, ? extends JComponent> collectNotificationData(@NotNull Project project,
                                                                                                        @NotNull VirtualFile file) {
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     if (sdk == null) {

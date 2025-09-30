@@ -50,7 +50,7 @@ public abstract class EmbeddedBrowser {
 
   public static final String ANALYTICS_CATEGORY = "embedded-browser";
 
-  protected final Map<@NotNull String, Map<@NotNull String, @NotNull BrowserTab>> windows = new HashMap<>();
+  protected final Map<String, Map<String, BrowserTab>> windows = new HashMap<>();
 
   public abstract @NotNull Logger logger();
 

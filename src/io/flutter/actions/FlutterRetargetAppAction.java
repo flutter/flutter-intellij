@@ -33,7 +33,7 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
   FlutterRetargetAppAction(@NotNull String actionId,
                            @Nullable String text,
                            @Nullable String description,
-                           @SuppressWarnings("SameParameterValue") @NotNull String @NotNull ... places) {
+                           @SuppressWarnings("SameParameterValue") @NotNull String ... places) {
     super(text, description, null);
     myActionId = actionId;
     myPlaces.addAll(Arrays.asList(places));

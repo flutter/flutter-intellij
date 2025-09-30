@@ -38,7 +38,7 @@ public class WorkspaceCache {
 
   private boolean refreshScheduled = false;
 
-  private final @NotNull Set<@NotNull Runnable> subscribers = new LinkedHashSet<>();
+  private final @NotNull Set<Runnable> subscribers = new LinkedHashSet<>();
 
   private WorkspaceCache(@NotNull final Project project) {
     this.project = project;
@@ -157,7 +157,7 @@ public class WorkspaceCache {
     notifyListeners();
   }
 
-  private Set<@NotNull Runnable> getSubscribers() {
+  private Set<Runnable> getSubscribers() {
     synchronized (subscribers) {
       return ImmutableSet.copyOf(subscribers);
     }

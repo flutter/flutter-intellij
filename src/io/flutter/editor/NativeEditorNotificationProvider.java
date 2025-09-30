@@ -34,7 +34,7 @@ public class NativeEditorNotificationProvider implements EditorNotificationProvi
   }
 
   @Override
-  public @Nullable Function<? super @NotNull FileEditor, ? extends @Nullable JComponent> collectNotificationData(@NotNull Project project,
+  public @Nullable Function<? super FileEditor, ? extends JComponent> collectNotificationData(@NotNull Project project,
                                                                                                                  @NotNull VirtualFile file) {
     if (!file.isInLocalFileSystem() || !showNotification) {
       return null;

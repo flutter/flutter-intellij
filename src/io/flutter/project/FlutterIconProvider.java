@@ -77,7 +77,7 @@ public class FlutterIconProvider extends IconProvider {
   }
 
   @NotNull
-  private static Icon overlayIcons(@NotNull Icon @NotNull ... icons) {
+  private static Icon overlayIcons(@NotNull Icon ... icons) {
     final LayeredIcon result = new LayeredIcon(icons.length);
 
     for (int layer = 0; layer < icons.length; layer++) {

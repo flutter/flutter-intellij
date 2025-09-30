@@ -174,7 +174,7 @@ public class AttachDebuggerAction extends FlutterSdkAction {
     return count == 1 ? sdkConfig : null;
   }
 
-  private static void onAttachTermination(@NotNull Project project, @NotNull Consumer<@NotNull Project> runner) {
+  private static void onAttachTermination(@NotNull Project project, @NotNull Consumer<Project> runner) {
     final MessageBusConnection connection = project.getMessageBus().connect();
 
     // Need an ExecutionListener to clean up project-scoped state when the Stop button is clicked.

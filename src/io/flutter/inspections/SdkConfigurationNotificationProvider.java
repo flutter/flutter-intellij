@@ -36,7 +36,7 @@ public class SdkConfigurationNotificationProvider implements EditorNotificationP
   }
 
   @Override
-  public @Nullable Function<? super @NotNull FileEditor, ? extends @Nullable JComponent> collectNotificationData(@NotNull Project project,
+  public @Nullable Function<? super FileEditor, ? extends JComponent> collectNotificationData(@NotNull Project project,
                                                                                                                  @NotNull VirtualFile file) {
     // If this is a Bazel configured Flutter project, exit immediately, neither of the notifications should be shown for this project type.
     if (FlutterModuleUtils.isFlutterBazelProject(project)) return null;

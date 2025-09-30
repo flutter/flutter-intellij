@@ -47,7 +47,7 @@ public class FlutterRequestUtilities {
    * </pre>
    */
   public static JsonObject generateAnalysisSetSubscriptions(@NotNull String id,
-                                                            Map<String, @NotNull List<String>> subscriptions) {
+                                                            Map<String, List<String>> subscriptions) {
     final JsonObject params = new JsonObject();
     params.add(SUBSCRIPTIONS, buildJsonElement(subscriptions));
     return buildJsonObjectRequest(id, METHOD_FLUTTER_SET_SUBSCRIPTIONS, params);

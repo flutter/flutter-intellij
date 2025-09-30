@@ -26,7 +26,7 @@ import java.util.function.Function;
 public final class FlutterPubspecNotificationProvider implements EditorNotificationProvider {
   @Nullable
   @Override
-  public Function<? super @NotNull FileEditor, ? extends @Nullable JComponent> collectNotificationData(@NotNull Project project,
+  public Function<? super FileEditor, ? extends JComponent> collectNotificationData(@NotNull Project project,
                                                                                                        @NotNull VirtualFile file) {
     // We only show this notification inside of local pubspec files.
     if (!PubRoot.isPubspec(file) || !file.isInLocalFileSystem()) {

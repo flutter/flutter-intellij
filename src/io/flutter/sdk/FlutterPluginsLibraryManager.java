@@ -134,7 +134,7 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
       .submit(AppExecutorUtil.getAppExecutorService());
   }
 
-  private static @NotNull Set<@NotNull String> getFlutterPluginPaths(@NotNull List<@NotNull PubRoot> roots) {
+  private static @NotNull Set<String> getFlutterPluginPaths(@NotNull List<PubRoot> roots) {
     final Set<String> paths = new HashSet<>();
 
     for (PubRoot pubRoot : roots) {

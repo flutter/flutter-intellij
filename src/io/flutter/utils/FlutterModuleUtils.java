@@ -201,7 +201,7 @@ public class FlutterModuleUtils {
   }
 
 
-  public static @NotNull Module @NotNull [] getModules(@NotNull Project project) {
+  public static @NotNull Module[] getModules(@NotNull Project project) {
     // A disposed project has no modules.
     if (project.isDisposed()) return Module.EMPTY_ARRAY;
 

@@ -426,7 +426,7 @@ public class DartVmServiceValue extends XNamedValue {
 
     if (instance.getBytes() != null) { // true for typed data
       //noinspection ConstantConditions
-      byte @NotNull [] bytes = Base64.getDecoder().decode(instance.getBytes());
+      byte[] bytes = Base64.getDecoder().decode(instance.getBytes());
       TypedDataList data = getTypedDataList(bytes);
       XValueChildrenList childrenList = new XValueChildrenList(data.size());
       for (int i = 0; i < data.size(); i++) {
@@ -469,7 +469,7 @@ public class DartVmServiceValue extends XNamedValue {
     return new InstanceRef(ref);
   }
 
-  private TypedDataList getTypedDataList(byte @NotNull [] bytes) {
+  private TypedDataList getTypedDataList(byte[] bytes) {
     ByteBuffer buffer = ByteBuffer.wrap(bytes);
     //noinspection ConstantConditions
     return switch (myInstanceRef.getKind()) {

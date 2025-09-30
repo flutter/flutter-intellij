@@ -23,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class OpenApiUtils {
 
-  public static @NotNull VirtualFile @NotNull [] getContentRoots(@NotNull Module module) {
+  public static @NotNull VirtualFile[] getContentRoots(@NotNull Module module) {
     var moduleRootManager = ModuleRootManager.getInstance(module);
     return moduleRootManager == null ? VirtualFile.EMPTY_ARRAY : moduleRootManager.getContentRoots();
   }
@@ -33,7 +33,7 @@ public class OpenApiUtils {
     return registrar == null ? null : registrar.getLibraryTable(project);
   }
 
-  public static @NotNull Module @NotNull [] getModules(@NotNull Project project) {
+  public static @NotNull Module[] getModules(@NotNull Project project) {
     var modules = ModuleManager.getInstance(project).getModules();
     return modules == null ? Module.EMPTY_ARRAY : modules;
   }

@@ -60,7 +60,7 @@ public class PubRootCache {
   }
 
   @NotNull
-  public List<@NotNull PubRoot> getRoots(@NotNull Module module) {
+  public List<PubRoot> getRoots(@NotNull Module module) {
     final List<PubRoot> result = new ArrayList<>();
 
     for (VirtualFile dir : OpenApiUtils.getContentRoots(module)) {
