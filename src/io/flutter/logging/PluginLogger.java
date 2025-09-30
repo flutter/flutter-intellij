@@ -42,14 +42,9 @@ public class PluginLogger {
 
   static {
     rootLogger.addHandler(fileHandler);
-    // This check prevents trying to access settings in test context.
-    if (ApplicationManager.getApplication() != null) {
-      updateLogLevel();
-      FlutterSettings.getInstance().addListener(PluginLogger::updateLogLevel);
-    }
   }
 
-  private static void updateLogLevel() {
+  public static void updateLogLevel() {
     final Logger rootLoggerInstance = Logger.getInstance("io.flutter");
     rootLoggerInstance.setLevel(FlutterSettings.getInstance().isVerboseLogging() ? LogLevel.ALL : LogLevel.INFO);
   }
