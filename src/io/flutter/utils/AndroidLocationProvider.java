@@ -23,10 +23,14 @@ public class AndroidLocationProvider implements BuildModelContext.ResolvedConfig
   @Nullable
   @Override
   public VirtualFile getGradleBuildFile(@NotNull Module module) {
-    GradleModuleModel moduleModel = GradleProjectSystemUtil.getGradleModuleModel(module);
-    if (moduleModel != null) {
-      return moduleModel.getBuildFile();
-    }
+    // TODO(helin24): Delete this code (and potentially related code) if commenting out has no negative impact on Android editing.
+    // I believe this is to make gradle files show up nicely when a flutter project is opened, but this functionality already does not work
+    // and is not needed if we are recommending users edit Android files in a separate project window.
+
+    //GradleModuleModel moduleModel = GradleProjectSystemUtil.getGradleModuleModel(module);
+    //if (moduleModel != null) {
+    //  return moduleModel.getBuildFile();
+    //}
     return null;
   }
 
