@@ -39,6 +39,7 @@ import io.flutter.devtools.DevToolsUtils;
 import io.flutter.devtools.RemainingDevToolsViewFactory;
 import io.flutter.editor.FlutterSaveActionsManager;
 import io.flutter.logging.FlutterConsoleLogManager;
+import io.flutter.logging.PluginLogger;
 import io.flutter.module.FlutterModuleBuilder;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -82,6 +83,10 @@ public class FlutterInitializer extends FlutterProjectActivity {
 
   @Override
   public void executeProjectStartup(@NotNull Project project) {
+    // This sets the correct log level and listens for future changes.
+    PluginLogger.updateLogLevel();
+    FlutterSettings.getInstance().addListener(PluginLogger::updateLogLevel);
+
     log().info("Executing Flutter plugin startup for project: " + project.getName());
     // Disable the 'Migrate Project to Gradle' notification.
     FlutterUtils.disableGradleProjectMigrationNotification(project);
