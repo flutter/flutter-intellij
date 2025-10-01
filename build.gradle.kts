@@ -152,9 +152,7 @@ sourceSets {
   test {
     java.srcDirs(
       listOf(
-        "src",
-        "testSrc/unit",
-        "third_party/vmServiceDrivers"
+        "testSrc/unit"
       )
     )
     resources.srcDirs(
