@@ -1,6 +1,8 @@
-## Unreleased
+## 88.0.0
 
 ### Added
+
+- Support for Android Studio 2025.2
 
 ### Removed
 
