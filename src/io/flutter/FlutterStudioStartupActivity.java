@@ -7,20 +7,19 @@ package io.flutter;
 
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.content.Content;
-import com.intellij.ui.content.ContentManager;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import io.flutter.android.AndroidModuleLibraryManager;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.logging.PluginLogger;
 import io.flutter.settings.FlutterSettings;
-import io.flutter.utils.*;
+import io.flutter.utils.AddToAppUtils;
+import io.flutter.utils.AndroidUtils;
+import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.GradleUtils;
+import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterStudioStartupActivity extends FlutterProjectActivity {
