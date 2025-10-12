@@ -22,11 +22,13 @@ import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.ListPopup;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.scale.JBUIScale;
 import com.intellij.util.IconUtil;
 import com.intellij.util.ModalityUiUtil;
 import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.logging.PluginLogger;
@@ -97,6 +99,13 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
     final JBLabel textLabel = new JBLabel();
     final JBLabel arrowLabel = new JBLabel(DEFAULT_ARROW_ICON);
 
+    // Set foreground color to adapt to the toolbar theme (e.g., dark header with light theme)
+    final JBColor foregroundColor = JBColor.namedColor(
+      "MainToolbar.foreground",
+      UIUtil.getLabelForeground()
+    );
+    textLabel.setForeground(foregroundColor);
+
     // Create a wrapper button for hover effects
     final JButton button = new JButton() {
       @Override
@@ -104,7 +113,12 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
         if (getModel() instanceof ButtonModel m && m.isRollover()) {
           final @NotNull Graphics2D g2 = (Graphics2D)Objects.requireNonNull(g.create());
           g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-          g2.setColor(JBUI.CurrentTheme.ActionButton.hoverBackground());
+          // Use MainToolbar hover background to adapt to the toolbar theme (e.g., dark header with light theme)
+          final JBColor hoverColor = JBColor.namedColor(
+            "MainToolbar.Icon.hoverBackground",
+            JBUI.CurrentTheme.ActionButton.hoverBackground()
+          );
+          g2.setColor(hoverColor);
           final int arc = JBUIScale.scale(JBUI.getInt("MainToolbar.Button.arc", 12));
           g2.fillRoundRect(0, 0, getWidth(), getHeight(), arc, arc);
           g2.dispose();
@@ -340,6 +354,12 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
       }
       if (textLabel != null) {
         textLabel.setText(text);
+        // Update the foreground color to adapt to theme changes.
+        final JBColor foregroundColor = JBColor.namedColor(
+          "MainToolbar.foreground",
+          UIUtil.getLabelForeground()
+        );
+        textLabel.setForeground(foregroundColor);
         customComponent.invalidate();
         Container parent = customComponent.getParent();
         while (parent != null) {
