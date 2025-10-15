@@ -22,11 +22,13 @@ import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.ListPopup;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.scale.JBUIScale;
 import com.intellij.util.IconUtil;
 import com.intellij.util.ModalityUiUtil;
 import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.logging.PluginLogger;
@@ -54,6 +56,20 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
   private static final @NotNull Icon DEFAULT_DEVICE_ICON = FlutterIcons.Mobile;
   private static final @NotNull Icon DEFAULT_ARROW_ICON = IconUtil.scale(AllIcons.General.ChevronDown, null, 1.2f);
 
+  /**
+   * Theme property key for the main toolbar foreground color.
+   * This key is used to retrieve the appropriate text color for toolbar components,
+   * ensuring proper visibility in all theme configurations (e.g., light theme with dark header).
+   */
+  private static final String TOOLBAR_FOREGROUND_KEY = "MainToolbar.foreground";
+
+  /**
+   * Theme property key for the main toolbar icon hover background color.
+   * This key is used to retrieve the appropriate hover background color for toolbar icon buttons,
+   * ensuring consistency with other toolbar actions in all theme configurations.
+   */
+  private static final String TOOLBAR_ICON_HOVER_BACKGROUND_KEY = "MainToolbar.Icon.hoverBackground";
+
   private volatile @NotNull List<AnAction> actions = new ArrayList<>();
   private final List<Project> knownProjects = Collections.synchronizedList(new ArrayList<>());
 
@@ -61,6 +77,38 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
 
   DeviceSelectorAction() {
     super();
+  }
+
+  /**
+   * Returns the appropriate foreground color for toolbar text components.
+   * <p>
+   * This method attempts to retrieve the theme-specific toolbar foreground color using the
+   * {@link #TOOLBAR_FOREGROUND_KEY}. If the key is not found in the current theme (which may
+   * happen with custom or older themes), it falls back to the standard label foreground color
+   * provided by {@link UIUtil#getLabelForeground()}.
+   * </p>
+   *
+   * @return A {@link Color} suitable for toolbar text that adapts to the current theme,
+   *         including configurations like light themes with dark headers.
+   */
+  @NotNull Color getToolbarForegroundColor() {
+    return JBColor.namedColor(TOOLBAR_FOREGROUND_KEY, UIUtil.getLabelForeground());
+  }
+
+  /**
+   * Returns the appropriate hover background color for toolbar icon buttons.
+   * <p>
+   * This method attempts to retrieve the theme-specific toolbar icon hover background color using
+   * the {@link #TOOLBAR_ICON_HOVER_BACKGROUND_KEY}. If the key is not found in the current theme
+   * (which may happen with custom or older themes), it falls back to the standard action button
+   * hover background color provided by {@link JBUI.CurrentTheme.ActionButton#hoverBackground()}.
+   * </p>
+   *
+   * @return A {@link Color} suitable for toolbar icon button hover states that adapts to the
+   *         current theme, ensuring consistency with other toolbar actions.
+   */
+  @NotNull Color getToolbarHoverBackgroundColor() {
+    return JBColor.namedColor(TOOLBAR_ICON_HOVER_BACKGROUND_KEY, JBUI.CurrentTheme.ActionButton.hoverBackground());
   }
 
   public @NotNull ActionUpdateThread getActionUpdateThread() {
@@ -97,6 +145,9 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
     final JBLabel textLabel = new JBLabel();
     final JBLabel arrowLabel = new JBLabel(DEFAULT_ARROW_ICON);
 
+    // Set foreground color to adapt to the toolbar theme (e.g., dark header with light theme)
+    textLabel.setForeground(getToolbarForegroundColor());
+
     // Create a wrapper button for hover effects
     final JButton button = new JButton() {
       @Override
@@ -104,7 +155,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
         if (getModel() instanceof ButtonModel m && m.isRollover()) {
           final @NotNull Graphics2D g2 = (Graphics2D)Objects.requireNonNull(g.create());
           g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-          g2.setColor(JBUI.CurrentTheme.ActionButton.hoverBackground());
+          g2.setColor(getToolbarHoverBackgroundColor());
           final int arc = JBUIScale.scale(JBUI.getInt("MainToolbar.Button.arc", 12));
           g2.fillRoundRect(0, 0, getWidth(), getHeight(), arc, arc);
           g2.dispose();
@@ -340,6 +391,8 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
       }
       if (textLabel != null) {
         textLabel.setText(text);
+        // Update the foreground color to adapt to theme changes.
+        textLabel.setForeground(getToolbarForegroundColor());
         customComponent.invalidate();
         Container parent = customComponent.getParent();
         while (parent != null) {

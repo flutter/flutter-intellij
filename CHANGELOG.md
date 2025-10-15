@@ -1,3 +1,13 @@
+## Unreleased
+
+### Added
+
+### Removed
+
+### Changed
+
+- Fix incorrect colors for the device selector when using light themes. (#8576)
+
 ## 88.0.0
 
 ### Added
