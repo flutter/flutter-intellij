@@ -6,6 +6,7 @@
 
 ### Changed
 
+- Made Flutter project open to project view by default (#8573)
 - Fix incorrect colors for the device selector when using light themes. (#8576)
 
 ## 88.0.0
