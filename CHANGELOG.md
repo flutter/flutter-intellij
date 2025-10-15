@@ -13,11 +13,11 @@
 
 ### Added
 
-- Added support for Android Studio 2025.2.
+- Support for Android Studio 2025.2.
 
 ### Removed
 
-- Removed notification of required pub actions at the top of Dart files. (#7623, #8481)
+- Notification of required pub actions at the top of Dart files. (#7623, #8481)
 
 ### Changed
 
@@ -35,23 +35,17 @@
 ### Changed
 
 - Registered VM service with DTD. (#8436)
-
-### Fixed
-
 - Fixed a ClassCastException for BadgeIcon on flutter runs. (#8426)
 
 ## 87.0.0
 
 ### Added
 
-- Added internal support for logging to a dedicated plugin log file. (#8253)
+- Internal support for logging to a dedicated plugin log file. (#8253)
 
 ### Changed
 
 - Made Android dependencies optional, allowing the plugin to be used in more Jetbrains products (Rider, etc). (#7949, #8375)
-
-### Fixed
-
 - Fixed issues with Flutter test execution. (#8233, #8325)
 - Fixed issues to ensure the Property Editor loads on all project opens. (#8268)
 - Fixed a hang after opening a new project in Android Studio. (#8390)
