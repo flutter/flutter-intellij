@@ -91,7 +91,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
    * @return A {@link Color} suitable for toolbar text that adapts to the current theme,
    *         including configurations like light themes with dark headers.
    */
-  private static @NotNull Color getToolbarForegroundColor() {
+  @NotNull Color getToolbarForegroundColor() {
     return JBColor.namedColor(TOOLBAR_FOREGROUND_KEY, UIUtil.getLabelForeground());
   }
 
@@ -107,7 +107,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
    * @return A {@link Color} suitable for toolbar icon button hover states that adapts to the
    *         current theme, ensuring consistency with other toolbar actions.
    */
-  private static @NotNull Color getToolbarHoverBackgroundColor() {
+  @NotNull Color getToolbarHoverBackgroundColor() {
     return JBColor.namedColor(TOOLBAR_ICON_HOVER_BACKGROUND_KEY, JBUI.CurrentTheme.ActionButton.hoverBackground());
   }
 
