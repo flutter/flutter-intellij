@@ -60,7 +60,6 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
    * Theme property key for the main toolbar foreground color.
    * This key is used to retrieve the appropriate text color for toolbar components,
    * ensuring proper visibility in all theme configurations (e.g., light theme with dark header).
-   * If this key is not found in the current theme, falls back to the standard label foreground color.
    */
   private static final String TOOLBAR_FOREGROUND_KEY = "MainToolbar.foreground";
 
@@ -68,7 +67,6 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
    * Theme property key for the main toolbar icon hover background color.
    * This key is used to retrieve the appropriate hover background color for toolbar icon buttons,
    * ensuring consistency with other toolbar actions in all theme configurations.
-   * If this key is not found in the current theme, falls back to the standard action button hover background.
    */
   private static final String TOOLBAR_ICON_HOVER_BACKGROUND_KEY = "MainToolbar.Icon.hoverBackground";
 
