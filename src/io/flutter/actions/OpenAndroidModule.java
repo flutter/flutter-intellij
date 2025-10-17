@@ -5,7 +5,6 @@
  */
 package io.flutter.actions;
 
-import com.android.tools.idea.gradle.project.importing.GradleProjectImporter;
 import com.intellij.ide.actions.OpenFileAction;
 import com.intellij.ide.impl.OpenProjectTask;
 import com.intellij.openapi.actionSystem.ActionPlaces;
@@ -18,13 +17,11 @@ import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.BitUtil;
 import io.flutter.FlutterMessages;
-import org.jdom.JDOMException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.nio.file.Path;
 
 import static com.android.tools.idea.gradle.project.ProjectImportUtil.findGradleTarget;
