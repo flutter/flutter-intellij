@@ -73,9 +73,10 @@ public class OpenDevToolsAction extends DumbAwareAction {
       return;
     }
 
-    // If this action was triggered as a command by the user, there will not be
-    // a connector for the running app. not be already set. Therefore, see if
-    // there is a running app, and set the connector if so.
+    // This action is registered in plugin.xml with the default constructor.
+    // Therefore, if a user triggers this from the IDE, even if there is a
+    // running Flutter app myConnector will be null. In that case, check for a
+    // Flutter app first and use its connector instead.
     if (myConnector == null) {
       final List<FlutterApp> apps = FlutterApp.allFromProjectProcess(project);
       if (!apps.isEmpty()) {
