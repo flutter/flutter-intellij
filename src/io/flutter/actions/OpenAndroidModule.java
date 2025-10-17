@@ -7,6 +7,7 @@ package io.flutter.actions;
 
 import com.android.tools.idea.gradle.project.importing.GradleProjectImporter;
 import com.intellij.ide.actions.OpenFileAction;
+import com.intellij.ide.impl.OpenProjectTask;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -17,11 +18,13 @@ import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.BitUtil;
 import io.flutter.FlutterMessages;
+import org.jdom.JDOMException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
 
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.nio.file.Path;
 
 import static com.android.tools.idea.gradle.project.ProjectImportUtil.findGradleTarget;
@@ -61,8 +64,8 @@ public class OpenAndroidModule extends OpenInAndroidStudioAction implements Dumb
     if (canImportAsGradleProject(projectFile)) {
       VirtualFile target = findGradleTarget(projectFile);
       if (target != null) {
-        GradleProjectImporter gradleImporter = GradleProjectImporter.getInstance();
-        gradleImporter.importAndOpenProjectCore(null, true, projectFile);
+        com.intellij.ide.impl.ProjectUtil.openOrImport(projectFile.toNioPath(), OpenProjectTask.build().withForceOpenInNewFrame(forceOpenInNewFrame));
+
         for (Project proj : ProjectManager.getInstance().getOpenProjects()) {
           if (projectFile.equals(ProjectUtil.guessProjectDir(proj)) || projectFile.equals(proj.getProjectFile())) {
             if (sourceFile != null && !sourceFile.isDirectory()) {
