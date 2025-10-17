@@ -26,12 +26,13 @@ import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Objects;
 
 public class OpenDevToolsAction extends DumbAwareAction {
   private static final @NotNull Logger LOG = PluginLogger.createLogger(OpenDevToolsAction.class);
   private static final String title = "Open Flutter DevTools in Browser";
-  private final @Nullable ObservatoryConnector myConnector;
+  private @Nullable ObservatoryConnector myConnector;
   private final Computable<Boolean> myIsApplicable;
 
   public OpenDevToolsAction() {
@@ -70,6 +71,16 @@ public class OpenDevToolsAction extends DumbAwareAction {
     Project project = event.getProject();
     if (project == null) {
       return;
+    }
+
+    // If this action was triggered as a command by the user, there will not be
+    // a connector for the running app. not be already set. Therefore, see if
+    // there is a running app, and set the connector if so.
+    if (myConnector == null) {
+      final List<FlutterApp> apps = FlutterApp.allFromProjectProcess(project);
+      if (!apps.isEmpty()) {
+        myConnector = apps.get(0).getConnector();
+      }
     }
 
     AsyncUtils.whenCompleteUiThread(Objects.requireNonNull(DevToolsService.getInstance(project).getDevToolsInstance()), (instance, ex) -> {
