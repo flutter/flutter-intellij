@@ -5,6 +5,7 @@
  */
 package io.flutter.run;
 
+import com.intellij.execution.process.ProcessHandler;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -77,6 +78,8 @@ public class OpenDevToolsAction extends DumbAwareAction {
     // Therefore, if a user triggers this from the IDE, even if there is a
     // running Flutter app myConnector will be null. In that case, check for a
     // Flutter app first and use its connector instead.
+    // TODO(https://github.com/flutter/flutter-intellij/issues/8583): Open the
+    // running app instead of the first one listed in the project processes.
     if (myConnector == null) {
       final List<FlutterApp> apps = FlutterApp.allFromProjectProcess(project);
       if (!apps.isEmpty()) {
