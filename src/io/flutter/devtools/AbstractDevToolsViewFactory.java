@@ -19,6 +19,7 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.OpenApiUtils;
+import io.flutter.view.DevToolsUrlProvider;
 import io.flutter.view.EmbeddedBrowser;
 import io.flutter.view.ViewUtils;
 import kotlin.coroutines.Continuation;
@@ -156,7 +157,7 @@ public abstract class AbstractDevToolsViewFactory implements ToolWindowFactory {
               FlutterUtils.embeddedBrowser(project))
             .ifPresent(embeddedBrowser ->
                        {
-                         embeddedBrowser.openPanel(toolWindow, getToolWindowTitle(), getToolWindowIcon(), devToolsUrl, System.out::println,
+                         embeddedBrowser.openPanel(toolWindow, getToolWindowTitle(), getToolWindowIcon(), new DevToolsUrlProvider(devToolsUrl), System.out::println,
                                                    warningMessage);
                          devToolsLoadedInBrowser = true;
                          doAfterBrowserOpened(project, embeddedBrowser);

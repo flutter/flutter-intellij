@@ -415,6 +415,11 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.TEST, args.toArray(new String[]{ }));
   }
 
+  @NotNull
+  public FlutterCommand widgetPreview(@NotNull PubRoot root) {
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.WIDGET_PREVIEW, "start", "--web-server", "--machine");
+  }
+
   /**
    * Runs flutter create and waits for it to finish.
    * <p>
