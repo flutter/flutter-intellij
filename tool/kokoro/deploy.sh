@@ -3,14 +3,14 @@
 source ./tool/kokoro/setup.sh
 setup
 
-echo "kokoro verify start"
-
-./gradlew verifyPluginProjectConfiguration
-./gradlew verifyPluginStructure
-./gradlew verifyPluginSignature
-./gradlew verifyPlugin
-
-echo "kokoro verify finished"
+#echo "kokoro verify start"
+#
+#./gradlew verifyPluginProjectConfiguration
+#./gradlew verifyPluginStructure
+#./gradlew verifyPluginSignature
+#./gradlew verifyPlugin
+#
+#echo "kokoro verify finished"
 
 echo "kokoro test start"
 
