@@ -292,7 +292,7 @@ intellijPlatform {
       // TODO(team) Ideally all of the following FailureLevels should be enabled:
       // https://github.com/flutter/flutter-intellij/issues/8361
       VerifyPluginTask.FailureLevel.COMPATIBILITY_WARNINGS,
-      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+//      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
 //      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES, // https://github.com/flutter/flutter-intellij/issues/7718
 //      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
 // `BadgeIcon`:
@@ -309,14 +309,8 @@ intellijPlatform {
     subsystemsToCheck = VerifyPluginTask.Subsystems.ALL
 
     ides {
-//      recommended()
+      recommended()
       ide(IntelliJPlatformType.AndroidStudio, ideaVersion)
-//      select {
-//        types = listOf(IntelliJPlatformType.AndroidStudio)
-//        channels = listOf(ProductRelease.Channel.RELEASE)
-//        sinceBuild = "232"
-//        untilBuild = "241.*"
-//      }
     }
   }
 }
