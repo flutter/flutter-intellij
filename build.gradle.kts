@@ -15,6 +15,13 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import org.gradle.api.execution.TaskExecutionListener
+import org.gradle.api.tasks.TaskState
+import org.gradle.kotlin.dsl.api
+import org.gradle.kotlin.dsl.invoke
+import org.gradle.kotlin.dsl.java
+import org.jetbrains.intellij.platform.gradle.models.AndroidStudioReleases
+import java.util.concurrent.ConcurrentHashMap
 
 // Specify UTF-8 for all compilations so we avoid Windows-1252.
 allprojects {
@@ -40,7 +47,8 @@ plugins {
   // https://plugins.gradle.org/plugin/org.jetbrains.intellij.platform
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("java") // Java support
-  id("org.jetbrains.intellij.platform") version "2.7.2" // IntelliJ Platform Gradle Plugin
+  id("org.jetbrains.intellij.platform") version "2.10.2" // IntelliJ Platform Gradle Plugin
+//  id("org.jetbrains.intellij.platform") version "2.7.2" // IntelliJ Platform Gradle Plugin
   id("org.jetbrains.kotlin.jvm") version "2.2.0" // Kotlin support
   id("org.jetbrains.changelog") version "2.2.0" // Gradle Changelog Plugin
   idea // IntelliJ IDEA support
@@ -270,6 +278,16 @@ intellijPlatform {
     // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
     // https://github.com/JetBrains/intellij-plugin-verifier
     cliPath = file("./third_party/lib/verifier-cli-1.394-all.jar")
+    // Add this block to pass arguments directly to the verifier CLI tool.
+//    freeArgs = listOf(
+//      // Set the connection timeout to 2 minutes (in milliseconds)
+////      "--connect-timeout", "120000",
+//      "--connect-timeout", "12",
+//
+//      // Set the read timeout to 2 minutes (in milliseconds)
+////      "--read-timeout", "120000"
+//      "--read-timeout", "12"
+//    )
     failureLevel = listOf(
       // TODO(team) Ideally all of the following FailureLevels should be enabled:
       // https://github.com/flutter/flutter-intellij/issues/8361
@@ -291,7 +309,14 @@ intellijPlatform {
     subsystemsToCheck = VerifyPluginTask.Subsystems.ALL
 
     ides {
-      recommended()
+//      recommended()
+      ide(IntelliJPlatformType.AndroidStudio, ideaVersion)
+//      select {
+//        types = listOf(IntelliJPlatformType.AndroidStudio)
+//        channels = listOf(ProductRelease.Channel.RELEASE)
+//        sinceBuild = "232"
+//        untilBuild = "241.*"
+//      }
     }
   }
 }
@@ -409,6 +434,7 @@ tasks.named("processResources") {
   dependsOn(writeLicenseKey)
 }
 
+
 // TODO(helin24): Find a better way to skip checking this file for tests.
 tasks.withType<ProcessResources>().configureEach {
   if (name == "processTestResources") {
@@ -417,3 +443,33 @@ tasks.withType<ProcessResources>().configureEach {
     exclude("jxbrowser/jxbrowser.properties")
   }
 }
+//
+//// A map to store the start times of tasks we want to time.
+//val taskStartTimes = ConcurrentHashMap<String, Long>()
+//
+//// Create a listener for task execution events.
+//val timingListener = object : TaskExecutionListener {
+//  override fun beforeExecute(task: org.gradle.api.Task) {
+//    // This method is called right before a task starts.
+//    println("### Starting: ${task.name} ###")
+//    taskStartTimes[task.path] = System.currentTimeMillis()
+//  }
+//
+//  override fun afterExecute(task: org.gradle.api.Task, state: TaskState) {
+//    // This method is called right after a task finishes.
+//    val startTime = taskStartTimes.remove(task.path) // Use remove to clean up the map
+//    if (startTime != null) {
+//      val durationMillis = System.currentTimeMillis() - startTime
+//      val durationSeconds = durationMillis / 1000.0
+//      if (state.failure == null) {
+//        println("### Finished: ${task.name}. Took ${durationSeconds}s ###")
+//      } else {
+//        println("### Finished with FAILURE: ${task.name}. Took ${durationSeconds}s ###")
+//      }
+//    }
+//  }
+//}
+//
+//// Register the listener with Gradle's task graph.
+//gradle.taskGraph.addTaskExecutionListener(timingListener)
+//
