@@ -109,13 +109,14 @@ public class FlutterCommand {
    */
   @Nullable
   public Process start() {
+    final GeneralCommandLine commandLine = createGeneralCommandLine(null);
+    final String commandText = safeCommandLog(commandLine);
+    LOG.info(commandText);
     try {
-      final GeneralCommandLine commandLine = createGeneralCommandLine(null);
-      LOG.info(safeCommandLog(commandLine));
       return commandLine.createProcess();
     }
     catch (ExecutionException e) {
-      LOG.error("Failed to start Flutter command: " + getDisplayCommand(), e);
+      LOG.error("Failed to start Flutter command: " + commandText, e);
       return null;
     }
   }
