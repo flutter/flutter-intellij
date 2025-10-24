@@ -17,6 +17,8 @@ import com.teamdev.jxbrowser.browser.callback.input.PressKeyCallback;
 import com.teamdev.jxbrowser.browser.event.ConsoleMessageReceived;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.js.ConsoleMessage;
+import com.teamdev.jxbrowser.permission.PermissionType;
+import com.teamdev.jxbrowser.permission.callback.RequestPermissionCallback;
 import com.teamdev.jxbrowser.ui.KeyCode;
 import com.teamdev.jxbrowser.ui.event.KeyPressed;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
@@ -56,6 +58,18 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
     this.engine = engine;
 
     try {
+      // Support copying text in the embedded browser to the clipboard. The following was copied from:
+      // https://teamdev.com/jxbrowser/docs/guides/clipboard/#necessary-permissions
+      this.engine.permissions().set(RequestPermissionCallback.class, (params, tell) -> {
+        var type = params.permissionType();
+        if (type == PermissionType.CLIPBOARD_READ_WRITE
+            || type == PermissionType.CLIPBOARD_SANITIZED_WRITE) {
+          tell.grant();
+        } else {
+          tell.deny();
+        }
+      });
+
       this.browser = engine.newBrowser();
       this.zoom = this.browser.zoom();
       this.browser.settings().enableTransparentBackground();
