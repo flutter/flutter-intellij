@@ -8,9 +8,9 @@ package io.flutter.view;
 import org.jetbrains.annotations.NotNull;
 
 public class SimpleUrlProvider implements BrowserUrlProvider {
-  private final String url;
+  private final @NotNull String url;
 
-  public SimpleUrlProvider(String url) {
+  public SimpleUrlProvider(@NotNull String url) {
     this.url = url;
   }
 
@@ -20,7 +20,7 @@ public class SimpleUrlProvider implements BrowserUrlProvider {
   }
 
   @Override
-  public String getBrowserUrl() {
+  public @NotNull String getBrowserUrl() {
     return url;
   }
 

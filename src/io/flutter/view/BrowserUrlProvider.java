@@ -7,14 +7,15 @@ package io.flutter.view;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.CompletableFuture;
-
+/**
+ * Saves a browser URL that may be editable depending on additional settings from the IDE or running applications.
+ */
 public interface BrowserUrlProvider {
   String widgetId = "";
 
   void setWidgetId(@NotNull String widgetId);
 
-  String getBrowserUrl();
+  @NotNull String getBrowserUrl();
 
   void maybeUpdateColor();
 

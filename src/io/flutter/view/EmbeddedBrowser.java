@@ -42,10 +42,15 @@ import java.util.function.Function;
  */
 public abstract class EmbeddedBrowser {
   static public class BrowserTab {
-    protected EmbeddedTab embeddedTab;
+    public BrowserTab(@NotNull ContentManager contentManager) {
+      this.urlFuture = new CompletableFuture<>();
+      this.contentManager = contentManager;
+    }
+
+    protected @Nullable EmbeddedTab embeddedTab;
     protected Content content;
-    protected CompletableFuture<BrowserUrlProvider> urlFuture;
-    public ContentManager contentManager;
+    protected @NotNull CompletableFuture<BrowserUrlProvider> urlFuture;
+    public @NotNull ContentManager contentManager;
   }
 
   public static final String ANALYTICS_CATEGORY = "embedded-browser";
@@ -120,8 +125,9 @@ public abstract class EmbeddedBrowser {
 
     try {
       final String url = browserUrlProvider.getBrowserUrl();
-      // Potentially loading will not work because of an error? And then
-      // URL is already found here. I think we are using devtools URL because it lets us update the URL later
+      if (tab.embeddedTab == null) {
+        throw new RuntimeException("Embedded tab was not created");
+      }
       tab.embeddedTab.loadUrl(url);
     }
     catch (Exception ex) {
@@ -174,16 +180,14 @@ public abstract class EmbeddedBrowser {
     });
   }
 
-  private void openLinkInStandardBrowser(ContentManager contentManager) {
+  private void openLinkInStandardBrowser(@NotNull ContentManager contentManager) {
     verifyEventDispatchThread();
     if (browserUrlProvider == null) {
       showMessage("The URL is invalid.", contentManager);
     }
     else {
-      BrowserLauncher.getInstance().browse(
-        browserUrlProvider.getBrowserUrl(),
-        null
-      );
+      final String url = browserUrlProvider.getBrowserUrl();
+      BrowserLauncher.getInstance().browse(url, null);
 
       showMessage("The URL has been opened in the browser.", contentManager);
     }
@@ -199,7 +203,7 @@ public abstract class EmbeddedBrowser {
     showLabelsWithUrlLink(labels, contentManager);
   }
 
-  protected void showLabelsWithUrlLink(@NotNull List<LabelInput> labels, ContentManager contentManager) {
+  protected void showLabelsWithUrlLink(@NotNull List<LabelInput> labels, @NotNull ContentManager contentManager) {
     labels.add(new LabelInput("Open DevTools in the browser?", (linkLabel, data) -> {
       openLinkInStandardBrowser(contentManager);
     }));
@@ -207,7 +211,7 @@ public abstract class EmbeddedBrowser {
     showLabels(labels, contentManager);
   }
 
-  protected void showMessage(@NotNull String message, ContentManager contentManager) {
+  protected void showMessage(@NotNull String message, @NotNull ContentManager contentManager) {
     final List<LabelInput> labels = new ArrayList<>();
     labels.add(new LabelInput(message));
     showLabels(labels, contentManager);
@@ -241,11 +245,9 @@ public abstract class EmbeddedBrowser {
     new ViewUtils().replacePanelLabel(contentManager, label);
   }
 
-  private BrowserTab openBrowserTabFor(String tabName, ToolWindow toolWindow) {
-    BrowserTab tab = new BrowserTab();
-    tab.urlFuture = new CompletableFuture<>();
+  private BrowserTab openBrowserTabFor(String tabName, @NotNull ToolWindow toolWindow) {
+    BrowserTab tab = new BrowserTab(toolWindow.getContentManager());
     tab.embeddedTab = openEmbeddedTab(toolWindow.getContentManager());
-    tab.contentManager = toolWindow.getContentManager();
     return tab;
   }
 
@@ -253,6 +255,7 @@ public abstract class EmbeddedBrowser {
 
   public void updatePanelToWidget(@NotNull String widgetId) {
     updateUrlAndReload(urlProvider -> {
+      if (urlProvider == null) return null;
       urlProvider.setWidgetId(widgetId);
       return urlProvider;
     });
@@ -260,6 +263,7 @@ public abstract class EmbeddedBrowser {
 
   public void updateVmServiceUri(@NotNull String newVmServiceUri) {
     updateUrlAndReload(urlProvider -> {
+      if (urlProvider == null) return null;
       if (!urlProvider.setVmServiceUri(newVmServiceUri)) {
         return null;
       }
@@ -288,7 +292,7 @@ public abstract class EmbeddedBrowser {
     });
   }
 
-  private void updateUrlAndReload(Function<BrowserUrlProvider, BrowserUrlProvider> urlProviderFn) {
+  private void updateUrlAndReload(@NotNull Function<BrowserUrlProvider, BrowserUrlProvider> urlProviderFn) {
     this.windows.forEach((window, tabs) -> {
       tabs.forEach((tabName, tab) -> {
         final CompletableFuture<BrowserUrlProvider> updatedUrlFuture = tab.urlFuture.thenApply(urlProvider -> {

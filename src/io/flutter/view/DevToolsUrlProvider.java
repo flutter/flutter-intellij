@@ -8,11 +8,7 @@ package io.flutter.view;
 import io.flutter.devtools.DevToolsUrl;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.CompletableFuture;
-
-public class DevToolsUrlProvider implements BrowserUrlProvider {
-  private final DevToolsUrl url;
-
+public record DevToolsUrlProvider(@NotNull DevToolsUrl url) implements BrowserUrlProvider {
   public DevToolsUrlProvider(@NotNull DevToolsUrl url) {
     this.url = url;
   }
@@ -23,7 +19,7 @@ public class DevToolsUrlProvider implements BrowserUrlProvider {
   }
 
   @Override
-  public String getBrowserUrl() {
+  public @NotNull String getBrowserUrl() {
     return url.getUrlString();
   }
 
@@ -34,7 +30,7 @@ public class DevToolsUrlProvider implements BrowserUrlProvider {
 
   @Override
   public boolean setVmServiceUri(@NotNull String newVmServiceUri) {
-    if (url.vmServiceUri.equals(newVmServiceUri)) {
+    if (url.vmServiceUri != null && url.vmServiceUri.equals(newVmServiceUri)) {
       return false;
     }
     url.vmServiceUri = newVmServiceUri;
