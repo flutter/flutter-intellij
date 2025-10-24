@@ -274,11 +274,11 @@ intellijPlatform {
       // TODO(team) Ideally all of the following FailureLevels should be enabled:
       // https://github.com/flutter/flutter-intellij/issues/8361
       VerifyPluginTask.FailureLevel.COMPATIBILITY_WARNINGS,
-//      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
 //      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES, // https://github.com/flutter/flutter-intellij/issues/7718
 //      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
 // `BadgeIcon`:
-//      VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
+      VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
 //      VerifyPluginTask.FailureLevel.INTERNAL_API_USAGES,
 //      VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
       VerifyPluginTask.FailureLevel.NON_EXTENDABLE_API_USAGES,
@@ -289,9 +289,12 @@ intellijPlatform {
     )
     verificationReportsFormats = VerifyPluginTask.VerificationReportsFormats.ALL
     subsystemsToCheck = VerifyPluginTask.Subsystems.ALL
+    ignoredProblemsFile.set(project.file("verify-ignore-problems.txt"))
+    println("ignored problems file: ${ignoredProblemsFile.get().asFile.absolutePath}")
 
     ides {
-      recommended()
+//      recommended()
+      create(IntelliJPlatformType.AndroidStudio, "2025.2.2.1")
     }
   }
 }
