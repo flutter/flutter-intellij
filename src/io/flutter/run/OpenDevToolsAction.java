@@ -5,6 +5,7 @@
  */
 package io.flutter.run;
 
+import com.intellij.execution.process.ProcessHandler;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -26,12 +27,13 @@ import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Objects;
 
 public class OpenDevToolsAction extends DumbAwareAction {
   private static final @NotNull Logger LOG = PluginLogger.createLogger(OpenDevToolsAction.class);
   private static final String title = "Open Flutter DevTools in Browser";
-  private final @Nullable ObservatoryConnector myConnector;
+  private @Nullable ObservatoryConnector myConnector;
   private final Computable<Boolean> myIsApplicable;
 
   public OpenDevToolsAction() {
@@ -70,6 +72,19 @@ public class OpenDevToolsAction extends DumbAwareAction {
     Project project = event.getProject();
     if (project == null) {
       return;
+    }
+
+    // This action is registered in plugin.xml with the default constructor.
+    // Therefore, if a user triggers this from the IDE, even if there is a
+    // running Flutter app myConnector will be null. In that case, check for a
+    // Flutter app first and use its connector instead.
+    // TODO(https://github.com/flutter/flutter-intellij/issues/8583): Open the
+    // running app instead of the first one listed in the project processes.
+    if (myConnector == null) {
+      final List<FlutterApp> apps = FlutterApp.allFromProjectProcess(project);
+      if (!apps.isEmpty()) {
+        myConnector = apps.get(0).getConnector();
+      }
     }
 
     AsyncUtils.whenCompleteUiThread(Objects.requireNonNull(DevToolsService.getInstance(project).getDevToolsInstance()), (instance, ex) -> {
