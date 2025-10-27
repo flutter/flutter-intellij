@@ -417,7 +417,15 @@ public class FlutterSdk {
 
   @NotNull
   public FlutterCommand widgetPreview(@NotNull PubRoot root) {
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.WIDGET_PREVIEW, "start", "--web-server", "--machine");
+    final List<String> args = new ArrayList<>();
+    args.add("start");
+    args.add("--web-server");
+    args.add("--machine");
+    if (FlutterSettings.getInstance().isVerboseLogging()) {
+      args.add("--verbose");
+    }
+
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.WIDGET_PREVIEW, args.toArray(new String[]{}));
   }
 
   /**

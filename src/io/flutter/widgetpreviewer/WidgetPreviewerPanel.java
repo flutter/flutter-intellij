@@ -111,7 +111,7 @@ public class WidgetPreviewerPanel extends SimpleToolWindowPanel implements Dispo
             LOG.debug("STDOUT from Widget previewer: " + text);
 
             // Don't parse further if the URL has already been found.
-            if (!urlFuture.isDone()) {
+            if (urlFuture.isDone()) {
               return;
             }
 
