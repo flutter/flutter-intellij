@@ -1,0 +1,6 @@
+# This is a known false positive. The de.roderick.weberknecht package is provided
+# by the Dart plugin at runtime, but the verifier's static analysis of
+# class loader visibility is flawed in this case.
+# See more context in https://github.com/flutter/flutter-intellij/pull/8590
+::Package 'de.roderick' is not found.*
+

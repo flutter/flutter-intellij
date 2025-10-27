@@ -274,7 +274,7 @@ intellijPlatform {
       // TODO(team) Ideally all of the following FailureLevels should be enabled:
       // https://github.com/flutter/flutter-intellij/issues/8361
       VerifyPluginTask.FailureLevel.COMPATIBILITY_WARNINGS,
-//      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
 //      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES, // https://github.com/flutter/flutter-intellij/issues/7718
 //      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
 // `BadgeIcon`:
@@ -289,6 +289,7 @@ intellijPlatform {
     )
     verificationReportsFormats = VerifyPluginTask.VerificationReportsFormats.ALL
     subsystemsToCheck = VerifyPluginTask.Subsystems.ALL
+    ignoredProblemsFile.set(project.file("verify-ignore-problems.txt"))
 
     ides {
       recommended()
@@ -417,3 +418,4 @@ tasks.withType<ProcessResources>().configureEach {
     exclude("jxbrowser/jxbrowser.properties")
   }
 }
+
