@@ -418,3 +418,4 @@ tasks.withType<ProcessResources>().configureEach {
     exclude("jxbrowser/jxbrowser.properties")
   }
 }
+
