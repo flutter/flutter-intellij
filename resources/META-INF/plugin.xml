@@ -330,9 +330,9 @@
     <toolWindow id="Flutter DevTools" anchor="right" icon="FlutterIcons.DevTools" factoryClass="io.flutter.devtools.RemainingDevToolsViewFactory" />
     <toolWindow id="Flutter DevTools Extensions" anchor="right" icon="FlutterIcons.DevToolsExtensions" factoryClass="io.flutter.devtools.DevToolsExtensionsViewFactory" />
     <toolWindow id="Flutter Property Editor" anchor="right" icon="FlutterIcons.PropertyEditor" factoryClass="io.flutter.propertyeditor.PropertyEditorViewFactory" />
-    <toolWindow id="Flutter Widget Preview"
+    <toolWindow id="Flutter Widget Previewer"
                 anchor="right"
-                factoryClass="io.flutter.widgetpreview.WidgetPreviewToolWindowFactory"
+                factoryClass="io.flutter.widgetpreviewer.WidgetPreviewerToolWindowFactory"
                 icon="FlutterIcons.Flutter" />
     <!-- Having the projectService defined after the toolWindows allows them to all be picked up by the platform -->
     <!-- See https://github.com/flutter/flutter-intellij/issues/8029 -->

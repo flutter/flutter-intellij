@@ -1,9 +1,6 @@
-package io.flutter.widgetpreview;
+package io.flutter.widgetpreviewer;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.*;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.Disposable;
@@ -16,13 +13,10 @@ import com.intellij.openapi.wm.ToolWindow;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
-import io.flutter.actions.RefreshToolWindowAction;
-import io.flutter.jxbrowser.EmbeddedJxBrowser;
 import io.flutter.logging.PluginLogger;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import io.flutter.utils.OpenApiUtils;
@@ -33,8 +27,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -42,20 +34,17 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposable {
-  private static final Logger LOG = PluginLogger.createLogger(WidgetPreviewPanel.class);
-  // Regex to find a URL like http://localhost:XXXXX/
-  private static final Pattern URL_PATTERN = Pattern.compile("http://localhost:\\d+/?");
-
+public class WidgetPreviewerPanel extends SimpleToolWindowPanel implements Disposable {
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(WidgetPreviewerPanel.class);
   @NotNull private final Project project;
   @NotNull private final ToolWindow toolWindow;
-  private final AtomicReference<ProcessHandler> flutterProcessRef = new AtomicReference<>();
+  private final @NotNull AtomicReference<ProcessHandler> flutterProcessRef = new AtomicReference<>();
   private final AtomicReference<EmbeddedTab> browserTabRef = new AtomicReference<>();
 
   private final JPanel contentPanel;
   @NotNull private final ViewUtils viewUtils = new ViewUtils();
 
-  public WidgetPreviewPanel(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+  public WidgetPreviewerPanel(@NotNull Project project, @NotNull ToolWindow toolWindow) {
     super(true, true); // vertical, with border
     this.project = project;
     this.toolWindow = toolWindow;
@@ -97,11 +86,17 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         showInfoMessage(FlutterBundle.message("widget.preview.starting"));
 
         final CompletableFuture<String> urlFuture = new CompletableFuture<>();
-        final FlutterCommand command = sdk.widgetPreview(PubRoot.forFile(project.getProjectFile()));
+
+        final PubRoot root = PubRoot.forFile(project.getProjectFile());
+        if (root == null) {
+          showInfoMessage("Pub root could not be found to start widget previewer.");
+          return;
+        }
+        final FlutterCommand command = sdk.widgetPreview(root);
         LOG.info(command.getDisplayCommand());
         final ProcessHandler handler = new MostlySilentColoredProcessHandler(command.createGeneralCommandLine(project));
         flutterProcessRef.set(handler);
-        handler.addProcessListener(new ProcessAdapter() {
+        handler.addProcessListener(new ProcessListener() {
           // Regex to find a URL like http://localhost:XXXXX/
           private static final Pattern URL_PATTERN = Pattern.compile("http://localhost:\\d+/?");
 
@@ -112,24 +107,41 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
             }
 
             final String text = event.getText();
-            LOG.info("Text from widget previewer: " + text);
+            if (text == null) return;
+            LOG.debug("STDOUT from Widget previewer: " + text);
+
+            // Don't parse further if the URL has already been found.
+            if (!urlFuture.isDone()) {
+              return;
+            }
+
             try {
-              JsonElement element = JsonParser.parseString(text);
+              final JsonElement element = JsonParser.parseString(text);
+              if (element == null) return;
               if (element.isJsonArray()) {
-                for (JsonElement item : element.getAsJsonArray()) {
+                final JsonArray jsonArray = element.getAsJsonArray();
+                if (jsonArray == null) return;
+                for (JsonElement item : jsonArray) {
+                  if (item == null) continue;
                   if (item.isJsonObject()) {
                     final JsonObject obj = item.getAsJsonObject();
+                    if (obj == null) continue;
                     if (obj.has("event") && obj.has("params")) {
-                      final String eventName = obj.get("event").getAsString();
+                      JsonElement eventElement = obj.get("event");
+                      if (eventElement == null) continue;
+                      final String eventName = eventElement.getAsString();
                       if ("widget_preview.app.webLaunchUrl".equals(eventName) || "widget_preview.started".equals(eventName)) {
-                        final JsonObject params = obj.get("params").getAsJsonObject();
+                        JsonElement eventParams = obj.get("params");
+                        if (eventParams == null) continue;
+                        final JsonObject params = eventParams.getAsJsonObject();
+                        if (params == null) continue;
                         if (params.has("url")) {
-                          final String url = params.get("url").getAsString();
+                          JsonElement urlElement = params.get("url");
+                          if (urlElement == null) continue;
+                          final String url = urlElement.getAsString();
                           if (!urlFuture.isDone()) {
                             urlFuture.complete(url);
                           }
-                          // Optional: remove listener after we found the URL?
-                          // handler.removeProcessListener(this);
                         }
                       }
                     }
