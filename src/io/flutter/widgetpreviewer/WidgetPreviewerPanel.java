@@ -18,12 +18,14 @@ import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import io.flutter.utils.OpenApiUtils;
 import io.flutter.view.EmbeddedTab;
 import io.flutter.view.SimpleUrlProvider;
 import io.flutter.view.ViewUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -92,7 +94,8 @@ public class WidgetPreviewerPanel extends SimpleToolWindowPanel implements Dispo
           showInfoMessage("Pub root could not be found to start widget previewer.");
           return;
         }
-        final FlutterCommand command = sdk.widgetPreview(root);
+        boolean isVerboseMode = FlutterSettings.getInstance().isVerboseLogging();
+        final FlutterCommand command = sdk.widgetPreview(root, isVerboseMode);
         LOG.info(command.getDisplayCommand());
         final ProcessHandler handler = new MostlySilentColoredProcessHandler(command.createGeneralCommandLine(project));
         flutterProcessRef.set(handler);
@@ -106,7 +109,7 @@ public class WidgetPreviewerPanel extends SimpleToolWindowPanel implements Dispo
               return;
             }
 
-            final String text = event.getText();
+            String text = event.getText();
             if (text == null) return;
             LOG.debug("STDOUT from Widget previewer: " + text);
 
@@ -115,38 +118,17 @@ public class WidgetPreviewerPanel extends SimpleToolWindowPanel implements Dispo
               return;
             }
 
+            // If we are in verbose mode, the text will have a prepended section for timings, e.g.:
+            // ```
+            // [   +4 ms] [{"event":"widget_preview.logMessage",...}]
+            if (isVerboseMode) {
+              text = jsonFromVerboseOutput(text);
+            }
+
             try {
-              final JsonElement element = JsonParser.parseString(text);
-              if (element == null) return;
-              if (element.isJsonArray()) {
-                final JsonArray jsonArray = element.getAsJsonArray();
-                if (jsonArray == null) return;
-                for (JsonElement item : jsonArray) {
-                  if (item == null) continue;
-                  if (item.isJsonObject()) {
-                    final JsonObject obj = item.getAsJsonObject();
-                    if (obj == null) continue;
-                    if (obj.has("event") && obj.has("params")) {
-                      JsonElement eventElement = obj.get("event");
-                      if (eventElement == null) continue;
-                      final String eventName = eventElement.getAsString();
-                      if ("widget_preview.app.webLaunchUrl".equals(eventName) || "widget_preview.started".equals(eventName)) {
-                        JsonElement eventParams = obj.get("params");
-                        if (eventParams == null) continue;
-                        final JsonObject params = eventParams.getAsJsonObject();
-                        if (params == null) continue;
-                        if (params.has("url")) {
-                          JsonElement urlElement = params.get("url");
-                          if (urlElement == null) continue;
-                          final String url = urlElement.getAsString();
-                          if (!urlFuture.isDone()) {
-                            urlFuture.complete(url);
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
+              final String maybeUrl = tryToExtractUrlFromJson(text);
+              if (maybeUrl != null && !urlFuture.isDone()) {
+                urlFuture.complete(maybeUrl);
               }
             }
             catch (JsonSyntaxException e) {
@@ -197,6 +179,49 @@ public class WidgetPreviewerPanel extends SimpleToolWindowPanel implements Dispo
         throw new RuntimeException(e);
       }
     });
+  }
+
+  private static @NotNull String jsonFromVerboseOutput(@NotNull String text) {
+    if (text.startsWith("[") && !text.startsWith("[{")) {
+      final int closingBracketLocation = text.indexOf("]");
+      if (closingBracketLocation != -1) {
+        text = text.substring(closingBracketLocation + 1).trim();
+      }
+    }
+    return text;
+  }
+
+  private static @Nullable String tryToExtractUrlFromJson(@NotNull String text) {
+    final JsonElement element = JsonParser.parseString(text);
+    if (element == null) return null;
+    if (element.isJsonArray()) {
+      final JsonArray jsonArray = element.getAsJsonArray();
+      if (jsonArray == null) return null;
+      for (JsonElement item : jsonArray) {
+        if (item == null) continue;
+        if (item.isJsonObject()) {
+          final JsonObject obj = item.getAsJsonObject();
+          if (obj == null) continue;
+          if (obj.has("event") && obj.has("params")) {
+            JsonElement eventElement = obj.get("event");
+            if (eventElement == null) continue;
+            final String eventName = eventElement.getAsString();
+            if ("widget_preview.app.webLaunchUrl".equals(eventName) || "widget_preview.started".equals(eventName)) {
+              JsonElement eventParams = obj.get("params");
+              if (eventParams == null) continue;
+              final JsonObject params = eventParams.getAsJsonObject();
+              if (params == null) continue;
+              if (params.has("url")) {
+                JsonElement urlElement = params.get("url");
+                if (urlElement == null) continue;
+                return urlElement.getAsString();
+              }
+            }
+          }
+        }
+      }
+    }
+    return null;
   }
 
   private void showInfoMessage(@NotNull String message) {

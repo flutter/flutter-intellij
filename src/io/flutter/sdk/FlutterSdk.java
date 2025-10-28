@@ -416,12 +416,12 @@ public class FlutterSdk {
   }
 
   @NotNull
-  public FlutterCommand widgetPreview(@NotNull PubRoot root) {
+  public FlutterCommand widgetPreview(@NotNull PubRoot root, boolean isVerboseMode) {
     final List<String> args = new ArrayList<>();
     args.add("start");
     args.add("--web-server");
     args.add("--machine");
-    if (FlutterSettings.getInstance().isVerboseLogging()) {
+    if (isVerboseMode) {
       args.add("--verbose");
     }
 
