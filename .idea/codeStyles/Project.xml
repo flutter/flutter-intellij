@@ -18,12 +18,9 @@
     </GroovyCodeStyleSettings>
     <JavaCodeStyleSettings>
       <option name="PREFER_LONGER_NAMES" value="false" />
+      <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="1000" />
       <option name="PACKAGES_TO_USE_IMPORT_ON_DEMAND">
-        <value>
-          <package name="java.awt" withSubpackages="false" static="false" />
-          <package name="javax.tools" withSubpackages="true" static="false" />
-          <package name="javax.swing" withSubpackages="false" static="false" />
-        </value>
+        <value />
       </option>
     </JavaCodeStyleSettings>
     <JetCodeStyleSettings>
