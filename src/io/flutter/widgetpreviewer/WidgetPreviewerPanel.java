@@ -5,12 +5,18 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.colors.EditorColorsListener;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.util.messages.MessageBusConnection;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
+import io.flutter.devtools.DevToolsUtils;
 import io.flutter.logging.PluginLogger;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterCommand;
@@ -19,10 +25,12 @@ import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import io.flutter.utils.OpenApiUtils;
+import io.flutter.view.BrowserUrlProvider;
 import io.flutter.view.EmbeddedTab;
-import io.flutter.view.SimpleUrlProvider;
+import io.flutter.view.WidgetPreviewerUrlProvider;
 import io.flutter.view.ViewUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -41,6 +49,8 @@ public class WidgetPreviewerPanel extends SimpleToolWindowPanel implements Dispo
 
   private final JPanel contentPanel;
   @NotNull private final ViewUtils viewUtils = new ViewUtils();
+
+  private BrowserUrlProvider urlProvider;
 
   public WidgetPreviewerPanel(@NotNull Project project, @NotNull ToolWindow toolWindow) {
     super(true, true); // vertical, with border
@@ -100,20 +110,7 @@ public class WidgetPreviewerPanel extends SimpleToolWindowPanel implements Dispo
         Consumer<String> onError = (message) -> {
           showInfoMessage(FlutterBundle.message("widget.preview.error", message != null ? message : ""));
         };
-        Consumer<@NotNull String> onSuccess = (url) -> {
-          showInfoMessage(FlutterBundle.message("widget.preview.loading", url));
-
-          OpenApiUtils.safeInvokeLater(() -> {
-            Optional.ofNullable(
-                FlutterUtils.embeddedBrowser(project))
-              .ifPresent(embeddedBrowser ->
-                         {
-                           embeddedBrowser.openPanel(toolWindow, "Widget Previewer", FlutterIcons.Flutter, new SimpleUrlProvider(url),
-                                                     System.out::println,
-                                                     null);
-                         });
-          });
-        };
+        Consumer<@NotNull String> onSuccess = this::setUrlAndLoad;
         handler.addProcessListener(new WidgetPreviewListener(urlFuture, isVerboseMode, onError, onSuccess));
         handler.startNotify();
       }
@@ -121,6 +118,46 @@ public class WidgetPreviewerPanel extends SimpleToolWindowPanel implements Dispo
         throw new RuntimeException(e);
       }
     });
+  }
+
+  // This is intended for the first time we load the panel - save the URL and listen for changes.
+  private void setUrlAndLoad(@NotNull String url) {
+    this.urlProvider = new WidgetPreviewerUrlProvider(url, new DevToolsUtils().getIsBackgroundBright());
+    loadUrl(urlProvider);
+    listenForReload();
+  }
+
+  private void loadUrl(@NotNull BrowserUrlProvider urlProvider) {
+    showInfoMessage(FlutterBundle.message("widget.preview.loading", urlProvider.getBrowserUrl()));
+
+    OpenApiUtils.safeInvokeLater(() -> {
+      Optional.ofNullable(
+          FlutterUtils.embeddedBrowser(project))
+        .ifPresent(embeddedBrowser ->
+                   {
+                     embeddedBrowser.openPanel(toolWindow, "Widget Previewer", FlutterIcons.Flutter, urlProvider,
+                                               System.out::println,
+                                               null);
+                   });
+    });
+  }
+
+  private void listenForReload() {
+    MessageBusConnection connection = project.getMessageBus().connect();
+    connection.subscribe(EditorColorsManager.TOPIC, new EditorColorsListener() {
+      @Override
+      public void globalSchemeChange(@Nullable EditorColorsScheme scheme) {
+        if (urlProvider == null) {
+          return;
+        }
+
+        final boolean changed = urlProvider.maybeUpdateColor();
+        if (changed) {
+          loadUrl(urlProvider);
+        }
+      }
+    });
+    Disposer.register(toolWindow.getDisposable(), connection);
   }
 
   private void showInfoMessage(@NotNull String message) {

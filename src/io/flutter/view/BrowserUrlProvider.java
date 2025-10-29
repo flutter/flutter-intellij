@@ -17,7 +17,7 @@ public interface BrowserUrlProvider {
 
   @NotNull String getBrowserUrl();
 
-  void maybeUpdateColor();
+  boolean maybeUpdateColor();
 
   boolean setVmServiceUri(@NotNull String vmServiceUri);
 }

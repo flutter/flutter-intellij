@@ -24,8 +24,8 @@ public record DevToolsUrlProvider(@NotNull DevToolsUrl url) implements BrowserUr
   }
 
   @Override
-  public void maybeUpdateColor() {
-    url.maybeUpdateColor();
+  public boolean maybeUpdateColor() {
+    return url.maybeUpdateColor();
   }
 
   @Override

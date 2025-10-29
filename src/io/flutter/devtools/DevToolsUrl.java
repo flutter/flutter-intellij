@@ -214,13 +214,14 @@ public class DevToolsUrl {
     return "http://" + devToolsHost + ":" + devToolsPort + "/" + (page != null ? page : "") + "?" + String.join("&", params);
   }
 
-  public void maybeUpdateColor() {
+  public boolean maybeUpdateColor() {
     final String newColor = devToolsUtils.getColorHexCode();
     if (Objects.equals(colorHexCode, newColor)) {
-      return;
+      return false;
     }
 
     colorHexCode = newColor;
     isBright = devToolsUtils.getIsBackgroundBright();
+    return true;
   }
 }
