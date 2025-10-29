@@ -9,10 +9,6 @@ import io.flutter.devtools.DevToolsUrl;
 import org.jetbrains.annotations.NotNull;
 
 public record DevToolsUrlProvider(@NotNull DevToolsUrl url) implements BrowserUrlProvider {
-  public DevToolsUrlProvider(@NotNull DevToolsUrl url) {
-    this.url = url;
-  }
-
   @Override
   public void setWidgetId(@NotNull String widgetId) {
     url.widgetId = widgetId;

@@ -11,8 +11,6 @@ import org.jetbrains.annotations.NotNull;
  * Saves a browser URL that may be editable depending on additional settings from the IDE or running applications.
  */
 public interface BrowserUrlProvider {
-  String widgetId = "";
-
   void setWidgetId(@NotNull String widgetId);
 
   @NotNull String getBrowserUrl();
