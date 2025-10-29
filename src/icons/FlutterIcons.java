@@ -9,7 +9,7 @@ public class FlutterIcons {
     return IconLoader.getIcon(path, FlutterIcons.class);
   }
 
-  public static final Icon WidgetPreviewer = load("/icons/expui/widgetPreviewer.svg");
+  public static final Icon WidgetPreview = load("/icons/expui/widgetPreview.svg");
   public static final Icon DevToolsDeepLinks = load("/icons/expui/deepLinks.svg");
   public static final Icon DevTools = load("/icons/expui/devTools.svg");
   public static final Icon DevToolsExtensions = load("/icons/expui/extensions.svg");

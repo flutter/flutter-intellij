@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.widgetpreviewer;
+package io.flutter.widgetpreview;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -50,7 +50,7 @@ public class WidgetPreviewListener implements ProcessListener {
 
     String text = event.getText();
     if (text == null) return;
-    LOG.debug("STDOUT from Widget previewer: " + text);
+    LOG.debug("STDOUT from Widget preview: " + text);
 
     // Don't parse further if the URL has already been found.
     if (urlFuture.isDone()) {

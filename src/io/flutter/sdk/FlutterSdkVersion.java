@@ -61,7 +61,7 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
   public static final FlutterSdkVersion MIN_SUPPORTS_PROPERTY_EDITOR = new FlutterSdkVersion("3.32.0-0.1.pre");
 
   @NotNull
-  public static final FlutterSdkVersion MIN_SUPPORTS_WIDGET_PREVIEWER = new FlutterSdkVersion("3.38.0-0.0.pre");
+  public static final FlutterSdkVersion MIN_SUPPORTS_WIDGET_PREVIEW = new FlutterSdkVersion("3.38.0-0.0.pre");
 
   @NotNull
   public static final String UNKNOWN_VERSION = "unknown version";
@@ -173,8 +173,8 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
     return supportsVersion(MIN_SUPPORTS_PROPERTY_EDITOR);
   }
 
-  public boolean canUseWidgetPreviewer() {
-    return supportsVersion(MIN_SUPPORTS_WIDGET_PREVIEWER);
+  public boolean canUseWidgetPreview() {
+    return supportsVersion(MIN_SUPPORTS_WIDGET_PREVIEW);
   }
 
   public boolean canUseDevToolsMultiEmbed() {

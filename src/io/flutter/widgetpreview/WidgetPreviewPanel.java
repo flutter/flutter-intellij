@@ -1,4 +1,4 @@
-package io.flutter.widgetpreviewer;
+package io.flutter.widgetpreview;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.process.ProcessHandler;
@@ -27,7 +27,7 @@ import io.flutter.utils.MostlySilentColoredProcessHandler;
 import io.flutter.utils.OpenApiUtils;
 import io.flutter.view.BrowserUrlProvider;
 import io.flutter.view.EmbeddedTab;
-import io.flutter.view.WidgetPreviewerUrlProvider;
+import io.flutter.view.WidgetPreviewUrlProvider;
 import io.flutter.view.ViewUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,8 +40,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-public class WidgetPreviewerPanel extends SimpleToolWindowPanel implements Disposable {
-  private static final @NotNull Logger LOG = PluginLogger.createLogger(WidgetPreviewerPanel.class);
+public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposable {
+  private static final @NotNull Logger LOG = PluginLogger.createLogger(WidgetPreviewPanel.class);
   @NotNull private final Project project;
   @NotNull private final ToolWindow toolWindow;
   private final @NotNull AtomicReference<ProcessHandler> flutterProcessRef = new AtomicReference<>();
@@ -52,7 +52,7 @@ public class WidgetPreviewerPanel extends SimpleToolWindowPanel implements Dispo
 
   private BrowserUrlProvider urlProvider;
 
-  public WidgetPreviewerPanel(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+  public WidgetPreviewPanel(@NotNull Project project, @NotNull ToolWindow toolWindow) {
     super(true, true); // vertical, with border
     this.project = project;
     this.toolWindow = toolWindow;
@@ -86,7 +86,7 @@ public class WidgetPreviewerPanel extends SimpleToolWindowPanel implements Dispo
           return;
         }
 
-        if (!sdk.getVersion().canUseWidgetPreviewer()) {
+        if (!sdk.getVersion().canUseWidgetPreview()) {
           showInfoMessage(FlutterBundle.message("widget.preview.sdk.too.old"));
           return;
         }
@@ -97,7 +97,7 @@ public class WidgetPreviewerPanel extends SimpleToolWindowPanel implements Dispo
 
         final PubRoot root = PubRoot.forFile(project.getProjectFile());
         if (root == null) {
-          showInfoMessage("Pub root could not be found to start widget previewer.");
+          showInfoMessage("Pub root could not be found to start widget preview.");
           return;
         }
 
@@ -122,7 +122,7 @@ public class WidgetPreviewerPanel extends SimpleToolWindowPanel implements Dispo
 
   // This is intended for the first time we load the panel - save the URL and listen for changes.
   private void setUrlAndLoad(@NotNull String url) {
-    this.urlProvider = new WidgetPreviewerUrlProvider(url, new DevToolsUtils().getIsBackgroundBright());
+    this.urlProvider = new WidgetPreviewUrlProvider(url, new DevToolsUtils().getIsBackgroundBright());
     loadUrl(urlProvider);
     listenForReload();
   }
@@ -135,7 +135,7 @@ public class WidgetPreviewerPanel extends SimpleToolWindowPanel implements Dispo
           FlutterUtils.embeddedBrowser(project))
         .ifPresent(embeddedBrowser ->
                    {
-                     embeddedBrowser.openPanel(toolWindow, "Widget Previewer", FlutterIcons.Flutter, urlProvider,
+                     embeddedBrowser.openPanel(toolWindow, "Widget Preview", FlutterIcons.Flutter, urlProvider,
                                                System.out::println,
                                                null);
                    });

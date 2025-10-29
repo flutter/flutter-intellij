@@ -8,11 +8,11 @@ package io.flutter.view;
 import io.flutter.devtools.DevToolsUtils;
 import org.jetbrains.annotations.NotNull;
 
-public class WidgetPreviewerUrlProvider implements BrowserUrlProvider {
+public class WidgetPreviewUrlProvider implements BrowserUrlProvider {
   private final @NotNull String url;
   private boolean isBackgroundBright;
 
-  public WidgetPreviewerUrlProvider(@NotNull String url, boolean isBackgroundBright) {
+  public WidgetPreviewUrlProvider(@NotNull String url, boolean isBackgroundBright) {
     this.url = url;
     this.isBackgroundBright = isBackgroundBright;
   }
