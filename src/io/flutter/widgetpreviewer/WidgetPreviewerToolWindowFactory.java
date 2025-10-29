@@ -5,6 +5,8 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
+import io.flutter.sdk.FlutterSdk;
+import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 
 public class WidgetPreviewerToolWindowFactory implements ToolWindowFactory {
@@ -16,5 +18,17 @@ public class WidgetPreviewerToolWindowFactory implements ToolWindowFactory {
     ContentFactory contentFactory = ContentFactory.getInstance();
     Content content = contentFactory.createContent(widgetPreviewerPanel, "", false);
     toolWindow.getContentManager().addContent(content);
+  }
+
+  @Override
+  public Object isApplicableAsync(@NotNull Project project, @NotNull Continuation<? super Boolean> $completion) {
+    // If we know for sure the Flutter SDK version is too old, we won't show options to open this tool window.
+    FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+    if (sdk != null && !sdk.getVersion().canUseWidgetPreviewer()) {
+      return false;
+    }
+
+    // For other cases, let the panel handle SDK version issues (e.g. missing SDK version).
+    return true;
   }
 }

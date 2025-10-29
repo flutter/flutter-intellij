@@ -333,7 +333,7 @@
     <toolWindow id="Flutter Widget Previewer"
                 anchor="right"
                 factoryClass="io.flutter.widgetpreviewer.WidgetPreviewerToolWindowFactory"
-                icon="FlutterIcons.Flutter" />
+                icon="FlutterIcons.WidgetPreviewer" />
     <!-- Having the projectService defined after the toolWindows allows them to all be picked up by the platform -->
     <!-- See https://github.com/flutter/flutter-intellij/issues/8029 -->
     <projectService serviceImplementation="io.flutter.view.InspectorView" overrides="false"/>
