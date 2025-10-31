@@ -162,7 +162,7 @@ public class InspectorView implements Disposable {
       Runnable task = () -> {
         embeddedBrowserOptional().ifPresent(
           embeddedBrowser -> OpenApiUtils.safeInvokeLater(() -> {
-            embeddedBrowser.openPanel(toolWindow, tabName, tabIcon, devToolsUrl, (String error) -> {
+            embeddedBrowser.openPanel(toolWindow, tabName, tabIcon, new DevToolsUrlProvider(devToolsUrl), (String error) -> {
               // If the embedded browser doesn't work, offer a link to open in the regular browser.
               final List<LabelInput> inputs = Arrays.asList(
                 new LabelInput("The embedded browser failed to load. Error: " + error),

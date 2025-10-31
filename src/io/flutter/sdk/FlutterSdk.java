@@ -415,6 +415,19 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.TEST, args.toArray(new String[]{ }));
   }
 
+  @NotNull
+  public FlutterCommand widgetPreview(@NotNull PubRoot root, boolean isVerboseMode) {
+    final List<String> args = new ArrayList<>();
+    args.add("start");
+    args.add("--web-server");
+    args.add("--machine");
+    if (isVerboseMode) {
+      args.add("--verbose");
+    }
+
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.WIDGET_PREVIEW, args.toArray(new String[]{}));
+  }
+
   /**
    * Runs flutter create and waits for it to finish.
    * <p>

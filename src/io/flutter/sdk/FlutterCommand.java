@@ -101,6 +101,27 @@ public class FlutterCommand {
   }
 
   /**
+   * Starts running the command and returns the raw `Process` object.
+   *
+   * <p>This is intended for commands that need direct stream access and do not need console integration.
+   *
+   * @return the started `Process`, or null if an exception occurred.
+   */
+  @Nullable
+  public Process start() {
+    final GeneralCommandLine commandLine = createGeneralCommandLine(null);
+    final String commandText = safeCommandLog(commandLine);
+    LOG.info(commandText);
+    try {
+      return commandLine.createProcess();
+    }
+    catch (ExecutionException e) {
+      LOG.error("Failed to start Flutter command: " + commandText, e);
+      return null;
+    }
+  }
+
+  /**
    * Starts running the command, without showing its output in a console.
    * <p>
    * If unable to start (for example, if a command is already running), returns null.
@@ -307,6 +328,7 @@ public class FlutterCommand {
     RUN("Flutter run", "run"),
     UPGRADE("Flutter upgrade", "upgrade"),
     VERSION("Flutter version", "--version"),
+    WIDGET_PREVIEW("Flutter widget preview", "widget-preview"),
     TEST("Flutter test", "test");
 
     final public String title;

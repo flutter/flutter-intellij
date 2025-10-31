@@ -394,7 +394,7 @@ public class FlutterConsoleLogManager {
         Project project = app.getProject();
         if (!project.isDisposed()) {
           final EmbeddedBrowser browser = FlutterUtils.embeddedBrowser(project);
-          if (browser != null) {
+          if (browser != null && widgetId != null) {
             browser.updatePanelToWidget(widgetId);
           }
         }

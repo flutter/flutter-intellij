@@ -246,7 +246,7 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
     };
   }
 
-  private void manageJxBrowserDownload(ContentManager contentManager) {
+  private void manageJxBrowserDownload(@NotNull ContentManager contentManager) {
     final JxBrowserStatus jxBrowserStatus = jxBrowserManager.getStatus();
 
     if (jxBrowserStatus.equals(JxBrowserStatus.INSTALLED)) {
@@ -303,7 +303,7 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
     }
   }
 
-  protected void handleJxBrowserInstallationFailed(ContentManager contentManager) {
+  protected void handleJxBrowserInstallationFailed(@NotNull ContentManager contentManager) {
     final List<LabelInput> inputs = new ArrayList<>();
 
     final InstallationFailedReason latestFailureReason = jxBrowserManager.getLatestFailureReason();
