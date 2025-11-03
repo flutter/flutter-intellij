@@ -13,12 +13,18 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.util.messages.MessageBusConnection;
+import com.jetbrains.lang.dart.ide.devtools.DartDevToolsService;
+import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
+import io.flutter.dart.DtdUtils;
+import io.flutter.devtools.DevToolsUrl;
 import io.flutter.devtools.DevToolsUtils;
 import io.flutter.logging.PluginLogger;
 import io.flutter.pub.PubRoot;
+import io.flutter.run.daemon.DevToolsInstance;
+import io.flutter.run.daemon.DevToolsService;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
@@ -37,6 +43,8 @@ import java.awt.BorderLayout;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -67,7 +75,7 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
   }
 
   private void startWidgetPreview() {
-    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+    OpenApiUtils.safeExecuteOnPooledThread(() -> {
       try {
         // Check versioning of Flutter SDK.
         FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
@@ -102,7 +110,9 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         }
 
         boolean isVerboseMode = FlutterSettings.getInstance().isVerboseLogging();
-        final FlutterCommand command = sdk.widgetPreview(root, isVerboseMode);
+        final String dtdUri = getDtdUri();
+        final String devToolsUri = getDevToolsUri();
+        final FlutterCommand command = sdk.widgetPreview(root, isVerboseMode, dtdUri, devToolsUri);
         LOG.info(command.getDisplayCommand());
 
         final ProcessHandler handler = new MostlySilentColoredProcessHandler(command.createGeneralCommandLine(project));
@@ -120,11 +130,48 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
     });
   }
 
+  private @Nullable String getDevToolsUri() {
+    try {
+      final CompletableFuture<DevToolsInstance> devToolsFuture = DevToolsService.getInstance(project).getDevToolsInstance();
+      if (devToolsFuture == null) {
+        LOG.error("DevTools future is null.");
+        return null;
+      }
+
+      final DevToolsInstance instance = devToolsFuture.get(30, TimeUnit.SECONDS);
+      if (instance == null) {
+        LOG.error("DevTools instance is null.");
+        return null;
+      }
+      return new DevToolsUrl.Builder().setDevToolsHost(instance.host()).setDevToolsPort(instance.port()).build().getUrlString();
+    }
+    catch (InterruptedException | java.util.concurrent.ExecutionException | TimeoutException e) {
+      LOG.error("DevTools service failed: ", e);
+    }
+    return null;
+  }
+
+  private @Nullable String getDtdUri() {
+    try {
+      final DartToolingDaemonService dtd = new DtdUtils().readyDtdService(project).get(30, TimeUnit.SECONDS);
+      if (dtd == null) {
+        LOG.error("DTD service is null.");
+        return null;
+      }
+
+      return dtd.getUri();
+    }
+    catch (TimeoutException | java.util.concurrent.ExecutionException | InterruptedException e) {
+      LOG.error("DTD service is not available after 30 seconds.", e);
+    }
+    return null;
+  }
+
   // This is intended for the first time we load the panel - save the URL and listen for changes.
   private void setUrlAndLoad(@NotNull String url) {
     this.urlProvider = new WidgetPreviewUrlProvider(url, new DevToolsUtils().getIsBackgroundBright());
     loadUrl(urlProvider);
-    listenForReload();
+    //listenForReload();
   }
 
   private void loadUrl(@NotNull BrowserUrlProvider urlProvider) {
@@ -144,17 +191,14 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
 
   private void listenForReload() {
     MessageBusConnection connection = project.getMessageBus().connect();
-    connection.subscribe(EditorColorsManager.TOPIC, new EditorColorsListener() {
-      @Override
-      public void globalSchemeChange(@Nullable EditorColorsScheme scheme) {
-        if (urlProvider == null) {
-          return;
-        }
+    connection.subscribe(EditorColorsManager.TOPIC, (EditorColorsListener)scheme -> {
+      if (urlProvider == null) {
+        return;
+      }
 
-        final boolean changed = urlProvider.maybeUpdateColor();
-        if (changed) {
-          loadUrl(urlProvider);
-        }
+      final boolean changed = urlProvider.maybeUpdateColor();
+      if (changed) {
+        loadUrl(urlProvider);
       }
     });
     Disposer.register(toolWindow.getDisposable(), connection);

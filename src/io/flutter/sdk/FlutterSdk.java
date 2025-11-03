@@ -416,13 +416,19 @@ public class FlutterSdk {
   }
 
   @NotNull
-  public FlutterCommand widgetPreview(@NotNull PubRoot root, boolean isVerboseMode) {
+  public FlutterCommand widgetPreview(@NotNull PubRoot root, boolean isVerboseMode, @Nullable String dtdUri, @Nullable String devToolsUri) {
     final List<String> args = new ArrayList<>();
     args.add("start");
     args.add("--web-server");
     args.add("--machine");
     if (isVerboseMode) {
       args.add("--verbose");
+    }
+    if (dtdUri != null) {
+      args.add("--dtd-url=" + dtdUri);
+    }
+    if (devToolsUri != null) {
+      args.add("--devtools-server-address=" + devToolsUri);
     }
 
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.WIDGET_PREVIEW, args.toArray(new String[]{}));
