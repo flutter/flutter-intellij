@@ -50,11 +50,11 @@ void printCreationTimeCounts(Iterable<Issue> issues, {required int issueCount, r
     }
   }
 
-  print('issues: $issueCount (+ $prCount PRs)');
+  print('issues: $issueCount (+ $prCount PRs)\n');
   var unprioritizedPercentage = '${(unpriortizedCount / issueCount).toStringAsFixed(2).substring(2)}%';
   print(
-      'unprioritized: $unpriortizedCount ($unprioritizedPercentage)');
-  print('created within ...');
+      'unprioritized: $unpriortizedCount ($unprioritizedPercentage)\n');
+  print('created within ...\n');
 
   var timeData = [seven, fourteen, twentyEight, ninety, threeSixty, tenEighty, beyond];
 
