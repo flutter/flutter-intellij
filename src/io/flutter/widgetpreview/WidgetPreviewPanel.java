@@ -187,6 +187,8 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
     });
   }
 
+  // TODO(https://github.com/flutter/flutter/issues/177945): Ideally widget preview would change colors based on theme changes events,
+  //  which we already send for the DevTools panels. If this is implemented then we can remove this listening code.
   private void listenForReload() {
     MessageBusConnection connection = project.getMessageBus().connect();
     connection.subscribe(EditorColorsManager.TOPIC, (EditorColorsListener)scheme -> {
