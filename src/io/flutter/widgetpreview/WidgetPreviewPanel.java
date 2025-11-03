@@ -171,7 +171,7 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
   private void setUrlAndLoad(@NotNull String url) {
     this.urlProvider = new WidgetPreviewUrlProvider(url, new DevToolsUtils().getIsBackgroundBright());
     loadUrl(urlProvider);
-    //listenForReload();
+    listenForReload();
   }
 
   private void loadUrl(@NotNull BrowserUrlProvider urlProvider) {
