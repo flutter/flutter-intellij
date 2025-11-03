@@ -16,6 +16,8 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterMessages;
+import io.flutter.analytics.Analytics;
+import io.flutter.analytics.AnalyticsData;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
@@ -50,6 +52,8 @@ public class RestartFlutterApp extends FlutterAppAction {
       reloadManager.saveAllAndRestart(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
     }
 
+    var analyticsData = AnalyticsData.forAction(this, e);
+
     if (WorkspaceCache.getInstance(project).isBazel() &&
         FlutterSettings.getInstance().isShowBazelHotRestartWarning() &&
         !FlutterSettings.getInstance().isEnableBazelHotRestart()) {
@@ -61,8 +65,12 @@ public class RestartFlutterApp extends FlutterAppAction {
         NotificationType.INFORMATION);
       Notifications.Bus.notify(notification, project);
 
+      analyticsData.add("google3", true);
+
       // We only want to show this notification once.
       FlutterSettings.getInstance().setShowBazelHotRestartWarning(false);
     }
+
+    Analytics.report(analyticsData);
   }
 }
