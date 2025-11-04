@@ -17,6 +17,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterMessages;
 import io.flutter.analytics.Analytics;
+import io.flutter.analytics.AnalyticsConstants;
 import io.flutter.analytics.AnalyticsData;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.FlutterReloadManager;
@@ -65,7 +66,7 @@ public class RestartFlutterApp extends FlutterAppAction {
         NotificationType.INFORMATION);
       Notifications.Bus.notify(notification, project);
 
-      analyticsData.add("google3", true);
+      analyticsData.add(AnalyticsConstants.GOOGLE3, true);
 
       // We only want to show this notification once.
       FlutterSettings.getInstance().setShowBazelHotRestartWarning(false);
