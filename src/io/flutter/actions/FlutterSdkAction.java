@@ -13,6 +13,8 @@ import com.intellij.openapi.project.Project;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
+import io.flutter.analytics.Analytics;
+import io.flutter.analytics.AnalyticsData;
 import io.flutter.bazel.Workspace;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -32,12 +34,16 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
   public void actionPerformed(@NotNull AnActionEvent event) {
     final Project project = DumbAwareAction.getEventProject(event);
 
+    AnalyticsData analyticsData = AnalyticsData.forAction(this, event);
+
     if (enableActionInBazelContext()) {
       // See if the Bazel workspace exists for this project.
       final Workspace workspace = FlutterModuleUtils.getFlutterBazelWorkspace(project);
       if (workspace != null) {
         FileDocumentManager.getInstance().saveAllDocuments();
         startCommandInBazelContext(project, workspace, event);
+        analyticsData.add("inBazelContext", true);
+        Analytics.report(analyticsData);
         return;
       }
     }
@@ -45,6 +51,8 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
     final FlutterSdk sdk = project != null ? FlutterSdk.getFlutterSdk(project) : null;
     if (sdk == null) {
       showMissingSdkDialog(project);
+      analyticsData.add("missingSdk", true);
+      Analytics.report(analyticsData);
       return;
     }
 
@@ -60,6 +68,8 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
         startCommand(project, sdk, sub, context);
       }
     }
+
+    Analytics.report(analyticsData);
   }
 
   public abstract void startCommand(@NotNull Project project,

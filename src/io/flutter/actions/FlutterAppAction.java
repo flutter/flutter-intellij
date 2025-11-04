@@ -98,4 +98,8 @@ abstract public class FlutterAppAction extends DumbAwareAction {
   public FlutterApp getApp() {
     return myApp;
   }
+
+  public @NotNull String getId() {
+    return myActionId;
+  }
 }
