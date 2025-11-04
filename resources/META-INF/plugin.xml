@@ -111,9 +111,9 @@
               text="Open Flutter DevTools in Browser"
               description="Open Flutter DevTools in Browser"/>
       <separator/>
-<!--      <action id="flutter.androidstudio.open" class="io.flutter.actions.OpenInAndroidStudioAction"-->
-<!--              text="Open Android module in Android Studio"-->
-<!--              description="Launch Android Studio to edit the Android module as a top-level project"/>-->
+      <action id="flutter.androidstudio.open" class="io.flutter.actions.OpenInAndroidStudioAction"
+              text="Open Android module in Android Studio"
+              description="Launch Android Studio to edit the Android module as a top-level project"/>
       <action id="flutter.xcode.open" class="io.flutter.actions.OpenInXcodeAction"
               text="Open iOS/macOS Module in Xcode"
               description="Launch Xcode to edit the iOS module as a top-level project"/>
