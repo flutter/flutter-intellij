@@ -13,6 +13,7 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.analytics.Analytics;
+import io.flutter.analytics.AnalyticsConstants;
 import io.flutter.analytics.AnalyticsData;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
@@ -49,7 +50,7 @@ public class ReloadFlutterApp extends FlutterAppAction {
     // If the shift key is held down, perform a restart. We check to see if we're being invoked from the
     // 'GoToAction' dialog. If so, the modifiers are for the command that opened the go-to action dialog.
     final boolean shouldRestart = (e.getModifiers() & InputEvent.SHIFT_MASK) != 0 && !"GoToAction".equals(e.getPlace());
-    analyticsData.add("requiresRestart", shouldRestart);
+    analyticsData.add(AnalyticsConstants.REQUIRES_RESTART, shouldRestart);
 
     var reloadManager = FlutterReloadManager.getInstance(project);
     if (reloadManager == null) return;
@@ -61,7 +62,7 @@ public class ReloadFlutterApp extends FlutterAppAction {
       // Else perform a hot reload.
       reloadManager.saveAllAndReload(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
     }
-    
+
     Analytics.report(analyticsData);
   }
 

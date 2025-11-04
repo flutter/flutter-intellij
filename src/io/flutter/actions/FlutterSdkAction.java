@@ -14,6 +14,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.analytics.Analytics;
+import io.flutter.analytics.AnalyticsConstants;
 import io.flutter.analytics.AnalyticsData;
 import io.flutter.bazel.Workspace;
 import io.flutter.pub.PubRoot;
@@ -42,7 +43,7 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
       if (workspace != null) {
         FileDocumentManager.getInstance().saveAllDocuments();
         startCommandInBazelContext(project, workspace, event);
-        analyticsData.add("inBazelContext", true);
+        analyticsData.add(AnalyticsConstants.IN_BAZEL_CONTEXT, true);
         Analytics.report(analyticsData);
         return;
       }
@@ -51,7 +52,7 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
     final FlutterSdk sdk = project != null ? FlutterSdk.getFlutterSdk(project) : null;
     if (sdk == null) {
       showMissingSdkDialog(project);
-      analyticsData.add("missingSdk", true);
+      analyticsData.add(AnalyticsConstants.MISSING_SDK, true);
       Analytics.report(analyticsData);
       return;
     }
