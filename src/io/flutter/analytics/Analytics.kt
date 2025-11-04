@@ -33,8 +33,12 @@ internal object NoOpReporter : AnalyticsReporter() {
   override fun process(data: AnalyticsData) = Unit
 }
 
-abstract class AnalyticsData {
+abstract class AnalyticsData(type: String) {
   val data = mutableMapOf<String, Any>()
+
+  init {
+    add("type", type)
+  }
 
   companion object {
     @JvmStatic
@@ -61,7 +65,14 @@ abstract class AnalyticsData {
   open fun reportTo(reporter: AnalyticsReporter) = reporter.process(this)
 }
 
-class ActionData(private val id: String?, private val place: String) : AnalyticsData() {
+/**
+ * Data describing an IntelliJ [com.intellij.openapi.actionSystem.AnAction] for analytics reporting.
+ *
+ * @param id The unique identifier of the action, typically defined in `plugin.xml`.
+ * @param place The UI location where the action was invoked (e.g., "MainMenu", "Toolbar").
+ * @see <a href="https://plugins.jetbrains.com/docs/intellij/basic-action-system.html">IntelliJ Action System</a>
+ */
+class ActionData(private val id: String?, private val place: String) : AnalyticsData("action") {
 
   init {
     id?.let { add("id", it) }
