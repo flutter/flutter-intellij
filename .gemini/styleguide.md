@@ -1,6 +1,6 @@
 # Flutter Plugin for IntelliJ Style Guide
 
-# Key Principles
+## Key Principles
 * **Readability:** Code should be easy to understand for all team members.
 * **Maintainability:** Code should be easy to modify and extend.
 * **Consistency:** Adhering to a consistent style across all projects improves
