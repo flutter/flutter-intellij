@@ -8,7 +8,16 @@ package io.flutter.actions;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.ActivityTracker;
 import com.intellij.ide.DataManager;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.DataKey;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.PlatformCoreDataKeys;
+import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
@@ -31,6 +40,8 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.analytics.Analytics;
+import io.flutter.analytics.AnalyticsData;
 import io.flutter.logging.PluginLogger;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.daemon.DeviceService;
@@ -39,12 +50,28 @@ import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.ButtonModel;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class DeviceSelectorAction extends AnAction implements CustomComponentAction, DumbAware {
   private static final @NotNull Logger LOG = PluginLogger.createLogger(DeviceSelectorAction.class);
@@ -89,7 +116,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
    * </p>
    *
    * @return A {@link Color} suitable for toolbar text that adapts to the current theme,
-   *         including configurations like light themes with dark headers.
+   * including configurations like light themes with dark headers.
    */
   @NotNull Color getToolbarForegroundColor() {
     return JBColor.namedColor(TOOLBAR_FOREGROUND_KEY, UIUtil.getLabelForeground());
@@ -105,7 +132,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
    * </p>
    *
    * @return A {@link Color} suitable for toolbar icon button hover states that adapts to the
-   *         current theme, ensuring consistency with other toolbar actions.
+   * current theme, ensuring consistency with other toolbar actions.
    */
   @NotNull Color getToolbarHoverBackgroundColor() {
     return JBColor.namedColor(TOOLBAR_ICON_HOVER_BACKGROUND_KEY, JBUI.CurrentTheme.ActionButton.hoverBackground());
@@ -121,6 +148,8 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
     if (!isSelectorVisible(project)) {
       return;
     }
+
+    Analytics.report(AnalyticsData.forAction(this, e));
 
     final DefaultActionGroup group = new DefaultActionGroup();
     group.addAll(actions);

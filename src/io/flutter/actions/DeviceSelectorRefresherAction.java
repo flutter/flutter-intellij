@@ -9,6 +9,8 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import io.flutter.analytics.Analytics;
+import io.flutter.analytics.AnalyticsData;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
@@ -17,9 +19,10 @@ public class DeviceSelectorRefresherAction extends AnAction {
   @Override
   public void actionPerformed(@NotNull AnActionEvent e) {
     final Project project = e.getProject();
-    if (project != null) {
-      DeviceService.getInstance(project).restart();
-    }
+    if (project == null) return;
+
+    Analytics.report(AnalyticsData.forAction(this, e));
+    DeviceService.getInstance(project).restart();
   }
 
   public @NotNull ActionUpdateThread getActionUpdateThread() {
