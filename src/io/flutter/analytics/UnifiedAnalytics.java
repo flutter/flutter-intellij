@@ -71,7 +71,7 @@ public class UnifiedAnalytics {
   }
 
   /**
-   * Sends an analytics event to the unified analytics service.
+   * Sends analytics data to the unified analytics service.
    *
    * @param analyticsData The data object containing the details of the event to report.
    * @return A {@link CompletableFuture} that completes with a {@link SendResult}.
