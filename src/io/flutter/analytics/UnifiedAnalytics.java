@@ -73,10 +73,6 @@ public class UnifiedAnalytics {
   /**
    * Sends an analytics event to the unified analytics service.
    *
-   * <p>This method constructs and sends an analytics event based on the provided
-   * {@link AnalyticsData}. It handles the communication with the Dart Tooling Daemon
-   * and processes the response.
-   *
    * @param analyticsData The data object containing the details of the event to report.
    * @return A {@link CompletableFuture} that completes with a {@link SendResult}.
    * The {@code SendResult} will indicate whether the report was successfully
@@ -265,42 +261,19 @@ class SendResult {
    */
   public final @Nullable String message;
 
-  /**
-   * Constructs a new SendResult.
-   *
-   * @param success True if the operation was successful, false otherwise.
-   * @param message An optional descriptive message.
-   */
   SendResult(boolean success, @Nullable String message) {
     this.success = success;
     this.message = message;
   }
 
-  /**
-   * Wraps this result instance in a completed CompletableFuture.
-   *
-   * @return A CompletableFuture that is already completed with this SendResult instance.
-   */
   CompletableFuture<SendResult> toCompletedFuture() {
     return CompletableFuture.completedFuture(this);
   }
 
-  /**
-   * Creates a CompletableFuture completed with a failed SendResult.
-   *
-   * @param message An optional error message describing the failure.
-   * @return A CompletableFuture completed with a new SendResult indicating failure.
-   */
   static CompletableFuture<SendResult> failed(@Nullable String message) {
     return new SendResult(false, message).toCompletedFuture();
   }
 
-  /**
-   * Creates a CompletableFuture completed with a successful SendResult.
-   *
-   * @param success The success status to record.
-   * @return A CompletableFuture completed with a new SendResult indicating success.
-   */
   static CompletableFuture<SendResult> succeeded(boolean success) {
     return new SendResult(success, null).toCompletedFuture();
   }
