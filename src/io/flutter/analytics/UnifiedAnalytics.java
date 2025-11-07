@@ -32,10 +32,9 @@ public class UnifiedAnalytics {
   private static final @NotNull Logger LOG = PluginLogger.createLogger(UnifiedAnalytics.class);
 
   @Nullable Boolean enabled = null;
-  final Project project;
-  final DtdUtils dtdUtils;
-  @NotNull final FlutterSdkUtil flutterSdkUtil;
-
+  final @NotNull Project project;
+  final @NotNull DtdUtils dtdUtils;
+  final @NotNull FlutterSdkUtil flutterSdkUtil;
 
   public UnifiedAnalytics(@NotNull Project project) {
     this.project = project;
@@ -68,6 +67,48 @@ public class UnifiedAnalytics {
     }
     catch (Exception e) {
       LOG.info(e);
+    }
+  }
+
+  /**
+   * Sends analytics data to the unified analytics service.
+   *
+   * @param analyticsData The data object containing the details of the event to report.
+   * @return A {@link CompletableFuture} that completes with a {@link SendResult}.
+   * The {@code SendResult} will indicate whether the report was successfully
+   * sent and may contain a message with additional details on failure.
+   * If the analytics service is unavailable or an error occurs, the future
+   * will complete with a result where {@code success} is false.
+   */
+  public @NotNull CompletableFuture<SendResult> sendReport(AnalyticsData analyticsData) {
+    try {
+      DartToolingDaemonService service = dtdUtils.readyDtdService(project).get();
+      if (service == null) {
+        return SendResult.failed("DTD service is null");
+      }
+
+      JsonObject params = new JsonObject();
+      params.addProperty("tool", getToolName());
+
+      // TODO (pq): convert analyticsData to params.
+
+      // TODO (pq): hoist request constants into static fields
+      return makeUnifiedAnalyticsRequest("ideEvent", service, params).thenCompose(result -> {
+        if (result == null) {
+          return SendResult.failed("ideEvent result is null");
+        }
+
+        JsonPrimitive type = result.getAsJsonPrimitive("type");
+        if (type == null) {
+          return SendResult.failed("ideEvent result type is null");
+        }
+
+        return SendResult.succeeded("Success".equals(type.getAsString()));
+      });
+    }
+    catch (Exception e) {
+      LOG.info(e);
+      return SendResult.failed(e.getMessage());
     }
   }
 
@@ -168,15 +209,11 @@ public class UnifiedAnalytics {
 
   private String getToolName() throws Exception {
     String ideValue = flutterSdkUtil.getFlutterHostEnvValue();
-    if ("IntelliJ-IDEA".equals(ideValue)) {
-      return "intellij-plugins";
-    }
-    else if ("Android-Studio".equals(ideValue)) {
-      return "android-studio-plugins";
-    }
-    else {
-      throw new Exception("Tool name cannot be found for IDE type: " + ideValue);
-    }
+    return switch (flutterSdkUtil.getFlutterHostEnvValue()) {
+      case "IntelliJ-IDEA" -> "intellij-plugins";
+      case "Android-Studio" -> "android-studio-plugins";
+      default -> throw new Exception("Tool name cannot be found for IDE type: " + ideValue);
+    };
   }
 
   private @NotNull CompletableFuture<Boolean> shouldShowMessage(@NotNull DartToolingDaemonService service, @NotNull JsonObject params) {
@@ -204,5 +241,40 @@ public class UnifiedAnalytics {
       innerResult.complete(value.getAsString());
       return innerResult;
     });
+  }
+}
+
+/**
+ * Represents the result of an analytics sending operation.
+ * <p>
+ * This class encapsulates whether the operation was successful and includes an
+ * optional message, typically used for logging errors.
+ */
+class SendResult {
+  /**
+   * True if the analytics report was sent successfully, false otherwise.
+   */
+  public final boolean success;
+
+  /**
+   * An optional message providing more details about the result, particularly on failure.
+   */
+  public final @Nullable String message;
+
+  SendResult(boolean success, @Nullable String message) {
+    this.success = success;
+    this.message = message;
+  }
+
+  CompletableFuture<SendResult> toCompletedFuture() {
+    return CompletableFuture.completedFuture(this);
+  }
+
+  static CompletableFuture<SendResult> failed(@Nullable String message) {
+    return new SendResult(false, message).toCompletedFuture();
+  }
+
+  static CompletableFuture<SendResult> succeeded(boolean success) {
+    return new SendResult(success, null).toCompletedFuture();
   }
 }
