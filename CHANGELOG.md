@@ -1,8 +1,8 @@
-## Unreleased
+## 88.1.0
 
 ### Added
 
-### Removed
+- Widget preview tool window (#8595, #8599).
 
 ### Changed
 
