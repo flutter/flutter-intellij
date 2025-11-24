@@ -269,7 +269,7 @@ intellijPlatform {
   pluginVerification {
     // https://github.com/JetBrains/intellij-plugin-verifier/?tab=readme-ov-file#specific-options
     // https://github.com/JetBrains/intellij-plugin-verifier
-    cliPath = file("./third_party/lib/verifier-cli-1.394-all.jar")
+    cliPath = file("./third_party/lib/verifier-cli-1.398-all.jar")
     failureLevel = listOf(
       // TODO(team) Ideally all of the following FailureLevels should be enabled:
       // https://github.com/flutter/flutter-intellij/issues/8361
