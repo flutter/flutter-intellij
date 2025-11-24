@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - name: build
         run: ./tool/github.sh
   checker:
@@ -31,7 +31,7 @@ jobs:
         bot: [CHECK_BOT, DART_BOT, UNIT_TEST_BOT, VERIFY_BOT]
     steps:
       - name: checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - name: Linux ${{ matrix.bot }}
         run: ./tool/github.sh
         env:
