@@ -6,8 +6,8 @@ code_review:
   max_review_comments: -1
   pull_request_opened:
     help: false
-    summary: true
-    code_review: true
+    summary: false
+    code_review: false
     include_drafts: true
 ignore_patterns: []
 
