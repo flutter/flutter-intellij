@@ -259,7 +259,7 @@ intellijPlatform {
       untilBuild = untilBuildInput
     }
     changeNotes = provider {
-      project.changelog.render(Changelog.OutputType.HTML)
+      project.changelog.renderItem(project.changelog.getLatest(), Changelog.OutputType.HTML)
     }
   }
 
