@@ -5,8 +5,8 @@
  */
 package io.flutter.actions;
 
-import com.android.tools.idea.gradle.project.importing.GradleProjectImporter;
 import com.intellij.ide.actions.OpenFileAction;
+import com.intellij.ide.impl.OpenProjectTask;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -61,8 +61,8 @@ public class OpenAndroidModule extends OpenInAndroidStudioAction implements Dumb
     if (canImportAsGradleProject(projectFile)) {
       VirtualFile target = findGradleTarget(projectFile);
       if (target != null) {
-        GradleProjectImporter gradleImporter = GradleProjectImporter.getInstance();
-        gradleImporter.importAndOpenProjectCore(null, true, projectFile);
+        com.intellij.ide.impl.ProjectUtil.openOrImport(projectFile.toNioPath(), OpenProjectTask.build().withForceOpenInNewFrame(forceOpenInNewFrame));
+
         for (Project proj : ProjectManager.getInstance().getOpenProjects()) {
           if (projectFile.equals(ProjectUtil.guessProjectDir(proj)) || projectFile.equals(proj.getProjectFile())) {
             if (sourceFile != null && !sourceFile.isDirectory()) {
