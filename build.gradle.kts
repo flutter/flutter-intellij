@@ -292,8 +292,16 @@ intellijPlatform {
     ignoredProblemsFile.set(project.file("verify-ignore-problems.txt"))
 
     ides {
-      recommended()
-    }
+            recommended()
+            select {
+                types = listOf(
+                    IntelliJPlatformType.IntellijIdeaCommunity,
+                    IntelliJPlatformType.IntellijIdeaUltimate,
+                    IntelliJPlatformType.AndroidStudio,
+                )
+                channels = listOf(ProductRelease.Channel.RELEASE)
+            }
+        }
   }
 }
 
