@@ -1,3 +1,15 @@
+## 88.2.0
+
+### Added
+
+### Changed
+
+### Removed
+
+### Fixed
+
+- Fixed crash when using 3rd party loggers that don't implement `setLevel`. (#8631)
+
 ## 88.1.0
 
 ### Added
