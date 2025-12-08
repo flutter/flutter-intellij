@@ -292,10 +292,30 @@ intellijPlatform {
     ignoredProblemsFile.set(project.file("verify-ignore-problems.txt"))
 
     ides {
-      recommended()
+      if (project.hasProperty("singleIdeVersion")) {
+        val singleIdeVersion = project.property("singleIdeVersion") as String
+        select {
+          types = listOf(IntelliJPlatformType.AndroidStudio)
+          channels = listOf(ProductRelease.Channel.RELEASE)
+          sinceBuild = singleIdeVersion
+          untilBuild = "$singleIdeVersion.*"
+        }
+      } else {
+        recommended()
+      }
     }
   }
 }
+
+//tasks.named<VerifyPluginTask>("verifyPlugin") {
+//    doLast {
+//        val ideDirFile = ideDir.get().asFile
+//        if (ideDirFile.exists()) {
+//            println("Deleting IDE directory: " + ideDirFile.absolutePath)
+//            ideDirFile.deleteRecursively()
+//        }
+//    }
+//}
 
 tasks {
   register<Test>("integration") {
@@ -418,4 +438,3 @@ tasks.withType<ProcessResources>().configureEach {
     exclude("jxbrowser/jxbrowser.properties")
   }
 }
-
