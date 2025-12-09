@@ -86,14 +86,17 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
   echo "Check on space before verifyPlugin for 243\n"
   df -h
   ./gradlew verifyPlugin -PsingleIdeVersion=243
+  ./gradlew clean
 
   echo "Check on space before verifyPlugin for 251\n"
   df -h
   ./gradlew verifyPlugin -PsingleIdeVersion=251
+  ./gradlew clean
 
   echo "Check on space before verifyPlugin for 252\n"
   df -h
   ./gradlew verifyPlugin -PsingleIdeVersion=252
+  ./gradlew clean
 
 elif [ "INTEGRATION_BOT" = "$BOT" ]; then
   # Run the integration tests
