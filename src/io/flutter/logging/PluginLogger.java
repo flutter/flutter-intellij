@@ -5,7 +5,6 @@
  */
 package io.flutter.logging;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.LogLevel;
 import com.intellij.openapi.diagnostic.Logger;
@@ -18,7 +17,7 @@ import java.util.logging.FileHandler;
 import java.util.logging.SimpleFormatter;
 
 public class PluginLogger {
-  private static final String LOG_FILE_NAME = "flutter.log";
+  public static final String LOG_FILE_NAME = "dash.log";
 
   // This handler specifies the logging format and location.
   private static final FileHandler fileHandler;

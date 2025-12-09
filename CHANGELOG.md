@@ -4,6 +4,8 @@
 
 ### Changed
 
+- Made log file `dash.log` (instead of `flutter.log`).
+
 ### Removed
 
 ### Fixed
