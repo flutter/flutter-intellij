@@ -83,17 +83,14 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
   df -h
   ./gradlew verifyPluginSignature
 
-  echo "Check on space before verifyPlugin for 243\n"
-  df -h
-  ./gradlew verifyPlugin -PsingleIdeVersion=243
+  for version in 243 251 252; do
+    echo "Check on space before verifyPlugin for $version\n"
+    df -h
+    ./gradlew verifyPlugin -PsingleIdeVersion=$version
+  done
 
-  echo "Check on space before verifyPlugin for 251\n"
+  echo "Check on space after verifyPlugin"
   df -h
-  ./gradlew verifyPlugin -PsingleIdeVersion=251
-
-  echo "Check on space before verifyPlugin for 252\n"
-  df -h
-  ./gradlew verifyPlugin -PsingleIdeVersion=252
 
 elif [ "INTEGRATION_BOT" = "$BOT" ]; then
   # Run the integration tests
