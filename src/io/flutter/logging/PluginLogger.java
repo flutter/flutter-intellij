@@ -5,7 +5,6 @@
  */
 package io.flutter.logging;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.LogLevel;
 import com.intellij.openapi.diagnostic.Logger;
