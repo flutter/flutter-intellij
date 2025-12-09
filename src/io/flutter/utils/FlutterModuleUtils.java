@@ -375,13 +375,14 @@ public class FlutterModuleUtils {
 
   public static void setFlutterModuleAndReload(@NotNull Module module, @NotNull Project project) {
     if (project.isDisposed()) return;
+    ApplicationManager.getApplication().invokeLater(() -> {
+      ApplicationManager.getApplication().runWriteAction(() -> setFlutterModuleType(module));
+      enableDartSDK(module);
+      project.save();
 
-    setFlutterModuleType(module);
-    enableDartSDK(module);
-    project.save();
-
-    EditorNotifications.getInstance(project).updateAllNotifications();
-    ProjectManager.getInstance().reloadProject(project);
+      EditorNotifications.getInstance(project).updateAllNotifications();
+      ProjectManager.getInstance().reloadProject(project);
+    });
   }
 
   public static void enableDartSDK(final @NotNull Module module) {

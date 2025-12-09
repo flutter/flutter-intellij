@@ -28,10 +28,8 @@ class FlutterStudioProjectOpenProcessor : FlutterProjectOpenProcessor() {
   override val name: String
     get() = "Flutter Studio"
 
-  override fun canOpenProject(file: VirtualFile): Boolean {
-    val root = PubRoot.forDirectory(file)
-    return root != null && root.declaresFlutter()
-  }
+  override fun canOpenProject(file: VirtualFile): Boolean =
+    PubRoot.forDirectory(file)?.declaresFlutter() == true
 
   /**
    * Replaces the deprecated `doOpenProject`.
@@ -57,16 +55,16 @@ class FlutterStudioProjectOpenProcessor : FlutterProjectOpenProcessor() {
       return newProject
     }
 
-    writeAction {
-      for (module in FlutterModuleUtils.getModules(newProject)) {
-        if (FlutterModuleUtils.declaresFlutter(module) && !FlutterModuleUtils.isFlutterModule(module)) {
+    for (module in FlutterModuleUtils.getModules(newProject)) {
+      if (FlutterModuleUtils.declaresFlutter(module) && !FlutterModuleUtils.isFlutterModule(module)) {
+        writeAction {
           FlutterModuleUtils.setFlutterModuleType(module)
-          FlutterModuleUtils.enableDartSDK(module)
         }
+        FlutterModuleUtils.enableDartSDK(module)
       }
-      newProject.save()
-      EditorNotifications.getInstance(newProject).updateAllNotifications()
     }
+    newProject.save()
+    EditorNotifications.getInstance(newProject).updateAllNotifications()
     
     return newProject
   }

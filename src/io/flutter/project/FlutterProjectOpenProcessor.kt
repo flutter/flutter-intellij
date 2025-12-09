@@ -67,9 +67,7 @@ open class FlutterProjectOpenProcessor : ProjectOpenProcessor() {
     if (project == null || project.isDisposed) return project
 
     // Convert any modules that use Flutter but don't have IntelliJ Flutter metadata.
-    writeAction {
-      convertToFlutterProject(project)
-    }
+    convertToFlutterProject(project)
 
     return project
   }

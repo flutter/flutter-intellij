@@ -13,7 +13,7 @@
 ### Fixed
 
 - Fixed crash when using 3rd party loggers that don't implement `setLevel`. (#8631)
-- Fixed "Slow operations are prohibited on EDT" by migrating `FlutterProjectOpenProcessor` to Kotlin and using `openProjectAsync`. (#8629)
+- Fixed `IllegalStateException` and "Slow operations are prohibited on EDT" when opening projects by migrating `FlutterProjectOpenProcessor` to Kotlin and using `openProjectAsync`. (#8629)
 
 ## 88.1.0
 
