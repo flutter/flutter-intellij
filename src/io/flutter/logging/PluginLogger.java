@@ -45,13 +45,18 @@ public class PluginLogger {
 
   public static void updateLogLevel() {
     final Logger rootLoggerInstance = Logger.getInstance("io.flutter");
+    // Workaround for https://github.com/flutter/flutter-intellij/issues/8631
+    if (rootLoggerInstance.getClass().getName().equals("com.haulmont.jmixstudio.logger.JmixLoggerWrapper")) {
+      return;
+    }
     try {
       rootLoggerInstance.setLevel(FlutterSettings.getInstance().isVerboseLogging() ? LogLevel.ALL : LogLevel.INFO);
     }
     catch (Throwable e) {
-      // This can happen if the logger is wrapped by a 3rd party plugin that doesn't correctly implement setLevel.
+      // This can happen if the logger is wrapped by a 3rd party plugin that doesn't
+      // correctly implement setLevel.
       // See https://github.com/flutter/flutter-intellij/issues/8631
-      Logger.getInstance(PluginLogger.class).warn("Failed to set log level", e);
+      Logger.getInstance(PluginLogger.class).info("Failed to set log level");
     }
   }
 
