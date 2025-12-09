@@ -307,15 +307,18 @@ intellijPlatform {
   }
 }
 
-//tasks.named<VerifyPluginTask>("verifyPlugin") {
-//    doLast {
-//        val ideDirFile = ideDir.get().asFile
-//        if (ideDirFile.exists()) {
-//            println("Deleting IDE directory: " + ideDirFile.absolutePath)
-//            ideDirFile.deleteRecursively()
-//        }
-//    }
-//}
+// If we don't delete old versions of the IDE during `verifyPlugin`, then GitHub action bots can run out of space.
+tasks.withType<VerifyPluginTask> {
+  doLast {
+    ides.forEach { ide ->
+      if (ide.exists()) {
+        println("Deleting IDE directory at ${ide.path}")
+        val result = ide.deleteRecursively()
+        println("IDE was deleted? $result")
+      }
+    }
+  }
+}
 
 tasks {
   register<Test>("integration") {
