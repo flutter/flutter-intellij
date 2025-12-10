@@ -141,6 +141,12 @@ sourceSets {
         "third_party/vmServiceDrivers"
       )
     )
+    kotlin.srcDirs(
+      listOf(
+        "src",
+        "third_party/vmServiceDrivers"
+      )
+    )
     // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
     resources.srcDirs(
       listOf(
