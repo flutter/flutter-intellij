@@ -75,8 +75,11 @@ These are the versions of Flutter SDK that current and previous Flutter plugins 
 
 | Flutter SDK version | Flutter plugin version |
 |---------------------|------------------------|
-| up to v3.7          | 85.3.2 and earlier     |
-| v3.10 and above     | Currently supported    |
+| up to v3.7.12       | 83.0.4 and earlier     |
+| v3.10.0 to v3.10.2  | 85.3.2 and earlier     |
+| v3.10.3 to v3.10.6  | 86.0.2 and earlier     |
+| v3.13.0 to v3.13.9  | 88.1.0 and earlier     |
+| v3.16.0 and above   | Currently supported    |
 
 Here is more information on the Flutter plugin's support for Flutter
 SDKs: https://docs.flutter.dev/tools/sdk#sdk-support-for-flutter-developer-tools.
