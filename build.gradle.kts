@@ -292,7 +292,36 @@ intellijPlatform {
     ignoredProblemsFile.set(project.file("verify-ignore-problems.txt"))
 
     ides {
-      recommended()
+      // `singleIdeVersion` is only intended for use by GitHub actions to enable deleting instances of IDEs after testing.
+      if (project.hasProperty("singleIdeVersion")) {
+        val singleIdeVersion = project.property("singleIdeVersion") as String
+        select {
+          types = listOf(IntelliJPlatformType.AndroidStudio)
+          channels = listOf(ProductRelease.Channel.RELEASE)
+          sinceBuild = singleIdeVersion
+          untilBuild = "$singleIdeVersion.*"
+        }
+      } else {
+        recommended()
+      }
+    }
+  }
+}
+
+// If we don't delete old versions of the IDE during `verifyPlugin`, then GitHub action bots can run out of space.
+tasks.withType<VerifyPluginTask> {
+  if (project.hasProperty("singleIdeVersion")) {
+    doLast {
+      ides.forEach { ide ->
+        if (ide.exists()) {
+          // This isn't a clean deletion because gradle has internal logic for tagging that it has downloaded something, and the tagging
+          // isn't deleted. So if we were to run `./gradlew verifyPlugin -PsingleIdeVersion=<someVersion` twice in a row, the second time
+          // would fail due to gradle thinking that there should be an IDE at a place it recorded from the last run.
+          println("Deleting IDE directory at ${ide.path}")
+          val result = ide.deleteRecursively()
+          println("IDE was deleted? $result")
+        }
+      }
     }
   }
 }
@@ -418,4 +447,3 @@ tasks.withType<ProcessResources>().configureEach {
     exclude("jxbrowser/jxbrowser.properties")
   }
 }
-
