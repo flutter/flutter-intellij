@@ -194,7 +194,14 @@ dependencies {
     // Documentation on the default target platform methods:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
     // Android Studio versions can be found at: https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
-    androidStudio(ideaVersion)
+    try {
+      androidStudio(ideaVersion)
+    } catch (e: Exception) {
+      throw GradleException(
+        "Failed to resolve Android Studio / IDEA download URL. This is likely due to a network issue blocking the download URL. Please check your internet connection or VPN.",
+        e
+      )
+    }
     testFramework(TestFrameworkType.Platform)
     testFramework(TestFrameworkType.Starter, configurationName = "integrationImplementation")
     testFramework(TestFrameworkType.JUnit5, configurationName = "integrationImplementation")
@@ -344,7 +351,16 @@ tasks {
     maxHeapSize = "4g"
 
     systemProperty("path.to.build.plugin", buildPlugin.get().archiveFile.get().asFile.absolutePath)
-    systemProperty("idea.home.path", prepareTestSandbox.get().getDestinationDir().parentFile.absolutePath)
+    systemProperty("idea.home.path", providers.provider {
+      try {
+        prepareTestSandbox.get().destinationDir.parentFile.absolutePath
+      } catch (e: Exception) {
+        throw GradleException(
+          "Failed to resolve Android Studio/ IDEA path. This is likely due to a network issue blocking the download URL. Please check your internet connection or VPN.",
+          e
+        )
+      }
+    })
     systemProperty(
       "allure.results.directory", project.layout.buildDirectory.get().asFile.absolutePath + "/allure-results"
     )
