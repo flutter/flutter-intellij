@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
+
 public class FlutterErrorHelperTest {
   @Test
   public void testGetAnalyticsId() {
@@ -117,5 +118,28 @@ public class FlutterErrorHelperTest {
                                           'package:flutter_error_studies/main.dart': Failed assertion: line 45 pos 12: '() {
                                                 return 1 == 2;
                                               }()': is not true."""));
+  }
+
+  @Test
+  public void testGetAnalyticsId_edgeCases() {
+    assertEquals(
+        "xxx-error",
+        FlutterErrorHelper.getAnalyticsId("123 error")); // Numbers at start
+
+    assertEquals(
+        "error-with-multiple-spaces",
+        FlutterErrorHelper.getAnalyticsId("Error   with    multiple   spaces"));
+
+    assertEquals(
+        "error-with-parens",
+        FlutterErrorHelper.getAnalyticsId("Error with (some variable info) parens"));
+
+    assertEquals(
+        "long-error-message-that-should-ideally-be-truncated-or-handled-but-currently-is-just-dashified",
+        FlutterErrorHelper.getAnalyticsId(
+            "Long error message that should ideally be truncated or handled but currently is just dashified"));
+
+    assertEquals("", FlutterErrorHelper.getAnalyticsId(""));
+    assertEquals("", FlutterErrorHelper.getAnalyticsId("   "));
   }
 }
