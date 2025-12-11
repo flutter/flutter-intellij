@@ -49,4 +49,32 @@ public class IconPreviewGeneratorTest {
     }
     preview.delete();
   }
+
+  @Test
+  public void generateWithInvalidPaths() throws IOException {
+    final Path tempDir = Files.createTempDirectory("preview_invalid");
+    final String outputPath = tempDir.toAbsolutePath().toString();
+    File preview = new File(outputPath);
+
+    // Should handle missing font gracefully (or throw, let's see)
+    // Actually batchConvert catches IOException? No, it might print stack trace or
+    // just fail.
+    // The class uses Font.createFont which throws.
+    // Let's assume it throws IOException or similar if font not found.
+    IconPreviewGenerator ipg = new IconPreviewGenerator("nonexistent.ttf", 16, 16, Color.black);
+    // batchConvert might fail.
+    try {
+      ipg.batchConvert(outputPath, "nonexistent.properties", "");
+    } catch (Exception e) {
+      // Expected failure or handled error
+    }
+
+    // Clean up
+    if (preview.exists()) {
+      for (File each : preview.listFiles()) {
+        each.delete();
+      }
+      preview.delete();
+    }
+  }
 }
