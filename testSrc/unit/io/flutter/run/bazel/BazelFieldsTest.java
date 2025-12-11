@@ -65,7 +65,16 @@ public class BazelFieldsTest {
     assertEquals("bazel_or_dart_target", after.getTarget());
     assertEquals("bazel_args --1 -2=3", after.getBazelArgs());
     assertEquals("additional_args --1 --2=3", after.getAdditionalArgs());
+
     assertTrue(after.getEnableReleaseMode());
+  }
+
+  @Test
+  public void constructorHandlesNulls() {
+    final BazelFields fields = new BazelFields(null, null, null, false);
+    assertNull(fields.getTarget());
+    assertNull(fields.getBazelArgs());
+    assertNull(fields.getAdditionalArgs());
   }
 
   private void addOption(Element elt, String name, String value) {
