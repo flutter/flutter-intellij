@@ -109,5 +109,20 @@ public class TypedDataListTest {
     byte[] bytes = new byte[]{0, 0, 0, 0, 0, 0, -16, 63};
     Float64List list = new Float64List(bytes);
     assertEquals("1.0", list.getValue(0));
+    assertEquals("1.0", list.getValue(0));
+  }
+
+  @Test
+  public void testEmptyLists() {
+    byte[] empty = new byte[0];
+    assertEquals(0, new Int8List(empty).size());
+    assertEquals(0, new Uint8List(empty).size());
+    assertEquals(0, new Int16List(empty).size());
+    assertEquals(0, new Float32List(empty).size());
+  }
+
+  @Test(expected = IndexOutOfBoundsException.class)
+  public void testOutOfBounds() {
+    new Int8List(new byte[] { 1 }).getValue(1);
   }
 }

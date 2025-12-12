@@ -129,4 +129,19 @@ public class StdoutJsonParserTest {
       parser.getAvailableLines().toArray()
     );
   }
+
+  @Test
+  public void testEmptyInput() {
+    StdoutJsonParser parser = new StdoutJsonParser();
+    parser.appendOutput("");
+    assertArrayEquals("empty input", new String[] {}, parser.getAvailableLines().toArray());
+  }
+
+  @Test
+  public void testOnlyNewlines() {
+    StdoutJsonParser parser = new StdoutJsonParser();
+    parser.appendOutput("\n");
+    parser.appendOutput("\r\n");
+    assertArrayEquals("newline input", new String[] { "\n", "\r\n" }, parser.getAvailableLines().toArray());
+  }
 }
