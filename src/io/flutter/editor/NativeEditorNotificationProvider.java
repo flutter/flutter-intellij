@@ -107,6 +107,7 @@ public class NativeEditorNotificationProvider implements EditorNotificationProvi
     final AnAction myAction;
     final boolean isVisible;
 
+    @SuppressWarnings("deprecation")
     NativeEditorActionsPanel(@NotNull FileEditor fileEditor, @NotNull VirtualFile root, @NotNull String actionName) {
       super(UIUtils.getEditorNotificationBackgroundColor());
       myFile = fileEditor.getFile();
@@ -117,8 +118,9 @@ public class NativeEditorNotificationProvider implements EditorNotificationProvi
       text("Flutter commands");
 
       // Ensure this project is a Flutter project by updating the menu action. It will only be visible for Flutter projects.
-      myAction.update(
-        AnActionEvent.createEvent(makeContext(), myAction.getTemplatePresentation(), ActionPlaces.EDITOR_TOOLBAR, ActionUiKind.NONE, null));
+      final AnActionEvent event = AnActionEvent.createEvent(makeContext(), myAction.getTemplatePresentation(),
+          ActionPlaces.EDITOR_TOOLBAR, ActionUiKind.NONE, null);
+      com.intellij.openapi.actionSystem.ex.ActionUtil.performDumbAwareUpdate(myAction, event, false);
 
       isVisible = myAction.getTemplatePresentation().isVisible();
       //noinspection DialogTitleCapitalization

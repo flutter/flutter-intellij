@@ -12,6 +12,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.GlobalSearchScopesCore;
@@ -31,9 +32,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -158,7 +161,15 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
     final PsiFile[] localFilesWithSameName = OpenApiUtils.safeRunReadAction(() -> {
       final String remoteFileName = PathUtil.getFileName(remotePath);
       final GlobalSearchScope scope = GlobalSearchScopesCore.directoryScope(project, sourceRoot, true);
-      return FilenameIndex.getFilesByName(project, remoteFileName, scope);
+      final List<PsiFile> files = new ArrayList<>();
+      FilenameIndex.processFilesByName(remoteFileName, false, scope, virtualFile -> {
+        PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+        if (psiFile != null) {
+          files.add(psiFile);
+        }
+        return true;
+      });
+      return files.toArray(PsiFile.EMPTY_ARRAY);
     });
 
     String match = null;

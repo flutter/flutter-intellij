@@ -36,6 +36,7 @@ public class FlutterPopFrameAction extends AnAction implements DumbAware {
     final DartVmServiceStackFrame frame = getStackFrame(e);
     final boolean enabled = frame != null && frame.canDrop();
 
+    // noinspection deprecation
     if (ActionPlaces.isMainMenuOrActionSearch(e.getPlace()) || ActionPlaces.DEBUGGER_TOOLBAR.equals(e.getPlace())) {
       e.getPresentation().setEnabled(enabled);
     }

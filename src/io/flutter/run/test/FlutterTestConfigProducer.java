@@ -25,8 +25,9 @@ import org.jetbrains.annotations.NotNull;
 public class FlutterTestConfigProducer extends RunConfigurationProducer<TestConfig> {
   private final TestConfigUtils testConfigUtils = TestConfigUtils.getInstance();
 
+  @SuppressWarnings("deprecation")
   protected FlutterTestConfigProducer() {
-    super(FlutterTestConfigType.getInstance());
+    super(FlutterTestConfigType.getInstance().getConfigurationFactories()[0]);
   }
 
   private static boolean isFlutterContext(@NotNull ConfigurationContext context) {

@@ -20,6 +20,7 @@ public class FlutterCoverageSuite extends BaseCoverageSuite {
     this.coverageEngine = coverageEngine;
   }
 
+  @SuppressWarnings("deprecation")
   public FlutterCoverageSuite(CoverageRunner runner,
                               String name,
                               CoverageFileProvider coverageDataFileProvider,

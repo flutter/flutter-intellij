@@ -185,10 +185,12 @@ public class DeviceService {
    * <p>
    * <p>This might mean starting it, stopping it, or restarting it.
    */
+  @SuppressWarnings("unchecked")
   private void refreshDeviceDaemon() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       DumbService.getInstance(project).waitForSmartMode();
       if (project.isDisposed()) return;
+      // noinspection unchecked
       deviceDaemon.refresh(this::chooseNextDaemon);
       refreshInProgress = false;
       ActivityTracker.getInstance().inc();
@@ -273,7 +275,9 @@ public class DeviceService {
     JobScheduler.getScheduler().schedule(this::refreshDeviceDaemon, 4, TimeUnit.SECONDS);
   }
 
+  @SuppressWarnings("unchecked")
   private void shutDown() {
+    // noinspection unchecked
     deviceDaemon.refresh(this::shutDownDaemon);
   }
 

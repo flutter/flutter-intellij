@@ -4,3 +4,19 @@
 # See more context in https://github.com/flutter/flutter-intellij/pull/8590
 ::Package 'de.roderick' is not found.*
 
+// Internal API usages
+::Internal method com.intellij.openapi.module.Module.setModuleType.*
+::Internal .* com.intellij.openapi.project.impl.ProjectImpl.*
+::Internal class com.intellij.openapi.project.impl.ProjectManagerImpl.*
+::Internal method com.intellij.execution.configurations.coverage.CoverageEnabledConfiguration.coverageRunnerExtensionRemoved.*
+::Internal method com.intellij.coverage.SimpleCoverageAnnotator.getRoots.*
+::Internal method com.intellij.coverage.CoverageEngine.recompileProjectAndRerunAction.*
+::Internal method com.intellij.coverage.CoverageEngine.canHavePerTestCoverage.*
+::Internal method com.intellij.coverage.CoverageEngine.getQualifiedName.*
+::Internal method com.intellij.ide.impl.NewProjectUtilKt.createNewProjectAsync.*
+::Internal method com.intellij.xdebugger.impl.XDebugSessionImpl.reset.*
+::Internal class com.intellij.serviceContainer.ComponentManagerImpl.*
+::Internal method com.intellij.openapi.startup.StartupManager.runAfterOpened.*
+::Internal constructor com.intellij.ui.BadgeIcon.<init>.*
+::Dependency 'module com.intellij.modules.androidstudio \(optional\)' is not resolved.*
+

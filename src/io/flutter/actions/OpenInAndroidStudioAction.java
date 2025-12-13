@@ -8,7 +8,8 @@ package io.flutter.actions;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ColoredProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
+
+import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.editor.CaretModel;
@@ -245,7 +246,7 @@ public class OpenInAndroidStudioAction extends AnAction {
         cmd.addParameter(sourceFile);
       }
       final ColoredProcessHandler handler = new ColoredProcessHandler(cmd);
-      handler.addProcessListener(new ProcessAdapter() {
+      handler.addProcessListener(new ProcessListener() {
         @Override
         public void processTerminated(@NotNull final ProcessEvent event) {
           if (event.getExitCode() != 0) {

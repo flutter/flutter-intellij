@@ -25,6 +25,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.concurrency.AppExecutorUtil;
@@ -173,9 +174,9 @@ public class FlutterInitializer extends FlutterProjectActivity {
       List<Module> modules = FlutterModuleUtils.findModulesWithFlutterContents(project);
       for (Module module : modules) {
         if (module.isDisposed() || !FlutterModuleUtils.isFlutterModule(module)) continue;
-        VirtualFile moduleFile = module.getModuleFile();
-        if (moduleFile == null) continue;
-        VirtualFile baseDir = moduleFile.getParent();
+        VirtualFile baseDir = ProjectUtil.guessModuleDir(module);
+        if (baseDir == null)
+          continue;
         if (baseDir.getName().equals(".idea")) {
           baseDir = baseDir.getParent();
         }
