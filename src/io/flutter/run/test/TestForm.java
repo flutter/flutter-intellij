@@ -63,8 +63,9 @@ public class TestForm extends SettingsEditor<TestConfig> {
     });
 
     initDartFileTextWithBrowse(project, testFile);
-    testDir.addBrowseFolderListener(project, FileChooserDescriptorFactory.createSingleFolderDescriptor()
-      .withTitle("Test Directory"));
+    testDir.addBrowseFolderListener("Test Directory", null, project,
+        FileChooserDescriptorFactory.createSingleFolderDescriptor(),
+        com.intellij.openapi.ui.TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT);
   }
 
   @NotNull

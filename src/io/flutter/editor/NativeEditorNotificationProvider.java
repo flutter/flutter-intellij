@@ -118,8 +118,8 @@ public class NativeEditorNotificationProvider implements EditorNotificationProvi
       text("Flutter commands");
 
       // Ensure this project is a Flutter project by updating the menu action. It will only be visible for Flutter projects.
-      final AnActionEvent event = AnActionEvent.createEvent(makeContext(), myAction.getTemplatePresentation(),
-          ActionPlaces.EDITOR_TOOLBAR, ActionUiKind.NONE, null);
+      final AnActionEvent event = new AnActionEvent(null, makeContext(),
+          ActionPlaces.EDITOR_TOOLBAR, myAction.getTemplatePresentation(), ActionManager.getInstance(), 0);
       com.intellij.openapi.actionSystem.ex.ActionUtil.performDumbAwareUpdate(myAction, event, false);
 
       isVisible = myAction.getTemplatePresentation().isVisible();
@@ -143,7 +143,8 @@ public class NativeEditorNotificationProvider implements EditorNotificationProvi
     private void performAction() {
       // Open Xcode or Android Studio. If already running AS then just open a new window.
       myAction.actionPerformed(
-        AnActionEvent.createEvent(makeContext(), myAction.getTemplatePresentation(), ActionPlaces.EDITOR_TOOLBAR, ActionUiKind.NONE, null));
+          new AnActionEvent(null, makeContext(), ActionPlaces.EDITOR_TOOLBAR, myAction.getTemplatePresentation(),
+              ActionManager.getInstance(), 0));
     }
 
     private DataContext makeContext() {

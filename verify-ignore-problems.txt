@@ -18,5 +18,10 @@
 ::Internal class com.intellij.serviceContainer.ComponentManagerImpl.*
 ::Internal method com.intellij.openapi.startup.StartupManager.runAfterOpened.*
 ::Internal constructor com.intellij.ui.BadgeIcon.<init>.*
-::Dependency 'module com.intellij.modules.androidstudio \(optional\)' is not resolved.*
-
+::Internal class com.intellij.ui.BadgeIcon.*
+::Invocation of unresolved constructor com.intellij.openapi.project.impl.ProjectImpl.<init>.*
+::module com.intellij.modules.androidstudio \(optional\): Dependency 'module com.intellij.modules.androidstudio \(optional\)' is not resolved.*
+::Internal method com.intellij.util.lang.UrlClassLoader.addFiles.*
+::Internal method com.intellij.execution.testframework.sm.runner.states.TestStateInfo.Magnitude.values.*
+::Internal field com.intellij.execution.testframework.sm.runner.states.TestStateInfo.Magnitude.*
+::Internal field com.intellij.ide.ui.UISettingsListener.TOPIC
