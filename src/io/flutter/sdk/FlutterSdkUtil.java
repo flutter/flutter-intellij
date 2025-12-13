@@ -95,7 +95,7 @@ public class FlutterSdkUtil {
   /**
    * Adds the current path and other known paths to the combo, most recently used first.
    */
-  public static void addKnownSDKPathsToCombo(@NotNull JComboBox combo) {
+  public static void addKnownSDKPathsToCombo(@NotNull @SuppressWarnings("rawtypes") JComboBox combo) {
     // First, get the current path from the combo box on the EDT.
     final String currentPath = combo.getEditor().getItem().toString().trim();
     final Set<String> pathsToShow = new LinkedHashSet<>();

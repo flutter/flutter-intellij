@@ -75,8 +75,8 @@ public class FlutterGeneratorPeer {
       }
     }
 
-    mySdkPathComboWithBrowse.addBrowseFolderListener(null, FileChooserDescriptorFactory.createSingleFolderDescriptor()
-      .withTitle(FlutterBundle.message("flutter.sdk.browse.path.label")), TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
+    mySdkPathComboWithBrowse.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
+        FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
     mySdkPathComboWithBrowse.getComboBox().addActionListener(e -> fillSdkCache());
     fillSdkCache();
 

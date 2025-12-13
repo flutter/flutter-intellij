@@ -49,6 +49,7 @@ public class FlutterCoverageEngine extends CoverageEngine {
   }
 
   @Override
+  @SuppressWarnings("deprecation")
   public @Nullable CoverageSuite createCoverageSuite(@NotNull CoverageRunner covRunner,
                                                      @NotNull String name,
                                                      @NotNull CoverageFileProvider coverageDataFileProvider,
@@ -63,6 +64,7 @@ public class FlutterCoverageEngine extends CoverageEngine {
   }
 
   @Override
+  @SuppressWarnings("deprecation")
   public @Nullable CoverageSuite createCoverageSuite(@NotNull CoverageRunner covRunner,
                                                      @NotNull String name,
                                                      @NotNull CoverageFileProvider coverageDataFileProvider,

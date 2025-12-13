@@ -5,7 +5,7 @@
  */
 package io.flutter.actions
 
-import com.intellij.ide.impl.createNewProjectAsync
+
 import com.intellij.ide.projectWizard.NewProjectWizard
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
@@ -41,7 +41,9 @@ class FlutterNewProjectAction : AnAction(), DumbAware {
       val wizard = withContext(Dispatchers.EDT) {
         NewProjectWizard(null, ModulesProvider.EMPTY_MODULES_PROVIDER, null)
       }
-      createNewProjectAsync(wizard)
+      com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+        com.intellij.ide.impl.NewProjectUtil.createNewProject(wizard)
+      }
     }
 
   }

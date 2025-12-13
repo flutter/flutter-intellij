@@ -283,6 +283,7 @@
     <backgroundPostStartupActivity id="FontPreviewStartupActivity"
                                    implementation="io.flutter.font.FontPreviewStartupActivity"
                                    order="last"/>
+    <backgroundPostStartupActivity implementation="io.flutter.project.FlutterAndroidModulePostStartupActivity"/>
 
     <configurationType implementation="io.flutter.run.FlutterRunConfigurationType"/>
     <runConfigurationProducer implementation="io.flutter.run.FlutterRunConfigurationProducer"/>

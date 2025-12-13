@@ -6,8 +6,8 @@
 package io.flutter.actions;
 
 import com.intellij.execution.process.ColoredProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessListener;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
@@ -33,7 +33,7 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
                            @Nullable String desc) {
     final ProgressHelper progressHelper = new ProgressHelper(project);
     progressHelper.start(desc == null ? "building" : desc);
-    ProcessAdapter processAdapter = new ProcessAdapter() {
+    ProcessListener processListener = new ProcessListener() {
       @Override
       public void processTerminated(@NotNull ProcessEvent event) {
         progressHelper.done();
@@ -42,10 +42,22 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
           FlutterMessages.showError("Error while building " + buildType, "`flutter build` returned: " + exitCode, project);
         }
       }
+
+      @Override
+      public void startNotified(@NotNull ProcessEvent event) {
+      }
+
+      @Override
+      public void processWillTerminate(@NotNull ProcessEvent event, boolean willBeDestroyed) {
+      }
+
+      @Override
+      public void onTextAvailable(@NotNull ProcessEvent event, @NotNull com.intellij.openapi.util.Key outputType) {
+      }
     };
     final Module module = pubRoot.getModule(project);
     if (module != null) {
-      sdk.flutterBuild(pubRoot, buildType.type).startInModuleConsole(module, pubRoot::refresh, processAdapter);
+      sdk.flutterBuild(pubRoot, buildType.type).startInModuleConsole(module, pubRoot::refresh, processListener);
     }
     else {
       final ColoredProcessHandler processHandler = sdk.flutterBuild(pubRoot, buildType.type).startInConsole(project);
@@ -53,7 +65,7 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
         progressHelper.done();
       }
       else {
-        processHandler.addProcessListener(processAdapter);
+        processHandler.addProcessListener(processListener);
       }
     }
   }

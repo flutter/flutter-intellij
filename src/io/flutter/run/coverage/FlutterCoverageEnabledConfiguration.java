@@ -20,8 +20,7 @@ import org.jetbrains.annotations.Nullable;
 public class FlutterCoverageEnabledConfiguration extends CoverageEnabledConfiguration {
 
   public FlutterCoverageEnabledConfiguration(@NotNull RunConfigurationBase<?> configuration) {
-    super(configuration);
-    super.setCoverageRunner(CoverageRunner.getInstance(FlutterCoverageRunner.class));
+    super(configuration, CoverageRunner.getInstance(FlutterCoverageRunner.class));
     createCoverageFile();
     ModalityUiUtil.invokeLaterIfNeeded(
       ModalityState.any(),

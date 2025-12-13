@@ -125,7 +125,7 @@ public class BazelTestRunner extends GenericProgramRunner {
       Workspace workspace = WorkspaceCache.getInstance(project).get();
       assert (workspace != null);
       String configWarningPrefix = workspace.getConfigWarningPrefix();
-      listener = new ProcessAdapter() {
+      listener = new ProcessListener() {
         @Override
         public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
           final String text = event.getText();

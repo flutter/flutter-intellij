@@ -32,18 +32,22 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
 
   private final BazelTestConfigUtils bazelTestConfigUtils;
 
+  @SuppressWarnings("deprecation")
   protected BazelTestConfigProducer() {
-    this(FlutterBazelTestConfigurationType.getInstance().factory);
+    super(FlutterBazelTestConfigurationType.getInstance().factory);
+    bazelTestConfigUtils = BazelTestConfigUtils.getInstance();
   }
 
+  @SuppressWarnings("deprecation")
   protected BazelTestConfigProducer(@NotNull ConfigurationFactory factory) {
     super(factory);
     bazelTestConfigUtils = BazelTestConfigUtils.getInstance();
   }
 
   @VisibleForTesting
+  @SuppressWarnings("deprecation")
   BazelTestConfigProducer(BazelTestConfigUtils bazelTestConfigUtils) {
-    super(FlutterBazelTestConfigurationType.getInstance());
+    super(FlutterBazelTestConfigurationType.getInstance().factory);
     this.bazelTestConfigUtils = bazelTestConfigUtils;
   }
 

@@ -8,8 +8,9 @@ package io.flutter.android;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ColoredProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
+
 import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -95,7 +96,7 @@ public class AndroidSdk {
     try {
       final StringBuilder stringBuilder = new StringBuilder();
       final ColoredProcessHandler process = new ColoredProcessHandler(cmd);
-      process.addProcessListener(new ProcessAdapter() {
+      process.addProcessListener(new ProcessListener() {
         @Override
         public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
           if (outputType == ProcessOutputTypes.STDOUT) {

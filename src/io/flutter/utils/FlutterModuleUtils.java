@@ -370,7 +370,9 @@ public class FlutterModuleUtils {
    * Set the passed module to the module type used by Flutter, defined by {@link #getModuleTypeIDForFlutter()}.
    */
   public static void setFlutterModuleType(@NotNull Module module) {
-    module.setModuleType(getModuleTypeIDForFlutter());
+    if (!getModuleTypeIDForFlutter().equals(ModuleType.get(module).getId())) {
+      module.setModuleType(getModuleTypeIDForFlutter());
+    }
   }
 
   public static void setFlutterModuleAndReload(@NotNull Module module, @NotNull Project project) {

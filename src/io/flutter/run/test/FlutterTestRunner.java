@@ -226,7 +226,15 @@ public class FlutterTestRunner extends GenericProgramRunner {
     private String observatoryUri;
 
     public Connector(ProcessHandler handler) {
-      listener = new ProcessAdapter() {
+      listener = new ProcessListener() {
+        @Override
+        public void startNotified(@NotNull ProcessEvent event) {
+        }
+
+        @Override
+        public void processTerminated(@NotNull ProcessEvent event) {
+        }
+
         @Override
         public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
           if (!outputType.equals(ProcessOutputTypes.STDOUT)) {

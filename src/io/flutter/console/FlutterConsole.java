@@ -8,7 +8,8 @@ package io.flutter.console;
 import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.process.ColoredProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
+
+import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
@@ -81,7 +82,7 @@ class FlutterConsole {
     view.attachToProcess(process);
 
     // Print exit code.
-    final ProcessAdapter listener = new ProcessAdapter() {
+    final ProcessListener listener = new ProcessListener() {
       @Override
       public void processTerminated(final @NotNull ProcessEvent event) {
         view.print(

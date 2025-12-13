@@ -19,6 +19,7 @@ import java.time.format.DateTimeFormatter
 // Specify UTF-8 for all compilations so we avoid Windows-1252.
 allprojects {
   tasks.withType<JavaCompile> {
+    options.compilerArgs.addAll(listOf("-Xlint:unchecked", "-Xlint:deprecation"))
     options.encoding = "UTF-8"
   }
   tasks.withType<Test> {
@@ -316,6 +317,18 @@ intellijPlatform {
         }
       } else {
         recommended()
+        select {
+          types = listOf(IntelliJPlatformType.AndroidStudio)
+          channels = listOf(ProductRelease.Channel.RELEASE)
+          sinceBuild = "2024.1"
+          untilBuild = "2025.2.*"
+        }
+        select {
+          types = listOf(IntelliJPlatformType.IntellijIdeaCommunity, IntelliJPlatformType.IntellijIdeaUltimate)
+          channels = listOf(ProductRelease.Channel.RELEASE)
+          sinceBuild = "243"
+          untilBuild = "253.*"
+        }
       }
     }
   }
