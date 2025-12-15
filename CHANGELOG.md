@@ -1,3 +1,15 @@
+## Next
+
+### Added
+
+### Changed
+
+### Removed
+
+### Fixed
+
+- DtdUtils static field retaining disposed Project (#8658)
+
 ## 88.2.0
 
 ### Added
