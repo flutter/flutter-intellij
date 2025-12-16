@@ -40,7 +40,7 @@ plugins {
   // https://plugins.gradle.org/plugin/org.jetbrains.intellij.platform
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("java") // Java support
-  id("org.jetbrains.intellij.platform") version "2.10.2" // IntelliJ Platform Gradle Plugin
+  id("org.jetbrains.intellij.platform") version "2.10.5" // IntelliJ Platform Gradle Plugin
   id("org.jetbrains.kotlin.jvm") version "2.2.0" // Kotlin support
   id("org.jetbrains.changelog") version "2.2.0" // Gradle Changelog Plugin
   idea // IntelliJ IDEA support
@@ -141,6 +141,12 @@ sourceSets {
         "third_party/vmServiceDrivers"
       )
     )
+    kotlin.srcDirs(
+      listOf(
+        "src",
+        "third_party/vmServiceDrivers"
+      )
+    )
     // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
     resources.srcDirs(
       listOf(
@@ -194,7 +200,14 @@ dependencies {
     // Documentation on the default target platform methods:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
     // Android Studio versions can be found at: https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
-    androidStudio(ideaVersion)
+    try {
+      androidStudio(ideaVersion)
+    } catch (e: Exception) {
+      throw GradleException(
+        "Failed to resolve Android Studio / IDEA download URL. This is likely due to a network issue blocking the download URL. Please check your internet connection or VPN.",
+        e
+      )
+    }
     testFramework(TestFrameworkType.Platform)
     testFramework(TestFrameworkType.Starter, configurationName = "integrationImplementation")
     testFramework(TestFrameworkType.JUnit5, configurationName = "integrationImplementation")
@@ -302,6 +315,37 @@ intellijPlatform {
                 channels = listOf(ProductRelease.Channel.RELEASE)
             }
         }
+      // `singleIdeVersion` is only intended for use by GitHub actions to enable deleting instances of IDEs after testing.
+      if (project.hasProperty("singleIdeVersion")) {
+        val singleIdeVersion = project.property("singleIdeVersion") as String
+        select {
+          types = listOf(IntelliJPlatformType.AndroidStudio)
+          channels = listOf(ProductRelease.Channel.RELEASE)
+          sinceBuild = singleIdeVersion
+          untilBuild = "$singleIdeVersion.*"
+        }
+      } else {
+        recommended()
+      }
+    }
+  }
+}
+
+// If we don't delete old versions of the IDE during `verifyPlugin`, then GitHub action bots can run out of space.
+tasks.withType<VerifyPluginTask> {
+  if (project.hasProperty("singleIdeVersion")) {
+    doLast {
+      ides.forEach { ide ->
+        if (ide.exists()) {
+          // This isn't a clean deletion because gradle has internal logic for tagging that it has downloaded something, and the tagging
+          // isn't deleted. So if we were to run `./gradlew verifyPlugin -PsingleIdeVersion=<someVersion` twice in a row, the second time
+          // would fail due to gradle thinking that there should be an IDE at a place it recorded from the last run.
+          println("Deleting IDE directory at ${ide.path}")
+          val result = ide.deleteRecursively()
+          println("IDE was deleted? $result")
+        }
+      }
+    }
   }
 }
 
@@ -323,7 +367,16 @@ tasks {
     maxHeapSize = "4g"
 
     systemProperty("path.to.build.plugin", buildPlugin.get().archiveFile.get().asFile.absolutePath)
-    systemProperty("idea.home.path", prepareTestSandbox.get().getDestinationDir().parentFile.absolutePath)
+    systemProperty("idea.home.path", providers.provider {
+      try {
+        prepareTestSandbox.get().destinationDir.parentFile.absolutePath
+      } catch (e: Exception) {
+        throw GradleException(
+          "Failed to resolve Android Studio/ IDEA path. This is likely due to a network issue blocking the download URL. Please check your internet connection or VPN.",
+          e
+        )
+      }
+    })
     systemProperty(
       "allure.results.directory", project.layout.buildDirectory.get().asFile.absolutePath + "/allure-results"
     )
@@ -426,4 +479,3 @@ tasks.withType<ProcessResources>().configureEach {
     exclude("jxbrowser/jxbrowser.properties")
   }
 }
-

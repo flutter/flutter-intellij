@@ -21,6 +21,7 @@ import com.intellij.openapi.fileTypes.PlainTextLanguage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
+import io.flutter.logging.PluginLogger;
 import io.flutter.run.daemon.DaemonApi;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
@@ -181,7 +182,7 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     builder.append("```\n");
     try {
       final String logPath = PathManager.getLogPath();
-      final File logFile = new File(logPath, "flutter.log");
+      final File logFile = new File(logPath, PluginLogger.LOG_FILE_NAME);
       if (logFile.exists()) {
         final List<String> lines = Files.readAllLines(logFile.toPath(), StandardCharsets.UTF_8);
         final int count = 200;

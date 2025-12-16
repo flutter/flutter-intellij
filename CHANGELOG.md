@@ -1,3 +1,20 @@
+## 88.2.0
+
+### Added
+
+### Changed
+
+- Made log file `dash.log` (instead of `flutter.log`). (#8638)
+
+### Removed
+
+- Support for platform version 2024.3. (#8644)
+
+### Fixed
+
+- Fixed crash when using 3rd party loggers that don't implement `setLevel`. (#8631)
+- Fixed `IllegalStateException` and "Slow operations are prohibited on EDT" when opening projects by migrating `FlutterProjectOpenProcessor` to Kotlin and using `openProjectAsync`. (#8629)
+
 ## 88.1.0
 
 ### Added

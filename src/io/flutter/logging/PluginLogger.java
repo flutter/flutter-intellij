@@ -5,7 +5,6 @@
  */
 package io.flutter.logging;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.LogLevel;
 import com.intellij.openapi.diagnostic.Logger;
@@ -18,7 +17,7 @@ import java.util.logging.FileHandler;
 import java.util.logging.SimpleFormatter;
 
 public class PluginLogger {
-  private static final String LOG_FILE_NAME = "flutter.log";
+  public static final String LOG_FILE_NAME = "dash.log";
 
   // This handler specifies the logging format and location.
   private static final FileHandler fileHandler;
@@ -46,7 +45,19 @@ public class PluginLogger {
 
   public static void updateLogLevel() {
     final Logger rootLoggerInstance = Logger.getInstance("io.flutter");
-    rootLoggerInstance.setLevel(FlutterSettings.getInstance().isVerboseLogging() ? LogLevel.ALL : LogLevel.INFO);
+    // Workaround for https://github.com/flutter/flutter-intellij/issues/8631
+    if (rootLoggerInstance.getClass().getName().equals("com.haulmont.jmixstudio.logger.JmixLoggerWrapper")) {
+      return;
+    }
+    try {
+      rootLoggerInstance.setLevel(FlutterSettings.getInstance().isVerboseLogging() ? LogLevel.ALL : LogLevel.INFO);
+    }
+    catch (Throwable e) {
+      // This can happen if the logger is wrapped by a 3rd party plugin that doesn't
+      // correctly implement setLevel.
+      // See https://github.com/flutter/flutter-intellij/issues/8631
+      Logger.getInstance(PluginLogger.class).info("Failed to set log level");
+    }
   }
 
   public static @NotNull Logger createLogger(@NotNull Class<?> logClass) {

@@ -30,4 +30,9 @@ public class FlutterModuleUtilsTest {
   public void isFlutterModule_emptyModule() {
     assertFalse(FlutterModuleUtils.isFlutterModule(fixture.getModule()));
   }
+
+  @Test
+  public void getModuleTypeIDForFlutter() {
+    assertEquals("JAVA_MODULE", FlutterModuleUtils.getModuleTypeIDForFlutter());
+  }
 }

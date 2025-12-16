@@ -70,6 +70,15 @@ public class BazelTestFieldsTest {
     assertEquals("--no-watch --other-args", after.getAdditionalArgs());
   }
 
+  @Test
+  public void constructorHandlesNulls() {
+    final BazelTestFields fields = new BazelTestFields(null, null, null, null);
+    assertNull(fields.getTestName());
+    assertNull(fields.getEntryFile());
+    assertNull(fields.getBazelTarget());
+    assertNull(fields.getAdditionalArgs());
+  }
+
   private void addOption(Element elt, String name, String value) {
     final Element child = new Element("option");
     child.setAttribute("name", name);
