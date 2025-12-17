@@ -8,11 +8,12 @@ package io.flutter.actions;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ColoredProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterMessages;
@@ -81,7 +82,7 @@ public class OpenInXcodeAction extends AnAction {
         FlutterMessages.showError("Error Opening Xcode", "unable to run `flutter build`", project);
       }
       else {
-        processHandler.addProcessListener(new ProcessAdapter() {
+        processHandler.addProcessListener(new ProcessListener() {
           @Override
           public void processTerminated(@NotNull ProcessEvent event) {
             progressHelper.done();
@@ -93,6 +94,18 @@ public class OpenInXcodeAction extends AnAction {
             }
 
             openWithXcode(project, file.getPath());
+          }
+
+          @Override
+          public void startNotified(@NotNull ProcessEvent event) {
+          }
+
+          @Override
+          public void processWillTerminate(@NotNull ProcessEvent event, boolean willBeDestroyed) {
+          }
+
+          @Override
+          public void onTextAvailable(@NotNull ProcessEvent event, @NotNull com.intellij.openapi.util.Key outputType) {
           }
         });
       }
@@ -117,12 +130,24 @@ public class OpenInXcodeAction extends AnAction {
     try {
       final GeneralCommandLine cmd = new GeneralCommandLine().withExePath("open").withParameters(path);
       final ColoredProcessHandler handler = new ColoredProcessHandler(cmd);
-      handler.addProcessListener(new ProcessAdapter() {
+      handler.addProcessListener(new ProcessListener() {
         @Override
         public void processTerminated(@NotNull final ProcessEvent event) {
           if (event.getExitCode() != 0) {
             FlutterMessages.showError("Error Opening", path, project);
           }
+        }
+
+        @Override
+        public void startNotified(@NotNull ProcessEvent event) {
+        }
+
+        @Override
+        public void processWillTerminate(@NotNull ProcessEvent event, boolean willBeDestroyed) {
+        }
+
+        @Override
+        public void onTextAvailable(@NotNull ProcessEvent event, @NotNull com.intellij.openapi.util.Key outputType) {
         }
       });
       handler.startNotify();

@@ -13,7 +13,8 @@ import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.configurations.RunnerSettings;
 import com.intellij.execution.configurations.coverage.CoverageEnabledConfiguration;
-import com.intellij.execution.process.ProcessAdapter;
+
+import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.DefaultProgramRunnerKt;
@@ -42,7 +43,7 @@ public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSet
 
   private static final String ID = "FlutterCoverageProgramRunner";
   private ProcessHandler handler;
-  private ProcessAdapter listener;
+  private ProcessListener listener;
 
   @Override
   public @NotNull
@@ -71,7 +72,7 @@ public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSet
     }
     handler = result.getProcessHandler();
     if (handler != null) {
-      listener = new ProcessAdapter() {
+      listener = new ProcessListener() {
         @Override
         public void processTerminated(@NotNull ProcessEvent event) {
           OpenApiUtils.safeInvokeLater(() -> processCoverage(env));

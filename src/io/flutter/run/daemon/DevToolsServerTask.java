@@ -11,7 +11,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.ProcessAdapter;
+
+import com.intellij.execution.process.ProcessListener;
+import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.notification.Notification;
@@ -139,7 +141,7 @@ class DevToolsServerTask extends Task.Backgroundable {
   private void setUpInDevMode(@NotNull GeneralCommandLine command) {
     try {
       this.process = new MostlySilentColoredProcessHandler(command);
-      this.process.addProcessListener(new ProcessAdapter() {
+      this.process.addProcessListener(new ProcessListener() {
         @Override
         public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
           final String text = event.getText().trim();
@@ -159,7 +161,17 @@ class DevToolsServerTask extends Task.Backgroundable {
   private void setUpWithDart(GeneralCommandLine command) {
     try {
       this.process = new MostlySilentColoredProcessHandler(command);
-      this.process.addProcessListener(new ProcessAdapter() {
+      this.process.addProcessListener(new ProcessListener() {
+        @Override
+        public void startNotified(@NotNull ProcessEvent event) {
+        }
+
+        @Override
+        public void processTerminated(@NotNull ProcessEvent event) {
+          DevToolsServerTask.this.process.removeProcessListener(this);
+          DevToolsServerTask.this.process = null;
+        }
+
         @Override
         public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
           tryParseStartupText(event.getText().trim());
