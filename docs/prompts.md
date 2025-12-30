@@ -33,3 +33,24 @@
     *   Push the branch to `origin`.
     *   (Optional) Reset `main` or switch back to `main` to start the next branch cleanly.
 5.  **Final Report:** Provide a summary of the branches created and the packages covered.
+
+---
+
+## Prompt 3: Update org.jetbrains.intellij.platform
+**Objective:** Update the `org.jetbrains.intellij.platform` plugin version to the latest available.
+
+**Instructions:**
+1.  **Build the plugin** using `./gradlew buildPlugin` to establish a baseline and check for any existing warnings.
+2.  **Create a new branch** off of `main` for this update.
+3.  **Find the new version name and URL**:
+    *   Open `https://plugins.gradle.org/plugin/org.jetbrains.intellij.platform` in Chrome.
+    *   Identify the latest version number.
+4.  **Make the change**:
+    *   Update the version in `third_party/build.gradle.kts` (look for `id("org.jetbrains.intellij.platform") version "..."`).
+5.  **Validate**:
+    *   Run `./gradlew buildPlugin` again to ensure the build succeeds.
+    *   Run the tests (`./gradlew test`) to ensure everything is still working.
+    *   **Crucial**: If any tests fail, verify if they are pre-existing failures by running them on the `main` branch (or the version before your changes). Only failures introduced by the update need to be fixed.
+6.  **Create a PR**:
+    *   Use a commit message like: "Update org.jetbrains.intellij.platform to <VERSION>"
+    *   You can point to https://github.com/flutter/dart-intellij-third-party/pull/167 as an example of a similar PR.
