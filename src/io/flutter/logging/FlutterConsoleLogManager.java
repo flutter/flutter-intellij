@@ -43,8 +43,8 @@ import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -186,7 +186,7 @@ public class FlutterConsoleLogManager {
   private static final int errorSeparatorLength = 100;
   private static final String errorSeparatorChar = "=";
 
-  private static final ArrayList<DiagnosticsNode> emptyList = new ArrayList<>();
+  private static final List<DiagnosticsNode> emptyList = Collections.emptyList();
 
   /**
    * Pretty print the error using the available console syling attributes.
@@ -256,9 +256,9 @@ public class FlutterConsoleLogManager {
     if (property.getLevel() == DiagnosticLevel.summary) {
       skip = false;
     }
-    else if (property.hasChildren()) {
-      final CompletableFuture<ArrayList<DiagnosticsNode>> future = property.getChildren();
-      final ArrayList<DiagnosticsNode> children = future.getNow(emptyList);
+    if (property.hasChildren()) {
+      final CompletableFuture<List<DiagnosticsNode>> future = property.getChildren();
+      final List<DiagnosticsNode> children = future.getNow(emptyList);
       if (children.stream().noneMatch(DiagnosticsNode::hasChildren)) {
         skip = false;
       }
@@ -292,8 +292,8 @@ public class FlutterConsoleLogManager {
     }
 
     if (property.hasChildren()) {
-      final CompletableFuture<ArrayList<DiagnosticsNode>> future = property.getChildren();
-      final ArrayList<DiagnosticsNode> children = future.getNow(emptyList);
+      final CompletableFuture<List<DiagnosticsNode>> future = property.getChildren();
+      final List<DiagnosticsNode> children = future.getNow(emptyList);
 
       for (DiagnosticsNode child : children) {
         printDiagnosticsNodeProperty(console, childIndent, child, contentType, false);
@@ -342,8 +342,8 @@ public class FlutterConsoleLogManager {
     }
 
     if (property.hasChildren()) {
-      final CompletableFuture<ArrayList<DiagnosticsNode>> future = property.getChildren();
-      final ArrayList<DiagnosticsNode> children = future.getNow(emptyList);
+      final CompletableFuture<List<DiagnosticsNode>> future = property.getChildren();
+      final List<DiagnosticsNode> children = future.getNow(emptyList);
 
       // Don't collapse children if it's just a flat list of children.
       if (!isInChild && children.stream().noneMatch(DiagnosticsNode::hasChildren)) {

@@ -17,8 +17,11 @@ import org.dartlang.vm.service.element.InstanceRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.intellij.util.SmartList;
+
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -50,7 +53,7 @@ public class DiagnosticsNode {
 
   private CompletableFuture<String> propertyDocFuture;
 
-  private ArrayList<DiagnosticsNode> cachedProperties;
+  private List<DiagnosticsNode> cachedProperties;
 
   public DiagnosticsNode(JsonObject json,
                          boolean isProperty,
@@ -286,12 +289,12 @@ public class DiagnosticsNode {
    * <p>
    * Only applies to IterableProperty.
    */
-  public ArrayList<String> getValues() {
+  public List<String> getValues() {
     if (!json.has("values")) {
       return null;
     }
     final JsonArray rawValues = json.getAsJsonArray("values");
-    final ArrayList<String> values = new ArrayList<>(rawValues.size());
+    final List<String> values = new ArrayList<>(rawValues.size());
     for (int i = 0; i < rawValues.size(); ++i) {
       values.add(rawValues.get(i).getAsString());
     }
@@ -452,7 +455,7 @@ public class DiagnosticsNode {
    */
   private final JsonObject json;
 
-  private CompletableFuture<ArrayList<DiagnosticsNode>> children;
+  private CompletableFuture<List<DiagnosticsNode>> children;
 
   private CompletableFuture<Map<String, InstanceRef>> valueProperties;
 
@@ -554,11 +557,11 @@ public class DiagnosticsNode {
     return json.has("children") || (children != null && children.isDone());
   }
 
-  public CompletableFuture<ArrayList<DiagnosticsNode>> getChildren() {
+  public CompletableFuture<List<DiagnosticsNode>> getChildren() {
     if (children == null) {
       if (json.has("children")) {
         final JsonArray jsonArray = json.get("children").getAsJsonArray();
-        final ArrayList<DiagnosticsNode> nodes = new ArrayList<>();
+        final List<DiagnosticsNode> nodes = new SmartList<>();
         for (JsonElement element : jsonArray) {
           final DiagnosticsNode child = new DiagnosticsNode(element.getAsJsonObject(), false, parent);
           child.setParent(this);
@@ -568,7 +571,7 @@ public class DiagnosticsNode {
       }
       else {
         // Known to have no children so we can provide the children immediately.
-        children = CompletableFuture.completedFuture(new ArrayList<>());
+        children = CompletableFuture.completedFuture(new SmartList<>());
       }
     }
     return children;
@@ -593,9 +596,9 @@ public class DiagnosticsNode {
   /**
    * Properties to show inline in the widget tree.
    */
-  public ArrayList<DiagnosticsNode> getInlineProperties() {
+  public List<DiagnosticsNode> getInlineProperties() {
     if (cachedProperties == null) {
-      cachedProperties = new ArrayList<>();
+      cachedProperties = new SmartList<>();
       if (json.has("properties")) {
         final JsonArray jsonArray = json.get("properties").getAsJsonArray();
         for (JsonElement element : jsonArray) {
