@@ -70,13 +70,15 @@
     *   Resolve the specific issue (e.g., remove the override-only call, migrate the internal API).
     *   Ensure the fix is minimal and targeted.
 5.  **Verify Fix:** Run `./gradlew verifyPlugin` again to confirm the specific warning is gone and no new issues were introduced.
-6.  **Commit & Push:**
+6.  **Commit:**
     *   Commit with a clear message: `Fix [Issue Type] in [Class Name]`.
     *   Include relevant website links and supporting information.
     *   Include the number of warnings or errors resolved in the commit message.
     *   Do not push any branches, the user will do that.
     *   Switch back to `main` to start the next fix.
-7.  **Final Report:** Provide a summary to the user of all of the fixes and which branches they are in.
+7.  **Final Report:**
+    *   Provide a summary to the user of all of the fixes and which branches they are in.
+    *   Suggest manual test steps: Check the code changes made and write test steps for a user to execute that will trigger the code paths that have changed. If needed, add logging statements to verify that the code paths have successfully run.
 
 ---
 
@@ -88,7 +90,8 @@
 2.  **Enable Caching:** Check `gradle.properties` for `org.gradle.caching=true`. If missing, add it to enable the Build Cache.
 3.  **Configuration Cache:** Run `./gradlew help --configuration-cache` to check for compatibility. If feasible, enable it to speed up the configuration phase.
 4.  **Update Wrapper:** Check if a newer stable Gradle version is available and update the wrapper using `./gradlew wrapper --gradle-version [VERSION]`.
-5.  **Verify:** Run a clean build to ensure optimizations didn't break the build process.
+5.  **Verify:**
+    *   Run a clean build to ensure optimizations didn't break the build process.
 
 ---
 
@@ -100,7 +103,9 @@
 2.  **Run Verification:** Execute `./gradlew verifyPlugin` to check for binary incompatibilities or broken API usages in the new version.
 3.  **Check Bounds:** Review `plugin.xml` for `<idea-version since-build="..." until-build="..."/>`. Ensure `until-build` is open-ended or appropriately set for the new version.
 4.  **Resolve Issues:** Fix any compilation errors or verification warnings specific to the new platform version.
-5.  **Report:** Summarize any required changes or blockers for supporting the new version.
+5.  **Report:**
+    *   Summarize any required changes or blockers for supporting the new version.
+    *   Suggest manual test steps: Check the code changes made and write test steps for a user to execute that will trigger the code paths that have changed. If needed, add logging statements to verify that the code paths have successfully run.
 
 ---
 
@@ -112,7 +117,9 @@
 2.  **Identify Blocking Calls:** Ensure no I/O operations (file access, network calls) or heavy computations occur within these UI blocks.
 3.  **Migrate to Background:** Refactor heavy tasks to run on background threads using `Task.Backgroundable` or `ReadAction.nonBlocking`.
 4.  **Check Modality:** Verify that modal dialogs do not block the UI thread unnecessarily.
-5.  **Verify:** Run the plugin in a sandbox (`./gradlew runIde`) and perform key actions while monitoring for UI freezes.
+5.  **Verify:**
+    *   Run the plugin in a sandbox (`./gradlew runIde`) and perform key actions while monitoring for UI freezes.
+    *   Suggest manual test steps: Check the code changes made and write test steps for a user to execute that will trigger the code paths that have changed. If needed, add logging statements to verify that the code paths have successfully run.
 
 ---
 
@@ -138,7 +145,9 @@
     *   `getAccessibleContext().setAccessibleDescription(...)`
 3.  **Focus Management:** Ensure custom components handle focus traversal correctly (Tab/Shift+Tab).
 4.  **Color Contrast:** If custom colors are used, verify they meet WCAG contrast guidelines (especially for dark themes).
-5.  **Verify:** Use the "Accessibility Inspector" (if available in the SDK) or a screen reader to navigate the UI.
+5.  **Verify:**
+    *   Use the "Accessibility Inspector" (if available in the SDK) or a screen reader to navigate the UI.
+    *   Suggest manual test steps: Check the code changes made and write test steps for a user to execute that will trigger the code paths that have changed. If needed, add logging statements to verify that the code paths have successfully run.
 
 ---
 
@@ -150,7 +159,9 @@
 2.  **Check `plugin.xml`:** Ensure all `<depends>` tags match the actual API usage.
 3.  **Update Versions:** Check for newer stable versions of third-party libraries (e.g., using `./gradlew dependencyUpdates` if configured, or manual check).
 4.  **Remove Unused:** Delete any local `.jar` files in `lib/` that are not referenced or can be replaced by Maven coordinates.
-5.  **Verify:** Run `./gradlew buildPlugin` and check the distribution size. Ensure the plugin still loads and functions correctly.
+5.  **Verify:**
+    *   Run `./gradlew buildPlugin` and check the distribution size. Ensure the plugin still loads and functions correctly.
+    *   Suggest manual test steps: Check the code changes made and write test steps for a user to execute that will trigger the code paths that have changed. If needed, add logging statements to verify that the code paths have successfully run.
 
 ---
 
@@ -175,7 +186,9 @@
     *   Cache expensive results.
     *   Use `ReadAction.nonBlocking` for long-running read operations.
     *   Optimize collections (e.g., use `SmartList` or `ContainerUtil` maps).
-4.  **Verify:** Re-profile to confirm the performance improvement.
+4.  **Verify:**
+    *   Re-profile to confirm the performance improvement.
+    *   Suggest manual test steps: Check the code changes made and write test steps for a user to execute that will trigger the code paths that have changed. If needed, add logging statements to verify that the code paths have successfully run.
 
 ---
 
