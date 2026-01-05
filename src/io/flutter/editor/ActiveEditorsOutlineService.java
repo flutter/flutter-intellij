@@ -6,6 +6,7 @@
 package io.flutter.editor;
 
 import com.google.common.collect.Lists;
+import com.intellij.util.SmartList;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.fileEditor.FileEditor;
@@ -100,7 +101,7 @@ public class ActiveEditorsOutlineService implements Disposable {
     }
 
     // Remove obsolete outline listeners.
-    final List<String> obsoletePaths = new ArrayList<>();
+    final List<String> obsoletePaths = new SmartList<>();
 
     synchronized (outlineListeners) {
       for (final String path : outlineListeners.keySet()) {
