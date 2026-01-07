@@ -20,6 +20,7 @@ import com.jetbrains.lang.dart.ide.runner.DartLineBreakpointType;
 import org.dartlang.vm.service.element.Breakpoint;
 import org.jetbrains.annotations.NotNull;
 
+import com.intellij.util.SmartList;
 import java.util.*;
 
 import static com.intellij.icons.AllIcons.Debugger.Db_invalid_breakpoint;
@@ -118,7 +119,7 @@ public class DartVmServiceBreakpointHandler extends XBreakpointHandler<XLineBrea
 class IsolateBreakpointInfo {
   private final String myIsolateId;
   private final DartVmServiceDebugProcess myDebugProcess;
-  private final List<String> myTemporaryVmBreakpointIds = new ArrayList<>();
+  private final List<String> myTemporaryVmBreakpointIds = new SmartList<>();
   private final Map<XLineBreakpoint<XBreakpointProperties>, Set<String>> myXBreakpointToVmBreakpointIdsMap = new HashMap<>();
 
   IsolateBreakpointInfo(@NotNull String isolateId, @NotNull DartVmServiceDebugProcess debugProcess) {
