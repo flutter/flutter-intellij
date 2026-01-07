@@ -24,7 +24,7 @@ import io.flutter.utils.FlutterModuleUtils
  *
  * Converted to Kotlin to support `openProjectAsync`.
  */
-class FlutterStudioProjectOpenProcessor : FlutterProjectOpenProcessor() {
+open class FlutterStudioProjectOpenProcessor : FlutterProjectOpenProcessor() {
   override val name: String
     get() = "Flutter Studio"
 
@@ -50,12 +50,24 @@ class FlutterStudioProjectOpenProcessor : FlutterProjectOpenProcessor() {
     val project = importProvider.openProjectAsync(virtualFile, projectToClose, forceOpenInNewFrame)
     
     // A callback may have caused the project to be reloaded. Find the new Project object.
-    val newProject = FlutterUtils.findProject(virtualFile.path)
+    var newProject = findProject(virtualFile.path)
     if (newProject == null || newProject.isDisposed) {
-      return newProject
+      // Fallback to the original project if re-lookup fails.
+      if (project != null && !project.isDisposed) {
+        newProject = project
+      } else {
+        return null
+      }
     }
 
-    for (module in FlutterModuleUtils.getModules(newProject)) {
+    configureFlutterProject(newProject)
+    
+    return newProject
+  }
+
+  @org.jetbrains.annotations.VisibleForTesting
+  protected open suspend fun configureFlutterProject(project: Project) {
+    for (module in FlutterModuleUtils.getModules(project)) {
       if (FlutterModuleUtils.declaresFlutter(module) && !FlutterModuleUtils.isFlutterModule(module)) {
         writeAction {
           FlutterModuleUtils.setFlutterModuleType(module)
@@ -63,10 +75,13 @@ class FlutterStudioProjectOpenProcessor : FlutterProjectOpenProcessor() {
         FlutterModuleUtils.enableDartSDK(module)
       }
     }
-    newProject.save()
-    EditorNotifications.getInstance(newProject).updateAllNotifications()
-    
-    return newProject
+    project.save()
+    EditorNotifications.getInstance(project).updateAllNotifications()
+  }
+
+  @org.jetbrains.annotations.VisibleForTesting
+  protected open fun findProject(path: String): Project? {
+    return FlutterUtils.findProject(path)
   }
 
   override fun doOpenProject(
