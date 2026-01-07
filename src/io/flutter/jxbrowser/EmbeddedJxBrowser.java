@@ -41,6 +41,7 @@ import com.intellij.ide.ui.UISettingsUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import com.intellij.util.SmartList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -304,7 +305,7 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
   }
 
   protected void handleJxBrowserInstallationFailed(@NotNull ContentManager contentManager) {
-    final List<LabelInput> inputs = new ArrayList<>();
+    final List<LabelInput> inputs = new SmartList<>();
 
     final InstallationFailedReason latestFailureReason = jxBrowserManager.getLatestFailureReason();
 
