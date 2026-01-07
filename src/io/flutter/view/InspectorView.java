@@ -22,6 +22,7 @@ import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.util.ui.UIUtil;
+import com.intellij.util.SmartList;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.RefreshToolWindowAction;
@@ -124,7 +125,7 @@ public class InspectorView implements Disposable {
     final ContentManager contentManager = toolWindow.getContentManager();
 
     final FlutterDevice device = app.device();
-    final List<FlutterDevice> existingDevices = new ArrayList<>();
+    final List<FlutterDevice> existingDevices = new SmartList<>();
     final String tabName = device.getUniqueName(existingDevices);
     final Icon tabIcon = device.getIcon();
 
@@ -355,7 +356,7 @@ public class InspectorView implements Disposable {
 
   protected void handleJxBrowserInstallationFailed(FlutterApp app, ToolWindow toolWindow,
                                                    DevToolsIdeFeature ideFeature) {
-    final List<LabelInput> inputs = new ArrayList<>();
+    final List<LabelInput> inputs = new SmartList<>();
     final LabelInput openDevToolsLabel = openDevToolsLabel(app, toolWindow, ideFeature);
 
     final InstallationFailedReason latestFailureReason = jxBrowserManager.getLatestFailureReason();
@@ -387,7 +388,7 @@ public class InspectorView implements Disposable {
                                                       ToolWindow toolWindow,
                                                       String message,
                                                       DevToolsIdeFeature ideFeature) {
-    final List<LabelInput> inputs = new ArrayList<>();
+    final List<LabelInput> inputs = new SmartList<>();
     inputs.add(new LabelInput(message));
     inputs.add(openDevToolsLabel(app, toolWindow, ideFeature));
     viewUtils.presentClickableLabel(toolWindow, inputs);
