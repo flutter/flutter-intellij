@@ -5,7 +5,7 @@
  */
 package io.flutter.utils;
 
-import java.util.ArrayList;
+import com.intellij.util.SmartList;
 import java.util.List;
 
 /**
@@ -19,7 +19,7 @@ import java.util.List;
 public class StdoutJsonParser {
   private final StringBuilder buffer = new StringBuilder();
   private boolean bufferIsJson = false;
-  private final List<String> lines = new ArrayList<>();
+  private final List<String> lines = new SmartList<>();
   private boolean eatNextEol = false;
   private boolean isPotentialWindowsReturn = false;
 
@@ -112,7 +112,7 @@ public class StdoutJsonParser {
    */
   public List<String> getAvailableLines() {
     synchronized (lines) {
-      final List<String> copy = new ArrayList<>(lines);
+      final List<String> copy = new SmartList<>(lines);
       lines.clear();
       return copy;
     }
