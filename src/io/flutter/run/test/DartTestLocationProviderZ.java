@@ -11,6 +11,7 @@ import com.google.gson.reflect.TypeToken;
 import com.intellij.execution.Location;
 import com.intellij.execution.PsiLocation;
 import com.intellij.execution.testframework.sm.runner.SMTestLocator;
+import com.intellij.util.SmartList;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -115,7 +116,7 @@ public class DartTestLocationProviderZ implements SMTestLocator, DumbAware {
 
   @SuppressWarnings("rawtypes")
   protected List<Location> getLocationByGroupAndTestNames(final PsiFile psiFile, final List<String> nodes) {
-    final List<Location> locations = new ArrayList<>();
+    final List<Location> locations = new SmartList<>();
 
     if (psiFile instanceof DartFile && !nodes.isEmpty()) {
       final PsiElementProcessor<PsiElement> collector = new PsiElementProcessor<>() {
