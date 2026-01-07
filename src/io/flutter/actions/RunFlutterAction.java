@@ -25,7 +25,7 @@ import io.flutter.run.SdkRunConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
+import com.intellij.util.SmartList;
 import java.util.List;
 import java.util.Objects;
 
@@ -67,7 +67,7 @@ public abstract class RunFlutterAction extends AnAction {
       flavorArg = "--flavor=" + fields.getBuildFlavor();
     }
 
-    final List<String> args = new ArrayList<>();
+    final List<String> args = new SmartList<>();
     if (additionalArgs != null) {
       args.add(additionalArgs);
     }

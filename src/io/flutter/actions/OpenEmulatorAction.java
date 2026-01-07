@@ -14,7 +14,7 @@ import io.flutter.android.AndroidEmulator;
 import io.flutter.sdk.AndroidEmulatorManager;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
+import com.intellij.util.SmartList;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,7 +30,7 @@ public class OpenEmulatorAction extends AnAction {
    */
   public static List<OpenEmulatorAction> getEmulatorActions(Project project) {
     if (project == null || project.isDisposed()) {
-      return new ArrayList<>();
+      return new SmartList<>();
     }
     final AndroidEmulatorManager emulatorManager = AndroidEmulatorManager.getInstance(project);
 
