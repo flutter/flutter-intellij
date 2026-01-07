@@ -16,6 +16,7 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.InvalidVirtualFileAccessException;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.utils.OpenApiUtils;
+import com.intellij.util.SmartList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -106,7 +107,7 @@ public class Workspace {
    */
   @Nullable
   public String getRelativePath(@Nullable VirtualFile file) {
-    final List<String> path = new ArrayList<>();
+    final List<String> path = new SmartList<>();
     while (file != null) {
       if (file.equals(root)) {
         if (path.isEmpty()) {
