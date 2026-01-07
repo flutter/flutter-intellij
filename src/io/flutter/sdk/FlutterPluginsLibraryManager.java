@@ -13,9 +13,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
 import com.intellij.openapi.roots.libraries.PersistentLibraryKind;
-import com.intellij.openapi.vfs.*;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtilCore;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileContentsChangedAdapter;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.concurrency.AppExecutorUtil;
-import com.jetbrains.lang.dart.util.DotPackagesFileUtil;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -25,8 +28,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static com.jetbrains.lang.dart.util.PubspecYamlUtil.PUBSPEC_YAML;
 
 /**
  * Manages the Flutter Plugins library, which hooks the packages used by plugins referenced in a project
@@ -77,21 +78,8 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
   protected PersistentLibraryKind<FlutterPluginLibraryProperties> getLibraryKind() {
     return FlutterPluginLibraryType.LIBRARY_KIND;
   }
-
-  private boolean isPackagesFile(@NotNull final VirtualFile file) {
-    final VirtualFile parent = file.getParent();
-    return file.getName().equals(DotPackagesFileUtil.DOT_PACKAGES) && parent != null && parent.findChild(PUBSPEC_YAML) != null;
-  }
-
-  private boolean isPackageConfigFile(@NotNull final VirtualFile file) {
-    final VirtualFile parent = file.getParent();
-    return file.getName().equals(DotPackagesFileUtil.PACKAGE_CONFIG_JSON)
-           && parent != null
-           && parent.getName().equals(DotPackagesFileUtil.DART_TOOL_DIR);
-  }
-
+  
   private void fileChanged(@NotNull final Project project, @NotNull final VirtualFile file) {
-    if (!isPackageConfigFile(file) && !isPackagesFile(file)) return;
     if (LocalFileSystem.getInstance() != file.getFileSystem() && !ApplicationManager.getApplication().isUnitTestMode()) return;
 
     scheduleUpdate();
