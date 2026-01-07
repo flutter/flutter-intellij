@@ -14,6 +14,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
+import com.intellij.util.SmartList;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.VmServiceListener;
 import org.dartlang.vm.service.consumer.GetIsolateConsumer;
@@ -48,7 +49,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
    * Temporarily stores service extensions that we need to add. We should not add extensions until the first frame event
    * has been received [firstFrameEventReceived].
    */
-  private final List<String> pendingServiceExtensions = new ArrayList<>();
+  private final List<String> pendingServiceExtensions = new SmartList<>();
 
   private final Set<String> registeredServices = new HashSet<>();
 
@@ -162,7 +163,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
     final Iterable<EventStream<Boolean>> existingExtensions;
     synchronized (serviceExtensions) {
       firstFrameEventReceived = false;
-      existingExtensions = new ArrayList<>(serviceExtensions.values());
+      existingExtensions = new SmartList<>(serviceExtensions.values());
     }
     for (EventStream<Boolean> serviceExtension : existingExtensions) {
       serviceExtension.setValue(false);
