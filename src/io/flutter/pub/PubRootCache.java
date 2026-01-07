@@ -13,6 +13,7 @@ import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.intellij.util.SmartList;
 import java.util.*;
 
 /**
@@ -61,7 +62,7 @@ public class PubRootCache {
 
   @NotNull
   public List<@NotNull PubRoot> getRoots(@NotNull Module module) {
-    final List<PubRoot> result = new ArrayList<>();
+    final List<PubRoot> result = new SmartList<>();
 
     for (VirtualFile dir : OpenApiUtils.getContentRoots(module)) {
       PubRoot root = cache.get(dir);
@@ -81,7 +82,7 @@ public class PubRootCache {
 
   @NotNull
   public List<PubRoot> getRoots(@NotNull Project project) {
-    final List<PubRoot> result = new ArrayList<>();
+    final List<PubRoot> result = new SmartList<>();
     for (Module module : OpenApiUtils.getModules(project)) {
       result.addAll(getRoots(module));
     }
