@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.event.ItemListener;
-import java.util.ArrayList;
+import com.intellij.util.SmartList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Supplier;
@@ -23,7 +23,7 @@ import java.util.function.Supplier;
 public class ProjectType {
   private static final class ProjectTypeComboBoxModel extends AbstractListModel<FlutterProjectType>
     implements ComboBoxModel<FlutterProjectType> {
-    private final List<FlutterProjectType> myList = new ArrayList<>(EnumSet.allOf(FlutterProjectType.class));
+    private final List<FlutterProjectType> myList = new SmartList<>(EnumSet.allOf(FlutterProjectType.class));
     private FlutterProjectType mySelected;
 
     private ProjectTypeComboBoxModel() {
