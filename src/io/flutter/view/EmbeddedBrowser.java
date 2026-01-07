@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import com.intellij.util.SmartList;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -198,7 +199,7 @@ public abstract class EmbeddedBrowser {
   }
 
   protected void showMessageWithUrlLink(@NotNull String message, ContentManager contentManager) {
-    final List<LabelInput> labels = new ArrayList<>();
+    final List<LabelInput> labels = new SmartList<>();
     labels.add(new LabelInput(message));
     showLabelsWithUrlLink(labels, contentManager);
   }
@@ -212,7 +213,7 @@ public abstract class EmbeddedBrowser {
   }
 
   protected void showMessage(@NotNull String message, @NotNull ContentManager contentManager) {
-    final List<LabelInput> labels = new ArrayList<>();
+    final List<LabelInput> labels = new SmartList<>();
     labels.add(new LabelInput(message));
     showLabels(labels, contentManager);
   }
