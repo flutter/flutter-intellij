@@ -15,7 +15,7 @@ import io.flutter.FlutterMessages;
 import io.flutter.utils.SystemUtils;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
+import com.intellij.util.SmartList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,7 +38,7 @@ public class XcodeUtils {
    * {@link FlutterMessages#showError(String, String, Project)}.
    */
   public static void openSimulator(@Nullable Project project, String... additionalArgs) {
-    final List<String> params = new ArrayList<>(Arrays.asList(additionalArgs));
+    final List<String> params = new SmartList<>(Arrays.asList(additionalArgs));
     params.add("-a");
     params.add("Simulator.app");
 

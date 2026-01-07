@@ -14,6 +14,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.SmartList;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
 import io.flutter.android.IntelliJAndroidSdk;
@@ -65,7 +66,7 @@ public class FlutterCommand {
    * Returns a displayable version of the command that will be run.
    */
   public @NotNull String getDisplayCommand() {
-    final List<String> words = new ArrayList<>();
+    final List<String> words = new SmartList<>();
     words.add("flutter");
     words.addAll(type.subCommand);
     words.addAll(args);
@@ -80,11 +81,11 @@ public class FlutterCommand {
       return getDisplayCommand();
     }
 
-    final List<String> words = new ArrayList<>();
+    final List<String> words = new SmartList<>();
     words.add("flutter");
     words.addAll(type.subCommand);
 
-    final List<String> newArgs = new ArrayList<>(args);
+    final List<String> newArgs = new SmartList<>(args);
     // For run, attach, and test commands, the last argument is typically a file path.
     // We redact it to avoid logging user-specific information.
     if (!newArgs.isEmpty() && (type == Type.RUN || type == Type.ATTACH || type == Type.TEST)) {

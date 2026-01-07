@@ -26,6 +26,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.util.SmartList;
 import com.intellij.util.ui.EDT;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import git4idea.config.GitExecutableManager;
@@ -217,7 +218,7 @@ public class FlutterSdk {
   @NonNls
   @NotNull
   public FlutterCommand flutterCreate(@NotNull VirtualFile appDir, @Nullable FlutterCreateAdditionalSettings additionalSettings) {
-    final List<String> args = new ArrayList<>();
+    final List<String> args = new SmartList<>();
     if (additionalSettings != null) {
       args.addAll(additionalSettings.getArgs());
       if (FlutterProjectType.PLUGIN.equals(additionalSettings.getType())) {
@@ -292,7 +293,7 @@ public class FlutterSdk {
                                    @NotNull FlutterLaunchMode flutterLaunchMode,
                                    @NotNull Project project,
                                    String... additionalArgs) {
-    final List<String> args = new ArrayList<>();
+    final List<String> args = new SmartList<>();
     args.add("--machine");
     FlutterSettings settings = FlutterSettings.getInstance();
     if (settings.isVerboseLogging()) {
@@ -336,7 +337,7 @@ public class FlutterSdk {
   @NotNull
   public FlutterCommand flutterAttach(@NotNull PubRoot root, @NotNull VirtualFile main, @Nullable FlutterDevice device,
                                       @NotNull FlutterLaunchMode flutterLaunchMode, String... additionalArgs) {
-    final List<String> args = new ArrayList<>();
+    final List<String> args = new SmartList<>();
     args.add("--machine");
     if (FlutterSettings.getInstance().isVerboseLogging()) {
       args.add("--verbose");
@@ -371,7 +372,7 @@ public class FlutterSdk {
   public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir, @Nullable String testNameSubstring,
                                     @NotNull RunMode mode, @Nullable String additionalArgs, TestFields.Scope scope, boolean useRegexp) {
 
-    final List<String> args = new ArrayList<>();
+    final List<String> args = new SmartList<>();
     args.add("--machine");
 
     // Starting the app paused so the IDE can catch early errors is ideal. However, we don't have a way to resume for multiple test files
@@ -417,7 +418,7 @@ public class FlutterSdk {
 
   @NotNull
   public FlutterCommand widgetPreview(@NotNull PubRoot root, boolean isVerboseMode, @Nullable String dtdUri, @Nullable String devToolsUri) {
-    final List<String> args = new ArrayList<>();
+    final List<String> args = new SmartList<>();
     args.add("start");
     args.add("--web-server");
     args.add("--machine");

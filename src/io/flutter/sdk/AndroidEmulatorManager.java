@@ -15,7 +15,7 @@ import io.flutter.android.AndroidSdk;
 import io.flutter.logging.PluginLogger;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
+import com.intellij.util.SmartList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -37,7 +37,7 @@ public class AndroidEmulatorManager {
   private final @NotNull Project project;
   private final AtomicReference<ImmutableSet<Runnable>> listeners = new AtomicReference<>(ImmutableSet.of());
 
-  private @NotNull List<AndroidEmulator> cachedEmulators = new ArrayList<>();
+  private @NotNull List<AndroidEmulator> cachedEmulators = new SmartList<>();
 
   private AndroidEmulatorManager(@NotNull Project project) {
     this.project = project;
@@ -45,7 +45,7 @@ public class AndroidEmulatorManager {
 
   public void addListener(@NotNull Runnable callback) {
     listeners.updateAndGet((old) -> {
-      final List<Runnable> changed = new ArrayList<>(old);
+      final List<Runnable> changed = new SmartList<>(old);
       changed.add(callback);
       return ImmutableSet.copyOf(changed);
     });
@@ -53,7 +53,7 @@ public class AndroidEmulatorManager {
 
   public void removeListener(@NotNull Runnable callback) {
     listeners.updateAndGet((old) -> {
-      final List<Runnable> changed = new ArrayList<>(old);
+      final List<Runnable> changed = new SmartList<>(old);
       changed.remove(callback);
       return ImmutableSet.copyOf(changed);
     });
