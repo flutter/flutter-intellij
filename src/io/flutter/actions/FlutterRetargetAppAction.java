@@ -12,6 +12,7 @@ import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import io.flutter.utils.FlutterModuleUtils;
+import com.intellij.util.SmartList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,7 +29,7 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
   private final String myActionId;
 
   @NotNull
-  private final List<String> myPlaces = new ArrayList<>();
+  private final List<String> myPlaces = new SmartList<>();
 
   FlutterRetargetAppAction(@NotNull String actionId,
                            @Nullable String text,
