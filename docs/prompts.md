@@ -344,7 +344,7 @@ This document serves as the authoritative "Runbook for Robots," codifying standa
 5.  **Report & Review:**
     *   Summarize the test added and the coverage improvement.
     *   **Test Location:** Explicitly state *where* in the IDE the user should go to test the changed functionality (e.g., "Run the new test file `[TestFileName]`").
-    *   **Action:** Ask the user to review the new test closely.
+    *   **Action:** Ask the user to review the new test closely. For instance, validate that the code being tested is actively used (e.g., check that it is not dead code/0 references).
     *   **Do not commit or push.**
     *   Provide a suggested Git commit message, **explicitly including the Kover coverage improvement**.
         *   Example Pattern: `Add unit tests for [Class Name]. Coverage verified using Kover. Coverage improvement: [Class Name]: ~[X]% line coverage ([Y] covered, [Z] uncovered).`
