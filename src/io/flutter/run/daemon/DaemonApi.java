@@ -18,6 +18,7 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.logging.PluginLogger;
 import io.flutter.utils.JsonUtils;
 import io.flutter.utils.StdoutJsonParser;
@@ -236,7 +237,7 @@ public class DaemonApi {
    */
   public String getStderrTail() {
     final String[] lines = stderr.toArray(new String[]{ });
-    return String.join("", lines);
+    return StringUtil.join(lines, "");
   }
 
   /**

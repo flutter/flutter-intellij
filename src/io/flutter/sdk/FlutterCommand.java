@@ -13,6 +13,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
@@ -69,7 +70,7 @@ public class FlutterCommand {
     words.add("flutter");
     words.addAll(type.subCommand);
     words.addAll(args);
-    return String.join(" ", words);
+    return StringUtil.join(words, " ");
   }
 
   /**
@@ -93,7 +94,7 @@ public class FlutterCommand {
     }
 
     words.addAll(newArgs);
-    return String.join(" ", words);
+    return StringUtil.join(words, " ");
   }
 
   protected boolean isPubRelatedCommand() {
