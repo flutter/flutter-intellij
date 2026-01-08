@@ -43,6 +43,7 @@ plugins {
   id("org.jetbrains.intellij.platform") version "2.10.5" // IntelliJ Platform Gradle Plugin
   id("org.jetbrains.kotlin.jvm") version "2.2.0" // Kotlin support
   id("org.jetbrains.changelog") version "2.2.0" // Gradle Changelog Plugin
+  id("org.jetbrains.kotlinx.kover") version "0.9.0"
   idea // IntelliJ IDEA support
 }
 
