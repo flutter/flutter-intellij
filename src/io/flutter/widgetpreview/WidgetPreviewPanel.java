@@ -2,6 +2,7 @@ package io.flutter.widgetpreview;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.process.ProcessHandler;
+import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -30,6 +31,7 @@ import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import io.flutter.utils.OpenApiUtils;
 import io.flutter.view.BrowserUrlProvider;
+import io.flutter.view.EmbeddedBrowser;
 import io.flutter.view.EmbeddedTab;
 import io.flutter.view.ViewUtils;
 import io.flutter.view.WidgetPreviewUrlProvider;
@@ -84,6 +86,7 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         }
 
         if (sdk.getVersion().fullVersion().equals(FlutterSdkVersion.UNKNOWN_VERSION)) {
+          LOG.warn("Flutter SDK version is unknown or incomplete.");
           viewUtils.presentLabels(toolWindow, List.of("A Flutter SDK was found at the location",
                                                       "specified in the settings, however the directory",
                                                       "is in an incomplete state. To fix, shut down the IDE,",
@@ -93,6 +96,7 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         }
 
         if (!sdk.getVersion().canUseWidgetPreview()) {
+          LOG.info("Flutter SDK version is too old for widget preview: " + sdk.getVersion().fullVersion());
           showInfoMessage(FlutterBundle.message("widget.preview.sdk.too.old"));
           return;
         }
@@ -103,6 +107,7 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
 
         final PubRoot root = PubRoot.forFile(project.getProjectFile());
         if (root == null) {
+          LOG.warn("Pub root not found for project: " + project.getName());
           showInfoMessage("Pub root could not be found to start widget preview.");
           return;
         }
@@ -116,6 +121,7 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         final ProcessHandler handler = new MostlySilentColoredProcessHandler(command.createGeneralCommandLine(project));
         flutterProcessRef.set(handler);
         Consumer<String> onError = (message) -> {
+          LOG.warn("Widget preview process error: " + message);
           showInfoMessage(FlutterBundle.message("widget.preview.error", message != null ? message : ""));
         };
         Consumer<@NotNull String> onSuccess = this::setUrlAndLoad;
@@ -123,6 +129,7 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         handler.startNotify();
       }
       catch (ExecutionException e) {
+        LOG.error("Failed to execute widget preview command", e);
         throw new RuntimeException(e);
       }
     });
@@ -167,23 +174,40 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
 
   // This is intended for the first time we load the panel - save the URL and listen for changes.
   private void setUrlAndLoad(@NotNull String url) {
+    LOG.info("Widget preview URL received: " + url);
     this.urlProvider = new WidgetPreviewUrlProvider(url, new DevToolsUtils().getIsBackgroundBright());
     loadUrl(urlProvider);
     listenForReload();
   }
 
   private void loadUrl(@NotNull BrowserUrlProvider urlProvider) {
+    LOG.info("Embedded browser is available: " + (FlutterUtils.embeddedBrowser(project) != null));
     showInfoMessage(FlutterBundle.message("widget.preview.loading", urlProvider.getBrowserUrl()));
 
     OpenApiUtils.safeInvokeLater(() -> {
-      Optional.ofNullable(
-          FlutterUtils.embeddedBrowser(project))
-        .ifPresent(embeddedBrowser ->
-                   {
-                     embeddedBrowser.openPanel(toolWindow, "Widget Preview", FlutterIcons.Flutter, urlProvider,
-                                               System.out::println,
-                                               null);
-                   });
+      final Consumer<EmbeddedBrowser> onBrowserAvailable = embeddedBrowser -> {
+        embeddedBrowser.openPanel(toolWindow, "Widget Preview", FlutterIcons.Flutter, urlProvider,
+            System.out::println,
+            null);
+      };
+
+      final Runnable onBrowserUnavailable = () -> {
+        final List<io.flutter.utils.LabelInput> inputs = List.of(
+            new io.flutter.utils.LabelInput("Embedded browser is not available."),
+            new io.flutter.utils.LabelInput("Open in external browser", (label, data) -> {
+              BrowserLauncher.getInstance().browse(urlProvider.getBrowserUrl(), null);
+            }));
+        final JPanel panel = viewUtils.createClickableLabelPanel(inputs);
+        ApplicationManager.getApplication().invokeLater(() -> {
+          contentPanel.removeAll();
+          contentPanel.add(panel, BorderLayout.CENTER);
+          contentPanel.revalidate();
+          contentPanel.repaint();
+        });
+      };
+
+      Optional.<EmbeddedBrowser>ofNullable(FlutterUtils.embeddedBrowser(project))
+          .ifPresentOrElse(onBrowserAvailable, onBrowserUnavailable);
     });
   }
 
