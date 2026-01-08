@@ -1,6 +1,6 @@
 # AI Agent Prompts
 
-
+This document serves as the authoritative "Runbook for Robots," codifying standard operating procedures into executable prompts for AI agents. It operationalizes "Prompt Engineering as Infrastructure," treating these instructions not as casual suggestions but as critical configuration that ensures deterministic and hermetic development environments. By strictly adhering to these workflows, agents are grounded in the project's "Sensory Input"—reliable metrics like exit codes, code coverage, and static analysis—rather than operating on assumptions. This approach enforces a "Verify and Harden" loop where every task is validated against rigorous testing suites and lints, ensuring that the increased velocity from AI tools creates stability rather than technical debt. We define success through finite, idempotent scopes, allowing agents to confidently maintain, refactor, and evolve the codebase while always preserving a "Known Good" state.
 
 ## Verify Tests and Cleanup
 **Objective:** Verify the current test suite status with `./gradlew test`, clean up any temporary modifications, and harden test coverage for active files.
