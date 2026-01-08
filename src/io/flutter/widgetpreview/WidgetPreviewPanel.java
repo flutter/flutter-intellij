@@ -31,6 +31,7 @@ import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import io.flutter.utils.OpenApiUtils;
 import io.flutter.view.BrowserUrlProvider;
+import io.flutter.view.EmbeddedBrowser;
 import io.flutter.view.EmbeddedTab;
 import io.flutter.view.ViewUtils;
 import io.flutter.view.WidgetPreviewUrlProvider;
@@ -184,15 +185,13 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
     showInfoMessage(FlutterBundle.message("widget.preview.loading", urlProvider.getBrowserUrl()));
 
     OpenApiUtils.safeInvokeLater(() -> {
-      Optional.ofNullable(FlutterUtils.embeddedBrowser(project))
-        .ifPresent(embeddedBrowser ->
-                   {
-                     embeddedBrowser.openPanel(toolWindow, "Widget Preview", FlutterIcons.Flutter, urlProvider,
-                                               System.out::println,
-                                               null);
-                   });
+      final Consumer<EmbeddedBrowser> onBrowserAvailable = embeddedBrowser -> {
+        embeddedBrowser.openPanel(toolWindow, "Widget Preview", FlutterIcons.Flutter, urlProvider,
+            System.out::println,
+            null);
+      };
 
-      if (FlutterUtils.embeddedBrowser(project) == null) {
+      final Runnable onBrowserUnavailable = () -> {
         final List<io.flutter.utils.LabelInput> inputs = List.of(
             new io.flutter.utils.LabelInput("Embedded browser is not available."),
             new io.flutter.utils.LabelInput("Open in external browser", (label, data) -> {
@@ -205,7 +204,10 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
           contentPanel.revalidate();
           contentPanel.repaint();
         });
-      }
+      };
+
+      Optional.<EmbeddedBrowser>ofNullable(FlutterUtils.embeddedBrowser(project))
+          .ifPresentOrElse(onBrowserAvailable, onBrowserUnavailable);
     });
   }
 
