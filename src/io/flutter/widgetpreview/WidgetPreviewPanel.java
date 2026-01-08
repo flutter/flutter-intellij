@@ -79,14 +79,12 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         // Check versioning of Flutter SDK.
         FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
         if (sdk == null) {
-          // ERROR_SITE: Flutter SDK not found.
           showInfoMessage(FlutterBundle.message("flutter.sdk.not.found"));
           LOG.info("Flutter SDK was not found");
           return;
         }
 
         if (sdk.getVersion().fullVersion().equals(FlutterSdkVersion.UNKNOWN_VERSION)) {
-          // ERROR_SITE: Flutter SDK found but incomplete or unknown version.
           viewUtils.presentLabels(toolWindow, List.of("A Flutter SDK was found at the location",
                                                       "specified in the settings, however the directory",
                                                       "is in an incomplete state. To fix, shut down the IDE,",
@@ -96,7 +94,6 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         }
 
         if (!sdk.getVersion().canUseWidgetPreview()) {
-          // ERROR_SITE: Flutter SDK version is too old.
           showInfoMessage(FlutterBundle.message("widget.preview.sdk.too.old"));
           return;
         }
@@ -107,7 +104,6 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
 
         final PubRoot root = PubRoot.forFile(project.getProjectFile());
         if (root == null) {
-          // ERROR_SITE: No Pub root found (not inside a Flutter project?).
           showInfoMessage("Pub root could not be found to start widget preview.");
           return;
         }
@@ -121,8 +117,6 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         final ProcessHandler handler = new MostlySilentColoredProcessHandler(command.createGeneralCommandLine(project));
         flutterProcessRef.set(handler);
         Consumer<String> onError = (message) -> {
-          // ERROR_SITE: Process listener reported an error (e.g. process exited, or no
-          // URL found).
           showInfoMessage(FlutterBundle.message("widget.preview.error", message != null ? message : ""));
         };
         Consumer<@NotNull String> onSuccess = this::setUrlAndLoad;
@@ -130,7 +124,6 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         handler.startNotify();
       }
       catch (ExecutionException e) {
-        // ERROR_SITE: Failed to execute the widget preview command.
         throw new RuntimeException(e);
       }
     });
