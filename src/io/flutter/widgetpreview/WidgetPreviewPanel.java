@@ -104,6 +104,26 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         showInfoMessage(FlutterBundle.message("widget.preview.starting"));
 
         final CompletableFuture<String> urlFuture = new CompletableFuture<>();
+        urlFuture.whenComplete((url, ex) -> {
+          if (ex != null) {
+            LOG.error("Error getting widget preview URL", ex);
+            final String message = ex.getMessage();
+            LOG.warn("Widget preview process error: " + message);
+            showInfoMessage(FlutterBundle.message("widget.preview.error", message != null ? message : ""));
+            return;
+          }
+
+          ApplicationManager.getApplication().invokeLater(() -> {
+            if (url == null) {
+              final String message = "No URL found";
+              LOG.warn("Widget preview process error: " + message);
+              showInfoMessage(FlutterBundle.message("widget.preview.error", message));
+              return;
+            }
+
+            setUrlAndLoad(url);
+          });
+        });
 
         final PubRoot root = PubRoot.forFile(project.getProjectFile());
         if (root == null) {
@@ -120,12 +140,7 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
 
         final ProcessHandler handler = new MostlySilentColoredProcessHandler(command.createGeneralCommandLine(project));
         flutterProcessRef.set(handler);
-        Consumer<String> onError = (message) -> {
-          LOG.warn("Widget preview process error: " + message);
-          showInfoMessage(FlutterBundle.message("widget.preview.error", message != null ? message : ""));
-        };
-        Consumer<@NotNull String> onSuccess = this::setUrlAndLoad;
-        handler.addProcessListener(new WidgetPreviewListener(urlFuture, isVerboseMode, onError, onSuccess));
+        handler.addProcessListener(new WidgetPreviewListener(urlFuture, isVerboseMode));
         handler.startNotify();
       }
       catch (ExecutionException e) {
