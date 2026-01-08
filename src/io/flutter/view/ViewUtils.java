@@ -64,6 +64,11 @@ public class ViewUtils {
 
 
   public void presentClickableLabel(ToolWindow toolWindow, List<LabelInput> labels) {
+    JPanel center = createClickableLabelPanel(labels);
+    replacePanelLabel(toolWindow, center);
+  }
+
+  public JPanel createClickableLabelPanel(List<LabelInput> labels) {
     final JPanel panel = new JPanel(new GridLayout(0, 1));
 
     for (LabelInput input : labels) {
@@ -71,20 +76,20 @@ public class ViewUtils {
         final JLabel descriptionLabel = new JLabel(wrapWithHtml(input.text));
         descriptionLabel.setBorder(JBUI.Borders.empty(5));
         descriptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        panel.add(descriptionLabel, BorderLayout.NORTH);
+        panel.add(descriptionLabel);
       }
       else {
         final LinkLabel<String> linkLabel = new LinkLabel<>(wrapWithHtml(input.text), null);
         linkLabel.setBorder(JBUI.Borders.empty(5));
         linkLabel.setListener(input.listener, null);
         linkLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        panel.add(linkLabel, BorderLayout.SOUTH);
+        panel.add(linkLabel);
       }
     }
 
     final JPanel center = new JPanel(new VerticalFlowLayout(VerticalFlowLayout.MIDDLE));
     center.add(panel);
-    replacePanelLabel(toolWindow, center);
+    return center;
   }
 
   public void replacePanelLabel(ToolWindow toolWindow, JComponent label) {

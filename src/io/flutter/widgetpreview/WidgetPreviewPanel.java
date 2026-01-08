@@ -2,6 +2,7 @@ package io.flutter.widgetpreview;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.process.ProcessHandler;
+import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -78,12 +79,14 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         // Check versioning of Flutter SDK.
         FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
         if (sdk == null) {
+          // ERROR_SITE: Flutter SDK not found.
           showInfoMessage(FlutterBundle.message("flutter.sdk.not.found"));
           LOG.info("Flutter SDK was not found");
           return;
         }
 
         if (sdk.getVersion().fullVersion().equals(FlutterSdkVersion.UNKNOWN_VERSION)) {
+          // ERROR_SITE: Flutter SDK found but incomplete or unknown version.
           viewUtils.presentLabels(toolWindow, List.of("A Flutter SDK was found at the location",
                                                       "specified in the settings, however the directory",
                                                       "is in an incomplete state. To fix, shut down the IDE,",
@@ -93,6 +96,7 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         }
 
         if (!sdk.getVersion().canUseWidgetPreview()) {
+          // ERROR_SITE: Flutter SDK version is too old.
           showInfoMessage(FlutterBundle.message("widget.preview.sdk.too.old"));
           return;
         }
@@ -103,6 +107,7 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
 
         final PubRoot root = PubRoot.forFile(project.getProjectFile());
         if (root == null) {
+          // ERROR_SITE: No Pub root found (not inside a Flutter project?).
           showInfoMessage("Pub root could not be found to start widget preview.");
           return;
         }
@@ -116,6 +121,8 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         final ProcessHandler handler = new MostlySilentColoredProcessHandler(command.createGeneralCommandLine(project));
         flutterProcessRef.set(handler);
         Consumer<String> onError = (message) -> {
+          // ERROR_SITE: Process listener reported an error (e.g. process exited, or no
+          // URL found).
           showInfoMessage(FlutterBundle.message("widget.preview.error", message != null ? message : ""));
         };
         Consumer<@NotNull String> onSuccess = this::setUrlAndLoad;
@@ -123,6 +130,7 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         handler.startNotify();
       }
       catch (ExecutionException e) {
+        // ERROR_SITE: Failed to execute the widget preview command.
         throw new RuntimeException(e);
       }
     });
@@ -176,14 +184,28 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
     showInfoMessage(FlutterBundle.message("widget.preview.loading", urlProvider.getBrowserUrl()));
 
     OpenApiUtils.safeInvokeLater(() -> {
-      Optional.ofNullable(
-          FlutterUtils.embeddedBrowser(project))
+      Optional.ofNullable(FlutterUtils.embeddedBrowser(project))
         .ifPresent(embeddedBrowser ->
                    {
                      embeddedBrowser.openPanel(toolWindow, "Widget Preview", FlutterIcons.Flutter, urlProvider,
                                                System.out::println,
                                                null);
                    });
+
+      if (FlutterUtils.embeddedBrowser(project) == null) {
+        final List<io.flutter.utils.LabelInput> inputs = List.of(
+            new io.flutter.utils.LabelInput("Embedded browser is not available."),
+            new io.flutter.utils.LabelInput("Open in external browser", (label, data) -> {
+              BrowserLauncher.getInstance().browse(urlProvider.getBrowserUrl(), null);
+            }));
+        final JPanel panel = viewUtils.createClickableLabelPanel(inputs);
+        ApplicationManager.getApplication().invokeLater(() -> {
+          contentPanel.removeAll();
+          contentPanel.add(panel, BorderLayout.CENTER);
+          contentPanel.revalidate();
+          contentPanel.repaint();
+        });
+      }
     });
   }
 
