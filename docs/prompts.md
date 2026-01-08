@@ -1,6 +1,8 @@
 # AI Agent Prompts
 
-## Prompt 1: Verify Tests and Cleanup
+
+
+## Verify Tests and Cleanup
 **Objective:** Verify the current test suite status with `./gradlew test`, clean up any temporary modifications, and harden test coverage for active files.
 
 **Instructions:**
@@ -16,7 +18,7 @@
 
 ---
 
-## Prompt 2: Full Project Test Coverage Expansion & PR Split
+## Full Project Test Coverage Expansion & PR Split
 **Objective:** Systematically expand unit test coverage across the entire project and submit changes in organized, granular Pull Requests.
 
 **Instructions:**
@@ -36,7 +38,7 @@
 
 ---
 
-## Prompt 3: Update org.jetbrains.intellij.platform
+## Update org.jetbrains.intellij.platform
 **Objective:** Update the `org.jetbrains.intellij.platform` plugin version to the latest available.
 
 **Instructions:**
@@ -57,7 +59,7 @@
 
 ---
 
-## Prompt 4: Resolve Plugin Verification Issues
+## Resolve Plugin Verification Issues
 **Objective:** Eliminate plugin verification warnings and errors (Internal API usage, Override-only API usage, etc.) by creating isolated, non-colliding fix branches.
 
 **Instructions:**
@@ -82,7 +84,7 @@
 
 ---
 
-## Prompt 5: Gradle Build Optimization
+## Gradle Build Optimization
 **Objective:** Improve local build performance and CI efficiency by leveraging Gradle's caching and profiling tools.
 
 **Instructions:**
@@ -95,7 +97,7 @@
 
 ---
 
-## Prompt 6: Plugin Compatibility & EAP Verification
+## Plugin Compatibility & EAP Verification
 **Objective:** Ensure the plugin remains compatible with the latest IntelliJ Platform releases and EAP (Early Access Program) builds.
 
 **Instructions:**
@@ -109,7 +111,7 @@
 
 ---
 
-## Prompt 7: UI Thread Safety & Responsiveness
+## UI Thread Safety & Responsiveness
 **Objective:** Prevent UI freezes and ensure a responsive user experience by validating threading rules.
 
 **Instructions:**
@@ -123,7 +125,7 @@
 
 ---
 
-## Prompt 8: Code Inspection & Cleanup
+## Code Inspection & Cleanup
 **Objective:** Reduce technical debt and improve code quality by systematically resolving static analysis warnings.
 
 **Instructions:**
@@ -135,7 +137,7 @@
 
 ---
 
-## Prompt 9: Accessibility (A11y) Audit
+## Accessibility (A11y) Audit
 **Objective:** Ensure the plugin's custom UI components are accessible to users with screen readers and other assistive technologies.
 
 **Instructions:**
@@ -151,7 +153,7 @@
 
 ---
 
-## Prompt 10: Dependency & Library Audit
+## Dependency & Library Audit
 **Objective:** Optimize plugin size and security by removing unused dependencies and updating outdated libraries.
 
 **Instructions:**
@@ -165,7 +167,7 @@
 
 ---
 
-## Prompt 11: Documentation Coverage
+## Documentation Coverage
 **Objective:** Ensure all public classes and methods in `src/` have Javadoc/KDoc to improve maintainability and API clarity.
 
 **Instructions:**
@@ -176,7 +178,7 @@
 
 ---
 
-## Prompt 12: Performance Investigation
+## Performance Investigation
 **Objective:** Identify and optimize performance bottlenecks in the plugin's execution.
 
 **Instructions:**
@@ -192,7 +194,7 @@
 
 ---
 
-## Prompt 13: Unused Asset Cleanup
+## Unused Asset Cleanup
 **Objective:** Reduce plugin size by removing unused icons, images, and resources.
 
 **Instructions:**
