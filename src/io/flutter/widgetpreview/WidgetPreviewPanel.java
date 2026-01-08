@@ -80,7 +80,6 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         // Check versioning of Flutter SDK.
         FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
         if (sdk == null) {
-          // ERROR_SITE: Flutter SDK not found.
           showInfoMessage(FlutterBundle.message("flutter.sdk.not.found"));
           LOG.info("Flutter SDK was not found");
           return;
