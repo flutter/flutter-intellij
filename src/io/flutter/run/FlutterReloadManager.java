@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.intellij.concurrency.JobScheduler;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.ide.actions.SaveAllAction;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationGroup;
@@ -77,7 +78,7 @@ import java.util.concurrent.TimeUnit;
 public class FlutterReloadManager {
   private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterReloadManager.class);
 
-  private static final Map<String, NotificationGroup> toolWindowNotificationGroups = new HashMap<>();
+  private static final Map<String, NotificationGroup> toolWindowNotificationGroups = ContainerUtil.newHashMap();
 
   private static final Map<String, String> toolWindowIdsToNotificationGroupIds = ImmutableMap.of(
     ToolWindowId.DEBUG, "flutter-debug",

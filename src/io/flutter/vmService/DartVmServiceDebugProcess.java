@@ -49,6 +49,7 @@ import org.dartlang.vm.service.element.Event;
 import org.dartlang.vm.service.logging.Logging;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import com.intellij.util.containers.ContainerUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -66,8 +67,10 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
   @NotNull private final DartUrlResolver myDartUrlResolver;
   @NotNull private final XBreakpointHandler[] myBreakpointHandlers;
   private final IsolatesInfo myIsolatesInfo;
-  @NotNull private final Map<String, CompletableFuture<Object>> mySuspendedIsolateIds = Collections.synchronizedMap(new HashMap<>());
-  private final Map<String, LightVirtualFile> myScriptIdToContentMap = new HashMap<>();
+  @NotNull
+  private final Map<String, CompletableFuture<Object>> mySuspendedIsolateIds = Collections
+      .synchronizedMap(ContainerUtil.newHashMap());
+  private final Map<String, LightVirtualFile> myScriptIdToContentMap = ContainerUtil.newHashMap();
   @Nullable private final VirtualFile myCurrentWorkingDirectory;
   @NotNull private final ObservatoryConnector myConnector;
   @NotNull private final ExecutionEnvironment executionEnvironment;

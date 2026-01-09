@@ -13,6 +13,7 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.Version;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Alarm;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.concurrency.Semaphore;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XSourcePosition;
@@ -118,7 +119,7 @@ public class VmServiceWrapper implements Disposable {
     myIsolatesInfo = isolatesInfo;
     myBreakpointHandler = breakpointHandler;
     myRequestsScheduler = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, this);
-    breakpointNumbersToCanonicalMap = new HashMap<>();
+    breakpointNumbersToCanonicalMap = ContainerUtil.newHashMap();
     canonicalBreakpoints = new HashSet<>();
   }
 

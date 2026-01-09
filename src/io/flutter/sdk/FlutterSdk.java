@@ -6,11 +6,13 @@
 package io.flutter.sdk;
 
 import com.google.gson.JsonElement;
+import com.intellij.util.containers.ContainerUtil;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
+
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -63,11 +65,11 @@ public class FlutterSdk {
 
   private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterSdk.class);
 
-  private static final @NotNull Map<String, FlutterSdk> projectSdkCache = new HashMap<>();
+  private static final @NotNull Map<String, FlutterSdk> projectSdkCache = ContainerUtil.newHashMap();
 
   private final @NotNull VirtualFile myHome;
   private final @NotNull FlutterSdkVersion myVersion;
-  private final @NotNull Map<String, String> cachedConfigValues = new HashMap<>();
+  private final @NotNull Map<String, String> cachedConfigValues = ContainerUtil.newHashMap();
 
   private FlutterSdk(@NotNull final VirtualFile home, @NotNull final FlutterSdkVersion version) {
     myHome = home;

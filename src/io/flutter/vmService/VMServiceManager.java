@@ -8,6 +8,7 @@ package io.flutter.vmService;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.run.daemon.FlutterApp;
@@ -31,13 +32,15 @@ import static io.flutter.vmService.ServiceExtensions.enableOnDeviceInspector;
 
 public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposable {
   @NotNull private final FlutterApp app;
-  @NotNull private final Map<String, EventStream<Boolean>> serviceExtensions = new HashMap<>();
+  @NotNull
+  private final Map<String, EventStream<Boolean>> serviceExtensions = ContainerUtil.newHashMap();
 
   /**
    * Boolean value applicable only for boolean service extensions indicating
    * whether the service extension is enabled or disabled.
    */
-  @NotNull private final Map<String, EventStream<ServiceExtensionState>> serviceExtensionState = new HashMap<>();
+  @NotNull
+  private final Map<String, EventStream<ServiceExtensionState>> serviceExtensionState = ContainerUtil.newHashMap();
 
   private final EventStream<IsolateRef> flutterIsolateRefStream;
 
@@ -352,12 +355,12 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
         app.callBooleanExtension(name, (Boolean)value);
       }
       else if (value instanceof String) {
-        final Map<String, Object> params = new HashMap<>();
+        final Map<String, Object> params = ContainerUtil.newHashMap();
         params.put("value", value);
         app.callServiceExtension(name, params);
       }
       else if (value instanceof Double) {
-        final Map<String, Object> params = new HashMap<>();
+        final Map<String, Object> params = ContainerUtil.newHashMap();
         // The param name for a numeric service extension will be the last part of the extension name
         // (ext.flutter.extensionName => extensionName).
         params.put(name.substring(name.lastIndexOf(".") + 1), value);

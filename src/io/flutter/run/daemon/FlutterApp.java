@@ -28,6 +28,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import de.roderick.weberknecht.WebSocketException;
 import io.flutter.FlutterMessages;
@@ -425,7 +426,7 @@ public class FlutterApp implements Disposable {
   }
 
   public CompletableFuture<JsonObject> callServiceExtension(String methodName) {
-    return callServiceExtension(methodName, new HashMap<>());
+    return callServiceExtension(methodName, ContainerUtil.newHashMap());
   }
 
   public CompletableFuture<JsonObject> callServiceExtension(String methodName, Map<String, Object> params) {
@@ -447,7 +448,7 @@ public class FlutterApp implements Disposable {
 
   @SuppressWarnings("UnusedReturnValue")
   public CompletableFuture<Boolean> callBooleanExtension(String methodName, boolean enabled) {
-    final Map<String, Object> params = new HashMap<>();
+    final Map<String, Object> params = ContainerUtil.newHashMap();
     params.put("enabled", enabled);
     return callServiceExtension(methodName, params).thenApply(obj -> {
       //noinspection CodeBlock2Expr

@@ -10,6 +10,7 @@ import com.intellij.ui.ColorUtil;
 import com.intellij.ui.LayeredIcon;
 import com.intellij.util.ui.GraphicsUtil;
 import com.intellij.util.ui.UIUtil;
+import com.intellij.util.containers.ContainerUtil;
 import icons.FlutterIcons;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +23,7 @@ import java.util.Map;
 public class CustomIconMaker {
   private static final Color normalColor = ColorUtil.fromHex("231F20");
 
-  private final Map<String, Icon> iconCache = new HashMap<>();
+  private final Map<String, Icon> iconCache = ContainerUtil.newHashMap();
 
   public CustomIconMaker() {
 

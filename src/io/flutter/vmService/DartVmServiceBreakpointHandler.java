@@ -23,13 +23,15 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 import static com.intellij.icons.AllIcons.Debugger.Db_invalid_breakpoint;
+import com.intellij.util.containers.ContainerUtil;
 
 public class DartVmServiceBreakpointHandler extends XBreakpointHandler<XLineBreakpoint<XBreakpointProperties>> {
 
   private final DartVmServiceDebugProcess myDebugProcess;
   private final Set<XLineBreakpoint<XBreakpointProperties>> myXBreakpoints = new HashSet<>();
-  private final Map<String, IsolateBreakpointInfo> myIsolateInfo = new HashMap<>();
-  private final Map<String, XLineBreakpoint<XBreakpointProperties>> myVmBreakpointIdToXBreakpointMap = new HashMap<>();
+  private final Map<String, IsolateBreakpointInfo> myIsolateInfo = ContainerUtil.newHashMap();
+  private final Map<String, XLineBreakpoint<XBreakpointProperties>> myVmBreakpointIdToXBreakpointMap = ContainerUtil
+      .newHashMap();
 
   public DartVmServiceBreakpointHandler(@NotNull final DartVmServiceDebugProcess debugProcess) {
     super(DartLineBreakpointType.class);
@@ -119,7 +121,8 @@ class IsolateBreakpointInfo {
   private final String myIsolateId;
   private final DartVmServiceDebugProcess myDebugProcess;
   private final List<String> myTemporaryVmBreakpointIds = new ArrayList<>();
-  private final Map<XLineBreakpoint<XBreakpointProperties>, Set<String>> myXBreakpointToVmBreakpointIdsMap = new HashMap<>();
+  private final Map<XLineBreakpoint<XBreakpointProperties>, Set<String>> myXBreakpointToVmBreakpointIdsMap = ContainerUtil
+      .newHashMap();
 
   IsolateBreakpointInfo(@NotNull String isolateId, @NotNull DartVmServiceDebugProcess debugProcess) {
     this.myIsolateId = isolateId;

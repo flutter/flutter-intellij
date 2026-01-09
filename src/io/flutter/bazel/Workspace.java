@@ -18,6 +18,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import com.intellij.util.containers.ContainerUtil;
 
 import java.util.*;
 
@@ -369,7 +370,7 @@ public class Workspace {
       ProjectRootManager rootManager = ProjectRootManager.getInstance(p);
       if (rootManager == null) return null;
       
-      final Map<String, VirtualFile> candidates = new HashMap<>();
+      final Map<String, VirtualFile> candidates = ContainerUtil.newHashMap();
       for (VirtualFile contentRoot : rootManager.getContentRoots()) {
         if (contentRoot == null) continue;
         final VirtualFile wf = findContainingWorkspaceFile(contentRoot);

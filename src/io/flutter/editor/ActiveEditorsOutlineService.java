@@ -6,6 +6,7 @@
 package io.flutter.editor;
 
 import com.google.common.collect.Lists;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.fileEditor.FileEditor;
@@ -47,11 +48,13 @@ public class ActiveEditorsOutlineService implements Disposable {
   /**
    * Outlines for the currently visible files.
    */
-  @NotNull private final Map<String, FlutterOutline> pathToOutline = new HashMap<>();
+  @NotNull
+  private final Map<String, FlutterOutline> pathToOutline = ContainerUtil.newHashMap();
   /**
    * Outline listeners for the currently visible files.
    */
-  @NotNull private final Map<String, FlutterOutlineListener> outlineListeners = new HashMap<>();
+  @NotNull
+  private final Map<String, FlutterOutlineListener> outlineListeners = ContainerUtil.newHashMap();
 
   /**
    * List of listeners.

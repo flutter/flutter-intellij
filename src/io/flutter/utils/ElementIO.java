@@ -9,7 +9,8 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
+import com.intellij.util.containers.ContainerUtil;
+
 import java.util.Map;
 
 /**
@@ -26,7 +27,7 @@ public class ElementIO {
   }
 
   public static Map<String, String> readOptions(Element element) {
-    final Map<String, String> result = new HashMap<>();
+    final Map<String, String> result = ContainerUtil.newHashMap();
     for (Element child : element.getChildren()) {
       if ("option".equals(child.getName())) {
         final String name = child.getAttributeValue("name");

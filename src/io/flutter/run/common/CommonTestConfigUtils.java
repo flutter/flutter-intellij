@@ -24,7 +24,7 @@ import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
+import com.intellij.util.containers.ContainerUtil;
 import java.util.Map;
 
 import static org.dartlang.analysis.server.protocol.ElementKind.UNIT_TEST_GROUP;
@@ -69,7 +69,7 @@ public abstract class CommonTestConfigUtils {
     return null;
   }
 
-  private final Map<String, OutlineCache> cache = new HashMap<>();
+  private final Map<String, OutlineCache> cache = ContainerUtil.newHashMap();
 
   private void clearCachedInfo(String path) {
     synchronized (this) {
@@ -85,7 +85,7 @@ public abstract class CommonTestConfigUtils {
     final Project project = file.getProject();
     final ActiveEditorsOutlineService outlineService = getActiveEditorsOutlineService(project);
     if (outlineService == null) {
-      return new HashMap<>();
+      return ContainerUtil.newHashMap();
     }
 
     final FlutterOutline outline = outlineService.getIfUpdated(file);
@@ -102,7 +102,7 @@ public abstract class CommonTestConfigUtils {
       if (listener != null) {
         outlineService.addListener(listener);
       }
-      return new HashMap<>();
+      return ContainerUtil.newHashMap();
     }
 
     synchronized (this) {
@@ -167,7 +167,7 @@ public abstract class CommonTestConfigUtils {
   /**
    * The cache of listeners for the path of each {@link PsiFile} that has an outded {@link FlutterOutline}.
    */
-  private static final Map<String, LineMarkerUpdatingListener> listenerCache = new HashMap<>();
+  private static final Map<String, LineMarkerUpdatingListener> listenerCache = ContainerUtil.newHashMap();
 
   private LineMarkerUpdatingListener getListenerForFile(@NotNull final PsiFile file) {
     final String path = file.getVirtualFile().getCanonicalPath();
@@ -187,7 +187,7 @@ public abstract class CommonTestConfigUtils {
     final FlutterOutline outline;
 
     private OutlineCache(FlutterOutline outline, PsiFile file) {
-      this.callToTestType = new HashMap<>();
+      this.callToTestType = ContainerUtil.newHashMap();
       this.outline = outline;
 
       populateTestTypeMap(outline, file);
