@@ -45,6 +45,7 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
+import com.intellij.util.containers.ContainerUtil;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,13 +56,13 @@ import static io.flutter.editor.FlutterIconLineMarkerProvider.KnownPaths;
 public class FontPreviewProcessor {
 
   public static final String PACKAGE_SEPARATORS = "[,\r\n]";
-  public static final Map<String, String> UNSUPPORTED_PACKAGES = new HashMap<>();
+  public static final Map<String, String> UNSUPPORTED_PACKAGES = ContainerUtil.newHashMap();
 
   // If there are triple quotes around a package URL they won't be recognized.
   private static final Pattern EXPORT_STATEMENT_PATTERN = Pattern.compile("^\\s*export\\s+[\"']([-_. $A-Za-z0-9/]+\\.dart)[\"'].*");
   private static final Pattern IMPORT_STATEMENT_PATTERN = Pattern.compile("^\\s*import\\s+[\"']([-_. $A-Za-z0-9/]+\\.dart)[\"'].*");
-  private static final Map<String, Set<String>> ANALYZED_PROJECT_FILES = new HashMap<>();
-  private static final Map<String, WorkItem> WORK_ITEMS = new HashMap<>();
+  private static final Map<String, Set<String>> ANALYZED_PROJECT_FILES = ContainerUtil.newHashMap();
+  private static final Map<String, WorkItem> WORK_ITEMS = ContainerUtil.newHashMap();
   private static final @NotNull Logger LOG = PluginLogger.createLogger(FontPreviewProcessor.class);
 
   static {
@@ -455,7 +456,7 @@ public class FontPreviewProcessor {
     final Queue<FileInfo> filesToRewrite = new LinkedList<>();
     final Queue<ClassInfo> classesToAnalyze = new LinkedList<>();
     final Queue<FileInfo> filesToCheck = new LinkedList<>();
-    final Map<String, PathInfo> filesWithNoClasses = new HashMap<>();
+    final Map<String, PathInfo> filesWithNoClasses = ContainerUtil.newHashMap();
     final String projectPath;
     boolean isCancelled = false;
 

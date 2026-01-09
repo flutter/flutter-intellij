@@ -6,6 +6,7 @@
 package io.flutter.run;
 
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.PathUtil;
 import com.intellij.xdebugger.XDebuggerUtil;
@@ -141,7 +142,7 @@ class ObservatoryFile {
      * A cache containing each file downloaded from Observatory. The key is a script id.
      * Each version of a file is stored as a separate entry.
      */
-    private final Map<String, ObservatoryFile> versions = new HashMap<>();
+    private final Map<String, ObservatoryFile> versions = ContainerUtil.newHashMap();
 
     Cache(@NotNull String isolateId, @NotNull DartVmServiceDebugProcess.ScriptProvider provider) {
       this.isolateId = isolateId;

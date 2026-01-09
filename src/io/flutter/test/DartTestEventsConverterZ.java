@@ -13,6 +13,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.PathUtil;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.lang.dart.ide.runner.util.DartTestLocationProvider;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.logging.PluginLogger;
@@ -110,10 +111,10 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
                                   @NotNull final DartUrlResolver urlResolver) {
     super(testFrameworkName, consoleProperties);
     myUrlResolver = urlResolver;
-    myTestIdToTimestamp = new HashMap<>();
-    myTestData = new HashMap<>();
-    myGroupData = new HashMap<>();
-    mySuiteData = new HashMap<>();
+    myTestIdToTimestamp = ContainerUtil.newHashMap();
+    myTestData = ContainerUtil.newHashMap();
+    myGroupData = ContainerUtil.newHashMap();
+    mySuiteData = ContainerUtil.newHashMap();
   }
 
   @Override

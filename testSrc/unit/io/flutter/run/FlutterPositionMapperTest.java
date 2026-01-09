@@ -10,6 +10,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import com.jetbrains.lang.dart.util.DartUrlResolverImpl;
@@ -118,7 +119,7 @@ public class FlutterPositionMapperTest {
   }
 
   private static final class FakeScriptProvider implements DartVmServiceDebugProcess.ScriptProvider {
-    final Map<String, Script> scripts = new HashMap<>();
+    final Map<String, Script> scripts = ContainerUtil.newHashMap();
 
     void addScript(String isolateId, String scriptId, String uri, List<Line> table) {
       final JsonArray tokenPosTable = new JsonArray();

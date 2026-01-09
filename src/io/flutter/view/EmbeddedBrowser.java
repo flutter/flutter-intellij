@@ -26,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashMap;
+import com.intellij.util.containers.ContainerUtil;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -55,7 +55,7 @@ public abstract class EmbeddedBrowser {
 
   public static final String ANALYTICS_CATEGORY = "embedded-browser";
 
-  protected final Map<@NotNull String, Map<@NotNull String, @NotNull BrowserTab>> windows = new HashMap<>();
+  protected final Map<@NotNull String, Map<@NotNull String, @NotNull BrowserTab>> windows = ContainerUtil.newHashMap();
 
   public abstract @NotNull Logger logger();
 
@@ -100,7 +100,7 @@ public abstract class EmbeddedBrowser {
                         @NotNull Consumer<String> onBrowserUnavailable,
                         @Nullable String warningMessage) {
     this.browserUrlProvider = browserUrlProvider;
-    Map<String, BrowserTab> tabs = windows.computeIfAbsent(toolWindow.getId(), k -> new HashMap<>());
+    Map<String, BrowserTab> tabs = windows.computeIfAbsent(toolWindow.getId(), k -> ContainerUtil.newHashMap());
 
     final BrowserTab firstTab = tabs.get(tabName);
     if (firstTab == null) {

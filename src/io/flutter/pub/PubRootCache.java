@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import io.flutter.utils.OpenApiUtils;
+import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,7 +27,7 @@ public class PubRootCache {
 
   @NotNull final Project project;
 
-  private final Map<VirtualFile, PubRoot> cache = new HashMap<>();
+  private final Map<VirtualFile, PubRoot> cache = ContainerUtil.newHashMap();
 
   private PubRootCache(@NotNull final Project project) {
     this.project = project;

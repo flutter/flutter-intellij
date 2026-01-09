@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import com.intellij.util.containers.ContainerUtil;
 
 /**
  * Store and retrieve actions relative to a Project.
@@ -23,7 +24,7 @@ public class ProjectActions {
   public static void registerAction(@NotNull Project project, @NotNull String id, @NotNull AnAction action) {
     Map<String, AnAction> actions = project.getUserData(PROJECT_ACTIONS_KEY);
     if (actions == null) {
-      actions = new HashMap<>();
+      actions = ContainerUtil.newHashMap();
       project.putUserData(PROJECT_ACTIONS_KEY, actions);
     }
     actions.put(id, action);

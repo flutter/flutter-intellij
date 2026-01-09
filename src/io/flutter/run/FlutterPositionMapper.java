@@ -32,7 +32,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.HashMap;
+import com.intellij.util.containers.ContainerUtil;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -100,7 +100,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
   /**
    * A cache containing each file version downloaded from Observatory. The key is an isolate id.
    */
-  private final Map<String, ObservatoryFile.Cache> fileCache = new HashMap<>();
+  private final Map<String, ObservatoryFile.Cache> fileCache = ContainerUtil.newHashMap();
 
   public FlutterPositionMapper(@NotNull Project project,
                                @NotNull VirtualFile sourceRoot,

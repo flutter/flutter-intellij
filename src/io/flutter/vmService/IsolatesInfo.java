@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
+import java.util.Map;
 import java.util.function.Supplier;
+import com.intellij.util.containers.ContainerUtil;
 
 public class IsolatesInfo {
 
@@ -51,7 +53,7 @@ public class IsolatesInfo {
     }
   }
 
-  private final HashMap<String, IsolateInfo> myIsolateIdToInfoMap = new HashMap<>();
+  private final Map<String, IsolateInfo> myIsolateIdToInfoMap = ContainerUtil.newHashMap();
 
   public synchronized boolean addIsolate(@NotNull final IsolateRef isolateRef) {
     if (myIsolateIdToInfoMap.containsKey(isolateRef.getId())) {

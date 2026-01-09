@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.HashMap;
+import com.intellij.util.containers.ContainerUtil;
 import java.util.Map;
 import java.util.Properties;
 
@@ -34,7 +34,7 @@ public class FlutterCupertinoColors {
       FlutterUtils.warn(LOG, "Failed to load Cupertino colors", e, true);
     }
 
-    colorToName = new HashMap<>();
+    colorToName = ContainerUtil.newHashMap();
     for (Map.Entry<Object, Object> entry : colors.entrySet()) {
       final String name = (String)entry.getKey();
       final String value = (String)entry.getValue();

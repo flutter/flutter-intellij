@@ -6,6 +6,7 @@
 package io.flutter.run.coverage;
 
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.rt.coverage.data.ClassData;
 import com.intellij.rt.coverage.data.LineData;
 import com.intellij.rt.coverage.data.ProjectData;
@@ -29,7 +30,7 @@ public class LcovInfo {
   private static final String DATA_LABEL = "DA:";
   private static final String END_LABEL = "end_of_record";
 
-  private final Map<String, List<LineCount>> counts = new HashMap<>();
+  private final Map<String, List<LineCount>> counts = ContainerUtil.newHashMap();
 
   private Path currentFile = null;
   private List<LineCount> lineCounts = null;

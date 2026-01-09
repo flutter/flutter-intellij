@@ -6,6 +6,7 @@
 package io.flutter.editor;
 
 import com.intellij.codeInsight.daemon.GutterName;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProviderDescriptor;
 import com.intellij.lang.ASTNode;
@@ -48,8 +49,8 @@ import static io.flutter.dart.DartPsiUtil.*;
 // that could return null, but they seldom trigger, so the return is on the same line as the if statement.
 public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor {
 
-  public static final Map<String, Set<String>> KnownPaths = new HashMap<>();
-  private static final Map<String, String> BuiltInPaths = new HashMap<>();
+  public static final Map<String, Set<String>> KnownPaths = ContainerUtil.newHashMap();
+  private static final Map<String, String> BuiltInPaths = ContainerUtil.newHashMap();
   private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterIconLineMarkerProvider.class);
   private static final String MaterialRelativeAssetPath = "/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf";
   private static final String MaterialRelativeIconsPath = "/packages/flutter/lib/src/material/icons.dart";
@@ -384,7 +385,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
   }
 
   static class IconInfoVisitor extends DartRecursiveVisitor {
-    final HashMap<String, String> staticVars = new HashMap<>();
+    final HashMap<String, String> staticVars = ContainerUtil.newHashMap();
     final String iconName;
     IconInfo info;
 
@@ -484,7 +485,7 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
 
   //@Deprecated // This might be useful if we eliminate the preference pane that defines packages to analyze.
   //static class YamlAssetMapVisitor extends YamlRecursivePsiElementVisitor {
-  //  final HashMap<String, String> assetMap = new HashMap<>();
+  // final HashMap<String, String> assetMap = ContainerUtil.newHashMap();
   //  final List<String> iconClassNames = new ArrayList<>();
   //
   //  @Override

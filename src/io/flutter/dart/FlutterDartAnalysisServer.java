@@ -17,6 +17,7 @@ import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.Consumer;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.utils.JsonUtils;
 import org.dartlang.analysis.server.protocol.AnalysisError;
@@ -36,16 +37,16 @@ public class FlutterDartAnalysisServer implements Disposable {
    * Each key is a notification identifier.
    * Each value is the set of files subscribed to the notification.
    */
-  private final @NotNull Map<String, List<String>> subscriptions = new HashMap<>();
+  private final @NotNull Map<String, List<String>> subscriptions = ContainerUtil.newHashMap();
 
   @VisibleForTesting
-  protected final Map<String, List<FlutterOutlineListener>> fileOutlineListeners = new HashMap<>();
+  protected final Map<String, List<FlutterOutlineListener>> fileOutlineListeners = ContainerUtil.newHashMap();
 
   /**
    * Each key is a request identifier.
    * Each value is the {@link Consumer} for the response.
    */
-  private final Map<String, Consumer<JsonObject>> responseConsumers = new HashMap<>();
+  private final Map<String, Consumer<JsonObject>> responseConsumers = ContainerUtil.newHashMap();
   private boolean isDisposed = false;
 
   @NotNull
