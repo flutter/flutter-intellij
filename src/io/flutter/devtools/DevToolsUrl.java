@@ -8,6 +8,7 @@ package io.flutter.devtools;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.sdk.FlutterSdkVersion;
+import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -211,7 +212,8 @@ public class DevToolsUrl {
     if (widgetId != null) {
       params.add("inspectorRef=" + widgetId);
     }
-    return "http://" + devToolsHost + ":" + devToolsPort + "/" + (page != null ? page : "") + "?" + String.join("&", params);
+    return "http://" + devToolsHost + ":" + devToolsPort + "/" + (page != null ? page : "") + "?"
+        + StringUtil.join(params, "&");
   }
 
   public boolean maybeUpdateColor() {
