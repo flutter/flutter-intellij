@@ -8,7 +8,7 @@ package io.flutter.actions;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ColoredProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
@@ -46,12 +46,24 @@ public class OpenInAppCodeAction extends AnAction {
         final GeneralCommandLine cmd = new GeneralCommandLine().withExePath("/bin/bash")
           .withParameters("-c", "mdfind \"kMDItemContentType == 'com.apple.application-bundle'\" | grep AppCode.app");
         final ColoredProcessHandler handler = new ColoredProcessHandler(cmd);
-        handler.addProcessListener(new ProcessAdapter() {
+        handler.addProcessListener(new ProcessListener() {
           @Override
           public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
             if (outputType == ProcessOutputTypes.STDOUT) {
               IS_APPCODE_INSTALLED = true;
             }
+          }
+
+          @Override
+          public void processTerminated(@NotNull ProcessEvent event) {
+          }
+
+          @Override
+          public void startNotified(@NotNull ProcessEvent event) {
+          }
+
+          @Override
+          public void processWillTerminate(@NotNull ProcessEvent event, boolean willBeDestroyed) {
           }
         });
         handler.startNotify();
@@ -110,12 +122,24 @@ public class OpenInAppCodeAction extends AnAction {
     try {
       final GeneralCommandLine cmd = new GeneralCommandLine().withExePath("open").withParameters("-a", "AppCode.app", path);
       final ColoredProcessHandler handler = new ColoredProcessHandler(cmd);
-      handler.addProcessListener(new ProcessAdapter() {
+      handler.addProcessListener(new ProcessListener() {
         @Override
         public void processTerminated(@NotNull final ProcessEvent event) {
           if (event.getExitCode() != 0) {
             FlutterMessages.showError("Error Opening", path, project);
           }
+        }
+
+        @Override
+        public void startNotified(@NotNull ProcessEvent event) {
+        }
+
+        @Override
+        public void processWillTerminate(@NotNull ProcessEvent event, boolean willBeDestroyed) {
+        }
+
+        @Override
+        public void onTextAvailable(@NotNull ProcessEvent event, @NotNull com.intellij.openapi.util.Key outputType) {
         }
       });
       handler.startNotify();
