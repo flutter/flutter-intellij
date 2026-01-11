@@ -306,6 +306,16 @@ intellijPlatform {
     ignoredProblemsFile.set(project.file("verify-ignore-problems.txt"))
 
     ides {
+            recommended()
+            select {
+                types = listOf(
+                    IntelliJPlatformType.IntellijIdeaCommunity,
+                    IntelliJPlatformType.IntellijIdeaUltimate,
+                    IntelliJPlatformType.AndroidStudio,
+                )
+                channels = listOf(ProductRelease.Channel.RELEASE)
+            }
+        }
       // `singleIdeVersion` is only intended for use by GitHub actions to enable deleting instances of IDEs after testing.
       if (project.hasProperty("singleIdeVersion")) {
         val singleIdeVersion = project.property("singleIdeVersion") as String
