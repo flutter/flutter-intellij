@@ -22,6 +22,7 @@ import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.dart.DartPlugin;
 import io.flutter.logging.PluginLogger;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.OpenApiUtils;
 import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.element.LibraryRef;
@@ -140,7 +141,15 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
       if (remoteUri.startsWith(DartUrlResolver.DART_PREFIX)) continue;
       if (remoteUri.startsWith(DartUrlResolver.PACKAGE_PREFIX)) continue;
       remoteSourceRoot = findRemoteSourceRoot(remoteUri);
-      if (remoteSourceRoot != null) return;
+      if (remoteSourceRoot != null) {
+        if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+          LOG.info("Calculated remoteSourceRoot: " + remoteSourceRoot + " from " + remoteUri);
+        }
+        return;
+      }
+    }
+    if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+      LOG.info("Could not calculate remoteSourceRoot");
     }
   }
 
@@ -189,6 +198,9 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
   public Collection<String> getBreakpointUris(@NotNull final VirtualFile file) {
     final Set<String> results = new HashSet<>();
     final String uriByIde = resolver.getDartUrlForFile(file);
+    if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+      LOG.info("getBreakpointUris: uriByIde=" + uriByIde + " for file=" + file.getPath());
+    }
 
     // If dart:, short circuit the results.
     if (uriByIde.startsWith(DartUrlResolver.DART_PREFIX)) {
@@ -211,6 +223,9 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
       if (uriByServer != null) {
         results.add(uriByServer);
       }
+      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+        LOG.info("getBreakpointUris: uriByServer=" + uriByServer);
+      }
     }
 
     final String path = file.getPath();
@@ -228,6 +243,9 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
       }
     }
 
+    if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+      LOG.info("getBreakpointUris for " + file.getPath() + ": " + results);
+    }
     return results;
   }
 
@@ -285,7 +303,13 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
 
   @Nullable
   protected VirtualFile findLocalFile(@NotNull String uri) {
-    return findLocalFile(uri, null);
+    final VirtualFile file = findLocalFile(uri, null);
+    if (file == null) {
+      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+        LOG.info("findLocalFile: could not find local file for " + uri);
+      }
+    }
+    return file;
   }
 
   /**
