@@ -68,7 +68,10 @@ public class FlutterTestConfigProducer extends RunConfigurationProducer<TestConf
     final VirtualFile testFile = verifyFlutterTestFile(config, context, file);
     if (testFile == null) return false;
 
-    config.setFields(TestFields.forTestName(testName, testFile.getPath()).useRegexp(hasVariant));
+    TestFields fields = TestFields.forTestName(testName, testFile.getPath()).useRegexp(hasVariant);
+    fields.setAdditionalArgs(config.getFields().getAdditionalArgs());
+    config.setFields(fields);
+
     config.setGeneratedName();
 
     return true;
@@ -78,7 +81,10 @@ public class FlutterTestConfigProducer extends RunConfigurationProducer<TestConf
     final VirtualFile testFile = verifyFlutterTestFile(config, context, file);
     if (testFile == null) return false;
 
-    config.setFields(TestFields.forFile(testFile.getPath()));
+    TestFields fields = TestFields.forFile(testFile.getPath());
+    fields.setAdditionalArgs(config.getFields().getAdditionalArgs());
+    config.setFields(fields);
+
     config.setGeneratedName();
 
     return true;
@@ -97,8 +103,12 @@ public class FlutterTestConfigProducer extends RunConfigurationProducer<TestConf
 
     if (!root.hasTests(dir.getVirtualFile())) return false;
 
-    config.setFields(TestFields.forDir(dir.getVirtualFile().getPath()));
+    TestFields fields = TestFields.forDir(dir.getVirtualFile().getPath());
+    fields.setAdditionalArgs(config.getFields().getAdditionalArgs());
+    config.setFields(fields);
+
     config.setGeneratedName();
+
     return true;
   }
 
