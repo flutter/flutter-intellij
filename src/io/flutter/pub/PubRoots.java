@@ -11,7 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
+import com.intellij.util.SmartList;
 import java.util.List;
 
 /**
@@ -29,7 +29,7 @@ public class PubRoots {
    */
   @NotNull
   public static List<@NotNull PubRoot> forModule(@NotNull Module module) {
-    final List<PubRoot> result = new ArrayList<>();
+    final List<PubRoot> result = new SmartList<>();
     if (module.isDisposed()) return result;
 
     for (VirtualFile dir : OpenApiUtils.getContentRoots(module)) {
@@ -48,7 +48,7 @@ public class PubRoots {
    */
   @NotNull
   public static List<@NotNull PubRoot> forProject(@NotNull Project project) {
-    final List<PubRoot> result = new ArrayList<>();
+    final List<PubRoot> result = new SmartList<>();
     if (project.isDisposed()) return result;
 
     for (Module module : OpenApiUtils.getModules(project)) {
