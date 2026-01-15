@@ -318,14 +318,9 @@ intellijPlatform {
       } else {
         select {
           types = listOf(IntelliJPlatformType.AndroidStudio)
-          channels = listOf(ProductRelease.Channel.BETA, ProductRelease.Channel.CANARY, ProductRelease.Channel.DEV, ProductRelease.Channel.EAP, ProductRelease.Channel.RELEASE)
+          channels = listOf(ProductRelease.Channel.BETA, ProductRelease.Channel.CANARY, ProductRelease.Channel.EAP, ProductRelease.Channel.RELEASE)
           sinceBuild = "2025.1.1"
           untilBuild = "2025.3.1"
-        }
-        select {
-          types = listOf(IntelliJPlatformType.AppCode)
-          sinceBuild = "251.0"
-          untilBuild = "253.*"
         }
         select {
           types = listOf(IntelliJPlatformType.CLion)
@@ -338,12 +333,12 @@ intellijPlatform {
           untilBuild = "2025.3.1.1"
         }
         select {
-          types = listOf(IntelliJPlatformType.IntelliJIdea)
+          types = listOf(IntelliJPlatformType.IntellijIdea)
           sinceBuild = "2025.1"
           untilBuild = "2025.3.2"
         }
         select {
-          types = listOf(IntelliJPlatformType.IntelliJIdeaCommunity)
+          types = listOf(IntelliJPlatformType.IntellijIdeaCommunity)
           sinceBuild = "2025.1"
           untilBuild = "2025.2.6.1"
         }
