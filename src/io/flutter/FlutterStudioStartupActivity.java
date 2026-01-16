@@ -7,8 +7,10 @@ package io.flutter;
 
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import io.flutter.android.AndroidModuleLibraryManager;
@@ -58,6 +60,26 @@ public class FlutterStudioStartupActivity extends FlutterProjectActivity {
       return;
     }
 
+    // Ensure Flutter project configuration is applied.
+    // This logic was previously in FlutterStudioProjectOpenProcessor. However, that processor
+    // caused hangs and crashes due to threading issues when delegating to the Platform processor (AS 2025.2).
+    // Instead, we let the Platform open the project normally, and then apply our configuration here.
+    // This includes ensuring the module type is set to 'flutter' (for icons/facets) and enabling the Dart SDK.
+    // See https://github.com/flutter/flutter-intellij/issues/8661
+    LOG.info("Checking for unconfigured Flutter modules in " + project.getName());
+    for (Module module : FlutterModuleUtils.getModules(project)) {
+      if (FlutterModuleUtils.declaresFlutter(module) && !FlutterModuleUtils.isFlutterModule(module)) {
+        LOG.info("Fixing Flutter module configuration for " + module.getName());
+        // TODO Add analytics when available
+        ApplicationManager.getApplication().invokeLater(() -> {
+          ApplicationManager.getApplication().runWriteAction(() -> {
+            FlutterModuleUtils.setFlutterModuleType(module);
+          });
+          FlutterModuleUtils.enableDartSDK(module);
+        });
+      }
+    }
+
     // Set project tool window to show the project on first open (Android Studio sometimes opens android view instead).
     // See https://github.com/flutter/flutter-intellij/issues/8556.
     // Note: After showing the project view, subsequent opens should go to the project view also. However, if the android subdirectory is
@@ -68,7 +90,9 @@ public class FlutterStudioStartupActivity extends FlutterProjectActivity {
     if (!properties.isValueSet(IS_FIRST_OPEN_KEY)) {
       OpenApiUtils.safeInvokeLater(() -> {
         ProjectView projectView = ProjectView.getInstance(project);
-        if (projectView == null) return;
+        if (projectView == null) {
+          return;
+        }
         if (projectView.getPaneIds().contains(PROJECT_VIEW_ID)) {
           LOG.info("Project " + project.getName() + ": Setting project tool window to be project view on first open");
           projectView.changeView(PROJECT_VIEW_ID);
