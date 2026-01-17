@@ -9,7 +9,6 @@
   <extensions defaultExtensionNs="com.intellij">
     <externalSystemTaskNotificationListener implementation="io.flutter.utils.FlutterExternalSystemTaskNotificationListener"/>
     <postStartupActivity implementation="io.flutter.FlutterStudioStartupActivity"/>
-    <projectOpenProcessor implementation="io.flutter.editor.FlutterStudioProjectOpenProcessor" order="after flutter"/>
     <library.type implementation="io.flutter.android.AndroidModuleLibraryType"/>
     <projectService serviceImplementation="io.flutter.android.AndroidModuleLibraryManager"/>
 
