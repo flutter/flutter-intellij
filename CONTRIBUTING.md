@@ -18,6 +18,8 @@ Contributing to Flutter Plugin for IntelliJ
   * [Flutter DevTools Integration](#flutter-devtools-integration)
     * [Working with Embedded DevTools (JxBrowser)](#working-with-embedded-devtools-jxbrowser)
     * [Developing with local DevTools](#developing-with-local-devtools)
+  * [Formatting Guide](#formatting-guide)
+    * [Command Line Formatting](#command-line-formatting)
 <!-- TOC -->
 
 ## Contributing code
@@ -340,3 +342,79 @@ By default, the DevTools version in IntelliJ will match the DevTools version shi
 4. Open Help > Show log in finder > Open idea.log
     - Verify you see output like see output `"DevTools startup: <various messages that come from running dt serve>"`
 5. To stop using local DevTools, go back to the registry key set in step 2 and remove it
+
+# Formatting Guide
+
+## Command Line Formatting
+
+We provide a `tool/format.sh` script to format the codebase.
+
+> [!NOTE]
+> Formatting is enforced in the **presubmit** checks. Please ensure your code is formatted before submitting a PR.
+
+### Dart
+Dart formatting works out of the box using `dart format`.
+
+### Java / Kotlin / XML / Form / Properties / JSON
+To format Java, Kotlin, XML, and other files (such as `.form`, `.properties`, `.json`), the script uses IntelliJ IDEA's built-in command-line formatter.
+
+It attempts to find IntelliJ IDEA in standard macOS locations. For other operating systems (Linux, Windows) or custom installations, you must set the `IDEA_HOME` environment variable.
+
+#### Linux Setup (bash/zsh)
+```bash
+# Standard Snap install location
+export IDEA_HOME="/snap/intellij-idea-community/current"
+# OR standard archive install
+# export IDEA_HOME="/opt/idea-IC-223.8214.52"
+```
+
+#### Windows Setup (PowerShell)
+```powershell
+# Standard Toolbox install location
+$Env:IDEA_HOME = "$Env:LOCALAPPDATA\JetBrains\Toolbox\apps\IDEA-C\ch-0\223.8214.52"
+```
+
+#### macOS Setup (bash/zsh)
+Add this to your `~/.zshrc` (or `~/.bash_profile` for bash):
+
+```bash
+# Point to your IntelliJ installation
+export IDEA_HOME="/Applications/IntelliJ IDEA CE.app/Contents"
+# OR for Ultimate:
+# export IDEA_HOME="/Applications/IntelliJ IDEA.app/Contents"
+```
+
+Then reload your shell configuration (e.g., `source ~/.zshrc` or `source ~/.bash_profile`).
+
+### Running the formatter
+
+```bash
+./tool/format.sh
+```
+
+# Inspection Guide
+
+We use IntelliJ's code inspection tool to verify code quality and check for regressions in critical areas (like XML validity, deprecated API usage, etc.).
+
+## Command Line Inspection
+
+We provide a `tool/verify_inspections.sh` script to run inspections and assert expected error counts.
+
+### Usage
+
+```bash
+./tool/verify_inspections.sh
+```
+
+This script:
+1.  Downloads/locates IntelliJ IDEA.
+2.  Runs the inspection profile (`Project Default`).
+3.  Compares existing violations against a baseline (defined in the script).
+
+### Adding New Inspections
+
+To add a new inspection check:
+1.  Run the script once to see current violation counts.
+2.  Edit `tool/verify_inspections.sh` to add a new `check_errors_count` call with the expected baseline.
+3.  Ensure the baseline is exact. The script will fail on both regressions (more errors) and unexpected improvements (fewer errors), prompting you to update the baseline.
+

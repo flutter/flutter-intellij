@@ -23,6 +23,19 @@ export PATH=$JAVA_HOME/bin:$PATH
 # Clone and configure Flutter to the latest stable release
 git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
 export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
+
+if ! command -v flutter &> /dev/null; then
+  echo "Error: flutter command not found on PATH after cloning the repo."
+  exit 1
+fi
+echo "flutter command found: $(which flutter)"
+
+if ! command -v dart &> /dev/null; then
+  echo "Error: dart command not found on PATH after cloning the repo."
+  exit 1
+fi
+echo "dart command found: $(which dart)"
+
 flutter config --no-analytics
 flutter doctor
 export FLUTTER_SDK=`pwd`/../flutter
@@ -43,9 +56,10 @@ dart pub get
 if [ "DART_BOT" = "$BOT" ] ; then
   # Analyze the Dart code in the repo.
   echo "dart analyze"
-  (cd src; dart analyze)
-  (cd tool/plugin; dart analyze)
-  (cd tool/triage; dart pub upgrade && dart analyze)
+  (cd src && dart analyze)
+  (cd tool/plugin && dart analyze)
+  (cd tool/triage && dart pub upgrade && dart analyze)
+
 
   # Ensure that the edits have been applied to template files (and their target
   # files have been regenerated).
@@ -59,6 +73,27 @@ if [ "DART_BOT" = "$BOT" ] ; then
 
   # Run the tests for the plugin tool.
   (cd tool/plugin; dart test/plugin_test.dart)
+
+setup_intellij() {
+  echo "Setting up IntelliJ IDEA 2025.3 for Inspection/Formatting..."
+  # Note: AARCH64 URL provided by user, ensure runner is compatible or use x64 if needed.
+  wget -qO idea.tar.gz https://download.jetbrains.com/idea/idea-2025.3.1.1-aarch64.tar.gz
+  mkdir idea
+  tar -xzf idea.tar.gz -C idea --strip-components=1
+  export IDEA_HOME="$(pwd)/idea"
+}
+
+if [ "FORMAT_BOT" = "$BOT" ] ; then
+  setup_intellij
+  # Check for formatting issues
+  echo "./tool/format.sh"
+  ./tool/format.sh
+  git diff --exit-code
+
+elif [ "INSPECT_BOT" = "$BOT" ] ; then
+  setup_intellij
+  echo "Running verify_inspections.sh..."
+  ./tool/verify_inspections.sh
 
 elif [ "CHECK_BOT" = "$BOT" ] ; then
   # Run some validations on the repo code.
