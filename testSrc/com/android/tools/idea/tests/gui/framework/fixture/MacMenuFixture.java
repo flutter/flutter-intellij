@@ -15,11 +15,13 @@ import com.google.common.collect.Lists;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
+
 import java.awt.Container;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+
 import org.fest.swing.core.Robot;
 import org.fest.swing.timing.Wait;
 import org.jetbrains.annotations.NotNull;

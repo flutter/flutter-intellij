@@ -332,7 +332,8 @@ public class FlutterTestRunner extends GenericProgramRunner {
 
         if (primVmServiceUri != null) {
           observatoryUri = primVmServiceUri.getAsString();
-        } else {
+        }
+        else {
           final JsonPrimitive primObservatoryUri = params.getAsJsonPrimitive("observatoryUri");
 
           if (primObservatoryUri != null) {

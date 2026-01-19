@@ -125,7 +125,7 @@ public class PubRoot {
     if (fileOrDir == null) return null;
     ProjectRootManager manager = ProjectRootManager.getInstance(project);
     if (manager == null) return null;
-    
+
     final ProjectFileIndex index = manager.getFileIndex();
     return OpenApiUtils.safeRunReadAction(() -> {
       final VirtualFile root = index.getContentRootForFile(fileOrDir);

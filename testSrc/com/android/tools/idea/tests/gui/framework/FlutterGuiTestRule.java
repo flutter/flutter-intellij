@@ -30,6 +30,7 @@ import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import com.intellij.testGuiFramework.impl.GuiTestThread;
 import com.intellij.testGuiFramework.remote.transport.RestartIdeMessage;
 import io.flutter.tests.util.ProjectWrangler;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
@@ -48,6 +49,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+
 import org.fest.swing.core.Robot;
 import org.fest.swing.exception.WaitTimedOutError;
 import org.fest.swing.timing.Wait;

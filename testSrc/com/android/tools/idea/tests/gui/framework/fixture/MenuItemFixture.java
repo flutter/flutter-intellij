@@ -6,6 +6,7 @@
 package com.android.tools.idea.tests.gui.framework.fixture;
 
 import javax.swing.JMenuItem;
+
 import org.fest.swing.core.Robot;
 import org.fest.swing.fixture.JMenuItemFixture;
 import org.jetbrains.annotations.NotNull;

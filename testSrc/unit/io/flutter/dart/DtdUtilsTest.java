@@ -30,7 +30,7 @@ public class DtdUtilsTest {
   public void setUp() throws Exception {
     MockitoAnnotations.initMocks(this);
     project = fixture.getProject();
-    
+
     // Register mock service
     // We need to use the disposable from the fixture to ensure it gets cleaned up
     ServiceContainerUtil.registerServiceInstance(project, DartToolingDaemonService.class, mockDtdService);
@@ -39,10 +39,10 @@ public class DtdUtilsTest {
   @Test
   public void testReadyDtdServiceRemovesProjectFromWaiters() throws Exception {
     when(mockDtdService.getWebSocketReady()).thenReturn(true);
-    
+
     DtdUtils dtdUtils = new DtdUtils();
     CompletableFuture<DartToolingDaemonService> future = dtdUtils.readyDtdService(project);
-    
+
     assertTrue(future.isDone());
     // Verify WAITERS map is empty
     assertTrue("WAITERS map should be empty after service is ready", DtdUtils.WAITERS.isEmpty());

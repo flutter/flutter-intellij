@@ -17,7 +17,7 @@ public class FlutterGettingStartedAction extends DumbAwareAction {
   @Override
   public void actionPerformed(@NotNull final AnActionEvent e) {
     Analytics.report(AnalyticsData.forAction(this, e));
-    
+
     BrowserLauncher.getInstance().browse(FlutterConstants.URL_GETTING_STARTED_IDE, null);
   }
 }

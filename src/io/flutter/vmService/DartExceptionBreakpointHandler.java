@@ -29,7 +29,7 @@ public class DartExceptionBreakpointHandler extends XBreakpointHandler<XBreakpoi
   public static XBreakpoint<DartExceptionBreakpointProperties> getDefaultExceptionBreakpoint(@NotNull final Project project) {
     final XBreakpointManager bpManager = XDebuggerManager.getInstance(project).getBreakpointManager();
     final DartExceptionBreakpointType bpType = XBreakpointType.EXTENSION_POINT_NAME.findExtension(DartExceptionBreakpointType.class);
-    assert(bpType != null);
+    assert (bpType != null);
     @NotNull Set<XBreakpoint<DartExceptionBreakpointProperties>> bps = bpManager.getDefaultBreakpoints(bpType);
     assert (bps.size() == 1);
     final XBreakpoint<DartExceptionBreakpointProperties> breakpoint = new ArrayList<>(bps).get(0);

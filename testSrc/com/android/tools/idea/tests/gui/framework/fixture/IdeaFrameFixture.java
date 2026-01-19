@@ -68,6 +68,7 @@ import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import com.intellij.openapi.wm.impl.StripeButton;
 import com.intellij.openapi.wm.impl.ToolWindowsPane;
 import com.intellij.util.ThreeState;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -84,6 +85,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+
 import org.fest.swing.core.GenericTypeMatcher;
 import org.fest.swing.core.Robot;
 import org.fest.swing.core.WindowAncestorFinder;
@@ -400,7 +402,7 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
    * Returns the virtual file corresponding to the given path. The path must be relative to the project root directory
    * (the top-level directory containing all source files associated with the project).
    *
-   * @param relativePath  a file path relative to the project root directory
+   * @param relativePath a file path relative to the project root directory
    * @return the virtual file corresponding to {@code relativePath}, or {@code null} if no such file exists
    */
   @Nullable
@@ -438,7 +440,7 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
 
   @NotNull
   public IdeaFrameFixture actAndWaitForGradleProjectSyncToFinish(@Nullable Wait waitForSync,
-                                                                @NotNull Consumer<IdeaFrameFixture> actions) {
+                                                                 @NotNull Consumer<IdeaFrameFixture> actions) {
     return actAndWaitForGradleProjectSyncToFinish(
       waitForSync,
       () -> {
@@ -454,7 +456,7 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
   }
 
   public static IdeaFrameFixture actAndWaitForGradleProjectSyncToFinish(@Nullable Wait waitForSync,
-                                                                       @NotNull Supplier<? extends IdeaFrameFixture> ideFrame) {
+                                                                        @NotNull Supplier<? extends IdeaFrameFixture> ideFrame) {
     long beforeStartedTimeStamp = System.currentTimeMillis();
 
     IdeaFrameFixture ideFixture = ideFrame.get();

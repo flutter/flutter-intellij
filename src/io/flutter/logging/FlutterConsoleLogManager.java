@@ -137,7 +137,8 @@ public class FlutterConsoleLogManager {
           catch (Throwable t) {
             if (FlutterSettings.getInstance().isVerboseLogging()) {
               LOG.warn(t);
-            } else {
+            }
+            else {
               LOG.warn("Error processing FlutterErrorEvent: " + t.getMessage());
             }
           }
@@ -154,7 +155,8 @@ public class FlutterConsoleLogManager {
     catch (Throwable t) {
       if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
         LOG.warn(t);
-      } else {
+      }
+      else {
         LOG.warn("Error handling FlutterErrorEvent: " + t.getMessage());
       }
     }
@@ -176,7 +178,8 @@ public class FlutterConsoleLogManager {
       catch (InterruptedException e) {
         if (FlutterSettings.getInstance().isVerboseLogging()) {
           LOG.error(e);
-        } else {
+        }
+        else {
           LOG.error("Exception when flushing FlutterErrorQueue: " + e.getMessage());
         }
       }
@@ -425,7 +428,8 @@ public class FlutterConsoleLogManager {
       catch (Throwable t) {
         if (FlutterSettings.getInstance().isVerboseLogging()) {
           LOG.warn(t);
-        } else {
+        }
+        else {
           LOG.warn("Error processing LoggingEvent: " + t.getMessage());
         }
       }

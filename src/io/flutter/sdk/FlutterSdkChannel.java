@@ -49,7 +49,7 @@ public class FlutterSdkChannel {
   private FlutterSdkChannel(@NotNull ID channel) {
     this.channel = channel;
   }
-  
+
   public String toString() {
     return "channel " + channel;
   }

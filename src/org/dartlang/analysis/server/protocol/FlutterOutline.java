@@ -13,7 +13,9 @@ import com.google.dart.server.utilities.general.ObjectUtilities;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
 import static org.apache.commons.lang3.StringUtils.join;
+
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
@@ -156,7 +158,8 @@ public class FlutterOutline {
     final int codeOffset = jsonObject.get("codeOffset").getAsInt();
     final int codeLength = jsonObject.get("codeLength").getAsInt();
     final String label = jsonObject.get("label") == null ? null : jsonObject.get("label").getAsString();
-    final Element dartElement = jsonObject.get("dartElement") == null ? null : Element.fromJson(jsonObject.get("dartElement").getAsJsonObject());
+    final Element dartElement =
+      jsonObject.get("dartElement") == null ? null : Element.fromJson(jsonObject.get("dartElement").getAsJsonObject());
     final List<FlutterOutlineAttribute> attributes =
       jsonObject.get("attributes") == null ? null : FlutterOutlineAttribute.fromJsonArray(jsonObject.get("attributes").getAsJsonArray());
     final String className = jsonObject.get("className") == null ? null : jsonObject.get("className").getAsString();

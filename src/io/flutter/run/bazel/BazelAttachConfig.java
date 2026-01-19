@@ -33,5 +33,4 @@ public class BazelAttachConfig extends BazelRunConfig {
     final RunMode mode = RunMode.fromEnv(env);
     return launchFields.getLaunchCommand(env.getProject(), device, mode, true);
   }
-
 }

@@ -94,7 +94,7 @@ public class SdkFields {
     if (hasAdditionalArgs()) {
       assert additionalArgs != null;
       return ParametersListUtil.parse(additionalArgs, false, false, true).stream().filter(s -> !s.isEmpty())
-          .toArray(String[]::new);
+        .toArray(String[]::new);
     }
 
     return new String[0];
@@ -117,7 +117,7 @@ public class SdkFields {
     if (hasAttachArgs()) {
       assert attachArgs != null;
       return ParametersListUtil.parse(attachArgs, false, false, true).stream().filter(s -> !s.isEmpty())
-          .toArray(String[]::new);
+        .toArray(String[]::new);
     }
     return new String[0];
   }

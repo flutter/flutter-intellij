@@ -15,9 +15,11 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import io.flutter.module.FlutterProjectType;
+
 import java.util.List;
 import javax.swing.JDialog;
 import javax.swing.JRootPane;
+
 import org.fest.swing.core.Robot;
 import org.fest.swing.fixture.JListFixture;
 import org.fest.swing.timing.Wait;

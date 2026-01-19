@@ -47,7 +47,7 @@ public enum FlutterLaunchMode {
   public boolean supportsReload() {
     return this == DEBUG;
   }
-  
+
   @Override
   public String toString() {
     return myCliCommand;

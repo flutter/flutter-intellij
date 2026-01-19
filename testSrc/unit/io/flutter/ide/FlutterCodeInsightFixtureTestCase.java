@@ -125,10 +125,10 @@ abstract public class FlutterCodeInsightFixtureTestCase extends BasePlatformTest
   private static final String SamplePubspec =
     """
       name: hello_world
-
+      
       environment:
         sdk: ">=2.12.0-0 <3.0.0"
-
+      
       dependencies:
         flutter:
           sdk: flutter

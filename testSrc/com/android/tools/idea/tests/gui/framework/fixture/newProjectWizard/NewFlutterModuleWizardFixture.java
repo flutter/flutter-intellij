@@ -13,8 +13,10 @@ import com.android.tools.idea.tests.gui.framework.fixture.IdeaFrameFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardFixture;
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
 import io.flutter.module.FlutterProjectType;
+
 import javax.swing.JDialog;
 import javax.swing.JRootPane;
+
 import org.fest.swing.core.Robot;
 import org.fest.swing.fixture.JListFixture;
 import org.fest.swing.timing.Wait;

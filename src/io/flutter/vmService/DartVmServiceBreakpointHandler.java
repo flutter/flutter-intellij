@@ -106,10 +106,11 @@ public class DartVmServiceBreakpointHandler extends XBreakpointHandler<XLineBrea
     // This can be null when the breakpoint has been set by another debugger client.
     if (xBreakpoint != null) {
       myDebugProcess.getSession().updateBreakpointPresentation(xBreakpoint, null, null);
-    } else {
+    }
+    else {
       if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
         LOG.info("breakpointResolved: could not find XLineBreakpoint for vmBreakpointId=" + vmBreakpoint.getId() + " "
-            + vmBreakpoint.getLocation());
+                 + vmBreakpoint.getLocation());
       }
     }
   }

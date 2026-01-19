@@ -41,7 +41,9 @@ import com.intellij.ide.ui.UISettingsUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+
 import com.intellij.util.SmartList;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -66,7 +68,8 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
         if (type == PermissionType.CLIPBOARD_READ_WRITE
             || type == PermissionType.CLIPBOARD_SANITIZED_WRITE) {
           tell.grant();
-        } else {
+        }
+        else {
           tell.deny();
         }
       });
@@ -85,7 +88,8 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
     catch (Exception | Error ex) {
       if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
         LOG.info(ex);
-      } else {
+      }
+      else {
         LOG.info("Exception when creating a new browser instance: " + ex.getMessage());
       }
     }
