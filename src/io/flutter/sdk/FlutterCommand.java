@@ -8,7 +8,11 @@ package io.flutter.sdk;
 import com.google.common.collect.ImmutableList;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.*;
+import com.intellij.execution.process.CapturingProcessAdapter;
+import com.intellij.execution.process.ColoredProcessHandler;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessListener;
+import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -188,7 +192,7 @@ public class FlutterCommand {
     if (processListener != null) {
       handler.addProcessListener(processListener);
     }
-    handler.addProcessListener(new ProcessAdapter() {
+    handler.addProcessListener(new ProcessListener() {
       @Override
       public void processTerminated(@NotNull ProcessEvent event) {
         if (onDone != null) {
@@ -245,7 +249,7 @@ public class FlutterCommand {
       final GeneralCommandLine commandLine = createGeneralCommandLine(project);
       LOG.info(safeCommandLog(commandLine));
       handler = new MostlySilentColoredProcessHandler(commandLine);
-      handler.addProcessListener(new ProcessAdapter() {
+      handler.addProcessListener(new ProcessListener() {
         @Override
         public void processTerminated(@NotNull final ProcessEvent event) {
           if (isPubRelatedCommand()) {

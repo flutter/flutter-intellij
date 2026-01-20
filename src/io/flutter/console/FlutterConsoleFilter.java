@@ -12,10 +12,12 @@ import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.execution.filters.OpenFileHyperlinkInfo;
 import com.intellij.execution.process.ColoredProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessListener;
+import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.openapi.editor.markup.EffectType;
 import com.intellij.openapi.editor.markup.TextAttributes;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
@@ -54,12 +56,24 @@ public class FlutterConsoleFilter implements Filter {
       try {
         final GeneralCommandLine cmd = new GeneralCommandLine().withExePath("open").withParameters(myPath);
         final ColoredProcessHandler handler = new ColoredProcessHandler(cmd);
-        handler.addProcessListener(new ProcessAdapter() {
+        handler.addProcessListener(new ProcessListener() {
+          @Override
+          public void startNotified(@NotNull ProcessEvent event) {
+          }
+
           @Override
           public void processTerminated(@NotNull final ProcessEvent event) {
             if (event.getExitCode() != 0) {
               FlutterMessages.showError("Error Opening ", myPath, project);
             }
+          }
+
+          @Override
+          public void processWillTerminate(@NotNull ProcessEvent event, boolean willBeDestroyed) {
+          }
+
+          @Override
+          public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
           }
         });
         handler.startNotify();

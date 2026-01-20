@@ -10,9 +10,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.ProcessAdapter;
+
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
+import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
@@ -257,7 +258,7 @@ public class FlutterApp implements Disposable {
     final DaemonApi api = new DaemonApi(process);
     final FlutterApp app = new FlutterApp(project, mode, device, process, env, api, command);
 
-    process.addProcessListener(new ProcessAdapter() {
+    process.addProcessListener(new ProcessListener() {
       @Override
       public void processTerminated(@NotNull ProcessEvent event) {
         LOG.info(analyticsStop + " " + project.getName() + " (" + mode.mode() + ")");
