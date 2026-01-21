@@ -36,12 +36,16 @@ import io.flutter.utils.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 public class FlutterSdkUtil {
   /**
@@ -208,16 +212,7 @@ public class FlutterSdkUtil {
     final File dartLibFolder = new File(path + "/bin/cache/dart-sdk/lib");
     return flutterPubspecFile.isFile() && flutterToolFile.isFile() && !dartLibFolder.isDirectory();
   }
-
-  /**
-   * Checks the workspace for any open Flutter projects.
-   *
-   * @return true if an open Flutter project is found
-   */
-  public static boolean hasFlutterModules() {
-    return Arrays.stream(ProjectManager.getInstance().getOpenProjects()).anyMatch(FlutterModuleUtils::hasFlutterModule);
-  }
-
+  
   public static boolean hasFlutterModules(@NotNull Project project) {
     return FlutterModuleUtils.hasFlutterModule(project);
   }
@@ -284,21 +279,6 @@ public class FlutterSdkUtil {
           continue;
         }
         return path;
-      }
-    }
-
-    // Next, try the obsolete .packages
-    for (PubRoot pubRoot : PubRoots.forModule(module)) {
-      final VirtualFile packagesFile = pubRoot.getPackagesFile();
-      if (packagesFile == null) {
-        continue;
-      }
-      // parse it
-      try {
-        final String contents = new String(packagesFile.contentsToByteArray(true /* cache contents */));
-        return parseFlutterSdkPath(contents);
-      }
-      catch (IOException ignored) {
       }
     }
 
