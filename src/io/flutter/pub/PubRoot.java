@@ -14,7 +14,7 @@ import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.jetbrains.lang.dart.util.DotPackagesFileUtil;
+import com.jetbrains.lang.dart.util.PackageConfigFileUtil;
 import io.flutter.FlutterUtils;
 import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
@@ -318,12 +318,12 @@ public class PubRoot {
   public @Nullable Map<String, String> getPackagesMap() {
     final var packageConfigFile = getPackageConfigFile();
     if (packageConfigFile != null) {
-      return DotPackagesFileUtil.getPackagesMapFromPackageConfigJsonFile(packageConfigFile);
+      return PackageConfigFileUtil.getPackagesMapFromPackageConfigJsonFile(packageConfigFile);
     }
 
     final var packagesFile = getPackagesFile();
     if (packagesFile != null) {
-      return DotPackagesFileUtil.getPackagesMap(packagesFile);
+      return PackageConfigFileUtil.getPackagesMap(packagesFile);
     }
 
     return null;
