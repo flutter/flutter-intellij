@@ -321,11 +321,6 @@ public class PubRoot {
       return PackageConfigFileUtil.getPackagesMapFromPackageConfigJsonFile(packageConfigFile);
     }
 
-    final var packagesFile = getPackagesFile();
-    if (packagesFile != null) {
-      return PackageConfigFileUtil.getPackagesMap(packagesFile);
-    }
-
     return null;
   }
 
