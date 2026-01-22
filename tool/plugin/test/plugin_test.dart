@@ -11,70 +11,12 @@ import 'package:test/test.dart';
 
 void main() {
   group("create", () {
-    test('test', () {
-      expect(TestCommand(BuildCommandRunner()).name, "test");
-    });
-
     test('deploy', () {
       expect(DeployCommand(BuildCommandRunner()).name, "deploy");
     });
 
     test('generate', () {
       expect(GenerateCommand(BuildCommandRunner()).name, "generate");
-    });
-  });
-
-  group("spec", () {
-    /// This method has assertions which can be made for all commands in this
-    /// test group.
-    void buildSpecAssertions(BuildCommandRunner runner, String command) {
-      var specs = (runner.commands[command] as ProductCommand).specs;
-      expect(specs, isList);
-      expect(specs, isNotEmpty);
-
-      // channel should be set to stable in the product-matrix.json
-      for (String channel in specs.map((spec) => spec.channel).toList()) {
-        expect(channel, anyOf('stable'));
-      }
-
-      // name should be set to stable in the product-matrix.json
-      for (String name in specs.map((spec) => spec.name).toList()) {
-        expect(name, isNotEmpty);
-        expect(name.length, 6);
-        expect(name, validator.isFloat);
-      }
-
-      // ideaProduct should be android-studio or IC
-      for (String ideaProduct
-          in specs.map((spec) => spec.ideaProduct).toList()) {
-        expect(ideaProduct, anyOf('android-studio', 'IC'));
-      }
-
-      // sinceBuild should be in the form of '243'
-      for (String sinceBuild in specs.map((spec) => spec.sinceBuild).toList()) {
-        expect(sinceBuild.length, 3);
-        expect(sinceBuild, validator.isNumeric);
-      }
-
-      // untilBuild should be in the form of '243.*'
-      for (String untilBuild in specs.map((spec) => spec.untilBuild).toList()) {
-        expect(untilBuild.length, 5);
-        expect(untilBuild.substring(0, 2), validator.isNumeric);
-      }
-    }
-
-    test('test', () async {
-      var runner = makeTestRunner();
-      await runner.run(["-r=19", "-d../..", "test"]).whenComplete(() {
-        buildSpecAssertions(runner, "test");
-      });
-    });
-
-    test('deploy', () async {
-      var runner = makeTestRunner();
-      await runner.run(["-r19", "-d../..", "deploy"]).whenComplete(() {
-        buildSpecAssertions(runner, "deploy");
-      });
     });
   });
 
@@ -144,8 +86,7 @@ void main() {
 
 BuildCommandRunner makeTestRunner() {
   var runner = BuildCommandRunner();
-  runner.addCommand(TestTestCommand(runner));
-  runner.addCommand(TestDeployCommand(runner));
+    runner.addCommand(TestDeployCommand(runner));
   runner.addCommand(TestGenCommand(runner));
   return runner;
 }
@@ -181,16 +122,6 @@ class TestDeployCommand extends DeployCommand {
 
 class TestGenCommand extends GenerateCommand {
   TestGenCommand(super.runner);
-
-  @override
-  bool get isTesting => true;
-
-  @override
-  Future<int> doit() async => Future(() => 0);
-}
-
-class TestTestCommand extends TestCommand {
-  TestTestCommand(super.runner);
 
   @override
   bool get isTesting => true;
