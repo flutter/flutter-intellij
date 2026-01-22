@@ -33,7 +33,6 @@ import java.util.Objects;
 public class PubRoot {
   public static final String DOT_DART_TOOL = ".dart_tool";
   public static final String PACKAGE_CONFIG_JSON = "package_config.json";
-  public static final String DOT_PACKAGES = ".packages";
   public static final String PUBSPEC_YAML = "pubspec.yaml";
 
   @NotNull
