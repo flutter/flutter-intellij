@@ -6,7 +6,6 @@ import 'dart:io';
 
 import 'package:plugin_tool/plugin.dart';
 import 'package:plugin_tool/runner.dart';
-import 'package:string_validator/string_validator.dart' as validator;
 import 'package:test/test.dart';
 
 void main() {
