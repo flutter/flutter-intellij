@@ -62,10 +62,10 @@ List<String> findJavaFiles(String path) {
       .toList();
 }
 
-bool isTravisFileValid() {
-  var travisPath = p.join(rootPath, '.github/workflows/presubmit.yaml');
-  var travisFile = File(travisPath);
-  return travisFile.existsSync();
+bool isPresubmitFileValid() {
+  var presubmitPath = p.join(rootPath, '.github/workflows/presubmit.yaml');
+  var presubmitFile = File(presubmitPath);
+  return presubmitFile.existsSync();
 }
 
 Future<int> jar(String directory, String outFile) async {
@@ -110,7 +110,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
             name.lastIndexOf(RegExp(r"\.[0-9]")) == name.length - 2;
       }
       if (result) {
-        if (isTravisFileValid()) {
+        if (isPresubmitFileValid()) {
           return result;
         } else {
           log('the presubmit.yaml file needs updating: plugin generate');
