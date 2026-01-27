@@ -8,8 +8,8 @@ package io.flutter.actions;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
-import io.flutter.analytics.Analytics;
-import io.flutter.analytics.AnalyticsData;
+import com.jetbrains.lang.dart.analytics.Analytics;
+import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterSubmitFeedback extends DumbAwareAction {

@@ -8,16 +8,16 @@ package io.flutter.actions;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
+import com.jetbrains.lang.dart.analytics.Analytics;
+import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import io.flutter.FlutterConstants;
-import io.flutter.analytics.Analytics;
-import io.flutter.analytics.AnalyticsData;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterGettingStartedAction extends DumbAwareAction {
   @Override
   public void actionPerformed(@NotNull final AnActionEvent e) {
     Analytics.report(AnalyticsData.forAction(this, e));
-    
+
     BrowserLauncher.getInstance().browse(FlutterConstants.URL_GETTING_STARTED_IDE, null);
   }
 }
