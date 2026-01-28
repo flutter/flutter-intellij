@@ -1,4 +1,4 @@
-## Unreleased
+## 89.0.0
 
 ### Added
 
@@ -9,6 +9,7 @@
 ### Fixed
 
 - DtdUtils static field retaining disposed Project (#8658)
+- Fixed project open hang in Android Studio 2025.2 by removing legacy `FlutterStudioProjectOpenProcessor` and migrating configuration logic to `FlutterStudioStartupActivity`. (#8661)
 
 ## 88.2.0
 

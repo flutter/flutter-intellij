@@ -18,6 +18,9 @@ import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpoint;
 import com.jetbrains.lang.dart.ide.runner.DartLineBreakpointType;
 import org.dartlang.vm.service.element.Breakpoint;
+import com.intellij.openapi.diagnostic.Logger;
+import io.flutter.logging.PluginLogger;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -26,6 +29,7 @@ import static com.intellij.icons.AllIcons.Debugger.Db_invalid_breakpoint;
 import com.intellij.util.containers.ContainerUtil;
 
 public class DartVmServiceBreakpointHandler extends XBreakpointHandler<XLineBreakpoint<XBreakpointProperties>> {
+  private static final Logger LOG = PluginLogger.createLogger(DartVmServiceBreakpointHandler.class);
 
   private final DartVmServiceDebugProcess myDebugProcess;
   private final Set<XLineBreakpoint<XBreakpointProperties>> myXBreakpoints = new HashSet<>();
@@ -104,6 +108,11 @@ public class DartVmServiceBreakpointHandler extends XBreakpointHandler<XLineBrea
     // This can be null when the breakpoint has been set by another debugger client.
     if (xBreakpoint != null) {
       myDebugProcess.getSession().updateBreakpointPresentation(xBreakpoint, null, null);
+    } else {
+      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+        LOG.info("breakpointResolved: could not find XLineBreakpoint for vmBreakpointId=" + vmBreakpoint.getId() + " "
+            + vmBreakpoint.getLocation());
+      }
     }
   }
 

@@ -2,7 +2,6 @@
 // code is governed by a BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
@@ -11,7 +10,6 @@ import 'package:git/git.dart';
 import 'package:path/path.dart' as p;
 
 import 'build_spec.dart';
-import 'edit.dart';
 import 'globals.dart';
 import 'lint.dart';
 import 'runner.dart';
@@ -21,7 +19,6 @@ Future<int> main(List<String> args) async {
   var runner = BuildCommandRunner();
 
   runner.addCommand(LintCommand(runner));
-  runner.addCommand(TestCommand(runner));
   runner.addCommand(DeployCommand(runner));
   runner.addCommand(GenerateCommand(runner));
 
@@ -47,15 +44,6 @@ void copyResources({required String from, required String to}) {
   _copyResources(Directory(from), Directory(to));
 }
 
-List<BuildSpec> createBuildSpecs(ProductCommand command) {
-  var specs = <BuildSpec>[];
-  var input = readProductMatrix();
-  for (var json in input) {
-    specs.add(BuildSpec.fromJson(json, command.release));
-  }
-  return specs;
-}
-
 List<File> findJars(String path) {
   final dir = Directory(path);
   return dir
@@ -74,18 +62,10 @@ List<String> findJavaFiles(String path) {
       .toList();
 }
 
-bool isTravisFileValid() {
-  var travisPath = p.join(rootPath, '.github/workflows/presubmit.yaml');
-  var travisFile = File(travisPath);
-  if (!travisFile.existsSync()) {
-    return false;
-  }
-  var matrixPath = p.join(rootPath, 'product-matrix.json');
-  var matrixFile = File(matrixPath);
-  if (!matrixFile.existsSync()) {
-    throw 'product-matrix.json is missing';
-  }
-  return isNewer(travisFile, matrixFile);
+bool isPresubmitFileValid() {
+  var presubmitPath = p.join(rootPath, '.github/workflows/presubmit.yaml');
+  var presubmitFile = File(presubmitPath);
+  return presubmitFile.existsSync();
 }
 
 Future<int> jar(String directory, String outFile) async {
@@ -130,7 +110,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
             name.lastIndexOf(RegExp(r"\.[0-9]")) == name.length - 2;
       }
       if (result) {
-        if (isTravisFileValid()) {
+        if (isPresubmitFileValid()) {
           return result;
         } else {
           log('the presubmit.yaml file needs updating: plugin generate');
@@ -160,13 +140,6 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
     );
   }
   return false;
-}
-
-List<Map<String, Object?>> readProductMatrix() {
-  var contents =
-      File(p.join(rootPath, 'product-matrix.json')).readAsStringSync();
-  var map = json.decode(contents);
-  return (map['list'] as List<Object?>).cast<Map<String, Object?>>();
 }
 
 void _copyFile(File file, Directory to, {String filename = ''}) {
@@ -278,12 +251,7 @@ https://plugins.jetbrains.com/plugin/uploadPlugin
   }
 }
 
-/// Generate the plugin.xml from the plugin.xml.template file. If the --release
-/// argument is given, create a git branch and commit the new file to it,
-/// assuming the release checks pass.
-///
-/// Note: The product-matrix.json file includes a build spec for the EAP version
-/// at the end. When the EAP version is released that needs to be updated.
+/// This is only used to generate live templates for the Flutter plugin.
 class GenerateCommand extends ProductCommand {
   @override
   final BuildCommandRunner runner;
@@ -353,7 +321,6 @@ class GenerateCommand extends ProductCommand {
 abstract class ProductCommand extends Command<int> {
   @override
   final String name;
-  late List<BuildSpec> specs;
 
   ProductCommand(this.name) {
     addProductFlags(argParser, name[0].toUpperCase() + name.substring(1));
@@ -448,7 +415,6 @@ abstract class ProductCommand extends Command<int> {
   @override
   Future<int> run() async {
     await _initGlobals();
-    await _initSpecs();
     try {
       return await doit();
     } catch (ex, stack) {
@@ -470,17 +436,6 @@ abstract class ProductCommand extends Command<int> {
       lastReleaseName = await lastRelease();
       lastReleaseDate = await dateOfLastRelease();
     }
-  }
-
-  Future<int> _initSpecs() async {
-    specs = createBuildSpecs(this);
-    for (var i = 0; i < specs.length; i++) {
-      if (isDevChannel) {
-        specs[i].buildForDev();
-      }
-      await specs[i].initChangeLog();
-    }
-    return specs.length;
   }
 }
 
@@ -595,68 +550,5 @@ class RenamePackageCommand extends ProductCommand {
         _editAll(entity, skipOld: skipOld, skipNew: skipNew);
       }
     }
-  }
-}
-
-/// Build the tests if necessary then run them and return any failure code.
-class TestCommand extends ProductCommand {
-  @override
-  final BuildCommandRunner runner;
-
-  TestCommand(this.runner) : super('test') {
-    argParser.addFlag(
-      'skip',
-      negatable: false,
-      help: 'Do not run tests, just unpack artifaccts',
-      abbr: 's',
-    );
-    argParser.addFlag('setup', abbr: 'p', defaultsTo: true);
-  }
-
-  @override
-  String get description => 'Run the tests for the Flutter plugin.';
-
-  @override
-  Future<int> doit() async {
-    final javaHome = Platform.environment['JAVA_HOME'];
-    if (javaHome == null) {
-      log('ERROR: JAVA_HOME environment variable not set - this is needed by gradle.');
-      return 1;
-    }
-
-    log('JAVA_HOME=$javaHome');
-
-    // Case 1: Handle skipping tests
-    if (argResults != null && argResults!.flag('skip')) {
-      log('Skipping unit tests as requested.');
-      return 0;
-    }
-
-    // Filter for all unit test targets
-    final unitTestTargets = specs.where((s) => s.isUnitTestTarget).toList();
-
-    // Case 2: Zero unit test targets
-    if (unitTestTargets.isEmpty) {
-      log('ERROR: No unit test target found in the specifications. Cannot run tests.');
-      return 1;
-    }
-
-    // Case 3: More than one unit test target
-    if (unitTestTargets.length > 1) {
-      final targetNames = unitTestTargets.map((s) => s.name).join(', ');
-      log('ERROR: More than one unit test target found: $targetNames. Please specify which one to run, or ensure only one exists.');
-      return 1;
-    }
-
-    // Happy Case: Exactly one unit test target
-    final spec = unitTestTargets.first;
-    return await _runUnitTests(spec);
-  }
-
-  Future<int> _runUnitTests(BuildSpec spec) async {
-    // run './gradlew test'
-    return await applyEdits(spec, () async {
-      return await runner.runGradleCommand(['test'], spec, '1', 'true');
-    });
   }
 }

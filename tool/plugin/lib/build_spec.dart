@@ -132,35 +132,3 @@ class BuildSpec {
   }
 }
 
-/// This represents a BuildSpec that is used to generate the plugin.xml
-/// that is used during development. It needs to span all possible versions.
-/// The product-matrix.json file lists the versions in increasing build order.
-/// The first one is the earliest version used during development and the
-/// last one is the latest used during development. This BuildSpec combines
-/// those two.
-class SyntheticBuildSpec extends BuildSpec {
-  late final BuildSpec alternate;
-
-  SyntheticBuildSpec.fromJson(
-    super.json,
-    super.releaseNum,
-    List<BuildSpec> specs,
-  ) : super.fromJson() {
-    try {
-      // 'isUnitTestTarget' should always be in the spec for the latest IntelliJ (not AS).
-      alternate = specs.firstWhere((s) => s.isUnitTestTarget);
-    } on StateError catch (_) {
-      log('No build spec defines "isUnitTestTarget"');
-      exit(1);
-    }
-  }
-
-  @override
-  String get sinceBuild => alternate.sinceBuild;
-
-  @override
-  String get untilBuild => alternate.untilBuild;
-
-  @override
-  bool get isSynthetic => true;
-}
