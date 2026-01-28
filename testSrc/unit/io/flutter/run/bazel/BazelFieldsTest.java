@@ -42,7 +42,7 @@ public class BazelFieldsTest {
     assertEquals("--android_cpu=x86", fields.getAdditionalArgs());
     assertFalse(fields.getEnableReleaseMode());
   }
-  
+
   @Test
   public void roundTripShouldPreserveFields() {
     final BazelFields before = new BazelFields(

@@ -123,6 +123,6 @@ public class TypedDataListTest {
 
   @Test(expected = IndexOutOfBoundsException.class)
   public void testOutOfBounds() {
-    new Int8List(new byte[] { 1 }).getValue(1);
+    new Int8List(new byte[]{1}).getValue(1);
   }
 }

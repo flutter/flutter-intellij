@@ -82,7 +82,8 @@ public class DartVmServiceEvaluator extends XDebuggerEvaluator {
       if (psiFile != null) {
         element = psiFile.findElementAt(expressionPosition.getOffset());
       }
-    } else {
+    }
+    else {
       // TODO(jacobr): we could use the most recently selected Dart file instead
       // of using the selected file.
       if (fileEditorManager != null) {
@@ -201,7 +202,8 @@ public class DartVmServiceEvaluator extends XDebuggerEvaluator {
     final List<String> lines = StringUtil.split(StringUtil.convertLineSeparators(rawError), "\n");
 
     if (!lines.isEmpty()) {
-      if ((Objects.equals(lines.get(0), "Error: Unhandled exception:") || Objects.equals(lines.get(0), "Unhandled exception:")) && lines.size() > 1) {
+      if ((Objects.equals(lines.get(0), "Error: Unhandled exception:") || Objects.equals(lines.get(0), "Unhandled exception:")) &&
+          lines.size() > 1) {
         return lines.get(1);
       }
       final Matcher matcher = ERROR_PATTERN.matcher(lines.get(0));

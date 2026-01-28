@@ -25,11 +25,13 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.platform.PlatformProjectOpenProcessor;
 import com.intellij.platform.templates.github.ZipUtil;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.EnumSet;
 import java.util.List;
+
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;

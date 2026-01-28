@@ -31,27 +31,27 @@ public class FlutterInitializerTest {
   public void testSchedulerFieldExists() throws Exception {
     // Test that the scheduler field exists and is properly initialized
     FlutterInitializer initializer = new FlutterInitializer();
-    
+
     Field schedulerField = FlutterInitializer.class.getDeclaredField("scheduler");
     schedulerField.setAccessible(true);
-    
+
     Object scheduler = schedulerField.get(initializer);
     assertNotNull("Scheduler field should be initialized", scheduler);
-    assertTrue("Scheduler should be a ScheduledExecutorService", 
+    assertTrue("Scheduler should be a ScheduledExecutorService",
                scheduler instanceof ScheduledExecutorService);
   }
 
-  @Test 
+  @Test
   public void testDebounceFieldExists() throws Exception {
     // Test that the debounce field exists and is properly initialized
     FlutterInitializer initializer = new FlutterInitializer();
-    
+
     Field debounceField = FlutterInitializer.class.getDeclaredField("lastScheduledThemeChangeTime");
     debounceField.setAccessible(true);
-    
+
     Object debounceTimer = debounceField.get(initializer);
     assertNotNull("Debounce timer field should be initialized", debounceTimer);
-    assertTrue("Debounce timer should be an AtomicLong", 
+    assertTrue("Debounce timer should be an AtomicLong",
                debounceTimer instanceof AtomicLong);
   }
 }

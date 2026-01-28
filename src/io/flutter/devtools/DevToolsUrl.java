@@ -213,7 +213,7 @@ public class DevToolsUrl {
       params.add("inspectorRef=" + widgetId);
     }
     return "http://" + devToolsHost + ":" + devToolsPort + "/" + (page != null ? page : "") + "?"
-        + StringUtil.join(params, "&");
+           + StringUtil.join(params, "&");
   }
 
   public boolean maybeUpdateColor() {

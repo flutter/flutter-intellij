@@ -68,14 +68,14 @@ public class SdkFieldsTest {
   public void supportsSpacesInAdditionalArgs() {
     final SdkFields sdkFields = new SdkFields();
     sdkFields.setAdditionalArgs("  --dart-define=\"VALUE=foo bar\"  ");
-    assertArrayEquals(new String[] { "--dart-define=VALUE=foo bar" }, sdkFields.getAdditionalArgsParsed());
+    assertArrayEquals(new String[]{"--dart-define=VALUE=foo bar"}, sdkFields.getAdditionalArgsParsed());
   }
 
   @Test
   public void supportsSpacesInAttachArgs() {
     final SdkFields sdkFields = new SdkFields();
     sdkFields.setAttachArgs("  --dart-define=\"VALUE=foo bar\"  ");
-    assertArrayEquals(new String[] { "--dart-define=VALUE=foo bar" }, sdkFields.getAttachArgsParsed());
+    assertArrayEquals(new String[]{"--dart-define=VALUE=foo bar"}, sdkFields.getAttachArgsParsed());
   }
 
   @Test
@@ -89,7 +89,7 @@ public class SdkFieldsTest {
     assertArrayEquals(new String[0], sdkFields.getAdditionalArgsParsed());
 
     sdkFields.setAdditionalArgs("  --foo   --bar  ");
-    assertArrayEquals(new String[] { "--foo", "--bar" }, sdkFields.getAdditionalArgsParsed());
+    assertArrayEquals(new String[]{"--foo", "--bar"}, sdkFields.getAdditionalArgsParsed());
   }
 
   private void addOption(Element elt, String name, String value) {

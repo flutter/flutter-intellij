@@ -84,7 +84,7 @@ public class ProjectWatch implements Closeable {
       callback.run();
     }
     catch (Exception e) {
-      FlutterUtils.warn(LOG,"Uncaught exception in ProjectWatch callback", e, true);
+      FlutterUtils.warn(LOG, "Uncaught exception in ProjectWatch callback", e, true);
       close(); // avoid further errors
     }
   }

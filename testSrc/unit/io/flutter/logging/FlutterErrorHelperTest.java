@@ -123,21 +123,21 @@ public class FlutterErrorHelperTest {
   @Test
   public void testGetAnalyticsId_edgeCases() {
     assertEquals(
-        "xxx-error",
-        FlutterErrorHelper.getAnalyticsId("123 error")); // Numbers at start
+      "xxx-error",
+      FlutterErrorHelper.getAnalyticsId("123 error")); // Numbers at start
 
     assertEquals(
-        "error-with-multiple-spaces",
-        FlutterErrorHelper.getAnalyticsId("Error   with    multiple   spaces"));
+      "error-with-multiple-spaces",
+      FlutterErrorHelper.getAnalyticsId("Error   with    multiple   spaces"));
 
     assertEquals(
-        "error-with-parens",
-        FlutterErrorHelper.getAnalyticsId("Error with (some variable info) parens"));
+      "error-with-parens",
+      FlutterErrorHelper.getAnalyticsId("Error with (some variable info) parens"));
 
     assertEquals(
-        "long-error-message-that-should-ideally-be-truncated-or-handled-but-currently-is-just-dashified",
-        FlutterErrorHelper.getAnalyticsId(
-            "Long error message that should ideally be truncated or handled but currently is just dashified"));
+      "long-error-message-that-should-ideally-be-truncated-or-handled-but-currently-is-just-dashified",
+      FlutterErrorHelper.getAnalyticsId(
+        "Long error message that should ideally be truncated or handled but currently is just dashified"));
 
     assertEquals("", FlutterErrorHelper.getAnalyticsId(""));
     assertEquals("", FlutterErrorHelper.getAnalyticsId("   "));

@@ -10,7 +10,8 @@ package io.flutter.testing;
  */
 public class JsonTesting {
 
-  private JsonTesting() {}
+  private JsonTesting() {
+  }
 
   /**
    * Generates a JSON object expression.

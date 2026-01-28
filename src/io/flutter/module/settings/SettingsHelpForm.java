@@ -11,10 +11,12 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
 import io.flutter.module.FlutterProjectType;
+
 import java.awt.Cursor;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
 import org.jetbrains.annotations.NotNull;
 
 /**

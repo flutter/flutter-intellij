@@ -9,7 +9,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 import io.flutter.module.FlutterProjectType;
+
 import java.util.List;
+
 import org.junit.Test;
 
 public class FlutterCreateAdditionalSettingsTest {

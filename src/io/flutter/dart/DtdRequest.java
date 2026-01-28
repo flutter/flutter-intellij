@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * These are requests to DTD. More are listed here: <a href="https://github.com/dart-lang/sdk/blob/main/pkg/dtd/lib/src/constants.dart">...</a>
- *
+ * <p>
  * Also see the protocol documentation: <a href="https://github.com/dart-lang/sdk/blob/main/pkg/dtd_impl/dtd_protocol.md">...</a>
  */
 public enum DtdRequest {

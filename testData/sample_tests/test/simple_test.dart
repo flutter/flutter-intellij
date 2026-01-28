@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-import'package:test/test.dart';
+import 'package:test/test.dart';
 
 /// Test data for test line marker tests.
 /// The outline for this file is pretty-printed in simple_outline.txt.

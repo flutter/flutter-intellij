@@ -78,7 +78,7 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
   protected PersistentLibraryKind<FlutterPluginLibraryProperties> getLibraryKind() {
     return FlutterPluginLibraryType.LIBRARY_KIND;
   }
-  
+
   private void fileChanged(@NotNull final Project project, @NotNull final VirtualFile file) {
     if (LocalFileSystem.getInstance() != file.getFileSystem() && !ApplicationManager.getApplication().isUnitTestMode()) return;
 

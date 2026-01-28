@@ -12,10 +12,9 @@ void main(List<String> args) => grind(args);
 @Task('Check plugin URLs for live-ness')
 void checkUrls() async {
   log('checking URLs in FlutterBundle.properties...');
-  var lines =
-      await File(
-        'src/io/flutter/FlutterBundle.properties',
-      ).readAsLines();
+  var lines = await File(
+    'src/io/flutter/FlutterBundle.properties',
+  ).readAsLines();
   for (var line in lines) {
     var split = line.split('=');
     if (split.length == 2) {

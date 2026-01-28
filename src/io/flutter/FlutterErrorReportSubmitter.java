@@ -193,10 +193,12 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
         for (int i = start; i < lines.size(); i++) {
           builder.append(lines.get(i)).append("\n");
         }
-      } else {
+      }
+      else {
         builder.append("(flutter.log not found)\n");
       }
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       builder.append("(exception trying to read log: ").append(ex.getMessage()).append(")\n");
     }
     builder.append("```\n\n");

@@ -16,7 +16,7 @@ public class FlutterSubmitFeedback extends DumbAwareAction {
   @Override
   public void actionPerformed(@NotNull final AnActionEvent e) {
     Analytics.report(AnalyticsData.forAction(this, e));
-    
+
     final String url = "https://github.com/flutter/flutter-intellij/issues/new";
     BrowserLauncher.getInstance().browse(url, null);
   }

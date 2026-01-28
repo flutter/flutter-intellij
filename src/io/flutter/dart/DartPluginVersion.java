@@ -45,9 +45,11 @@ public class DartPluginVersion implements Comparable<DartPluginVersion> {
     final int major = version.major;
     if (major == 243) {
       return this.compareTo(new DartPluginVersion("243.26753.1")) >= 0;
-    } else if (major == 251) {
+    }
+    else if (major == 251) {
       return this.compareTo(new DartPluginVersion("251.23774.318")) >= 0;
-    } else {
+    }
+    else {
       return major >= 244;
     }
   }

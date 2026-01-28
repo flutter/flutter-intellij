@@ -54,7 +54,8 @@ public class EmbeddedBrowserEngine {
       temp = null;
       if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
         LOG.info(ex);
-      } else {
+      }
+      else {
         LOG.info("Exception when creating a new instance of JX Browser engine: " + ex.getMessage());
       }
     }
@@ -71,7 +72,8 @@ public class EmbeddedBrowserEngine {
         catch (Exception ex) {
           if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
             LOG.info(ex);
-          } else {
+          }
+          else {
             LOG.info("Exception when closing JX Browser engine: " + ex.getMessage());
           }
         }

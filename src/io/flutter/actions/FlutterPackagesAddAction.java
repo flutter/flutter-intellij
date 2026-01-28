@@ -23,7 +23,7 @@ public class FlutterPackagesAddAction extends FlutterSdkAction {
         project);
       return;
     }
-    PackageDialogWrapper dialog  = new PackageDialogWrapper();
+    PackageDialogWrapper dialog = new PackageDialogWrapper();
     if (dialog.showAndGet()) {
       sdk.startPubAdd(root, project, dialog.getPackageName(), dialog.getDevOnly());
     }

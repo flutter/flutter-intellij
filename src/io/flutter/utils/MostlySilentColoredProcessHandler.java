@@ -44,7 +44,7 @@ public class MostlySilentColoredProcessHandler extends ColoredProcessHandler {
   }
 
   public MostlySilentColoredProcessHandler(@NotNull GeneralCommandLine commandLine, Consumer<String> onTextAvailable)
-          throws ExecutionException {
+    throws ExecutionException {
     super(commandLine);
     this.commandLine = commandLine;
     this.onTextAvailable = onTextAvailable;

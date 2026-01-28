@@ -157,7 +157,8 @@ public abstract class AbstractDevToolsViewFactory implements ToolWindowFactory {
               FlutterUtils.embeddedBrowser(project))
             .ifPresent(embeddedBrowser ->
                        {
-                         embeddedBrowser.openPanel(toolWindow, getToolWindowTitle(), getToolWindowIcon(), new DevToolsUrlProvider(devToolsUrl), System.out::println,
+                         embeddedBrowser.openPanel(toolWindow, getToolWindowTitle(), getToolWindowIcon(),
+                                                   new DevToolsUrlProvider(devToolsUrl), System.out::println,
                                                    warningMessage);
                          devToolsLoadedInBrowser = true;
                          doAfterBrowserOpened(project, embeddedBrowser);

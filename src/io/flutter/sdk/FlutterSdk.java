@@ -431,7 +431,7 @@ public class FlutterSdk {
       args.add("--devtools-server-address=" + devToolsUri);
     }
 
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.WIDGET_PREVIEW, args.toArray(new String[]{}));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.WIDGET_PREVIEW, args.toArray(new String[]{ }));
   }
 
   /**

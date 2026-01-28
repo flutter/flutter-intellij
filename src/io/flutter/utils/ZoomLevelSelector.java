@@ -46,4 +46,5 @@ public class ZoomLevelSelector {
     }
 
     return closest;
-  }}
+  }
+}

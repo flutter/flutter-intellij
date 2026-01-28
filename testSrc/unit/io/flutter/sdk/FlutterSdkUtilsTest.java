@@ -45,7 +45,8 @@ public class FlutterSdkUtilsTest {
   public void flutterScriptName() {
     if (SystemInfo.isWindows) {
       assertEquals("flutter.bat", FlutterSdkUtil.flutterScriptName());
-    } else {
+    }
+    else {
       assertEquals("flutter", FlutterSdkUtil.flutterScriptName());
     }
   }
@@ -75,7 +76,8 @@ public class FlutterSdkUtilsTest {
         result = result.replaceAll("\\\\", "/");
         assertEquals("/Users/user/flutter", result);
       }
-    } else {
+    }
+    else {
       assertEquals("/Users/user/flutter", result);
     }
   }

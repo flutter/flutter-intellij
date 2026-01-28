@@ -43,6 +43,7 @@ public class DevToolsUtils {
 
   /**
    * Register a VM listener that listens for devtools "ToolEvent"s.
+   *
    * @param app the associated app
    */
   public static void registerDevToolsVmServiceListener(@NotNull FlutterApp app) {
@@ -60,7 +61,8 @@ public class DevToolsUtils {
 
     vmService.addVmServiceListener(new VmServiceListener() {
       @Override
-      public void connectionOpened() { }
+      public void connectionOpened() {
+      }
 
       @Override
       public void received(String streamId, Event event) {
@@ -70,7 +72,8 @@ public class DevToolsUtils {
       }
 
       @Override
-      public void connectionClosed() { }
+      public void connectionClosed() {
+      }
     });
   }
 

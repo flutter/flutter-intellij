@@ -12,6 +12,7 @@ import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardF
 import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardStepFixture;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import io.flutter.project.FlutterProjectStep;
+
 import java.awt.Component;
 import java.io.File;
 import javax.swing.JComboBox;
@@ -19,6 +20,7 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JRootPane;
 import javax.swing.text.JTextComponent;
+
 import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.exception.ComponentLookupException;
 import org.fest.swing.fixture.JComboBoxFixture;
@@ -114,8 +116,8 @@ public class FlutterProjectStepFixture<W extends AbstractWizardFixture> extends 
     try {
       return isShown(findTextFieldWithLabel("Project name")) &&
              isShown(findTextFieldWithLabel("Description"));// &&
-             //isShown(findComboBox().target()) &&
-             //!isShown(getLocationField());
+      //isShown(findComboBox().target()) &&
+      //!isShown(getLocationField());
     }
     catch (ComponentLookupException ex) {
       // Expect this exception when the location field is not found.

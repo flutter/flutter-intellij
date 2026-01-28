@@ -65,7 +65,8 @@ public class IconPreviewGeneratorTest {
     // batchConvert might fail.
     try {
       ipg.batchConvert(outputPath, "nonexistent.properties", "");
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       // Expected failure or handled error
     }
 

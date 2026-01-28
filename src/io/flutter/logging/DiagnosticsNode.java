@@ -138,7 +138,7 @@ public class DiagnosticsNode {
   public String getDescription() {
     return getStringMember("description");
   }
-  
+
   /**
    * Priority level of the diagnostic used to control which diagnostics should
    * be shown and filtered.

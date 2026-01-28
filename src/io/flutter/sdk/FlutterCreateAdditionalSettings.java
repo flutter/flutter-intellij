@@ -8,8 +8,10 @@ package io.flutter.sdk;
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.module.settings.InitializeOnceBoolValueProperty;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
