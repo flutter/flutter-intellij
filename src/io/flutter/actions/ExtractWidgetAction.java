@@ -18,6 +18,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.refactoring.util.CommonRefactoringUtil;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.util.ui.JBUI;
+import com.jetbrains.lang.dart.analytics.Analytics;
+import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import com.jetbrains.lang.dart.ide.refactoring.ServerRefactoringDialog;
 import com.jetbrains.lang.dart.ide.refactoring.status.RefactoringStatus;
 import io.flutter.FlutterUtils;
@@ -25,9 +27,14 @@ import io.flutter.refactoring.ExtractWidgetRefactoring;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 
 public class ExtractWidgetAction extends DumbAwareAction {
   @Override
@@ -43,6 +50,8 @@ public class ExtractWidgetAction extends DumbAwareAction {
     final Caret caret = dataContext.getData(PlatformDataKeys.CARET);
 
     if (project != null && file != null && editor != null && caret != null) {
+      Analytics.report(AnalyticsData.forAction(this, event));
+
       final int offset = caret.getSelectionStart();
       final int length = caret.getSelectionEnd() - offset;
       final ExtractWidgetRefactoring refactoring = new ExtractWidgetRefactoring(project, file, offset, length);

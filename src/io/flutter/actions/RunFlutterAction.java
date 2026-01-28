@@ -17,6 +17,8 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import com.jetbrains.lang.dart.analytics.Analytics;
+import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import io.flutter.FlutterBundle;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.LaunchState;
@@ -100,6 +102,8 @@ public abstract class RunFlutterAction extends AnAction {
     FlutterLaunchMode.addToEnvironment(env, myLaunchMode);
 
     ProgramRunnerUtil.executeConfiguration(env, false, true);
+
+    Analytics.report(AnalyticsData.forAction(this, e));
   }
 
   @Override

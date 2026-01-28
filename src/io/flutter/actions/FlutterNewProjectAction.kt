@@ -14,6 +14,8 @@ import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider
 import com.intellij.openapi.wm.impl.welcomeScreen.NewWelcomeScreen
+import com.jetbrains.lang.dart.analytics.Analytics
+import com.jetbrains.lang.dart.analytics.AnalyticsData
 import io.flutter.FlutterBundle
 import io.flutter.FlutterUtils
 import kotlinx.coroutines.*
@@ -44,6 +46,7 @@ class FlutterNewProjectAction : AnAction(), DumbAware {
       createNewProjectAsync(wizard)
     }
 
+    Analytics.report(AnalyticsData.forAction(this, e));
   }
 
   override fun getActionUpdateThread() = ActionUpdateThread.BGT
