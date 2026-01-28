@@ -9,6 +9,8 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
+import com.jetbrains.lang.dart.analytics.Analytics;
+import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
@@ -48,5 +50,7 @@ public class RestartAllFlutterApps extends FlutterAppAction {
       reloadManager
         .saveAllAndRestartAll(FlutterApp.allFromProjectProcess(project), FlutterConstants.RELOAD_REASON_MANUAL);
     }
+    
+    Analytics.report(AnalyticsData.forAction(ID, e.getPlace(), e.getProject()));
   }
 }
