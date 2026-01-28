@@ -10,12 +10,14 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NlsActions;
+import com.jetbrains.lang.dart.analytics.Analytics;
+import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import icons.FlutterIcons;
 import io.flutter.run.daemon.DeviceService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
+import javax.swing.Icon;
 
 public class RestartFlutterDaemonAction extends AnAction {
 
@@ -52,6 +54,8 @@ public class RestartFlutterDaemonAction extends AnAction {
     }
 
     DeviceService.getInstance(project).restart();
+
+    Analytics.report(AnalyticsData.forAction(this, event));
   }
 
   @Override
