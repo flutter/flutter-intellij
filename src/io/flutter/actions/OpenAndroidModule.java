@@ -16,6 +16,8 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.BitUtil;
+import com.jetbrains.lang.dart.analytics.Analytics;
+import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import io.flutter.FlutterMessages;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,6 +35,9 @@ import static com.intellij.openapi.fileChooser.impl.FileChooserUtil.setLastOpene
  * rather than spawning a new process (as IntelliJ does).
  */
 public class OpenAndroidModule extends OpenInAndroidStudioAction implements DumbAware {
+
+  public static final String ID = "fluter.open.android.module";
+
   @Override
   public void actionPerformed(@NotNull AnActionEvent e) {
     final VirtualFile projectFile = findProjectFile(e);
@@ -51,6 +56,8 @@ public class OpenAndroidModule extends OpenInAndroidStudioAction implements Dumb
     //ProjectUtil.openOrImport(projectFile.getPath(), e.getProject(), forceOpenInNewFrame);
     // presents the user with a really imposing Gradle project import dialog.
     openOrImportProject(projectFile, e.getProject(), sourceFile, forceOpenInNewFrame);
+
+    Analytics.report(AnalyticsData.forAction(ID, e.getPlace(), e.getProject()));
   }
 
   private static void openOrImportProject(@NotNull VirtualFile projectFile,
