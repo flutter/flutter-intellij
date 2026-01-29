@@ -4,7 +4,7 @@ description: Assistance with triage of unprioritized issues. Use when the user a
 ---
 
 When a user asks for help in the CLI:
-- Find the latest open issues in the flutter/flutter-intellij repo that don't have a priority label.
+- Find the latest open issues in the https://github.com/flutter/flutter-intellij/ repo that don't have a priority label.
 - (Prompt the user for their personal access token if needed)
 - Consider the most recently updated issues first. Start presenting issues one at a time to the user, with the issue URL and other relevant information.
 - For each issue, give suggestions such as:
@@ -16,6 +16,6 @@ When a user asks for help in the CLI:
     - Suggest a priority and other labels that may be relevant along with reasoning for the priority
 - Then wait for user feedback before continuing on to the next issue.
 
-
-
 Avoid executing tasks on GitHub directly, such as making comments, applying labels, or closing issues.
+
+There is additional context on our issue triage process in docs/Triaging.md.
