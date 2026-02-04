@@ -68,7 +68,7 @@ Once in the gemini CLI, you can say something like "help me with triage". Exampl
 ```
 
 Notes:
-- There are instructions for gemini in the `tool/triage/GEMINI.md` file, and gemini should be able to access this whenever you start
+- There is a triage skill for gemini in the `.gemini/skills` directory, and gemini should be able to access this whenever you start
 `gemini` in the flutter-intellij directory.
 - This extension can also help with reviewing PRs, or any other tasks that require context from GitHub.
 
