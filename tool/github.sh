@@ -83,7 +83,7 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
   df -h
   ./gradlew verifyPluginSignature
 
-  for version in 251 252; do
+  for version in 251 252 253; do
     echo "Check on space before verifyPlugin for $version\n"
     df -h
     ./gradlew verifyPlugin -PsingleIdeVersion=$version

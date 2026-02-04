@@ -8,7 +8,12 @@ echo "kokoro verify start"
 ./gradlew verifyPluginProjectConfiguration
 ./gradlew verifyPluginStructure
 ./gradlew verifyPluginSignature
-./gradlew verifyPlugin
+
+for version in 251 252 253; do
+  echo "Check on space before verifyPlugin for $version\n"
+  df -h
+  ./gradlew verifyPlugin -PsingleIdeVersion=$version
+done
 
 echo "kokoro verify finished"
 
