@@ -112,6 +112,7 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
 
     ReadAction.nonBlocking(() -> getFlutterPluginPaths(PubRoots.forProject(project)))
       .expireWith(FlutterDartAnalysisServer.getInstance(project))
+      .coalesceBy(this)
       .finishOnUiThread(ModalityState.nonModal(), flutterPluginPaths -> {
         final Set<String> flutterPluginUrls = new HashSet<>();
         for (String path : flutterPluginPaths) {
