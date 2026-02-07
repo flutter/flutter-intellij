@@ -126,7 +126,7 @@ public class NativeEditorNotificationProvider implements EditorNotificationProvi
       // Ensure this project is a Flutter project by updating the menu action. It will only be visible for Flutter projects.
       ActionUtil.updateAction(myAction,
                               AnActionEvent.createEvent(makeContext(), myAction.getTemplatePresentation(), ActionPlaces.EDITOR_TOOLBAR,
-                                                        ActionUiKind.NONE, null), false);
+                                                        ActionUiKind.NONE, null));
 
       isVisible = myAction.getTemplatePresentation().isVisible();
       //noinspection DialogTitleCapitalization
