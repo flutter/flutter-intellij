@@ -135,6 +135,7 @@ public class FlutterInitializer extends FlutterProjectActivity {
 
     // Lambdas need final vars.
     boolean finalHasFlutterModule = hasFlutterModule;
+    boolean finalIsBazel = WorkspaceCache.getInstance(project).isBazel();
     ReadAction.nonBlocking(() -> {
         for (var root : roots) {
           // Set up a default run configuration for 'main.dart' (if it's not there already and the file exists).
@@ -144,7 +145,7 @@ public class FlutterInitializer extends FlutterProjectActivity {
       })
       .expireWith(FlutterDartAnalysisServer.getInstance(project))
       .finishOnUiThread(ModalityState.defaultModalityState(), result -> {
-        edtInitialization(finalHasFlutterModule, project);
+        edtInitialization(finalHasFlutterModule, finalIsBazel, project);
       })
       .submit(AppExecutorUtil.getAppExecutorService());
   }
@@ -152,8 +153,8 @@ public class FlutterInitializer extends FlutterProjectActivity {
   /***
    * Initialization that needs to complete on the EDT thread.
    */
-  private void edtInitialization(boolean hasFlutterModule, @NotNull Project project) {
-    if (hasFlutterModule || WorkspaceCache.getInstance(project).isBazel()) {
+  private void edtInitialization(boolean hasFlutterModule, boolean isBazel, @NotNull Project project) {
+    if (hasFlutterModule || isBazel) {
       initializeToolWindows(project);
     }
     else {
