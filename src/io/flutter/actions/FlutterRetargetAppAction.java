@@ -76,7 +76,7 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
       if (text != null) {
         presentation.setText(text, true);
       }
-      action.update(e);
+      ActionUtil.updateAction(action, e);
     }
   }
 
