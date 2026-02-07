@@ -15,6 +15,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditor;
@@ -75,7 +76,7 @@ public class OpenInAndroidStudioAction extends AnAction {
         //noinspection unchecked
         final Class<OpenInAndroidStudioAction> opener =
           (Class<OpenInAndroidStudioAction>)Class.forName("io.flutter.actions.OpenAndroidModule");
-        opener.getDeclaredConstructor().newInstance().actionPerformed(event);
+        ActionUtil.performAction(opener.getDeclaredConstructor().newInstance(), event);
         return;
       }
       catch (ClassNotFoundException | IllegalAccessException | InstantiationException | NoSuchMethodException |

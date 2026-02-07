@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.jetbrains.lang.dart.analytics.Analytics;
@@ -49,7 +50,7 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
   public void actionPerformed(@NotNull AnActionEvent e) {
     final AnAction action = getAction(e.getProject());
     if (action != null) {
-      action.actionPerformed(e);
+      ActionUtil.performAction(action, e);
       Analytics.report(AnalyticsData.forAction(this, e));
     }
   }
