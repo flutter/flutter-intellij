@@ -70,10 +70,12 @@ public class AndroidUtils {
     if (string.isEmpty()) {
       return "Package segments must be of non-zero length";
     }
-    if (SourceVersion.isKeyword(string)) {
+
+    SourceVersion javaSource = SourceVersion.latest();
+    if (javaSource.isKeyword(string)) {
       return "Package names cannot contain Java keywords like '" + string + "'";
     }
-    if (!SourceVersion.isIdentifier(string)) {
+    if (!javaSource.isIdentifier(string)) {
       return string + " is not a valid identifier";
     }
     return null;
