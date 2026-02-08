@@ -15,12 +15,9 @@ import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
 
 import javax.swing.Icon;
-import java.awt.Color;
 import java.util.Objects;
 
 public class ToolWindowBadgeUpdater {
-  public static final Color BADGE_PAINT = Color.decode("#5ca963");
-
   /**
    * Updates the tool window icons for RUN or DEBUG mode with a green badge.
    *
