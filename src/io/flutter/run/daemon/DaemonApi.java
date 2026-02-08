@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -314,7 +315,7 @@ public class DaemonApi {
   private static PrintWriter getStdin(ProcessHandler processHandler) {
     final OutputStream stdin = processHandler.getProcessInput();
     if (stdin == null) return null;
-    return new PrintWriter(new OutputStreamWriter(stdin, Charsets.UTF_8));
+    return new PrintWriter(new OutputStreamWriter(stdin, StandardCharsets.UTF_8));
   }
 
   public static class RestartResult {
