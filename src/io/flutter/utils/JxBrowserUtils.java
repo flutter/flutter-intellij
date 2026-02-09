@@ -45,7 +45,7 @@ public class JxBrowserUtils {
     }
 
     if (name.isEmpty()) {
-      throw new FileNotFoundException("Unable to find matching JxBrowser platform file for: " + SystemInfo.getOsNameAndVersion());
+      throw new FileNotFoundException("Unable to find matching JxBrowser platform file for: " + SystemUtils.getOsNameAndVersion());
     }
 
     return String.format("%s-%s-%s.%s", JXBROWSER_FILE_PREFIX, name, JXBROWSER_FILE_VERSION, JXBROWSER_FILE_SUFFIX);
