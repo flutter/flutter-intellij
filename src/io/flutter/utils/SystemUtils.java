@@ -12,12 +12,18 @@ import com.intellij.execution.process.ProcessOutput;
 import com.intellij.execution.util.ExecUtil;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.concurrency.AppExecutorUtil;
+import com.intellij.util.system.OS;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
 
 public class SystemUtils {
+  
+  // Replaces slated-for-removal `com.intellij.openapi.util.SystemInfo.getOsNameAndVersion()`.
+  public static String getOsNameAndVersion() {
+    return OS.CURRENT.name() + ' ' + OS.CURRENT.version;
+  }
 
   /**
    * Locate a given command-line tool given its name.
