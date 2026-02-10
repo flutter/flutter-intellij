@@ -14,7 +14,10 @@ import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.executors.DefaultDebugExecutor;
-import com.intellij.execution.process.*;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessHandler;
+import com.intellij.execution.process.ProcessListener;
+import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.GenericProgramRunner;
 import com.intellij.execution.runners.RunContentBuilder;
@@ -37,6 +40,7 @@ import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
+import io.flutter.utils.ProcessAdapter;
 import io.flutter.utils.StdoutJsonParser;
 import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.vmService.VmServiceConsumers;
@@ -332,7 +336,8 @@ public class FlutterTestRunner extends GenericProgramRunner {
 
         if (primVmServiceUri != null) {
           observatoryUri = primVmServiceUri.getAsString();
-        } else {
+        }
+        else {
           final JsonPrimitive primObservatoryUri = params.getAsJsonPrimitive("observatoryUri");
 
           if (primObservatoryUri != null) {
