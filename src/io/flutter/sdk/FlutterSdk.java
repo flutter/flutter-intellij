@@ -9,7 +9,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
-import com.intellij.execution.process.*;
+import com.intellij.execution.process.ColoredProcessHandler;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessListener;
+import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
@@ -41,6 +44,7 @@ import io.flutter.run.common.RunMode;
 import io.flutter.run.test.TestFields;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
+import io.flutter.utils.ProcessAdapter;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -49,7 +53,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 import static java.util.Arrays.asList;
 
@@ -431,7 +442,7 @@ public class FlutterSdk {
       args.add("--devtools-server-address=" + devToolsUri);
     }
 
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.WIDGET_PREVIEW, args.toArray(new String[]{}));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.WIDGET_PREVIEW, args.toArray(new String[]{ }));
   }
 
   /**
