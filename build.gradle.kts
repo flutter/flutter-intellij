@@ -218,7 +218,6 @@ dependencies {
     // https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html#project-setup
     bundledPlugins(
       immutableListOf(
-        "com.google.tools.ij.aiplugin",
         "com.intellij.java",
         "com.intellij.properties",
         "JUnit",
