@@ -10,17 +10,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.BadgeIcon;
+import com.intellij.ui.LayeredIcon;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.Icon;
 import java.util.Objects;
 
 public class ToolWindowBadgeUpdater {
-  public static final Color BADGE_PAINT = Color.decode("#5ca963");
-
   /**
    * Updates the tool window icons for RUN or DEBUG mode with a green badge.
    *
@@ -36,7 +33,7 @@ public class ToolWindowBadgeUpdater {
       if (runToolWindow != null) {
         manager.invokeLater(() -> {
           Icon baseIcon = AllIcons.Toolwindows.ToolWindowRun;
-          BadgeIcon iconWithBadge = new BadgeIcon(baseIcon, BADGE_PAINT);
+          Icon iconWithBadge = new LayeredIcon(baseIcon, AllIcons.Nodes.RunnableMark);
           runToolWindow.setIcon(iconWithBadge);
         });
       }
@@ -46,7 +43,7 @@ public class ToolWindowBadgeUpdater {
         // https://github.com/flutter/flutter-intellij/issues/8391
         if (debugToolWindow != null) {
           Icon baseIcon = AllIcons.Toolwindows.ToolWindowDebugger;
-          BadgeIcon iconWithBadge = new BadgeIcon(baseIcon, BADGE_PAINT);
+          Icon iconWithBadge = new LayeredIcon(baseIcon, AllIcons.Nodes.RunnableMark);
           debugToolWindow.setIcon(iconWithBadge);
         }
       });

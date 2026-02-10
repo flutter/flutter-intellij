@@ -16,7 +16,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.FlutterMessages;
@@ -32,10 +31,13 @@ import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import io.flutter.utils.OpenApiUtils;
+import io.flutter.utils.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTextPane;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -452,7 +454,7 @@ class DeviceDaemon {
       setTitle("Flutter Device Daemon Crash");
       myPanel = new JPanel();
       myTextPane = new JTextPane();
-      final String os = SystemInfo.getOsNameAndVersion();
+      final String os = SystemUtils.getOsNameAndVersion();
       final String link = "https://www.google.com/search?q=increase maximum file handles " + os;
       Messages.installHyperlinkSupport(myTextPane);
       final String message =
