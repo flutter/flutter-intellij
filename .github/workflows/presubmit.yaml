@@ -43,4 +43,5 @@ jobs:
          name: build-${{ matrix.bot }}
          path: |
            **/build/reports/
-           **/build/test-results/     
+           **/build/test-results/
+         if-no-files-found: ignore  
