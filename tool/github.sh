@@ -40,6 +40,13 @@ dart pub get
 # Set up the plugin tool.
 (cd tool/plugin; echo "dart pub get `pwd`"; dart pub get)
 
+# Color constants.
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BOLD='\033[1m'
+NC='\033[0m' # None (Reset)
+
 if [ "DART_BOT" = "$BOT" ] ; then
   # Analyze the Dart code in the repo.
   echo "dart analyze"
@@ -75,7 +82,7 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
   EXIT_STATUS=0
 
   for version in 251 252; do
-    echo "Running verifyPlugin for $version..."
+    echo "${BOLD}Running verifyPlugin for $version...${NC}"
     ./gradlew verifyPlugin -PsingleIdeVersion=$version || true
 
     BASELINE="$GITHUB_WORKSPACE/tool/baseline/$version/verifier-baseline.txt"
@@ -88,12 +95,14 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
         NEW_ERRORS=$(comm -13 <(sort "$BASELINE") current_issues.tmp)
 
         if [ -n "$NEW_ERRORS" ]; then
-          echo "Error: New verification issues found for IDE version $version:"
+          echo -e "${RED}${BOLD}Error: New verification issues found for version $version:${NC}"
           echo "$NEW_ERRORS"
           EXIT_STATUS=1
+        else
+          echo -e "${GREEN}Verification passed for version $version (no new issues).${NC}"
         fi
       else
-        echo "Warning: No baseline file found at $BASELINE. Skipping comparison."
+        echo "${YELLOW}Warning: No baseline file found at $BASELINE. Skipping comparison.${NC}"
       fi
     fi
   done
@@ -102,7 +111,7 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
   df -h
 
   if [ $EXIT_STATUS -ne 0 ]; then
-    echo "Build failed: New verification issues were detected."
+    echo -e "${RED}${BOLD}Build failed: New verification issues were detected.${NC}"
     exit 1
   fi
 
