@@ -72,31 +72,27 @@ elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
   ./gradlew test
 
 elif [ "VERIFY_BOT" = "$BOT" ] ; then
-  BASELINE="$GITHUB_WORKSPACE/tool/verifier-baseline.txt"
-  # The version we'll check the baseline against.
-  BASELINE_VERSION=252
 
   for version in 251 252; do
     echo "Running verifyPlugin for $version..."
     ./gradlew verifyPlugin -PsingleIdeVersion=$version || true
 
-    if [ "$version" = "$BASELINE_VERSION" ]; then
-      REPORT=$(find build/reports/pluginVerifier -name "report.md" | head -n 1)
+    BASELINE="$GITHUB_WORKSPACE/tool/baseline/$version/verifier-baseline.txt"
+    REPORT=$(find build/reports/pluginVerifier -name "report.md" | head -n 1)
 
-      if [ -f "$REPORT" ]; then
-        grep "^*" "$REPORT" | sort > current_issues.tmp
+    if [ -f "$REPORT" ]; then
+      grep "^*" "$REPORT" | sort > current_issues.tmp
 
-        if [ -f "$BASELINE" ]; then
-          NEW_ERRORS=$(comm -13 <(sort "$BASELINE") current_issues.tmp)
+      if [ -f "$BASELINE" ]; then
+        NEW_ERRORS=$(comm -13 <(sort "$BASELINE") current_issues.tmp)
 
-          if [ -n "$NEW_ERRORS" ]; then
-            echo "Error: New verification issues found for IDE version $version:"
-            echo "$NEW_ERRORS"
-            exit 1
-          fi
-        else
-          echo "Warning: No baseline file found at $BASELINE. Skipping comparison."
+        if [ -n "$NEW_ERRORS" ]; then
+          echo "Error: New verification issues found for IDE version $version:"
+          echo "$NEW_ERRORS"
+          exit 1
         fi
+      else
+        echo "Warning: No baseline file found at $BASELINE. Skipping comparison."
       fi
     fi
   done
