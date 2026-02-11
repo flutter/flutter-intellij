@@ -89,6 +89,7 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
     REPORT=$(find build/reports/pluginVerifier -name "report.md" | head -n 1)
 
     if [ -f "$REPORT" ]; then
+      echo "Comparing baseline against report in $REPORT"
       grep "^*" "$REPORT" | sort > current_issues.tmp
 
       if [ -f "$BASELINE" ]; then
