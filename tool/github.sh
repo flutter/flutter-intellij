@@ -86,7 +86,10 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
     ./gradlew verifyPlugin -PsingleIdeVersion=$version || true
 
     BASELINE="$GITHUB_WORKSPACE/tool/baseline/$version/verifier-baseline.txt"
-    REPORT=$(find build/reports/pluginVerifier -name "report.md" | head -n 1)
+
+    echo -e "${BOLD}Searching for report for version $version...${NC}"
+    REPORT=$(find build/reports/pluginVerifier -path "*-$version.*/report.md" | head -n 1)
+    echo "Found: $REPORT"
 
     if [ -f "$REPORT" ]; then
       echo "Comparing baseline against report in $REPORT"
@@ -105,7 +108,10 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
       else
         echo -e "${YELLOW}Warning: No baseline file found at $BASELINE. Skipping comparison.${NC}"
       fi
-    fi
+    else
+      echo -e "${RED}${BOLD}Report does not exist.${NC}"
+      EXIT_STATUS=1
+    fi  
   done
 
   echo "Check on space after verifyPlugin"
