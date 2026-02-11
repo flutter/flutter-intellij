@@ -72,23 +72,18 @@ elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
   ./gradlew test
 
 elif [ "VERIFY_BOT" = "$BOT" ] ; then
-  # Define the baseline file location
-  BASELINE="tool/verifier-baseline.txt"
+  BASELINE="$GITHUB_WORKSPACE/tool/verifier-baseline.txt"
 
   for version in 251 252; do
     echo "Running verifyPlugin for $version..."
     ./gradlew verifyPlugin -PsingleIdeVersion=$version || true
 
-    # Path to the generated report
-    REPORT="build/reports/pluginVerifier/report.md"
+    REPORT=$(find build/reports/pluginVerifier -name "report.md" | head -n 1)
 
     if [ -f "$REPORT" ]; then
-      # Extract all lines starting with '*' (the actual issues) from the report
-      # This captures Compatibility Problems, Deprecated API usages, and Internal API usages.
       grep "^*" "$REPORT" | sort > current_issues.tmp
 
       if [ -f "$BASELINE" ]; then
-        # Identify lines in the current report that are not in the baseline
         NEW_ERRORS=$(comm -13 <(sort "$BASELINE") current_issues.tmp)
 
         if [ -n "$NEW_ERRORS" ]; then
