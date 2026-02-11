@@ -72,6 +72,7 @@ elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
   ./gradlew test
 
 elif [ "VERIFY_BOT" = "$BOT" ] ; then
+  EXIT_STATUS=0
 
   for version in 251 252; do
     echo "Running verifyPlugin for $version..."
@@ -89,7 +90,7 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
         if [ -n "$NEW_ERRORS" ]; then
           echo "Error: New verification issues found for IDE version $version:"
           echo "$NEW_ERRORS"
-          exit 1
+          EXIT_STATUS=1
         fi
       else
         echo "Warning: No baseline file found at $BASELINE. Skipping comparison."
@@ -97,8 +98,13 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
     fi
   done
 
- echo "Check on space after verifyPlugin"
+  echo "Check on space after verifyPlugin"
   df -h
+
+  if [ $EXIT_STATUS -ne 0 ]; then
+    echo "Build failed: New verification issues were detected."
+    exit 1
+  fi
 
 elif [ "INTEGRATION_BOT" = "$BOT" ]; then
   # Run the integration tests
