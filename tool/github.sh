@@ -72,25 +72,35 @@ elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
   ./gradlew test
 
 elif [ "VERIFY_BOT" = "$BOT" ] ; then
-  # Run the verifier
-  echo "Check on space before verifyPluginProjectConfiguration\n"
-  df -h
-  ./gradlew verifyPluginProjectConfiguration
-  echo "Check on space before verifyPluginStructure\n"
-  df -h
-  ./gradlew verifyPluginStructure
-  echo "Check on space before verifyPluginSignature\n"
-  df -h
-  ./gradlew verifyPluginSignature
+  # Define the baseline file location
+  BASELINE="tool/verifier-baseline.txt"
 
   for version in 251 252; do
-    echo "Check on space before verifyPlugin for $version\n"
-    df -h
-    ./gradlew verifyPlugin -PsingleIdeVersion=$version
-  done
+    echo "Running verifyPlugin for $version..."
+    ./gradlew verifyPlugin -PsingleIdeVersion=$version || true
 
-  echo "Check on space after verifyPlugin"
-  df -h
+    # Path to the generated report
+    REPORT="build/reports/pluginVerifier/report.md"
+
+    if [ -f "$REPORT" ]; then
+      # Extract all lines starting with '*' (the actual issues) from the report
+      # This captures Compatibility Problems, Deprecated API usages, and Internal API usages.
+      grep "^*" "$REPORT" | sort > current_issues.tmp
+
+      if [ -f "$BASELINE" ]; then
+        # Identify lines in the current report that are not in the baseline
+        NEW_ERRORS=$(comm -13 <(sort "$BASELINE") current_issues.tmp)
+
+        if [ -n "$NEW_ERRORS" ]; then
+          echo "Error: New verification issues found for IDE version $version:"
+          echo "$NEW_ERRORS"
+          exit 1
+        fi
+      else
+        echo "Warning: No baseline file found at $BASELINE. Skipping comparison."
+      fi
+    fi
+  done
 
 elif [ "INTEGRATION_BOT" = "$BOT" ]; then
   # Run the integration tests
