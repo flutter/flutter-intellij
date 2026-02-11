@@ -102,6 +102,9 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
     fi
   done
 
+ echo "Check on space after verifyPlugin"
+  df -h
+
 elif [ "INTEGRATION_BOT" = "$BOT" ]; then
   # Run the integration tests
   ./gradlew integration --warning-mode all
