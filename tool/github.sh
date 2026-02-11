@@ -82,7 +82,7 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
   EXIT_STATUS=0
 
   for version in 251 252; do
-    echo "${BOLD}Running verifyPlugin for $version...${NC}"
+    echo -e "${BOLD}Running verifyPlugin for $version...${NC}"
     ./gradlew verifyPlugin -PsingleIdeVersion=$version || true
 
     BASELINE="$GITHUB_WORKSPACE/tool/baseline/$version/verifier-baseline.txt"
@@ -102,7 +102,7 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
           echo -e "${GREEN}Verification passed for version $version (no new issues).${NC}"
         fi
       else
-        echo "${YELLOW}Warning: No baseline file found at $BASELINE. Skipping comparison.${NC}"
+        echo -e "${YELLOW}Warning: No baseline file found at $BASELINE. Skipping comparison.${NC}"
       fi
     fi
   done
