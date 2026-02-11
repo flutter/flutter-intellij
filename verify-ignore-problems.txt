@@ -4,3 +4,124 @@
 # See more context in https://github.com/flutter/flutter-intellij/pull/8590
 ::Package 'de.roderick' is not found.*
 
+# --- Deprecated API Usages ---
+
+^Deprecated class com\.intellij\.ui\.ComboboxWithBrowseButton is referenced in io\.flutter\.module\.FlutterGeneratorPeer\.lambda\$fillSdkCache\$1\(\) : void$
+^Deprecated class com\.intellij\.ui\.ComboboxWithBrowseButton is referenced in io\.flutter\.module\.FlutterGeneratorPeer\.getSdkEditor\(\) : ComboBoxEditor$
+^Deprecated class com\.intellij\.ui\.ComboboxWithBrowseButton is referenced in io\.flutter\.module\.FlutterGeneratorPeer\.mySdkPathComboWithBrowse : ComboboxWithBrowseButton$
+^Deprecated class com\.intellij\.ui\.ComboboxWithBrowseButton is referenced in io\.flutter\.module\.FlutterGeneratorPeer\.init\(\) : void$
+^Deprecated class com\.intellij\.ui\.ComboboxWithBrowseButton is referenced in io\.flutter\.module\.FlutterGeneratorPeer\.createUIComponents\(\) : void$
+
+^Deprecated method com\.intellij\.psi\.search\.FilenameIndex\.getFilesByName\(com\.intellij\.openapi\.project\.Project project, java\.lang\.String name, com\.intellij\.psi\.search\.GlobalSearchScope scope\) : com\.intellij\.psi\.PsiFile\[\] is invoked in io\.flutter\.run\.FlutterPositionMapper\.lambda\$findRemoteSourceRoot\$0\(String\) : PsiFile\[\]$
+
+^Deprecated constructor com\.jetbrains\.lang\.dart\.ide\.template\.DartTemplateContextType\.\<init\>\(java\.lang\.String arg0, java\.lang\.String arg1, java\.lang\.Class arg2\) is invoked in io\.flutter\.template\.DartToplevelTemplateContextType\.\<init\>\(\)$
+
+^Deprecated method com\.intellij\.openapi\.vfs\.VirtualFileManager\.addVirtualFileListener\(com\.intellij\.openapi\.vfs\.VirtualFileListener arg0, com\.intellij\.openapi\.Disposable arg1\) : void is invoked in io\.flutter\.sdk\.FlutterPluginsLibraryManager\.startWatching\(\) : void$
+
+^Deprecated method com\.intellij\.openapi\.project\.DumbService\.runReadActionInSmartMode\(com\.intellij\.openapi\.util\.Computable r\) : T is invoked in io\.flutter\.font\.FontPreviewProcessor\.analyzeNextClass\(Project, FontPreviewProcessor\.WorkItem\) : void$
+^Deprecated method com\.intellij\.openapi\.project\.DumbService\.runReadActionInSmartMode\(com\.intellij\.openapi\.util\.Computable r\) : T is invoked in io\.flutter\.font\.FontPreviewProcessor\.findFontFiles\(Project, String, FontPreviewProcessor\.WorkItem\) : void$
+^Deprecated method com\.intellij\.openapi\.project\.DumbService\.runReadActionInSmartMode\(com\.intellij\.openapi\.util\.Computable r\) : T is invoked in io\.flutter\.font\.FontPreviewProcessor\.analyzeNextFile\(Project, FontPreviewProcessor\.WorkItem\) : void$
+
+^Deprecated constructor com\.intellij\.execution\.actions\.RunConfigurationProducer\.\<init\>\(com\.intellij\.execution\.configurations\.ConfigurationType configurationType\) is invoked in io\.flutter\.run\.FlutterRunConfigurationProducer\.\<init\>\(\)$
+^Deprecated constructor com\.intellij\.execution\.actions\.RunConfigurationProducer\.\<init\>\(com\.intellij\.execution\.configurations\.ConfigurationType configurationType\) is invoked in io\.flutter\.run\.test\.FlutterTestConfigProducer\.\<init\>\(\)$
+^Deprecated constructor com\.intellij\.execution\.actions\.RunConfigurationProducer\.\<init\>\(com\.intellij\.execution\.configurations\.ConfigurationType configurationType\) is invoked in io\.flutter\.run\.bazelTest\.BazelTestConfigProducer\.\<init\>\(BazelTestConfigUtils\)$
+
+^Deprecated method com\.intellij\.util\.lang\.UrlClassLoader\.addFiles\(java\.util\.List files\) : void is invoked in io\.flutter\.utils\.FileUtils\.loadPaths\(ClassLoader, List\) : void$
+
+^Deprecated method com\.intellij\.openapi\.project\.ProjectManagerListener\.projectOpened\(com\.intellij\.openapi\.project\.Project project\) : void is overridden in class io\.flutter\.project\.FlutterProjectStructureDetector\$1\. This method will be removed in a future release$
+
+^Deprecated interface com\.intellij\.codeInsight\.template\.impl\.DefaultLiveTemplatesProvider is referenced in io\.flutter\.template\.FlutterLiveTemplatesProvider$
+
+^Deprecated method com\.intellij\.openapi\.project\.ProjectTypeService\.setProjectType\(com\.intellij\.openapi\.project\.Project project, com\.intellij\.openapi\.project\.ProjectType projectType\) : void is invoked in io\.flutter\.ProjectOpenActivity\.executeProjectStartup\(Project\) : void$
+
+^Deprecated method com\.intellij\.openapi\.actionSystem\.ActionPlaces\.isMainMenuOrActionSearch\(java\.lang\.String place\) : boolean is invoked in io\.flutter\.run\.FlutterPopFrameAction\.update\(AnActionEvent\) : void$
+
+^Deprecated method com\.intellij\.openapi\.application\.Application\.addApplicationListener\(com\.intellij\.openapi\.application\.ApplicationListener arg0\) : void is invoked in io\.flutter\.jxbrowser\.EmbeddedBrowserEngine\.\<init\>\(\)$
+
+^Deprecated method com\.intellij\.coverage\.CoverageEngine\.createCoverageSuite\(com\.intellij\.coverage\.CoverageRunner runner, java\.lang\.String name, com\.intellij\.coverage\.CoverageFileProvider fileProvider, java\.lang\.String\[\] filters, long lastCoverageTimeStamp, java\.lang\.String suiteToMerge, boolean coverageByTestEnabled, boolean branchCoverage, boolean trackTestFolders, com\.intellij\.openapi\.project\.Project project\) : com\.intellij\.coverage\.CoverageSuite is overridden in class io\.flutter\.run\.coverage\.FlutterCoverageEngine$
+
+^Deprecated method com\.intellij\.coverage\.CoverageEngine\.createCoverageSuite\(com\.intellij\.coverage\.CoverageRunner runner, java\.lang\.String name, com\.intellij\.coverage\.CoverageFileProvider fileProvider, com\.intellij\.execution\.configurations\.coverage\.CoverageEnabledConfiguration config\) : com\.intellij\.coverage\.CoverageSuite is overridden in class io\.flutter\.run\.coverage\.FlutterCoverageEngine$
+
+^Deprecated constructor com\.intellij\.coverage\.BaseCoverageSuite\.\<init\>\(java\.lang\.String name, com\.intellij\.coverage\.CoverageFileProvider fileProvider, long timestamp, boolean coverageByTestEnabled, boolean branchCoverage, boolean trackTestFolders, com\.intellij\.coverage\.CoverageRunner coverageRunner, com\.intellij\.openapi\.project\.Project project\) is invoked in io\.flutter\.run\.coverage\.FlutterCoverageSuite\.\<init\>\(CoverageRunner, String, CoverageFileProvider, Project, FlutterCoverageEngine\)$
+
+^Deprecated constructor com\.intellij\.execution\.configurations\.coverage\.CoverageEnabledConfiguration\.\<init\>\(com\.intellij\.execution\.configurations\.RunConfigurationBase configuration\) is invoked in io\.flutter\.run\.coverage\.FlutterCoverageEnabledConfiguration\.\<init\>\(RunConfigurationBase\)$
+
+^Deprecated constructor com\.intellij\.ui\.LayeredIcon\.\<init\>\(javax\.swing\.Icon\[\] icons\) is invoked in io\.flutter\.toolwindow\.ToolWindowBadgeUpdater\.lambda\$updateBadgedIcon\$0\(ToolWindow\) : void$
+^Deprecated constructor com\.intellij\.ui\.LayeredIcon\.\<init\>\(javax\.swing\.Icon\[\] icons\) is invoked in io\.flutter\.toolwindow\.ToolWindowBadgeUpdater\.lambda\$updateBadgedIcon\$1\(ToolWindow\) : void$
+
+^Deprecated method com\.intellij\.util\.ReflectionUtil\.getDeclaredMethod\(java\.lang\.Class aClass, java\.lang\.String name, java\.lang\.Class\[\] parameters\) : java\.lang\.reflect\.Method is invoked in io\.flutter\.android\.AndroidEmulator\.getLaunchInToolWindow\(\) : boolean$
+
+^Deprecated method com\.intellij\.ide\.util\.PropertiesComponent\.setValues\(java\.lang\.String arg0, java\.lang\.String\[\] arg1\) : void is invoked in io\.flutter\.sdk\.FlutterSdkUtil\.updateKnownPaths\(String, String\) : void$
+
+^Deprecated constructor com\.intellij\.util\.xmlb\.SkipDefaultValuesSerializationFilters\.\<init\>\(\) is invoked in io\.flutter\.run\.SdkRunConfig\.writeExternal\(Element\) : void$
+
+^Deprecated method com\.intellij\.coverage\.CoverageRunner\.loadCoverageData\(java\.io\.File sessionDataFile, com\.intellij\.coverage\.CoverageSuite baseCoverageSuite\) : com\.intellij\.rt\.coverage\.data\.ProjectData is overridden in class io\.flutter\.run\.coverage\.FlutterCoverageRunner$
+
+^Deprecated constructor com\.intellij\.execution\.actions\.RunConfigurationProducer\.\<init\>\(com\.intellij\.execution\.configurations\.ConfigurationFactory configurationFactory\) is invoked in io\.flutter\.run\.bazelTest\.BazelTestConfigProducer\.\<init\>\(ConfigurationFactory\)$
+
+
+# --- Internal API Usages ---
+
+^Internal field com\.intellij\.execution\.testframework\.sm\.runner\.states\.TestStateInfo\.Magnitude\.COMPLETE_INDEX : com\.intellij\.execution\.testframework\.sm\.runner\.states\.TestStateInfo\.Magnitude is accessed in io\.flutter\.run\.common\.TestLineMarkerContributor\$1\.\<clinit\>\(\) : void\. This field is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the field is not supposed to be used in client code\.$
+
+^Internal class com\.intellij\.xdebugger\.impl\.XDebugSessionImpl is referenced in io\.flutter\.vmService\.VmServiceWrapper\.lambda\$attachIsolate\$6\(XDebugSession\) : void\. This class is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the class is not supposed to be used in client code\.$
+
+^Internal method com\.intellij\.util\.lang\.UrlClassLoader\.addFiles\(java\.util\.List files\) : void is invoked in io\.flutter\.utils\.FileUtils\.loadPaths\(ClassLoader, List\) : void\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the method is not supposed to be used in client code\.$
+
+^Internal field com\.intellij\.execution\.configurations\.coverage\.CoverageEnabledConfiguration\.myCoverageFilePath : java\.lang\.String is accessed in io\.flutter\.run\.coverage\.FlutterCoverageEnabledConfiguration\.createCoverageFile\(\) : String\. This field is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the field is not supposed to be used in client code\.$
+^Internal field com\.intellij\.execution\.configurations\.coverage\.CoverageEnabledConfiguration\.myCoverageFilePath : java\.lang\.String is accessed in io\.flutter\.run\.coverage\.FlutterCoverageEnabledConfiguration\.coverageRunnerExtensionRemoved\(CoverageRunner\) : void\. This field is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the field is not supposed to be used in client code\.$
+^Internal field com\.intellij\.execution\.configurations\.coverage\.CoverageEnabledConfiguration\.myCoverageFilePath : java\.lang\.String is accessed in io\.flutter\.run\.coverage\.FlutterCoverageEnabledConfiguration\.setCoverageRunner\(CoverageRunner\) : void\. This field is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the field is not supposed to be used in client code\.$
+
+^Internal method com\.intellij\.openapi\.startup\.StartupManager\.runAfterOpened\(java\.lang\.Runnable arg0\) : void is invoked in io\.flutter\.project\.FlutterProjectStructureDetector\$1\.projectOpened\(Project\) : void\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the method is not supposed to be used in client code\.$
+
+^Internal enum com\.intellij\.execution\.testframework\.sm\.runner\.states\.TestStateInfo\.Magnitude is referenced in io\.flutter\.run\.common\.TestLineMarkerContributor\.getTestStateIcon\(PsiElement, Icon\) : Icon\. This enum is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the class is not supposed to be used in client code\.$
+^Internal enum com\.intellij\.execution\.testframework\.sm\.runner\.states\.TestStateInfo\.Magnitude is referenced in io\.flutter\.run\.common\.TestLineMarkerContributor\$1\.\<clinit\>\(\) : void\. This enum is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the class is not supposed to be used in client code\.$
+
+^Internal interface com\.intellij\.openapi\.ui\.messages\.MessagesService is referenced in io\.flutter\.FlutterMessages\.showDialog\(Project, String, String, String\[\], int\) : int\. This interface is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the class is not supposed to be used in client code\.$
+
+^Internal method com\.intellij\.execution\.configurations\.coverage\.CoverageEnabledConfiguration\.coverageRunnerExtensionRemoved\(CoverageRunner\) is overridden in class io\.flutter\.run\.coverage\.FlutterCoverageEnabledConfiguration\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the method is not supposed to be used in client code\.$
+
+^Internal method com\.intellij\.coverage\.CoverageEngine\.coverageProjectViewStatisticsApplicableTo\(VirtualFile\) is overridden in class io\.flutter\.run\.coverage\.FlutterCoverageEngine\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the method is not supposed to be used in client code\.$
+
+^Internal method com\.intellij\.xdebugger\.impl\.XDebugSessionImpl\.reset\(\) : void is invoked in io\.flutter\.vmService\.VmServiceWrapper\.lambda\$attachIsolate\$6\(XDebugSession\) : void\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the method is not supposed to be used in client code\.$
+
+^Internal method com\.intellij\.openapi\.ui\.messages\.MessagesService\.getInstance\(\) : com\.intellij\.openapi\.ui\.messages\.MessagesService is invoked in io\.flutter\.FlutterMessages\.showDialog\(Project, String, String, String\[\], int\) : int\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the method is not supposed to be used in client code\.$
+
+^Internal method com\.intellij\.openapi\.module\.Module\.setModuleType\(String\) : void is invoked in io\.flutter\.utils\.FlutterModuleUtils\.setFlutterModuleType\(Module\) : void\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the method is not supposed to be used in client code\.$
+
+^Internal method com\.intellij\.execution\.testframework\.sm\.runner\.states\.TestStateInfo\.Magnitude\.values\(\) : com\.intellij\.execution\.testframework\.sm\.runner\.states\.TestStateInfo\.Magnitude\[\] is invoked in io\.flutter\.run\.common\.TestLineMarkerContributor\$1\.\<clinit\>\(\) : void\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the method is not supposed to be used in client code\.$
+
+^Internal method com\.intellij\.execution\.configurations\.coverage\.CoverageEnabledConfiguration\.coverageRunnerExtensionRemoved\(CoverageRunner\) : void is invoked in io\.flutter\.run\.coverage\.FlutterCoverageEnabledConfiguration\.coverageRunnerExtensionRemoved\(CoverageRunner\) : void\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the method is not supposed to be used in client code\.$
+
+^Internal method com\.intellij\.openapi\.ui\.messages\.MessagesService\.showMessageDialog\(com\.intellij\.openapi\.project\.Project project, java\.awt\.Component parentComponent, java\.lang\.String message, java\.lang\.String title, java\.lang\.String\[\] options, int defaultOptionIndex, int focusedOptionIndex, javax\.swing\.Icon icon, com\.intellij\.openapi\.ui\.DoNotAskOption doNotAskOption, boolean alwaysUseIdeaUI, java\.lang\.String helpId\) : int is invoked in io\.flutter\.FlutterMessages\.showDialog\(Project, String, String, String\[\], int\) : int\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the method is not supposed to be used in client code\.$
+
+^Internal method com\.intellij\.coverage\.SimpleCoverageAnnotator\.getRoots\(Project, CoverageDataManager, CoverageSuitesBundle\) is overridden in class io\.flutter\.run\.coverage\.FlutterCoverageAnnotator\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the method is not supposed to be used in client code\.$
+
+^Internal method com\.intellij\.openapi\.module\.Module\.getModuleFile\(\) : com\.intellij\.openapi\.vfs\.VirtualFile is invoked in io\.flutter\.FlutterInitializer\.edtInitialization\(boolean, boolean, Project\) : void\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the method is not supposed to be used in client code\.$
+
+^Internal method com\.intellij\.coverage\.CoverageEngine\.recompileProjectAndRerunAction\(Module, CoverageSuitesBundle, Runnable\) is overridden in class io\.flutter\.run\.coverage\.FlutterCoverageEngine\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the method is not supposed to be used in client code\.$
+
+^Internal method com\.intellij\.coverage\.CoverageEngine\.canHavePerTestCoverage\(RunConfigurationBase\) is overridden in class io\.flutter\.run\.coverage\.FlutterCoverageEngine\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the method is not supposed to be used in client code\.$
+
+^Internal field com\.intellij\.execution\.testframework\.sm\.runner\.states\.TestStateInfo\.Magnitude\.IGNORED_INDEX : com\.intellij\.execution\.testframework\.sm\.runner\.states\.TestStateInfo\.Magnitude is accessed in io\.flutter\.run\.common\.TestLineMarkerContributor\$1\.\<clinit\>\(\) : void\. This field is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the field is not supposed to be used in client code\.$
+
+^Internal field com\.intellij\.execution\.testframework\.sm\.runner\.states\.TestStateInfo\.Magnitude\.ERROR_INDEX : com\.intellij\.execution\.testframework\.sm\.runner\.states\.TestStateInfo\.Magnitude is accessed in io\.flutter\.run\.common\.TestLineMarkerContributor\$1\.\<clinit\>\(\) : void\. This field is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the field is not supposed to be used in client code\.$
+
+^Internal field com\.intellij\.execution\.testframework\.sm\.runner\.states\.TestStateInfo\.Magnitude\.PASSED_INDEX : com\.intellij\.execution\.testframework\.sm\.runner\.states\.TestStateInfo\.Magnitude is accessed in io\.flutter\.run\.common\.TestLineMarkerContributor\$1\.\<clinit\>\(\) : void\. This field is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the field is not supposed to be used in client code\.$
+
+^Internal method com\.intellij\.ide\.impl\.NewProjectUtilKt\.createNewProjectAsync\(AbstractProjectWizard, Continuation\) : java\.lang\.Object is invoked in io\.flutter\.actions\.FlutterNewProjectAction\.actionPerformed\$1\.invokeSuspend\(Object\) : Object\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the method is not supposed to be used in client code\.$
+
+^Internal method com\.intellij\.coverage\.CoverageEngine\.getQualifiedName\(File, PsiFile\) is overridden in class io\.flutter\.run\.coverage\.FlutterCoverageEngine\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the method is not supposed to be used in client code\.$
+
+^Internal field com\.intellij\.execution\.testframework\.sm\.runner\.states\.TestStateInfo\.Magnitude\.FAILED_INDEX : com\.intellij\.execution\.testframework\.sm\.runner\.states\.TestStateInfo\.Magnitude is accessed in io\.flutter\.run\.common\.TestLineMarkerContributor\$1\.\<clinit\>\(\) : void\. This field is marked with @org\.jetbrains\.annotations\.ApiStatus\.Internal annotation or @com\.intellij\.openapi\.util\.IntellijInternalApi annotation and indicates that the field is not supposed to be used in client code\.$
+
+
+# --- Override-only API usages ---
+
+^Override-only method com\.intellij\.openapi\.actionSystem\.AnAction\.update\(AnActionEvent\) is invoked in io\.flutter\.editor\.NativeEditorNotificationProvider\.NativeEditorActionsPanel\.\<init\>\(NativeEditorNotificationProvider, FileEditor, VirtualFile, String\)\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.OverrideOnly annotation, which indicates that the method must be only overridden but not invoked by client code\. See documentation of the @ApiStatus\.OverrideOnly for more info\.$
+^Override-only method com\.intellij\.openapi\.actionSystem\.AnAction\.update\(AnActionEvent\) is invoked in io\.flutter\.actions\.FlutterRetargetAppAction\.update\(AnActionEvent\) : void\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.OverrideOnly annotation, which indicates that the method must be only overridden but not invoked by client code\. See documentation of the @ApiStatus\.OverrideOnly for more info\.$
+
+^Override-only method io\.flutter\.actions\.OpenInAndroidStudioAction\.actionPerformed\(AnActionEvent\) is invoked in io\.flutter\.actions\.OpenInAndroidStudioAction\.actionPerformed\(AnActionEvent\) : void\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.OverrideOnly annotation, which indicates that the method must be only overridden but not invoked by client code\. See documentation of the @ApiStatus\.OverrideOnly for more info\.$
+
+^Override-only method com\.intellij\.openapi\.actionSystem\.AnAction\.actionPerformed\(AnActionEvent\) is invoked in io\.flutter\.actions\.FlutterRetargetAppAction\.actionPerformed\(AnActionEvent\) : void\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.OverrideOnly annotation, which indicates that the method must be only overridden but not invoked by client code\. See documentation of the @ApiStatus\.OverrideOnly for more info\.$
+^Override-only method com\.intellij\.openapi\.actionSystem\.AnAction\.actionPerformed\(AnActionEvent\) is invoked in io\.flutter\.editor\.NativeEditorNotificationProvider\.NativeEditorActionsPanel\.performAction\(\) : void\. This method is marked with @org\.jetbrains\.annotations\.ApiStatus\.OverrideOnly annotation, which indicates that the method must be only overridden but not invoked by client code\. See documentation of the @ApiStatus\.OverrideOnly for more info\.$

@@ -288,11 +288,11 @@ intellijPlatform {
       // https://github.com/flutter/flutter-intellij/issues/8361
       VerifyPluginTask.FailureLevel.COMPATIBILITY_WARNINGS,
       VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
-//      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES, // https://github.com/flutter/flutter-intellij/issues/7718
-//      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
+      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES, // https://github.com/flutter/flutter-intellij/issues/7718
+      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
       VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
-//      VerifyPluginTask.FailureLevel.INTERNAL_API_USAGES,
-//      VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
+      VerifyPluginTask.FailureLevel.INTERNAL_API_USAGES,
+      VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
       VerifyPluginTask.FailureLevel.NON_EXTENDABLE_API_USAGES,
       VerifyPluginTask.FailureLevel.PLUGIN_STRUCTURE_WARNINGS,
       VerifyPluginTask.FailureLevel.MISSING_DEPENDENCIES,
