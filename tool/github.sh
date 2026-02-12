@@ -80,9 +80,25 @@ elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
 
 elif [ "VERIFY_BOT" = "$BOT" ] ; then
   EXIT_STATUS=0
+  
+  echo "Check on space before verifyPluginProjectConfiguration\n"
+  df -h
+  ./gradlew verifyPluginProjectConfiguration
+  
+  echo "Check on space before verifyPluginStructure\n"
+  df -h
+  ./gradlew verifyPluginStructure
+  
+  echo "Check on space before verifyPluginSignature\n"
+  df -h
+  ./gradlew verifyPluginSignature
 
   for version in 251 252; do
     echo -e "${BOLD}Running verifyPlugin for $version...${NC}"
+    
+    echo "Check on space before run\n"
+    df -h
+    
     ./gradlew verifyPlugin -PsingleIdeVersion=$version || true
 
     BASELINE="$GITHUB_WORKSPACE/tool/baseline/$version/verifier-baseline.txt"
