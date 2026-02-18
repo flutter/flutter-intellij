@@ -55,7 +55,6 @@ import io.flutter.toolwindow.ToolWindowBadgeUpdater;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -171,16 +170,12 @@ public class LaunchState extends CommandLineState {
     final String nameWithDeviceName = descriptor.getDisplayName() + " (" + device.deviceName() + ")";
 
     try {
-      // There is no public way to set display name so we resort to reflection.
-      final Field f = descriptor.getClass().getDeclaredField("myDisplayNameView");
-      f.setAccessible(true);
-      Object viewInstance = f.get(descriptor);
-      if (viewInstance != null) {
-        final Method setValueMethod = viewInstance.getClass().getMethod("setValue", Object.class);
-        setValueMethod.invoke(viewInstance, nameWithDeviceName);
-      }
+      // RunContentDescriptor.setDisplayName() is protected, so we use reflection to call it.
+      final Method setDisplayName = RunContentDescriptor.class.getDeclaredMethod("setDisplayName", String.class);
+      setDisplayName.setAccessible(true);
+      setDisplayName.invoke(descriptor, nameWithDeviceName);
     }
-    catch (IllegalAccessException | InvocationTargetException | NoSuchFieldException | NoSuchMethodException e) {
+    catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
       FlutterUtils.info(LOG, "Error setting display name", e, true);
     }
 
