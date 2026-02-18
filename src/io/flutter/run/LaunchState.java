@@ -60,6 +60,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiConsumer;
+import org.jetbrains.annotations.VisibleForTesting;
 
 /**
  * Launches a flutter app, showing it in the console.
@@ -168,18 +170,40 @@ public class LaunchState extends CommandLineState {
     // The descriptor shows the run configuration name (e.g., `main.dart`) by default;
     // adding the device name will help users identify the instance when trying to operate a specific one.
     final String nameWithDeviceName = descriptor.getDisplayName() + " (" + device.deviceName() + ")";
-
-    try {
-      // RunContentDescriptor.setDisplayName() is protected, so we use reflection to call it.
-      final Method setDisplayName = RunContentDescriptor.class.getDeclaredMethod("setDisplayName", String.class);
-      setDisplayName.setAccessible(true);
-      setDisplayName.invoke(descriptor, nameWithDeviceName);
+    final BiConsumer<RunContentDescriptor, String> setter = getDisplaySetter();
+    if (setter != null) {
+      setter.accept(descriptor, nameWithDeviceName);
     }
-    catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-      FlutterUtils.info(LOG, "Error setting display name", e, true);
+    else {
+      FlutterUtils.info(LOG, "Could not find a way to set run tab display name", null, true);
     }
 
     return descriptor;
+  }
+
+  /**
+   * Returns a function that sets the display name on a {@link RunContentDescriptor}, or null if unavailable.
+   * Uses reflection to call the protected {@code setDisplayName()} method.
+   * Exposed for testing to verify that the method is accessible on the current IntelliJ build.
+   */
+  @VisibleForTesting
+  @Nullable
+  static BiConsumer<RunContentDescriptor, String> getDisplaySetter() {
+    try {
+      final Method m = RunContentDescriptor.class.getDeclaredMethod("setDisplayName", String.class);
+      m.setAccessible(true);
+      return (descriptor, name) -> {
+        try {
+          m.invoke(descriptor, name);
+        }
+        catch (IllegalAccessException | InvocationTargetException e) {
+          FlutterUtils.info(LOG, "Error setting display name", e, true);
+        }
+      };
+    }
+    catch (NoSuchMethodException e) {
+      return null;
+    }
   }
 
   private static Class classForName(String className) {
