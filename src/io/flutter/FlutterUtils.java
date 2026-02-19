@@ -94,9 +94,6 @@ public class FlutterUtils {
   }
 
   public static boolean isDartFile(@NotNull VirtualFile file) {
-    // TODO: remove this later
-    System.out.println("Testing the bot");
-    
     return Objects.equals(file.getFileType(), DartFileType.INSTANCE);
   }
 
