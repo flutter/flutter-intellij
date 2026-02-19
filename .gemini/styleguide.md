@@ -29,6 +29,7 @@ enforce standard modern Java/Kotlin coding conventions, but strictly police the 
 - **Actions:**
   - Classes extending `AnAction` must be completely stateless. Flag any `AnAction` class that defines mutable instance variables (fields), as the platform instantiates a single instance of the action for the lifetime of the IDE.
   - Ensure `update(AnActionEvent e)` methods are fast and do not perform heavy calculations, as they are called frequently by the IDE to determine menu item visibility.
+  - Ensure `actionPerformed(AnActionEvent e)` methods are instrumented w/ a call to analytics reporting like `Analytics.report(AnalyticsData.forAction(this, e))`.
 
 ## 3. Idiomatic Language Standards
 ### Dart
