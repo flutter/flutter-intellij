@@ -1,13 +1,25 @@
-# These are all defaults for now. Descriptions for these settings: https://developers.google.com/gemini-code-assist/docs/customize-gemini-behavior-github#config.yaml-schema
+# Based on Flutter config: https://github.com/flutter/flutter/blob/master/.gemini/config.yaml
+#
+# Schema: https://developers.google.com/gemini-code-assist/docs/customize-gemini-behavior-github#config.yaml-schema
+
+# No poetry in summaries (DEFAULT).
 have_fun: false
+
 code_review:
+  # (DEFAULT)
   disable: false
+  # LOW, MEDIUM, HIGH or CRITICAL
   comment_severity_threshold: MEDIUM
+  # -1 is unlimited (DEFAULT)
   max_review_comments: -1
   pull_request_opened:
+    # (DEFAULT)
     help: false
+    # These tend to be verbose, and since we expect PR authors to clearly
+    # describe their PRs this would be at best duplicative.
     summary: false
-    code_review: false
+    code_review: true
+    # (DEFAULT) -- Note that this is disabled for flutter
     include_drafts: true
 ignore_patterns: []
 
