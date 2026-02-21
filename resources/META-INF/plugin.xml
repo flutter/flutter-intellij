@@ -331,9 +331,14 @@
                 anchor="right"
                 factoryClass="io.flutter.widgetpreview.WidgetPreviewToolWindowFactory"
                 icon="FlutterIcons.WidgetPreview" />
+    <toolWindow id="Flutter Performance" anchor="right" icon="FlutterIcons.FlutterDefault"
+                factoryClass="io.flutter.performance.FlutterPerformanceViewFactory"/>
     <!-- Having the projectService defined after the toolWindows allows them to all be picked up by the platform -->
     <!-- See https://github.com/flutter/flutter-intellij/issues/8029 -->
     <projectService serviceImplementation="io.flutter.view.InspectorView" overrides="false"/>
+    <projectService serviceImplementation="io.flutter.performance.FlutterPerformanceView" overrides="false"/>
+    <projectService serviceImplementation="io.flutter.perf.FlutterWidgetPerfManager" overrides="false"/>
+    <projectService serviceImplementation="io.flutter.run.FlutterAppManager" overrides="false"/>
 
     <projectOpenProcessor id="flutter" implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
 
@@ -371,5 +376,10 @@
   <extensions defaultExtensionNs="Dart">
     <completionExtension implementation="io.flutter.editor.FlutterCompletionContributor" order="last"/>
   </extensions>
+
+  <projectListeners>
+    <listener class="io.flutter.performance.FlutterPerformanceViewFactory$FlutterPerformanceViewListener"
+              topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
+  </projectListeners>
 
 </idea-plugin>

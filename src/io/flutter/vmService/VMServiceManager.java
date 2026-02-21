@@ -31,6 +31,7 @@ import static io.flutter.vmService.ServiceExtensions.enableOnDeviceInspector;
 
 public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposable {
   @NotNull private final FlutterApp app;
+  @NotNull private final FlutterFramesMonitor flutterFramesMonitor;
   @NotNull private final Map<String, EventStream<Boolean>> serviceExtensions = new HashMap<>();
 
   /**
@@ -52,6 +53,8 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
   private final Set<String> registeredServices = new HashSet<>();
 
+  @NotNull public final DisplayRefreshRateManager displayRefreshRateManager;
+
   public VMServiceManager(@NotNull FlutterApp app, @NotNull VmService vmService) {
     this.app = app;
     this.vmService = vmService;
@@ -59,6 +62,8 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
 
     assert (app.getFlutterDebugProcess() != null);
 
+    this.displayRefreshRateManager = new DisplayRefreshRateManager(this, vmService);
+    this.flutterFramesMonitor = new FlutterFramesMonitor(displayRefreshRateManager, vmService);
     flutterIsolateRefStream = new EventStream<>();
 
     // The VM Service depends on events from the Extension event stream to determine when Flutter.Frame
@@ -140,6 +145,21 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener, Disposab
     synchronized (flutterIsolateRefStream) {
       return flutterIsolateRefStream.getValue();
     }
+  }
+
+  /**
+   * Returns a StreamSubscription providing the current Flutter isolate.
+   * <p>
+   * The current value of the subscription can be null occasionally during initial application startup and for a brief time when doing a
+   * hot restart.
+   */
+  public StreamSubscription<IsolateRef> getCurrentFlutterIsolate(Consumer<IsolateRef> onValue, boolean onUIThread) {
+    return flutterIsolateRefStream.listen(onValue, onUIThread);
+  }
+
+  @NotNull
+  public FlutterFramesMonitor getFlutterFramesMonitor() {
+    return flutterFramesMonitor;
   }
 
   @Override

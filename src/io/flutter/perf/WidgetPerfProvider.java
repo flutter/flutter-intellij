@@ -1,0 +1,29 @@
+/*
+ * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+package io.flutter.perf;
+
+import com.intellij.openapi.Disposable;
+import com.intellij.openapi.fileEditor.FileEditor;
+
+import java.util.concurrent.CompletableFuture;
+
+/**
+ * Interface defining what information about widget performance can be fetched
+ * from the running device.
+ * <p>
+ * See VMServiceWidgetPerfProvider for the non-test implementation of this class.
+ */
+public interface WidgetPerfProvider extends Disposable {
+  void setTarget(WidgetPerfListener widgetPerfListener);
+
+  boolean isStarted();
+
+  boolean isConnected();
+
+  boolean shouldDisplayPerfStats(FileEditor editor);
+
+  CompletableFuture<Void> getWidgetTree();
+}

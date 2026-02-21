@@ -54,6 +54,8 @@ import io.flutter.settings.FlutterSettings;
 import io.flutter.survey.FlutterSurveyNotifications;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.OpenApiUtils;
+import io.flutter.perf.FlutterWidgetPerfManager;
+import io.flutter.performance.FlutterPerformanceViewFactory;
 import io.flutter.view.InspectorViewFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -425,6 +427,13 @@ public class FlutterInitializer extends FlutterProjectActivity {
     InspectorViewFactory.init(project);
     RemainingDevToolsViewFactory.init(project);
     DevToolsExtensionsViewFactory.init(project);
+
+    // Conditionally initialize the native performance view (opt-in, default off).
+    if (FlutterSettings.getInstance().isEnableNativePerfView()) {
+      FlutterWidgetPerfManager.init(project);
+      FlutterPerformanceViewFactory.init(project);
+    }
+
     toolWindowsInitialized = true;
   }
 

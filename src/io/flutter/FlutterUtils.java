@@ -97,6 +97,14 @@ public class FlutterUtils {
     return Objects.equals(file.getFileType(), DartFileType.INSTANCE);
   }
 
+  /**
+   * Returns true if a file could potentially contain Flutter widgets.
+   * Used by the performance view to filter relevant editors.
+   */
+  public static boolean couldContainWidgets(@NotNull com.intellij.openapi.project.Project project, @Nullable VirtualFile file) {
+    return file != null && isDartFile(file);
+  }
+
   public static boolean isAndroidStudio() {
     try {
       // The class is available if the IDE has the "Android" plugin installed or is Android Studio.

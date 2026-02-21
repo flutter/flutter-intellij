@@ -87,6 +87,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private ActionLink settingsLink;
   private JCheckBox myEnableLogsPreserveAfterHotReloadOrRestart;
   private @NotNull JCheckBox myEnableFilePathLogging;
+  private @NotNull JCheckBox myEnableNativePerfView;
 
   private final @NotNull Project myProject;
   private final WorkspaceCache workspaceCache;
@@ -250,7 +251,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    return settings.isEnableJcefBrowser() != myEnableJcefBrowserCheckBox.isSelected();
+    if (settings.isEnableJcefBrowser() != myEnableJcefBrowserCheckBox.isSelected()) {
+      return true;
+    }
+
+    return settings.isEnableNativePerfView() != myEnableNativePerfView.isSelected();
   }
 
   @Override
@@ -305,6 +310,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setFontPackages(myFontPackagesTextArea.getText());
     settings.setEnableJcefBrowser(myEnableJcefBrowserCheckBox.isSelected());
     settings.setFilePathLoggingEnabled(myEnableFilePathLogging.isSelected());
+    settings.setEnableNativePerfView(myEnableNativePerfView.isSelected());
 
     reset(); // because we rely on remembering initial state
     checkFontPackages(settings.getFontPackages(), oldFontPackages);
@@ -373,6 +379,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myEnableJcefBrowserCheckBox.setSelected(settings.isEnableJcefBrowser());
     myFontPackagesTextArea.setText(settings.getFontPackages());
     myEnableFilePathLogging.setSelected(settings.isFilePathLoggingEnabled());
+    myEnableNativePerfView.setSelected(settings.isEnableNativePerfView());
   }
 
   private void onVersionChanged() {

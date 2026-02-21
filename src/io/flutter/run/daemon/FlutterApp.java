@@ -44,6 +44,7 @@ import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.common.RunMode;
 import io.flutter.settings.FlutterSettings;
+import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import io.flutter.utils.ProcessAdapter;
 import io.flutter.utils.ProgressHelper;
@@ -312,6 +313,16 @@ public class FlutterApp implements Disposable {
 
   public boolean isReloading() {
     return myState.get() == State.RELOADING || myState.get() == State.RESTARTING;
+  }
+
+  /**
+   * Returns true if the given file has not been modified since the last reload/restart.
+   * Used by the performance view to determine if stats are still valid for a file.
+   */
+  public boolean isLatestVersionRunning(@NotNull VirtualFile file) {
+    // After a reload or restart, all files are considered to be running the latest version.
+    // If the file has unsaved changes, we consider it not running the latest version.
+    return !com.intellij.openapi.fileEditor.FileDocumentManager.getInstance().isFileModified(file);
   }
 
   public boolean isConnected() {
@@ -623,6 +634,12 @@ public class FlutterApp implements Disposable {
   @Nullable
   public VMServiceManager getVMServiceManager() {
     return myVMServiceManager;
+  }
+
+  @Nullable
+  public io.flutter.vmService.DisplayRefreshRateManager getDisplayRefreshRateManager() {
+    final VMServiceManager manager = getVMServiceManager();
+    return manager != null ? manager.displayRefreshRateManager : null;
   }
 
   @NotNull

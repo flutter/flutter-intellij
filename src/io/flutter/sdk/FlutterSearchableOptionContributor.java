@@ -37,6 +37,7 @@ public class FlutterSearchableOptionContributor extends SearchableOptionContribu
     add(processor, FlutterBundle.message("settings.show.closing.labels"));
     add(processor, FlutterBundle.message("settings.sdk.copy.content"));
     add(processor, FlutterBundle.message("settings.enable.verbose.logging.tooltip"));
+    add(processor, "Enable native Performance tool window");
   }
 
   private static void add(@NotNull SearchableOptionProcessor processor, @NotNull String key) {

@@ -36,6 +36,7 @@ public class FlutterSettings {
   private static final String sdkVersionOutdatedWarningAcknowledgedKey = "io.flutter.sdkVersionOutdatedWarningAcknowledged";
   private static final String androidStudioBotAcknowledgedKey = "io.flutter.androidStudioBotAcknowledgedKey";
   private static final String enableFilePathLoggingKey = "io.flutter.enableFilePathLogging";
+  private static final String enableNativePerfViewKey = "io.flutter.enableNativePerfView";
 
   private static @Nullable FlutterSettings testInstance;
 
@@ -259,5 +260,14 @@ public class FlutterSettings {
 
   public void setFilePathLoggingEnabled(boolean value) {
     getPropertiesComponent().setValue(enableFilePathLoggingKey, value);
+  }
+
+  public boolean isEnableNativePerfView() {
+    return getPropertiesComponent().getBoolean(enableNativePerfViewKey, false);
+  }
+
+  public void setEnableNativePerfView(boolean value) {
+    getPropertiesComponent().setValue(enableNativePerfViewKey, value, false);
+    fireEvent();
   }
 }

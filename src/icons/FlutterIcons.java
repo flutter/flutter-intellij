@@ -38,4 +38,37 @@ public class FlutterIcons {
   public static final Icon CustomMethodAbstract = load("/icons/custom/method_abstract.png");
   public static final Icon CustomInfo = load("/icons/custom/info.png");
   public static final Icon AttachDebugger = load("/icons/attachDebugger.png");
+
+  public static final Icon Phone = load("/icons/phone.png");
+  public static final Icon DebugPaint = load("/icons/debugPaint.png");
+  public static final Icon Text = load("/icons/inspector/textArea.png");
+
+  public static class State {
+    public static final Icon RedProgr_1 = load("/icons/perf/RedProgr_1.png");
+    public static final Icon RedProgr_2 = load("/icons/perf/RedProgr_2.png");
+    public static final Icon RedProgr_3 = load("/icons/perf/RedProgr_3.png");
+    public static final Icon RedProgr_4 = load("/icons/perf/RedProgr_4.png");
+    public static final Icon RedProgr_5 = load("/icons/perf/RedProgr_5.png");
+    public static final Icon RedProgr_6 = load("/icons/perf/RedProgr_6.png");
+    public static final Icon RedProgr_7 = load("/icons/perf/RedProgr_7.png");
+    public static final Icon RedProgr_8 = load("/icons/perf/RedProgr_8.png");
+
+    public static final Icon YellowProgr_1 = load("/icons/perf/YellowProgr_1.png");
+    public static final Icon YellowProgr_2 = load("/icons/perf/YellowProgr_2.png");
+    public static final Icon YellowProgr_3 = load("/icons/perf/YellowProgr_3.png");
+    public static final Icon YellowProgr_4 = load("/icons/perf/YellowProgr_4.png");
+    public static final Icon YellowProgr_5 = load("/icons/perf/YellowProgr_5.png");
+    public static final Icon YellowProgr_6 = load("/icons/perf/YellowProgr_6.png");
+    public static final Icon YellowProgr_7 = load("/icons/perf/YellowProgr_7.png");
+    public static final Icon YellowProgr_8 = load("/icons/perf/YellowProgr_8.png");
+
+    public static final Icon GreyProgr_1 = load("/icons/perf/GreyProgr_1.png");
+    public static final Icon GreyProgr_2 = load("/icons/perf/GreyProgr_2.png");
+    public static final Icon GreyProgr_3 = load("/icons/perf/GreyProgr_3.png");
+    public static final Icon GreyProgr_4 = load("/icons/perf/GreyProgr_4.png");
+    public static final Icon GreyProgr_5 = load("/icons/perf/GreyProgr_5.png");
+    public static final Icon GreyProgr_6 = load("/icons/perf/GreyProgr_6.png");
+    public static final Icon GreyProgr_7 = load("/icons/perf/GreyProgr_7.png");
+    public static final Icon GreyProgr_8 = load("/icons/perf/GreyProgr_8.png");
+  }
 }
