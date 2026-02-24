@@ -45,7 +45,7 @@ public class FlutterColorProvider implements ElementColorProvider {
 
     if (parent.getNode().getElementType() == DartTokenTypes.ARRAY_ACCESS_EXPRESSION) {
       // Colors.blue[200]
-      if (!refExpr.getFirstChild().getText().matches("(Cupertino)?Colors")) {
+      if (!refExpr.getFirstChild().getText().equals("Colors") && !refExpr.getFirstChild().getText().equals("CupertinoColors")) {
         return null;
       }
       if (name.equals(refExpr.getFirstChild().getText()) && refExpr.getChildren().length > 1) {
