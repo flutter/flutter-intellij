@@ -119,7 +119,7 @@ public class FlutterColorProvider implements ElementColorProvider {
       // name.equals(refExpr.getFirstChild().getText()) -> Colors.blue
       final PsiElement idNode = refExpr.getFirstChild();
       if (idNode == null) return null;
-      if (name.matches("(Cupertino)?Colors") && name.equals(idNode.getText())) {
+      if ((name.equals("Colors") || name.equals("CupertinoColors")) && name.equals(idNode.getText())) {
         final PsiElement selectorNode = refExpr.getLastChild();
         if (selectorNode == null) return null;
         final String code = AstBufferUtil.getTextSkippingWhitespaceComments(selectorNode.getNode());
