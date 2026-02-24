@@ -45,6 +45,9 @@ public class FlutterColorProvider implements ElementColorProvider {
 
     if (parent.getNode().getElementType() == DartTokenTypes.ARRAY_ACCESS_EXPRESSION) {
       // Colors.blue[200]
+      if (!refExpr.getFirstChild().getText().matches("(Cupertino)?Colors")) {
+        return null;
+      }
       if (name.equals(refExpr.getFirstChild().getText()) && refExpr.getChildren().length > 1) {
         // Avoid duplicate resolves.
         return null;
@@ -116,7 +119,7 @@ public class FlutterColorProvider implements ElementColorProvider {
       // name.equals(refExpr.getFirstChild().getText()) -> Colors.blue
       final PsiElement idNode = refExpr.getFirstChild();
       if (idNode == null) return null;
-      if (name.equals(idNode.getText())) {
+      if (name.matches("(Cupertino)?Colors") && name.equals(idNode.getText())) {
         final PsiElement selectorNode = refExpr.getLastChild();
         if (selectorNode == null) return null;
         final String code = AstBufferUtil.getTextSkippingWhitespaceComments(selectorNode.getNode());
