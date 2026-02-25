@@ -110,7 +110,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   }
 
   private void init() {
-    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myProject);
+    final FlutterSdk sdk = FlutterSdk.getIncomplete(myProject);
     if (sdk != null) {
       previousSdkVersion = sdk.getVersion();
     }
@@ -185,7 +185,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   @Override
   public boolean isModified() {
 
-    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myProject);
+    final FlutterSdk sdk = FlutterSdk.getIncomplete(myProject);
     final FlutterSettings settings = FlutterSettings.getInstance();
     final String sdkPathInModel = sdk == null ? "" : sdk.getHomePath();
     final String sdkPathInUI = FileUtilRt.toSystemIndependentName(getSdkPathText());
@@ -312,7 +312,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Override
   public void reset() {
-    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myProject);
+    final FlutterSdk sdk = FlutterSdk.getIncomplete(myProject);
     final String path = sdk != null ? sdk.getHomePath() : "";
 
     // Set this after populating the combo box to display correctly when the Flutter SDK is unset.
