@@ -110,7 +110,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   }
 
   private void init() {
-    final FlutterSdk sdk = FlutterSdk.getIncomplete(myProject);
+    final FlutterSdk sdk = com.intellij.openapi.application.ReadAction.compute(() -> FlutterSdk.getIncomplete(myProject));
     if (sdk != null) {
       previousSdkVersion = sdk.getVersion();
     }
