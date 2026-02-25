@@ -48,7 +48,7 @@ If necessary, install the gs_util command-line utility from
 To see a list of all current IntelliJ build pre-reqs:
 
 ```shell
-$ gsutil ls gs://flutter_infra_release/flutter/intellij/
+$ gcloud storage ls gs://flutter_infra_release/flutter/intellij/
 ```
 
 ### uploading new artifacts
@@ -58,7 +58,7 @@ Do not upload new artifacts.
 In order to update or add a new pre-req:
 
 ```shell
-$ gsutil cp <path-to-archive> gs://flutter_infra_release/flutter/intellij/
+$ gcloud storage cp <path-to-archive> gs://flutter_infra_release/flutter/intellij/
 ```
 
 ## Branching to manage IDEA platform versions
