@@ -1,3 +1,22 @@
+## Unreleased
+
+### Added
+
+### Changed
+
+- Improved color recognition in gutter previews by making it more specific to `Colors` and `CupertinoColors` classes. (#8824)
+- Improved responsiveness by moving `FlutterInitializer` initialization and `FlutterPluginsLibraryManager` read actions off the UI thread. (
+  #8761, #8759)
+- Dart Plugin issue tracker URL in documentation. (#8784)
+
+### Removed
+
+- Support for deprecated `.packages` files. (#8724, #8721)
+
+### Fixed
+
+- Missing device labels in run tabs on IntelliJ 2025.3+. (#8796)
+
 ## 89.0.0
 
 ### Added
@@ -9,7 +28,8 @@
 ### Fixed
 
 - DtdUtils static field retaining disposed Project (#8658)
-- Fixed project open hang in Android Studio 2025.2 by removing legacy `FlutterStudioProjectOpenProcessor` and migrating configuration logic to `FlutterStudioStartupActivity`. (#8661)
+- Fixed project open hang in Android Studio 2025.2 by removing legacy `FlutterStudioProjectOpenProcessor` and migrating configuration logic
+  to `FlutterStudioStartupActivity`. (#8661)
 
 ## 88.2.0
 
@@ -26,7 +46,8 @@
 ### Fixed
 
 - Fixed crash when using 3rd party loggers that don't implement `setLevel`. (#8631)
-- Fixed `IllegalStateException` and "Slow operations are prohibited on EDT" when opening projects by migrating `FlutterProjectOpenProcessor` to Kotlin and using `openProjectAsync`. (#8629)
+- Fixed `IllegalStateException` and "Slow operations are prohibited on EDT" when opening projects by migrating `FlutterProjectOpenProcessor`
+  to Kotlin and using `openProjectAsync`. (#8629)
 
 ## 88.1.0
 
