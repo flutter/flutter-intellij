@@ -312,7 +312,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Override
   public void reset() {
-    final FlutterSdk sdk = FlutterSdk.getIncomplete(myProject);
+    final FlutterSdk sdk = com.intellij.openapi.application.ReadAction.compute(() -> FlutterSdk.getIncomplete(myProject));
     final String path = sdk != null ? sdk.getHomePath() : "";
 
     // Set this after populating the combo box to display correctly when the Flutter SDK is unset.
