@@ -2,6 +2,8 @@
 
 ### Added
 
+- Support for IntelliJ platform version 2026.1. (#8773)
+
 ### Changed
 
 - Improved color recognition in gutter previews by making it more specific to `Colors` and `CupertinoColors` classes. (#8824)
