@@ -5,7 +5,14 @@
  */
 package io.flutter.editor;
 
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionPlaces;
+import com.intellij.openapi.actionSystem.ActionUiKind;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.project.Project;
@@ -22,7 +29,7 @@ import io.flutter.utils.UIUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
+import javax.swing.JComponent;
 import java.util.function.Function;
 
 public class NativeEditorNotificationProvider implements EditorNotificationProvider {
@@ -117,8 +124,9 @@ public class NativeEditorNotificationProvider implements EditorNotificationProvi
       text("Flutter commands");
 
       // Ensure this project is a Flutter project by updating the menu action. It will only be visible for Flutter projects.
-      myAction.update(
-        AnActionEvent.createEvent(makeContext(), myAction.getTemplatePresentation(), ActionPlaces.EDITOR_TOOLBAR, ActionUiKind.NONE, null));
+      ActionUtil.updateAction(myAction,
+                              AnActionEvent.createEvent(makeContext(), myAction.getTemplatePresentation(), ActionPlaces.EDITOR_TOOLBAR,
+                                                        ActionUiKind.NONE, null));
 
       isVisible = myAction.getTemplatePresentation().isVisible();
       //noinspection DialogTitleCapitalization
@@ -140,8 +148,9 @@ public class NativeEditorNotificationProvider implements EditorNotificationProvi
 
     private void performAction() {
       // Open Xcode or Android Studio. If already running AS then just open a new window.
-      myAction.actionPerformed(
-        AnActionEvent.createEvent(makeContext(), myAction.getTemplatePresentation(), ActionPlaces.EDITOR_TOOLBAR, ActionUiKind.NONE, null));
+      ActionUtil.performAction(myAction,
+                               AnActionEvent.createEvent(makeContext(), myAction.getTemplatePresentation(), ActionPlaces.EDITOR_TOOLBAR,
+                                                         ActionUiKind.NONE, null));
     }
 
     private DataContext makeContext() {
