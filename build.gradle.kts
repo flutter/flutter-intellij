@@ -314,7 +314,67 @@ intellijPlatform {
           untilBuild = "$singleIdeVersion.*"
         }
       } else {
-        recommended()
+        select {
+          types = listOf(IntelliJPlatformType.AndroidStudio)
+          channels = listOf(ProductRelease.Channel.BETA, ProductRelease.Channel.CANARY, ProductRelease.Channel.EAP, ProductRelease.Channel.RELEASE)
+          sinceBuild = "2025.1.1"
+          untilBuild = "2025.3.1"
+        }
+        select {
+          types = listOf(IntelliJPlatformType.CLion)
+          sinceBuild = "2025.1"
+          untilBuild = "2025.3.1.1"
+        }
+        select {
+          types = listOf(IntelliJPlatformType.GoLand)
+          sinceBuild = "2025.1"
+          untilBuild = "2025.3.1.1"
+        }
+        select {
+          types = listOf(IntelliJPlatformType.IntellijIdea)
+          sinceBuild = "2025.1"
+          untilBuild = "2025.3.2"
+        }
+        select {
+          types = listOf(IntelliJPlatformType.IntellijIdeaCommunity)
+          sinceBuild = "2025.1"
+          untilBuild = "2025.2.6.1"
+        }
+        select {
+          types = listOf(IntelliJPlatformType.PhpStorm)
+          sinceBuild = "2025.1"
+          untilBuild = "2025.3.1.1"
+        }
+        select {
+          types = listOf(IntelliJPlatformType.PyCharm)
+          sinceBuild = "2025.1"
+          untilBuild = "2025.3.1.1"
+        }
+        select {
+          types = listOf(IntelliJPlatformType.PyCharmCommunity)
+          sinceBuild = "2025.1"
+          untilBuild = "2025.2.6"
+        }
+        select {
+          types = listOf(IntelliJPlatformType.Rider)
+          sinceBuild = "2025.1"
+          untilBuild = "2025.3.1"
+        }
+        select {
+          types = listOf(IntelliJPlatformType.RubyMine)
+          sinceBuild = "2025.1"
+          untilBuild = "2025.3.1.1"
+        }
+        select {
+          types = listOf(IntelliJPlatformType.RustRover)
+          sinceBuild = "2025.1"
+          untilBuild = "2025.3.2"
+        }
+        select {
+          types = listOf(IntelliJPlatformType.WebStorm)
+          sinceBuild = "2025.1"
+          untilBuild = "2025.3.1.1"
+        }
       }
     }
   }
