@@ -2,6 +2,16 @@
 
 ### Added
 
+### Changed
+
+### Removed
+
+### Fixed
+
+## 90.0.0
+
+### Added
+
 - Support for IntelliJ platform version 2026.1. (#8773)
 
 ### Changed
