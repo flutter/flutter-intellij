@@ -14,7 +14,7 @@ import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.jetbrains.lang.dart.util.DotPackagesFileUtil;
+import com.jetbrains.lang.dart.util.PackageConfigFileUtil;
 import io.flutter.FlutterUtils;
 import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +33,6 @@ import java.util.Objects;
 public class PubRoot {
   public static final String DOT_DART_TOOL = ".dart_tool";
   public static final String PACKAGE_CONFIG_JSON = "package_config.json";
-  public static final String DOT_PACKAGES = ".packages";
   public static final String PUBSPEC_YAML = "pubspec.yaml";
 
   @NotNull
@@ -271,17 +270,6 @@ public class PubRoot {
     return FlutterUtils.isFlutterPlugin(pubspec);
   }
 
-  /**
-   * Returns true if the directory content looks like a Flutter module.
-   */
-  public boolean isFlutterModule() {
-    return root.findChild(".android") != null;
-  }
-
-  public boolean isNonEditableFlutterModule() {
-    return isFlutterModule() && root.findChild("android") == null;
-  }
-
   @Nullable
   public VirtualFile getPackageConfigFile() {
     VirtualFile rootToExpectToolsDirectory = root;
@@ -305,25 +293,10 @@ public class PubRoot {
     return null;
   }
 
-  @Nullable
-  public VirtualFile getPackagesFile() {
-    // Obsolete by Flutter 2.0
-    final VirtualFile packages = root.findChild(DOT_PACKAGES);
-    if (packages != null && !packages.isDirectory()) {
-      return packages;
-    }
-    return null;
-  }
-
   public @Nullable Map<String, String> getPackagesMap() {
     final var packageConfigFile = getPackageConfigFile();
     if (packageConfigFile != null) {
-      return DotPackagesFileUtil.getPackagesMapFromPackageConfigJsonFile(packageConfigFile);
-    }
-
-    final var packagesFile = getPackagesFile();
-    if (packagesFile != null) {
-      return DotPackagesFileUtil.getPackagesMap(packagesFile);
+      return PackageConfigFileUtil.getPackagesMapFromPackageConfigJsonFile(packageConfigFile);
     }
 
     return null;
@@ -345,12 +318,6 @@ public class PubRoot {
       long pubspecLastModified = new File(pubspec.getPath()).lastModified();
       long configLastModified = new File(configFile.getPath()).lastModified();
       return pubspecLastModified < configLastModified;
-    }
-    final VirtualFile packagesFile = getPackagesFile();
-    if (packagesFile != null) {
-      long pubspecLastModified = new File(pubspec.getPath()).lastModified();
-      long packagesLastModified = new File(packagesFile.getPath()).lastModified();
-      return pubspecLastModified < packagesLastModified;
     }
     return false;
   }

@@ -25,6 +25,7 @@ import io.flutter.module.FlutterModuleBuilder;
 import io.flutter.pub.PubRoot;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.OpenApiUtils;
+import com.intellij.util.SmartList;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -64,7 +65,7 @@ public class FlutterProjectStructureDetector extends ProjectStructureDetector {
   public void setupProjectStructure(@NotNull Collection<DetectedProjectRoot> roots,
                                     @NotNull ProjectDescriptor projectDescriptor,
                                     @NotNull ProjectFromSourcesBuilder builder) {
-    final List<ModuleDescriptor> modules = new ArrayList<>();
+    final List<ModuleDescriptor> modules = new SmartList<>();
     for (DetectedProjectRoot root : roots) {
       if (root != null) {
         //noinspection ConstantConditions

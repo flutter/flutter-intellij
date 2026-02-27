@@ -13,6 +13,7 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.execution.ParametersListUtil;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterDevice;
@@ -299,7 +300,7 @@ public class TestFields {
     }
     args.add(0, "-d");
     args.add(1, device.deviceId());
-    return String.join(" ", args);
+    return StringUtil.join(args, " ");
   }
 
   private void checkSdk(@NotNull Project project) throws RuntimeConfigurationError {

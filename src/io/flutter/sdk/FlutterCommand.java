@@ -8,11 +8,16 @@ package io.flutter.sdk;
 import com.google.common.collect.ImmutableList;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.*;
+import com.intellij.execution.process.CapturingProcessAdapter;
+import com.intellij.execution.process.ColoredProcessHandler;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessListener;
+import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
@@ -22,12 +27,17 @@ import io.flutter.dart.DartPlugin;
 import io.flutter.logging.PluginLogger;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
+import io.flutter.utils.ProcessAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -69,7 +79,7 @@ public class FlutterCommand {
     words.add("flutter");
     words.addAll(type.subCommand);
     words.addAll(args);
-    return String.join(" ", words);
+    return StringUtil.join(words, " ");
   }
 
   /**
@@ -93,7 +103,7 @@ public class FlutterCommand {
     }
 
     words.addAll(newArgs);
-    return String.join(" ", words);
+    return StringUtil.join(words, " ");
   }
 
   protected boolean isPubRelatedCommand() {

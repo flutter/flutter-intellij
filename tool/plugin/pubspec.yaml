@@ -13,7 +13,7 @@ dependencies:
   git: ^2.0.0
   markdown: ^7.1.1
   path: ^1.8.0
-  string_validator: 1.1.0
+  string_validator: ^1.1.0
 
 dev_dependencies:
   lints: ^6.0.0

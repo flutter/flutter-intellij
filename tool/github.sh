@@ -40,6 +40,13 @@ dart pub get
 # Set up the plugin tool.
 (cd tool/plugin; echo "dart pub get `pwd`"; dart pub get)
 
+# Color constants.
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BOLD='\033[1m'
+NC='\033[0m' # None (Reset)
+
 if [ "DART_BOT" = "$BOT" ] ; then
   # Analyze the Dart code in the repo.
   echo "dart analyze"
@@ -72,25 +79,64 @@ elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
   ./gradlew test
 
 elif [ "VERIFY_BOT" = "$BOT" ] ; then
-  # Run the verifier
+  EXIT_STATUS=0
+  
   echo "Check on space before verifyPluginProjectConfiguration\n"
   df -h
   ./gradlew verifyPluginProjectConfiguration
+  
   echo "Check on space before verifyPluginStructure\n"
   df -h
   ./gradlew verifyPluginStructure
+  
   echo "Check on space before verifyPluginSignature\n"
   df -h
   ./gradlew verifyPluginSignature
 
   for version in 251 252; do
-    echo "Check on space before verifyPlugin for $version\n"
+    echo -e "${BOLD}Running verifyPlugin for $version...${NC}"
+    
+    echo "Check on space before run\n"
     df -h
-    ./gradlew verifyPlugin -PsingleIdeVersion=$version
+    
+    ./gradlew verifyPlugin -PsingleIdeVersion=$version || true
+
+    BASELINE="$GITHUB_WORKSPACE/tool/baseline/$version/verifier-baseline.txt"
+
+    echo -e "${BOLD}Searching for report for version $version...${NC}"
+    REPORT=$(find build/reports/pluginVerifier -path "*-$version.*/report.md" | head -n 1)
+    echo "Found: $REPORT"
+
+    if [ -f "$REPORT" ]; then
+      echo "Comparing baseline against report in $REPORT"
+      grep "^*" "$REPORT" | sort > current_issues.tmp
+
+      if [ -f "$BASELINE" ]; then
+        NEW_ERRORS=$(comm -13 <(sort "$BASELINE") current_issues.tmp)
+
+        if [ -n "$NEW_ERRORS" ]; then
+          echo -e "${RED}${BOLD}Error: New verification issues found for version $version:${NC}"
+          echo "$NEW_ERRORS"
+          EXIT_STATUS=1
+        else
+          echo -e "${GREEN}Verification passed for version $version (no new issues).${NC}"
+        fi
+      else
+        echo -e "${YELLOW}Warning: No baseline file found at $BASELINE. Skipping comparison.${NC}"
+      fi
+    else
+      echo -e "${RED}${BOLD}Report does not exist.${NC}"
+      EXIT_STATUS=1
+    fi  
   done
 
   echo "Check on space after verifyPlugin"
   df -h
+
+  if [ $EXIT_STATUS -ne 0 ]; then
+    echo -e "${RED}${BOLD}Build failed: New verification issues were detected.${NC}"
+    exit 1
+  fi
 
 elif [ "INTEGRATION_BOT" = "$BOT" ]; then
   # Run the integration tests

@@ -124,8 +124,7 @@ public class MainFile {
     assert (!WorkspaceCache.getInstance(project).isBazel());
     return dir.isDirectory() && (
       dir.findChild(PubRoot.PUBSPEC_YAML) != null ||
-      dir.findChild(PubRoot.DOT_DART_TOOL) != null ||
-      dir.findChild(PubRoot.DOT_PACKAGES) != null
+      dir.findChild(PubRoot.DOT_DART_TOOL) != null
     );
   }
 

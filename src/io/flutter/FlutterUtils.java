@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
@@ -348,7 +349,7 @@ public class FlutterUtils {
 
   @NotNull
   public static PluginId getPluginId() {
-    final PluginId pluginId = PluginId.findId("io.flutter", "");
+    final PluginId pluginId = PluginId.getId("io.flutter");
     assert pluginId != null;
     return pluginId;
   }
@@ -468,7 +469,7 @@ public class FlutterUtils {
     if (meta != null) {
       try {
         final Properties properties = new Properties();
-        properties.load(new InputStreamReader(meta.getInputStream(), Charsets.UTF_8));
+        properties.load(new InputStreamReader(meta.getInputStream(), StandardCharsets.UTF_8));
         final String value = properties.getProperty("project_type");
         if (value == null) {
           return null;

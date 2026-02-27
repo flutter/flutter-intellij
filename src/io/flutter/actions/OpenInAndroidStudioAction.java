@@ -8,9 +8,12 @@ package io.flutter.actions;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ColoredProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditor;
@@ -21,6 +24,8 @@ import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.jetbrains.lang.dart.analytics.Analytics;
+import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
@@ -28,6 +33,7 @@ import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.OpenApiUtils;
+import io.flutter.utils.ProcessAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,6 +46,9 @@ import java.lang.reflect.InvocationTargetException;
  * See https://github.com/flutter/flutter-intellij/issues/7103
  */
 public class OpenInAndroidStudioAction extends AnAction {
+
+  public static final String ID = "fluter.open.android.studio";
+
   private static final String LABEL_FILE = FlutterBundle.message("flutter.androidstudio.open.file.text");
   private static final String DESCR_FILE = FlutterBundle.message("flutter.androidstudio.open.file.description");
   private static final String LABEL_MODULE = FlutterBundle.message("flutter.androidstudio.open.module.text");
@@ -58,6 +67,8 @@ public class OpenInAndroidStudioAction extends AnAction {
   @Override
   public void actionPerformed(@NotNull final AnActionEvent event) {
     @Nullable final Project project = event.getProject();
+
+    Analytics.report(AnalyticsData.forAction(ID, event.getPlace(), event.getProject()));
 
     if (FlutterUtils.isAndroidStudio()) {
       try {

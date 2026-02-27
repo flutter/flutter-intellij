@@ -12,14 +12,15 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
-import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.logging.PluginLogger;
 import io.flutter.utils.JsonUtils;
+import io.flutter.utils.ProcessAdapter;
 import io.flutter.utils.StdoutJsonParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -236,7 +238,7 @@ public class DaemonApi {
    */
   public String getStderrTail() {
     final String[] lines = stderr.toArray(new String[]{ });
-    return String.join("", lines);
+    return StringUtil.join(lines, "");
   }
 
   /**
@@ -313,7 +315,7 @@ public class DaemonApi {
   private static PrintWriter getStdin(ProcessHandler processHandler) {
     final OutputStream stdin = processHandler.getProcessInput();
     if (stdin == null) return null;
-    return new PrintWriter(new OutputStreamWriter(stdin, Charsets.UTF_8));
+    return new PrintWriter(new OutputStreamWriter(stdin, StandardCharsets.UTF_8));
   }
 
   public static class RestartResult {

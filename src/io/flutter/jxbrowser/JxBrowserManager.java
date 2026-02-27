@@ -15,7 +15,6 @@ import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.download.DownloadableFileDescription;
 import com.intellij.util.download.DownloadableFileService;
@@ -26,6 +25,7 @@ import io.flutter.logging.PluginLogger;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FileUtils;
 import io.flutter.utils.JxBrowserUtils;
+import io.flutter.utils.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,7 +36,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -211,8 +216,8 @@ public class JxBrowserManager {
       platformFileName = jxBrowserUtils.getPlatformFileName();
     }
     catch (FileNotFoundException e) {
-      LOG.info(projectName + ": Unable to find JxBrowser platform file for " + SystemInfo.getOsNameAndVersion());
-      setStatusFailed(new InstallationFailedReason(FailureType.MISSING_PLATFORM_FILES, SystemInfo.getOsNameAndVersion()));
+      LOG.info(projectName + ": Unable to find JxBrowser platform file for " + SystemUtils.getOsNameAndVersion());
+      setStatusFailed(new InstallationFailedReason(FailureType.MISSING_PLATFORM_FILES, SystemUtils.getOsNameAndVersion()));
       return;
     }
 

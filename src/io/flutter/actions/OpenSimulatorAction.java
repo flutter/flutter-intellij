@@ -9,6 +9,8 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import com.jetbrains.lang.dart.analytics.Analytics;
+import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import icons.FlutterIcons;
 import io.flutter.sdk.XcodeUtils;
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +18,8 @@ import org.jetbrains.annotations.Nullable;
 
 public class OpenSimulatorAction extends AnAction {
   final boolean enabled;
+
+  public static final String ID = "open.simulator";
 
   public OpenSimulatorAction(boolean enabled) {
     super("Open iOS Simulator", null, FlutterIcons.IOS);
@@ -47,5 +51,7 @@ public class OpenSimulatorAction extends AnAction {
     //}
 
     XcodeUtils.openSimulator(project);
+
+    Analytics.report(AnalyticsData.forAction(ID, event.getPlace(), event.getProject()));
   }
 }

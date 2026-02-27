@@ -9,7 +9,7 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.messages.MessagesService;
 import icons.FlutterIcons;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -54,8 +54,9 @@ public class FlutterMessages {
                                @NotNull @Nls String title,
                                @NotNull String[] options,
                                int defaultOptionIndex) {
-    return Messages.showIdeaMessageDialog(project, message, title,
-                                          options, defaultOptionIndex,
-                                          FlutterIcons.Flutter_2x, null);
+    return MessagesService.getInstance()
+      .showMessageDialog(project, null, message, title,
+                         options, defaultOptionIndex, -1,
+                         FlutterIcons.Flutter_2x, null, true, null);
   }
 }

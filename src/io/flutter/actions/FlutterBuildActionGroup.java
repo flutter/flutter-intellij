@@ -6,20 +6,26 @@
 package io.flutter.actions;
 
 import com.intellij.execution.process.ColoredProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.jetbrains.lang.dart.analytics.Analytics;
+import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import io.flutter.FlutterMessages;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.OpenApiUtils;
+import io.flutter.utils.ProcessAdapter;
 import io.flutter.utils.ProgressHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -118,6 +124,8 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
 
   abstract public static class FlutterBuildAction extends AnAction {
 
+    public static String ID_PREFIX = "flutter.build";
+
     @NotNull
     abstract protected BuildType buildType();
 
@@ -128,6 +136,9 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
       if (project == null) {
         return;
       }
+
+      Analytics.report(AnalyticsData.forAction(ID_PREFIX + "." + buildType().type, event.getPlace(), project));
+
       final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
       if (sdk == null) {
         return;

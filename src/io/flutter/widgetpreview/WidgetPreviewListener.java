@@ -29,15 +29,10 @@ public class WidgetPreviewListener implements ProcessListener {
   private static final @NotNull Logger LOG = PluginLogger.createLogger(WidgetPreviewListener.class);
   @NotNull private final CompletableFuture<String> urlFuture;
   boolean isVerboseMode;
-  @NotNull private final Consumer<String> onError;
-  @NotNull private final Consumer<String> onSuccess;
 
-  public WidgetPreviewListener(@NotNull CompletableFuture<String> urlFuture, boolean isVerboseMode, @NotNull Consumer<String> onError,
-                               Consumer<@NotNull String> onSuccess) {
+  public WidgetPreviewListener(@NotNull CompletableFuture<String> urlFuture, boolean isVerboseMode) {
     this.urlFuture = urlFuture;
     this.isVerboseMode = isVerboseMode;
-    this.onError = onError;
-    this.onSuccess = onSuccess;
   }
 
   private static final Pattern URL_PATTERN = Pattern.compile("http://localhost:\\d+/?");
@@ -80,24 +75,6 @@ public class WidgetPreviewListener implements ProcessListener {
         }
       }
     }
-
-    urlFuture.whenComplete((url, ex) -> {
-      if (ex != null) {
-        LOG.error("Error getting widget preview URL", ex);
-        final String message = ex.getMessage();
-        this.onError.accept(message);
-        return;
-      }
-
-      ApplicationManager.getApplication().invokeLater(() -> {
-        if (url == null) {
-          this.onError.accept("No URL found");
-          return;
-        }
-
-        this.onSuccess.accept(url);
-      });
-    });
   }
 
   @Override

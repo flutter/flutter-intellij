@@ -43,6 +43,7 @@ plugins {
   id("org.jetbrains.intellij.platform") version "2.10.5" // IntelliJ Platform Gradle Plugin
   id("org.jetbrains.kotlin.jvm") version "2.2.0" // Kotlin support
   id("org.jetbrains.changelog") version "2.2.0" // Gradle Changelog Plugin
+  id("org.jetbrains.kotlinx.kover") version "0.9.4"
   idea // IntelliJ IDEA support
 }
 
@@ -217,7 +218,6 @@ dependencies {
     // https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html#project-setup
     bundledPlugins(
       immutableListOf(
-        "com.google.tools.ij.aiplugin",
         "com.intellij.java",
         "com.intellij.properties",
         "JUnit",
@@ -290,8 +290,7 @@ intellijPlatform {
       VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
 //      VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES, // https://github.com/flutter/flutter-intellij/issues/7718
 //      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
-// `BadgeIcon`:
-//      VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
+      VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
 //      VerifyPluginTask.FailureLevel.INTERNAL_API_USAGES,
 //      VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
       VerifyPluginTask.FailureLevel.NON_EXTENDABLE_API_USAGES,

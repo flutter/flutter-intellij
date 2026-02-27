@@ -37,9 +37,6 @@
   <depends optional="true" config-file="idea-contribs.xml">com.intellij.modules.java</depends>
   <depends optional="true" config-file="flutter-coverage.xml">com.intellij.modules.coverage</depends>
 
-  <!-- Contributes Gemini Code Assist extensions. -->
-  <depends optional="true" config-file="gemini-contribs.xml">com.google.tools.ij.aiplugin</depends>
-
   <!-- Contributes Android-supported features and implementations. -->
   <depends optional="true" config-file="android-contribs.xml">org.jetbrains.android</depends>
 

@@ -9,10 +9,10 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
+import com.jetbrains.lang.dart.analytics.Analytics;
+import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
-import io.flutter.analytics.Analytics;
-import io.flutter.analytics.AnalyticsData;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;

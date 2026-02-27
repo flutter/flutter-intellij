@@ -46,8 +46,8 @@ for Flutter IntelliJ issues.
 
 - for more general Flutter issues, you should prefer to use the Flutter
   [issue tracker](https://github.com/flutter/flutter/issues)
-- for more Dart IntelliJ related issues, you can use JetBrains'
-  [YouTrack tracker](https://youtrack.jetbrains.com/issues?q=Subsystem:%20%7BLang.%20Dart%7D%20%20State:%20Unresolved)
+- for more Dart IntelliJ related issues, please use the Dart Plugin
+  [issue tracker](https://github.com/flutter/dart-intellij-third-party/issues)
 
 ## Known issues
 

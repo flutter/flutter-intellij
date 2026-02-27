@@ -8,18 +8,24 @@ package io.flutter.actions;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ColoredProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.jetbrains.lang.dart.analytics.Analytics;
+import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.ProcessAdapter;
 import io.flutter.utils.ProgressHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -164,5 +170,7 @@ public class OpenInXcodeAction extends AnAction {
 
       FlutterMessages.showError("Error Opening Xcode", "Project not found.", project);
     }
+
+    Analytics.report(AnalyticsData.forAction(this, event));
   }
 }

@@ -5,9 +5,6 @@
  */
 package io.flutter.project
 
-import com.intellij.openapi.application.ApplicationInfo
-import com.intellij.openapi.application.writeAction
-import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.projectImport.ProjectOpenProcessor
@@ -16,7 +13,7 @@ import io.flutter.FlutterBundle
 import io.flutter.FlutterUtils
 import io.flutter.pub.PubRoot
 import io.flutter.utils.FlutterModuleUtils
-import java.util.Objects
+import java.util.*
 import javax.swing.Icon
 
 /**
@@ -37,7 +34,6 @@ open class FlutterProjectOpenProcessor : ProjectOpenProcessor() {
   }
 
   override fun canOpenProject(file: VirtualFile): Boolean {
-    val info = ApplicationInfo.getInstance()
     if (FlutterUtils.isAndroidStudio()) {
       return false
     }
@@ -94,21 +90,18 @@ open class FlutterProjectOpenProcessor : ProjectOpenProcessor() {
       )
     }.findFirst().orElse(null)
   }
+}
 
-
-  companion object {
-    /**
-     * Sets up a project that doesn't have any Flutter modules.
-     *
-     *
-     * (It probably wasn't created with "flutter create" and probably didn't have any IntelliJ configuration before.)
-     */
-    private fun convertToFlutterProject(project: Project) {
-      for (module in FlutterModuleUtils.getModules(project)) {
-        if (FlutterModuleUtils.declaresFlutter(module) && !FlutterModuleUtils.isFlutterModule(module)) {
-          FlutterModuleUtils.setFlutterModuleAndReload(module, project)
-        }
-      }
+/**
+ * Sets up a project that doesn't have any Flutter modules.
+ *
+ *
+ * (It probably wasn't created with "flutter create" and probably didn't have any IntelliJ configuration before.)
+ */
+private fun convertToFlutterProject(project: Project) {
+  for (module in FlutterModuleUtils.getModules(project)) {
+    if (FlutterModuleUtils.declaresFlutter(module) && !FlutterModuleUtils.isFlutterModule(module)) {
+      FlutterModuleUtils.setFlutterModuleAndReload(module, project)
     }
   }
 }

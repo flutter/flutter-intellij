@@ -101,16 +101,6 @@ public class FlutterSettings {
     fireEvent();
   }
 
-  public boolean isSyncingAndroidLibraries() {
-    return getPropertiesComponent().getBoolean(syncAndroidLibrariesKey, false);
-  }
-
-  public void setSyncingAndroidLibraries(boolean value) {
-    getPropertiesComponent().setValue(syncAndroidLibrariesKey, value, false);
-
-    fireEvent();
-  }
-
   public boolean isShowStructuredErrors() {
     return getPropertiesComponent().getBoolean(showStructuredErrorsKey, true);
   }
