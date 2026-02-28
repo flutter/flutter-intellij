@@ -130,13 +130,16 @@ public abstract class CommonTestConfigUtils {
     final DartCallExpression call = findEnclosingTestCall(elt, getTestsFromOutline(elt.getContainingFile()));
     if (call == null) return null;
 
+    return extractTestName(call);
+  }
+
+  @VisibleForTesting
+  @Nullable
+  public String extractTestName(@NotNull DartCallExpression call) {
     final DartStringLiteralExpression lit = DartSyntax.getArgument(call, 0, DartStringLiteralExpression.class);
     if (lit == null) return null;
 
-    final String name = DartSyntax.unquote(lit);
-    if (name == null) return null;
-
-    return StringUtil.escapeProperty(name, false);
+    return DartSyntax.unquote(lit);
   }
 
   /**
