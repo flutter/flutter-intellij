@@ -139,6 +139,7 @@ public class FlutterPositionMapperTest {
 
   private static class Line {
     final JsonArray json = new JsonArray();
+
     Line(int number) {
       json.add(number);
     }

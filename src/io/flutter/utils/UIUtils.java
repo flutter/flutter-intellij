@@ -18,5 +18,4 @@ public class UIUtils {
   public static ColorKey getEditorNotificationBackgroundColor() {
     return EditorColors.GUTTER_BACKGROUND;
   }
-
 }

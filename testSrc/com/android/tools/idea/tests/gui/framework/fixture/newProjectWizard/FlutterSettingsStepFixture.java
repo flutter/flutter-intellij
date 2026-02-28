@@ -8,9 +8,11 @@ package com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard;
 import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardStepFixture;
 import io.flutter.FlutterBundle;
+
 import javax.swing.JCheckBox;
 import javax.swing.JRootPane;
 import javax.swing.text.JTextComponent;
+
 import org.fest.swing.fixture.JCheckBoxFixture;
 import org.jetbrains.annotations.NotNull;
 

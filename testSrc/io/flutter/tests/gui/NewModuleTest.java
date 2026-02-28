@@ -16,7 +16,9 @@ import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.NewFl
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.module.WorkingDirectoryProvider;
 import io.flutter.module.FlutterProjectType;
+
 import java.io.IOException;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;

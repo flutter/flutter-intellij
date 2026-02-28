@@ -368,7 +368,7 @@ public class Workspace {
     final Computable<VirtualFile> readAction = () -> {
       ProjectRootManager rootManager = ProjectRootManager.getInstance(p);
       if (rootManager == null) return null;
-      
+
       final Map<String, VirtualFile> candidates = new HashMap<>();
       for (VirtualFile contentRoot : rootManager.getContentRoots()) {
         if (contentRoot == null) continue;

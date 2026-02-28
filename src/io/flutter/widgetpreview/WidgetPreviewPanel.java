@@ -202,16 +202,16 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
     OpenApiUtils.safeInvokeLater(() -> {
       final Consumer<EmbeddedBrowser> onBrowserAvailable = embeddedBrowser -> {
         embeddedBrowser.openPanel(toolWindow, "Widget Preview", FlutterIcons.Flutter, urlProvider,
-            System.out::println,
-            null);
+                                  System.out::println,
+                                  null);
       };
 
       final Runnable onBrowserUnavailable = () -> {
         final List<io.flutter.utils.LabelInput> inputs = List.of(
-            new io.flutter.utils.LabelInput("Embedded browser is not available."),
-            new io.flutter.utils.LabelInput("Open in external browser", (label, data) -> {
-              BrowserLauncher.getInstance().browse(urlProvider.getBrowserUrl(), null);
-            }));
+          new io.flutter.utils.LabelInput("Embedded browser is not available."),
+          new io.flutter.utils.LabelInput("Open in external browser", (label, data) -> {
+            BrowserLauncher.getInstance().browse(urlProvider.getBrowserUrl(), null);
+          }));
         final JPanel panel = viewUtils.createClickableLabelPanel(inputs);
         ApplicationManager.getApplication().invokeLater(() -> {
           contentPanel.removeAll();
@@ -222,7 +222,7 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
       };
 
       Optional.<EmbeddedBrowser>ofNullable(FlutterUtils.embeddedBrowser(project))
-          .ifPresentOrElse(onBrowserAvailable, onBrowserUnavailable);
+        .ifPresentOrElse(onBrowserAvailable, onBrowserUnavailable);
     });
   }
 

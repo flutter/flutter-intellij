@@ -105,7 +105,8 @@ public class FlutterUtils {
       final Object instance = getInstance.invoke(null);
       final Method isAndroidStudio = ideInfoClass.getMethod("isAndroidStudio");
       return (Boolean)isAndroidStudio.invoke(instance);
-    } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
+    }
+    catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
       // Fall back to checking application name
       // e.g., "Android Studio Meerkat | 2024.3.1"
       return ApplicationInfo.getInstance().getFullApplicationName().startsWith("Android Studio");
@@ -115,7 +116,8 @@ public class FlutterUtils {
   public static void info(@NotNull Logger logger, @NotNull String message, @NotNull Throwable t, boolean sanitizePaths) {
     if (sanitizePaths && FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
       logger.info(message, t);
-    } else {
+    }
+    else {
       logger.info(message);
     }
   }
@@ -123,7 +125,8 @@ public class FlutterUtils {
   public static void warn(@NotNull Logger logger, @NotNull String message, @NotNull Throwable t, boolean sanitizePaths) {
     if (sanitizePaths && FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
       logger.warn(message, t);
-    } else {
+    }
+    else {
       logger.warn(message);
     }
   }
@@ -131,7 +134,8 @@ public class FlutterUtils {
   public static void error(@NotNull Logger logger, @NotNull String message, @NotNull Throwable t, boolean sanitizePaths) {
     if (sanitizePaths && FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
       logger.error(message, t);
-    } else {
+    }
+    else {
       logger.error(message);
     }
   }
@@ -140,7 +144,7 @@ public class FlutterUtils {
    * Write a warning message to the IntelliJ log.
    * <p>
    * This is separate from LOG.warn() to allow us to decorate the behavior.
-   *
+   * <p>
    * This method is deprecated (as we are not decorating this behavior anywhere).
    */
   public static void warn(@NotNull Logger logger, @NotNull String message) {
@@ -151,7 +155,7 @@ public class FlutterUtils {
    * Write a warning message to the IntelliJ log.
    * <p>
    * This is separate from LOG.warn() to allow us to decorate the behavior.
-   *
+   * <p>
    * This method is deprecated (as we are not decorating this behavior anywhere).
    */
   public static void warn(@NotNull Logger logger, @NotNull String message, @NotNull Throwable t) {

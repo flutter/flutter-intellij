@@ -21,7 +21,7 @@
   <category>Custom Languages</category>
   <version>$VERSION</version>
   <!--suppress PluginXmlValidity -->
-  <idea-version />
+  <idea-version/>
 
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.lang</depends>
@@ -70,7 +70,7 @@
               icon="FlutterIcons.Mobile"/>
       <action id="Flutter.DeviceSelectorRefresherLegacy" class="io.flutter.actions.DeviceSelectorRefresherAction"
               text="Refresh Device List"
-              description="Refresh device list" />
+              description="Refresh device list"/>
       <add-to-group anchor="before" group-id="ToolbarRunGroup" relative-to-action="RunConfiguration"/>
     </group>
 
@@ -108,9 +108,9 @@
               text="Open Flutter DevTools in Browser"
               description="Open Flutter DevTools in Browser"/>
       <separator/>
-<!--      <action id="flutter.androidstudio.open" class="io.flutter.actions.OpenInAndroidStudioAction"-->
-<!--              text="Open Android module in Android Studio"-->
-<!--              description="Launch Android Studio to edit the Android module as a top-level project"/>-->
+      <!--      <action id="flutter.androidstudio.open" class="io.flutter.actions.OpenInAndroidStudioAction"-->
+      <!--              text="Open Android module in Android Studio"-->
+      <!--              description="Launch Android Studio to edit the Android module as a top-level project"/>-->
       <action id="flutter.xcode.open" class="io.flutter.actions.OpenInXcodeAction"
               text="Open iOS/macOS Module in Xcode"
               description="Launch Xcode to edit the iOS module as a top-level project"/>
@@ -132,7 +132,7 @@
         <reference ref="flutter.pub.get"/>
         <reference ref="flutter.pub.upgrade"/>
         <separator/>
-<!--        <reference ref="flutter.androidstudio.open"/>-->
+        <!--        <reference ref="flutter.androidstudio.open"/>-->
         <reference ref="flutter.xcode.open"/>
         <reference ref="flutter.appcode.open"/>
         <separator/>
@@ -142,17 +142,17 @@
       <separator/>
       <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="AddToFavorites" anchor="before"/>
     </group>
-<!--    See comment at the top of FlutterExternalIdeActionGroup.-->
-<!--    <group id="FlutterExternalIdeActionGroup" class="io.flutter.actions.FlutterExternalIdeActionGroup">-->
-<!--      <separator/>-->
-<!--      <group text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">-->
-<!--        <reference ref="flutter.androidstudio.open"/>-->
-<!--        <reference ref="flutter.xcode.open"/>-->
-<!--        <reference ref="flutter.appcode.open"/>-->
-<!--      </group>-->
-<!--      <separator/>-->
-<!--      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="AddToFavorites" anchor="before"/>-->
-<!--    </group>-->
+    <!--    See comment at the top of FlutterExternalIdeActionGroup.-->
+    <!--    <group id="FlutterExternalIdeActionGroup" class="io.flutter.actions.FlutterExternalIdeActionGroup">-->
+    <!--      <separator/>-->
+    <!--      <group text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">-->
+    <!--        <reference ref="flutter.androidstudio.open"/>-->
+    <!--        <reference ref="flutter.xcode.open"/>-->
+    <!--        <reference ref="flutter.appcode.open"/>-->
+    <!--      </group>-->
+    <!--      <separator/>-->
+    <!--      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="AddToFavorites" anchor="before"/>-->
+    <!--    </group>-->
     <group id="FlutterBuildActionGroup" class="io.flutter.actions.FlutterBuildActionGroup">
       <separator/>
       <group id="FlutterBuildGroup" text="Flutter" popup="true">
@@ -310,7 +310,7 @@
 
     <applicationService serviceImplementation="io.flutter.settings.FlutterSettings" overrides="false"/>
 
-    <applicationService serviceImplementation="io.flutter.jxbrowser.EmbeddedBrowserEngine" overrides="false" />
+    <applicationService serviceImplementation="io.flutter.jxbrowser.EmbeddedBrowserEngine" overrides="false"/>
     <applicationService serviceImplementation="io.flutter.font.FontPreviewProcessor"/>
     <console.folding implementation="io.flutter.console.FlutterConsoleFolding" id="1"/>
     <console.folding implementation="io.flutter.console.FlutterConsoleExceptionFolding" order="after 1"/>
@@ -322,15 +322,20 @@
     <codeInsight.lineMarkerProvider language="Dart" implementationClass="io.flutter.editor.FlutterIconLineMarkerProvider"/>
     <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
 
-    <toolWindow id="Flutter Inspector" anchor="right" icon="FlutterIcons.DevToolsInspector" factoryClass="io.flutter.view.InspectorViewFactory"/>
-    <toolWindow id="Flutter Deep Links" anchor="right" icon="FlutterIcons.DevToolsDeepLinks" factoryClass="io.flutter.deeplinks.DeepLinksViewFactory" />
-    <toolWindow id="Flutter DevTools" anchor="right" icon="FlutterIcons.DevTools" factoryClass="io.flutter.devtools.RemainingDevToolsViewFactory" />
-    <toolWindow id="Flutter DevTools Extensions" anchor="right" icon="FlutterIcons.DevToolsExtensions" factoryClass="io.flutter.devtools.DevToolsExtensionsViewFactory" />
-    <toolWindow id="Flutter Property Editor" anchor="right" icon="FlutterIcons.PropertyEditor" factoryClass="io.flutter.propertyeditor.PropertyEditorViewFactory" />
+    <toolWindow id="Flutter Inspector" anchor="right" icon="FlutterIcons.DevToolsInspector"
+                factoryClass="io.flutter.view.InspectorViewFactory"/>
+    <toolWindow id="Flutter Deep Links" anchor="right" icon="FlutterIcons.DevToolsDeepLinks"
+                factoryClass="io.flutter.deeplinks.DeepLinksViewFactory"/>
+    <toolWindow id="Flutter DevTools" anchor="right" icon="FlutterIcons.DevTools"
+                factoryClass="io.flutter.devtools.RemainingDevToolsViewFactory"/>
+    <toolWindow id="Flutter DevTools Extensions" anchor="right" icon="FlutterIcons.DevToolsExtensions"
+                factoryClass="io.flutter.devtools.DevToolsExtensionsViewFactory"/>
+    <toolWindow id="Flutter Property Editor" anchor="right" icon="FlutterIcons.PropertyEditor"
+                factoryClass="io.flutter.propertyeditor.PropertyEditorViewFactory"/>
     <toolWindow id="Flutter Widget Preview"
                 anchor="right"
                 factoryClass="io.flutter.widgetpreview.WidgetPreviewToolWindowFactory"
-                icon="FlutterIcons.WidgetPreview" />
+                icon="FlutterIcons.WidgetPreview"/>
     <!-- Having the projectService defined after the toolWindows allows them to all be picked up by the platform -->
     <!-- See https://github.com/flutter/flutter-intellij/issues/8029 -->
     <projectService serviceImplementation="io.flutter.view.InspectorView" overrides="false"/>
@@ -359,9 +364,9 @@
     <projectService serviceImplementation="io.flutter.jxbrowser.EmbeddedJxBrowser" overrides="false"/>
     <projectService serviceImplementation="io.flutter.view.EmbeddedJcefBrowser" overrides="false"/>
     <notificationGroup displayType="STICKY_BALLOON" id="deeplink"/>
-    <notificationGroup displayType="TOOL_WINDOW" id="flutter-run" toolWindowId="Run" />
-    <notificationGroup displayType="TOOL_WINDOW" id="flutter-debug" toolWindowId="Debug" />
-    <notificationGroup displayType="TOOL_WINDOW" id="flutter-analysis" toolWindowId="Dart Analysis" />
+    <notificationGroup displayType="TOOL_WINDOW" id="flutter-run" toolWindowId="Run"/>
+    <notificationGroup displayType="TOOL_WINDOW" id="flutter-debug" toolWindowId="Debug"/>
+    <notificationGroup displayType="TOOL_WINDOW" id="flutter-analysis" toolWindowId="Dart Analysis"/>
 
     <registryKey defaultValue="" description="Launch local server for DevTools" key="flutter.local.devtools.dir"/>
     <registryKey defaultValue="" description="Local DevTools server arguments" key="flutter.local.devtools.args"/>

@@ -18,11 +18,11 @@ public class UrlUtilsTest {
       UrlUtils.generateHtmlFragmentWithHrefTags("Multiple http://link1.com links http://link2.com test")
     );
     assertEquals(
-        "Open <a href=\"https://secure.com\">https://secure.com</a>",
-        UrlUtils.generateHtmlFragmentWithHrefTags("Open https://secure.com"));
+      "Open <a href=\"https://secure.com\">https://secure.com</a>",
+      UrlUtils.generateHtmlFragmentWithHrefTags("Open https://secure.com"));
     assertEquals(
-        "<a href=\"http://start.com\">http://start.com</a> at start",
-        UrlUtils.generateHtmlFragmentWithHrefTags("http://start.com at start"));
+      "<a href=\"http://start.com\">http://start.com</a> at start",
+      UrlUtils.generateHtmlFragmentWithHrefTags("http://start.com at start"));
   }
 
   @Test
