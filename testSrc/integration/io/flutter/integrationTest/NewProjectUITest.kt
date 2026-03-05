@@ -84,11 +84,15 @@ class MyProjectUITest {
 
   @Test
   fun newProjectIC() {
+    // ARRANGE: Set up the test environment and launch the IDE.
     println("Initializing IDE test context")
     println("Test project will be created as: $testProjectName")
     run = Setup.setupTestContextIC("MyProjectUITest").runIdeWithDriver()
 
+    // ACT: Create a new project from the welcome screen.
     newProjectWelcomeScreen(run, testProjectName)
+
+    // ASSERT: Verify that the project was created correctly.
     newProjectInProjectView()
   }
 

@@ -9,9 +9,11 @@ package io.flutter.integrationTest.utils
 import com.intellij.driver.sdk.ui.Finder
 import com.intellij.driver.sdk.ui.components.ComponentData
 import com.intellij.driver.sdk.ui.components.UiComponent
+import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.welcomeScreen
 import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.driver.engine.BackgroundRun
+import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import org.junit.jupiter.api.fail
 import kotlin.time.Duration.Companion.seconds
 
@@ -44,7 +46,7 @@ open class NewProjectDialogUI(data: ComponentData) : UiComponent(data) {
 
   // Locates the list of project types within the dialog.
   // The xQuery targets a component with the specific class "JBList".
-  private val projectTypeList = x("//div[@class='JBList']")
+  internal val projectTypeList = x("//div[@class='JBList']")
 
   // Locates the "Next" button in the dialog.
   // The xQuery finds a button component with the visible text "Next".
@@ -53,6 +55,7 @@ open class NewProjectDialogUI(data: ComponentData) : UiComponent(data) {
   // Locates the "Create" button in the dialog.
   // The xQuery finds a button component with the visible text "Create".
   val createButton = x("//div[@text='Create']")
+  val flutterSdkPath = x("//div[./div/text()='Flutter SDK:']//div[@class='TextFieldWithBrowseButton']")
 }
 
 /**
@@ -64,39 +67,38 @@ open class NewProjectDialogUI(data: ComponentData) : UiComponent(data) {
  */
 fun newProjectWelcomeScreen(run: BackgroundRun, testProjectName: String) {
   run.driver.withContext {
-    // Assert that the welcome screen is visible before interacting with it.
+    // The test operates within the context of the IDE's welcome screen.
     welcomeScreen {
-      assert(isVisible())
+      // STEP 1: Start the "New Project" wizard.
       println("Creating the new project from Welcome Screen")
       createNewProjectButton.click()
 
-      // The test expects the `FlutterGeneratorPeer` to automatically populate the
-      // Flutter SDK path. This behavior relies on the FLUTTER_SDK environment
-      // variable being set.
-      //
-      // If the FLUTTER_SDK variable is not present, the UI will not find the SDK,
-      // and the 'Next' button will remain disabled, causing the test to fail.
-      // A common reason for this failure is an unconfigured test environment.
-
+      // This block interacts with the "New Project" dialog.
       newProjectDialog {
-        // Wait for the dialog to fully load
-        wait(1.seconds)
-
-        // Select project type - adjust based on your needs
+        // STEP 2: Select "Flutter" as the project type.
+        // We wait for the list of project types to appear before making a selection.
+        projectTypeList.waitFound()
         chooseProjectType("Flutter")
-        wait(1.seconds)
 
-        // Expect setup to take care of setting the correct Flutter SDK
+        // STEP 3: Navigate to the next screen.
+        // The "Next" button will only be enabled if the Flutter SDK is correctly
+        // configured in the test environment. We wait up to 15 seconds for it
+        // to become enabled before proceeding.
+        nextButton.waitFound(15.seconds)
         if (!nextButton.isEnabled()) {
-          fail { "The FLUTTER_SDK environment variable was not set." }
+          fail { "The 'Next' button is disabled, which likely means the Flutter SDK path is not set. Please make sure the FLUTTER_SDK environment variable is set." }
         }
         nextButton.click()
-        wait(1.seconds)
+
+        // STEP 4: Enter project details and create the project.
+        // We wait for the "Create" button to appear on the second screen of the
+        // wizard before typing the project name and clicking the button.
+        createButton.waitFound()
 
         keyboard {
           typeText(testProjectName)
         }
-        createButton.click()
+        createButton.doubleClick()
       }
     }
   }

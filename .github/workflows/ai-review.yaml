@@ -1,0 +1,33 @@
+name: AI PR Reviewer
+on:
+  pull_request:
+    # Trigger on new PRs or when new code is pushed to an existing PR
+    types: [opened, synchronized]
+
+jobs:
+  ai-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write  # Necessary to post comments and reassign
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install PyGithub google-generativeai
+
+      - name: Run Review Agent
+        env:
+          # These secrets must be set in your Repo Settings
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python scripts/ai_reviewer/review_agent.py ${{ github.event.pull_request.number }}

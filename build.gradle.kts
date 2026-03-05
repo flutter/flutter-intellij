@@ -171,13 +171,15 @@ sourceSets {
     )
   }
 
-  create("integration", Action<SourceSet> {
+  create("integration") {
     java.srcDirs("testSrc/integration")
     kotlin.srcDirs("testSrc/integration")
     resources.srcDirs("testSrc/integration")
-    compileClasspath += sourceSets["main"].output + sourceSets["test"].output
-    runtimeClasspath += sourceSets["main"].output + sourceSets["test"].output
-  })
+    compileClasspath += sourceSets.main.get().output
+    runtimeClasspath += sourceSets.main.get().output
+    compileClasspath += sourceSets.test.get().compileClasspath
+    runtimeClasspath += sourceSets.test.get().runtimeClasspath
+  }
 }
 
 // Configure IntelliJ IDEA to recognize integration as test sources
@@ -265,6 +267,7 @@ dependencies {
 }
 
 intellijPlatform {
+  sourceSets.add(sourceSets.getByName("integration"))
   pluginConfiguration {
     version = flutterPluginVersion
     ideaVersion {
