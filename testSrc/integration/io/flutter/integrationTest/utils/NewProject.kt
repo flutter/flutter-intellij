@@ -98,7 +98,7 @@ fun newProjectWelcomeScreen(run: BackgroundRun, testProjectName: String) {
         keyboard {
           typeText(testProjectName)
         }
-        createButton.doubleClick()
+        createButton.click()
       }
     }
   }

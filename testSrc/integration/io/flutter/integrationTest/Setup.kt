@@ -37,22 +37,7 @@ import java.nio.file.Paths
  */
 class Setup {
 
-  /**
-   * Custom GlobalPaths implementation that points to the project's build directory.
-   * This ensures all test artifacts are stored within the project structure.
-   */
-  class TemplatePaths : GlobalPaths(Git.getRepoRoot().resolve("build"))
-
-
   companion object {
-
-    init {
-      // Configure dependency injection to use our custom paths
-      di = DI.Companion {
-        extend(di)
-        bindSingleton<GlobalPaths>(overrides = true) { TemplatePaths() }
-      }
-    }
 
     fun setupTestContextIC(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
       return setupTestContext(
