@@ -35,7 +35,8 @@ import java.nio.file.Paths
  *
  * @see [IntelliJ IDE Starter Documentation](https://github.com/JetBrains/intellij-ide-starter)
  */
-class Setup {
+class
+Setup {
 
   companion object {
 
