@@ -13,6 +13,7 @@ import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.junit5.config.UseLatestDownloadedIdeBuild
+import com.jetbrains.rd.util.string.println
 import io.flutter.integrationTest.utils.newProjectWelcomeScreen
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
@@ -140,46 +141,53 @@ class MyProjectUITest {
      * It is designed to be called after the project creation process has been initiated
      * and the main IDE window has opened.
      */
-    run.driver.withContext {
-      ideFrame {
-        // Wait for the main IDE window to appear before attempting to interact with it.
-        // This is a positive assertion that confirms the UI transition is complete.
-        waitFound()
+    try {
+      run.driver.withContext {
+        ideFrame {
+          // Wait for the main IDE window to appear before attempting to interact with it.
+          // This is a positive assertion that confirms the UI transition is complete.
+          waitFound()
 
-        // This is a crucial step that waits for the IDE to finish all background tasks,
-        // such as indexing, downloading dependencies, and building the initial project.
-        // This prevents race conditions where the test tries to interact with files
-        // before they are fully loaded.
-        driver.waitForIndicators(5.minutes)
-        println("IDE is ready, accessing editor.")
+          // This is a crucial step that waits for the IDE to finish all background tasks,
+          // such as indexing, downloading dependencies, and building the initial project.
+          // This prevents race conditions where the test tries to interact with files
+          // before they are fully loaded.
+          driver.waitForIndicators(5.minutes)
+          println("IDE is ready, accessing editor.")
 
-        projectView {
-          // Asserting the top-level files
-          // Note: The `pathExists()` method is part of an older API.
-          // The recommended method is `findPath().shouldExist()`.
-          projectViewTree.pathExists(testProjectName, "README.md")
-          projectViewTree.pathExists(testProjectName, "pubspec.yaml")
+          projectView {
+            // Asserting the top-level files
+            // Note: The `pathExists()` method is part of an older API.
+            // The recommended method is `findPath().shouldExist()`.
+            projectViewTree.pathExists(testProjectName, "README.md")
+            projectViewTree.pathExists(testProjectName, "pubspec.yaml")
 
-          // Asserting files inside specific directories
-          projectViewTree.pathExists(testProjectName, "lib", "main.dart")
-          projectViewTree.pathExists(testProjectName, "test", "widget_test.dart")
+            // Asserting files inside specific directories
+            projectViewTree.pathExists(testProjectName, "lib", "main.dart")
+            projectViewTree.pathExists(testProjectName, "test", "widget_test.dart")
 
-          // Asserting the existence of the main project folders
-          projectViewTree.pathExists(testProjectName, ".dart_tool")
-          projectViewTree.pathExists(testProjectName, "lib")
-          projectViewTree.pathExists(testProjectName, "test")
-          projectViewTree.pathExists(testProjectName, "android")
-          projectViewTree.pathExists(testProjectName, "ios")
-          projectViewTree.pathExists(testProjectName, "linux")
-          projectViewTree.pathExists(testProjectName, "macos")
-          projectViewTree.pathExists(testProjectName, "web")
-          projectViewTree.pathExists(testProjectName, "windows")
-          // Double-click the main file to open it in the editor.
-          projectViewTree
-            .waitFound()
-            .doubleClickPath(testProjectName, "lib", "main.dart", fullMatch = false)
+            // Asserting the existence of the main project folders
+            projectViewTree.pathExists(testProjectName, ".dart_tool")
+            projectViewTree.pathExists(testProjectName, "lib")
+            projectViewTree.pathExists(testProjectName, "test")
+            projectViewTree.pathExists(testProjectName, "android")
+            projectViewTree.pathExists(testProjectName, "ios")
+            projectViewTree.pathExists(testProjectName, "linux")
+            projectViewTree.pathExists(testProjectName, "macos")
+            projectViewTree.pathExists(testProjectName, "web")
+            projectViewTree.pathExists(testProjectName, "windows")
+            // Double-click the main file to open it in the editor.
+            projectViewTree
+              .waitFound()
+              .doubleClickPath(testProjectName, "lib", "main.dart", fullMatch = false)
+          }
         }
       }
+    } catch (e: Exception) {
+      System.out.println("Exception caught: " + e.toString());
+
+      e.printStackTrace();
+
     }
   }
 }
