@@ -30,86 +30,89 @@ public class PluginLogger {
     final String logPath = PathManager.getLogPath();
     String fullPath = logPath + File.separatorChar + LOG_FILE_NAME;
 
-    // Try to find an existing FileHandler on either logger
-    FileHandler existingHandler = null;
+    synchronized (java.util.logging.LogManager.getLogManager()) {
+      // Try to find an existing FileHandler on either logger
+      FileHandler existingHandler = null;
 
-    if (rootLogger != null) {
-      Handler[] rootHandlers = rootLogger.getHandlers();
-      if (rootHandlers != null) {
-        for (Handler handler : rootHandlers) {
-          if (handler instanceof FileHandler) {
-            existingHandler = (FileHandler) handler;
-            break;
-          }
-        }
-      }
-    }
-
-    if (existingHandler == null) {
-      if (dartLogger != null) {
-        Handler[] dartHandlers = dartLogger.getHandlers();
-        if (dartHandlers != null) {
-          for (Handler handler : dartHandlers) {
-            if (handler instanceof FileHandler) {
-              existingHandler = (FileHandler) handler;
-              break;
-            }
-          }
-        }
-      }
-    }
-
-    if (existingHandler != null) {
-      // Another plugin initialized first; reuse its handler
       if (rootLogger != null) {
-        boolean hasHandler = false;
-        if (rootLogger.getHandlers() != null) {
-          for (Handler h : rootLogger.getHandlers()) {
-            if (h == existingHandler) {
-              hasHandler = true;
+        Handler[] rootHandlers = rootLogger.getHandlers();
+        if (rootHandlers != null) {
+          for (Handler handler : rootHandlers) {
+            if (handler instanceof FileHandler) {
+              existingHandler = (FileHandler)handler;
               break;
             }
           }
         }
-        if (!hasHandler) {
-          rootLogger.addHandler(existingHandler);
-        }
       }
-      if (dartLogger != null) {
-        boolean hasHandler = false;
-        if (dartLogger.getHandlers() != null) {
-          for (Handler h : dartLogger.getHandlers()) {
-            if (h == existingHandler) {
-              hasHandler = true;
-              break;
-            }
-          }
-        }
-        if (!hasHandler) {
-          dartLogger.addHandler(existingHandler);
-        }
-      }
-    } else {
-      // We are the first plugin to initialize; create the handler
-      // TODO(helin24): It seems there could still be conditions where two handlers
-      // are created. To properly fix this problem maybe this
-      // needs to be an API on Dart plugin or combine the plugins.
-      try {
-        FileHandler newHandler = new FileHandler(fullPath, 10 * 1024 * 1024, 5, true);
-        System.setProperty(
-            "java.util.logging.SimpleFormatter.format",
-            "%1$tF %1$tT %3$s [%4$-7s] %5$s %6$s %n");
-        newHandler.setFormatter(new SimpleFormatter());
 
-        // Attach to both loggers so the next plugin finds it
+      if (existingHandler == null) {
+        if (dartLogger != null) {
+          Handler[] dartHandlers = dartLogger.getHandlers();
+          if (dartHandlers != null) {
+            for (Handler handler : dartHandlers) {
+              if (handler instanceof FileHandler) {
+                existingHandler = (FileHandler)handler;
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      if (existingHandler != null) {
+        // Another plugin initialized first; reuse its handler
         if (rootLogger != null) {
-          rootLogger.addHandler(newHandler);
+          boolean hasHandler = false;
+          if (rootLogger.getHandlers() != null) {
+            for (Handler h : rootLogger.getHandlers()) {
+              if (h == existingHandler) {
+                hasHandler = true;
+                break;
+              }
+            }
+          }
+          if (!hasHandler) {
+            rootLogger.addHandler(existingHandler);
+          }
         }
         if (dartLogger != null) {
-          dartLogger.addHandler(newHandler);
+          boolean hasHandler = false;
+          if (dartLogger.getHandlers() != null) {
+            for (Handler h : dartLogger.getHandlers()) {
+              if (h == existingHandler) {
+                hasHandler = true;
+                break;
+              }
+            }
+          }
+          if (!hasHandler) {
+            dartLogger.addHandler(existingHandler);
+          }
         }
-      } catch (Exception e) {
-        throw new RuntimeException(e);
+      }
+      else {
+        // We are the first plugin to initialize; create the handler
+        // TODO(helin24): It seems there could still be conditions where two handlers are created. To properly fix this problem maybe this
+        //  needs to be an API on Dart plugin or combine the plugins.
+        try {
+          FileHandler newHandler = new FileHandler(fullPath, 10 * 1024 * 1024, 5, true);
+          System.setProperty(
+            "java.util.logging.SimpleFormatter.format",
+            "%1$tF %1$tT %3$s [%4$-7s] %5$s %6$s %n");
+          newHandler.setFormatter(new SimpleFormatter());
+
+          // Attach to both loggers so the next plugin finds it
+          if (rootLogger != null) {
+            rootLogger.addHandler(newHandler);
+          }
+          if (dartLogger != null) {
+            dartLogger.addHandler(newHandler);
+          }
+        }
+        catch (Exception e) {
+          throw new RuntimeException(e);
+        }
       }
     }
   }
