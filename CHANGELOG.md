@@ -4,6 +4,8 @@
 
 ### Changed
 
+- Updated gradle plugin version to re-enable running `./gradlew verifyPlugin` locally. ()
+
 ### Removed
 
 ### Fixed
