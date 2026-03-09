@@ -19,7 +19,7 @@ import java.nio.file.Paths
  */
 object FlutterTestSdk {
 
-  private const val FLUTTER_VERSION = "3.24.5"
+  private const val FLUTTER_VERSION = "3.38.10"
 
   /** Root directory that contains the extracted `flutter/` folder. */
   private val cacheRoot: java.io.File =

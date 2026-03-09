@@ -9,7 +9,7 @@ Verify that a user can set the Flutter SDK path in the IDE settings and that the
 
 1. **Ensure alternate Flutter SDK is installed**
    - Check if `~/.flutter_test_sdk/flutter/bin/flutter` exists.
-   - If not, download Flutter 3.24.5 for the current OS/arch and extract it there.
+   - If not, download Flutter 3.38.10 for the current OS/arch and extract it there.
    - Store the path as `alternateSdkPath` for use in the test.
    - This directory is never deleted between runs (Flutter is large).
 
@@ -30,24 +30,29 @@ Verify that a user can set the Flutter SDK path in the IDE settings and that the
 
 ---
 
-## Test: `setFlutterSdkPath` (next)
+## Test: `setFlutterSdkPath`
 
 1. Wait for the welcome screen to appear.
-2. Create a new flutter project (similar to new project test in NewProjectUITest.kt)
-3. Wait for the project window to open (probably about 20 seconds max)
-4. Check the current flutter version using flutter doctor. save that value to check at the end
-5. Open the Settings dialog.
-6. Navigate to **Languages & Frameworks > Flutter** in the settings tree.
-7. Read the current SDK path from the Flutter SDK text field.
-8. Clear the field and type `alternateSdkPath`.
-9. Click OK/Apply to save.
-10. Close the Settings dialog.
-11. [ Open a project / create a project to land in the IDE frame ]
-12. Open the terminal.
-13. Run `flutter doctor`.
-14. Wait for `Doctor summary` to appear.
-15. Parse the Flutter version from the output.
-16. Assert that the version matches Flutter 3.24.5 (the alternate SDK). This should not be the same value as it was set to before.
+2. Create a new Flutter project to land in the IDE frame.
+3. Wait for the project window to open and indicators to clear.
+3b. Lower `pubspec.yaml` sdk constraint to `>=3.10.9 <4.0.0`. The project is created with
+    Flutter 3.41.4 (Dart 3.11.1) which sets `>=3.11.0` — incompatible with the alternate
+    Flutter 3.38.10 (Dart 3.10.9) we are about to switch to.
+4. Open the Settings dialog via `ShowSettings` action.
+5. Navigate to **Languages & Frameworks > Flutter** in the settings tree.
+6. Detect the version of the flutter sdk already set. This is in text  below the sdk text box. This is initialVersion
+7. Locate the Flutter SDK field — it is a `ComboBox` with an `ExtendableTextField` editor.
+8. **Set the field value directly** using `JTextFieldUI.text = alternateSdkPath` (avoids keyboard selection issues).
+9. **Assert the field value** equals `alternateSdkPath` before saving (verifies the value was written correctly).
+10. Detect the version of the flutter sdk that is now set. This is in text below the sdk text box. It should not equal the old value, it should equal the new value. This is newVersion
+11. Assert `newVersion != initialVersion`.
+12. Assert `newVersion == "3.38.10"`.
+13. Click OK to save.
+14. Reopen the settings again, and ensure the path you set before is still set, and its still the same version
+15. Click cancel to close.
+
+
+**Key implementation note:** The SDK field is `com.intellij.openapi.ui.ComboBox` with a `BasicComboBoxEditor` wrapping an `ExtendableTextField`. Use `JTextFieldUI` from the driver SDK to set/read the value programmatically.
 
 ---
 
