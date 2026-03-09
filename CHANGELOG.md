@@ -4,7 +4,7 @@
 
 ### Changed
 
-- Updated gradle plugin version to re-enable running `./gradlew verifyPlugin` locally. ()
+- Updated gradle plugin version to re-enable running `./gradlew verifyPlugin` locally. (#8847)
 
 ### Removed
 
