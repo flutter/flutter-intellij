@@ -335,8 +335,6 @@
     <!-- See https://github.com/flutter/flutter-intellij/issues/8029 -->
     <projectService serviceImplementation="io.flutter.view.InspectorView" overrides="false"/>
 
-    <projectOpenProcessor id="flutter" implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
-
     <editorNotificationProvider implementation="io.flutter.editor.FlutterPubspecNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.inspections.SdkConfigurationNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.editor.NativeEditorNotificationProvider"/>
