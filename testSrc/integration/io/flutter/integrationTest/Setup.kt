@@ -22,6 +22,7 @@ import com.intellij.ide.starter.utils.Git
 import com.intellij.openapi.util.SystemInfo
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
+import java.net.URI
 import java.nio.file.Paths
 
 /**
@@ -45,10 +46,11 @@ class Setup {
 
 
       return setupTestContext(
-        "", IdeProductProvider.IC.copy(
+        "", IdeProductProvider.IU.copy(
+          downloadURI = URI("https://data.services.jetbrains.com/products/releases"),
           // TODO(team) should the version be fetched from some setting, i.e. System.getProperty("uiPlatformBuildVersion")
-          version = "2025.2.6.1",
-          buildType = BuildType.RELEASE.type,
+          version = "2025.3.3",
+          buildType = BuildType.RELEASE.type
         ), projectInfoSpec
       )
 
