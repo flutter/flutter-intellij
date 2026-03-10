@@ -12,25 +12,33 @@ import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.SimpleFormatter;
 
 public class PluginLogger {
   public static final String LOG_FILE_NAME = "dash.log";
 
+  private static final String FLUTTER_ROOT_LOGGER_NAME = "io.flutter";
+  private static final int MAX_LOG_SIZE = 10 * 1024 * 1024;
+  private static final int MAX_LOG_FILES = 5;
+  private static final String LOG_FORMAT_STRING = "%1$tF %1$tT %3$s [%4$-7s] %5$s %6$s %n";
+
   // Add the handler to the root logger so that all classes within `io.flutter`
   // log to the file correctly. We can also update the log level
   // of all classes at once by changing the root logger level.
-  private static final java.util.logging.Logger rootLogger = java.util.logging.Logger.getLogger("io.flutter");
+  private static final java.util.logging.Logger rootLogger = java.util.logging.Logger.getLogger(FLUTTER_ROOT_LOGGER_NAME);
   private static final java.util.logging.Logger dartLogger = java.util.logging.Logger
-      .getLogger("com.jetbrains.lang.dart");
+    .getLogger("com.jetbrains.lang.dart");
 
   static {
     final String logPath = PathManager.getLogPath();
     String fullPath = logPath + File.separatorChar + LOG_FILE_NAME;
 
-    synchronized (java.util.logging.LogManager.getLogManager()) {
+    synchronized (LogManager.getLogManager()) {
       // Try to find an existing FileHandler on either logger
       FileHandler existingHandler = null;
 
@@ -41,20 +49,6 @@ public class PluginLogger {
             if (handler instanceof FileHandler) {
               existingHandler = (FileHandler)handler;
               break;
-            }
-          }
-        }
-      }
-
-      if (existingHandler == null) {
-        if (dartLogger != null) {
-          Handler[] dartHandlers = dartLogger.getHandlers();
-          if (dartHandlers != null) {
-            for (Handler handler : dartHandlers) {
-              if (handler instanceof FileHandler) {
-                existingHandler = (FileHandler)handler;
-                break;
-              }
             }
           }
         }
@@ -76,49 +70,29 @@ public class PluginLogger {
             rootLogger.addHandler(existingHandler);
           }
         }
-        if (dartLogger != null) {
-          boolean hasHandler = false;
-          if (dartLogger.getHandlers() != null) {
-            for (Handler h : dartLogger.getHandlers()) {
-              if (h == existingHandler) {
-                hasHandler = true;
-                break;
-              }
-            }
-          }
-          if (!hasHandler) {
-            dartLogger.addHandler(existingHandler);
-          }
-        }
       }
       else {
         // We are the first plugin to initialize; create the handler
-        // TODO(helin24): It seems there could still be conditions where two handlers are created. To properly fix this problem maybe this
-        //  needs to be an API on Dart plugin or combine the plugins.
         try {
-          FileHandler newHandler = new FileHandler(fullPath, 10 * 1024 * 1024, 5, true);
-          System.setProperty(
-            "java.util.logging.SimpleFormatter.format",
-            "%1$tF %1$tT %3$s [%4$-7s] %5$s %6$s %n");
+          FileHandler newHandler = new FileHandler(fullPath, MAX_LOG_SIZE, MAX_LOG_FILES, true);
+          System.setProperty("java.util.logging.SimpleFormatter.format", LOG_FORMAT_STRING);
           newHandler.setFormatter(new SimpleFormatter());
 
-          // Attach to both loggers so the next plugin finds it
+          // Attach to logger so the next plugin finds it
           if (rootLogger != null) {
             rootLogger.addHandler(newHandler);
           }
-          if (dartLogger != null) {
-            dartLogger.addHandler(newHandler);
-          }
         }
-        catch (Exception e) {
-          throw new RuntimeException(e);
+        catch (IOException | SecurityException e) {
+          java.util.logging.Logger.getLogger(PluginLogger.class.getName())
+            .log(Level.WARNING, "Failed to initialize plugin log file handler", e);
         }
       }
     }
   }
 
   public static void updateLogLevel() {
-    final Logger rootLoggerInstance = Logger.getInstance("io.flutter");
+    final Logger rootLoggerInstance = Logger.getInstance(FLUTTER_ROOT_LOGGER_NAME);
     // Workaround for https://github.com/flutter/flutter-intellij/issues/8631
     if (rootLoggerInstance.getClass().getName().equals("com.haulmont.jmixstudio.logger.JmixLoggerWrapper")) {
       return;
