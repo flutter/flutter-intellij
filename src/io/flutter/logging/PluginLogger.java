@@ -35,11 +35,16 @@ public class PluginLogger {
   private static final java.util.logging.Logger dartLogger = java.util.logging.Logger
     .getLogger("com.jetbrains.lang.dart");
 
-  static {
+  private static boolean isInitialized = false;
+
+  public static void initLogger() {
+    if (isInitialized) return;
+
     final String logPath = PathManager.getLogPath();
     String fullPath = logPath + File.separatorChar + LOG_FILE_NAME;
 
     synchronized (LogManager.getLogManager()) {
+      isInitialized = true;
       // Try to find an existing FileHandler on either logger
       FileHandler existingHandler = getExistingFileHandler(rootLogger);
       if (existingHandler == null) {
