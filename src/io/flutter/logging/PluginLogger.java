@@ -10,6 +10,7 @@ import com.intellij.openapi.diagnostic.LogLevel;
 import com.intellij.openapi.diagnostic.Logger;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,50 +41,14 @@ public class PluginLogger {
 
     synchronized (LogManager.getLogManager()) {
       // Try to find an existing FileHandler on either logger
-      FileHandler existingHandler = null;
-
-      if (rootLogger != null) {
-        Handler[] rootHandlers = rootLogger.getHandlers();
-        if (rootHandlers != null) {
-          for (Handler handler : rootHandlers) {
-            if (handler instanceof FileHandler) {
-              existingHandler = (FileHandler)handler;
-              break;
-            }
-          }
-        }
-      }
-
+      FileHandler existingHandler = getExistingFileHandler(rootLogger);
       if (existingHandler == null) {
-        if (dartLogger != null) {
-          Handler[] dartHandlers = dartLogger.getHandlers();
-          if (dartHandlers != null) {
-            for (Handler handler : dartHandlers) {
-              if (handler instanceof FileHandler) {
-                existingHandler = (FileHandler)handler;
-                break;
-              }
-            }
-          }
-        }
+        existingHandler = getExistingFileHandler(dartLogger);
       }
 
       if (existingHandler != null) {
         // Another plugin initialized first; reuse its handler
-        if (rootLogger != null) {
-          boolean hasHandler = false;
-          if (rootLogger.getHandlers() != null) {
-            for (Handler h : rootLogger.getHandlers()) {
-              if (h == existingHandler) {
-                hasHandler = true;
-                break;
-              }
-            }
-          }
-          if (!hasHandler) {
-            rootLogger.addHandler(existingHandler);
-          }
-        }
+        ensureHandlerSet(rootLogger, existingHandler);
       }
       else {
         // We are the first plugin to initialize; create the handler
@@ -93,9 +58,7 @@ public class PluginLogger {
           newHandler.setFormatter(new SimpleFormatter());
 
           // Attach to logger so the next plugin finds it
-          if (rootLogger != null) {
-            rootLogger.addHandler(newHandler);
-          }
+          ensureHandlerSet(rootLogger, newHandler);
         }
         catch (IOException | SecurityException e) {
           java.util.logging.Logger.getLogger(PluginLogger.class.getName())
@@ -103,6 +66,36 @@ public class PluginLogger {
         }
       }
     }
+  }
+
+  private static void ensureHandlerSet(java.util.logging.Logger logger, FileHandler handler) {
+    if (logger != null) {
+      boolean hasHandler = false;
+      if (logger.getHandlers() != null) {
+        for (Handler h : logger.getHandlers()) {
+          if (h == handler) {
+            hasHandler = true;
+            break;
+          }
+        }
+      }
+      if (!hasHandler) {
+        logger.addHandler(handler);
+      }
+    }
+  }
+
+  private static @Nullable FileHandler getExistingFileHandler(java.util.logging.Logger logger) {
+    if (logger == null) return null;
+    Handler[] handlers = logger.getHandlers();
+    if (handlers != null) {
+      for (Handler handler : handlers) {
+        if (handler instanceof FileHandler) {
+          return (FileHandler)handler;
+        }
+      }
+    }
+    return null;
   }
 
   public static void updateLogLevel() {
