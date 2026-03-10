@@ -54,6 +54,20 @@ public class PluginLogger {
         }
       }
 
+      if (existingHandler == null) {
+        if (dartLogger != null) {
+          Handler[] dartHandlers = dartLogger.getHandlers();
+          if (dartHandlers != null) {
+            for (Handler handler : dartHandlers) {
+              if (handler instanceof FileHandler) {
+                existingHandler = (FileHandler)handler;
+                break;
+              }
+            }
+          }
+        }
+      }
+
       if (existingHandler != null) {
         // Another plugin initialized first; reuse its handler
         if (rootLogger != null) {
