@@ -54,8 +54,7 @@ public class PluginLogger {
         // We are the first plugin to initialize; create the handler
         try {
           FileHandler newHandler = new FileHandler(fullPath, MAX_LOG_SIZE, MAX_LOG_FILES, true);
-          System.setProperty("java.util.logging.SimpleFormatter.format", LOG_FORMAT_STRING);
-          newHandler.setFormatter(new SimpleFormatter());
+          newHandler.setFormatter(createLogFormatter());
 
           // Attach to logger so the next plugin finds it
           ensureHandlerSet(rootLogger, newHandler);
@@ -70,15 +69,8 @@ public class PluginLogger {
 
   private static void ensureHandlerSet(java.util.logging.Logger logger, FileHandler handler) {
     if (logger != null) {
-      boolean hasHandler = false;
-      if (logger.getHandlers() != null) {
-        for (Handler h : logger.getHandlers()) {
-          if (h == handler) {
-            hasHandler = true;
-            break;
-          }
-        }
-      }
+      Handler[] handlers = logger.getHandlers();
+      boolean hasHandler = handlers != null && java.util.Arrays.stream(handlers).anyMatch(h -> h == handler);
       if (!hasHandler) {
         logger.addHandler(handler);
       }
@@ -96,6 +88,22 @@ public class PluginLogger {
       }
     }
     return null;
+  }
+
+  private static @NotNull java.util.logging.Formatter createLogFormatter() {
+    return new java.util.logging.Formatter() {
+      @Override
+      public String format(java.util.logging.LogRecord record) {
+        return String.format(LOG_FORMAT_STRING,
+          new java.util.Date(record.getMillis()),
+          null, // Not using source name in the format string
+          record.getLoggerName(),
+          record.getLevel().getLocalizedName(),
+          super.formatMessage(record),
+          (record.getThrown() != null ? "\n" + com.intellij.openapi.util.text.StringUtil.getThrowableText(record.getThrown()) : "")
+        );
+      }
+    };
   }
 
   public static void updateLogLevel() {
