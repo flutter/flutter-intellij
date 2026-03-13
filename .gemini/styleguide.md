@@ -70,5 +70,5 @@ enforce standard modern Java/Kotlin coding conventions, but strictly police the 
 - **Single Responsibility:** Methods should ideally be 10-20 lines. If a method exceeds 30 lines, suggest a refactor.
 - **DRY:** Identify blocks of code that are 90%+ identical to existing utility methods in this repo and flag them for duplication.
 - **Meaningful Naming:** Variables should describe their intent (e.g., `timeoutInMs` instead of `t`).
-- **Explanatory PR:** Contributors should include the information recommended in the pull request template (In
+- **Descriptive Pull Request:** Contributors should include the information recommended in the pull request template (In
   `.github/PULL_REQUEST_TEMPLATE.md`Ï)
