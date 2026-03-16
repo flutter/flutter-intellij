@@ -64,29 +64,21 @@ public class FlutterTestConfigProducer extends RunConfigurationProducer<TestConf
     return setupForDartFile(config, context, file);
   }
 
-  private boolean setupForSingleTest(TestConfig config, ConfigurationContext context, DartFile file, String testName, boolean hasVariant) {
+  private boolean setupForSingleTest(@NotNull TestConfig config, ConfigurationContext context, DartFile file, String testName, boolean hasVariant) {
     final VirtualFile testFile = verifyFlutterTestFile(config, context, file);
     if (testFile == null) return false;
 
-    TestFields fields = TestFields.forTestName(testName, testFile.getPath()).useRegexp(hasVariant);
-    fields.setAdditionalArgs(config.getFields().getAdditionalArgs());
-    config.setFields(fields);
-
+    setTestFields(config, TestFields.forTestName(testName, testFile.getPath()).useRegexp(hasVariant));
     config.setGeneratedName();
-
     return true;
   }
 
-  private boolean setupForDartFile(TestConfig config, ConfigurationContext context, DartFile file) {
+  private boolean setupForDartFile(@NotNull TestConfig config, ConfigurationContext context, DartFile file) {
     final VirtualFile testFile = verifyFlutterTestFile(config, context, file);
     if (testFile == null) return false;
 
-    TestFields fields = TestFields.forFile(testFile.getPath());
-    fields.setAdditionalArgs(config.getFields().getAdditionalArgs());
-    config.setFields(fields);
-
+    setTestFields(config, TestFields.forFile(testFile.getPath()));
     config.setGeneratedName();
-
     return true;
   }
 
@@ -97,18 +89,20 @@ public class FlutterTestConfigProducer extends RunConfigurationProducer<TestConf
     return FlutterUtils.isInTestDir(file) ? candidate : null;
   }
 
-  private boolean setupForDirectory(TestConfig config, PsiDirectory dir) {
+  private boolean setupForDirectory(@NotNull TestConfig config, PsiDirectory dir) {
     final PubRoot root = PubRoot.forDescendant(dir.getVirtualFile(), dir.getProject());
     if (root == null) return false;
 
     if (!root.hasTests(dir.getVirtualFile())) return false;
 
-    TestFields fields = TestFields.forDir(dir.getVirtualFile().getPath());
-    fields.setAdditionalArgs(config.getFields().getAdditionalArgs());
-    config.setFields(fields);
-
+    setTestFields(config, TestFields.forDir(dir.getVirtualFile().getPath()));
     config.setGeneratedName();
     return true;
+  }
+
+  private static void setTestFields(@NotNull TestConfig config, @NotNull TestFields fields) {
+    fields.setAdditionalArgs(config.getFields().getAdditionalArgs());
+    config.setFields(fields);
   }
 
   /**
