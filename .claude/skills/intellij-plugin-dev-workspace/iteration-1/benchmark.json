@@ -1,0 +1,323 @@
+{
+  "metadata": {
+    "skill_name": "intellij-plugin-dev",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-03-16T04:00:26Z",
+    "evals_run": [
+      1,
+      2,
+      3
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 230.0,
+        "tokens": 99378,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Mentions ext.flutter.inspector.structuredErrors or structured errors being enabled as the reason Chrome differs from Windows",
+          "passed": true,
+          "evidence": "The response explicitly states 'When isShowStructuredErrors() is true, the plugin enables ext.flutter.inspector.structuredErrors via FlutterApp.getFlutterConsoleLogManager()' and explains that 'On Chrome/web, ext.flutter.inspector.structuredErrors is not available, so the callback in hasServiceExtension(...) never fires, structured errors stay disabled'"
+        },
+        {
+          "text": "Mentions FlutterConsoleLogManager or handleFlutterErrorEvent as the handler for Flutter.Error events",
+          "passed": true,
+          "evidence": "The response shows the full chain including 'app.getFlutterConsoleLogManager().handleFlutterErrorEvent(event)' and 'queue.add(() -> processFlutterErrorEvent(diagnosticsNode))  [FlutterConsoleLogManager.java:133]'"
+        },
+        {
+          "text": "Identifies the silent exception catch (try/catch that only logs a warning) in processFlutterErrorEvent as the failure point",
+          "passed": true,
+          "evidence": "The response shows the catch block at line 137: 'catch (Throwable t) { if (FlutterSettings.getInstance().isVerboseLogging()) { LOG.warn(t); } else { LOG.warn(\"Error processing FlutterErrorEvent: \" + t.getMessage()); } }' and notes 'The error goes to idea.log only. Nothing appears in the console.'"
+        },
+        {
+          "text": "Proposes a concrete fix \u00e2\u20ac\u201d either a fallback to display raw error text on exception, or adds error visibility when processFlutterErrorEvent throws",
+          "passed": true,
+          "evidence": "The response proposes two concrete fixes: Part 1 fixes getStyleMember() to add a try/catch matching getLevelMember(), and Part 2 adds a fallback console.print(rawError, ERROR_OUTPUT) in the catch block so errors are never silently swallowed."
+        },
+        {
+          "text": "Explains why Chrome works differently (extension not available on web, so app.log path is used instead)",
+          "passed": true,
+          "evidence": "The response states 'On Chrome/web, ext.flutter.inspector.structuredErrors is not available, so the callback in hasServiceExtension(...) never fires, structured errors stay disabled, and Flutter errors come through the normal app.log daemon event path which works reliably.'"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 133.0,
+        "tokens": 56900,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Shows a plugin.xml <toolWindow> extension point declaration with id, factoryClass, and anchor attributes",
+          "passed": true,
+          "evidence": "The response shows '<toolWindow id=\"Flutter Devices\" anchor=\"bottom\" icon=\"FlutterIcons.Mobile\" factoryClass=\"io.flutter.devicelist.FlutterDeviceListWindowFactory\" canCloseContents=\"false\" />' with all three required attributes (id, factoryClass, anchor)."
+        },
+        {
+          "text": "Shows a ToolWindowFactory implementation with createToolWindowContent() method using ContentFactory",
+          "passed": true,
+          "evidence": "The response shows FlutterDeviceListWindowFactory implementing ToolWindowFactory with 'public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow)' that uses 'ContentFactory.getInstance().createContent(panel.getComponent(), \"\", false)' and 'toolWindow.getContentManager().addContent(content)'."
+        },
+        {
+          "text": "Shows MessageBus subscription with project.getMessageBus().connect() and a Disposable parent to avoid leaks",
+          "passed": true,
+          "evidence": "In section 4, the response shows 'MessageBusConnection connection = project.getMessageBus().connect();' followed by 'Disposer.register(toolWindow.getDisposable(), connection);' to scope the connection to the tool window lifetime."
+        },
+        {
+          "text": "Mentions that UI updates must happen on the EDT (invokeLater or similar) since callbacks arrive on background threads",
+          "passed": true,
+          "evidence": "In section 4 (MessageBus pattern), the response shows 'devices -> SwingUtilities.invokeLater(() -> rebuildList(devices))' and notes 'The key disposable rule from the skill applies here too'. The DeviceService section also notes 'Callbacks are always delivered on the EDT (via SwingUtilities.invokeLater inside DeviceService.fireChangeEvent())'."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 3,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.6667,
+        "passed": 4,
+        "failed": 2,
+        "total": 6,
+        "time_seconds": 266.8,
+        "tokens": 64445,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses NopProcessHandler (or similar fake process handler) rather than a real process",
+          "passed": true,
+          "evidence": "The response uses 'final ProcessHandler handler = new NopProcessHandler();' and explains 'NopProcessHandler (IntelliJ platform, com.intellij.execution.process) holds no OS process.'"
+        },
+        {
+          "text": "Extends BasePlatformTestCase, LightPlatformTestCase, or another appropriate IntelliJ test base class",
+          "passed": false,
+          "evidence": "The test class 'DaemonConsoleViewTest' does not extend any IntelliJ test base class. It uses a '@Rule public final ProjectFixture<IdeaProjectTestFixture> fixture = Testing.makeEmptyProject();' approach with JUnit rules instead. The class declaration is 'public class DaemonConsoleViewTest {' with no extends clause."
+        },
+        {
+          "text": "Uses handler.notifyTextAvailable() or equivalent to simulate stdout events arriving",
+          "passed": true,
+          "evidence": "The response uses 'handler.notifyTextAvailable(\"[{\\\"event\\\":\\\"app.log\\\",...}]\\n\", ProcessOutputTypes.STDOUT)' to simulate stdout events and 'handler.notifyTextAvailable(\"Launching lib/main.dart on iPhone 15\\n\", ProcessOutputTypes.STDOUT)' for regular text."
+        },
+        {
+          "text": "Calls UIUtil.dispatchAllInvocationEvents(), PlatformTestUtil.dispatchAllEventsInIdeEventQueue(), or equivalent to flush EDT before asserting",
+          "passed": false,
+          "evidence": "The response explicitly states 'there is no background thread and no need to call UIUtil.dispatchAllInvocationEvents() before asserting' because NopProcessHandler fires notifyTextAvailable synchronously. No EDT flush call is made before the assertions."
+        },
+        {
+          "text": "Asserts that JSON daemon event lines do NOT appear in the console output",
+          "passed": true,
+          "evidence": "The response asserts 'assertFalse(\"JSON daemon event must not appear: \" + line, line.trim().startsWith(\"[{\"));' iterating over all printed lines, verifying no daemon JSON events appear in the output."
+        },
+        {
+          "text": "Asserts that regular (non-JSON) text lines DO appear in the console output",
+          "passed": true,
+          "evidence": "The response asserts 'assertTrue(printed.stream().anyMatch(l -> l.contains(\"Launching lib/main.dart\")));' and 'assertTrue(printed.stream().anyMatch(l -> l.contains(\"Flutter run key commands\")));' to verify regular text lines are displayed."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.0,
+        "passed": 0,
+        "failed": 5,
+        "total": 5,
+        "time_seconds": 93.6,
+        "tokens": 26606,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Mentions ext.flutter.inspector.structuredErrors or structured errors being enabled as the reason Chrome differs from Windows",
+          "passed": false,
+          "evidence": "The response does not mention ext.flutter.inspector.structuredErrors or the structured errors extension at all. It incorrectly attributes the Chrome vs Windows difference to Chrome using stderr directly while Windows uses app.log daemon events, without identifying the actual structured errors mechanism."
+        },
+        {
+          "text": "Mentions FlutterConsoleLogManager or handleFlutterErrorEvent as the handler for Flutter.Error events",
+          "passed": false,
+          "evidence": "The response does not mention FlutterConsoleLogManager or handleFlutterErrorEvent anywhere. It references DaemonApi, FlutterApp, and app.log listeners generically but never identifies the specific class responsible for handling Flutter.Error events."
+        },
+        {
+          "text": "Identifies the silent exception catch (try/catch that only logs a warning) in processFlutterErrorEvent as the failure point",
+          "passed": false,
+          "evidence": "The response does not identify processFlutterErrorEvent or any silent catch block as the failure point. It speculates about an app.log listener not being registered for desktop targets or a null ConsoleView reference, which are hypothetical failure points not grounded in the actual code."
+        },
+        {
+          "text": "Proposes a concrete fix \u00e2\u20ac\u201d either a fallback to display raw error text on exception, or adds error visibility when processFlutterErrorEvent throws",
+          "passed": false,
+          "evidence": "The response proposes registering an app.log listener unconditionally for all device types, which is not the actual fix needed. It does not address the real failure point (the silent catch in processFlutterErrorEvent) and does not propose adding fallback console output when an exception is thrown."
+        },
+        {
+          "text": "Explains why Chrome works differently (extension not available on web, so app.log path is used instead)",
+          "passed": false,
+          "evidence": "The response incorrectly explains the Chrome difference as Chrome emitting errors directly to stderr of the flutter run process. It does not mention that the structuredErrors extension is unavailable on web, which is the actual reason the app.log path is used on Chrome."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 64.1,
+        "tokens": 26973,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Shows a plugin.xml <toolWindow> extension point declaration with id, factoryClass, and anchor attributes",
+          "passed": true,
+          "evidence": "The response shows a toolWindow declaration with 'id=\"Flutter Devices\"', 'anchor=\"bottom\"', and 'factoryClass=\"io.flutter.view.FlutterDeviceToolWindowFactory\"' \u00e2\u20ac\u201d all three required attributes are present."
+        },
+        {
+          "text": "Shows a ToolWindowFactory implementation with createToolWindowContent() method using ContentFactory",
+          "passed": true,
+          "evidence": "The response shows FlutterDeviceToolWindowFactory with 'public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow)' that uses 'ContentFactory contentFactory = ContentFactory.getInstance()' and 'contentFactory.createContent(panel.getComponent(), \"\", false)'."
+        },
+        {
+          "text": "Shows MessageBus subscription with project.getMessageBus().connect() and a Disposable parent to avoid leaks",
+          "passed": true,
+          "evidence": "The response shows 'project.getMessageBus().connect(this)' where 'this' is Disposable with the comment 'auto-disconnects on dispose', followed by '.subscribe(DeviceService.DEVICE_LIST_CHANGED, (DeviceListListener) this::updateList)'."
+        },
+        {
+          "text": "Mentions that UI updates must happen on the EDT (invokeLater or similar) since callbacks arrive on background threads",
+          "passed": true,
+          "evidence": "The response states 'Always marshal Swing updates to the EDT via SwingUtilities.invokeLater'."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 3,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.8333,
+        "passed": 5,
+        "failed": 1,
+        "total": 6,
+        "time_seconds": 77.0,
+        "tokens": 27975,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses NopProcessHandler (or similar fake process handler) rather than a real process",
+          "passed": true,
+          "evidence": "The response uses a custom 'FakeProcessHandler extends ProcessHandler' that holds no real OS process and provides simulateStdout/simulateStderr methods calling notifyTextAvailable() \u00e2\u20ac\u201d a valid fake process handler approach."
+        },
+        {
+          "text": "Extends BasePlatformTestCase, LightPlatformTestCase, or another appropriate IntelliJ test base class",
+          "passed": true,
+          "evidence": "The test class declaration is 'public class DaemonConsoleViewTest extends BasePlatformTestCase' which is an appropriate IntelliJ test base class."
+        },
+        {
+          "text": "Uses handler.notifyTextAvailable() or equivalent to simulate stdout events arriving",
+          "passed": true,
+          "evidence": "The FakeProcessHandler uses 'notifyTextAvailable(text, ProcessOutputType.STDOUT)' in simulateStdout() and 'notifyTextAvailable(text, ProcessOutputType.STDERR)' in simulateStderr(), which is the standard way to simulate process output events."
+        },
+        {
+          "text": "Calls UIUtil.dispatchAllInvocationEvents(), PlatformTestUtil.dispatchAllEventsInIdeEventQueue(), or equivalent to flush EDT before asserting",
+          "passed": false,
+          "evidence": "The response does not call UIUtil.dispatchAllInvocationEvents() or any equivalent EDT flush method before asserting. The tests go directly from simulateStdout() calls to verify() calls with no event queue flushing step."
+        },
+        {
+          "text": "Asserts that JSON daemon event lines do NOT appear in the console output",
+          "passed": true,
+          "evidence": "The response uses 'verify(mockConsoleView, never()).print(contains(\"app.log\"), any(ConsoleViewContentType.class))' and 'verify(mockConsoleView, never()).print(eq(daemon), any(ConsoleViewContentType.class))' to assert daemon JSON events are not passed to the console."
+        },
+        {
+          "text": "Asserts that regular (non-JSON) text lines DO appear in the console output",
+          "passed": true,
+          "evidence": "The response uses 'verify(mockConsoleView, times(1)).print(eq(regularText), eq(ConsoleViewContentType.NORMAL_OUTPUT))' and similar verify calls for regular1 and regular2 to assert non-JSON lines are displayed in the console."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 0.8889,
+        "stddev": 0.1924,
+        "min": 0.6667,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 209.9333,
+        "stddev": 69.1203,
+        "min": 133.0,
+        "max": 266.8
+      },
+      "tokens": {
+        "mean": 73574.3333,
+        "stddev": 22662.8256,
+        "min": 56900,
+        "max": 99378
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.6111,
+        "stddev": 0.5358,
+        "min": 0.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 78.2333,
+        "stddev": 14.7886,
+        "min": 64.1,
+        "max": 93.6
+      },
+      "tokens": {
+        "mean": 27184.6667,
+        "stddev": 708.62,
+        "min": 26606,
+        "max": 27975
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.28",
+      "time_seconds": "+131.7",
+      "tokens": "+46390"
+    }
+  },
+  "notes": []
+}

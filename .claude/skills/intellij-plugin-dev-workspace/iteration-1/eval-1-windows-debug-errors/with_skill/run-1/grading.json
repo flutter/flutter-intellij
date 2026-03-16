@@ -1,0 +1,37 @@
+{
+  "eval_id": 1,
+  "run_type": "with_skill",
+  "expectations": [
+    {
+      "text": "Mentions ext.flutter.inspector.structuredErrors or structured errors being enabled as the reason Chrome differs from Windows",
+      "passed": true,
+      "evidence": "The response explicitly states 'When isShowStructuredErrors() is true, the plugin enables ext.flutter.inspector.structuredErrors via FlutterApp.getFlutterConsoleLogManager()' and explains that 'On Chrome/web, ext.flutter.inspector.structuredErrors is not available, so the callback in hasServiceExtension(...) never fires, structured errors stay disabled'"
+    },
+    {
+      "text": "Mentions FlutterConsoleLogManager or handleFlutterErrorEvent as the handler for Flutter.Error events",
+      "passed": true,
+      "evidence": "The response shows the full chain including 'app.getFlutterConsoleLogManager().handleFlutterErrorEvent(event)' and 'queue.add(() -> processFlutterErrorEvent(diagnosticsNode))  [FlutterConsoleLogManager.java:133]'"
+    },
+    {
+      "text": "Identifies the silent exception catch (try/catch that only logs a warning) in processFlutterErrorEvent as the failure point",
+      "passed": true,
+      "evidence": "The response shows the catch block at line 137: 'catch (Throwable t) { if (FlutterSettings.getInstance().isVerboseLogging()) { LOG.warn(t); } else { LOG.warn(\"Error processing FlutterErrorEvent: \" + t.getMessage()); } }' and notes 'The error goes to idea.log only. Nothing appears in the console.'"
+    },
+    {
+      "text": "Proposes a concrete fix \u00e2\u20ac\u201d either a fallback to display raw error text on exception, or adds error visibility when processFlutterErrorEvent throws",
+      "passed": true,
+      "evidence": "The response proposes two concrete fixes: Part 1 fixes getStyleMember() to add a try/catch matching getLevelMember(), and Part 2 adds a fallback console.print(rawError, ERROR_OUTPUT) in the catch block so errors are never silently swallowed."
+    },
+    {
+      "text": "Explains why Chrome works differently (extension not available on web, so app.log path is used instead)",
+      "passed": true,
+      "evidence": "The response states 'On Chrome/web, ext.flutter.inspector.structuredErrors is not available, so the callback in hasServiceExtension(...) never fires, structured errors stay disabled, and Flutter errors come through the normal app.log daemon event path which works reliably.'"
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

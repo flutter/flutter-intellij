@@ -1,0 +1,32 @@
+{
+  "eval_id": 2,
+  "run_type": "without_skill",
+  "expectations": [
+    {
+      "text": "Shows a plugin.xml <toolWindow> extension point declaration with id, factoryClass, and anchor attributes",
+      "passed": true,
+      "evidence": "The response shows a toolWindow declaration with 'id=\"Flutter Devices\"', 'anchor=\"bottom\"', and 'factoryClass=\"io.flutter.view.FlutterDeviceToolWindowFactory\"' \u00e2\u20ac\u201d all three required attributes are present."
+    },
+    {
+      "text": "Shows a ToolWindowFactory implementation with createToolWindowContent() method using ContentFactory",
+      "passed": true,
+      "evidence": "The response shows FlutterDeviceToolWindowFactory with 'public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow)' that uses 'ContentFactory contentFactory = ContentFactory.getInstance()' and 'contentFactory.createContent(panel.getComponent(), \"\", false)'."
+    },
+    {
+      "text": "Shows MessageBus subscription with project.getMessageBus().connect() and a Disposable parent to avoid leaks",
+      "passed": true,
+      "evidence": "The response shows 'project.getMessageBus().connect(this)' where 'this' is Disposable with the comment 'auto-disconnects on dispose', followed by '.subscribe(DeviceService.DEVICE_LIST_CHANGED, (DeviceListListener) this::updateList)'."
+    },
+    {
+      "text": "Mentions that UI updates must happen on the EDT (invokeLater or similar) since callbacks arrive on background threads",
+      "passed": true,
+      "evidence": "The response states 'Always marshal Swing updates to the EDT via SwingUtilities.invokeLater'."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  }
+}

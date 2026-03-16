@@ -1,0 +1,42 @@
+{
+  "eval_id": 3,
+  "run_type": "with_skill",
+  "expectations": [
+    {
+      "text": "Uses NopProcessHandler (or similar fake process handler) rather than a real process",
+      "passed": true,
+      "evidence": "The response uses 'final ProcessHandler handler = new NopProcessHandler();' and explains 'NopProcessHandler (IntelliJ platform, com.intellij.execution.process) holds no OS process.'"
+    },
+    {
+      "text": "Extends BasePlatformTestCase, LightPlatformTestCase, or another appropriate IntelliJ test base class",
+      "passed": false,
+      "evidence": "The test class 'DaemonConsoleViewTest' does not extend any IntelliJ test base class. It uses a '@Rule public final ProjectFixture<IdeaProjectTestFixture> fixture = Testing.makeEmptyProject();' approach with JUnit rules instead. The class declaration is 'public class DaemonConsoleViewTest {' with no extends clause."
+    },
+    {
+      "text": "Uses handler.notifyTextAvailable() or equivalent to simulate stdout events arriving",
+      "passed": true,
+      "evidence": "The response uses 'handler.notifyTextAvailable(\"[{\\\"event\\\":\\\"app.log\\\",...}]\\n\", ProcessOutputTypes.STDOUT)' to simulate stdout events and 'handler.notifyTextAvailable(\"Launching lib/main.dart on iPhone 15\\n\", ProcessOutputTypes.STDOUT)' for regular text."
+    },
+    {
+      "text": "Calls UIUtil.dispatchAllInvocationEvents(), PlatformTestUtil.dispatchAllEventsInIdeEventQueue(), or equivalent to flush EDT before asserting",
+      "passed": false,
+      "evidence": "The response explicitly states 'there is no background thread and no need to call UIUtil.dispatchAllInvocationEvents() before asserting' because NopProcessHandler fires notifyTextAvailable synchronously. No EDT flush call is made before the assertions."
+    },
+    {
+      "text": "Asserts that JSON daemon event lines do NOT appear in the console output",
+      "passed": true,
+      "evidence": "The response asserts 'assertFalse(\"JSON daemon event must not appear: \" + line, line.trim().startsWith(\"[{\"));' iterating over all printed lines, verifying no daemon JSON events appear in the output."
+    },
+    {
+      "text": "Asserts that regular (non-JSON) text lines DO appear in the console output",
+      "passed": true,
+      "evidence": "The response asserts 'assertTrue(printed.stream().anyMatch(l -> l.contains(\"Launching lib/main.dart\")));' and 'assertTrue(printed.stream().anyMatch(l -> l.contains(\"Flutter run key commands\")));' to verify regular text lines are displayed."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 2,
+    "total": 6,
+    "pass_rate": 0.6667
+  }
+}

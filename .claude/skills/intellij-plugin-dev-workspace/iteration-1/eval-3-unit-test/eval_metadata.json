@@ -1,0 +1,31 @@
+{
+  "eval_id": 3,
+  "eval_name": "daemon-console-unit-test",
+  "prompt": "I need to write a unit test for DaemonConsoleView that verifies daemon JSON events ([{\"event\":\"app.log\",...}]) are filtered from console output, while regular text lines are displayed. The test should not start a real Flutter process. Show me the test class, how to set up the fake process handler, how to simulate stdout events, and how to assert what ended up in the console.",
+  "assertions": [
+    {
+      "id": "nop-process-handler",
+      "text": "Uses NopProcessHandler (or similar fake process handler) rather than a real process"
+    },
+    {
+      "id": "correct-test-base-class",
+      "text": "Extends BasePlatformTestCase, LightPlatformTestCase, or another appropriate IntelliJ test base class"
+    },
+    {
+      "id": "notify-text-available",
+      "text": "Uses handler.notifyTextAvailable() or equivalent to simulate stdout events arriving"
+    },
+    {
+      "id": "edt-flush",
+      "text": "Calls UIUtil.dispatchAllInvocationEvents(), PlatformTestUtil.dispatchAllEventsInIdeEventQueue(), or equivalent to flush EDT before asserting"
+    },
+    {
+      "id": "json-filtered-assertion",
+      "text": "Asserts that JSON daemon event lines do NOT appear in the console output"
+    },
+    {
+      "id": "regular-text-shown-assertion",
+      "text": "Asserts that regular (non-JSON) text lines DO appear in the console output"
+    }
+  ]
+}
