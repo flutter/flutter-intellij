@@ -66,7 +66,7 @@ fun newProjectWelcomeScreen(run: BackgroundRun, testProjectName: String) {
   run.driver.withContext {
     // Assert that the welcome screen is visible before interacting with it.
     welcomeScreen {
-      assert(isVisible())
+      assert(present())
       println("Creating the new project from Welcome Screen")
       createNewProjectButton.click()
 
@@ -94,7 +94,7 @@ fun newProjectWelcomeScreen(run: BackgroundRun, testProjectName: String) {
         wait(1.seconds)
 
         keyboard {
-          typeText(testProjectName)
+          typeText(testProjectName, 60)
         }
         createButton.click()
       }
