@@ -94,7 +94,7 @@ fun newProjectWelcomeScreen(run: BackgroundRun, testProjectName: String) {
         wait(1.seconds)
 
         keyboard {
-          typeText(testProjectName, 60)
+          typeText(testProjectName, delayBetweenCharsInMs = 60)
         }
         createButton.click()
       }
