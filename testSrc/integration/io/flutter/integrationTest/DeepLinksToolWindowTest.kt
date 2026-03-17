@@ -100,7 +100,7 @@ class DeepLinksToolWindowTest {
         driver.invokeAction("ActivateFlutterDeepLinksToolWindow")
 
         // Wait for the tool window to be focused or exist
-        toolWindow("Flutter Deep Links") {
+        toolWindow(io.flutter.deeplinks.DeepLinksViewFactory.TOOL_WINDOW_ID) {
           waitFound(1.minutes)
 
           // Verify a JCEF or JxBrowser component exists. We use 'Browser' in class name robustly.
