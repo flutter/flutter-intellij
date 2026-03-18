@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2026 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -25,6 +25,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Paths
 import kotlin.time.Duration.Companion.minutes
+import io.flutter.integrationTest.utils.createFlutterProjectWithCli
 
 @Tag("ui")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -35,23 +36,8 @@ class DeepLinksToolWindowTest {
   private lateinit var run: BackgroundRun
 
   @BeforeAll
-  fun createProject() {
-    val flutterSdk = System.getenv("FLUTTER_SDK")
-      ?: throw IllegalStateException("FLUTTER_SDK environment variable not set")
-    val flutterExe = Paths.get(flutterSdk, "bin", "flutter").toString()
-    val tmpDir = System.getProperty("java.io.tmpdir")
-
-    println("Creating project $testProjectName in $tmpDir")
-    val process = ProcessBuilder(flutterExe, "create", "--project-name", "deep_links_test", testProjectName)
-      .directory(java.io.File(tmpDir))
-      .redirectErrorStream(true)
-      .start()
-
-    val exitCode = process.waitFor()
-    if (exitCode != 0) {
-      val output = process.inputStream.bufferedReader().readText()
-      throw IllegalStateException("flutter create failed: $output")
-    }
+  fun setup() {
+    createFlutterProjectWithCli(testProjectName, projectName = "deep_links_test")
   }
 
   @AfterEach

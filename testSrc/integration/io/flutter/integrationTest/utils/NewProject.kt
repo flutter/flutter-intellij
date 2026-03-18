@@ -13,6 +13,7 @@ import com.intellij.driver.sdk.ui.components.common.welcomeScreen
 import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import org.junit.jupiter.api.fail
+import java.nio.file.Paths
 import kotlin.time.Duration.Companion.seconds
 
 // A Kotlin extension function for the `Finder` class.
@@ -101,3 +102,33 @@ fun newProjectWelcomeScreen(run: BackgroundRun, testProjectName: String) {
     }
   }
 }
+
+/**
+ * Creates a new Flutter project using the Flutter CLI.
+ *
+ * @param testProjectName The folder name for the new project.
+ * @param projectName The Dart package name of the project.
+ * @param directory The parent directory where the project folder will be created.
+ */
+fun createFlutterProjectWithCli(
+  testProjectName: String,
+  projectName: String = "test_project",
+  directory: String = System.getProperty("java.io.tmpdir")
+) {
+  val flutterSdk = System.getenv("FLUTTER_SDK")
+    ?: throw IllegalStateException("FLUTTER_SDK environment variable not set")
+  val flutterExe = Paths.get(flutterSdk, "bin", "flutter").toString()
+
+  println("Creating project $testProjectName in $directory")
+  val process = ProcessBuilder(flutterExe, "create", "--project-name", projectName, testProjectName)
+    .directory(java.io.File(directory))
+    .redirectErrorStream(true)
+    .start()
+
+  val exitCode = process.waitFor()
+  if (exitCode != 0) {
+    val output = process.inputStream.bufferedReader().readText()
+    throw IllegalStateException("flutter create failed: $output")
+  }
+}
+
