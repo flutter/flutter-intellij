@@ -264,7 +264,14 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
     // Dispose the browser tab
     final EmbeddedTab tab = browserTabRef.getAndSet(null);
     if (tab != null) {
-      tab.close();
+      ApplicationManager.getApplication().executeOnPooledThread(() -> {
+        try {
+          tab.close();
+        }
+        catch (Exception ex) {
+          LOG.info(ex);
+        }
+      });
     }
   }
 }
