@@ -140,6 +140,10 @@ public class FlutterConsoleLogManager {
             } else {
               LOG.warn("Error processing FlutterErrorEvent: " + t.getMessage());
             }
+            // Fallback: always print the raw error description to the console so the user
+            // isn't left with a blank debug console. This is the safety net for issue #8839
+            // and any future rendering failures.
+            console.print(diagnosticsNode + "\n", ERROR_CONTENT_TYPE);
           }
           finally {
             queueLength.decrementAndGet();
