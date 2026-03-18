@@ -81,6 +81,8 @@ public class FlutterInitializer extends FlutterProjectActivity {
 
   @Override
   public void executeProjectStartup(@NotNull Project project) {
+    PluginLogger.initLogger();
+
     // This sets the correct log level and listens for future changes.
     PluginLogger.updateLogLevel();
     FlutterSettings.getInstance().addListener(PluginLogger::updateLogLevel);
