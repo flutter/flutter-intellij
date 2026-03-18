@@ -63,18 +63,20 @@ public class EmbeddedBrowserEngine {
     ApplicationManager.getApplication().addApplicationListener(new ApplicationListener() {
       @Override
       public boolean canExitApplication() {
-        try {
-          if (engine != null && !engine.isClosed()) {
-            engine.close();
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+          try {
+            if (engine != null && !engine.isClosed()) {
+              engine.close();
+            }
           }
-        }
-        catch (Exception ex) {
-          if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-            LOG.info(ex);
-          } else {
-            LOG.info("Exception when closing JX Browser engine: " + ex.getMessage());
+          catch (Exception ex) {
+            if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+              LOG.info(ex);
+            } else {
+              LOG.info("Exception when closing JX Browser engine: " + ex.getMessage());
+            }
           }
-        }
+        });
         return true;
       }
     });
