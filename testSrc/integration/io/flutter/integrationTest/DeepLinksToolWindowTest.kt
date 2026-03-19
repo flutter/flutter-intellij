@@ -26,6 +26,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Paths
 import kotlin.time.Duration.Companion.minutes
 import io.flutter.integrationTest.utils.createFlutterProjectWithCli
+import io.flutter.integrationTest.utils.deleteFlutterProject
 
 @Tag("ui")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -51,18 +52,8 @@ class DeepLinksToolWindowTest {
   }
 
   @AfterAll
-  fun cleanUpTestFolder() {
-    // Clean up the project folder
-    if (testProjectName.isNotEmpty()) {
-      val projectPath = Paths.get(System.getProperty("java.io.tmpdir"), testProjectName)
-      val projectFile = projectPath.toFile()
-      if (projectFile.exists()) {
-        projectFile.deleteRecursively()
-        println("Successfully deleted test folder: $projectPath")
-      } else {
-        println("Test folder does not exist, skipping cleanup: $projectPath")
-      }
-    }
+  fun teardown() {
+    deleteFlutterProject(testProjectName)
   }
 
   @Test

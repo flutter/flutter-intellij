@@ -132,3 +132,25 @@ fun createFlutterProjectWithCli(
   }
 }
 
+/**
+ * Deletes a test project folder.
+ *
+ * @param testProjectName The folder name of the project.
+ * @param directory The parent directory where the project folder is located. Defaults to the system tmp directory.
+ */
+fun deleteFlutterProject(
+  testProjectName: String,
+  directory: String = System.getProperty("java.io.tmpdir")
+) {
+  if (testProjectName.isNotEmpty()) {
+    val projectPath = Paths.get(directory, testProjectName)
+    val projectFile = projectPath.toFile()
+    if (projectFile.exists()) {
+      projectFile.deleteRecursively()
+      println("Successfully deleted test folder: $projectPath")
+    } else {
+      println("Test folder does not exist, skipping cleanup: $projectPath")
+    }
+  }
+}
+
