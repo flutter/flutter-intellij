@@ -79,17 +79,6 @@ val untilBuildInput = providers.gradleProperty("untilBuild").get()
 val javaVersion = providers.gradleProperty("javaVersion").get()
 group = "io.flutter"
 
-// For debugging purposes:
-println("flutterPluginVersion: $flutterPluginVersion")
-println("platformType: $platformType")
-println("ideaVersion: $ideaVersion")
-println("intellijIdeaVersion: $intellijIdeaVersion")
-println("dartPluginVersion: $dartPluginVersion")
-println("sinceBuild: $sinceBuildInput")
-println("untilBuild: $untilBuildInput")
-println("javaVersion: $javaVersion")
-println("group: $group")
-
 var jvmVersion: JvmTarget
 jvmVersion = when (javaVersion) {
   "17" -> {
