@@ -60,7 +60,7 @@ class DeepLinksToolWindowTest {
   fun testDeepLinksToolWindow() {
     println("Initializing IDE test context")
     val projectPath = Paths.get(System.getProperty("java.io.tmpdir"), testProjectName)
-    run = Setup.setupTestContextIC("DeepLinksToolWindowTest", LocalProjectInfo(projectPath)).runIdeWithDriver()
+    run = Setup.setupTestContextIC(javaClass.simpleName, LocalProjectInfo(projectPath)).runIdeWithDriver()
 
     run.driver.withContext {
       ideFrame {

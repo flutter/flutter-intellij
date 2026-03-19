@@ -73,7 +73,7 @@ class NewProjectUITest {
   fun newProjectIC() {
     println("Initializing IDE test context")
     println("Test project will be created as: $testProjectName")
-    run = Setup.setupTestContextIC("NewProjectUITest").runIdeWithDriver()
+    run = Setup.setupTestContextIC(javaClass.simpleName).runIdeWithDriver()
 
     newProjectWelcomeScreen(run, testProjectName)
     newProjectInProjectView()
@@ -84,7 +84,7 @@ class NewProjectUITest {
   fun newProjectUE() {
     println("Initializing IDE test context")
     println("Test project will be created as: $testProjectName")
-    run = Setup.setupTestContextUE("NewProjectUITest").runIdeWithDriver()
+    run = Setup.setupTestContextUE(javaClass.simpleName).runIdeWithDriver()
 
     newProjectWelcomeScreen(run, testProjectName)
     run.driver.withContext {
@@ -101,7 +101,7 @@ class NewProjectUITest {
   fun newProjectWS() {
     println("Initializing IDE test context")
     println("Test project will be created as: $testProjectName")
-    run = Setup.setupTestContextWS("NewProjectUITest").runIdeWithDriver()
+    run = Setup.setupTestContextWS(javaClass.simpleName).runIdeWithDriver()
 
     newProjectWelcomeScreen(run, testProjectName)
     newProjectInProjectView()
