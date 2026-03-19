@@ -9,6 +9,7 @@ import com.intellij.openapi.application.ApplicationListener;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.SystemInfo;
+import io.flutter.utils.OpenApiUtils;
 import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.engine.EngineOptions;
 import com.teamdev.jxbrowser.engine.PasswordStore;
@@ -63,7 +64,7 @@ public class EmbeddedBrowserEngine {
     ApplicationManager.getApplication().addApplicationListener(new ApplicationListener() {
       @Override
       public boolean canExitApplication() {
-        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+        OpenApiUtils.safeExecuteOnPooledThread(() -> {
           try {
             if (engine != null && !engine.isClosed()) {
               engine.close();

@@ -71,7 +71,7 @@ public abstract class EmbeddedBrowser {
             final BrowserTab tab = tabs.get(tabName);
               final EmbeddedTab embeddedTab = tab.embeddedTab;
               if (embeddedTab != null) {
-                com.intellij.openapi.application.ApplicationManager.getApplication().executeOnPooledThread(() -> {
+                OpenApiUtils.safeExecuteOnPooledThread(() -> {
                   try {
                     embeddedTab.close();
                   }
