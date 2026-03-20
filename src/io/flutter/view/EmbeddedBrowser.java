@@ -71,14 +71,12 @@ public abstract class EmbeddedBrowser {
             final BrowserTab tab = tabs.get(tabName);
               final EmbeddedTab embeddedTab = tab.embeddedTab;
               if (embeddedTab != null) {
-                OpenApiUtils.safeExecuteOnPooledThread(() -> {
-                  try {
-                    embeddedTab.close();
-                  }
-                  catch (Exception ex) {
-                    logger().info(ex);
-                  }
-                });
+                try {
+                  embeddedTab.close();
+                }
+                catch (Exception ex) {
+                  logger().info(ex);
+                }
               }
           }
           tabs.clear();
