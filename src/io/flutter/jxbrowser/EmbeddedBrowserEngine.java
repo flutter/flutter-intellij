@@ -5,7 +5,7 @@
  */
 package io.flutter.jxbrowser;
 
-import com.intellij.openapi.application.ApplicationListener;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.SystemInfo;
@@ -23,7 +23,7 @@ import java.nio.file.Paths;
 import static com.teamdev.jxbrowser.engine.RenderingMode.HARDWARE_ACCELERATED;
 import static com.teamdev.jxbrowser.engine.RenderingMode.OFF_SCREEN;
 
-public class EmbeddedBrowserEngine {
+public class EmbeddedBrowserEngine implements Disposable {
   private static final @NotNull Logger LOG = PluginLogger.createLogger(EmbeddedBrowserEngine.class);
   private final Engine engine;
 
@@ -61,24 +61,22 @@ public class EmbeddedBrowserEngine {
     }
     engine = temp;
 
-    ApplicationManager.getApplication().addApplicationListener(new ApplicationListener() {
-      @Override
-      public boolean canExitApplication() {
-        OpenApiUtils.safeExecuteOnPooledThread(() -> {
-          try {
-            if (engine != null && !engine.isClosed()) {
-              engine.close();
-            }
-          }
-          catch (Exception ex) {
-            if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-              LOG.info(ex);
-            } else {
-              LOG.info("Exception when closing JX Browser engine: " + ex.getMessage());
-            }
-          }
-        });
-        return true;
+  }
+
+  @Override
+  public void dispose() {
+    OpenApiUtils.safeExecuteOnPooledThread(() -> {
+      try {
+        if (engine != null && !engine.isClosed()) {
+          engine.close();
+        }
+      }
+      catch (Exception ex) {
+        if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+          LOG.info(ex);
+        } else {
+          LOG.info("Exception when closing JX Browser engine: " + ex.getMessage());
+        }
       }
     });
   }
