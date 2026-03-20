@@ -28,6 +28,7 @@ import io.flutter.logging.PluginLogger;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.JxBrowserUtils;
+import io.flutter.utils.OpenApiUtils;
 import io.flutter.utils.ZoomLevelSelector;
 import io.flutter.view.EmbeddedBrowser;
 import io.flutter.view.EmbeddedTab;
@@ -98,7 +99,18 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
 
   @Override
   public void close() {
-    this.browser.close();
+    OpenApiUtils.safeExecuteOnPooledThread(() -> {
+      try {
+        this.browser.close();
+      }
+      catch (Exception ex) {
+        if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+          LOG.info(ex);
+        } else {
+          LOG.info("Exception when closing JX Browser instance: " + ex.getMessage());
+        }
+      }
+    });
   }
 
   @Override
