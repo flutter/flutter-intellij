@@ -71,6 +71,8 @@ if (project.hasProperty("release")) {
 }
 
 val ideaVersion = providers.gradleProperty("ideaVersion").get()
+val intellijIdeaVersion = providers.gradleProperty("intellijIdeaVersion").get()
+val platformType = providers.gradleProperty("platformType").getOrElse("AS")
 val dartPluginVersion = providers.gradleProperty("dartPluginVersion").get()
 val sinceBuildInput = providers.gradleProperty("sinceBuild").get()
 val untilBuildInput = providers.gradleProperty("untilBuild").get()
@@ -79,7 +81,9 @@ group = "io.flutter"
 
 // For debugging purposes:
 println("flutterPluginVersion: $flutterPluginVersion")
+println("platformType: $platformType")
 println("ideaVersion: $ideaVersion")
+println("intellijIdeaVersion: $intellijIdeaVersion")
 println("dartPluginVersion: $dartPluginVersion")
 println("sinceBuild: $sinceBuildInput")
 println("untilBuild: $untilBuildInput")
@@ -142,6 +146,21 @@ sourceSets {
         "third_party/vmServiceDrivers"
       )
     )
+    if (platformType == "IC") {
+      // Option 1 experiment: keep AS-specific code in src and exclude for IC builds.
+      java.exclude(
+        listOf(
+          "io/flutter/FlutterStudioStartupActivity.java",
+          "io/flutter/actions/OpenAndroidModule.java",
+          "io/flutter/android/AndroidStudioGradleSyncProvider.java",
+          "io/flutter/utils/AddToAppUtils.java",
+          "io/flutter/utils/AndroidLocationProvider.java",
+          "io/flutter/utils/FlutterExternalSystemTaskNotificationListener.java",
+          "io/flutter/utils/GradleUtils.java",
+          "org/jetbrains/android/facet/AndroidFrameworkDetector.java"
+        )
+      )
+    }
     kotlin.srcDirs(
       listOf(
         "src",
@@ -201,8 +220,13 @@ dependencies {
     // Documentation on the default target platform methods:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
     // Android Studio versions can be found at: https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
+    // IntelliJ IDEA CE versions can be found at: https://www.jetbrains.com/idea/download/other.html
     try {
-      androidStudio(ideaVersion)
+      if (platformType == "IC") {
+        intellijIdeaCommunity(intellijIdeaVersion)
+      } else {
+        androidStudio(ideaVersion)
+      }
     } catch (e: Exception) {
       throw GradleException(
         "Failed to resolve Android Studio / IDEA download URL. This is likely due to a network issue blocking the download URL. Please check your internet connection or VPN.",
@@ -216,20 +240,21 @@ dependencies {
     // Plugin dependency documentation:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
     // https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html#project-setup
-    bundledPlugins(
-      immutableListOf(
-        "com.intellij.java",
-        "com.intellij.properties",
-        "JUnit",
-        "Git4Idea",
-        "org.jetbrains.kotlin",
-        "org.jetbrains.plugins.gradle",
-        "org.jetbrains.plugins.yaml",
-        "org.intellij.intelliLang",
-        "org.jetbrains.android",
-        "com.android.tools.idea.smali"
-      )
+    val commonPlugins = immutableListOf(
+      "com.intellij.java",
+      "com.intellij.properties",
+      "JUnit",
+      "Git4Idea",
+      "org.jetbrains.kotlin",
+      "org.jetbrains.plugins.gradle",
+      "org.jetbrains.plugins.yaml",
+      "org.intellij.intelliLang"
     )
+    if (platformType == "AS") {
+      bundledPlugins(commonPlugins + listOf("org.jetbrains.android", "com.android.tools.idea.smali"))
+    } else {
+      bundledPlugins(commonPlugins)
+    }
     plugin("Dart:$dartPluginVersion")
 
     if (sinceBuildInput == "243" || sinceBuildInput == "251") {

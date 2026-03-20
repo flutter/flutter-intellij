@@ -7,7 +7,6 @@ package io.flutter;
 
 import com.intellij.framework.FrameworkType;
 import com.intellij.framework.detection.DetectionExcludesConfiguration;
-import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
@@ -29,7 +28,8 @@ import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
-import org.jetbrains.android.facet.AndroidFrameworkDetector;
+// AndroidFrameworkDetector is loaded reflectively to avoid a compile-time dependency on
+// org.jetbrains.android, which is only bundled in Android Studio (not IntelliJ IDEA CE).
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -93,20 +93,24 @@ public class ProjectOpenActivity extends FlutterProjectActivity implements DumbA
     if (FlutterUtils.isAndroidStudio()) {
       return;
     }
-    IdeaPluginDescriptor desc;
     if (PluginManagerCore.getPlugin(PluginId.getId("org.jetbrains.android")) == null) {
       return;
     }
     try {
       final DetectionExcludesConfiguration excludesConfiguration = DetectionExcludesConfiguration.getInstance(project);
       try {
-        final FrameworkType type = new AndroidFrameworkDetector().getFrameworkType();
+        final Class<?> detectorClass = Class.forName("org.jetbrains.android.facet.AndroidFrameworkDetector");
+        final Object detector = detectorClass.getDeclaredConstructor().newInstance();
+        final FrameworkType type = (FrameworkType)detectorClass.getMethod("getFrameworkType").invoke(detector);
         if (!excludesConfiguration.isExcludedFromDetection(type)) {
           excludesConfiguration.addExcludedFramework(type);
         }
       }
       catch (NullPointerException ignored) {
         // If the Android facet has not been configured then getFrameworkType() throws a NPE.
+      }
+      catch (ReflectiveOperationException ignored) {
+        // AndroidFrameworkDetector could not be loaded reflectively.
       }
     }
     catch (NoClassDefFoundError ignored) {
