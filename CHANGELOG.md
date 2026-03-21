@@ -11,7 +11,7 @@
 ### Fixed
 
 - Silent failure when opening Flutter projects without `.idea` directory in IntelliJ IDEA, by removing `FlutterProjectOpenProcessor` and migrating configuration logic to `FlutterInitializer`. (#8845)
-- Fixed gutter buttons not running tests with non-ASCII characters in their names. (#7985)
+- Gutter buttons not running tests with non-ASCII characters in their names. (#7985)
 
 ## 90.0.0
 
