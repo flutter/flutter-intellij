@@ -117,7 +117,8 @@ fun createFlutterProjectWithCli(
 ) {
   val flutterSdk = System.getenv("FLUTTER_SDK")
     ?: throw IllegalStateException("FLUTTER_SDK environment variable not set")
-  val flutterExe = Paths.get(flutterSdk, "bin", "flutter").toString()
+  val flutterName = if (System.getProperty("os.name").lowercase().contains("win")) "flutter.bat" else "flutter"
+  val flutterExe = Paths.get(flutterSdk, "bin", flutterName).toString()
 
   println("Creating project $testProjectName in $directory")
   val process = ProcessBuilder(flutterExe, "create", "--project-name", projectName, testProjectName)
