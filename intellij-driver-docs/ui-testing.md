@@ -1,5 +1,7 @@
 # UI testing: `Finder`, `UiComponent`, and built-in components
 
+For a **deeper guide** on choosing locators (XPath vs `QueryBuilder`, how to discover attributes, hierarchy dumps, and avoiding ambiguous matches), see **[ui-discovery-and-locators.md](ui-discovery-and-locators.md)**.
+
 ## `Finder` and `UiComponent`
 
 `com.intellij.driver.sdk.ui.Finder` is the entry point for **locating UI** inside the IDE. Typical patterns:

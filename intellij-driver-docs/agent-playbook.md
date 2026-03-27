@@ -10,10 +10,13 @@ Use this as a **checklist** when adding or fixing UI integration tests in this r
 
 ## Discovery workflow
 
+**Full detail:** [ui-discovery-and-locators.md](ui-discovery-and-locators.md) (Swing DOM → XPath, `QueryBuilder`, when raw XPath is OK, hierarchy dumps, plugin `.form` files).
+
 1. **Resolved versions:** `./gradlew dependencyInsight --dependency driver-sdk --configuration integrationRuntimeClasspath`
 2. **API surface:** `jar tf ~/.gradle/caches/.../driver-sdk-<ver>.jar | findstr /i something` (or use `tools/list-driver-sdk-classes.ps1`)
-3. **Kotlin sources:** download **`driver-sdk-<ver>-sources.jar`** from the same Maven coordinates and read **`Finder.kt`**, **`ActionManager.kt`** (or equivalent `invokeAction` file), dialog components under **`com.intellij.driver.sdk.ui.components.common`**
+3. **Kotlin sources:** download **`driver-sdk-<ver>-sources.jar`** from the same Maven coordinates and read **`Finder.kt`**, **`QueryBuilder.kt`**, **`ActionManager.kt`** (or equivalent `invokeAction` file), dialog components under **`com.intellij.driver.sdk.ui.components.common`**
 4. **Bytecode quick check:** `javap -classpath driver-client-…jar com.intellij.driver.client.Driver`
+5. **Locators:** prefer **`xQuery { }` / `QueryBuilder`** over long hand-written XPath strings; use hierarchy dump helpers in **`testSrc/integration/.../utils/`** when debugging (see discovery doc).
 
 ## Prefer SDK over invention
 

@@ -25,6 +25,7 @@ After upgrades, re-check in **`driver-sdk-*-sources.jar`**:
 
 - **`invokeAction`** implementation (delegation to **`ActionManager.tryToExecute`**)
 - **`DEFAULT_FIND_TIMEOUT`** in **`Finder`**
+- **`QueryBuilder.kt`** (attribute names and helpers — affects locators; see [ui-discovery-and-locators.md](ui-discovery-and-locators.md))
 - Dialog components (**`EditRunConfigurationsDialogUiComponent`**, accessible names)
 
 If Kotlin sources are not attached in the IDE, download **`-sources.jar`** from the same Maven coordinates as the resolved **`driver-sdk`** JAR.

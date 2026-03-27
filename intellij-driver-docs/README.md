@@ -29,6 +29,7 @@ See [architecture.md](architecture.md) for how these pieces connect.
 | [architecture.md](architecture.md) | Test process vs IDE, threading, `RdTarget`, artifact diagram |
 | [driver-api.md](driver-api.md) | `Driver`, `invokeAction` and **`now`**, modals, `RdTarget` |
 | [ui-testing.md](ui-testing.md) | `Finder` / `UiComponent`, built-in frames and dialogs |
+| [ui-discovery-and-locators.md](ui-discovery-and-locators.md) | **How to find UI**: XPath vs `QueryBuilder`, discovery workflow, scoping, text fields |
 | [ide-starter-integration.md](ide-starter-integration.md) | How **this repo** wires Starter + Gradle (`Setup.kt`, `integration` task) |
 | [agent-playbook.md](agent-playbook.md) | Short rules for humans and coding agents |
 | [maintenance.md](maintenance.md) | Refreshing docs when upgrading IDE / driver |
