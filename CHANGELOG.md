@@ -11,6 +11,8 @@
 ### Fixed
 
 - Silent failure when opening Flutter projects without `.idea` directory in IntelliJ IDEA, by removing `FlutterProjectOpenProcessor` and migrating configuration logic to `FlutterInitializer`. (#8845)
+- Gutter buttons not running tests with non-ASCII characters in their names. (#7985)
+- Freeze from JX Browser close. (#8864)
 
 ## 90.0.0
 
