@@ -75,7 +75,8 @@ class FlutterTestTemplateAdditionalArgsTest {
     run.driver.withContext {
       ideFrame {
         waitFound()
-        driver.waitForIndicators(1.minutes)
+        // See if this next line is required. There are errors that always appear but are innocuous
+        //driver.waitForIndicators(1.minutes)
         println("IDE is ready.")
 
         // 1. Verify project structure
@@ -83,6 +84,7 @@ class FlutterTestTemplateAdditionalArgsTest {
           projectViewTree.pathExists("flutter_test_template", "pubspec.yaml")
           projectViewTree.pathExists("flutter_test_template", "test", "widget_test.dart")
         }
+        wait(30.seconds)
 
         // 2. Open Run/Debug Configurations and edit the Flutter Test template.
         // Use now = false so ActionManager.tryToExecute queues the action; the default (now = true)
@@ -90,21 +92,24 @@ class FlutterTestTemplateAdditionalArgsTest {
         println("before editRunConfigurations")
         driver.invokeAction("editRunConfigurations", now = false)
         println("waiting after editRunConfigurations")
-        wait(5.seconds)
+        wait(30.seconds)
 
         // 3. Click "Edit configuration templates..." to open templates
         // The link is typically at the bottom-left of the dialog
         runConfigurationsDialog {
           editTemplatesLink.click()
           println("waiting after editTemplatesLink")
-          wait(5.seconds)
+          wait(15.seconds)
         }
 
-        // 4. Select "Flutter Test" from the templates list and set Additional args
+        // 4. Add Flutter Test template via + (it may not appear in the tree until added), then set Additional args
         runConfigurationsDialog {
-          templatesList.waitOneText("Flutter Test").click()
-          println("waiting after Flutter Test click")
-          wait(5.seconds)
+          selectFlutterTestTemplateViaAddMenu()
+          println("waiting after Flutter Test template selected via Add")
+          wait(15.seconds)
+
+          // Debug: dump Swing UI as XPath DOM (same model driver uses for x()/xx()) while Flutter Test template UI is visible
+          dumpXPathTreeToConsole("Run/Debug Configurations — Flutter Test template visible")
 
           // Find and fill the Additional args field (ExpandableTextField or JTextField)
           additionalArgsField.click()
@@ -144,10 +149,8 @@ class FlutterTestTemplateAdditionalArgsTest {
         wait(2.seconds)
 
         runConfigurationsDialog {
-          // The newly created config should be selected. Verify Additional args.
-          // The driver's UiComponent may expose text via data. Use toString() as fallback
-          // to include component state, or skip if API is unavailable.
-          val additionalArgsValue = additionalArgsField.toString()
+          // The newly created config should be selected. Verify Additional args (actual Swing text).
+          val additionalArgsValue = additionalArgsField.waitFound().text
           org.junit.jupiter.api.Assertions.assertTrue(
             additionalArgsValue.contains(TEMPLATE_ADDITIONAL_ARGS),
             "Expected Flutter Test config created from gutter to inherit template's Additional args '$TEMPLATE_ADDITIONAL_ARGS', " +
