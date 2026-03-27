@@ -37,6 +37,7 @@ import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
+import com.intellij.xdebugger.XSessionStartedResult;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
@@ -100,15 +101,15 @@ public class BazelTestRunner extends GenericProgramRunner {
 
     // Create the debug session.
     final XDebuggerManager manager = XDebuggerManager.getInstance(env.getProject());
-    final XDebugSession session = manager.startSession(env, new XDebugProcessStarter() {
+    final XSessionStartedResult result = manager.newSessionBuilder(new XDebugProcessStarter() {
       @Override
       @NotNull
       public XDebugProcess start(@NotNull final XDebugSession session) {
         return new BazelTestDebugProcess(env, session, executionResult, resolver, connector, mapper);
       }
-    });
+    }).environment(env).startSession();
 
-    return session.getRunContentDescriptor();
+    return result.getRunContentDescriptor();
   }
 
   /**

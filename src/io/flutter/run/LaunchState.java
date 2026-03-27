@@ -40,6 +40,7 @@ import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
+import com.intellij.xdebugger.XSessionStartedResult;
 import com.jetbrains.lang.dart.ide.runner.DartExecutionHelper;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterConstants;
@@ -224,28 +225,30 @@ public class LaunchState extends CommandLineState {
   }
 
   @NotNull
-  protected XDebugSession createDebugSession(@NotNull final ExecutionEnvironment env,
-                                             @NotNull final FlutterApp app,
-                                             @NotNull final ExecutionResult executionResult)
+  protected XSessionStartedResult createDebugSession(@NotNull final ExecutionEnvironment env,
+                                                     @NotNull final FlutterApp app,
+                                                     @NotNull final ExecutionResult executionResult)
     throws ExecutionException {
 
     final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), sourceLocation);
     final FlutterPositionMapper mapper = createPositionMapper(env, app, resolver);
 
     final XDebuggerManager manager = XDebuggerManager.getInstance(env.getProject());
-    final XDebugSession session = manager.startSession(env, new XDebugProcessStarter() {
+    final XSessionStartedResult startedResult = manager.newSessionBuilder(new XDebugProcessStarter() {
       @Override
       @NotNull
       public XDebugProcess start(@NotNull final XDebugSession session) {
         return new FlutterDebugProcess(app, env, session, executionResult, resolver, mapper);
       }
-    });
+    }).environment(env).startSession();
+
+    final XDebugSession session = startedResult.getSession();
 
     if (app.getMode() != RunMode.DEBUG) {
       session.setBreakpointMuted(true);
     }
 
-    return session;
+    return startedResult;
   }
 
   @NotNull

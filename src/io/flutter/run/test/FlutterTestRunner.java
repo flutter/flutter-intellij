@@ -32,6 +32,7 @@ import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
+import io.flutter.run.FlutterDebugSessionUtils;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
 import io.flutter.logging.PluginLogger;
@@ -210,15 +211,15 @@ public class FlutterTestRunner extends GenericProgramRunner {
 
     // Create the debug session.
     final XDebuggerManager manager = XDebuggerManager.getInstance(env.getProject());
-    final XDebugSession session = manager.startSession(env, new XDebugProcessStarter() {
+    final XSessionStartedResult result = manager.newSessionBuilder(new XDebugProcessStarter() {
       @Override
       @NotNull
       public XDebugProcess start(@NotNull final XDebugSession session) {
         return new TestDebugProcess(env, session, executionResult, resolver, connector, mapper);
       }
-    });
+    }).environment(env).startSession();
 
-    return session.getRunContentDescriptor();
+    return result.getRunContentDescriptor();
   }
 
   /**
