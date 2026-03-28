@@ -202,7 +202,8 @@ dependencies {
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
     // Android Studio versions can be found at: https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
     try {
-      androidStudio(ideaVersion)
+//      androidStudio(ideaVersion)
+      intellijIdeaUltimate(ideaVersion)
     } catch (e: Exception) {
       throw GradleException(
         "Failed to resolve Android Studio / IDEA download URL. This is likely due to a network issue blocking the download URL. Please check your internet connection or VPN.",
@@ -226,7 +227,7 @@ dependencies {
         "org.jetbrains.plugins.gradle",
         "org.jetbrains.plugins.yaml",
         "org.intellij.intelliLang",
-        "org.jetbrains.android",
+//        "org.jetbrains.android",
         "com.android.tools.idea.smali"
       )
     )
