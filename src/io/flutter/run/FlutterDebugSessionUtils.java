@@ -34,13 +34,18 @@ public class FlutterDebugSessionUtils {
         startSessionMethod = ss;
     }
 
-    public static RunContentDescriptor startSessionAndGetDescriptor(
+    public static @NotNull RunContentDescriptor startSessionAndGetDescriptor(
             @NotNull XDebuggerManager manager,
             @NotNull ExecutionEnvironment env,
             @NotNull XDebugProcessStarter starter,
             boolean muteBreakpoints) throws ExecutionException {
         try {
-            Object sessionResult = buildAndStartSession(manager, env, starter);
+            if (newSessionBuilderMethod == null) {
+                throw new NoSuchMethodException("newSessionBuilder is not available");
+            }
+            Object builder = newSessionBuilderMethod.invoke(manager, starter);
+            builder = environmentMethod.invoke(builder, env);
+            Object sessionResult = startSessionMethod.invoke(builder);
 
             if (muteBreakpoints) {
                 Method getSessionMethod = sessionResult.getClass().getMethod("getSession");
@@ -67,41 +72,5 @@ public class FlutterDebugSessionUtils {
         } catch (Exception e) {
             throw new ExecutionException("Failed with unexpected reflection error", e);
         }
-    }
-
-    public static XDebugSession startSession(
-            @NotNull XDebuggerManager manager,
-            @NotNull ExecutionEnvironment env,
-            @NotNull XDebugProcessStarter starter) throws ExecutionException {
-        try {
-            Object sessionResult = buildAndStartSession(manager, env, starter);
-
-            Method getSessionMethod = sessionResult.getClass().getMethod("getSession");
-            return (XDebugSession) getSessionMethod.invoke(sessionResult);
-
-        } catch (NoSuchMethodException e) {
-            // Fallback to old API
-            return manager.startSession(env, starter);
-        } catch (InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof ExecutionException) {
-                throw (ExecutionException) cause;
-            }
-            throw new ExecutionException("Failed to start debug session via reflection", cause != null ? cause : e);
-        } catch (Exception e) {
-            throw new ExecutionException("Failed with unexpected reflection error", e);
-        }
-    }
-    @NotNull
-    private static Object buildAndStartSession(
-            @NotNull XDebuggerManager manager,
-            @NotNull ExecutionEnvironment env,
-            @NotNull XDebugProcessStarter starter) throws Exception {
-        if (newSessionBuilderMethod == null) {
-            throw new NoSuchMethodException("newSessionBuilder is not available");
-        }
-        Object builder = newSessionBuilderMethod.invoke(manager, starter);
-        builder = environmentMethod.invoke(builder, env);
-        return startSessionMethod.invoke(builder);
     }
 }
