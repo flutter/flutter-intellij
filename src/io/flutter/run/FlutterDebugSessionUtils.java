@@ -11,6 +11,8 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+// TODO(helin24): This class is using reflection to find experimental APIs that are only present in platform versions 2025.3+. We should be
+//  able to use the APIs directly once we are only supporting versions past 2025.3.
 public class FlutterDebugSessionUtils {
 
     private static final Method newSessionBuilderMethod;
