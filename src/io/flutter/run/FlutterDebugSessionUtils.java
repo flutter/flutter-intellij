@@ -12,6 +12,27 @@ import java.lang.reflect.Method;
 
 public class FlutterDebugSessionUtils {
 
+    private static final Method newSessionBuilderMethod;
+    private static final Method environmentMethod;
+    private static final Method startSessionMethod;
+
+    static {
+        Method nsb = null;
+        Method env = null;
+        Method ss = null;
+        try {
+            nsb = XDebuggerManager.class.getMethod("newSessionBuilder", XDebugProcessStarter.class);
+            Class<?> builderClass = nsb.getReturnType();
+            env = builderClass.getMethod("environment", ExecutionEnvironment.class);
+            ss = builderClass.getMethod("startSession");
+        } catch (NoSuchMethodException e) {
+            // Fallback for older platforms
+        }
+        newSessionBuilderMethod = nsb;
+        environmentMethod = env;
+        startSessionMethod = ss;
+    }
+
     public static RunContentDescriptor startSessionAndGetDescriptor(
             @NotNull XDebuggerManager manager,
             @NotNull ExecutionEnvironment env,
@@ -63,13 +84,11 @@ public class FlutterDebugSessionUtils {
             @NotNull XDebuggerManager manager,
             @NotNull ExecutionEnvironment env,
             @NotNull XDebugProcessStarter starter) throws Exception {
-        Method newSessionBuilderMethod = XDebuggerManager.class.getMethod("newSessionBuilder", XDebugProcessStarter.class);
+        if (newSessionBuilderMethod == null) {
+            throw new NoSuchMethodException("newSessionBuilder is not available");
+        }
         Object builder = newSessionBuilderMethod.invoke(manager, starter);
-
-        Method environmentMethod = builder.getClass().getMethod("environment", ExecutionEnvironment.class);
         builder = environmentMethod.invoke(builder, env);
-
-        Method startSessionMethod = builder.getClass().getMethod("startSession");
         return startSessionMethod.invoke(builder);
     }
 }
