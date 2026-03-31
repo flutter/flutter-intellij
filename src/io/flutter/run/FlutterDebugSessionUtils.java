@@ -8,6 +8,7 @@ import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class FlutterDebugSessionUtils {
@@ -57,8 +58,14 @@ public class FlutterDebugSessionUtils {
                 session.setBreakpointMuted(true);
             }
             return session.getRunContentDescriptor();
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof ExecutionException) {
+                throw (ExecutionException) cause;
+            }
+            throw new ExecutionException("Failed to start debug session via reflection", cause != null ? cause : e);
         } catch (Exception e) {
-            throw new ExecutionException("Failed to start debug session via reflection", e);
+            throw new ExecutionException("Failed with unexpected reflection error", e);
         }
     }
 
@@ -75,8 +82,14 @@ public class FlutterDebugSessionUtils {
         } catch (NoSuchMethodException e) {
             // Fallback to old API
             return manager.startSession(env, starter);
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof ExecutionException) {
+                throw (ExecutionException) cause;
+            }
+            throw new ExecutionException("Failed to start debug session via reflection", cause != null ? cause : e);
         } catch (Exception e) {
-            throw new ExecutionException("Failed to start debug session via reflection", e);
+            throw new ExecutionException("Failed with unexpected reflection error", e);
         }
     }
     @NotNull
