@@ -155,6 +155,8 @@ sourceSets {
         "resources"
       )
     )
+
+    // TODO(helin24): Include these files when we go back to building against Android Studio.
     java.exclude("**/AndroidStudioGradleSyncProvider.java")
     java.exclude("**/GradleUtils.java")
     java.exclude("**/FlutterExternalSystemTaskNotificationListener.java")
@@ -217,7 +219,7 @@ dependencies {
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
     // Android Studio versions can be found at: https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
     try {
-//      androidStudio(ideaVersion)
+      // TODO(helin24): Go back to using Android Studio once 2026.1 is released.
       intellijIdeaUltimate(ideaVersion)
     } catch (e: Exception) {
       throw GradleException(
@@ -232,6 +234,7 @@ dependencies {
     // Plugin dependency documentation:
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#plugins
     // https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html#project-setup
+    // TODO(helin24): Add back bundled plugins once we go back to building against Android Studio.
     bundledPlugins(
       immutableListOf(
         "com.intellij.java",
@@ -239,18 +242,13 @@ dependencies {
         "JUnit",
         "Git4Idea",
         "org.jetbrains.kotlin",
-//        "org.jetbrains.plugins.gradle",
         "org.jetbrains.plugins.yaml",
         "org.intellij.intelliLang",
-//        "org.jetbrains.android",
-//        "com.android.tools.idea.smali"
       )
     )
     plugin("Dart:$dartPluginVersion")
     plugin("org.jetbrains.android:261.22158.277")
     plugin("org.jetbrains.plugins.gradle:261.22158.182")
-    // this doesn't seem to make a difference
-//    plugin("com.android.tools.idea.smali:261.22158.182")
 
     if (sinceBuildInput == "243" || sinceBuildInput == "251") {
       bundledModule("intellij.platform.coverage")
