@@ -18,17 +18,7 @@ public class FlutterDebugSessionUtils {
             @NotNull XDebugProcessStarter starter,
             boolean muteBreakpoints) throws ExecutionException {
         try {
-            // Try to find the newSessionBuilder method (introduced in 2025.2+)
-            Method newSessionBuilderMethod = XDebuggerManager.class.getMethod("newSessionBuilder", XDebugProcessStarter.class);
-            Object builder = newSessionBuilderMethod.invoke(manager, starter);
-
-            // builder.environment(env)
-            Method environmentMethod = builder.getClass().getMethod("environment", ExecutionEnvironment.class);
-            builder = environmentMethod.invoke(builder, env);
-
-            // builder.startSession() -> returns XSessionStartedResult
-            Method startSessionMethod = builder.getClass().getMethod("startSession");
-            Object sessionResult = startSessionMethod.invoke(builder);
+            Object sessionResult = buildAndStartSession(manager, env, starter);
 
             if (muteBreakpoints) {
                 Method getSessionMethod = sessionResult.getClass().getMethod("getSession");
@@ -36,7 +26,6 @@ public class FlutterDebugSessionUtils {
                 session.setBreakpointMuted(true);
             }
 
-            // sessionResult.getRunContentDescriptor()
             Method getDescriptorMethod = sessionResult.getClass().getMethod("getRunContentDescriptor");
             return (RunContentDescriptor) getDescriptorMethod.invoke(sessionResult);
 
@@ -57,16 +46,8 @@ public class FlutterDebugSessionUtils {
             @NotNull ExecutionEnvironment env,
             @NotNull XDebugProcessStarter starter) throws ExecutionException {
         try {
-            Method newSessionBuilderMethod = XDebuggerManager.class.getMethod("newSessionBuilder", XDebugProcessStarter.class);
-            Object builder = newSessionBuilderMethod.invoke(manager, starter);
+            Object sessionResult = buildAndStartSession(manager, env, starter);
 
-            Method environmentMethod = builder.getClass().getMethod("environment", ExecutionEnvironment.class);
-            builder = environmentMethod.invoke(builder, env);
-
-            Method startSessionMethod = builder.getClass().getMethod("startSession");
-            Object sessionResult = startSessionMethod.invoke(builder); // This is XSessionStartedResult
-
-            // Now get the session from the result
             Method getSessionMethod = sessionResult.getClass().getMethod("getSession");
             return (XDebugSession) getSessionMethod.invoke(sessionResult);
 
@@ -76,5 +57,19 @@ public class FlutterDebugSessionUtils {
         } catch (Exception e) {
             throw new ExecutionException("Failed to start debug session via reflection", e);
         }
+    }
+    @NotNull
+    private static Object buildAndStartSession(
+            @NotNull XDebuggerManager manager,
+            @NotNull ExecutionEnvironment env,
+            @NotNull XDebugProcessStarter starter) throws Exception {
+        Method newSessionBuilderMethod = XDebuggerManager.class.getMethod("newSessionBuilder", XDebugProcessStarter.class);
+        Object builder = newSessionBuilderMethod.invoke(manager, starter);
+
+        Method environmentMethod = builder.getClass().getMethod("environment", ExecutionEnvironment.class);
+        builder = environmentMethod.invoke(builder, env);
+
+        Method startSessionMethod = builder.getClass().getMethod("startSession");
+        return startSessionMethod.invoke(builder);
     }
 }
