@@ -1,3 +1,8 @@
+/*
+ * Copyright 2026 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 package io.flutter.run;
 
 import com.intellij.execution.ExecutionException;
@@ -13,6 +18,7 @@ import java.lang.reflect.Method;
 
 // TODO(helin24): This class is using reflection to find experimental APIs that are only present in platform versions 2025.3+. We should be
 //  able to use the APIs directly once we are only supporting versions past 2025.3.
+//  See https://github.com/flutter/flutter-intellij/issues/8879.
 public class FlutterDebugSessionUtils {
 
     private static final Method newSessionBuilderMethod;
