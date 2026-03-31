@@ -41,7 +41,7 @@ plugins {
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("java") // Java support
   id("org.jetbrains.intellij.platform") version "2.12.0" // IntelliJ Platform Gradle Plugin
-  id("org.jetbrains.kotlin.jvm") version "2.2.0" // Kotlin support
+  id("org.jetbrains.kotlin.jvm") version "2.3.20" // Kotlin support
   id("org.jetbrains.changelog") version "2.2.0" // Gradle Changelog Plugin
   id("org.jetbrains.kotlinx.kover") version "0.9.4"
   idea // IntelliJ IDEA support
@@ -103,7 +103,7 @@ jvmVersion = when (javaVersion) {
 
 kotlin {
   compilerOptions {
-    apiVersion.set(KotlinVersion.KOTLIN_2_1)
+    apiVersion.set(KotlinVersion.KOTLIN_2_3)
     jvmTarget = jvmVersion
   }
   // This is how you specify the specific JVM requirements, this may be a requirement for the Starter test framework
@@ -155,6 +155,21 @@ sourceSets {
         "resources"
       )
     )
+    java.exclude("**/AndroidStudioGradleSyncProvider.java")
+    java.exclude("**/GradleUtils.java")
+    java.exclude("**/FlutterExternalSystemTaskNotificationListener.java")
+    java.exclude("**/AndroidLocationProvider.java")
+    java.exclude("**/FlutterStudioStartupActivity.java")
+    java.exclude("**/OpenAndroidModule.java")
+    java.exclude("**/AddToAppUtils.java")
+
+    kotlin.exclude("**/AndroidStudioGradleSyncProvider.java")
+    kotlin.exclude("**/GradleUtils.java")
+    kotlin.exclude("**/FlutterExternalSystemTaskNotificationListener.java")
+    kotlin.exclude("**/AndroidLocationProvider.java")
+    kotlin.exclude("**/FlutterStudioStartupActivity.java")
+    kotlin.exclude("**/OpenAndroidModule.java")
+    kotlin.exclude("**/AddToAppUtils.java")
   }
   test {
     java.srcDirs(
@@ -224,14 +239,18 @@ dependencies {
         "JUnit",
         "Git4Idea",
         "org.jetbrains.kotlin",
-        "org.jetbrains.plugins.gradle",
+//        "org.jetbrains.plugins.gradle",
         "org.jetbrains.plugins.yaml",
         "org.intellij.intelliLang",
 //        "org.jetbrains.android",
-        "com.android.tools.idea.smali"
+//        "com.android.tools.idea.smali"
       )
     )
     plugin("Dart:$dartPluginVersion")
+    plugin("org.jetbrains.android:261.22158.277")
+    plugin("org.jetbrains.plugins.gradle:261.22158.182")
+    // this doesn't seem to make a difference
+//    plugin("com.android.tools.idea.smali:261.22158.182")
 
     if (sinceBuildInput == "243" || sinceBuildInput == "251") {
       bundledModule("intellij.platform.coverage")
