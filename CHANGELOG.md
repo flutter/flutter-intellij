@@ -10,18 +10,14 @@
 
 ## 91.0.0
 
-### Added
-
 ### Changed
 
 - Gradle plugin version to re-enable running `./gradlew verifyPlugin` locally. (#8847)
 
-### Removed
-
 ### Fixed
 
 - Silent failure when opening Flutter projects without `.idea` directory in IntelliJ IDEA, by removing `FlutterProjectOpenProcessor` and
-  migrating configuration logic to `FlutterInitializer`. (#8845)
+  migrating configuration logic to `FlutterInitializer`. (#8846)
 - Gutter buttons not running tests with non-ASCII characters in their names. (#7985)
 - Freeze from JX Browser close. (#8864)
 - Crash in split debugger mode in IntelliJ 2025.3+. (#8831)
