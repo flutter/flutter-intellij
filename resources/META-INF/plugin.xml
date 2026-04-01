@@ -163,11 +163,19 @@
         <!--suppress PluginXmlCapitalization -->
         <action id="flutter.build.aab" text="Build App Bundle" description="Building a Flutter app for Google Play Store distribution"
                 class="io.flutter.actions.FlutterBuildActionGroup$AppBundle"/>
+        <action id="flutter.build.bundle" text="Build Assets Bundle" description="Building the Flutter assets directory"
+                class="io.flutter.actions.FlutterBuildActionGroup$Bundle"/>
         <!--suppress PluginXmlCapitalization -->
         <action id="flutter.build.ios" text="Build iOS" description="Building a Flutter app for Apple App Store distribution"
                 class="io.flutter.actions.FlutterBuildActionGroup$Ios"/>
+        <action id="flutter.build.linux" text="Build Linux" description="Building a Flutter app for Linux"
+                class="io.flutter.actions.FlutterBuildActionGroup$Linux"/>
+        <action id="flutter.build.macos" text="Build macOS" description="Building a Flutter app for macOS"
+                class="io.flutter.actions.FlutterBuildActionGroup$Macos"/>
         <action id="flutter.build.web" text="Build Web" description="Building a Flutter app for web"
                 class="io.flutter.actions.FlutterBuildActionGroup$Web"/>
+        <action id="flutter.build.windows" text="Build Windows" description="Building a Flutter app for Windows"
+                class="io.flutter.actions.FlutterBuildActionGroup$Windows"/>
       </group>
       <add-to-group group-id="BuildMenu" anchor="first"/>
     </group>
