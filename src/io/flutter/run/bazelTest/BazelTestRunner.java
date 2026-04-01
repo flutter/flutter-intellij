@@ -45,6 +45,7 @@ import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.logging.PluginLogger;
 import io.flutter.run.FlutterPositionMapper;
+import io.flutter.run.FlutterDebugSessionUtils;
 import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.run.test.FlutterTestRunner;
 import io.flutter.settings.FlutterSettings;
@@ -100,15 +101,13 @@ public class BazelTestRunner extends GenericProgramRunner {
 
     // Create the debug session.
     final XDebuggerManager manager = XDebuggerManager.getInstance(env.getProject());
-    final XDebugSession session = manager.startSession(env, new XDebugProcessStarter() {
+    return FlutterDebugSessionUtils.startSessionAndGetDescriptor(manager, env, new XDebugProcessStarter() {
       @Override
       @NotNull
       public XDebugProcess start(@NotNull final XDebugSession session) {
         return new BazelTestDebugProcess(env, session, executionResult, resolver, connector, mapper);
       }
-    });
-
-    return session.getRunContentDescriptor();
+    }, false);
   }
 
   /**

@@ -160,7 +160,7 @@ public class LaunchState extends CommandLineState {
     final RunContentDescriptor descriptor;
     if (launchMode.supportsDebugConnection()) {
       ToolWindowBadgeUpdater.updateBadgedIcon(app, project);
-      descriptor = createDebugSession(env, app, result).getRunContentDescriptor();
+      descriptor = createDebugSession(env, app, result);
     }
     else {
       descriptor = new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
@@ -224,28 +224,22 @@ public class LaunchState extends CommandLineState {
   }
 
   @NotNull
-  protected XDebugSession createDebugSession(@NotNull final ExecutionEnvironment env,
-                                             @NotNull final FlutterApp app,
-                                             @NotNull final ExecutionResult executionResult)
+  protected RunContentDescriptor createDebugSession(@NotNull final ExecutionEnvironment env,
+                                                   @NotNull final FlutterApp app,
+                                                   @NotNull final ExecutionResult executionResult)
     throws ExecutionException {
 
     final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), sourceLocation);
     final FlutterPositionMapper mapper = createPositionMapper(env, app, resolver);
 
     final XDebuggerManager manager = XDebuggerManager.getInstance(env.getProject());
-    final XDebugSession session = manager.startSession(env, new XDebugProcessStarter() {
+    return FlutterDebugSessionUtils.startSessionAndGetDescriptor(manager, env, new XDebugProcessStarter() {
       @Override
       @NotNull
       public XDebugProcess start(@NotNull final XDebugSession session) {
         return new FlutterDebugProcess(app, env, session, executionResult, resolver, mapper);
       }
-    });
-
-    if (app.getMode() != RunMode.DEBUG) {
-      session.setBreakpointMuted(true);
-    }
-
-    return session;
+    }, app.getMode() != RunMode.DEBUG);
   }
 
   @NotNull
