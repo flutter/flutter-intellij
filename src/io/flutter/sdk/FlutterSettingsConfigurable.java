@@ -275,7 +275,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
             if (sdk != null) {
               try {
                 lock.acquire();
-                sdk.queryFlutterChannel(false);
+                sdk.queryFlutterChannel(false, myProject);
                 lock.release();
               }
               catch (InterruptedException e) {

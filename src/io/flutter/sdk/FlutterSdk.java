@@ -583,6 +583,12 @@ public class FlutterSdk {
   @Nullable
   @NonNls
   public FlutterSdkChannel queryFlutterChannel(boolean useCachedValue) {
+    return queryFlutterChannel(useCachedValue, null);
+  }
+
+  @Nullable
+  @NonNls
+  public FlutterSdkChannel queryFlutterChannel(boolean useCachedValue, @Nullable Project project) {
     if (useCachedValue) {
       final String channel = cachedConfigValues.get("channel");
       if (channel != null) {
@@ -594,9 +600,9 @@ public class FlutterSdk {
     assert dir != null;
     String branch;
     try {
-      branch = git4idea.light.LightGitUtilKt.getLocation(dir, GitExecutableManager.getInstance().getExecutable((Project)null));
+      branch = git4idea.light.LightGitUtilKt.getLocation(dir, GitExecutableManager.getInstance().getExecutable(project));
     }
-    catch (VcsException e) {
+    catch (VcsException | IllegalStateException e) {
       final String stdout = returnOutputOfQuery(flutterChannel());
       if (stdout == null) {
         branch = "unknown";

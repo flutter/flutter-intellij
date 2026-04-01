@@ -99,7 +99,7 @@ public class FlutterGeneratorPeer {
         FlutterSdk sdk = FlutterSdk.forPath(path);
         if (sdk != null) {
           sdk.queryConfiguredPlatforms(false);
-          sdk.queryFlutterChannel(false);
+          sdk.queryFlutterChannel(false, myContext.getProject());
         }
       }
     });
