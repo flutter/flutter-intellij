@@ -16,10 +16,10 @@
 
 ### Fixed
 
-- Gutter buttons not running tests with non-ASCII characters in their names. (#7985)
+- Gutter buttons not running tests with non-ASCII characters in their names. (#8838)
 - Freeze from JX Browser close. (#8864)
-- Crash in split debugger mode in IntelliJ 2025.3+. (#8831)
-- Passing additional arguments from the Flutter test template. (#7261)
+- Crash in split debugger mode in IntelliJ 2025.3+. (#8878)
+- Passing additional arguments from the Flutter test template. (#8836)
 
 ## 90.0.0
 
