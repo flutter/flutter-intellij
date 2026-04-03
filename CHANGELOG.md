@@ -2,6 +2,8 @@
 
 ### Added
 
+- Option to specify the pub root module for Flutter Widget Previewer. (#8888)
+
 ### Changed
 
 ### Removed
