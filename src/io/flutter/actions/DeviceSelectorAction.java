@@ -381,6 +381,10 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
       update(project, presentation);
     }
 
+    updateComponent(project, presentation);
+  }
+
+  private void updateComponent(@NotNull Project project, @NotNull Presentation presentation) {
     final DeviceService deviceService = DeviceService.getInstance(project);
     final FlutterDevice selectedDevice = deviceService.getSelectedDevice();
     final Collection<FlutterDevice> devices = deviceService.getConnectedDevices();
@@ -447,6 +451,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
     }
     updateActions(project, presentation);
     updateVisibility(project, presentation);
+    updateComponent(project, presentation);
   }
 
   private static void updateVisibility(final Project project, final @NotNull Presentation presentation) {
@@ -531,11 +536,6 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
     // Atomically replace the action list
     LOG.debug("[" + projectName + "] Replacing device selector actions");
     this.actions = newActions;
-
-    var tracker = ActivityTracker.getInstance();
-    if (tracker != null) {
-      tracker.inc();
-    }
   }
 
   private static class SelectDeviceAction extends AnAction {

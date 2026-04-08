@@ -191,7 +191,6 @@ public class DeviceService {
       if (project.isDisposed()) return;
       deviceDaemon.refresh(this::chooseNextDaemon);
       refreshInProgress = false;
-      ActivityTracker.getInstance().inc();
     });
   }
 
