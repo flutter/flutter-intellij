@@ -1,0 +1,21 @@
+# Gemini Code Assist Configuration
+version: 1.0
+project:
+  context:
+    instruction_files:
+      - .gemini/styleguide.md
+
+  generation_rules:
+    - "Strictly adhere to the IntelliJ Platform Threading Model: No I/O on the EDT."
+    - "All generated AnAction classes must be stateless."
+    - "Apply [MUST-FIX] severity logic to any code suggestions that violate plugin SDK best practices."
+    - "Use io.flutter.logging.PluginLogger for all logging; avoid System.out."
+    - "Always include the standard Chromium Authors copyright header in new files."
+    - "Adhere to the Zero-Formatting Policy: Do not comment on indentation, spacing, or brace placement."
+    # Ensure local agents read styleguide files automatically.
+    - "At the start of the session, read and adhere to the guidelines in all files listed in project.context.instruction_files."
+
+  languages:
+    - java
+    - kotlin
+    - dart 
