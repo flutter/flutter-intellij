@@ -8,7 +8,7 @@ project:
   generation_rules:
     - "Strictly adhere to the IntelliJ Platform Threading Model: No I/O on the EDT."
     - "All generated AnAction classes must be stateless."
-    - "Apply [MUST-FIX] severity logic to any code suggestions that violate plugin SDK best practices."
+    - "Apply [MUST-FIX], [CONCERN], and [NIT] severity logic to any code suggestions that violate plugin SDK best practices or style guidelines."
     - "Use io.flutter.logging.PluginLogger for all logging; avoid System.out."
     - "Always include the standard Chromium Authors copyright header in new files."
     - "Adhere to the Zero-Formatting Policy: Do not comment on indentation, spacing, or brace placement."
