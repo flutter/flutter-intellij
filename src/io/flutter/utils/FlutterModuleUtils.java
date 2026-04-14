@@ -384,7 +384,10 @@ public class FlutterModuleUtils {
     });
   }
 
-  public static String locateSdkPath(@NotNull Module module) {
+  public static void enableDartSDK(final @NotNull Module module) {
+    if (FlutterSdk.getFlutterSdk(module.getProject()) != null) {
+      return;
+    }
     // parse the .dart_tool/flutter_config.json or .packages file
     String sdkPath = FlutterSdkUtil.guessFlutterSdkFromPackagesFile(module);
     if (sdkPath != null) {
@@ -409,24 +412,13 @@ public class FlutterModuleUtils {
     if (sdkPath != null) {
       final FlutterSdk flutterSdk = FlutterSdk.forPath(sdkPath);
       if (flutterSdk == null) {
-        return null;
+        return;
       }
       final String dartSdkPath = flutterSdk.getDartSdkPath();
       if (dartSdkPath == null) {
-        return null; // Not cached. TODO call flutterSdk.sync() here?
+        return; // Not cached. TODO call flutterSdk.sync() here?
       }
-      return dartSdkPath;
-    }
-    return null;
-  }
 
-  public static void enableDartSDK(final @NotNull Module module) {
-    if (FlutterSdk.getFlutterSdk(module.getProject()) != null) {
-      return;
-    }
-    
-    String dartSdkPath = locateSdkPath(module);
-    if (dartSdkPath != null) {
       // Wrap the write action in a thread-safe way
       // See https://github.com/flutter/flutter-intellij/issues/8480
       final Application application = ApplicationManager.getApplication();
@@ -439,13 +431,5 @@ public class FlutterModuleUtils {
         });
       }
     }
-  }
-
-  public static void configureFlutterModule(@NotNull Module module, @NotNull String dartSdkPath) {
-    ApplicationManager.getApplication().runWriteAction(() -> {
-      setFlutterModuleType(module);
-      DartPlugin.ensureDartSdkConfigured(module.getProject(), dartSdkPath);
-      DartPlugin.enableDartSdk(module);
-    });
   }
 }
