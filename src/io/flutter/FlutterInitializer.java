@@ -97,8 +97,6 @@ public class FlutterInitializer extends FlutterProjectActivity {
     // Start a DevTools server
     DevToolsService.getInstance(project);
 
-
-
     // If the project declares a Flutter dependency, do some extra initialization.
     boolean hasFlutterModule = false;
 
