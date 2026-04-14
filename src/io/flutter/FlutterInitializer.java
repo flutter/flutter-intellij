@@ -97,17 +97,7 @@ public class FlutterInitializer extends FlutterProjectActivity {
     // Start a DevTools server
     DevToolsService.getInstance(project);
 
-    // Ensure Flutter project configuration is applied for projects that may have been
-    // opened without a .idea directory. Previously this was handled by FlutterProjectOpenProcessor,
-    // but that processor silently failed when no delegate processor could open the project.
-    // Instead, we let the platform open the project normally and apply our configuration here.
-    // See https://github.com/flutter/flutter-intellij/issues/8661 (Android Studio equivalent)
-    for (Module module : FlutterModuleUtils.getModules(project)) {
-      if (FlutterModuleUtils.declaresFlutter(module) && !FlutterModuleUtils.isFlutterModule(module)) {
-        log().info("Fixing Flutter module configuration for " + module.getName());
-        FlutterModuleUtils.setFlutterModuleWithoutReload(module, project);
-      }
-    }
+
 
     // If the project declares a Flutter dependency, do some extra initialization.
     boolean hasFlutterModule = false;
@@ -125,8 +115,19 @@ public class FlutterInitializer extends FlutterProjectActivity {
       }
 
       log().info("Flutter module has been found for project: " + project.getName());
-      // Ensure SDKs are configured; needed for clean module import.
-      FlutterModuleUtils.enableDartSDK(module);
+
+      // Ensure Flutter project configuration is applied for projects that may have been
+      // opened without a .idea directory. Previously this was handled by FlutterProjectOpenProcessor,
+      // but that processor silently failed when no delegate processor could open the project.
+      // Instead, we let the platform open the project normally and apply our configuration here.
+      // See https://github.com/flutter/flutter-intellij/issues/8661 (Android Studio equivalent)
+      if (!FlutterModuleUtils.isFlutterModule(module)) {
+        log().info("Fixing Flutter module configuration for " + module.getName());
+        FlutterModuleUtils.setFlutterModuleWithoutReload(module, project);
+      } else {
+        // Ensure SDKs are configured; needed for clean module import.
+        FlutterModuleUtils.enableDartSDK(module);
+      }
 
       for (PubRoot root : PubRoots.forModule(module)) {
         // Set Android SDK.
