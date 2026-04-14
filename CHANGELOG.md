@@ -8,7 +8,7 @@
 
 ### Fixed
 - Silent failure when opening Flutter projects without `.idea` directory in IntelliJ IDEA, by removing `FlutterProjectOpenProcessor` and
-  migrating configuration logic to `FlutterInitializer`. (#8846)
+  migrating configuration logic to `FlutterInitializer`. (#8903)
 
 ## 91.0.0
 
