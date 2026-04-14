@@ -105,6 +105,16 @@ public class FlutterInitializer extends FlutterProjectActivity {
 
     var roots = new ArrayList<PubRoot>();
 
+    class ModuleToFix {
+      final Module module;
+      final String sdkPath;
+      ModuleToFix(Module module, String sdkPath) {
+        this.module = module;
+        this.sdkPath = sdkPath;
+      }
+    }
+    List<ModuleToFix> modulesToFix = new ArrayList<>();
+
     for (Module module : OpenApiUtils.getModules(project)) {
       final boolean declaresFlutter = FlutterModuleUtils.declaresFlutter(module);
 
@@ -123,7 +133,10 @@ public class FlutterInitializer extends FlutterProjectActivity {
       // See https://github.com/flutter/flutter-intellij/issues/8661 (Android Studio equivalent)
       if (!FlutterModuleUtils.isFlutterModule(module)) {
         log().info("Fixing Flutter module configuration for " + module.getName());
-        FlutterModuleUtils.setFlutterModuleWithoutReload(module, project);
+        String sdkPath = FlutterModuleUtils.locateSdkPath(module);
+        if (sdkPath != null) {
+          modulesToFix.add(new ModuleToFix(module, sdkPath));
+        }
       } else {
         // Ensure SDKs are configured; needed for clean module import.
         FlutterModuleUtils.enableDartSDK(module);
@@ -144,6 +157,16 @@ public class FlutterInitializer extends FlutterProjectActivity {
           FlutterModuleUtils.autoShowMain(project, root);
         }
       }
+    }
+
+    if (!modulesToFix.isEmpty()) {
+      ApplicationManager.getApplication().invokeLater(() -> {
+        for (ModuleToFix item : modulesToFix) {
+          FlutterModuleUtils.configureFlutterModule(item.module, item.sdkPath);
+        }
+        project.save();
+        EditorNotifications.getInstance(project).updateAllNotifications();
+      });
     }
 
     // Lambdas need final vars.
