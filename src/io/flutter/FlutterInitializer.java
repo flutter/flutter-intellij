@@ -105,7 +105,7 @@ public class FlutterInitializer extends FlutterProjectActivity {
     for (Module module : FlutterModuleUtils.getModules(project)) {
       if (FlutterModuleUtils.declaresFlutter(module) && !FlutterModuleUtils.isFlutterModule(module)) {
         log().info("Fixing Flutter module configuration for " + module.getName());
-        FlutterModuleUtils.setFlutterModuleAndReload(module, project);
+        FlutterModuleUtils.setFlutterModuleWithoutReload(module, project);
       }
     }
 
