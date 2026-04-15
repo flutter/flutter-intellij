@@ -101,9 +101,6 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
     session.addSessionListener(new XDebugSessionListener() {
       @Override
       public void sessionPaused() {
-        // This can be removed if XFramesView starts popping the project window to the top of the z-axis stack.
-        final Project project = getSession().getProject();
-        focusProject(project);
         stackFrameChanged();
       }
 
