@@ -577,68 +577,6 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
     return uri.startsWith("dart:_") || uri.startsWith("dart:") && uri.contains("-patch/");
   }
 
-  private static void focusProject(@NotNull Project project) {
-    final WindowManager windowManager = WindowManager.getInstance();
-    if (windowManager == null) {
-      return;
-    }
-
-    final JFrame projectFrame = windowManager.getFrame(project);
-    if (projectFrame == null) {
-      return;
-    }
-
-    final int frameState = projectFrame.getExtendedState();
-
-    if (BitUtil.isSet(frameState, java.awt.Frame.ICONIFIED)) {
-      // restore the frame if it is minimized
-      projectFrame.setExtendedState(frameState ^ java.awt.Frame.ICONIFIED);
-      projectFrame.toFront();
-    }
-    else {
-      final JFrame anchor = new JFrame();
-      anchor.setType(Window.Type.UTILITY);
-      anchor.setUndecorated(true);
-      anchor.setSize(0, 0);
-      anchor.addWindowListener(new WindowListener() {
-        @Override
-        public void windowOpened(WindowEvent e) {
-        }
-
-        @Override
-        public void windowClosing(WindowEvent e) {
-        }
-
-        @Override
-        public void windowClosed(WindowEvent e) {
-        }
-
-        @Override
-        public void windowIconified(WindowEvent e) {
-        }
-
-        @Override
-        public void windowDeiconified(WindowEvent e) {
-        }
-
-        @Override
-        public void windowActivated(WindowEvent e) {
-          if (projectFrame.isDisplayable()) {
-            projectFrame.setVisible(true);
-          }
-          anchor.dispose();
-        }
-
-        @Override
-        public void windowDeactivated(WindowEvent e) {
-        }
-      });
-      anchor.pack();
-      anchor.setVisible(true);
-      anchor.toFront();
-    }
-  }
-
   public interface PositionMapper {
     void onConnect(ScriptProvider provider, String remoteBaseUrl);
 
