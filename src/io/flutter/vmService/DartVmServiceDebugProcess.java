@@ -98,20 +98,6 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
 
     session.setPauseActionSupported(true);
 
-    session.addSessionListener(new XDebugSessionListener() {
-      @Override
-      public void sessionPaused() {
-        stackFrameChanged();
-      }
-
-      @Override
-      public void stackFrameChanged() {
-        final XStackFrame stackFrame = getSession().getCurrentStackFrame();
-        myLatestCurrentIsolateId =
-          stackFrame instanceof DartVmServiceStackFrame ? ((DartVmServiceStackFrame)stackFrame).getIsolateId() : null;
-      }
-    });
-
     this.executionEnvironment = executionEnvironment;
     this.mapper = mapper;
     myConnector = connector;
