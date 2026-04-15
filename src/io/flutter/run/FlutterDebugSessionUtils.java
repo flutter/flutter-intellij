@@ -38,10 +38,10 @@ public class FlutterDebugSessionUtils {
         Method st = null;
         Method ss = null;
         try {
-            nsb = XDebuggerManager.class.getMethod("newSessionBuilder", XDebugProcessStarter.class);
-            Class<?> builderClass = nsb.getReturnType();
-            env = builderClass.getMethod("environment", ExecutionEnvironment.class);
-            ss = builderClass.getMethod("startSession");
+            final Method nsbLocal = XDebuggerManager.class.getMethod("newSessionBuilder", XDebugProcessStarter.class);
+            final Class<?> builderClass = nsbLocal.getReturnType();
+            final Method envLocal = builderClass.getMethod("environment", ExecutionEnvironment.class);
+            final Method ssLocal = builderClass.getMethod("startSession");
             try {
                 sn = builderClass.getMethod("sessionName", String.class);
                 ctr = builderClass.getMethod("contentToReuse", RunContentDescriptor.class);
@@ -49,6 +49,9 @@ public class FlutterDebugSessionUtils {
             } catch (NoSuchMethodException e) {
                 // Some newer SDKs may expose the builder without all of the tab configuration hooks.
             }
+            nsb = nsbLocal;
+            env = envLocal;
+            ss = ssLocal;
         } catch (NoSuchMethodException e) {
             // Fallback for older platforms
         }
@@ -74,40 +77,14 @@ public class FlutterDebugSessionUtils {
             @NotNull XDebugProcessStarter starter,
             @NotNull String sessionName,
             boolean muteBreakpoints) throws ExecutionException {
+        if (newSessionBuilderMethod == null) {
+            return startLegacySessionAndGetDescriptor(manager, env, starter, muteBreakpoints);
+        }
+
         try {
-            if (newSessionBuilderMethod == null) {
-                throw new NoSuchMethodException("newSessionBuilder is not available");
-            }
-            Object builder = newSessionBuilderMethod.invoke(manager, starter);
-            builder = environmentMethod.invoke(builder, env);
-            // Split debugger builds derive the visible tab title from the builder configuration rather than later descriptor mutation.
-            if (contentToReuseMethod != null) {
-                builder = contentToReuseMethod.invoke(builder, env.getContentToReuse());
-            }
-            if (sessionNameMethod != null) {
-                builder = sessionNameMethod.invoke(builder, sessionName);
-            }
-            if (showTabMethod != null) {
-                builder = showTabMethod.invoke(builder, true);
-            }
-            Object sessionResult = startSessionMethod.invoke(builder);
-
-            if (muteBreakpoints) {
-                Method getSessionMethod = sessionResult.getClass().getMethod("getSession");
-                XDebugSession session = (XDebugSession) getSessionMethod.invoke(sessionResult);
-                session.setBreakpointMuted(true);
-            }
-
-            Method getDescriptorMethod = sessionResult.getClass().getMethod("getRunContentDescriptor");
-            return (RunContentDescriptor) getDescriptorMethod.invoke(sessionResult);
-
-        } catch (NoSuchMethodException e) {
-            // Fallback to old API for 2025.1 and older
-            XDebugSession session = manager.startSession(env, starter);
-            if (muteBreakpoints) {
-                session.setBreakpointMuted(true);
-            }
-            return session.getRunContentDescriptor();
+            final Object sessionResult = startBuilderSession(manager, env, starter, sessionName);
+            muteBreakpointsIfNeeded(sessionResult, muteBreakpoints);
+            return getDescriptor(sessionResult);
         } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
             if (cause instanceof ExecutionException) {
@@ -117,6 +94,60 @@ public class FlutterDebugSessionUtils {
         } catch (Exception e) {
             throw new ExecutionException("Failed with unexpected reflection error", e);
         }
+    }
+
+    private static @NotNull RunContentDescriptor startLegacySessionAndGetDescriptor(
+            @NotNull XDebuggerManager manager,
+            @NotNull ExecutionEnvironment env,
+            @NotNull XDebugProcessStarter starter,
+            boolean muteBreakpoints) throws ExecutionException {
+        final XDebugSession session = manager.startSession(env, starter);
+        if (muteBreakpoints) {
+            session.setBreakpointMuted(true);
+        }
+        return session.getRunContentDescriptor();
+    }
+
+    private static @NotNull Object startBuilderSession(
+            @NotNull XDebuggerManager manager,
+            @NotNull ExecutionEnvironment env,
+            @NotNull XDebugProcessStarter starter,
+            @NotNull String sessionName) throws Exception {
+        Object builder = newSessionBuilderMethod.invoke(manager, starter);
+        builder = environmentMethod.invoke(builder, env);
+        builder = configureNamedTab(builder, env, sessionName);
+        return startSessionMethod.invoke(builder);
+    }
+
+    private static @NotNull Object configureNamedTab(
+            @NotNull Object builder,
+            @NotNull ExecutionEnvironment env,
+            @NotNull String sessionName) throws Exception {
+        // Split debugger builds derive the visible tab title from the builder configuration rather than later descriptor mutation.
+        if (contentToReuseMethod != null) {
+            builder = contentToReuseMethod.invoke(builder, env.getContentToReuse());
+        }
+        if (sessionNameMethod != null) {
+            builder = sessionNameMethod.invoke(builder, sessionName);
+        }
+        if (showTabMethod != null) {
+            builder = showTabMethod.invoke(builder, true);
+        }
+        return builder;
+    }
+
+    private static void muteBreakpointsIfNeeded(@NotNull Object sessionResult, boolean muteBreakpoints) throws Exception {
+        if (!muteBreakpoints) {
+            return;
+        }
+        final Method getSessionMethod = sessionResult.getClass().getMethod("getSession");
+        final XDebugSession session = (XDebugSession) getSessionMethod.invoke(sessionResult);
+        session.setBreakpointMuted(true);
+    }
+
+    private static @NotNull RunContentDescriptor getDescriptor(@NotNull Object sessionResult) throws Exception {
+        final Method getDescriptorMethod = sessionResult.getClass().getMethod("getRunContentDescriptor");
+        return (RunContentDescriptor) getDescriptorMethod.invoke(sessionResult);
     }
 
     /**

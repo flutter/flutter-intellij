@@ -156,7 +156,7 @@ public class LaunchState extends CommandLineState {
       }
     }
 
-    final String nameWithDeviceName = env.getRunProfile().getName() + " (" + device.deviceName() + ")";
+    final String nameWithDeviceName = buildRunTabName(env, device);
     final FlutterLaunchMode launchMode = FlutterLaunchMode.fromEnv(env);
     final RunContentDescriptor descriptor;
     if (launchMode.supportsDebugConnection()) {
@@ -179,6 +179,10 @@ public class LaunchState extends CommandLineState {
     }
 
     return descriptor;
+  }
+
+  protected static @NotNull String buildRunTabName(@NotNull ExecutionEnvironment env, @NotNull FlutterDevice device) {
+    return env.getRunProfile().getName() + " (" + device.deviceName() + ")";
   }
 
   /**
