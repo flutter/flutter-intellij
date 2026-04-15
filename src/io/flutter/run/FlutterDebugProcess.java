@@ -111,6 +111,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
     topToolbar.addAction(new RestartFlutterApp(app, canReload));
     topToolbar.addSeparator();
     topToolbar.addAction(new OpenDevToolsAction(app, debugUrlAvailable));
+    FlutterDebugProcessActions.addTopToolbarExtensionActions(topToolbar);
 
     settings.addAction(new ReloadAllFlutterApps(app, canReload));
     settings.addAction(new RestartAllFlutterApps(app, canReload));
