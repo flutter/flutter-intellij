@@ -12,6 +12,8 @@ import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -23,22 +25,38 @@ public class FlutterDebugSessionUtils {
 
     private static final Method newSessionBuilderMethod;
     private static final Method environmentMethod;
+    private static final Method sessionNameMethod;
+    private static final Method contentToReuseMethod;
+    private static final Method showTabMethod;
     private static final Method startSessionMethod;
 
     static {
         Method nsb = null;
         Method env = null;
+        Method sn = null;
+        Method ctr = null;
+        Method st = null;
         Method ss = null;
         try {
             nsb = XDebuggerManager.class.getMethod("newSessionBuilder", XDebugProcessStarter.class);
             Class<?> builderClass = nsb.getReturnType();
             env = builderClass.getMethod("environment", ExecutionEnvironment.class);
             ss = builderClass.getMethod("startSession");
+            try {
+                sn = builderClass.getMethod("sessionName", String.class);
+                ctr = builderClass.getMethod("contentToReuse", RunContentDescriptor.class);
+                st = builderClass.getMethod("showTab", boolean.class);
+            } catch (NoSuchMethodException e) {
+                // Some newer SDKs may expose the builder without all of the tab configuration hooks.
+            }
         } catch (NoSuchMethodException e) {
             // Fallback for older platforms
         }
         newSessionBuilderMethod = nsb;
         environmentMethod = env;
+        sessionNameMethod = sn;
+        contentToReuseMethod = ctr;
+        showTabMethod = st;
         startSessionMethod = ss;
     }
 
@@ -47,12 +65,31 @@ public class FlutterDebugSessionUtils {
             @NotNull ExecutionEnvironment env,
             @NotNull XDebugProcessStarter starter,
             boolean muteBreakpoints) throws ExecutionException {
+        return startSessionAndGetDescriptor(manager, env, starter, env.getRunProfile().getName(), muteBreakpoints);
+    }
+
+    public static @NotNull RunContentDescriptor startSessionAndGetDescriptor(
+            @NotNull XDebuggerManager manager,
+            @NotNull ExecutionEnvironment env,
+            @NotNull XDebugProcessStarter starter,
+            @NotNull String sessionName,
+            boolean muteBreakpoints) throws ExecutionException {
         try {
             if (newSessionBuilderMethod == null) {
                 throw new NoSuchMethodException("newSessionBuilder is not available");
             }
             Object builder = newSessionBuilderMethod.invoke(manager, starter);
             builder = environmentMethod.invoke(builder, env);
+            // Split debugger builds derive the visible tab title from the builder configuration rather than later descriptor mutation.
+            if (contentToReuseMethod != null) {
+                builder = contentToReuseMethod.invoke(builder, env.getContentToReuse());
+            }
+            if (sessionNameMethod != null) {
+                builder = sessionNameMethod.invoke(builder, sessionName);
+            }
+            if (showTabMethod != null) {
+                builder = showTabMethod.invoke(builder, true);
+            }
             Object sessionResult = startSessionMethod.invoke(builder);
 
             if (muteBreakpoints) {
@@ -80,5 +117,28 @@ public class FlutterDebugSessionUtils {
         } catch (Exception e) {
             throw new ExecutionException("Failed with unexpected reflection error", e);
         }
+    }
+
+    /**
+     * Returns null when the current SDK exposes the reflective builder hooks needed to label split debug tabs.
+     */
+    @VisibleForTesting
+    static @Nullable String getNamedTabSupportError() {
+        if (newSessionBuilderMethod == null) {
+            return null;
+        }
+        if (environmentMethod == null) {
+            return "environment not found on XDebugSessionBuilder";
+        }
+        if (startSessionMethod == null) {
+            return "startSession not found on XDebugSessionBuilder";
+        }
+        if (sessionNameMethod == null) {
+            return "sessionName not found on XDebugSessionBuilder";
+        }
+        if (showTabMethod == null) {
+            return "showTab not found on XDebugSessionBuilder";
+        }
+        return null;
     }
 }
