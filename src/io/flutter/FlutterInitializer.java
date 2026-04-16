@@ -67,8 +67,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * Runs actions after the project has started up and the index is up to date.
  *
  * @see ProjectOpenActivity for actions that run earlier.
- * @see io.flutter.project.FlutterProjectOpenProcessor for additional actions that
- * may run when a project is being imported.
  */
 public class FlutterInitializer extends FlutterProjectActivity {
   private boolean toolWindowsInitialized = false;
@@ -115,8 +113,19 @@ public class FlutterInitializer extends FlutterProjectActivity {
       }
 
       log().info("Flutter module has been found for project: " + project.getName());
-      // Ensure SDKs are configured; needed for clean module import.
-      FlutterModuleUtils.enableDartSDK(module);
+
+      // Ensure Flutter project configuration is applied for projects that may have been
+      // opened without a .idea directory. Previously this was handled by FlutterProjectOpenProcessor,
+      // but that processor silently failed when no delegate processor could open the project.
+      // Instead, we let the platform open the project normally and apply our configuration here.
+      // See https://github.com/flutter/flutter-intellij/issues/8661 (Android Studio equivalent)
+      if (!FlutterModuleUtils.isFlutterModule(module)) {
+        log().info("Fixing Flutter module configuration for " + module.getName());
+        FlutterModuleUtils.setFlutterModuleWithoutReload(module, project);
+      } else {
+        // Ensure SDKs are configured; needed for clean module import.
+        FlutterModuleUtils.enableDartSDK(module);
+      }
 
       for (PubRoot root : PubRoots.forModule(module)) {
         // Set Android SDK.
