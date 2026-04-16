@@ -389,8 +389,8 @@ tasks {
 // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-faq.html#how-to-check-the-latest-available-eap-release
 tasks {
   printProductsReleases {
-    channels = listOf(ProductRelease.Channel.EAP)
-    types = listOf(IntelliJPlatformType.IntellijIdeaCommunity)
+    channels = listOf(ProductRelease.Channel.RELEASE, ProductRelease.Channel.EAP)
+    types = listOf(IntelliJPlatformType.IntellijIdeaCommunity, IntelliJPlatformType.IntellijIdeaUltimate)
     untilBuild = provider { null }
 
     doLast {
