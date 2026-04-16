@@ -373,7 +373,7 @@ public class FlutterModuleUtils {
     module.setModuleType(getModuleTypeIDForFlutter());
   }
 
-  public static void setFlutterModuleAndReload(@NotNull Module module, @NotNull Project project) {
+  public static void setFlutterModuleWithoutReload(@NotNull Module module, @NotNull Project project) {
     if (project.isDisposed()) return;
     ApplicationManager.getApplication().invokeLater(() -> {
       ApplicationManager.getApplication().runWriteAction(() -> setFlutterModuleType(module));
@@ -381,7 +381,6 @@ public class FlutterModuleUtils {
       project.save();
 
       EditorNotifications.getInstance(project).updateAllNotifications();
-      ProjectManager.getInstance().reloadProject(project);
     });
   }
 
