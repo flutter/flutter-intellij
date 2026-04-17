@@ -8,9 +8,14 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.EditorColorsListener;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.util.messages.MessageBusConnection;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
@@ -22,12 +27,14 @@ import io.flutter.devtools.DevToolsUrl;
 import io.flutter.devtools.DevToolsUtils;
 import io.flutter.logging.PluginLogger;
 import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRootCache;
 import io.flutter.run.daemon.DevToolsInstance;
 import io.flutter.run.daemon.DevToolsService;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.LabelInput;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import io.flutter.utils.OpenApiUtils;
 import io.flutter.view.BrowserUrlProvider;
@@ -71,10 +78,10 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
     showInfoMessage(FlutterBundle.message("widget.preview.initializing"));
 
     // Start the preview process asynchronously
-    startWidgetPreview();
+    startWidgetPreview(null);
   }
 
-  private void startWidgetPreview() {
+  private void startWidgetPreview(@Nullable VirtualFile file) {
     OpenApiUtils.safeExecuteOnPooledThread(() -> {
       try {
         // Check versioning of Flutter SDK.
@@ -125,10 +132,10 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
           });
         });
 
-        final PubRoot root = PubRoot.forFile(project.getProjectFile());
+        final PubRoot root = getPubRoot(file);
         if (root == null) {
           LOG.warn("Pub root not found for project: " + project.getName());
-          showInfoMessage("Pub root could not be found to start widget preview.");
+          showRetryMessage(FlutterBundle.message("widget.preview.pubroot.not.found"), file);
           return;
         }
 
@@ -146,6 +153,16 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
       catch (ExecutionException e) {
         LOG.error("Failed to execute widget preview command", e);
         throw new RuntimeException(e);
+      }
+    });
+  }
+
+  private @Nullable PubRoot getPubRoot(@Nullable VirtualFile file) {
+    return OpenApiUtils.safeRunReadAction(() -> {
+      if (file != null) {
+        return PubRootCache.getInstance(project).getRoot(file);
+      } else {
+        return PubRoot.forFile(project.getProjectFile());
       }
     });
   }
@@ -252,6 +269,34 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
     });
   }
 
+  private void showRetryMessage(@NotNull String message, @Nullable VirtualFile file) {
+    ApplicationManager.getApplication().invokeLater(() -> {
+      final List<LabelInput> inputs = List.of(
+        new LabelInput(message),
+        new LabelInput(FlutterBundle.message("widget.preview.retry"), (label, data) -> startWidgetPreview(file)),
+        new LabelInput(FlutterBundle.message("widget.preview.choose_pubroot"), (label, data) -> chooseFile())
+      );
+      final JPanel panel = viewUtils.createClickableLabelPanel(inputs);
+      contentPanel.removeAll();
+      contentPanel.add(panel, BorderLayout.CENTER);
+      contentPanel.revalidate();
+      contentPanel.repaint();
+    });
+  }
+
+  private void chooseFile() {
+    final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.singleFileOrDir()
+      .withTitle(FlutterBundle.message("widget.preview.choose_pubroot.title"))
+      .withDescription(FlutterBundle.message("widget.preview.choose_pubroot.description"))
+      .withRoots(FlutterUtils.getProjectRoot(project));
+
+    final VirtualFile selectedFile = FileChooser.chooseFile(descriptor, project, null);
+    if (selectedFile != null
+        && OpenApiUtils.safeRunReadAction(() -> ProjectFileIndex.getInstance(project).isInContent(selectedFile))) {
+      startWidgetPreview(selectedFile);
+    }
+  }
+
   @Override
   public void dispose() {
     // Terminate the Flutter process when the tool window is closed
@@ -264,7 +309,12 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
     // Dispose the browser tab
     final EmbeddedTab tab = browserTabRef.getAndSet(null);
     if (tab != null) {
-      tab.close();
+      try {
+        tab.close();
+      }
+      catch (Exception ex) {
+        LOG.info(ex);
+      }
     }
   }
 }

@@ -13,8 +13,8 @@ import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.junit5.config.UseLatestDownloadedIdeBuild
+import io.flutter.integrationTest.utils.deleteFlutterProject
 import io.flutter.integrationTest.utils.newProjectWelcomeScreen
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
@@ -28,28 +28,9 @@ import kotlin.time.Duration.Companion.minutes
 @Tag("ui")
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 @ExtendWith(UseLatestDownloadedIdeBuild::class)
-class MyProjectUITest {
+class NewProjectUITest {
 
-  companion object {
-    var testProjectName = ""
-
-    /**
-     * Cleanup method that runs after all tests in this class.
-     * Removes the test project folder created during testing to keep the system clean.
-     */
-    @JvmStatic
-    @AfterAll
-    fun cleanUpTestFolder() {
-      val projectPath = Paths.get(System.getProperty("user.home"), "IdeaProjects", testProjectName)
-      val projectFile = projectPath.toFile()
-      if (projectFile.exists()) {
-        projectFile.deleteRecursively()
-        println("Successfully deleted test folder: $projectPath")
-      } else {
-        println("Test folder does not exist, skipping cleanup: $projectPath")
-      }
-    }
-  }
+  private var testProjectName = ""
 
   /**
    * The IDE instance running in the background.
@@ -73,20 +54,26 @@ class MyProjectUITest {
    * The initialization check prevents errors if the setup failed.
    */
   @AfterEach
-  fun closeIde() {
+  fun cleanUpProjectAndIde() {
     if (::run.isInitialized) {
       println("Closing IDE")
       run.closeIdeAndWait()
     } else {
       println("IDE was not started, skipping close")
     }
+
+    // Clean up the project folder
+    deleteFlutterProject(
+      testProjectName,
+      directory = Paths.get(System.getProperty("user.home"), "IdeaProjects").toString()
+    )
   }
 
   @Test
   fun newProjectIC() {
     println("Initializing IDE test context")
     println("Test project will be created as: $testProjectName")
-    run = Setup.setupTestContextIC("MyProjectUITest").runIdeWithDriver()
+    run = Setup.setupTestContextIC(javaClass.simpleName).runIdeWithDriver()
 
     newProjectWelcomeScreen(run, testProjectName)
     newProjectInProjectView()
@@ -97,7 +84,7 @@ class MyProjectUITest {
   fun newProjectUE() {
     println("Initializing IDE test context")
     println("Test project will be created as: $testProjectName")
-    run = Setup.setupTestContextUE("MyProjectUITest").runIdeWithDriver()
+    run = Setup.setupTestContextUE(javaClass.simpleName).runIdeWithDriver()
 
     newProjectWelcomeScreen(run, testProjectName)
     run.driver.withContext {
@@ -114,7 +101,7 @@ class MyProjectUITest {
   fun newProjectWS() {
     println("Initializing IDE test context")
     println("Test project will be created as: $testProjectName")
-    run = Setup.setupTestContextWS("MyProjectUITest").runIdeWithDriver()
+    run = Setup.setupTestContextWS(javaClass.simpleName).runIdeWithDriver()
 
     newProjectWelcomeScreen(run, testProjectName)
     newProjectInProjectView()

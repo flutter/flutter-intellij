@@ -2,11 +2,28 @@
 
 ### Added
 
+- Option to specify the pub root module for Flutter Widget Previewer. (#8888)
+
 ### Changed
 
 ### Removed
 
 ### Fixed
+- Silent failure when opening Flutter projects without `.idea` directory in IntelliJ IDEA, by removing `FlutterProjectOpenProcessor` and
+  migrating configuration logic to `FlutterInitializer`. (#8903)
+
+## 91.0.0
+
+### Changed
+
+- Gradle plugin version to re-enable running `./gradlew verifyPlugin` locally. (#8847)
+
+### Fixed
+
+- Gutter buttons not running tests with non-ASCII characters in their names. (#8838)
+- Freeze from JX Browser close. (#8864)
+- Crash in split debugger mode in IntelliJ 2025.3+. (#8878)
+- Passing additional arguments from the Flutter test template. (#8836)
 
 ## 90.0.0
 
