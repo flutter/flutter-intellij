@@ -232,6 +232,23 @@ name and contact info to the [AUTHORS](AUTHORS) file.
     - Expand `Edit configuration templates...` and verify that Flutter is present.
     - Click [+] and verify that Flutter is present.
 
+### Running against custom target IDEs
+
+To test or debug the plugin against a different IDE target (like IntelliJ IDEA Community or Ultimate) without changing the project's compilation target, you can use the custom `runTarget` Gradle task.
+
+Run it from the command line specifying the target IDE and version:
+```bash
+./gradlew runTarget -Pide=IntelliJ -PideV=2025.1
+```
+
+*   **`-Pide`**: Valid values are `AndroidStudio` (default), `IntelliJ` (Community), and `Ultimate`.
+*   **`-PideV`**: Any valid version string or build number for the selected IDE.
+
+To see a full list of available options and usage examples, run the task without any parameters:
+```bash
+./gradlew runTarget
+```
+
 ## Provision Tool
 
 This is not currently required. However, for debugging unit tests, it may be handy; please ignore for now.
