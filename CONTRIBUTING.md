@@ -58,7 +58,6 @@ name and contact info to the [AUTHORS](AUTHORS) file.
 ## Environment set-up
 
 1. Install the latest [Java Development Kit](https://www.java.com/en/download/).
-    - The current Java Development Kit version is: **23**.
     - **[Googlers only]** Install Java from go/softwarecenter instead.
 
 2. Set your `JAVA_HOME` directory in the configuration file for your shell environment.
