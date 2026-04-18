@@ -390,7 +390,7 @@ tasks {
 tasks {
   printProductsReleases {
     channels = listOf(ProductRelease.Channel.RELEASE, ProductRelease.Channel.EAP)
-    types = listOf(IntelliJPlatformType.IntellijIdeaCommunity, IntelliJPlatformType.IntellijIdeaUltimate)
+    types = listOf(IntelliJPlatformType.IntellijIdeaCommunity, IntelliJPlatformType.IntellijIdeaUltimate, IntelliJPlatformType.AndroidStudio)
     untilBuild = provider { null }
 
     doLast {
