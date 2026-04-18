@@ -98,23 +98,6 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
 
     session.setPauseActionSupported(true);
 
-    session.addSessionListener(new XDebugSessionListener() {
-      @Override
-      public void sessionPaused() {
-        // This can be removed if XFramesView starts popping the project window to the top of the z-axis stack.
-        final Project project = getSession().getProject();
-        focusProject(project);
-        stackFrameChanged();
-      }
-
-      @Override
-      public void stackFrameChanged() {
-        final XStackFrame stackFrame = getSession().getCurrentStackFrame();
-        myLatestCurrentIsolateId =
-          stackFrame instanceof DartVmServiceStackFrame ? ((DartVmServiceStackFrame)stackFrame).getIsolateId() : null;
-      }
-    });
-
     this.executionEnvironment = executionEnvironment;
     this.mapper = mapper;
     myConnector = connector;
@@ -592,68 +575,6 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
   private static boolean isDartPatchUri(@NotNull final String uri) {
     // dart:_builtin or dart:core-patch/core_patch.dart
     return uri.startsWith("dart:_") || uri.startsWith("dart:") && uri.contains("-patch/");
-  }
-
-  private static void focusProject(@NotNull Project project) {
-    final WindowManager windowManager = WindowManager.getInstance();
-    if (windowManager == null) {
-      return;
-    }
-
-    final JFrame projectFrame = windowManager.getFrame(project);
-    if (projectFrame == null) {
-      return;
-    }
-
-    final int frameState = projectFrame.getExtendedState();
-
-    if (BitUtil.isSet(frameState, java.awt.Frame.ICONIFIED)) {
-      // restore the frame if it is minimized
-      projectFrame.setExtendedState(frameState ^ java.awt.Frame.ICONIFIED);
-      projectFrame.toFront();
-    }
-    else {
-      final JFrame anchor = new JFrame();
-      anchor.setType(Window.Type.UTILITY);
-      anchor.setUndecorated(true);
-      anchor.setSize(0, 0);
-      anchor.addWindowListener(new WindowListener() {
-        @Override
-        public void windowOpened(WindowEvent e) {
-        }
-
-        @Override
-        public void windowClosing(WindowEvent e) {
-        }
-
-        @Override
-        public void windowClosed(WindowEvent e) {
-        }
-
-        @Override
-        public void windowIconified(WindowEvent e) {
-        }
-
-        @Override
-        public void windowDeiconified(WindowEvent e) {
-        }
-
-        @Override
-        public void windowActivated(WindowEvent e) {
-          if (projectFrame.isDisplayable()) {
-            projectFrame.setVisible(true);
-          }
-          anchor.dispose();
-        }
-
-        @Override
-        public void windowDeactivated(WindowEvent e) {
-        }
-      });
-      anchor.pack();
-      anchor.setVisible(true);
-      anchor.toFront();
-    }
   }
 
   public interface PositionMapper {
