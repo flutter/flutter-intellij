@@ -23,45 +23,7 @@ import java.lang.reflect.Method;
 //  See https://github.com/flutter/flutter-intellij/issues/8879.
 public class FlutterDebugSessionUtils {
 
-    private static final Method newSessionBuilderMethod;
-    private static final Method environmentMethod;
-    private static final Method sessionNameMethod;
-    private static final Method contentToReuseMethod;
-    private static final Method showTabMethod;
-    private static final Method startSessionMethod;
-
-    static {
-        Method nsb = null;
-        Method env = null;
-        Method sn = null;
-        Method ctr = null;
-        Method st = null;
-        Method ss = null;
-        try {
-            final Method nsbLocal = XDebuggerManager.class.getMethod("newSessionBuilder", XDebugProcessStarter.class);
-            final Class<?> builderClass = nsbLocal.getReturnType();
-            final Method envLocal = builderClass.getMethod("environment", ExecutionEnvironment.class);
-            final Method ssLocal = builderClass.getMethod("startSession");
-            try {
-                sn = builderClass.getMethod("sessionName", String.class);
-                ctr = builderClass.getMethod("contentToReuse", RunContentDescriptor.class);
-                st = builderClass.getMethod("showTab", boolean.class);
-            } catch (NoSuchMethodException e) {
-                // Some newer SDKs may expose the builder without all of the tab configuration hooks.
-            }
-            nsb = nsbLocal;
-            env = envLocal;
-            ss = ssLocal;
-        } catch (NoSuchMethodException e) {
-            // Fallback for older platforms
-        }
-        newSessionBuilderMethod = nsb;
-        environmentMethod = env;
-        sessionNameMethod = sn;
-        contentToReuseMethod = ctr;
-        showTabMethod = st;
-        startSessionMethod = ss;
-    }
+    private static final @Nullable BuilderHooks builderHooks = findBuilderHooks();
 
     public static @NotNull RunContentDescriptor startSessionAndGetDescriptor(
             @NotNull XDebuggerManager manager,
@@ -77,12 +39,23 @@ public class FlutterDebugSessionUtils {
             @NotNull XDebugProcessStarter starter,
             @NotNull String sessionName,
             boolean muteBreakpoints) throws ExecutionException {
-        if (newSessionBuilderMethod == null) {
+        if (builderHooks == null) {
             return startLegacySessionAndGetDescriptor(manager, env, starter, muteBreakpoints);
         }
 
+        return startSessionAndGetDescriptor(builderHooks, manager, env, starter, sessionName, muteBreakpoints);
+    }
+
+    @VisibleForTesting
+    static @NotNull RunContentDescriptor startSessionAndGetDescriptor(
+            @NotNull BuilderHooks hooks,
+            @NotNull Object manager,
+            @NotNull ExecutionEnvironment env,
+            @NotNull XDebugProcessStarter starter,
+            @NotNull String sessionName,
+            boolean muteBreakpoints) throws ExecutionException {
         try {
-            final Object sessionResult = startBuilderSession(manager, env, starter, sessionName);
+            final Object sessionResult = startBuilderSession(hooks, manager, env, starter, sessionName);
             muteBreakpointsIfNeeded(sessionResult, muteBreakpoints);
             return getDescriptor(sessionResult);
         } catch (InvocationTargetException e) {
@@ -93,6 +66,29 @@ public class FlutterDebugSessionUtils {
             throw new ExecutionException("Failed to start debug session via reflection", cause != null ? cause : e);
         } catch (Exception e) {
             throw new ExecutionException("Failed with unexpected reflection error", e);
+        }
+    }
+
+    private static @Nullable BuilderHooks findBuilderHooks() {
+        Method sn = null;
+        Method ctr = null;
+        Method st = null;
+        try {
+            final Method nsb = XDebuggerManager.class.getMethod("newSessionBuilder", XDebugProcessStarter.class);
+            final Class<?> builderClass = nsb.getReturnType();
+            final Method env = builderClass.getMethod("environment", ExecutionEnvironment.class);
+            final Method ss = builderClass.getMethod("startSession");
+            try {
+                sn = builderClass.getMethod("sessionName", String.class);
+                ctr = builderClass.getMethod("contentToReuse", RunContentDescriptor.class);
+                st = builderClass.getMethod("showTab", boolean.class);
+            } catch (NoSuchMethodException e) {
+                // Some newer SDKs may expose the builder without all of the tab configuration hooks.
+            }
+            return new BuilderHooks(nsb, env, sn, ctr, st, ss);
+        } catch (NoSuchMethodException e) {
+            // Fallback for older platforms
+            return null;
         }
     }
 
@@ -109,29 +105,31 @@ public class FlutterDebugSessionUtils {
     }
 
     private static @NotNull Object startBuilderSession(
-            @NotNull XDebuggerManager manager,
+            @NotNull BuilderHooks hooks,
+            @NotNull Object manager,
             @NotNull ExecutionEnvironment env,
             @NotNull XDebugProcessStarter starter,
             @NotNull String sessionName) throws Exception {
-        Object builder = newSessionBuilderMethod.invoke(manager, starter);
-        builder = environmentMethod.invoke(builder, env);
-        builder = configureNamedTab(builder, env, sessionName);
-        return startSessionMethod.invoke(builder);
+        Object builder = hooks.newSessionBuilderMethod.invoke(manager, starter);
+        builder = hooks.environmentMethod.invoke(builder, env);
+        builder = configureNamedTab(hooks, builder, env, sessionName);
+        return hooks.startSessionMethod.invoke(builder);
     }
 
     private static @NotNull Object configureNamedTab(
+            @NotNull BuilderHooks hooks,
             @NotNull Object builder,
             @NotNull ExecutionEnvironment env,
             @NotNull String sessionName) throws Exception {
         // Split debugger builds derive the visible tab title from the builder configuration rather than later descriptor mutation.
-        if (contentToReuseMethod != null) {
-            builder = contentToReuseMethod.invoke(builder, env.getContentToReuse());
+        if (hooks.contentToReuseMethod != null) {
+            builder = hooks.contentToReuseMethod.invoke(builder, env.getContentToReuse());
         }
-        if (sessionNameMethod != null) {
-            builder = sessionNameMethod.invoke(builder, sessionName);
+        if (hooks.sessionNameMethod != null) {
+            builder = hooks.sessionNameMethod.invoke(builder, sessionName);
         }
-        if (showTabMethod != null) {
-            builder = showTabMethod.invoke(builder, true);
+        if (hooks.showTabMethod != null) {
+            builder = hooks.showTabMethod.invoke(builder, true);
         }
         return builder;
     }
@@ -155,21 +153,46 @@ public class FlutterDebugSessionUtils {
      */
     @VisibleForTesting
     static @Nullable String getNamedTabSupportError() {
-        if (newSessionBuilderMethod == null) {
+        if (builderHooks == null) {
             return null;
         }
-        if (environmentMethod == null) {
+        if (builderHooks.environmentMethod == null) {
             return "environment not found on XDebugSessionBuilder";
         }
-        if (startSessionMethod == null) {
+        if (builderHooks.startSessionMethod == null) {
             return "startSession not found on XDebugSessionBuilder";
         }
-        if (sessionNameMethod == null) {
+        if (builderHooks.sessionNameMethod == null) {
             return "sessionName not found on XDebugSessionBuilder";
         }
-        if (showTabMethod == null) {
+        if (builderHooks.showTabMethod == null) {
             return "showTab not found on XDebugSessionBuilder";
         }
         return null;
+    }
+
+    @VisibleForTesting
+    static final class BuilderHooks {
+        final Method newSessionBuilderMethod;
+        final Method environmentMethod;
+        final @Nullable Method sessionNameMethod;
+        final @Nullable Method contentToReuseMethod;
+        final @Nullable Method showTabMethod;
+        final Method startSessionMethod;
+
+        BuilderHooks(
+                @NotNull Method newSessionBuilderMethod,
+                @NotNull Method environmentMethod,
+                @Nullable Method sessionNameMethod,
+                @Nullable Method contentToReuseMethod,
+                @Nullable Method showTabMethod,
+                @NotNull Method startSessionMethod) {
+            this.newSessionBuilderMethod = newSessionBuilderMethod;
+            this.environmentMethod = environmentMethod;
+            this.sessionNameMethod = sessionNameMethod;
+            this.contentToReuseMethod = contentToReuseMethod;
+            this.showTabMethod = showTabMethod;
+            this.startSessionMethod = startSessionMethod;
+        }
     }
 }
