@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Copyright 2026 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 if [ ! -f "build.gradle.kts" ]; then
   echo "Error: This script must be run from the repository root directory."
   exit 1
