@@ -1,6 +1,9 @@
 #!/bin/bash
-# Script to create or update baselines based on current verification reports.
-# Run this from the repository root.
+
+if [ ! -f "build.gradle.kts" ]; then
+  echo "Error: This script must be run from the repository root directory."
+  exit 1
+fi
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
