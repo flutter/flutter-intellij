@@ -10,10 +10,8 @@ NC='\033[0m' # None (Reset)
 
 echo -e "${BOLD}Running plugin verification...${NC}"
 
-# Stale reports cleanup
 rm -rf build/reports/pluginVerifier
 
-# Discover versions from tool/baseline
 VERSIONS=$(ls tool/baseline)
 
 if [ -z "$VERSIONS" ]; then
@@ -25,7 +23,7 @@ echo -e "${BOLD}Found versions to update: $VERSIONS${NC}"
 
 for version in $VERSIONS; do
   echo -e "${BOLD}Verifying version $version...${NC}"
-  ./gradlew verifyPlugin -PsingleIdeVersion=$version || true
+  ./gradlew verifyPlugin -PsingleIdeVersion=$version --no-configuration-cache --no-daemon || true
 
   echo -e "${BOLD}Processing baseline for $version...${NC}"
   BASELINE="tool/baseline/$version/verifier-baseline.txt"
