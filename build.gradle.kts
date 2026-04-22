@@ -390,16 +390,18 @@ tasks {
 tasks {
   printProductsReleases {
     channels = listOf(ProductRelease.Channel.RELEASE, ProductRelease.Channel.EAP)
-    types = listOf(IntelliJPlatformType.IntellijIdeaCommunity, IntelliJPlatformType.IntellijIdeaUltimate)
+    types = listOf(IntelliJPlatformType.IntellijIdeaCommunity, IntelliJPlatformType.IntellijIdeaUltimate, IntelliJPlatformType.AndroidStudio)
     untilBuild = provider { null }
 
     doLast {
       productsReleases.get().max()
       println()
       println("Mapping printProductsReleases output to ideV:")
-      println(" - The prefix (e.g., IU-, IC-) maps to -Pide (Ultimate, IntelliJ).")
+      println(" - The prefix (e.g., IU-, IC-, AI-) maps to -Pide (Ultimate, IntelliJ, Android Studio).")
       println(" - The number part (e.g., 261.23567.71) maps to -PideV.")
       println(" - Example: IU-261.23567.71 -> -Pide=Ultimate -PideV=261.23567.71")
+      println(" - Example: AI-2025.3.3.6 -> -Pide=AndroidStudio -PideV=2025.3.3.6")
+
       println()
     }
   }

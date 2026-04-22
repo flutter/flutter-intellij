@@ -135,6 +135,9 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
 
   if [ $EXIT_STATUS -ne 0 ]; then
     echo -e "${RED}${BOLD}Build failed: New verification issues were detected.${NC}"
+    echo -e "${YELLOW}To update the baselines with these new issues, run:${NC}"
+    echo -e "${YELLOW}  ./tool/update_baselines.sh${NC}"
+    echo -e "${YELLOW}from the repository root and commit the changes.${NC}"
     exit 1
   fi
 
