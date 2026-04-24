@@ -1,0 +1,35 @@
+# Copyright 2026 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+[versions]
+jetbrains-annotations = "24.0.0"
+guava-android = "32.0.1-android"
+guava-jre = "32.0.1-jre"
+gson = "2.10.1"
+junit = "4.13.2"
+kodein-di = "7.26.1"
+kotlinx-coroutines = "1.9.0"
+junit-jupiter = "5.11.4"
+junit-platform = "1.11.4"
+intellij-platform-plugin = "2.12.0"
+kotlin = "2.2.0"
+changelog = "2.2.0"
+kover = "0.9.4"
+
+[libraries]
+jetbrains-annotations = { group = "org.jetbrains", name = "annotations", version.ref = "jetbrains-annotations" }
+guava-android = { group = "com.google.guava", name = "guava", version.ref = "guava-android" }
+guava-jre = { group = "com.google.guava", name = "guava", version.ref = "guava-jre" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+kodein-di = { group = "org.kodein.di", name = "kodein-di-jvm", version.ref = "kodein-di" }
+kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit-jupiter" }
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junit-platform" }
+
+[plugins]
+intellij-platform = { id = "org.jetbrains.intellij.platform", version.ref = "intellij-platform-plugin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

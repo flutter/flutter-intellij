@@ -40,10 +40,10 @@ plugins {
   // https://plugins.gradle.org/plugin/org.jetbrains.intellij.platform
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("java") // Java support
-  id("org.jetbrains.intellij.platform") version "2.12.0" // IntelliJ Platform Gradle Plugin
-  id("org.jetbrains.kotlin.jvm") version "2.2.0" // Kotlin support
-  id("org.jetbrains.changelog") version "2.2.0" // Gradle Changelog Plugin
-  id("org.jetbrains.kotlinx.kover") version "0.9.4"
+  alias(libs.plugins.intellij.platform) // IntelliJ Platform Gradle Plugin
+  alias(libs.plugins.kotlin.jvm) // Kotlin support
+  alias(libs.plugins.changelog) // Gradle Changelog Plugin
+  alias(libs.plugins.kover)
   idea // IntelliJ IDEA support
 }
 
@@ -239,13 +239,13 @@ dependencies {
     pluginVerifier()
   }
 
-  compileOnly("org.jetbrains:annotations:24.0.0")
-  testImplementation("org.jetbrains:annotations:24.0.0")
-  compileOnly("com.google.guava:guava:32.0.1-android")
-  compileOnly("com.google.code.gson:gson:2.10.1")
-  testImplementation("com.google.guava:guava:32.0.1-jre")
-  testImplementation("com.google.code.gson:gson:2.10.1")
-  testImplementation("junit:junit:4.13.2")
+  compileOnly(libs.jetbrains.annotations)
+  testImplementation(libs.jetbrains.annotations)
+  compileOnly(libs.guava.android)
+  compileOnly(libs.gson)
+  testImplementation(libs.guava.jre)
+  testImplementation(libs.gson)
+  testImplementation(libs.junit)
   implementation(
     fileTree(
       mapOf(
@@ -256,12 +256,12 @@ dependencies {
   )
 
   // UI Test dependencies
-  integrationImplementation("org.kodein.di:kodein-di-jvm:7.26.1")
-  integrationImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+  integrationImplementation(libs.kodein.di)
+  integrationImplementation(libs.kotlinx.coroutines)
 
   // JUnit 5 is required for UI tests
-  integrationImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
-  integrationRuntimeOnly("org.junit.platform:junit-platform-launcher")
+  integrationImplementation(libs.junit.jupiter)
+  integrationRuntimeOnly(libs.junit.platform.launcher)
 }
 
 intellijPlatform {
