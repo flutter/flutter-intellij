@@ -11,6 +11,8 @@
 ### Fixed
 - Silent failure when opening Flutter projects without `.idea` directory in IntelliJ IDEA, by removing `FlutterProjectOpenProcessor` and
   migrating configuration logic to `FlutterInitializer`. (#8903)
+- Fixed an issue where the IDE would lose focus when running in full screen mode. (#8906)
+- Fixed excessive toolbar updates causing exceptions in Android Studio by making target device selector updates targeted instead of global. (#8891)
 
 ## 91.0.0
 
