@@ -40,10 +40,10 @@ plugins {
   // https://plugins.gradle.org/plugin/org.jetbrains.intellij.platform
   // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm
   id("java") // Java support
-  id("org.jetbrains.intellij.platform") version "2.12.0" // IntelliJ Platform Gradle Plugin
-  id("org.jetbrains.kotlin.jvm") version "2.2.0" // Kotlin support
-  id("org.jetbrains.changelog") version "2.2.0" // Gradle Changelog Plugin
-  id("org.jetbrains.kotlinx.kover") version "0.9.4"
+  alias(libs.plugins.intellij.platform) // IntelliJ Platform Gradle Plugin
+  alias(libs.plugins.kotlin.jvm) // Kotlin support
+  alias(libs.plugins.changelog) // Gradle Changelog Plugin
+  alias(libs.plugins.kover)
   idea // IntelliJ IDEA support
 }
 
@@ -239,13 +239,13 @@ dependencies {
     pluginVerifier()
   }
 
-  compileOnly("org.jetbrains:annotations:24.0.0")
-  testImplementation("org.jetbrains:annotations:24.0.0")
-  compileOnly("com.google.guava:guava:32.0.1-android")
-  compileOnly("com.google.code.gson:gson:2.10.1")
-  testImplementation("com.google.guava:guava:32.0.1-jre")
-  testImplementation("com.google.code.gson:gson:2.10.1")
-  testImplementation("junit:junit:4.13.2")
+  compileOnly(libs.jetbrains.annotations)
+  testImplementation(libs.jetbrains.annotations)
+  compileOnly(libs.guava.android)
+  compileOnly(libs.gson)
+  testImplementation(libs.guava.jre)
+  testImplementation(libs.gson)
+  testImplementation(libs.junit)
   implementation(
     fileTree(
       mapOf(
@@ -256,12 +256,12 @@ dependencies {
   )
 
   // UI Test dependencies
-  integrationImplementation("org.kodein.di:kodein-di-jvm:7.26.1")
-  integrationImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+  integrationImplementation(libs.kodein.di)
+  integrationImplementation(libs.kotlinx.coroutines)
 
   // JUnit 5 is required for UI tests
-  integrationImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
-  integrationRuntimeOnly("org.junit.platform:junit-platform-launcher")
+  integrationImplementation(libs.junit.jupiter)
+  integrationRuntimeOnly(libs.junit.platform.launcher)
 }
 
 intellijPlatform {
@@ -389,12 +389,20 @@ tasks {
 // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-faq.html#how-to-check-the-latest-available-eap-release
 tasks {
   printProductsReleases {
-    channels = listOf(ProductRelease.Channel.EAP)
-    types = listOf(IntelliJPlatformType.IntellijIdeaCommunity)
+    channels = listOf(ProductRelease.Channel.RELEASE, ProductRelease.Channel.EAP)
+    types = listOf(IntelliJPlatformType.IntellijIdeaCommunity, IntelliJPlatformType.IntellijIdeaUltimate, IntelliJPlatformType.AndroidStudio)
     untilBuild = provider { null }
 
     doLast {
       productsReleases.get().max()
+      println()
+      println("Mapping printProductsReleases output to ideV:")
+      println(" - The prefix (e.g., IU-, IC-, AI-) maps to -Pide (Ultimate, IntelliJ, Android Studio).")
+      println(" - The number part (e.g., 261.23567.71) maps to -PideV.")
+      println(" - Example: IU-261.23567.71 -> -Pide=Ultimate -PideV=261.23567.71")
+      println(" - Example: AI-2025.3.3.6 -> -Pide=AndroidStudio -PideV=2025.3.3.6")
+
+      println()
     }
   }
   prepareJarSearchableOptions {
@@ -411,6 +419,53 @@ tasks {
       showStandardStreams = true
       exceptionFormat = TestExceptionFormat.FULL
       events("skipped", "failed")
+    }
+  }
+}
+
+intellijPlatformTesting {
+  runIde {
+    register("runTarget") {
+      val target = project.findProperty("ide") as? String
+      val version = project.findProperty("ideV") as? String
+      
+      val actualTarget = target ?: "AndroidStudio"
+      type = when (actualTarget) {
+        "IntelliJ" -> IntelliJPlatformType.IntellijIdeaCommunity
+        "Ultimate" -> IntelliJPlatformType.IntellijIdeaUltimate
+        else -> IntelliJPlatformType.AndroidStudio
+      }
+      this.version = version ?: ideaVersion
+    }
+  }
+}
+
+tasks.named("runTarget") {
+  val target = project.findProperty("ide") as? String
+  val version = project.findProperty("ideV") as? String
+  
+  doFirst {
+    if (target == null && version == null) {
+      println("============================================================")
+      println("runTarget - Available Options")
+      println("============================================================")
+      println("Valid values for -Pide:")
+      println(" - AndroidStudio (default)")
+      println(" - IntelliJ (IntelliJ IDEA Community)")
+      println(" - Ultimate (IntelliJ IDEA Ultimate)")
+      println()
+      println("Valid values for -PideV:")
+      println(" - Any valid version string for the selected IDE.")
+      println(" - Examples for IntelliJ/Ultimate: 2024.1, 2024.2, 2024.3, 2025.1")
+      println(" - Run './gradlew printProductsReleases' to see the full list.")
+      println()
+      println("Examples:")
+      println(" ./gradlew runTarget -Pide=IntelliJ -PideV=2025.1")
+      println(" ./gradlew runTarget -Pide=Ultimate -PideV=2025.1")
+      println("============================================================")
+      println("Stopping execution. Please run with parameters to launch a specific IDE.")
+      
+      throw org.gradle.api.tasks.StopExecutionException()
     }
   }
 }

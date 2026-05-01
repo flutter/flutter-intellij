@@ -18,18 +18,19 @@ public class FlutterSdkVersionTest {
 
   @Test
   public void trackSdkVersionSupport() {
-    assertFalse(new FlutterSdkVersion("3.15.0").isSDKSupported());
-    assertFalse(new FlutterSdkVersion("3.16.0-0.1.pre").isSDKSupported());
-    assertTrue(new FlutterSdkVersion("3.16.0").isSDKSupported());
-    assertTrue(new FlutterSdkVersion("3.16.1").isSDKSupported());
-    assertTrue(new FlutterSdkVersion("3.17.0").isSDKSupported());
+    assertFalse(new FlutterSdkVersion("3.19.3").isSDKSupported());
+    assertFalse(new FlutterSdkVersion("3.19.4-0.1.pre").isSDKSupported());
+    assertTrue(new FlutterSdkVersion("3.19.4").isSDKSupported());
+    assertTrue(new FlutterSdkVersion("3.19.5").isSDKSupported());
+    assertTrue(new FlutterSdkVersion("3.20.0").isSDKSupported());
     assertFalse(new FlutterSdkVersion("unknown").isSDKSupported());
 
-    assertTrue(new FlutterSdkVersion("3.16.0").isSDKAboutToSunset());
-    assertTrue(new FlutterSdkVersion("3.17.0").isSDKAboutToSunset());
-    assertTrue(new FlutterSdkVersion("3.19.3").isSDKAboutToSunset());
-    assertFalse(new FlutterSdkVersion("3.19.4").isSDKAboutToSunset());
-    assertFalse(new FlutterSdkVersion("3.20.0").isSDKAboutToSunset());
+    assertTrue(new FlutterSdkVersion("3.19.4").isSDKAboutToSunset());
+    assertTrue(new FlutterSdkVersion("3.20.0").isSDKAboutToSunset());
+    assertTrue(new FlutterSdkVersion("3.22.0").isSDKAboutToSunset());
+    assertTrue(new FlutterSdkVersion("3.22.1").isSDKAboutToSunset());
+    assertFalse(new FlutterSdkVersion("3.22.2").isSDKAboutToSunset());
+    assertFalse(new FlutterSdkVersion("3.23.0").isSDKAboutToSunset());
   }
 
   @Test

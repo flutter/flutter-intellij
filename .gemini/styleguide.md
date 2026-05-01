@@ -13,6 +13,8 @@ enforce standard modern Java/Kotlin coding conventions, but strictly police the 
     - `[NIT]`: Idiomatic improvements or minor naming suggestions.
 - **Focus:** Prioritize logic, performance on the UI thread, and architectural consistency.
 - **No Empty Praise:** Do not leave "Looks good" or "Nice change" comments. If there are no issues, leave no comments.
+- **Copyright Headers:** Ensure all new files have a proper copyright header (e.g., `Copyright 2026 The Chromium Authors`). Flag any missing
+  headers as `[MUST-FIX]`.
 
 ## 2. IntelliJ Platform Best Practices
 
@@ -30,8 +32,10 @@ enforce standard modern Java/Kotlin coding conventions, but strictly police the 
       as recommended by the modern SDK.
 - **Backward Compatibility:** Avoid using `@ApiStatus.Internal` or `@ApiStatus.ScheduledForRemoval` APIs unless strictly necessary.
 - **Logging:**
-    - Reject any use of `System.out.println` or `System.err.println` for logging in `src/` code (integration tests may use them for milestone logging).
-    - Enforce the use of the IntelliJ SDK's built-in logger (`com.intellij.openapi.diagnostic.Logger`) or our own (`io.flutter.logging.PluginLogger`).
+    - Reject any use of `System.out.println` or `System.err.println` for logging in `src/` code (integration tests may use them for
+      milestone logging).
+    - Enforce the use of the IntelliJ SDK's built-in logger (`com.intellij.openapi.diagnostic.Logger`) or our own (
+      `io.flutter.logging.PluginLogger`).
 - **Actions:**
     - Classes extending `AnAction` must be completely stateless. Flag any `AnAction` class that defines mutable instance variables (fields),
       as the platform instantiates a single instance of the action for the lifetime of the IDE.
