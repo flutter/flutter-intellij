@@ -6,6 +6,7 @@ updates:
       interval: "weekly"
     labels:
       - "autosubmit"
+      - "kokoro:run"
     # Updating patch versions for "github-actions" is too chatty.
     # See https://github.com/flutter/flutter/issues/158350.
     ignore:
@@ -18,3 +19,4 @@ updates:
       interval: "weekly"
     labels:
       - "autosubmit"
+      - "kokoro:run"
