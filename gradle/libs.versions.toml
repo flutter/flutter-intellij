@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 [versions]
-jetbrains-annotations = "24.0.0"
+jetbrains-annotations = "26.1.0"
 guava-android = "33.6.0-android"
 guava-jre = "33.6.0-android"
 gson = "2.14.0"
