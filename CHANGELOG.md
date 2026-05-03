@@ -2,6 +2,16 @@
 
 ### Added
 
+### Changed
+
+### Removed
+
+### Fixed
+
+## 92.0.0
+
+### Added
+
 - Option to specify the pub root module for Flutter Widget Previewer. (#8888)
 
 ### Changed
@@ -11,6 +21,8 @@
 ### Fixed
 - Silent failure when opening Flutter projects without `.idea` directory in IntelliJ IDEA, by removing `FlutterProjectOpenProcessor` and
   migrating configuration logic to `FlutterInitializer`. (#8903)
+- IDE focus loss when running in full screen mode. (#8906)
+- Excessive toolbar updates causing exceptions in Android Studio, by making device selector updates targeted instead of global. (#8891)
 
 ## 91.0.0
 
