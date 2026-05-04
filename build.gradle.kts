@@ -230,6 +230,7 @@ dependencies {
       )
     )
     plugin("Dart:$dartPluginVersion")
+    plugin("com.redhat.devtools.lsp4ij:${libs.versions.lsp4ij.get()}")
     bundledModule("intellij.platform.langInjection")
 
     if (sinceBuildInput == "243" || sinceBuildInput == "251") {
@@ -246,6 +247,7 @@ dependencies {
   testImplementation(libs.guava.jre)
   testImplementation(libs.gson)
   testImplementation(libs.junit)
+  testImplementation(libs.bytebuddy)
   implementation(
     fileTree(
       mapOf(
