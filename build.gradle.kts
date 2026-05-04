@@ -225,12 +225,12 @@ dependencies {
         "org.jetbrains.kotlin",
         "org.jetbrains.plugins.gradle",
         "org.jetbrains.plugins.yaml",
-        "org.intellij.intelliLang",
         "org.jetbrains.android",
         "com.android.tools.idea.smali"
       )
     )
     plugin("Dart:$dartPluginVersion")
+    bundledModule("intellij.platform.langInjection")
 
     if (sinceBuildInput == "243" || sinceBuildInput == "251") {
       bundledModule("intellij.platform.coverage")
