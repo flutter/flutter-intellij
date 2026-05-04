@@ -2,6 +2,8 @@
 
 ### Added
 
+- Missing platforms and targets to Build menu.
+
 ### Changed
 
 ### Removed
