@@ -93,7 +93,7 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
   df -h
   ./gradlew verifyPluginSignature
 
-  for version in 251 252; do
+  for version in 251 252 253; do
     echo -e "${BOLD}Running verifyPlugin for $version...${NC}"
     
     echo "Check on space before run\n"
@@ -109,10 +109,12 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
 
     if [ -f "$REPORT" ]; then
       echo "Comparing baseline against report in $REPORT"
-      grep "^*" "$REPORT" | sort > current_issues.tmp
+      # Normalize the specific constructor signature to ignore parameter names.
+      # This bridges the gap between local builds (with names) and CI builds (without names).
+      grep "^*" "$REPORT" | sed -E 's/DartTemplateContextType\.<init>\([^)]+\)/DartTemplateContextType.<init>(args)/' | sort > current_issues.tmp
 
       if [ -f "$BASELINE" ]; then
-        NEW_ERRORS=$(comm -13 <(sort "$BASELINE") current_issues.tmp)
+        NEW_ERRORS=$(comm -13 <(sed -E 's/DartTemplateContextType\.<init>\([^)]+\)/DartTemplateContextType.<init>(args)/' "$BASELINE" | sort) current_issues.tmp)
 
         if [ -n "$NEW_ERRORS" ]; then
           echo -e "${RED}${BOLD}Error: New verification issues found for version $version:${NC}"
