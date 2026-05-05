@@ -233,10 +233,8 @@ dependencies {
     plugin("com.redhat.devtools.lsp4ij:${libs.versions.lsp4ij.get()}")
     bundledModule("intellij.platform.langInjection")
 
-    if (sinceBuildInput == "243" || sinceBuildInput == "251") {
-      bundledModule("intellij.platform.coverage")
-      bundledModule("intellij.platform.coverage.agent")
-    }
+    bundledModule("intellij.platform.coverage")
+    bundledModule("intellij.platform.coverage.agent")
     pluginVerifier()
   }
 
