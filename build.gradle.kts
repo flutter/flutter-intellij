@@ -70,7 +70,7 @@ if (project.hasProperty("release")) {
   }
 }
 
-val ideaVersion = providers.gradleProperty("ideaVersion").get()
+val androidStudioVersion = providers.gradleProperty("androidStudioVersion").get()
 val dartPluginVersion = providers.gradleProperty("dartPluginVersion").get()
 val sinceBuildInput = providers.gradleProperty("sinceBuild").get()
 val untilBuildInput = providers.gradleProperty("untilBuild").get()
@@ -79,7 +79,7 @@ group = "io.flutter"
 
 // For debugging purposes:
 println("flutterPluginVersion: $flutterPluginVersion")
-println("ideaVersion: $ideaVersion")
+println("androidStudioVersion: $androidStudioVersion")
 println("dartPluginVersion: $dartPluginVersion")
 println("sinceBuild: $sinceBuildInput")
 println("untilBuild: $untilBuildInput")
@@ -97,7 +97,7 @@ jvmVersion = when (javaVersion) {
   }
 
   else -> {
-    throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
+    throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $androidStudioVersion")
   }
 }
 
@@ -125,7 +125,7 @@ javaCompatibilityVersion = when (javaVersion) {
   }
 
   else -> {
-    throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $ideaVersion")
+    throw IllegalArgumentException("javaVersion must be defined in the product matrix as either \"17\" or \"21\", but is not for $androidStudioVersion")
   }
 }
 
@@ -202,7 +202,7 @@ dependencies {
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html#default-target-platforms
     // Android Studio versions can be found at: https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
     try {
-      androidStudio(ideaVersion)
+      androidStudio(androidStudioVersion)
     } catch (e: Exception) {
       throw GradleException(
         "Failed to resolve Android Studio / IDEA download URL. This is likely due to a network issue blocking the download URL. Please check your internet connection or VPN.",
@@ -435,7 +435,7 @@ intellijPlatformTesting {
         "Ultimate" -> IntelliJPlatformType.IntellijIdeaUltimate
         else -> IntelliJPlatformType.AndroidStudio
       }
-      this.version = version ?: ideaVersion
+      this.version = version ?: androidStudioVersion
     }
   }
 }
