@@ -21,23 +21,7 @@ echo "export PATH=$JAVA_HOME/bin:\$PATH"
 export PATH=$JAVA_HOME/bin:$PATH
 
 # Download and configure Flutter to the pinned stable release if not present
-if [ ! -d "../flutter" ]; then
-  OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
-  FLUTTER_VERSION="3.41.0"
-  
-  echo "Provisioning Flutter SDK version ${FLUTTER_VERSION} for ${OS_NAME}..."
-  if [ "$OS_NAME" = "darwin" ]; then
-    curl -O "https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_${FLUTTER_VERSION}-stable.zip"
-    unzip -q "flutter_macos_${FLUTTER_VERSION}-stable.zip" -d ../
-    rm "flutter_macos_${FLUTTER_VERSION}-stable.zip"
-  else
-    curl -O "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
-    tar xf "flutter_linux_${FLUTTER_VERSION}-stable.tar.xz" -C ../
-    rm "flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
-  fi
-else
-  echo "../flutter already exists, skipping download."
-fi
+source ./tool/provision_flutter.sh
 export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
 flutter config --no-analytics
 flutter doctor
