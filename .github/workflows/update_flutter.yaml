@@ -1,0 +1,61 @@
+# Copyright 2026 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+name: Update Flutter SDK Pin
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # Run every Monday at midnight UTC
+  workflow_dispatch: # Allow manual execution from the Actions tab
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Check for New Flutter stable version
+        id: check-version
+        run: |
+          # 1. Retrieve the current pinned version from the shared script
+          CURRENT_VERSION=$(grep -E 'FLUTTER_VERSION="[0-9.]+"' tool/provision_flutter.sh | head -n 1 | cut -d'"' -f2)
+          echo "Current pinned version: $CURRENT_VERSION"
+
+          # 2. Retrieve the latest stable version from Flutter's official releases manifest
+          LATEST_VERSION=$(curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json | jq -r '.current_release.stable')
+          echo "Latest stable version: $LATEST_VERSION"
+
+          # 3. Compare and update if a newer version is available
+          if [ "$CURRENT_VERSION" != "$LATEST_VERSION" ]; then
+            echo "New Flutter stable version detected: $LATEST_VERSION"
+            sed -i -e "s/FLUTTER_VERSION=\"$CURRENT_VERSION\"/FLUTTER_VERSION=\"$LATEST_VERSION\"/g" tool/provision_flutter.sh
+            echo "updated=true" >> $GITHUB_OUTPUT
+            echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "Flutter SDK is already up to date."
+            echo "updated=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request for Version Bump
+        if: steps.check-version.outputs.updated == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "ci: bump pinned Flutter SDK to version ${{ steps.check-version.outputs.latest_version }}"
+          title: "ci: bump pinned Flutter SDK to version ${{ steps.check-version.outputs.latest_version }}"
+          body: |
+            An automated check has detected a new stable release of the Flutter SDK.
+            
+            * **New Pinned Version**: `${{ steps.check-version.outputs.latest_version }}`
+            
+            This Pull Request updates our shared provisioning script (`tool/provision_flutter.sh`) to target this version. All presubmit tests will be run against this version to verify compatibility.
+          branch: "auto-update-flutter-sdk"
+          delete-branch: true
+          labels: |
+            dependencies
+            ci
