@@ -37,7 +37,7 @@ if [ ! -f "$ZIP_FILE" ]; then
 fi
 
 echo "Uploading $ZIP_FILE to JetBrains Marketplace..."
-curl -i \
+curl -if \
   --header "Authorization: Bearer $TOKEN" \
   -F pluginId=9212 \
   -F file=@"$ZIP_FILE" \
