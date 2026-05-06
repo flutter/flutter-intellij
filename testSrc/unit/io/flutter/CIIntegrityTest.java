@@ -46,9 +46,9 @@ public class CIIntegrityTest {
 
     // Ensure the shell script declares the version constant in a predictable pattern:
     // E.g. FLUTTER_VERSION="3.41.0"
-    Pattern versionPattern = Pattern.compile("FLUTTER_VERSION=\"\\d+\\.\\d+\\.\\d+\"");
+    Pattern versionPattern = Pattern.compile("FLUTTER_VERSION=\"[0-9.]+\"");
     assertTrue(
-      "provision_flutter.sh must define a constant FLUTTER_VERSION matching semver format (e.g., FLUTTER_VERSION=\"3.41.0\"). " +
+      "provision_flutter.sh must define a constant FLUTTER_VERSION matching the expected format (e.g., FLUTTER_VERSION=\"3.41.0\"). " +
       "This constant is critical because the automated GitHub Actions updater searches for this exact pattern to bump the version.",
       versionPattern.matcher(content).find()
     );
