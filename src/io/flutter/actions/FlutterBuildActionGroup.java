@@ -68,8 +68,12 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
     AAR("aar"),
     APK("apk"),
     APP_BUNDLE("appbundle"),
+    BUNDLE("bundle"),
     IOS("ios"),
-    WEB("web");
+    LINUX("linux"),
+    MACOS("macos"),
+    WEB("web"),
+    WINDOWS("windows");
 
     final public String type;
 
@@ -183,10 +187,43 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
     }
   }
 
+  public static class Bundle extends FlutterBuildAction {
+    @Override
+    protected @NotNull BuildType buildType() {
+      return BuildType.BUNDLE;
+    }
+  }
+
   public static class Ios extends FlutterBuildAction {
     @Override
     protected @NotNull BuildType buildType() {
       return BuildType.IOS;
+    }
+
+    @Override
+    public void update(@NotNull AnActionEvent event) {
+      final Presentation presentation = event.getPresentation();
+      presentation.setEnabled(SystemInfo.isMac);
+    }
+  }
+
+  public static class Linux extends FlutterBuildAction {
+    @Override
+    protected @NotNull BuildType buildType() {
+      return BuildType.LINUX;
+    }
+
+    @Override
+    public void update(@NotNull AnActionEvent event) {
+      final Presentation presentation = event.getPresentation();
+      presentation.setEnabled(SystemInfo.isLinux);
+    }
+  }
+
+  public static class Macos extends FlutterBuildAction {
+    @Override
+    protected @NotNull BuildType buildType() {
+      return BuildType.MACOS;
     }
 
     @Override
@@ -201,6 +238,19 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
     @Override
     protected @NotNull BuildType buildType() {
       return BuildType.WEB;
+    }
+  }
+
+  public static class Windows extends FlutterBuildAction {
+    @Override
+    protected @NotNull BuildType buildType() {
+      return BuildType.WINDOWS;
+    }
+
+    @Override
+    public void update(@NotNull AnActionEvent event) {
+      final Presentation presentation = event.getPresentation();
+      presentation.setEnabled(SystemInfo.isWindows);
     }
   }
 }

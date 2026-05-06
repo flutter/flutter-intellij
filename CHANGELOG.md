@@ -2,11 +2,14 @@
 
 ### Added
 
+- Missing platforms and targets to Build menu.
+
 ### Changed
 
 ### Removed
 
 ### Fixed
+- Restored device labels on split-debugger run tabs in IntelliJ IDEA 2025.3+. (#8908)
 
 ## 92.0.0
 
