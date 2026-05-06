@@ -28,7 +28,7 @@ jobs:
           echo "Current pinned version: $CURRENT_VERSION"
 
           # 2. Retrieve the latest stable version from Flutter's official releases manifest
-          LATEST_VERSION=$(curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json | jq -r '.current_release.stable')
+          LATEST_VERSION=$(curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json | jq -r '.releases | map(select(.channel == "stable"))[0].version')
           echo "Latest stable version: $LATEST_VERSION"
 
           # 3. Compare and update if a newer version is available
