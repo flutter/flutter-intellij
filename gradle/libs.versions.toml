@@ -6,16 +6,18 @@
 jetbrains-annotations = "26.1.0"
 guava-android = "33.6.0-android"
 guava-jre = "33.6.0-android"
-gson = "2.10.1"
+gson = "2.14.0"
 junit = "4.13.2"
 kodein-di = "7.26.1"
-kotlinx-coroutines = "1.9.0"
+kotlinx-coroutines = "1.10.2"
 junit-jupiter = "6.0.3"
 junit-platform = "6.0.3"
-intellij-platform-plugin = "2.12.0"
+intellij-platform-plugin = "2.16.0"
 kotlin = "2.2.0"
 changelog = "2.5.0"
 kover = "0.9.8"
+lsp4ij="0.19.3"
+bytebuddy = "1.14.11"
 
 [libraries]
 jetbrains-annotations = { group = "org.jetbrains", name = "annotations", version.ref = "jetbrains-annotations" }
@@ -27,6 +29,7 @@ kodein-di = { group = "org.kodein.di", name = "kodein-di-jvm", version.ref = "ko
 kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit-jupiter" }
 junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junit-platform" }
+bytebuddy = { group = "net.bytebuddy", name = "byte-buddy", version.ref = "bytebuddy" }
 
 [plugins]
 intellij-platform = { id = "org.jetbrains.intellij.platform", version.ref = "intellij-platform-plugin" }
