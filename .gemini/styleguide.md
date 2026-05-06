@@ -75,4 +75,4 @@ enforce standard modern Java/Kotlin coding conventions, but strictly police the 
 - **Meaningful Naming:** Variables should describe their intent (e.g., `timeoutInMs` instead of `t`).
 - **Descriptive Pull Request:** Contributors should include the information recommended in the pull request template (In
   `.github/PULL_REQUEST_TEMPLATE.md`Ï)
-**Changelog Entries:** Enforce that there is a changelog entry for all new code and pull requests. Entries must strictly match the existing grammatical style using descriptive, state-based phrases (typically starting with gerunds, nouns, or verbs like *Avoid* / *Support* / *Log* / *Prevent*) rather than starting with the imperative verb *Fix* or *Add*.
+- **Changelog Entries:** Enforce that there is a changelog entry for all user-facing changes. Entries must strictly match the existing grammatical style using descriptive, state-based phrases (typically starting with gerunds, nouns, or verbs like *Avoid* / *Support* / *Log* / *Prevent*) rather than starting with the imperative verb *Fix* or *Add*.
