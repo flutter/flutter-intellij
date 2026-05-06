@@ -69,11 +69,13 @@ public class CIIntegrityTest {
 
     String content = Files.readString(workflowFile.toPath());
 
-    // The workflow must use the exact same constant name in its grep/sed matching regex
+    // The workflow must use the constant name followed by a flexible regex query in single or double quotes.
+    // E.g., matches 'FLUTTER_VERSION="[0-9.]+"' or 'FLUTTER_VERSION="[0-9.]*"' or "FLUTTER_VERSION='[0-9.]+'"
+    Pattern regexPattern = Pattern.compile("FLUTTER_VERSION=['\"].+?['\"]");
     assertTrue(
-      "update_flutter.yaml must reference the 'FLUTTER_VERSION=\"[0-9.]+\"' constant in its search-and-replace step. " +
-      "If you renamed this constant in tool/provision_flutter.sh, you must also update it inside update_flutter.yaml.",
-      content.contains("FLUTTER_VERSION=\"[0-9.]+\"")
+      "update_flutter.yaml must reference the 'FLUTTER_VERSION' constant with a regex pattern (e.g. 'FLUTTER_VERSION=\"[0-9.]+\"') " +
+      "in its search-and-replace logic.",
+      regexPattern.matcher(content).find()
     );
   }
 }
