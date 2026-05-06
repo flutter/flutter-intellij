@@ -32,8 +32,24 @@ setup() {
 
   export JAVA_OPTS=" -Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true"
 
-  # Clone and configure Flutter to the latest stable release
-  git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
+  # Download and configure Flutter to the pinned stable release if not present
+  if [ ! -d "../flutter" ]; then
+    OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+    FLUTTER_VERSION="3.22.0"
+    
+    echo "Provisioning Flutter SDK version ${FLUTTER_VERSION} for ${OS_NAME}..."
+    if [ "$OS_NAME" = "darwin" ]; then
+      curl -O "https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_${FLUTTER_VERSION}-stable.zip"
+      unzip -q "flutter_macos_${FLUTTER_VERSION}-stable.zip" -d ../
+      rm "flutter_macos_${FLUTTER_VERSION}-stable.zip"
+    else
+      curl -O "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
+      tar xf "flutter_linux_${FLUTTER_VERSION}-stable.tar.xz" -C ../
+      rm "flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
+    fi
+  else
+    echo "../flutter already exists, skipping download."
+  fi
   export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
   flutter config --no-analytics
   flutter doctor
