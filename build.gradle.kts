@@ -15,6 +15,10 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import org.gradle.api.DefaultTask
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.TaskAction
 
 // Specify UTF-8 for all compilations so we avoid Windows-1252.
 allprojects {
@@ -50,12 +54,16 @@ plugins {
 // By default (e.g. when we call `runIde` during development), the plugin version is SNAPSHOT
 var flutterPluginVersion = "SNAPSHOT"
 
+val isRelease = providers.gradleProperty("release").isPresent
+val isDev = providers.gradleProperty("dev").isPresent
+val singleIdeVersionProvider = providers.gradleProperty("singleIdeVersion")
+
 // Otherwise, we will decide on the proper semver-formatted version from the CHANGELOG.
 // Note: The CHANGELOG follows the style from https://keepachangelog.com/en/1.0.0/ so that we can use the gradle changelog plugin.
-if (project.hasProperty("release")) {
+if (isRelease) {
   // If we are building for a release, the changelog should be updated with the latest version.
   flutterPluginVersion = changelog.getLatest().version
-} else if (project.hasProperty("dev")) {
+} else if (isDev) {
   // If we are building the dev version, the version label will increment the latest version from the changelog and append the date.
   val latestVersion = changelog.getLatest().version
   val majorVersion = latestVersion.substringBefore('.').toInt()
@@ -63,8 +71,17 @@ if (project.hasProperty("release")) {
   val datestamp = DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now())
   flutterPluginVersion = "$nextMajorVersion.0.0-dev.$datestamp"
 
-  val commitHash = System.getenv("KOKORO_GIT_COMMIT")
-  if (commitHash is String) {
+  val commitHash = System.getenv("KOKORO_GIT_COMMIT") ?: try {
+    providers.exec {
+      commandLine("git", "rev-parse", "--short", "HEAD")
+    }.standardOutput.asText.get().trim()
+  } catch (e: Exception) {
+    // Catching all exceptions here is intentional: if git is not installed, or if this is built
+    // outside of a git repository clone (e.g. from a source zip release), we want the build
+    // to gracefully proceed with an empty hash instead of crashing.
+    ""
+  }
+  if (commitHash.isNotEmpty()) {
     val shortCommitHash = commitHash.take(7)
     flutterPluginVersion += "-$shortCommitHash"
   }
@@ -305,8 +322,8 @@ intellijPlatform {
 
     ides {
       // `singleIdeVersion` is only intended for use by GitHub actions to enable deleting instances of IDEs after testing.
-      if (project.hasProperty("singleIdeVersion")) {
-        val singleIdeVersion = project.property("singleIdeVersion") as String
+      if (singleIdeVersionProvider.isPresent) {
+        val singleIdeVersion = singleIdeVersionProvider.get()
         select {
           types = listOf(IntelliJPlatformType.AndroidStudio)
           channels = listOf(ProductRelease.Channel.RELEASE)
@@ -322,7 +339,7 @@ intellijPlatform {
 
 // If we don't delete old versions of the IDE during `verifyPlugin`, then GitHub action bots can run out of space.
 tasks.withType<VerifyPluginTask> {
-  if (project.hasProperty("singleIdeVersion")) {
+  if (singleIdeVersionProvider.isPresent) {
     doLast {
       ides.forEach { ide ->
         if (ide.exists()) {
@@ -522,4 +539,18 @@ tasks.withType<ProcessResources>().configureEach {
     // The context here is unambiguously the task itself.
     exclude("jxbrowser/jxbrowser.properties")
   }
+}
+
+abstract class PrintVersionTask : DefaultTask() {
+  @get:Input
+  abstract val pluginVersion: Property<String>
+
+  @TaskAction
+  fun action() {
+    println(pluginVersion.get())
+  }
+}
+
+tasks.register<PrintVersionTask>("printVersion") {
+  pluginVersion.set(intellijPlatform.pluginConfiguration.version)
 }
