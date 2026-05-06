@@ -20,8 +20,8 @@ ls $JAVA_HOME
 echo "export PATH=$JAVA_HOME/bin:\$PATH"
 export PATH=$JAVA_HOME/bin:$PATH
 
-# Clone and configure Flutter to the latest stable release
-git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
+# Download and configure Flutter to the pinned stable release if not present
+source ./tool/provision_flutter.sh
 export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
 flutter config --no-analytics
 flutter doctor
