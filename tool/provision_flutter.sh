@@ -9,7 +9,7 @@ set -e
 # Provision the pinned Flutter SDK if not present
 if [ ! -d "../flutter" ]; then
   OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
-  FLUTTER_VERSION="3.41.0"
+  FLUTTER_VERSION="3.22.0"
   
   echo "Provisioning Flutter SDK version ${FLUTTER_VERSION} for ${OS_NAME}..."
   if [ "$OS_NAME" = "darwin" ]; then
