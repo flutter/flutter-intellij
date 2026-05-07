@@ -46,7 +46,7 @@ jobs:
 
       - name: Create Pull Request for Version Bump
         if: steps.check-version.outputs.updated == 'true'
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.FLUTTERACTIONSBOT_CP_TOKEN }}
           push-to-fork: flutteractionsbot/flutter-intellij
