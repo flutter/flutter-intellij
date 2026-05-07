@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.FLUTTERACTIONSBOT_CP_TOKEN }}
 
       - name: Check for New Flutter stable version
         id: check-version
@@ -46,6 +48,10 @@ jobs:
         if: steps.check-version.outputs.updated == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ secrets.FLUTTERACTIONSBOT_CP_TOKEN }}
+          push-to-fork: flutteractionsbot/flutter-intellij
+          committer: flutteractionsbot <flutter-actions-bot@google.com>
+          author: flutteractionsbot <flutter-actions-bot@google.com>
           commit-message: "ci: bump pinned Flutter SDK to version ${{ steps.check-version.outputs.latest_version }}"
           title: "ci: bump pinned Flutter SDK to version ${{ steps.check-version.outputs.latest_version }}"
           body: |
