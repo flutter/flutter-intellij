@@ -17,7 +17,7 @@ kotlin = "2.2.0"
 changelog = "2.5.0"
 kover = "0.9.8"
 lsp4ij="0.19.3"
-bytebuddy = "1.14.11"
+bytebuddy = "1.18.8"
 
 [libraries]
 jetbrains-annotations = { group = "org.jetbrains", name = "annotations", version.ref = "jetbrains-annotations" }
