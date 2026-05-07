@@ -156,11 +156,12 @@ public class LaunchState extends CommandLineState {
       }
     }
 
+    final String nameWithDeviceName = device.withRunConfigurationName(env.getRunProfile().getName());
     final FlutterLaunchMode launchMode = FlutterLaunchMode.fromEnv(env);
     final RunContentDescriptor descriptor;
     if (launchMode.supportsDebugConnection()) {
       ToolWindowBadgeUpdater.updateBadgedIcon(app, project);
-      descriptor = createDebugSession(env, app, result);
+      descriptor = createDebugSession(env, app, result, nameWithDeviceName);
     }
     else {
       descriptor = new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
@@ -169,7 +170,6 @@ public class LaunchState extends CommandLineState {
     // Add the device name for the run descriptor.
     // The descriptor shows the run configuration name (e.g., `main.dart`) by default;
     // adding the device name will help users identify the instance when trying to operate a specific one.
-    final String nameWithDeviceName = descriptor.getDisplayName() + " (" + device.deviceName() + ")";
     final BiConsumer<RunContentDescriptor, String> setter = getDisplaySetter();
     if (setter != null) {
       setter.accept(descriptor, nameWithDeviceName);
@@ -226,7 +226,8 @@ public class LaunchState extends CommandLineState {
   @NotNull
   protected RunContentDescriptor createDebugSession(@NotNull final ExecutionEnvironment env,
                                                    @NotNull final FlutterApp app,
-                                                   @NotNull final ExecutionResult executionResult)
+                                                   @NotNull final ExecutionResult executionResult,
+                                                   @NotNull final String sessionName)
     throws ExecutionException {
 
     final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), sourceLocation);
@@ -239,7 +240,7 @@ public class LaunchState extends CommandLineState {
       public XDebugProcess start(@NotNull final XDebugSession session) {
         return new FlutterDebugProcess(app, env, session, executionResult, resolver, mapper);
       }
-    }, app.getMode() != RunMode.DEBUG);
+    }, sessionName, app.getMode() != RunMode.DEBUG);
   }
 
   @NotNull
