@@ -52,6 +52,11 @@ public class FlutterDevice {
     return myDeviceName;
   }
 
+  @NotNull
+  public String withRunConfigurationName(@NotNull String runConfigurationName) {
+    return runConfigurationName + " (" + deviceName() + ")";
+  }
+
   @Nullable
   public String platform() {
     return myPlatform;

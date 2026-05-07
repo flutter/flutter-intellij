@@ -32,8 +32,8 @@ setup() {
 
   export JAVA_OPTS=" -Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true"
 
-  # Clone and configure Flutter to the latest stable release
-  git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
+  # Download and configure Flutter to the pinned stable release if not present
+  source ./tool/provision_flutter.sh
   export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
   flutter config --no-analytics
   flutter doctor

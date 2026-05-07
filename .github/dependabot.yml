@@ -1,6 +1,3 @@
-# See Dependabot documentation for all configuration options:
-# https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
-
 version: 2
 updates:
   - package-ecosystem: "github-actions"
@@ -9,8 +6,17 @@ updates:
       interval: "weekly"
     labels:
       - "autosubmit"
+      - "kokoro:run"
     # Updating patch versions for "github-actions" is too chatty.
     # See https://github.com/flutter/flutter/issues/158350.
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]
+
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "autosubmit"
+      - "kokoro:run"

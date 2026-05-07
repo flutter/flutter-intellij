@@ -69,14 +69,15 @@ public abstract class EmbeddedBrowser {
           final Map<String, BrowserTab> tabs = windows.get(window);
           for (final String tabName : tabs.keySet()) {
             final BrowserTab tab = tabs.get(tabName);
-            if (tab.embeddedTab != null) {
-              try {
-                tab.embeddedTab.close();
+              final EmbeddedTab embeddedTab = tab.embeddedTab;
+              if (embeddedTab != null) {
+                try {
+                  embeddedTab.close();
+                }
+                catch (Exception ex) {
+                  logger().info(ex);
+                }
               }
-              catch (Exception ex) {
-                logger().info(ex);
-              }
-            }
           }
           tabs.clear();
         }
