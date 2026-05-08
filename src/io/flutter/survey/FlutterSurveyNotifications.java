@@ -12,6 +12,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
@@ -99,7 +100,9 @@ public class FlutterSurveyNotifications {
         properties.setValue(survey.uniqueId, true);
         notification.expire();
 
-        StringBuilder stringBuilder = new StringBuilder(survey.urlPrefix + "?Source=IntelliJ");
+        final ApplicationInfo applicationInfo = ApplicationInfo.getInstance();
+        final String ideName = applicationInfo != null ? applicationInfo.getVersionName() : "IntelliJ - Unknown";
+        StringBuilder stringBuilder = new StringBuilder(survey.urlPrefix + "?dashTool=intellij-plugins&dashIdeName=" + ideName);
 
         final DartSdk dartSdk = DartSdk.getDartSdk(myProject);
         if (dartSdk != null) {
