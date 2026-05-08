@@ -243,7 +243,6 @@ public class SdkFields {
     commandLine.getEnvironment().putAll(getEnvs());
     Analytics.updateEnvironment(commandLine);
     commandLine.withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE);
-
     return commandLine;
   }
 
