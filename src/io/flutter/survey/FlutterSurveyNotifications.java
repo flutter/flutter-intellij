@@ -27,6 +27,8 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -101,8 +103,12 @@ public class FlutterSurveyNotifications {
         notification.expire();
 
         final ApplicationInfo applicationInfo = ApplicationInfo.getInstance();
-        final String ideName = applicationInfo != null ? applicationInfo.getVersionName() : "IntelliJ - Unknown";
-        StringBuilder stringBuilder = new StringBuilder(survey.urlPrefix + "?dashTool=intellij-plugins&dashIdeName=" + ideName);
+        String rawIdeName = applicationInfo != null ? applicationInfo.getVersionName() : "IntelliJ - Unknown";
+        if (rawIdeName == null) {
+          rawIdeName = "IntelliJ - Unknown";
+        }
+        final String ideName = URLEncoder.encode(rawIdeName, StandardCharsets.UTF_8);
+        StringBuilder stringBuilder = new StringBuilder(survey.urlPrefix + "?Source=" + ideName);
 
         final DartSdk dartSdk = DartSdk.getDartSdk(myProject);
         if (dartSdk != null) {
