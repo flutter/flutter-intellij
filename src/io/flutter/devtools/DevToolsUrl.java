@@ -9,6 +9,7 @@ import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.sdk.FlutterSdkVersion;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.application.ApplicationInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -180,6 +181,8 @@ public class DevToolsUrl {
 
     String ideValue = sdkUtil.getFlutterHostEnvValue();
     params.add("ide=" + (ideValue == null ? "IntelliJPluginUnknown" : ideValue));
+    params.add("dashTool=intellij-plugins");
+    params.add("dashIdeName=" + URLEncoder.encode(getIdeName(), StandardCharsets.UTF_8));
     if (colorHexCode != null) {
       params.add("backgroundColor=" + colorHexCode);
     }
@@ -214,6 +217,17 @@ public class DevToolsUrl {
     }
     return "http://" + devToolsHost + ":" + devToolsPort + "/" + (page != null ? page : "") + "?"
         + StringUtil.join(params, "&");
+  }
+
+  private String getIdeName() {
+    ApplicationInfo appInfo = ApplicationInfo.getInstance();
+    if (appInfo != null) {
+      String versionName = appInfo.getVersionName();
+      if (versionName != null) {
+        return versionName;
+      }
+    }
+    return "IntelliJ - Unknown";
   }
 
   public boolean maybeUpdateColor() {
