@@ -241,7 +241,6 @@ public class SdkFields {
     command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
     final GeneralCommandLine commandLine = command.createGeneralCommandLine(project);
     commandLine.getEnvironment().putAll(getEnvs());
-    Analytics.updateEnvironment(commandLine);
     commandLine.withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE);
     return commandLine;
   }
