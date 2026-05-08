@@ -5,6 +5,7 @@
  */
 package io.flutter.devtools;
 
+import com.intellij.openapi.application.ApplicationManager;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.sdk.FlutterSdkVersion;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class DevToolsUrl {
+  public static final String UNKNOWN_INTELLIJ_NAME = "IntelliJ - Unknown";
   private String devToolsHost;
   private int devToolsPort;
   public String vmServiceUri;
@@ -180,7 +182,7 @@ public class DevToolsUrl {
     final List<String> params = new ArrayList<>();
 
     String ideValue = sdkUtil.getFlutterHostEnvValue();
-    params.add("ide=" + (ideValue == null ? "IntelliJPluginUnknown" : ideValue));
+    params.add("ide=" + (ideValue == null ? UNKNOWN_INTELLIJ_NAME : ideValue));
     params.add("dashTool=intellij-plugins");
     params.add("dashIdeName=" + URLEncoder.encode(getIdeName(), StandardCharsets.UTF_8));
     if (colorHexCode != null) {
@@ -219,7 +221,10 @@ public class DevToolsUrl {
         + StringUtil.join(params, "&");
   }
 
-  private String getIdeName() {
+  private @NotNull String getIdeName() {
+    if (ApplicationManager.getApplication() == null) {
+      return UNKNOWN_INTELLIJ_NAME;
+    }
     ApplicationInfo appInfo = ApplicationInfo.getInstance();
     if (appInfo != null) {
       String versionName = appInfo.getVersionName();
@@ -227,7 +232,7 @@ public class DevToolsUrl {
         return versionName;
       }
     }
-    return "IntelliJ - Unknown";
+    return UNKNOWN_INTELLIJ_NAME;
   }
 
   public boolean maybeUpdateColor() {
