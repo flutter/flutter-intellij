@@ -22,6 +22,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
+import com.jetbrains.lang.dart.analytics.Analytics;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
 import io.flutter.bazel.Workspace;
@@ -343,6 +344,8 @@ public class BazelFields {
     }
 
     commandLine.addParameter(target);
+
+    Analytics.updateEnvironment(commandLine);
 
     return commandLine;
   }
