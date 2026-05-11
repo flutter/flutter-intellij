@@ -37,6 +37,7 @@ public class DevToolsUrl {
   private final boolean canUseMultiEmbed;
 
   public final DevToolsIdeFeature ideFeature;
+  private final String ideName;
 
   @NotNull private final DevToolsUtils devToolsUtils;
 
@@ -53,6 +54,7 @@ public class DevToolsUrl {
     private @Nullable FlutterSdkVersion flutterSdkVersion;
     private WorkspaceCache workspaceCache;
     private DevToolsIdeFeature ideFeature;
+    private String ideName;
 
     private DevToolsUtils devToolsUtils;
 
@@ -134,6 +136,12 @@ public class DevToolsUrl {
     }
 
     @NotNull
+    public Builder setIdeName(String ideName) {
+      this.ideName = ideName;
+      return this;
+    }
+
+    @NotNull
     public DevToolsUrl build() {
       if (devToolsUtils == null) {
         devToolsUtils = new DevToolsUtils();
@@ -164,6 +172,7 @@ public class DevToolsUrl {
     this.flutterSdkVersion = builder.flutterSdkVersion;
     this.ideFeature = builder.ideFeature;
     this.sdkUtil = builder.flutterSdkUtil;
+    this.ideName = builder.ideName != null ? builder.ideName : getIdeName();
 
     if (builder.workspaceCache != null && builder.workspaceCache.isBazel()) {
       this.canUseMultiEmbed = true;
@@ -182,9 +191,10 @@ public class DevToolsUrl {
     final List<String> params = new ArrayList<>();
 
     String ideValue = sdkUtil.getFlutterHostEnvValue();
-    params.add("ide=" + (ideValue == null ? UNKNOWN_INTELLIJ_NAME : ideValue));
+    String ideParamValue = ideValue == null ? UNKNOWN_INTELLIJ_NAME : ideValue;
+    params.add("ide=" + URLEncoder.encode(ideParamValue, StandardCharsets.UTF_8));
     params.add("dashTool=intellij-plugins");
-    params.add("dashIdeName=" + URLEncoder.encode(getIdeName(), StandardCharsets.UTF_8));
+    params.add("dashIdeName=" + URLEncoder.encode(this.ideName, StandardCharsets.UTF_8));
     if (colorHexCode != null) {
       params.add("backgroundColor=" + colorHexCode);
     }
