@@ -80,7 +80,6 @@ PRs prepared using AI tools must follow these requirements:
 ## Environment set-up
 
 1. Install the latest [Java Development Kit](https://www.java.com/en/download/).
-    - The current Java Development Kit version is: **23**.
     - **[Googlers only]** Install Java from go/softwarecenter instead.
 
 2. Set your `JAVA_HOME` directory in the configuration file for your shell environment.
@@ -254,6 +253,23 @@ PRs prepared using AI tools must follow these requirements:
     - Choose `Edit Configurations...` in the Run Configuration drop-down list.
     - Expand `Edit configuration templates...` and verify that Flutter is present.
     - Click [+] and verify that Flutter is present.
+
+### Running against custom target IDEs
+
+To test or debug the plugin against a different IDE target (like IntelliJ IDEA Community or Ultimate) without changing the project's compilation target, you can use the custom `runTarget` Gradle task.
+
+Run it from the command line specifying the target IDE and version:
+```bash
+./gradlew runTarget -Pide=IntelliJ -PideV=2025.1
+```
+
+*   **`-Pide`**: Valid values are `AndroidStudio` (default), `IntelliJ` (Community), and `Ultimate`.
+*   **`-PideV`**: Any valid version string or build number for the selected IDE.
+
+To see a full list of available options and usage examples, run the task without any parameters:
+```bash
+./gradlew runTarget
+```
 
 ## Provision Tool
 

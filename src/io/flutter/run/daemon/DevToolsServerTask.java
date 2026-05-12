@@ -30,6 +30,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.registry.Registry;
 import com.jetbrains.lang.dart.ide.devtools.DartDevToolsService;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
+import com.jetbrains.lang.dart.analytics.Analytics;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.WorkspaceCache;
@@ -259,6 +260,8 @@ class DevToolsServerTask extends Task.Backgroundable {
     for (String argument : arguments) {
       result.addParameter(argument);
     }
+
+    Analytics.updateEnvironment(result);
 
     return result;
   }

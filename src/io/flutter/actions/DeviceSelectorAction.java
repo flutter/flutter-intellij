@@ -6,7 +6,6 @@
 package io.flutter.actions;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.ActivityTracker;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -46,6 +45,7 @@ import io.flutter.logging.PluginLogger;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.sdk.AndroidEmulatorManager;
+import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -381,14 +381,19 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
       update(project, presentation);
     }
 
+    updateComponent(project, presentation);
+  }
+
+  private void updateComponent(@NotNull Project project, @NotNull Presentation presentation) {
     final DeviceService deviceService = DeviceService.getInstance(project);
     final FlutterDevice selectedDevice = deviceService.getSelectedDevice();
     final Collection<FlutterDevice> devices = deviceService.getConnectedDevices();
 
     final String text;
-    Icon icon = DEFAULT_DEVICE_ICON;
+    Icon icon;
 
     if (devices.isEmpty()) {
+      icon = DEFAULT_DEVICE_ICON;
       final boolean isLoading = deviceService.getStatus() == DeviceService.State.LOADING;
       if (isLoading) {
         text = FlutterBundle.message("devicelist.loading");
@@ -398,6 +403,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
       }
     }
     else if (selectedDevice == null) {
+      icon = DEFAULT_DEVICE_ICON;
       text = FlutterBundle.message("devicelist.noDeviceSelected");
     }
     else {
@@ -412,25 +418,27 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
     // Update the custom component if it exists
     final JButton customComponent = presentation.getClientProperty(CUSTOM_COMPONENT_KEY);
     if (customComponent != null) {
-      final @Nullable JBLabel iconLabel = (JBLabel)customComponent.getClientProperty(ICON_LABEL_KEY);
-      final @Nullable JBLabel textLabel = (JBLabel)customComponent.getClientProperty(TEXT_LABEL_KEY);
+      AsyncUtils.invokeLater(() -> {
+        final @Nullable JBLabel iconLabel = (JBLabel)customComponent.getClientProperty(ICON_LABEL_KEY);
+        final @Nullable JBLabel textLabel = (JBLabel)customComponent.getClientProperty(TEXT_LABEL_KEY);
 
-      if (iconLabel != null) {
-        iconLabel.setIcon(icon);
-      }
-      if (textLabel != null) {
-        textLabel.setText(text);
-        // Update the foreground color to adapt to theme changes.
-        textLabel.setForeground(getToolbarForegroundColor());
-        customComponent.invalidate();
-        Container parent = customComponent.getParent();
-        while (parent != null) {
-          parent.invalidate();
-          parent = parent.getParent();
+        if (iconLabel != null) {
+          iconLabel.setIcon(icon);
         }
-        customComponent.revalidate();
-        customComponent.repaint();
-      }
+        if (textLabel != null) {
+          textLabel.setText(text);
+          // Update the foreground color to adapt to theme changes.
+          textLabel.setForeground(getToolbarForegroundColor());
+          customComponent.invalidate();
+          Container parent = customComponent.getParent();
+          while (parent != null) {
+            parent.invalidate();
+            parent = parent.getParent();
+          }
+          customComponent.revalidate();
+          customComponent.repaint();
+        }
+      });
     }
   }
 
@@ -447,6 +455,7 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
     }
     updateActions(project, presentation);
     updateVisibility(project, presentation);
+    updateComponent(project, presentation);
   }
 
   private static void updateVisibility(final Project project, final @NotNull Presentation presentation) {
@@ -531,11 +540,6 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
     // Atomically replace the action list
     LOG.debug("[" + projectName + "] Replacing device selector actions");
     this.actions = newActions;
-
-    var tracker = ActivityTracker.getInstance();
-    if (tracker != null) {
-      tracker.inc();
-    }
   }
 
   private static class SelectDeviceAction extends AnAction {
