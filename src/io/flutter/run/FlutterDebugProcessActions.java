@@ -24,14 +24,21 @@ public final class FlutterDebugProcessActions {
   private FlutterDebugProcessActions() {
   }
 
+  /**
+   * Appends toolbar actions contributed by downstream dependent plugins.
+   *
+   * <p>{@link ActionManager#getAction(String)} returns {@link AnAction} because action groups are
+   * actions too. The extension id resolves to an inline {@link ActionGroup}, which can contain
+   * multiple contributed child actions.
+   */
   public static void addTopToolbarExtensionActions(@NotNull DefaultActionGroup topToolbar) {
-    final AnAction action = ActionManager.getInstance().getAction(TOP_TOOLBAR_EXTENSION_GROUP_ID);
-    if (!(action instanceof ActionGroup actionGroup) || isEmpty(actionGroup)) {
+    final AnAction extensionGroupAction = ActionManager.getInstance().getAction(TOP_TOOLBAR_EXTENSION_GROUP_ID);
+    if (!(extensionGroupAction instanceof ActionGroup actionGroup) || isEmpty(actionGroup)) {
       return;
     }
 
     topToolbar.addSeparator();
-    topToolbar.addAction(action);
+    topToolbar.addAction(extensionGroupAction);
   }
 
   private static boolean isEmpty(@NotNull ActionGroup actionGroup) {
