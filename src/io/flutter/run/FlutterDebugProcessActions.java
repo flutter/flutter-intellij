@@ -5,7 +5,6 @@
  */
 package io.flutter.run;
 
-import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -33,19 +32,13 @@ public final class FlutterDebugProcessActions {
    */
   public static void addTopToolbarExtensionActions(@NotNull DefaultActionGroup topToolbar) {
     final AnAction extensionGroupAction = ActionManager.getInstance().getAction(TOP_TOOLBAR_EXTENSION_GROUP_ID);
-    if (!(extensionGroupAction instanceof ActionGroup actionGroup) || isEmpty(actionGroup)) {
+    if (!(extensionGroupAction instanceof DefaultActionGroup extensionGroup) ||
+        extensionGroup.getChildActionsOrStubs().length == 0) {
       return;
     }
 
     topToolbar.addSeparator();
-    topToolbar.addAction(extensionGroupAction);
+    topToolbar.addAction(extensionGroup);
   }
 
-  private static boolean isEmpty(@NotNull ActionGroup actionGroup) {
-    if (actionGroup instanceof DefaultActionGroup defaultActionGroup) {
-      return defaultActionGroup.getChildActionsOrStubs().length == 0;
-    }
-
-    return actionGroup.getChildren(null).length == 0;
-  }
 }
