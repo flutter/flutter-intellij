@@ -76,6 +76,9 @@
       <add-to-group anchor="before" group-id="ToolbarRunGroup" relative-to-action="RunConfiguration"/>
     </group>
 
+    <!-- Allows dependent plugins to contribute inline actions to Flutter run/debug content toolbars. -->
+    <group id="Flutter.DebugProcess.TopToolbar" popup="false"/>
+
     <!--suppress PluginXmlCapitalization -->
     <group id="FlutterToolsActionGroup" class="io.flutter.actions.FlutterToolsActionGroup" popup="true"
            text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter">
