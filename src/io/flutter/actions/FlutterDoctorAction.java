@@ -19,6 +19,7 @@ import io.flutter.console.FlutterConsoles;
 import io.flutter.logging.PluginLogger;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
+import com.jetbrains.lang.dart.analytics.Analytics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,6 +53,8 @@ public class FlutterDoctorAction extends FlutterSdkAction {
     final GeneralCommandLine cmdLine = new GeneralCommandLine().withWorkDirectory(workDir);
     cmdLine.setCharset(StandardCharsets.UTF_8);
     cmdLine.setExePath(FileUtil.toSystemDependentName(doctorScript));
+
+    Analytics.updateEnvironment(cmdLine);
 
     final ColoredProcessHandler handler;
     try {
