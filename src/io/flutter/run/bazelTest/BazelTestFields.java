@@ -18,6 +18,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
+import com.jetbrains.lang.dart.analytics.Analytics;
 import io.flutter.FlutterBundle;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
@@ -221,6 +222,7 @@ public class BazelTestFields {
     if (mode == RunMode.DEBUG) {
       commandLine.addParameters(Flags.separator, Flags.enableDebugging);
     }
+    Analytics.updateEnvironment(commandLine);
     return commandLine;
   }
 

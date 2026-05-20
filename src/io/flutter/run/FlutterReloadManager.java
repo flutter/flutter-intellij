@@ -56,6 +56,7 @@ import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.logging.PluginLogger;
+import com.jetbrains.lang.dart.analytics.Analytics;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
@@ -317,6 +318,8 @@ public class FlutterReloadManager {
     final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workspace.getRoot().getPath());
     commandLine.setCharset(StandardCharsets.UTF_8);
     commandLine.setExePath(FileUtil.toSystemDependentName(script));
+
+    Analytics.updateEnvironment(commandLine);
 
     try {
       final MostlySilentColoredProcessHandler handler = new MostlySilentColoredProcessHandler(commandLine);

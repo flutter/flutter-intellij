@@ -32,6 +32,7 @@ import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import io.flutter.utils.OpenApiUtils;
 import io.flutter.utils.SystemUtils;
+import com.jetbrains.lang.dart.analytics.Analytics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -315,6 +316,7 @@ class DeviceDaemon {
       for (String param : parameters) {
         result.addParameter(param);
       }
+      Analytics.updateEnvironment(result);
       return result;
     }
 
