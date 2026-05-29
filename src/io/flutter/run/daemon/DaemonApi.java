@@ -169,7 +169,6 @@ public class DaemonApi {
     });
 
     // All hooked up and ready to receive events.
-    process.startNotify();
   }
 
   /**

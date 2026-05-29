@@ -228,6 +228,7 @@ class DeviceDaemon {
         final DaemonApi api = new DaemonApi(process);
         final Listener listener = new Listener(daemonId, api, devices, deviceChanged, processStopped);
         api.listen(process, listener);
+        process.startNotify();
 
         final Future<Void> ready = listener.connected.thenCompose((Void ignored) -> api.enableDeviceEvents());
 
