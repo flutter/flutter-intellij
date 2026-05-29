@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
 public class FlutterDebugSessionUtils {
 
     private static final @Nullable BuilderHooks builderHooks = findBuilderHooks();
-    private static final boolean USE_NAMED_TAB = builderHooks != null && getNamedTabSupportError() == null;
+    public static final boolean USE_NAMED_TAB = builderHooks != null && getNamedTabSupportError() == null;
 
     public static @NotNull RunContentDescriptor startSessionAndGetDescriptor(
             @NotNull XDebuggerManager manager,
@@ -174,9 +174,6 @@ public class FlutterDebugSessionUtils {
         return null;
     }
 
-    public static boolean useNamedTab() {
-        return USE_NAMED_TAB;
-    }
 
     @VisibleForTesting
     static final class BuilderHooks {

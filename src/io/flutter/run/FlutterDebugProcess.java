@@ -127,7 +127,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
       // AND we are using the new named tab hooks.
       // For other non-debug modes (like PROFILE), the tab is still visible in the Debug window,
       // so we must suppress the empty debugger panels.
-      final boolean isHeadlessRunMode = app.getMode() == RunMode.RUN && FlutterDebugSessionUtils.useNamedTab();
+      final boolean isHeadlessRunMode = app.getMode() == RunMode.RUN && FlutterDebugSessionUtils.USE_NAMED_TAB;
       if (!isHeadlessRunMode) {
         suppressDebugViews(getSession().getUI());
       }
