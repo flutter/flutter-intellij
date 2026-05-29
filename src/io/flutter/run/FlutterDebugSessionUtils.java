@@ -174,7 +174,6 @@ public class FlutterDebugSessionUtils {
         return null;
     }
 
-
     @VisibleForTesting
     static final class BuilderHooks {
         final Method newSessionBuilderMethod;
