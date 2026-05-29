@@ -158,14 +158,7 @@ public class LaunchState extends CommandLineState {
 
     final String nameWithDeviceName = device.withRunConfigurationName(env.getRunProfile().getName());
     final FlutterLaunchMode launchMode = FlutterLaunchMode.fromEnv(env);
-    final RunContentDescriptor descriptor;
-    if (launchMode.supportsDebugConnection()) {
-      ToolWindowBadgeUpdater.updateBadgedIcon(app, project);
-      descriptor = createDebugSession(env, app, result, nameWithDeviceName);
-    }
-    else {
-      descriptor = new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
-    }
+    final RunContentDescriptor descriptor = getRunContentDescriptor(env, app, result, nameWithDeviceName, launchMode, project);
 
     // Add the device name for the run descriptor.
     // The descriptor shows the run configuration name (e.g., `main.dart`) by default;
@@ -179,6 +172,29 @@ public class LaunchState extends CommandLineState {
     }
 
     return descriptor;
+  }
+
+  private @Nullable RunContentDescriptor getRunContentDescriptor(
+      @NotNull ExecutionEnvironment env,
+      @NotNull FlutterApp app,
+      @NotNull ExecutionResult result,
+      @NotNull String nameWithDeviceName,
+      @NotNull FlutterLaunchMode launchMode,
+      @NotNull Project project) throws ExecutionException {
+    if (launchMode.supportsDebugConnection()) {
+      ToolWindowBadgeUpdater.updateBadgedIcon(app, project);
+
+      // We must always create a debug session here (even in Run mode) because the debug connection
+      // is what connects to the Dart VM Service and powers background Hot Reload / Hot Restart.
+      final RunContentDescriptor debugDescriptor = createDebugSession(env, app, result, nameWithDeviceName);
+
+      if (app.getMode() == RunMode.RUN) {
+        // In Run mode, we discard the debug descriptor UI and instead render a standard Run console tab.
+        return new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
+      }
+      return debugDescriptor;
+    }
+    return new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
   }
 
   /**
@@ -280,6 +296,16 @@ public class LaunchState extends CommandLineState {
       super.createActions(console, app.getProcessHandler(), getEnvironment().getExecutor())));
     actions.add(new Separator());
     actions.add(new OpenDevToolsAction(app, observatoryAvailable));
+
+    if (app.getMode() == RunMode.RUN && app.getLaunchMode().supportsReload()) {
+      final Computable<Boolean> isSessionActive = () -> app.isStarted() &&
+                                                         app.getFlutterDebugProcess() != null &&
+                                                         app.getFlutterDebugProcess().getVmConnected() &&
+                                                         !app.getProcessHandler().isProcessTerminated();
+      final Computable<Boolean> canReload = () -> isSessionActive.compute() && !app.isReloading();
+      actions.add(new io.flutter.actions.ReloadFlutterApp(app, canReload));
+      actions.add(new io.flutter.actions.RestartFlutterApp(app, canReload));
+    }
 
     return new DefaultExecutionResult(console, app.getProcessHandler(), actions.toArray(new AnAction[0]));
   }
