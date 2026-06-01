@@ -6,6 +6,7 @@
 package io.flutter.run;
 
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.xdebugger.XDebugProcessStarter;
@@ -24,6 +25,7 @@ import java.lang.reflect.Method;
 public class FlutterDebugSessionUtils {
 
     private static final @Nullable BuilderHooks builderHooks = findBuilderHooks();
+    public static final boolean USE_NAMED_TAB = builderHooks != null && getNamedTabSupportError() == null;
 
     public static @NotNull RunContentDescriptor startSessionAndGetDescriptor(
             @NotNull XDebuggerManager manager,
@@ -129,7 +131,8 @@ public class FlutterDebugSessionUtils {
             builder = hooks.sessionNameMethod.invoke(builder, sessionName);
         }
         if (hooks.showTabMethod != null) {
-            builder = hooks.showTabMethod.invoke(builder, true);
+            boolean showTab = !env.getExecutor().getId().equals(DefaultRunExecutor.EXECUTOR_ID);
+            builder = hooks.showTabMethod.invoke(builder, showTab);
         }
         return builder;
     }

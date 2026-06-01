@@ -6,7 +6,9 @@
 package io.flutter.run;
 
 import com.intellij.execution.ExecutionResult;
+import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.execution.ui.ExecutionConsole;
 import com.intellij.execution.ui.RunnerLayoutUi;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -121,8 +123,25 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
   @Override
   public void sessionInitialized() {
     if (app.getMode() != RunMode.DEBUG) {
-      suppressDebugViews(getSession().getUI());
+      // Only skip suppressDebugViews if we are in RUN mode (where the tab is headless/hidden)
+      // AND we are using the new named tab hooks.
+      // For other non-debug modes (like PROFILE), the tab is still visible in the Debug window,
+      // so we must suppress the empty debugger panels.
+      final boolean isHeadlessRunMode = app.getMode() == RunMode.RUN && FlutterDebugSessionUtils.USE_NAMED_TAB;
+      if (!isHeadlessRunMode) {
+        suppressDebugViews(getSession().getUI());
+      }
     }
+  }
+
+  @NotNull
+  @Override
+  public ExecutionConsole createConsole() {
+    if (app.getMode() == RunMode.RUN) {
+      return TextConsoleBuilderFactory.getInstance()
+        .createBuilder(getSession().getProject()).getConsole();
+    }
+    return super.createConsole();
   }
 
   /**

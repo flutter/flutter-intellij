@@ -5,6 +5,7 @@
  */
 package io.flutter.run;
 
+import com.intellij.execution.Executor;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.xdebugger.XDebugProcessStarter;
@@ -34,6 +35,9 @@ public class FlutterDebugSessionUtilsTest {
   @Test
   public void splitDebugSessionUsesDeviceQualifiedBuilderTitle() throws Exception {
     final ExecutionEnvironment env = mock(ExecutionEnvironment.class);
+    final Executor executor = mock(Executor.class);
+    when(executor.getId()).thenReturn("Debug");
+    when(env.getExecutor()).thenReturn(executor);
     final RunContentDescriptor contentToReuse = mock(RunContentDescriptor.class);
     when(env.getContentToReuse()).thenReturn(contentToReuse);
 
@@ -69,6 +73,42 @@ public class FlutterDebugSessionUtilsTest {
       List.of("newSessionBuilder", "environment", "contentToReuse", "sessionName", "showTab", "startSession"),
       builder.calls
     );
+  }
+
+  @Test
+  public void splitDebugSessionMutesTabInRunMode() throws Exception {
+    final ExecutionEnvironment env = mock(ExecutionEnvironment.class);
+    final Executor executor = mock(Executor.class);
+    when(executor.getId()).thenReturn("Run");
+    when(env.getExecutor()).thenReturn(executor);
+    final RunContentDescriptor contentToReuse = mock(RunContentDescriptor.class);
+    when(env.getContentToReuse()).thenReturn(contentToReuse);
+
+    final RunContentDescriptor descriptor = mock(RunContentDescriptor.class);
+    final XDebugSession session = mock(XDebugSession.class);
+    final RecordingSessionBuilder builder = new RecordingSessionBuilder(session, descriptor);
+    final RecordingManager manager = new RecordingManager(builder);
+    final XDebugProcessStarter starter = mock(XDebugProcessStarter.class);
+    final FlutterDebugSessionUtils.BuilderHooks hooks = new FlutterDebugSessionUtils.BuilderHooks(
+      RecordingManager.class.getMethod("newSessionBuilder", XDebugProcessStarter.class),
+      RecordingSessionBuilder.class.getMethod("environment", ExecutionEnvironment.class),
+      RecordingSessionBuilder.class.getMethod("sessionName", String.class),
+      RecordingSessionBuilder.class.getMethod("contentToReuse", RunContentDescriptor.class),
+      RecordingSessionBuilder.class.getMethod("showTab", boolean.class),
+      RecordingSessionBuilder.class.getMethod("startSession")
+    );
+
+    final RunContentDescriptor result = FlutterDebugSessionUtils.startSessionAndGetDescriptor(
+      hooks,
+      manager,
+      env,
+      starter,
+      "main.dart (macOS)",
+      true
+    );
+
+    assertSame(descriptor, result);
+    assertEquals(Boolean.FALSE, builder.showTab);
   }
 
   private static final class RecordingManager {
