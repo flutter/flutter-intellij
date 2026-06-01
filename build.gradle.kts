@@ -51,6 +51,17 @@ plugins {
   idea // IntelliJ IDEA support
 }
 
+val commitHash = System.getenv("KOKORO_GIT_COMMIT")?.takeIf { it.isNotBlank() }?.take(7) ?: try {
+  providers.exec {
+    commandLine("git", "rev-parse", "--short", "HEAD")
+  }.standardOutput.asText.get().trim().take(7)
+} catch (e: Exception) {
+  // Catching all exceptions here is intentional: if git is not installed, or if this is built
+  // outside of a git repository clone (e.g. from a source zip release), we want the build
+  // to gracefully proceed with an empty hash instead of crashing.
+  ""
+}
+
 // By default (e.g. when we call `runIde` during development), the plugin version is SNAPSHOT
 var flutterPluginVersion = "SNAPSHOT"
 
@@ -71,19 +82,8 @@ if (isRelease) {
   val datestamp = DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now())
   flutterPluginVersion = "$nextMajorVersion.0.0-dev.$datestamp"
 
-  val commitHash = System.getenv("KOKORO_GIT_COMMIT") ?: try {
-    providers.exec {
-      commandLine("git", "rev-parse", "--short", "HEAD")
-    }.standardOutput.asText.get().trim()
-  } catch (e: Exception) {
-    // Catching all exceptions here is intentional: if git is not installed, or if this is built
-    // outside of a git repository clone (e.g. from a source zip release), we want the build
-    // to gracefully proceed with an empty hash instead of crashing.
-    ""
-  }
   if (commitHash.isNotEmpty()) {
-    val shortCommitHash = commitHash.take(7)
-    flutterPluginVersion += "-$shortCommitHash"
+    flutterPluginVersion += "-$commitHash"
   }
 }
 
@@ -545,12 +545,29 @@ abstract class PrintVersionTask : DefaultTask() {
   @get:Input
   abstract val pluginVersion: Property<String>
 
+  @get:org.gradle.api.tasks.Internal
+  abstract val archiveFileName: Property<String>
+
   @TaskAction
   fun action() {
-    println(pluginVersion.get())
+    println("Plugin Version: ${pluginVersion.get()}")
+    println("Archive File Name: ${archiveFileName.get()}")
   }
 }
 
 tasks.register<PrintVersionTask>("printVersion") {
   pluginVersion.set(intellijPlatform.pluginConfiguration.version)
+  val buildPluginTask = tasks.named<Zip>("buildPlugin")
+  archiveFileName.set(buildPluginTask.flatMap { it.archiveFileName })
+}
+
+tasks.named<Zip>("buildPlugin") {
+  val v = intellijPlatform.pluginConfiguration.version
+  archiveFileName.set(v.map { versionStr ->
+    if (commitHash.isNotEmpty() && !versionStr.contains(commitHash)) {
+      "Flutter-$versionStr-$commitHash.zip"
+    } else {
+      "Flutter-$versionStr.zip"
+    }
+  })
 }
