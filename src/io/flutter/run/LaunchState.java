@@ -44,6 +44,8 @@ import com.jetbrains.lang.dart.ide.runner.DartExecutionHelper;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
+import io.flutter.actions.ReloadFlutterApp;
+import io.flutter.actions.RestartFlutterApp;
 import io.flutter.dart.DartPlugin;
 import io.flutter.logging.PluginLogger;
 import io.flutter.run.bazel.BazelRunConfig;
@@ -303,8 +305,8 @@ public class LaunchState extends CommandLineState {
                                                          app.getFlutterDebugProcess().getVmConnected() &&
                                                          !app.getProcessHandler().isProcessTerminated();
       final Computable<Boolean> canReload = () -> isSessionActive.compute() && !app.isReloading();
-      actions.add(new io.flutter.actions.ReloadFlutterApp(app, canReload));
-      actions.add(new io.flutter.actions.RestartFlutterApp(app, canReload));
+      actions.add(new ReloadFlutterApp(app, canReload));
+      actions.add(new RestartFlutterApp(app, canReload));
     }
 
     return new DefaultExecutionResult(console, app.getProcessHandler(), actions.toArray(new AnAction[0]));

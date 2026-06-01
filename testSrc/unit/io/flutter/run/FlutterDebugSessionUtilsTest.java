@@ -5,6 +5,7 @@
  */
 package io.flutter.run;
 
+import com.intellij.execution.Executor;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.xdebugger.XDebugProcessStarter;
@@ -34,7 +35,7 @@ public class FlutterDebugSessionUtilsTest {
   @Test
   public void splitDebugSessionUsesDeviceQualifiedBuilderTitle() throws Exception {
     final ExecutionEnvironment env = mock(ExecutionEnvironment.class);
-    final com.intellij.execution.Executor executor = mock(com.intellij.execution.Executor.class);
+    final Executor executor = mock(Executor.class);
     when(executor.getId()).thenReturn("Debug");
     when(env.getExecutor()).thenReturn(executor);
     final RunContentDescriptor contentToReuse = mock(RunContentDescriptor.class);
@@ -77,7 +78,7 @@ public class FlutterDebugSessionUtilsTest {
   @Test
   public void splitDebugSessionMutesTabInRunMode() throws Exception {
     final ExecutionEnvironment env = mock(ExecutionEnvironment.class);
-    final com.intellij.execution.Executor executor = mock(com.intellij.execution.Executor.class);
+    final Executor executor = mock(Executor.class);
     when(executor.getId()).thenReturn("Run");
     when(env.getExecutor()).thenReturn(executor);
     final RunContentDescriptor contentToReuse = mock(RunContentDescriptor.class);
