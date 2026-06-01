@@ -18,6 +18,7 @@ import java.time.format.DateTimeFormatter
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 
 // Specify UTF-8 for all compilations so we avoid Windows-1252.
@@ -51,15 +52,17 @@ plugins {
   idea // IntelliJ IDEA support
 }
 
-val commitHash = System.getenv("KOKORO_GIT_COMMIT")?.takeIf { it.isNotBlank() }?.take(7) ?: try {
-  providers.exec {
-    commandLine("git", "rev-parse", "--short", "HEAD")
-  }.standardOutput.asText.get().trim().take(7)
-} catch (e: Exception) {
-  // Catching all exceptions here is intentional: if git is not installed, or if this is built
-  // outside of a git repository clone (e.g. from a source zip release), we want the build
-  // to gracefully proceed with an empty hash instead of crashing.
-  ""
+val commitHash by lazy {
+  System.getenv("KOKORO_GIT_COMMIT")?.takeIf { it.isNotBlank() }?.take(7) ?: try {
+    providers.exec {
+      commandLine("git", "rev-parse", "--short", "HEAD")
+    }.standardOutput.asText.get().trim().take(7)
+  } catch (e: Exception) {
+    // Catching all exceptions here is intentional: if git is not installed, or if this is built
+    // outside of a git repository clone (e.g. from a source zip release), we want the build
+    // to gracefully proceed with an empty hash instead of crashing.
+    ""
+  }
 }
 
 // By default (e.g. when we call `runIde` during development), the plugin version is SNAPSHOT
@@ -545,7 +548,7 @@ abstract class PrintVersionTask : DefaultTask() {
   @get:Input
   abstract val pluginVersion: Property<String>
 
-  @get:org.gradle.api.tasks.Internal
+  @get:Internal
   abstract val archiveFileName: Property<String>
 
   @TaskAction
