@@ -2,6 +2,16 @@
 
 ### Added
 
+### Changed
+
+### Removed
+
+### Fixed
+
+## 93.0.0
+
+### Added
+
 - Missing platforms and targets to Build menu. (#8875)
 - Explicit text labels to Flutter device selector. (#8972)
 
