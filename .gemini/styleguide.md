@@ -67,6 +67,7 @@ enforce standard modern Java/Kotlin coding conventions, but strictly police the 
 - Prefer **Composition over Inheritance** for plugin components.
 - Avoid using reflection without a strong justification.
 - Avoid stray `TODO` or `FIXME` comments without justification.
+- Use imports instead of fully qualified names.
 
 ## 4. Code Quality & Maintainability
 
