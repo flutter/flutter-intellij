@@ -567,10 +567,14 @@ tasks.register<PrintVersionTask>("printVersion") {
 tasks.named<Zip>("buildPlugin") {
   val v = intellijPlatform.pluginConfiguration.version
   archiveFileName.set(v.map { versionStr ->
-    if (commitHash.isNotEmpty() && !versionStr.contains(commitHash)) {
-      "Flutter-$versionStr-$commitHash.zip"
+    if (project.hasProperty("versionedName")) {
+      if (commitHash.isNotEmpty() && !versionStr.contains(commitHash)) {
+        "Flutter-$versionStr-$commitHash.zip"
+      } else {
+        "Flutter-$versionStr.zip"
+      }
     } else {
-      "Flutter-$versionStr.zip"
+      "Flutter.zip"
     }
   })
 }
