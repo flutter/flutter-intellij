@@ -1,4 +1,4 @@
-  /*
+/*
  * Copyright 2016 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
@@ -15,7 +15,6 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -111,7 +110,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   }
 
   private void init() {
-    final FlutterSdk sdk = ReadAction.compute(() -> FlutterSdk.getIncomplete(myProject));
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myProject);
     if (sdk != null) {
       previousSdkVersion = sdk.getVersion();
     }
@@ -186,7 +185,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   @Override
   public boolean isModified() {
 
-    final FlutterSdk sdk = FlutterSdk.getIncomplete(myProject);
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myProject);
     final FlutterSettings settings = FlutterSettings.getInstance();
     final String sdkPathInModel = sdk == null ? "" : sdk.getHomePath();
     final String sdkPathInUI = FileUtilRt.toSystemIndependentName(getSdkPathText());
@@ -313,7 +312,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Override
   public void reset() {
-    final FlutterSdk sdk = ReadAction.compute(() -> FlutterSdk.getIncomplete(myProject));
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myProject);
     final String path = sdk != null ? sdk.getHomePath() : "";
 
     // Set this after populating the combo box to display correctly when the Flutter SDK is unset.
