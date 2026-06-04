@@ -27,10 +27,7 @@ else
   TOKEN=$(cat "$KOKORO_TOKEN_FILE")
 fi
 
-ZIP_FILE="build/distributions/flutter-intellij-kokoro.zip"
-if [ ! -f "$ZIP_FILE" ]; then
-  ZIP_FILE="build/distributions/flutter-intellij.zip"
-fi
+ZIP_FILE="build/distributions/Flutter.zip"
 if [ ! -f "$ZIP_FILE" ]; then
   echo "Error: Zip file not found at $ZIP_FILE"
   exit 1
