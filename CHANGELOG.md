@@ -21,7 +21,6 @@
 
 ### Fixed
 - Restored device labels on split-debugger run tabs in IntelliJ IDEA 2025.3+. (#8908)
-- Settings page not showing an updated Flutter SDK path. (#8827)
 - Debug window opening for run app in 2026.1. (#8985)
 
 ## 92.0.0
