@@ -11,7 +11,7 @@ if [ ! -d "../flutter" ]; then
   OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
   # Pinned Flutter SDK version. This constant is automatically checked and updated weekly
   # by the .github/workflows/update_flutter.yaml GitHub Actions workflow.
-  FLUTTER_VERSION="3.44.1"
+  FLUTTER_VERSION="3.44.2"
   
   echo "Provisioning Flutter SDK version ${FLUTTER_VERSION} for ${OS_NAME}..."
   if [ "$OS_NAME" = "darwin" ]; then
