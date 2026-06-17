@@ -38,6 +38,8 @@ import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
 import com.intellij.util.xmlb.XmlSerializer;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import io.flutter.FlutterUtils;
+import io.flutter.analytics.Analytics;
+import io.flutter.analytics.AnalyticsConstants;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.logging.PluginLogger;
@@ -202,6 +204,7 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
 
     final LaunchState launcher = new LaunchState(env, mainFile.getAppDir(), mainFile.getFile(), this, createAppCallback);
     addConsoleFilters(launcher, env, mainFile, null /* look up the module in an async read context */);
+    Analytics.recordRunOrDebugSession(AnalyticsConstants.MECHANISM_FLUTTER_APP, executor, getProject());
     return launcher;
   }
 

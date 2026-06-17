@@ -18,6 +18,8 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.analytics.Analytics;
+import io.flutter.analytics.AnalyticsConstants;
 import io.flutter.bazel.Workspace;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.LaunchState;
@@ -80,6 +82,7 @@ public class BazelRunConfig extends RunConfigurationBase<LaunchState>
                               StringUtil.capitalize(mode.mode()) + "BazelApp", "StopBazelApp");
     };
 
+    Analytics.recordRunOrDebugSession(AnalyticsConstants.MECHANISM_BAZEL_APP, executor, getProject());
     return new LaunchState(env, workspaceRoot, workspaceRoot, this, createAppCallback);
   }
 
