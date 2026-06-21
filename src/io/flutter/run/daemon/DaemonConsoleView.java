@@ -13,6 +13,9 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.ScrollingModel;
+import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.search.ExecutionSearchScopes;
@@ -22,6 +25,7 @@ import io.flutter.logging.PluginLogger;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.StdoutJsonParser;
+import java.awt.Rectangle;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -55,6 +59,10 @@ public class DaemonConsoleView extends ConsoleViewImpl {
   private final StdoutJsonParser stdoutParser = new StdoutJsonParser();
   private boolean hasPrintedText;
 
+  // Whether the console was scrolled to the end before the most recent batch of output.
+  // Defaults to true so that the first output auto-scrolls normally.
+  private boolean wasAtScrollEnd = true;
+
   public DaemonConsoleView(@NotNull final Project project, @NotNull final GlobalSearchScope searchScope) {
     super(project, searchScope, true, false);
   }
@@ -69,6 +77,14 @@ public class DaemonConsoleView extends ConsoleViewImpl {
       return;
     }
 
+    // Capture scroll position before queuing new output so scrollToEnd() can
+    // honour it once the editor flushes the pending text.
+    final Editor rawEditor = getEditor();
+    final EditorEx editor = rawEditor instanceof EditorEx ? (EditorEx) rawEditor : null;
+    if (editor != null) {
+      wasAtScrollEnd = isAtScrollEnd(editor);
+    }
+
     if (contentType != ConsoleViewContentType.NORMAL_OUTPUT) {
       writeAvailableLines();
       super.print(text, contentType);
@@ -77,6 +93,33 @@ public class DaemonConsoleView extends ConsoleViewImpl {
       stdoutParser.appendOutput(text);
       writeAvailableLines();
     }
+  }
+
+  /**
+   * Called by the platform after flushing queued text to the editor.
+   * Only scroll to end when the user was already there; otherwise preserve
+   * their position so the root-cause error at the top stays visible.
+   */
+  @Override
+  public void scrollToEnd() {
+    if (wasAtScrollEnd) {
+      super.scrollToEnd();
+    }
+  }
+
+  static boolean isAtScrollEnd(@NotNull EditorEx editor) {
+    final ScrollingModel scrollingModel = editor.getScrollingModel();
+    final Rectangle visibleArea = scrollingModel.getVisibleArea();
+    return isAtScrollEnd(
+      scrollingModel.getVerticalScrollOffset(),
+      visibleArea.height,
+      editor.getContentSize().height,
+      editor.getLineHeight()
+    );
+  }
+
+  static boolean isAtScrollEnd(int scrollOffset, int visibleHeight, int totalHeight, int lineHeight) {
+    return scrollOffset + visibleHeight >= totalHeight - lineHeight;
   }
 
   private void writeAvailableLines() {
