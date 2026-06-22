@@ -13,6 +13,8 @@ import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
+import io.flutter.analytics.Analytics;
+import io.flutter.analytics.AnalyticsConstants;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 
@@ -50,6 +52,7 @@ public class BazelTestConfig extends LocatableConfigurationBase<CommandLineState
   @NotNull
   @Override
   public CommandLineState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) throws ExecutionException {
+    Analytics.recordRunOrDebugSession(AnalyticsConstants.MECHANISM_BAZEL_TEST, executor, getProject());
     return BazelTestLaunchState.create(env, this);
   }
 

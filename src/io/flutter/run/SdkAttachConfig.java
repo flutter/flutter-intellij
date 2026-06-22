@@ -30,6 +30,8 @@ import com.intellij.refactoring.listeners.RefactoringElementListener;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
+import io.flutter.analytics.Analytics;
+import io.flutter.analytics.AnalyticsConstants;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.common.RunMode;
@@ -82,6 +84,7 @@ public class SdkAttachConfig extends SdkRunConfig {
 
     final LaunchState launcher = new AttachState(env, mainFile.getAppDir(), mainFile.getFile(), this, createAppCallback);
     addConsoleFilters(launcher, env, mainFile, module);
+    Analytics.recordRunOrDebugSession(AnalyticsConstants.MECHANISM_FLUTTER_ATTACH, executor, getProject());
     return launcher;
   }
 
