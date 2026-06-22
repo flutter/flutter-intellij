@@ -275,8 +275,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
             if (sdk != null) {
               try {
                 lock.acquire();
-                sdk.queryFlutterChannel(false);
-                lock.release();
+                try {
+                  sdk.queryFlutterChannel(false);
+                }
+                finally {
+                  lock.release();
+                }
               }
               catch (InterruptedException e) {
                 // do nothing
@@ -333,10 +337,14 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
           final List<PubRoot> roots = PubRoots.forProject(myProject);
           try {
             lock.acquire();
-            for (PubRoot root : roots) {
-              sdk.startPubGet(root, myProject);
+            try {
+              for (PubRoot root : roots) {
+                sdk.startPubGet(root, myProject);
+              }
             }
-            lock.release();
+            finally {
+              lock.release();
+            }
           }
           catch (InterruptedException e) {
             // do nothing
@@ -416,17 +424,24 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
         OpenApiUtils.safeInvokeLater(() -> {
           // "flutter --version" can take a long time on a slow network.
-          updater = sdk.flutterVersion().start((ProcessOutput output) -> {
-            fullVersionString = output.getStdout();
-            final String[] lines = StringUtil.splitByLines(fullVersionString);
-            final String singleLineVersion = lines.length > 0 ? lines[0] : "";
+          try {
+            updater = sdk.flutterVersion().start((ProcessOutput output) -> {
+              fullVersionString = output.getStdout();
+              final String[] lines = StringUtil.splitByLines(fullVersionString);
+              final String singleLineVersion = lines.length > 0 ? lines[0] : "";
 
-            OpenApiUtils.safeInvokeLater(() -> {
-              updater = null;
+              OpenApiUtils.safeInvokeLater(() -> {
+                updater = null;
+                lock.release();
+                updateVersionTextIfCurrent(sdk, singleLineVersion);
+              }, modalityState);
+            }, null);
+          }
+          finally {
+            if (updater == null) {
               lock.release();
-              updateVersionTextIfCurrent(sdk, singleLineVersion);
-            }, modalityState);
-          }, null);
+            }
+          }
         }, modalityState);
       }
       catch (InterruptedException e) {
