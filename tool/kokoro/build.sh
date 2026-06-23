@@ -18,7 +18,7 @@ while [[ $ATTEMPT -le $MAX_RETRIES ]]; do
     break
   else
     exit_code=$?
-    if [[ $exit_code -eq 130 || $exit_code -eq 143 ]]; then
+    if [[ $exit_code -ge 128 ]]; then
       echo "Build interrupted. Exiting."
       exit $exit_code
     fi
