@@ -13,10 +13,15 @@ ATTEMPT=1
 while [[ $ATTEMPT -le $MAX_RETRIES ]]; do
   echo "Running buildPlugin (Attempt $ATTEMPT of $MAX_RETRIES)..."
   
-  exit_code=0\n  ./gradlew buildPlugin || exit_code=$?
-  if [[ $exit_code -eq 0 ]]; then
+  if ./gradlew buildPlugin; then
     echo "Gradle build completed successfully."
     break
+  else
+    exit_code=$?
+    if [[ $exit_code -eq 130 || $exit_code -eq 143 ]]; then
+      echo "Build interrupted. Exiting."
+      exit $exit_code
+    fi
   fi
 
   echo "Build failed on attempt $ATTEMPT."
