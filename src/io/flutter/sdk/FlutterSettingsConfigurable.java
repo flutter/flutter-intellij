@@ -270,7 +270,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
           FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath);
           FlutterSdkUtil.enableDartSdk(myProject);
 
-          ApplicationManager.getApplication().executeOnPooledThread(() -> {
+          OpenApiUtils.safeExecuteOnPooledThread(() -> {
             final FlutterSdk sdk = FlutterSdk.forPath(sdkHomePath);
             if (sdk != null) {
               try {
@@ -417,6 +417,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
           // This isn't perfect, but does help avoid printing this message most times:
           // Waiting for another flutter command to release the startup lock...
           updater.destroy();
+          updater = null;
           lock.release();
         }
         Thread.sleep(100L);
@@ -425,6 +426,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
         OpenApiUtils.safeInvokeLater(() -> {
           // "flutter --version" can take a long time on a slow network.
           try {
+            updater = null;
             updater = sdk.flutterVersion().start((ProcessOutput output) -> {
               fullVersionString = output.getStdout();
               final String[] lines = StringUtil.splitByLines(fullVersionString);
