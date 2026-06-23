@@ -592,7 +592,7 @@ public class FlutterSdk {
 
     final VirtualFile dir = LocalFileSystem.getInstance().findFileByPath(getHomePath());
     if (dir == null) {
-      return FlutterSdkChannel.fromText("unknown");
+      return FlutterSdkChannel.fromId(FlutterSdkChannel.ID.UNKNOWN);
     }
     String branch;
     try {
