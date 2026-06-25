@@ -100,7 +100,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
    * Semaphore used to synchronize flutter commands so we don't try to do two at once.
    */
   private final Semaphore lock = new Semaphore(1, true);
-  private Process updater;
+  private volatile @org.jspecify.annotations.Nullable Process updater;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
     this.myProject = project;
@@ -428,13 +428,15 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
           try {
             updater = null;
             updater = sdk.flutterVersion().start((ProcessOutput output) -> {
+              if (updater != null) {
+                updater = null;
+                lock.release();
+              }
               fullVersionString = output.getStdout();
               final String[] lines = StringUtil.splitByLines(fullVersionString);
               final String singleLineVersion = lines.length > 0 ? lines[0] : "";
 
               OpenApiUtils.safeInvokeLater(() -> {
-                updater = null;
-                lock.release();
                 updateVersionTextIfCurrent(sdk, singleLineVersion);
               }, modalityState);
             }, null);
