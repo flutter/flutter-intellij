@@ -100,7 +100,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
    * Semaphore used to synchronize flutter commands so we don't try to do two at once.
    */
   private final Semaphore lock = new Semaphore(1, true);
-  private volatile @org.jspecify.annotations.Nullable Process updater;
+  private volatile @Nullable Process updater;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
     this.myProject = project;
