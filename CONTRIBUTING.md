@@ -36,6 +36,28 @@ before any of your contributions with code get merged into the repo.
 If you've never submitted code before, you must add your (or your organization's)
 name and contact info to the [AUTHORS](AUTHORS) file.
 
+## AI Contribution Guidelines
+
+PRs prepared using AI tools must follow these requirements:
+
+1. You must review all AI-generated code before uploading it for review, and before requesting
+   re-review of any updates to the uploaded change.
+   * You are responsible for ensuring that code you submit meets coding standards.
+   * Unmodified AI output generally does _not_ meet those standards.
+2. You must ensure that uploaded code compiles and passes at least the tests you have yourself
+   added as part of the change.
+3. You must understand and be able to discuss the code you are uploading for review.
+   * Non-trivial changes require discussion and iteration during review. If you do not understand the
+     code, you cannot meaningfully respond to review feedback.
+   * In our experience, simply feeding review feedback into an AI agent and uncritically reposting
+     its output will not lead to a constructive review.
+4. You must verify the accuracy of any AI-generated text you include in the change description or
+   review discussion comments.
+   * If an AI provides you incorrect information, it is just hallucinating; if you choose to paste
+     that text into GitHub, you are misrepresenting your change to your reviewer.
+   * In particular, do not tell a reviewer that you have addressed their feedback just because
+     AI output says so. It is your responsibility to make sure that review feedback has actually
+     been addressed.
 ## Getting started
 
 1. Install Flutter SDK from [Flutter SDK download](https://flutter.dev/docs/get-started/install) or
