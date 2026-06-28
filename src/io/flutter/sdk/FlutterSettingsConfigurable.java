@@ -100,7 +100,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
    * Semaphore used to synchronize flutter commands so we don't try to do two at once.
    */
   private final Semaphore lock = new Semaphore(1, true);
-  private Process updater;
+  private volatile @Nullable Process updater;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
     this.myProject = project;
@@ -270,13 +270,17 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
           FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath);
           FlutterSdkUtil.enableDartSdk(myProject);
 
-          ApplicationManager.getApplication().executeOnPooledThread(() -> {
+          OpenApiUtils.safeExecuteOnPooledThread(() -> {
             final FlutterSdk sdk = FlutterSdk.forPath(sdkHomePath);
             if (sdk != null) {
               try {
                 lock.acquire();
-                sdk.queryFlutterChannel(false);
-                lock.release();
+                try {
+                  sdk.queryFlutterChannel(false);
+                }
+                finally {
+                  lock.release();
+                }
               }
               catch (InterruptedException e) {
                 // do nothing
@@ -333,10 +337,14 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
           final List<PubRoot> roots = PubRoots.forProject(myProject);
           try {
             lock.acquire();
-            for (PubRoot root : roots) {
-              sdk.startPubGet(root, myProject);
+            try {
+              for (PubRoot root : roots) {
+                sdk.startPubGet(root, myProject);
+              }
             }
-            lock.release();
+            finally {
+              lock.release();
+            }
           }
           catch (InterruptedException e) {
             // do nothing
@@ -409,6 +417,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
           // This isn't perfect, but does help avoid printing this message most times:
           // Waiting for another flutter command to release the startup lock...
           updater.destroy();
+          updater = null;
           lock.release();
         }
         Thread.sleep(100L);
@@ -416,17 +425,27 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
         OpenApiUtils.safeInvokeLater(() -> {
           // "flutter --version" can take a long time on a slow network.
-          updater = sdk.flutterVersion().start((ProcessOutput output) -> {
-            fullVersionString = output.getStdout();
-            final String[] lines = StringUtil.splitByLines(fullVersionString);
-            final String singleLineVersion = lines.length > 0 ? lines[0] : "";
+          try {
+            updater = null;
+            updater = sdk.flutterVersion().start((ProcessOutput output) -> {
+              if (updater != null) {
+                updater = null;
+                lock.release();
+              }
+              fullVersionString = output.getStdout();
+              final String[] lines = StringUtil.splitByLines(fullVersionString);
+              final String singleLineVersion = lines.length > 0 ? lines[0] : "";
 
-            OpenApiUtils.safeInvokeLater(() -> {
-              updater = null;
+              OpenApiUtils.safeInvokeLater(() -> {
+                updateVersionTextIfCurrent(sdk, singleLineVersion);
+              }, modalityState);
+            }, null);
+          }
+          finally {
+            if (updater == null) {
               lock.release();
-              updateVersionTextIfCurrent(sdk, singleLineVersion);
-            }, modalityState);
-          }, null);
+            }
+          }
         }, modalityState);
       }
       catch (InterruptedException e) {
