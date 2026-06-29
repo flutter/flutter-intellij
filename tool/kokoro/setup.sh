@@ -16,12 +16,20 @@ run_gradle_with_retry() {
           echo "Error: --max-retries requires an argument." >&2
           return 1
         fi
+        if [[ ! "$2" =~ ^[0-9]+$ ]]; then
+          echo "Error: --max-retries requires a non-negative integer." >&2
+          return 1
+        fi
         max_retries="$2"
         shift 2
         ;;
       --delay-secs)
         if [[ $# -lt 2 ]]; then
           echo "Error: --delay-secs requires an argument." >&2
+          return 1
+        fi
+        if [[ ! "$2" =~ ^[0-9]+$ ]]; then
+          echo "Error: --delay-secs requires a non-negative integer." >&2
           return 1
         fi
         delay_secs="$2"
