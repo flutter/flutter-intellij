@@ -26,6 +26,7 @@ Perform a multi-pass analysis of the diff:
 - **Edge cases:** Check boundary conditions (empty lists, null values, division by zero, empty strings).
 - **Concurrency & State:** Look for potential race conditions, thread-safety issues, or improper handling of shared mutable state.
 - **Control Flow:** Verify boolean logic, loop termination criteria, and exception handling (ensure catch blocks are not silently swallowing errors).
+- **Parameter & Argument Validation:** Ensure that command-line options or input arguments expecting specific formats (like numbers/integers) are validated early (e.g. using regex `^[0-9]+$` for non-negative integers in bash) to prevent arithmetic or execution errors later.
 
 ### Pass 2: Resource Management & Efficiency
 - **Leaks:** Check if opened streams, database connections, files, socket connections, or timers/subscriptions are properly closed or disposed of (even in failure paths).
