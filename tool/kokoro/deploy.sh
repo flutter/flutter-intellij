@@ -8,7 +8,7 @@ setup
 
 echo "kokoro build start"
 
-./gradlew buildPlugin -Pdev --no-configuration-cache
+run_gradle_with_retry buildPlugin -Pdev --no-configuration-cache
 
 echo "kokoro build finished"
 
