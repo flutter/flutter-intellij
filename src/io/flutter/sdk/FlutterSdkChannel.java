@@ -46,11 +46,6 @@ public class FlutterSdkChannel {
     return new FlutterSdkChannel(ID.fromText(text));
   }
 
-  @NotNull
-  public static FlutterSdkChannel fromId(@NotNull ID channelId) {
-    return new FlutterSdkChannel(channelId);
-  }
-
   private FlutterSdkChannel(@NotNull ID channel) {
     this.channel = channel;
   }

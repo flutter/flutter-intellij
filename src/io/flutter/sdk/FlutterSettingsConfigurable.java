@@ -270,17 +270,13 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
           FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath);
           FlutterSdkUtil.enableDartSdk(myProject);
 
-          OpenApiUtils.safeExecuteOnPooledThread(() -> {
+          ApplicationManager.getApplication().executeOnPooledThread(() -> {
             final FlutterSdk sdk = FlutterSdk.forPath(sdkHomePath);
             if (sdk != null) {
               try {
                 lock.acquire();
-                try {
-                  sdk.queryFlutterChannel(false);
-                }
-                finally {
-                  lock.release();
-                }
+                sdk.queryFlutterChannel(false);
+                lock.release();
               }
               catch (InterruptedException e) {
                 // do nothing
@@ -337,14 +333,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
           final List<PubRoot> roots = PubRoots.forProject(myProject);
           try {
             lock.acquire();
-            try {
-              for (PubRoot root : roots) {
-                sdk.startPubGet(root, myProject);
-              }
+            for (PubRoot root : roots) {
+              sdk.startPubGet(root, myProject);
             }
-            finally {
-              lock.release();
-            }
+            lock.release();
           }
           catch (InterruptedException e) {
             // do nothing
@@ -417,7 +409,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
           // This isn't perfect, but does help avoid printing this message most times:
           // Waiting for another flutter command to release the startup lock...
           updater.destroy();
-          updater = null;
           lock.release();
         }
         Thread.sleep(100L);
@@ -425,25 +416,17 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
         OpenApiUtils.safeInvokeLater(() -> {
           // "flutter --version" can take a long time on a slow network.
-          try {
-            updater = null;
-            updater = sdk.flutterVersion().start((ProcessOutput output) -> {
-              fullVersionString = output.getStdout();
-              final String[] lines = StringUtil.splitByLines(fullVersionString);
-              final String singleLineVersion = lines.length > 0 ? lines[0] : "";
+          updater = sdk.flutterVersion().start((ProcessOutput output) -> {
+            fullVersionString = output.getStdout();
+            final String[] lines = StringUtil.splitByLines(fullVersionString);
+            final String singleLineVersion = lines.length > 0 ? lines[0] : "";
 
-              OpenApiUtils.safeInvokeLater(() -> {
-                updater = null;
-                lock.release();
-                updateVersionTextIfCurrent(sdk, singleLineVersion);
-              }, modalityState);
-            }, null);
-          }
-          finally {
-            if (updater == null) {
+            OpenApiUtils.safeInvokeLater(() -> {
+              updater = null;
               lock.release();
-            }
-          }
+              updateVersionTextIfCurrent(sdk, singleLineVersion);
+            }, modalityState);
+          }, null);
         }, modalityState);
       }
       catch (InterruptedException e) {
