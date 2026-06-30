@@ -83,3 +83,15 @@ These are the versions of Flutter SDK that current and previous Flutter plugins 
 
 Here is more information on the Flutter plugin's support for Flutter
 SDKs: https://docs.flutter.dev/tools/sdk#sdk-support-for-flutter-developer-tools.
+
+## AI Coding Agent Skills
+
+This repository comes with custom configuration and automation skills for AI coding agents (such as Gemini Code Assist / Antigravity).
+
+These skills are located in the [.agents/skills/](.agents/skills/) directory. They are automatically discovered and loaded by agentic workflows when they analyze the workspace.
+
+### Available Workspace Skills:
+* **[Code Review](.agents/skills/code-review/SKILL.md):** Performs a pedantic, multi-perspective code review (covering logic, correctness, resource safety, design, and styleguide compliance) on your uncommitted changes.
+
+### How to use:
+Tell your AI assistant to run the desired skill (e.g. by typing `/code-review` or asking *"Run the code-review skill on my changes"*). The agent will automatically find, load, and follow the instructions in the corresponding `SKILL.md` file.

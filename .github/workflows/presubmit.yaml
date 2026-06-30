@@ -14,6 +14,15 @@ permissions:
   contents: read
 
 jobs:
+  # Check Agent Skills Documentation
+  check-skills-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - name: Run documentation check
+        run: ./tool/check_agent_skills.sh
+
   presubmit:
     runs-on: ubuntu-latest
     steps:
