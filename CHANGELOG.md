@@ -8,6 +8,17 @@
 
 ### Fixed
 
+## 94.0.0
+
+### Added
+- Support for IntelliJ platform version 2026.2. (#9022)
+
+### Changed
+
+### Removed
+
+### Fixed
+
 ## 93.0.0
 
 ### Added
