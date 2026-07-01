@@ -18,8 +18,6 @@
 ### Removed
 
 ### Fixed
-- IDE freeze during Flutter SDK change. (#9011)
-- Freeze when settings panel closed quickly. (#9016)
 
 ## 93.0.0
 
