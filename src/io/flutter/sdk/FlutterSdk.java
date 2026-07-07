@@ -591,14 +591,12 @@ public class FlutterSdk {
     }
 
     final VirtualFile dir = LocalFileSystem.getInstance().findFileByPath(getHomePath());
-    if (dir == null) {
-      return FlutterSdkChannel.fromId(FlutterSdkChannel.ID.UNKNOWN);
-    }
+    assert dir != null;
     String branch;
     try {
       branch = git4idea.light.LightGitUtilKt.getLocation(dir, GitExecutableManager.getInstance().getExecutable((Project)null));
     }
-    catch (Exception e) {
+    catch (VcsException e) {
       final String stdout = returnOutputOfQuery(flutterChannel());
       if (stdout == null) {
         branch = "unknown";
