@@ -39,7 +39,7 @@ jobs:
           java-version: '21'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@90ddb51e90a5fd9ba75f40cf85156b7b41bf76a3 # v6
+        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6
 
       - name: build
         run: ./tool/github.sh
@@ -61,7 +61,7 @@ jobs:
           java-version: '21'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@90ddb51e90a5fd9ba75f40cf85156b7b41bf76a3 # v6
+        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6
 
       - name: Linux ${{ matrix.bot }}
         run: ./tool/github.sh
