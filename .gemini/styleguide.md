@@ -13,8 +13,7 @@ enforce standard modern Java/Kotlin coding conventions, but strictly police the 
     - `[NIT]`: Idiomatic improvements or minor naming suggestions.
 - **Focus:** Prioritize logic, performance on the UI thread, and architectural consistency.
 - **No Empty Praise:** Do not leave "Looks good" or "Nice change" comments. If there are no issues, leave no comments.
-- **Copyright Headers:** Ensure all new files have a proper copyright header (e.g., `Copyright 2026 The Chromium Authors`). Flag any missing
-  headers as `[MUST-FIX]`.
+- **Copyright Headers:** Ensure all new source code files (`.java`, `.kt`, `.dart`, `.sh`) have a proper copyright header (e.g., `Copyright 2026 The Chromium Authors`). Do NOT require copyright headers on documentation, markdown (`.md`), YAML, JSON, or agent skill documents (`SKILL.md`). Flag any missing headers on source code files as `[MUST-FIX]`.
 
 ## 2. IntelliJ Platform Best Practices
 

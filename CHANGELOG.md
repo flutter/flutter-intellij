@@ -5,6 +5,7 @@
 ### Changed
 
 ### Removed
+- Support for platform version 2025.1.
 
 ### Fixed
 

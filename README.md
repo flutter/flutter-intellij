@@ -92,6 +92,7 @@ These skills are located in the [.agents/skills/](.agents/skills/) directory. Th
 
 ### Available Workspace Skills:
 * **[Code Review](.agents/skills/code-review/SKILL.md):** Performs a pedantic, multi-perspective code review (covering logic, correctness, resource safety, design, and styleguide compliance) on your uncommitted changes.
+* **[Remove Platform Version](.agents/skills/remove-platform-version/SKILL.md):** Remove support for an older IntelliJ Platform / Android Studio version from the project and clean up obsolete code, baselines, and CI configurations.
 
 ### How to use:
 Tell your AI assistant to run the desired skill (e.g. by typing `/code-review` or asking *"Run the code-review skill on my changes"*). The agent will automatically find, load, and follow the instructions in the corresponding `SKILL.md` file.
