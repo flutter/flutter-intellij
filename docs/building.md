@@ -67,7 +67,7 @@ $ gcloud storage cp <path-to-archive> gs://flutter_infra_release/flutter/intelli
 
 (The below is a summary of an internal doc on our strategy for version management.)
 
-The main branch intends to support multiple IDEA platform versions (e.g. currently, 2025.1 to 2025.3). This simplifies
+The main branch intends to support multiple IDEA platform versions (e.g. currently, 2025.2 to 2025.3). This simplifies
 development as only one plugin is typically built and released from main.
 
 However, there may be times when we need different builds for different versions of the IDEA platform; for example, if we introduce a

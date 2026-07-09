@@ -5,6 +5,7 @@
 ### Changed
 
 ### Removed
+- Support removed for 2025.1.
 
 ### Fixed
 

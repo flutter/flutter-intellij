@@ -383,3 +383,32 @@ This document serves as the authoritative "Runbook for Robots," codifying standa
     *   **Do not commit or push.**
     *   Provide a suggested Git commit message (e.g., "Fix [Issue ID/Description]: [Summary of Fix]").
 
+---
+
+## Remove Platform Version Support
+**Objective:** Remove support for an older IntelliJ Platform or Android Studio version (e.g., dropping support for `2025.1` / build `251` and raising the lower bound to `2025.2` / build `252`).
+
+**Instructions:**
+1.  **Establish Baseline:**
+    *   Run `./gradlew testClasses` to ensure the project compiles.
+2.  **Update Compatibility Lower Bound:**
+    *   In `gradle.properties`, update `sinceBuild` to the new lower bound build number (e.g., change `sinceBuild=251` to `sinceBuild=252`).
+3.  **Update CI Verification (`tool/github.sh`):**
+    *   Remove the dropped version number from the `VERIFY_BOT` verification loop in `tool/github.sh` (`for version in ...; do`).
+4.  **Remove Obsolete Verifier Baseline:**
+    *   Remove `tool/baseline/<version>/` and its baseline file (e.g., `git rm -r tool/baseline/<version>`).
+5.  **Search & Remove Obsolete Code and TODOs:**
+    *   Search `src/` for references to the removed build number or version string (e.g., `251`, `2025.1`).
+    *   Simplify or remove dead code paths in version check logic (e.g., `DartPluginVersion.java`).
+    *   Check for TODOs or workarounds mentioning the removed version that can now be cleaned up.
+6.  **Search Repository Issues:**
+    *   Search repository issues for any tracked tasks or bugs related to moving off the dropped version, and implement applicable cleanups.
+7.  **Update Documentation & Changelog:**
+    *   Add an entry under `### Removed` in `CHANGELOG.md` (e.g., `- Support removed for 2025.1.`).
+    *   Update documentation examples in `docs/building.md` to reflect the new compatibility range.
+8.  **Verify & Validate:**
+    *   Run `./gradlew testClasses`, `./gradlew test`, and `./gradlew verifyPlugin` to verify that the project compiles, tests pass, and plugin verification succeeds against the new compatibility range.
+    *   **Do not commit or push.**
+    *   Provide a suggested Git commit message (e.g., "Drop support for IntelliJ 2025.1 (251)").
+
+
