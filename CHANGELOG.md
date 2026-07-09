@@ -5,7 +5,7 @@
 ### Changed
 
 ### Removed
-- Support removed for 2025.1.
+- Support for platform version 2025.1.
 
 ### Fixed
 

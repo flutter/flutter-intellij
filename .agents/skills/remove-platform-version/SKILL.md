@@ -41,7 +41,7 @@ Systematically update compatibility ranges, clean up CI verification loops and b
 - Check if any open issues or tracked technical debt items specify code deletions or cleanup steps upon dropping support for that version, and implement any applicable cleanups.
 
 ### 7. Update Changelog
-- **`CHANGELOG.md`:** Under the `### Removed` section, add an entry documenting the removal (e.g., `- Support removed for 2025.1.`).
+- **`CHANGELOG.md`:** Under the `### Removed` section, add an entry documenting the removal (e.g., `- Support for platform version 2025.1.`).
 - **Note:** Do not modify `docs/building.md`. Its version examples are illustrative and should not be updated when removing a platform version.
 
 ### 8. Verify & Validate
