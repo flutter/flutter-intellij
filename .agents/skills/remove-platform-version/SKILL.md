@@ -40,9 +40,9 @@ Systematically update compatibility ranges, clean up CI verification loops and b
 - Search repository issues (via GitHub issue search or issue tracker) for issues related to dropping or moving off the removed version (e.g., `repo:flutter/flutter-intellij <version>` or platform compatibility issues).
 - Check if any open issues or tracked technical debt items specify code deletions or cleanup steps upon dropping support for that version, and implement any applicable cleanups.
 
-### 7. Update Changelog & Documentation
+### 7. Update Changelog
 - **`CHANGELOG.md`:** Under the `### Removed` section, add an entry documenting the removal (e.g., `- Support removed for 2025.1.`).
-- **`docs/building.md`:** Check if documentation examples reference the supported version range and update them to reflect the new range.
+- **Note:** Do not modify `docs/building.md`. Its version examples are illustrative and should not be updated when removing a platform version.
 
 ### 8. Verify & Validate
 - Run `./gradlew testClasses` to verify compilation.
