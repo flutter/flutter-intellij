@@ -98,15 +98,9 @@ These skills are located in the [.agents/skills/](.agents/skills/) directory. Th
 * **[Code Inspection Cleanup](.agents/skills/cleanup-code-inspections/SKILL.md):** Reduce technical debt and improve code quality by systematically resolving static analysis warnings.
 * **[Unused Asset Cleanup](.agents/skills/cleanup-unused-assets/SKILL.md):** Reduce plugin size by scanning `resources/icons` and removing unreferenced assets.
 * **[Code Review](.agents/skills/code-review/SKILL.md):** Performs a pedantic, multi-perspective code review (covering logic, correctness, resource safety, design, and styleguide compliance) on your uncommitted changes.
-* **[Fix Specified Issue](.agents/skills/fix-specified-issue/SKILL.md):** Reproduce, test, fix, and verify a specific user-provided issue (stack trace or GitHub issue link) following plugin development guidelines.
-* **[Documentation Coverage](.agents/skills/improve-documentation-coverage/SKILL.md):** Ensure public classes and methods in `src/` have Javadoc/KDoc to improve maintainability and API clarity.
-* **[Single File Coverage Improvement](.agents/skills/improve-single-file-coverage/SKILL.md):** Write a new single test file, or modify an existing file, to improve coverage for a specific target class using Kover.
 * **[Migrate IntelliJ Util](.agents/skills/migrate-intellij-util/SKILL.md):** Optimize memory usage, consistency, and performance by migrating standard Java/Kotlin classes to IntelliJ's specialized `com.intellij.util` implementations.
-* **[Optimize Gradle Build](.agents/skills/optimize-gradle-build/SKILL.md):** Improve local build performance and CI efficiency by leveraging Gradle's caching and profiling tools.
-* **[Prepare PR Cleanup](.agents/skills/prepare-pr-cleanup/SKILL.md):** Verify current test suite status with `./gradlew test`, clean up any temporary debug modifications, and harden test coverage for active files before opening a pull request.
 * **[Remove Platform Version](.agents/skills/remove-platform-version/SKILL.md):** Remove support for an older IntelliJ Platform / Android Studio version from the project and clean up obsolete code, baselines, and CI configurations.
 * **[Resolve Verification Issues](.agents/skills/resolve-verification-issues/SKILL.md):** Eliminate plugin verification warnings and errors identified by `./gradlew verifyPlugin`.
-* **[Update IntelliJ Platform Plugin](.agents/skills/update-intellij-platform-plugin/SKILL.md):** Update the `org.jetbrains.intellij.platform` Gradle plugin version to the latest available and run comprehensive validation checks.
 * **[Verify EAP Compatibility](.agents/skills/verify-eap-compatibility/SKILL.md):** Ensure the plugin remains compatible with the latest IntelliJ Platform releases and EAP (Early Access Program) builds.
 
 ### How to use:
