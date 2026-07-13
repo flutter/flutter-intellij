@@ -32,8 +32,6 @@ import de.roderick.weberknecht.WebSocketException;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
-import io.flutter.bazel.Workspace;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DtdRequest;
 import io.flutter.dart.DtdUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
@@ -56,7 +54,6 @@ import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -233,24 +230,6 @@ public class FlutterApp implements Disposable {
     LOG.info(command.toString());
 
     Consumer<String> onTextAvailable = null;
-
-    if (WorkspaceCache.getInstance(project).isBazel()) {
-      Workspace workspace = WorkspaceCache.getInstance(project).get();
-      assert (workspace != null);
-      String configWarningPrefix = workspace.getConfigWarningPrefix();
-      if (configWarningPrefix != null) {
-        onTextAvailable = text -> {
-          if (text.startsWith(configWarningPrefix)) {
-            FlutterMessages.showWarning(
-              "Configuration warning",
-              UrlUtils.generateHtmlFragmentWithHrefTags(text.substring(configWarningPrefix.length())),
-              null
-            );
-          }
-        };
-      }
-    }
-
     final ProcessHandler process = new MostlySilentColoredProcessHandler(command, onTextAvailable);
     Disposer.register(FlutterDartAnalysisServer.getInstance(project), process::destroyProcess);
 
@@ -702,7 +681,6 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
   private final @NotNull ProgressHelper progress;
   private @Nullable String appVmServiceUri;
   private static final @NotNull DtdUtils dtdUtils = new DtdUtils();
-
 
   FlutterAppDaemonEventListener(@NotNull FlutterApp app, @NotNull Project project) {
     this.app = app;

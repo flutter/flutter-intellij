@@ -13,13 +13,11 @@ import com.intellij.ui.EditorNotificationProvider;
 import com.intellij.ui.HyperlinkLabel;
 import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.UIUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import javax.swing.*;
 import java.util.function.Function;
 
@@ -30,12 +28,6 @@ public final class FlutterPubspecNotificationProvider implements EditorNotificat
                                                                                                        @NotNull VirtualFile file) {
     // We only show this notification inside of local pubspec files.
     if (!PubRoot.isPubspec(file) || !file.isInLocalFileSystem()) {
-      return null;
-    }
-
-    // If the user has opted out of using pub in a project with both bazel rules and pub rules,
-    // then we will default to bazel instead of pub.
-    if (WorkspaceCache.getInstance(project).isBazel()) {
       return null;
     }
 

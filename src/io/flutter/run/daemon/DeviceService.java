@@ -19,7 +19,6 @@ import com.intellij.openapi.roots.ex.ProjectRootManagerEx;
 import com.intellij.openapi.util.Disposer;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.logging.PluginLogger;
 import io.flutter.run.FlutterDevice;
@@ -28,7 +27,6 @@ import io.flutter.sdk.FlutterSdkManager;
 import io.flutter.utils.Refreshable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -85,14 +83,10 @@ public class DeviceService {
     Disposer.register(FlutterDartAnalysisServer.getInstance(project),
                       () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
 
-    // Watch for Bazel workspace changes.
-    WorkspaceCache.getInstance(project).subscribe(this::refreshDeviceDaemon);
-
     // Watch for Java SDK changes. (Used to get the value of ANDROID_HOME.)
-    ProjectRootManagerEx.getInstanceEx(project).addProjectJdkListener(this::refreshDeviceDaemon);
-  }
 
-  /**
+    ProjectRootManagerEx.getInstanceEx(project).addProjectJdkListener(this::refreshDeviceDaemon);
+  }  /**
    * Adds a callback for any changes to the status, device list, or selection.
    */
   public void addListener(@NotNull Runnable callback) {

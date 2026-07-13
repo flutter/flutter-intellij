@@ -26,8 +26,6 @@ import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.util.PubspecYamlUtil;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterBuildActionGroup;
-import io.flutter.bazel.Workspace;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRootCache;
@@ -39,7 +37,6 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import java.util.List;
 
 public class FlutterModuleUtils {
@@ -99,34 +96,6 @@ public class FlutterModuleUtils {
     if (project.isDisposed()) return false;
 
     return CollectionUtils.anyMatch(getModules(project), FlutterModuleUtils::isFlutterModule);
-  }
-
-  /**
-   * Return the Flutter {@link Workspace} if there is at least one module that is determined to be a Flutter module by the workspace, and
-   * has the Dart SDK enabled module.
-   */
-  @Nullable
-  public static Workspace getFlutterBazelWorkspace(@Nullable Project project) {
-    if (project == null || project.isDisposed()) return null;
-
-    final Workspace workspace = WorkspaceCache.getInstance(project).get();
-    if (workspace == null) return null;
-
-    for (Module module : getModules(project)) {
-      if (DartPlugin.isDartSdkEnabled(module)) {
-        return workspace;
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Return true if the passed {@link Project} is a Bazel Flutter {@link Project}. If the {@link Workspace} is needed after this call,
-   * {@link #getFlutterBazelWorkspace(Project)} should be used.
-   */
-  public static boolean isFlutterBazelProject(@Nullable Project project) {
-    return getFlutterBazelWorkspace(project) != null;
   }
 
   @Nullable
@@ -199,7 +168,6 @@ public class FlutterModuleUtils {
     }
     return null;
   }
-
 
   public static @NotNull Module @NotNull [] getModules(@NotNull Project project) {
     // A disposed project has no modules.

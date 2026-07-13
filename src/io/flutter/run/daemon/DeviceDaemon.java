@@ -21,8 +21,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.android.IntelliJAndroidSdk;
-import io.flutter.bazel.Workspace;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.logging.PluginLogger;
 import io.flutter.run.FlutterDevice;
 import io.flutter.sdk.FlutterSdk;
@@ -35,7 +33,6 @@ import io.flutter.utils.SystemUtils;
 import com.jetbrains.lang.dart.analytics.Analytics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
@@ -144,15 +141,6 @@ class DeviceDaemon {
 
     final String androidHome = IntelliJAndroidSdk.chooseAndroidHome(project, false);
 
-    // See if the Bazel workspace provides a script.
-    final Workspace workspace = WorkspaceCache.getInstance(project).get();
-    if (workspace != null) {
-      final String script = workspace.getDaemonScript();
-      if (script != null) {
-        return new Command(workspace.getRoot().getPath(), script, ImmutableList.of(), androidHome);
-      }
-    }
-
     // Otherwise, use the Flutter SDK.
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     if (sdk == null) {
@@ -177,7 +165,7 @@ class DeviceDaemon {
   }
 
   private static boolean usesFlutter(@NotNull final Project project) {
-    return FlutterModuleUtils.isFlutterBazelProject(project) || FlutterModuleUtils.hasFlutterModule(project);
+    return FlutterModuleUtils.hasFlutterModule(project);
   }
 
   /**

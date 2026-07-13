@@ -16,7 +16,6 @@ import com.intellij.openapi.util.Computable;
 import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.logging.PluginLogger;
@@ -26,7 +25,6 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -105,7 +103,6 @@ public class OpenDevToolsAction extends DumbAwareAction {
         .setDevToolsPort(instance.port())
         .setVmServiceUri(serviceUrl)
         .setFlutterSdkVersion(flutterSdk == null ? null : flutterSdk.getVersion())
-        .setWorkspaceCache(WorkspaceCache.getInstance(project))
         .setIdeFeature(DevToolsIdeFeature.RUN_CONSOLE)
         .build()
         .getUrlString();

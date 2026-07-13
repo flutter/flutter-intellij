@@ -23,7 +23,6 @@ import com.intellij.xdebugger.frame.XExecutionStack;
 import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import com.jetbrains.lang.dart.DartFileType;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.logging.PluginLogger;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
@@ -74,7 +73,6 @@ import org.dartlang.vm.service.element.UriList;
 import org.dartlang.vm.service.element.VM;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -492,10 +490,6 @@ public class VmServiceWrapper implements Disposable {
   private boolean isVmServiceMappingSupported(org.dartlang.vm.service.element.Version version) {
     assert version != null;
 
-    if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
-      return true;
-    }
-
     return VmServiceVersion.hasMapping(version);
   }
 
@@ -633,32 +627,10 @@ public class VmServiceWrapper implements Disposable {
   }
 
   private String getResolvedUri(@NotNull XSourcePosition position) {
-    XDebugSession session = myDebugProcess.getSession();
-    VirtualFile file =
-      WorkspaceCache.getInstance(session.getProject()).isBazel() ? position.getFile() : position.getFile().getCanonicalFile();
+    VirtualFile file = position.getFile().getCanonicalFile();
     assert file != null;
     String url = file.getUrl();
     if (FlutterSettings.getInstance().isFilePathLoggingEnabled())  LOG.info("in getResolvedUri. url: " + url);
-
-    if (WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).isBazel()) {
-      String root = WorkspaceCache.getInstance(myDebugProcess.getSession().getProject()).get().getRoot().getPath();
-      String resolvedUriRoot = "google3:///";
-
-      // Look for a generated file path.
-      String genFilePattern = root + "/blaze-.*?/(.*)";
-      Pattern pattern = Pattern.compile(genFilePattern);
-      Matcher matcher = pattern.matcher(url);
-      if (matcher.find()) {
-        String path = matcher.group(1);
-        return resolvedUriRoot + path;
-      }
-
-      // Look for root.
-      int rootIdx = url.indexOf(root);
-      if (rootIdx >= 0) {
-        return resolvedUriRoot + url.substring(rootIdx + root.length() + 1);
-      }
-    }
 
     if (SystemInfo.isWindows) {
       // Dart and the VM service use three /'s in file URIs: https://api.dart.dev/stable/2.16.1/dart-core/Uri-class.html.
