@@ -27,12 +27,6 @@ object AnalyticsConstants {
   val GOOGLE3 = BooleanValue("google3")
 
   /**
-   * Indicates if the project is in a Bazel context.
-   */
-  @JvmField
-  val IN_BAZEL_CONTEXT = BooleanValue("inBazelContext")
-
-  /**
    * Indicates if the Flutter SDK is missing.
    */
   @JvmField
@@ -46,8 +40,6 @@ object AnalyticsConstants {
 
   const val MECHANISM_FLUTTER_ATTACH = "flutter_attach"
   const val MECHANISM_FLUTTER_APP = "flutter_app"
-  const val MECHANISM_BAZEL_APP = "bazel_app"
-  const val MECHANISM_BAZEL_TEST = "bazel_test"
   const val MECHANISM_FLUTTER_TESTS = "flutter_tests"
 
   const val DEBUG_SESSION_TYPE = "debug_session"

@@ -128,15 +128,6 @@
             <properties>
               <text value="Show structured errors for Flutter framework issues"/>
             </properties>
-          </component>
-          <component id="475be" class="javax.swing.JCheckBox" binding="myEnableBazelHotRestartCheckBox">
-            <constraints>
-              <grid row="4" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text resource-bundle="io/flutter/FlutterBundle" key="settings.enable.bazel.hot.restart"/>
-            </properties>
-          </component>
           <component id="6cf1f" class="javax.swing.JCheckBox" binding="myIncludeAllStackTraces">
             <constraints>
               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="3" use-parent-layout="false"/>

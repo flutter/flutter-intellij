@@ -43,7 +43,6 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
       if (workspace != null) {
         FileDocumentManager.getInstance().saveAllDocuments();
         startCommandInBazelContext(project, workspace, event);
-        analyticsData.add(AnalyticsConstants.IN_BAZEL_CONTEXT, true);
         Analytics.report(analyticsData);
         return;
       }
