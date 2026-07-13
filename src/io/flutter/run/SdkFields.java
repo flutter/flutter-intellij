@@ -40,10 +40,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Fields used when launching an app using the Flutter SDK (non-bazel).
+ * Fields used when launching an app using the Flutter SDK.
  */
 public class SdkFields {
   private static final @NotNull Logger LOG = PluginLogger.createLogger(SdkFields.class);
+
   private @Nullable String filePath;
   private @Nullable String buildFlavor;
   private @Nullable String additionalArgs;

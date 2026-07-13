@@ -15,9 +15,9 @@ import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.execution.testframework.sm.runner.SMTestLocator;
 import com.intellij.execution.ui.ConsoleView;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
-import io.flutter.run.bazelTest.BazelTestConfig;
 import io.flutter.run.test.FlutterTestEventsConverter;
 import io.flutter.run.test.FlutterTestLocationProvider;
+
 import io.flutter.run.test.TestConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,11 +32,6 @@ public class ConsoleProps extends SMTRunnerConsoleProperties implements SMCustom
    * Name of the {@code testFrameworkName}passed to the {@link ConsoleProps} constructor for Pub-based consoles.
    */
   public static String pubFrameworkName = "FlutterTestRunner";
-
-  /**
-   * Name of the {@code testFrameworkName}passed to the {@link ConsoleProps} constructor for Bazel-based consoles..
-   */
-  public static String bazelFrameworkName = "FlutterBazelTestRunner";
 
   @NotNull
   private final DartUrlResolver resolver;
@@ -53,10 +48,6 @@ public class ConsoleProps extends SMTRunnerConsoleProperties implements SMCustom
 
   public static ConsoleProps forPub(@NotNull TestConfig config, @NotNull Executor exec, @NotNull DartUrlResolver resolver) {
     return new ConsoleProps(config, exec, resolver, pubFrameworkName);
-  }
-
-  public static ConsoleProps forBazel(@NotNull BazelTestConfig config, @NotNull Executor exec, @NotNull DartUrlResolver resolver) {
-    return new ConsoleProps(config, exec, resolver, bazelFrameworkName);
   }
 
   @Nullable

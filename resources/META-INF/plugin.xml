@@ -284,12 +284,14 @@
     <postStartupActivity implementation="io.flutter.ProjectOpenActivity"/>
     <postStartupActivity implementation="io.flutter.FlutterInitializer"/>
     <projectService serviceImplementation="io.flutter.run.daemon.DeviceService"/>
+
     <projectService serviceImplementation="io.flutter.run.daemon.DevToolsService"/>
     <projectService serviceImplementation="io.flutter.dart.FlutterDartAnalysisServer"/>
     <projectService serviceImplementation="io.flutter.bazel.WorkspaceCache"/>
-    <projectService serviceImplementation="io.flutter.pub.PubRootCache"/>
 
+    <projectService serviceImplementation="io.flutter.pub.PubRootCache"/>
     <backgroundPostStartupActivity implementation="io.flutter.sdk.FlutterProjectActivity"/>
+
     <backgroundPostStartupActivity id="FontPreviewStartupActivity"
                                    implementation="io.flutter.font.FontPreviewStartupActivity"
                                    order="last"/>
@@ -303,14 +305,6 @@
     <programRunner implementation="io.flutter.run.test.FlutterTestRunner"/>
     <runLineMarkerContributor language="Dart" implementationClass="io.flutter.run.test.FlutterTestLineMarkerContributor"/>
 
-    <configurationType implementation="io.flutter.run.bazel.FlutterBazelRunConfigurationType"/>
-    <programRunner implementation="io.flutter.run.bazel.BazelRunner"/>
-
-    <configurationType implementation="io.flutter.run.bazelTest.FlutterBazelTestConfigurationType"/>
-    <runConfigurationProducer implementation="io.flutter.run.bazelTest.BazelTestConfigProducer"/>
-    <runConfigurationProducer implementation="io.flutter.run.bazelTest.BazelWatchTestConfigProducer"/>
-    <programRunner implementation="io.flutter.run.bazelTest.BazelTestRunner"/>
-    <runLineMarkerContributor language="Dart" implementationClass="io.flutter.run.bazelTest.FlutterBazelTestLineMarkerContributor"/>
 
     <defaultLiveTemplatesProvider implementation="io.flutter.template.FlutterLiveTemplatesProvider"/>
     <liveTemplateContext contextId="DART_TOPLEVEL" implementation="io.flutter.template.DartToplevelTemplateContextType"/>

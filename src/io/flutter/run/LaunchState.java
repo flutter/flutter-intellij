@@ -48,8 +48,8 @@ import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.actions.RestartFlutterApp;
 import io.flutter.dart.DartPlugin;
 import io.flutter.logging.PluginLogger;
-import io.flutter.run.bazel.BazelRunConfig;
 import io.flutter.run.common.RunMode;
+
 import io.flutter.run.daemon.DaemonConsoleView;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.run.daemon.FlutterApp;
@@ -132,16 +132,6 @@ public class LaunchState extends CommandLineState {
 
     final ExecutionResult result = setUpConsoleAndActions(app);
 
-    // For Bazel run configurations, where the console is not null, and we find the expected
-    // process handler type, print the command line command to the console.
-    if (runConfig instanceof BazelRunConfig &&
-        app.getConsole() != null &&
-        app.getProcessHandler() instanceof ColoredProcessHandler) {
-      final String commandLineString = ((ColoredProcessHandler)app.getProcessHandler()).getCommandLine().trim();
-      if (StringUtil.isNotEmpty(commandLineString)) {
-        app.getConsole().print(commandLineString + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
-      }
-    }
 
     device.bringToFront();
 
@@ -274,9 +264,9 @@ public class LaunchState extends CommandLineState {
     }
 
     // Choose source root containing the Dart application.
-    // TODO(skybrian) for bazel, we probably should pass in three source roots here (for bazel-bin, bazel-genfiles, etc).
     final VirtualFile pubspec = resolver.getPubspecYamlFile();
     final VirtualFile sourceRoot = pubspec != null ? pubspec.getParent() : workDir;
+
 
     return new FlutterPositionMapper(env.getProject(), sourceRoot, resolver, analyzer);
   }
@@ -329,8 +319,9 @@ public class LaunchState extends CommandLineState {
   /**
    * Starts the process and wraps it in a FlutterApp.
    * <p>
-   * The callback knows the appropriate command line arguments (bazel versus non-bazel).
+   * The callback knows the appropriate command line arguments.
    */
+
   public interface CreateAppCallback {
     FlutterApp createApp(@Nullable FlutterDevice device) throws ExecutionException;
   }
