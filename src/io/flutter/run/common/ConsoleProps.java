@@ -17,7 +17,6 @@ import com.intellij.execution.ui.ConsoleView;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.run.test.FlutterTestEventsConverter;
 import io.flutter.run.test.FlutterTestLocationProvider;
-
 import io.flutter.run.test.TestConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

@@ -32,7 +32,6 @@ public class FlutterIcons {
   public static final Icon HotRestart = load("/icons/hot-restart.png");
 
   public static final Icon CustomClass = load("/icons/custom/class.png");
-
   public static final Icon CustomClassAbstract = load("/icons/custom/class_abstract.png");
   public static final Icon CustomMethod = load("/icons/custom/method.png");
   public static final Icon CustomMethodAbstract = load("/icons/custom/method_abstract.png");

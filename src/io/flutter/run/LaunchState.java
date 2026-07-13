@@ -49,7 +49,6 @@ import io.flutter.actions.RestartFlutterApp;
 import io.flutter.dart.DartPlugin;
 import io.flutter.logging.PluginLogger;
 import io.flutter.run.common.RunMode;
-
 import io.flutter.run.daemon.DaemonConsoleView;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.run.daemon.FlutterApp;
@@ -267,7 +266,6 @@ public class LaunchState extends CommandLineState {
     final VirtualFile pubspec = resolver.getPubspecYamlFile();
     final VirtualFile sourceRoot = pubspec != null ? pubspec.getParent() : workDir;
 
-
     return new FlutterPositionMapper(env.getProject(), sourceRoot, resolver, analyzer);
   }
 
@@ -321,7 +319,6 @@ public class LaunchState extends CommandLineState {
    * <p>
    * The callback knows the appropriate command line arguments.
    */
-
   public interface CreateAppCallback {
     FlutterApp createApp(@Nullable FlutterDevice device) throws ExecutionException;
   }

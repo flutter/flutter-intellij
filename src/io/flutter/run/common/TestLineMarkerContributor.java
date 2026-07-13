@@ -68,24 +68,9 @@ public abstract class TestLineMarkerContributor extends RunLineMarkerContributor
             return new RunLineMarkerContributor.Info(icon, ExecutorAction.getActions(), tooltipProvider);
           }
         }
-        else if (dartId.getParent().getParent() instanceof DartFunctionDeclarationWithBodyOrNative) {
-          if (testConfigUtils instanceof TestConfigUtils) {
-            return null;
-          }
-          if ("main".equals(dartId.getText())) {
-
-            // There seems to be an intermittent timing issue that causes the first test call to not get marked.
-            // Priming the cache here solves it.
-            testConfigUtils.refreshOutline(element);
-            TestType testCall = TestType.MAIN;
-            final Icon icon = getTestStateIcon(element, testCall.getIcon());
-            final Function<PsiElement, String> tooltipProvider =
-              psiElement -> testCall.getTooltip(psiElement, testConfigUtils);
-            return new RunLineMarkerContributor.Info(icon, ExecutorAction.getActions(), tooltipProvider);
-          }
-        }
       }
     }
+
 
     return null;
   }

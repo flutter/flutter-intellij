@@ -27,7 +27,6 @@ import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.SdkAttachConfig;
 import io.flutter.run.SdkRunConfig;
 import io.flutter.sdk.FlutterSdk;
-
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
@@ -114,7 +113,6 @@ public class AttachDebuggerAction extends FlutterSdkAction {
         configuration = settings.getConfiguration();
         enabled = configuration instanceof SdkRunConfig;
       }
-
     }
     else {
       enabled = true;

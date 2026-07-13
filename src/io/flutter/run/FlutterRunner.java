@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
  */
 public class FlutterRunner extends LaunchState.Runner<SdkRunConfig> {
   public FlutterRunner() {
-
     super(SdkRunConfig.class);
   }
 

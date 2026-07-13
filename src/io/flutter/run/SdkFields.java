@@ -44,7 +44,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class SdkFields {
   private static final @NotNull Logger LOG = PluginLogger.createLogger(SdkFields.class);
-
   private @Nullable String filePath;
   private @Nullable String buildFlavor;
   private @Nullable String additionalArgs;
