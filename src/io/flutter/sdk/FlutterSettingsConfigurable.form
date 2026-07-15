@@ -128,6 +128,7 @@
             <properties>
               <text value="Show structured errors for Flutter framework issues"/>
             </properties>
+          </component>
           <component id="6cf1f" class="javax.swing.JCheckBox" binding="myIncludeAllStackTraces">
             <constraints>
               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="3" use-parent-layout="false"/>
