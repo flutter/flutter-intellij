@@ -8,7 +8,6 @@
 - Support for platform version 2025.1.
 - Bazel run and test configurations.
 
-
 ### Fixed
 
 ## 94.0.0
