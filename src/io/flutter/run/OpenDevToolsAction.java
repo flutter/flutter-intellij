@@ -5,7 +5,6 @@
  */
 package io.flutter.run;
 
-import com.intellij.execution.process.ProcessHandler;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -25,6 +24,7 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 import java.util.Objects;
 

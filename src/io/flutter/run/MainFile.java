@@ -104,6 +104,7 @@ public class MainFile {
     return new MainFile.Result(new MainFile(file, dir), null);
   }
 
+  @Nullable
   private static VirtualFile findAppDir(@Nullable VirtualFile file, @NotNull Project project) {
     for (VirtualFile candidate = file; inProject(candidate, project); candidate = candidate.getParent()) {
       if (isAppDir(candidate, project)) return candidate;
