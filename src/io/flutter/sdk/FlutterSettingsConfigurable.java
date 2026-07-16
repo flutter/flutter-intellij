@@ -38,8 +38,6 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterMessages;
-import io.flutter.bazel.Workspace;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.font.FontPreviewProcessor;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -75,10 +73,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myOrganizeImportsOnSaveCheckBox;
   private JCheckBox myShowStructuredErrors;
   private JCheckBox myIncludeAllStackTraces;
-  private JCheckBox myEnableBazelHotRestartCheckBox;
 
   private JCheckBox myEnableJcefBrowserCheckBox;
-
   private JCheckBox myShowBuildMethodGuides;
   private JCheckBox myShowClosingLabels;
   private FixedSizeButton myCopyButton;
@@ -89,10 +85,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private @NotNull JCheckBox myEnableFilePathLogging;
 
   private final @NotNull Project myProject;
-  private final WorkspaceCache workspaceCache;
 
   private boolean ignoringSdkChanges = false;
-
   private String fullVersionString;
   private FlutterSdkVersion previousSdkVersion;
 
@@ -104,7 +98,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   FlutterSettingsConfigurable(@NotNull Project project) {
     this.myProject = project;
-    workspaceCache = WorkspaceCache.getInstance(project);
     init();
     myVersionLabel.setText(" ");
   }
@@ -133,13 +126,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
         }
       }
     });
-    workspaceCache.subscribe(this::onVersionChanged);
     myFormatCodeOnSaveCheckBox.addChangeListener(
       (e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
     myShowStructuredErrors.addChangeListener(
       (e) -> myIncludeAllStackTraces.setEnabled(myShowStructuredErrors.isSelected()));
-
-    myEnableBazelHotRestartCheckBox.setVisible(WorkspaceCache.getInstance(myProject).isBazel());
   }
 
   private void createUIComponents() {
@@ -234,10 +224,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isEnableBazelHotRestart() != myEnableBazelHotRestartCheckBox.isSelected()) {
-      return true;
-    }
-
     if (settings.isAllowTestsInSourcesRoot() != myAllowTestsInSourcesRoot.isSelected()) {
       return true;
     }
@@ -255,36 +241,31 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Override
   public void apply() throws ConfigurationException {
-    // Bazel workspaces do not specify a sdk path so we do not need to update the sdk path if using
-    // a bazel workspace.
-    if (!workspaceCache.isBazel()) {
-      final String errorMessage = FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(getSdkPathText());
-      if (errorMessage != null) {
-        throw new ConfigurationException(errorMessage);
-      }
+    final String errorMessage = FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(getSdkPathText());
+    if (errorMessage != null) {
+      throw new ConfigurationException(errorMessage);
+    }
 
-      final String sdkHomePath = getSdkPathText();
-      if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
+    final String sdkHomePath = getSdkPathText();
+    if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
+      OpenApiUtils.safeRunWriteAction(() -> {
+        FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath);
+        FlutterSdkUtil.enableDartSdk(myProject);
 
-        OpenApiUtils.safeRunWriteAction(() -> {
-          FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath);
-          FlutterSdkUtil.enableDartSdk(myProject);
-
-          ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            final FlutterSdk sdk = FlutterSdk.forPath(sdkHomePath);
-            if (sdk != null) {
-              try {
-                lock.acquire();
-                sdk.queryFlutterChannel(false);
-                lock.release();
-              }
-              catch (InterruptedException e) {
-                // do nothing
-              }
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+          final FlutterSdk sdk = FlutterSdk.forPath(sdkHomePath);
+          if (sdk != null) {
+            try {
+              lock.acquire();
+              sdk.queryFlutterChannel(false);
+              lock.release();
             }
-          });
+            catch (InterruptedException e) {
+              // do nothing
+            }
+          }
         });
-      }
+      });
     }
 
     final FlutterSettings settings = FlutterSettings.getInstance();
@@ -300,7 +281,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setPerserveLogsDuringHotReloadAndRestart(myEnableLogsPreserveAfterHotReloadOrRestart.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
-    settings.setEnableBazelHotRestart(myEnableBazelHotRestartCheckBox.isSelected());
     settings.setAllowTestsInSourcesRoot(myAllowTestsInSourcesRoot.isSelected());
     settings.setFontPackages(myFontPackagesTextArea.getText());
     settings.setEnableJcefBrowser(myEnableJcefBrowserCheckBox.isSelected());
@@ -355,7 +335,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myOrganizeImportsOnSaveCheckBox.setSelected(settings.isOrganizeImportsOnSave());
 
     myShowBuildMethodGuides.setSelected(settings.isShowBuildMethodGuides());
-
     myShowClosingLabels.setSelected(settings.isShowClosingLabels());
 
     myShowStructuredErrors.setSelected(settings.isShowStructuredErrors());
@@ -364,9 +343,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myEnableLogsPreserveAfterHotReloadOrRestart.setSelected(settings.isPerserveLogsDuringHotReloadAndRestart());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
 
-    myEnableBazelHotRestartCheckBox.setSelected(settings.isEnableBazelHotRestart());
     myAllowTestsInSourcesRoot.setSelected(settings.isAllowTestsInSourcesRoot());
-
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
     myIncludeAllStackTraces.setEnabled(myShowStructuredErrors.isSelected());
 
@@ -376,21 +353,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   }
 
   private void onVersionChanged() {
-    final Workspace workspace = workspaceCache.get();
-    if (workspaceCache.isBazel()) {
-      if (mySdkCombo.isEnabled()) {
-        // The workspace is not null if workspaceCache.isBazel() is true.
-        assert (workspace != null);
-
-        mySdkCombo.setEnabled(false);
-        mySdkCombo.getEditor()
-          .setItem(workspace.getRoot().getPath() + '/' + workspace.getSdkHome() + " <set by bazel project>");
-      }
-    }
-    else {
-      mySdkCombo.setEnabled(true);
-    }
-
+    mySdkCombo.setEnabled(true);
     final FlutterSdk sdk = FlutterSdk.forPath(getSdkPathText());
     if (sdk == null) {
       // Clear the label out with a non-empty string, so that the layout doesn't give this element 0 height.
