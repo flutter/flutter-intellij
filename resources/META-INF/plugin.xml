@@ -286,10 +286,9 @@
     <projectService serviceImplementation="io.flutter.run.daemon.DeviceService"/>
     <projectService serviceImplementation="io.flutter.run.daemon.DevToolsService"/>
     <projectService serviceImplementation="io.flutter.dart.FlutterDartAnalysisServer"/>
-    <projectService serviceImplementation="io.flutter.bazel.WorkspaceCache"/>
     <projectService serviceImplementation="io.flutter.pub.PubRootCache"/>
-
     <backgroundPostStartupActivity implementation="io.flutter.sdk.FlutterProjectActivity"/>
+
     <backgroundPostStartupActivity id="FontPreviewStartupActivity"
                                    implementation="io.flutter.font.FontPreviewStartupActivity"
                                    order="last"/>
@@ -302,7 +301,6 @@
     <runConfigurationProducer implementation="io.flutter.run.test.FlutterTestConfigProducer"/>
     <programRunner implementation="io.flutter.run.test.FlutterTestRunner"/>
     <runLineMarkerContributor language="Dart" implementationClass="io.flutter.run.test.FlutterTestLineMarkerContributor"/>
-
 
     <defaultLiveTemplatesProvider implementation="io.flutter.template.FlutterLiveTemplatesProvider"/>
     <liveTemplateContext contextId="DART_TOPLEVEL" implementation="io.flutter.template.DartToplevelTemplateContextType"/>
