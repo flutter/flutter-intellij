@@ -381,6 +381,13 @@ public class FlutterReloadManager {
       LOG.error("Could not find notification group for toolWindowId: " + DartProblemsView.TOOLWINDOW_ID);
       return;
     }
+
+    // Expire the previous notification before posting a new one to prevent accumulation
+    // in the IDE Notifications timeline. See: https://github.com/flutter/flutter-intellij/issues/8914
+    if (lastNotification != null && !isError) {
+      lastNotification.expire();
+    }
+
     final Notification notification = notificationGroup.createNotification(
       title, content, isError ? NotificationType.ERROR : NotificationType.INFORMATION);
 
@@ -415,6 +422,13 @@ public class FlutterReloadManager {
       return null;
     }
 
+    // Expire the previous transient notification (e.g. "Reloading…") before posting a new one,
+    // so that hot reload/restart events do not accumulate in the IDE Notifications timeline and
+    // obscure genuinely important alerts. See: https://github.com/flutter/flutter-intellij/issues/8914
+    if (lastNotification != null && !isError) {
+      lastNotification.expire();
+    }
+
     final Notification notification =
       notificationGroup.createNotification(content, isError ? NotificationType.ERROR : NotificationType.INFORMATION);
     notification.setIcon(FlutterIcons.Flutter);
@@ -430,7 +444,10 @@ public class FlutterReloadManager {
   }
 
   private void clearLastNotification() {
-    lastNotification = null;
+    if (lastNotification != null) {
+      lastNotification.expire();
+      lastNotification = null;
+    }
   }
 
   private void removeRunNotifications(FlutterApp app) {
