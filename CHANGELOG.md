@@ -4,6 +4,8 @@
 
 ### Changed
 
+- Scrolling the first of multiple errors to the top of the run console and holding that position, instead of auto-scrolling to the bottom. (#9008)
+
 ### Removed
 - Support for platform version 2025.1.
 - Bazel run and test configurations.
