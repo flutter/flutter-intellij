@@ -12,6 +12,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
@@ -26,6 +27,8 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -99,7 +102,13 @@ public class FlutterSurveyNotifications {
         properties.setValue(survey.uniqueId, true);
         notification.expire();
 
-        StringBuilder stringBuilder = new StringBuilder(survey.urlPrefix + "?Source=IntelliJ");
+        final ApplicationInfo applicationInfo = ApplicationInfo.getInstance();
+        String rawIdeName = applicationInfo != null ? applicationInfo.getVersionName() : "IntelliJ - Unknown";
+        if (rawIdeName == null) {
+          rawIdeName = "IntelliJ - Unknown";
+        }
+        final String ideName = URLEncoder.encode(rawIdeName, StandardCharsets.UTF_8);
+        StringBuilder stringBuilder = new StringBuilder(survey.urlPrefix + "?Source=" + ideName);
 
         final DartSdk dartSdk = DartSdk.getDartSdk(myProject);
         if (dartSdk != null) {

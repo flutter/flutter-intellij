@@ -53,6 +53,7 @@
     <group id="Flutter.MainToolbarActions">
       <!--suppress PluginXmlCapitalization -->
       <action id="Flutter.DeviceSelector" class="io.flutter.actions.DeviceSelectorAction"
+              text="Flutter Device Selection"
               description="Flutter Device Selection"
               icon="FlutterIcons.Mobile"/>
       <action id="Flutter.DeviceSelectorRefresher" class="io.flutter.actions.DeviceSelectorRefresherAction"
@@ -66,13 +67,17 @@
     <group id="Flutter.MainToolbarActionsLegacy">
       <!--suppress PluginXmlCapitalization -->
       <action id="Flutter.DeviceSelectorLegacy" class="io.flutter.actions.DeviceSelectorAction"
-              description="Flutter Device Selection"
+              text="Flutter Device Selection (Legacy)"
+              description="Flutter Device Selection (Legacy)"
               icon="FlutterIcons.Mobile"/>
       <action id="Flutter.DeviceSelectorRefresherLegacy" class="io.flutter.actions.DeviceSelectorRefresherAction"
               text="Refresh Device List"
               description="Refresh device list" />
       <add-to-group anchor="before" group-id="ToolbarRunGroup" relative-to-action="RunConfiguration"/>
     </group>
+
+    <!-- Allows dependent plugins to contribute inline actions to Flutter run/debug content toolbars. -->
+    <group id="Flutter.DebugProcess.TopToolbar" popup="false"/>
 
     <!--suppress PluginXmlCapitalization -->
     <group id="FlutterToolsActionGroup" class="io.flutter.actions.FlutterToolsActionGroup" popup="true"
@@ -163,11 +168,19 @@
         <!--suppress PluginXmlCapitalization -->
         <action id="flutter.build.aab" text="Build App Bundle" description="Building a Flutter app for Google Play Store distribution"
                 class="io.flutter.actions.FlutterBuildActionGroup$AppBundle"/>
+        <action id="flutter.build.bundle" text="Build Assets Bundle" description="Building the Flutter assets directory"
+                class="io.flutter.actions.FlutterBuildActionGroup$Bundle"/>
         <!--suppress PluginXmlCapitalization -->
         <action id="flutter.build.ios" text="Build iOS" description="Building a Flutter app for Apple App Store distribution"
                 class="io.flutter.actions.FlutterBuildActionGroup$Ios"/>
+        <action id="flutter.build.linux" text="Build Linux" description="Building a Flutter app for Linux"
+                class="io.flutter.actions.FlutterBuildActionGroup$Linux"/>
+        <action id="flutter.build.macos" text="Build macOS" description="Building a Flutter app for macOS"
+                class="io.flutter.actions.FlutterBuildActionGroup$Macos"/>
         <action id="flutter.build.web" text="Build Web" description="Building a Flutter app for web"
                 class="io.flutter.actions.FlutterBuildActionGroup$Web"/>
+        <action id="flutter.build.windows" text="Build Windows" description="Building a Flutter app for Windows"
+                class="io.flutter.actions.FlutterBuildActionGroup$Windows"/>
       </group>
       <add-to-group group-id="BuildMenu" anchor="first"/>
     </group>
@@ -273,10 +286,9 @@
     <projectService serviceImplementation="io.flutter.run.daemon.DeviceService"/>
     <projectService serviceImplementation="io.flutter.run.daemon.DevToolsService"/>
     <projectService serviceImplementation="io.flutter.dart.FlutterDartAnalysisServer"/>
-    <projectService serviceImplementation="io.flutter.bazel.WorkspaceCache"/>
     <projectService serviceImplementation="io.flutter.pub.PubRootCache"/>
-
     <backgroundPostStartupActivity implementation="io.flutter.sdk.FlutterProjectActivity"/>
+
     <backgroundPostStartupActivity id="FontPreviewStartupActivity"
                                    implementation="io.flutter.font.FontPreviewStartupActivity"
                                    order="last"/>
@@ -289,15 +301,6 @@
     <runConfigurationProducer implementation="io.flutter.run.test.FlutterTestConfigProducer"/>
     <programRunner implementation="io.flutter.run.test.FlutterTestRunner"/>
     <runLineMarkerContributor language="Dart" implementationClass="io.flutter.run.test.FlutterTestLineMarkerContributor"/>
-
-    <configurationType implementation="io.flutter.run.bazel.FlutterBazelRunConfigurationType"/>
-    <programRunner implementation="io.flutter.run.bazel.BazelRunner"/>
-
-    <configurationType implementation="io.flutter.run.bazelTest.FlutterBazelTestConfigurationType"/>
-    <runConfigurationProducer implementation="io.flutter.run.bazelTest.BazelTestConfigProducer"/>
-    <runConfigurationProducer implementation="io.flutter.run.bazelTest.BazelWatchTestConfigProducer"/>
-    <programRunner implementation="io.flutter.run.bazelTest.BazelTestRunner"/>
-    <runLineMarkerContributor language="Dart" implementationClass="io.flutter.run.bazelTest.FlutterBazelTestLineMarkerContributor"/>
 
     <defaultLiveTemplatesProvider implementation="io.flutter.template.FlutterLiveTemplatesProvider"/>
     <liveTemplateContext contextId="DART_TOPLEVEL" implementation="io.flutter.template.DartToplevelTemplateContextType"/>

@@ -393,7 +393,7 @@ abstract class ProductCommand extends Command<int> {
       'releases',
       subDir,
       spec.version,
-      'flutter-intellij.zip',
+      'Flutter.zip',
     );
     return filePath;
   }

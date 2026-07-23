@@ -44,9 +44,10 @@ import com.jetbrains.lang.dart.ide.runner.DartExecutionHelper;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
+import io.flutter.actions.ReloadFlutterApp;
+import io.flutter.actions.RestartFlutterApp;
 import io.flutter.dart.DartPlugin;
 import io.flutter.logging.PluginLogger;
-import io.flutter.run.bazel.BazelRunConfig;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.DaemonConsoleView;
 import io.flutter.run.daemon.DeviceService;
@@ -130,16 +131,6 @@ public class LaunchState extends CommandLineState {
 
     final ExecutionResult result = setUpConsoleAndActions(app);
 
-    // For Bazel run configurations, where the console is not null, and we find the expected
-    // process handler type, print the command line command to the console.
-    if (runConfig instanceof BazelRunConfig &&
-        app.getConsole() != null &&
-        app.getProcessHandler() instanceof ColoredProcessHandler) {
-      final String commandLineString = ((ColoredProcessHandler)app.getProcessHandler()).getCommandLine().trim();
-      if (StringUtil.isNotEmpty(commandLineString)) {
-        app.getConsole().print(commandLineString + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
-      }
-    }
 
     device.bringToFront();
 
@@ -156,20 +147,13 @@ public class LaunchState extends CommandLineState {
       }
     }
 
+    final String nameWithDeviceName = device.withRunConfigurationName(env.getRunProfile().getName());
     final FlutterLaunchMode launchMode = FlutterLaunchMode.fromEnv(env);
-    final RunContentDescriptor descriptor;
-    if (launchMode.supportsDebugConnection()) {
-      ToolWindowBadgeUpdater.updateBadgedIcon(app, project);
-      descriptor = createDebugSession(env, app, result);
-    }
-    else {
-      descriptor = new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
-    }
+    final RunContentDescriptor descriptor = getRunContentDescriptor(env, app, result, nameWithDeviceName, launchMode, project);
 
     // Add the device name for the run descriptor.
     // The descriptor shows the run configuration name (e.g., `main.dart`) by default;
     // adding the device name will help users identify the instance when trying to operate a specific one.
-    final String nameWithDeviceName = descriptor.getDisplayName() + " (" + device.deviceName() + ")";
     final BiConsumer<RunContentDescriptor, String> setter = getDisplaySetter();
     if (setter != null) {
       setter.accept(descriptor, nameWithDeviceName);
@@ -179,6 +163,29 @@ public class LaunchState extends CommandLineState {
     }
 
     return descriptor;
+  }
+
+  private @Nullable RunContentDescriptor getRunContentDescriptor(
+      @NotNull ExecutionEnvironment env,
+      @NotNull FlutterApp app,
+      @NotNull ExecutionResult result,
+      @NotNull String nameWithDeviceName,
+      @NotNull FlutterLaunchMode launchMode,
+      @NotNull Project project) throws ExecutionException {
+    if (launchMode.supportsDebugConnection()) {
+      ToolWindowBadgeUpdater.updateBadgedIcon(app, project);
+
+      // We must always create a debug session here (even in Run mode) because the debug connection
+      // is what connects to the Dart VM Service and powers background Hot Reload / Hot Restart.
+      final RunContentDescriptor debugDescriptor = createDebugSession(env, app, result, nameWithDeviceName);
+
+      if (app.getMode() == RunMode.RUN) {
+        // In Run mode, we discard the debug descriptor UI and instead render a standard Run console tab.
+        return new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
+      }
+      return debugDescriptor;
+    }
+    return new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
   }
 
   /**
@@ -226,7 +233,8 @@ public class LaunchState extends CommandLineState {
   @NotNull
   protected RunContentDescriptor createDebugSession(@NotNull final ExecutionEnvironment env,
                                                    @NotNull final FlutterApp app,
-                                                   @NotNull final ExecutionResult executionResult)
+                                                   @NotNull final ExecutionResult executionResult,
+                                                   @NotNull final String sessionName)
     throws ExecutionException {
 
     final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), sourceLocation);
@@ -239,7 +247,7 @@ public class LaunchState extends CommandLineState {
       public XDebugProcess start(@NotNull final XDebugSession session) {
         return new FlutterDebugProcess(app, env, session, executionResult, resolver, mapper);
       }
-    }, app.getMode() != RunMode.DEBUG);
+    }, sessionName, app.getMode() != RunMode.DEBUG);
   }
 
   @NotNull
@@ -255,7 +263,6 @@ public class LaunchState extends CommandLineState {
     }
 
     // Choose source root containing the Dart application.
-    // TODO(skybrian) for bazel, we probably should pass in three source roots here (for bazel-bin, bazel-genfiles, etc).
     final VirtualFile pubspec = resolver.getPubspecYamlFile();
     final VirtualFile sourceRoot = pubspec != null ? pubspec.getParent() : workDir;
 
@@ -280,6 +287,16 @@ public class LaunchState extends CommandLineState {
     actions.add(new Separator());
     actions.add(new OpenDevToolsAction(app, observatoryAvailable));
 
+    if (app.getMode() == RunMode.RUN && app.getLaunchMode().supportsReload()) {
+      final Computable<Boolean> isSessionActive = () -> app.isStarted() &&
+                                                         app.getFlutterDebugProcess() != null &&
+                                                         app.getFlutterDebugProcess().getVmConnected() &&
+                                                         !app.getProcessHandler().isProcessTerminated();
+      final Computable<Boolean> canReload = () -> isSessionActive.compute() && !app.isReloading();
+      actions.add(new ReloadFlutterApp(app, canReload));
+      actions.add(new RestartFlutterApp(app, canReload));
+    }
+
     return new DefaultExecutionResult(console, app.getProcessHandler(), actions.toArray(new AnAction[0]));
   }
 
@@ -300,7 +317,7 @@ public class LaunchState extends CommandLineState {
   /**
    * Starts the process and wraps it in a FlutterApp.
    * <p>
-   * The callback knows the appropriate command line arguments (bazel versus non-bazel).
+   * The callback knows the appropriate command line arguments.
    */
   public interface CreateAppCallback {
     FlutterApp createApp(@Nullable FlutterDevice device) throws ExecutionException;

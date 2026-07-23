@@ -18,6 +18,7 @@ import com.intellij.util.xmlb.annotations.OptionTag;
 import com.intellij.util.xmlb.annotations.XMap;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
+import com.jetbrains.lang.dart.analytics.Analytics;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
@@ -39,7 +40,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Fields used when launching an app using the Flutter SDK (non-bazel).
+ * Fields used when launching an app using the Flutter SDK.
  */
 public class SdkFields {
   private static final @NotNull Logger LOG = PluginLogger.createLogger(SdkFields.class);

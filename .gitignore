@@ -21,6 +21,7 @@
 .vscode/
 .sandbox/
 artifacts/
+/bin/
 build/
 flutter-gui-tests/.gradle/
 flutter-gui-tests/guitest.log

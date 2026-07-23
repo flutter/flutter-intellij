@@ -27,12 +27,9 @@ public class FlutterSettings {
   private static final String showStructuredErrorsKey = "io.flutter.showStructuredErrors";
   private static final String includeAllStackTracesKey = "io.flutter.includeAllStackTraces";
   private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
-  private static final String enableBazelHotRestartKey = "io.flutter.editor.enableBazelHotRestart";
-  private static final String showBazelHotRestartWarningKey = "io.flutter.showBazelHotRestartWarning";
   private static final String enableJcefBrowserKey = "io.flutter.enableJcefBrowser";
   private static final String fontPackagesKey = "io.flutter.fontPackages";
   private static final String allowTestsInSourcesRootKey = "io.flutter.allowTestsInSources";
-  private static final String showBazelIosRunNotificationKey = "io.flutter.hideBazelIosRunNotification";
   private static final String sdkVersionOutdatedWarningAcknowledgedKey = "io.flutter.sdkVersionOutdatedWarningAcknowledged";
   private static final String androidStudioBotAcknowledgedKey = "io.flutter.androidStudioBotAcknowledgedKey";
   private static final String enableFilePathLoggingKey = "io.flutter.enableFilePathLogging";
@@ -194,24 +191,6 @@ public class FlutterSettings {
     dispatcher.getMulticaster().settingsChanged();
   }
 
-  public boolean isEnableBazelHotRestart() {
-    return getPropertiesComponent().getBoolean(enableBazelHotRestartKey, false);
-  }
-
-  public void setEnableBazelHotRestart(boolean value) {
-    getPropertiesComponent().setValue(enableBazelHotRestartKey, value, false);
-    fireEvent();
-  }
-
-  public boolean isShowBazelHotRestartWarning() {
-    return getPropertiesComponent().getBoolean(showBazelHotRestartWarningKey, true);
-  }
-
-  public void setShowBazelHotRestartWarning(boolean value) {
-    getPropertiesComponent().setValue(showBazelHotRestartWarningKey, value, true);
-    fireEvent();
-  }
-
   public boolean isAllowTestsInSourcesRoot() {
     return getPropertiesComponent().getBoolean(allowTestsInSourcesRootKey, false);
   }
@@ -221,14 +200,7 @@ public class FlutterSettings {
     fireEvent();
   }
 
-  public boolean isShowBazelIosRunNotification() {
-    return getPropertiesComponent().getBoolean(showBazelIosRunNotificationKey, true);
-  }
 
-  public void setShowBazelIosRunNotification(boolean value) {
-    getPropertiesComponent().setValue(showBazelIosRunNotificationKey, value, true);
-    fireEvent();
-  }
 
   /**
    * See {FlutterSdkVersion#MIN_SDK_SUPPORTED}.

@@ -7,8 +7,6 @@ package io.flutter.run;
 
 import com.google.common.collect.ImmutableMap;
 import com.intellij.concurrency.JobScheduler;
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.ide.actions.SaveAllAction;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationGroup;
@@ -33,7 +31,6 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.util.SystemInfo;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowId;
@@ -52,20 +49,16 @@ import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterAppAction;
 import io.flutter.actions.ProjectActions;
 import io.flutter.actions.ReloadFlutterApp;
-import io.flutter.bazel.Workspace;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.logging.PluginLogger;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
-import io.flutter.utils.MostlySilentColoredProcessHandler;
 import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -262,10 +255,6 @@ public class FlutterReloadManager {
     final FlutterApp.State previousAppState = app.transitionStartingHotReload();
 
     JobScheduler.getScheduler().schedule(() -> {
-      if (WorkspaceCache.getInstance(myProject).isBazel()) {
-        syncFiles();
-      }
-
       clearLastNotification();
 
       if (!app.isConnected()) {
@@ -307,27 +296,6 @@ public class FlutterReloadManager {
         }
       });
     }, 0, TimeUnit.MILLISECONDS);
-  }
-
-  private void syncFiles() {
-    final Workspace workspace = WorkspaceCache.getInstance(myProject).get();
-    assert workspace != null;
-
-    final String script = workspace.getRoot().getPath() + "/" + workspace.getSyncScript();
-    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workspace.getRoot().getPath());
-    commandLine.setCharset(StandardCharsets.UTF_8);
-    commandLine.setExePath(FileUtil.toSystemDependentName(script));
-
-    try {
-      final MostlySilentColoredProcessHandler handler = new MostlySilentColoredProcessHandler(commandLine);
-      handler.startNotify();
-      if (!handler.getProcess().waitFor(10, TimeUnit.SECONDS)) {
-        LOG.error("Syncing files timed out");
-      }
-    }
-    catch (ExecutionException | InterruptedException e) {
-      FlutterUtils.error(LOG, "Unable to sync files", e, true);
-    }
   }
 
   private void reloadApp(@NotNull FlutterApp app, @NotNull String reason) {

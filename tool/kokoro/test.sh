@@ -6,6 +6,6 @@ setup
 (cd testData/sample_tests; echo "dart pub get `pwd`"; dart pub get --no-precompile)
 
 echo "kokoro test start"
-./gradlew test
+run_gradle_with_retry --max-retries 0 test
 
 echo "kokoro test finished"

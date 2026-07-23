@@ -6,7 +6,6 @@
 package io.flutter.deeplinks;
 
 import com.intellij.openapi.project.Project;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.devtools.AbstractDevToolsViewFactory;
 import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.devtools.DevToolsUrl;
@@ -47,7 +46,6 @@ public class DeepLinksViewFactory extends AbstractDevToolsViewFactory {
       .setPage(DEVTOOLS_PAGE_ID)
       .setEmbed(true)
       .setFlutterSdkVersion(flutterSdkVersion)
-      .setWorkspaceCache(WorkspaceCache.getInstance(project))
       .setIdeFeature(DevToolsIdeFeature.TOOL_WINDOW)
       .build();
   }
