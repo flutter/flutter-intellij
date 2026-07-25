@@ -11,6 +11,7 @@ import com.intellij.execution.process.KillableProcessHandler
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.io.BaseOutputReader
 import org.dartlang.vm.service.VmService
 import org.dartlang.vm.service.consumer.SuccessConsumer
@@ -109,7 +110,7 @@ class VmServiceTest {
     val testFile = fixtureRoot.resolve("test").resolve("vm_service_test.dart")
     assertTrue(Files.isRegularFile(testFile), "Missing Flutter test fixture: $testFile")
 
-    val isWindows = System.getProperty("os.name").startsWith("Windows", ignoreCase = true)
+    val isWindows = SystemInfo.isWindows
     val flutterExecutable = Path.of(flutterSdkHome, "bin", if (isWindows) "flutter.bat" else "flutter")
     assertTrue(Files.isRegularFile(flutterExecutable), "Missing Flutter executable: $flutterExecutable")
 
@@ -158,15 +159,12 @@ class VmServiceTest {
   }
 
   private fun findFlutterSdkHome(): String {
-    var sdkHome: String? = System.getProperty("flutter.sdk")
-    if (sdkHome.isNullOrBlank()) {
-      sdkHome = System.getenv("FLUTTER_ROOT")
-    }
-    if (sdkHome.isNullOrBlank()) {
-      sdkHome = System.getenv("FLUTTER_SDK")
-    }
+    val sdkHome = System.getProperty("flutter.sdk")?.takeIf { it.isNotBlank() }
+      ?: System.getenv("FLUTTER_ROOT")?.takeIf { it.isNotBlank() }
+      ?: System.getenv("FLUTTER_SDK")?.takeIf { it.isNotBlank() }
+
     assumeTrue(
-      !sdkHome.isNullOrBlank(),
+      sdkHome != null,
       "A real Flutter SDK is required; set -Dflutter.sdk=<path>, FLUTTER_ROOT, or FLUTTER_SDK",
     )
     return requireNotNull(sdkHome)
