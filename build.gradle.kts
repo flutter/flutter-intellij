@@ -358,15 +358,13 @@ tasks.withType<VerifyPluginTask> {
   }
 }
 
-tasks {
-  register<Test>("integration") {
-    description = "Runs only the UI integration tests that start the IDE"
+intellijPlatformTesting.testIde.register("integration") {
+  task {
+    description = "Runs integration tests"
     group = "verification"
     testClassesDirs = sourceSets["integration"].output.classesDirs
-    classpath = sourceSets["integration"].runtimeClasspath
-    useJUnitPlatform {
-      includeTags("ui")
-    }
+    classpath += sourceSets["integration"].runtimeClasspath
+    useJUnitPlatform()
 
     // UI tests should run sequentially (not in parallel) to avoid conflicts
     maxParallelForks = 1
@@ -375,17 +373,7 @@ tasks {
     minHeapSize = "1g"
     maxHeapSize = "4g"
 
-    systemProperty("path.to.build.plugin", buildPlugin.get().archiveFile.get().asFile.absolutePath)
-    systemProperty("idea.home.path", providers.provider {
-      try {
-        prepareTestSandbox.get().destinationDir.parentFile.absolutePath
-      } catch (e: Exception) {
-        throw GradleException(
-          "Failed to resolve Android Studio/ IDEA path. This is likely due to a network issue blocking the download URL. Please check your internet connection or VPN.",
-          e
-        )
-      }
-    })
+    systemProperty("path.to.build.plugin", project.tasks.buildPlugin.get().archiveFile.get().asFile.absolutePath)
     systemProperty(
       "allure.results.directory", project.layout.buildDirectory.get().asFile.absolutePath + "/allure-results"
     )
@@ -401,7 +389,7 @@ tasks {
       )
     }
 
-    dependsOn(buildPlugin)
+    dependsOn(project.tasks.buildPlugin)
   }
 }
 
