@@ -5,6 +5,8 @@
  */
 package io.flutter.sdk;
 
+import com.intellij.execution.process.CapturingProcessAdapter;
+import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
@@ -254,7 +256,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
             try {
               sdk.queryFlutterChannel(false);
             }
-            catch (Throwable ignored) {
+            catch (Exception ignored) {
               // ignore exceptions during channel query
             }
           }
@@ -363,23 +365,28 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final ModalityState modalityState = ModalityState.current();
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       // "flutter --version" can take a long time on a slow network.
-      final Process[] processHolder = new Process[1];
-      processHolder[0] = sdk.flutterVersion().start((ProcessOutput output) -> {
-        fullVersionString = output.getStdout();
-        final String[] lines = StringUtil.splitByLines(fullVersionString);
-        final String singleLineVersion = lines.length > 0 ? lines[0] : "";
-
-        OpenApiUtils.safeInvokeLater(() -> {
-          if (processHolder[0] != null) {
-            activeVersionProcess.compareAndSet(processHolder[0], null);
-          }
-          updateVersionTextIfCurrent(sdk, singleLineVersion);
-        }, modalityState);
-      }, null);
-
-      if (processHolder[0] != null) {
-        activeVersionProcess.set(processHolder[0]);
+      final Process process = sdk.flutterVersion().start();
+      if (process == null) {
+        return;
       }
+      activeVersionProcess.set(process);
+
+      final ColoredProcessHandler handler = new ColoredProcessHandler(process, null);
+      final CapturingProcessAdapter listener = new CapturingProcessAdapter();
+      handler.addProcessListener(listener);
+      handler.startNotify();
+      handler.waitFor();
+
+      final ProcessOutput output = listener.getOutput();
+      final String stdout = output.getStdout();
+      final String[] lines = StringUtil.splitByLines(stdout);
+      final String singleLineVersion = lines.length > 0 ? lines[0] : "";
+
+      OpenApiUtils.safeInvokeLater(() -> {
+        activeVersionProcess.compareAndSet(process, null);
+        fullVersionString = stdout;
+        updateVersionTextIfCurrent(sdk, singleLineVersion);
+      }, modalityState);
     });
   }
 
