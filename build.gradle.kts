@@ -321,8 +321,6 @@ intellijPlatform {
     )
     verificationReportsFormats = VerifyPluginTask.VerificationReportsFormats.ALL
     subsystemsToCheck = VerifyPluginTask.Subsystems.ALL
-    ignoredProblemsFile.set(project.file("verify-ignore-problems.txt"))
-
     ides {
       // `singleIdeVersion` is only intended for use by GitHub actions to enable deleting instances of IDEs after testing.
       if (singleIdeVersionProvider.isPresent) {

@@ -29,7 +29,6 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.messages.MessageBusConnection;
-import de.roderick.weberknecht.WebSocketException;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.dart.DtdUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
@@ -313,7 +312,9 @@ public class FlutterInitializer extends FlutterProjectActivity {
               }
             });
           }
-          catch (WebSocketException e) {
+          // The Dart plugin changed its checked WebSocket exception type when it replaced
+          // Weberknecht. Catching the common base type keeps this call compatible with both APIs.
+          catch (Exception e) {
             log().error("Unable to send theme changed event", e);
           }
         })
