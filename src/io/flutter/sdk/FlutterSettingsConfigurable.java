@@ -5,6 +5,8 @@
  */
 package io.flutter.sdk;
 
+import com.intellij.execution.process.CapturingProcessAdapter;
+import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
@@ -54,7 +56,7 @@ import javax.swing.text.JTextComponent;
 import java.awt.datatransfer.StringSelection;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicReference;
 
 // Note: when updating the settings here, update FlutterSearchableOptionContributor as well.
 
@@ -90,11 +92,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private String fullVersionString;
   private FlutterSdkVersion previousSdkVersion;
 
-  /**
-   * Semaphore used to synchronize flutter commands so we don't try to do two at once.
-   */
-  private final Semaphore lock = new Semaphore(1, true);
-  private Process updater;
+  private final AtomicReference<Process> activeVersionProcess = new AtomicReference<>();
 
   FlutterSettingsConfigurable(@NotNull Project project) {
     this.myProject = project;
@@ -256,12 +254,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
           final FlutterSdk sdk = FlutterSdk.forPath(sdkHomePath);
           if (sdk != null) {
             try {
-              lock.acquire();
               sdk.queryFlutterChannel(false);
-              lock.release();
             }
-            catch (InterruptedException e) {
-              // do nothing
+            catch (Exception ignored) {
+              // ignore exceptions during channel query
             }
           }
         });
@@ -311,16 +307,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       if (previousSdkVersion != null) {
         if (previousSdkVersion.compareTo(sdk.getVersion()) != 0) {
           final List<PubRoot> roots = PubRoots.forProject(myProject);
-          try {
-            lock.acquire();
+          ApplicationManager.getApplication().executeOnPooledThread(() -> {
             for (PubRoot root : roots) {
               sdk.startPubGet(root, myProject);
             }
-            lock.release();
-          }
-          catch (InterruptedException e) {
-            // do nothing
-          }
+          });
           previousSdkVersion = sdk.getVersion();
         }
       }
@@ -352,8 +343,17 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myEnableFilePathLogging.setSelected(settings.isFilePathLoggingEnabled());
   }
 
+  private void cancelActiveVersionProcess() {
+    final Process previous = activeVersionProcess.getAndSet(null);
+    if (previous != null && previous.isAlive()) {
+      previous.destroy();
+    }
+  }
+
   private void onVersionChanged() {
     mySdkCombo.setEnabled(true);
+    cancelActiveVersionProcess();
+
     final FlutterSdk sdk = FlutterSdk.forPath(getSdkPathText());
     if (sdk == null) {
       // Clear the label out with a non-empty string, so that the layout doesn't give this element 0 height.
@@ -362,40 +362,37 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return;
     }
 
-    // Moved launching the version updater to a background thread to avoid deadlock
-    // when the semaphone was locked for a long time on the EDT.
     final ModalityState modalityState = ModalityState.current();
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      try {
-        if (updater != null) {
-          // If we get back here before the previous one finished then just kill it.
-          // This isn't perfect, but does help avoid printing this message most times:
-          // Waiting for another flutter command to release the startup lock...
-          updater.destroy();
-          lock.release();
-        }
-        Thread.sleep(100L);
-        lock.acquire();
-
-        OpenApiUtils.safeInvokeLater(() -> {
-          // "flutter --version" can take a long time on a slow network.
-          updater = sdk.flutterVersion().start((ProcessOutput output) -> {
-            fullVersionString = output.getStdout();
-            final String[] lines = StringUtil.splitByLines(fullVersionString);
-            final String singleLineVersion = lines.length > 0 ? lines[0] : "";
-
-            OpenApiUtils.safeInvokeLater(() -> {
-              updater = null;
-              lock.release();
-              updateVersionTextIfCurrent(sdk, singleLineVersion);
-            }, modalityState);
-          }, null);
-        }, modalityState);
+      // "flutter --version" can take a long time on a slow network.
+      final Process process = sdk.flutterVersion().start();
+      if (process == null) {
+        return;
       }
-      catch (InterruptedException e) {
-        // do nothing
-      }
+      activeVersionProcess.set(process);
+
+      final ColoredProcessHandler handler = new ColoredProcessHandler(process, null);
+      final CapturingProcessAdapter listener = new CapturingProcessAdapter();
+      handler.addProcessListener(listener);
+      handler.startNotify();
+      handler.waitFor();
+
+      final ProcessOutput output = listener.getOutput();
+      final String stdout = output.getStdout();
+      final String[] lines = StringUtil.splitByLines(stdout);
+      final String singleLineVersion = lines.length > 0 ? lines[0] : "";
+
+      OpenApiUtils.safeInvokeLater(() -> {
+        activeVersionProcess.compareAndSet(process, null);
+        fullVersionString = stdout;
+        updateVersionTextIfCurrent(sdk, singleLineVersion);
+      }, modalityState);
     });
+  }
+
+  @Override
+  public void disposeUIResources() {
+    cancelActiveVersionProcess();
   }
 
   /***
