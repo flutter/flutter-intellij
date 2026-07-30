@@ -17,15 +17,15 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import de.roderick.weberknecht.WebSocket;
-import de.roderick.weberknecht.WebSocketEventHandler;
-import de.roderick.weberknecht.WebSocketException;
-import de.roderick.weberknecht.WebSocketMessage;
 import org.dartlang.vm.service.consumer.*;
 import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.internal.RequestSink;
 import org.dartlang.vm.service.internal.VmServiceConst;
 import org.dartlang.vm.service.internal.WebSocketRequestSink;
+import org.dartlang.vm.service.internal.websocket.WebSocket;
+import org.dartlang.vm.service.internal.websocket.WebSocketEventHandler;
+import org.dartlang.vm.service.internal.websocket.WebSocketException;
+import org.dartlang.vm.service.internal.websocket.WebSocketMessage;
 import org.dartlang.vm.service.logging.Logging;
 
 import java.io.IOException;
@@ -63,13 +63,7 @@ abstract class VmServiceBase implements VmServiceConst {
     }
 
     // Create web socket and observatory
-    WebSocket webSocket;
-    try {
-      webSocket = new WebSocket(uri);
-    }
-    catch (WebSocketException e) {
-      throw new IOException("Failed to create websocket: " + url, e);
-    }
+    WebSocket webSocket = new WebSocket(uri);
     final VmService vmService = new VmService();
 
     // Setup event handler for forwarding responses
@@ -113,11 +107,6 @@ abstract class VmServiceBase implements VmServiceConst {
       webSocket.connect();
     }
     catch (WebSocketException e) {
-      throw new IOException("Failed to connect: " + url, e);
-    }
-    catch (ArrayIndexOutOfBoundsException e) {
-      // The weberknecht can occasionally throw an array index exception if a connect terminates on initial connect
-      // (de.roderick.weberknecht.WebSocket.connect, WebSocket.java:126).
       throw new IOException("Failed to connect: " + url, e);
     }
     vmService.requestSink = new WebSocketRequestSink(webSocket);

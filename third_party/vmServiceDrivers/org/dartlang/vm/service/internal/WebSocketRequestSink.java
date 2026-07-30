@@ -14,8 +14,8 @@
 package org.dartlang.vm.service.internal;
 
 import com.google.gson.JsonObject;
-import de.roderick.weberknecht.WebSocket;
-import de.roderick.weberknecht.WebSocketException;
+import org.dartlang.vm.service.internal.websocket.WebSocket;
+import org.dartlang.vm.service.internal.websocket.WebSocketException;
 import org.dartlang.vm.service.logging.Logging;
 
 /**
