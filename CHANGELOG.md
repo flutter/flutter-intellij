@@ -9,6 +9,7 @@
 - Bazel run and test configurations.
 
 ### Fixed
+- IDE freeze when applying Flutter SDK path changes in Settings. (#9058)
 
 ## 94.0.0
 
