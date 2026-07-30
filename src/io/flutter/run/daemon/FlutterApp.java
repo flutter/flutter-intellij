@@ -842,7 +842,7 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
     }
     // The Dart plugin changed its checked WebSocket exception type when it replaced
     // Weberknecht. Catching the common base type keeps this call compatible with both APIs.
-    // We can potnetitaly catch WebSocketException in the future from Dart plugin, but since it's only used for logging, the general exception is ok
+    // We can potentially catch WebSocketException in the future from Dart plugin, but since it's only used for logging, the general exception is ok
     catch (Exception e) {
       LOG.error("Exception while sending DTD request", e);
     }
