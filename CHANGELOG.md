@@ -3,6 +3,7 @@
 ### Added
 
 ### Changed
+- Removed upper build constraint (`untilBuild`) for open-ended platform compatibility. (#9063)
 
 ### Removed
 - Support for platform version 2025.1.
