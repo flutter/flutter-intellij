@@ -93,7 +93,6 @@ if (isRelease) {
 val androidStudioVersion = providers.gradleProperty("androidStudioVersion").get()
 val dartPluginVersion = providers.gradleProperty("dartPluginVersion").get()
 val sinceBuildInput = providers.gradleProperty("sinceBuild").get()
-val untilBuildInput = providers.gradleProperty("untilBuild").get()
 val javaVersion = providers.gradleProperty("javaVersion").get()
 group = "io.flutter"
 
@@ -102,7 +101,6 @@ println("flutterPluginVersion: $flutterPluginVersion")
 println("androidStudioVersion: $androidStudioVersion")
 println("dartPluginVersion: $dartPluginVersion")
 println("sinceBuild: $sinceBuildInput")
-println("untilBuild: $untilBuildInput")
 println("javaVersion: $javaVersion")
 println("group: $group")
 
@@ -289,7 +287,6 @@ intellijPlatform {
     version = flutterPluginVersion
     ideaVersion {
       sinceBuild = sinceBuildInput
-      untilBuild = untilBuildInput
     }
     changeNotes = provider {
       project.changelog.renderItem(project.changelog.getLatest(), Changelog.OutputType.HTML)

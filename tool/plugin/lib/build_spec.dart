@@ -30,7 +30,6 @@ class BuildSpec {
 
   // plugin.xml variables
   final String sinceBuild;
-  final String untilBuild;
   final String pluginId = 'io.flutter';
   final String? release;
   final List<String> filesToSkip;
@@ -48,7 +47,6 @@ class BuildSpec {
         androidPluginVersion = json['androidPluginVersion'] as String,
         dartPluginVersion = json['dartPluginVersion'] as String,
         sinceBuild = json['sinceBuild'] as String,
-        untilBuild = json['untilBuild'] as String,
         filesToSkip = json['filesToSkip'] as List<String>? ?? [],
         isUnitTestTarget = json['isUnitTestTarget'] == 'true',
         isTestTarget = json['isTestTarget'] == 'true',
@@ -110,7 +108,6 @@ class BuildSpec {
         'dartPluginVersion: $dartPluginVersion, '
         'javaVersion: $javaVersion, '
         'since: $sinceBuild, '
-        'until: $untilBuild, '
         'version: "$release")';
   }
 
