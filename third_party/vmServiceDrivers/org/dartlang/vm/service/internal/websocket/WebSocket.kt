@@ -26,7 +26,7 @@ class WebSocket(private val uri: URI) {
     @Volatile
     var eventHandler: WebSocketEventHandler? = null
 
-    @Throws(com.jetbrains.lang.dart.websocket.WebSocketException::class)
+    @Throws(WebSocketException::class)
     fun connect() {
         val listener = JdkListener()
         val future = try {
