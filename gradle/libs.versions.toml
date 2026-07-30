@@ -15,7 +15,7 @@ junit-platform = "6.1.2"
 intellij-platform-plugin = "2.18.1"
 kotlin = "2.4.10"
 changelog = "2.5.0"
-kover = "0.9.8"
+kover = "0.9.9"
 lsp4ij="0.19.3"
 bytebuddy = "1.18.11"
 
