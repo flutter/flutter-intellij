@@ -76,3 +76,5 @@ enforce standard modern Java/Kotlin coding conventions, but strictly police the 
 - **Descriptive Pull Request:** Contributors should include the information recommended in the pull request template (In
   `.github/PULL_REQUEST_TEMPLATE.md`Ï)
 - **Changelog Entries:** Enforce that there is a changelog entry for all user-facing changes. Entries must strictly match the existing grammatical style using descriptive, state-based phrases (typically starting with gerunds, nouns, or verbs like *Avoid* / *Support* / *Log* / *Prevent*) rather than starting with the imperative verb *Fix* or *Add*.
+- **Portability:** Flag any references to local directories (e.g., `/Users/username/...`), hardcoded LDAP/usernames, or environment-specific paths that could make tools, scripts, or agent skills less portable.
+- **Agent Skills Documentation:** Enforce that any newly created or added agent skills (i.e., new `SKILL.md` files) are documented in the repository's `README.md`.
