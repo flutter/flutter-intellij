@@ -12,7 +12,8 @@ permissions:
 jobs:
   add-reviews:
     runs-on: ubuntu-latest
-    # Don't auto-assign for project owners.
-    if: github.actor != 'pq' && github.actor != 'helin24'
     steps:
-      - uses: kentaro-m/auto-assign-action@a6d59add3a817df08cafa9b166367768d2c337f8 # v2.0.1
+      - name: Auto Assign
+        uses: kentaro-m/auto-assign-action@a6d59add3a817df08cafa9b166367768d2c337f8 # v2.0.1
+        # Don't auto-assign for project owners.
+        if: github.actor != 'pq' && github.actor != 'helin24'
