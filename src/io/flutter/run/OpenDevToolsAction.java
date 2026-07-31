@@ -5,7 +5,6 @@
  */
 package io.flutter.run;
 
-import com.intellij.execution.process.ProcessHandler;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -16,7 +15,6 @@ import com.intellij.openapi.util.Computable;
 import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.logging.PluginLogger;
@@ -105,7 +103,6 @@ public class OpenDevToolsAction extends DumbAwareAction {
         .setDevToolsPort(instance.port())
         .setVmServiceUri(serviceUrl)
         .setFlutterSdkVersion(flutterSdk == null ? null : flutterSdk.getVersion())
-        .setWorkspaceCache(WorkspaceCache.getInstance(project))
         .setIdeFeature(DevToolsIdeFeature.RUN_CONSOLE)
         .build()
         .getUrlString();

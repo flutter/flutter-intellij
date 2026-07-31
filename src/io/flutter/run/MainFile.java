@@ -18,8 +18,6 @@ import com.jetbrains.lang.dart.psi.DartFile;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
-import io.flutter.bazel.Workspace;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.pub.PubRoot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -108,12 +106,6 @@ public class MainFile {
 
   @Nullable
   private static VirtualFile findAppDir(@Nullable VirtualFile file, @NotNull Project project) {
-    if (WorkspaceCache.getInstance(project).isBazel()) {
-      final Workspace workspace = WorkspaceCache.getInstance(project).get();
-      assert (workspace != null);
-      return workspace.getRoot();
-    }
-
     for (VirtualFile candidate = file; inProject(candidate, project); candidate = candidate.getParent()) {
       if (isAppDir(candidate, project)) return candidate;
     }
@@ -121,7 +113,6 @@ public class MainFile {
   }
 
   private static boolean isAppDir(@NotNull VirtualFile dir, @NotNull Project project) {
-    assert (!WorkspaceCache.getInstance(project).isBazel());
     return dir.isDirectory() && (
       dir.findChild(PubRoot.PUBSPEC_YAML) != null ||
       dir.findChild(PubRoot.DOT_DART_TOOL) != null

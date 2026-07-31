@@ -8,6 +8,20 @@
 
 ### Fixed
 
+## 95.0.0
+
+### Added
+
+### Changed
+- Removed upper build constraint (`untilBuild`) for open-ended platform compatibility. (#9063)
+
+### Removed
+- Support for platform version 2025.1.
+- Bazel run and test configurations.
+
+### Fixed
+- IDE freeze when applying Flutter SDK path changes in Settings. (#9058)
+
 ## 94.0.0
 
 ### Added

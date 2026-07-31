@@ -22,7 +22,6 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import javax.swing.*;
 import java.util.function.Function;
 
@@ -38,9 +37,6 @@ public class SdkConfigurationNotificationProvider implements EditorNotificationP
   @Override
   public @Nullable Function<? super @NotNull FileEditor, ? extends @Nullable JComponent> collectNotificationData(@NotNull Project project,
                                                                                                                  @NotNull VirtualFile file) {
-    // If this is a Bazel configured Flutter project, exit immediately, neither of the notifications should be shown for this project type.
-    if (FlutterModuleUtils.isFlutterBazelProject(project)) return null;
-
     if (!FlutterUtils.isDartFile(file)) return null;
 
     final PsiFile psiFile = PsiManager.getInstance(project).findFile(file);

@@ -5,7 +5,6 @@
  */
 package io.flutter.run.daemon;
 
-import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
@@ -28,12 +27,11 @@ import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.registry.Registry;
+import com.jetbrains.lang.dart.analytics.Analytics;
 import com.jetbrains.lang.dart.ide.devtools.DartDevToolsService;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
-import com.jetbrains.lang.dart.analytics.Analytics;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DtdUtils;
 import io.flutter.logging.PluginLogger;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -76,17 +74,6 @@ class DevToolsServerTask extends Task.Backgroundable {
       progressIndicator.setFraction(30);
       progressIndicator.setText2("Init");
       LOG.info("Finding or starting DevTools");
-
-      // If we are in a Bazel workspace, start the server.
-      // Note: This is only for internal usages.
-      final WorkspaceCache workspaceCache = WorkspaceCache.getInstance(project);
-      if (workspaceCache.isBazel()) {
-        progressIndicator.setFraction(60);
-        progressIndicator.setText2("Starting server");
-        setUpWithDart(createCommand(workspaceCache.get().getRoot().getPath(), workspaceCache.get().getDevToolsScript(),
-                                    ImmutableList.of("--machine")));
-        return;
-      }
 
       // This is only for development to check integration with a locally run DevTools server.
       // To enable, follow the instructions in:

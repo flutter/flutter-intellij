@@ -12,6 +12,8 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "gradle"
     directory: "/"
@@ -20,3 +22,5 @@ updates:
     labels:
       - "autosubmit"
       - "kokoro:run"
+    cooldown:
+      default-days: 7

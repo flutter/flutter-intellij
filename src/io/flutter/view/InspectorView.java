@@ -25,7 +25,6 @@ import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.RefreshToolWindowAction;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.devtools.DevToolsIdeFeature;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.devtools.DevToolsUtils;
@@ -50,10 +49,16 @@ import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import java.awt.*;
-import java.util.*;
+import javax.swing.Icon;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import java.awt.BorderLayout;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -137,7 +142,6 @@ public class InspectorView implements Disposable {
     FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(app.getProject());
     FlutterSdkVersion flutterSdkVersion = flutterSdk == null ? null : flutterSdk.getVersion();
 
-
     // Register for devtools events (required for inspector->editor source linking)
     // See: https://github.com/flutter/flutter-intellij/issues/8041
     VmService vmService = app.getVmService();
@@ -153,7 +157,6 @@ public class InspectorView implements Disposable {
         .setPage("inspector")
         .setEmbed(true)
         .setFlutterSdkVersion(flutterSdkVersion)
-        .setWorkspaceCache(WorkspaceCache.getInstance(app.getProject()))
         .setIdeFeature(ideFeature)
         .build();
 
@@ -185,7 +188,6 @@ public class InspectorView implements Disposable {
           .setVmServiceUri(browserUrl)
           .setPage("inspector")
           .setFlutterSdkVersion(flutterSdkVersion)
-          .setWorkspaceCache(WorkspaceCache.getInstance(app.getProject()))
           .setIdeFeature(ideFeature)
           .build()
           .getUrlString(),

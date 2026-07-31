@@ -10,3 +10,7 @@
 - All new files must include the standard Chromium Authors copyright header.
 - Zero-Formatting Policy: do not comment on indentation, spacing, or brace placement.
 - Categorize code suggestions with `[MUST-FIX]`, `[CONCERN]`, or `[NIT]` severity prefixes.
+
+## Agent Skills & Workflows
+
+- For standard project maintenance workflows and automated procedures (PR cleanup, verification fixes, unit testing, platform version removal, etc.), refer to the executable skills in `.agents/skills/`.

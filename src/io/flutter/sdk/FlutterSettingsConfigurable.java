@@ -5,6 +5,8 @@
  */
 package io.flutter.sdk;
 
+import com.intellij.execution.process.CapturingProcessAdapter;
+import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
@@ -38,8 +40,6 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterMessages;
-import io.flutter.bazel.Workspace;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.font.FontPreviewProcessor;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -56,7 +56,7 @@ import javax.swing.text.JTextComponent;
 import java.awt.datatransfer.StringSelection;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicReference;
 
 // Note: when updating the settings here, update FlutterSearchableOptionContributor as well.
 
@@ -75,10 +75,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myOrganizeImportsOnSaveCheckBox;
   private JCheckBox myShowStructuredErrors;
   private JCheckBox myIncludeAllStackTraces;
-  private JCheckBox myEnableBazelHotRestartCheckBox;
 
   private JCheckBox myEnableJcefBrowserCheckBox;
-
   private JCheckBox myShowBuildMethodGuides;
   private JCheckBox myShowClosingLabels;
   private FixedSizeButton myCopyButton;
@@ -89,22 +87,15 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private @NotNull JCheckBox myEnableFilePathLogging;
 
   private final @NotNull Project myProject;
-  private final WorkspaceCache workspaceCache;
 
   private boolean ignoringSdkChanges = false;
-
   private String fullVersionString;
   private FlutterSdkVersion previousSdkVersion;
 
-  /**
-   * Semaphore used to synchronize flutter commands so we don't try to do two at once.
-   */
-  private final Semaphore lock = new Semaphore(1, true);
-  private Process updater;
+  private final AtomicReference<Process> activeVersionProcess = new AtomicReference<>();
 
   FlutterSettingsConfigurable(@NotNull Project project) {
     this.myProject = project;
-    workspaceCache = WorkspaceCache.getInstance(project);
     init();
     myVersionLabel.setText(" ");
   }
@@ -133,13 +124,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
         }
       }
     });
-    workspaceCache.subscribe(this::onVersionChanged);
     myFormatCodeOnSaveCheckBox.addChangeListener(
       (e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
     myShowStructuredErrors.addChangeListener(
       (e) -> myIncludeAllStackTraces.setEnabled(myShowStructuredErrors.isSelected()));
-
-    myEnableBazelHotRestartCheckBox.setVisible(WorkspaceCache.getInstance(myProject).isBazel());
   }
 
   private void createUIComponents() {
@@ -234,10 +222,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isEnableBazelHotRestart() != myEnableBazelHotRestartCheckBox.isSelected()) {
-      return true;
-    }
-
     if (settings.isAllowTestsInSourcesRoot() != myAllowTestsInSourcesRoot.isSelected()) {
       return true;
     }
@@ -255,36 +239,29 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Override
   public void apply() throws ConfigurationException {
-    // Bazel workspaces do not specify a sdk path so we do not need to update the sdk path if using
-    // a bazel workspace.
-    if (!workspaceCache.isBazel()) {
-      final String errorMessage = FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(getSdkPathText());
-      if (errorMessage != null) {
-        throw new ConfigurationException(errorMessage);
-      }
+    final String errorMessage = FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(getSdkPathText());
+    if (errorMessage != null) {
+      throw new ConfigurationException(errorMessage);
+    }
 
-      final String sdkHomePath = getSdkPathText();
-      if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
+    final String sdkHomePath = getSdkPathText();
+    if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
+      OpenApiUtils.safeRunWriteAction(() -> {
+        FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath);
+        FlutterSdkUtil.enableDartSdk(myProject);
 
-        OpenApiUtils.safeRunWriteAction(() -> {
-          FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath);
-          FlutterSdkUtil.enableDartSdk(myProject);
-
-          ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            final FlutterSdk sdk = FlutterSdk.forPath(sdkHomePath);
-            if (sdk != null) {
-              try {
-                lock.acquire();
-                sdk.queryFlutterChannel(false);
-                lock.release();
-              }
-              catch (InterruptedException e) {
-                // do nothing
-              }
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+          final FlutterSdk sdk = FlutterSdk.forPath(sdkHomePath);
+          if (sdk != null) {
+            try {
+              sdk.queryFlutterChannel(false);
             }
-          });
+            catch (Exception ignored) {
+              // ignore exceptions during channel query
+            }
+          }
         });
-      }
+      });
     }
 
     final FlutterSettings settings = FlutterSettings.getInstance();
@@ -300,7 +277,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setPerserveLogsDuringHotReloadAndRestart(myEnableLogsPreserveAfterHotReloadOrRestart.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
-    settings.setEnableBazelHotRestart(myEnableBazelHotRestartCheckBox.isSelected());
     settings.setAllowTestsInSourcesRoot(myAllowTestsInSourcesRoot.isSelected());
     settings.setFontPackages(myFontPackagesTextArea.getText());
     settings.setEnableJcefBrowser(myEnableJcefBrowserCheckBox.isSelected());
@@ -331,16 +307,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       if (previousSdkVersion != null) {
         if (previousSdkVersion.compareTo(sdk.getVersion()) != 0) {
           final List<PubRoot> roots = PubRoots.forProject(myProject);
-          try {
-            lock.acquire();
+          ApplicationManager.getApplication().executeOnPooledThread(() -> {
             for (PubRoot root : roots) {
               sdk.startPubGet(root, myProject);
             }
-            lock.release();
-          }
-          catch (InterruptedException e) {
-            // do nothing
-          }
+          });
           previousSdkVersion = sdk.getVersion();
         }
       }
@@ -355,7 +326,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myOrganizeImportsOnSaveCheckBox.setSelected(settings.isOrganizeImportsOnSave());
 
     myShowBuildMethodGuides.setSelected(settings.isShowBuildMethodGuides());
-
     myShowClosingLabels.setSelected(settings.isShowClosingLabels());
 
     myShowStructuredErrors.setSelected(settings.isShowStructuredErrors());
@@ -364,9 +334,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myEnableLogsPreserveAfterHotReloadOrRestart.setSelected(settings.isPerserveLogsDuringHotReloadAndRestart());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
 
-    myEnableBazelHotRestartCheckBox.setSelected(settings.isEnableBazelHotRestart());
     myAllowTestsInSourcesRoot.setSelected(settings.isAllowTestsInSourcesRoot());
-
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
     myIncludeAllStackTraces.setEnabled(myShowStructuredErrors.isSelected());
 
@@ -375,21 +343,16 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myEnableFilePathLogging.setSelected(settings.isFilePathLoggingEnabled());
   }
 
-  private void onVersionChanged() {
-    final Workspace workspace = workspaceCache.get();
-    if (workspaceCache.isBazel()) {
-      if (mySdkCombo.isEnabled()) {
-        // The workspace is not null if workspaceCache.isBazel() is true.
-        assert (workspace != null);
+  private void cancelActiveVersionProcess() {
+    final Process previous = activeVersionProcess.getAndSet(null);
+    if (previous != null && previous.isAlive()) {
+      previous.destroy();
+    }
+  }
 
-        mySdkCombo.setEnabled(false);
-        mySdkCombo.getEditor()
-          .setItem(workspace.getRoot().getPath() + '/' + workspace.getSdkHome() + " <set by bazel project>");
-      }
-    }
-    else {
-      mySdkCombo.setEnabled(true);
-    }
+  private void onVersionChanged() {
+    mySdkCombo.setEnabled(true);
+    cancelActiveVersionProcess();
 
     final FlutterSdk sdk = FlutterSdk.forPath(getSdkPathText());
     if (sdk == null) {
@@ -399,40 +362,37 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return;
     }
 
-    // Moved launching the version updater to a background thread to avoid deadlock
-    // when the semaphone was locked for a long time on the EDT.
     final ModalityState modalityState = ModalityState.current();
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      try {
-        if (updater != null) {
-          // If we get back here before the previous one finished then just kill it.
-          // This isn't perfect, but does help avoid printing this message most times:
-          // Waiting for another flutter command to release the startup lock...
-          updater.destroy();
-          lock.release();
-        }
-        Thread.sleep(100L);
-        lock.acquire();
-
-        OpenApiUtils.safeInvokeLater(() -> {
-          // "flutter --version" can take a long time on a slow network.
-          updater = sdk.flutterVersion().start((ProcessOutput output) -> {
-            fullVersionString = output.getStdout();
-            final String[] lines = StringUtil.splitByLines(fullVersionString);
-            final String singleLineVersion = lines.length > 0 ? lines[0] : "";
-
-            OpenApiUtils.safeInvokeLater(() -> {
-              updater = null;
-              lock.release();
-              updateVersionTextIfCurrent(sdk, singleLineVersion);
-            }, modalityState);
-          }, null);
-        }, modalityState);
+      // "flutter --version" can take a long time on a slow network.
+      final Process process = sdk.flutterVersion().start();
+      if (process == null) {
+        return;
       }
-      catch (InterruptedException e) {
-        // do nothing
-      }
+      activeVersionProcess.set(process);
+
+      final ColoredProcessHandler handler = new ColoredProcessHandler(process, null);
+      final CapturingProcessAdapter listener = new CapturingProcessAdapter();
+      handler.addProcessListener(listener);
+      handler.startNotify();
+      handler.waitFor();
+
+      final ProcessOutput output = listener.getOutput();
+      final String stdout = output.getStdout();
+      final String[] lines = StringUtil.splitByLines(stdout);
+      final String singleLineVersion = lines.length > 0 ? lines[0] : "";
+
+      OpenApiUtils.safeInvokeLater(() -> {
+        activeVersionProcess.compareAndSet(process, null);
+        fullVersionString = stdout;
+        updateVersionTextIfCurrent(sdk, singleLineVersion);
+      }, modalityState);
     });
+  }
+
+  @Override
+  public void disposeUIResources() {
+    cancelActiveVersionProcess();
   }
 
   /***

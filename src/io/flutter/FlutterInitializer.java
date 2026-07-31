@@ -29,9 +29,7 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.messages.MessageBusConnection;
-import de.roderick.weberknecht.WebSocketException;
 import io.flutter.android.IntelliJAndroidSdk;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DtdUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.devtools.DevToolsExtensionsViewFactory;
@@ -100,7 +98,6 @@ public class FlutterInitializer extends FlutterProjectActivity {
     // If the project declares a Flutter dependency, do some extra initialization.
     boolean hasFlutterModule = false;
 
-
     var roots = new ArrayList<PubRoot>();
 
     for (Module module : OpenApiUtils.getModules(project)) {
@@ -146,7 +143,6 @@ public class FlutterInitializer extends FlutterProjectActivity {
 
     // Lambdas need final vars.
     boolean finalHasFlutterModule = hasFlutterModule;
-    boolean finalIsBazel = WorkspaceCache.getInstance(project).isBazel();
     ReadAction.nonBlocking(() -> {
         for (var root : roots) {
           // Set up a default run configuration for 'main.dart' (if it's not there already and the file exists).
@@ -156,7 +152,7 @@ public class FlutterInitializer extends FlutterProjectActivity {
       })
       .expireWith(FlutterDartAnalysisServer.getInstance(project))
       .finishOnUiThread(ModalityState.defaultModalityState(), result -> {
-        edtInitialization(finalHasFlutterModule, finalIsBazel, project);
+        edtInitialization(finalHasFlutterModule, project);
       })
       .submit(AppExecutorUtil.getAppExecutorService());
   }
@@ -164,8 +160,8 @@ public class FlutterInitializer extends FlutterProjectActivity {
   /***
    * Initialization that needs to complete on the EDT thread.
    */
-  private void edtInitialization(boolean hasFlutterModule, boolean isBazel, @NotNull Project project) {
-    if (hasFlutterModule || isBazel) {
+  private void edtInitialization(boolean hasFlutterModule, @NotNull Project project) {
+    if (hasFlutterModule) {
       initializeToolWindows(project);
     }
     else {
@@ -316,7 +312,9 @@ public class FlutterInitializer extends FlutterProjectActivity {
               }
             });
           }
-          catch (WebSocketException e) {
+          // The Dart plugin changed its checked WebSocket exception type when it replaced
+          // Weberknecht. Catching the common base type keeps this call compatible with both APIs.
+          catch (Exception e) {
             log().error("Unable to send theme changed event", e);
           }
         })

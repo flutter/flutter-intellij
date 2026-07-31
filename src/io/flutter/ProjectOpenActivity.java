@@ -22,7 +22,6 @@ import com.intellij.openapi.project.ProjectType;
 import com.intellij.openapi.project.ProjectTypeService;
 import com.intellij.openapi.ui.Messages;
 import icons.FlutterIcons;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -31,7 +30,6 @@ import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.android.facet.AndroidFrameworkDetector;
 import org.jetbrains.annotations.NotNull;
-
 import java.util.Collection;
 
 /**
@@ -47,9 +45,7 @@ public class ProjectOpenActivity extends FlutterProjectActivity implements DumbA
 
   @Override
   public void executeProjectStartup(@NotNull Project project) {
-    // TODO(helinx): We don't have a good way to check whether a Bazel project is using Flutter. Look into whether we can
-    // build a better Flutter Bazel check into `declaresFlutter` so we don't need the second condition.
-    if (!FlutterModuleUtils.declaresFlutter(project) && !WorkspaceCache.getInstance(project).isBazel()) {
+    if (!FlutterModuleUtils.declaresFlutter(project)) {
       return;
     }
 
@@ -75,11 +71,6 @@ public class ProjectOpenActivity extends FlutterProjectActivity implements DumbA
           ProjectTypeService.setProjectType(project, FLUTTER_PROJECT_TYPE);
         }
       }
-    }
-
-    // If this project is intended as a bazel project, don't run the pub alerts.
-    if (WorkspaceCache.getInstance(project).isBazel()) {
-      return;
     }
 
     for (PubRoot pubRoot : PubRoots.forProject(project)) {

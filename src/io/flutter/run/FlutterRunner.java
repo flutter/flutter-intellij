@@ -9,7 +9,7 @@ import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Runner for non-Bazel run configurations (using the Flutter SDK).
+ * Runner for run configurations (using the Flutter SDK).
  */
 public class FlutterRunner extends LaunchState.Runner<SdkRunConfig> {
   public FlutterRunner() {

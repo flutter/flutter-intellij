@@ -5,12 +5,11 @@
  */
 package io.flutter.devtools;
 
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
-import io.flutter.bazel.WorkspaceCache;
+import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.sdk.FlutterSdkVersion;
-import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.application.ApplicationInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,7 +51,6 @@ public class DevToolsUrl {
     private String hide;
 
     private @Nullable FlutterSdkVersion flutterSdkVersion;
-    private WorkspaceCache workspaceCache;
     private DevToolsIdeFeature ideFeature;
     private String ideName;
 
@@ -118,12 +116,6 @@ public class DevToolsUrl {
     }
 
     @NotNull
-    public Builder setWorkspaceCache(WorkspaceCache workspaceCache) {
-      this.workspaceCache = workspaceCache;
-      return this;
-    }
-
-    @NotNull
     public Builder setIdeFeature(DevToolsIdeFeature ideFeature) {
       this.ideFeature = ideFeature;
       return this;
@@ -174,10 +166,7 @@ public class DevToolsUrl {
     this.sdkUtil = builder.flutterSdkUtil;
     this.ideName = builder.ideName != null ? builder.ideName : getIdeName();
 
-    if (builder.workspaceCache != null && builder.workspaceCache.isBazel()) {
-      this.canUseMultiEmbed = true;
-    }
-    else if (flutterSdkVersion != null) {
+    if (flutterSdkVersion != null) {
       this.canUseMultiEmbed = flutterSdkVersion.canUseDevToolsMultiEmbed();
     }
     else {
