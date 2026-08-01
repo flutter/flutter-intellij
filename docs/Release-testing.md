@@ -1,2 +1,3 @@
-The following use cases should be tested on all new releases:
-[https://github.com/flutter/flutter-intellij/blob/main/testing.md](https://github.com/flutter/flutter-intellij/blob/main/docs/testing.md)
+# Release Testing
+
+For manual release verification and testing checklists, see the [`release-plugin` skill](../.agents/skills/release-plugin/SKILL.md#5-manual-testing-checklist).

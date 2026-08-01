@@ -1,5 +1,8 @@
 ## Building the plugin for release
 
+> [!NOTE]
+> For the complete step-by-step workflow for preparing and executing a plugin release (including dependency updates, changelog management, building versioned zip artifacts, and manual testing checklists), see the [`release-plugin` skill](../.agents/skills/release-plugin/SKILL.md).
+
 Update the `gradle.properties` file
 
 - IntelliJ IDEA versions can be found here: https://www.jetbrains.com/idea/download/other.html
@@ -18,7 +21,7 @@ with the `<KEY>` replaced with a valid JXBrowser key to be used in the built Flu
 Run gradle:
 
 - Check that `$JAVA_HOME` is set (see CONTRIBUTING.md for instructions if not set)
-- Run `./gradlew buildPlugin -Prelease` to build the plugin for the settings specified in `gradle.properties`
+- Run `./gradlew buildPlugin -Prelease -PversionedName` to build the plugin for the settings specified in `gradle.properties`
 - The output .zip file will be in `<flutter-intellij root>/build/distributions`
 
 ### Test and upload to the JetBrains Servers
