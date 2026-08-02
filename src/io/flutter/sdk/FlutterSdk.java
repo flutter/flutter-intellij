@@ -157,7 +157,11 @@ public class FlutterSdk {
 
   @NotNull
   private static FlutterSdk saveSdkInCache(@NotNull VirtualFile home) {
-    final String cacheKey = home.getCanonicalPath();
+    // Keep SDKs selected through distinct symlink paths separate. FVM changes the
+    // target of a project-local symlink, so using its canonical path makes one
+    // project's SDK instance leak into another project that currently uses the
+    // same Flutter version.
+    final String cacheKey = home.getPath();
     synchronized (projectSdkCache) {
       if (!projectSdkCache.containsKey(cacheKey)) {
         projectSdkCache.put(cacheKey, new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home)));
