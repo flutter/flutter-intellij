@@ -16,7 +16,7 @@ Systematically update plugin dependencies, compatibility parameters, and `CHANGE
 
 ### 1. Update Platform & Dependency Parameters
 - **`gradle.properties`**:
-  - Update `dartPluginVersion` to the target Dart plugin release version (e.g. `dartPluginVersion= 507.0.0`).
+  - Update `dartPluginVersion` to the latest public Dart plugin release version. Fetch the latest version from JetBrains Marketplace (e.g. via `curl -s "https://plugins.jetbrains.com/api/plugins/6351/updates?size=1" | jq -r '.[0].version'` or by checking [JetBrains Marketplace Dart Plugin](https://plugins.jetbrains.com/plugin/6351-dart)) and set `dartPluginVersion` in `gradle.properties` to that version (e.g., `dartPluginVersion= 508.0.0`).
   - If dropping support for older platform versions, update `sinceBuild` to the new lower bound (e.g., `sinceBuild=252`). Note: `untilBuild` is omitted for open-ended platform compatibility.
 - **New Platform Version Compatibility & Baselines**:
   - When supporting/verifying a new platform release (e.g., IntelliJ 2026.3 / build `263`):
