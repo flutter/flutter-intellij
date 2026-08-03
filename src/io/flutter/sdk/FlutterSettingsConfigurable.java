@@ -341,12 +341,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     if (previousSdkVersion != null && previousSdkVersion.compareTo(sdk.getVersion()) != 0) {
       final List<PubRoot> roots = PubRoots.forProject(myProject);
-      OpenApiUtils.safeExecuteOnPooledThread(() -> {
+      OpenApiUtils.safeInvokeLater(() -> {
         for (PubRoot root : roots) {
-          final Module module = OpenApiUtils.<Module>safeRunReadAction(() -> root.getModule(myProject));
-          if (module != null) {
-            sdk.startPubGet(root, myProject);
-          }
+          sdk.startPubGet(root, myProject);
         }
       });
       previousSdkVersion = sdk.getVersion();
