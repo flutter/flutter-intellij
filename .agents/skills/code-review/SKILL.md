@@ -42,7 +42,12 @@ Perform a multi-pass analysis of the diff:
 - **API Design:** Are new functions/methods single-responsibility? Do the parameters make sense? Are visibility modifiers (public, private, protected) used correctly?
 
 ## Step-by-Step Execution
-1. Retrieve the current changes (using `git diff`).
-2. Read `.gemini/styleguide.md` if present.
-3. Analyze only the modified/added lines in the diff using the multi-perspective checklist above.
-4. Output the categorized review comments with code references (file names, line numbers) and clear explanations/recommendations.
+1. **Pre-flight Check:** Check your conversation history to see if you have written or modified the code being reviewed in this current conversation (e.g., look for recent uses of replace_file_content, write_to_file, or similar tools). If so, and you are in an interactive session, pause and ask the user:
+   > "I noticed we wrote this code in our current conversation. Should I spin up a sub-agent for an unbiased review?"
+   - If they agree, invoke a subagent to perform the rest of this skill.
+   - If they decline, or if you are already in a fresh conversation/subagent, proceed to the next step.
+   If you are in a non-interactive environment, automatically invoke a subagent to perform the review.
+2. Retrieve the current changes (using `git diff`).
+3. Read `.gemini/styleguide.md` if present.
+4. Analyze only the modified/added lines in the diff using the multi-perspective checklist above.
+5. Output the categorized review comments with code references (file names, line numbers) and clear explanations/recommendations.
