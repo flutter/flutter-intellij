@@ -118,7 +118,11 @@ public class FlutterSdk {
       return null;
     }
 
-    final String dartPath = dartSdk.getHomePath();
+    final String homePath = dartSdk.getHomePath();
+    if (homePath == null) {
+      return null;
+    }
+    final String dartPath = FileUtil.toSystemIndependentName(homePath);
     if (!dartPath.endsWith(DART_SDK_SUFFIX)) {
       return null;
     }

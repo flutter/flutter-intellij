@@ -21,6 +21,7 @@
 
 ### Fixed
 - IDE freeze when applying Flutter SDK path changes in Settings. (#9058)
+- Fixed issue with saving the Flutter SDK path in Settings. ([#9074](https://github.com/flutter/flutter-intellij/pull/9074))
 
 ## 94.0.0
 

@@ -79,4 +79,15 @@ public class FlutterSdkUtilsTest {
       assertEquals("/Users/user/flutter", result);
     }
   }
+
+  @Test
+  public void addKnownSDKPathsToCombo_preservesActiveItem() {
+    final javax.swing.JComboBox<String> combo = new javax.swing.JComboBox<>();
+    combo.setEditable(true);
+    combo.getEditor().setItem("/path/to/custom/sdk");
+
+    FlutterSdkUtil.addKnownSDKPathsToCombo(combo);
+
+    assertEquals("/path/to/custom/sdk", combo.getEditor().getItem());
+  }
 }

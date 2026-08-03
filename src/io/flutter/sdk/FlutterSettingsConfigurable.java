@@ -21,6 +21,7 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ide.CopyPasteManager;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.project.Project;
@@ -286,39 +287,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     checkFontPackages(settings.getFontPackages(), oldFontPackages);
   }
 
+  // Reset is run when opening settings, clicking cancel, or right after apply.
   @Override
   public void reset() {
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myProject);
-    final String path = sdk != null ? sdk.getHomePath() : "";
-
-    // Set this after populating the combo box to display correctly when the Flutter SDK is unset.
-    // (This can happen if the user changed the Dart SDK.)
-    try {
-      ignoringSdkChanges = true;
-      FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkCombo);
-      mySdkCombo.getEditor().setItem(FileUtil.toSystemDependentName(path));
-    }
-    finally {
-      ignoringSdkChanges = false;
-    }
-
-    onVersionChanged();
-    if (sdk != null) {
-      if (previousSdkVersion != null) {
-        if (previousSdkVersion.compareTo(sdk.getVersion()) != 0) {
-          final List<PubRoot> roots = PubRoots.forProject(myProject);
-          ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            for (PubRoot root : roots) {
-              sdk.startPubGet(root, myProject);
-            }
-          });
-          previousSdkVersion = sdk.getVersion();
-        }
-      }
-    }
-    else {
-      previousSdkVersion = null;
-    }
+    resetSdkSelection(sdk);
 
     final FlutterSettings settings = FlutterSettings.getInstance();
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
@@ -341,6 +314,40 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myEnableJcefBrowserCheckBox.setSelected(settings.isEnableJcefBrowser());
     myFontPackagesTextArea.setText(settings.getFontPackages());
     myEnableFilePathLogging.setSelected(settings.isFilePathLoggingEnabled());
+  }
+
+  private void resetSdkSelection(@Nullable FlutterSdk sdk) {
+    final String path = sdk != null ? sdk.getHomePath() : "";
+
+    try {
+      ignoringSdkChanges = true;
+      mySdkCombo.getEditor().setItem(FileUtil.toSystemDependentName(path));
+      FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkCombo);
+    }
+    finally {
+      ignoringSdkChanges = false;
+    }
+
+    // This is to show the version below the SDK selection box.
+    onVersionChanged();
+    updatePubGetOnSdkChange(sdk);
+  }
+
+  private void updatePubGetOnSdkChange(@Nullable FlutterSdk sdk) {
+    if (sdk == null) {
+      previousSdkVersion = null;
+      return;
+    }
+
+    if (previousSdkVersion != null && previousSdkVersion.compareTo(sdk.getVersion()) != 0) {
+      final List<PubRoot> roots = PubRoots.forProject(myProject);
+      OpenApiUtils.safeInvokeLater(() -> {
+        for (PubRoot root : roots) {
+          sdk.startPubGet(root, myProject);
+        }
+      });
+      previousSdkVersion = sdk.getVersion();
+    }
   }
 
   private void cancelActiveVersionProcess() {
@@ -424,7 +431,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @NotNull
   private String getSdkPathText() {
-    return FileUtilRt.toSystemIndependentName(mySdkCombo.getEditor().getItem().toString().trim());
+    final Object item = mySdkCombo.getEditor().getItem();
+    return item != null ? FileUtilRt.toSystemIndependentName(item.toString().trim()) : "";
   }
 
   private void checkFontPackages(String value, String previous) {
