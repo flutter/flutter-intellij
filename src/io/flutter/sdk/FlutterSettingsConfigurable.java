@@ -21,6 +21,7 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ide.CopyPasteManager;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.project.Project;
@@ -340,9 +341,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     if (previousSdkVersion != null && previousSdkVersion.compareTo(sdk.getVersion()) != 0) {
       final List<PubRoot> roots = PubRoots.forProject(myProject);
-      OpenApiUtils.safeInvokeLater(() -> {
+      OpenApiUtils.safeExecuteOnPooledThread(() -> {
         for (PubRoot root : roots) {
-          sdk.startPubGet(root, myProject);
+          final Module module = OpenApiUtils.<Module>safeRunReadAction(() -> root.getModule(myProject));
+          if (module != null) {
+            sdk.startPubGet(root, myProject);
+          }
         }
       });
       previousSdkVersion = sdk.getVersion();
