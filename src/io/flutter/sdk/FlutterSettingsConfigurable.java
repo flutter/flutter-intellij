@@ -295,8 +295,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     // (This can happen if the user changed the Dart SDK.)
     try {
       ignoringSdkChanges = true;
-      FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkCombo);
       mySdkCombo.getEditor().setItem(FileUtil.toSystemDependentName(path));
+      FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkCombo);
     }
     finally {
       ignoringSdkChanges = false;
@@ -307,7 +307,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       if (previousSdkVersion != null) {
         if (previousSdkVersion.compareTo(sdk.getVersion()) != 0) {
           final List<PubRoot> roots = PubRoots.forProject(myProject);
-          ApplicationManager.getApplication().executeOnPooledThread(() -> {
+          OpenApiUtils.safeInvokeLater(() -> {
             for (PubRoot root : roots) {
               sdk.startPubGet(root, myProject);
             }
@@ -424,7 +424,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @NotNull
   private String getSdkPathText() {
-    return FileUtilRt.toSystemIndependentName(mySdkCombo.getEditor().getItem().toString().trim());
+    final Object item = mySdkCombo.getEditor().getItem();
+    return item != null ? FileUtilRt.toSystemIndependentName(item.toString().trim()) : "";
   }
 
   private void checkFontPackages(String value, String previous) {
