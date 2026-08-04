@@ -53,22 +53,22 @@ We define and agree on the desired plugin functionality for Flutter SDK manageme
 When making changes to SDK functionality, refer to the following key components in the codebase:
 
 - **SDK Instance & Versioning:**
-  - [`FlutterSdk.java`](file:///Users/helinx/Documents/flutter-intellij-doc/src/io/flutter/sdk/FlutterSdk.java) - Per-project SDK instance, version querying, and running SDK tools.
-  - [`FlutterSdkVersion.java`](file:///Users/helinx/Documents/flutter-intellij-doc/src/io/flutter/sdk/FlutterSdkVersion.java) - Parses and compares SDK version strings against capability thresholds.
+  - [`FlutterSdk.java`](../../src/io/flutter/sdk/FlutterSdk.java) - Per-project SDK instance, version querying, and running SDK tools.
+  - [`FlutterSdkVersion.java`](../../src/io/flutter/sdk/FlutterSdkVersion.java) - Parses and compares SDK version strings against capability thresholds.
 
 - **SDK Discovery, Validation & Paths:**
-  - [`FlutterSdkUtil.java`](file:///Users/helinx/Documents/flutter-intellij-doc/src/io/flutter/sdk/FlutterSdkUtil.java) - Core validation (`isFlutterSdkHome`, `getErrorMessageIfWrongSdkRootPath`), configuring nested Dart SDK (`setFlutterSdkPath`), and known paths persistence (`getKnownFlutterSdkPaths`).
+  - [`FlutterSdkUtil.java`](../../src/io/flutter/sdk/FlutterSdkUtil.java) - Core validation (`isFlutterSdkHome`, `getErrorMessageIfWrongSdkRootPath`), configuring nested Dart SDK (`setFlutterSdkPath`), and known paths persistence (`getKnownFlutterSdkPaths`).
 
 - **Settings UI:**
-  - [`FlutterSettingsConfigurable.java`](file:///Users/helinx/Documents/flutter-intellij-doc/src/io/flutter/sdk/FlutterSettingsConfigurable.java) - **Settings > Languages & Frameworks > Flutter** UI, path selection, and applying changes.
+  - [`FlutterSettingsConfigurable.java`](../../src/io/flutter/sdk/FlutterSettingsConfigurable.java) - **Settings > Languages & Frameworks > Flutter** UI, path selection, and applying changes.
 
 - **SDK Manager & Change Notifications:**
-  - [`FlutterSdkManager.java`](file:///Users/helinx/Documents/flutter-intellij-doc/src/io/flutter/sdk/FlutterSdkManager.java) - Listens for library table changes and fires `flutterSdkAdded` / `flutterSdkRemoved`.
+  - [`FlutterSdkManager.java`](../../src/io/flutter/sdk/FlutterSdkManager.java) - Listens for library table changes and fires `flutterSdkAdded` / `flutterSdkRemoved`.
 
 - **New Project Wizard:**
-  - [`FlutterModuleBuilder.java`](file:///Users/helinx/Documents/flutter-intellij-doc/src/io/flutter/module/FlutterModuleBuilder.java) - Handles project creation commit steps.
-  - [`FlutterGeneratorPeer.java`](file:///Users/helinx/Documents/flutter-intellij-doc/src/io/flutter/module/FlutterGeneratorPeer.java) - Manages SDK selection combo box and path validation in wizard.
+  - [`FlutterModuleBuilder.java`](../../src/io/flutter/module/FlutterModuleBuilder.java) - Handles project creation commit steps.
+  - [`FlutterGeneratorPeer.java`](../../src/io/flutter/module/FlutterGeneratorPeer.java) - Manages SDK selection combo box and path validation in wizard.
 
 - **Editor Notifications:**
-  - [`SdkConfigurationNotificationProvider.java`](file:///Users/helinx/Documents/flutter-intellij-doc/src/io/flutter/inspections/SdkConfigurationNotificationProvider.java) - Banner prompting user to configure Flutter SDK when opening Dart files without an SDK set.
+  - [`SdkConfigurationNotificationProvider.java`](../../src/io/flutter/inspections/SdkConfigurationNotificationProvider.java) - Banner prompting user to configure Flutter SDK when opening Dart files without an SDK set.
 
