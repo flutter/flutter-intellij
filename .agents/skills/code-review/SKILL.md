@@ -55,7 +55,7 @@ Perform a multi-pass analysis of the diff:
 2. Retrieve the current changes (using `git diff`).
 3. Read `.gemini/styleguide.md` if present.
 
-   *(Note for subagents: If context was not provided by your parent and you are executing the context-gathering steps yourself, the system may pause to ask the user for permission. If you get stuck waiting, use the **`send_message`** tool to notify your parent agent.)*
+   *(Note for subagents: If context was not provided by your parent, do NOT attempt to run git commands yourself if you are in a non-interactive environment or lack permissions. Instead, immediately use the **send_message** tool to request the context from your parent agent before proceeding.)*
 
 ### Analysis & Review
 4. Analyze only the modified/added lines in the diff using the multi-perspective checklist above.
