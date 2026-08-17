@@ -8,7 +8,7 @@ Future<List<Issue>> getFlutterPluginIssues({Authentication? auth}) async {
   var github = auth != null ? GitHub(auth: auth) : GitHub();
   var slug = RepositorySlug('flutter', 'flutter-intellij');
   try {
-    return github.issues.listByRepo(slug).toList();
+    return await github.issues.listByRepo(slug).toList();
   } on Exception catch (e) {
     print(e);
     return Future.value(<Issue>[]);
