@@ -7,6 +7,7 @@
 ### Removed
 
 ### Fixed
+- Prevent Flutter upgrades from running inside the IDE on Windows when Dart SDK files may be locked. (#9092)
 
 ## 96.0.0
 
