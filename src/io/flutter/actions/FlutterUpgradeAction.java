@@ -9,6 +9,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
+import com.jetbrains.lang.dart.analytics.Analytics;
+import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
 import io.flutter.pub.PubRoot;
@@ -25,6 +27,7 @@ public class FlutterUpgradeAction extends FlutterSdkAction {
                                  FlutterBundle.message("flutter.upgrade.windows.message"),
                                  FlutterBundle.message("flutter.upgrade.windows.title"),
                                  new String[]{"OK"}, 0);
+      Analytics.report(AnalyticsData.forAction(this, event));
       return;
     }
 
