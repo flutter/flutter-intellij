@@ -4,8 +4,8 @@
 
 [versions]
 jetbrains-annotations = "26.1.0"
-guava-android = "33.6.0-android"
-guava-jre = "33.6.0-android"
+guava-android = "33.7.1-android"
+guava-jre = "33.7.1-android"
 gson = "2.14.0"
 junit = "4.13.2"
 kodein-di = "7.33.0"
