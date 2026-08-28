@@ -250,18 +250,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       OpenApiUtils.safeRunWriteAction(() -> {
         FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath);
         FlutterSdkUtil.enableDartSdk(myProject);
-
-        ApplicationManager.getApplication().executeOnPooledThread(() -> {
-          final FlutterSdk sdk = FlutterSdk.forPath(sdkHomePath);
-          if (sdk != null) {
-            try {
-              sdk.queryFlutterChannel(false);
-            }
-            catch (Exception ignored) {
-              // ignore exceptions during channel query
-            }
-          }
-        });
       });
     }
 
