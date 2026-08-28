@@ -7,6 +7,7 @@
 ### Removed
 
 ### Fixed
+- Prevent untrusted project Git error during project creation when selecting a Flutter SDK. (#9099)
 
 ## 95.0.0
 
