@@ -7,6 +7,7 @@
 ### Removed
 
 ### Fixed
+- IDE deadlock on project open when the Flutter SDK path is invalid. (#9093)
 
 ## 95.0.0
 
