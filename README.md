@@ -69,6 +69,9 @@ might want to try out the dev channel. It is updated daily with the latest conte
 from the "main" branch. It has minimal testing. Set up instructions are in the wiki's
 [dev channel page](./docs/Dev-Channel.md).
 
+For information on how to run and write integration tests, see the
+[integration testing guide](./docs/integration-testing.md).
+
 ## Flutter SDK compatibility
 
 These are the versions of Flutter SDK that current and previous Flutter plugins support:
