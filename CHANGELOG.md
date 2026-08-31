@@ -18,7 +18,7 @@
 
 ### Fixed
 - Prevent untrusted project Git error during project creation when selecting a Flutter SDK. (#9099)
-- Fixed issue with saving the Flutter SDK path in Settings. (#9074)
+- Issue with saving the Flutter SDK path in Settings. (#9074)
 
 ## 95.0.0
 
