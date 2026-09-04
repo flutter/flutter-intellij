@@ -116,11 +116,11 @@ setup() {
 
   # Download and configure Flutter to the pinned stable release if not present
   source ./tool/provision_flutter.sh
-  export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
+  export PATH="$PATH":`pwd`/../flutter-sdk/bin:`pwd`/../flutter-sdk/bin/cache/dart-sdk/bin
   flutter config --no-analytics
   flutter doctor
 
-  export FLUTTER_SDK=`pwd`/../flutter
+  export FLUTTER_SDK=`pwd`/../flutter-sdk
   export FLUTTER_KEYSTORE_ID=74840
   export FLUTTER_KEYSTORE_NAME=jetbrains-plugin-upload-auth-token
   export FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME=flutter-intellij-plugin-jxbrowser-license-key

@@ -7,7 +7,7 @@
 set -e
 
 # Provision the pinned Flutter SDK if not present
-if [ ! -d "../flutter" ]; then
+if [ ! -d "../flutter-sdk" ]; then
   OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
   # Pinned Flutter SDK version. This constant is automatically checked and updated weekly
   # by the .github/workflows/update_flutter.yaml GitHub Actions workflow.
@@ -16,13 +16,17 @@ if [ ! -d "../flutter" ]; then
   echo "Provisioning Flutter SDK version ${FLUTTER_VERSION} for ${OS_NAME}..."
   if [ "$OS_NAME" = "darwin" ]; then
     curl -fLO "https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_${FLUTTER_VERSION}-stable.zip"
-    unzip -q "flutter_macos_${FLUTTER_VERSION}-stable.zip" -d ../
-    rm "flutter_macos_${FLUTTER_VERSION}-stable.zip"
+    mkdir -p ../flutter-sdk-tmp
+    unzip -q "flutter_macos_${FLUTTER_VERSION}-stable.zip" -d ../flutter-sdk-tmp
+    mv ../flutter-sdk-tmp/flutter ../flutter-sdk
+    rm -rf ../flutter-sdk-tmp "flutter_macos_${FLUTTER_VERSION}-stable.zip"
   else
     curl -fLO "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
-    tar xf "flutter_linux_${FLUTTER_VERSION}-stable.tar.xz" -C ../
-    rm "flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
+    mkdir -p ../flutter-sdk-tmp
+    tar xf "flutter_linux_${FLUTTER_VERSION}-stable.tar.xz" -C ../flutter-sdk-tmp
+    mv ../flutter-sdk-tmp/flutter ../flutter-sdk
+    rm -rf ../flutter-sdk-tmp "flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
   fi
 else
-  echo "../flutter already exists, skipping download."
+  echo "../flutter-sdk already exists, skipping download."
 fi

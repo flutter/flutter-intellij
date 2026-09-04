@@ -34,11 +34,12 @@ if [ ! -f "$ZIP_FILE" ]; then
 fi
 
 echo "Uploading $ZIP_FILE to JetBrains Marketplace..."
-curl -if \
-  --header "Authorization: Bearer $TOKEN" \
-  -F pluginId=9212 \
-  -F file=@"$ZIP_FILE" \
-  -F channel=dev \
-  https://plugins.jetbrains.com/plugin/uploadPlugin
+# Disable for now
+#curl -if \
+#  --header "Authorization: Bearer $TOKEN" \
+#  -F pluginId=9212 \
+#  -F file=@"$ZIP_FILE" \
+#  -F channel=dev \
+#  https://plugins.jetbrains.com/plugin/uploadPlugin
 
 echo "kokoro deploy finished"

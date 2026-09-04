@@ -22,10 +22,10 @@ export PATH=$JAVA_HOME/bin:$PATH
 
 # Download and configure Flutter to the pinned stable release if not present
 source ./tool/provision_flutter.sh
-export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
+export PATH="$PATH":`pwd`/../flutter-sdk/bin:`pwd`/../flutter-sdk/bin/cache/dart-sdk/bin
 flutter config --no-analytics
 flutter doctor
-export FLUTTER_SDK=`pwd`/../flutter
+export FLUTTER_SDK=`pwd`/../flutter-sdk
 
 echo "java --version"
 java --version
@@ -101,7 +101,7 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
     
     ./gradlew verifyPlugin -PsingleIdeVersion=$version || true
 
-    BASELINE="$GITHUB_WORKSPACE/tool/baseline/$version/verifier-baseline.txt"
+    BASELINE="tool/baseline/$version/verifier-baseline.txt"
 
     echo -e "${BOLD}Searching for report for version $version...${NC}"
     REPORT=$(find build/reports/pluginVerifier -path "*-$version.*/report.md" | head -n 1)

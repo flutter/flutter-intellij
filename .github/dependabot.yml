@@ -16,7 +16,7 @@ updates:
       default-days: 7
 
   - package-ecosystem: "gradle"
-    directory: "/"
+    directory: "/flutter"
     schedule:
       interval: "weekly"
     labels:

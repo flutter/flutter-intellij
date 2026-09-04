@@ -24,6 +24,7 @@ jobs:
           persist-credentials: false
       - name: Run documentation check
         run: ./tool/check_agent_skills.sh
+        working-directory: flutter
 
   presubmit:
     runs-on: ubuntu-latest
@@ -43,6 +44,8 @@ jobs:
 
       - name: build
         run: ./tool/github.sh
+        working-directory: flutter
+
   checker:
     runs-on: ubuntu-latest
     strategy:
@@ -65,14 +68,15 @@ jobs:
 
       - name: Linux ${{ matrix.bot }}
         run: ./tool/github.sh
+        working-directory: flutter
         env:
           BOT: ${{ matrix.bot }}
       - name: upload build artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
-         name: build-${{ matrix.bot }}
-         path: |
-           **/build/reports/
-           **/build/test-results/
-         if-no-files-found: ignore  
+          name: build-${{ matrix.bot }}
+          path: |
+            flutter/**/build/reports/
+            flutter/**/build/test-results/
+          if-no-files-found: ignore  

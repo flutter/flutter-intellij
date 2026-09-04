@@ -38,9 +38,11 @@ public class CIIntegrityTest {
    */
   @Test
   public void testFlutterProvisioningScriptIntegrity() throws Exception {
-    // The JVM's Current Working Directory (CWD) during unit tests is the repository root.
     File scriptFile = new File("tool/provision_flutter.sh");
-    assertTrue("provision_flutter.sh must exist at the repository root 'tool/' directory", scriptFile.exists());
+    if (!scriptFile.exists()) {
+      scriptFile = new File("flutter/tool/provision_flutter.sh");
+    }
+    assertTrue("provision_flutter.sh must exist at 'tool/provision_flutter.sh'", scriptFile.exists());
 
     String content = Files.readString(scriptFile.toPath());
 
@@ -64,7 +66,10 @@ public class CIIntegrityTest {
    */
   @Test
   public void testGitHubWorkflowRegexSync() throws Exception {
-    File workflowFile = new File(".github/workflows/update_flutter.yaml");
+    File workflowFile = new File("../.github/workflows/update_flutter.yaml");
+    if (!workflowFile.exists()) {
+      workflowFile = new File(".github/workflows/update_flutter.yaml");
+    }
     assertTrue("update_flutter.yaml workflow must exist in the '.github/workflows/' directory", workflowFile.exists());
 
     String content = Files.readString(workflowFile.toPath());
