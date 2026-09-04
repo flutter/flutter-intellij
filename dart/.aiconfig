@@ -1,0 +1,9 @@
+project:
+  context:
+    instruction_files:
+      - .agents/skills/code-review/SKILL.md
+      - .gemini/styleguide.md
+
+  generation_rules:
+    - "When the user asks for a 'code review', always follow the instructions specified in `.agents/skills/code-review/SKILL.md`."
+    - "NEVER edit or propose edits to upstream-synced files in `third_party/thirdPartySrc/platform-lsp/` or `third_party/thirdPartySrc/analysisServer/org/dartlang/analysis/server/protocol/` without an automated patch script. Custom client wrapper code under `third_party/thirdPartySrc/analysisServer/com/google/dart/server/` (such as `RequestUtilities.java`) is locally maintained and may be edited directly."

@@ -1,0 +1,3 @@
+main() {
+  ical<caret>
+}

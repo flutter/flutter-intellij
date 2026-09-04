@@ -1,4 +1,5 @@
 cd %KOKORO_ARTIFACTS_DIR%\github\flutter-intellij-kokoro
+cd flutter
 
 rem Use choco to install dart so we get the latest version without having to edit this script
 rem Can't find where choco puts dart-sdk

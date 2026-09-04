@@ -1,0 +1,326 @@
+// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.jetbrains.lang.dart.projectWizard;
+
+import com.intellij.icons.AllIcons;
+import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.ide.util.projectWizard.SettingsStep;
+import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.application.ReadAction;
+import com.intellij.openapi.ui.TextFieldWithBrowseButton;
+import com.intellij.openapi.ui.ValidationInfo;
+import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.HtmlBuilder;
+import com.intellij.openapi.util.text.HtmlChunk;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.platform.ProjectGeneratorPeer;
+import com.intellij.ui.ColorUtil;
+import com.intellij.ui.DocumentAdapter;
+import com.intellij.ui.JBColor;
+import com.intellij.ui.components.JBCheckBox;
+import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.JBList;
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.util.concurrency.AppExecutorUtil;
+import com.intellij.util.ui.AsyncProcessIcon;
+import com.jetbrains.lang.dart.DartBundle;
+import com.jetbrains.lang.dart.sdk.DartSdkUtil;
+import com.jetbrains.lang.dart.ui.BasicComboBoxWithBrowseButton;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.text.JTextComponent;
+import java.awt.*;
+import java.util.List;
+import java.util.stream.IntStream;
+
+public class DartGeneratorPeer implements ProjectGeneratorPeer<DartProjectWizardData>, Disposable {
+  private static final String DART_PROJECT_TEMPLATE = "DART_PROJECT_TEMPLATE";
+  private static final String CREATE_SAMPLE_UNCHECKED = "CREATE_SAMPLE_UNCHECKED";
+
+  private JPanel myMainPanel;
+  private BasicComboBoxWithBrowseButton<String> mySdkPathComboWithBrowse;
+  private JBLabel myVersionLabel;
+
+  private JPanel myTemplatesPanel;
+  private JPanel myLoadingTemplatesPanel;
+  private JPanel myLoadedTemplatesPanel;
+  private JBCheckBox myCreateSampleProjectCheckBox;
+  private JBList<DartProjectTemplate> myTemplatesList;
+
+  private JBLabel myErrorLabel; // shown in IntelliJ IDEA only
+
+  private boolean myIntellijLiveValidationEnabled = false;
+
+  private boolean myDartCreateCalcStarted;
+  private List<DartProjectTemplate> myDartCreateTemplates;// not-null means that it's been already calculated
+  private String myDartCreateTemplatesSdkPath; //used to expire the above cache if the sdk is changed
+
+  private String mySdkPathValidationError;
+
+  public DartGeneratorPeer() {
+    // set initial values before initDartSdkControls() because listeners should not be triggered on initialization
+    mySdkPathComboWithBrowse.setEditable(true);
+
+    // now setup controls
+    DartSdkUtil.initDartSdkControls(null, mySdkPathComboWithBrowse, myVersionLabel, this);
+
+    myCreateSampleProjectCheckBox.addActionListener(e -> {
+      myTemplatesList.setEnabled(myCreateSampleProjectCheckBox.isSelected());
+    });
+    String selectedTemplateName = PropertiesComponent.getInstance().getValue(DART_PROJECT_TEMPLATE);
+    myCreateSampleProjectCheckBox.setSelected(!CREATE_SAMPLE_UNCHECKED.equals(selectedTemplateName));
+
+    myTemplatesList.setEmptyText(DartBundle.message("set.sdk.to.see.sample.content.options"));
+
+    myTemplatesList.setCellRenderer(new DefaultListCellRenderer() {
+      @Override
+      public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        JLabel component = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        DartProjectTemplate template = (DartProjectTemplate)value;
+        String text = template.getDescription().isEmpty()
+                      ? template.getName()
+                      : template.getName() + " - " + StringUtil.decapitalize(template.getDescription());
+        component.setText(text);
+        return component;
+      }
+    });
+
+    myErrorLabel.setIcon(AllIcons.Actions.Lightning);
+    myErrorLabel.setVisible(false);
+
+    myLoadingTemplatesPanel.setVisible(false);
+    myCreateSampleProjectCheckBox.setEnabled(false);
+    myTemplatesList.setEnabled(false);
+
+    final JTextComponent editorComponent = (JTextComponent)mySdkPathComboWithBrowse.getEditor().getEditorComponent();
+    final DocumentAdapter listener = new DocumentAdapter() {
+      @Override
+      protected void textChanged(final @NotNull DocumentEvent e) {
+        onSdkPathChanged();
+      }
+    };
+    editorComponent.getDocument().addDocumentListener(listener);
+    Disposer.register(this, () -> editorComponent.getDocument().removeDocumentListener(listener));
+
+    onSdkPathChanged();
+  }
+
+  private void onSdkPathChanged() {
+    final String sdkPath = mySdkPathComboWithBrowse.getEditor().getItem().toString().trim();
+    // If the sdk path has changed, recalculate the create template options
+    if (myDartCreateTemplatesSdkPath != null && !myDartCreateTemplatesSdkPath.equals(sdkPath)) {
+      clearTemplates();
+    }
+
+    ReadAction.nonBlocking(() -> DartSdkUtil.getErrorMessageIfWrongSdkRootPath(sdkPath))
+      .finishOnUiThread(ModalityState.any(), errorMessage -> {
+        mySdkPathValidationError = errorMessage;
+        if (myIntellijLiveValidationEnabled) {
+          validateInIntelliJ();
+        }
+
+        if (errorMessage != null) {
+          clearTemplates();
+          return;
+        }
+
+        if (myDartCreateCalcStarted) {
+          if (myDartCreateTemplates != null) {
+            showTemplates(myDartCreateTemplates);
+          }
+          else {
+            // Calculation in progress, just wait.
+            myLoadingTemplatesPanel.setVisible(true);
+            myLoadedTemplatesPanel.setVisible(false);
+          }
+        }
+        else {
+          myDartCreateCalcStarted = true;
+          startLoadingTemplates();
+        }
+      })
+      .submit(AppExecutorUtil.getAppExecutorService());
+  }
+
+  private void clearTemplates() {
+    myDartCreateTemplates = null;
+    myDartCreateTemplatesSdkPath = null;
+    myDartCreateCalcStarted = false;
+
+    myLoadingTemplatesPanel.setVisible(false);
+    myLoadedTemplatesPanel.setVisible(true);
+    myCreateSampleProjectCheckBox.setEnabled(false);
+    myTemplatesList.setEnabled(false);
+    myTemplatesList.setModel(new DefaultListModel<>());
+  }
+
+  private void startLoadingTemplates() {
+    myLoadingTemplatesPanel.setVisible(true);
+    myLoadingTemplatesPanel.setPreferredSize(myLoadedTemplatesPanel.getPreferredSize());
+
+    myLoadedTemplatesPanel.setVisible(false);
+
+    final AsyncProcessIcon asyncProcessIcon = new AsyncProcessIcon("Dart project templates loading");
+    myLoadingTemplatesPanel.add(asyncProcessIcon, new GridConstraints());// defaults are ok: row = 0, column = 0
+    asyncProcessIcon.resume();
+
+    final String comboSdkPath = mySdkPathComboWithBrowse.getEditor().getItem().toString().trim();
+    final String sdkPath = FileUtil.toSystemIndependentName(comboSdkPath);
+
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      DartProjectTemplate.loadTemplatesAsync(sdkPath, templates -> {
+        ApplicationManager.getApplication().invokeLater(() -> {
+          asyncProcessIcon.suspend();
+          myLoadingTemplatesPanel.remove(asyncProcessIcon);
+          Disposer.dispose(asyncProcessIcon);
+
+          myDartCreateTemplates = templates;
+          myDartCreateTemplatesSdkPath = comboSdkPath;
+
+          // it's better to call onSdkPathChanged() but not showTemplates()
+          // directly as sdk path could have been changed during this long calculation
+          onSdkPathChanged();
+        }, ModalityState.any());
+      });
+    });
+  }
+
+  private void showTemplates(final List<DartProjectTemplate> templates) {
+    ListModel<DartProjectTemplate> currentModel = myTemplatesList.getModel();
+
+    if (myLoadedTemplatesPanel.isVisible() &&
+        currentModel.getSize() == templates.size() &&
+        IntStream.range(0, templates.size()).allMatch(i -> templates.get(i).getName().equals(currentModel.getElementAt(i).getName()))) {
+      // already showing the right list
+
+      return;
+    }
+
+    boolean rightAfterLoading = myLoadingTemplatesPanel.isVisible();
+
+    myLoadingTemplatesPanel.setVisible(false);
+    myLoadedTemplatesPanel.setVisible(true);
+    myCreateSampleProjectCheckBox.setEnabled(true);
+
+    final String selectedTemplateName = PropertiesComponent.getInstance().getValue(DART_PROJECT_TEMPLATE);
+
+    myTemplatesList.setVisibleRowCount(Math.min(8, templates.size()));
+    myTemplatesList.setEnabled(myCreateSampleProjectCheckBox.isSelected());
+
+    DartProjectTemplate selectedTemplate = null;
+
+    final DefaultListModel<DartProjectTemplate> model = new DefaultListModel<>();
+    for (DartProjectTemplate template : templates) {
+      model.addElement(template);
+
+      if (rightAfterLoading && template.getName().equals(selectedTemplateName)) {
+        selectedTemplate = template;
+      }
+    }
+
+    myTemplatesList.setModel(model);
+
+    if (selectedTemplate != null) {
+      myTemplatesList.setSelectedValue(selectedTemplate, true);
+    }
+    else if (!templates.isEmpty()) {
+      myTemplatesList.setSelectedIndex(0);
+    }
+  }
+
+  @Override
+  public @NotNull JComponent getComponent(@NotNull TextFieldWithBrowseButton myLocationField, @NotNull Runnable checkValid) {
+    return myMainPanel;
+  }
+
+  @NotNull JPanel getMainPanel() {
+    return myMainPanel;
+  }
+
+  @Override
+  public void buildUI(final @NotNull SettingsStep settingsStep) {
+    settingsStep.addSettingsField(DartBundle.message("dart.sdk.path.label"), mySdkPathComboWithBrowse);
+    settingsStep.addSettingsField(DartBundle.message("version.label"), myVersionLabel);
+    settingsStep.addSettingsComponent(myTemplatesPanel);
+  }
+
+  @Override
+  public @NotNull DartProjectWizardData getSettings() {
+    final String sdkPath = FileUtil.toSystemIndependentName(mySdkPathComboWithBrowse.getEditor().getItem().toString().trim());
+    final DartProjectTemplate template = myCreateSampleProjectCheckBox.isSelected() ? myTemplatesList.getSelectedValue() : null;
+    PropertiesComponent.getInstance().setValue(DART_PROJECT_TEMPLATE, template == null ? CREATE_SAMPLE_UNCHECKED : template.getName());
+
+    return new DartProjectWizardData(sdkPath, template);
+  }
+
+  @Override
+  public @Nullable ValidationInfo validate() {
+    if (mySdkPathValidationError != null) {
+      return new ValidationInfo(mySdkPathValidationError, mySdkPathComboWithBrowse);
+    }
+
+    if (myCreateSampleProjectCheckBox.isSelected()) {
+      if (myTemplatesList.getSelectedValue() == null) {
+        return new ValidationInfo(DartBundle.message("project.template.not.selected"), myCreateSampleProjectCheckBox);
+      }
+    }
+
+    return null;
+  }
+
+  public boolean validateInIntelliJ() {
+    final ValidationInfo info = validate();
+
+    if (info == null) {
+      myErrorLabel.setVisible(false);
+      return true;
+    }
+    else {
+      myErrorLabel.setVisible(true);
+      HtmlChunk.Element html = new HtmlBuilder().append(info.message)
+        .wrapWith("font").attr("color", "#" + ColorUtil.toHex(JBColor.RED))
+        .wrapWith("html");
+      myErrorLabel.setText(html.toString());
+
+      if (!myIntellijLiveValidationEnabled) {
+        myIntellijLiveValidationEnabled = true;
+        enableIntellijLiveValidation();
+      }
+
+      return false;
+    }
+  }
+
+  private void enableIntellijLiveValidation() {
+    final JTextComponent editorComponent = (JTextComponent)mySdkPathComboWithBrowse.getEditor().getEditorComponent();
+    final DocumentAdapter listener = new DocumentAdapter() {
+      @Override
+      protected void textChanged(final @NotNull DocumentEvent e) {
+        validateInIntelliJ();
+      }
+    };
+    editorComponent.getDocument().addDocumentListener(listener);
+    Disposer.register(this, () -> editorComponent.getDocument().removeDocumentListener(listener));
+
+    myCreateSampleProjectCheckBox.addActionListener(e -> validateInIntelliJ());
+    myTemplatesList.addListSelectionListener(e -> validateInIntelliJ());
+  }
+
+  @Override
+  public boolean isBackgroundJobRunning() {
+    return false;
+  }
+
+  @Override
+  public void dispose() {
+  }
+
+  private void createUIComponents() {
+    mySdkPathComboWithBrowse = new BasicComboBoxWithBrowseButton<>();
+  }
+}

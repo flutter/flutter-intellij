@@ -1,0 +1,40 @@
+// This is a generated file. Not intended for manual editing.
+package com.jetbrains.lang.dart.psi;
+
+import java.util.List;
+import org.jetbrains.annotations.*;
+import com.intellij.psi.PsiElement;
+
+public interface DartClassDefinition extends DartClass {
+
+  @Nullable
+  DartClassBody getClassBody();
+
+  @Nullable
+  DartComponentName getComponentName();
+
+  @Nullable
+  DartInterfaces getInterfaces();
+
+  @NotNull
+  List<DartMetadata> getMetadataList();
+
+  @Nullable
+  DartMixinApplication getMixinApplication();
+
+  @Nullable
+  DartMixins getMixins();
+
+  @Nullable
+  DartPrimaryConstructorTail getPrimaryConstructorTail();
+
+  @Nullable
+  DartStringLiteralExpression getStringLiteralExpression();
+
+  @Nullable
+  DartSuperclass getSuperclass();
+
+  @Nullable
+  DartTypeParameters getTypeParameters();
+
+}

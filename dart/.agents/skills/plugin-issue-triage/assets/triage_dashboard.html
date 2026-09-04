@@ -1,0 +1,2060 @@
+<!--
+Copyright 2026 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IntelliJ Plugins Issue Triage Dashboard</title>
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <!-- Marked Library for Markdown Parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- DOMPurify for HTML Sanitization (XSS mitigation) -->
+  <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+  <style>
+    :root {
+      /* VS Code Dark Modern Palette */
+      --bg-base: #181818;
+      --bg-surface: #1f1f1f;
+      --bg-surface-elevated: #2b2d31;
+      --bg-hover: #2a2d2e;
+      --border-color: #2b2d31;
+      --border-focus: #007fd4;
+
+      --text-primary: #cccccc;
+      --text-secondary: #999999;
+      --text-muted: #666666;
+
+      --accent-primary: #007fd4;
+      --accent-hover: #006bb3;
+
+      /* Priority Colors */
+      --color-p0: #D93F0B;
+      --color-p0-muted: #D93F0B66;
+      --color-p1: #F4A261;
+      --color-p1-muted: #F4A26166;
+      --color-p2: #FBCA04;
+      --color-p2-muted: #FBCA0466;
+      --color-p3: #0E8A16;
+      --color-p3-muted: #0E8A1666;
+      --color-p4: #1D76DB;
+      --color-p4-muted: #1D76DB66;
+
+      --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header Bar */
+    header {
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .brand-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-logo {
+      width: 1.75rem;
+      height: 1.75rem;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: white;
+      font-size: 0.9rem;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .global-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    button {
+      font-family: var(--font-sans);
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--bg-surface-elevated);
+      color: var(--text-primary);
+      border-color: var(--border-focus);
+    }
+
+    .btn-primary {
+      background-color: var(--accent-primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-hover);
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+    }
+
+    /* Custom Select Component for Multi-assignees */
+    .custom-select-container {
+      position: relative;
+      width: 100%;
+    }
+
+    .custom-select-trigger {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--bg-base);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 0.6rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .custom-select-container.active .custom-select-trigger {
+      border-color: var(--accent-primary);
+    }
+
+    .custom-select-arrow {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+    }
+
+    .custom-select-container.active .custom-select-arrow {
+      transform: rotate(180deg);
+    }
+
+    .custom-select-options {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background-color: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      max-height: 250px;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      padding: 4px 0;
+    }
+
+    .custom-select-container.active .custom-select-options {
+      display: block;
+    }
+
+    .custom-select-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0.6rem 0.8rem;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+
+    .custom-select-option:hover {
+      background-color: var(--bg-base);
+    }
+
+    .custom-select-option.disabled-header {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      cursor: default;
+      background-color: transparent !important;
+      padding-top: 0.8rem;
+      padding-bottom: 0.3rem;
+    }
+
+    .custom-select-option.separator {
+      height: 1px;
+      background-color: var(--border-color);
+      padding: 0;
+      margin: 4px 0;
+      cursor: default;
+    }
+
+    .custom-select-option input[type='checkbox'] {
+      cursor: pointer;
+      width: 14px;
+      height: 14px;
+      margin: 0;
+    }
+
+
+
+    /* Custom Assignee Input */
+    .custom-select-search-container {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      gap: 8px;
+      background-color: var(--bg-surface);
+    }
+
+    .custom-select-search-container input {
+      flex: 1;
+      background-color: var(--bg-base);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .custom-select-search-container input:focus {
+      border-color: var(--accent-primary);
+    }
+
+    .custom-select-search-container button {
+      background-color: var(--accent-primary);
+      color: white;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .custom-select-search-container button:hover {
+      background-color: var(--accent-hover);
+    }
+
+    /* Main Workspace Layout */
+    .workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Left Sidebar: Issue List */
+    .sidebar {
+      width: 24rem;
+      border-right: 1px solid var(--border-color);
+      background-color: var(--bg-surface);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .search-container {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .search-input {
+      width: 100%;
+      background-color: var(--bg-base);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 0.6rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-primary);
+    }
+
+    .issue-list {
+      flex: 1;
+      overflow-y: auto;
+      list-style: none;
+    }
+
+    .issue-item {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      position: relative;
+    }
+
+    .issue-item:hover {
+      background-color: var(--bg-surface-elevated);
+    }
+
+    .issue-item.active {
+      background-color: var(--bg-surface-elevated);
+      border-left: 3px solid var(--accent-primary);
+      padding-left: calc(1rem - 3px);
+    }
+
+    .remaining-issues-item {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      background-color: rgba(66, 153, 225, 0.05);
+      /* soft blue tint */
+      color: var(--text-secondary);
+      border-left: 3px solid rgba(66, 153, 225, 0.4);
+      padding-left: calc(1rem - 3px);
+    }
+
+    .remaining-issues-content {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+
+    .remaining-icon {
+      font-size: 1rem;
+    }
+
+    .remaining-text {
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .issue-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .issue-id {
+      color: var(--text-muted);
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .priority-badge {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      color: #fff;
+    }
+
+    .badge-p0 {
+      background-color: var(--color-p0-muted);
+      color: var(--color-p0);
+    }
+
+    .badge-p1 {
+      background-color: var(--color-p1-muted);
+      color: var(--color-p1);
+    }
+
+    .badge-p2 {
+      background-color: var(--color-p2-muted);
+      color: var(--color-p2);
+    }
+
+    .badge-p3 {
+      background-color: var(--color-p3-muted);
+      color: var(--color-p3);
+    }
+
+    .badge-p4 {
+      background-color: var(--color-p4-muted);
+      color: var(--color-p4);
+    }
+
+    .badge-none {
+      background-color: var(--text-muted);
+    }
+
+    .issue-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+      line-height: 1.4;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text-primary);
+    }
+
+    .issue-subtext {
+      margin-top: 0.35rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .reviewed-icon {
+      color: var(--accent-primary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: none;
+    }
+
+    .issue-item.reviewed .reviewed-icon {
+      display: inline;
+    }
+
+    /* Middle Pane: Issue Detail */
+    .detail-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background-color: var(--bg-base);
+    }
+
+    .detail-header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border-color);
+      background-color: var(--bg-surface);
+      flex-shrink: 0;
+    }
+
+    .detail-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .detail-title {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .github-link {
+      font-size: 0.8rem;
+      color: var(--accent-primary);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      white-space: nowrap;
+      margin-top: 0.35rem;
+    }
+
+    .github-link:hover {
+      text-decoration: underline;
+    }
+
+    .detail-meta {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .detail-body-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 2rem;
+    }
+
+    .section-label {
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .issue-body {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem;
+      line-height: 1.6;
+      font-size: 0.925rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Markdown Styles */
+    .issue-body p {
+      margin-bottom: 1rem;
+    }
+
+    .issue-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .issue-body code {
+      background-color: rgba(255, 255, 255, 0.08);
+      padding: 0.15rem 0.3rem;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.85em;
+    }
+
+    .issue-body pre {
+      background-color: #08090c;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .issue-body pre code {
+      background-color: transparent;
+      padding: 0;
+      font-size: 0.85rem;
+    }
+
+    .issue-body a, .comments-container a, .markdown-body a {
+      color: var(--accent-primary);
+      text-decoration: none;
+    }
+
+    .issue-body a:hover, .comments-container a:hover, .markdown-body a:hover {
+      text-decoration: underline;
+    }
+
+    .comments-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .comment-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+    }
+
+    .comment-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 0.35rem;
+    }
+
+    .comment-author {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .comment-body {
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+
+    /* Right Pane: Triage Form */
+    .triage-pane {
+      width: 24rem;
+      background-color: var(--bg-surface);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    /* Resizer Splitter Bar */
+    .resizer {
+      width: 4px;
+      cursor: col-resize;
+      background-color: var(--border-color);
+      flex-shrink: 0;
+      transition: background-color 0.15s ease;
+      position: relative;
+    }
+
+    .resizer:hover,
+    .resizer.dragging {
+      background-color: var(--accent-primary);
+      box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
+    }
+
+
+
+    .triage-form {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    select,
+    textarea,
+    input[type='text'] {
+      width: 100%;
+      background-color: var(--bg-base);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 0.6rem;
+      border-radius: 6px;
+      font-family: var(--font-sans);
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    select:focus,
+    textarea:focus,
+    input[type='text']:focus {
+      border-color: var(--accent-primary);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 180px;
+      line-height: 1.5;
+      font-size: 0.85rem;
+    }
+
+    /* Label Checklist Multi-select */
+    .label-checklist {
+      background-color: transparent;
+      border: none;
+      padding: 0;
+    }
+
+    .pill-tag {
+      padding: 0.3rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      background-color: transparent;
+      color: var(--text-primary);
+      transition: all 0.15s ease;
+    }
+
+    .pill-tag.active {
+      border: 1px solid #007fd4;
+      background-color: rgba(0, 127, 212, 0.2);
+      color: #60a5fa;
+    }
+
+    .label-check-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.3rem 0.4rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.15s ease;
+    }
+
+    .label-check-item:hover {
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .label-check-item input[type='checkbox'] {
+      cursor: pointer;
+    }
+
+    .triage-actions {
+      padding: 1.5rem;
+      border-top: 1px solid var(--border-color);
+      background-color: var(--bg-surface);
+      flex-shrink: 0;
+    }
+
+    .btn-block {
+      width: 100%;
+      padding: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* Empty state */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .empty-state h3 {
+      font-family: var(--font-display);
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="brand-container">
+      <div class="brand-logo" style="background: none;"><svg height="24" aria-hidden="true" viewBox="0 0 16 16"
+          version="1.1" width="24" data-view-component="true" class="octicon octicon-mark-github">
+          <path fill="currentColor"
+            d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z">
+          </path>
+        </svg></div>
+      <h1>IntelliJ Plugins Issue Triage</h1>
+    </div>
+    <div class="global-actions">
+      <button class="btn-secondary" onclick="abortTriage()">Discard</button>
+      <button class="btn-primary" onclick="saveAndApply()">Apply</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <!-- Left: Issues List -->
+    <aside class="sidebar">
+      <div class="search-container">
+        <input type="text" class="search-input" id="searchBar" placeholder="Search issues..."
+          oninput="filterIssues()" />
+      </div>
+      <ul class="issue-list" id="issueListContainer">
+        <!-- Issue items dynamically loaded -->
+      </ul>
+    </aside>
+
+    <!-- Middle: Detailed View -->
+    <main class="detail-pane" id="detailPane">
+      <div class="empty-state">
+        <div class="empty-state-icon">📥</div>
+        <h3>No Issue Selected</h3>
+        <p>Select an issue from the sidebar to review details and begin triaging.</p>
+      </div>
+    </main>
+
+    <!-- Pane Resizer Splitter -->
+    <div class="resizer" id="paneResizer" style="visibility: hidden"></div>
+
+    <!-- Right: Triage Decisions Panel -->
+    <aside class="triage-pane" id="triagePane" style="visibility: hidden">
+
+      <div class="triage-form">
+        <div style="display: flex; gap: 1rem; margin-bottom: 0;">
+          <div class="form-group" style="flex: 1; margin-bottom: 0;">
+
+            <select id="triageType" onchange="updateActiveDecision('type', this.value)"
+              style="border-radius: 6px; padding: 0.5rem; border: 1px solid var(--border-color); background-color: var(--bg-surface); color: var(--text-primary); outline: none; font-size: 0.9rem; font-weight: 500;">
+              <option value="None">Type</option>
+              <option value="bug">Bug</option>
+              <option value="feature">Feature</option>
+              <option value="task">Task</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex: 1; margin-bottom: 0;">
+
+            <select id="triagePriority" onchange="updateActiveDecision('priority', this.value)"
+              style="border-radius: 6px; padding: 0.5rem; border: 1px solid var(--border-color); background-color: var(--bg-surface); color: var(--text-primary); outline: none; font-size: 0.9rem; font-weight: 500;">
+              <option value="None">Priority</option>
+              <option value="P0">P0</option>
+              <option value="P1">P1</option>
+              <option value="P2">P2</option>
+              <option value="P3">P3</option>
+              <option value="P4">P4</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Assignees</label>
+          <div class="custom-select-container" id="assigneeDropdownContainer">
+            <div class="custom-select-trigger" id="assigneeDropdownTrigger" onclick="toggleAssigneeDropdown(event)">
+              <span id="assigneeDropdownValue" style="font-style: italic; color: var(--text-muted)">Unassigned</span>
+              <span class="custom-select-arrow">▼</span>
+            </div>
+            <div class="custom-select-options" id="assigneeDropdownOptions">
+              <div class="custom-select-search-container" onclick="event.stopPropagation()">
+                <input type="text" id="assigneeCustomInput" placeholder="Add custom GitHub login..."
+                  onkeydown="handleCustomAssigneeKeyDown(event, activeIssueId)" />
+                <button type="button" class="btn-add-custom" onclick="addCustomAssignee(activeIssueId)">
+                  Add
+                </button>
+              </div>
+              <div id="assigneeOptionsList">
+                <!-- Dynamically populated options with checkboxes -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: 8px;">
+            <input type="checkbox" id="triageProject" style="margin:0; width:auto;"
+              onchange="handleProjectChange(this.checked)">
+            <label for="triageProject"
+              style="margin:0; text-transform: none; font-size: 0.9rem; color: var(--text-primary);">Add to the Flutter
+              DevExp GH Project</label>
+          </div>
+
+          <div
+            style="display: flex; flex-direction: column; gap: 8px; margin-left: 24px; padding-left: 12px; border-left: 2px solid var(--border-color);">
+            <div
+              style="display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: 8px;">
+              <input type="checkbox" id="triageIteration" style="margin:0; width:auto;"
+                onchange="updateActiveDecision('currentIteration', this.checked)">
+              <label for="triageIteration" id="triageIterationLabel"
+                style="margin:0; text-transform: none; font-size: 0.9rem; color: var(--text-primary); transition: color 0.2s;">Add
+                to Current Iteration</label>
+            </div>
+
+            <div
+              style="display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: 8px;">
+              <input type="checkbox" id="triageSwarmable" style="margin:0; width:auto;"
+                onchange="updateActiveDecision('swarmable', this.checked)">
+              <label for="triageSwarmable" id="triageSwarmableLabel"
+                style="margin:0; text-transform: none; font-size: 0.9rem; color: var(--text-primary); transition: color 0.2s;">Swarmable</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Labels</label>
+          <div class="label-checklist" id="labelChecklistContainer">
+            <!-- Dynamic checkboxes -->
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Proposed Actions</label>
+          <div id="proposedActionsContainer" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          </div>
+        </div>
+
+
+        <div class="form-group">
+          <label for="triageReply">Response</label>
+          <textarea id="triageReply" placeholder="Draft a polite triage response..."
+            oninput="updateActiveDecision('reply', this.value)"></textarea>
+        </div>
+      </div>
+
+      <div class="triage-actions">
+        <button id="approveBtn" class="btn-primary btn-block" onclick="toggleActiveIssueApproval()">
+          Mark as Reviewed
+        </button>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    let repoData = { repo: '', issues: [] };
+    let decisions = {}; // keyed by issue ID
+    let activeIssueId = null;
+
+    const formatDate = dateStr => {
+      if (!dateStr) return 'N/A';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    };
+
+    // Labels in the repository, populated dynamically from data on load
+    const standardLabels = [];
+
+    const ACTION_TAGS = {
+      'missing_repro': { label: 'Missing Repro', text: 'Could you share some simple reproduction steps or a minimal project so we can debug on our end?' },
+      'missing_plugin_version': { label: 'Missing Plugin Version', text: 'What version of the IntelliJ plugin are you using?' },
+      'missing_flutter_sdk': { label: 'Missing Flutter SDK', text: 'What version of the Flutter SDK are you using (`flutter --version`)?' },
+      'missing_dart_sdk': { label: 'Missing Dart SDK', text: 'What version of the Dart SDK are you using (`dart --version`)?' },
+      'outdated_sdk': { label: 'Old SDK', text: 'It looks like you might be using an older SDK. Could you try updating to the latest stable release to see if the issue persists?' },
+      'outdated_plugin': { label: 'Old Plugin', text: 'Could you try updating the plugin to the latest version to see if this has already been fixed?' },
+      'duplicate': { label: 'Duplicate', text: 'This looks like a duplicate of another issue.' }
+    };
+
+    function renderProposedActions(activeTags) {
+      const container = document.getElementById('proposedActionsContainer');
+      container.innerHTML = '';
+
+      for (const [key, info] of Object.entries(ACTION_TAGS)) {
+        const isActive = activeTags.includes(key);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pill-tag' + (isActive ? ' active' : '');
+        btn.textContent = info.label;
+        btn.onclick = () => toggleActionTag(key);
+        container.appendChild(btn);
+      }
+    }
+
+    function toggleActionTag(tag) {
+      if (!activeIssueId) return;
+      const dec = decisions[activeIssueId];
+      let tags = dec.proposed_actions || [];
+      if (typeof tags === 'string') tags = [];
+
+      if (tags.includes(tag)) {
+        tags = tags.filter(t => t !== tag);
+      } else {
+        tags.push(tag);
+      }
+      dec.proposed_actions = tags;
+
+      renderProposedActions(tags);
+
+      let draftText = tags.map(t => ACTION_TAGS[t].text).join(' ');
+      if (draftText) {
+        draftText = "Thanks for the report! Based on the issue description, we need a bit more info.\n\n" + draftText;
+      }
+      dec.reply = draftText;
+      document.getElementById('triageReply').value = draftText;
+    }
+
+    // Fetch comments and issue data on load
+    // Render the assignee select dropdown dynamically for the active issue
+    function toggleAssigneeDropdown(event) {
+      event.stopPropagation();
+      const container = document.getElementById('assigneeDropdownContainer');
+      container.classList.toggle('active');
+    }
+
+    function renderAssigneeSelect(issue, currentSelectedValues) {
+      const selectOptions = document.getElementById('assigneeOptionsList');
+      const dropdownValueSpan = document.getElementById('assigneeDropdownValue');
+
+      selectOptions.innerHTML = '';
+
+      const selectedList = Array.isArray(currentSelectedValues) ? currentSelectedValues : [];
+      const allAssignees = [...(repoData.assignees || [])]; // The Owners
+
+      // Ensure all currently selected assignees are known
+      selectedList.forEach(login => {
+        if (!allAssignees.some(a => a.login === login)) {
+          allAssignees.push({login: login, name: ''});
+        }
+      });
+
+      const originalAssignees = Array.isArray(issue.assignees) ? issue.assignees : [];
+      originalAssignees.forEach(login => {
+        if (!allAssignees.some(a => a.login === login)) {
+          allAssignees.push({login: login, name: ''});
+        }
+      });
+
+      const customAssignees = Array.isArray(issue.custom_assignees) ? issue.custom_assignees : [];
+      customAssignees.forEach(login => {
+        if (!allAssignees.some(a => a.login === login)) {
+          allAssignees.push({login: login, name: ''});
+        }
+      });
+
+      if (selectedList.length === 0) {
+        dropdownValueSpan.textContent = 'Unassigned';
+        dropdownValueSpan.style.fontStyle = 'italic';
+        dropdownValueSpan.style.color = 'var(--text-muted)';
+      } else {
+        const displayNames = selectedList.map(login => {
+          const found = allAssignees.find(a => a.login === login);
+          let nameStr = `@${login}`;
+          if (found && found.name && found.name.toLowerCase() !== login.toLowerCase()) {
+            nameStr = `${found.name} (@${login})`;
+          }
+          return nameStr;
+        });
+        dropdownValueSpan.textContent = (displayNames.length === 1 ? 'Assignee: ' : 'Assignees: ') + displayNames.join(', ');
+        dropdownValueSpan.style.fontStyle = 'normal';
+        dropdownValueSpan.style.color = 'var(--text-primary)';
+      }
+
+      const formatOptionText = assigneeObj => {
+        if (assigneeObj.name && assigneeObj.name.toLowerCase() !== assigneeObj.login.toLowerCase()) {
+          return `${assigneeObj.name} (@${assigneeObj.login})`;
+        }
+        return `@${assigneeObj.login}`;
+      };
+
+      const handleToggle = (login, isChecked) => {
+        let newList = [...selectedList];
+        if (isChecked) {
+          if (!newList.includes(login)) newList.push(login);
+        } else {
+          newList = newList.filter(l => l !== login);
+        }
+        decisions[issue.id].assignee = newList;
+        renderAssigneeSelect(issue, newList);
+      };
+
+      const unassignedOpt = document.createElement('div');
+      unassignedOpt.className = 'custom-select-option';
+      unassignedOpt.style.fontStyle = 'italic';
+      unassignedOpt.style.color = 'var(--text-muted)';
+      unassignedOpt.textContent = 'Unassigned (Clear all)';
+      unassignedOpt.onclick = e => {
+        e.stopPropagation();
+        decisions[issue.id].assignee = [];
+        renderAssigneeSelect(issue, []);
+      };
+      selectOptions.appendChild(unassignedOpt);
+
+      const renderOption = (obj) => {
+        const opt = document.createElement('div');
+        opt.className = 'custom-select-option';
+
+        const chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.checked = selectedList.includes(obj.login);
+        chk.onclick = e => e.stopPropagation();
+        chk.onchange = e => {
+          handleToggle(obj.login, e.target.checked);
+        };
+
+        const label = document.createElement('span');
+        label.textContent = formatOptionText(obj);
+
+        opt.appendChild(chk);
+        opt.appendChild(label);
+        opt.onclick = () => {
+          chk.checked = !chk.checked;
+          handleToggle(obj.login, chk.checked);
+        };
+        selectOptions.appendChild(opt);
+      };
+
+      const originalObjects = [];
+      originalAssignees.forEach(login => {
+        const found = allAssignees.find(a => a.login === login);
+        if (found) originalObjects.push(found);
+      });
+
+      if (originalObjects.length > 0) {
+        const headerOpt = document.createElement('div');
+        headerOpt.className = 'custom-select-option disabled-header';
+        headerOpt.textContent = '── Currently Assigned ──';
+        selectOptions.appendChild(headerOpt);
+        originalObjects.forEach(renderOption);
+      }
+
+      const ownersList = (repoData.owners || []).filter(a => !originalAssignees.includes(a.login));
+      if (ownersList.length > 0) {
+        if (originalObjects.length > 0) {
+          const sep = document.createElement('div');
+          sep.className = 'custom-select-option separator';
+          selectOptions.appendChild(sep);
+        }
+        const headerOpt = document.createElement('div');
+        headerOpt.className = 'custom-select-option disabled-header';
+        headerOpt.textContent = '── Owners ──';
+        selectOptions.appendChild(headerOpt);
+        ownersList.forEach(renderOption);
+
+        const sepAfter = document.createElement('div');
+        sepAfter.className = 'custom-select-option separator';
+        selectOptions.appendChild(sepAfter);
+      }
+
+      const othersList = allAssignees.filter(a => {
+        return !originalAssignees.includes(a.login) && !(repoData.owners || []).some(owner => owner.login === a.login);
+      });
+
+      if (othersList.length > 0) {
+        if (ownersList.length === 0 && originalObjects.length > 0) {
+          const sep = document.createElement('div');
+          sep.className = 'custom-select-option separator';
+          selectOptions.appendChild(sep);
+        }
+
+        const headerOpt = document.createElement('div');
+        headerOpt.className = 'custom-select-option disabled-header';
+        headerOpt.textContent = '── Other Contributors ──';
+        selectOptions.appendChild(headerOpt);
+        othersList.forEach(renderOption);
+      }
+    }
+    function handleCustomAssigneeKeyDown(event, issueId) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        addCustomAssignee(issueId);
+      }
+    }
+
+    function addCustomAssignee(issueId) {
+      const input = document.getElementById('assigneeCustomInput');
+      if (!input) return;
+      const login = input.value.trim();
+      if (!login) return;
+
+      const issue = repoData.issues.find(i => i.id === issueId);
+      if (!issue) return;
+
+      // Initialize custom_assignees list on the issue if not present
+      issue.custom_assignees = issue.custom_assignees || [];
+      if (!issue.custom_assignees.includes(login)) {
+        issue.custom_assignees.push(login);
+      }
+
+      // Also add it to the active decision's assignee list if not already there
+      let currentAssignees = decisions[issueId].assignee || [];
+      if (!currentAssignees.includes(login)) {
+        currentAssignees = [...currentAssignees, login];
+        decisions[issueId].assignee = currentAssignees;
+      }
+
+      // Reset input
+      input.value = '';
+
+      // Re-render the select dropdown
+      renderAssigneeSelect(issue, currentAssignees);
+    }
+
+    async function loadIssues() {
+      try {
+        try {
+          const configRes = await fetch('/api/config');
+          if (configRes.ok) {
+            const config = await configRes.json();
+            if (config.currentIteration) {
+              const iterLabel = document.querySelector('label[for="triageIteration"]');
+              if (iterLabel) {
+                iterLabel.textContent = `Add to Current Iteration (${config.currentIteration})`;
+              }
+            }
+          }
+        } catch (e) {
+          console.error('Failed to fetch config', e);
+        }
+
+        const res = await fetch('/api/comments');
+        if (!res.ok) throw new Error('Failed to fetch issue data');
+        repoData = await res.json();
+
+        // Dynamically override standard labels list with real repo labels if available,
+        // filtering out priority labels (P0-P4) since they are managed via the priority dropdown.
+        if (repoData.labels_by_repo) {
+          const allLabels = Object.values(repoData.labels_by_repo).flat();
+          const uniqueLabels = [...new Set(allLabels)].filter(label => !/^[Pp][0-4]$/.test(label));
+          standardLabels.splice(0, standardLabels.length, ...uniqueLabels);
+        }
+
+        // Pre-populate decisions object with AI suggestions
+        repoData.issues.forEach(issue => {
+          const existingAssignees = Array.isArray(issue.assignees) ? [...issue.assignees] : [];
+          const initialAssignees = existingAssignees;
+
+          decisions[issue.id] = {
+            id: issue.id,
+            repo: issue.repo || repoData.repo,
+            approved: false,
+            type: issue.suggestions.issue_type || 'None',
+            priority: issue.suggestions.priority || 'None',
+            assignee: initialAssignees,
+            labels: issue.suggestions.labels || [],
+            reply: issue.suggestions.reply || '',
+            proposed_actions: issue.suggestions.proposed_actions || [],
+            addToProject: issue.suggestions.addToProject || false,
+            swarmable: issue.suggestions.swarmable || false,
+            currentIteration: issue.suggestions.currentIteration || false,
+          };
+        });
+
+        renderIssueList();
+      } catch (err) {
+        console.error(err);
+        document.getElementById('detailPane').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon" style="color: var(--color-p0);">⚠️</div>
+            <h3>Failed to Load Issues</h3>
+            <p>${err.message}</p>
+          </div>`;
+      }
+    }
+
+    function renderIssueList() {
+      const container = document.getElementById('issueListContainer');
+      container.innerHTML = '';
+
+      let lastRepo = null;
+      repoData.issues.forEach(issue => {
+        if (issue.repo && issue.repo !== lastRepo) {
+          const header = document.createElement('li');
+          header.style.padding = '0.5rem 1rem';
+          header.style.backgroundColor = 'var(--bg-card)';
+          header.style.color = 'var(--accent-primary)';
+          header.style.fontSize = '0.75rem';
+          header.style.fontWeight = 'bold';
+          header.style.textTransform = 'uppercase';
+          header.style.letterSpacing = '0.05em';
+          header.style.borderBottom = '1px solid var(--border-color)';
+          header.style.borderTop = lastRepo ? '1px solid var(--border-color)' : 'none';
+          header.textContent = issue.repo.replace(/^flutter\//i, '');
+          container.appendChild(header);
+          lastRepo = issue.repo;
+        }
+
+        const dec = decisions[issue.id];
+        const pClass =
+          dec.priority !== 'None' ? `badge-${dec.priority.toLowerCase()}` : 'badge-none';
+
+        const li = document.createElement('li');
+        li.className = `issue-item ${dec.approved ? 'reviewed' : ''} ${issue.id === activeIssueId ? 'active' : ''}`;
+        li.id = `issue-item-${issue.id}`;
+        li.onclick = () => selectIssue(issue.id);
+
+        const dupes = issue.suggestions.possible_duplicates || [];
+
+
+        const dupeBadge = dupes.length > 0 ? `<span class="priority-badge" style="background-color: var(--color-p3); color: white;" title="Possible duplicates found">${dupes.length} Dupes?</span>` : '';
+
+
+
+        li.innerHTML = `
+
+
+          <div class="issue-meta">
+
+
+            <span class="issue-id">#${issue.id}</span>
+
+
+            <div style="display:flex; gap:4px;">
+
+
+              ${dupeBadge}
+
+
+              <span class="priority-badge ${pClass}" id="list-priority-badge-${issue.id}">${dec.priority}</span>
+
+
+            </div>
+
+
+          </div>
+
+
+          <div class="issue-title">${issue.title}</div>
+
+
+          <div class="issue-subtext">
+            <span>@${issue.author}</span>
+            <span class="reviewed-icon">✓ Reviewed</span>
+          </div>
+        `;
+        container.appendChild(li);
+      });
+
+      // Append remaining backlog info card if there are more issues
+      if (repoData.total_issues_count && repoData.total_issues_count > repoData.issues.length) {
+        const remaining = repoData.total_issues_count - repoData.issues.length;
+        const li = document.createElement('li');
+        li.className = 'remaining-issues-item';
+        li.innerHTML = `
+          <div class="remaining-issues-content">
+            <span class="remaining-icon">ℹ️</span>
+            <span class="remaining-text">${remaining} more issue${remaining > 1 ? 's' : ''} to be reviewed after these</span>
+          </div>
+        `;
+        container.appendChild(li);
+      }
+    }
+
+    function selectIssue(id) {
+      activeIssueId = id;
+      renderIssueList(); // refresh active highlight
+
+      const issue = repoData.issues.find(i => i.id === id);
+      const dec = decisions[id];
+
+      // Render Details
+      const detailPane = document.getElementById('detailPane');
+      const cleanBody = DOMPurify.sanitize(
+        marked.parse(issue.body || '*No description provided.*'),
+      );
+
+      let commentsHtml = '';
+      if (issue.comments && issue.comments.length > 0) {
+        commentsHtml = `
+          <div class="section-label" style="margin-top: 2rem;">Comments (${issue.comments.length})</div>
+          <div class="comments-container">
+            ${issue.comments
+            .map(
+              c => `
+              <div class="comment-card">
+                <div class="comment-meta">
+                  <span class="comment-author">@${c.author}</span>
+                </div>
+                <div class="comment-body">${DOMPurify.sanitize(marked.parse(c.body))}</div>
+              </div>
+            `,
+            )
+            .join('')}
+          </div>
+        `;
+      } else {
+        commentsHtml = `
+          <div class="section-label" style="margin-top: 2rem;">Comments</div>
+          <p style="font-size: 0.875rem; color: var(--text-muted); italic">No comments on this issue yet.</p>
+        `;
+      }
+
+      let duplicatesHtml = '';
+
+
+      if (issue.suggestions.possible_duplicates && issue.suggestions.possible_duplicates.length > 0) {
+
+
+        duplicatesHtml = `
+
+
+        <div class="section-label" style="margin-top: 1.5rem; color: var(--color-p3);">Possible Duplicates (${issue.suggestions.possible_duplicates.length})</div>
+
+
+        <div class="comments-container" style="border-left: 3px solid var(--color-p3);">
+
+
+          ${issue.suggestions.possible_duplicates
+
+
+            .map(
+
+
+              d => `
+
+
+            <div class="comment-card" style="padding: 0.75rem;">
+
+
+              <div style="font-weight: 500; margin-bottom: 4px;">
+
+
+                <a href="${d.url}" target="_blank" style="color: var(--text-primary); text-decoration: none;">#${d.number}: ${d.title}</a>
+
+
+              </div>
+
+
+              <div style="font-size: 0.8rem; color: var(--text-secondary); display: flex; gap: 8px;">
+
+
+                <span class="badge-${d.state.toLowerCase() === 'closed' ? 'p0' : 'p3'}">${d.state}</span>
+
+
+                <span>Opened: ${formatDate(d.createdAt)}</span>
+
+
+              </div>
+
+
+            </div>
+
+
+          `,
+
+
+            )
+
+
+            .join('')}
+
+
+        </div>
+
+
+        `;
+
+
+      }
+
+
+
+      detailPane.innerHTML = `
+
+
+        <div class="detail-header">
+
+
+          <div class="detail-title-row">
+
+
+            <h2 class="detail-title">${issue.title}</h2>
+
+
+          </div>
+
+
+          <div class="detail-meta" style="margin-bottom: 0.5rem;">
+
+
+            Opened by <strong>@${issue.author}</strong> • 
+
+
+            <a class="github-link" href="https://github.com/${issue.repo || repoData.repo}/issues/${issue.id}" target="_blank">
+
+
+              View on GitHub ↗
+
+
+            </a>
+
+
+          </div>
+
+
+          <div class="detail-dates" style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1.5rem; display: flex; gap: 16px;">
+
+
+            <span>Opened: <strong>${formatDate(issue.createdAt)}</strong></span>
+
+
+            <span>Last modified: <strong>${formatDate(issue.updatedAt || issue.createdAt)}</strong></span>
+
+
+          </div>
+
+
+        </div>
+
+
+        <div class="detail-body-container">
+
+
+          <div class="section-label">Description</div>
+
+
+          <div class="issue-body">${cleanBody}</div>
+
+
+          ${duplicatesHtml}
+
+
+          ${commentsHtml}
+
+
+        </div>
+
+
+      `;
+
+      // Pre-fill Form Controls on Right
+      document.getElementById('triagePane').style.visibility = 'visible';
+      document.getElementById('paneResizer').style.visibility = 'visible';
+      const typeSelect = document.getElementById('triageType');
+      const prioSelect = document.getElementById('triagePriority');
+
+      // Reset text
+      Array.from(typeSelect.options).forEach(opt => {
+        opt.text = (opt.value === 'None' ? 'Type' : opt.value.charAt(0).toUpperCase() + opt.value.slice(1));
+      });
+      const knownTypes = ['bug', 'feature', 'task'];
+      let aiType = issue.suggestions.issue_type || 'None';
+      if (aiType === 'None') {
+        const typeLabelMatch = (issue.suggestions.labels || []).find(l => {
+          const clean = l.replace('type: ', '');
+          return knownTypes.includes(clean);
+        });
+        aiType = typeLabelMatch ? typeLabelMatch.replace('type: ', '') : 'None';
+      }
+      Array.from(typeSelect.options).forEach(opt => {
+        if (opt.value === aiType) opt.text += ' (suggested)';
+      });
+
+      // Reset priority text
+      Array.from(prioSelect.options).forEach(opt => {
+        opt.text = (opt.value === 'None' ? 'Priority' : opt.value);
+      });
+      const aiPrio = issue.suggestions.priority || 'None';
+      Array.from(prioSelect.options).forEach(opt => {
+        if (opt.value === aiPrio) opt.text += ' (suggested)';
+      });
+
+      typeSelect.value = dec.type || 'None';
+      prioSelect.value = dec.priority;
+      updateDropdownColors();
+
+      document.getElementById('triageProject').checked = !!dec.addToProject;
+      document.getElementById('triageSwarmable').checked = !!dec.swarmable;
+      document.getElementById('triageIteration').checked = !!dec.currentIteration;
+      handleProjectChange(!!dec.addToProject);
+
+      // Dynamically populate assignee dropdown with sorted suggested contributors
+      renderAssigneeSelect(issue, dec.assignee);
+
+      // Clear custom assignee input when selecting a different issue
+      const customInput = document.getElementById('assigneeCustomInput');
+      if (customInput) {
+        customInput.value = '';
+      }
+
+
+
+
+      let proposed = dec.proposed_actions || [];
+      if (typeof proposed === 'string') proposed = [];
+      renderProposedActions(proposed);
+
+      document.getElementById('triageReply').value = dec.reply || '';
+
+      // Load labels checkboxes
+      renderLabelChecklist(dec.labels);
+
+      // Update the approval toggle button state
+      updateApproveButton(dec.approved);
+    }
+
+    function renderLabelChecklist(selectedLabels) {
+      const container = document.getElementById('labelChecklistContainer');
+      container.innerHTML = '';
+      container.style.display = 'flex';
+      container.style.flexWrap = 'wrap';
+      container.style.gap = '0.5rem';
+
+      let availableLabels = standardLabels;
+      const issue = repoData.issues.find(i => i.id === activeIssueId);
+      if (issue && repoData.labels_by_repo && repoData.labels_by_repo[issue.repo || repoData.repo]) {
+        availableLabels = repoData.labels_by_repo[issue.repo || repoData.repo].filter(label => !/^[Pp][0-4]$/.test(label));
+      }
+
+      availableLabels.sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'})).forEach(labelName => {
+        const isChecked = selectedLabels.includes(labelName);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = labelName;
+
+        btn.className = 'pill-tag' + (isChecked ? ' active' : '');
+
+        btn.onclick = () => {
+          toggleLabelSelection(labelName);
+          renderLabelChecklist(decisions[activeIssueId].labels);
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function toggleLabelSelection(labelName) {
+      if (!activeIssueId) return;
+      const dec = decisions[activeIssueId];
+      const index = dec.labels.indexOf(labelName);
+      if (index === -1) {
+        dec.labels.push(labelName);
+      } else {
+        dec.labels.splice(index, 1);
+      }
+    }
+
+    function updateDropdownColors() {
+      const typeSelect = document.getElementById('triageType');
+      const prioSelect = document.getElementById('triagePriority');
+      if (!typeSelect || !prioSelect) return;
+
+      switch (typeSelect.value) {
+        case 'bug': typeSelect.style.backgroundColor = 'rgba(159, 18, 57, 0.4)'; typeSelect.style.color = '#fb7185'; break;
+        case 'feature': typeSelect.style.backgroundColor = 'rgba(3, 102, 214, 0.4)'; typeSelect.style.color = '#60a5fa'; break;
+        case 'task': typeSelect.style.backgroundColor = 'rgba(255, 211, 61, 0.4)'; typeSelect.style.color = '#fbbf24'; break;
+        default: typeSelect.style.backgroundColor = 'var(--bg-base)'; typeSelect.style.color = 'var(--text-primary)'; break;
+      }
+
+      switch (prioSelect.value) {
+        case 'P0': prioSelect.style.backgroundColor = 'var(--color-p0-muted)'; prioSelect.style.color = 'var(--color-p0)'; break;
+        case 'P1': prioSelect.style.backgroundColor = 'var(--color-p1-muted)'; prioSelect.style.color = 'var(--color-p1)'; break;
+        case 'P2': prioSelect.style.backgroundColor = 'var(--color-p2-muted)'; prioSelect.style.color = 'var(--color-p2)'; break;
+        case 'P3': prioSelect.style.backgroundColor = 'var(--color-p3-muted)'; prioSelect.style.color = 'var(--color-p3)'; break;
+        case 'P4': prioSelect.style.backgroundColor = 'var(--color-p4-muted)'; prioSelect.style.color = 'var(--color-p4)'; break;
+        default: prioSelect.style.backgroundColor = 'var(--bg-base)'; prioSelect.style.color = 'var(--text-primary)'; break;
+      }
+    }
+
+    function handleProjectChange(checked) {
+      if (!activeIssueId) return;
+      decisions[activeIssueId].addToProject = checked;
+
+      const iterCheckbox = document.getElementById('triageIteration');
+      const swarmCheckbox = document.getElementById('triageSwarmable');
+      const iterLabel = document.getElementById('triageIterationLabel');
+      const swarmLabel = document.getElementById('triageSwarmableLabel');
+
+      if (checked) {
+        iterCheckbox.disabled = false;
+        swarmCheckbox.disabled = false;
+        iterLabel.style.color = 'var(--text-primary)';
+        swarmLabel.style.color = 'var(--text-primary)';
+      } else {
+        iterCheckbox.disabled = true;
+        swarmCheckbox.disabled = true;
+        iterCheckbox.checked = false;
+        swarmCheckbox.checked = false;
+        iterLabel.style.color = 'var(--text-muted)';
+        swarmLabel.style.color = 'var(--text-muted)';
+        decisions[activeIssueId].currentIteration = false;
+        decisions[activeIssueId].swarmable = false;
+      }
+    }
+
+    function updateActiveDecision(field, value) {
+      if (!activeIssueId) return;
+      decisions[activeIssueId][field] = value;
+      if (field === 'priority' || field === 'type') {
+        updateDropdownColors();
+      }
+
+      // Dynamically update priority badge in sidebar list
+      if (field === 'priority') {
+        const badge = document.getElementById(`list-priority-badge-${activeIssueId}`);
+        if (badge) {
+          badge.textContent = value;
+          badge.className = `priority-badge ${value !== 'None' ? `badge-${value.toLowerCase()}` : 'badge-none'}`;
+        }
+      }
+    }
+
+    function updateApproveButton(approved) {
+      const btn = document.getElementById('approveBtn');
+      if (approved) {
+        btn.textContent = 'Mark as Unreviewed';
+        btn.className = 'btn-secondary btn-block';
+      } else {
+        btn.textContent = 'Mark as Reviewed';
+        btn.className = 'btn-primary btn-block';
+      }
+    }
+
+    function toggleActiveIssueApproval() {
+      if (!activeIssueId) return;
+      const dec = decisions[activeIssueId];
+      const isApproving = !dec.approved;
+
+      dec.approved = isApproving;
+
+      const item = document.getElementById(`issue-item-${activeIssueId}`);
+      if (item) {
+        if (isApproving) {
+          item.classList.add('reviewed');
+        } else {
+          item.classList.remove('reviewed');
+        }
+      }
+
+      updateApproveButton(isApproving);
+
+      // Sequential navigation: Only auto-select next issue when transitioning to APPROVED
+      if (isApproving) {
+        const currentIndex = repoData.issues.findIndex(issue => issue.id === activeIssueId);
+        let nextIssue = null;
+        for (let i = currentIndex + 1; i < repoData.issues.length; i++) {
+          const issue = repoData.issues[i];
+          if (!decisions[issue.id].approved) {
+            nextIssue = issue;
+            break;
+          }
+        }
+        if (!nextIssue) {
+          for (let i = 0; i < currentIndex; i++) {
+            const issue = repoData.issues[i];
+            if (!decisions[issue.id].approved) {
+              nextIssue = issue;
+              break;
+            }
+          }
+        }
+
+        if (nextIssue) {
+          selectIssue(nextIssue.id);
+        } else {
+          alert(
+            "All issues have been triaged! Click 'Apply' to save and push to GitHub.",
+          );
+        }
+      }
+    }
+
+    function filterIssues() {
+      const q = document.getElementById('searchBar').value.toLowerCase();
+      repoData.issues.forEach(issue => {
+        const li = document.getElementById(`issue-item-${issue.id}`);
+        if (li) {
+          const match =
+            issue.title.toLowerCase().includes(q) || issue.author.toLowerCase().includes(q);
+          li.style.display = match ? 'block' : 'none';
+        }
+      });
+    }
+
+    function renderSummaryPage(decisionList) {
+      const triaged = decisionList.filter(d => d.approved);
+      const unchanged = decisionList.filter(d => !d.approved);
+
+      const getIssueDetails = id => {
+        const issue = repoData.issues.find(i => i.id === id);
+        return issue
+          ? { title: issue.title, author: issue.author }
+          : { title: `Issue #${id}`, author: '' };
+      };
+
+      let triagedCardsHtml = '';
+      if (triaged.length > 0) {
+        triagedCardsHtml = triaged
+          .map(d => {
+            const details = getIssueDetails(d.id);
+            const pClass =
+              d.priority !== 'None' ? `badge-${d.priority.toLowerCase()}` : 'badge-none';
+
+            const proposedText = (d.proposed_actions || [])
+              .map(tag => ACTION_TAGS[tag] ? ACTION_TAGS[tag].label : tag)
+              .join(', ') || 'None';
+
+            return `
+            <div style="
+              background-color: #15171e;
+              border: 1px solid #2b2f3d;
+              border-radius: 8px;
+              padding: 1rem;
+              display: flex;
+              flex-direction: column;
+              gap: 0.5rem;
+              text-align: left;
+            ">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+                <h4 style="font-size: 0.925rem; font-weight: 500; font-family: 'Outfit', sans-serif;">
+                  <a href="https://github.com/${d.repo}/issues/${d.id}" target="_blank" style="color: #f3f4f6; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
+                    <span style="color: #818cf8; font-family: monospace;">#${d.id}</span> ${details.title}
+                    <span style="font-size: 0.75rem; color: #6b7280;">↗</span>
+                  </a>
+                </h4>
+                <span class="priority-badge ${pClass}">${d.priority}</span>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.75rem; margin-top: 0.25rem;">
+                <span style="background-color: #1e212b; border: 1px solid #2b2f3d; padding: 0.15rem 0.4rem; border-radius: 4px; color: #9ca3af;">
+                  Assignee: <strong>${(() => {
+                const list = Array.isArray(d.assignee)
+                  ? d.assignee
+                  : d.assignee
+                    ? d.assignee.split(',')
+                    : [];
+                return list.length > 0
+                  ? list
+                    .map(login => {
+                      const found = (repoData.assignees || []).find(a => a.login === login);
+                      return found && found.name ? `\${found.name} (@\${login})` : `@\${login}`;
+                    })
+                    .join(', ')
+                  : 'None';
+              })()}</strong>
+                </span>
+                <span style="background-color: #1e212b; border: 1px solid #2b2f3d; padding: 0.15rem 0.4rem; border-radius: 4px; color: #9ca3af;">
+                  Proposed Actions: <strong>${proposedText}</strong>
+                </span>
+              </div>
+              ${d.reply
+                ? `
+                <div style="
+                  background-color: #0d0e12;
+                  border-radius: 4px;
+                  padding: 0.5rem 0.75rem;
+                  font-size: 0.8rem;
+                  color: #9ca3af;
+                  margin-top: 0.25rem;
+                  border-left: 2px solid #6366f1;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                ">
+                  "${d.reply}"
+                </div>
+              `
+                : ''
+              }
+            </div>
+          `;
+          })
+          .join('');
+      } else {
+        triagedCardsHtml = `<p style="font-size: 0.875rem; color: #6b7280; font-style: italic; text-align: left;">No issues were triaged in this session.</p>`;
+      }
+
+      let unchangedCardsHtml = '';
+      if (unchanged.length > 0) {
+        unchangedCardsHtml = unchanged
+          .map(d => {
+            const details = getIssueDetails(d.id);
+            return `
+            <div style="
+              background-color: #15171e;
+              border: 1px solid #2b2f3d;
+              border-radius: 8px;
+              padding: 0.85rem 1rem;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              gap: 1rem;
+              text-align: left;
+            ">
+              <h4 style="font-size: 0.9rem; font-weight: 500; font-family: 'Outfit', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;">
+                <a href="https://github.com/${d.repo}/issues/${d.id}" target="_blank" style="color: #9ca3af; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
+                  <span style="color: #6b7280; font-family: monospace;">#${d.id}</span> ${details.title}
+                  <span style="font-size: 0.75rem; color: #6b7280;">↗</span>
+                </a>
+              </h4>
+              <span style="
+                font-family: 'Outfit', sans-serif;
+                font-size: 0.75rem;
+                font-weight: 600;
+                padding: 0.15rem 0.4rem;
+                border-radius: 4px;
+                background-color: #2b2f3d;
+                color: #9ca3af;
+                text-transform: uppercase;
+              ">Unchanged</span>
+            </div>
+          `;
+          })
+          .join('');
+      } else {
+        unchangedCardsHtml = `<p style="font-size: 0.875rem; color: #6b7280; font-style: italic; text-align: left;">All issues were successfully triaged.</p>`;
+      }
+
+      document.body.innerHTML = `
+        <div style="
+          min-height: 100vh;
+          background-color: #0d0e12;
+          color: #f3f4f6;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 3rem 2rem;
+          overflow-y: auto;
+        ">
+          <!-- Header -->
+          <div style="text-align: center; margin-bottom: 2.5rem; max-width: 36rem;">
+            <div style="font-size: 4.5rem; margin-bottom: 1rem; line-height: 1;">🎉</div>
+            <h2 style="font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.5rem; background: linear-gradient(135deg, #a5b4fc, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Triage Submitted!</h2>
+            <p style="color: #9ca3af; font-family: 'Inter', sans-serif; font-size: 0.95rem; line-height: 1.5;">The local server has been shut down. You can now safely close this browser tab. A summary of your triage actions is shown below.</p>
+          </div>
+          
+          <!-- Summary Content Grid -->
+          <div style="width: 100%; max-width: 48rem; display: flex; flex-direction: column; gap: 2.5rem;">
+            
+            <!-- Section 1: Applied Changes -->
+            <div>
+              <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #818cf8; border-bottom: 1px solid #2b2f3d; padding-bottom: 0.5rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                <span>Applied / Triaged Issues</span>
+                <span style="font-size: 0.8rem; background-color: rgba(99, 102, 241, 0.15); padding: 0.1rem 0.5rem; border-radius: 12px; color: #a5b4fc;">${triaged.length}</span>
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                ${triagedCardsHtml}
+              </div>
+            </div>
+            
+            <!-- Section 2: Left Unchanged -->
+            <div>
+              <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; border-bottom: 1px solid #2b2f3d; padding-bottom: 0.5rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                <span>Left Unchanged</span>
+                <span style="font-size: 0.8rem; background-color: rgba(156, 163, 175, 0.15); padding: 0.1rem 0.5rem; border-radius: 12px; color: #d1d5db;">${unchanged.length}</span>
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                ${unchangedCardsHtml}
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      `;
+    }
+
+    async function saveAndApply() {
+      // Map assignee array back to comma-separated string
+      const decisionList = Object.values(decisions).map(d => ({
+        ...d,
+        assignee: Array.isArray(d.assignee) ? d.assignee.join(',') : d.assignee || '',
+      }));
+
+      try {
+        const res = await fetch('/api/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ decisions: decisionList }),
+        });
+        if (!res.ok) throw new Error('Failed to save triage decisions');
+
+        renderSummaryPage(Object.values(decisions));
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function abortTriage() {
+      if (confirm('Are you sure you want to discard issue triage? Your changes will be lost.')) {
+        try {
+          // Render the aborted page immediately
+          document.body.innerHTML = `
+            <div style="
+              height: 100vh;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              background-color: #0d0e12;
+              color: #f3f4f6;
+              font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+              text-align: center;
+              padding: 2rem;
+            ">
+              <div style="font-size: 4rem; margin-bottom: 1rem;">🛑</div>
+              <h2 style="font-size: 1.75rem; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.02em;">Triage Session Discarded</h2>
+              <p style="color: #9ca3af; font-size: 0.95rem; max-width: 24rem; line-height: 1.5; font-family: sans-serif;">The local server has been shut down. You can now safely close this browser tab.</p>
+            </div>
+          `;
+          // Notify the backend to exit
+          await fetch('/api/abort', { method: 'POST' });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    }
+
+    // Draggable Splitter/Resizer Logic
+    function initResizer() {
+      const resizer = document.getElementById('paneResizer');
+      const triagePane = document.getElementById('triagePane');
+
+      const savedWidth = localStorage.getItem('triagePaneWidth');
+      if (savedWidth) {
+        triagePane.style.width = savedWidth;
+      }
+
+      let startX = 0;
+      let startWidth = 0;
+
+      resizer.addEventListener('mousedown', e => {
+        e.preventDefault();
+        startX = e.clientX;
+        startWidth = triagePane.getBoundingClientRect().width;
+
+        resizer.classList.add('dragging');
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      });
+
+      function onMouseMove(e) {
+        const dx = e.clientX - startX;
+        let newWidth = startWidth - dx;
+
+        if (newWidth < 280) newWidth = 280;
+        if (newWidth > 600) newWidth = 600;
+
+        triagePane.style.width = `${newWidth}px`;
+      }
+
+      function onMouseUp() {
+        resizer.classList.remove('dragging');
+        localStorage.setItem('triagePaneWidth', triagePane.style.width);
+
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      }
+    }
+
+    // Initialize
+    window.onload = () => {
+      loadIssues();
+      initResizer();
+
+      // Close custom select dropdown on click outside
+      document.addEventListener('click', () => {
+        const container = document.getElementById('assigneeDropdownContainer');
+        if (container) {
+          container.classList.remove('active');
+        }
+      });
+    };
+  </script>
+</body>
+
+</html>

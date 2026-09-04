@@ -1,0 +1,11 @@
+class X implements Y {
+
+  @override
+  void y({Y y}) {
+    <caret>
+  }
+}
+
+class Y {
+  void y({Y y});
+}

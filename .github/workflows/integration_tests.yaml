@@ -1,0 +1,56 @@
+name: integration tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - '2025.2'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration-tests:
+    name: Integration Tests (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-large]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Provision Dart SDK
+        run: ../tool/provision_dart.sh
+        working-directory: dart/third_party
+        shell: bash
+
+      - name: Run Integration Tests
+        run: |
+          export DART_HOME="$GITHUB_WORKSPACE/dart-sdk"
+          ./gradlew :test --tests "com.jetbrains.dart.*" -PverboseTests
+        working-directory: dart/third_party
+        shell: bash
+
+      - name: Upload test results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: integration-test-results
+          path: |
+            **/build/reports/
+            **/build/test-results/

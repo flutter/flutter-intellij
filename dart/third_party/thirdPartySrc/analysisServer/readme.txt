@@ -1,0 +1,1 @@
+Original source code can be found in https://github.com/dart-lang/sdk/tree/main/pkg/analysis_server/tool/spec/generated/java

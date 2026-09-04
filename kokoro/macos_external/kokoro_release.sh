@@ -16,4 +16,8 @@ set -e
 # in the job configuration.
 cd ${KOKORO_ARTIFACTS_DIR}/github/flutter-intellij-kokoro
 
-./tool/kokoro/deploy.sh
+echo "=== Releasing Flutter Plugin ==="
+(cd flutter && ./tool/kokoro/deploy.sh)
+
+echo "=== Releasing Dart Plugin ==="
+(cd dart && ./third_party/tool/kokoro/deploy.sh)

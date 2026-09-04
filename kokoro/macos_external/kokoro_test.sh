@@ -14,6 +14,7 @@ set -e
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
 cd ${KOKORO_ARTIFACTS_DIR}/github/flutter-intellij-kokoro
+cd flutter
 
 if [[ $KOKORO_JOB_NAME =~ .*presubmit ]]; then
   ./tool/kokoro/test.sh

@@ -27,7 +27,7 @@ jobs:
         id: check-version
         run: |
           # 1. Retrieve the current pinned version from the shared script
-          CURRENT_VERSION=$(grep -E 'FLUTTER_VERSION="[0-9.]+"' tool/provision_flutter.sh | head -n 1 | cut -d'"' -f2)
+          CURRENT_VERSION=$(grep -E 'FLUTTER_VERSION="[0-9.]+"' flutter/tool/provision_flutter.sh | head -n 1 | cut -d'"' -f2)
           echo "Current pinned version: $CURRENT_VERSION"
 
           # 2. Retrieve the latest stable version from Flutter's official releases manifest
@@ -37,7 +37,7 @@ jobs:
           # 3. Compare and update if a newer version is available
           if [ "$CURRENT_VERSION" != "$LATEST_VERSION" ]; then
             echo "New Flutter stable version detected: $LATEST_VERSION"
-            sed -i -e "s/FLUTTER_VERSION=\"$CURRENT_VERSION\"/FLUTTER_VERSION=\"$LATEST_VERSION\"/g" tool/provision_flutter.sh
+            sed -i -e "s/FLUTTER_VERSION=\"$CURRENT_VERSION\"/FLUTTER_VERSION=\"$LATEST_VERSION\"/g" flutter/tool/provision_flutter.sh
             echo "updated=true" >> $GITHUB_OUTPUT
             echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
           else
@@ -60,7 +60,7 @@ jobs:
             
             * **New Pinned Version**: `${{ steps.check-version.outputs.latest_version }}`
             
-            This Pull Request updates our shared provisioning script (`tool/provision_flutter.sh`) to target this version. All presubmit tests will be run against this version to verify compatibility.
+            This Pull Request updates our shared provisioning script (`flutter/tool/provision_flutter.sh`) to target this version. All presubmit tests will be run against this version to verify compatibility.
           branch: "auto-update-flutter-sdk"
           delete-branch: true
           labels: |

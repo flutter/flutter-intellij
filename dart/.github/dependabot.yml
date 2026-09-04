@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "autosubmit"
+      - "kokoro:run"
+    # Updating patch versions for "github-actions" is too chatty.
+    # See https://github.com/flutter/flutter/issues/158350.
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
+    cooldown:
+      default-days: 7
+
+  - package-ecosystem: "gradle"
+    directory: "/third_party"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "autosubmit"
+      - "kokoro:run"
+    cooldown:
+      default-days: 7
+

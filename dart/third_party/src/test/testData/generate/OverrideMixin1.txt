@@ -1,0 +1,11 @@
+abstract class Mixin {
+  mixinMethod() {}
+}
+
+class AClass extends Object with Mixin {
+
+  @override
+  mixinMethod() {
+    <caret>
+  }
+}

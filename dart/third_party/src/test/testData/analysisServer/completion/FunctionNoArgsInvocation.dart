@@ -1,0 +1,3 @@
+abcdefghij() {
+  abcdefgh<caret>
+}

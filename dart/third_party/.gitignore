@@ -1,0 +1,46 @@
+### See https://www.toptal.com/developers/gitignore ###
+### See https://github.com/JetBrains/intellij-platform-plugin-template/blob/main/.gitignore ###
+
+### IntelliJ ###
+# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
+# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
+
+.idea
+.intellijPlatform
+
+# Kotlin build cache
+.kotlin
+
+# Crashlytics plugin (for Android Studio and IntelliJ)
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+### Gradle ###
+
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
+**/build/
+!src/**/build/
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+
+# Cache of project
+.gradletasknamecache
+
+# Java heap dump
+*.hprof
+
+# Mac Finder settings
+.DS_Store
+
+# Build output
+/bin/

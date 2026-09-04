@@ -5,46 +5,38 @@
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
-.idea
-**/.idea
-.intellijPlatform/
+**/.idea/
 **/.intellijPlatform/
 
 # Kotlin build cache
-.kotlin
+**/.kotlin/
 
 .dart_tool/
 .DS_Store
-.gradle/
+**/.gradle/
 .packages
 .pub/
 .vscode/
 .sandbox/
 artifacts/
 /bin/
-build/
+**/build/
+flutter-sdk/
+dart-sdk/
+flutter-sdk-tmp/
+*.tmp
 flutter-gui-tests/.gradle/
 flutter-gui-tests/guitest.log
 flutter-intellij.jar
 flutter-intellij.zip
-third_party/lib/jxbrowser/*
-!third_party/lib/jxbrowser/jxbrowser-8.9.0.jar
-!third_party/lib/jxbrowser/jxbrowser-swing-8.9.0.jar
-!third_party/lib/java-string-similarity-2.0.0.jar
+flutter/third_party/lib/jxbrowser/*
+!flutter/third_party/lib/jxbrowser/jxbrowser-8.9.0.jar
+!flutter/third_party/lib/jxbrowser/jxbrowser-swing-8.9.0.jar
+!flutter/third_party/lib/java-string-similarity-2.0.0.jar
 material-design-icons/
-out/
-pubspec.lock
+**/out/
+**/pubspec.lock
 releases/
-resources/jxbrowser/jxbrowser.properties
-.kotlin/
-flutter-studio/build/
-flutter-studio/.gradle/
-flutter-idea/build/
-flutter-idea/.gradle/
-tool/plugin/.idea
+flutter/resources/jxbrowser/jxbrowser.properties
 lib/kotlin*
-
-# Gradle
-.gradle
-/build/
 gradle-app.setting

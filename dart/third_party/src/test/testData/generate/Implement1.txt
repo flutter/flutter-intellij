@@ -1,0 +1,15 @@
+class Implement1 implements IFoo<Bar> {
+
+  @override
+  Bar getFoo() {
+    <caret>
+  }
+}
+
+class IFoo<T> {
+  T getFoo();
+}
+
+class Bar {
+
+}

@@ -1,0 +1,64 @@
+name: Update Dart SDK Pin
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # Run every Monday at midnight UTC
+  workflow_dispatch: # Allow manual execution from the Actions tab
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          token: ${{ secrets.FLUTTERACTIONSBOT_CP_TOKEN }}
+          persist-credentials: false
+
+      - name: Check for New Dart stable version
+        id: check-version
+        run: |
+          # 1. Retrieve the current pinned version from the shared script
+          CURRENT_VERSION=$(grep -E 'DART_VERSION="[0-9.]+"' tool/provision_dart.sh | head -n 1 | cut -d'"' -f2)
+          echo "Current pinned version: $CURRENT_VERSION"
+
+          # 2. Retrieve the latest stable version from Dart's official releases manifest
+          LATEST_VERSION=$(curl -s https://storage.googleapis.com/dart-archive/channels/stable/release/latest/VERSION | jq -r '.version')
+          echo "Latest stable version: $LATEST_VERSION"
+
+          # 3. Compare and update if a newer version is available
+          if [ "$CURRENT_VERSION" != "$LATEST_VERSION" ]; then
+            echo "New Dart stable version detected: $LATEST_VERSION"
+            sed -i -e "s/DART_VERSION=\"$CURRENT_VERSION\"/DART_VERSION=\"$LATEST_VERSION\"/g" tool/provision_dart.sh
+            echo "updated=true" >> $GITHUB_OUTPUT
+            echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "Dart SDK is already up to date."
+            echo "updated=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request for Version Bump
+        if: steps.check-version.outputs.updated == 'true'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
+        with:
+          token: ${{ secrets.FLUTTERACTIONSBOT_CP_TOKEN }}
+          push-to-fork: flutteractionsbot/dart-intellij-third-party
+          committer: flutteractionsbot <flutter-actions-bot@google.com>
+          author: flutteractionsbot <flutter-actions-bot@google.com>
+          commit-message: "ci: bump pinned Dart SDK to version ${{ steps.check-version.outputs.latest_version }}"
+          title: "ci: bump pinned Dart SDK to version ${{ steps.check-version.outputs.latest_version }}"
+          body: |
+            An automated check has detected a new stable release of the Dart SDK.
+            
+            * **New Pinned Version**: `${{ steps.check-version.outputs.latest_version }}`
+            
+            This Pull Request updates our shared provisioning script (`tool/provision_dart.sh`) to target this version. All presubmit tests will be run against this version to verify compatibility.
+          branch: "auto-update-dart-sdk"
+          delete-branch: true
+          labels: |
+            dependencies
+            ci

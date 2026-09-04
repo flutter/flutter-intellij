@@ -1,0 +1,22 @@
+# Based on Flutter config: https://github.com/flutter/flutter/blob/master/.gemini/config.yaml
+#
+# Schema: https://developers.google.com/gemini-code-assist/docs/customize-gemini-behavior-github#config.yaml-schema
+
+# No poetry in summaries (DEFAULT).
+have_fun: false
+
+code_review:
+  # (DEFAULT)
+  disable: false
+  # LOW, MEDIUM, HIGH or CRITICAL
+  comment_severity_threshold: MEDIUM
+  # -1 is unlimited (DEFAULT)
+  max_review_comments: -1
+  pull_request_opened:
+    # (DEFAULT)
+    help: false
+    summary: false
+    code_review: true
+    # (DEFAULT) -- Note that this is disabled for flutter
+    include_drafts: true
+ignore_patterns: []
