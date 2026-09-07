@@ -98,6 +98,7 @@ These skills are located in the [.agents/skills/](.agents/skills/) directory. Th
 * **[Code Inspection Cleanup](.agents/skills/cleanup-code-inspections/SKILL.md):** Reduce technical debt and improve code quality by systematically resolving static analysis warnings.
 * **[Unused Asset Cleanup](.agents/skills/cleanup-unused-assets/SKILL.md):** Reduce plugin size by scanning `resources/icons` and removing unreferenced assets.
 * **[Code Review](.agents/skills/code-review/SKILL.md):** Performs a pedantic, multi-perspective code review (covering logic, correctness, resource safety, design, and styleguide compliance) on your uncommitted changes.
+* **[Load Repository Context](.agents/skills/load-repo-context/SKILL.md):** Primes understanding of repository architecture by navigating hierarchical ABOUT.md manifests.
 * **[Migrate IntelliJ Util](.agents/skills/migrate-intellij-util/SKILL.md):** Optimize memory usage, consistency, and performance by migrating standard Java/Kotlin classes to IntelliJ's specialized `com.intellij.util` implementations.
 * **[Remove Platform Version](.agents/skills/remove-platform-version/SKILL.md):** Remove support for an older IntelliJ Platform / Android Studio version from the project and clean up obsolete code, baselines, and CI configurations.
 * **[Release Plugin](.agents/skills/release-plugin/SKILL.md):** Prepare and execute a new release for the flutter-intellij plugin, including updating dependencies, compatibility bounds, changelogs, and verification.
