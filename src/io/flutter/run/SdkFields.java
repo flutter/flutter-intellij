@@ -18,7 +18,6 @@ import com.intellij.util.xmlb.annotations.OptionTag;
 import com.intellij.util.xmlb.annotations.XMap;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
-import com.jetbrains.lang.dart.analytics.Analytics;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
@@ -95,7 +94,7 @@ public class SdkFields {
     if (hasAdditionalArgs()) {
       assert additionalArgs != null;
       return ParametersListUtil.parse(additionalArgs, false, false, true).stream().filter(s -> !s.isEmpty())
-          .toArray(String[]::new);
+        .toArray(String[]::new);
     }
 
     return new String[0];
@@ -118,7 +117,7 @@ public class SdkFields {
     if (hasAttachArgs()) {
       assert attachArgs != null;
       return ParametersListUtil.parse(attachArgs, false, false, true).stream().filter(s -> !s.isEmpty())
-          .toArray(String[]::new);
+        .toArray(String[]::new);
     }
     return new String[0];
   }
