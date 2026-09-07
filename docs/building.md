@@ -40,7 +40,7 @@ The `plugin` tool is being retained currently for deploying the dev build, linti
 
 ### install gs_util
 
-It is no longer necessary to use gs_util. All artifact management is automated.
+It is no longer necessary to manage cloud storage. All artifact management is automated.
 This section is being retained in case someone wants to clean up the cloud storage.
 
 If necessary, install the gcloud command-line utility from
