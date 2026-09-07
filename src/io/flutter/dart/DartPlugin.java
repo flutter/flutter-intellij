@@ -55,10 +55,6 @@ public class DartPlugin {
     DartSdkLibUtil.ensureDartSdkConfigured(project, sdkHomePath);
   }
 
-  public static boolean isPubActionInProgress() {
-    return DartPubActionBase.isInProgress();
-  }
-
   public static void setPubActionInProgress(boolean inProgress) {
     DartPubActionBase.setIsInProgress(inProgress);
   }

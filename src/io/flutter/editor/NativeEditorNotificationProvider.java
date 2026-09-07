@@ -5,7 +5,13 @@
  */
 package io.flutter.editor;
 
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionPlaces;
+import com.intellij.openapi.actionSystem.ActionUiKind;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.project.Project;
@@ -22,7 +28,7 @@ import io.flutter.utils.UIUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
+import javax.swing.JComponent;
 import java.util.function.Function;
 
 public class NativeEditorNotificationProvider implements EditorNotificationProvider {
@@ -76,27 +82,6 @@ public class NativeEditorNotificationProvider implements EditorNotificationProvi
       else if (root.getName().equals("macos")) {
         return "flutter.xcode.open";
       }
-    }
-    return null;
-  }
-
-  @Nullable
-  private static VirtualFile findRootDir(@NotNull VirtualFile file, @Nullable VirtualFile projectDir) {
-    if (projectDir == null) {
-      return null;
-    }
-    // Return the top-most parent of file that is a child of the project directory.
-    VirtualFile parent = file.getParent();
-    if (projectDir.equals(parent)) {
-      return null;
-    }
-    VirtualFile root = parent;
-    while (parent != null) {
-      parent = parent.getParent();
-      if (projectDir.equals(parent)) {
-        return root;
-      }
-      root = parent;
     }
     return null;
   }
