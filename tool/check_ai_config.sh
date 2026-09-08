@@ -61,14 +61,18 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     continue
   fi
 
-  if [[ $in_ignore_patterns -eq 1 && "$line" == *\"*\"* ]]; then
-    # Extract quoted string using pure Bash parameter expansion
-    temp="${line#*\"}"
-    pattern="${temp%\"*}"
-    norm="${pattern%/\*\*}"
-    norm="${norm#/}"
-    norm="${norm%/}"
-    gemini_norms+=("$norm")
+  if [[ $in_ignore_patterns -eq 1 ]]; then
+    if [[ "$line" =~ ^[[:space:]]*-[[:space:]]+(.*)$ ]]; then
+      item="${BASH_REMATCH[1]}"
+      item="${item#\"}"
+      item="${item%\"}"
+      item="${item#\\'}"
+      item="${item%\\'}"
+      norm="${item%/\\*\\*}"
+      norm="${norm#/}"
+      norm="${norm%/}"
+      gemini_norms+=("$norm")
+    fi
   fi
 done < "$GEMINI_CONFIG"
 
