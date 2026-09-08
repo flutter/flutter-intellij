@@ -68,7 +68,11 @@ while IFS= read -r line || [[ -n "$line" ]]; do
       item="${item%\"}"
       item="${item#\\'}"
       item="${item%\\'}"
-      norm="${item%/\\*\\*}"
+      if [[ "$item" == *'/**' ]]; then
+        norm="${item%/**}"
+      else
+        norm="$item"
+      fi
       norm="${norm#/}"
       norm="${norm%/}"
       gemini_norms+=("$norm")
