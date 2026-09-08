@@ -1,0 +1,23 @@
+# Build & Compiler Outputs
+/build/
+/out/
+bin/main/
+bin/test/
+bin/integration/
+
+# Caches & Platform SDKs
+/.intellijPlatform/
+/.gradle/
+/.dart_tool/
+/.kotlin/
+/.idea/
+/.sandbox/
+
+# Binary Archives & Third-Party Libraries
+/releases/
+third_party/lib/
+gradle/wrapper/gradle-wrapper.jar
+
+# High-volume Generated Assets & Legacy Docs
+resources/flutter/icons/
+/CHANGELOG-old.md
