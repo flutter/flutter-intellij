@@ -6,18 +6,14 @@
 package io.flutter.actions;
 
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import io.flutter.logging.PluginLogger;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FlutterDoctorAction extends FlutterSdkAction {
-
-  private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterDoctorAction.class);
-
+  
   public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root) {
     sdk.flutterDoctor().startInConsole(project);
   }

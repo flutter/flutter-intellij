@@ -9,7 +9,8 @@ import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.swing.*;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -210,10 +211,6 @@ public class EventStreamTest {
     synchronized (logEntries) {
       return ImmutableList.copyOf(logEntries);
     }
-  }
-
-  private void reportFailure(Exception e) {
-    fail("Exception: " + e + "\nLog: " + getLogEntries());
   }
 
   private void checkLog(String... expectedEntries) {

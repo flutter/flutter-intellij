@@ -5,7 +5,6 @@
  */
 package io.flutter.run.daemon;
 
-import com.google.common.base.Charsets;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
