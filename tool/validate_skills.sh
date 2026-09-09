@@ -9,4 +9,4 @@ set -e
 REPO_DIR="$(cd "${BASH_SOURCE[0]%/*}/.." && pwd)"
 cd "$REPO_DIR"
 
-dart tool/grind.dart lint-skills "$@"
+dart tool/grind.dart lint-skills
