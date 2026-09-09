@@ -7,6 +7,7 @@
 ### Removed
 
 ### Fixed
+- Empty Flutter SDK dropdown in the New Project wizard on IntelliJ Platform 2026.2. (#9106)
 
 ## 96.0.0
 
