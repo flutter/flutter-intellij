@@ -99,3 +99,12 @@ Future<void> checkUrls() async {
     client.close();
   }
 }
+
+@Task('Validate agent skills with skills_lint')
+Future<void> lintSkills() async {
+  log('validating agent skills...');
+  await runAsync(
+    Platform.executable,
+    arguments: ['run', 'skills_lint', '--config', 'tool/skills_lint.yaml'],
+  );
+}

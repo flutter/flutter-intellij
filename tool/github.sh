@@ -70,6 +70,9 @@ elif [ "CHECK_BOT" = "$BOT" ] ; then
   # Run some validations on the repo code.
   ./bin/plugin lint
 
+  # Validate agent skills.
+  dart tool/grind.dart lint-skills
+
   # Check plugin and documentation URLs for liveness.
   dart tool/grind.dart check-urls
 
