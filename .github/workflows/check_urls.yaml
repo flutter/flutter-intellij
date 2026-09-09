@@ -23,7 +23,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Dart SDK
-        uses: dart-lang/setup-dart@e630b99d28a3b71860378cab400d03220d95f01e # v1.7.1
+        uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
         with:
           sdk: stable
 
