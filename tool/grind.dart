@@ -39,12 +39,20 @@ Future<void> checkUrls() async {
     if (bundleFile.existsSync()) {
       var lines = await bundleFile.readAsLines();
       for (var line in lines) {
-        var split = line.split('=');
-        if (split.length == 2) {
-          // flutter.io.gettingStarted.url | flutter.analytics.privacyUrl
-          if (split[0].toLowerCase().endsWith('url')) {
-            var url = split[1].trim();
-            await verifyUrl(url, 'FlutterBundle.properties');
+        var trimmed = line.trim();
+        if (trimmed.isEmpty ||
+            trimmed.startsWith('#') ||
+            trimmed.startsWith('!')) {
+          continue;
+        }
+        var eqIndex = trimmed.indexOf('=');
+        if (eqIndex != -1) {
+          var key = trimmed.substring(0, eqIndex).trim();
+          if (key.toLowerCase().endsWith('url')) {
+            var url = trimmed.substring(eqIndex + 1).trim();
+            if (url.isNotEmpty) {
+              await verifyUrl(url, 'FlutterBundle.properties');
+            }
           }
         }
       }
