@@ -99,3 +99,21 @@ Future<void> checkUrls() async {
     client.close();
   }
 }
+
+@Task('Validate agent skills with skills_lint')
+Future<void> lintSkills() async {
+  log('validating agent skills...');
+  var result = await Process.run(
+    Platform.executable,
+    ['run', 'skills_lint', '--config', 'tool/skills_lint.yaml'],
+  );
+  if (result.stdout.toString().isNotEmpty) {
+    log(result.stdout.toString().trim());
+  }
+  if (result.stderr.toString().isNotEmpty) {
+    log(result.stderr.toString().trim());
+  }
+  if (result.exitCode != 0) {
+    fail('skills_lint failed with exit code ${result.exitCode}');
+  }
+}

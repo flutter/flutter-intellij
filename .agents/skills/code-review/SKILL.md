@@ -47,7 +47,7 @@ Perform a multi-pass analysis of the diff:
    - If they agree: **Before** invoking the subagent, you (the parent agent) must gather the required context (by executing the context-gathering steps below yourself). This avoids the subagent stalling on permission prompts. Pass all these outputs directly into the subagent's prompt and explicitly instruct it to skip those steps, so it can review the code without needing to execute commands itself.
    - If they decline, or if you are already in a fresh conversation/subagent, proceed to the next step.
    If you are in a non-interactive environment, gather the context as described above and automatically invoke a subagent, passing the context and instructing it to skip the context-gathering steps.
-   
+
     > [!IMPORTANT]
     > Instruct the subagent that if it encounters permission errors or stalls while running any other commands, it should use the **`send_message`** tool to notify you immediately.
 
