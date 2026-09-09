@@ -70,7 +70,7 @@ elif [ "CHECK_BOT" = "$BOT" ] ; then
   # Run some validations on the repo code.
   ./bin/plugin lint
 
-  # Check plugin-referenced urls for liveness.
+  # Check plugin and documentation URLs for liveness.
   dart tool/grind.dart check-urls
 
 elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
