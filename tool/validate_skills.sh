@@ -9,4 +9,8 @@ set -e
 REPO_DIR="$(cd "${BASH_SOURCE[0]%/*}/.." && pwd)"
 cd "$REPO_DIR"
 
-dart tool/grind.dart lint-skills
+echo "Resolving dependencies for skills_lint..."
+dart pub get
+
+echo "Running skills_lint..."
+dart run skills_lint --config tool/skills_lint.yaml "$@"
