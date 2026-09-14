@@ -14,6 +14,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ApplicationNamesInfo;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -143,7 +144,7 @@ public class FlutterSdkUtil {
         else if (combo.getSelectedIndex() == -1 && combo.getItemCount() > 0) {
           combo.setSelectedIndex(0);
         }
-      });
+      }, ModalityState.stateForComponent(combo));
     });
   }
 
