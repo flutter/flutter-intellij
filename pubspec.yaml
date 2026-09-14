@@ -13,7 +13,7 @@ dependencies:
   path: any
 
 dev_dependencies:
-  grinder: ^0.9.3
+  grinder: ^0.10.1
   http: ^1.2.0
   lints: ^6.0.0
   meta: any
