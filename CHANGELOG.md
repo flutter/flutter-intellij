@@ -7,6 +7,7 @@
 ### Removed
 
 ### Fixed
+- Opening the iOS Simulator with Xcode 27, which replaced `Simulator.app` with `DeviceHub.app`. (#9126)
 
 ## 96.0.0
 
