@@ -29,12 +29,17 @@ import java.util.concurrent.CompletableFuture;
 public class XcodeUtils {
   private static final String SIMULATOR_APP_NAME = "Simulator.app";
 
+  /**
+   * `xcode-select` can hang, e.g. when the Xcode license has not been accepted, so don't wait on it indefinitely.
+   */
+  private static final int XCODE_SELECT_TIMEOUT_MS = 5000;
+
   public static boolean isSimulatorRunning() {
     final ProcessInfo[] processInfos = OSProcessUtil.getProcessList();
     for (ProcessInfo info : processInfos) {
       // Xcode 27 replaced Simulator.app with DeviceHub.app.
       final String name = info.getExecutableName();
-      if (name.equals("Simulator") || name.equals("DeviceHub")) {
+      if ("Simulator".equals(name) || "DeviceHub".equals(name)) {
         return true;
       }
     }
@@ -91,7 +96,8 @@ public class XcodeUtils {
   @NotNull
   private static String findSimulatorApp() {
     try {
-      final ProcessOutput output = ExecUtil.execAndGetOutput(new GeneralCommandLine("xcode-select", "--print-path"));
+      final ProcessOutput output =
+        ExecUtil.execAndGetOutput(new GeneralCommandLine("xcode-select", "--print-path"), XCODE_SELECT_TIMEOUT_MS);
       if (output.getExitCode() == 0) {
         return getSimulatorAppPath(output.getStdout().trim());
       }
