@@ -308,6 +308,66 @@ If you wanted to run a subset of the tests, you could do so this way.
 See the [Gradle docs](https://docs.gradle.org/current/userguide/java_testing.html)
 for more info about testing.
 
+## Plugin verification
+
+The [IntelliJ plugin verifier](https://github.com/JetBrains/intellij-plugin-verifier)
+checks the plugin against each supported IDE. To run it locally:
+
+```shell
+./gradlew verifyPlugin
+```
+
+### How verification is gated
+
+Two independent checks run in CI (the `VERIFY_BOT` branch of `tool/github.sh`),
+with a deliberate division of responsibility:
+
+1. **`verifyPlugin` decides what is severe.** Its `failureLevel` in
+   `build.gradle.kts` fails the build on compatibility problems, an invalid
+   plugin, and so on.
+2. **`check_verifier_baselines.sh` decides what is *new*.** It compares each
+   report against a committed baseline and reports anything not already known,
+   so a failure points at the specific issues that changed:
+
+   ```shell
+   ./tool/check_verifier_baselines.sh check
+   ```
+
+The script intentionally does **not** classify severity — that would duplicate
+`failureLevel` in a second place and the two would drift. Its contract is
+simply: anything new relative to the baseline is surfaced and fails.
+
+A few things worth knowing:
+
+- Baselines live in `tool/baseline/<IDE branch>/verifier-baseline.txt`, one per
+  platform branch (`252`, `253`, …). The branches are discovered from the
+  reports on disk, so verifying a branch with no committed baseline fails
+  loudly with "no baseline for IDE branch N" rather than silently skipping it.
+- Each baseline line is `<section><TAB><issue>`, which keeps the report section
+  visible in the diff so you can see at a glance what kind of finding changed.
+- Each baseline records the exact IDE build it was generated from, so when a
+  new EAP build introduces issues the report says so explicitly.
+- New issues are reported as job annotations and in the job summary, not just
+  buried in the log.
+
+> [!NOTE]
+> A new IDE build can introduce failures that no pull request caused. The
+> report names the IDE build and flags when it differs from the one the
+> baseline was recorded against, which usually makes this obvious.
+
+### Updating verifier baselines
+
+If new verification issues are found that match expected platform updates,
+update the baseline files and commit the result:
+
+```shell
+./tool/update_baselines.sh
+```
+
+> [!IMPORTANT]
+> Run this from the root directory of the repository. It runs the verifier once
+> per baselined platform version, so it takes a while.
+
 ## Adding platform sources
 
 Sometimes browsing the source code of IntelliJ helps understand platform details that aren't documented.
