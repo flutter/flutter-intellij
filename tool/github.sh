@@ -52,7 +52,6 @@ if [ "DART_BOT" = "$BOT" ] ; then
   echo "dart analyze"
   (cd src; dart analyze)
   (cd tool/plugin; dart analyze)
-  (cd tool/triage; dart pub upgrade && dart analyze)
 
   # Ensure that the edits have been applied to template files (and their target
   # files have been regenerated).
@@ -71,7 +70,10 @@ elif [ "CHECK_BOT" = "$BOT" ] ; then
   # Run some validations on the repo code.
   ./bin/plugin lint
 
-  # Check plugin-referenced urls for liveness.
+  # Validate agent skills.
+  dart tool/grind.dart lint-skills
+
+  # Check plugin and documentation URLs for liveness.
   dart tool/grind.dart check-urls
 
 elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then

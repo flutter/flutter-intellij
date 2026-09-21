@@ -5,17 +5,18 @@
  */
 package io.flutter;
 
-import com.google.common.base.Charsets;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
-import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.roots.*;
+import com.intellij.openapi.roots.ContentEntry;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.ModuleSourceOrderEntry;
+import com.intellij.openapi.roots.OrderEntry;
+import com.intellij.openapi.roots.SourceFolder;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -51,7 +52,6 @@ import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -105,7 +105,8 @@ public class FlutterUtils {
       final Object instance = getInstance.invoke(null);
       final Method isAndroidStudio = ideInfoClass.getMethod("isAndroidStudio");
       return (Boolean)isAndroidStudio.invoke(instance);
-    } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
+    }
+    catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
       // Fall back to checking application name
       // e.g., "Android Studio Meerkat | 2024.3.1"
       return ApplicationInfo.getInstance().getFullApplicationName().startsWith("Android Studio");
@@ -115,7 +116,8 @@ public class FlutterUtils {
   public static void info(@NotNull Logger logger, @NotNull String message, @NotNull Throwable t, boolean sanitizePaths) {
     if (sanitizePaths && FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
       logger.info(message, t);
-    } else {
+    }
+    else {
       logger.info(message);
     }
   }
@@ -123,7 +125,8 @@ public class FlutterUtils {
   public static void warn(@NotNull Logger logger, @NotNull String message, @NotNull Throwable t, boolean sanitizePaths) {
     if (sanitizePaths && FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
       logger.warn(message, t);
-    } else {
+    }
+    else {
       logger.warn(message);
     }
   }
@@ -131,7 +134,8 @@ public class FlutterUtils {
   public static void error(@NotNull Logger logger, @NotNull String message, @NotNull Throwable t, boolean sanitizePaths) {
     if (sanitizePaths && FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
       logger.error(message, t);
-    } else {
+    }
+    else {
       logger.error(message);
     }
   }
@@ -140,7 +144,7 @@ public class FlutterUtils {
    * Write a warning message to the IntelliJ log.
    * <p>
    * This is separate from LOG.warn() to allow us to decorate the behavior.
-   *
+   * <p>
    * This method is deprecated (as we are not decorating this behavior anywhere).
    */
   public static void warn(@NotNull Logger logger, @NotNull String message) {
@@ -151,7 +155,7 @@ public class FlutterUtils {
    * Write a warning message to the IntelliJ log.
    * <p>
    * This is separate from LOG.warn() to allow us to decorate the behavior.
-   *
+   * <p>
    * This method is deprecated (as we are not decorating this behavior anywhere).
    */
   public static void warn(@NotNull Logger logger, @NotNull String message, @NotNull Throwable t) {
@@ -250,11 +254,6 @@ public class FlutterUtils {
 
   public static boolean isIntegrationTestingMode() {
     return Objects.equals(System.getProperty("idea.required.plugins.id", ""), "io.flutter.tests.gui.flutter-gui-tests");
-  }
-
-  @Nullable
-  public static VirtualFile getRealVirtualFile(@Nullable PsiFile psiFile) {
-    return psiFile != null ? psiFile.getOriginalFile().getVirtualFile() : null;
   }
 
   @NotNull
@@ -414,25 +413,6 @@ public class FlutterUtils {
    */
   public static boolean isFlutterPlugin(@NotNull final VirtualFile pubspec) {
     return getFlutterPubspecInfo(pubspec).isFlutterPlugin();
-  }
-
-  /**
-   * Return the project located at the <code>path</code> or containing it.
-   *
-   * @param path The path to a project or one of its files
-   * @return The Project located at the path
-   */
-  @Nullable
-  public static Project findProject(@NotNull String path) {
-    ProjectManager projectManager = ProjectManager.getInstance();
-    if (projectManager != null) {
-      for (Project project : projectManager.getOpenProjects()) {
-        if (ProjectUtil.isSameProject(Paths.get(path), project)) {
-          return project;
-        }
-      }
-    }
-    return null;
   }
 
   @Nullable

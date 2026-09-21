@@ -6,8 +6,6 @@
 package io.flutter.utils;
 
 import com.android.tools.idea.gradle.dsl.model.BuildModelContext;
-import com.android.tools.idea.gradle.project.model.GradleModuleModel;
-import com.android.tools.idea.gradle.util.GradleProjectSystemUtil;
 import com.android.tools.idea.projectsystem.AndroidProjectRootUtil;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;

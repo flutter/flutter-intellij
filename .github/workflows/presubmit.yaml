@@ -14,16 +14,22 @@ permissions:
   contents: read
 
 jobs:
-  # Check Agent Skills Documentation
-  check-skills-docs:
+  # Check AI Configuration and Agent Skills
+  check-ai-config:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           persist-credentials: false
-      - name: Run documentation check
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+      - name: Check agent skills documentation
         run: ./tool/check_agent_skills.sh
+      - name: Lint agent skills
+        run: ./tool/validate_skills.sh
+      - name: Check AI ignore configurations
+        run: ./tool/check_ai_config.sh
 
   presubmit:
     runs-on: ubuntu-latest

@@ -5,9 +5,6 @@
  */
 package io.flutter.actions;
 
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
@@ -17,10 +14,8 @@ import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
-import io.flutter.FlutterMessages;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 public class RestartFlutterApp extends FlutterAppAction {

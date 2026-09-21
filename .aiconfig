@@ -10,10 +10,11 @@ project:
     - "All generated AnAction classes must be stateless."
     - "Apply [MUST-FIX], [CONCERN], and [NIT] severity logic to any code suggestions that violate plugin SDK best practices or style guidelines."
     - "Use io.flutter.logging.PluginLogger for all logging; avoid System.out."
-    - "Always include the standard Chromium Authors copyright header in new files."
+    - "Always include the standard Chromium Authors copyright header in new source code files (.java, .kt, .dart, .sh)."
     - "Adhere to the Zero-Formatting Policy: Do not comment on indentation, spacing, or brace placement."
     # Ensure local agents read styleguide files automatically.
     - "At the start of the session, read and adhere to the guidelines in all files listed in project.context.instruction_files."
+    - "Do not read, index, or search paths matching patterns defined in .aiexclude."
 
   languages:
     - java

@@ -8,9 +8,6 @@ package io.flutter.devtools;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.junit.Test;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
 import static org.junit.Assert.assertTrue;
 
 public class DevToolsUrlTest {

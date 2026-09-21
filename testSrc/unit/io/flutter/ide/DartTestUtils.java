@@ -5,26 +5,13 @@
  */
 package io.flutter.ide;
 
-import com.intellij.openapi.Disposable;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.*;
-import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
-import com.intellij.util.SmartList;
 import com.jetbrains.lang.dart.DartLanguage;
-import io.flutter.sdk.FlutterSdkUtil;
-import io.flutter.utils.OpenApiUtils;
-import junit.framework.TestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.TestOnly;
-import org.junit.Assert;
-
-import java.util.List;
-import java.util.Objects;
 
 /**
  * Adapted from similar class in the Dart plugin.
@@ -32,81 +19,7 @@ import java.util.Objects;
 public class DartTestUtils {
 
   public static final String BASE_TEST_DATA_PATH = findTestDataPath();
-  public static final String SDK_HOME_PATH = BASE_TEST_DATA_PATH + "/sdk";
-
-  @TestOnly
-  public static void configureFlutterSdk(@NotNull final Module module, @NotNull final Disposable disposable, final boolean realSdk) {
-    final String sdkHome;
-    if (realSdk) {
-      sdkHome = System.getProperty("flutter.sdk");
-      if (sdkHome == null) {
-        Assert.fail(
-          "To run tests that use Dart Analysis Server you need to add '-Dflutter.sdk=[real SDK home]' to the VM Options field of " +
-          "the corresponding JUnit run configuration (Run | Edit Configurations)");
-      }
-      if (!FlutterSdkUtil.isFlutterSdkHome(sdkHome)) {
-        Assert.fail("Incorrect path to the Flutter SDK (" + sdkHome + ") is set as '-Dflutter.sdk' VM option of " +
-                    "the corresponding JUnit run configuration (Run | Edit Configurations)");
-      }
-    }
-    else {
-      sdkHome = SDK_HOME_PATH;
-    }
-
-    VfsRootAccess.allowRootAccess(disposable, sdkHome);
-    //final String dartSdkHome = sdkHome + "bin/cache/dart-sdk";
-    //VfsRootAccess.allowRootAccess(disposable, dartSdkHome);
-
-    //ApplicationManager.getApplication().runWriteAction(() -> {
-    //  Disposer.register(disposable, DartSdkLibUtil.configureDartSdkAndReturnUndoingDisposable(module.getProject(), dartSdkHome));
-    //  Disposer.register(disposable, DartSdkLibUtil.enableDartSdkAndReturnUndoingDisposable(module));
-    //});
-  }
-
-  /**
-   * Use this method in finally{} clause if the test modifies excluded roots or configures module libraries
-   */
-  public static void resetModuleRoots(@NotNull final Module module) {
-    OpenApiUtils.safeRunWriteAction(() -> {
-      final ModifiableRootModel modifiableModel = Objects.requireNonNull(ModuleRootManager.getInstance(module)).getModifiableModel();
-
-      try {
-        final List<OrderEntry> entriesToRemove = new SmartList<>();
-
-        for (OrderEntry orderEntry : modifiableModel.getOrderEntries()) {
-          if (orderEntry instanceof LibraryOrderEntry) {
-            entriesToRemove.add(orderEntry);
-          }
-        }
-
-        for (OrderEntry orderEntry : entriesToRemove) {
-          assert orderEntry != null;
-          modifiableModel.removeOrderEntry(orderEntry);
-        }
-
-        final ContentEntry[] contentEntries = modifiableModel.getContentEntries();
-        TestCase.assertEquals("Expected one content root, got: " + contentEntries.length, 1, contentEntries.length);
-
-        final ContentEntry oldContentEntry = contentEntries[0];
-        assert oldContentEntry != null;
-        if (oldContentEntry.getSourceFolders().length != 1 || !oldContentEntry.getExcludeFolderUrls().isEmpty()) {
-          modifiableModel.removeContentEntry(oldContentEntry);
-          final ContentEntry newContentEntry = modifiableModel.addContentEntry(oldContentEntry.getUrl());
-          newContentEntry.addSourceFolder(newContentEntry.getUrl(), false);
-        }
-
-        if (modifiableModel.isChanged()) {
-          modifiableModel.commit();
-        }
-      }
-      finally {
-        if (!modifiableModel.isDisposed()) {
-          modifiableModel.dispose();
-        }
-      }
-    });
-  }
-
+ 
   /**
    * Creates the syntax tree for a Dart file at a specific path and returns the innermost element with the given text.
    */
