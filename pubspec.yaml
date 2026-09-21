@@ -17,4 +17,8 @@ dev_dependencies:
   http: ^1.2.0
   lints: ^6.0.0
   meta: any
-  skills_lint: ^0.5.1
+  # Requires >=0.5.2: that version resolves the directory paths in
+  # tool/skills_lint.yaml relative to the config file rather than the
+  # CWD, which is why that config uses "../.agents/skills". Downgrading
+  # below 0.5.2 would resolve that path outside the repository.
+  skills_lint: ^0.5.2
