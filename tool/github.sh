@@ -118,7 +118,7 @@ elif [ "VERIFY_BOT" = "$BOT" ] ; then
   # verdict: it fails on anything new, in any category. Note that this only
   # discards the *status* -- a problem serious enough to matter still appears
   # in the report, and so is still caught if it is new.
-  for version in 252 253 261; do
+  for version in $(ls tool/baseline); do
     echo -e "${BOLD}Running verifyPlugin for $version...${NC}"
     echo "Check on space before verifyPlugin for $version"
     df -h
