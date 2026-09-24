@@ -81,67 +81,58 @@ elif [ "UNIT_TEST_BOT" = "$BOT" ] ; then
   ./gradlew test
 
 elif [ "VERIFY_BOT" = "$BOT" ] ; then
+  # `verifyPlugin` gates on severity via `failureLevel` in build.gradle.kts.
+  # Every verification below records its own status rather than aborting the
+  # bot, so that a failure in one still reports the others, and so that the
+  # baseline check always runs to explain *which* issues are new -- that
+  # diagnosis is the whole point, and it used to be skipped precisely when the
+  # verifier failed.
   EXIT_STATUS=0
-  
-  echo "Check on space before verifyPluginProjectConfiguration\n"
-  df -h
-  ./gradlew verifyPluginProjectConfiguration
-  
-  echo "Check on space before verifyPluginStructure\n"
-  df -h
-  ./gradlew verifyPluginStructure
-  
-  echo "Check on space before verifyPluginSignature\n"
-  df -h
-  ./gradlew verifyPluginSignature
 
-  for version in 252 253 261; do
-    echo -e "${BOLD}Running verifyPlugin for $version...${NC}"
-    
-    echo "Check on space before run\n"
+  verify() {
+    local name="$1"
+    shift
+    echo -e "${BOLD}Running $name...${NC}"
+    echo "Check on space before $name"
     df -h
-    
-    ./gradlew verifyPlugin -PsingleIdeVersion=$version || true
-
-    BASELINE="$GITHUB_WORKSPACE/tool/baseline/$version/verifier-baseline.txt"
-
-    echo -e "${BOLD}Searching for report for version $version...${NC}"
-    REPORT=$(find build/reports/pluginVerifier -path "*-$version.*/report.md" | head -n 1)
-    echo "Found: $REPORT"
-
-    if [ -f "$REPORT" ]; then
-      echo "Comparing baseline against report in $REPORT"
-      # Normalize the specific constructor signature to ignore parameter names.
-      # This bridges the gap between local builds (with names) and CI builds (without names).
-      grep "^*" "$REPORT" | sed -E 's/DartTemplateContextType\.<init>\([^)]+\)/DartTemplateContextType.<init>(args)/' | sort > current_issues.tmp
-
-      if [ -f "$BASELINE" ]; then
-        NEW_ERRORS=$(comm -13 <(sed -E 's/DartTemplateContextType\.<init>\([^)]+\)/DartTemplateContextType.<init>(args)/' "$BASELINE" | sort) current_issues.tmp)
-
-        if [ -n "$NEW_ERRORS" ]; then
-          echo -e "${RED}${BOLD}Error: New verification issues found for version $version:${NC}"
-          echo "$NEW_ERRORS"
-          EXIT_STATUS=1
-        else
-          echo -e "${GREEN}Verification passed for version $version (no new issues).${NC}"
-        fi
-      else
-        echo -e "${YELLOW}Warning: No baseline file found at $BASELINE. Skipping comparison.${NC}"
-      fi
-    else
-      echo -e "${RED}${BOLD}Report does not exist.${NC}"
+    if ! "$@"; then
       EXIT_STATUS=1
-    fi  
+      echo -e "${RED}${BOLD}$name failed.${NC}"
+      echo "::error title=$name failed::See the ${BOT} job log for details."
+    fi
+  }
+
+  verify verifyPluginProjectConfiguration ./gradlew verifyPluginProjectConfiguration
+  verify verifyPluginStructure ./gradlew verifyPluginStructure
+  verify verifyPluginSignature ./gradlew verifyPluginSignature
+
+  # One IDE at a time: with `singleIdeVersion` set, each run deletes its IDE
+  # afterwards (see build.gradle.kts), which is what keeps the bot from running
+  # out of disk. The reports accumulate, so the baseline check below sees all
+  # of them.
+  #
+  # The exit status is deliberately ignored. `failureLevel` in build.gradle.kts
+  # judges an issue by severity alone, with no notion of whether we have
+  # already accepted it, so a baselined issue in an enabled category would fail
+  # every run with no way to suppress it. The baseline check below is the
+  # verdict: it fails on anything new, in any category. Note that this only
+  # discards the *status* -- a problem serious enough to matter still appears
+  # in the report, and so is still caught if it is new.
+  for version in $(ls tool/baseline); do
+    echo -e "${BOLD}Running verifyPlugin for $version...${NC}"
+    echo "Check on space before verifyPlugin for $version"
+    df -h
+    ./gradlew verifyPlugin -PsingleIdeVersion=$version || true
   done
 
   echo "Check on space after verifyPlugin"
   df -h
 
+  # Diffs every report produced above against tool/baseline/<IDE branch>/.
+  # New problems are surfaced as job annotations and in the job summary.
+  ./tool/check_verifier_baselines.sh check || EXIT_STATUS=1
+
   if [ $EXIT_STATUS -ne 0 ]; then
-    echo -e "${RED}${BOLD}Build failed: New verification issues were detected.${NC}"
-    echo -e "${YELLOW}To update the baselines with these new issues, run:${NC}"
-    echo -e "${YELLOW}  ./tool/update_baselines.sh${NC}"
-    echo -e "${YELLOW}from the repository root and commit the changes.${NC}"
     exit 1
   fi
 
