@@ -103,7 +103,7 @@ fi
 status=0
 details=""
 
-current="$(mktemp)"
+current="$(mktemp)" || exit 1
 trap 'rm -f "$current"' EXIT INT TERM
 
 for report in "${reports[@]}"; do
