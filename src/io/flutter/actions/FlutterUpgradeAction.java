@@ -23,11 +23,16 @@ public class FlutterUpgradeAction extends FlutterSdkAction {
   public void actionPerformed(@NotNull AnActionEvent event) {
     final Project project = event.getProject();
     if (SystemInfo.isWindows && project != null && FlutterSdk.getFlutterSdk(project) != null) {
-      FlutterMessages.showDialog(project,
-                                 FlutterBundle.message("flutter.upgrade.windows.message"),
-                                 FlutterBundle.message("flutter.upgrade.windows.title"),
-                                 new String[]{"OK"}, 0);
-      Analytics.report(AnalyticsData.forAction(this, event));
+      final int response = FlutterMessages.showDialog(project,
+                                                     FlutterBundle.message("flutter.upgrade.windows.message"),
+                                                     FlutterBundle.message("flutter.upgrade.windows.title"),
+                                                     new String[]{FlutterBundle.message("flutter.upgrade.windows.continue"), "Cancel"}, 1);
+      if (response == 0) {
+        super.actionPerformed(event);
+      }
+      else {
+        Analytics.report(AnalyticsData.forAction(this, event));
+      }
       return;
     }
 
