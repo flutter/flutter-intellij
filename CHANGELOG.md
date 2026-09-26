@@ -8,6 +8,7 @@
 
 ### Fixed
 - Opening the iOS Simulator with Xcode 27, which replaced `Simulator.app` with `DeviceHub.app`. (#9126)
+- Prevent Flutter upgrades from running inside the IDE on Windows when Dart SDK files may be locked. (#9092)
 
 ## 96.0.0
 
