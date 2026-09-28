@@ -10,12 +10,6 @@
 
 ## 97.0.0
 
-### Added
-
-### Changed
-
-### Removed
-
 ### Fixed
 - Opening the iOS Simulator with Xcode 27, which replaced `Simulator.app` with `DeviceHub.app`. (#9126)
 - `IndexOutOfBoundsException` in `FlutterColorProvider`. (#9091)
