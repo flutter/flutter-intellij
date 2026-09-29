@@ -4,13 +4,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Run the IntelliJ plugin verifier and refresh the committed baselines from the
+# resulting reports. Run this from the repository root.
+#
+# The comparison logic lives in check_verifier_baselines.sh so that the "check"
+# and "update" paths can never drift apart.
+
+set -uo pipefail
+
 if [ ! -f "build.gradle.kts" ]; then
   echo "Error: This script must be run from the repository root directory."
   exit 1
 fi
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BOLD='\033[1m'
 NC='\033[0m' # None (Reset)
@@ -28,22 +34,17 @@ fi
 
 echo -e "${BOLD}Found versions to update: $VERSIONS${NC}"
 
+# One IDE at a time: `verifyPlugin` deletes each IDE after use when
+# `singleIdeVersion` is set (see build.gradle.kts), which is what keeps CI bots
+# from running out of disk. The reports accumulate, so the baseline refresh
+# below sees all of them.
+#
+# `verifyPlugin` exits non-zero when it finds problems, which is exactly the
+# case we want to re-baseline, so its status is intentionally ignored here.
+# check_verifier_baselines.sh fails if no reports were produced at all.
 for version in $VERSIONS; do
   echo -e "${BOLD}Verifying version $version...${NC}"
   ./gradlew verifyPlugin -PsingleIdeVersion=$version --no-configuration-cache --no-daemon || true
-
-  echo -e "${BOLD}Processing baseline for $version...${NC}"
-  BASELINE="tool/baseline/$version/verifier-baseline.txt"
-  REPORT=$(find build/reports/pluginVerifier -path "*-$version.*/report.md" | head -n 1)
-
-  if [ -f "$REPORT" ]; then
-    echo "Extracting issues from $REPORT"    
-    mkdir -p "$(dirname "$BASELINE")"
-    grep "^*" "$REPORT" | sort > "$BASELINE"
-    echo -e "${GREEN}Updated baseline at $BASELINE${NC}"
-  else
-    echo -e "${YELLOW}Warning: Report does not exist for version $version. Skipping.${NC}"
-  fi
 done
 
-echo -e "${BOLD}Done updating baselines.${NC}"
+exec ./tool/check_verifier_baselines.sh update
