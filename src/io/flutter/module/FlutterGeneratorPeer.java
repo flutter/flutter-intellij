@@ -26,7 +26,10 @@ import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import javax.swing.ComboBoxEditor;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -62,17 +65,24 @@ public class FlutterGeneratorPeer {
   }
 
   private void init() {
-    mySdkPathComboWithBrowse.getComboBox().setEditable(true);
-    FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkPathComboWithBrowse.getComboBox());
-    if (mySdkPathComboWithBrowse.getComboBox().getModel().getSize() == 0) {
-      // If no SDKs are found, try to use the one from the FLUTTER_SDK environment variable.
-      // This ensures the SDK path is pre-filled when the combo box is empty, not requiring
-      // a running Application which is the case for users and bots on the initial startup
-      // experience.
-      final String flutterSDKPath = System.getenv("FLUTTER_SDK");
-      if (StringUtil.isNotEmpty(flutterSDKPath)) {
-        mySdkPathComboWithBrowse.getComboBox().setSelectedItem(flutterSDKPath);
-      }
+    final JComboBox<String> sdkCombo = mySdkPathComboWithBrowse.getComboBox();
+    sdkCombo.setEditable(true);
+
+    // The combo may not be showing yet (e.g. switching project type mid-wizard); wait until
+    // it is so FlutterSdkUtil can resolve the dialog's real modality state below.
+    if (sdkCombo.isShowing()) {
+      populateSdkCombo(sdkCombo);
+    }
+    else {
+      sdkCombo.addHierarchyListener(new HierarchyListener() {
+        @Override
+        public void hierarchyChanged(HierarchyEvent e) {
+          if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0 && sdkCombo.isShowing()) {
+            sdkCombo.removeHierarchyListener(this);
+            populateSdkCombo(sdkCombo);
+          }
+        }
+      });
     }
 
     mySdkPathComboWithBrowse.addBrowseFolderListener(null, FileChooserDescriptorFactory.createSingleFolderDescriptor()
@@ -90,6 +100,20 @@ public class FlutterGeneratorPeer {
 
     errorIcon.setVisible(false);
     errorPane.setVisible(false);
+  }
+
+  private void populateSdkCombo(@NotNull JComboBox<String> combo) {
+    FlutterSdkUtil.addKnownSDKPathsToCombo(combo);
+    if (combo.getModel().getSize() == 0) {
+      // If no SDKs are found, try to use the one from the FLUTTER_SDK environment variable.
+      // This ensures the SDK path is pre-filled when the combo box is empty, not requiring
+      // a running Application which is the case for users and bots on the initial startup
+      // experience.
+      final String flutterSDKPath = System.getenv("FLUTTER_SDK");
+      if (StringUtil.isNotEmpty(flutterSDKPath)) {
+        combo.setSelectedItem(flutterSDKPath);
+      }
+    }
   }
 
   private void fillSdkCache() {
