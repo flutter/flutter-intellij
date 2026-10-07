@@ -9,7 +9,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.FilenameIndex;
@@ -17,10 +16,8 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.GlobalSearchScopesCore;
 import com.intellij.util.PathUtil;
 import com.intellij.xdebugger.XSourcePosition;
-import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
-import io.flutter.dart.DartPlugin;
 import io.flutter.logging.PluginLogger;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.OpenApiUtils;
@@ -68,12 +65,6 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
   private final DartUrlResolver resolver;
 
   /**
-   * Used to ask the Dart analysis server to convert between Dart URI's and local absolute paths.
-   */
-  @Nullable
-  private final Analyzer analyzer;
-
-  /**
    * Callback to download a Dart file from Observatory.
    * <p>
    * Initialized when the debugger connects.
@@ -105,12 +96,10 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
 
   public FlutterPositionMapper(@NotNull Project project,
                                @NotNull VirtualFile sourceRoot,
-                               @NotNull DartUrlResolver resolver,
-                               @Nullable Analyzer analyzer) {
+                               @NotNull DartUrlResolver resolver) {
     this.project = project;
     this.sourceRoot = sourceRoot;
     this.resolver = resolver;
-    this.analyzer = analyzer;
   }
 
   @NotNull
@@ -215,17 +204,6 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
     else {
       results.add(uriByIde);
       results.add(threeSlashize(new File(file.getPath()).toURI().toString()));
-    }
-
-    // package: (if applicable)
-    if (analyzer != null) {
-      final String uriByServer = analyzer.getUri(file.getPath());
-      if (uriByServer != null) {
-        results.add(uriByServer);
-      }
-      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-        LOG.info("getBreakpointUris: uriByServer=" + uriByServer);
-      }
     }
 
     final String path = file.getPath();
@@ -340,19 +318,6 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
         remoteUri = uri;
       }
 
-      // See if the analysis server can resolve the URI.
-      if (analyzer != null && !isDartPatchUri(remoteUri)) {
-        final String path = analyzer.getAbsolutePath(remoteUri);
-        if (path != null) {
-          if (path.startsWith("file://")) {
-            LocalFileSystem.getInstance().findFileByPath(path.substring(7));
-          }
-          else {
-            LocalFileSystem.getInstance().findFileByPath(path);
-          }
-        }
-      }
-
       // Otherwise, assume no mapping is needed and see if we can resolve it locally.
       return resolver.findFileByDartUrl(remoteUri);
     });
@@ -368,74 +333,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
     return uri;
   }
 
-  private static boolean isDartPatchUri(@NotNull final String uri) {
-    // dart:_builtin or dart:core-patch/core_patch.dart
-    return uri.startsWith("dart:_") || uri.startsWith("dart:") && uri.contains("-patch/");
-  }
-
   public void shutdown() {
-    if (analyzer != null) {
-      analyzer.close();
-    }
     project = null;
-  }
-
-  /**
-   * Wraps a Dart analysis server and execution id for doing URI resolution for a particular Flutter app.
-   * <p>
-   * (Can be mocked out for unit tests.)
-   */
-  public interface Analyzer {
-    @Nullable
-    String getAbsolutePath(@NotNull String dartUri);
-
-    @Nullable
-    String getUri(@NotNull String absolutePath);
-
-    void close();
-
-    /**
-     * Sets up the analysis server to resolve URI's for a Flutter app, if possible.
-     *
-     * @param sourceLocation the file containing the app's main() method, or a directory containing it.
-     */
-    @Nullable
-    static Analyzer create(@NotNull Project project, @NotNull VirtualFile sourceLocation) {
-      final DartPlugin dartPluginInstance = DartPlugin.getInstance();
-      final DartAnalysisServerService dartAnalysisServerService = dartPluginInstance.getAnalysisService(project);
-      if (dartAnalysisServerService == null) {
-        return null;
-      }
-
-      if (!dartAnalysisServerService.serverReadyForRequest()) {
-        LOG.warn("Dart analysis server is not running. Some breakpoints may not work.");
-        return null;
-      }
-
-      final String contextId = dartAnalysisServerService.execution_createContext(sourceLocation.getPath());
-      if (contextId == null) {
-        LOG.warn("Failed to get execution context from analysis server. Some breakpoints may not work.");
-        return null;
-      }
-
-      return new Analyzer() {
-        @Override
-        @Nullable
-        public String getAbsolutePath(@NotNull String dartUri) {
-          return dartAnalysisServerService.execution_mapUri(contextId, dartUri);
-        }
-
-        @Override
-        @Nullable
-        public String getUri(@NotNull String absolutePath) {
-          return dartAnalysisServerService.execution_mapUri(contextId, absolutePath);
-        }
-
-        @Override
-        public void close() {
-          dartAnalysisServerService.execution_deleteContext(contextId);
-        }
-      };
-    }
   }
 }
