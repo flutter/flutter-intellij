@@ -449,78 +449,110 @@ public class VmServiceWrapper implements Disposable {
       return;
     }
 
-    addRequest(() -> {
-      int line = position.getLine() + 1;
+    addRequest(() -> doAddBreakpoint(isolateId, position, consumer));
+  }
 
-      String resolvedUri = getResolvedUri(position);
-      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) LOG.info("Computed resolvedUri: " + resolvedUri);
-      List<String> resolvedUriList = List.of(percentEscapeUri(resolvedUri));
+  private void doAddBreakpoint(@NotNull String isolateId,
+                               @NotNull XSourcePosition position,
+                               @NotNull VmServiceConsumers.BreakpointsConsumer consumer) {
+    int line = position.getLine() + 1;
+    String resolvedUri = getResolvedUri(position);
+    if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) LOG.info("Computed resolvedUri: " + resolvedUri);
+    List<String> resolvedUriList = List.of(percentEscapeUri(resolvedUri));
 
-      CanonicalBreakpoint canonicalBreakpoint =
-        new CanonicalBreakpoint(position.getFile().getName(), position.getFile().getCanonicalPath(), line);
-      canonicalBreakpoints.add(canonicalBreakpoint);
-      List<Breakpoint> breakpointResponses = new ArrayList<>();
-      List<RPCError> errorResponses = new ArrayList<>();
+    CanonicalBreakpoint canonicalBreakpoint =
+      new CanonicalBreakpoint(position.getFile().getName(), position.getFile().getCanonicalPath(), line);
+    canonicalBreakpoints.add(canonicalBreakpoint);
 
-      myVmService.lookupPackageUris(isolateId, resolvedUriList, new UriListConsumer() {
-        @Override
-        public void received(UriList response) {
-          LOG.info("in received of lookupPackageUris");
-          if (myDebugProcess.getSession().getProject().isDisposed()) {
-            return;
-          }
+    myVmService.lookupPackageUris(
+      isolateId,
+      resolvedUriList,
+      createPackageUriConsumer(isolateId, line, canonicalBreakpoint, consumer)
+    );
+  }
 
-          List<String> uris = response.getUris();
+  @NotNull
+  private UriListConsumer createPackageUriConsumer(@NotNull String isolateId,
+                                                   int line,
+                                                   @NotNull CanonicalBreakpoint canonicalBreakpoint,
+                                                   @NotNull VmServiceConsumers.BreakpointsConsumer consumer) {
+    List<Breakpoint> breakpointResponses = new ArrayList<>();
+    List<RPCError> errorResponses = new ArrayList<>();
 
-          if (uris == null || uris.get(0) == null) {
-            LOG.info("Uri was not found");
-            JsonObject error = new JsonObject();
-            error.addProperty("error", "Breakpoint could not be mapped to package URI");
-            errorResponses.add(new RPCError(error));
-            consumer.received(breakpointResponses, errorResponses);
-            return;
-          }
+    return new UriListConsumer() {
+      @Override
+      public void received(UriList response) {
+        handlePackageUrisReceived(isolateId, line, canonicalBreakpoint, response, breakpointResponses, errorResponses, consumer);
+      }
 
-          String scriptUri = uris.get(0);
-          LOG.info("in received of lookupPackageUris. scriptUri: " + scriptUri);
-          myVmService.addBreakpointWithScriptUri(isolateId, scriptUri, line, new AddBreakpointWithScriptUriConsumer() {
-            @Override
-            public void received(Breakpoint response) {
-              breakpointResponses.add(response);
-              breakpointNumbersToCanonicalMap.put(response.getBreakpointNumber(), canonicalBreakpoint);
+      @Override
+      public void onError(RPCError error) {
+        LOG.error(error.toString());
+        LOG.error(error.getMessage());
+        LOG.error(Objects.toString(error.getRequest()));
+        LOG.error(error.getDetails());
+        errorResponses.add(error);
+        consumer.received(breakpointResponses, errorResponses);
+      }
+    };
+  }
 
-              checkDone();
-            }
+  private void handlePackageUrisReceived(@NotNull String isolateId,
+                                         int line,
+                                         @NotNull CanonicalBreakpoint canonicalBreakpoint,
+                                         @NotNull UriList response,
+                                         @NotNull List<Breakpoint> breakpointResponses,
+                                         @NotNull List<RPCError> errorResponses,
+                                         @NotNull VmServiceConsumers.BreakpointsConsumer consumer) {
+    LOG.info("in received of lookupPackageUris");
+    if (myDebugProcess.getSession().getProject().isDisposed()) {
+      return;
+    }
 
-            @Override
-            public void received(Sentinel response) {
-              checkDone();
-            }
+    List<String> uris = response.getUris();
+    if (uris == null || uris.get(0) == null) {
+      LOG.info("Uri was not found");
+      JsonObject error = new JsonObject();
+      error.addProperty("error", "Breakpoint could not be mapped to package URI");
+      errorResponses.add(new RPCError(error));
+      consumer.received(breakpointResponses, errorResponses);
+      return;
+    }
 
-            @Override
-            public void onError(RPCError error) {
-              errorResponses.add(error);
+    String scriptUri = uris.get(0);
+    LOG.info("in received of lookupPackageUris. scriptUri: " + scriptUri);
+    myVmService.addBreakpointWithScriptUri(
+      isolateId,
+      scriptUri,
+      line,
+      createScriptUriBreakpointConsumer(canonicalBreakpoint, breakpointResponses, errorResponses, consumer)
+    );
+  }
 
-              checkDone();
-            }
+  @NotNull
+  private AddBreakpointWithScriptUriConsumer createScriptUriBreakpointConsumer(@NotNull CanonicalBreakpoint canonicalBreakpoint,
+                                                                               @NotNull List<Breakpoint> breakpointResponses,
+                                                                               @NotNull List<RPCError> errorResponses,
+                                                                               @NotNull VmServiceConsumers.BreakpointsConsumer consumer) {
+    return new AddBreakpointWithScriptUriConsumer() {
+      @Override
+      public void received(Breakpoint response) {
+        breakpointResponses.add(response);
+        breakpointNumbersToCanonicalMap.put(response.getBreakpointNumber(), canonicalBreakpoint);
+        consumer.received(breakpointResponses, errorResponses);
+      }
 
-            private void checkDone() {
-              consumer.received(breakpointResponses, errorResponses);
-            }
-          });
-        }
+      @Override
+      public void received(Sentinel response) {
+        consumer.received(breakpointResponses, errorResponses);
+      }
 
-        @Override
-        public void onError(RPCError error) {
-          LOG.error(error.toString());
-          LOG.error(error.getMessage());
-          LOG.error(Objects.toString(error.getRequest()));
-          LOG.error(error.getDetails());
-          errorResponses.add(error);
-          consumer.received(breakpointResponses, errorResponses);
-        }
-      });
-    });
+      @Override
+      public void onError(RPCError error) {
+        errorResponses.add(error);
+        consumer.received(breakpointResponses, errorResponses);
+      }
+    };
   }
 
   private String getResolvedUri(@NotNull XSourcePosition position) {
@@ -614,20 +646,21 @@ public class VmServiceWrapper implements Disposable {
   }
 
   public void setExceptionPauseMode(@NotNull ExceptionPauseMode mode) {
+    SetIsolatePauseModeConsumer consumer = new SetIsolatePauseModeConsumer() {
+      @Override
+      public void onError(RPCError error) {
+      }
+
+      @Override
+      public void received(Sentinel response) {
+      }
+
+      @Override
+      public void received(Success response) {
+      }
+    };
     for (IsolatesInfo.IsolateInfo isolateInfo : myIsolatesInfo.getIsolateInfos()) {
-      addRequest(() -> myVmService.setIsolatePauseMode(isolateInfo.getIsolateId(), mode, false, new SetIsolatePauseModeConsumer() {
-        @Override
-        public void onError(RPCError error) {
-        }
-
-        @Override
-        public void received(Sentinel response) {
-        }
-
-        @Override
-        public void received(Success response) {
-        }
-      }));
+      addRequest(() -> myVmService.setIsolatePauseMode(isolateInfo.getIsolateId(), mode, false, consumer));
     }
   }
 
