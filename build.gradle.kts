@@ -13,6 +13,7 @@ import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import org.gradle.api.DefaultTask
@@ -147,9 +148,34 @@ javaCompatibilityVersion = when (javaVersion) {
   }
 }
 
+// Without auto-provisioning, the running JVM is the toolchain, so it must be able to target javaVersion.
+if (JavaVersion.current() < javaCompatibilityVersion) {
+  throw GradleException(
+    "Gradle is running on JDK ${JavaVersion.current().majorVersion}, but JDK $javaVersion or newer is required. " +
+      "Set JAVA_HOME (or the IDE's Gradle JVM) to JDK $javaVersion+."
+  )
+}
+
 java {
+  toolchain {
+    // Dynamically use the running JVM version for the toolchain so Gradle does not search for or download a
+    // specific JDK on CI or locally. The bytecode level is still enforced by `options.release` and `jvmTarget`.
+    languageVersion.set(JavaLanguageVersion.of(JavaVersion.current().majorVersion))
+  }
   sourceCompatibility = javaCompatibilityVersion
   targetCompatibility = javaCompatibilityVersion
+}
+
+tasks.withType<JavaCompile>().configureEach {
+  // Enforce the target bytecode version and standard library API level, since the toolchain may be newer.
+  options.release.set(javaVersion.toInt())
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+  compilerOptions {
+    // Same as above, but for Kotlin; otherwise jvmTarget defaults to the (possibly newer) toolchain version.
+    jvmTarget.set(jvmVersion)
+  }
 }
 
 sourceSets {
