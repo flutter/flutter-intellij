@@ -148,6 +148,14 @@ javaCompatibilityVersion = when (javaVersion) {
   }
 }
 
+// Without auto-provisioning, the running JVM is the toolchain, so it must be able to target javaVersion.
+if (JavaVersion.current() < javaCompatibilityVersion) {
+  throw GradleException(
+    "Gradle is running on JDK ${JavaVersion.current().majorVersion}, but JDK $javaVersion or newer is required. " +
+      "Set JAVA_HOME (or the IDE's Gradle JVM) to JDK $javaVersion+."
+  )
+}
+
 java {
   toolchain {
     // Dynamically use the running JVM version for the toolchain so Gradle does not search for or download a
