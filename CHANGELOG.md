@@ -3,6 +3,7 @@
 ### Added
 
 ### Changed
+- Format and organize imports on save using IntelliJ Platform processors instead of the legacy Dart Analysis Server. (#9140)
 
 ### Removed
 - Legacy Dart Analysis Server URI mapping during debugging. (#9149)

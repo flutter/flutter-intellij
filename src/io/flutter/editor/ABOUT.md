@@ -30,7 +30,7 @@ Provides editor-level enhancements such as code completion, color pickers, icon 
 - FlutterIconLineMarkerProvider caches known icon paths and relies on static analysis to resolve font packages.
 
 ## Side Effects
-- Modifies document content on save via DartAnalysisServerService to format code and organize imports (FlutterSaveActionsManager).
+- Modifies document content on save via ReformatCodeProcessor and OptimizeImportsProcessor to format code and organize imports (FlutterSaveActionsManager).
 - Subscribes to DartAnalysisServer and FileEditorManager events to manage outline listeners (ActiveEditorsOutlineService).
 - Injects editor notification banners and gutter line markers into the IDE UI.
 - Executes external commands (Pub get/upgrade/outdated, and opening Xcode/Android Studio) triggered via editor notification panel actions.
