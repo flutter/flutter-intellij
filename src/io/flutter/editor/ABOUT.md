@@ -30,7 +30,7 @@ Provides editor-level enhancements: color and icon decorations on Dart completio
 - FlutterPubspecNotificationProvider only shows for local pubspec files that declare Flutter, and only when a Flutter SDK is configured.
 
 ## Side Effects
-- Modifies document content on save via DartAnalysisServerService to format code and organize imports (FlutterSaveActionsManager).
+- Modifies document content on save via ReformatCodeProcessor and OptimizeImportsProcessor to format code and organize imports (FlutterSaveActionsManager).
 - Injects editor notification banners and gutter line markers into the IDE UI.
 - Runs commands from editor notification panels: Pub get/upgrade/outdated and Flutter doctor (pubspec banner), and on macOS opening `ios`/`macos` project roots in Xcode (native banner, which also offers a "hide notification" action). The Android Studio option is disabled (issue #7103).
 - The platform shows color picker popups for `FlutterColorProvider` swatches, and the provider rewrites source when a color is changed from the gutter.
