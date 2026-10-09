@@ -98,7 +98,7 @@ public class FlutterPositionMapperTest {
     final FlutterPositionMapper[] mapper = new FlutterPositionMapper[1];
     OpenApiUtils.safeRunReadAction(() -> {
       final DartUrlResolver resolver = new DartUrlResolverImpl(fixture.getProject(), contextFile);
-      mapper[0] = new FlutterPositionMapper(fixture.getProject(), sourceRoot, resolver, null);
+      mapper[0] = new FlutterPositionMapper(fixture.getProject(), sourceRoot, resolver);
       mapper[0].onConnect(scripts, remoteBaseUri);
     });
     return mapper[0];
