@@ -35,7 +35,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Converts positions between Dart files in Observatory and local Dart files.
@@ -233,9 +232,8 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
   @Nullable
   public XSourcePosition getSourcePosition(@NotNull final String isolateId,
                                            @NotNull final ScriptRef scriptRef,
-                                           int tokenPos,
-                                           CompletableFuture<String> fileFuture) {
-    return getSourcePosition(isolateId, scriptRef.getId(), scriptRef.getUri(), tokenPos, fileFuture);
+                                           int tokenPos) {
+    return getSourcePosition(isolateId, scriptRef.getId(), scriptRef.getUri(), tokenPos);
   }
 
   /**
@@ -246,23 +244,18 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
     return getSourcePosition(isolateId, script.getId(), script.getUri(), tokenPos);
   }
 
-  private XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final String scriptId,
-                                            @NotNull final String scriptUri, int tokenPos) {
-    return getSourcePosition(isolateId, scriptId, scriptUri, tokenPos, null);
-  }
-
   /**
    * Returns the local position (to display to the user) corresponding to a token position in Observatory.
    */
   @Nullable
   private XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final String scriptId,
-                                            @NotNull final String scriptUri, int tokenPos, CompletableFuture<String> fileFuture) {
+                                            @NotNull final String scriptUri, int tokenPos) {
     if (scriptProvider == null) {
       LOG.warn("attempted to get source position before connected to observatory");
       return null;
     }
 
-    final VirtualFile local = findLocalFile(scriptUri, fileFuture);
+    final VirtualFile local = findLocalFile(scriptUri);
 
     final ObservatoryFile.Cache cache =
       fileCache.computeIfAbsent(isolateId, (id) -> new ObservatoryFile.Cache(id, scriptProvider));
@@ -279,23 +272,12 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
     return remoteSourceRoot;
   }
 
-  @Nullable
-  protected VirtualFile findLocalFile(@NotNull String uri) {
-    final VirtualFile file = findLocalFile(uri, null);
-    if (file == null) {
-      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-        LOG.info("findLocalFile: could not find local file for " + uri);
-      }
-    }
-    return file;
-  }
-
   /**
    * Attempt to find a local Dart file corresponding to a script in Observatory.
    */
   @Nullable
-  protected VirtualFile findLocalFile(@NotNull String uri, CompletableFuture<String> fileFuture) {
-    return OpenApiUtils.safeRunReadAction(() -> {
+  protected VirtualFile findLocalFile(@NotNull String uri) {
+    final VirtualFile file = OpenApiUtils.safeRunReadAction(() -> {
       // This can be a remote file or URI.
       if (remoteSourceRoot != null && uri.startsWith(remoteSourceRoot)) {
         final String rootUri = StringUtil.trimEnd(resolver.getDartUrlForFile(sourceRoot), '/');
@@ -321,6 +303,12 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
       // Otherwise, assume no mapping is needed and see if we can resolve it locally.
       return resolver.findFileByDartUrl(remoteUri);
     });
+    if (file == null) {
+      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+        LOG.info("findLocalFile: could not find local file for " + uri);
+      }
+    }
+    return file;
   }
 
   @NotNull
