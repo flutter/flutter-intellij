@@ -19,7 +19,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.PsiErrorElementUtil;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.FlutterUtils;
@@ -53,8 +52,10 @@ public class FlutterSaveActionsManager {
   }
 
   private final @NotNull Project myProject;
-  private final @NotNull Set<Document> myPendingDocuments = Collections.newSetFromMap(new WeakHashMap<>());
-  private final @NotNull Set<Document> mySavingDocuments = Collections.newSetFromMap(new WeakHashMap<>());
+  private final @NotNull Set<Document> myPendingDocuments =
+    Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+  private final @NotNull Set<Document> mySavingDocuments =
+    Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
   public FlutterSaveActionsManager(@NotNull Project project) {
     this(project, project);
@@ -111,7 +112,7 @@ public class FlutterSaveActionsManager {
     }
 
     final Module module = ModuleUtil.findModuleForFile(file, myProject);
-    if (module == null || !isDartSdkEnabled(module) || hasSyntaxErrors(psiFile, file)) {
+    if (module == null || !isDartSdkEnabled(module) || hasSyntaxErrors(psiFile)) {
       return null;
     }
 
@@ -126,7 +127,8 @@ public class FlutterSaveActionsManager {
       if (myProject.isDisposed() || !psiFile.isValid() || file == null || !file.isValid()) {
         return;
       }
-      if (hasSyntaxErrors(psiFile, file)) {
+      PsiDocumentManager.getInstance(myProject).commitDocument(document);
+      if (hasSyntaxErrors(psiFile)) {
         return;
       }
 
@@ -134,8 +136,10 @@ public class FlutterSaveActionsManager {
     });
   }
 
-  private boolean hasSyntaxErrors(@NotNull PsiFile psiFile, @NotNull VirtualFile file) {
-    return PsiTreeUtil.hasErrorElements(psiFile) || PsiErrorElementUtil.hasErrors(myProject, file);
+  private static boolean hasSyntaxErrors(@NotNull PsiFile psiFile) {
+    // Use PsiTreeUtil.hasErrorElements directly rather than PsiErrorElementUtil.hasErrors,
+    // because DartHighlightingErrorFilter suppresses PSI error elements for in-project Dart files.
+    return Boolean.TRUE.equals(OpenApiUtils.safeRunReadAction(() -> PsiTreeUtil.hasErrorElements(psiFile)));
   }
 
   @VisibleForTesting
