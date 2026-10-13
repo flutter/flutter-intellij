@@ -426,8 +426,7 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
 
   @Nullable
   public XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final ScriptRef scriptRef, int tokenPos) {
-    CompletableFuture<String> fileFuture = myVmServiceWrapper.findResolvedFile(isolateId, scriptRef.getUri());
-    return mapper.getSourcePosition(isolateId, scriptRef, tokenPos, fileFuture);
+    return mapper.getSourcePosition(isolateId, scriptRef, tokenPos);
   }
 
   @Nullable
@@ -588,11 +587,6 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
     return myVmConnected;
   }
 
-  private static boolean isDartPatchUri(@NotNull final String uri) {
-    // dart:_builtin or dart:core-patch/core_patch.dart
-    return uri.startsWith("dart:_") || uri.startsWith("dart:") && uri.contains("-patch/");
-  }
-
   public interface PositionMapper {
     void onConnect(ScriptProvider provider, String remoteBaseUrl);
 
@@ -613,7 +607,7 @@ public abstract class DartVmServiceDebugProcess extends XDebugProcess {
     /**
      * Returns the local position (to display to the user) corresponding to a token position in Observatory.
      */
-    XSourcePosition getSourcePosition(String isolateId, ScriptRef scriptRef, int tokenPos, CompletableFuture<String> fileFuture);
+    XSourcePosition getSourcePosition(String isolateId, ScriptRef scriptRef, int tokenPos);
 
     /**
      * Returns the local position (to display to the user) corresponding to a token position in Observatory.

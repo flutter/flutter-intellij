@@ -5,6 +5,7 @@
 ### Changed
 
 ### Removed
+- Legacy Dart Analysis Server URI mapping during debugging. (#9149)
 
 ### Fixed
 
