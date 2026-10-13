@@ -127,6 +127,10 @@ public class FlutterSdkUtil {
       }
 
       // After the slow operation is complete, switch back to the EDT to update the UI.
+      // Without an explicit ModalityState, invokeLater uses the non-modal default, which the platform only
+      // runs once no modal dialog is open. When the wizard's dialog is already showing (e.g. the user switched
+      // to Flutter from another language), the update would stay queued until the dialog closed, leaving the
+      // dropdown empty. Using the combo's own modality state lets it run while that dialog is open.
       OpenApiUtils.safeInvokeLater(() -> {
         // This code runs on the EDT.
         final Object currentEditorItem = combo.getEditor().getItem();

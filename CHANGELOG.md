@@ -8,6 +8,7 @@
 - Legacy Dart Analysis Server URI mapping during debugging. (#9149)
 
 ### Fixed
+- Empty Flutter SDK dropdown in the New Project wizard when switching to Flutter after starting the wizard on another language. (#9106)
 
 ## 97.0.0
 
@@ -19,8 +20,6 @@
 
 ### Fixed
 - Opening the iOS Simulator with Xcode 27, which replaced `Simulator.app` with `DeviceHub.app`. (#9126)
-
-- Empty Flutter SDK dropdown in the New Project wizard when switching to Flutter after starting the wizard on another language. (#9106)
 
 - `IndexOutOfBoundsException` in `FlutterColorProvider`. (#9091)
 
