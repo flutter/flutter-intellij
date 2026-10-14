@@ -3,9 +3,11 @@
 ### Added
 
 ### Changed
+- Migrated test detection from `FlutterOutline` to Dart PSI. (#9159)
 
 ### Removed
 - Legacy Dart Analysis Server URI mapping during debugging. (#9149)
+- `ActiveEditorsOutlineService` and `flutter.outline` subscriptions for active editors. (#9159)
 
 ### Fixed
 

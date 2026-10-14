@@ -6,10 +6,15 @@
 package io.flutter.run.common;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.CachedValue;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
 import com.jetbrains.lang.dart.psi.DartComponent;
@@ -23,6 +28,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Common utilities for processing Flutter tests.
@@ -35,6 +43,7 @@ public abstract class CommonTestConfigUtils {
   private static final String TEST_WIDGETS = "testWidgets";
   private static final String IS_TEST = "isTest";
   private static final String IS_TEST_GROUP = "isTestGroup";
+  private static final Key<CachedValue<Map<String, Optional<TestType>>>> CUSTOM_TEST_CACHE_KEY = Key.create("CUSTOM_TEST_CACHE_KEY");
 
   public static String convertHttpServiceProtocolToWs(String url) {
     return StringUtil.trimTrailing(
@@ -141,39 +150,45 @@ public abstract class CommonTestConfigUtils {
       return null;
     }
 
-    for (DartComponent component : PsiTreeUtil.getChildrenOfTypeAsList(file, DartComponent.class)) {
-      if (functionName.equals(component.getName())) {
-        final TestType type = getTestTypeFromMetadata(component);
-        if (type != null) {
-          return type;
-        }
-      }
-    }
-
-    final VirtualFile virtualFile = DartResolveUtil.getRealVirtualFile(file);
-    if (virtualFile == null) {
-      return null;
-    }
-
-    final List<DartComponentName> componentNames = new ArrayList<>();
-    DartResolveUtil.processTopLevelDeclarations(
-      call,
-      new DartResolveProcessor(componentNames, functionName),
-      virtualFile,
-      functionName
+    final Map<String, Optional<TestType>> cache = CachedValuesManager.getCachedValue(file, CUSTOM_TEST_CACHE_KEY, () ->
+      CachedValueProvider.Result.create(new ConcurrentHashMap<>(), PsiModificationTracker.MODIFICATION_COUNT)
     );
 
-    for (DartComponentName componentName : componentNames) {
-      final PsiElement parent = componentName.getParent();
-      if (parent instanceof DartComponent component) {
-        final TestType type = getTestTypeFromMetadata(component);
-        if (type != null) {
-          return type;
+    return cache.computeIfAbsent(functionName, name -> {
+      for (DartComponent component : PsiTreeUtil.getChildrenOfTypeAsList(file, DartComponent.class)) {
+        if (name.equals(component.getName())) {
+          final TestType type = getTestTypeFromMetadata(component);
+          if (type != null) {
+            return Optional.of(type);
+          }
         }
       }
-    }
 
-    return null;
+      final VirtualFile virtualFile = DartResolveUtil.getRealVirtualFile(file);
+      if (virtualFile == null) {
+        return Optional.empty();
+      }
+
+      final List<DartComponentName> componentNames = new ArrayList<>();
+      DartResolveUtil.processTopLevelDeclarations(
+        call,
+        new DartResolveProcessor(componentNames, name),
+        virtualFile,
+        name
+      );
+
+      for (DartComponentName componentName : componentNames) {
+        final PsiElement parent = componentName.getParent();
+        if (parent instanceof DartComponent component) {
+          final TestType type = getTestTypeFromMetadata(component);
+          if (type != null) {
+            return Optional.of(type);
+          }
+        }
+      }
+
+      return Optional.empty();
+    }).orElse(null);
   }
 
   @Nullable

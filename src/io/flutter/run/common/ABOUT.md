@@ -20,5 +20,6 @@ Shared utilities and configurations for Flutter test, coverage, and run executio
 - TestType.MAIN does not detect main methods on its own, it defers to CommonTestConfigUtils.
 
 ## Side Effects
+- CommonTestConfigUtils caches resolved custom test annotation types per file using CachedValuesManager.
 - RunMode.fromEnv throws an ExecutionException if the execution environment run mode string is unsupported.
 - TestLineMarkerContributor dynamically queries TestStateStorage for recent test states.
