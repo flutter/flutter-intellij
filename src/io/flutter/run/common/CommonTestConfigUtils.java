@@ -66,9 +66,55 @@ public abstract class CommonTestConfigUtils {
 
   @Nullable
   protected TestType findNamedTestCall(@NotNull PsiElement element) {
-    if (!(element instanceof DartCallExpression call)) {
-      return null;
+    if (element instanceof DartCallExpression call) {
+      return getTestType(call);
     }
+    return null;
+  }
+
+  /**
+   * Returns the name of the test containing this element, or null if it can't be calculated.
+   */
+  @Nullable
+  public String findTestName(@Nullable PsiElement elt) {
+    if (elt == null) return null;
+
+    final DartCallExpression call = findEnclosingTestCall(elt);
+    if (call == null) return null;
+
+    return extractTestName(call);
+  }
+
+  @VisibleForTesting
+  @Nullable
+  public String extractTestName(@NotNull DartCallExpression call) {
+    final DartStringLiteralExpression lit = DartSyntax.getArgument(call, 0, DartStringLiteralExpression.class);
+    if (lit == null) return null;
+
+    return DartSyntax.unquote(lit);
+  }
+
+  /**
+   * Finds the closest enclosing {@link DartCallExpression} of {@param element} that is a test or group call.
+   */
+  @Nullable
+  private DartCallExpression findEnclosingTestCall(@NotNull PsiElement element) {
+    while (element != null) {
+      if (element instanceof DartCallExpression call) {
+        if (findNamedTestCall(call) != null) {
+          return call;
+        }
+        // If we found nothing, move up to the element's parent before finding the enclosing function call.
+        // This avoids an infinite loop found during testing.
+        element = element.getParent();
+      }
+      element = DartSyntax.findClosestEnclosingFunctionCall(element);
+    }
+    return null;
+  }
+
+  @Nullable
+  private static TestType getTestType(@NotNull DartCallExpression call) {
     if (DartSyntax.getArgument(call, 0, DartStringLiteralExpression.class) == null) {
       return null;
     }
@@ -137,47 +183,6 @@ public abstract class CommonTestConfigUtils {
     }
     if (component.getMetadataByName(IS_TEST_GROUP) != null) {
       return TestType.GROUP;
-    }
-    return null;
-  }
-
-  /**
-   * Returns the name of the test containing this element, or null if it can't be calculated.
-   */
-  @Nullable
-  public String findTestName(@Nullable PsiElement elt) {
-    if (elt == null) return null;
-
-    final DartCallExpression call = findEnclosingTestCall(elt);
-    if (call == null) return null;
-
-    return extractTestName(call);
-  }
-
-  @VisibleForTesting
-  @Nullable
-  public String extractTestName(@NotNull DartCallExpression call) {
-    final DartStringLiteralExpression lit = DartSyntax.getArgument(call, 0, DartStringLiteralExpression.class);
-    if (lit == null) return null;
-
-    return DartSyntax.unquote(lit);
-  }
-
-  /**
-   * Finds the closest enclosing {@link DartCallExpression} of {@param element} that is a test or group call.
-   */
-  @Nullable
-  private DartCallExpression findEnclosingTestCall(@NotNull PsiElement element) {
-    while (element != null) {
-      if (element instanceof DartCallExpression call) {
-        if (findNamedTestCall(call) != null) {
-          return call;
-        }
-        // If we found nothing, move up to the element's parent before finding the enclosing function call.
-        // This avoids an infinite loop found during testing.
-        element = element.getParent();
-      }
-      element = DartSyntax.findClosestEnclosingFunctionCall(element);
     }
     return null;
   }
