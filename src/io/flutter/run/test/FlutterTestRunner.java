@@ -206,8 +206,7 @@ public class FlutterTestRunner extends GenericProgramRunner {
 
     // Set up source file mapping.
     final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), launcher.getTestFileOrDir());
-    final FlutterPositionMapper.Analyzer analyzer = FlutterPositionMapper.Analyzer.create(env.getProject(), launcher.getTestFileOrDir());
-    final FlutterPositionMapper mapper = new FlutterPositionMapper(env.getProject(), launcher.getPubRoot().getRoot(), resolver, analyzer);
+    final FlutterPositionMapper mapper = new FlutterPositionMapper(env.getProject(), launcher.getPubRoot().getRoot(), resolver);
 
     // Create the debug session.
     final XDebuggerManager manager = XDebuggerManager.getInstance(env.getProject());
