@@ -16,7 +16,9 @@ import java.util.Arrays;
 public class FlutterCommandTest extends FlutterCodeInsightFixtureTestCase {
 
   private FlutterSdk createFlutterSdk() throws Exception {
-    VirtualFile home = ModuleRootManager.getInstance(getModule()).getContentRoots()[0];
+    VirtualFile[] roots = ModuleRootManager.getInstance(getModule()).getContentRoots();
+    assertTrue("No content roots found for module", roots.length > 0);
+    VirtualFile home = roots[0];
 
     Constructor<FlutterSdk> constructor =
       FlutterSdk.class.getDeclaredConstructor(VirtualFile.class, FlutterSdkVersion.class);
