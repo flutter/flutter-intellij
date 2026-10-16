@@ -5,8 +5,8 @@
 
 """Renders a recorded walkthrough directory into browsable files.
 
-Reads step_*.png and captions.txt (one caption per line, in step order; lines starting with #
-are ignored) from the walkthrough directory and writes:
+Reads step_*.png, captions.txt (one caption per line, in step order; lines starting with # are ignored), and
+the optional summary.md (what the test shows, in Markdown) from the walkthrough directory and writes:
 
   walkthrough.md    Standard Markdown with relative image links (GitHub, IDEs, Markdown viewers).
   walkthrough.html  A single self-contained page (images embedded) with a slideshow, keyboard
@@ -21,6 +21,7 @@ import datetime
 import html
 import json
 import pathlib
+import re
 import sys
 
 META_FILE = ".walkthrough-meta.json"
@@ -47,7 +48,58 @@ def load_meta(directory: pathlib.Path, args: argparse.Namespace) -> dict:
   return meta
 
 
-def summary(meta: dict, steps: int) -> str:
+def read_test_summary(directory: pathlib.Path) -> str:
+  path = directory / "summary.md"
+  return path.read_text().strip() if path.exists() else ""
+
+
+def inline_markdown(text: str) -> str:
+  text = html.escape(text, quote=False)
+  text = re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
+  return re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", text)
+
+
+def markdown_to_html(text: str) -> str:
+  """Converts the small Markdown subset used in test summaries: paragraphs, - / 1. lists, `code`, **bold**."""
+  blocks, list_tag, items, para = [], None, [], []
+
+  def flush_para():
+    if para:
+      blocks.append("<p>" + inline_markdown(" ".join(para)) + "</p>")
+      para.clear()
+
+  def flush_list():
+    nonlocal list_tag
+    if list_tag:
+      blocks.append(f"<{list_tag}>" + "".join(f"<li>{inline_markdown(i)}</li>" for i in items) + f"</{list_tag}>")
+      items.clear()
+      list_tag = None
+
+  for line in text.splitlines():
+    stripped = line.strip()
+    bullet = re.match(r"^[-*]\s+(.*)", stripped)
+    number = re.match(r"^\d+[.)]\s+(.*)", stripped)
+    if not stripped:
+      flush_para()
+      flush_list()
+    elif bullet or number:
+      flush_para()
+      tag = "ul" if bullet else "ol"
+      if list_tag != tag:
+        flush_list()
+        list_tag = tag
+      items.append((bullet or number).group(1))
+    elif list_tag and line.startswith(" "):
+      items[-1] += " " + stripped  # Continuation of the previous list item.
+    else:
+      flush_list()
+      para.append(stripped)
+  flush_para()
+  flush_list()
+  return "\n".join(blocks)
+
+
+def capture_line(meta: dict, steps: int) -> str:
   text = f"Captured {meta['captured']}. {steps} steps"
   if meta.get("frames_total"):
     text += f" selected from {meta['frames_total']} captured frames"
@@ -55,10 +107,12 @@ def summary(meta: dict, steps: int) -> str:
 
 
 def write_markdown(directory: pathlib.Path, meta: dict, images: list[pathlib.Path],
-                   captions: list[str]) -> pathlib.Path:
-  out = [f"# {meta['title']}", "", summary(meta, len(images)), ""]
+                   captions: list[str], test_summary: str) -> pathlib.Path:
+  out = [f"# {meta['title']}", "", capture_line(meta, len(images)), ""]
+  if test_summary:
+    out += ["## What this test shows", "", test_summary, "", "## Steps captured", ""]
   for i, (image, caption) in enumerate(zip(images, captions), start=1):
-    out += [f"## {i}. {caption}", "", f"![{caption}]({image.name})", ""]
+    out += [f"### {i}. {caption}" if test_summary else f"## {i}. {caption}", "", f"![{caption}]({image.name})", ""]
   path = directory / "walkthrough.md"
   path.write_text("\n".join(out))
   return path
@@ -77,6 +131,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   header {{ padding:16px 24px 8px; }}
   h1 {{ margin:0; font-size:22px; }}
   .meta {{ color:var(--muted); }}
+  .about {{ margin:12px 24px 4px; padding:12px 16px; background:var(--panel); border:1px solid #43454a; border-radius:8px; max-width:1100px; }}
+  .about h2 {{ margin:0 0 6px; font-size:16px; }}
+  .about p, .about ol, .about ul {{ margin:6px 0; }}
+  .about code {{ background:#1e1f22; padding:1px 4px; border-radius:4px; }}
+  .about.collapsed .body {{ display:none; }}
+  .about h2 button {{ margin-left:8px; padding:2px 8px; font-size:12px; }}
   .bar {{ display:flex; gap:8px; align-items:center; padding:8px 24px; }}
   button {{ background:var(--panel); color:var(--fg); border:1px solid #43454a; border-radius:6px; padding:6px 12px; cursor:pointer; }}
   button:hover {{ border-color:var(--accent); }}
@@ -100,6 +160,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   <h1>{title}</h1>
   <div class="meta">{summary}</div>
 </header>
+{about}
 <div class="bar">
   <button class="nav" id="prev" title="Previous (Left arrow)">&#8592; Prev</button>
   <button class="nav" id="next" title="Next (Right arrow)">Next &#8594;</button>
@@ -138,6 +199,12 @@ function show(i) {{
   [...thumbs.children].forEach((t, j) => t.classList.toggle('active', j === index));
   thumbs.children[index].scrollIntoView({{block: 'nearest', inline: 'nearest'}});
 }}
+function toggleAbout() {{
+  const a = document.querySelector('.about');
+  if (!a) return;
+  const collapsed = a.classList.toggle('collapsed');
+  a.querySelector('h2 button').textContent = collapsed ? 'Show' : 'Hide';
+}}
 function toggle() {{
   const on = document.body.classList.toggle('show-all');
   document.getElementById('toggle').textContent = on ? 'Slideshow' : 'Show all steps';
@@ -151,6 +218,7 @@ document.addEventListener('keydown', e => {{
   else if (e.key === 'Home') show(0);
   else if (e.key === 'End') show(steps.length - 1);
   else if (e.key === 'a' || e.key === 'A') toggle();
+  else if (e.key === 's' || e.key === 'S') toggleAbout();
 }});
 show(0);
 </script>
@@ -160,13 +228,16 @@ show(0);
 
 
 def write_html(directory: pathlib.Path, meta: dict, images: list[pathlib.Path],
-               captions: list[str]) -> pathlib.Path:
+               captions: list[str], test_summary: str) -> pathlib.Path:
   steps = [{"caption": caption,
             "src": "data:image/png;base64," + base64.b64encode(image.read_bytes()).decode("ascii")}
            for image, caption in zip(images, captions)]
   page = HTML_TEMPLATE.format(
     title=html.escape(meta["title"]),
-    summary=html.escape(summary(meta, len(images))),
+    summary=html.escape(capture_line(meta, len(images))),
+    about=('<section class="about"><h2>What this test shows'
+           '<button onclick="toggleAbout()" title="Show/hide (S)">Hide</button></h2>'
+           f'<div class="body">{markdown_to_html(test_summary)}</div></section>') if test_summary else "",
     # Escape "</" so captions cannot terminate the script element.
     steps_json=json.dumps(steps).replace("</", "<\\/"),
   )
@@ -190,8 +261,9 @@ def main() -> int:
 
   meta = load_meta(directory, args)
   captions = read_captions(directory / "captions.txt", len(images))
-  md = write_markdown(directory, meta, images, captions)
-  page = write_html(directory, meta, images, captions)
+  test_summary = read_test_summary(directory)
+  md = write_markdown(directory, meta, images, captions, test_summary)
+  page = write_html(directory, meta, images, captions, test_summary)
   print(f"render_walkthrough: {len(images)} steps -> {md} and {page}")
   return 0
 

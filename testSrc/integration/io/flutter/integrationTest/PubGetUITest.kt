@@ -12,7 +12,15 @@ import kotlin.io.path.readText
 import kotlin.time.Duration.Companion.minutes
 
 /**
- * Adds a dependency to `pubspec.yaml` in the editor and runs the plugin's "Flutter Pub Get" action.
+ * **Shows:** adding a package dependency and fetching it with the Flutter plugin's **Flutter Pub Get** action.
+ *
+ * Steps:
+ * 1. IntelliJ IDEA opens an existing Flutter app (created with `flutter create`).
+ * 2. Open `pubspec.yaml` and add `args: any` under `dependencies:`.
+ * 3. Save, then run **Flutter Pub Get**.
+ * 4. The plugin runs `flutter pub get` and shows its output in the Messages console.
+ *
+ * Expected result: the console reports success (exit code 0) and `pubspec.lock` now lists the `args` package.
  */
 class PubGetUITest : ExistingProjectUITest("pub_get_test") {
 

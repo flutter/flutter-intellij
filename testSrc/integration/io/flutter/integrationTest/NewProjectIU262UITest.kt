@@ -20,9 +20,20 @@ import java.nio.file.Paths
 import kotlin.time.Duration.Companion.minutes
 
 /**
- * Launches IntelliJ IDEA 2026.2.3 with the locally built plugin and creates a new Flutter app
- * through the New Project wizard.
+ * **Shows:** creating a new Flutter app with the Flutter plugin's New Project wizard in IntelliJ IDEA 2026.2.3.
  *
+ * Steps:
+ * 1. IntelliJ IDEA starts with the locally built Flutter plugin and the Dart plugin installed.
+ * 2. On the welcome screen, click **New Project**.
+ * 3. Select **Flutter** under Generators. The Flutter SDK path is filled in automatically.
+ * 4. Click **Next**, type a project name, and click **Create**.
+ * 5. The plugin runs `flutter create`, then the new project opens and is indexed.
+ *
+ * Expected result: the project window opens with the generated app (`lib/main.dart`, `test/`, and the
+ * `android`, `ios`, `linux`, `macos`, `web`, and `windows` folders), and a `main.dart` run configuration appears in
+ * the toolbar.
+ *
+ * Implementation notes:
  * Requires the `FLUTTER_SDK` environment variable. The created project in `~/IdeaProjects` is deleted after the
  * test; set `KEEP_TEST_PROJECT=true` to keep it. Set `KEEP_IDE_OPEN_MINUTES` to leave the IDE running for manual
  * inspection.

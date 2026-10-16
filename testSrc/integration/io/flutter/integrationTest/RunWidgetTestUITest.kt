@@ -12,8 +12,17 @@ import java.awt.event.KeyEvent
 import kotlin.time.Duration.Companion.minutes
 
 /**
- * Runs the generated widget test from the editor ("Run context configuration", Ctrl+Shift+F10) and waits for the
- * Flutter test runner to report success. Needs no device.
+ * **Shows:** running a Flutter widget test from the editor and seeing the result in the IDE's test runner.
+ *
+ * Steps:
+ * 1. IntelliJ IDEA opens an existing Flutter app (created with `flutter create`).
+ * 2. Open `test/widget_test.dart` and put the caret on `testWidgets`.
+ * 3. Press Ctrl+Shift+F10 (Run context configuration). The plugin creates a Flutter test run configuration and
+ *    runs `flutter test` for that test.
+ * 4. The Run tool window shows the test tree and progress.
+ *
+ * Expected result: the test runner reports "1 test passed" for the "Counter increments smoke test". No device or
+ * emulator is needed.
  */
 class RunWidgetTestUITest : ExistingProjectUITest("run_widget_test") {
 

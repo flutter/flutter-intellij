@@ -17,9 +17,23 @@ import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.minutes
 
 /**
- * Runs the app from the IDE on a device, edits `lib/main.dart`, hot reloads, and stops the app.
+ * **Shows:** running a Flutter app from the IDE on a device and applying a code change with hot reload.
  *
- * Device is chosen with `FLUTTER_TEST_DEVICE`:
+ * Steps:
+ * 1. IntelliJ IDEA opens an existing Flutter app (created with `flutter create`). For the Android emulator variant,
+ *    the emulator is booted first.
+ * 2. Pick the target device in the Flutter device selector: **Chrome (web)** or the Android emulator
+ *    (**Medium Phone (mobile)**).
+ * 3. Click **Run**. The plugin runs `flutter run` and the Run console shows the app building and starting.
+ * 4. Change the home page title in `lib/main.dart` from "Flutter Demo Home Page" to "Hot Reloaded Home Page", save,
+ *    and click **Hot Reload**.
+ * 5. Stop the app.
+ *
+ * Expected result: the app starts on the device, the console reports a successful hot reload
+ * ("Reloaded ..."), and the app stops cleanly.
+ *
+ * Implementation notes:
+ * The device is chosen with `FLUTTER_TEST_DEVICE`:
  * - `chrome` (default): selects "Chrome (web)" in the device selector. Chrome opens on the test's display.
  * - `emulator`: boots the Android AVD named by `FLUTTER_TEST_AVD` (default `Medium_Phone`) on the test's display
  *   before the IDE starts, and selects it. Needs a working Android toolchain (SDK licenses accepted).

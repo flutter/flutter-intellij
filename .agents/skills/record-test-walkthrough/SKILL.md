@@ -16,7 +16,8 @@ test is what runs; this skill only provides a display for it and records that di
 ## Prerequisites
 
 - Linux with `xvfb` (headless), `xserver-xephyr` (visible), `x11-utils` (`xdpyinfo`), `imagemagick` (`import`, `convert`, `compare`) and `python3`.
-- An automated test that shows UI on `$DISPLAY`. For IDE Starter tests:
+- An automated test that shows UI on `$DISPLAY`, with a doc comment that explains what it shows (see
+  [Test summary](#test-summary)). For IDE Starter tests:
   - The test must run in a fresh JVM with the environment passed through. `--test` uses `./gradlew --no-daemon`.
   - IDE Starter launches the IDE on `$DISPLAY` when it is set, and only falls back to its own `xvfb-run` when it is not.
   - Flutter tests need `FLUTTER_SDK`. The recorder defaults it to the SDK of `flutter` on `PATH`.
@@ -59,6 +60,7 @@ From the repository root:
 | `--task <name>` | Gradle test task for `--test` (default `integration`) |
 | `--out <dir>` | Output directory (default `build/walkthrough/<test>-<timestamp>`). Use a directory outside `build/` to survive `./gradlew clean`. |
 | `--title <text>` | Walkthrough title (default `<test> walkthrough`) |
+| `--summary <text\|@file>` | What the test shows, in Markdown (default for `--test`: the test class's doc comment) |
 | `--size <WxH>` | Screen size (default `1920x1080`). Use a smaller size in visible mode if the window doesn't fit your screen. |
 | `--min-percent <n>` | Key-frame change threshold (default `0.5`) |
 
@@ -67,16 +69,18 @@ The recorder exits with the test's exit status. It:
 1. Starts Xvfb or Xephyr on a free display (`:90` and up).
 2. Starts [`capture_display.sh`](scripts/capture_display.sh), which samples the display every 0.5 s and saves a PNG whenever it changes.
 3. Runs the test with `DISPLAY` set to that display and `WAYLAND_DISPLAY` unset, teeing output to `test.log`.
-4. Runs [`build_walkthrough.sh`](scripts/build_walkthrough.sh), which skips blank frames, keeps frames where more than 0.5% of the pixels changed, trims the black background, and writes default captions.
-5. Runs [`render_walkthrough.py`](scripts/render_walkthrough.py) to produce the browsable files.
+4. Writes `summary.md` from `--summary` or, for `--test`, from the test class's doc comment ([`extract_test_summary.py`](scripts/extract_test_summary.py)).
+5. Runs [`build_walkthrough.sh`](scripts/build_walkthrough.sh), which skips blank frames, keeps frames where more than 0.5% of the pixels changed, trims the black background, and writes default captions.
+6. Runs [`render_walkthrough.py`](scripts/render_walkthrough.py) to produce the browsable files.
 
 ### 3. Outputs
 
 | File | Contents |
 |---|---|
-| `walkthrough.html` | **Self-contained page for browsing later.** Images are embedded, so the single file can be copied, archived, or attached. Slideshow with Prev/Next (arrow keys, Home/End), thumbnails, and a "Show all steps" view (`A`). |
-| `walkthrough.md` | Standard Markdown, one heading and image per step, with relative image links |
-| `captions.txt` | One caption per step, the source for both files above |
+| `walkthrough.html` | **Self-contained page for browsing later.** Images are embedded, so the single file can be copied, archived, or attached. Starts with a "What this test shows" panel (toggle with `S`), then a slideshow with Prev/Next (arrow keys, Home/End), thumbnails, and a "Show all steps" view (`A`). |
+| `walkthrough.md` | Standard Markdown: a "What this test shows" section, then one heading and image per step, with relative image links |
+| `summary.md` | What the test shows, the source for the summary in both files above |
+| `captions.txt` | One caption per step, the source for the step captions in both files above |
 | `step_NN_HHMMSS.png` | Trimmed key frames |
 | `frames/` | Every distinct captured frame |
 | `test.log`, `capture.log`, `xserver.log` | Raw logs |
@@ -86,10 +90,12 @@ The recorder exits with the test's exit status. It:
 - `Test exit status: 0`, plus the test's own success output in `test.log` (for Gradle: `BUILD SUCCESSFUL`).
 - `capture.log` reports a frame count. If it's zero, the UI never appeared on the recorder's display. Check that the test honors `DISPLAY` and runs in a fresh process (see Troubleshooting).
 
-### 5. Caption
+### 5. Summary and captions
 
-Default captions are capture times. View each `step_*.png`, replace the matching lines in
-`captions.txt` (one line per step, in order; lines starting with `#` are ignored), then re-render:
+Check that `summary.md` describes the flow; if it's missing, add a doc comment to the test (see
+[Test summary](#test-summary)) or write `summary.md` by hand. Default captions are capture times. View each
+`step_*.png`, replace the matching lines in `captions.txt` (one line per step, in order; lines starting with `#`
+are ignored), then re-render:
 
 ```bash
 python3 .agents/skills/record-test-walkthrough/scripts/render_walkthrough.py <walkthrough-dir>
@@ -104,6 +110,37 @@ caption line. Fast steps can fall between samples; pick them from `frames/`, or 
 - To browse later, open `walkthrough.html` in a browser (`xdg-open <walkthrough-dir>/walkthrough.html`).
 - To share as Markdown, send `walkthrough.md` together with the `step_*.png` files.
 - Tools that need absolute image paths (for example, agent artifact viewers) need the images copied next to the artifact and the paths rewritten.
+
+## Test summary
+
+Every walkthrough starts with a "What this test shows" section, taken from the test class's doc comment (KDoc or
+Javadoc) up to a line starting with `Implementation notes:`. Write that comment for someone watching the
+walkthrough, using this shape:
+
+```kotlin
+/**
+ * **Shows:** <one sentence: the feature or flow this test demonstrates>.
+ *
+ * Steps:
+ * 1. <starting state, e.g. "IntelliJ IDEA opens an existing Flutter app (created with `flutter create`).">
+ * 2. <each user-visible action, naming the UI elements and plugin actions involved>
+ *
+ * Expected result: <what the viewer should see at the end>.
+ *
+ * Implementation notes:
+ * <environment variables, setup, cleanup: not shown in the walkthrough>
+ */
+class MyFlowUITest : ExistingProjectUITest("my_flow") { ... }
+```
+
+Supported Markdown: paragraphs, `-` and `1.` lists (indent continuation lines), `` `code` `` and `**bold**`.
+To add or refresh the summary of an existing walkthrough without re-recording it:
+
+```bash
+S=.agents/skills/record-test-walkthrough/scripts
+python3 $S/extract_test_summary.py io.flutter.integrationTest.MyFlowUITest > <walkthrough-dir>/summary.md
+python3 $S/render_walkthrough.py <walkthrough-dir>
+```
 
 ## Example: New Flutter project test
 

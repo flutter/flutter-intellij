@@ -19,6 +19,8 @@
 #   --task <name>            Gradle test task for --test. Default: integration.
 #   --out <dir>              Output directory. Default: build/walkthrough/<test>-<timestamp>.
 #   --title <text>           Walkthrough title. Default: the test name.
+#   --summary <text|@file>   What the test shows (Markdown), shown at the top of the walkthrough. Default for
+#                            --test: the test class's doc comment, up to "Implementation notes:".
 #   --size <WxH>             Screen size. Default: 1920x1080.
 #   --min-percent <n>        Key-frame threshold for build_walkthrough.sh. Default: 0.5.
 #
@@ -42,6 +44,7 @@ TEST=""
 TASK=integration
 OUT=""
 TITLE=""
+SUMMARY=""
 SIZE=1920x1080
 MIN_PERCENT=0.5
 CMD=()
@@ -53,6 +56,7 @@ while [ $# -gt 0 ]; do
     --task) TASK="$2"; shift 2 ;;
     --out) OUT="$2"; shift 2 ;;
     --title) TITLE="$2"; shift 2 ;;
+    --summary) SUMMARY="$2"; shift 2 ;;
     --size) SIZE="$2"; shift 2 ;;
     --min-percent) MIN_PERCENT="$2"; shift 2 ;;
     -h|--help) usage 0 ;;
@@ -151,6 +155,12 @@ capture_pid=""
 cat "$OUT/capture.log"
 
 # --- Build walkthrough -----------------------------------------------------------------------
+if [ -n "$SUMMARY" ]; then
+  if [ "${SUMMARY:0:1}" = "@" ]; then cp "${SUMMARY:1}" "$OUT/summary.md"; else printf '%s\n' "$SUMMARY" > "$OUT/summary.md"; fi
+elif [ -n "$TEST" ]; then
+  python3 "$SCRIPT_DIR/extract_test_summary.py" "$TEST" --repo "$REPO_DIR" > "$OUT/summary.md" || rm -f "$OUT/summary.md"
+fi
+[ -f "$OUT/summary.md" ] || echo "No test summary found; add a doc comment to the test class or pass --summary."
 bash "$SCRIPT_DIR/build_walkthrough.sh" "$OUT/frames" "$OUT" "$MIN_PERCENT"
 python3 "$SCRIPT_DIR/render_walkthrough.py" "$OUT" --title "$TITLE" > /dev/null
 

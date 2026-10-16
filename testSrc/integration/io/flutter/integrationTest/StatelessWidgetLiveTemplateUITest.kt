@@ -11,7 +11,17 @@ import java.awt.event.KeyEvent
 import kotlin.io.path.writeText
 
 /**
- * Expands the plugin's `stless` live template in a Dart file and fills in the widget name.
+ * **Shows:** generating a `StatelessWidget` with the Flutter plugin's `stless` live template.
+ *
+ * Steps:
+ * 1. IntelliJ IDEA opens an existing Flutter app (created with `flutter create`) that has an almost empty
+ *    `lib/greeting.dart`.
+ * 2. Open `lib/greeting.dart`, move to the end of the file, and type `stless`.
+ * 3. Press Tab to expand the live template.
+ * 4. Type `Greeting` as the widget name and press Enter.
+ *
+ * Expected result: the file contains `class Greeting extends StatelessWidget` with a `const Greeting({super.key})`
+ * constructor and a `build` method that returns a `Placeholder`.
  */
 class StatelessWidgetLiveTemplateUITest : ExistingProjectUITest("live_template_test") {
 

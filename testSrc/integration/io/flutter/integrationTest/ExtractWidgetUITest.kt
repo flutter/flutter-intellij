@@ -12,7 +12,17 @@ import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Uses the plugin's "Extract Flutter Widget..." refactoring on a `Text` widget in `lib/main.dart`.
+ * **Shows:** the Flutter plugin's **Extract Flutter Widget...** refactoring turning a widget expression into its
+ * own `StatelessWidget` class.
+ *
+ * Steps:
+ * 1. IntelliJ IDEA opens an existing Flutter app (created with `flutter create`).
+ * 2. Open `lib/main.dart` and put the caret on `Text('You have pushed the button this many times:')`.
+ * 3. Run **Extract Flutter Widget...**. A dialog asks for the widget name (default `NewWidget`).
+ * 4. Type `CounterLabel` and press Enter. The Dart analysis server performs the refactoring.
+ *
+ * Expected result: `lib/main.dart` contains a new `class CounterLabel extends StatelessWidget`, and the original
+ * `Text(...)` is replaced by `CounterLabel()`.
  */
 class ExtractWidgetUITest : ExistingProjectUITest("extract_widget_test") {
 
