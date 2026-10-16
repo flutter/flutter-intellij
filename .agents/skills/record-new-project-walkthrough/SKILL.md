@@ -12,7 +12,7 @@ recording into an annotated screenshot carousel.
 
 ## Prerequisites
 
-- Linux with `xvfb` (`xvfb-run`, `Xvfb`), `x11-utils` (`xdpyinfo`) and `imagemagick` (`import`, `convert`, `compare`).
+- Linux with `xvfb` (`xvfb-run`, `Xvfb`), `x11-utils` (`xdpyinfo`), `imagemagick` (`import`, `convert`, `compare`) and `python3`.
 - A Flutter SDK, either in `FLUTTER_SDK` or as `flutter` on `PATH`.
 - The UI test sources from this branch:
   - `testSrc/integration/io/flutter/integrationTest/NewProjectIU262UITest.kt`
@@ -35,13 +35,16 @@ This takes about 3 minutes once the IDE is cached. The script:
 
 1. Starts [`capture_xvfb.sh`](scripts/capture_xvfb.sh) in the background. It waits for the Xvfb display that IDE Starter creates and, sampling every 0.5 s, saves a PNG whenever the screen changes.
 2. Runs `./gradlew --no-daemon buildPlugin integration --tests io.flutter.integrationTest.NewProjectIU262UITest` with `DISPLAY` and `WAYLAND_DISPLAY` unset, so IDE Starter launches the IDE under `xvfb-run`.
-3. Runs [`build_walkthrough.sh`](scripts/build_walkthrough.sh). It skips blank frames, keeps frames where more than 0.5% of the pixels changed (set `MIN_PERCENT` to tune this), trims the black background, and writes `walkthrough.md`.
+3. Runs [`build_walkthrough.sh`](scripts/build_walkthrough.sh). It skips blank frames, keeps frames where more than 0.5% of the pixels changed (set `MIN_PERCENT` to tune this), trims the black background, writes default captions, and calls [`render_walkthrough.py`](scripts/render_walkthrough.py).
 
-The output goes to `build/walkthrough/<timestamp>/` (or the directory passed as the first argument):
+The output goes to `build/walkthrough/<timestamp>/`, or to the directory passed as the first argument.
+Pass a directory outside `build/` if you want the walkthrough to survive `./gradlew clean`.
 
 | File | Contents |
 |---|---|
-| `walkthrough.md` | Carousel of the key frames, captioned with capture times |
+| `walkthrough.html` | **Self-contained page for browsing later.** Images are embedded, so the single file can be copied, archived, or attached. Slideshow with Prev/Next (arrow keys, Home/End), a thumbnail strip, and a "Show all steps" view (`A`). |
+| `walkthrough.md` | Standard Markdown, one heading and image per step, with relative image links (renders on GitHub, in IDEs, and in Markdown viewers). |
+| `captions.txt` | One caption per step, the source for both files above |
 | `step_NN_HHMMSS.png` | Trimmed key frames |
 | `frames/` | Every distinct captured frame |
 | `gradle.log`, `capture.log` | Raw logs |
@@ -50,13 +53,19 @@ The test deletes the project it creates in `~/IdeaProjects`. Set `KEEP_TEST_PROJ
 
 ### 2. Verify
 
-- `gradle.log` should contain `Project my_flutter_app_<millis> created and indexed.` and `BUILD SUCCESSFUL`.
+- `gradle.log` should contain `BUILD SUCCESSFUL`, and the script prints `Project my_flutter_app_<millis> created and indexed.` (read from the JUnit XML).
 - The capture log should report a frame count. Zero frames means the IDE never started under Xvfb; see Troubleshooting.
 
 ### 3. Caption
 
-`build_walkthrough.sh` only adds timestamps as captions. View each `step_*.png` and replace the
-captions in `walkthrough.md` with what the step shows. A successful run normally contains these steps:
+Default captions are only capture times. View each `step_*.png`, replace the matching lines in
+`captions.txt` (one line per step, in order; lines starting with `#` are ignored), then re-render:
+
+```bash
+python3 .agents/skills/record-new-project-walkthrough/scripts/render_walkthrough.py <walkthrough-dir>
+```
+
+Use `--title` to change the page title. A successful run normally contains these steps:
 
 1. IntelliJ IDEA splash screen.
 2. Welcome screen (Flutter and Dart plugins loaded).
@@ -69,15 +78,16 @@ captions in `walkthrough.md` with what the step shows. A successful run normally
 9. Project tree populated (`android`, `ios`, `lib`, `linux`, `macos`, `test`, `web`, `windows`), with the `main.dart` run configuration in the toolbar.
 10. IDE trial tab (IntelliJ IDEA starts a 30-day trial automatically).
 
-Remove near-duplicate steps (for example, a half-painted window). Fast steps, such as typing the
-project name right before **Create**, can fall between samples. If you need one, pick it from
-`frames/`, or rerun `build_walkthrough.sh` with a lower `MIN_PERCENT`.
+Remove near-duplicate steps (for example, a half-painted window) by deleting their `step_*.png` and
+caption line. Fast steps, such as typing the project name right before **Create**, can fall between
+samples. If you need one, pick it from `frames/`, or rerun `build_walkthrough.sh` with a lower
+`MIN_PERCENT` (this resets `captions.txt`).
 
 ### 4. Present
 
-Share `walkthrough.md` and its images. The carousel uses image paths relative to the Markdown file.
-Tools that need absolute image paths (for example, agent artifact viewers) need the images copied
-next to the artifact and the paths rewritten.
+- To browse later, open `walkthrough.html` in a browser (`xdg-open <walkthrough-dir>/walkthrough.html`). It needs nothing else, so you can copy it anywhere.
+- To share as Markdown, send `walkthrough.md` together with the `step_*.png` files.
+- Tools that need absolute image paths (for example, agent artifact viewers) need the images copied next to the artifact and the paths rewritten.
 
 ## Targeting another IDE build
 

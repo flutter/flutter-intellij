@@ -25,11 +25,11 @@ TEST_CLASS="${TEST_CLASS:-io.flutter.integrationTest.NewProjectIU262UITest}"
 
 # --- Preflight -------------------------------------------------------------------------------
 missing=()
-for tool in xvfb-run Xvfb xdpyinfo import convert compare identify; do
+for tool in xvfb-run Xvfb xdpyinfo import convert compare identify python3; do
   command -v "$tool" > /dev/null || missing+=("$tool")
 done
 if [ "${#missing[@]}" -gt 0 ]; then
-  echo "Missing tools: ${missing[*]} (install xvfb, x11-utils, imagemagick)" >&2
+  echo "Missing tools: ${missing[*]} (install xvfb, x11-utils, imagemagick, python3)" >&2
   exit 1
 fi
 
@@ -80,5 +80,6 @@ grep -h -o -E 'Project [a-z0-9_]+ created and indexed\.|Successfully deleted tes
   build/test-results/integration/TEST-*.xml 2> /dev/null
 grep -E 'FAILED|BUILD (SUCCESSFUL|FAILED)' "$OUT/gradle.log"
 echo "Test exit status: $test_status"
-echo "Walkthrough: $OUT/walkthrough.md"
+echo "Walkthrough: $OUT/walkthrough.html (self-contained) and $OUT/walkthrough.md"
+echo "Edit $OUT/captions.txt, then re-render with: python3 $SCRIPT_DIR/render_walkthrough.py $OUT"
 exit "$test_status"

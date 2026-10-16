@@ -3,7 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Selects key frames from a capture and writes a Markdown walkthrough with a carousel.
+# Selects key frames from a capture, writes default captions, and renders the walkthrough
+# (walkthrough.md and a self-contained walkthrough.html) via render_walkthrough.py.
 #
 # Usage: build_walkthrough.sh <frames-dir> <output-dir> [min-changed-percent]
 #
@@ -61,14 +62,11 @@ for i in "${!frames[@]}"; do
   last_small="$work/last.png"
 done
 
-md="$OUT/walkthrough.md"
+captions="$OUT/captions.txt"
 {
-  echo "# New Flutter project walkthrough"
-  echo
-  echo "Captured $(date '+%Y-%m-%d'). ${#keep[@]} key frames selected from ${#frames[@]} captured frames."
-  echo
-  echo '````carousel'
-} > "$md"
+  echo "# One caption per line, in step order. Lines starting with # are ignored."
+  echo "# Edit, then run: render_walkthrough.py $OUT"
+} > "$captions"
 
 step=0
 for f in "${keep[@]}"; do
@@ -77,9 +75,8 @@ for f in "${keep[@]}"; do
   time="${stamp:0:2}:${stamp:2:2}:${stamp:4:2}"
   name=$(printf 'step_%02d_%s.png' "$step" "$stamp")
   convert "$f" -bordercolor black -fuzz 2% -trim +repage "$OUT/$name"
-  [ "$step" -gt 1 ] && echo '<!-- slide -->' >> "$md"
-  echo "![${step}. ${time}](${name})" >> "$md"
+  echo "Captured at ${time}" >> "$captions"
 done
-echo '````' >> "$md"
 
-echo "build_walkthrough: ${#keep[@]} of ${#frames[@]} frames -> $md"
+echo "build_walkthrough: ${#keep[@]} of ${#frames[@]} frames kept"
+python3 "$(cd "${BASH_SOURCE[0]%/*}" && pwd)/render_walkthrough.py" "$OUT" --frames-total "${#frames[@]}"
