@@ -1,5 +1,5 @@
 <!--* freshness: { reviewed: '2026-08-17' } *-->
-# vmServiceDrivers Internal
+# Dart VM Service Internals
 
 ## Overview
 Provides internal network sinks, queues, and constants for managing JSON-RPC requests and responses to the Dart VM Service over WebSockets.

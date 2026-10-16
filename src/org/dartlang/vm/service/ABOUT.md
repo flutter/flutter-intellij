@@ -1,5 +1,5 @@
 <!--* freshness: { reviewed: '2026-08-31' } *-->
-# vmServiceDrivers Service
+# Dart VM Service
 
 ## Overview
 Provides the main Dart VM Service client implementation, including the `VmService` class and related listeners for interacting with a running Dart VM via JSON-RPC.

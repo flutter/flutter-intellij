@@ -1,5 +1,5 @@
 <!--* freshness: { reviewed: '2026-08-17' } *-->
-# vmServiceDrivers Consumer
+# Dart VM Service Consumers
 
 ## Overview
 Contains interface definitions used for handling asynchronous callback responses from the Dart VM Service. These interfaces define `onError` and `received` callbacks for specific service requests.

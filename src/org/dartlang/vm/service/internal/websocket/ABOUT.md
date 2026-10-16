@@ -1,8 +1,8 @@
 <!--* freshness: { reviewed: '2026-08-17' } *-->
-# vmServiceDrivers WebSocket
+# Dart VM Service WebSocket
 
 ## Overview
-Provides a WebSocket client implementation wrapping the JDK's java.net.http.WebSocket for the Dart VM Service Drivers.
+Provides a WebSocket client implementation wrapping the JDK's java.net.http.WebSocket for the Dart VM Service client.
 
 ## Interface
 - `class WebSocket(uri: URI)`

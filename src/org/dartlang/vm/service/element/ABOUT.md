@@ -1,5 +1,5 @@
 <!--* freshness: { reviewed: '2026-08-31' } *-->
-# vmServiceDrivers Element
+# Dart VM Service Elements
 
 ## Overview
 Provides data model elements for the Dart VM Service Protocol. These classes wrap JSON objects and arrays returned by the VM service.

@@ -1,5 +1,5 @@
 <!--* freshness: { reviewed: '2026-08-17' } *-->
-# vmServiceDrivers Logging
+# Dart VM Service Logging
 
 ## Overview
 Provides logging interfaces and a global logging configuration for the Dart VM Service Drivers.
