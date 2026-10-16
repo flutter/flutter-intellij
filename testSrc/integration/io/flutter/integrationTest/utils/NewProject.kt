@@ -9,6 +9,7 @@ package io.flutter.integrationTest.utils
 import com.intellij.driver.sdk.ui.Finder
 import com.intellij.driver.sdk.ui.components.ComponentData
 import com.intellij.driver.sdk.ui.components.UiComponent
+import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.welcomeScreen
 import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.driver.engine.BackgroundRun
@@ -65,9 +66,10 @@ open class NewProjectDialogUI(data: ComponentData) : UiComponent(data) {
  */
 fun newProjectWelcomeScreen(run: BackgroundRun, testProjectName: String) {
   run.driver.withContext {
-    // Assert that the welcome screen is visible before interacting with it.
+    // Wait for the welcome screen to be visible before interacting with it; a one-shot
+    // present() check races with IDE startup.
     welcomeScreen {
-      assert(present())
+      waitFound()
       println("Creating the new project from Welcome Screen")
       createNewProjectButton.click()
 

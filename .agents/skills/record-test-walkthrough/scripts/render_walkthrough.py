@@ -42,7 +42,7 @@ def load_meta(directory: pathlib.Path, args: argparse.Namespace) -> dict:
     meta["frames_total"] = args.frames_total
   if args.title:
     meta["title"] = args.title
-  meta.setdefault("title", "New Flutter project walkthrough")
+  meta.setdefault("title", "Test walkthrough")
   meta_path.write_text(json.dumps(meta, indent=2) + "\n")
   return meta
 
