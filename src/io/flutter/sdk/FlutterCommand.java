@@ -311,19 +311,12 @@ public class FlutterCommand {
     if (workDir != null) {
       line.setWorkDirectory(workDir.getPath());
     }
-    if (!isDoctorCommand()) {
-      line.addParameter("--no-color");
-    }
     line.addParameters(type.subCommand);
     line.addParameters(args);
 
     Analytics.updateEnvironment(line);
 
     return line;
-  }
-
-  private boolean isDoctorCommand() {
-    return type == Type.DOCTOR;
   }
 
   enum Type {
