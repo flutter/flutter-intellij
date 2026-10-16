@@ -74,6 +74,18 @@ class Setup {
       )
     }
 
+    /**
+     * IntelliJ IDEA 2026.2.3 (unified distribution), paired with a Dart plugin that supports build 262.
+     */
+    fun setupTestContextIU262(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
+      return setupTestContext(
+        hyphenateWithClass, IdeProductProvider.IU.copy(
+          buildNumber = "262.10968.63",
+          buildType = BuildType.RELEASE.type
+        ), projectInfoSpec, dartPluginVersion = "509.0.0"
+      )
+    }
+
     fun setupTestContextWS(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
       return setupTestContext(
         "", IdeProductProvider.WS.copy(
@@ -98,7 +110,12 @@ class Setup {
      *
      * @throws IllegalStateException if required system properties are not set
      */
-    fun setupTestContext(hyphenateWithClass: String, ideInfo: IdeInfo, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
+    fun setupTestContext(
+      hyphenateWithClass: String,
+      ideInfo: IdeInfo,
+      projectInfoSpec: ProjectInfoSpec = NoProject,
+      dartPluginVersion: String = "252.24322.5"
+    ): IDETestContext {
 
       val testCase = TestCase(ideInfo, projectInfoSpec)
 
@@ -107,7 +124,7 @@ class Setup {
         val pluginPath = System.getProperty("path.to.build.plugin")
         PluginConfigurator(this)
           .installPluginFromPath(Paths.get(pluginPath))
-          .installPluginFromPluginManager("Dart", "252.24322.5")
+          .installPluginFromPluginManager("Dart", dartPluginVersion)
         withBuildTool<GradleBuildTool>()
       }.applyVMOptionsPatch {
 
@@ -154,6 +171,9 @@ class Setup {
             // Linux specific settings
             addSystemProperty("ide.browser.jcef.enabled", true)
             addSystemProperty("ide.native.launcher", false) // Avoid launcher issues on Linux
+
+            // Force X11 (XWayland on Wayland sessions): the Driver's java.awt.Robot input does not work with JBR's native WLToolkit.
+            addSystemProperty("awt.toolkit.name", "XToolkit")
 
             // X11/Wayland compatibility
             addSystemProperty("sun.java2d.uiScale.enabled", false)
