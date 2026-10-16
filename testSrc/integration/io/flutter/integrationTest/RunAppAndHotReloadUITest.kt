@@ -8,6 +8,7 @@ package io.flutter.integrationTest
 
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
+import com.intellij.driver.sdk.ui.ui
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import java.awt.event.KeyEvent
@@ -26,6 +27,7 @@ import kotlin.time.Duration.Companion.minutes
 class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
 
   private val deviceKind = System.getenv("FLUTTER_TEST_DEVICE") ?: "chrome"
+  private val avdName = System.getenv("FLUTTER_TEST_AVD") ?: "Medium_Phone"
   private val androidHome = System.getenv("ANDROID_HOME") ?: "${System.getProperty("user.home")}/Android/Sdk"
   private var emulator: Process? = null
 
@@ -47,7 +49,13 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
     openProjectFile("lib/main.dart")
 
     inFrame {
-      selectDevice(if (deviceKind == "emulator") "sdk gphone" else "Chrome")
+      if (deviceKind == "emulator") {
+        // The IDE lists a running AVD by its name (e.g. "Medium Phone (mobile)"); Flutter's own name is "sdk gphone...".
+        selectDevice(avdName.replace('_', ' '), "sdk gphone")
+      }
+      else {
+        selectDevice("Chrome")
+      }
 
       driver.invokeAction("Run")
       // Printed by `flutter run` once the app is up on any device.
@@ -75,38 +83,44 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
     }.onFailure { println("Could not stop the app (${it.message}); it stops when the IDE closes.") }
   }
 
-  /** Opens the Flutter device selector and picks the device whose name starts with [name]. */
-  private fun IdeaFrameUI.selectDevice(name: String) {
+  /** Opens the Flutter device selector and clicks the device whose name starts with one of [names]. */
+  private fun IdeaFrameUI.selectDevice(vararg names: String) {
+    fun String.matches() = names.any { startsWith(it, ignoreCase = true) }
     val selector = x(
       "//div[@class='JBLabel' and (contains(@text, '(desktop)') or contains(@text, '(web)') or " +
       "contains(@text, '(mobile)') or contains(@text, 'device') or contains(@text, 'Device'))]"
     )
-    waitUntil("device '$name' to be selected", timeout = 3.minutes) {
-      if (selector.getAllTexts().any { it.text.startsWith(name, ignoreCase = true) }) return@waitUntil true
+    var attempt = 0
+    waitUntil("device ${names.toList()} to be selected", timeout = 3.minutes) {
+      if (selector.getAllTexts().any { it.text.matches() }) return@waitUntil true
+      val name = names[attempt++ % names.size]
       selector.click()
       Thread.sleep(1_000)
+      // Use the popup's speed search. If nothing matches (the device daemon may not have listed the device yet, or
+      // the name differs), close the popup so the typed text can't land in the editor, and try the next name.
       keyboard { typeText(name, 50) }
       Thread.sleep(1_000)
-      // Only confirm when the popup's speed search matched a device; otherwise close the popup so the typed text
-      // can't land in the editor, and retry once the device daemon has listed more devices.
-      if (x("//div[contains(@visible_text, 'Nothing to show')]").present()) {
+      if (x("//div[contains(@visible_text, 'Nothing to show')]").present() ||
+          driver.ui.xx("//div[contains(@visible_text, 'Nothing to show')]").list().isNotEmpty()) {
         keyboard { escape() }
       }
       else {
         keyboard { enter() }
       }
       Thread.sleep(2_000)
-      selector.getAllTexts().any { it.text.startsWith(name, ignoreCase = true) }
+      selector.getAllTexts().any { it.text.matches() }
     }
-    println("Selected device: $name")
+    println("Selected device: ${selector.getAllTexts().joinToString("") { it.text }}")
   }
 
   private fun startEmulator() {
-    val avd = System.getenv("FLUTTER_TEST_AVD") ?: "Medium_Phone"
+    val avd = avdName
     println("Starting emulator $avd on DISPLAY=${System.getenv("DISPLAY")}")
     emulator = ProcessBuilder(
       "$androidHome/emulator/emulator", "-avd", avd,
       "-no-snapshot-save", "-no-boot-anim", "-no-audio", "-gpu", "swiftshader_indirect",
+      // A previous unclean exit would otherwise show a crash-report dialog that blocks boot.
+      "-crash-report-mode", "disabled", "-no-metrics",
     ).redirectErrorStream(true).redirectOutput(File(projectDir.parent.toFile(), "emulator-$avd.log")).start()
 
     val adb = "$androidHome/platform-tools/adb"
