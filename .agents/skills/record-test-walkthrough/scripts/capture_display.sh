@@ -25,6 +25,8 @@ misses=0
 echo "capture: recording display $DISPLAY_TO_CAPTURE from $(date +%T)"
 while $running; do
   tmp="$OUT/.tmp.png"
+  # Stamp the frame (HHMMSSmmm) when the capture starts, so it can be matched to test steps precisely.
+  stamp=$(date +%H%M%S%3N)
   if ! import -display "$DISPLAY_TO_CAPTURE" -window root "$tmp" 2> /dev/null; then
     misses=$((misses + 1))
     [ "$misses" -ge 5 ] && break
@@ -35,7 +37,7 @@ while $running; do
   sig=$(convert "$tmp" -scale 25% -format '%#' info:)
   if [ "$sig" != "$last" ]; then
     n=$((n + 1))
-    mv "$tmp" "$(printf '%s/%03d_%s.png' "$OUT" "$n" "$(date +%H%M%S)")"
+    mv "$tmp" "$(printf '%s/%03d_%s.png' "$OUT" "$n" "$stamp")"
     last="$sig"
   fi
   sleep 0.5

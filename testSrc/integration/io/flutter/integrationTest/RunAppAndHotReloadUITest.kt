@@ -9,6 +9,7 @@ package io.flutter.integrationTest
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.ui
+import io.flutter.integrationTest.utils.WalkthroughSteps
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import java.awt.event.KeyEvent
@@ -60,9 +61,15 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
   @Test
   fun runEditAndHotReload() {
     startIdeOnProject()
+    step("Open lib/main.dart", "The editor shows the counter app's `lib/main.dart`; the toolbar has the Flutter device selector and the `main.dart` run configuration.")
     openProjectFile("lib/main.dart")
 
     inFrame {
+      step(
+        "Select the device",
+        if (deviceKind == "emulator") "The device selector popup lists the running emulator as \"Medium Phone (mobile)\"; after selecting it, the toolbar shows that device."
+        else "The device selector popup lists Chrome (web), Linux (desktop), and any emulators; after selecting Chrome, the toolbar shows \"Chrome (web)\"."
+      )
       if (deviceKind == "emulator") {
         // The IDE lists a running AVD by its name (e.g. "Medium Phone (mobile)"); Flutter's own name is "sdk gphone...".
         selectDevice(avdName.replace('_', ' '), "sdk gphone")
@@ -71,19 +78,28 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
         selectDevice("Chrome")
       }
 
+      step(
+        "Run the app",
+        "The Run tool window opens a `main.dart` tab and shows `flutter run` output (\"Launching lib/main.dart ...\") until the app is up and a \"Debug service listening\" or VM Service line appears."
+      )
       driver.invokeAction("Run")
       // Printed by `flutter run` once the app is up on any device.
       waitForConsoleText("Flutter run key commands", "A Dart VM Service", "Debug service listening",
                          timeout = if (deviceKind == "emulator") 15.minutes else 8.minutes)
 
       val editor = editorFor("main.dart")
+      step("Change the title", "In `lib/main.dart`, the home page title changes from \"Flutter Demo Home Page\" to \"Hot Reloaded Home Page\".")
       editor.text = editor.text.replace("Flutter Demo Home Page", "Hot Reloaded Home Page")
+      editor.moveCaretToText("Hot Reloaded Home Page")
+      editor.scrollToCaret()
       driver.invokeAction("SaveAll")
+      step("Hot reload", "The console shows \"Performing hot reload...\" followed by \"Reloaded ...\" (for example \"Reloaded application in 321ms\").")
       driver.invokeAction("Flutter.Toolbar.ReloadAction")
       waitForConsoleText("Reloaded", "Restarted", timeout = 3.minutes)
 
       // Leave time for the reloaded app to render in the recording.
       Thread.sleep(5_000)
+      step("Stop the app", "The run session ends; the Stop button is disabled and the console shows the app has finished.")
       stopApp()
     }
   }
@@ -130,6 +146,7 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
   private fun startEmulator() {
     val avd = avdName
     println("Starting emulator $avd on DISPLAY=${System.getenv("DISPLAY")}")
+    WalkthroughSteps.step("Boot the Android emulator", "The Android emulator window for `$avd` opens and boots to the Android home screen.")
     emulator = ProcessBuilder(
       "$androidHome/emulator/emulator", "-avd", avd,
       "-no-snapshot-save", "-no-boot-anim", "-no-audio", "-gpu", "swiftshader_indirect",

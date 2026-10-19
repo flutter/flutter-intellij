@@ -34,6 +34,7 @@ work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
 keep=()
+nonblank=()
 last_small=""
 total_pixels=0
 for i in "${!frames[@]}"; do
@@ -45,6 +46,7 @@ for i in "${!frames[@]}"; do
      [ "$(convert "$work/cur.png" -bordercolor black -fuzz 2% -trim +repage -format '%[fx:standard_deviation>0.02]' info:)" = "0" ]; then
     continue
   fi
+  nonblank+=("$f")
   if [ -z "$last_small" ]; then
     keep+=("$f")
     total_pixels=$(identify -format '%[fx:w*h]' "$work/cur.png")
@@ -62,21 +64,66 @@ for i in "${!frames[@]}"; do
   last_small="$work/last.png"
 done
 
+# Match frames to the steps the test announced (steps.tsv: HHMMSS<TAB>title<TAB>what to expect), make sure every
+# step has at least one frame, and write "frame<TAB>caption<TAB>expect" lines in display order.
+printf '%s\n' "${keep[@]}" > "$work/keep.txt"
+printf '%s\n' "${nonblank[@]}" > "$work/nonblank.txt"
+python3 - "$work/keep.txt" "$work/nonblank.txt" "$OUT/steps.tsv" > "$work/plan.tsv" <<'PY'
+import os, sys
+keep = [l for l in open(sys.argv[1]).read().splitlines() if l]
+nonblank = [l for l in open(sys.argv[2]).read().splitlines() if l]
+stamp = lambda f: os.path.basename(f)[:-4].split("_")[1]
+steps = []
+if os.path.exists(sys.argv[3]):
+  for line in open(sys.argv[3]).read().splitlines():
+    parts = line.split("\t")
+    if len(parts) >= 2:
+      steps.append((parts[0], parts[1], parts[2] if len(parts) > 2 else ""))
+def step_of(frame):
+  current = None
+  for i, (t, _, _) in enumerate(steps):
+    if t <= stamp(frame):
+      current = i
+  return current
+chosen = set(keep)
+for i in range(len(steps)):
+  if not any(step_of(f) == i for f in chosen):
+    # Show where the step ended up: the last frame captured during it.
+    during = [f for f in nonblank if step_of(f) == i]
+    if during:
+      chosen.add(during[-1])
+frames = sorted(chosen, key=lambda f: os.path.basename(f))
+counts = {}
+for f in frames:
+  counts[step_of(f)] = counts.get(step_of(f), 0) + 1
+seen = {}
+for f in frames:
+  i = step_of(f)
+  t = stamp(f)
+  if i is None:
+    caption, expect = f"Captured at {t[:2]}:{t[2:4]}:{t[4:]}", ""
+  else:
+    seen[i] = seen.get(i, 0) + 1
+    caption, expect = steps[i][1], steps[i][2]
+    if counts[i] > 1:
+      caption += f" ({seen[i]}/{counts[i]})"
+  print(f"{f}\t{caption}\t{expect}")
+PY
+
 captions="$OUT/captions.txt"
 {
-  echo "# One caption per line, in step order. Lines starting with # are ignored."
-  echo "# Edit, then run: render_walkthrough.py $OUT"
+  echo "# One line per step, in order: caption, optionally followed by ' | ' and what to look for in that step."
+  echo "# Lines starting with # are ignored. Edit, then run: render_walkthrough.py $OUT"
 } > "$captions"
 
 step=0
-for f in "${keep[@]}"; do
+while IFS=$'\t' read -r f caption expect; do
   step=$((step + 1))
   stamp=$(basename "$f" .png | cut -d_ -f2)
-  time="${stamp:0:2}:${stamp:2:2}:${stamp:4:2}"
   name=$(printf 'step_%02d_%s.png' "$step" "$stamp")
   convert "$f" -bordercolor black -fuzz 2% -trim +repage "$OUT/$name"
-  echo "Captured at ${time}" >> "$captions"
-done
+  if [ -n "$expect" ]; then echo "$caption | $expect" >> "$captions"; else echo "$caption" >> "$captions"; fi
+done < "$work/plan.tsv"
 
-echo "build_walkthrough: ${#keep[@]} of ${#frames[@]} frames kept"
+echo "build_walkthrough: $step of ${#frames[@]} frames kept"
 python3 "$(cd "${BASH_SOURCE[0]%/*}" && pwd)/render_walkthrough.py" "$OUT" --frames-total "${#frames[@]}"

@@ -110,6 +110,8 @@ fi
 [ -n "${FLUTTER_SDK:-}" ] && export FLUTTER_SDK
 
 mkdir -p "$OUT/frames"
+OUT="$(cd "$OUT" && pwd)"
+rm -f "$OUT/steps.tsv"
 echo "Recording '$TITLE' ($MODE) -> $OUT"
 echo "Command: ${CMD[*]}"
 
@@ -149,6 +151,8 @@ capture_pid=$!
   # Run the test against our display only; never the desktop's Wayland compositor.
   unset WAYLAND_DISPLAY
   export DISPLAY="$TEST_DISPLAY"
+  # Tests that announce their steps (WalkthroughSteps) append "HHMMSS<TAB>title<TAB>what to expect" here.
+  export WALKTHROUGH_STEPS_FILE="$OUT/steps.tsv"
   "${CMD[@]}"
 ) 2>&1 | tee "$OUT/test.log"
 test_status=${PIPESTATUS[0]}

@@ -5,7 +5,8 @@
 
 """Renders a recorded walkthrough directory into browsable files.
 
-Reads step_*.png, captions.txt (one caption per line, in step order; lines starting with # are ignored), and
+Reads step_*.png, captions.txt (one line per step, in order: a caption, optionally followed by " | " and what to
+look for in that step; lines starting with # are ignored), and
 the optional summary.md (what the test shows, in Markdown) from the walkthrough directory and writes:
 
   walkthrough.md    Standard Markdown with relative image links (GitHub, IDEs, Markdown viewers).
@@ -27,12 +28,17 @@ import sys
 META_FILE = ".walkthrough-meta.json"
 
 
-def read_captions(path: pathlib.Path, count: int) -> list[str]:
+def read_captions(path: pathlib.Path, count: int) -> list[tuple[str, str]]:
+  """Returns (caption, what to look for) per step."""
   lines = []
   if path.exists():
     lines = [l.strip() for l in path.read_text().splitlines()
              if l.strip() and not l.lstrip().startswith("#")]
-  return [lines[i] if i < len(lines) else f"Step {i + 1}" for i in range(count)]
+  result = []
+  for i in range(count):
+    caption, _, expect = (lines[i] if i < len(lines) else f"Step {i + 1}").partition(" | ")
+    result.append((caption.strip(), expect.strip()))
+  return result
 
 
 def load_meta(directory: pathlib.Path, args: argparse.Namespace) -> dict:
@@ -107,12 +113,15 @@ def capture_line(meta: dict, steps: int) -> str:
 
 
 def write_markdown(directory: pathlib.Path, meta: dict, images: list[pathlib.Path],
-                   captions: list[str], test_summary: str) -> pathlib.Path:
+                   captions: list[tuple[str, str]], test_summary: str) -> pathlib.Path:
   out = [f"# {meta['title']}", "", capture_line(meta, len(images)), ""]
   if test_summary:
     out += ["## What this test shows", "", test_summary, "", "## Steps captured", ""]
-  for i, (image, caption) in enumerate(zip(images, captions), start=1):
-    out += [f"### {i}. {caption}" if test_summary else f"## {i}. {caption}", "", f"![{caption}]({image.name})", ""]
+  for i, (image, (caption, expect)) in enumerate(zip(images, captions), start=1):
+    out += [f"### {i}. {caption}" if test_summary else f"## {i}. {caption}", ""]
+    if expect:
+      out += [f"**What to look for:** {expect}", ""]
+    out += [f"![{caption}]({image.name})", ""]
   path = directory / "walkthrough.md"
   path.write_text("\n".join(out))
   return path
@@ -143,8 +152,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   #counter {{ color:var(--muted); min-width:70px; }}
   #stage {{ padding:0 24px; text-align:center; }}
   #stage figure {{ margin:0; }}
-  #stage img {{ max-width:100%; max-height:calc(100vh - 260px); border:1px solid #43454a; border-radius:6px; }}
+  #stage img {{ max-width:100%; max-height:calc(100vh - 300px); border:1px solid #43454a; border-radius:6px; }}
   figcaption {{ font-size:17px; margin:10px 0 4px; }}
+  .expect {{ margin:0 auto 10px; max-width:1000px; color:#c9ccd1; }}
+  .expect:not(:empty)::before {{ content:"What to look for: "; font-weight:600; color:#8fb8ff; }}
+  .expect code {{ background:var(--panel); padding:1px 4px; border-radius:4px; }}
   #thumbs {{ display:flex; gap:8px; overflow-x:auto; padding:12px 24px 20px; }}
   #thumbs img {{ height:72px; border:2px solid transparent; border-radius:4px; cursor:pointer; opacity:.7; }}
   #thumbs img.active {{ border-color:var(--accent); opacity:1; }}
@@ -168,7 +180,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   <span style="flex:1"></span>
   <button id="toggle" title="Toggle slideshow / all steps (A)">Show all steps</button>
 </div>
-<div id="stage"><figure><img id="main" alt=""><figcaption id="caption"></figcaption></figure></div>
+<div id="stage"><figure><figcaption id="caption"></figcaption><div id="expect" class="expect"></div><img id="main" alt=""></figure></div>
 <div id="thumbs"></div>
 <div id="all"></div>
 <script>
@@ -176,6 +188,7 @@ const steps = {steps_json};
 let index = 0;
 const main = document.getElementById('main');
 const caption = document.getElementById('caption');
+const expect = document.getElementById('expect');
 const counter = document.getElementById('counter');
 const thumbs = document.getElementById('thumbs');
 const all = document.getElementById('all');
@@ -185,8 +198,9 @@ steps.forEach((s, i) => {{
   t.onclick = () => show(i);
   thumbs.appendChild(t);
   const f = document.createElement('figure');
-  f.innerHTML = '<figcaption></figcaption><img alt="">';
+  f.innerHTML = '<figcaption></figcaption><div class="expect"></div><img alt="">';
   f.querySelector('figcaption').textContent = (i + 1) + '. ' + s.caption;
+  f.querySelector('.expect').innerHTML = s.expect;
   f.querySelector('img').src = s.src;
   all.appendChild(f);
 }});
@@ -195,6 +209,7 @@ function show(i) {{
   main.src = steps[index].src;
   main.alt = steps[index].caption;
   caption.textContent = (index + 1) + '. ' + steps[index].caption;
+  expect.innerHTML = steps[index].expect;
   counter.textContent = (index + 1) + ' / ' + steps.length;
   [...thumbs.children].forEach((t, j) => t.classList.toggle('active', j === index));
   thumbs.children[index].scrollIntoView({{block: 'nearest', inline: 'nearest'}});
@@ -228,10 +243,10 @@ show(0);
 
 
 def write_html(directory: pathlib.Path, meta: dict, images: list[pathlib.Path],
-               captions: list[str], test_summary: str) -> pathlib.Path:
-  steps = [{"caption": caption,
+               captions: list[tuple[str, str]], test_summary: str) -> pathlib.Path:
+  steps = [{"caption": caption, "expect": inline_markdown(expect),
             "src": "data:image/png;base64," + base64.b64encode(image.read_bytes()).decode("ascii")}
-           for image, caption in zip(images, captions)]
+           for image, (caption, expect) in zip(images, captions)]
   page = HTML_TEMPLATE.format(
     title=html.escape(meta["title"]),
     summary=html.escape(capture_line(meta, len(images))),

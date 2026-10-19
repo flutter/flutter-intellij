@@ -71,6 +71,7 @@ fun newProjectWelcomeScreen(run: BackgroundRun, testProjectName: String) {
     welcomeScreen {
       waitFound()
       println("Creating the new project from Welcome Screen")
+      WalkthroughSteps.step("Click New Project", "The IntelliJ IDEA welcome screen is showing; clicking New Project opens the New Project dialog (it starts on Java).")
       createNewProjectButton.click()
 
       // The test expects the `FlutterGeneratorPeer` to automatically populate the
@@ -86,6 +87,7 @@ fun newProjectWelcomeScreen(run: BackgroundRun, testProjectName: String) {
         wait(1.seconds)
 
         // Select project type - adjust based on your needs
+        WalkthroughSteps.step("Select Flutter", "Flutter is selected under Generators; the right side shows the Flutter SDK path, filled in automatically.")
         chooseProjectType("Flutter")
         wait(1.seconds)
 
@@ -93,9 +95,11 @@ fun newProjectWelcomeScreen(run: BackgroundRun, testProjectName: String) {
         if (!nextButton.isEnabled()) {
           fail { "The FLUTTER_SDK environment variable was not set." }
         }
+        WalkthroughSteps.step("Click Next", "The Flutter project settings page appears: project name, location, description, project type, organization, Android language, and platforms.")
         nextButton.click()
         wait(1.seconds)
 
+        WalkthroughSteps.step("Name the project and click Create", "The project name and location update as the name is typed; clicking Create shows a \"Creating Flutter project\" progress dialog while `flutter create` runs.")
         keyboard {
           typeText(testProjectName, delayBetweenCharsInMs = 60)
         }

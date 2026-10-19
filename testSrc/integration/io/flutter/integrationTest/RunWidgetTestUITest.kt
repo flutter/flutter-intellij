@@ -29,13 +29,19 @@ class RunWidgetTestUITest : ExistingProjectUITest("run_widget_test") {
   @Test
   fun runWidgetTestFromEditor() {
     startIdeOnProject()
+    step("Open the widget test", "The editor shows `test/widget_test.dart` with the \"Counter increments smoke test\" and a green run icon in the gutter next to `testWidgets`.")
     openProjectFile("test/widget_test.dart")
 
     inFrame {
       val editor = editorFor("widget_test.dart")
+      step("Run the test from the editor", "The caret is on `testWidgets`; Ctrl+Shift+F10 starts a Flutter test run configuration named after the test.")
       editor.clickOn("testWidgets", RemoteMouseButton.LEFT, 1)
       keyboard { hotKey(KeyEvent.VK_CONTROL, KeyEvent.VK_SHIFT, KeyEvent.VK_F10) }
 
+      step(
+        "Watch the test runner",
+        "The Run tool window shows the test tree and the `flutter test` command; the status changes from \"Instantiating tests\" to \"1 test passed\" with a green check."
+      )
       // The test runner status reads e.g. "1 test passed" or "3 tests passed".
       waitUntil("widget test to pass", timeout = 5.minutes) {
         x("//div[contains(@visible_text, 'test passed') or contains(@visible_text, 'tests passed')]").present() ||

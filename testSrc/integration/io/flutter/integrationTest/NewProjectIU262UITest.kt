@@ -11,6 +11,7 @@ import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
+import io.flutter.integrationTest.utils.WalkthroughSteps
 import io.flutter.integrationTest.utils.deleteFlutterProject
 import io.flutter.integrationTest.utils.newProjectWelcomeScreen
 import org.junit.jupiter.api.AfterEach
@@ -67,9 +68,14 @@ class NewProjectIU262UITest {
   fun newFlutterProject() {
     testProjectName = "my_flutter_app_${System.currentTimeMillis()}"
     println("Test project will be created as: $testProjectName")
+    WalkthroughSteps.step("Start IntelliJ IDEA", "The IntelliJ IDEA 2026.2 splash screen, then the welcome screen with New Project, Open, and Clone Repository.")
     run = Setup.setupTestContextIU262(javaClass.simpleName).runIdeWithDriver()
 
     newProjectWelcomeScreen(run, testProjectName)
+    WalkthroughSteps.step(
+      "Open the new project",
+      "The project window opens on the new app; the Project view fills with `lib`, `test`, `android`, `ios`, `linux`, `macos`, `web`, and `windows`, and a `main.dart` run configuration appears in the toolbar."
+    )
     waitForProjectReady()
     println("Project $testProjectName created and indexed.")
   }

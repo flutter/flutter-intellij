@@ -32,18 +32,22 @@ class StatelessWidgetLiveTemplateUITest : ExistingProjectUITest("live_template_t
   @Test
   fun expandStlessTemplate() {
     startIdeOnProject()
+    step("Open lib/greeting.dart", "The editor shows a nearly empty `lib/greeting.dart` containing only the `material.dart` import.")
     openProjectFile("lib/greeting.dart")
 
     inFrame {
       val editor = editorFor("greeting.dart")
+      step("Type stless", "`stless` is typed at the end of the file; a completion popup may list the `stless` live template.")
       editor.click()
       keyboard {
         hotKey(KeyEvent.VK_CONTROL, KeyEvent.VK_END)
         typeText("stless", 80)
       }
       Thread.sleep(1_000)
+      step("Expand the template with Tab", "`stless` expands into a `StatelessWidget` class skeleton, with the cursor in the class-name placeholder.")
       keyboard { tab() }
       Thread.sleep(1_000)
+      step("Name the widget Greeting", "Typing `Greeting` fills the class name and the constructor at the same time: `class Greeting extends StatelessWidget` and `const Greeting({super.key});`.")
       keyboard {
         typeText("Greeting", 80)
         enter()

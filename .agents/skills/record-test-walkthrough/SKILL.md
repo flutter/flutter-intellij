@@ -83,7 +83,7 @@ The recorder exits with the test's exit status. It:
 2. Starts [`capture_display.sh`](scripts/capture_display.sh), which samples the display every 0.5 s and saves a PNG whenever it changes.
 3. Runs the test with `DISPLAY` set to that display and `WAYLAND_DISPLAY` unset, teeing output to `test.log`.
 4. Writes `summary.md` from `--summary` or, for `--test`, from the test class's doc comment ([`extract_test_summary.py`](scripts/extract_test_summary.py)).
-5. Runs [`build_walkthrough.sh`](scripts/build_walkthrough.sh), which skips blank frames, keeps frames where more than 0.5% of the pixels changed, trims the black background, and writes default captions.
+5. Runs [`build_walkthrough.sh`](scripts/build_walkthrough.sh), which skips blank frames, keeps frames where more than 0.5% of the pixels changed, and trims the black background. If the test announced its steps (see [Per-step expectations](#per-step-expectations)), each screenshot is captioned with the step it belongs to and what to look for, and every step keeps at least one screenshot.
 6. Runs [`render_walkthrough.py`](scripts/render_walkthrough.py) to produce the browsable files.
 7. Refreshes `index.html` in the parent folder ([`build_index.py`](scripts/build_index.py)), which lists every walkthrough there, newest first, with its title, summary, and date.
 
@@ -92,9 +92,10 @@ The recorder exits with the test's exit status. It:
 | File | Contents |
 |---|---|
 | `walkthrough.html` | **Self-contained page for browsing later.** Images are embedded, so the single file can be copied, archived, or attached. Starts with a "What this test shows" panel (toggle with `S`), then a slideshow with Prev/Next (arrow keys, Home/End), thumbnails, and a "Show all steps" view (`A`). |
-| `walkthrough.md` | Standard Markdown: a "What this test shows" section, then one heading and image per step, with relative image links |
+| `walkthrough.md` | Standard Markdown: a "What this test shows" section, then per step a heading, a "What to look for" line, and the image, with relative image links |
 | `summary.md` | What the test shows, the source for the summary in both files above |
-| `captions.txt` | One caption per step, the source for the step captions in both files above |
+| `captions.txt` | One line per screenshot, `Caption \| What to look for`, the source for the step captions and expectations in both files above |
+| `steps.tsv` | Steps the test announced, with timestamps (only for tests that use `WalkthroughSteps`) |
 | `step_NN_HHMMSS.png` | Trimmed key frames |
 | `frames/` | Every distinct captured frame |
 | `test.log`, `capture.log`, `xserver.log` | Raw logs |
@@ -107,9 +108,10 @@ The recorder exits with the test's exit status. It:
 ### 6. Summary and captions
 
 Check that `summary.md` describes the flow; if it's missing, add a doc comment to the test (see
-[Test summary](#test-summary)) or write `summary.md` by hand. Default captions are capture times. View each
-`step_*.png`, replace the matching lines in `captions.txt` (one line per step, in order; lines starting with `#`
-are ignored), then re-render:
+[Test summary](#test-summary)) or write `summary.md` by hand. For tests that announce their steps,
+captions and "What to look for" notes are filled in automatically. Otherwise captions are capture times: view each
+`step_*.png` and replace the matching lines in `captions.txt` (one line per screenshot, in order, as
+`Caption | What to look for`; lines starting with `#` are ignored). Then re-render:
 
 ```bash
 python3 .agents/skills/record-test-walkthrough/scripts/render_walkthrough.py <walkthrough-dir>
@@ -155,6 +157,26 @@ S=.agents/skills/record-test-walkthrough/scripts
 python3 $S/extract_test_summary.py io.flutter.integrationTest.MyFlowUITest > <walkthrough-dir>/summary.md
 python3 $S/render_walkthrough.py <walkthrough-dir>
 ```
+
+## Per-step expectations
+
+Each screenshot in a walkthrough can say what the viewer should look for. Tests provide this by announcing each
+user-visible step as it starts, with `WalkthroughSteps.step(title, expect)` from
+`testSrc/integration/io/flutter/integrationTest/utils/WalkthroughSteps.kt` (or `step(...)` in subclasses of
+`ExistingProjectUITest`):
+
+```kotlin
+step("Run Extract Flutter Widget", "The \"Extract Widget\" dialog opens with the name field showing `NewWidget` selected.")
+driver.invokeAction("Flutter.ExtractWidget", now = false, component = editor.component)
+```
+
+- `title` becomes the screenshot caption. Use a short imperative, e.g. "Run the app".
+- `expect` says what should be visible during or right after the step. Name concrete UI text, files, and code.
+- Call `step` immediately before the action, so screenshots taken while it runs are attributed to it.
+
+The recorder sets `WALKTHROUGH_STEPS_FILE`, and each step is appended there with a timestamp (`steps.tsv`). When the
+walkthrough is built, each screenshot gets the most recent step at its capture time. If a step has no key frame, the
+last screenshot captured during it is added. Outside the recorder, steps are only printed.
 
 ## Example: New Flutter project test
 

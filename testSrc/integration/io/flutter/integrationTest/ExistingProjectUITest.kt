@@ -8,6 +8,7 @@ package io.flutter.integrationTest
 
 import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.openFile
+import com.intellij.driver.sdk.ui.ui
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.common.JEditorUiComponent
@@ -18,6 +19,7 @@ import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.project.LocalProjectInfo
+import io.flutter.integrationTest.utils.WalkthroughSteps
 import io.flutter.integrationTest.utils.createFlutterProjectWithCli
 import io.flutter.integrationTest.utils.deleteFlutterProject
 import org.junit.jupiter.api.AfterAll
@@ -83,9 +85,17 @@ abstract class ExistingProjectUITest(private val packageName: String) {
     }
   }
 
+  /** Marks the start of a user-visible step for walkthrough recordings; see [WalkthroughSteps]. */
+  protected fun step(title: String, expect: String) = WalkthroughSteps.step(title, expect)
+
   /** Starts the IDE on [projectDir] and waits until the project is open and indexed. */
   protected fun startIdeOnProject() {
     println("Opening existing project $projectDir")
+    step(
+      "Open the existing Flutter project",
+      "IntelliJ IDEA starts (splash screen), then opens the project created with `flutter create`. " +
+      "The Project view shows its files and the status bar shows indexing until it finishes."
+    )
     run = Setup.setupTestContextIU262(javaClass.simpleName, LocalProjectInfo(projectDir)).runIdeWithDriver()
     waitForProjectReady()
   }
@@ -108,10 +118,25 @@ abstract class ExistingProjectUITest(private val packageName: String) {
     xx("//div[@class='EditorComponentImpl']", JEditorUiComponent::class.java).list()
       .joinToString("\n") { runCatching { it.text }.getOrDefault("") }
 
+  /**
+   * Closes dialogs the IDE may pop up on its own during a test (for example the trial feedback survey "Tell us about
+   * your experience"), which would otherwise block the UI. Called while polling.
+   */
+  protected fun dismissInterruptions() {
+    runCatching {
+      driver.ui.xx("//div[@class='JButton' and (@visible_text='No, Thanks' or @visible_text='No, thanks')]").list()
+        .firstOrNull()?.let {
+          println("Dismissing an IDE interruption dialog")
+          it.click()
+        }
+    }
+  }
+
   /** Waits until any editor or console in the frame contains one of [texts]; returns the one found. */
   protected fun IdeaFrameUI.waitForConsoleText(vararg texts: String, timeout: Duration = 3.minutes): String {
     var found = ""
     waitFor("console to contain one of ${texts.toList()}", timeout, 2.seconds) {
+      dismissInterruptions()
       val all = allEditorText()
       found = texts.firstOrNull { all.contains(it) } ?: ""
       found.isNotEmpty()
@@ -122,7 +147,10 @@ abstract class ExistingProjectUITest(private val packageName: String) {
 
   /** Waits until [condition] holds, polling every 2 seconds. */
   protected fun waitUntil(message: String, timeout: Duration = 3.minutes, condition: () -> Boolean) {
-    waitFor(message, timeout, 2.seconds) { condition() }
+    waitFor(message, timeout, 2.seconds) {
+      dismissInterruptions()
+      condition()
+    }
   }
 
   private fun waitForProjectReady(attempts: Int = 3) {

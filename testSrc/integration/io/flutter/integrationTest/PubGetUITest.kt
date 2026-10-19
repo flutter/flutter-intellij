@@ -27,13 +27,19 @@ class PubGetUITest : ExistingProjectUITest("pub_get_test") {
   @Test
   fun addDependencyAndRunPubGet() {
     startIdeOnProject()
+    step("Open pubspec.yaml", "The editor shows the app's `pubspec.yaml`, with `flutter` and `cupertino_icons` under `dependencies:`.")
     openProjectFile("pubspec.yaml")
 
     inFrame {
       val editor = editorFor("pubspec.yaml")
       // `args` is not a transitive dependency of a new app, so it only shows up in pubspec.lock after pub get.
+      step("Add the args dependency", "A new line `args: any` appears under `dependencies:` in `pubspec.yaml`.")
       editor.text = editor.text.replaceFirst("\ndependencies:\n", "\ndependencies:\n  args: any\n")
       driver.invokeAction("SaveAll")
+      step(
+        "Run Flutter Pub Get",
+        "The Messages tool window opens and shows `flutter pub get` output, ending with \"Process finished with exit code 0\"."
+      )
       driver.invokeAction("flutter.pub.get")
       waitForConsoleText("exit code 0", "Got dependencies", timeout = 3.minutes)
     }
