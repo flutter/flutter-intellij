@@ -76,12 +76,15 @@ From the repository root:
 | `--summary <text\|@file>` | What the test shows, in Markdown (default for `--test`: the test class's doc comment) |
 | `--size <WxH>` | Screen size (default `1920x1080`). Use a smaller size in visible mode if the window doesn't fit your screen. |
 | `--min-percent <n>` | Key-frame change threshold (default `0.5`) |
+| `--step-pause <seconds>` | Pause after each announced test step so its result is captured, 0 to 5 (default `3`) |
+| `--ide-log <path>` | IDE log to scan for license and trial events (default: the newest IDE Starter `idea.log`) |
 
 The recorder exits with the test's exit status. It:
 
 1. Starts Xvfb or Xephyr on a free display (`:90` and up).
 2. Starts [`capture_display.sh`](scripts/capture_display.sh), which samples the display every 0.5 s and saves a PNG whenever it changes.
-3. Runs the test with `DISPLAY` set to that display and `WAYLAND_DISPLAY` unset, teeing output to `test.log`.
+3. Runs the test with `DISPLAY` set to that display and `WAYLAND_DISPLAY` unset, teeing output to `test.log`. Tests that announce steps pause `--step-pause` seconds after each one, so its result stays on screen.
+   Then the recorder scans the IDE log for license and trial events (see [License screen](#license-screen)).
 4. Writes `summary.md` from `--summary` or, for `--test`, from the test class's doc comment ([`extract_test_summary.py`](scripts/extract_test_summary.py)).
 5. Runs [`build_walkthrough.sh`](scripts/build_walkthrough.sh), which skips blank frames, keeps frames where more than 0.5% of the pixels changed, and trims the black background. If the test announced its steps (see [Per-step expectations](#per-step-expectations)), each screenshot is captioned with the step it belongs to and what to look for, and every step keeps at least one screenshot.
 6. Runs [`render_walkthrough.py`](scripts/render_walkthrough.py) to produce the browsable files.
@@ -96,13 +99,20 @@ The recorder exits with the test's exit status. It:
 | `summary.md` | What the test shows, the source for the summary in both files above |
 | `captions.txt` | One line per screenshot, `Caption \| What to look for`, the source for the step captions and expectations in both files above |
 | `steps.tsv` | Steps the test announced, with timestamps (only for tests that use `WalkthroughSteps`) |
+| `flags.txt` | Screenshots that are probably not useful (`<step number><TAB><reason>`); they are highlighted, not removed |
+| `ide-events.tsv` | License-screen and trial-tab events from the IDE log, with timestamps |
+| `license-screen.txt` | Present only if IntelliJ showed its license screen; the warning and instructions for the user |
 | `step_NN_HHMMSS.png` | Trimmed key frames |
 | `frames/` | Every distinct captured frame |
 | `test.log`, `capture.log`, `xserver.log` | Raw logs |
 
 ### 5. Verify
 
+- **If the recorder printed `LICENSE SCREEN DETECTED`** (or `license-screen.txt` exists), stop and tell the user. See
+  [License screen](#license-screen). Don't retry the recording until the user has cleared the license screen.
 - `Test exit status: 0`, plus the test's own success output in `test.log` (for Gradle: `BUILD SUCCESSFUL`).
+- Review the screenshots marked **Possibly not useful** (`flags.txt`, amber outline in `walkthrough.html`) and tell
+  the user how many there are. They are kept on purpose; only remove them if the user asks.
 - `capture.log` reports a frame count. If it's zero, the UI never appeared on the recorder's display. Check that the test honors `DISPLAY` and runs in a fresh process (see Troubleshooting).
 
 ### 6. Summary and captions
@@ -158,6 +168,40 @@ python3 $S/extract_test_summary.py io.flutter.integrationTest.MyFlowUITest > <wa
 python3 $S/render_walkthrough.py <walkthrough-dir>
 ```
 
+## Screenshots flagged as possibly not useful
+
+`build_walkthrough.sh` marks screenshots that probably don't help the viewer, without removing them. Each flag has
+a reason, which is shown in the walkthrough:
+
+| Reason | How it's detected |
+|---|---|
+| IntelliJ's splash screen while the IDE starts | Small window that is mostly strongly saturated color |
+| The IDE is still drawing its window | Very little detail (gray-level standard deviation below 0.045) |
+| IntelliJ's trial promotion tab is covering the editor | The IDE log reported the Trial tab opening, and the frame is colorful, within that step |
+| IntelliJ's license screen may be showing | Captured after the IDE log reported the license screen, before the next step |
+| Almost identical to the previous screenshot | Less than `--min-percent` of pixels changed since the previous screenshot of the same step |
+| Captured before the test's first step | No step had been announced yet |
+
+In `walkthrough.html`, flagged screenshots have an amber outline, a "Possibly not useful" banner, and a dashed
+thumbnail. The header shows how many are flagged. In `walkthrough.md`, they get a "Possibly not useful" note.
+
+## License screen
+
+IntelliJ IDEA's licensing is not deterministic. On some runs it starts a free trial automatically (and opens a
+"Trial" promotion tab, which is flagged). On others it stops at its license screen, which blocks the IDE until
+someone deals with it. A test cannot handle this reliably, so the recorder detects it instead: if the IDE log
+contains `#LicenseManager - License required` or `Trial was not started`, the recorder prints
+`LICENSE SCREEN DETECTED`, writes `license-screen.txt`, and the walkthrough shows a red warning at the top.
+
+When this happens, tell the user clearly that they need to clear the license screen in IntelliJ themselves:
+
+1. Start the same IntelliJ IDEA version, for example `./gradlew runTarget -Pide=Ultimate -PideV=2026.2.3`.
+2. On the license screen, sign in with a JetBrains account and start the trial, activate a license, or choose the
+   free option if offered, until IntelliJ opens normally.
+3. Close IntelliJ, then record the walkthrough again.
+
+Do not try to click through the license screen from the test or the agent.
+
 ## Per-step expectations
 
 Each screenshot in a walkthrough can say what the viewer should look for. Tests provide this by announcing each
@@ -173,6 +217,8 @@ driver.invokeAction("Flutter.ExtractWidget", now = false, component = editor.com
 - `title` becomes the screenshot caption. Use a short imperative, e.g. "Run the app".
 - `expect` says what should be visible during or right after the step. Name concrete UI text, files, and code.
 - Call `step` immediately before the action, so screenshots taken while it runs are attributed to it.
+- While recording, each `step` call first waits `--step-pause` seconds (default 3, at most 5), and so does
+  `WalkthroughSteps.finish()` at the end of the test, so the previous step's result is captured.
 
 The recorder sets `WALKTHROUGH_STEPS_FILE`, and each step is appended there with a timestamp (`steps.tsv`). When the
 walkthrough is built, each screenshot gets the most recent step at its capture time. If a step has no key frame, the

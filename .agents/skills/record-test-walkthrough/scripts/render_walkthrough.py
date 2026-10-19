@@ -7,7 +7,9 @@
 
 Reads step_*.png, captions.txt (one line per step, in order: a caption, optionally followed by " | " and what to
 look for in that step; lines starting with # are ignored), and
-the optional summary.md (what the test shows, in Markdown) from the walkthrough directory and writes:
+the optional summary.md (what the test shows, in Markdown), flags.txt ("<step number><TAB>why the screenshot is
+probably not useful"), and license-screen.txt (a warning that IntelliJ showed its license screen) from the
+walkthrough directory and writes:
 
   walkthrough.md    Standard Markdown with relative image links (GitHub, IDEs, Markdown viewers).
   walkthrough.html  A single self-contained page (images embedded) with a slideshow, keyboard
@@ -52,6 +54,23 @@ def load_meta(directory: pathlib.Path, args: argparse.Namespace) -> dict:
   meta.setdefault("title", "Test walkthrough")
   meta_path.write_text(json.dumps(meta, indent=2) + "\n")
   return meta
+
+
+def read_flags(directory: pathlib.Path, count: int) -> list[str]:
+  """Returns, per step, why its screenshot is probably not useful ("" if it looks fine)."""
+  flags = [""] * count
+  path = directory / "flags.txt"
+  if path.exists():
+    for line in path.read_text().splitlines():
+      number, _, reason = line.partition("\t")
+      if number.strip().isdigit() and 0 < int(number) <= count:
+        flags[int(number) - 1] = reason.strip()
+  return flags
+
+
+def read_license_warning(directory: pathlib.Path) -> str:
+  path = directory / "license-screen.txt"
+  return path.read_text().strip() if path.exists() else ""
 
 
 def read_test_summary(directory: pathlib.Path) -> str:
@@ -113,12 +132,20 @@ def capture_line(meta: dict, steps: int) -> str:
 
 
 def write_markdown(directory: pathlib.Path, meta: dict, images: list[pathlib.Path],
-                   captions: list[tuple[str, str]], test_summary: str) -> pathlib.Path:
+                   captions: list[tuple[str, str]], test_summary: str, flags: list[str],
+                   license_warning: str) -> pathlib.Path:
   out = [f"# {meta['title']}", "", capture_line(meta, len(images)), ""]
+  if license_warning:
+    out += ["> [!WARNING]"] + [f"> {line}" for line in license_warning.splitlines()] + [""]
+  flagged = sum(1 for f in flags if f)
+  if flagged:
+    out += [f"{flagged} screenshot(s) are marked **Possibly not useful**; they are kept for review.", ""]
   if test_summary:
     out += ["## What this test shows", "", test_summary, "", "## Steps captured", ""]
-  for i, (image, (caption, expect)) in enumerate(zip(images, captions), start=1):
+  for i, (image, (caption, expect), flag) in enumerate(zip(images, captions, flags), start=1):
     out += [f"### {i}. {caption}" if test_summary else f"## {i}. {caption}", ""]
+    if flag:
+      out += [f"> ⚠️ **Possibly not useful:** {flag}", ""]
     if expect:
       out += [f"**What to look for:** {expect}", ""]
     out += [f"![{caption}]({image.name})", ""]
@@ -157,6 +184,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   .expect {{ margin:0 auto 10px; max-width:1000px; color:#c9ccd1; }}
   .expect:not(:empty)::before {{ content:"What to look for: "; font-weight:600; color:#8fb8ff; }}
   .expect code {{ background:var(--panel); padding:1px 4px; border-radius:4px; }}
+  .flag {{ display:none; margin:0 auto 10px; max-width:1000px; padding:6px 10px; border-radius:6px;
+          background:#4a3a12; color:#ffd479; border:1px solid #8a6d1f; }}
+  .flag.on {{ display:block; }}
+  figure.flagged img, #stage.flagged img {{ outline:4px solid #e0a526; outline-offset:2px; }}
+  #thumbs img.flagged {{ border-color:#e0a526; border-style:dashed; }}
+  .license {{ margin:12px 24px 4px; padding:12px 16px; background:#4a1f1f; border:1px solid #a33; border-radius:8px;
+             color:#ffd6d6; white-space:pre-wrap; max-width:1100px; }}
+  .license strong {{ color:#fff; }}
   #thumbs {{ display:flex; gap:8px; overflow-x:auto; padding:12px 24px 20px; }}
   #thumbs img {{ height:72px; border:2px solid transparent; border-radius:4px; cursor:pointer; opacity:.7; }}
   #thumbs img.active {{ border-color:var(--accent); opacity:1; }}
@@ -170,8 +205,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <body>
 <header>
   <h1>{title}</h1>
-  <div class="meta">{summary}</div>
+  <div class="meta">{summary}{flag_count}</div>
 </header>
+{license}
 {about}
 <div class="bar">
   <button class="nav" id="prev" title="Previous (Left arrow)">&#8592; Prev</button>
@@ -180,7 +216,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   <span style="flex:1"></span>
   <button id="toggle" title="Toggle slideshow / all steps (A)">Show all steps</button>
 </div>
-<div id="stage"><figure><figcaption id="caption"></figcaption><div id="expect" class="expect"></div><img id="main" alt=""></figure></div>
+<div id="stage"><figure><figcaption id="caption"></figcaption><div id="flag" class="flag"></div><div id="expect" class="expect"></div><img id="main" alt=""></figure></div>
 <div id="thumbs"></div>
 <div id="all"></div>
 <script>
@@ -189,6 +225,8 @@ let index = 0;
 const main = document.getElementById('main');
 const caption = document.getElementById('caption');
 const expect = document.getElementById('expect');
+const flag = document.getElementById('flag');
+const stage = document.getElementById('stage');
 const counter = document.getElementById('counter');
 const thumbs = document.getElementById('thumbs');
 const all = document.getElementById('all');
@@ -196,9 +234,16 @@ steps.forEach((s, i) => {{
   const t = document.createElement('img');
   t.src = s.src; t.alt = s.caption; t.title = (i + 1) + '. ' + s.caption;
   t.onclick = () => show(i);
+  if (s.flag) {{ t.classList.add('flagged'); t.title += ' (possibly not useful)'; }}
   thumbs.appendChild(t);
   const f = document.createElement('figure');
-  f.innerHTML = '<figcaption></figcaption><div class="expect"></div><img alt="">';
+  f.innerHTML = '<figcaption></figcaption><div class="flag"></div><div class="expect"></div><img alt="">';
+  if (s.flag) {{
+    f.classList.add('flagged');
+    const fl = f.querySelector('.flag');
+    fl.textContent = '\u26a0 Possibly not useful: ' + s.flag;
+    fl.classList.add('on');
+  }}
   f.querySelector('figcaption').textContent = (i + 1) + '. ' + s.caption;
   f.querySelector('.expect').innerHTML = s.expect;
   f.querySelector('img').src = s.src;
@@ -210,6 +255,9 @@ function show(i) {{
   main.alt = steps[index].caption;
   caption.textContent = (index + 1) + '. ' + steps[index].caption;
   expect.innerHTML = steps[index].expect;
+  flag.textContent = steps[index].flag ? '\u26a0 Possibly not useful: ' + steps[index].flag : '';
+  flag.classList.toggle('on', !!steps[index].flag);
+  stage.classList.toggle('flagged', !!steps[index].flag);
   counter.textContent = (index + 1) + ' / ' + steps.length;
   [...thumbs.children].forEach((t, j) => t.classList.toggle('active', j === index));
   thumbs.children[index].scrollIntoView({{block: 'nearest', inline: 'nearest'}});
@@ -243,13 +291,18 @@ show(0);
 
 
 def write_html(directory: pathlib.Path, meta: dict, images: list[pathlib.Path],
-               captions: list[tuple[str, str]], test_summary: str) -> pathlib.Path:
-  steps = [{"caption": caption, "expect": inline_markdown(expect),
+               captions: list[tuple[str, str]], test_summary: str, flags: list[str],
+               license_warning: str) -> pathlib.Path:
+  steps = [{"caption": caption, "expect": inline_markdown(expect), "flag": flag,
             "src": "data:image/png;base64," + base64.b64encode(image.read_bytes()).decode("ascii")}
-           for image, (caption, expect) in zip(images, captions)]
+           for image, (caption, expect), flag in zip(images, captions, flags)]
   page = HTML_TEMPLATE.format(
     title=html.escape(meta["title"]),
     summary=html.escape(capture_line(meta, len(images))),
+    flag_count=(f" {sum(1 for f in flags if f)} marked as possibly not useful (highlighted)."
+                if any(flags) else ""),
+    license=(f'<section class="license"><strong>License screen detected.</strong> '
+             f'{html.escape(license_warning)}</section>') if license_warning else "",
     about=('<section class="about"><h2>What this test shows'
            '<button onclick="toggleAbout()" title="Show/hide (S)">Hide</button></h2>'
            f'<div class="body">{markdown_to_html(test_summary)}</div></section>') if test_summary else "",
@@ -277,8 +330,10 @@ def main() -> int:
   meta = load_meta(directory, args)
   captions = read_captions(directory / "captions.txt", len(images))
   test_summary = read_test_summary(directory)
-  md = write_markdown(directory, meta, images, captions, test_summary)
-  page = write_html(directory, meta, images, captions, test_summary)
+  flags = read_flags(directory, len(images))
+  license_warning = read_license_warning(directory)
+  md = write_markdown(directory, meta, images, captions, test_summary, flags, license_warning)
+  page = write_html(directory, meta, images, captions, test_summary, flags, license_warning)
   print(f"render_walkthrough: {len(images)} steps -> {md} and {page}")
   return 0
 

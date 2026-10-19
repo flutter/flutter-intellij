@@ -47,6 +47,7 @@ class NewProjectIU262UITest {
 
   @AfterEach
   fun closeIdeAndCleanUp() {
+    WalkthroughSteps.finish()
     if (::run.isInitialized) {
       val keepOpenMinutes = System.getenv("KEEP_IDE_OPEN_MINUTES")?.toLongOrNull() ?: 0L
       if (keepOpenMinutes > 0) {

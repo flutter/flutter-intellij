@@ -66,6 +66,7 @@ abstract class ExistingProjectUITest(private val packageName: String) {
 
   @AfterEach
   fun closeIde() {
+    WalkthroughSteps.finish()
     if (!::run.isInitialized) return
     val keepOpenMinutes = System.getenv("KEEP_IDE_OPEN_MINUTES")?.toLongOrNull() ?: 0L
     if (keepOpenMinutes > 0) {

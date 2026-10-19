@@ -25,6 +25,8 @@
 #                            --test: the test class's doc comment, up to "Implementation notes:".
 #   --size <WxH>             Screen size. Default: 1920x1080.
 #   --min-percent <n>        Key-frame threshold for build_walkthrough.sh. Default: 0.5.
+#   --step-pause <seconds>   Pause after each announced test step so its result is captured (0-5). Default: 3.
+#   --ide-log <path>         IDE log to scan for license/trial events. Default: the newest IDE Starter idea.log.
 #
 # Both modes use a real X server, so tests that drive the UI with java.awt.Robot work even on a
 # Wayland desktop (where Robot input to normal windows is blocked).
@@ -50,6 +52,8 @@ TITLE=""
 SUMMARY=""
 SIZE=1920x1080
 MIN_PERCENT=0.5
+STEP_PAUSE=3
+IDE_LOG=""
 CMD=()
 
 while [ $# -gt 0 ]; do
@@ -63,6 +67,8 @@ while [ $# -gt 0 ]; do
     --summary) SUMMARY="$2"; shift 2 ;;
     --size) SIZE="$2"; shift 2 ;;
     --min-percent) MIN_PERCENT="$2"; shift 2 ;;
+    --step-pause) STEP_PAUSE="$2"; shift 2 ;;
+    --ide-log) IDE_LOG="$2"; shift 2 ;;
     -h|--help) usage 0 ;;
     --) shift; CMD=("$@"); break ;;
     *) echo "Unknown option: $1" >&2; usage ;;
@@ -82,6 +88,8 @@ fi
 TITLE="${TITLE:-$name walkthrough}"
 DEST="${DEST/#\~/$HOME}"
 OUT="${OUT:-$DEST/${name}-$(date +%Y%m%d-%H%M%S)}"
+
+STEP_PAUSE_MS=$(awk -v s="$STEP_PAUSE" 'BEGIN { s = s + 0; if (s < 0) s = 0; if (s > 5) s = 5; printf "%d", s * 1000 }')
 
 case "$MODE" in
   headless) SERVER=Xvfb ;;
@@ -153,6 +161,8 @@ capture_pid=$!
   export DISPLAY="$TEST_DISPLAY"
   # Tests that announce their steps (WalkthroughSteps) append "HHMMSS<TAB>title<TAB>what to expect" here.
   export WALKTHROUGH_STEPS_FILE="$OUT/steps.tsv"
+  # ...and pause this long before each new step, so the previous step's result is on screen long enough.
+  export WALKTHROUGH_STEP_PAUSE_MS="$STEP_PAUSE_MS"
   "${CMD[@]}"
 ) 2>&1 | tee "$OUT/test.log"
 test_status=${PIPESTATUS[0]}
@@ -162,6 +172,38 @@ kill "$capture_pid" 2> /dev/null
 wait "$capture_pid" 2> /dev/null
 capture_pid=""
 cat "$OUT/capture.log"
+
+# --- IDE events: license screen and trial promotion -------------------------------------------
+# IntelliJ's licensing is not deterministic: a run may auto-start a trial (and open a "Trial" promo tab over the
+# editor), or stop at the license screen until someone deals with it in IntelliJ.
+if [ -z "$IDE_LOG" ] && [ -d "$REPO_DIR/build/out/ide-tests/tests" ]; then
+  IDE_LOG=$(find "$REPO_DIR/build/out/ide-tests/tests" -path '*/log/idea.log' -newer "$OUT/xserver.log" \
+    -printf '%T@ %p\n' 2> /dev/null | sort -n | tail -1 | cut -d' ' -f2-)
+fi
+rm -f "$OUT/ide-events.tsv" "$OUT/license-screen.txt"
+if [ -n "$IDE_LOG" ] && [ -f "$IDE_LOG" ]; then
+  awk '
+    function stamp(t) { gsub(/[:,]/, "", t); return t }
+    /#LicenseManager - License required|Trial was not started/ { print stamp($2) "\tlicense-screen\t" substr($0, index($0, " - ") + 3) }
+    /Opening a Trial tab in editor/ { print stamp($2) "\ttrial-tab\tIntelliJ opened its Trial promotion tab" }
+  ' "$IDE_LOG" > "$OUT/ide-events.tsv"
+  [ -s "$OUT/ide-events.tsv" ] || rm -f "$OUT/ide-events.tsv"
+fi
+if [ -f "$OUT/ide-events.tsv" ] && grep -q "license-screen" "$OUT/ide-events.tsv"; then
+  cat > "$OUT/license-screen.txt" << 'LICENSE'
+IntelliJ IDEA showed its license screen during this run, so the IDE may have been blocked and the recording may be
+incomplete. Whether this screen appears is not deterministic (it depends on JetBrains account, trial, and license
+state), so the test cannot handle it. To clear it:
+  1. Start the same IntelliJ IDEA version yourself, for example: ./gradlew runTarget -Pide=Ultimate -PideV=2026.2.3
+  2. On the license screen, sign in with your JetBrains account and start the trial, activate a license, or choose
+     the free option if offered, until IntelliJ opens normally.
+  3. Close IntelliJ and record the walkthrough again.
+LICENSE
+  echo
+  echo "!!! LICENSE SCREEN DETECTED !!!"
+  cat "$OUT/license-screen.txt"
+  echo
+fi
 
 # --- Build walkthrough -----------------------------------------------------------------------
 if [ -n "$SUMMARY" ]; then
