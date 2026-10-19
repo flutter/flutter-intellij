@@ -15,3 +15,91 @@
   - The overall reliability and stability of the integration testing framework.
   - How effectively we can maintain these tests over time.
   - How best to incorporate integration testing into our overall plugin maintenance and testing strategy.
+
+## Running the Tests Yourself
+
+The UI tests start a real IntelliJ IDEA (downloaded on first run into `build/out/ide-tests/`) with your locally
+built Flutter plugin, and drive it with the IntelliJ IDE Starter / Driver framework: they click, type, and read the
+UI like a user would.
+
+### Prerequisites
+
+- Linux, with a Flutter SDK. Point `FLUTTER_SDK` at it (for example `export FLUTTER_SDK=~/develop/flutter`).
+- For recordings (optional): `xvfb`, `xserver-xephyr`, `x11-utils`, `imagemagick`, and `python3`.
+- About 2 GB of disk for the first IDE download.
+
+### Run one test
+
+From the repository root:
+
+```bash
+unset DISPLAY WAYLAND_DISPLAY
+./gradlew --no-daemon integration --tests io.flutter.integrationTest.RunWidgetTestUITest
+```
+
+- **Why `unset DISPLAY WAYLAND_DISPLAY`:** IDE Starter then runs the IDE on a hidden virtual display (Xvfb). On a
+  Wayland desktop, a test pointed at your real display opens the IDE, but its clicks and keystrokes never arrive,
+  because Wayland blocks synthetic input.
+- **Why `--no-daemon`:** a running Gradle daemon keeps the environment it started with, so the test might not see
+  `FLUTTER_SDK` or the display settings above.
+- A run takes about 2 to 3 minutes once the IDE is downloaded. The test result is in
+  `build/reports/tests/integration/index.html`, and the IDE's own log is in
+  `build/out/ide-tests/tests/<IDE build>/<TestName>/log/idea.log`.
+
+### Watch a test, or record it as a walkthrough
+
+To see what a test does, use the walkthrough recorder. It runs the test on its own display and saves a step-by-step
+screenshot walkthrough (a single self-contained HTML page) to `~/walkthroughs/`:
+
+```bash
+# Watch it live: a window opens on your desktop with the IDE inside (don't click in it while it runs)
+.agents/skills/record-test-walkthrough/scripts/record_walkthrough.sh --mode visible --size 1600x900 \
+  --test io.flutter.integrationTest.RunWidgetTestUITest
+
+# Or record it without showing anything on screen
+.agents/skills/record-test-walkthrough/scripts/record_walkthrough.sh \
+  --test io.flutter.integrationTest.RunWidgetTestUITest
+
+# Browse all recorded walkthroughs
+xdg-open ~/walkthroughs/index.html
+```
+
+Run the recorder with `--help` for all options. For full details, see
+[`.agents/skills/record-test-walkthrough/SKILL.md`](../../.agents/skills/record-test-walkthrough/SKILL.md).
+
+### Available tests
+
+All of these run against IntelliJ IDEA 2026.2.3. Except for `NewProjectIU262UITest`, they start with the IDE already
+open on a Flutter app created with `flutter create`.
+
+| Test | What it shows |
+|---|---|
+| `NewProjectIU262UITest` | Creating a Flutter app with the plugin's New Project wizard |
+| `PubGetUITest` | Adding a dependency to `pubspec.yaml` and running **Flutter Pub Get** |
+| `RunWidgetTestUITest` | Running `test/widget_test.dart` from the editor and seeing it pass in the test runner |
+| `ExtractWidgetUITest` | The **Extract Flutter Widget...** refactoring |
+| `StatelessWidgetLiveTemplateUITest` | Expanding the `stless` live template |
+| `RunAppAndHotReloadUITest` | Running the app on a device and hot reloading a change |
+
+Each test's class comment explains what it shows, step by step.
+
+### Useful environment variables
+
+| Variable | Effect |
+|---|---|
+| `FLUTTER_SDK` | Flutter SDK used by the tests (required) |
+| `KEEP_TEST_PROJECT=true` | Keep the test's Flutter project instead of deleting it afterwards |
+| `KEEP_IDE_OPEN_MINUTES=<n>` | Leave the IDE running for `n` minutes after the test, for inspection |
+| `FLUTTER_TEST_DEVICE=chrome\|emulator` | Device for `RunAppAndHotReloadUITest` (default `chrome`) |
+| `FLUTTER_TEST_AVD=<name>` | Android emulator for `FLUTTER_TEST_DEVICE=emulator` (default `Medium_Phone`) |
+
+### If something goes wrong
+
+- **IntelliJ shows its license screen and the test hangs.** IntelliJ's licensing isn't deterministic. Start the same
+  IntelliJ version yourself (`./gradlew runTarget -Pide=Ultimate -PideV=2026.2.3`), sign in and start the trial,
+  activate a license, or choose the free option, then run the test again.
+- **The test can't find the Flutter SDK.** Check that `FLUTTER_SDK` is exported in the same shell, and use `--no-daemon`.
+- **Nothing happens in the IDE window.** You're probably running against your Wayland desktop; `unset DISPLAY
+  WAYLAND_DISPLAY` first, or use the recorder's `--mode visible`.
+- **The emulator variant can't find the device.** If an emulator was killed uncleanly, it may be stuck behind a crash
+  dialog. Shut it down with `adb emu kill` and try again.
