@@ -25,7 +25,15 @@ test is what runs; this skill only provides a display for it and records that di
 
 ## Workflow
 
-### 1. Choose the test and mode
+### 1. Ask where to save the walkthrough
+
+Before recording, ask the user which folder to save walkthroughs in, and suggest `~/walkthroughs` as the default
+(or `$WALKTHROUGH_DIR` if it's set). Use the default whenever the user doesn't name another folder. Each run is saved
+in its own subfolder, `<folder>/<test>-<timestamp>/`. Pass the answer with `--dest <folder>`, or omit `--dest` to
+use the default. The default is outside the repository, so walkthroughs survive `./gradlew clean`, never end up
+in a commit, and are easy to find later.
+
+### 2. Choose the test and mode
 
 | Mode | Display | Use when |
 |---|---|---|
@@ -36,13 +44,17 @@ Both modes are real X servers, so tests that send input through `java.awt.Robot`
 desktop. Running a test directly against a Wayland session does not work, because Wayland blocks
 synthetic input to normal windows.
 
-### 2. Record
+### 3. Record
 
 From the repository root:
 
 ```bash
 # A Gradle test (default task: integration)
 .agents/skills/record-test-walkthrough/scripts/record_walkthrough.sh \
+  --test io.flutter.integrationTest.NewProjectIU262UITest
+
+# Save into a folder the user chose instead of ~/walkthroughs
+.agents/skills/record-test-walkthrough/scripts/record_walkthrough.sh --dest ~/Documents/flutter-walkthroughs \
   --test io.flutter.integrationTest.NewProjectIU262UITest
 
 # Watch it live
@@ -58,7 +70,8 @@ From the repository root:
 | `--mode headless\|visible` | Display type (default `headless`) |
 | `--test <fqcn>` | Test class or `class.method`, run as `./gradlew --no-daemon <task> --tests <fqcn>` |
 | `--task <name>` | Gradle test task for `--test` (default `integration`) |
-| `--out <dir>` | Output directory (default `build/walkthrough/<test>-<timestamp>`). Use a directory outside `build/` to survive `./gradlew clean`. |
+| `--dest <folder>` | Folder to save walkthroughs in; each run gets `<folder>/<test>-<timestamp>/` (default `$WALKTHROUGH_DIR`, else `~/walkthroughs`) |
+| `--out <dir>` | Exact output directory for this run (overrides `--dest`) |
 | `--title <text>` | Walkthrough title (default `<test> walkthrough`) |
 | `--summary <text\|@file>` | What the test shows, in Markdown (default for `--test`: the test class's doc comment) |
 | `--size <WxH>` | Screen size (default `1920x1080`). Use a smaller size in visible mode if the window doesn't fit your screen. |
@@ -72,8 +85,9 @@ The recorder exits with the test's exit status. It:
 4. Writes `summary.md` from `--summary` or, for `--test`, from the test class's doc comment ([`extract_test_summary.py`](scripts/extract_test_summary.py)).
 5. Runs [`build_walkthrough.sh`](scripts/build_walkthrough.sh), which skips blank frames, keeps frames where more than 0.5% of the pixels changed, trims the black background, and writes default captions.
 6. Runs [`render_walkthrough.py`](scripts/render_walkthrough.py) to produce the browsable files.
+7. Refreshes `index.html` in the parent folder ([`build_index.py`](scripts/build_index.py)), which lists every walkthrough there, newest first, with its title, summary, and date.
 
-### 3. Outputs
+### 4. Outputs
 
 | File | Contents |
 |---|---|
@@ -85,12 +99,12 @@ The recorder exits with the test's exit status. It:
 | `frames/` | Every distinct captured frame |
 | `test.log`, `capture.log`, `xserver.log` | Raw logs |
 
-### 4. Verify
+### 5. Verify
 
 - `Test exit status: 0`, plus the test's own success output in `test.log` (for Gradle: `BUILD SUCCESSFUL`).
 - `capture.log` reports a frame count. If it's zero, the UI never appeared on the recorder's display. Check that the test honors `DISPLAY` and runs in a fresh process (see Troubleshooting).
 
-### 5. Summary and captions
+### 6. Summary and captions
 
 Check that `summary.md` describes the flow; if it's missing, add a doc comment to the test (see
 [Test summary](#test-summary)) or write `summary.md` by hand. Default captions are capture times. View each
@@ -105,9 +119,9 @@ Use `--title` to change the title. To drop a near-duplicate step, delete its `st
 caption line. Fast steps can fall between samples; pick them from `frames/`, or rerun
 `build_walkthrough.sh <frames-dir> <walkthrough-dir> <lower-percent>` (this resets `captions.txt`).
 
-### 6. Present
+### 7. Present
 
-- To browse later, open `walkthrough.html` in a browser (`xdg-open <walkthrough-dir>/walkthrough.html`).
+- To browse later, open `<folder>/index.html` (for example `xdg-open ~/walkthroughs/index.html`) and pick a walkthrough, or open a run's `walkthrough.html` directly.
 - To share as Markdown, send `walkthrough.md` together with the `step_*.png` files.
 - Tools that need absolute image paths (for example, agent artifact viewers) need the images copied next to the artifact and the paths rewritten.
 
@@ -178,5 +192,5 @@ context. The Dart plugin version must support the IDE build; check with
 
 ## Notes
 
-- **Do not commit** generated output; it lives under `build/` by default.
+- Walkthroughs are saved outside the repository (`~/walkthroughs` by default), so they are never committed.
 - The UI tests in `testSrc/integration` are experimental (see `testSrc/integration/README.md`) and are not run in CI.

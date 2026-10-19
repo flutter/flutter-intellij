@@ -17,7 +17,9 @@
 #                            visible: Xephyr window on your desktop, so you can watch the test live.
 #   --test <fqcn>            Test class (or class.method) for `./gradlew --no-daemon <task> --tests`.
 #   --task <name>            Gradle test task for --test. Default: integration.
-#   --out <dir>              Output directory. Default: build/walkthrough/<test>-<timestamp>.
+#   --dest <folder>          Parent folder for walkthroughs; each run gets <folder>/<test>-<timestamp>.
+#                            Default: $WALKTHROUGH_DIR, else ~/walkthroughs.
+#   --out <dir>              Exact output directory (overrides --dest).
 #   --title <text>           Walkthrough title. Default: the test name.
 #   --summary <text|@file>   What the test shows (Markdown), shown at the top of the walkthrough. Default for
 #                            --test: the test class's doc comment, up to "Implementation notes:".
@@ -43,6 +45,7 @@ MODE=headless
 TEST=""
 TASK=integration
 OUT=""
+DEST="${WALKTHROUGH_DIR:-$HOME/walkthroughs}"
 TITLE=""
 SUMMARY=""
 SIZE=1920x1080
@@ -55,6 +58,7 @@ while [ $# -gt 0 ]; do
     --test) TEST="$2"; shift 2 ;;
     --task) TASK="$2"; shift 2 ;;
     --out) OUT="$2"; shift 2 ;;
+    --dest) DEST="$2"; shift 2 ;;
     --title) TITLE="$2"; shift 2 ;;
     --summary) SUMMARY="$2"; shift 2 ;;
     --size) SIZE="$2"; shift 2 ;;
@@ -76,7 +80,8 @@ else
   usage
 fi
 TITLE="${TITLE:-$name walkthrough}"
-OUT="${OUT:-build/walkthrough/${name}-$(date +%Y%m%d-%H%M%S)}"
+DEST="${DEST/#\~/$HOME}"
+OUT="${OUT:-$DEST/${name}-$(date +%Y%m%d-%H%M%S)}"
 
 case "$MODE" in
   headless) SERVER=Xvfb ;;
@@ -163,6 +168,8 @@ fi
 [ -f "$OUT/summary.md" ] || echo "No test summary found; add a doc comment to the test class or pass --summary."
 bash "$SCRIPT_DIR/build_walkthrough.sh" "$OUT/frames" "$OUT" "$MIN_PERCENT"
 python3 "$SCRIPT_DIR/render_walkthrough.py" "$OUT" --title "$TITLE" > /dev/null
+# Refresh the index of all walkthroughs in the parent folder.
+python3 "$SCRIPT_DIR/build_index.py" "$(dirname "$OUT")" || true
 
 echo
 echo "Test exit status: $test_status"
