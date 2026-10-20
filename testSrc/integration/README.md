@@ -66,6 +66,8 @@ xdg-open ~/walkthroughs/index.html
 
 Run the recorder with `--help` for all options. For full details, see
 [`.agents/skills/record-test-walkthrough/SKILL.md`](../../.agents/skills/record-test-walkthrough/SKILL.md).
+For the background, design decisions, and current status of these tests and the recorder, see
+[`.agents/design-docs/integration-ui-tests-and-walkthroughs.md`](../../.agents/design-docs/integration-ui-tests-and-walkthroughs.md).
 
 ### Available tests
 

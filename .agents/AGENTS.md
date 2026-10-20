@@ -7,3 +7,7 @@ This directory contains workspace customizations, rules, skills, and design docu
 
 ## Design Documents
 - [`sdk-functionality.md`](design-docs/sdk-functionality.md): Full architectural design document for SDK handling in IntelliJ plugins.
+- [`integration-ui-tests-and-walkthroughs.md`](design-docs/integration-ui-tests-and-walkthroughs.md): Context, decisions, and status for the IntelliJ IDE Starter UI tests and the `record-test-walkthrough` skill.
+
+## Skills
+- [`record-test-walkthrough`](skills/record-test-walkthrough/SKILL.md): Record any automated UI test as a step-by-step screenshot walkthrough.
