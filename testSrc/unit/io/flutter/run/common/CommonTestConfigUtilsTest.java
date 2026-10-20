@@ -88,6 +88,18 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
         "void main() { group('$TestFileArgs', () {}); }", "'$TestFileArgs'");
       assertEquals(TestType.GROUP, testConfigUtils.asTestCall(interpolatedGroupCall));
       assertNull(testConfigUtils.findTestName(interpolatedGroupCall));
+
+      final DartCallExpression typeGroupCall = findCallWithArg(
+        "void main() { group(SomeType, () {}); }", "SomeType");
+      assertEquals(TestType.GROUP, testConfigUtils.asTestCall(typeGroupCall));
+      assertNull(testConfigUtils.findTestName(typeGroupCall));
+
+      final DartCallExpression variableTestCall = setUpDartElement(
+        "void main() { const description = 'my test'; test(description, () {}); }",
+        "test(description, () {})",
+        DartCallExpression.class);
+      assertEquals(TestType.SINGLE, testConfigUtils.asTestCall(variableTestCall));
+      assertNull(testConfigUtils.findTestName(variableTestCall));
     });
   }
 }

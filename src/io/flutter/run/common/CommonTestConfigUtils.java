@@ -19,6 +19,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
 import com.jetbrains.lang.dart.psi.DartComponent;
 import com.jetbrains.lang.dart.psi.DartComponentName;
+import com.jetbrains.lang.dart.psi.DartExpression;
 import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
 import com.jetbrains.lang.dart.resolve.DartResolveProcessor;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
@@ -124,7 +125,7 @@ public abstract class CommonTestConfigUtils {
 
   @Nullable
   private static TestType getTestType(@NotNull DartCallExpression call) {
-    if (DartSyntax.getArgument(call, 0, DartStringLiteralExpression.class) == null) {
+    if (DartSyntax.getArgument(call, 0, DartExpression.class) == null) {
       return null;
     }
 
@@ -134,10 +135,10 @@ public abstract class CommonTestConfigUtils {
     }
 
     if (GROUP.equals(functionName)) {
-      return TestType.GROUP;
+      return DartSyntax.getArgument(call, 1, DartExpression.class) != null ? TestType.GROUP : null;
     }
     if (TEST.equals(functionName) || TEST_WIDGETS.equals(functionName)) {
-      return TestType.SINGLE;
+      return DartSyntax.getArgument(call, 1, DartExpression.class) != null ? TestType.SINGLE : null;
     }
 
     return findCustomTestAnnotationType(call, functionName);
