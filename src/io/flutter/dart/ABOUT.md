@@ -35,6 +35,7 @@ Wrappers and managers for interacting with the Dart Analysis Server, parsing Dar
 - `DartSyntax.isCallToFunctionMatching(DartCallExpression, Pattern)`
 - `DartSyntax.isMainFunctionDeclaration(PsiElement)`
 - `DartSyntax.unquote(DartStringLiteralExpression)`
+- `DartSyntax.getCalledFunctionName(DartCallExpression)`
 - `DtdRequest.REGISTER_VM_SERVICE`
 - `DtdRequest.UNREGISTER_VM_SERVICE`
 - `DtdUtils.readyDtdService(Project)`
