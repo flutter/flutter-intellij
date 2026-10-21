@@ -12,7 +12,7 @@ import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessListener;
-import com.intellij.execution.process.ProcessOutputTypes;
+import com.intellij.execution.process.ProcessOutputType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
@@ -686,7 +686,7 @@ public class FlutterSdk {
     process.addProcessListener(new ProcessAdapter() {
       @Override
       public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
-        if (outputType == ProcessOutputTypes.STDOUT) {
+        if (ProcessOutputType.isStdout(outputType)) {
           stdout.append(event.getText());
         }
       }
