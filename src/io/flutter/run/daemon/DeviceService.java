@@ -79,9 +79,9 @@ public class DeviceService implements Disposable {
         refreshDeviceDaemon();
       }
     };
-    FlutterSdkManager.getInstance(project).addListener(sdkListener);
-    Disposer.register(this,
-                      () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
+    final FlutterSdkManager sdkManager = FlutterSdkManager.getInstance(project);
+    sdkManager.addListener(sdkListener);
+    Disposer.register(this, () -> sdkManager.removeListener(sdkListener));
 
     // Watch for Java SDK changes. (Used to get the value of ANDROID_HOME.)
     ProjectRootManagerEx.getInstanceEx(project).addProjectJdkListener(this::refreshDeviceDaemon);
