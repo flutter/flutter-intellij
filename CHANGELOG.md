@@ -3,6 +3,7 @@
 ### Added
 
 ### Changed
+- Avoiding `--no-color` on Flutter commands run from the plugin, and keeping their console command lines folded. (#9161)
 
 ### Removed
 - Legacy Dart Analysis Server URI mapping during debugging. (#9149)

@@ -16,11 +16,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * Fold lines like '/Users/.../projects/flutter/flutter/bin/flutter --no-color packages get'.
+ * Fold lines like '/Users/.../projects/flutter/flutter/bin/flutter packages get'.
  */
 public class FlutterConsoleFolding extends ConsoleFolding {
   private static final String flutterMarker =
-    FlutterConstants.INDEPENDENT_PATH_SEPARATOR + FlutterSdkUtil.flutterScriptName() + " --no-color ";
+    FlutterConstants.INDEPENDENT_PATH_SEPARATOR + FlutterSdkUtil.flutterScriptName() + " ";
 
   @Override
   public boolean shouldFoldLine(@NotNull Project project, @NotNull String line) {
