@@ -163,10 +163,7 @@ setup() {
     export PATH=$PATH:$JAVA_HOME/bin
   fi
 
-  # Let the OS pick the address family rather than forcing IPv6. Some external
-  # hosts (e.g. github.com) are IPv4-only. Command-line -D flags take precedence
-  # over the image-level JAVA_TOOL_OPTIONS, which also sets preferIPv6Addresses.
-  export JAVA_OPTS=" -Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=system"
+  export JAVA_OPTS=" -Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true"
 
   # Download and configure Flutter to the pinned stable release if not present
   source ./tool/provision_flutter.sh
