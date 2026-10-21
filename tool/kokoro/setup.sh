@@ -108,11 +108,13 @@ run_with_timeout() {
   rm -f "$marker"
   (
     sleep "$secs"
-    touch "$marker"
-    echo "Timed out after ${secs}s: $*" >&2
-    kill_tree TERM "$pid"
-    sleep 10
-    kill_tree KILL "$pid"
+    if kill -0 "$pid" 2>/dev/null; then
+      touch "$marker"
+      echo "Timed out after ${secs}s: $*" >&2
+      kill_tree TERM "$pid"
+      sleep 10
+      kill_tree KILL "$pid"
+    fi
   ) &
   local watchdog=$!
 
