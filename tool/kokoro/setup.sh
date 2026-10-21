@@ -80,6 +80,55 @@ run_gradle_with_retry() {
   done
 }
 
+# Send a signal to a process and all of its descendants.
+# Usage: kill_tree <signal> <pid>
+kill_tree() {
+  local sig="$1"
+  local pid="$2"
+  local child
+  for child in $(pgrep -P "$pid" 2>/dev/null); do
+    kill_tree "$sig" "$child"
+  done
+  kill "-$sig" "$pid" 2>/dev/null || true
+}
+
+# Run a command, killing it (and any subprocesses) if it runs longer than the
+# given number of seconds. macOS doesn't ship coreutils `timeout`, so this is a
+# portable bash version. Returns the command's exit code, or 124 on timeout.
+# Usage: run_with_timeout <seconds> <command...>
+run_with_timeout() {
+  local secs="$1"
+  shift
+
+  "$@" &
+  local pid=$!
+
+  local marker
+  marker=$(mktemp)
+  rm -f "$marker"
+  (
+    sleep "$secs"
+    touch "$marker"
+    echo "Timed out after ${secs}s: $*" >&2
+    kill_tree TERM "$pid"
+    sleep 10
+    kill_tree KILL "$pid"
+  ) &
+  local watchdog=$!
+
+  local exit_code=0
+  wait "$pid" || exit_code=$?
+
+  kill_tree TERM "$watchdog"
+  wait "$watchdog" 2>/dev/null || true
+
+  if [[ -f "$marker" ]]; then
+    rm -f "$marker"
+    return 124
+  fi
+  return $exit_code
+}
+
 # Initialize everything required by the plugin tool.
 setup() {
   # Fail on any error.
@@ -112,13 +161,22 @@ setup() {
     export PATH=$PATH:$JAVA_HOME/bin
   fi
 
-  export JAVA_OPTS=" -Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true"
+  # Let the OS pick the address family rather than forcing IPv6. Some external
+  # hosts (e.g. github.com) are IPv4-only. Command-line -D flags take precedence
+  # over the image-level JAVA_TOOL_OPTIONS, which also sets preferIPv6Addresses.
+  export JAVA_OPTS=" -Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=system"
 
   # Download and configure Flutter to the pinned stable release if not present
   source ./tool/provision_flutter.sh
   export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
-  flutter config --no-analytics
-  flutter doctor
+
+  # These steps are informational and can hang indefinitely when the VM can't
+  # reach github.com (the Flutter tool runs `git fetch`), which previously
+  # consumed the full 3h Kokoro VM timeout. Bound them and keep going.
+  run_with_timeout 300 flutter config --no-analytics \
+    || echo "WARNING: 'flutter config' failed or timed out; continuing." >&2
+  run_with_timeout 300 flutter doctor \
+    || echo "WARNING: 'flutter doctor' failed or timed out; continuing." >&2
 
   export FLUTTER_SDK=`pwd`/../flutter
   export FLUTTER_KEYSTORE_ID=74840
