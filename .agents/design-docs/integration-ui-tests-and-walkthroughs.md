@@ -104,6 +104,17 @@ the trial, activate a license, or choose free, then record again. Agents must no
 - Chrome is at `/usr/bin/google-chrome` (used by the Chrome variant and for checking rendered walkthroughs).
 - Desktop session is Wayland, so use the recorder's `--mode visible` to watch tests live.
 
+## Status (2026-10-22, Windows)
+
+- The work continues on the `cross-platform-ui-tests` branch (pushed to the `cj-radcliff/flutter-intellij-working`
+  fork), which makes the tests portable (`utils/Platform.kt`).
+- `PubGetUITest` passes on Windows 11 (`.\gradlew.bat --no-daemon integration --tests ...PubGetUITest`), with no
+  Windows-specific changes beyond `Platform.kt`. It now adds `http: ^1.2.0` and checks `pubspec.lock`,
+  `package_config.json`, and the pub cache. The other tests have not been run on Windows yet.
+- Decision: **walkthrough recording stays Linux only** for now. Windows (and macOS) run the tests but don't record.
+  The details for a later port are in
+  [Follow-up: recording on Windows and macOS](#follow-up-recording-on-windows-and-macos).
+
 ## Status (2026-10-20)
 
 - All six tests pass headless and visible. `RunAppAndHotReloadUITest` also passes on the Android emulator (visible).
@@ -128,3 +139,36 @@ the trial, activate a license, or choose free, then record again. Agents must no
 The work started in `~/repos/flutter-intellij` on 2026-10-15 and moved here on 2026-10-20. Both branches were
 fetched into this repo, rebased onto `main`, and deleted from the old repo, together with the downloaded test IDE
 (`build/out/ide-tests/`).
+
+## Follow-up: recording on Windows and macOS
+
+Not started; recording is Linux only for now (decided 2026-10-22). Notes for picking this up later:
+
+- **Why the recorder is Linux only today.**
+  - `record_walkthrough.sh` starts Xvfb or Xephyr and points `DISPLAY` at it.
+  - `capture_display.sh` grabs that display with ImageMagick `import`, which only works on X11.
+  - `build_walkthrough.sh` picks key frames, trims, and flags screenshots with ImageMagick `compare`, `convert`, and
+    `identify`, all driven from bash.
+- **Already portable, keep as is.** `render_walkthrough.py`, `extract_test_summary.py`, `build_index.py`,
+  `WalkthroughSteps` (`WALKTHROUGH_STEPS_FILE`, `WALKTHROUGH_STEP_PAUSE_MS`), and the step announcements and KDoc in
+  the tests.
+- **Platform limit.** Windows and macOS have no equivalent of Xvfb that accepts `java.awt.Robot` input, so only a
+  "visible" mode is possible there. The IDE runs on the real, unlocked desktop, and the user can't use the machine
+  while it records. A VM, Windows Sandbox, or an RDP session could make it unattended, at the cost of extra setup.
+- **Preferred approach: port the three shell scripts to one Python recorder** using Pillow (frame diff, trim, the
+  flag rules) and `mss` (screen capture).
+  - Windows and macOS: capture the real desktop.
+  - Linux: keep starting Xvfb or Xephyr as today, so Linux recordings don't change.
+  - Run Gradle with `gradlew.bat` on Windows.
+  - Output stays the same: `walkthrough.html`, `walkthrough.md`, `flags.txt`, and so on.
+- **Alternatives considered.**
+  - Capture inside the test JVM through the Driver. One code path for all OSes, but the test JVM runs with
+    `-Djava.awt.headless=true`, so the capture would have to happen in the IDE process.
+  - A PowerShell port with `System.Drawing`. Windows only.
+- **Main risk.** Matching today's key-frame threshold (`--min-percent 0.5`) and the flag heuristics (splash screen,
+  gray-level standard deviation below 0.045, trial tab, near-duplicates) closely enough. Check against an existing
+  Linux recording.
+- **Windows machine notes (2026-10-22).** Python 3.14 is installed, but not Pillow or `mss`
+  (`pip install pillow mss`). ImageMagick is not installed. Start with `PubGetUITest`, which is known to pass there.
+- **Docs to update when done.** `testSrc/integration/README.md` ("Linux only" notes) and the skill's prerequisites
+  and description.

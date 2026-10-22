@@ -16,6 +16,9 @@ test is what runs; this skill only provides a display for it and records that di
 ## Prerequisites
 
 - Linux with `xvfb` (headless), `xserver-xephyr` (visible), `x11-utils` (`xdpyinfo`), `imagemagick` (`import`, `convert`, `compare`) and `python3`.
+  Recording is **Linux only**. The tests themselves also run on Windows and macOS, but if the user asks to record
+  there, tell them to record on a Linux machine instead. A cross-platform recorder is planned follow-up work; see
+  [the design doc](../../design-docs/integration-ui-tests-and-walkthroughs.md#follow-up-recording-on-windows-and-macos).
 - An automated test that shows UI on `$DISPLAY`, with a doc comment that explains what it shows (see
   [Test summary](#test-summary)). For IDE Starter tests:
   - The test must run in a fresh JVM with the environment passed through. `--test` uses `./gradlew --no-daemon`.
