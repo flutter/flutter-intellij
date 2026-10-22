@@ -19,6 +19,7 @@ import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.project.LocalProjectInfo
+import io.flutter.integrationTest.utils.Platform
 import io.flutter.integrationTest.utils.WalkthroughSteps
 import io.flutter.integrationTest.utils.createFlutterProjectWithCli
 import io.flutter.integrationTest.utils.deleteFlutterProject
@@ -45,7 +46,7 @@ import kotlin.time.Duration.Companion.seconds
 abstract class ExistingProjectUITest(private val packageName: String) {
 
   private val projectFolder = "${packageName}_${System.currentTimeMillis()}"
-  private val parentDir: String = System.getProperty("java.io.tmpdir")
+  private val parentDir: String = Platform.testProjectsDir.toString()
 
   /** Root of the test project on disk. */
   protected val projectDir: Path = Paths.get(parentDir, projectFolder)
@@ -91,6 +92,7 @@ abstract class ExistingProjectUITest(private val packageName: String) {
 
   /** Starts the IDE on [projectDir] and waits until the project is open and indexed. */
   protected fun startIdeOnProject() {
+    println(Platform.describe())
     println("Opening existing project $projectDir")
     step(
       "Open the existing Flutter project",

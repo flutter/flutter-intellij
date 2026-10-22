@@ -9,10 +9,10 @@ package io.flutter.integrationTest
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.ui
+import io.flutter.integrationTest.utils.Platform
 import io.flutter.integrationTest.utils.WalkthroughSteps
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
-import java.awt.event.KeyEvent
 import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.minutes
@@ -43,7 +43,6 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
 
   private val deviceKind = System.getenv("FLUTTER_TEST_DEVICE") ?: "chrome"
   private val avdName = System.getenv("FLUTTER_TEST_AVD") ?: "Medium_Phone"
-  private val androidHome = System.getenv("ANDROID_HOME") ?: "${System.getProperty("user.home")}/Android/Sdk"
   private var emulator: Process? = null
 
   override fun prepareProject() {
@@ -53,7 +52,7 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
   @AfterAll
   fun stopEmulator() {
     emulator?.let {
-      runCatching { exec("$androidHome/platform-tools/adb", "emu", "kill").waitFor(30, TimeUnit.SECONDS) }
+      runCatching { exec(Platform.adb, "emu", "kill").waitFor(30, TimeUnit.SECONDS) }
       it.destroy()
     }
   }
@@ -68,7 +67,7 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
       step(
         "Select the device",
         if (deviceKind == "emulator") "The device selector popup lists the running emulator as \"Medium Phone (mobile)\"; after selecting it, the toolbar shows that device."
-        else "The device selector popup lists Chrome (web), Linux (desktop), and any emulators; after selecting Chrome, the toolbar shows \"Chrome (web)\"."
+        else "The device selector popup lists Chrome (web), this computer's desktop device (Linux, macOS, or Windows), and any emulators; after selecting Chrome, the toolbar shows \"Chrome (web)\"."
       )
       if (deviceKind == "emulator") {
         // The IDE lists a running AVD by its name (e.g. "Medium Phone (mobile)"); Flutter's own name is "sdk gphone...".
@@ -104,11 +103,13 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
     }
   }
 
-  /** Stops the running app. The Stop action needs an IDE context, so focus the editor and use its shortcut. */
+  /** Stops the running app. The Stop action needs an IDE context, so invoke it with the editor as context. */
   private fun IdeaFrameUI.stopApp() {
     runCatching {
-      editorFor("main.dart").click()
-      keyboard { hotKey(KeyEvent.VK_CONTROL, KeyEvent.VK_F2) }
+      val editor = editorFor("main.dart")
+      editor.click()
+      // By action ID: the shortcut differs between keymaps (Ctrl+F2 vs. ⌘F2 on macOS).
+      driver.invokeAction("Stop", component = editor.component)
       Thread.sleep(3_000)
     }.onFailure { println("Could not stop the app (${it.message}); it stops when the IDE closes.") }
   }
@@ -145,16 +146,16 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
 
   private fun startEmulator() {
     val avd = avdName
-    println("Starting emulator $avd on DISPLAY=${System.getenv("DISPLAY")}")
+    println("Starting emulator $avd (display: ${Platform.displayMode.description})")
     WalkthroughSteps.step("Boot the Android emulator", "The Android emulator window for `$avd` opens and boots to the Android home screen.")
     emulator = ProcessBuilder(
-      "$androidHome/emulator/emulator", "-avd", avd,
+      Platform.androidEmulator, "-avd", avd,
       "-no-snapshot-save", "-no-boot-anim", "-no-audio", "-gpu", "swiftshader_indirect",
       // A previous unclean exit would otherwise show a crash-report dialog that blocks boot.
       "-crash-report-mode", "disabled", "-no-metrics",
     ).redirectErrorStream(true).redirectOutput(File(projectDir.parent.toFile(), "emulator-$avd.log")).start()
 
-    val adb = "$androidHome/platform-tools/adb"
+    val adb = Platform.adb
     exec(adb, "wait-for-device").waitFor(5, TimeUnit.MINUTES)
     val deadline = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5)
     while (System.currentTimeMillis() < deadline) {

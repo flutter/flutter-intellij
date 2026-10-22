@@ -6,8 +6,8 @@
 
 package io.flutter.integrationTest
 
+import com.intellij.driver.sdk.invokeAction
 import org.junit.jupiter.api.Test
-import java.awt.event.KeyEvent
 import kotlin.io.path.writeText
 
 /**
@@ -39,8 +39,9 @@ class StatelessWidgetLiveTemplateUITest : ExistingProjectUITest("live_template_t
       val editor = editorFor("greeting.dart")
       step("Type stless", "`stless` is typed at the end of the file; a completion popup may list the `stless` live template.")
       editor.click()
+      // Move to the end of the file by action ID: the shortcut differs between keymaps (Ctrl+End vs. ⌘↓ on macOS).
+      driver.invokeAction("EditorTextEnd", component = editor.component)
       keyboard {
-        hotKey(KeyEvent.VK_CONTROL, KeyEvent.VK_END)
         typeText("stless", 80)
       }
       Thread.sleep(1_000)
