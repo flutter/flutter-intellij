@@ -9,6 +9,9 @@ Automated UI tests that drive a real IntelliJ IDEA with the locally built Flutte
 of those tests as a step-by-step screenshot walkthrough** that a person can browse later to see what the plugin
 does and what to look for at each step.
 
+The tests are being written from the plugin's manual TestTracker test plan, one test case at a time, both to automate
+the plan and to get the test-writing and recording process (the skill) right before scaling up.
+
 ## Where the work lives
 
 | Item | Location |
@@ -18,7 +21,11 @@ does and what to look for at each step.
 | How to run them (for humans) | [`testSrc/integration/README.md`](../../testSrc/integration/README.md), "Running the Tests Yourself" |
 | Recording skill (for agents) | [`.agents/skills/record-test-walkthrough/SKILL.md`](../skills/record-test-walkthrough/SKILL.md) and its `scripts/` |
 | Recorded walkthroughs | `~/walkthroughs/` (outside the repo); `~/walkthroughs/index.html` lists them, older sets are in `archive-*/` |
+| Manual test plan being automated | TestTracker plan `157725` ("Flutter vNN Full Test Plan"); fetch cases with `sso_client` (see the skill) |
 | Downloaded test IDE | `build/out/ide-tests/` (IntelliJ IDEA 2026.2.3, build `262.10968.63`, about 1.6 GB) |
+
+Related worktree: `~/repos/flutter-intellij-xplat` on branch `cross-platform-ui-tests` (started 2026-10-22, for running
+the tests on Windows and macOS; separate from this branch).
 
 Related local branch: `external-ide-action-group-bgt`, a one-line change making
 `FlutterExternalIdeActionGroup.getActionUpdateThread()` return `BGT` (the group is unregistered in `plugin.xml`, so it
@@ -36,6 +43,8 @@ has no runtime effect). Also kept rebased on `main`.
 | `ExtractWidgetUITest` | Extract Flutter Widget on `Text('You have pushed...')` -> `CounterLabel` |
 | `StatelessWidgetLiveTemplateUITest` | Type `stless` + Tab in `lib/greeting.dart`, name it `Greeting` |
 | `RunAppAndHotReloadUITest` | Select a device, run, edit the title, hot reload, stop; `FLUTTER_TEST_DEVICE=chrome` (default) or `emulator` |
+| `DevToolsInspectorUITest` | TestTracker 1.2.2: debug on the emulator (default) or Chrome, open Flutter Inspector and Flutter DevTools from the right-hand bar, check each shows the embedded browser and no error label |
+| `ColorGutterPreviewUITest` | TestTracker 1.2.4: check gutter color previews by RGB, type incomplete color code, change blue to red, scan `idea.log` for `IndexOutOfBoundsException` from `io.flutter` |
 
 - All tests except `NewProjectIU262UITest` extend `ExistingProjectUITest`. It creates the project with
   `flutter create` (never the plugin's wizard), opens the IDE on it, waits for indexing, dismisses IDE interruption
@@ -44,6 +53,10 @@ has no runtime effect). Also kept rebased on `main`.
   notes. The recorder puts that text at the top of the walkthrough.
 - Tests announce each user-visible step with `WalkthroughSteps.step(title, expect)`. The recorder uses this to
   caption screenshots and show "What to look for", and pauses between steps while recording.
+- Shared helpers: `ExistingProjectUITest` also has `selectDevice`, `stopApp`, `context`, and `ideLogFile`;
+  `utils/AndroidEmulator` boots and stops the AVD; `utils/BrowserEngine` picks JxBrowser or JCEF
+  (`FLUTTER_TEST_BROWSER=auto|jxbrowser|jcef`); `utils/GutterColors` reads gutter color icons through `@Remote`
+  interfaces. Known gaps are `// TODO(radcliffc):` comments above each test's doc comment.
 
 ### Recorder (`.agents/skills/record-test-walkthrough/scripts/`)
 
@@ -63,10 +76,15 @@ has no runtime effect). Also kept rebased on `main`.
   is IntelliJ's licensing; see below.
 - **Dart plugin 509.0.0** for build 262. Dart 505 only supports builds up to 261. Dart 507+ replaced the
   `weberknecht` WebSocket classes; upstream already handles that.
-- **Never drive the IDE on the Wayland desktop.** Wayland blocks the synthetic input (`java.awt.Robot` via XTest)
-  that the Driver uses: the IDE opens, but clicks and keys never arrive. Tests run on a real X server instead:
-  Xvfb (headless), Xephyr (visible), or IDE Starter's own `xvfb-run` when `DISPLAY` is unset. `Setup.kt` forces
-  `-Dawt.toolkit.name=XToolkit` for the IDE.
+- **Displays: Xvfb, Xephyr, or the Wayland desktop through the RemoteDesktop portal.** `Setup.kt` forces
+  `-Dawt.toolkit.name=XToolkit`, so the IDE is always an X client. On Xvfb (headless), Xephyr (visible), or IDE
+  Starter's own `xvfb-run` (when `DISPLAY` is unset), the Driver's `java.awt.Robot` input works through XTest. On the
+  Wayland desktop the IDE runs on XWayland, which GNOME starts with `-enable-ei-portal`: synthetic input only arrives
+  through the xdg-desktop-portal RemoteDesktop interface. That's why clicks and keys used to go nowhere. Since
+  2026-10-22, `Setup.isWaylandDesktop()` (both `WAYLAND_DISPLAY` and `DISPLAY` set) adds
+  `-Dawt.robot.screenshotMethod=dbusRemoteDesktop`, so JBR's Robot uses the portal; GNOME asks once for permission.
+  This is not yet verified on Cory's desktop. The recorder always uses its own Xvfb/Xephyr display and unsets
+  `WAYLAND_DISPLAY`.
 - **`./gradlew --no-daemon`** for test runs, because daemons keep the environment they started with (`DISPLAY`,
   `FLUTTER_SDK`, ...).
 - **`build.gradle.kts` fixes for the `integration` task.**
@@ -83,6 +101,11 @@ has no runtime effect). Also kept rebased on `main`.
   - Per-step "What to look for", from the step announcements.
   - Screenshots flagged as possibly not useful (splash screen, IDE still drawing, trial promo tab, license screen,
     near-duplicates). They are highlighted, never removed automatically.
+- **Tests check real IDE state, not just screens.** Where the Driver can reach it, a test asserts on Swing components
+  and text, or on IDE objects through `@Remote` interfaces (gutter icon colors, settings), and on `idea.log`. What it
+  can't see (a web page inside an embedded browser) is left to the walkthrough and stated in the doc comment.
+- **One TestTracker case at a time.** Summarize the case and how it maps to the plugin, agree on the test design with
+  Cory, then write, record, and fix. Plugin bugs the tests find are recorded as TODOs, not fixed in passing.
 - **Walkthroughs are saved to a user-chosen folder, default `~/walkthroughs`.** The skill asks for it first, so
   recordings survive `./gradlew clean`, never get committed, and aren't tied to an agent conversation.
 
@@ -102,17 +125,39 @@ the trial, activate a license, or choose free, then record again. Agents must no
   unclean exit makes the next boot wait on a crash-report dialog. The test passes
   `-crash-report-mode disabled -no-metrics` to prevent that.
 - Chrome is at `/usr/bin/google-chrome` (used by the Chrome variant and for checking rendered walkthroughs).
-- Desktop session is Wayland, so use the recorder's `--mode visible` to watch tests live.
+- Desktop session is GNOME 49 on Wayland (Xwayland 24.1 with `-enable-ei-portal`). Watch tests live with the
+  recorder's `--mode visible`, or run them directly on the desktop (portal permission prompt on first use).
+- Agent sandbox: no network, no writes outside the workspace or to `.git`. Compile there with
+  `./gradlew --no-daemon --offline -Pkotlin.compiler.execution.strategy=in-process compileIntegrationKotlin`;
+  recording, committing, `sso_client`, and `tool/validate_skills.sh` run outside it. A Gradle build in another
+  worktree can hold the Gradle cache lock ("Timeout waiting to lock journal cache").
 
-## Status (2026-10-20)
+## Plugin bugs found by the tests
 
-- All six tests pass headless and visible. `RunAppAndHotReloadUITest` also passes on the Android emulator (visible).
-- The latest full set of 13 walkthroughs (with step pauses, flags, and license checks) is in `~/walkthroughs/`.
-  The license screen did not appear in any of those runs.
-- Next focus: `RunWidgetTestUITest`, one test at a time. Open options:
-  - Trim or collapse the 8 startup screenshots, 6 of which are flagged.
-  - Show more of the test runner (test tree, output).
-  - Use the gutter run icon instead of Ctrl+Shift+F10, add a failing test, or run in debug mode.
+| Found by | Problem | Status |
+|---|---|---|
+| `DevToolsInspectorUITest` | With "Enable JCEF browser" on IntelliJ 2026.2, the Inspector stays on "Installing DevTools..." and `idea.log` has `NoClassDefFoundError: com/intellij/ui/jcef/JBCefBrowser`. JCEF is a separate module in 262 (`com.intellij.modules.jcef`) and `plugin.xml` doesn't depend on it. | Open. Likely fix: an optional dependency on `com.intellij.modules.jcef`, with the `EmbeddedJcefBrowser` service in its config file. |
+| `ColorGutterPreviewUITest` | `final c = Colors.blue;` gets no gutter preview. `FlutterColorProvider.getColorFrom` skips the `Colors` token in a `VAR_INIT` to avoid a duplicate, then can't resolve `blue`. `Colors.x.shadeN`, `Color(...)`, `fromARGB(...)` work. | Open; the test uses a list literal instead. |
+
+Not a bug, but a limit: local builds have no JxBrowser license key (`resources/jxbrowser/jxbrowser.properties` is
+written only on Kokoro), so the Inspector and DevTools windows show "The JxBrowser license could not be found."
+
+## Status (2026-10-22)
+
+- All eight tests are committed. `ColorGutterPreviewUITest` passes headless. `DevToolsInspectorUITest` passes with
+  `FLUTTER_TEST_BROWSER=jxbrowser`, which only checks the license fallback; the test case's real pass condition
+  (DevTools loads with no errors) needs a JxBrowser license or the JCEF fix.
+- The skill now also covers writing tests from TestTracker cases, the Driver techniques, IntelliJ 2026.2 surprises
+  (the Ctrl+Y "Redo or Delete Line?" dialog, completion popups, tool window buttons that toggle), and running from an
+  agent.
+- Open options:
+  - Verify running on the Wayland desktop (portal permission).
+  - Fix the JCEF dependency, or get a JxBrowser license key for local builds, and finish `DevToolsInspectorUITest`.
+  - Improve the DevTools walkthrough: the emulator window is mostly hidden behind the IDE, and the emulator's
+    "nested virtualization" dialog and IDE notifications stay on screen.
+  - Automate more cases from plan `157725`.
+- Earlier focus, `RunWidgetTestUITest` (trim the startup screenshots, show more of the test runner, use the gutter
+  run icon), is on hold.
 
 ## Working rules for this branch
 
