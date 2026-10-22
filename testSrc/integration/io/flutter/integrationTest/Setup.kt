@@ -54,6 +54,13 @@ class Setup {
       }
     }
 
+    /**
+     * True when the IDE will be shown on the user's Wayland desktop (through XWayland), rather than on Xvfb, Xephyr,
+     * or IDE Starter's own `xvfb-run` (used when `DISPLAY` is unset).
+     */
+    fun isWaylandDesktop(): Boolean =
+      SystemInfo.isLinux && !System.getenv("WAYLAND_DISPLAY").isNullOrEmpty() && !System.getenv("DISPLAY").isNullOrEmpty()
+
     fun setupTestContextIC(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
       return setupTestContext(
         "", IdeProductProvider.IC.copy(
@@ -174,6 +181,14 @@ class Setup {
 
             // Force X11 (XWayland on Wayland sessions): the Driver's java.awt.Robot input does not work with JBR's native WLToolkit.
             addSystemProperty("awt.toolkit.name", "XToolkit")
+
+            // On a Wayland desktop the IDE runs on XWayland, which only accepts synthetic input (XTest) through the
+            // xdg-desktop-portal RemoteDesktop interface. Have java.awt.Robot use that portal directly: GNOME asks once
+            // to allow remote interaction, and the JDK keeps a restore token (~/.java/robot/) for later runs.
+            // On Xvfb or Xephyr (no WAYLAND_DISPLAY), plain XTest works and nothing changes.
+            if (isWaylandDesktop()) {
+              addSystemProperty("awt.robot.screenshotMethod", "dbusRemoteDesktop")
+            }
 
             // X11/Wayland compatibility
             addSystemProperty("sun.java2d.uiScale.enabled", false)
