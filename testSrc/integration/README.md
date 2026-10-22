@@ -24,29 +24,45 @@ UI like a user would.
 
 ### Prerequisites
 
-- Linux, with a Flutter SDK. Point `FLUTTER_SDK` at it (for example `export FLUTTER_SDK=~/develop/flutter`).
-- For recordings (optional): `xvfb`, `xserver-xephyr`, `x11-utils`, `imagemagick`, and `python3`.
+- Linux, Windows, or macOS, with a Flutter SDK. Point `FLUTTER_SDK` at it (for example
+  `export FLUTTER_SDK=~/develop/flutter`, or `$env:FLUTTER_SDK = "C:\path\to\flutter"` in PowerShell).
+- For recordings (optional, **Linux only**): `xvfb`, `xserver-xephyr`, `x11-utils`, `imagemagick`, and `python3`.
 - About 2 GB of disk for the first IDE download.
 
 ### Run one test
 
-From the repository root:
+From the repository root, on Linux:
 
 ```bash
 unset DISPLAY WAYLAND_DISPLAY
 ./gradlew --no-daemon integration --tests io.flutter.integrationTest.RunWidgetTestUITest
 ```
 
-- **Why `unset DISPLAY WAYLAND_DISPLAY`:** IDE Starter then runs the IDE on a hidden virtual display (Xvfb). On a
-  Wayland desktop, a test pointed at your real display opens the IDE, but its clicks and keystrokes never arrive,
-  because Wayland blocks synthetic input.
+On Windows (PowerShell):
+
+```powershell
+.\gradlew.bat --no-daemon integration --tests io.flutter.integrationTest.RunWidgetTestUITest
+```
+
+On macOS, run the same `./gradlew` command as on Linux, without the `unset` line.
+
+- **Why `unset DISPLAY WAYLAND_DISPLAY` (Linux):** IDE Starter then runs the IDE on a hidden virtual display (Xvfb).
+  On a Wayland desktop, a test pointed at your real display opens the IDE, but its clicks and keystrokes never
+  arrive, because Wayland blocks synthetic input.
+- **Windows and macOS have no hidden display:** the IDE opens on your desktop. Keep the desktop unlocked and don't
+  click or type in the IDE while the test runs.
 - **Why `--no-daemon`:** a running Gradle daemon keeps the environment it started with, so the test might not see
   `FLUTTER_SDK` or the display settings above.
 - A run takes about 2 to 3 minutes once the IDE is downloaded. The test result is in
   `build/reports/tests/integration/index.html`, and the IDE's own log is in
   `build/out/ide-tests/tests/<IDE build>/<TestName>/log/idea.log`.
+- On Windows, test projects are created under `%USERPROFILE%\ft` (a short path, to stay under the 260-character path
+  limit).
 
 ### Watch a test, or record it as a walkthrough
+
+Recording walkthroughs is supported on **Linux only**, so record on a Linux machine even if you develop on Windows
+or macOS. On Windows and macOS you can still watch a test, because it runs on your desktop.
 
 To see what a test does, use the walkthrough recorder. It runs the test on its own display and saves a step-by-step
 screenshot walkthrough (a single self-contained HTML page) to `~/walkthroughs/`:

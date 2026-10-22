@@ -12,15 +12,14 @@ import java.util.concurrent.TimeUnit
 /**
  * Boots and stops an Android emulator for UI tests that run a Flutter app on a device.
  *
- * The AVD is named by `FLUTTER_TEST_AVD` (default `Medium_Phone`) and the SDK is found through `ANDROID_HOME`
- * (default `~/Android/Sdk`). The emulator window opens on the test's `DISPLAY`, so it shows up in recordings.
+ * The AVD is named by `FLUTTER_TEST_AVD` (default `Medium_Phone`); the SDK is [Platform.androidSdk]. On Linux the
+ * emulator window opens on the test's `DISPLAY`, so it shows up in recordings.
  */
 class AndroidEmulator(
   val avdName: String = System.getenv("FLUTTER_TEST_AVD") ?: "Medium_Phone",
-  private val androidHome: String = System.getenv("ANDROID_HOME") ?: "${System.getProperty("user.home")}/Android/Sdk",
 ) {
   private var process: Process? = null
-  private val adb get() = "$androidHome/platform-tools/adb"
+  private val adb get() = Platform.adb
 
   /**
    * Names the IDE's device selector may show for this emulator. A running AVD is listed by its name (for example
@@ -30,10 +29,10 @@ class AndroidEmulator(
 
   /** Starts the emulator and waits until Android has finished booting. Logs go to `emulator-<avd>.log` in [logDir]. */
   fun start(logDir: File) {
-    println("Starting emulator $avdName on DISPLAY=${System.getenv("DISPLAY")}")
+    println("Starting emulator $avdName (display: ${Platform.displayMode.description})")
     WalkthroughSteps.step("Boot the Android emulator", "The Android emulator window for `$avdName` opens and boots to the Android home screen.")
     process = ProcessBuilder(
-      "$androidHome/emulator/emulator", "-avd", avdName,
+      Platform.androidEmulator, "-avd", avdName,
       "-no-snapshot-save", "-no-boot-anim", "-no-audio", "-gpu", "swiftshader_indirect",
       // A previous unclean exit would otherwise show a crash-report dialog that blocks boot.
       "-crash-report-mode", "disabled", "-no-metrics",

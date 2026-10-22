@@ -20,6 +20,7 @@ import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.ide.starter.utils.Git
 import com.intellij.openapi.util.SystemInfo
+import io.flutter.integrationTest.utils.Platform
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.nio.file.Paths
@@ -58,8 +59,7 @@ class Setup {
      * True when the IDE will be shown on the user's Wayland desktop (through XWayland), rather than on Xvfb, Xephyr,
      * or IDE Starter's own `xvfb-run` (used when `DISPLAY` is unset).
      */
-    fun isWaylandDesktop(): Boolean =
-      SystemInfo.isLinux && !System.getenv("WAYLAND_DISPLAY").isNullOrEmpty() && !System.getenv("DISPLAY").isNullOrEmpty()
+    fun isWaylandDesktop(): Boolean = Platform.displayMode == Platform.DisplayMode.LINUX_WAYLAND_DESKTOP
 
     fun setupTestContextIC(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
       return setupTestContext(

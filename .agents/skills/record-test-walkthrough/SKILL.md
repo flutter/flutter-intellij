@@ -17,6 +17,9 @@ The automated test is what runs; the recorder only provides a display for it and
 ## Prerequisites
 
 - Linux with `xvfb` (headless), `xserver-xephyr` (visible), `x11-utils` (`xdpyinfo`), `imagemagick` (`import`, `convert`, `compare`) and `python3`.
+  Recording is **Linux only**. The tests themselves also run on Windows and macOS, but if the user asks to record
+  there, tell them to record on a Linux machine instead. A cross-platform recorder is planned follow-up work; see
+  [the design doc](../../design-docs/integration-ui-tests-and-walkthroughs.md#follow-up-recording-on-windows-and-macos).
 - An automated test that shows UI on `$DISPLAY`, with a doc comment that explains what it shows (see
   [Test summary](#test-summary)). For IDE Starter tests:
   - The test must run in a fresh JVM with the environment passed through. `--test` uses `./gradlew --no-daemon`.
@@ -272,8 +275,9 @@ To automate one test case:
 
 | Helper | What it gives you |
 |---|---|
-| `ExistingProjectUITest` | Creates the project with `flutter create`, starts the IDE (`startIdeOnProject()`), waits for indexing, and deletes the project afterwards. Also: `openProjectFile`, `inFrame { }`, `editorFor`, `allEditorText`, `waitForConsoleText`, `waitUntil` (dismisses IDE interruption dialogs while polling), `selectDevice`, `stopApp`, `context` (IDE Starter context) and `ideLogFile` (this run's `idea.log`). Override `prepareProject()` to change the project or boot a device before the IDE opens. |
-| `utils/AndroidEmulator` | `start(logDir)` boots the AVD from `FLUTTER_TEST_AVD` (default `Medium_Phone`) on the test's display; `stop()` uses `adb emu kill`; `deviceSelectorNames` for `selectDevice`. |
+| `ExistingProjectUITest` | Creates the project with `flutter create`, starts the IDE (`startIdeOnProject()`), waits for indexing, and deletes the project afterwards. Also: `openProjectFile`, `inFrame { }`, `editorFor`, `allEditorText`, `waitForConsoleText`, `waitUntil` (dismisses IDE interruption dialogs while polling), `selectDevice`, `stopApp` (clicks an enabled Stop button), `context` (IDE Starter context) and `ideLogFile` (this run's `idea.log`). Override `prepareProject()` to change the project or boot a device before the IDE opens. |
+| `utils/Platform` | Everything that differs between Linux, macOS, and Windows: `displayMode`, `flutterExecutable`, `androidSdk`, `adb`, `androidEmulator`, `testProjectsDir`, `deleteRecursively`. Tests must not check the OS themselves; add what they need here. |
+| `utils/AndroidEmulator` | `start(logDir)` boots the AVD from `FLUTTER_TEST_AVD` (default `Medium_Phone`) with `Platform.androidEmulator` (on Linux, on the test's display); `stop()` uses `adb emu kill`; `deviceSelectorNames` for `selectDevice`. |
 | `utils/BrowserEngine` | `FLUTTER_TEST_BROWSER=auto\|jxbrowser\|jcef` picks the embedded browser for Inspector/DevTools windows; `applyTo(driver)` flips the plugin's "Enable JCEF browser" setting in the running IDE. `pluginHasJxBrowserLicense()` checks the plugin under test. |
 | `utils/GutterColors` | `editor.gutterColors()` returns the color preview icons in an editor's gutter as `line -> [0xRRGGBB]`. |
 | `utils/WalkthroughSteps` | `step(title, expect)` for walkthrough captions; see [Per-step expectations](#per-step-expectations). |

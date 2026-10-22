@@ -20,6 +20,7 @@ import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.project.LocalProjectInfo
+import io.flutter.integrationTest.utils.Platform
 import io.flutter.integrationTest.utils.WalkthroughSteps
 import io.flutter.integrationTest.utils.createFlutterProjectWithCli
 import io.flutter.integrationTest.utils.deleteFlutterProject
@@ -28,7 +29,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.TestInstance
-import java.awt.event.KeyEvent
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.time.Duration
@@ -47,7 +47,7 @@ import kotlin.time.Duration.Companion.seconds
 abstract class ExistingProjectUITest(private val packageName: String) {
 
   private val projectFolder = "${packageName}_${System.currentTimeMillis()}"
-  private val parentDir: String = System.getProperty("java.io.tmpdir")
+  private val parentDir: String = Platform.testProjectsDir.toString()
 
   /** Root of the test project on disk. */
   protected val projectDir: Path = Paths.get(parentDir, projectFolder)
@@ -100,6 +100,7 @@ abstract class ExistingProjectUITest(private val packageName: String) {
 
   /** Starts the IDE on [projectDir] and waits until the project is open and indexed. */
   protected fun startIdeOnProject() {
+    println(Platform.describe())
     println("Opening existing project $projectDir")
     step(
       "Open the existing Flutter project",
@@ -194,12 +195,19 @@ abstract class ExistingProjectUITest(private val packageName: String) {
     println("Selected device: ${selector.getAllTexts().joinToString("") { it.text }}")
   }
 
-  /** Stops the running app. The Stop action needs an IDE context, so focus the editor and use its shortcut. */
-  protected fun IdeaFrameUI.stopApp(fileName: String = "main.dart") {
+  /**
+   * Stops the running app by clicking a Stop button (in the toolbar or the Run/Debug tool window), like a user would.
+   * The Stop shortcut differs between keymaps (Ctrl+F2 vs. ⌘F2 on macOS), and invoking the `Stop` action with the
+   * editor as context is rejected as disabled.
+   */
+  protected fun IdeaFrameUI.stopApp() {
     runCatching {
-      editorFor(fileName).click()
-      keyboard { hotKey(KeyEvent.VK_CONTROL, KeyEvent.VK_F2) }
+      val stop = xx("//div[@class='ActionButton' and @myicon='stop.svg']").list().firstOrNull { it.isEnabled() }
+                 ?: error("no enabled Stop button")
+      stop.click()
       Thread.sleep(3_000)
+      val stillRunning = xx("//div[@class='ActionButton' and @myicon='stop.svg']").list().any { it.isEnabled() }
+      println(if (stillRunning) "Clicked Stop, but a Stop button is still enabled" else "App stopped")
     }.onFailure { println("Could not stop the app (${it.message}); it stops when the IDE closes.") }
   }
 

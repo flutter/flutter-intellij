@@ -7,8 +7,8 @@
 package io.flutter.integrationTest
 
 import com.intellij.driver.model.RemoteMouseButton
+import com.intellij.driver.sdk.invokeAction
 import org.junit.jupiter.api.Test
-import java.awt.event.KeyEvent
 import kotlin.time.Duration.Companion.minutes
 
 /**
@@ -17,8 +17,8 @@ import kotlin.time.Duration.Companion.minutes
  * Steps:
  * 1. IntelliJ IDEA opens an existing Flutter app (created with `flutter create`).
  * 2. Open `test/widget_test.dart` and put the caret on `testWidgets`.
- * 3. Press Ctrl+Shift+F10 (Run context configuration). The plugin creates a Flutter test run configuration and
- *    runs `flutter test` for that test.
+ * 3. Run Context Configuration (Ctrl+Shift+F10, or ⌃⇧R on macOS). The plugin creates a Flutter test run
+ *    configuration and runs `flutter test` for that test.
  * 4. The Run tool window shows the test tree and progress.
  *
  * Expected result: the test runner reports "1 test passed" for the "Counter increments smoke test". No device or
@@ -34,9 +34,10 @@ class RunWidgetTestUITest : ExistingProjectUITest("run_widget_test") {
 
     inFrame {
       val editor = editorFor("widget_test.dart")
-      step("Run the test from the editor", "The caret is on `testWidgets`; Ctrl+Shift+F10 starts a Flutter test run configuration named after the test.")
+      step("Run the test from the editor", "The caret is on `testWidgets`; Run Context Configuration (Ctrl+Shift+F10, or ⌃⇧R on macOS) starts a Flutter test run configuration named after the test.")
       editor.clickOn("testWidgets", RemoteMouseButton.LEFT, 1)
-      keyboard { hotKey(KeyEvent.VK_CONTROL, KeyEvent.VK_SHIFT, KeyEvent.VK_F10) }
+      // Invoke the action by ID rather than pressing its shortcut, which differs between keymaps (macOS vs. others).
+      driver.invokeAction("RunClass", now = false, component = editor.component)
 
       step(
         "Watch the test runner",

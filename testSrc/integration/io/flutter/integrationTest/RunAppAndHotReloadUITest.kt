@@ -56,7 +56,7 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
       step(
         "Select the device",
         if (deviceKind == "emulator") "The device selector popup lists the running emulator as \"Medium Phone (mobile)\"; after selecting it, the toolbar shows that device."
-        else "The device selector popup lists Chrome (web), Linux (desktop), and any emulators; after selecting Chrome, the toolbar shows \"Chrome (web)\"."
+        else "The device selector popup lists Chrome (web), this computer's desktop device (Linux, macOS, or Windows), and any emulators; after selecting Chrome, the toolbar shows \"Chrome (web)\"."
       )
       if (deviceKind == "emulator") {
         selectDevice(*emulator.deviceSelectorNames.toTypedArray())

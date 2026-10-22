@@ -121,19 +121,16 @@ fun createFlutterProjectWithCli(
   projectName: String = "test_project",
   directory: String = System.getProperty("java.io.tmpdir")
 ) {
-  val flutterSdk = System.getenv("FLUTTER_SDK")
-    ?: throw IllegalStateException("FLUTTER_SDK environment variable not set")
-  val flutterExe = Paths.get(flutterSdk, "bin", "flutter").toString()
-
   println("Creating project $testProjectName in $directory")
-  val process = ProcessBuilder(flutterExe, "create", "--project-name", projectName, testProjectName)
+  val process = ProcessBuilder(Platform.flutterExecutable, "create", "--project-name", projectName, testProjectName)
     .directory(java.io.File(directory))
     .redirectErrorStream(true)
     .start()
 
+  // Read the output before waiting, so a full pipe buffer can't block the process.
+  val output = process.inputStream.bufferedReader().readText()
   val exitCode = process.waitFor()
   if (exitCode != 0) {
-    val output = process.inputStream.bufferedReader().readText()
     throw IllegalStateException("flutter create failed: $output")
   }
 }
@@ -152,8 +149,9 @@ fun deleteFlutterProject(
     val projectPath = Paths.get(directory, testProjectName)
     val projectFile = projectPath.toFile()
     if (projectFile.exists()) {
-      projectFile.deleteRecursively()
-      println("Successfully deleted test folder: $projectPath")
+      if (Platform.deleteRecursively(projectFile)) {
+        println("Successfully deleted test folder: $projectPath")
+      }
     } else {
       println("Test folder does not exist, skipping cleanup: $projectPath")
     }
