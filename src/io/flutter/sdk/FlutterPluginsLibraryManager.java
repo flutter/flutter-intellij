@@ -19,7 +19,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileContentsChangedAdapter;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.concurrency.AppExecutorUtil;
-import io.flutter.dart.FlutterDartAnalysisServer;
+import io.flutter.FlutterProjectDisposable;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import org.jetbrains.annotations.NotNull;
@@ -55,7 +55,7 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
       @Override
       protected void onBeforeFileChange(@NotNull VirtualFile file) {
       }
-    }, FlutterDartAnalysisServer.getInstance(project));
+    }, FlutterProjectDisposable.getInstance(project));
 
     project.getMessageBus().connect().subscribe(ModuleRootListener.TOPIC, new ModuleRootListener() {
       @Override
@@ -111,7 +111,7 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
     Project project = getProject();
 
     ReadAction.nonBlocking(() -> getFlutterPluginPaths(PubRoots.forProject(project)))
-      .expireWith(FlutterDartAnalysisServer.getInstance(project))
+      .expireWith(FlutterProjectDisposable.getInstance(project))
       .coalesceBy(this)
       .finishOnUiThread(ModalityState.nonModal(), flutterPluginPaths -> {
         final Set<String> flutterPluginUrls = new HashSet<>();

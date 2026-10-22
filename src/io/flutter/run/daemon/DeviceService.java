@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.intellij.concurrency.JobScheduler;
 import com.intellij.execution.ExecutionException;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -18,7 +19,6 @@ import com.intellij.openapi.roots.ex.ProjectRootManagerEx;
 import com.intellij.openapi.util.Disposer;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
-import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.logging.PluginLogger;
 import io.flutter.run.FlutterDevice;
 import io.flutter.sdk.AndroidEmulatorManager;
@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Provides the list of available devices (mobile phones or emulators) that appears in the dropdown menu.
  */
-public class DeviceService {
+public class DeviceService implements Disposable {
   @NotNull private final Project project;
 
   /**
@@ -63,7 +63,7 @@ public class DeviceService {
   private DeviceService(@NotNull final Project project) {
     this.project = project;
 
-    deviceDaemon.setDisposeParent(FlutterDartAnalysisServer.getInstance(project));
+    deviceDaemon.setDisposeParent(this);
     deviceDaemon.subscribe(this::refreshDeviceSelection);
     refreshDeviceDaemon();
 
@@ -79,12 +79,16 @@ public class DeviceService {
         refreshDeviceDaemon();
       }
     };
-    FlutterSdkManager.getInstance(project).addListener(sdkListener);
-    Disposer.register(FlutterDartAnalysisServer.getInstance(project),
-                      () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
+    final FlutterSdkManager sdkManager = FlutterSdkManager.getInstance(project);
+    sdkManager.addListener(sdkListener);
+    Disposer.register(this, () -> sdkManager.removeListener(sdkListener));
 
     // Watch for Java SDK changes. (Used to get the value of ANDROID_HOME.)
     ProjectRootManagerEx.getInstanceEx(project).addProjectJdkListener(this::refreshDeviceDaemon);
+  }
+
+  @Override
+  public void dispose() {
   }
 
   /**
