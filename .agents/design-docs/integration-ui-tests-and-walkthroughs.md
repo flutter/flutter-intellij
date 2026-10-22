@@ -31,7 +31,7 @@ has no runtime effect). Also kept rebased on `main`.
 | Test | Flow |
 |---|---|
 | `NewProjectIU262UITest` | Welcome screen -> New Project -> Flutter -> Next -> name -> Create -> project opens |
-| `PubGetUITest` | Add `args: any` to `pubspec.yaml`, run Flutter Pub Get, check `pubspec.lock` |
+| `PubGetUITest` | Add `http: ^1.2.0` to `pubspec.yaml`, run Flutter Pub Get, check `pubspec.lock`, `package_config.json`, and the pub cache |
 | `RunWidgetTestUITest` | Run `test/widget_test.dart` from the editor (Ctrl+Shift+F10), wait for "1 test passed" |
 | `ExtractWidgetUITest` | Extract Flutter Widget on `Text('You have pushed...')` -> `CounterLabel` |
 | `StatelessWidgetLiveTemplateUITest` | Type `stless` + Tab in `lib/greeting.dart`, name it `Greeting` |
