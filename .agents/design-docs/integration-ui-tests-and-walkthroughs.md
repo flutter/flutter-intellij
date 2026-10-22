@@ -16,7 +16,7 @@ the plan and to get the test-writing and recording process (the skill) right bef
 
 | Item | Location |
 |---|---|
-| Branch (local only, never pushed) | `integration-test-iu262` in `~/repos/flutter-intellij-working`, kept rebased on `main` |
+| Branch (not pushed; never sent for review) | `integration-test-iu262` in `~/repos/flutter-intellij-working`, kept up to date with `main` by merging (it contains the merge of `cross-platform-ui-tests`) |
 | UI tests | `testSrc/integration/io/flutter/integrationTest/` |
 | How to run them (for humans) | [`testSrc/integration/README.md`](../../testSrc/integration/README.md), "Running the Tests Yourself" |
 | Recording skill (for agents) | [`.agents/skills/record-test-walkthrough/SKILL.md`](../skills/record-test-walkthrough/SKILL.md) and its `scripts/` |
@@ -173,10 +173,15 @@ written only on Kokoro), so the Inspector and DevTools windows show "The JxBrows
 
 ## Working rules for this branch
 
-- Local only: don't push, don't send for review.
-- Keep `integration-test-iu262` (and `external-ide-action-group-bgt`) rebased on `main`:
-  `git switch integration-test-iu262 && git rebase main`. When `main` moves forward (for example after syncing the
-  fork with `upstream/main`), rebase again.
+- Never send for review. Push only when Cory asks, and only to his fork (`origin`,
+  `cj-radcliff/flutter-intellij-working`); Cory pushed `cross-platform-ui-tests` there to test on Windows.
+- Keep `integration-test-iu262` up to date with `main` by **merging**, not rebasing: it contains the merge of
+  `cross-platform-ui-tests` (2026-10-22), which a rebase would flatten or replay, and that branch is already pushed.
+  `git switch integration-test-iu262 && git merge main` whenever `main` moves forward (for example after syncing the
+  fork with `upstream/main`).
+- Bring later work from `cross-platform-ui-tests` in the same way: `git merge cross-platform-ui-tests`.
+- `external-ide-action-group-bgt` has no merges and stays rebased on `main`: `git switch external-ide-action-group-bgt
+  && git rebase main`.
 - Commit with descriptive messages; validate the skill with `tool/validate_skills.sh` (needs `dart` on `PATH`) and
   compile tests with `./gradlew --no-daemon compileIntegrationKotlin`.
 
