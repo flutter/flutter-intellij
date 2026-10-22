@@ -18,6 +18,7 @@ import com.intellij.driver.sdk.waitFor
 import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
+import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.project.LocalProjectInfo
 import io.flutter.integrationTest.utils.WalkthroughSteps
 import io.flutter.integrationTest.utils.createFlutterProjectWithCli
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.TestInstance
+import java.awt.event.KeyEvent
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.time.Duration
@@ -51,6 +53,13 @@ abstract class ExistingProjectUITest(private val packageName: String) {
   protected val projectDir: Path = Paths.get(parentDir, projectFolder)
 
   protected lateinit var run: BackgroundRun
+
+  /** The IDE Starter context of the running IDE (paths, VM options). */
+  protected lateinit var context: IDETestContext
+
+  /** This run's IDE log. IDE Starter starts each test with a fresh test home, so it only covers this run. */
+  protected val ideLogFile: Path
+    get() = context.paths.testHome.resolve("log").resolve("idea.log")
 
   protected val driver: Driver
     get() = run.driver
@@ -97,7 +106,8 @@ abstract class ExistingProjectUITest(private val packageName: String) {
       "IntelliJ IDEA starts (splash screen), then opens the project created with `flutter create`. " +
       "The Project view shows its files and the status bar shows indexing until it finishes."
     )
-    run = Setup.setupTestContextIU262(javaClass.simpleName, LocalProjectInfo(projectDir)).runIdeWithDriver()
+    context = Setup.setupTestContextIU262(javaClass.simpleName, LocalProjectInfo(projectDir))
+    run = context.runIdeWithDriver()
     waitForProjectReady()
   }
 
@@ -152,6 +162,45 @@ abstract class ExistingProjectUITest(private val packageName: String) {
       dismissInterruptions()
       condition()
     }
+  }
+
+  /** Opens the Flutter device selector and clicks the device whose name starts with one of [names]. */
+  protected fun IdeaFrameUI.selectDevice(vararg names: String) {
+    fun String.matches() = names.any { startsWith(it, ignoreCase = true) }
+    val selector = x(
+      "//div[@class='JBLabel' and (contains(@text, '(desktop)') or contains(@text, '(web)') or " +
+      "contains(@text, '(mobile)') or contains(@text, 'device') or contains(@text, 'Device'))]"
+    )
+    var attempt = 0
+    waitUntil("device ${names.toList()} to be selected", timeout = 3.minutes) {
+      if (selector.getAllTexts().any { it.text.matches() }) return@waitUntil true
+      val name = names[attempt++ % names.size]
+      selector.click()
+      Thread.sleep(1_000)
+      // Use the popup's speed search. If nothing matches (the device daemon may not have listed the device yet, or
+      // the name differs), close the popup so the typed text can't land in the editor, and try the next name.
+      keyboard { typeText(name, 50) }
+      Thread.sleep(1_000)
+      if (x("//div[contains(@visible_text, 'Nothing to show')]").present() ||
+          driver.ui.xx("//div[contains(@visible_text, 'Nothing to show')]").list().isNotEmpty()) {
+        keyboard { escape() }
+      }
+      else {
+        keyboard { enter() }
+      }
+      Thread.sleep(2_000)
+      selector.getAllTexts().any { it.text.matches() }
+    }
+    println("Selected device: ${selector.getAllTexts().joinToString("") { it.text }}")
+  }
+
+  /** Stops the running app. The Stop action needs an IDE context, so focus the editor and use its shortcut. */
+  protected fun IdeaFrameUI.stopApp(fileName: String = "main.dart") {
+    runCatching {
+      editorFor(fileName).click()
+      keyboard { hotKey(KeyEvent.VK_CONTROL, KeyEvent.VK_F2) }
+      Thread.sleep(3_000)
+    }.onFailure { println("Could not stop the app (${it.message}); it stops when the IDE closes.") }
   }
 
   private fun waitForProjectReady(attempts: Int = 3) {

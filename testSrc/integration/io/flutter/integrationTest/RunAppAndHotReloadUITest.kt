@@ -7,14 +7,9 @@
 package io.flutter.integrationTest
 
 import com.intellij.driver.sdk.invokeAction
-import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
-import com.intellij.driver.sdk.ui.ui
-import io.flutter.integrationTest.utils.WalkthroughSteps
+import io.flutter.integrationTest.utils.AndroidEmulator
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
-import java.awt.event.KeyEvent
-import java.io.File
-import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.minutes
 
 /**
@@ -42,21 +37,14 @@ import kotlin.time.Duration.Companion.minutes
 class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
 
   private val deviceKind = System.getenv("FLUTTER_TEST_DEVICE") ?: "chrome"
-  private val avdName = System.getenv("FLUTTER_TEST_AVD") ?: "Medium_Phone"
-  private val androidHome = System.getenv("ANDROID_HOME") ?: "${System.getProperty("user.home")}/Android/Sdk"
-  private var emulator: Process? = null
+  private val emulator = AndroidEmulator()
 
   override fun prepareProject() {
-    if (deviceKind == "emulator") startEmulator()
+    if (deviceKind == "emulator") emulator.start(projectDir.parent.toFile())
   }
 
   @AfterAll
-  fun stopEmulator() {
-    emulator?.let {
-      runCatching { exec("$androidHome/platform-tools/adb", "emu", "kill").waitFor(30, TimeUnit.SECONDS) }
-      it.destroy()
-    }
-  }
+  fun stopEmulator() = emulator.stop()
 
   @Test
   fun runEditAndHotReload() {
@@ -71,8 +59,7 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
         else "The device selector popup lists Chrome (web), Linux (desktop), and any emulators; after selecting Chrome, the toolbar shows \"Chrome (web)\"."
       )
       if (deviceKind == "emulator") {
-        // The IDE lists a running AVD by its name (e.g. "Medium Phone (mobile)"); Flutter's own name is "sdk gphone...".
-        selectDevice(avdName.replace('_', ' '), "sdk gphone")
+        selectDevice(*emulator.deviceSelectorNames.toTypedArray())
       }
       else {
         selectDevice("Chrome")
@@ -103,70 +90,4 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
       stopApp()
     }
   }
-
-  /** Stops the running app. The Stop action needs an IDE context, so focus the editor and use its shortcut. */
-  private fun IdeaFrameUI.stopApp() {
-    runCatching {
-      editorFor("main.dart").click()
-      keyboard { hotKey(KeyEvent.VK_CONTROL, KeyEvent.VK_F2) }
-      Thread.sleep(3_000)
-    }.onFailure { println("Could not stop the app (${it.message}); it stops when the IDE closes.") }
-  }
-
-  /** Opens the Flutter device selector and clicks the device whose name starts with one of [names]. */
-  private fun IdeaFrameUI.selectDevice(vararg names: String) {
-    fun String.matches() = names.any { startsWith(it, ignoreCase = true) }
-    val selector = x(
-      "//div[@class='JBLabel' and (contains(@text, '(desktop)') or contains(@text, '(web)') or " +
-      "contains(@text, '(mobile)') or contains(@text, 'device') or contains(@text, 'Device'))]"
-    )
-    var attempt = 0
-    waitUntil("device ${names.toList()} to be selected", timeout = 3.minutes) {
-      if (selector.getAllTexts().any { it.text.matches() }) return@waitUntil true
-      val name = names[attempt++ % names.size]
-      selector.click()
-      Thread.sleep(1_000)
-      // Use the popup's speed search. If nothing matches (the device daemon may not have listed the device yet, or
-      // the name differs), close the popup so the typed text can't land in the editor, and try the next name.
-      keyboard { typeText(name, 50) }
-      Thread.sleep(1_000)
-      if (x("//div[contains(@visible_text, 'Nothing to show')]").present() ||
-          driver.ui.xx("//div[contains(@visible_text, 'Nothing to show')]").list().isNotEmpty()) {
-        keyboard { escape() }
-      }
-      else {
-        keyboard { enter() }
-      }
-      Thread.sleep(2_000)
-      selector.getAllTexts().any { it.text.matches() }
-    }
-    println("Selected device: ${selector.getAllTexts().joinToString("") { it.text }}")
-  }
-
-  private fun startEmulator() {
-    val avd = avdName
-    println("Starting emulator $avd on DISPLAY=${System.getenv("DISPLAY")}")
-    WalkthroughSteps.step("Boot the Android emulator", "The Android emulator window for `$avd` opens and boots to the Android home screen.")
-    emulator = ProcessBuilder(
-      "$androidHome/emulator/emulator", "-avd", avd,
-      "-no-snapshot-save", "-no-boot-anim", "-no-audio", "-gpu", "swiftshader_indirect",
-      // A previous unclean exit would otherwise show a crash-report dialog that blocks boot.
-      "-crash-report-mode", "disabled", "-no-metrics",
-    ).redirectErrorStream(true).redirectOutput(File(projectDir.parent.toFile(), "emulator-$avd.log")).start()
-
-    val adb = "$androidHome/platform-tools/adb"
-    exec(adb, "wait-for-device").waitFor(5, TimeUnit.MINUTES)
-    val deadline = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5)
-    while (System.currentTimeMillis() < deadline) {
-      val booted = exec(adb, "shell", "getprop", "sys.boot_completed").inputStream.bufferedReader().readText().trim()
-      if (booted == "1") {
-        println("Emulator booted")
-        return
-      }
-      Thread.sleep(3_000)
-    }
-    error("Emulator $avd did not finish booting")
-  }
-
-  private fun exec(vararg command: String): Process = ProcessBuilder(*command).redirectErrorStream(true).start()
 }
