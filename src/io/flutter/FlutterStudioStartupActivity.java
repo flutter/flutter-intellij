@@ -13,7 +13,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.concurrency.AppExecutorUtil;
-import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.logging.PluginLogger;
 import io.flutter.utils.AddToAppUtils;
 import io.flutter.utils.AndroidUtils;
@@ -44,7 +43,7 @@ public class FlutterStudioStartupActivity extends FlutterProjectActivity {
 
   @Override
   public void executeProjectStartup(@NotNull Project project) {
-    ReadAction.nonBlocking(() -> doNonBlockingStartup(project)).expireWith(FlutterDartAnalysisServer.getInstance(project))
+    ReadAction.nonBlocking(() -> doNonBlockingStartup(project)).expireWith(FlutterProjectDisposable.getInstance(project))
       .submit(AppExecutorUtil.getAppExecutorService());
 
     if (!FlutterModuleUtils.declaresFlutter(project)) {

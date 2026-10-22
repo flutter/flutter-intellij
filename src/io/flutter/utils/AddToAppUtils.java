@@ -21,9 +21,9 @@ import com.intellij.openapi.project.ProjectTypeService;
 import com.intellij.util.ThreeState;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.messages.MessageBusConnection;
+import io.flutter.FlutterProjectDisposable;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.AttachDebuggerAction;
-import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.SdkAttachConfig;
 import io.flutter.sdk.FlutterSdk;
@@ -47,7 +47,7 @@ public class AddToAppUtils {
     // Sometime since then, the field has gone away entirely and we are not getting these notifications.
     // TODO(pq): 5/23/25  Asses whether we want to try and restore this logic
 
-    MessageBusConnection connection = project.getMessageBus().connect(FlutterDartAnalysisServer.getInstance(project));
+    MessageBusConnection connection = project.getMessageBus().connect(FlutterProjectDisposable.getInstance(project));
 
     if (!FlutterModuleUtils.hasFlutterModule(project)) {
       connection.subscribe(ModuleListener.TOPIC, new ModuleListener() {

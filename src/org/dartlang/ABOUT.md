@@ -2,10 +2,11 @@
 # Dartlang Integration
 
 ## Overview
-Structural package for Dart language integration and analysis.
+Structural package for Dart language and VM integration.
 
 ## Interface
 - `./analysis/ABOUT.md`
+- `./vm/ABOUT.md`
 
 ## Invariants
 - This is a structural directory containing no direct implementation files.
