@@ -52,4 +52,28 @@ public class FlutterConsoleFoldingTest extends FlutterCodeInsightFixtureTestCase
   public void testPlaceholderWithoutMarkerIsTrimmedText() {
     assertEquals("some other line", folding.getPlaceholderText(getProject(), List.of("  some other line  ")));
   }
+
+  //Windows tests
+  private static final String WINDOWS_FLUTTER_PATH =
+    "C:\\Users\\me\\flutter\\bin\\" + FlutterSdkUtil.flutterScriptName();
+
+  public void testFoldsWindowsStyleCommandLine() {
+    assertTrue(folding.shouldFoldLine(getProject(), WINDOWS_FLUTTER_PATH + " pub get"));
+  }
+
+  public void testDoesNotFoldSimilarlyNamedWindowsExecutable() {
+    assertFalse(folding.shouldFoldLine(getProject(), "C:\\Users\\me\\flutter\\bin\\flutter_tools pub get"));
+  }
+
+  public void testDoesNotFoldWhenTextPrecedesWindowsPath() {
+    assertFalse(folding.shouldFoldLine(getProject(), "Running " + WINDOWS_FLUTTER_PATH + " pub get"));
+  }
+
+  public void testWindowsPlaceholderShowsShortCommand() {
+    final String line = WINDOWS_FLUTTER_PATH + " run --machine --start-paused --device-id=windows lib\\main.dart";
+
+    assertEquals(
+      "flutter run --device-id=windows lib\\main.dart",
+      folding.getPlaceholderText(getProject(), List.of(line)));
+  }
 }
