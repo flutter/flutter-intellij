@@ -103,14 +103,19 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
     }
   }
 
-  /** Stops the running app. The Stop action needs an IDE context, so invoke it with the editor as context. */
+  /**
+   * Stops the running app by clicking a Stop button (in the toolbar or the Run tool window), like a user would.
+   * The Stop shortcut differs between keymaps (Ctrl+F2 vs. ⌘F2 on macOS), and invoking the `Stop` action with the
+   * editor as context is rejected as disabled.
+   */
   private fun IdeaFrameUI.stopApp() {
     runCatching {
-      val editor = editorFor("main.dart")
-      editor.click()
-      // By action ID: the shortcut differs between keymaps (Ctrl+F2 vs. ⌘F2 on macOS).
-      driver.invokeAction("Stop", component = editor.component)
+      val stop = xx("//div[@class='ActionButton' and @myicon='stop.svg']").list().firstOrNull { it.isEnabled() }
+                 ?: error("no enabled Stop button")
+      stop.click()
       Thread.sleep(3_000)
+      val stillRunning = xx("//div[@class='ActionButton' and @myicon='stop.svg']").list().any { it.isEnabled() }
+      println(if (stillRunning) "Clicked Stop, but a Stop button is still enabled" else "App stopped")
     }.onFailure { println("Could not stop the app (${it.message}); it stops when the IDE closes.") }
   }
 
