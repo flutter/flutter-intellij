@@ -1,12 +1,13 @@
 ---
 name: record-test-walkthrough
-description: Record any automated UI test (for example an IntelliJ IDE Starter integration test) as a step-by-step screenshot walkthrough, running headless under Xvfb or visibly in a Xephyr window, and save it as a self-contained HTML page and Markdown.
+description: Write IntelliJ IDE Starter UI tests for the Flutter plugin (for example from TestTracker test cases) and record any automated UI test as a step-by-step screenshot walkthrough, running headless under Xvfb, visibly in a Xephyr window, or on the Wayland desktop, saved as a self-contained HTML page and Markdown.
 ---
 
 # Skill: Record a Test Walkthrough
 
-Use this skill to turn an automated UI test into a browsable, step-by-step walkthrough. The automated
-test is what runs; this skill only provides a display for it and records that display.
+Use this skill to turn an automated UI test into a browsable, step-by-step walkthrough, and to write new UI tests for
+the Flutter plugin (see [Writing a test from a TestTracker test case](#writing-a-test-from-a-testtracker-test-case)).
+The automated test is what runs; the recorder only provides a display for it and records that display.
 
 - **The test** drives the UI, for example an IDE Starter / Driver test in `testSrc/integration`.
   `NewProjectIU262UITest` (creates a Flutter app in IntelliJ IDEA 2026.2.3) is one example.
@@ -41,8 +42,20 @@ in a commit, and are easy to find later.
 | `visible` | Xephyr window on your desktop | Watching the test live or debugging it. Don't click inside the window while it runs. |
 
 Both modes are real X servers, so tests that send input through `java.awt.Robot` work even on a Wayland
-desktop. Running a test directly against a Wayland session does not work, because Wayland blocks
-synthetic input to normal windows.
+desktop.
+
+To watch a test directly on a Wayland desktop instead (no recording), run it from a desktop terminal, where
+`DISPLAY` and `WAYLAND_DISPLAY` are both set:
+
+```bash
+FLUTTER_SDK=~/develop/flutter ./gradlew --no-daemon integration --tests io.flutter.integrationTest.ColorGutterPreviewUITest
+```
+
+The IDE then runs on XWayland, which only accepts synthetic input through the xdg-desktop-portal RemoteDesktop
+interface. `Setup.kt` detects this (`isWaylandDesktop()`) and passes `-Dawt.robot.screenshotMethod=dbusRemoteDesktop`,
+so `java.awt.Robot` uses the portal. GNOME asks once to allow remote interaction; the JDK keeps a restore token in
+`~/.java/robot/`. The test moves the real pointer, so don't touch the mouse or keyboard. Not yet verified on Cory's
+desktop. The recorder can't capture this mode; it always uses its own display.
 
 ### 3. Record
 
@@ -111,6 +124,11 @@ The recorder exits with the test's exit status. It:
 - **If the recorder printed `LICENSE SCREEN DETECTED`** (or `license-screen.txt` exists), stop and tell the user. See
   [License screen](#license-screen). Don't retry the recording until the user has cleared the license screen.
 - `Test exit status: 0`, plus the test's own success output in `test.log` (for Gradle: `BUILD SUCCESSFUL`).
+- The test's `println` output (for example `Gutter colors: ...`) is not in `test.log`; Gradle puts it in
+  `build/test-results/integration/TEST-<fqcn>.xml`, together with the failure and stack trace. The IDE's log is
+  `build/out/ide-tests/tests/<IDE build>/<TestClass>/log/idea.log`.
+- If the test failed, look at the last screenshots first: a dialog or popup that the test didn't expect is the most
+  common cause (see [IntelliJ 2026.2 behavior](#intellij-20262-behavior-to-plan-for)).
 - Review the screenshots marked **Possibly not useful** (`flags.txt`, amber outline in `walkthrough.html`) and tell
   the user how many there are. They are kept on purpose; only remove them if the user asks.
 - `capture.log` reports a frame count. If it's zero, the UI never appeared on the recorder's display. Check that the test honors `DISPLAY` and runs in a fresh process (see Troubleshooting).
@@ -160,6 +178,8 @@ class MyFlowUITest : ExistingProjectUITest("my_flow") { ... }
 ```
 
 Supported Markdown: paragraphs, `-` and `1.` lists (indent continuation lines), `` `code` `` and `**bold**`.
+The summary is found in untracked files too, so a new test gets it before it's committed. Put any `// TODO` comment
+*above* the doc comment: a line comment between the doc comment and `class` hides the summary.
 To add or refresh the summary of an existing walkthrough without re-recording it:
 
 ```bash
@@ -224,6 +244,96 @@ The recorder sets `WALKTHROUGH_STEPS_FILE`, and each step is appended there with
 walkthrough is built, each screenshot gets the most recent step at its capture time. If a step has no key frame, the
 last screenshot captured during it is added. Outside the recorder, steps are only printed.
 
+## Writing a test from a TestTracker test case
+
+The Flutter plugin's manual test plan lives in TestTracker (for example plan `157725`, "Flutter vNN Full Test Plan").
+To automate one test case:
+
+1. **Read the test case.** TestTracker pages need SSO. Fetch them with `sso_client` (outside the agent sandbox, since
+   it needs network and auth), then strip the HTML:
+
+   ```bash
+   sso_client --url 'https://default-dot-testtracker.googleplex.com/testplans/testcase/detail/<case>?id=<plan>&revision=1' > /tmp/case.html
+   ```
+
+   The useful parts are the title (for example "1.2.4 - Color Gutter Previews"), Pre-Condition, Procedure,
+   Verification, and the Testcase History (which IDEs and OSes it's run on).
+2. **Find the plugin code behind it** (`plugin.xml` extensions, tool window IDs, action IDs) and summarize for Cory how
+   the case maps to the plugin and what the test can check, before writing it.
+3. **Write the test** in `testSrc/integration/io/flutter/integrationTest/<Feature>UITest.kt`, extending
+   `ExistingProjectUITest` unless the case is about creating projects. Name the TestTracker case in the doc comment's
+   **Shows:** line, and turn the Verification into assertions the Driver can check (see below). Announce each
+   user-visible step with `step(...)`.
+4. **Compile, then record** (see [Running from an agent](#running-from-an-agent)), and fix what the screenshots show.
+5. **Leave a `// TODO(radcliffc):` above the doc comment** for anything the test can't verify yet, or plugin bugs it
+   found, so the gap stays visible.
+
+### Building blocks
+
+| Helper | What it gives you |
+|---|---|
+| `ExistingProjectUITest` | Creates the project with `flutter create`, starts the IDE (`startIdeOnProject()`), waits for indexing, and deletes the project afterwards. Also: `openProjectFile`, `inFrame { }`, `editorFor`, `allEditorText`, `waitForConsoleText`, `waitUntil` (dismisses IDE interruption dialogs while polling), `selectDevice`, `stopApp`, `context` (IDE Starter context) and `ideLogFile` (this run's `idea.log`). Override `prepareProject()` to change the project or boot a device before the IDE opens. |
+| `utils/AndroidEmulator` | `start(logDir)` boots the AVD from `FLUTTER_TEST_AVD` (default `Medium_Phone`) on the test's display; `stop()` uses `adb emu kill`; `deviceSelectorNames` for `selectDevice`. |
+| `utils/BrowserEngine` | `FLUTTER_TEST_BROWSER=auto\|jxbrowser\|jcef` picks the embedded browser for Inspector/DevTools windows; `applyTo(driver)` flips the plugin's "Enable JCEF browser" setting in the running IDE. `pluginHasJxBrowserLicense()` checks the plugin under test. |
+| `utils/GutterColors` | `editor.gutterColors()` returns the color preview icons in an editor's gutter as `line -> [0xRRGGBB]`. |
+| `utils/WalkthroughSteps` | `step(title, expect)` for walkthrough captions; see [Per-step expectations](#per-step-expectations). |
+
+| Test | TestTracker case | Device |
+|---|---|---|
+| `DevToolsInspectorUITest` | 1.2.2 DevTools & Inspector | Android emulator (default) or Chrome |
+| `ColorGutterPreviewUITest` | 1.2.4 Color Gutter Previews | none |
+
+### Checking results with the Driver
+
+Prefer checks on the IDE's real state over "something appeared on screen":
+
+- **UI text and components:** XPath on the Swing tree, for example
+  `x("//div[contains(@visible_text, 'test passed')]")`, or `window.x("//div[contains(@javaclass, 'com.teamdev.jxbrowser')]")`
+  inside `toolWindow("Flutter Inspector")`. `getAllTexts()` returns the text a component shows, including HTML labels.
+- **IDE objects through `@Remote` interfaces:** declare an interface for the IDE class you need (methods with the same
+  names and parameter counts) and get it with `driver.service(...)`, `driver.utility(...)`, or `driver.cast(ref, ...)`.
+  `GutterColors.kt` reads `EditorEx.getGutterComponentEx().getGutterRenderers(line)` and each icon's `ColorIcon` color;
+  `BrowserEngine.kt` changes a setting through `PropertiesComponent.updateValue(...)`. Make the interfaces `internal`,
+  not `private`, and run editor and UI reads in `driver.withContext(OnDispatcher.EDT) { ... }`. Look up exact method
+  signatures in the downloaded IDE (`javap -cp build/out/ide-tests/cache/builds/<IDE>/lib/<jar> <class>`).
+- **The IDE log:** read `ideLogFile` at the end of the test, for example to fail on exceptions from `io.flutter`.
+- **Things the Driver can't see**, such as the page inside an embedded browser, are left to the walkthrough
+  screenshots; say so in the doc comment.
+
+### IntelliJ 2026.2 behavior to plan for
+
+| Behavior | What to do |
+|---|---|
+| The first Ctrl+Y opens a "Map Action to Ctrl+Y: Redo or Delete Line?" dialog, which then swallows typed text | Invoke the action instead: `driver.invokeAction("EditorDeleteLine", component = editor.component)` |
+| Some shortcuts don't reach the action (Ctrl+Alt+W for Extract Widget) | `driver.invokeAction("<action id>", component = editor.component)`; action IDs are in `plugin.xml` |
+| Clicking a tool window's button hides it if it's already open | Check `stripeButton(id).isToolWindowVisible()` first; buttons are on `ToolWindowRightToolbar` / `ToolWindowLeftToolbar` |
+| Typing in the editor opens completion popups | Press Escape before the next action; don't press Enter while a popup may be open |
+| Local plugin builds have no JxBrowser license key, so Inspector/DevTools windows show "The JxBrowser license could not be found." | Use `BrowserEngine`; with a license, put it in the gitignored `resources/jxbrowser/jxbrowser.properties` before building |
+| JCEF mode fails with `NoClassDefFoundError: com/intellij/ui/jcef/JBCefBrowser` | Known plugin bug: no dependency on `com.intellij.modules.jcef` |
+| `final c = Colors.blue;` gets no gutter color preview (`Colors.x.shadeN`, `Color(...)` do) | Known plugin issue in `FlutterColorProvider`; use colors in lists or widget arguments |
+| "Input methods disabler" and "Flutter supports hot reload!" notifications, the Trial tab, and the emulator's "nested virtualization" dialog show up in screenshots | Harmless; they don't block input |
+
+## Running from an agent
+
+The agent's command sandbox has no network, can't write outside the workspace (including `~/walkthroughs`), and can't
+write `.git`. So:
+
+- **Compile in the sandbox** (fast check, no network, no Kotlin daemon):
+
+  ```bash
+  ./gradlew --no-daemon --offline -Pkotlin.compiler.execution.strategy=in-process compileIntegrationKotlin -q
+  ```
+
+- **Record outside the sandbox** (`BypassSandbox: true`): the recorder downloads dependencies, writes to
+  `~/walkthroughs`, starts emulators, and runs `flutter`. Set `FLUTTER_SDK` and put its `bin` on `PATH`, redirect the
+  output to a file, and run it in the background; a run takes 3 to 10 minutes.
+- **`Timeout waiting to lock journal cache`** means another Gradle build (for example in another worktree) holds the
+  Gradle cache. Wait, or run the recording outside the sandbox, which compiles too.
+- **Committing** also needs `BypassSandbox: true`. Commit only the test, helper, and skill files, not `.idea/*`,
+  `gradle.properties`, or `local.properties`.
+- **Validate the skill** after editing it with `PATH=~/develop/flutter/bin:$PATH tool/validate_skills.sh`, also
+  outside the sandbox (Flutter writes to its own cache).
+
 ## Example: New Flutter project test
 
 `NewProjectIU262UITest` opens IntelliJ IDEA 2026.2.3 with the locally built plugin, clicks **New Project
@@ -250,13 +360,16 @@ context. The Dart plugin version must support the IDE build; check with
 | Symptom | Cause and fix |
 |---|---|
 | Zero frames, or only a black screen | The UI went to another display. Gradle daemons keep their original environment, so use `--no-daemon`. Make sure the test doesn't override `DISPLAY`. |
-| Test clicks do nothing when run outside the recorder on Wayland | Expected: Wayland blocks `java.awt.Robot` input. Record with `--mode visible` instead. |
+| Test clicks do nothing when run on the Wayland desktop | The RemoteDesktop permission wasn't granted (GNOME asks on first use), or `DISPLAY`/`WAYLAND_DISPLAY` weren't both set, so the portal wasn't used. Or record with `--mode visible` instead. |
 | IDE Starter test loads Dart but not Flutter | The `integration` task installed an empty `flutter-intellij.zip`. It must resolve `buildPlugin.archiveFile` lazily so that the `Flutter.zip` name applies. |
 | `Plugin 'Dart' ... requires IDE build 261.* or older` | The Dart plugin version doesn't support the IDE build. |
 | `Thread leaked: WLKeyboard.KeyRepeatManager` | The test JVM started the Wayland AWT toolkit. The `integration` task passes `-Djava.awt.headless=true`. |
 | `DriverIllegalStateException: No such session` | IDEA rebuilt frame components; `NewProjectIU262UITest` retries its final wait. Rerun if it persists. |
 | Timeout waiting for the welcome screen | A license or trial dialog is blocking startup. Check `frames/`. |
 | Xephyr window is larger than the screen | Pass a smaller `--size`, for example `1600x900`. |
+| `WaitForException: Timeout` in a tool window check | The failure message includes the window's last text (for example "Installing DevTools..."); then check `idea.log` for the exception behind it. |
+| `IndexOutOfBoundsException: Wrong offset: -1` from the Driver | The test looked up text that isn't in the editor (an edit went somewhere else, often into a dialog). Check the screenshots. |
+| The walkthrough has no "What this test shows" | The test class has no doc comment, or a line comment sits between the doc comment and `class`. |
 
 ## Notes
 

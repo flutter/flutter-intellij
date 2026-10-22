@@ -25,7 +25,9 @@ STOP_MARKER = re.compile(r"^\s*Implementation notes:", re.IGNORECASE)
 def find_source(repo: pathlib.Path, fqcn: str) -> pathlib.Path | None:
   simple = fqcn.split(".")[-1].split("#")[0]
   package_path = "/".join(fqcn.split(".")[:-1])
-  files = subprocess.run(["git", "-C", str(repo), "ls-files", "*.kt", "*.java"],
+  # Include untracked files, so a new test that isn't committed yet still gets its summary.
+  files = subprocess.run(["git", "-C", str(repo), "ls-files", "--cached", "--others", "--exclude-standard",
+                          "*.kt", "*.java"],
                          capture_output=True, text=True, check=False).stdout.split()
   candidates = [f for f in files if pathlib.Path(f).stem == simple]
   if package_path:
