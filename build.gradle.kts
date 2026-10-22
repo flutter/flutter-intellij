@@ -58,7 +58,7 @@ val commitHash by lazy {
     providers.exec {
       commandLine("git", "rev-parse", "--short", "HEAD")
     }.standardOutput.asText.get().trim().take(7)
-  } catch (e: Exception) {
+  } catch (_: Exception) {
     // Catching all exceptions here is intentional: if git is not installed, or if this is built
     // outside of a git repository clone (e.g. from a source zip release), we want the build
     // to gracefully proceed with an empty hash instead of crashing.
@@ -180,19 +180,8 @@ tasks.withType<KotlinCompile>().configureEach {
 
 sourceSets {
   main {
-    java.srcDirs(
-      listOf(
-        "src",
-        "third_party/vmServiceDrivers"
-      )
-    )
-    kotlin.srcDirs(
-      listOf(
-        "src",
-        "third_party/vmServiceDrivers"
-      )
-    )
-    // Add kotlin.srcDirs if we start using Kotlin in the main plugin.
+    java.srcDirs(listOf("src"))
+    kotlin.srcDirs(listOf("src"))
     resources.srcDirs(
       listOf(
         "src",

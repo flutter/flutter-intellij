@@ -28,11 +28,11 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
+import io.flutter.FlutterProjectDisposable;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
 import io.flutter.dart.DtdRequest;
 import io.flutter.dart.DtdUtils;
-import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.logging.FlutterConsoleLogManager;
 import io.flutter.logging.PluginLogger;
 import io.flutter.run.FlutterDebugProcess;
@@ -229,7 +229,7 @@ public class FlutterApp implements Disposable {
 
     Consumer<String> onTextAvailable = null;
     final ProcessHandler process = new MostlySilentColoredProcessHandler(command, onTextAvailable);
-    Disposer.register(FlutterDartAnalysisServer.getInstance(project), process::destroyProcess);
+    Disposer.register(FlutterProjectDisposable.getInstance(project), process::destroyProcess);
 
     final DaemonApi api = new DaemonApi(process);
     final FlutterApp app = new FlutterApp(project, mode, device, process, env, api, command);

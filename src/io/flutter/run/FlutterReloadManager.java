@@ -12,6 +12,7 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationGroup;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.AnActionResult;
@@ -49,7 +50,6 @@ import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterAppAction;
 import io.flutter.actions.ProjectActions;
 import io.flutter.actions.ReloadFlutterApp;
-import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.logging.PluginLogger;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
@@ -67,7 +67,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Handle the mechanics of performing a hot reload on file save.
  */
-public class FlutterReloadManager {
+public class FlutterReloadManager implements Disposable {
   private static final @NotNull Logger LOG = PluginLogger.createLogger(FlutterReloadManager.class);
 
   private static final Map<String, NotificationGroup> toolWindowNotificationGroups = new HashMap<>();
@@ -117,7 +117,7 @@ public class FlutterReloadManager {
     this.myProject = project;
 
     final MessageBusConnection connection =
-      ApplicationManager.getApplication().getMessageBus().connect(FlutterDartAnalysisServer.getInstance(project));
+      ApplicationManager.getApplication().getMessageBus().connect(this);
     connection.subscribe(AnActionListener.TOPIC, new AnActionListener() {
       private @Nullable Project eventProject;
       private @Nullable Editor eventEditor;
@@ -457,5 +457,9 @@ public class FlutterReloadManager {
       }
     });
     return firstError != null;
+  }
+
+  @Override
+  public void dispose() {
   }
 }
