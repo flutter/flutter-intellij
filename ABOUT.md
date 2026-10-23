@@ -17,7 +17,7 @@ The `flutter-intellij` repository provides the official Flutter plugin for Intel
 - `src`: [./src/ABOUT.md](./src/ABOUT.md) - Root source directory containing the core Java and Kotlin implementations of the IDE plugin.
 - `testData`: Test files and goldens for various IDE integration tests.
 - `testSrc`: Source directory for IDE tests.
-- `third_party`: [./third_party/ABOUT.md](./third_party/ABOUT.md) - Third-party libraries and Dart VM service drivers.
+- `third_party`: [./third_party/ABOUT.md](./third_party/ABOUT.md) - Third-party libraries and IntelliJ plugin dependencies.
 - `tool`: [./tool/ABOUT.md](./tool/ABOUT.md) - Root tooling directory for flutter-intellij. Contains grind tasks and other shell utilities for CI, deployment, and testing.
 
 ## Global Invariants

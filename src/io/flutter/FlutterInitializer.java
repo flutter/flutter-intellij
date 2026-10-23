@@ -31,7 +31,6 @@ import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.dart.DtdUtils;
-import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.devtools.DevToolsExtensionsViewFactory;
 import io.flutter.devtools.DevToolsUtils;
 import io.flutter.devtools.RemainingDevToolsViewFactory;
@@ -150,7 +149,7 @@ public class FlutterInitializer extends FlutterProjectActivity {
         }
         return null;
       })
-      .expireWith(FlutterDartAnalysisServer.getInstance(project))
+      .expireWith(FlutterProjectDisposable.getInstance(project))
       .finishOnUiThread(ModalityState.defaultModalityState(), result -> {
         edtInitialization(finalHasFlutterModule, project);
       })
