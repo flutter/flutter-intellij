@@ -9,6 +9,7 @@
 - Legacy Dart Analysis Server URI mapping during debugging. (#9149)
 
 ### Fixed
+- Process handlers of terminated apps are no longer kept until the project closes. (#9169)
 
 ## 97.0.0
 
