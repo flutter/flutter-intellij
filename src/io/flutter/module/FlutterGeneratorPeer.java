@@ -18,6 +18,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.util.ui.update.UiNotifyConnector;
 import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.module.settings.SettingsHelpForm;
@@ -26,8 +27,6 @@ import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
 import javax.swing.ComboBoxEditor;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -69,21 +68,8 @@ public class FlutterGeneratorPeer {
     sdkCombo.setEditable(true);
 
     // The combo may not be showing yet (e.g. switching project type mid-wizard); wait until
-    // it is so FlutterSdkUtil can resolve the dialog's real modality state below.
-    if (sdkCombo.isShowing()) {
-      populateSdkCombo(sdkCombo);
-    }
-    else {
-      sdkCombo.addHierarchyListener(new HierarchyListener() {
-        @Override
-        public void hierarchyChanged(HierarchyEvent e) {
-          if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0 && sdkCombo.isShowing()) {
-            sdkCombo.removeHierarchyListener(this);
-            populateSdkCombo(sdkCombo);
-          }
-        }
-      });
-    }
+    // it is so FlutterSdkUtil can resolve the dialog's real modality state.
+    UiNotifyConnector.doWhenFirstShown(sdkCombo, () -> populateSdkCombo(sdkCombo));
 
     mySdkPathComboWithBrowse.addBrowseFolderListener(null, FileChooserDescriptorFactory.createSingleFolderDescriptor()
       .withTitle(FlutterBundle.message("flutter.sdk.browse.path.label")), TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
