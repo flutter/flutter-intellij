@@ -285,7 +285,6 @@
     <postStartupActivity implementation="io.flutter.FlutterInitializer"/>
     <projectService serviceImplementation="io.flutter.run.daemon.DeviceService"/>
     <projectService serviceImplementation="io.flutter.run.daemon.DevToolsService"/>
-    <projectService serviceImplementation="io.flutter.dart.FlutterDartAnalysisServer"/>
     <projectService serviceImplementation="io.flutter.pub.PubRootCache"/>
     <backgroundPostStartupActivity implementation="io.flutter.sdk.FlutterProjectActivity"/>
 
