@@ -229,10 +229,11 @@ public class FlutterApp implements Disposable {
 
     Consumer<String> onTextAvailable = null;
     final ProcessHandler process = new MostlySilentColoredProcessHandler(command, onTextAvailable);
-    Disposer.register(FlutterProjectDisposable.getInstance(project), process::destroyProcess);
 
     final DaemonApi api = new DaemonApi(process);
     final FlutterApp app = new FlutterApp(project, mode, device, process, env, api, command);
+    // Disposing the app destroys its process, so the project only holds the app until it terminates.
+    Disposer.register(FlutterProjectDisposable.getInstance(project), app);
 
     process.addProcessListener(new ProcessAdapter() {
       @Override
@@ -666,6 +667,7 @@ public class FlutterApp implements Disposable {
 
   @Override
   public void dispose() {
+    myProcessHandler.destroyProcess();
   }
 }
 
