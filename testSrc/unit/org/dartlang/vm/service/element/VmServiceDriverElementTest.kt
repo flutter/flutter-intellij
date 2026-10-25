@@ -34,4 +34,17 @@ class VmServiceDriverElementTest : TestCase() {
     val instance = Instance(json)
     assertEquals("manual-test-tag", instance.label)
   }
+
+  fun `test PerfettoTimeline`() {
+    val json = JsonObject().apply {
+      addProperty("trace", "AA==")
+      addProperty("timeOriginMicros", 3_000_000_000L)
+      addProperty("timeExtentMicros", 4_000_000_000L)
+    }
+
+    val timeline = PerfettoTimeline(json)
+    assertEquals("AA==", timeline.trace)
+    assertEquals(3_000_000_000L, timeline.timeOriginMicros)
+    assertEquals(4_000_000_000L, timeline.timeExtentMicros)
+  }
 }
