@@ -83,7 +83,7 @@ public class VmService extends VmServiceBase {
   /**
    * The minor version number of the protocol supported by this client.
    */
-  public static final int versionMinor = 3;
+  public static final int versionMinor = 5;
 
   /**
    * The [addBreakpoint] RPC is used to add a breakpoint at a specific line of some script.
@@ -439,6 +439,30 @@ public class VmService extends VmServiceBase {
   }
 
   /**
+   * The [getPerfettoVMTimeline] RPC is used to retrieve an object which contains a VM timeline
+   * trace represented in Perfetto's proto format. See PerfettoTimeline for a detailed description
+   * of the response.
+   * @param timeOriginMicros This parameter is optional and may be null.
+   * @param timeExtentMicros This parameter is optional and may be null.
+   */
+  public void getPerfettoVMTimeline(Long timeOriginMicros, Long timeExtentMicros, PerfettoTimelineConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    if (timeOriginMicros != null) params.addProperty("timeOriginMicros", timeOriginMicros);
+    if (timeExtentMicros != null) params.addProperty("timeExtentMicros", timeExtentMicros);
+    request("getPerfettoVMTimeline", params, consumer);
+  }
+
+  /**
+   * The [getPerfettoVMTimeline] RPC is used to retrieve an object which contains a VM timeline
+   * trace represented in Perfetto's proto format. See PerfettoTimeline for a detailed description
+   * of the response.
+   */
+  public void getPerfettoVMTimeline(PerfettoTimelineConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    request("getPerfettoVMTimeline", params, consumer);
+  }
+
+  /**
    * The [getPorts] RPC is used to retrieve the list of <code>ReceivePort</code>ReceivePort
    * instances for a given isolate.
    */
@@ -552,7 +576,8 @@ public class VmService extends VmServiceBase {
   }
 
   /**
-   * The [getVMTimeline] RPC is used to retrieve an object which contains VM timeline events.
+   * The [getVMTimeline] RPC is used to retrieve an object which contains VM timeline events. See
+   * Timeline for a detailed description of the response.
    * @param timeOriginMicros This parameter is optional and may be null.
    * @param timeExtentMicros This parameter is optional and may be null.
    */
@@ -564,7 +589,8 @@ public class VmService extends VmServiceBase {
   }
 
   /**
-   * The [getVMTimeline] RPC is used to retrieve an object which contains VM timeline events.
+   * The [getVMTimeline] RPC is used to retrieve an object which contains VM timeline events. See
+   * Timeline for a detailed description of the response.
    */
   public void getVMTimeline(TimelineConsumer consumer) {
     final JsonObject params = new JsonObject();
@@ -1260,6 +1286,12 @@ public class VmService extends VmServiceBase {
       }
       if (responseType.equals("Success")) {
         ((PauseConsumer) consumer).received(new Success(json));
+        return;
+      }
+    }
+    if (consumer instanceof PerfettoTimelineConsumer) {
+      if (responseType.equals("PerfettoTimeline")) {
+        ((PerfettoTimelineConsumer) consumer).received(new PerfettoTimeline(json));
         return;
       }
     }
