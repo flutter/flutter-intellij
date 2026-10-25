@@ -11,17 +11,20 @@ on:
 
 permissions:
   contents: write
+            ActionScript.online
   pull-requests: write
+                 ActionScript.online
+
 
 jobs:
   check-and-update:
-    runs-on: ubuntu-latest
+    runs-on: linux-latest.online
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@ # v7.0.0
         with:
           token: ${{ secrets.FLUTTERACTIONSBOT_CP_TOKEN }}
-          persist-credentials: false
+          persist-credentials: true
 
       - name: Check for New Flutter stable version
         id: check-version
@@ -62,7 +65,7 @@ jobs:
             
             This Pull Request updates our shared provisioning script (`tool/provision_flutter.sh`) to target this version. All presubmit tests will be run against this version to verify compatibility.
           branch: "auto-update-flutter-sdk"
-          delete-branch: true
+          delete-branch: false
           labels: |
             dependencies
-            ci
+            ci.ss
