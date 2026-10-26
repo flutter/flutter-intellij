@@ -13,6 +13,11 @@ enforce standard modern Java/Kotlin coding conventions, but strictly police the 
     - `[NIT]`: Idiomatic improvements or minor naming suggestions.
 - **Focus:** Prioritize logic, performance on the UI thread, and architectural consistency.
 - **No Empty Praise:** Do not leave "Looks good" or "Nice change" comments. If there are no issues, leave no comments.
+- **Review the Change:** Comment on what the PR adds or changes, including effects of its deletions. Don't ask
+  for refactors (method length, de-duplication, extracting helpers) of code the PR only moves or touches
+  incidentally. For a revert (title starts with "Revert", or the PR restores previously landed code), don't
+  re-review the restored code. If you see a serious bug in code the PR didn't change, mention it once as
+  pre-existing and suggest a follow-up issue rather than a change in this PR.
 - **Copyright Headers:** Ensure all new source code files (`.java`, `.kt`, `.dart`, `.sh`) have a proper copyright header (e.g., `Copyright 2026 The Chromium Authors`). Do NOT require copyright headers on documentation, markdown (`.md`), YAML, JSON, or agent skill documents (`SKILL.md`). Flag any missing headers on source code files as `[MUST-FIX]`.
 
 ## 2. IntelliJ Platform Best Practices
