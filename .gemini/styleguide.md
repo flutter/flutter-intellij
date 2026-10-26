@@ -45,6 +45,11 @@ enforce standard modern Java/Kotlin coding conventions, but strictly police the 
 
 ## 3. Idiomatic Language Standards
 
+- **Imports:** In Java, Kotlin, and Gradle Kotlin DSL code, use imports instead of fully qualified names. This
+  includes code in your own suggestions: add the import instead of writing e.g.
+  `com.intellij.openapi.application.ReadAction.compute(...)` inline. A fully qualified name is fine only to
+  disambiguate two types with the same simple name, or where a name must be a string (e.g. `plugin.xml`).
+
 ### Dart
 
 - Follow [Effective Dart](https://dart.dev/effective-dart).
@@ -66,7 +71,6 @@ enforce standard modern Java/Kotlin coding conventions, but strictly police the 
 - Prefer **Composition over Inheritance** for plugin components.
 - Avoid using reflection without a strong justification.
 - Avoid stray `TODO` or `FIXME` comments without justification.
-- Use imports instead of fully qualified names.
 
 ## 4. Code Quality & Maintainability
 
