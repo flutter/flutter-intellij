@@ -4,10 +4,13 @@ The previous builder for the Flutter plugin was written in Ant. An expert in Ant
 no such expert available. In order to increase stability and productivity we transformed the builder into a Dart command line tool, inspired
 by the Flutter tool. The tool is named `plugin`, since it helps with plugin development.
 
+The plugin itself is now built and tested with Gradle, so the tool no longer has build or test commands. Run it from the repository root
+with the [`bin/plugin`](../../bin/plugin) wrapper (`./bin/plugin <command>`), which runs [`bin/main.dart`](bin/main.dart). The commands
+are implemented in [`lib/plugin.dart`](lib/plugin.dart) and [`lib/lint.dart`](lib/lint.dart).
+
 ## Functions
 
-The tool needs to perform several functions. Building is the basic one, but others are important too. Implementation note: these will be
-implemented as compound commands in the CLI tool (similar to `flutter doctor` or `flutter run` in the Flutter CLI tool).
+The tool supports a few compound commands (similar to `flutter doctor` or `flutter run` in the Flutter CLI tool):
 
 * `deploy`
 * `generate`
@@ -15,27 +18,39 @@ implemented as compound commands in the CLI tool (similar to `flutter doctor` or
 
 Each command has its own set of optional arguments. If the CLI tool is invoked without a command then it will print its help message.
 
+`deploy` and `generate` share the product options `--[no-]ij` and `--[no-]as` (both default to on) and `-c, --channel=<stable|dev>`
+(default `stable`).
+
+`lib/plugin.dart` also defines a `rename` command (`RenamePackageCommand`), but `main` does not register it, so it cannot be run.
+
 There are two global options. On the command line these are given prior to the command name.
 
 * `-r, --release=XX`
   Use "release mode." The `XX` value specifies the release identifier, like 18 or 19.1. It will be shown in the "version" field of the
-  plugin manager's listing for the Flutter plugin. In this mode additional constraints must be satisfied. The current git branch must have
-  no unsaved changes and must be named "release_XX". The `.github/workflows/presubmit.yaml` file must be newer than the
-  `product-matrix.json` file (see the `generate` command).
+  plugin manager's listing for the Flutter plugin. In this mode additional constraints are checked (`performReleaseChecks`):
+  * The channel must not be `dev`, and the identifier must have the form `major.minor` (optionally with a `-dev.N` suffix).
+  * The current git branch must have no uncommitted changes and must be named `release_XX` (a branch like `release_XX.N` is also
+    accepted).
+  * The `.github/workflows/presubmit.yaml` file must exist.
+  * `resources/jxbrowser/jxbrowser.properties` must contain a real `jxbrowser.license.key=` value.
 * `-d, --cwd=<working-directory>`
   Set the root directory to the `working-directory` value. This should not be used when running the tool from the command line. It is only
   intended to be used when running tests from IntelliJ run configurations that have no way to specify the working directory.
 
 ### Deploy
 
-Automatically upload all required artifacts to the JetBrains site. This function will print instructions to retrieve the password from
-valentine then prompt for the password to log into the JetBrains site. It has no options. Returns a success or failure code to play nice
-with shell commands.
-(Used primarily by the dev channel Kokoro job. Not sure if it works for uploading to the stable channel.)
+Upload the plugin to the JetBrains Marketplace (plugin ID 9212). It requires `--channel=dev` and refuses to run otherwise. It reads the
+upload token from the Kokoro keystore file `$KOKORO_KEYSTORE_DIR/${FLUTTER_KEYSTORE_ID}_${FLUTTER_KEYSTORE_NAME}` and uploads
+`build/distributions/flutter-intellij-kokoro.zip` with `curl`. Returns a success or failure code to play nice with shell commands.
+
+Note that Gradle produces `build/distributions/Flutter.zip`, not `flutter-intellij-kokoro.zip`. The dev channel Kokoro job
+([`tool/kokoro/deploy.sh`](../kokoro/deploy.sh)) no longer uses this command; it uploads `Flutter.zip` with `curl` directly.
 
 ### Generate
 
-This is now only used for live templates (see `resources/liveTemplates`).
+This is now only used for live templates. It copies each `resources/liveTemplates/*.txt` fragment into the matching entry of
+`resources/liveTemplates/flutter_miscellaneous.xml`. In release mode it also runs the release-mode checks. CI runs it in the `DART_BOT`
+job and fails if the generated file differs from the committed one.
 
 ### Lint
 
