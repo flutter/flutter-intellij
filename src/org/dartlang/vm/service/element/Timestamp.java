@@ -28,6 +28,6 @@ public class Timestamp extends Response {
    * A timestamp in microseconds since epoch.
    */
   public long getTimestamp() {
-    return json.get("timestamp") == null ? -1 : json.get("timestamp").getAsLong();
+    return getAsLong("timestamp");
   }
 }

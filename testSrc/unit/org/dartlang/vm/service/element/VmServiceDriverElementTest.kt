@@ -6,6 +6,7 @@
 
 package org.dartlang.vm.service.element
 
+import com.google.gson.JsonNull
 import com.google.gson.JsonObject
 import junit.framework.TestCase
 
@@ -46,5 +47,32 @@ class VmServiceDriverElementTest : TestCase() {
     assertEquals("AA==", timeline.trace)
     assertEquals(3_000_000_000L, timeline.timeOriginMicros)
     assertEquals(4_000_000_000L, timeline.timeExtentMicros)
+  }
+
+  fun `test timestamp accessors support long values`() {
+    val json = JsonObject().apply {
+      addProperty("timestamp", 3_000_000_000L)
+    }
+
+    assertEquals(3_000_000_000L, CpuSample(json).timestamp)
+    assertEquals(3_000_000_000L, Event(json).timestamp)
+    assertEquals(3_000_000_000L, Timestamp(json).timestamp)
+  }
+
+  fun `test long accessors handle missing and JsonNull values`() {
+    assertMissingAndJsonNull("timestamp") { CpuSample(it).timestamp }
+    assertMissingAndJsonNull("timestamp") { Event(it).timestamp }
+    assertMissingAndJsonNull("timestamp") { Timestamp(it).timestamp }
+    assertMissingAndJsonNull("timeOriginMicros") { PerfettoTimeline(it).timeOriginMicros }
+    assertMissingAndJsonNull("timeExtentMicros") { PerfettoTimeline(it).timeExtentMicros }
+  }
+
+  private fun assertMissingAndJsonNull(propertyName: String, accessor: (JsonObject) -> Long) {
+    assertEquals(-1L, accessor(JsonObject()))
+
+    val jsonNull = JsonObject().apply {
+      add(propertyName, JsonNull.INSTANCE)
+    }
+    assertEquals(-1L, accessor(jsonNull))
   }
 }
