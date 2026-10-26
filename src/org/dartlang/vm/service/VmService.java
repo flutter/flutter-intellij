@@ -83,7 +83,7 @@ public class VmService extends VmServiceBase {
   /**
    * The minor version number of the protocol supported by this client.
    */
-  public static final int versionMinor = 5;
+  public static final int versionMinor = 6;
 
   /**
    * The [addBreakpoint] RPC is used to add a breakpoint at a specific line of some script.
@@ -283,10 +283,8 @@ public class VmService extends VmServiceBase {
   }
 
   /**
-   * The [getCpuSamples] RPC is used to retrieve samples collected by the CPU profiler. Only
-   * samples collected in the time range <code>[timeOriginMicros, timeOriginMicros +
-   * timeExtentMicros]</code>[timeOriginMicros, timeOriginMicros + timeExtentMicros] will be
-   * reported.
+   * The [getCpuSamples] RPC is used to retrieve samples collected by the CPU profiler. See
+   * CpuSamples for a detailed description of the response.
    */
   public void getCpuSamples(String isolateId, int timeOriginMicros, int timeExtentMicros, GetCpuSamplesConsumer consumer) {
     final JsonObject params = new JsonObject();
@@ -436,6 +434,32 @@ public class VmService extends VmServiceBase {
     if (offset != null) params.addProperty("offset", offset);
     if (count != null) params.addProperty("count", count);
     request("getObject", params, consumer);
+  }
+
+  /**
+   * The [getPerfettoCpuSamples] RPC is used to retrieve samples collected by the CPU profiler,
+   * serialized in Perfetto's proto format. See PerfettoCpuSamples for a detailed description of
+   * the response.
+   */
+  public void getPerfettoCpuSamples(String isolateId, GetPerfettoCpuSamplesConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    request("getPerfettoCpuSamples", params, consumer);
+  }
+
+  /**
+   * The [getPerfettoCpuSamples] RPC is used to retrieve samples collected by the CPU profiler,
+   * serialized in Perfetto's proto format. See PerfettoCpuSamples for a detailed description of
+   * the response.
+   * @param timeOriginMicros This parameter is optional and may be null.
+   * @param timeExtentMicros This parameter is optional and may be null.
+   */
+  public void getPerfettoCpuSamples(String isolateId, Long timeOriginMicros, Long timeExtentMicros, GetPerfettoCpuSamplesConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    if (timeOriginMicros != null) params.addProperty("timeOriginMicros", timeOriginMicros);
+    if (timeExtentMicros != null) params.addProperty("timeExtentMicros", timeExtentMicros);
+    request("getPerfettoCpuSamples", params, consumer);
   }
 
   /**
@@ -1208,6 +1232,16 @@ public class VmService extends VmServiceBase {
       }
       if (responseType.equals("TypeArguments")) {
         ((GetObjectConsumer) consumer).received(new TypeArguments(json));
+        return;
+      }
+    }
+    if (consumer instanceof GetPerfettoCpuSamplesConsumer) {
+      if (responseType.equals("PerfettoCpuSamples")) {
+        ((GetPerfettoCpuSamplesConsumer) consumer).received(new PerfettoCpuSamples(json));
+        return;
+      }
+      if (responseType.equals("Sentinel")) {
+        ((GetPerfettoCpuSamplesConsumer) consumer).received(new Sentinel(json));
         return;
       }
     }

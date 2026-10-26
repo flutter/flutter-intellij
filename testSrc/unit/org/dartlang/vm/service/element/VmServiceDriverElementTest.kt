@@ -6,6 +6,7 @@
 
 package org.dartlang.vm.service.element
 
+import com.google.gson.JsonNull
 import com.google.gson.JsonObject
 import junit.framework.TestCase
 
@@ -46,5 +47,64 @@ class VmServiceDriverElementTest : TestCase() {
     assertEquals("AA==", timeline.trace)
     assertEquals(3_000_000_000L, timeline.timeOriginMicros)
     assertEquals(4_000_000_000L, timeline.timeExtentMicros)
+  }
+
+  fun `test timestamp accessors support long values`() {
+    val json = JsonObject().apply {
+      addProperty("timestamp", 3_000_000_000L)
+    }
+
+    assertEquals(3_000_000_000L, CpuSample(json).timestamp)
+    assertEquals(3_000_000_000L, Event(json).timestamp)
+    assertEquals(3_000_000_000L, Timestamp(json).timestamp)
+  }
+
+  fun `test long accessors handle missing and JsonNull values`() {
+    assertMissingAndJsonNull("timestamp") { CpuSample(it).timestamp }
+    assertMissingAndJsonNull("timestamp") { Event(it).timestamp }
+    assertMissingAndJsonNull("timestamp") { Timestamp(it).timestamp }
+    assertMissingAndJsonNull("timeOriginMicros") { PerfettoTimeline(it).timeOriginMicros }
+    assertMissingAndJsonNull("timeExtentMicros") { PerfettoTimeline(it).timeExtentMicros }
+  }
+
+  fun `test PerfettoCpuSamples`() {
+    val json = JsonObject().apply {
+      addProperty("samplePeriod", 1_000)
+      addProperty("maxStackDepth", 128)
+      addProperty("sampleCount", 42)
+      addProperty("timeOriginMicros", 3_000_000_000L)
+      addProperty("timeExtentMicros", 4_000_000_000L)
+      addProperty("pid", 12_345)
+      addProperty("samples", "AA==")
+    }
+
+    val samples = PerfettoCpuSamples(json)
+    assertEquals(1_000, samples.samplePeriod)
+    assertEquals(128, samples.maxStackDepth)
+    assertEquals(42, samples.sampleCount)
+    assertEquals(3_000_000_000L, samples.timeOriginMicros)
+    assertEquals(4_000_000_000L, samples.timeExtentMicros)
+    assertEquals(12_345, samples.pid)
+    assertEquals("AA==", samples.samples)
+  }
+
+  fun `test PerfettoCpuSamples with null timestamps`() {
+    val json = JsonObject().apply {
+      add("timeOriginMicros", JsonNull.INSTANCE)
+      add("timeExtentMicros", JsonNull.INSTANCE)
+    }
+
+    val samples = PerfettoCpuSamples(json)
+    assertEquals(-1L, samples.timeOriginMicros)
+    assertEquals(-1L, samples.timeExtentMicros)
+  }
+
+  private fun assertMissingAndJsonNull(propertyName: String, accessor: (JsonObject) -> Long) {
+    assertEquals(-1L, accessor(JsonObject()))
+
+    val jsonNull = JsonObject().apply {
+      add(propertyName, JsonNull.INSTANCE)
+    }
+    assertEquals(-1L, accessor(jsonNull))
   }
 }

@@ -50,6 +50,14 @@ public class Element {
   /**
    * A utility method to handle null values and JsonNull values.
    */
+  long getAsLong(String name) {
+    final JsonElement element = json.get(name);
+    return (element == null || element == JsonNull.INSTANCE) ? -1L : element.getAsLong();
+  }
+
+  /**
+   * A utility method to handle null values and JsonNull values.
+   */
   boolean getAsBoolean(String name) {
     final JsonElement element = json.get(name);
     return (element == null || element == JsonNull.INSTANCE) ? false : element.getAsBoolean();
