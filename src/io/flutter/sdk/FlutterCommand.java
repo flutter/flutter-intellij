@@ -311,9 +311,6 @@ public class FlutterCommand {
     if (workDir != null) {
       line.setWorkDirectory(workDir.getPath());
     }
-    if (!isDoctorCommand()) {
-      line.addParameter("--no-color");
-    }
     line.addParameters(type.subCommand);
     line.addParameters(args);
 
@@ -322,14 +319,9 @@ public class FlutterCommand {
     return line;
   }
 
-  private boolean isDoctorCommand() {
-    return type == Type.DOCTOR;
-  }
-
   enum Type {
     ATTACH("Flutter attach", "attach"),
     BUILD("Flutter build", "build"),
-    CHANNEL("Flutter channel", "channel"),
     CLEAN("Flutter clean", "clean"),
     CONFIG("Flutter config", "config"),
     CREATE("Flutter create", "create"),

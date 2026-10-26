@@ -22,15 +22,13 @@ import com.intellij.psi.impl.source.tree.LeafElement;
 import com.intellij.util.Function;
 import com.intellij.util.Time;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
-import com.jetbrains.lang.dart.psi.DartFunctionDeclarationWithBodyOrNative;
 import com.jetbrains.lang.dart.psi.DartId;
-import java.util.Date;
-import java.util.Map;
-import javax.swing.Icon;
-
-import io.flutter.run.test.TestConfigUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import javax.swing.Icon;
+import java.util.Date;
+import java.util.Map;
 
 /**
  * Utility for creating {@link RunLineMarkerContributor}s for tests.

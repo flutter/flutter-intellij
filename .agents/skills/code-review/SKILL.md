@@ -42,7 +42,21 @@ Perform a multi-pass analysis of the diff:
 - **API Design:** Are new functions/methods single-responsibility? Do the parameters make sense? Are visibility modifiers (public, private, protected) used correctly?
 
 ## Step-by-Step Execution
-1. Retrieve the current changes (using `git diff`).
-2. Read `.gemini/styleguide.md` if present.
-3. Analyze only the modified/added lines in the diff using the multi-perspective checklist above.
-4. Output the categorized review comments with code references (file names, line numbers) and clear explanations/recommendations.
+1. **Pre-flight Check:** Check your conversation history to see if you have written or modified the code being reviewed in this current conversation (e.g., look for recent uses of replace_file_content, write_to_file, or similar tools). If so, and you are in an interactive session, pause and ask the user:
+   > "I noticed we wrote this code in our current conversation. Should I spin up a sub-agent for an unbiased review?"
+   - If they agree: **Before** invoking the subagent, you (the parent agent) must gather the required context (by executing the context-gathering steps below yourself). This avoids the subagent stalling on permission prompts. Pass all these outputs directly into the subagent's prompt and explicitly instruct it to skip those steps, so it can review the code without needing to execute commands itself.
+   - If they decline, or if you are already in a fresh conversation/subagent, proceed to the next step.
+   If you are in a non-interactive environment, gather the context as described above and automatically invoke a subagent, passing the context and instructing it to skip the context-gathering steps.
+
+    > [!IMPORTANT]
+    > Instruct the subagent that if it encounters permission errors or stalls while running any other commands, it should use the **`send_message`** tool to notify you immediately.
+
+### Context-Gathering Steps
+2. Retrieve the current changes (using `git diff`).
+3. Read `.gemini/styleguide.md` if present.
+
+   *(Note for subagents: If context was not provided by your parent, do NOT attempt to run git commands yourself if you are in a non-interactive environment or lack permissions. Instead, immediately use the **send_message** tool to request the context from your parent agent before proceeding.)*
+
+### Analysis & Review
+4. Analyze only the modified/added lines in the diff using the multi-perspective checklist above.
+5. Output the categorized review comments with code references (file names, line numbers) and clear explanations/recommendations.

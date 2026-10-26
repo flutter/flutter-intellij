@@ -12,7 +12,6 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ToolWindowType;
 import com.intellij.openapi.wm.ex.ToolWindowManagerListener;
 import com.intellij.util.messages.MessageBusConnection;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.dart.DartPluginVersion;
 import io.flutter.devtools.AbstractDevToolsViewFactory;
@@ -22,7 +21,6 @@ import io.flutter.run.daemon.DevToolsInstance;
 import io.flutter.sdk.FlutterSdkVersion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import java.util.List;
 
 public class PropertyEditorViewFactory extends AbstractDevToolsViewFactory {
@@ -59,7 +57,6 @@ public class PropertyEditorViewFactory extends AbstractDevToolsViewFactory {
       .setPage(DEVTOOLS_PAGE_ID)
       .setEmbed(true)
       .setFlutterSdkVersion(flutterSdkVersion)
-      .setWorkspaceCache(WorkspaceCache.getInstance(project))
       .setIdeFeature(DevToolsIdeFeature.TOOL_WINDOW)
       .build();
   }

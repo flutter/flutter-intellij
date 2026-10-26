@@ -11,7 +11,6 @@ import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.ide.actions.DartPubActionBase;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
@@ -55,10 +54,6 @@ public class DartPlugin {
     DartSdkLibUtil.ensureDartSdkConfigured(project, sdkHomePath);
   }
 
-  public static boolean isPubActionInProgress() {
-    return DartPubActionBase.isInProgress();
-  }
-
   public static void setPubActionInProgress(boolean inProgress) {
     DartPubActionBase.setIsInProgress(inProgress);
   }
@@ -79,13 +74,5 @@ public class DartPlugin {
     final IdeaPluginDescriptor dartPlugin = PluginManagerCore.getPlugin(PluginId.getId("Dart"));
     final String versionString = dartPlugin != null ? dartPlugin.getVersion() : null;
     return new DartPluginVersion(versionString);
-  }
-
-  /**
-   * Return the {@link DartAnalysisServerService} instance for the passed {@link Project}.
-   */
-  @Nullable
-  public DartAnalysisServerService getAnalysisService(@NotNull final Project project) {
-    return project.getService(DartAnalysisServerService.class);
   }
 }

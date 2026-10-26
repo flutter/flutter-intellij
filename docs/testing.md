@@ -1,5 +1,8 @@
 # Plugin Smoke Testing
 
+> [!WARNING]
+> **Outdated Documentation**: This smoke testing document contains legacy manual test procedures. For up-to-date release verification instructions and the active manual testing checklist, refer to the [`release-plugin` skill](../.agents/skills/release-plugin/SKILL.md#5-manual-testing-checklist).
+
 Manual tests to execute before plugin releases.
 
 ## Setup

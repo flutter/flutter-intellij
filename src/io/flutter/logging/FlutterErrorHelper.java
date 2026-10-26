@@ -13,17 +13,6 @@ import java.util.regex.Pattern;
 public class FlutterErrorHelper {
   private static final Pattern numberPattern = Pattern.compile("[0-9]+(\\.[0-9]+)?");
 
-  public static String getAnalyticsId(DiagnosticsNode node) {
-    for (DiagnosticsNode property : node.getInlineProperties()) {
-      if (property.getLevel() == DiagnosticLevel.summary) {
-        final String description = property.getDescription();
-        return getAnalyticsId(description);
-      }
-    }
-
-    return null;
-  }
-
   @VisibleForTesting
   public static String getAnalyticsId(String errorSummary) {
     // "A RenderFlex overflowed by 1183 pixels on the right."

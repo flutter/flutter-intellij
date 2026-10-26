@@ -9,7 +9,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.FilenameIndex;
@@ -17,10 +16,8 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.GlobalSearchScopesCore;
 import com.intellij.util.PathUtil;
 import com.intellij.xdebugger.XSourcePosition;
-import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
-import io.flutter.dart.DartPlugin;
 import io.flutter.logging.PluginLogger;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.OpenApiUtils;
@@ -38,7 +35,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Converts positions between Dart files in Observatory and local Dart files.
@@ -66,12 +62,6 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
 
   @NotNull
   private final DartUrlResolver resolver;
-
-  /**
-   * Used to ask the Dart analysis server to convert between Dart URI's and local absolute paths.
-   */
-  @Nullable
-  private final Analyzer analyzer;
 
   /**
    * Callback to download a Dart file from Observatory.
@@ -105,12 +95,10 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
 
   public FlutterPositionMapper(@NotNull Project project,
                                @NotNull VirtualFile sourceRoot,
-                               @NotNull DartUrlResolver resolver,
-                               @Nullable Analyzer analyzer) {
+                               @NotNull DartUrlResolver resolver) {
     this.project = project;
     this.sourceRoot = sourceRoot;
     this.resolver = resolver;
-    this.analyzer = analyzer;
   }
 
   @NotNull
@@ -217,17 +205,6 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
       results.add(threeSlashize(new File(file.getPath()).toURI().toString()));
     }
 
-    // package: (if applicable)
-    if (analyzer != null) {
-      final String uriByServer = analyzer.getUri(file.getPath());
-      if (uriByServer != null) {
-        results.add(uriByServer);
-      }
-      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-        LOG.info("getBreakpointUris: uriByServer=" + uriByServer);
-      }
-    }
-
     final String path = file.getPath();
     final String root = sourceRoot.getPath();
 
@@ -255,9 +232,8 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
   @Nullable
   public XSourcePosition getSourcePosition(@NotNull final String isolateId,
                                            @NotNull final ScriptRef scriptRef,
-                                           int tokenPos,
-                                           CompletableFuture<String> fileFuture) {
-    return getSourcePosition(isolateId, scriptRef.getId(), scriptRef.getUri(), tokenPos, fileFuture);
+                                           int tokenPos) {
+    return getSourcePosition(isolateId, scriptRef.getId(), scriptRef.getUri(), tokenPos);
   }
 
   /**
@@ -268,23 +244,18 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
     return getSourcePosition(isolateId, script.getId(), script.getUri(), tokenPos);
   }
 
-  private XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final String scriptId,
-                                            @NotNull final String scriptUri, int tokenPos) {
-    return getSourcePosition(isolateId, scriptId, scriptUri, tokenPos, null);
-  }
-
   /**
    * Returns the local position (to display to the user) corresponding to a token position in Observatory.
    */
   @Nullable
   private XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final String scriptId,
-                                            @NotNull final String scriptUri, int tokenPos, CompletableFuture<String> fileFuture) {
+                                            @NotNull final String scriptUri, int tokenPos) {
     if (scriptProvider == null) {
       LOG.warn("attempted to get source position before connected to observatory");
       return null;
     }
 
-    final VirtualFile local = findLocalFile(scriptUri, fileFuture);
+    final VirtualFile local = findLocalFile(scriptUri);
 
     final ObservatoryFile.Cache cache =
       fileCache.computeIfAbsent(isolateId, (id) -> new ObservatoryFile.Cache(id, scriptProvider));
@@ -301,23 +272,12 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
     return remoteSourceRoot;
   }
 
-  @Nullable
-  protected VirtualFile findLocalFile(@NotNull String uri) {
-    final VirtualFile file = findLocalFile(uri, null);
-    if (file == null) {
-      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-        LOG.info("findLocalFile: could not find local file for " + uri);
-      }
-    }
-    return file;
-  }
-
   /**
    * Attempt to find a local Dart file corresponding to a script in Observatory.
    */
   @Nullable
-  protected VirtualFile findLocalFile(@NotNull String uri, CompletableFuture<String> fileFuture) {
-    return OpenApiUtils.safeRunReadAction(() -> {
+  protected VirtualFile findLocalFile(@NotNull String uri) {
+    final VirtualFile file = OpenApiUtils.safeRunReadAction(() -> {
       // This can be a remote file or URI.
       if (remoteSourceRoot != null && uri.startsWith(remoteSourceRoot)) {
         final String rootUri = StringUtil.trimEnd(resolver.getDartUrlForFile(sourceRoot), '/');
@@ -340,22 +300,15 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
         remoteUri = uri;
       }
 
-      // See if the analysis server can resolve the URI.
-      if (analyzer != null && !isDartPatchUri(remoteUri)) {
-        final String path = analyzer.getAbsolutePath(remoteUri);
-        if (path != null) {
-          if (path.startsWith("file://")) {
-            LocalFileSystem.getInstance().findFileByPath(path.substring(7));
-          }
-          else {
-            LocalFileSystem.getInstance().findFileByPath(path);
-          }
-        }
-      }
-
       // Otherwise, assume no mapping is needed and see if we can resolve it locally.
       return resolver.findFileByDartUrl(remoteUri);
     });
+    if (file == null) {
+      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+        LOG.info("findLocalFile: could not find local file for " + uri);
+      }
+    }
+    return file;
   }
 
   @NotNull
@@ -368,74 +321,7 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
     return uri;
   }
 
-  private static boolean isDartPatchUri(@NotNull final String uri) {
-    // dart:_builtin or dart:core-patch/core_patch.dart
-    return uri.startsWith("dart:_") || uri.startsWith("dart:") && uri.contains("-patch/");
-  }
-
   public void shutdown() {
-    if (analyzer != null) {
-      analyzer.close();
-    }
     project = null;
-  }
-
-  /**
-   * Wraps a Dart analysis server and execution id for doing URI resolution for a particular Flutter app.
-   * <p>
-   * (Can be mocked out for unit tests.)
-   */
-  public interface Analyzer {
-    @Nullable
-    String getAbsolutePath(@NotNull String dartUri);
-
-    @Nullable
-    String getUri(@NotNull String absolutePath);
-
-    void close();
-
-    /**
-     * Sets up the analysis server to resolve URI's for a Flutter app, if possible.
-     *
-     * @param sourceLocation the file containing the app's main() method, or a directory containing it.
-     */
-    @Nullable
-    static Analyzer create(@NotNull Project project, @NotNull VirtualFile sourceLocation) {
-      final DartPlugin dartPluginInstance = DartPlugin.getInstance();
-      final DartAnalysisServerService dartAnalysisServerService = dartPluginInstance.getAnalysisService(project);
-      if (dartAnalysisServerService == null) {
-        return null;
-      }
-
-      if (!dartAnalysisServerService.serverReadyForRequest()) {
-        LOG.warn("Dart analysis server is not running. Some breakpoints may not work.");
-        return null;
-      }
-
-      final String contextId = dartAnalysisServerService.execution_createContext(sourceLocation.getPath());
-      if (contextId == null) {
-        LOG.warn("Failed to get execution context from analysis server. Some breakpoints may not work.");
-        return null;
-      }
-
-      return new Analyzer() {
-        @Override
-        @Nullable
-        public String getAbsolutePath(@NotNull String dartUri) {
-          return dartAnalysisServerService.execution_mapUri(contextId, dartUri);
-        }
-
-        @Override
-        @Nullable
-        public String getUri(@NotNull String absolutePath) {
-          return dartAnalysisServerService.execution_mapUri(contextId, absolutePath);
-        }
-
-        @Override
-        public void close() {
-          dartAnalysisServerService.execution_deleteContext(contextId);
-        }
-      };
-    }
   }
 }

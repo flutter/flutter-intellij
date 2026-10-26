@@ -21,5 +21,21 @@ code_review:
     code_review: true
     # (DEFAULT) -- Note that this is disabled for flutter
     include_drafts: true
-ignore_patterns: []
+ignore_patterns:
+  - "build/**"
+  - "out/**"
+  - "bin/main/**"
+  - "bin/test/**"
+  - "bin/integration/**"
+  - ".intellijPlatform/**"
+  - ".gradle/**"
+  - ".dart_tool/**"
+  - ".kotlin/**"
+  - ".idea/**"
+  - ".sandbox/**"
+  - "releases/**"
+  - "third_party/lib/**"
+  - "gradle/wrapper/gradle-wrapper.jar"
+  - "resources/flutter/icons/**"
+  - "CHANGELOG-old.md"
 

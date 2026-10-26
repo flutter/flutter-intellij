@@ -5,10 +5,12 @@
  */
 package io.flutter.jxbrowser;
 
+import com.intellij.ide.ui.UISettingsUtils;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.content.ContentManager;
+import com.intellij.util.SmartList;
 import com.teamdev.jxbrowser.browser.Browser;
 import com.teamdev.jxbrowser.browser.UnsupportedRenderingModeException;
 import com.teamdev.jxbrowser.browser.callback.AlertCallback;
@@ -24,26 +26,23 @@ import com.teamdev.jxbrowser.ui.event.KeyPressed;
 import com.teamdev.jxbrowser.view.swing.BrowserView;
 import com.teamdev.jxbrowser.view.swing.callback.DefaultAlertCallback;
 import com.teamdev.jxbrowser.view.swing.callback.DefaultConfirmCallback;
+import com.teamdev.jxbrowser.zoom.Zoom;
+import com.teamdev.jxbrowser.zoom.ZoomLevel;
 import io.flutter.logging.PluginLogger;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.JxBrowserUtils;
+import io.flutter.utils.LabelInput;
 import io.flutter.utils.OpenApiUtils;
 import io.flutter.utils.ZoomLevelSelector;
 import io.flutter.view.EmbeddedBrowser;
 import io.flutter.view.EmbeddedTab;
-import io.flutter.utils.LabelInput;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import com.teamdev.jxbrowser.zoom.Zoom;
-import com.teamdev.jxbrowser.zoom.ZoomLevel;
-import com.intellij.ide.ui.UISettingsUtils;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JComponent;
+import java.awt.Dimension;
 import java.io.File;
-import com.intellij.util.SmartList;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeoutException;
@@ -67,7 +66,8 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
         if (type == PermissionType.CLIPBOARD_READ_WRITE
             || type == PermissionType.CLIPBOARD_SANITIZED_WRITE) {
           tell.grant();
-        } else {
+        }
+        else {
           tell.deny();
         }
       });
@@ -86,7 +86,8 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
     catch (Exception | Error ex) {
       if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
         LOG.info(ex);
-      } else {
+      }
+      else {
         LOG.info("Exception when creating a new browser instance: " + ex.getMessage());
       }
     }
@@ -106,7 +107,8 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
       catch (Exception ex) {
         if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
           LOG.info(ex);
-        } else {
+        }
+        else {
           LOG.info("Exception when closing JX Browser instance: " + ex.getMessage());
         }
       }

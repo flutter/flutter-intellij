@@ -18,7 +18,6 @@ import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
-import java.util.logging.SimpleFormatter;
 
 public class PluginLogger {
   public static final String LOG_FILE_NAME = "dash.log";
@@ -100,12 +99,15 @@ public class PluginLogger {
       @Override
       public String format(java.util.logging.LogRecord record) {
         return String.format(LOG_FORMAT_STRING,
-          new java.util.Date(record.getMillis()),
-          null, // Not using source name in the format string
-          record.getLoggerName(),
-          record.getLevel().getLocalizedName(),
-          super.formatMessage(record),
-          (record.getThrown() != null ? "\n" + com.intellij.openapi.util.text.StringUtil.getThrowableText(record.getThrown()) : "")
+                             new java.util.Date(record.getMillis()),
+                             null, // Not using source name in the format string
+                             record.getLoggerName(),
+                             record.getLevel().getLocalizedName(),
+                             super.formatMessage(record),
+                             (record.getThrown() != null
+                              ? "\n" +
+                                com.intellij.openapi.util.text.StringUtil.getThrowableText(record.getThrown())
+                              : "")
         );
       }
     };

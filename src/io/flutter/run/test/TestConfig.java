@@ -7,7 +7,11 @@ package io.flutter.run.test;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
-import com.intellij.execution.configurations.*;
+import com.intellij.execution.configurations.CommandLineState;
+import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configurations.LocatableConfigurationBase;
+import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.configurations.RuntimeConfigurationException;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.testframework.TestConsoleProperties;
 import com.intellij.execution.testframework.actions.ConsolePropertiesProvider;
@@ -17,14 +21,13 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.AnalyticsConstants;
-import io.flutter.sdk.FlutterSdk;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * A configuration for running Flutter tests.
- *
+ * <p>
  * Inheriting from ConsolePropertiesProvider enables the auto-test-before-commit feature in the VCS tool window.
  * Note that using that window causes additional analysis to occur, which creates a bunch of spurious errors.
  * IntelliJ has its own rules for Android files, and Flutter doesn't follow some of them.
@@ -81,11 +84,6 @@ public class TestConfig extends LocatableConfigurationBase<CommandLineState> imp
   @Override
   public void checkConfiguration() throws RuntimeConfigurationException {
     fields.checkRunnable(getProject());
-  }
-
-  @Nullable
-  public FlutterSdk getSdk() {
-    return FlutterSdk.getFlutterSdk(getProject());
   }
 
   @NotNull

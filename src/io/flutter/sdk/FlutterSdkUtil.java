@@ -14,6 +14,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ApplicationNamesInfo;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -101,14 +102,21 @@ public class FlutterSdkUtil {
    */
   public static void addKnownSDKPathsToCombo(@NotNull JComboBox combo) {
     // First, get the current path from the combo box on the EDT.
-    final String currentPath = combo.getEditor().getItem().toString().trim();
-    final Set<String> pathsToShow = new LinkedHashSet<>();
+    final Object initialItem = combo.getEditor().getItem();
+    final String currentPath = initialItem != null ? initialItem.toString().trim() : "";
+    final Set<String> initialPaths = new LinkedHashSet<>();
     if (!currentPath.isEmpty()) {
-      pathsToShow.add(currentPath);
+      initialPaths.add(currentPath);
     }
 
+    // Resolve on the EDT while combo is safe to query. Requires combo to already be showing,
+    // otherwise this falls back to non-modal and the update below never runs under a dialog.
+    final ModalityState modalityState = combo.isShowing()
+      ? ModalityState.stateForComponent(combo)
+      : ModalityState.nonModal();
+
     // Now, run the slow operation (finding valid SDK paths) on a background thread.
-    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+    OpenApiUtils.safeExecuteOnPooledThread(() -> {
       final String[] knownPaths = getKnownFlutterSdkPaths();
       final Set<String> validPaths = new LinkedHashSet<>();
       for (String path : knownPaths) {
@@ -119,19 +127,34 @@ public class FlutterSdkUtil {
       }
 
       // After the slow operation is complete, switch back to the EDT to update the UI.
-      ApplicationManager.getApplication().invokeLater(() -> {
+      // Without an explicit ModalityState, invokeLater uses the non-modal default, which the platform only
+      // runs once no modal dialog is open. When the wizard's dialog is already showing (e.g. the user switched
+      // to Flutter from another language), the update would stay queued until the dialog closed, leaving the
+      // dropdown empty. Using the combo's own modality state lets it run while that dialog is open.
+      OpenApiUtils.safeInvokeLater(() -> {
         // This code runs on the EDT.
+        final Object currentEditorItem = combo.getEditor().getItem();
+        final String activePath = currentEditorItem != null ? currentEditorItem.toString().trim() : "";
+
+        final Set<String> pathsToShow = new LinkedHashSet<>();
+        if (!activePath.isEmpty()) {
+          pathsToShow.add(activePath);
+        }
+        pathsToShow.addAll(initialPaths);
         pathsToShow.addAll(validPaths);
 
         // Update the combo box model with the new paths.
         //noinspection unchecked
         combo.setModel(new DefaultComboBoxModel<>(ArrayUtil.toStringArray(pathsToShow)));
 
-        // Select the first item if none is selected.
-        if (combo.getSelectedIndex() == -1 && combo.getItemCount() > 0) {
+        // Preserve active editor content or select the first item if none is selected.
+        if (!activePath.isEmpty()) {
+          combo.getEditor().setItem(activePath);
+        }
+        else if (combo.getSelectedIndex() == -1 && combo.getItemCount() > 0) {
           combo.setSelectedIndex(0);
         }
-      });
+      }, modalityState);
     });
   }
 

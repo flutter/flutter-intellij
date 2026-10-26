@@ -193,7 +193,7 @@ public class FlutterColorProvider implements ElementColorProvider {
         return ExpressionParsingUtils.parseColor(code);
       }
     }
-    catch (StringIndexOutOfBoundsException e) {
+    catch (IndexOutOfBoundsException e) {
       // This is rare but possible in 2023.3, see https://github.com/flutter/flutter-intellij/issues/7285
       // from the call to AstBufferUtil.getTextSkippingWhitespaceComments()
       return null;

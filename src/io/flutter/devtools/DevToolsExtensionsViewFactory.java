@@ -6,7 +6,6 @@
 package io.flutter.devtools;
 
 import com.intellij.openapi.project.Project;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.daemon.DevToolsInstance;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.view.EmbeddedBrowser;
@@ -62,7 +61,6 @@ public class DevToolsExtensionsViewFactory extends AbstractDevToolsViewFactory {
       .setDevToolsPort(instance.port())
       .setHide("all-except-extensions")
       .setEmbed(true).setFlutterSdkVersion(flutterSdkVersion)
-      .setWorkspaceCache(WorkspaceCache.getInstance(project))
       .setIdeFeature(DevToolsIdeFeature.TOOL_WINDOW)
       .build();
   }

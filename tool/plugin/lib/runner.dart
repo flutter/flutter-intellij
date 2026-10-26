@@ -46,7 +46,6 @@ baseVersion=${spec.baseVersion}
 dartPluginVersion=${spec.dartPluginVersion}
 androidPluginVersion=${spec.androidPluginVersion}
 sinceBuild=${spec.sinceBuild}
-untilBuild=${spec.untilBuild}
 testing=$testing
 javaVersion=${spec.javaVersion}
 kotlin.stdlib.default.dependency=false

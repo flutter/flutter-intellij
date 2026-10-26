@@ -6,6 +6,7 @@
 package io.flutter.sdk;
 
 import com.intellij.concurrency.JobScheduler;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
@@ -13,7 +14,6 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.util.EventDispatcher;
-import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.utils.OpenApiUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Monitors the application library table to notify clients when Flutter SDK configuration changes.
  */
-public class FlutterSdkManager {
+public class FlutterSdkManager implements Disposable {
   private final EventDispatcher<Listener> myListenerDispatcher = EventDispatcher.create(Listener.class);
   private boolean isFlutterConfigured;
   private final @NotNull Project myProject;
@@ -49,7 +49,7 @@ public class FlutterSdkManager {
     final ScheduledFuture timer = JobScheduler.getScheduler().scheduleWithFixedDelay(
       this::checkForFlutterSdkChange, 1, 1, TimeUnit.SECONDS);
 
-    Disposer.register(FlutterDartAnalysisServer.getInstance(project), () -> {
+    Disposer.register(this, () -> {
       libraryTable.removeListener(libraryTableListener);
       timer.cancel(false);
     });
@@ -63,6 +63,10 @@ public class FlutterSdkManager {
 
     // Cache initial state.
     isFlutterConfigured = isFlutterSdkSetAndNeeded();
+  }
+
+  @Override
+  public void dispose() {
   }
 
   // Send events if Flutter SDK was configured or unconfigured.

@@ -15,14 +15,12 @@ import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.executors.DefaultRunExecutor;
-import com.intellij.execution.process.ColoredProcessHandler;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.GenericProgramRunner;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.runners.RunContentBuilder;
 import com.intellij.execution.ui.ConsoleView;
-import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.execution.ui.RunContentManager;
 import com.intellij.icons.AllIcons;
@@ -55,6 +53,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.toolwindow.ToolWindowBadgeUpdater;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -62,7 +61,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
-import org.jetbrains.annotations.VisibleForTesting;
 
 /**
  * Launches a flutter app, showing it in the console.
@@ -166,12 +164,12 @@ public class LaunchState extends CommandLineState {
   }
 
   private @Nullable RunContentDescriptor getRunContentDescriptor(
-      @NotNull ExecutionEnvironment env,
-      @NotNull FlutterApp app,
-      @NotNull ExecutionResult result,
-      @NotNull String nameWithDeviceName,
-      @NotNull FlutterLaunchMode launchMode,
-      @NotNull Project project) throws ExecutionException {
+    @NotNull ExecutionEnvironment env,
+    @NotNull FlutterApp app,
+    @NotNull ExecutionResult result,
+    @NotNull String nameWithDeviceName,
+    @NotNull FlutterLaunchMode launchMode,
+    @NotNull Project project) throws ExecutionException {
     if (launchMode.supportsDebugConnection()) {
       ToolWindowBadgeUpdater.updateBadgedIcon(app, project);
 
@@ -232,13 +230,13 @@ public class LaunchState extends CommandLineState {
 
   @NotNull
   protected RunContentDescriptor createDebugSession(@NotNull final ExecutionEnvironment env,
-                                                   @NotNull final FlutterApp app,
-                                                   @NotNull final ExecutionResult executionResult,
-                                                   @NotNull final String sessionName)
+                                                    @NotNull final FlutterApp app,
+                                                    @NotNull final ExecutionResult executionResult,
+                                                    @NotNull final String sessionName)
     throws ExecutionException {
 
     final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), sourceLocation);
-    final FlutterPositionMapper mapper = createPositionMapper(env, app, resolver);
+    final FlutterPositionMapper mapper = createPositionMapper(env, resolver);
 
     final XDebuggerManager manager = XDebuggerManager.getInstance(env.getProject());
     return FlutterDebugSessionUtils.startSessionAndGetDescriptor(manager, env, new XDebugProcessStarter() {
@@ -252,21 +250,12 @@ public class LaunchState extends CommandLineState {
 
   @NotNull
   private FlutterPositionMapper createPositionMapper(@NotNull ExecutionEnvironment env,
-                                                     @NotNull FlutterApp app,
                                                      @NotNull DartUrlResolver resolver) {
-    final FlutterPositionMapper.Analyzer analyzer;
-    if (app.getMode() == RunMode.DEBUG) {
-      analyzer = FlutterPositionMapper.Analyzer.create(env.getProject(), sourceLocation);
-    }
-    else {
-      analyzer = null; // Don't need analysis server just to run.
-    }
-
     // Choose source root containing the Dart application.
     final VirtualFile pubspec = resolver.getPubspecYamlFile();
     final VirtualFile sourceRoot = pubspec != null ? pubspec.getParent() : workDir;
 
-    return new FlutterPositionMapper(env.getProject(), sourceRoot, resolver, analyzer);
+    return new FlutterPositionMapper(env.getProject(), sourceRoot, resolver);
   }
 
   @NotNull
@@ -289,9 +278,9 @@ public class LaunchState extends CommandLineState {
 
     if (app.getMode() == RunMode.RUN && app.getLaunchMode().supportsReload()) {
       final Computable<Boolean> isSessionActive = () -> app.isStarted() &&
-                                                         app.getFlutterDebugProcess() != null &&
-                                                         app.getFlutterDebugProcess().getVmConnected() &&
-                                                         !app.getProcessHandler().isProcessTerminated();
+                                                        app.getFlutterDebugProcess() != null &&
+                                                        app.getFlutterDebugProcess().getVmConnected() &&
+                                                        !app.getProcessHandler().isProcessTerminated();
       final Computable<Boolean> canReload = () -> isSessionActive.compute() && !app.isReloading();
       actions.add(new ReloadFlutterApp(app, canReload));
       actions.add(new RestartFlutterApp(app, canReload));
