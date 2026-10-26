@@ -11,6 +11,7 @@ Core entry points, constants, messaging, and project initialization logic for th
 - `FlutterInitializer`
 - `FlutterMessages`
 - `FlutterProjectActivity`
+- `FlutterProjectDisposable`
 - `FlutterStudioStartupActivity`
 - `FlutterUtils`
 - `ObservatoryConnector`

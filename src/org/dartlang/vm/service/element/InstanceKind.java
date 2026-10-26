@@ -151,7 +151,8 @@ public enum InstanceKind {
   TypeParameter,
 
   /**
-   * An instance of the Dart class TypeRef.
+   * An instance of the Dart class TypeRef. Note: this object kind is deprecated and will be
+   * removed.
    */
   TypeRef,
 
@@ -168,6 +169,11 @@ public enum InstanceKind {
   Uint8ClampedList,
 
   Uint8List,
+
+  /**
+   * An instance of the Dart class UserTag.
+   */
+  UserTag,
 
   /**
    * An instance of the Dart class WeakProperty.
