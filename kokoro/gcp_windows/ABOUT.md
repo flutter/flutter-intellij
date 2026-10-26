@@ -1,16 +1,14 @@
-<!--* freshness: { reviewed: '2026-08-17' } *-->
+<!--* freshness: { reviewed: '2026-10-25' } *-->
 # gcp_windows
 
 ## Overview
-Configuration and scripts for the Kokoro `gcp_windows` CI environment. Note that this environment is currently ignored/deprecated as per the parent Kokoro configuration.
+Placeholder for the former Kokoro `gcp_windows` CI environment. The environment is no longer used: its job configuration (`presubmit.cfg`) and script (`kokoro_test.bat`) have been removed, and this `ABOUT.md` is the only file left in the directory. Active Kokoro CI runs in [`../macos_external`](../macos_external/ABOUT.md).
 
 ## Interface
-- `kokoro_test.bat`
-- `presubmit.cfg`
+- (None. The directory contains no configs or scripts.)
 
 ## Invariants
-- Build file is defined as flutter-intellij-kokoro/kokoro/gcp_windows/kokoro_test.bat in presubmit configuration.
-- Execution relies on the KOKORO_ARTIFACTS_DIR environment variable being set.
+- No Kokoro job references this directory.
 
 ## Side Effects
-- Changes the current working directory to `%KOKORO_ARTIFACTS_DIR%\github\flutter-intellij-kokoro`.
+- None.
