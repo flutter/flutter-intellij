@@ -364,11 +364,8 @@
 
     <registryKey defaultValue="" description="Launch local server for DevTools" key="flutter.local.devtools.dir"/>
     <registryKey defaultValue="" description="Local DevTools server arguments" key="flutter.local.devtools.args"/>
-  </extensions>
 
-  <!-- Dart Plugin extensions -->
-  <extensions defaultExtensionNs="Dart">
-    <completionExtension implementation="io.flutter.editor.FlutterCompletionContributor" order="last"/>
+    <completion.contributor language="Dart" implementationClass="io.flutter.editor.FlutterCompletionContributor" order="first" />
   </extensions>
 
 </idea-plugin>
