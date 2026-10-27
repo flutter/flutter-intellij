@@ -5,11 +5,9 @@
  */
 package io.flutter.utils;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ui.EdtInvocationManager;
-import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import com.jetbrains.lang.dart.sdk.DartSdkUtil;
@@ -40,11 +38,6 @@ class EnableDartSupportForModule implements Runnable {
               FlutterModuleUtils.enableDartSDK(myModule);
             }
           }
-        });
-        ApplicationManager.getApplication().executeOnPooledThread(() -> {
-          OpenApiUtils.safeRunReadAction(() -> {
-            DartAnalysisServerService.getInstance(project).serverReadyForRequest();
-          });
         });
       });
     });

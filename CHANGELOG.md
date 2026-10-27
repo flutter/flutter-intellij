@@ -5,6 +5,7 @@
 ### Changed
 
 ### Removed
+- Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)
 
 ### Fixed
 
