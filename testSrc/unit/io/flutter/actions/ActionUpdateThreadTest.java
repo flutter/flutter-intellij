@@ -8,13 +8,17 @@ package io.flutter.actions;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
+import io.flutter.android.AndroidEmulator;
 import io.flutter.pub.PubRoot;
+import io.flutter.run.FlutterLaunchMode;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Verifies that actions explicitly define {@link ActionUpdateThread#BGT}
@@ -79,6 +83,9 @@ public class ActionUpdateThreadTest {
     assertEquals(ActionUpdateThread.BGT, new RestartFlutterAppRetarget().getActionUpdateThread());
     assertEquals(ActionUpdateThread.BGT, new ReloadAllFlutterAppsRetarget().getActionUpdateThread());
     assertEquals(ActionUpdateThread.BGT, new RestartAllFlutterAppsRetarget().getActionUpdateThread());
+    assertEquals(ActionUpdateThread.BGT, new OpenInXcodeAction().getActionUpdateThread());
+    assertEquals(ActionUpdateThread.BGT, new OpenInAppCodeAction().getActionUpdateThread());
+    assertEquals(ActionUpdateThread.BGT, new OpenSimulatorAction(true).getActionUpdateThread());
   }
 
   @Test
@@ -100,5 +107,42 @@ public class ActionUpdateThreadTest {
     assertEquals(ActionUpdateThread.BGT, new FlutterToolsActionGroup().getActionUpdateThread());
     assertEquals(ActionUpdateThread.BGT, new FlutterPackagesExplorerActionGroup().getActionUpdateThread());
     assertEquals(ActionUpdateThread.EDT, new FlutterExternalIdeActionGroup().getActionUpdateThread());
+  }
+
+  @Test
+  public void testOpenEmulatorAction_usesBgt() {
+    final AndroidEmulator emulator = mock(AndroidEmulator.class);
+    when(emulator.getName()).thenReturn("Test_Emulator");
+    final OpenEmulatorAction action = new OpenEmulatorAction(emulator);
+    assertEquals(ActionUpdateThread.BGT, action.getActionUpdateThread());
+  }
+
+  @Test
+  public void testRunFlutterAction_usesBgt() {
+    final RunFlutterAction action = new RunFlutterAction("key", FlutterLaunchMode.DEBUG, "id") {};
+    assertEquals(ActionUpdateThread.BGT, action.getActionUpdateThread());
+  }
+
+  @Test
+  public void testFlutterAppActionHierarchy_usesBgt() {
+    final FlutterAppAction action = mock(FlutterAppAction.class);
+    when(action.getActionUpdateThread()).thenCallRealMethod();
+    assertEquals(ActionUpdateThread.BGT, action.getActionUpdateThread());
+
+    final ReloadFlutterApp reloadAction = mock(ReloadFlutterApp.class);
+    when(reloadAction.getActionUpdateThread()).thenCallRealMethod();
+    assertEquals(ActionUpdateThread.BGT, reloadAction.getActionUpdateThread());
+
+    final RestartFlutterApp restartAction = mock(RestartFlutterApp.class);
+    when(restartAction.getActionUpdateThread()).thenCallRealMethod();
+    assertEquals(ActionUpdateThread.BGT, restartAction.getActionUpdateThread());
+
+    final ReloadAllFlutterApps reloadAllAction = mock(ReloadAllFlutterApps.class);
+    when(reloadAllAction.getActionUpdateThread()).thenCallRealMethod();
+    assertEquals(ActionUpdateThread.BGT, reloadAllAction.getActionUpdateThread());
+
+    final RestartAllFlutterApps restartAllAction = mock(RestartAllFlutterApps.class);
+    when(restartAllAction.getActionUpdateThread()).thenCallRealMethod();
+    assertEquals(ActionUpdateThread.BGT, restartAllAction.getActionUpdateThread());
   }
 }
