@@ -706,7 +706,7 @@ public class VmServiceWrapper implements Disposable {
       public void received(Sentinel response) {
         container.errorOccurred(response.getValueAsString());
       }
-    });
+    }));
   }
 
   @Nullable
