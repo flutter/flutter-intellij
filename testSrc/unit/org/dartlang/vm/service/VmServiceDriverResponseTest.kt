@@ -8,13 +8,46 @@ package org.dartlang.vm.service
 
 import com.google.gson.JsonObject
 import junit.framework.TestCase
+import org.dartlang.vm.service.consumer.GetIsolatePauseEventConsumer
 import org.dartlang.vm.service.consumer.GetPerfettoCpuSamplesConsumer
+import org.dartlang.vm.service.element.Event
+import org.dartlang.vm.service.element.EventKind
 import org.dartlang.vm.service.element.PerfettoCpuSamples
 import org.dartlang.vm.service.element.RPCError
 import org.dartlang.vm.service.element.Sentinel
 import org.dartlang.vm.service.element.SentinelKind
 
 class VmServiceDriverResponseTest : TestCase() {
+
+  fun `test isolate pause event response dispatch`() {
+    val consumer = RecordingIsolatePauseEventConsumer()
+    val json = JsonObject().apply {
+      addProperty("type", "Event")
+      addProperty("kind", "PauseBreakpoint")
+      addProperty("timestamp", 3_000_000_000L)
+    }
+
+    VmService().forwardResponse(consumer, "Event", json)
+
+    assertEquals(EventKind.PauseBreakpoint, consumer.event?.kind)
+    assertNull(consumer.sentinel)
+    assertNull(consumer.error)
+  }
+
+  fun `test isolate pause event sentinel dispatch`() {
+    val consumer = RecordingIsolatePauseEventConsumer()
+    val json = JsonObject().apply {
+      addProperty("type", "Sentinel")
+      addProperty("kind", "Collected")
+      addProperty("valueAsString", "<collected>")
+    }
+
+    VmService().forwardResponse(consumer, "Sentinel", json)
+
+    assertEquals(SentinelKind.Collected, consumer.sentinel?.kind)
+    assertNull(consumer.event)
+    assertNull(consumer.error)
+  }
 
   fun `test PerfettoCpuSamples response dispatch`() {
     val consumer = RecordingPerfettoCpuSamplesConsumer()
@@ -60,6 +93,24 @@ class VmServiceDriverResponseTest : TestCase() {
 
     override fun received(response: PerfettoCpuSamples) {
       this.response = response
+    }
+
+    override fun received(response: Sentinel) {
+      sentinel = response
+    }
+
+    override fun onError(error: RPCError) {
+      this.error = error
+    }
+  }
+
+  private class RecordingIsolatePauseEventConsumer : GetIsolatePauseEventConsumer {
+    var event: Event? = null
+    var sentinel: Sentinel? = null
+    var error: RPCError? = null
+
+    override fun received(response: Event) {
+      event = response
     }
 
     override fun received(response: Sentinel) {

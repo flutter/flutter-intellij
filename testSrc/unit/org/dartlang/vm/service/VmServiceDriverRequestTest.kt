@@ -9,14 +9,28 @@ package org.dartlang.vm.service
 import com.google.gson.JsonObject
 import junit.framework.TestCase
 import org.dartlang.vm.service.consumer.Consumer
+import org.dartlang.vm.service.consumer.GetIsolatePauseEventConsumer
 import org.dartlang.vm.service.consumer.GetPerfettoCpuSamplesConsumer
 import org.dartlang.vm.service.consumer.PerfettoTimelineConsumer
+import org.dartlang.vm.service.element.Event
 import org.dartlang.vm.service.element.PerfettoCpuSamples
 import org.dartlang.vm.service.element.PerfettoTimeline
 import org.dartlang.vm.service.element.RPCError
 import org.dartlang.vm.service.element.Sentinel
 
 class VmServiceDriverRequestTest : TestCase() {
+
+  fun `test isolate pause event request`() {
+    val service = RecordingVmService()
+    val consumer = isolatePauseEventConsumer()
+
+    service.getIsolatePauseEvent("isolates/1", consumer)
+
+    assertEquals("getIsolatePauseEvent", service.method)
+    assertEquals("isolates/1", service.params.get("isolateId").asString)
+    assertEquals(1, service.params.size())
+    assertSame(consumer, service.consumer)
+  }
 
   fun `test PerfettoTimeline request supports long timestamps`() {
     val service = RecordingVmService()
@@ -115,6 +129,12 @@ class VmServiceDriverRequestTest : TestCase() {
 
   private fun perfettoCpuSamplesConsumer() = object : GetPerfettoCpuSamplesConsumer {
     override fun received(response: PerfettoCpuSamples) = Unit
+    override fun received(response: Sentinel) = Unit
+    override fun onError(error: RPCError) = Unit
+  }
+
+  private fun isolatePauseEventConsumer() = object : GetIsolatePauseEventConsumer {
+    override fun received(response: Event) = Unit
     override fun received(response: Sentinel) = Unit
     override fun onError(error: RPCError) = Unit
   }
