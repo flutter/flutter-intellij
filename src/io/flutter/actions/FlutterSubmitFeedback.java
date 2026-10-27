@@ -6,6 +6,7 @@
 package io.flutter.actions;
 
 import com.intellij.ide.browsers.BrowserLauncher;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.jetbrains.lang.dart.analytics.Analytics;
@@ -13,6 +14,11 @@ import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterSubmitFeedback extends DumbAwareAction {
+  @Override
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
+  }
+
   @Override
   public void actionPerformed(@NotNull final AnActionEvent e) {
     Analytics.report(AnalyticsData.forAction(this, e));
