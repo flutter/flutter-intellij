@@ -16,7 +16,7 @@ Manages the integration and configuration of the Flutter Deep Links tool window 
 ## Invariants
 - `TOOL_WINDOW_ID` is initialized to "Flutter Deep Links" and `DEVTOOLS_PAGE_ID` to "deep-links". Both fields are `public static` but not `final`, so this is a convention, not enforced.
 - `getToolWindowTitle()` strictly returns "Deep Links"
-- Tool support is strictly dependent on `flutterSdkVersion.canUseDeepLinksTool()`
+- `versionSupportsThisTool` always returns `true`
 - `getDevToolsUrl` always configures the URL with embedded mode enabled, the deep-links page, and the `TOOL_WINDOW` IDE feature
 - Behavior shared with other DevTools tool windows (always-applicable tool window, SDK warning labels, embedded browser loading, refresh title action) is inherited from `AbstractDevToolsViewFactory`; see [`devtools`](../devtools/ABOUT.md).
 - Unlike the DevTools and DevTools Extensions factories, it has no `init()` hook or view service, so it does not receive VM service URI updates from debug sessions.

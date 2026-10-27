@@ -60,7 +60,7 @@ Core entry points, constants, messaging, and project initialization logic for th
   - Fixes module settings without a reload, sets the project SDK from `ANDROID_HOME` when unset, opens `main.dart`, and auto-creates its run configuration.
   - Initializes tool windows (Inspector, DevTools, DevTools Extensions), run/survey notifications, reload-on-save, format-on-save, and the plugins library watcher.
   - Adds the Android module where applicable, checks SDK versions, and shows the Android Studio "Try Gemini" notification.
-- FlutterInitializer forwards theme changes (editor color scheme and UI settings, debounced by 1s) to the Dart Tooling Daemon (DTD), only when the SDK supports DTD. `setUpDtdAnalytics` is currently a stub.
+- FlutterInitializer forwards theme changes (editor color scheme and UI settings, debounced by 1s) to the Dart Tooling Daemon (DTD). `setUpDtdAnalytics` is currently a stub.
 - ProjectOpenActivity (only for projects that declare Flutter) initializes JxBrowser, excludes Android framework detection in non-Android Studio IDEs, sets the project type to `io.flutter` for non-Android projects in Android Studio, queries the `android-studio-dir` Flutter config on a pooled thread, and shows 'pub get' notifications.
 - FlutterStudioStartupActivity adds Gradle listeners, runs add-to-app detection, fixes the module type and enables the Dart SDK for unconfigured Flutter modules, and switches to the Project view pane on first open.
 - FlutterMessages dispatches warning, error, and info notifications to the IntelliJ messaging bus and shows UI dialogs.

@@ -30,5 +30,5 @@ Manages interactions with the Dart VM Service to provide debugging capabilities 
 - Writes event and error outputs directly to the IDE's execution console.
 - VMServiceManager toggles features actively running on the device via RPCs (e.g., debug paint, slow animations), and enables the on-device inspector extension when constructed.
 - VMServiceManager detects the Flutter isolate, tracks registered services (`ServiceRegistered`/`ServiceUnregistered`), and routes `Flutter.Error` and Logging events to `FlutterConsoleLogManager`. Its `dispose()` is empty, so its VM service listener is never removed.
-- Subscribes to pushed Dart VM event streams (not polling): VMServiceManager listens to Extension, Logging and Service; VmServiceWrapper listens to Debug, Isolate and, when the SDK supports it (`canUseToolEventStream()`), ToolEvent.
+- Subscribes to pushed Dart VM event streams (not polling): VMServiceManager listens to Extension, Logging and Service; VmServiceWrapper listens to Debug, Isolate, and ToolEvent.
 - `DartVmServiceListener` evaluates breakpoint condition and log expressions synchronously, blocking for up to 1 second per expression on a `Semaphore`.

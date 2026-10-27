@@ -28,7 +28,7 @@ Manages the configuration, discovery, and path resolution for the Flutter SDK an
 - AbstractLibraryManager manages a named project library (subclasses supply the default name, e.g. "Flutter Plugins") with any number of CLASSES root URLs. If the project does not declare Flutter, the library is removed instead.
 - FlutterCommand encapsulates a flutter command execution, tracking the command type, target directory, and arguments.
 - FlutterSdk manages a static cache of project SDK instances indexed by their canonical paths, and caches `flutter config` query results per instance (`cachedConfigValues`).
-- FlutterSdkVersion reads `bin/cache/flutter.version.json` and tracks SDK semantic versions, beta version tags, and capability thresholds. `MIN_SDK_SUPPORTED` and `MIN_SDK_WITHOUT_SUNSET_WARNING` drive the outdated-SDK warnings; the other `MIN_SUPPORTS_*` constants gate features (DTD, DevTools multi-embed, property editor, widget preview, etc.).
+- FlutterSdkVersion reads `bin/cache/flutter.version.json` and tracks SDK semantic versions, beta version tags, and capability thresholds. `MIN_SDK_SUPPORTED` and `MIN_SDK_WITHOUT_SUNSET_WARNING` drive the outdated-SDK warnings; the other `MIN_SUPPORTS_*` constants gate features (DevTools multi-embed, property editor, widget preview).
 
 ## Side Effects
 - Modifies module library dependencies and Project roots using IntelliJ's WriteAction; AbstractLibraryManager commits library root changes via `DumbService.runWhenSmart`.
