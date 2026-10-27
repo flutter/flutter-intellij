@@ -30,8 +30,12 @@ public class Stack extends Response {
   }
 
   /**
-   * A list of frames representing the asynchronous path. Comparable to `awaiterFrames`, if
-   * provided, although some frames may be different.
+   * A list of frames which contains both synchronous part and the asynchronous continuation e.g.
+   * `async` functions awaiting completion of the currently running `async` function. Asynchronous
+   * frames are separated from each other and synchronous prefix via frames of kind
+   * {@link FrameKind#AsyncSuspensionMarker}.
+   *
+   * This field is absent if currently running code does not have an asynchronous continuation.
    *
    * Can return <code>null</code>.
    */
@@ -47,8 +51,10 @@ public class Stack extends Response {
   }
 
   /**
-   * A list of frames representing the asynchronous path. Comparable to `asyncCausalFrames`, if
-   * provided, although some frames may be different.
+   * Deprecated since version 4.7 of the protocol. Will be always absent in the response.
+   *
+   * Used to contain information about asynchronous continuation, similar to the one in
+   * asyncCausalFrame but with a slightly different encoding.
    *
    * Can return <code>null</code>.
    */

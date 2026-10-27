@@ -6,11 +6,33 @@
 
 package org.dartlang.vm.service.element
 
+import com.google.gson.JsonArray
 import com.google.gson.JsonNull
 import com.google.gson.JsonObject
 import junit.framework.TestCase
 
 class VmServiceDriverElementTest : TestCase() {
+
+  fun `test deprecated TypeRef kind remains decodable`() {
+    val json = JsonObject().apply {
+      addProperty("kind", "TypeRef")
+    }
+
+    assertEquals(InstanceKind.TypeRef, InstanceRef(json).kind)
+  }
+
+  fun `test deprecated async stack values remain decodable`() {
+    val awaiterFrameJson = JsonObject().apply {
+      addProperty("kind", "AsyncActivation")
+    }
+    val stackJson = JsonObject().apply {
+      add("awaiterFrames", JsonArray().apply { add(awaiterFrameJson) })
+    }
+
+    val awaiterFrames = Stack(stackJson).awaiterFrames
+    assertEquals(1, awaiterFrames.size())
+    assertEquals(FrameKind.AsyncActivation, awaiterFrames[0].kind)
+  }
 
   fun `test UserTagKind`() {
     val json = JsonObject().apply {
