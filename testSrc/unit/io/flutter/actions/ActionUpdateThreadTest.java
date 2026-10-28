@@ -6,6 +6,7 @@
 package io.flutter.actions;
 
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
+import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
 import io.flutter.android.AndroidEmulator;
@@ -15,8 +16,18 @@ import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.InputStream;
+import java.util.Set;
+import java.util.TreeSet;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -61,56 +72,44 @@ public class ActionUpdateThreadTest {
   }
 
   @Test
-  public void testFlutterSdkSubclasses_inheritBgt() {
-    assertEquals(ActionUpdateThread.BGT, new FlutterCleanAction().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new FlutterDoctorAction().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new FlutterPackagesAddAction().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new FlutterPackagesGetAction().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new FlutterPackagesUpgradeAction().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new FlutterUpgradeAction().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new AttachDebuggerAction().getActionUpdateThread());
+  public void testAllPluginXmlActions_declareExplicitUpdateThread() throws Exception {
+    final InputStream stream = getClass().getClassLoader().getResourceAsStream("META-INF/plugin.xml");
+    assertNotNull("META-INF/plugin.xml not found on test classpath", stream);
+
+    final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+    final Document doc = factory.newDocumentBuilder().parse(stream);
+
+    final Set<String> classNames = new TreeSet<>();
+    final NodeList actions = doc.getElementsByTagName("action");
+    for (int i = 0; i < actions.getLength(); i++) {
+      final String className = ((Element) actions.item(i)).getAttribute("class");
+      if (!className.isEmpty()) {
+        classNames.add(className);
+      }
+    }
+    final NodeList groups = doc.getElementsByTagName("group");
+    for (int i = 0; i < groups.getLength(); i++) {
+      final String className = ((Element) groups.item(i)).getAttribute("class");
+      if (!className.isEmpty()) {
+        classNames.add(className);
+      }
+    }
+
+    assertFalse("No action classes found in plugin.xml", classNames.isEmpty());
+
+    for (String className : classNames) {
+      final Class<?> clazz = Class.forName(className);
+      final AnAction action = (AnAction) clazz.getDeclaredConstructor().newInstance();
+      assertEquals("Action/Group " + className + " must return BGT",
+                   ActionUpdateThread.BGT, action.getActionUpdateThread());
+    }
   }
 
   @Test
-  public void testOtherRegisteredActions_useBgt() {
-    assertEquals(ActionUpdateThread.BGT, new DeviceSelectorAction().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new DeviceSelectorRefresherAction().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new ExtractWidgetAction().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new RestartFlutterDaemonAction().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new RunProfileFlutterApp().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new RunReleaseFlutterApp().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new ReloadFlutterAppRetarget().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new RestartFlutterAppRetarget().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new ReloadAllFlutterAppsRetarget().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new RestartAllFlutterAppsRetarget().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new OpenInXcodeAction().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new OpenInAppCodeAction().getActionUpdateThread());
+  public void testDynamicDeviceActions_useBgt() {
     assertEquals(ActionUpdateThread.BGT, new OpenSimulatorAction(true).getActionUpdateThread());
-  }
 
-  @Test
-  public void testFlutterBuildActions_useBgt() {
-    assertEquals(ActionUpdateThread.BGT, new FlutterBuildActionGroup().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new FlutterBuildActionGroup.AAR().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new FlutterBuildActionGroup.APK().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new FlutterBuildActionGroup.AppBundle().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new FlutterBuildActionGroup.Bundle().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new FlutterBuildActionGroup.Ios().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new FlutterBuildActionGroup.Linux().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new FlutterBuildActionGroup.Macos().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new FlutterBuildActionGroup.Web().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new FlutterBuildActionGroup.Windows().getActionUpdateThread());
-  }
-
-  @Test
-  public void testActionGroups_specifyExplicitUpdateThread() {
-    assertEquals(ActionUpdateThread.BGT, new FlutterToolsActionGroup().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.BGT, new FlutterPackagesExplorerActionGroup().getActionUpdateThread());
-    assertEquals(ActionUpdateThread.EDT, new FlutterExternalIdeActionGroup().getActionUpdateThread());
-  }
-
-  @Test
-  public void testOpenEmulatorAction_usesBgt() {
     final AndroidEmulator emulator = mock(AndroidEmulator.class);
     when(emulator.getName()).thenReturn("Test_Emulator");
     final OpenEmulatorAction action = new OpenEmulatorAction(emulator);
@@ -144,5 +143,10 @@ public class ActionUpdateThreadTest {
     final RestartAllFlutterApps restartAllAction = mock(RestartAllFlutterApps.class);
     when(restartAllAction.getActionUpdateThread()).thenCallRealMethod();
     assertEquals(ActionUpdateThread.BGT, restartAllAction.getActionUpdateThread());
+  }
+
+  @Test
+  public void testFlutterExternalIdeActionGroup_usesEdt() {
+    assertEquals(ActionUpdateThread.EDT, new FlutterExternalIdeActionGroup().getActionUpdateThread());
   }
 }
