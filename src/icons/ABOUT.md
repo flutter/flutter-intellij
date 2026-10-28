@@ -1,8 +1,8 @@
-<!--* freshness: { reviewed: '2026-08-17' } *-->
+<!--* freshness: { reviewed: '2026-10-25' } *-->
 # Icons
 
 ## Overview
-Provides statically defined, centralized icons for the Flutter IntelliJ plugin, loaded from application resources.
+Provides statically defined, centralized icons for the Flutter IntelliJ plugin, loaded from application resources. Everything is defined in [`FlutterIcons.java`](FlutterIcons.java) (package `icons`).
 
 ## Interface
 - `FlutterIcons`
@@ -33,7 +33,8 @@ Provides statically defined, centralized icons for the Flutter IntelliJ plugin, 
 
 ## Invariants
 - All icon fields are public, static, and final.
-- Icons are loaded via `com.intellij.openapi.util.IconLoader` with the `FlutterIcons` class as the base for resolution.
+- Icons are loaded through the private `load(String)` helper, which calls `com.intellij.openapi.util.IconLoader.getIcon(path, FlutterIcons.class)`.
+- Icon paths are absolute classpath resources under `/icons/` (files live in [`../../resources/icons/`](../../resources/icons/)). Exception: `DevToolsInspector` uses `"icons/expui/inspector.svg"` with no leading `/`.
 
 ## Side Effects
 - Loads SVG and PNG icon resources from the classpath into memory during class initialization.

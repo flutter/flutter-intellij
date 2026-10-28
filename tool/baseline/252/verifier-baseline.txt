@@ -3,7 +3,7 @@
 Deprecated API usages	Deprecated class com.intellij.ui.ComboboxWithBrowseButton is referenced in io.flutter.module.FlutterGeneratorPeer.createUIComponents() : void
 Deprecated API usages	Deprecated class com.intellij.ui.ComboboxWithBrowseButton is referenced in io.flutter.module.FlutterGeneratorPeer.getSdkEditor() : ComboBoxEditor
 Deprecated API usages	Deprecated class com.intellij.ui.ComboboxWithBrowseButton is referenced in io.flutter.module.FlutterGeneratorPeer.init() : void
-Deprecated API usages	Deprecated class com.intellij.ui.ComboboxWithBrowseButton is referenced in io.flutter.module.FlutterGeneratorPeer.lambda$fillSdkCache$1() : void
+Deprecated API usages	Deprecated class com.intellij.ui.ComboboxWithBrowseButton is referenced in io.flutter.module.FlutterGeneratorPeer.lambda$fillSdkCache$2() : void
 Deprecated API usages	Deprecated class com.intellij.ui.ComboboxWithBrowseButton is referenced in io.flutter.module.FlutterGeneratorPeer.mySdkPathComboWithBrowse : ComboboxWithBrowseButton
 Deprecated API usages	Deprecated constructor com.intellij.coverage.BaseCoverageSuite.<init>(java.lang.String name, com.intellij.coverage.CoverageFileProvider fileProvider, long timestamp, boolean coverageByTestEnabled, boolean branchCoverage, boolean trackTestFolders, com.intellij.coverage.CoverageRunner coverageRunner, com.intellij.openapi.project.Project project) is invoked in io.flutter.run.coverage.FlutterCoverageSuite.<init>(CoverageRunner, String, CoverageFileProvider, Project, FlutterCoverageEngine)
 Deprecated API usages	Deprecated constructor com.intellij.execution.actions.RunConfigurationProducer.<init>(com.intellij.execution.configurations.ConfigurationType configurationType) is invoked in io.flutter.run.FlutterRunConfigurationProducer.<init>()

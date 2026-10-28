@@ -1,8 +1,10 @@
-<!--* freshness: { reviewed: '2026-08-17' } *-->
+<!--* freshness: { reviewed: '2026-10-25' } *-->
 # Flutter Refactoring
 
 ## Overview
-Integrates with the Dart Analysis Server to provide Flutter-specific refactoring operations, such as extracting widgets.
+Integrates with the Dart Analysis Server to provide Flutter-specific refactorings. Currently the package holds a single refactoring, Extract Widget.
+
+[ExtractWidgetRefactoring](ExtractWidgetRefactoring.java) extends the Dart plugin's `com.jetbrains.lang.dart.ide.refactoring.ServerRefactoring`. Its consumer is [ExtractWidgetAction](../actions/ExtractWidgetAction.java), registered as `Flutter.ExtractWidget` in [plugin.xml](../../../../resources/META-INF/plugin.xml).
 
 ## Interface
 - `ExtractWidgetRefactoring`
@@ -13,6 +15,7 @@ Integrates with the Dart Analysis Server to provide Flutter-specific refactoring
 ## Invariants
 - Always uses `RefactoringKind.EXTRACT_WIDGET`.
 - Initializes `ExtractWidgetOptions` with a default name of 'NewWidget'.
+- `setFeedback` is a no-op, so any feedback the server sends is discarded.
 
 ## Side Effects
 - `setName(String)` mutates the internal `ExtractWidgetOptions` object state.
