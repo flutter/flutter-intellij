@@ -70,6 +70,9 @@ abstract class ExistingProjectUITest(private val packageName: String) {
     prepareProject()
   }
 
+  /** The Dart plugin version to install. Override for tests of features that need a newer Dart plugin. */
+  protected open val dartPluginVersion: String = Setup.DART_PLUGIN_VERSION_IU262
+
   /** Hook for subclasses to adjust the project on disk before the IDE opens it. */
   protected open fun prepareProject() {}
 
@@ -107,7 +110,7 @@ abstract class ExistingProjectUITest(private val packageName: String) {
       "IntelliJ IDEA starts (splash screen), then opens the project created with `flutter create`. " +
       "The Project view shows its files and the status bar shows indexing until it finishes."
     )
-    context = Setup.setupTestContextIU262(javaClass.simpleName, LocalProjectInfo(projectDir))
+    context = Setup.setupTestContextIU262(javaClass.simpleName, LocalProjectInfo(projectDir), dartPluginVersion)
     run = context.runIdeWithDriver()
     waitForProjectReady()
     // The Trial tab usually opens while the project loads, but can come a few seconds later; give it a moment.

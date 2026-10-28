@@ -84,14 +84,21 @@ class Setup {
     /**
      * IntelliJ IDEA 2026.2.3 (unified distribution), paired with a Dart plugin that supports build 262.
      */
-    fun setupTestContextIU262(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
+    fun setupTestContextIU262(
+      hyphenateWithClass: String,
+      projectInfoSpec: ProjectInfoSpec = NoProject,
+      dartPluginVersion: String = DART_PLUGIN_VERSION_IU262,
+    ): IDETestContext {
       return setupTestContext(
         hyphenateWithClass, IdeProductProvider.IU.copy(
           buildNumber = "262.10968.63",
           buildType = BuildType.RELEASE.type
-        ), projectInfoSpec, dartPluginVersion = "509.0.0"
+        ), projectInfoSpec, dartPluginVersion = dartPluginVersion
       )
     }
+
+    /** The Dart plugin version installed with IntelliJ IDEA 2026.2 unless a test asks for another one. */
+    const val DART_PLUGIN_VERSION_IU262 = "509.0.0"
 
     fun setupTestContextWS(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
       return setupTestContext(
