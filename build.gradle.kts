@@ -195,6 +195,7 @@ sourceSets {
         "testSrc/unit"
       )
     )
+    kotlin.srcDirs("testSrc/unit")
     resources.srcDirs(
       listOf(
         "resources",

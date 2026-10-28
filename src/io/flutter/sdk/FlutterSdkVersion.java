@@ -26,11 +26,11 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
    * Note, this is for the Flutter SDK version, not the Dart SDK version, this mapping can be found:
    * <a href="https://docs.flutter.dev/release/archive">Flutter SDK Release Archive list</a>.
    * <p>
-   * This version was updated last on March 26, 2026.
+   * This version was updated last on October 27, 2026.
    */
   @VisibleForTesting
   @NotNull
-  public static final FlutterSdkVersion MIN_SDK_SUPPORTED = new FlutterSdkVersion("3.19.4");
+  public static final FlutterSdkVersion MIN_SDK_SUPPORTED = new FlutterSdkVersion("3.22.2");
 
   /**
    * The minimum version of the Flutter SDK that will be supported for 3 more months. A version less than this is either not supported or
@@ -39,23 +39,14 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
    * Note, this is for the Flutter SDK version, not the Dart SDK version, this mapping can be found:
    * <a href="https://docs.flutter.dev/release/archive">Flutter SDK Release Archive list</a>.
    * <p>
-   * This version was updated last on March 26, 2026.
+   * This version was updated last on October 27, 2026.
    */
   @VisibleForTesting
   @NotNull
-  public static final FlutterSdkVersion MIN_SDK_WITHOUT_SUNSET_WARNING = new FlutterSdkVersion("3.22.2");
-
-  @NotNull
-  private static final FlutterSdkVersion MIN_SUPPORTS_TOOL_EVENT_STREAM = new FlutterSdkVersion("3.7.1");
-
-  @NotNull
-  private static final FlutterSdkVersion MIN_SUPPORTS_DEEP_LINKS_TOOL = new FlutterSdkVersion("3.19.0");
+  public static final FlutterSdkVersion MIN_SDK_WITHOUT_SUNSET_WARNING = new FlutterSdkVersion("3.27.4");
 
   @NotNull
   private static final FlutterSdkVersion MIN_SUPPORTS_DEVTOOLS_MULTI_EMBED = new FlutterSdkVersion("3.23.0-0.1.pre");
-
-  @NotNull
-  private static final FlutterSdkVersion MIN_SUPPORTS_DTD = new FlutterSdkVersion("3.22.0");
 
   @NotNull
   public static final FlutterSdkVersion MIN_SUPPORTS_PROPERTY_EDITOR = new FlutterSdkVersion("3.32.0-0.1.pre");
@@ -161,14 +152,6 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
     return this.compareTo(otherVersion) >= 0;
   }
 
-  public boolean canUseToolEventStream() {
-    return supportsVersion(MIN_SUPPORTS_TOOL_EVENT_STREAM);
-  }
-
-  public boolean canUseDeepLinksTool() {
-    return supportsVersion(MIN_SUPPORTS_DEEP_LINKS_TOOL);
-  }
-
   public boolean canUsePropertyEditor() {
     return supportsVersion(MIN_SUPPORTS_PROPERTY_EDITOR);
   }
@@ -179,13 +162,6 @@ public final class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
   public boolean canUseDevToolsMultiEmbed() {
     return supportsVersion(MIN_SUPPORTS_DEVTOOLS_MULTI_EMBED);
-  }
-
-  /**
-   * @noinspection BooleanMethodIsAlwaysInverted
-   */
-  public boolean canUseDtd() {
-    return supportsVersion(MIN_SUPPORTS_DTD);
   }
 
   public boolean isSDKSupported() {
