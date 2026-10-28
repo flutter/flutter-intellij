@@ -80,11 +80,12 @@ These are the versions of Flutter SDK that current and previous Flutter plugins 
 | v3.10.3 to v3.10.6  | 86.0.2 and earlier     |
 | v3.13.0 to v3.13.9  | 88.1.0 and earlier     |
 | v3.16.0 to v3.19.3  | 90.0.0 and earlier     |
-| v3.19.4 and above   | Currently supported    |
+| v3.19.4 to v3.22.1  | 97.0.0 and earlier     |
+| v3.22.2 and above   | Currently supported    |
 
 The minimum supported version is `MIN_SDK_SUPPORTED` in
 [`FlutterSdkVersion.java`](src/io/flutter/sdk/FlutterSdkVersion.java). For SDKs older than
-`MIN_SDK_WITHOUT_SUNSET_WARNING` (currently v3.22.2), the plugin warns that support will end soon.
+`MIN_SDK_WITHOUT_SUNSET_WARNING` (currently v3.27.4), the plugin warns that support will end soon.
 
 Here is more information on the Flutter plugin's support for Flutter
 SDKs: https://docs.flutter.dev/tools/sdk#sdk-support-for-flutter-developer-tools.

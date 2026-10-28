@@ -232,7 +232,7 @@ public class FlutterInitializer extends FlutterProjectActivity {
   private void setUpDtdAnalytics(Project project) {
     if (project == null) return;
     FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    if (sdk == null || !sdk.getVersion().canUseDtd()) return;
+    if (sdk == null) return;
     //Thread t1 = new Thread(() -> {
     //  UnifiedAnalytics unifiedAnalytics = new UnifiedAnalytics(project);
     //   TODO(helin24): Turn on after adding some unified analytics reporting.
@@ -243,7 +243,7 @@ public class FlutterInitializer extends FlutterProjectActivity {
 
   private void setUpThemeChangeNotifications(@NotNull Project project) {
     FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    if (sdk == null || !sdk.getVersion().canUseDtd()) return;
+    if (sdk == null) return;
     Thread t1 = new Thread(() -> {
       if (busSubscribed) return;
       final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
