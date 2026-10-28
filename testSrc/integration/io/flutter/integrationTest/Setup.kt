@@ -147,6 +147,12 @@ class Setup {
         addSystemProperty("jb.privacy.policy.text", "<!--999.999-->") // Skip privacy policy
         addSystemProperty("ide.show.tips.on.startup.default.value", false) // No tips on startup
 
+        // No JetBrains feedback surveys ("Tell us about your experience" and similar). These are registry keys of the
+        // platform's feedback module; registry keys can be set as system properties.
+        addSystemProperty("platform.feedback", false)
+        addSystemProperty("csat.survey.enabled", false)
+        addSystemProperty("editor.ux.survey.enabled", false)
+
         // Test framework configuration
         addSystemProperty("junit.jupiter.extensions.autodetection.enabled", true)
         addSystemProperty("shared.indexes.download.auto.consent", true)

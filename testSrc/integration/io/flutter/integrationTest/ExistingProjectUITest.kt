@@ -110,6 +110,9 @@ abstract class ExistingProjectUITest(private val packageName: String) {
     context = Setup.setupTestContextIU262(javaClass.simpleName, LocalProjectInfo(projectDir))
     run = context.runIdeWithDriver()
     waitForProjectReady()
+    // The Trial tab usually opens while the project loads, but can come a few seconds later; give it a moment.
+    val deadline = System.currentTimeMillis() + 15_000
+    while (!closeTrialTab() && System.currentTimeMillis() < deadline) Thread.sleep(1_000)
   }
 
   /** Runs [action] inside the project frame. */
@@ -142,7 +145,21 @@ abstract class ExistingProjectUITest(private val packageName: String) {
           it.click()
         }
     }
+    closeTrialTab()
   }
+
+  /**
+   * Closes the "Trial" editor tab that IntelliJ IDEA Ultimate opens on its own after it starts a free trial (logged as
+   * "Automatically opened an editor tab for 'active' trial state"). It covers the editor and shows up in walkthroughs.
+   * Returns true if a tab was closed.
+   */
+  protected fun closeTrialTab(): Boolean = runCatching {
+    val close = driver.ui.xx("//div[@class='EditorTabLabel'][.//div[@visible_text='Trial']]//div[@myicon='closeSmall.svg']")
+      .list().firstOrNull() ?: return false
+    println("Closing IntelliJ IDEA's Trial tab")
+    close.click()
+    true
+  }.getOrDefault(false)
 
   /** Waits until any editor or console in the frame contains one of [texts]; returns the one found. */
   protected fun IdeaFrameUI.waitForConsoleText(vararg texts: String, timeout: Duration = 3.minutes): String {
