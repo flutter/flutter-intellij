@@ -77,8 +77,8 @@ class FlutterCompletionContributor : CompletionContributor() {
     fun findIcon(declaringType: String?, name: String?): Icon? {
       if (name == null) return null
       return when (declaringType) {
-        "Colors" -> FlutterColors.getColor(name)?.let { ColorIcon(ICON_SIZE, it.awtColor) }
-        "CupertinoColors" -> FlutterCupertinoColors.getColor(name)?.let { ColorIcon(ICON_SIZE, it.awtColor) }
+        "Colors" -> FlutterColors.getColor(name)?.let { ColorIcon(ICON_SIZE, it.getAWTColor()) }
+        "CupertinoColors" -> FlutterCupertinoColors.getColor(name)?.let { ColorIcon(ICON_SIZE, it.getAWTColor()) }
         "Icons" -> FlutterMaterialIcons.getIconForName(name) ?: EMPTY_ICON
         "CupertinoIcons" -> FlutterCupertinoIcons.getIconForName(name) ?: EMPTY_ICON
         else -> null
