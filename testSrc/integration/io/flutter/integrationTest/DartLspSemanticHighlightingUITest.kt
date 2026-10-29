@@ -20,8 +20,9 @@ import kotlin.io.path.readText
 import kotlin.io.path.writeText
 import kotlin.time.Duration.Companion.minutes
 
-// TODO(radcliffc): Findings on 2026-10-29 (PR #640 merged with dart-intellij-third-party main, Dart SDK
-//  3.14.0-315.3.beta): the 20 checked identifier colors, the edit, and the fallback all pass, but LSP highlighting
+// TODO(radcliffc): Findings on 2026-10-29, confirmed on github.com/cj-radcliff/dart-intellij-third-party-working
+//  branch pr-640 at c2ba597b1 (PR #640 merged with dart-intellij-third-party main as of that day), Dart SDK
+//  3.14.0-315.3.beta: the 20 checked identifier colors, the edit, and the fallback all pass, but LSP highlighting
 //  differs from legacy in 4 places, so the test fails:
 //  - Constructor name `Counter(this.value)`: legacy DART_CLASS, LSP DART_CONSTRUCTOR (maybe intended).
 //  - Writes `instances = 0` and `value += by`: legacy *_SETTER_REFERENCE, LSP *_GETTER_REFERENCE (no setter mapping).
