@@ -121,7 +121,7 @@ public class PluginLoggerTest {
 
     PluginLogger.infoFilePath(mockLogger, ex);
 
-    verify(mockLogger).info("sanitized message");
+    verify(mockLogger).info("RuntimeException");
     verify(mockLogger, never()).info(ex);
   }
 
@@ -205,7 +205,7 @@ public class PluginLoggerTest {
 
     PluginLogger.warnFilePath(mockLogger, ex);
 
-    verify(mockLogger).warn("warn message");
+    verify(mockLogger).warn("RuntimeException");
     verify(mockLogger, never()).warn(ex);
   }
 
@@ -289,7 +289,7 @@ public class PluginLoggerTest {
 
     PluginLogger.errorFilePath(mockLogger, ex);
 
-    verify(mockLogger).error("error message");
+    verify(mockLogger).error("RuntimeException");
     verify(mockLogger, never()).error(ex);
   }
 

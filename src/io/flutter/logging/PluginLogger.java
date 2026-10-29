@@ -182,15 +182,15 @@ public class PluginLogger {
   }
 
   /**
-   * Logs an info-level throwable. When file path logging is disabled, only the throwable message
-   * or class name is logged to prevent file paths from leaking through stack traces.
+   * Logs an info-level throwable. When file path logging is disabled, only the throwable
+   * class name is logged to prevent file paths from leaking through stack traces or exception messages.
    */
   public static void infoFilePath(@NotNull Logger logger, @NotNull Throwable t) {
     if (isFilePathLoggingEnabled()) {
       logger.info(t);
     }
     else {
-      logger.info(t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName());
+      logger.info(t.getClass().getSimpleName());
     }
   }
 
@@ -226,15 +226,15 @@ public class PluginLogger {
   }
 
   /**
-   * Logs a warn-level throwable. When file path logging is disabled, only the throwable message
-   * or class name is logged to prevent file paths from leaking through stack traces.
+   * Logs a warn-level throwable. When file path logging is disabled, only the throwable
+   * class name is logged to prevent file paths from leaking through stack traces or exception messages.
    */
   public static void warnFilePath(@NotNull Logger logger, @NotNull Throwable t) {
     if (isFilePathLoggingEnabled()) {
       logger.warn(t);
     }
     else {
-      logger.warn(t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName());
+      logger.warn(t.getClass().getSimpleName());
     }
   }
 
@@ -270,15 +270,15 @@ public class PluginLogger {
   }
 
   /**
-   * Logs an error-level throwable. When file path logging is disabled, only the throwable message
-   * or class name is logged to prevent file paths from leaking through stack traces.
+   * Logs an error-level throwable. When file path logging is disabled, only the throwable
+   * class name is logged to prevent file paths from leaking through stack traces or exception messages.
    */
   public static void errorFilePath(@NotNull Logger logger, @NotNull Throwable t) {
     if (isFilePathLoggingEnabled()) {
       logger.error(t);
     }
     else {
-      logger.error(t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName());
+      logger.error(t.getClass().getSimpleName());
     }
   }
 }

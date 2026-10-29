@@ -3,7 +3,7 @@
 ### Added
 
 ### Changed
-- Centralize file path logging into `PluginLogger`. (#8707)
+- Centralizing file path logging into `PluginLogger`. (#8707)
 
 ### Removed
 
