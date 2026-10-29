@@ -6,6 +6,7 @@
 package io.flutter.actions;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
@@ -27,6 +28,11 @@ public class RefreshToolWindowAction extends DumbAwareAction {
   public RefreshToolWindowAction(@NotNull String toolWindowId) {
     super(FlutterBundle.message("flutter.toolwindow.action.refresh"), null, AllIcons.Actions.Refresh);
     this.toolWindowId = toolWindowId;
+  }
+
+  @Override
+  public @NotNull ActionUpdateThread getActionUpdateThread() {
+    return ActionUpdateThread.BGT;
   }
 
   @Override
