@@ -1,4 +1,4 @@
-<!--* freshness: { reviewed: '2026-10-25' } *-->
+<!--* freshness: { reviewed: '2026-10-29' } *-->
 # Flutter Editor Features
 
 ## Overview
@@ -10,7 +10,7 @@ Provides editor-level enhancements: color and icon decorations on Dart completio
 - [`ExpressionParsingUtils`](ExpressionParsingUtils.java): parses `Color` literals (`Color(0x...)`, `fromARGB`, `fromRGBO`) for `FlutterColorProvider`.
 - [`FlutterColorProvider`](FlutterColorProvider.java): an `ElementColorProvider` that supplies gutter color swatches and writes picked colors back to source.
 - [`FlutterColors`](FlutterColors.java)
-- [`FlutterCompletionContributor`](FlutterCompletionContributor.java): a `DartCompletionExtension` (registered as `completionExtension`). It adds no completions; it decorates Dart server suggestions on `Colors`, `CupertinoColors`, `Icons`, and `CupertinoIcons` with color/icon type icons.
+- [`FlutterCompletionContributor`](FlutterCompletionContributor.kt): a `CompletionContributor` (registered as `completion.contributor` for `Dart` with `order="first"`). It adds no completions; it intercepts and decorates completion results on `Colors`, `CupertinoColors`, `Icons`, and `CupertinoIcons` with color/icon type icons.
 - [`FlutterCupertinoColors`](FlutterCupertinoColors.java)
 - [`FlutterCupertinoIcons`](FlutterCupertinoIcons.java)
 - [`FlutterIconLineMarkerProvider`](FlutterIconLineMarkerProvider.java)

@@ -3,6 +3,7 @@
 ### Added
 
 ### Changed
+- Migrated `FlutterCompletionContributor` (color and icon completion previews) to IntelliJ `CompletionContributor` for LSP completion support. (#9186)
 
 ### Removed
 
