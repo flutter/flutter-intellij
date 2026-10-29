@@ -38,6 +38,26 @@ fun JEditorUiComponent.usageHighlights(): List<UsageHighlight> = driver.withCont
   }.distinct().sortedBy { it.start }
 }
 
+/** A highlighted range `[start, end)` and the external name of its text attributes key, for example `DART_CLASS`. */
+data class AttributesHighlight(val start: Int, val end: Int, val key: String)
+
+/**
+ * All highlighters in the editor whose text attributes key starts with [keyPrefix] (for example `DART_` for the Dart
+ * plugin's semantic highlighting), from the editor's own and the document's markup models, sorted by offset.
+ * Highlighting from the lexer (comments, strings, numbers, built-in keywords) isn't in the markup models, so it isn't
+ * included.
+ */
+fun JEditorUiComponent.attributesHighlights(keyPrefix: String): List<AttributesHighlight> = driver.withContext(OnDispatcher.EDT) {
+  val editorEx = cast(editor, EditorWithMarkupRef::class)
+  val highlighters = editorEx.getMarkupModel().getAllHighlighters().toList() +
+                     editorEx.getFilteredDocumentMarkupModel().getAllHighlighters().toList()
+  highlighters.mapNotNull { highlighter ->
+    val key = runCatching { highlighter.getTextAttributesKey()?.getExternalName() }.getOrNull() ?: return@mapNotNull null
+    if (!key.startsWith(keyPrefix)) return@mapNotNull null
+    AttributesHighlight(highlighter.getStartOffset(), highlighter.getEndOffset(), key)
+  }.sortedWith(compareBy({ it.start }, { it.end }, { it.key }))
+}
+
 @Remote("com.intellij.openapi.editor.ex.EditorEx")
 internal interface EditorWithMarkupRef {
   fun getMarkupModel(): MarkupModelRef

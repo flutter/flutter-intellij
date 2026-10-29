@@ -6,21 +6,15 @@
 
 package io.flutter.integrationTest
 
-import com.intellij.driver.client.Remote
-import com.intellij.driver.sdk.singleProject
-import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
-import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.common.JEditorUiComponent
-import com.intellij.driver.sdk.ui.components.elements.button
-import com.intellij.driver.sdk.ui.components.elements.checkBox
-import com.intellij.driver.sdk.ui.components.settings.settingsDialog
 import io.flutter.integrationTest.utils.UsageAccess
+import io.flutter.integrationTest.utils.dartExperimentalLspFeaturesEnabled
+import io.flutter.integrationTest.utils.setDartExperimentalLspFeatures
 import io.flutter.integrationTest.utils.UsageHighlight
 import io.flutter.integrationTest.utils.usageHighlights
 import org.junit.jupiter.api.Test
 import kotlin.io.path.writeText
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 // TODO(radcliffc): First run (2026-10-28, IntelliJ 2026.2.3, Dart plugin 510.0.0, Flutter 3.44.7 / Dart SDK 3.12.2)
 //  fails: all four occurrences are highlighted, but all as reads, including `var count = 0` and `count =`. The Dart
@@ -72,9 +66,9 @@ class DocumentHighlightReadWriteUITest : ExistingProjectUITest("document_highlig
         "Turn off experimental LSP features",
         "Settings > Languages & Frameworks > Dart opens; \"Turn on experimental LSP features\" is checked by default, gets unchecked, and the change is applied."
       )
-      turnOffExperimentalLspFeatures()
+      setDartExperimentalLspFeatures(enabled = false)
     }
-    check(!experimentalLspFeaturesEnabled()) { "\"Turn on experimental LSP features\" is still on after unchecking it in Settings" }
+    check(!driver.dartExperimentalLspFeaturesEnabled()) { "\"Turn on experimental LSP features\" is still on after unchecking it in Settings" }
     println("Experimental LSP features: off")
 
     step("Open the sample file", "The editor shows `lib/highlight_sample.dart` with the `test()` function that writes and reads `count`.")
@@ -116,26 +110,6 @@ class DocumentHighlightReadWriteUITest : ExistingProjectUITest("document_highlig
     }
   }
 
-  /** Unchecks "Turn on experimental LSP features" in Settings > Languages & Frameworks > Dart, then applies and closes Settings. */
-  private fun IdeaFrameUI.turnOffExperimentalLspFeatures() {
-    openSettingsDialog()
-    settingsDialog {
-      waitFound(30.seconds)
-      openTreeSettingsSection("Languages & Frameworks", "Dart")
-      val flag = checkBox { contains(byVisibleText("Turn on experimental LSP features")) }
-      flag.waitFound(30.seconds)
-      println("Experimental LSP features checkbox was ${if (flag.isSelected()) "on" else "off"}")
-      if (flag.isSelected()) flag.click()
-      check(!flag.isSelected()) { "Could not uncheck \"Turn on experimental LSP features\"" }
-      applyButton.click()
-      button("OK").click()
-    }
-  }
-
-  /** The value the Dart plugin reads for "Turn on experimental LSP features" (default true). */
-  private fun experimentalLspFeaturesEnabled(): Boolean =
-    driver.service(ProjectPropertiesRef::class, driver.singleProject()).getBoolean(EXPERIMENTAL_LSP_KEY, true)
-
   private fun List<UsageHighlight>.describe(editor: JEditorUiComponent): String {
     if (isEmpty()) return "(nothing highlighted)"
     val text = editor.text
@@ -156,13 +130,5 @@ class DocumentHighlightReadWriteUITest : ExistingProjectUITest("document_highlig
 
     /** In order of appearance: `var count = 0`, `count =`, `count + 1`, `print(count)`. */
     val EXPECTED_ACCESS = listOf(UsageAccess.WRITE, UsageAccess.WRITE, UsageAccess.READ, UsageAccess.READ)
-
-    /** Project property behind "Turn on experimental LSP features" (`DartConfigurable`, default true). */
-    const val EXPERIMENTAL_LSP_KEY = "dart.lsp.experimental.enabled"
   }
-}
-
-@Remote("com.intellij.ide.util.PropertiesComponent")
-internal interface ProjectPropertiesRef {
-  fun getBoolean(name: String, defaultValue: Boolean): Boolean
 }

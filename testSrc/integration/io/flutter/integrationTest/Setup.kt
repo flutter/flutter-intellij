@@ -136,9 +136,17 @@ class Setup {
       return Starter.newContext(testName = hyphenateWithClass, testCase = testCase).apply {
         // Install the plugin that was built by the buildPlugin task
         val pluginPath = System.getProperty("path.to.build.plugin")
-        PluginConfigurator(this)
-          .installPluginFromPath(Paths.get(pluginPath))
-          .installPluginFromPluginManager("Dart", dartPluginVersion)
+        // DART_PLUGIN_ZIP installs a locally built Dart plugin (for example from a dart-intellij-third-party pull
+        // request) instead of the Marketplace version.
+        val localDartPlugin = System.getenv("DART_PLUGIN_ZIP")?.takeIf { it.isNotBlank() }
+        val plugins = PluginConfigurator(this).installPluginFromPath(Paths.get(pluginPath))
+        if (localDartPlugin != null) {
+          println("Installing the Dart plugin from $localDartPlugin")
+          plugins.installPluginFromPath(Paths.get(localDartPlugin))
+        }
+        else {
+          plugins.installPluginFromPluginManager("Dart", dartPluginVersion)
+        }
         withBuildTool<GradleBuildTool>()
       }.applyVMOptionsPatch {
 
