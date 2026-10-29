@@ -22,7 +22,6 @@ import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import com.jetbrains.lang.dart.DartFileType;
 import io.flutter.logging.PluginLogger;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.OpenApiUtils;
 import io.flutter.vmService.frame.DartAsyncMarkerFrame;
 import io.flutter.vmService.frame.DartVmServiceEvaluator;
@@ -442,7 +441,7 @@ public class VmServiceWrapper implements Disposable {
       int line = position.getLine() + 1;
 
       String resolvedUri = getResolvedUri(position);
-      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) LOG.info("Computed resolvedUri: " + resolvedUri);
+      PluginLogger.infoFilePath(LOG, () -> "Computed resolvedUri: " + resolvedUri);
       List<String> resolvedUriList = List.of(percentEscapeUri(resolvedUri));
 
       CanonicalBreakpoint canonicalBreakpoint =
@@ -516,7 +515,7 @@ public class VmServiceWrapper implements Disposable {
     VirtualFile file = position.getFile().getCanonicalFile();
     assert file != null;
     String url = file.getUrl();
-    if (FlutterSettings.getInstance().isFilePathLoggingEnabled())  LOG.info("in getResolvedUri. url: " + url);
+    PluginLogger.infoFilePath(LOG, () -> "in getResolvedUri. url: " + url);
 
     if (SystemInfo.isWindows) {
       // Dart and the VM service use three /'s in file URIs: https://api.dart.dev/stable/2.16.1/dart-core/Uri-class.html.

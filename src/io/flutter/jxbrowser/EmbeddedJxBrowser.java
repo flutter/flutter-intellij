@@ -84,12 +84,7 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
       // Skip using a transparent background if an exception is thrown.
     }
     catch (Exception | Error ex) {
-      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-        LOG.info(ex);
-      }
-      else {
-        LOG.info("Exception when creating a new browser instance: " + ex.getMessage());
-      }
+      PluginLogger.infoFilePath(LOG, "Exception when creating a new browser instance: " + ex.getMessage(), ex);
     }
   }
 
@@ -105,12 +100,7 @@ class EmbeddedJxBrowserTab implements EmbeddedTab {
         this.browser.close();
       }
       catch (Exception ex) {
-        if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-          LOG.info(ex);
-        }
-        else {
-          LOG.info("Exception when closing JX Browser instance: " + ex.getMessage());
-        }
+        PluginLogger.infoFilePath(LOG, "Exception when closing JX Browser instance: " + ex.getMessage(), ex);
       }
     });
   }
