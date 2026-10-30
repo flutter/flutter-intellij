@@ -21,4 +21,5 @@ dev_dependencies:
   # tool/skills_lint.yaml relative to the config file rather than the
   # CWD, which is why that config uses "../.agents/skills". Downgrading
   # below 0.5.2 would resolve that path outside the repository.
-  skills_lint: ^0.5.2
+  skills_lint: ^0.5.3
+
