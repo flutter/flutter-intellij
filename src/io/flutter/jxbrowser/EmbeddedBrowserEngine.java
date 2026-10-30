@@ -14,7 +14,6 @@ import com.teamdev.jxbrowser.engine.Engine;
 import com.teamdev.jxbrowser.engine.EngineOptions;
 import com.teamdev.jxbrowser.engine.PasswordStore;
 import io.flutter.logging.PluginLogger;
-import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -33,7 +32,7 @@ public class EmbeddedBrowserEngine implements Disposable {
 
   public EmbeddedBrowserEngine() {
     final String dataPath = JxBrowserManager.DOWNLOAD_PATH + File.separatorChar + "user-data";
-    if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) LOG.info("JxBrowser user data path: " + dataPath);
+    PluginLogger.infoFilePath(LOG, () -> "JxBrowser user data path: " + dataPath);
 
     final EngineOptions.Builder optionsBuilder =
       EngineOptions.newBuilder(SystemInfo.isMac ? HARDWARE_ACCELERATED : OFF_SCREEN)
@@ -53,11 +52,7 @@ public class EmbeddedBrowserEngine implements Disposable {
     }
     catch (Exception ex) {
       temp = null;
-      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-        LOG.info(ex);
-      } else {
-        LOG.info("Exception when creating a new instance of JX Browser engine: " + ex.getMessage());
-      }
+      PluginLogger.infoFilePath(LOG, "Exception when creating a new instance of JX Browser engine: " + ex.getMessage(), ex);
     }
     engine = temp;
 
@@ -72,11 +67,7 @@ public class EmbeddedBrowserEngine implements Disposable {
         }
       }
       catch (Exception ex) {
-        if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-          LOG.info(ex);
-        } else {
-          LOG.info("Exception when closing JX Browser engine: " + ex.getMessage());
-        }
+        PluginLogger.infoFilePath(LOG, "Exception when closing JX Browser engine: " + ex.getMessage(), ex);
       }
     });
   }

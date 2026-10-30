@@ -48,7 +48,7 @@ Registers standard IDE UI actions (buttons, context menus) that trigger Flutter 
 - [`RunReleaseFlutterApp`](RunReleaseFlutterApp.java)
 
 ## Invariants
-- Most actions extend standard IntelliJ action classes (e.g., AnAction, DumbAwareAction) and specify execution thread constraints via getActionUpdateThread().
+- Actions extend standard IntelliJ action classes (e.g., AnAction, DumbAwareAction) and explicitly specify background execution thread constraints via getActionUpdateThread() (`ActionUpdateThread.BGT`).
 - Actions extending FlutterSdkAction require a Flutter SDK. If none is configured, it shows a "configure SDK" dialog and reports `MISSING_SDK` analytics instead of running. When the event has no PubRoot, the command runs for every PubRoot in the project.
 - Actions extending FlutterAppAction are enabled only when the app is started, the action's applicability check passes, and the app's mode supports reload. Each instance registers itself in ProjectActions under its action ID while the app is connected, and unregisters when it disconnects.
 - ProjectActions binds AnAction instances strictly to the lifecycle and context of a Project via IntelliJ's UserData mappings.
