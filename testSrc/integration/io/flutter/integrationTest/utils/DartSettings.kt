@@ -15,6 +15,8 @@ import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.elements.button
 import com.intellij.driver.sdk.ui.components.elements.checkBox
 import com.intellij.driver.sdk.ui.components.settings.settingsDialog
+import kotlin.io.path.exists
+import kotlin.io.path.readText
 import kotlin.time.Duration.Companion.seconds
 
 /** Project property behind the Dart plugin's "Turn on experimental LSP features" checkbox (`DartConfigurable`, default true). */
@@ -56,4 +58,44 @@ interface DartAnalysisServerServiceStatics {
 
   /** [isLspHighlightingEnabled], and the analysis server advertised semantic tokens, so legacy highlighting is off. */
   fun isLspHighlightingActive(project: Project): Boolean
+}
+
+/** The Dart SDK version of `FLUTTER_SDK` (from `bin/cache/dart-sdk/version`), for example `3.14.0-315.3.beta`. */
+fun flutterDartSdkVersion(): String {
+  val versionFile = Platform.flutterSdk.resolve("bin/cache/dart-sdk/version")
+  check(versionFile.exists()) { "No Dart SDK in $versionFile; run `flutter --version` with FLUTTER_SDK=${Platform.flutterSdk} once" }
+  return versionFile.readText().trim()
+}
+
+/**
+ * Fails with a clear message if `FLUTTER_SDK`'s Dart SDK is older than [minimum], which [feature] needs. Call it before
+ * starting the IDE, so a too-old SDK doesn't show up later as a confusing assertion failure.
+ */
+fun checkDartSdkAtLeast(minimum: String, feature: String) {
+  val version = flutterDartSdkVersion()
+  println("Dart SDK: $version")
+  check(compareDartVersions(version, minimum) >= 0) {
+    "$feature needs Dart SDK $minimum or newer; FLUTTER_SDK=${Platform.flutterSdk} has $version (for example use the Flutter 3.50 beta)"
+  }
+}
+
+/** Compares Dart SDK versions like `3.14.0-315.3.beta` and `3.14.0-307.0.dev` (a release beats its prereleases). */
+fun compareDartVersions(a: String, b: String): Int {
+  fun parse(v: String): Pair<List<Int>, List<Int>?> {
+    val main = v.substringBefore('-').split('.').map { it.toIntOrNull() ?: 0 }
+    val pre = v.substringAfter('-', "").takeIf { it.isNotEmpty() }?.split('.')?.mapNotNull { it.toIntOrNull() }
+    return main to pre
+  }
+  val (am, ap) = parse(a)
+  val (bm, bp) = parse(b)
+  for (i in 0 until maxOf(am.size, bm.size)) {
+    val c = am.getOrElse(i) { 0 }.compareTo(bm.getOrElse(i) { 0 })
+    if (c != 0) return c
+  }
+  if (ap == null || bp == null) return (if (ap == null) 1 else 0) - (if (bp == null) 1 else 0)
+  for (i in 0 until maxOf(ap.size, bp.size)) {
+    val c = ap.getOrElse(i) { 0 }.compareTo(bp.getOrElse(i) { 0 })
+    if (c != 0) return c
+  }
+  return 0
 }

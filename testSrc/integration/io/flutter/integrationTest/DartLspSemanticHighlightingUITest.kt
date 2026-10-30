@@ -10,12 +10,11 @@ import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.ui.components.common.JEditorUiComponent
 import io.flutter.integrationTest.utils.AttributesHighlight
 import io.flutter.integrationTest.utils.DartAnalysisServerServiceStatics
-import io.flutter.integrationTest.utils.Platform
 import io.flutter.integrationTest.utils.attributesHighlights
+import io.flutter.integrationTest.utils.checkDartSdkAtLeast
 import io.flutter.integrationTest.utils.dartExperimentalLspFeaturesEnabled
 import io.flutter.integrationTest.utils.setDartExperimentalLspFeatures
 import org.junit.jupiter.api.Test
-import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 import kotlin.time.Duration.Companion.minutes
@@ -67,7 +66,7 @@ class DartLspSemanticHighlightingUITest : ExistingProjectUITest("lsp_highlightin
 
   @Test
   fun lspHighlightingMatchesLegacyAndFallsBack() {
-    checkDartSdkSupportsLspHighlighting()
+    checkDartSdkAtLeast(MIN_SDK, "LSP highlighting (dart-intellij-third-party#640)")
     // Differences between LSP and legacy highlighting are collected and reported together at the end, so one run shows
     // all of them and still checks the edit and fallback steps.
     val problems = mutableListOf<String>()
@@ -202,17 +201,6 @@ class DartLspSemanticHighlightingUITest : ExistingProjectUITest("lsp_highlightin
            "  Legacy only (${missing.size}):\n    ${missing.describe()}\n  LSP only (${extra.size}):\n    ${extra.describe()}"
   }
 
-  /** Fails early if `FLUTTER_SDK`'s Dart SDK is too old for LSP highlighting. */
-  private fun checkDartSdkSupportsLspHighlighting() {
-    val versionFile = Platform.flutterSdk.resolve("bin/cache/dart-sdk/version")
-    check(versionFile.exists()) { "No Dart SDK in $versionFile; run `flutter --version` with FLUTTER_SDK=${Platform.flutterSdk} once" }
-    val version = versionFile.readText().trim()
-    println("Dart SDK: $version")
-    check(compareDartVersions(version, MIN_SDK) >= 0) {
-      "LSP highlighting needs Dart SDK $MIN_SDK or newer; FLUTTER_SDK=${Platform.flutterSdk} has $version (for example use the Flutter 3.50 beta)"
-    }
-  }
-
   /** Fails if this run's IDE log has errors from the Dart plugin. */
   private fun checkIdeLogForDartErrors() {
     val entries = ideLogFile.readText().split(Regex("\n(?=\\d{4}-\\d{2}-\\d{2} )"))
@@ -313,27 +301,6 @@ void main() {
       Expect("int triple(int y)", "y", "DART_PARAMETER_DECLARATION"),
       Expect("=> y * 3", "y", "DART_PARAMETER_REFERENCE"),
     )
-
-    /** Compares Dart SDK versions like `3.14.0-315.3.beta` and `3.14.0-307.0.dev` (a release beats its prereleases). */
-    fun compareDartVersions(a: String, b: String): Int {
-      fun parse(v: String): Pair<List<Int>, List<Int>?> {
-        val main = v.substringBefore('-').split('.').map { it.toIntOrNull() ?: 0 }
-        val pre = v.substringAfter('-', "").takeIf { it.isNotEmpty() }?.split('.')?.mapNotNull { it.toIntOrNull() }
-        return main to pre
-      }
-      val (am, ap) = parse(a)
-      val (bm, bp) = parse(b)
-      for (i in 0 until maxOf(am.size, bm.size)) {
-        val c = am.getOrElse(i) { 0 }.compareTo(bm.getOrElse(i) { 0 })
-        if (c != 0) return c
-      }
-      if (ap == null || bp == null) return (if (ap == null) 1 else 0) - (if (bp == null) 1 else 0)
-      for (i in 0 until maxOf(ap.size, bp.size)) {
-        val c = ap.getOrElse(i) { 0 }.compareTo(bp.getOrElse(i) { 0 })
-        if (c != 0) return c
-      }
-      return 0
-    }
 
     fun String.substringSafe(start: Int, end: Int) = if (start in 0..end && end <= length) substring(start, end) else "?"
   }

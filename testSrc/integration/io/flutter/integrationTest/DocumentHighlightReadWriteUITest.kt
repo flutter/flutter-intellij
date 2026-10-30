@@ -8,6 +8,7 @@ package io.flutter.integrationTest
 
 import com.intellij.driver.sdk.ui.components.common.JEditorUiComponent
 import io.flutter.integrationTest.utils.UsageAccess
+import io.flutter.integrationTest.utils.checkDartSdkAtLeast
 import io.flutter.integrationTest.utils.dartExperimentalLspFeaturesEnabled
 import io.flutter.integrationTest.utils.setDartExperimentalLspFeatures
 import io.flutter.integrationTest.utils.UsageHighlight
@@ -16,9 +17,6 @@ import org.junit.jupiter.api.Test
 import kotlin.io.path.writeText
 import kotlin.time.Duration.Companion.minutes
 
-// TODO(radcliffc): First run (2026-10-28, IntelliJ 2026.2.3, Dart plugin 510.0.0, Flutter 3.44.7 / Dart SDK 3.12.2)
-//  fails: all four occurrences are highlighted, but all as reads, including `var count = 0` and `count =`. The Dart
-//  LSP server was running. Not investigated; possibly the Dart SDK version (CI now pins Flutter 3.47.8).
 /**
  * **Shows:** the Dart plugin highlighting the occurrences of a variable under the caret, with writes and reads in
  * different colors, while "Turn on experimental LSP features" is off (Dart plugin TestTracker plan 157229, case 1.2.5,
@@ -42,6 +40,10 @@ import kotlin.time.Duration.Companion.minutes
  *
  * Implementation notes:
  * - Installs Dart plugin 510.0.0, the first version where read/write highlighting via LSP is on for all users.
+ * - Needs a newer Dart SDK than the release note says: with Dart SDK 3.12.2 (Flutter 3.44.7) every occurrence is
+ *   highlighted as a read; with 3.14.0-315.3.beta (Flutter 3.50 beta) writes and reads are told apart (2026-10-30).
+ *   The test checks `FLUTTER_SDK`'s Dart SDK is 3.14 or newer before it starts the IDE. The exact first version that
+ *   works wasn't narrowed down.
  * - The test reads the highlighters in the editor's markup model and checks, for each occurrence, its exact text
  *   range and its text attributes key (`WRITE_IDENTIFIER_UNDER_CARET_ATTRIBUTES` for writes,
  *   `IDENTIFIER_UNDER_CARET_ATTRIBUTES` for reads), so it fails if an occurrence is missing, extra, or has the wrong
@@ -59,6 +61,7 @@ class DocumentHighlightReadWriteUITest : ExistingProjectUITest("document_highlig
 
   @Test
   fun readAndWriteOccurrencesAreHighlightedDifferently() {
+    checkDartSdkAtLeast(MIN_SDK, "Read/write occurrence highlighting via LSP")
     startIdeOnProject()
 
     inFrame {
@@ -121,6 +124,9 @@ class DocumentHighlightReadWriteUITest : ExistingProjectUITest("document_highlig
 
   private companion object {
     const val SAMPLE_PATH = "lib/highlight_sample.dart"
+
+    /** Oldest Dart SDK seen to report writes (any 3.14 prerelease or later); 3.12.2 reports every occurrence as a read. */
+    const val MIN_SDK = "3.14.0-0.0.dev"
     const val SAMPLE = """void test() {
   var count = 0;
   count = count + 1;
