@@ -28,6 +28,7 @@ import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.jxbrowser.EmbeddedJxBrowser;
 import io.flutter.jxbrowser.JxBrowserStatus;
+import io.flutter.logging.PluginLogger;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRootCache;
 import io.flutter.settings.FlutterSettings;
@@ -113,30 +114,33 @@ public class FlutterUtils {
     }
   }
 
+  @Deprecated
   public static void info(@NotNull Logger logger, @NotNull String message, @NotNull Throwable t, boolean sanitizePaths) {
-    if (sanitizePaths && FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+    if (sanitizePaths) {
+      PluginLogger.infoFilePath(logger, message, t);
+    }
+    else {
       logger.info(message, t);
     }
-    else {
-      logger.info(message);
-    }
   }
 
+  @Deprecated
   public static void warn(@NotNull Logger logger, @NotNull String message, @NotNull Throwable t, boolean sanitizePaths) {
-    if (sanitizePaths && FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
+    if (sanitizePaths) {
+      PluginLogger.warnFilePath(logger, message, t);
+    }
+    else {
       logger.warn(message, t);
     }
-    else {
-      logger.warn(message);
-    }
   }
 
+  @Deprecated
   public static void error(@NotNull Logger logger, @NotNull String message, @NotNull Throwable t, boolean sanitizePaths) {
-    if (sanitizePaths && FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-      logger.error(message, t);
+    if (sanitizePaths) {
+      PluginLogger.errorFilePath(logger, message, t);
     }
     else {
-      logger.error(message);
+      logger.error(message, t);
     }
   }
 

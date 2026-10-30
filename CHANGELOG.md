@@ -3,6 +3,7 @@
 ### Added
 
 ### Changed
+- Centralizing file path logging into `PluginLogger`. (#8707)
 
 ### Removed
 - Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)

@@ -5,6 +5,7 @@
  */
 package io.flutter.logging;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.LogLevel;
 import com.intellij.openapi.diagnostic.Logger;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Supplier;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -132,5 +134,151 @@ public class PluginLogger {
 
   public static @NotNull Logger createLogger(@NotNull Class<?> logClass) {
     return Logger.getInstance(logClass.getName());
+  }
+
+  /**
+   * Returns whether full file paths are permitted to be written to plugin logs.
+   * Defensively returns false if the IDE application or settings are not yet available.
+   */
+  public static boolean isFilePathLoggingEnabled() {
+    try {
+      return FlutterSettings.getInstance().isFilePathLoggingEnabled();
+    }
+    catch (Throwable t) {
+      return false;
+    }
+  }
+
+  /**
+   * Logs an info-level message containing file paths only if file path logging is enabled.
+   */
+  public static void infoFilePath(@NotNull Logger logger, @NotNull String message) {
+    if (isFilePathLoggingEnabled()) {
+      logger.info(message);
+    }
+  }
+
+  /**
+   * Lazily logs an info-level message containing file paths only if file path logging is enabled.
+   * Avoids string concatenation and formatting overhead when path logging is disabled.
+   */
+  public static void infoFilePath(@NotNull Logger logger, @NotNull Supplier<String> messageSupplier) {
+    if (isFilePathLoggingEnabled()) {
+      logger.info(messageSupplier.get());
+    }
+  }
+
+  /**
+   * Logs an info-level message and throwable. When file path logging is disabled, the throwable
+   * is omitted to prevent file paths from leaking through stack traces.
+   */
+  public static void infoFilePath(@NotNull Logger logger, @NotNull String message, @Nullable Throwable t) {
+    if (t != null && isFilePathLoggingEnabled()) {
+      logger.info(message, t);
+    }
+    else {
+      logger.info(message);
+    }
+  }
+
+  /**
+   * Logs an info-level throwable. When file path logging is disabled, only the throwable
+   * class name is logged to prevent file paths from leaking through stack traces or exception messages.
+   */
+  public static void infoFilePath(@NotNull Logger logger, @NotNull Throwable t) {
+    if (isFilePathLoggingEnabled()) {
+      logger.info(t);
+    }
+    else {
+      logger.info(t.getClass().getSimpleName());
+    }
+  }
+
+  /**
+   * Logs a warn-level message containing file paths only if file path logging is enabled.
+   */
+  public static void warnFilePath(@NotNull Logger logger, @NotNull String message) {
+    if (isFilePathLoggingEnabled()) {
+      logger.warn(message);
+    }
+  }
+
+  /**
+   * Lazily logs a warn-level message containing file paths only if file path logging is enabled.
+   */
+  public static void warnFilePath(@NotNull Logger logger, @NotNull Supplier<String> messageSupplier) {
+    if (isFilePathLoggingEnabled()) {
+      logger.warn(messageSupplier.get());
+    }
+  }
+
+  /**
+   * Logs a warn-level message and throwable. When file path logging is disabled, the throwable
+   * is omitted to prevent file paths from leaking through stack traces.
+   */
+  public static void warnFilePath(@NotNull Logger logger, @NotNull String message, @Nullable Throwable t) {
+    if (t != null && isFilePathLoggingEnabled()) {
+      logger.warn(message, t);
+    }
+    else {
+      logger.warn(message);
+    }
+  }
+
+  /**
+   * Logs a warn-level throwable. When file path logging is disabled, only the throwable
+   * class name is logged to prevent file paths from leaking through stack traces or exception messages.
+   */
+  public static void warnFilePath(@NotNull Logger logger, @NotNull Throwable t) {
+    if (isFilePathLoggingEnabled()) {
+      logger.warn(t);
+    }
+    else {
+      logger.warn(t.getClass().getSimpleName());
+    }
+  }
+
+  /**
+   * Logs an error-level message containing file paths only if file path logging is enabled.
+   */
+  public static void errorFilePath(@NotNull Logger logger, @NotNull String message) {
+    if (isFilePathLoggingEnabled()) {
+      logger.error(message);
+    }
+  }
+
+  /**
+   * Lazily logs an error-level message containing file paths only if file path logging is enabled.
+   */
+  public static void errorFilePath(@NotNull Logger logger, @NotNull Supplier<String> messageSupplier) {
+    if (isFilePathLoggingEnabled()) {
+      logger.error(messageSupplier.get());
+    }
+  }
+
+  /**
+   * Logs an error-level message and throwable. When file path logging is disabled, the throwable
+   * is omitted to prevent file paths from leaking through stack traces.
+   */
+  public static void errorFilePath(@NotNull Logger logger, @NotNull String message, @Nullable Throwable t) {
+    if (t != null && isFilePathLoggingEnabled()) {
+      logger.error(message, t);
+    }
+    else {
+      logger.error(message);
+    }
+  }
+
+  /**
+   * Logs an error-level throwable. When file path logging is disabled, only the throwable
+   * class name is logged to prevent file paths from leaking through stack traces or exception messages.
+   */
+  public static void errorFilePath(@NotNull Logger logger, @NotNull Throwable t) {
+    if (isFilePathLoggingEnabled()) {
+      logger.error(t);
+    }
+    else {
+      logger.error(t.getClass().getSimpleName());
+    }
   }
 }

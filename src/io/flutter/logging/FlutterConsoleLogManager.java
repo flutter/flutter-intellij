@@ -152,11 +152,7 @@ public class FlutterConsoleLogManager {
       }
     }
     catch (Throwable t) {
-      if (FlutterSettings.getInstance().isFilePathLoggingEnabled()) {
-        LOG.warn(t);
-      } else {
-        LOG.warn("Error handling FlutterErrorEvent: " + t.getMessage());
-      }
+      PluginLogger.warnFilePath(LOG, "Error handling FlutterErrorEvent: " + t.getMessage(), t);
     }
   }
 
