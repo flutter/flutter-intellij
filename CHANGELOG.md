@@ -3,6 +3,7 @@
 ### Added
 
 ### Changed
+- Routing Extract Flutter Widget refactoring to LSP code actions when experimental LSP features are enabled. (#9142)
 - Centralizing file path logging into `PluginLogger`. (#8707)
 
 ### Removed

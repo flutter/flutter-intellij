@@ -16,7 +16,12 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * LTK wrapper around Analysis Server 'Extract Widget' refactoring.
+ *
+ * @deprecated Prefer {@link FlutterLspRefactoringHelper} when LSP code actions are enabled.
+ * This class remains for legacy Analysis Server protocol support and will be removed once LSP
+ * is the sole refactoring engine.
  */
+@Deprecated(forRemoval = true)
 public class ExtractWidgetRefactoring extends ServerRefactoring {
   private final ExtractWidgetOptions options = new ExtractWidgetOptions("NewWidget");
 
