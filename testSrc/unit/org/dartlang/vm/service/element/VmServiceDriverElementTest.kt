@@ -99,16 +99,21 @@ class VmServiceDriverElementTest : TestCase() {
       addProperty("isGetter", false)
       addProperty("isSetter", true)
     }
+    val emptyJson = JsonObject()
 
     assertTrue(FuncRef(getterJson).isGetter)
     assertFalse(FuncRef(getterJson).isSetter)
     assertFalse(FuncRef(setterJson).isGetter)
     assertTrue(FuncRef(setterJson).isSetter)
+    assertFalse(FuncRef(emptyJson).isGetter)
+    assertFalse(FuncRef(emptyJson).isSetter)
 
     assertTrue(Func(getterJson).isGetter)
     assertFalse(Func(getterJson).isSetter)
     assertFalse(Func(setterJson).isGetter)
     assertTrue(Func(setterJson).isSetter)
+    assertFalse(Func(emptyJson).isGetter)
+    assertFalse(Func(emptyJson).isSetter)
   }
 
   fun `test PerfettoTimeline`() {
