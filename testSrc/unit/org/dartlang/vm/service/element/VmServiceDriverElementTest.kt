@@ -90,6 +90,27 @@ class VmServiceDriverElementTest : TestCase() {
     assertNull(Event(json).isolateGroup)
   }
 
+  fun `test function getter and setter flags`() {
+    val getterJson = JsonObject().apply {
+      addProperty("isGetter", true)
+      addProperty("isSetter", false)
+    }
+    val setterJson = JsonObject().apply {
+      addProperty("isGetter", false)
+      addProperty("isSetter", true)
+    }
+
+    assertTrue(FuncRef(getterJson).isGetter)
+    assertFalse(FuncRef(getterJson).isSetter)
+    assertFalse(FuncRef(setterJson).isGetter)
+    assertTrue(FuncRef(setterJson).isSetter)
+
+    assertTrue(Func(getterJson).isGetter)
+    assertFalse(Func(getterJson).isSetter)
+    assertFalse(Func(setterJson).isGetter)
+    assertTrue(Func(setterJson).isSetter)
+  }
+
   fun `test PerfettoTimeline`() {
     val json = JsonObject().apply {
       addProperty("trace", "AA==")
