@@ -43,10 +43,7 @@ public class Breakpoint extends Obj {
   }
 
   /**
-   * Is this a breakpoint that was added synthetically as part of a step OverAsyncSuspension resume
-   * command?
-   *
-   * Can return <code>null</code>.
+   * Deprecated since version 4.10 of the protocol. This property is always absent from the response.
    */
   public boolean getIsSyntheticAsyncContinuation() {
     return getAsBoolean("isSyntheticAsyncContinuation");

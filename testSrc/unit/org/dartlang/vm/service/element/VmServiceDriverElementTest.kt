@@ -58,6 +58,64 @@ class VmServiceDriverElementTest : TestCase() {
     assertEquals("manual-test-tag", instance.label)
   }
 
+  fun `test IsolateReload event includes isolate group without isolate`() {
+    val json = JsonObject().apply {
+      addProperty("type", "Event")
+      addProperty("kind", "IsolateReload")
+      add("isolateGroup", JsonObject().apply {
+        addProperty("type", "@IsolateGroup")
+        addProperty("id", "isolateGroups/1")
+        addProperty("number", "1")
+        addProperty("name", "main.dart")
+        addProperty("isSystemIsolateGroup", false)
+      })
+    }
+
+    val event = Event(json)
+    val isolateGroup = event.isolateGroup
+    assertEquals(EventKind.IsolateReload, event.kind)
+    assertEquals("isolateGroups/1", isolateGroup?.id)
+    assertEquals("1", isolateGroup?.number)
+    assertEquals("main.dart", isolateGroup?.name)
+    assertFalse(isolateGroup?.isSystemIsolateGroup ?: true)
+    assertNull(event.isolate)
+  }
+
+  fun `test event isolate group is optional`() {
+    val json = JsonObject().apply {
+      addProperty("type", "Event")
+      addProperty("kind", "VMUpdate")
+    }
+
+    assertNull(Event(json).isolateGroup)
+  }
+
+  fun `test function getter and setter flags`() {
+    val getterJson = JsonObject().apply {
+      addProperty("isGetter", true)
+      addProperty("isSetter", false)
+    }
+    val setterJson = JsonObject().apply {
+      addProperty("isGetter", false)
+      addProperty("isSetter", true)
+    }
+    val emptyJson = JsonObject()
+
+    assertTrue(FuncRef(getterJson).isGetter)
+    assertFalse(FuncRef(getterJson).isSetter)
+    assertFalse(FuncRef(setterJson).isGetter)
+    assertTrue(FuncRef(setterJson).isSetter)
+    assertFalse(FuncRef(emptyJson).isGetter)
+    assertFalse(FuncRef(emptyJson).isSetter)
+
+    assertTrue(Func(getterJson).isGetter)
+    assertFalse(Func(getterJson).isSetter)
+    assertFalse(Func(setterJson).isGetter)
+    assertTrue(Func(setterJson).isSetter)
+    assertFalse(Func(emptyJson).isGetter)
+    assertFalse(Func(emptyJson).isSetter)
+  }
+
   fun `test PerfettoTimeline`() {
     val json = JsonObject().apply {
       addProperty("trace", "AA==")

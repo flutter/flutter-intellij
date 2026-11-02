@@ -35,6 +35,11 @@ public class Stack extends Response {
    * frames are separated from each other and synchronous prefix via frames of kind
    * {@link FrameKind#AsyncSuspensionMarker}.
    *
+   * The name is historic and misleading: despite what <i>causal</i> implies, this stack does not
+   * reflect the stack at the moment when the asynchronous operation was started (i.e. the stack
+   * that <i>caused</i> it), but instead reflects the chain of listeners which will run when the
+   * asynchronous operation is completed (i.e. its <i>awaiters</i>).
+   *
    * This field is absent if currently running code does not have an asynchronous continuation.
    *
    * Can return <code>null</code>.
