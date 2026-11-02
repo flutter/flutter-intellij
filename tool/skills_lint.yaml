@@ -7,6 +7,7 @@ skills_lint:
     check-relative-paths: error
     check-absolute-paths: error
     check-trailing-whitespace: error
+    disallowed-field: error
   directories:
     # Paths are resolved relative to this config file (skills_lint >=0.5.2),
     # so this points at <repo root>/.agents/skills.
