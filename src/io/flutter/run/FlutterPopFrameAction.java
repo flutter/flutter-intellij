@@ -6,7 +6,11 @@
 package io.flutter.run;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionPlaces;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.xdebugger.XDebugSession;
@@ -36,7 +40,10 @@ public class FlutterPopFrameAction extends AnAction implements DumbAware {
     final DartVmServiceStackFrame frame = getStackFrame(e);
     final boolean enabled = frame != null && frame.canDrop();
 
-    if (ActionPlaces.isMainMenuOrActionSearch(e.getPlace()) || ActionPlaces.DEBUGGER_TOOLBAR.equals(e.getPlace())) {
+    if (e.isFromActionToolbar() ||
+        e.isFromMainMenu() ||
+        e.isFromSearchPopup() ||
+        ActionPlaces.DEBUGGER_TOOLBAR.equals(e.getPlace())) {
       e.getPresentation().setEnabled(enabled);
     }
     else {

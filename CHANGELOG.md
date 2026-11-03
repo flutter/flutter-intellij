@@ -4,6 +4,7 @@
 
 ### Changed
 - Centralizing file path logging into `PluginLogger`. (#8707)
+- Migrating direct `AnAction` invocations to `ActionUtil`, `ActionPlaces.isMainMenuOrActionSearch` to `AnActionEvent` UI-kind predicates, and `MessagesService` to `Messages.showDialog`. (#8361)
 
 ### Removed
 - Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)
