@@ -1,4 +1,4 @@
-<!--* freshness: { reviewed: '2026-10-25' } *-->
+<!--* freshness: { reviewed: '2026-11-02' } *-->
 # Flutter Daemon
 
 ## Overview
@@ -37,5 +37,5 @@ Communicates with the `flutter daemon` and manages Flutter app execution lifecyc
 - DeviceDaemon executes the 'flutter daemon' command (setting `ANDROID_HOME` and analytics environment via `Analytics.updateEnvironment`), handles its process lifecycle, and displays IDE error dialogs on repeated crashes.
 - DeviceService does not poll: the device list is updated from DeviceDaemon device events. It refreshes the daemon on Flutter SDK add/remove and project JDK changes, and also refreshes [`AndroidEmulatorManager`](../../sdk/AndroidEmulatorManager.java) when starting a daemon. If the daemon dies it is restarted immediately unless it was restarted in the last 20s (then a warning is shown); an explicit `restart()` shuts down and restarts after 4s.
 - DeviceService dispatches device list change events on the Swing Event Dispatch Thread (EDT).
-- FlutterApp starts 'flutter run' or 'attach' processes, adds entries to the IDE's LocalHistory for hot reloads/restarts, and registers/unregisters VM services via DartToolingDaemonService.
+- FlutterApp starts 'flutter run' or 'attach' processes (logging the command line via [`FlutterCommand.safeCommandLog`](../../sdk/FlutterCommand.java)), adds entries to the IDE's LocalHistory for hot reloads/restarts, and registers/unregisters VM services via DartToolingDaemonService.
 - FlutterApp schedules graceful process shutdown asynchronously before falling back to abrupt process destruction.

@@ -39,6 +39,7 @@ import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.common.RunMode;
+import io.flutter.sdk.FlutterCommand;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import io.flutter.utils.ProcessAdapter;
@@ -51,6 +52,7 @@ import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -186,6 +188,30 @@ public class FlutterApp implements Disposable {
     return myCommand;
   }
 
+  /**
+   * Returns a log-safe string representation of the app's command line, redacting the SDK path
+   * when file path logging is disabled.
+   * <p>
+   * Exposed for testing.
+   */
+  @VisibleForTesting
+  @NotNull
+  public String getCommandLog() {
+    return getCommandLog(myCommand);
+  }
+
+  /**
+   * Returns a log-safe string representation of the given command line, redacting the SDK path
+   * when file path logging is disabled.
+   * <p>
+   * Exposed for testing.
+   */
+  @VisibleForTesting
+  @NotNull
+  public static String getCommandLog(@NotNull GeneralCommandLine command) {
+    return FlutterCommand.safeCommandLog(command);
+  }
+
   @Nullable
   public static FlutterApp fromProcess(@NotNull ProcessHandler process) {
     return process.getUserData(FLUTTER_APP_KEY);
@@ -225,7 +251,7 @@ public class FlutterApp implements Disposable {
                                  @Nullable String analyticsStop)
     throws ExecutionException {
     LOG.info(analyticsStart + " " + project.getName() + " (" + mode.mode() + ")");
-    LOG.info(command.toString());
+    LOG.info(getCommandLog(command));
 
     Consumer<String> onTextAvailable = null;
     final ProcessHandler process = new MostlySilentColoredProcessHandler(command, onTextAvailable);
