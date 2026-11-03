@@ -30,6 +30,8 @@ jobs:
         run: ./tool/validate_skills.sh
       - name: Check AI ignore configurations
         run: ./tool/check_ai_config.sh
+      - name: Check PR intake verification stamp
+        run: ./.github/check_pr_intake_stamp.sh
 
   presubmit:
     runs-on: ubuntu-latest
