@@ -17,10 +17,13 @@ Run `./gradlew integration`. This directory is the `integration` source set in [
 All files are under `io/flutter/integrationTest/`:
 
 - [`Setup.kt`](io/flutter/integrationTest/Setup.kt): Configures the IDE Starter test context: paths, plugin installation, VM options, and OS-specific settings.
+- [`ExistingProjectUITest.kt`](io/flutter/integrationTest/ExistingProjectUITest.kt): Base class for UI tests against IntelliJ IDEA 2026.2 opened on an existing Flutter project created with `flutter create`.
 - [`NewProjectUITest.kt`](io/flutter/integrationTest/NewProjectUITest.kt): UI test for the new Flutter project flow.
 - [`DeepLinksToolWindowTest.kt`](io/flutter/integrationTest/DeepLinksToolWindowTest.kt): UI test for the Deep Links tool window.
 - [`vmService/VmServiceTest.kt`](io/flutter/integrationTest/vmService/VmServiceTest.kt): Launches a `flutter test` process and exchanges VM Service messages with it over WebSocket.
 - [`utils/NewProject.kt`](io/flutter/integrationTest/utils/NewProject.kt): Helpers for creating new projects in UI tests.
+- [`utils/Platform.kt`](io/flutter/integrationTest/utils/Platform.kt): Cross-platform paths, display modes, SDK executables, and retry-based project cleanup for Linux, macOS, and Windows.
+- [`utils/WalkthroughSteps.kt`](io/flutter/integrationTest/utils/WalkthroughSteps.kt): Step markers for test walkthrough recordings.
 
 ## Guidance & Strategy
 
@@ -29,3 +32,64 @@ All files are under `io/flutter/integrationTest/`:
   - The overall reliability and stability of the integration testing framework.
   - How effectively we can maintain these tests over time.
   - How best to incorporate integration testing into our overall plugin maintenance and testing strategy.
+
+## Running the Tests Yourself
+
+The UI tests start a real IntelliJ IDEA (downloaded on first run into `build/out/ide-tests/`) with your locally
+built Flutter plugin, and drive it with the IntelliJ IDE Starter / Driver framework: they click, type, and read the
+UI like a user would.
+
+### Prerequisites
+
+- Linux, Windows, or macOS, with a Flutter SDK. Point `FLUTTER_SDK` at it (for example
+  `export FLUTTER_SDK=~/develop/flutter`, or `$env:FLUTTER_SDK = "C:\path\to\flutter"` in PowerShell).
+- About 2 GB of disk for the first IDE download.
+
+### Run one test
+
+From the repository root, on Linux:
+
+```bash
+unset DISPLAY WAYLAND_DISPLAY
+./gradlew --no-daemon integration --tests io.flutter.integrationTest.<TestClass>
+```
+
+On Windows (PowerShell):
+
+```powershell
+.\gradlew.bat --no-daemon integration --tests io.flutter.integrationTest.<TestClass>
+```
+
+On macOS, run the same `./gradlew` command as on Linux, without the `unset` line.
+
+- **Why `unset DISPLAY WAYLAND_DISPLAY` (Linux):** IDE Starter then runs the IDE on a hidden virtual display (Xvfb).
+  On a Wayland desktop, synthetic `java.awt.Robot` input goes through the `xdg-desktop-portal` `RemoteDesktop`
+  interface (`-Dawt.robot.screenshotMethod=dbusRemoteDesktop`), which prompts once for permission and moves your real
+  pointer; unsetting `DISPLAY` and `WAYLAND_DISPLAY` keeps tests isolated on Xvfb.
+- **Windows and macOS have no hidden display:** the IDE opens on your desktop. Keep the desktop unlocked and don't
+  click or type in the IDE while the test runs.
+- **Why `--no-daemon`:** a running Gradle daemon keeps the environment it started with, so the test might not see
+  `FLUTTER_SDK` or the display settings above.
+- A run takes about 2 to 3 minutes once the IDE is downloaded. The test result is in
+  `build/reports/tests/integration/index.html`, and the IDE's own log is in
+  `build/out/ide-tests/tests/<IDE build>/<TestName>/log/idea.log`.
+- On Windows, test projects are created under `%USERPROFILE%\ft` (a short path, to stay under the 260-character path
+  limit).
+
+### Useful environment variables
+
+| Variable | Effect |
+|---|---|
+| `FLUTTER_SDK` | Flutter SDK used by the tests (required) |
+| `DART_PLUGIN_ZIP` | Optional path to a locally built `Dart.zip` to install instead of the Marketplace Dart plugin |
+| `KEEP_TEST_PROJECT=true` | Keep the test's Flutter project instead of deleting it afterwards |
+| `KEEP_IDE_OPEN_MINUTES=<n>` | Leave the IDE running for `n` minutes after the test, for inspection |
+
+### If something goes wrong
+
+- **IntelliJ shows its license screen and the test hangs.** IntelliJ's licensing isn't deterministic. Start the same
+  IntelliJ version yourself (`./gradlew runTarget -Pide=Ultimate -PideV=2026.2.3`), sign in and start the trial,
+  activate a license, or choose the free option, then run the test again.
+- **The test can't find the Flutter SDK.** Check that `FLUTTER_SDK` is exported in the same shell, and use `--no-daemon`.
+- **Nothing happens in the IDE window.** You're probably running against a display that blocks synthetic input;
+  `unset DISPLAY WAYLAND_DISPLAY` on Linux to run under Xvfb.
