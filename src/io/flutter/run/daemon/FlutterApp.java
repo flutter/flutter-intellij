@@ -197,19 +197,7 @@ public class FlutterApp implements Disposable {
   @VisibleForTesting
   @NotNull
   public String getCommandLog() {
-    return getCommandLog(myCommand);
-  }
-
-  /**
-   * Returns a log-safe string representation of the given command line, redacting the SDK path
-   * when file path logging is disabled.
-   * <p>
-   * Exposed for testing.
-   */
-  @VisibleForTesting
-  @NotNull
-  public static String getCommandLog(@NotNull GeneralCommandLine command) {
-    return FlutterCommand.safeCommandLog(command);
+    return FlutterCommand.safeCommandLog(myCommand);
   }
 
   @Nullable
@@ -251,7 +239,7 @@ public class FlutterApp implements Disposable {
                                  @Nullable String analyticsStop)
     throws ExecutionException {
     LOG.info(analyticsStart + " " + project.getName() + " (" + mode.mode() + ")");
-    LOG.info(getCommandLog(command));
+    LOG.info(FlutterCommand.safeCommandLog(command));
 
     Consumer<String> onTextAvailable = null;
     final ProcessHandler process = new MostlySilentColoredProcessHandler(command, onTextAvailable);
