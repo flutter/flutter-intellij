@@ -4,6 +4,7 @@
 
 ### Changed
 - Centralizing file path logging into `PluginLogger`. (#8707)
+- Migrating `RunConfigurationProducer` constructors, `SkipDefaultValuesSerializationFilters`, and `FilenameIndex.getFilesByName` off deprecated APIs. (#8361)
 
 ### Removed
 - Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)
