@@ -13,7 +13,6 @@ Deprecated API usages	Deprecated constructor com.intellij.ui.LayeredIcon.<init>(
 Deprecated API usages	Deprecated constructor com.intellij.ui.LayeredIcon.<init>(javax.swing.Icon[] icons) is invoked in io.flutter.toolwindow.ToolWindowBadgeUpdater.lambda$updateBadgedIcon$1(ToolWindow) : void
 Deprecated API usages	Deprecated constructor com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters.<init>() is invoked in io.flutter.run.SdkRunConfig.writeExternal(Element) : void
 Deprecated API usages	Deprecated constructor com.jetbrains.lang.dart.ide.template.DartTemplateContextType.<init>(java.lang.String id, java.lang.String presentableName, java.lang.Class baseContextType) is invoked in io.flutter.template.DartToplevelTemplateContextType.<init>()
-Deprecated API usages	Deprecated field com.intellij.util.system.OS.version : java.lang.String is accessed in io.flutter.utils.SystemUtils.getOsNameAndVersion() : String. This field will be removed in a future release
 Deprecated API usages	Deprecated interface com.intellij.codeInsight.template.impl.DefaultLiveTemplatesProvider is referenced in io.flutter.template.FlutterLiveTemplatesProvider
 Deprecated API usages	Deprecated method com.intellij.codeInsight.daemon.DaemonCodeAnalyzer.restart() : void is invoked in io.flutter.font.FontPreviewProcessor$2.onCancel() : void
 Deprecated API usages	Deprecated method com.intellij.codeInsight.daemon.DaemonCodeAnalyzer.restart() : void is invoked in io.flutter.font.FontPreviewProcessor$2.run(ProgressIndicator) : void

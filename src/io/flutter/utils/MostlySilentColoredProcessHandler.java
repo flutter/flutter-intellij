@@ -8,17 +8,16 @@ package io.flutter.utils;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.BaseOSProcessHandler;
-import com.intellij.execution.process.ColoredProcessHandler;
-import com.intellij.execution.process.UnixProcessManager;
+import com.intellij.execution.process.KillableColoredProcessHandler;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.io.BaseOutputReader;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
 /**
- * An {@link ColoredProcessHandler} that uses {@code BaseOutputReader.Options.forMostlySilentProcess}
+ * A {@link KillableColoredProcessHandler} that uses {@code BaseOutputReader.Options.forMostlySilentProcess}
  * in order to reduce cpu usage of the process it runs.
  *
  * <p>
@@ -33,20 +32,27 @@ import java.util.function.Consumer;
  * Note that long-running processes that don't use these options may log a warning in message
  * in the IntelliJ log.  See {@link BaseOSProcessHandler}'s {@code SimpleOutputReader.beforeSleeping}
  * for more information.
+ *
+ * <p>
+ * Extends {@link KillableColoredProcessHandler} rather than {@code ColoredProcessHandler} with
+ * manual {@code UnixProcessManager.sendSigIntToProcessTree} calls because {@code UnixProcessManager}
+ * is {@code @ApiStatus.Internal} and {@code sendSigIntToProcessTree} is {@code @ScheduledForRemoval}
+ * in {@code 262+}, whereas {@link KillableColoredProcessHandler} enables graceful {@code SIGINT} /
+ * Ctrl+C termination across {@code 252}+ via public Platform API.
  */
-public class MostlySilentColoredProcessHandler extends ColoredProcessHandler {
-  private GeneralCommandLine commandLine;
-  private Consumer<String> onTextAvailable;
+public class MostlySilentColoredProcessHandler extends KillableColoredProcessHandler {
+  private final @Nullable Consumer<String> onTextAvailable;
 
   public MostlySilentColoredProcessHandler(@NotNull GeneralCommandLine commandLine)
     throws ExecutionException {
     this(commandLine, null);
   }
 
-  public MostlySilentColoredProcessHandler(@NotNull GeneralCommandLine commandLine, Consumer<String> onTextAvailable)
-          throws ExecutionException {
+  public MostlySilentColoredProcessHandler(
+    @NotNull GeneralCommandLine commandLine,
+    @Nullable Consumer<String> onTextAvailable
+  ) throws ExecutionException {
     super(commandLine);
-    this.commandLine = commandLine;
     this.onTextAvailable = onTextAvailable;
   }
 
@@ -54,20 +60,6 @@ public class MostlySilentColoredProcessHandler extends ColoredProcessHandler {
   @Override
   protected BaseOutputReader.Options readerOptions() {
     return BaseOutputReader.Options.forMostlySilentProcess();
-  }
-
-  @Override
-  protected void doDestroyProcess() {
-    final Process process = getProcess();
-    if (SystemInfo.isUnix && shouldDestroyProcessRecursively() && processCanBeKilledByOS(process)) {
-      final boolean result = UnixProcessManager.sendSigIntToProcessTree(process);
-      if (!result) {
-        super.doDestroyProcess();
-      }
-    }
-    else {
-      super.doDestroyProcess();
-    }
   }
 
   @Override

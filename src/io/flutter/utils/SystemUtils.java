@@ -13,16 +13,24 @@ import com.intellij.execution.util.ExecUtil;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.system.OS;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
 
 public class SystemUtils {
-  
-  // Replaces slated-for-removal `com.intellij.openapi.util.SystemInfo.getOsNameAndVersion()`.
-  public static String getOsNameAndVersion() {
-    return OS.CURRENT.name() + ' ' + OS.CURRENT.version;
+
+  /**
+   * Returns a human-readable OS name and version string (for example, {@code "Linux 6.12.0"} or
+   * {@code "macOS 15.1"}).
+   *
+   * <p>Replaces slated-for-removal {@code SystemInfo.getOsNameAndVersion()} and avoids both the
+   * {@code @ScheduledForRemoval} {@code OS.CURRENT.version} field ({@code 253+}) and the
+   * {@code OS.CURRENT.version()} method (added in {@code 253}, absent on {@code 252}).
+   */
+  public static @NotNull String getOsNameAndVersion() {
+    return OS.CURRENT.name() + ' ' + System.getProperty("os.version", "unknown");
   }
 
   /**
