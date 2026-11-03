@@ -10,13 +10,11 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.GlobalSearchScopesCore;
 import com.intellij.util.PathUtil;
 import com.intellij.xdebugger.XSourcePosition;
-import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.logging.PluginLogger;
 import io.flutter.utils.OpenApiUtils;
@@ -147,16 +145,16 @@ public class FlutterPositionMapper implements DartVmServiceDebugProcess.Position
     if (project == null || project.isDisposed()) return null;
 
     // Find files with the same filename (matching the suffix after the last slash).
-    final PsiFile[] localFilesWithSameName = OpenApiUtils.safeRunReadAction(() -> {
+    final Collection<VirtualFile> localFilesWithSameName = OpenApiUtils.safeRunReadAction(() -> {
       final String remoteFileName = PathUtil.getFileName(remotePath);
       final GlobalSearchScope scope = GlobalSearchScopesCore.directoryScope(project, sourceRoot, true);
-      return FilenameIndex.getFilesByName(project, remoteFileName, scope);
+      return FilenameIndex.getVirtualFilesByName(remoteFileName, scope);
     });
+    if (localFilesWithSameName == null) return null;
 
     String match = null;
-    for (PsiFile psiFile : localFilesWithSameName) {
-      final VirtualFile local = DartResolveUtil.getRealVirtualFile(psiFile);
-      if (local == null) continue;
+    for (VirtualFile local : localFilesWithSameName) {
+      if (local == null || local.isDirectory()) continue;
 
       assert local.getPath().startsWith(sourceRoot.getPath() + "/");
       final String relativeLocal = local.getPath().substring(sourceRoot.getPath().length()); // starts with slash

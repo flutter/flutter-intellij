@@ -293,7 +293,7 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
   @Override
   public void writeExternal(@NotNull final Element element) throws WriteExternalException {
     super.writeExternal(element);
-    XmlSerializer.serializeInto(getFields(), element, new SkipDefaultValuesSerializationFilters());
+    XmlSerializer.serializeInto(getFields(), element, new SkipDefaultValuesSerializationFilters(new SdkFields()));
   }
 
   @Override

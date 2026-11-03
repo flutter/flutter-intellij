@@ -8,6 +8,7 @@ package io.flutter.run.test;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.ConfigurationFromContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
+import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
@@ -25,8 +26,13 @@ import org.jetbrains.annotations.NotNull;
 public class FlutterTestConfigProducer extends RunConfigurationProducer<TestConfig> {
   private final TestConfigUtils testConfigUtils = TestConfigUtils.getInstance();
 
-  protected FlutterTestConfigProducer() {
-    super(FlutterTestConfigType.getInstance());
+  public FlutterTestConfigProducer() {
+    super(true);
+  }
+
+  @Override
+  public @NotNull ConfigurationFactory getConfigurationFactory() {
+    return FlutterTestConfigType.getInstance().getConfigurationFactories()[0];
   }
 
   private static boolean isFlutterContext(@NotNull ConfigurationContext context) {

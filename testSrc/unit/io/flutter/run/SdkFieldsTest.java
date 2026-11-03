@@ -15,6 +15,7 @@ import java.util.TreeSet;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Verifies run configuration persistence.
@@ -47,21 +48,28 @@ public class SdkFieldsTest {
   }
 
   @Test
+  public void defaultFieldsSerializeToEmptyXml() {
+    final Element elt = new Element("test");
+    XmlSerializer.serializeInto(new SdkFields(), elt, new SkipDefaultValuesSerializationFilters(new SdkFields()));
+    assertTrue(elt.getChildren().isEmpty());
+  }
+
+  @Test
   public void roundTripShouldPreserveFields() {
     final SdkFields before = new SdkFields();
     before.setFilePath("main.dart");
     before.setAdditionalArgs("--trace-startup");
 
     final Element elt = new Element("test");
-    XmlSerializer.serializeInto(before, elt, new SkipDefaultValuesSerializationFilters());
+    XmlSerializer.serializeInto(before, elt, new SkipDefaultValuesSerializationFilters(new SdkFields()));
 
     // Make sure we no longer serialize workingDirectory
     assertArrayEquals(new String[]{"additionalArgs", "filePath"}, getOptionNames(elt).toArray());
 
     final SdkFields after = new SdkFields();
     XmlSerializer.deserializeInto(after, elt);
-    assertEquals("main.dart", before.getFilePath());
-    assertEquals("--trace-startup", before.getAdditionalArgs());
+    assertEquals("main.dart", after.getFilePath());
+    assertEquals("--trace-startup", after.getAdditionalArgs());
   }
 
   @Test

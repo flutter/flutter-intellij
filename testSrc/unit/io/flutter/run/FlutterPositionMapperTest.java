@@ -10,6 +10,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.testFramework.TestApplicationManager;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import com.jetbrains.lang.dart.util.DartUrlResolverImpl;
@@ -24,6 +25,7 @@ import org.dartlang.vm.service.element.ScriptRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -33,12 +35,18 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * Verifies that we can map file locations.
  */
 public class FlutterPositionMapperTest {
   private final FakeScriptProvider scripts = new FakeScriptProvider();
+
+  @BeforeClass
+  public static void setUpApplication() {
+    TestApplicationManager.getInstance();
+  }
 
   @Rule
   public ProjectFixture fixture = Testing.makeEmptyModule();
@@ -91,6 +99,36 @@ public class FlutterPositionMapperTest {
     assertNotNull(pos);
     assertEquals(pos.getFile(), hello);
     assertEquals(9, pos.getLine()); // zero-based
+  }
+
+  @Test
+  public void shouldReturnNullWhenMultipleFilesMatchRemoteSuffix() throws Exception {
+    tmp.writeFile("root/pubspec.yaml", "");
+    tmp.ensureDir("root/lib");
+    tmp.ensureDir("root/nested/lib");
+    final VirtualFile main = tmp.writeFile("root/lib/main.dart", "");
+    tmp.writeFile("root/nested/lib/main.dart", "");
+
+    final FlutterPositionMapper mapper = setUpMapper(main, null);
+    mapper.onLibrariesDownloaded(ImmutableList.of(
+      makeLibraryRef("some/prefix/nested/lib/main.dart")
+    ));
+    // Both "/lib/main.dart" and "/nested/lib/main.dart" are suffixes of the remote URI.
+    assertNull(mapper.getRemoteSourceRoot());
+  }
+
+  @Test
+  public void shouldIgnoreDirectoryMatchingRemoteFileName() throws Exception {
+    tmp.writeFile("root/pubspec.yaml", "");
+    tmp.ensureDir("root/lib");
+    tmp.ensureDir("root/dir_collision/main.dart");
+    final VirtualFile main = tmp.writeFile("root/lib/main.dart", "");
+
+    final FlutterPositionMapper mapper = setUpMapper(main, null);
+    mapper.onLibrariesDownloaded(ImmutableList.of(
+      makeLibraryRef("some/prefix/dir_collision/main.dart")
+    ));
+    assertNull(mapper.getRemoteSourceRoot());
   }
 
   @NotNull
