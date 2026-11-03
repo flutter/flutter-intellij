@@ -28,12 +28,12 @@ import com.jetbrains.lang.dart.psi.*;
 import com.jetbrains.lang.dart.psi.impl.DartCallExpressionImpl;
 import com.jetbrains.lang.dart.util.DartPsiImplUtil;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
-import info.debatty.java.stringsimilarity.JaroWinkler;
 import io.flutter.FlutterBundle;
 import io.flutter.logging.PluginLogger;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.IconPreviewGenerator;
+import io.flutter.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
@@ -374,10 +374,9 @@ public class FlutterIconLineMarkerProvider extends LineMarkerProviderDescriptor 
   }
 
   public double findPattern(@NotNull String t, @NotNull String p) {
-    // This is from https://github.com/tdebatty/java-string-similarity
-    // It's MIT license file is: https://github.com/tdebatty/java-string-similarity/blob/master/LICENSE.md
-    final JaroWinkler jw = new JaroWinkler();
-    return jw.similarity(t, p);
+    // Delegates to our in-tree implementation rather than info.debatty.java.stringsimilarity.JaroWinkler,
+    // which is no longer exposed on the platform classpath in Android Studio 2026.2+ (see StringUtils).
+    return StringUtils.jaroWinklerSimilarity(t, p);
   }
 
   record IconInfo(@NotNull String className, @NotNull String iconName, @Nullable String familyName, @NotNull String codepoint) {
