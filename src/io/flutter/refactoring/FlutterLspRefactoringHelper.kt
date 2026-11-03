@@ -40,6 +40,7 @@ object FlutterLspRefactoringHelper {
     val completed: Boolean,
     val serverResponded: Boolean,
     val matchingIntention: LspIntentionAction?,
+    val disabledReason: String? = null,
   )
 
   @JvmStatic
@@ -103,6 +104,10 @@ object FlutterLspRefactoringHelper {
       showCannotRefactorErrorHint(project, editor, errorTitle, FlutterBundle.message("flutter.refactoring.lsp.no.response"))
       return
     }
+    if (result.disabledReason != null) {
+      showCannotRefactorErrorHint(project, editor, errorTitle, result.disabledReason)
+      return
+    }
     val intentionToInvoke = result.matchingIntention ?: run {
       showCannotRefactorErrorHint(project, editor, errorTitle)
       return
@@ -137,27 +142,33 @@ object FlutterLspRefactoringHelper {
   ): CodeActionLookupResult {
     var serverResponded = false
     var matchingIntention: LspIntentionAction? = null
+    var disabledReason: String? = null
     val completed = ProgressManager.getInstance().runProcessWithProgressSynchronously(
       {
         val results = lspServer.sendRequestSync { it.textDocumentService.codeAction(params) }
           ?: return@runProcessWithProgressSynchronously
         serverResponded = true
-        val matchingAction = results.asSequence()
+        val matchingActions = results.asSequence()
           .mapNotNull { it.right }
-          .firstOrNull { it.disabled == null && it.title in targetTitles }
-          ?: return@runProcessWithProgressSynchronously
-        val intention = LspIntentionAction(lspServer, matchingAction)
-        ApplicationManager.getApplication().runReadAction {
-          if (intention.isAvailable()) {
-            matchingIntention = intention
+          .filter { it.title in targetTitles }
+          .toList()
+        val validAction = matchingActions.firstOrNull { it.disabled == null }
+        if (validAction != null) {
+          val intention = LspIntentionAction(lspServer, validAction)
+          ApplicationManager.getApplication().runReadAction {
+            if (intention.isAvailable()) {
+              matchingIntention = intention
+            }
           }
+        } else {
+          disabledReason = matchingActions.firstOrNull { it.disabled != null }?.disabled?.reason
         }
       },
       progressTitle,
       true,
       project,
     )
-    return CodeActionLookupResult(completed, serverResponded, matchingIntention)
+    return CodeActionLookupResult(completed, serverResponded, matchingIntention, disabledReason)
   }
 
   private fun showCannotRefactorErrorHint(
