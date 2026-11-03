@@ -245,6 +245,48 @@ class FlutterLspRefactoringHelperTest : FlutterCodeInsightFixtureTestCase() {
     }
   }
 
+  fun testPerformExtractWidgetShowsDisabledReasonWhenActionIsDisabled() {
+    val file = myFixture.configureByText(
+      "test.dart",
+      """
+      import 'package:flutter/widgets.dart';
+      void main() {
+        <selection>123</selection>;
+      }
+      """.trimIndent(),
+    )
+
+    val disabledMessage = "Only expressions that evaluate to a Widget can be extracted."
+    val fakeServer = createFakeLspServer(
+      onCodeAction = {
+        val action = CodeAction("Extract Widget").apply {
+          kind = CodeActionKind.RefactorExtract
+          disabled = CodeActionDisabled(disabledMessage)
+        }
+        listOf(Either.forRight(action))
+      },
+      onExecuteCommand = {},
+    )
+
+    val selectionModel = myFixture.editor.selectionModel
+    val offset = selectionModel.selectionStart
+    val length = selectionModel.selectionEnd - offset
+
+    try {
+      FlutterLspRefactoringHelper.performExtractWidget(
+        project = project,
+        editor = myFixture.editor,
+        file = file,
+        offset = offset,
+        length = length,
+        lspServer = fakeServer,
+      )
+      fail("Expected RefactoringErrorHintException when Extract Widget CodeAction is disabled")
+    } catch (e: CommonRefactoringUtil.RefactoringErrorHintException) {
+      assertEquals(RefactoringBundle.getCannotRefactorMessage(disabledMessage), e.message)
+    }
+  }
+
   fun testPerformExtractWidgetShowsNoResponseErrorHintWhenServerReturnsNull() {
     val file = myFixture.configureByText(
       "test.dart",
