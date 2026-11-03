@@ -43,6 +43,7 @@ UI like a user would.
 
 - Linux, Windows, or macOS, with a Flutter SDK. Point `FLUTTER_SDK` at it (for example
   `export FLUTTER_SDK=~/develop/flutter`, or `$env:FLUTTER_SDK = "C:\path\to\flutter"` in PowerShell).
+- For recordings (optional, **Linux only**): `xvfb`, `xserver-xephyr`, `x11-utils`, `imagemagick`, and `python3`.
 - About 2 GB of disk for the first IDE download.
 
 ### Run one test
@@ -75,6 +76,30 @@ On macOS, run the same `./gradlew` command as on Linux, without the `unset` line
   `build/out/ide-tests/tests/<IDE build>/<TestName>/log/idea.log`.
 - On Windows, test projects are created under `%USERPROFILE%\ft` (a short path, to stay under the 260-character path
   limit).
+
+### Watch a test, or record it as a walkthrough
+
+Recording walkthroughs is supported on **Linux only**, so record on a Linux machine even if you develop on Windows
+or macOS. On Windows and macOS you can still watch a test, because it runs on your desktop.
+
+To see what a test does, use the walkthrough recorder. It runs the test on its own display and saves a step-by-step
+screenshot walkthrough (a single self-contained HTML page) to `~/walkthroughs/`:
+
+```bash
+# Watch it live: a window opens on your desktop with the IDE inside (don't click in it while it runs)
+.agents/skills/record-test-walkthrough/scripts/record_walkthrough.sh --mode visible --size 1600x900 \
+  --test io.flutter.integrationTest.<TestClass>
+
+# Or record it without showing anything on screen
+.agents/skills/record-test-walkthrough/scripts/record_walkthrough.sh \
+  --test io.flutter.integrationTest.<TestClass>
+
+# Browse all recorded walkthroughs
+xdg-open ~/walkthroughs/index.html
+```
+
+Run the recorder with `--help` for all options. For full details, see
+[`.agents/skills/record-test-walkthrough/SKILL.md`](../../.agents/skills/record-test-walkthrough/SKILL.md).
 
 ### Useful environment variables
 
