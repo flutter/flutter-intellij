@@ -9,10 +9,15 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.ide.FlutterCodeInsightFixtureTestCase;
 
 import java.io.File;
 import java.util.List;
+
+import io.flutter.pub.PubRoot;
+import io.flutter.run.common.RunMode;
+import io.flutter.run.test.TestFields;
 
 public class FlutterCommandTest extends FlutterCodeInsightFixtureTestCase {
 
@@ -66,5 +71,25 @@ public class FlutterCommandTest extends FlutterCodeInsightFixtureTestCase {
 
     assertEquals(List.of("doctor", "--verbose"), params);
     assertFalse(params.contains("--no-color"));
+  }
+
+  public void testTestCommandAddsPlainName() throws Exception {
+    final FlutterSdk sdk = createFlutterSdk();
+    final VirtualFile pubRootFile = sdk.getHome().findFileByRelativePath("packages/flutter");
+    
+    final FlutterCommand command = sdk.flutterTest(
+      PubRoot.forDirectory(pubRootFile),
+      pubRootFile,
+      "my test name:",
+      RunMode.RUN,
+      null,
+      TestFields.Scope.NAME,
+      false
+    );
+    final GeneralCommandLine line = command.createGeneralCommandLine(getProject());
+    final List<String> params = line.getParametersList().getList();
+
+    assertTrue(params.contains("--plain-name"));
+    assertTrue(params.contains("my test name:"));
   }
 }

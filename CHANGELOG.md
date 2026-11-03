@@ -9,6 +9,7 @@
 - Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)
 
 ### Fixed
+- Failure running Flutter tests with escaped characters (such as quotes) or special characters (such as colons) in their name. (#9205)
 
 ## 98.0.0
 
