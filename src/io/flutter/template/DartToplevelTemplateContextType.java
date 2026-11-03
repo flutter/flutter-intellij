@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class DartToplevelTemplateContextType extends DartTemplateContextType {
   public DartToplevelTemplateContextType() {
-    super("DART_TOPLEVEL", "Top-level", Generic.class);
+    super("Top-level");
   }
 
   @Override

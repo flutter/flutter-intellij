@@ -49,13 +49,8 @@ NC=$'\033[0m' # None (Reset)
 
 SUMMARY="${GITHUB_STEP_SUMMARY:-/dev/null}"
 
-# Local runs report parameter names in this constructor signature while CI runs
-# do not, so the two would otherwise never agree. This is applied to both sides
-# of the comparison only -- never when writing a baseline -- so the committed
-# file stays a faithful record of the report for tool/churn/ to analyze.
 comparable() {
-  sed -E 's/DartTemplateContextType\.<init>\([^)]+\)/DartTemplateContextType.<init>(args)/g' \
-    | LC_ALL=C sort -u
+  LC_ALL=C sort -u
 }
 
 # Flatten a report.md into "SECTION<TAB>issue" lines.

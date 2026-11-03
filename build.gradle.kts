@@ -330,7 +330,7 @@ intellijPlatform {
       VerifyPluginTask.FailureLevel.PLUGIN_STRUCTURE_WARNINGS,
       VerifyPluginTask.FailureLevel.MISSING_DEPENDENCIES,
       VerifyPluginTask.FailureLevel.INVALID_PLUGIN,
-//      VerifyPluginTask.FailureLevel.NOT_DYNAMIC,
+      VerifyPluginTask.FailureLevel.NOT_DYNAMIC,
     )
     verificationReportsFormats = VerifyPluginTask.VerificationReportsFormats.ALL
     subsystemsToCheck = VerifyPluginTask.Subsystems.ALL
