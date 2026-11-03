@@ -4,9 +4,11 @@
 
 ### Changed
 - Centralizing file path logging into `PluginLogger`. (#8707)
+- Migrating Flutter live templates and `DART_TOPLEVEL` context registration to declarative XML extensions to support dynamic plugin loading without IDE restarts. (#8361)
 
 ### Removed
 - Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)
+- Deprecated `FlutterLiveTemplatesProvider` implementation in favor of `<defaultLiveTemplates>`. (#8361)
 
 ### Fixed
 
