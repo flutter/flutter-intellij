@@ -32,6 +32,7 @@ import org.junit.jupiter.api.TestInstance
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -113,9 +114,10 @@ abstract class ExistingProjectUITest(private val packageName: String) {
     context = Setup.setupTestContextIU262(javaClass.simpleName, LocalProjectInfo(projectDir), dartPluginVersion)
     run = context.runIdeWithDriver()
     waitForProjectReady()
-    // The Trial tab usually opens while the project loads, but can come a few seconds later; give it a moment.
-    val deadline = System.currentTimeMillis() + 15_000
-    while (!closeTrialTab() && System.currentTimeMillis() < deadline) Thread.sleep(1_000)
+    // The Trial tab usually opens while the project loads, but can arrive shortly after; poll briefly here and again
+    // when opening files or polling conditions in [dismissInterruptions].
+    val deadline = System.currentTimeMillis() + 3_000
+    while (!closeTrialTab() && System.currentTimeMillis() < deadline) Thread.sleep(500)
   }
 
   /** Runs [action] inside the project frame. */
@@ -125,7 +127,9 @@ abstract class ExistingProjectUITest(private val packageName: String) {
 
   /** Opens [relativePath] (relative to the project root) in an editor and waits for code analysis. */
   protected fun openProjectFile(relativePath: String) {
+    closeTrialTab()
     driver.openFile(relativePath)
+    closeTrialTab()
   }
 
   /** The editor for [fileName], e.g. `main.dart`. */
@@ -187,6 +191,7 @@ abstract class ExistingProjectUITest(private val packageName: String) {
 
   /** Opens the Flutter device selector and clicks the device whose name starts with one of [names]. */
   protected fun IdeaFrameUI.selectDevice(vararg names: String) {
+    require(names.isNotEmpty()) { "At least one device name must be provided" }
     fun String.matches() = names.any { startsWith(it, ignoreCase = true) }
     val selector = x(
       "//div[@class='JBLabel' and (contains(@text, '(desktop)') or contains(@text, '(web)') or " +
@@ -225,9 +230,10 @@ abstract class ExistingProjectUITest(private val packageName: String) {
       val stop = xx("//div[@class='ActionButton' and @myicon='stop.svg']").list().firstOrNull { it.isEnabled() }
                  ?: error("no enabled Stop button")
       stop.click()
-      Thread.sleep(3_000)
-      val stillRunning = xx("//div[@class='ActionButton' and @myicon='stop.svg']").list().any { it.isEnabled() }
-      println(if (stillRunning) "Clicked Stop, but a Stop button is still enabled" else "App stopped")
+      waitFor("app to stop", 10.seconds, 500.milliseconds) {
+        xx("//div[@class='ActionButton' and @myicon='stop.svg']").list().none { it.isEnabled() }
+      }
+      println("App stopped")
     }.onFailure { println("Could not stop the app (${it.message}); it stops when the IDE closes.") }
   }
 

@@ -384,7 +384,9 @@ intellijPlatformTesting.testIde.register("integration") {
     minHeapSize = "1g"
     maxHeapSize = "4g"
 
-    // Resolve the plugin archive lazily so that the `archiveFileName` override on `buildPlugin` (configured later in this file) applies.
+    // Resolve the plugin archive lazily via CommandLineArgumentProvider so that the `archiveFileName` override on
+    // `buildPlugin` (configured later in this file) applies; `Test.systemProperty(String, Any)` does not unwrap
+    // `Provider` values and instead calls `Provider.toString()`.
     val pluginArchive = project.tasks.buildPlugin.flatMap { it.archiveFile }
     jvmArgumentProviders += CommandLineArgumentProvider {
       listOf("-Dpath.to.build.plugin=${pluginArchive.get().asFile.absolutePath}")

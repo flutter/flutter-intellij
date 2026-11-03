@@ -41,7 +41,7 @@ object Platform {
   /** Path of the Flutter SDK, from `FLUTTER_SDK`. */
   val flutterSdk: Path
     get() = Paths.get(
-      System.getenv("FLUTTER_SDK")
+      System.getenv("FLUTTER_SDK")?.takeIf { it.isNotBlank() }
       ?: throw IllegalStateException("Set the FLUTTER_SDK environment variable to the Flutter SDK to test with")
     )
 
