@@ -4,6 +4,7 @@
 
 ### Changed
 - Centralizing file path logging into `PluginLogger`. (#8707)
+- Migrating OS version lookup and process termination handlers off scheduled-for-removal platform APIs. (#8361)
 
 ### Removed
 - Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)
