@@ -43,7 +43,7 @@ UI like a user would.
 
 - Linux, Windows, or macOS, with a Flutter SDK. Point `FLUTTER_SDK` at it (for example
   `export FLUTTER_SDK=~/develop/flutter`, or `$env:FLUTTER_SDK = "C:\path\to\flutter"` in PowerShell).
-- For recordings (optional, **Linux only**): `xvfb`, `xserver-xephyr`, `x11-utils`, `imagemagick`, and `python3`.
+- For recordings (optional, **Linux only**): `xvfb`, `xserver-xephyr`, `x11-utils`, `xauth`, `imagemagick`, and `python3`.
 - About 2 GB of disk for the first IDE download.
 
 ### Run one test

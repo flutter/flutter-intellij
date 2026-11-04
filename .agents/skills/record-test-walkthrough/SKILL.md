@@ -15,7 +15,7 @@ The automated test is what runs; the recorder only provides a display for it and
 
 ## Prerequisites
 
-- Linux with `xvfb` (headless), `xserver-xephyr` (visible), `x11-utils` (`xdpyinfo`), `imagemagick` (`import`, `convert`, `compare`) and `python3`.
+- Linux with `xvfb` (headless), `xserver-xephyr` (visible), `x11-utils` (`xdpyinfo`), `xauth`, `imagemagick` (`import`, `convert`, `compare`) and `python3`.
   Recording is **Linux only**. The tests themselves also run on Windows and macOS, but if the user asks to record
   there, tell them to record on a Linux machine instead.
 - An automated test that shows UI on `$DISPLAY`, with a doc comment that explains what it shows (see

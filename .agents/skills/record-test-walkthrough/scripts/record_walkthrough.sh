@@ -99,11 +99,11 @@ esac
 
 # --- Preflight -------------------------------------------------------------------------------
 missing=()
-for tool in "$SERVER" xdpyinfo import convert compare identify python3; do
+for tool in "$SERVER" xdpyinfo xauth mcookie import convert compare identify python3; do
   command -v "$tool" > /dev/null || missing+=("$tool")
 done
 if [ "${#missing[@]}" -gt 0 ]; then
-  echo "Missing tools: ${missing[*]} (packages: xvfb, xserver-xephyr, x11-utils, imagemagick, python3)" >&2
+  echo "Missing tools: ${missing[*]} (packages: xvfb, xserver-xephyr, x11-utils, xauth, imagemagick, python3)" >&2
   exit 1
 fi
 if [ "$MODE" = visible ] && [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then
@@ -124,21 +124,31 @@ echo "Recording '$TITLE' ($MODE) -> $OUT"
 echo "Command: ${CMD[*]}"
 
 # --- Start the X display ---------------------------------------------------------------------
+# Pick the display number up front so we can populate the xauth file before starting the X server
+# (Xvfb/Xephyr read -auth at startup, before -displayfd would report the chosen display number).
 num=90
 while [ -e "/tmp/.X${num}-lock" ] || [ -e "/tmp/.X11-unix/X${num}" ]; do num=$((num + 1)); done
 TEST_DISPLAY=":$num"
 
+XAUTH="$OUT/.Xauthority"
+rm -f "$XAUTH"
+(umask 077 && : > "$XAUTH")
+xauth -f "$XAUTH" add "$TEST_DISPLAY" . "$(mcookie)"
+
 if [ "$MODE" = headless ]; then
-  Xvfb "$TEST_DISPLAY" -screen 0 "${SIZE}x24" -ac -nolisten tcp > "$OUT/xserver.log" 2>&1 &
+  Xvfb "$TEST_DISPLAY" -screen 0 "${SIZE}x24" -auth "$XAUTH" -nolisten tcp > "$OUT/xserver.log" 2>&1 &
 else
-  Xephyr "$TEST_DISPLAY" -screen "$SIZE" -ac -nolisten tcp -title "Walkthrough: $TITLE ($TEST_DISPLAY)" \
+  # Launch Xephyr before overriding XAUTHORITY so it can still use the host desktop's cookie to open its window.
+  Xephyr "$TEST_DISPLAY" -screen "$SIZE" -auth "$XAUTH" -nolisten tcp -title "Walkthrough: $TITLE ($TEST_DISPLAY)" \
     > "$OUT/xserver.log" 2>&1 &
 fi
 server_pid=$!
+export XAUTHORITY="$XAUTH"
 
 cleanup() {
   [ -n "${capture_pid:-}" ] && kill "$capture_pid" 2> /dev/null
   kill "$server_pid" 2> /dev/null
+  rm -f "$XAUTH"
 }
 trap cleanup EXIT
 
