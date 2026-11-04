@@ -10,11 +10,25 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import io.flutter.ide.FlutterCodeInsightFixtureTestCase;
+import io.flutter.settings.FlutterSettings;
 
 import java.io.File;
 import java.util.List;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 public class FlutterCommandTest extends FlutterCodeInsightFixtureTestCase {
+
+  @Override
+  public void tearDown() throws Exception {
+    try {
+      FlutterSettings.setInstance(null);
+    }
+    finally {
+      super.tearDown();
+    }
+  }
 
   /**
    * Creates a real {@link FlutterSdk} backed by a minimal fake SDK directory in a temp folder.
@@ -66,5 +80,72 @@ public class FlutterCommandTest extends FlutterCodeInsightFixtureTestCase {
 
     assertEquals(List.of("doctor", "--verbose"), params);
     assertFalse(params.contains("--no-color"));
+  }
+
+  public void testSafeCommandLogRedactsSdkPathWhenDisabled() throws Exception {
+    final FlutterSettings mockSettings = mock(FlutterSettings.class);
+    when(mockSettings.isFilePathLoggingEnabled()).thenReturn(false);
+    FlutterSettings.setInstance(mockSettings);
+
+    final FlutterSdk sdk = createFlutterSdk();
+    final FlutterCommand command =
+      new FlutterCommand(sdk, null, FlutterCommand.Type.RUN, "--machine", "-d", "chrome", "lib/main.dart");
+    final GeneralCommandLine line = command.createGeneralCommandLine(getProject());
+
+    final String log = FlutterCommand.safeCommandLog(line);
+    assertEquals(FlutterSdkUtil.flutterScriptName() + " [run, --machine, -d, chrome, lib/main.dart]", log);
+    assertFalse(log.contains(sdk.getHomePath()));
+    assertFalse(log.contains(FileUtil.toSystemDependentName(sdk.getHomePath())));
+  }
+
+  public void testSafeCommandLogIncludesSdkPathWhenEnabled() throws Exception {
+    final FlutterSettings mockSettings = mock(FlutterSettings.class);
+    when(mockSettings.isFilePathLoggingEnabled()).thenReturn(true);
+    FlutterSettings.setInstance(mockSettings);
+
+    final FlutterSdk sdk = createFlutterSdk();
+    final FlutterCommand command =
+      new FlutterCommand(sdk, null, FlutterCommand.Type.RUN, "--machine", "-d", "chrome", "lib/main.dart");
+    final GeneralCommandLine line = command.createGeneralCommandLine(getProject());
+
+    final String log = FlutterCommand.safeCommandLog(line);
+    assertEquals(line.toString(), log);
+    assertTrue(log.contains(FileUtil.toSystemDependentName(sdk.getHomePath())));
+  }
+
+  public void testSafeCommandLogWithWindowsExePath() {
+    final FlutterSettings mockSettings = mock(FlutterSettings.class);
+    when(mockSettings.isFilePathLoggingEnabled()).thenReturn(false);
+    FlutterSettings.setInstance(mockSettings);
+
+    final GeneralCommandLine line =
+      new GeneralCommandLine("C:\\Users\\secret_user\\flutter\\bin\\flutter.bat", "doctor");
+    final String log = FlutterCommand.safeCommandLog(line);
+    assertEquals("flutter.bat [doctor]", log);
+    assertFalse(log.contains("secret_user"));
+  }
+
+  public void testGetSanitizedDisplayCommandRedactsLastArgWhenDisabled() throws Exception {
+    final FlutterSettings mockSettings = mock(FlutterSettings.class);
+    when(mockSettings.isFilePathLoggingEnabled()).thenReturn(false);
+    FlutterSettings.setInstance(mockSettings);
+
+    final FlutterSdk sdk = createFlutterSdk();
+    final FlutterCommand command =
+      new FlutterCommand(sdk, null, FlutterCommand.Type.RUN, "lib/main.dart");
+
+    assertEquals("flutter run <path>", command.getSanitizedDisplayCommand());
+  }
+
+  public void testGetSanitizedDisplayCommandIncludesPathWhenEnabled() throws Exception {
+    final FlutterSettings mockSettings = mock(FlutterSettings.class);
+    when(mockSettings.isFilePathLoggingEnabled()).thenReturn(true);
+    FlutterSettings.setInstance(mockSettings);
+
+    final FlutterSdk sdk = createFlutterSdk();
+    final FlutterCommand command =
+      new FlutterCommand(sdk, null, FlutterCommand.Type.RUN, "lib/main.dart");
+
+    assertEquals("flutter run lib/main.dart", command.getSanitizedDisplayCommand());
   }
 }

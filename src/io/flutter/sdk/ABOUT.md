@@ -1,4 +1,4 @@
-<!--* freshness: { reviewed: '2026-10-25' } *-->
+<!--* freshness: { reviewed: '2026-11-02' } *-->
 # Flutter SDK
 
 ## Overview
@@ -26,7 +26,7 @@ Manages the configuration, discovery, and path resolution for the Flutter SDK an
 ## Invariants
 - AndroidEmulatorManager maintains a cached list of Android emulators, with a single instance per project.
 - AbstractLibraryManager manages a named project library (subclasses supply the default name, e.g. "Flutter Plugins") with any number of CLASSES root URLs. If the project does not declare Flutter, the library is removed instead.
-- FlutterCommand encapsulates a flutter command execution, tracking the command type, target directory, and arguments.
+- FlutterCommand encapsulates a flutter command execution, tracking the command type, target directory, and arguments. `FlutterCommand.safeCommandLog(GeneralCommandLine)` formats a `GeneralCommandLine` for logging, redacting the SDK directory path unless `PluginLogger.isFilePathLoggingEnabled()` is true.
 - FlutterSdk manages a static cache of project SDK instances indexed by their canonical paths, and caches `flutter config` query results per instance (`cachedConfigValues`).
 - FlutterSdkVersion reads `bin/cache/flutter.version.json` and tracks SDK semantic versions, beta version tags, and capability thresholds. `MIN_SDK_SUPPORTED` and `MIN_SDK_WITHOUT_SUNSET_WARNING` drive the outdated-SDK warnings; the other `MIN_SUPPORTS_*` constants gate features (DevTools multi-embed, property editor, widget preview).
 
