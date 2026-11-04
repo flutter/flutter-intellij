@@ -52,7 +52,6 @@ import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.VisibleForTesting;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -186,18 +185,6 @@ public class FlutterApp implements Disposable {
   @NotNull
   public GeneralCommandLine getCommand() {
     return myCommand;
-  }
-
-  /**
-   * Returns a log-safe string representation of the app's command line, redacting the SDK path
-   * when file path logging is disabled.
-   * <p>
-   * Exposed for testing.
-   */
-  @VisibleForTesting
-  @NotNull
-  public String getCommandLog() {
-    return FlutterCommand.safeCommandLog(myCommand);
   }
 
   @Nullable
