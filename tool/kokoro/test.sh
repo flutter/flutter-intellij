@@ -3,7 +3,7 @@
 source ./tool/kokoro/setup.sh
 setup
 
-(cd testData/sample_tests; echo "dart pub get `pwd`"; dart pub get --no-precompile)
+run_pub_get_with_retry testData/sample_tests
 
 echo "kokoro test start"
 run_gradle_with_retry --max-retries 0 test
