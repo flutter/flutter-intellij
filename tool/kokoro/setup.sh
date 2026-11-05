@@ -131,6 +131,91 @@ run_with_timeout() {
   return $exit_code
 }
 
+# Run `dart pub get` in a directory, bounding each attempt with a timeout and
+# retrying on failure. Pub has no network timeout of its own, so a stalled
+# package download on the mac VMs previously hung until the 3h Kokoro VM
+# timeout. Retries run with `--verbose`, which logs each request, so a repeat
+# stall shows which host or package it was waiting on.
+# Usage: run_pub_get_with_retry [--max-retries N] [--timeout-secs N]
+#                               [--delay-secs N] <directory>
+run_pub_get_with_retry() {
+  local max_retries=1
+  local timeout_secs=300
+  local delay_secs=15
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --max-retries|--timeout-secs|--delay-secs)
+        if [[ $# -lt 2 ]]; then
+          echo "Error: $1 requires an argument." >&2
+          return 1
+        fi
+        if [[ ! "$2" =~ ^[0-9]+$ ]]; then
+          echo "Error: $1 requires a non-negative integer." >&2
+          return 1
+        fi
+        case "$1" in
+          --max-retries) max_retries="$2" ;;
+          --timeout-secs) timeout_secs="$2" ;;
+          --delay-secs) delay_secs="$2" ;;
+        esac
+        shift 2
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+
+  if [[ $# -ne 1 ]]; then
+    echo "Error: run_pub_get_with_retry requires exactly one directory." >&2
+    return 1
+  fi
+  local dir="$1"
+  # A missing directory won't fix itself, so fail now rather than retrying.
+  if [[ ! -d "$dir" ]]; then
+    echo "Error: Directory '$dir' does not exist." >&2
+    return 1
+  fi
+  local total_attempts=$((1 + max_retries))
+  local attempt=1
+  local exit_code=0
+
+  echo "pub get retry config: max_retries=$max_retries, total_attempts=$total_attempts, timeout_secs=$timeout_secs, delay_secs=$delay_secs" >&2
+
+  while [[ $attempt -le $total_attempts ]]; do
+    # Keep the first attempt quiet; only retries pay for verbose logging.
+    local pub_args=(pub get --no-precompile --directory "$dir")
+    if [[ $attempt -gt 1 ]]; then
+      pub_args+=(--verbose)
+    fi
+    echo "dart ${pub_args[*]} (Attempt $attempt of $total_attempts)..." >&2
+
+    exit_code=0
+    run_with_timeout "$timeout_secs" dart "${pub_args[@]}" || exit_code=$?
+    if [[ $exit_code -eq 0 ]]; then
+      echo "dart pub get completed successfully." >&2
+      return 0
+    fi
+    # 124 is our own timeout; any other code >=128 means we were interrupted.
+    if [[ $exit_code -ge 128 ]]; then
+      echo "dart pub get interrupted. Exiting." >&2
+      return $exit_code
+    fi
+
+    echo "dart pub get failed on attempt $attempt (exit code $exit_code)." >&2
+
+    if [[ $attempt -eq $total_attempts ]]; then
+      echo "All $total_attempts attempts failed." >&2
+      return $exit_code
+    fi
+
+    echo "Waiting $delay_secs seconds before retrying..." >&2
+    sleep "$delay_secs"
+    attempt=$((attempt + 1))
+  done
+}
+
 # Initialize everything required by the plugin tool.
 setup() {
   # Fail on any error.
@@ -183,6 +268,6 @@ setup() {
   export FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME=flutter-intellij-plugin-jxbrowser-license-key
   export NO_FS_ROOTS_ACCESS_CHECK=true
 
-  (cd tool/plugin; echo "dart pub get `pwd`"; dart pub get --no-precompile)
+  run_pub_get_with_retry tool/plugin
   run_gradle_with_retry --version
 }
