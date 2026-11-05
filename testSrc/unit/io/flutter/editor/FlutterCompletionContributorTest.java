@@ -185,24 +185,89 @@ public class FlutterCompletionContributorTest extends AbstractDartElementTest {
   }
 
   @Test
+  public void testFillCompletionVariantsSupportsImportPrefixAndMidChain() throws Exception {
+    run(() -> {
+      // Import prefix (`m.Colors.<caret>`)
+      assertColorCompletionDecorated("import 'package:flutter/material.dart' as m; main() { m.Colors.IntellijIdeaRulezzz; }");
+
+      // Mid-chain before method call (`Colors.<caret>.withValues(...)`)
+      assertColorCompletionDecorated("main() { Colors.IntellijIdeaRulezzz.withValues(alpha: 0.5); }");
+
+      // Mid-chain before property/shade (`Colors.<caret>.shade200`)
+      assertColorCompletionDecorated("main() { Colors.IntellijIdeaRulezzz.shade200; }");
+
+      // Mid-chain before index operator (`Colors.<caret>[200]`)
+      assertColorCompletionDecorated("main() { Colors.IntellijIdeaRulezzz[200]; }");
+
+      // Combined import prefix + multiline + mid-chain
+      assertColorCompletionDecorated("main() {\n  m.Colors\n    .IntellijIdeaRulezzz\n    .withValues(alpha: 0.5);\n}");
+    });
+  }
+
+  @Test
   public void testFillCompletionVariantsIgnoresNonQualifiedOrUnsupportedPrefix() throws Exception {
     run(() -> {
-      PsiElement unqualifiedPosition = setUpDartElement("main() { Colors; }", "Colors", LeafPsiElement.class);
-      CompletionParameters unqualifiedParams = mock(CompletionParameters.class);
-      when(unqualifiedParams.getPosition()).thenReturn(unqualifiedPosition);
-      CompletionResultSet resultSet1 = mock(CompletionResultSet.class);
+      // Unqualified identifier (`Colors<caret>`)
+      assertCompletionIgnored("main() { Colors; }", "Colors");
 
-      new FlutterCompletionContributor().fillCompletionVariants(unqualifiedParams, resultSet1);
-      verify(resultSet1, never()).runRemainingContributors(any(), any());
+      // Non-reference token (`123`)
+      assertCompletionIgnored("main() { var x = 123; }", "123");
 
-      PsiElement otherPrefixPosition =
-        setUpDartElement("main() { OtherClass.IntellijIdeaRulezzz; }", "IntellijIdeaRulezzz", LeafPsiElement.class);
-      CompletionParameters otherPrefixParams = mock(CompletionParameters.class);
-      when(otherPrefixParams.getPosition()).thenReturn(otherPrefixPosition);
-      CompletionResultSet resultSet2 = mock(CompletionResultSet.class);
+      // Left-hand side of dot (`Col<caret>.red`)
+      assertCompletionIgnored("main() { ColIntellijIdeaRulezzz.red; }", "ColIntellijIdeaRulezzz");
 
-      new FlutterCompletionContributor().fillCompletionVariants(otherPrefixParams, resultSet2);
-      verify(resultSet2, never()).runRemainingContributors(any(), any());
+      // Downstream member after constant (`Colors.red.<caret>` and `Icons.add.<caret>`)
+      assertCompletionIgnored("main() { Colors.red.IntellijIdeaRulezzz; }", "IntellijIdeaRulezzz");
+      assertCompletionIgnored("main() { Icons.add.IntellijIdeaRulezzz; }", "IntellijIdeaRulezzz");
+
+      // Non-reference qualifier (`getObj().<caret>`)
+      assertCompletionIgnored("main() { getObj().IntellijIdeaRulezzz; }", "IntellijIdeaRulezzz");
+
+      // Unsupported class with and without import prefix
+      assertCompletionIgnored("main() { OtherClass.IntellijIdeaRulezzz; }", "IntellijIdeaRulezzz");
+      assertCompletionIgnored("main() { m.OtherClass.IntellijIdeaRulezzz; }", "IntellijIdeaRulezzz");
     });
+  }
+
+  private void assertColorCompletionDecorated(@NotNull String dartSource) {
+    PsiElement position = setUpDartElement(dartSource, "IntellijIdeaRulezzz", LeafPsiElement.class);
+    CompletionParameters parameters = mock(CompletionParameters.class);
+    when(parameters.getPosition()).thenReturn(position);
+
+    CompletionResultSet resultSet = mock(CompletionResultSet.class);
+    LookupElement baseLookup = LookupElementBuilder.create("red").withTypeText("MaterialColor");
+    CompletionResult completionResult =
+      CompletionResult.wrap(baseLookup, PrefixMatcher.ALWAYS_TRUE, CompletionSorter.emptySorter());
+    assertNotNull(completionResult);
+
+    doAnswer(invocation -> {
+      Consumer<CompletionResult> consumer = invocation.getArgument(1);
+      consumer.consume(completionResult);
+      return null;
+    }).when(resultSet).runRemainingContributors(eq(parameters), any());
+
+    new FlutterCompletionContributor().fillCompletionVariants(parameters, resultSet);
+
+    ArgumentCaptor<CompletionResult> captor = ArgumentCaptor.forClass(CompletionResult.class);
+    verify(resultSet).passResult(captor.capture());
+
+    LookupElement decorated = captor.getValue().getLookupElement();
+    assertNull(decorated.getExpensiveRenderer());
+    LookupElementPresentation presentation = new LookupElementPresentation();
+    decorated.renderElement(presentation);
+    assertEquals("red", presentation.getItemText());
+    assertEquals("", presentation.getTypeText());
+    assertTrue(presentation.getTypeIcon() instanceof ColorIcon);
+    assertTrue(presentation.isTypeIconRightAligned());
+  }
+
+  private void assertCompletionIgnored(@NotNull String dartSource, @NotNull String elementText) {
+    PsiElement position = setUpDartElement(dartSource, elementText, LeafPsiElement.class);
+    CompletionParameters parameters = mock(CompletionParameters.class);
+    when(parameters.getPosition()).thenReturn(position);
+    CompletionResultSet resultSet = mock(CompletionResultSet.class);
+
+    new FlutterCompletionContributor().fillCompletionVariants(parameters, resultSet);
+    verify(resultSet, never()).runRemainingContributors(any(), any());
   }
 }

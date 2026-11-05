@@ -1,4 +1,4 @@
-<!--* freshness: { reviewed: '2026-10-29' } *-->
+<!--* freshness: { reviewed: '2026-11-05' } *-->
 # Flutter Editor Features
 
 ## Overview
