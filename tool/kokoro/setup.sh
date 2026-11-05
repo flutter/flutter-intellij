@@ -172,6 +172,11 @@ run_pub_get_with_retry() {
     return 1
   fi
   local dir="$1"
+  # A missing directory won't fix itself, so fail now rather than retrying.
+  if [[ ! -d "$dir" ]]; then
+    echo "Error: Directory '$dir' does not exist." >&2
+    return 1
+  fi
   local total_attempts=$((1 + max_retries))
   local attempt=1
   local exit_code=0
