@@ -220,9 +220,8 @@ cycle.
 ### 5.1 P2 benchmark issues
 
 These are closed bugs with clear steps, a deterministic oracle, no physical
-device, and a fix merged recently enough that the commit before the fix still
-builds against a current platform. For each one, `repro` runs on the fix
-commit's parent and `validate` runs on the fix commit.
+device, and a fix merged in 2026, so that undoing the fix on current code is
+practical. They're run as described in 5.2.
 
 | Issue | Behavior | Fix commit(s) | Test level | Notes |
 |---|---|---|---|---|
@@ -238,6 +237,59 @@ missing from run tabs, `be8bcce89`) and
 [#8890](https://github.com/flutter/flutter-intellij/issues/8890) (Debug tool
 window shown instead of Run in 2026.1, `d60ef029c`).
 
+**Stretch case (not scored):**
+[#9176](https://github.com/flutter/flutter-intellij/issues/9176), Dart code
+completion stops working. This issue is open, and the known cause is the
+Flutter Enhancement Suite (FES) plugin hooking into the Dart plugin's
+completion extension point (dart-intellij-third-party#735, fix in
+dart-intellij-third-party#814).
+- **Setup:** the spec pins the FES and IDE versions, and the test installs FES
+  the same way `Setup.kt` installs Dart.
+- **Oracle:** typing `Contai` in `lib/main.dart` offers `Container`, and for
+  red, the FES exception appears in `idea.log`.
+- **Validation:** green uses a Dart plugin build that includes #814, loaded
+  through `DART_PLUGIN_ZIP`.
+- **Why it isn't scored:** the fix lives outside this repo, and one reporter
+  saw the problem without FES installed, from a cause that's still unexplained.
+  The issue still covers two cases the scored set doesn't: a fix in another
+  plugin, and the `ide.product=AI` path.
+
+### 5.2 Closed vs. open issues
+
+**Closed issues** have a known fix, so they're used to measure the agent:
+
+1. **Hide the answer.** The agent sees only the issue text as originally filed.
+   It doesn't see the fix PR, the fix diff, or comments posted after the fix.
+   Only the runner knows the fix commit, so the test can't be shaped around
+   the fix code.
+2. **Undo the fix on current code.** The harness doesn't exist at old commits,
+   and old commits may not build against today's IDE. So:
+   - **Default:** check out `main`, reverse-apply the fix diff, and run `repro`
+     (expect red). Then restore the fix and run `validate` (expect green).
+   - **Fallback**, if the revert conflicts with later changes: check out the
+     fix commit's parent and copy in today's `testSrc/integration` folder.
+   - **If neither builds,** the issue is marked "unbuildable" and doesn't count
+     against the agent.
+3. **Pin the IDE version from the issue.** When a bug is tied to an IDE
+   version (for example #8890 on 2026.1, or #8795 on 2025.3 and newer), the
+   spec sets `ide.version` instead of `latest`.
+4. **Grade.** The test must be red with the fix undone and green with it
+   restored, both for the expected reason. A human then confirms the test
+   asserts the behavior the issue describes. Passing tests can be kept as
+   regression tests.
+
+**Open issues** have no known answer, which is the real use case:
+
+- **Red is the result:** the test fails on current `main` for the expected
+  reason.
+- **"Didn't reproduce" is a report, not a verdict.** The agent lists the
+  environments, versions, and overlays it tried, and how confident it is,
+  because a miss could come from the environment, the version, or missing
+  details in the report.
+- **Green waits for a candidate fix:** the agent's own, a PR, or another plugin
+  build (for example `DART_PLUGIN_ZIP`).
+- **No comments on the issue** (4.9). Findings go to the user.
+
 ## 6. Risks
 
 - **Starter/Driver API churn.** Mitigation: a step helper library (open question 1)
@@ -250,8 +302,10 @@ window shown instead of Run in 2026.1, `d60ef029c`).
 - **Flaky environments being misread as product bugs.** Mitigation: the
   preflight check plus the "expected reason" check in `repro` mode.
 - **Old fix commits that no longer build.** Mitigation: the benchmark only uses
-  2026 fixes, and the agent reports "unbuildable" instead of counting the issue
-  as a miss.
+  2026 fixes, which are undone on current `main` (5.2), and unbuildable issues
+  don't count as misses.
+- **Leaking the answer on closed issues.** Mitigation: the agent sees only the
+  issue text as originally filed, and only the runner knows the fix (5.2).
 
 ## 7. Open Questions
 
