@@ -7,3 +7,4 @@ This directory contains workspace customizations, rules, skills, and design docu
 
 ## Design Documents
 - [`sdk-functionality.md`](design-docs/sdk-functionality.md): Full architectural design document for SDK handling in IntelliJ plugins.
+- [`agent-integration-testing.md`](design-docs/agent-integration-testing.md): Proposal for agent skills that author, run, and validate IDE integration tests from workflows, bugs, and code changes.
