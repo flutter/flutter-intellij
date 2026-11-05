@@ -27,6 +27,7 @@
 ### Fixed
 - Empty Flutter SDK dropdown in the New Project wizard when switching to Flutter after starting the wizard on another language. (#9110)
 - Process handlers of terminated apps are no longer kept until the project closes. (#9175)
+- IDE deadlock on project open when the Flutter SDK path is invalid. (#9093)
 
 ## 97.0.0
 

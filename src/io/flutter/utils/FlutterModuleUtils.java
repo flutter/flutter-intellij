@@ -346,8 +346,11 @@ public class FlutterModuleUtils {
     ApplicationManager.getApplication().invokeLater(() -> {
       ApplicationManager.getApplication().runWriteAction(() -> setFlutterModuleType(module));
       enableDartSDK(module);
-      project.save();
 
+      // Do not call project.save() here. On the EDT it enters a nested modal pump while the
+      // document save it dispatches invokes back into the EDT, which deadlocks project open.
+      // The platform persists the module type on its own schedule.
+      // See https://github.com/flutter/flutter-intellij/issues/9093
       EditorNotifications.getInstance(project).updateAllNotifications();
     });
   }
