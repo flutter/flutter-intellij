@@ -97,8 +97,8 @@ these fixed sections:
 
 - **Title / Source:** the issue link, PR, or "manual".
 - **Fixture:** the base project (`flutter create` options), an optional overlay
-  name from `testData/integration/overlays/`, and the IDE product (IU / IC /
-  Android Studio).
+  name from `testData/integration/overlays/`, and the IDE product (`IU` /
+  `IC` / Android Studio, as in 4.3).
 - **Preconditions:** SDK state, settings, and open files.
 - **Steps:** user-level actions, numbered (for example "Open `lib/main.dart`",
   "Invoke *Flutter Hot Reload*").
@@ -114,9 +114,12 @@ these fixed sections:
 - **Platform level:** if the oracle doesn't need real UI, the authoring skill
   **must** drop down to `BasePlatformTestCase` or a heavy fixture test in
   `testSrc/unit`. These tests are cheaper and less flaky.
-- **Target IDE:** IntelliJ IDEA Ultimate (`IU`) at `latest` is the default.
-  That matches `setupTestContextIU262` from #9209, and since 2025.3 JetBrains ships one
-  IntelliJ IDEA distribution instead of a separate Community edition. The same
+- **Target IDE:** the default is the unified IntelliJ IDEA distribution at
+  `latest`. IDE Starter still identifies it by product code `IU`. Since
+  2025.3, JetBrains no longer ships a separate Community Edition
+  ([announcement](https://blog.jetbrains.com/idea/2025/07/intellij-idea-unified-distribution-plan/)),
+  so `IC` only applies to builds before 2025.3. This matches
+  `setupTestContextIU262` in #9209. The same
   tests must also run on Android Studio. The IDE is chosen at run time instead
   of being hard-coded in `Setup.kt`:
   - `ide.product`: `IU` (default), `AI` (Android Studio), or `IC` (only for
@@ -324,7 +327,8 @@ dart-intellij-third-party#814).
 
 ### Resolved
 
-- **Default IDE:** IntelliJ IDEA (IU) at `latest`, with Android Studio and any
+- **Default IDE:** unified IntelliJ IDEA (Starter product code `IU`) at
+  `latest`, with Android Studio and any
   user-given version supported (4.3).
 - **Fixtures:** `flutter create` plus named checked-in overlays (4.5).
 - **N:** 3 runs, and flaky results fail the run (4.7).
