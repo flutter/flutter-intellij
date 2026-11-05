@@ -52,13 +52,13 @@ From the repository root, on Linux:
 
 ```bash
 unset DISPLAY WAYLAND_DISPLAY
-./gradlew --no-daemon integration --tests io.flutter.integrationTest.<TestClass>
+./gradlew --no-daemon integration --tests io.flutter.integrationTest.RunWidgetTestUITest
 ```
 
 On Windows (PowerShell):
 
 ```powershell
-.\gradlew.bat --no-daemon integration --tests io.flutter.integrationTest.<TestClass>
+.\gradlew.bat --no-daemon integration --tests io.flutter.integrationTest.RunWidgetTestUITest
 ```
 
 On macOS, run the same `./gradlew` command as on Linux, without the `unset` line.
@@ -88,11 +88,11 @@ screenshot walkthrough (a single self-contained HTML page) to `~/walkthroughs/`:
 ```bash
 # Watch it live: a window opens on your desktop with the IDE inside (don't click in it while it runs)
 .agents/skills/record-test-walkthrough/scripts/record_walkthrough.sh --mode visible --size 1600x900 \
-  --test io.flutter.integrationTest.<TestClass>
+  --test io.flutter.integrationTest.RunWidgetTestUITest
 
 # Or record it without showing anything on screen
 .agents/skills/record-test-walkthrough/scripts/record_walkthrough.sh \
-  --test io.flutter.integrationTest.<TestClass>
+  --test io.flutter.integrationTest.RunWidgetTestUITest
 
 # Browse all recorded walkthroughs
 xdg-open ~/walkthroughs/index.html
@@ -100,6 +100,21 @@ xdg-open ~/walkthroughs/index.html
 
 Run the recorder with `--help` for all options. For full details, see
 [`.agents/skills/record-test-walkthrough/SKILL.md`](../../.agents/skills/record-test-walkthrough/SKILL.md).
+
+### Available tests
+
+All of these run against IntelliJ IDEA 2026.2.3. Except for `NewProjectIU262UITest`, they start with the IDE already
+open on a Flutter app created with `flutter create`.
+
+| Test | What it shows |
+|---|---|
+| `NewProjectIU262UITest` | Creating a Flutter app with the plugin's New Project wizard |
+| `PubGetUITest` | Adding a dependency to `pubspec.yaml` and running **Flutter Pub Get** |
+| `RunWidgetTestUITest` | Running `test/widget_test.dart` from the editor and seeing it pass in the test runner |
+| `ExtractWidgetUITest` | The **Extract Flutter Widget...** refactoring |
+| `StatelessWidgetLiveTemplateUITest` | Expanding the `stless` live template |
+
+Each test's class comment explains what it shows, step by step.
 
 ### Useful environment variables
 
