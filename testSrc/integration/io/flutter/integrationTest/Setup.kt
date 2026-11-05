@@ -23,7 +23,9 @@ import com.intellij.openapi.util.SystemInfo
 import io.flutter.integrationTest.utils.Platform
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
+import java.nio.file.Files
 import java.nio.file.Paths
+import java.util.Properties
 
 /**
  * Setup class for configuring IntelliJ IDE UI tests using the IntelliJ IDE Starter framework.
@@ -82,23 +84,31 @@ class Setup {
     }
 
     /**
-     * IntelliJ IDEA 2026.2.3 (unified distribution), paired with a Dart plugin that supports build 262.
+     * Reads the Dart plugin version from the `dart.plugin.version` system property (set from `gradle.properties` by the
+     * `integration` Gradle task), falling back to `gradle.properties` when running tests directly from the IDE.
+     */
+    private val dartPluginVersion: String by lazy {
+      System.getProperty("dart.plugin.version")?.trim()?.takeIf { it.isNotEmpty() }
+        ?: Properties().apply {
+          Files.newBufferedReader(Git.getRepoRoot().resolve("gradle.properties")).use(::load)
+        }.getProperty("dartPluginVersion")?.trim()?.takeIf { it.isNotEmpty() }
+        ?: error("dartPluginVersion is not configured in gradle.properties")
+    }
+
+    /**
+     * IntelliJ IDEA 2026.2.3 (unified distribution).
      */
     fun setupTestContextIU262(
       hyphenateWithClass: String,
       projectInfoSpec: ProjectInfoSpec = NoProject,
-      dartPluginVersion: String = DART_PLUGIN_VERSION_IU262,
     ): IDETestContext {
       return setupTestContext(
         hyphenateWithClass, IdeProductProvider.IU.copy(
           buildNumber = "262.10968.63",
           buildType = BuildType.RELEASE.type
-        ), projectInfoSpec, dartPluginVersion = dartPluginVersion
+        ), projectInfoSpec
       )
     }
-
-    /** The Dart plugin version installed with IntelliJ IDEA 2026.2 unless a test asks for another one. */
-    const val DART_PLUGIN_VERSION_IU262 = "509.0.0"
 
     fun setupTestContextWS(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
       return setupTestContext(
@@ -128,7 +138,6 @@ class Setup {
       hyphenateWithClass: String,
       ideInfo: IdeInfo,
       projectInfoSpec: ProjectInfoSpec = NoProject,
-      dartPluginVersion: String = "252.24322.5"
     ): IDETestContext {
 
       val testCase = TestCase(ideInfo, projectInfoSpec)

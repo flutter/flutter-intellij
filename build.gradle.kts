@@ -391,6 +391,7 @@ intellijPlatformTesting.testIde.register("integration") {
     jvmArgumentProviders += CommandLineArgumentProvider {
       listOf("-Dpath.to.build.plugin=${pluginArchive.get().asFile.absolutePath}")
     }
+    systemProperty("dart.plugin.version", dartPluginVersion.trim())
     systemProperty(
       "allure.results.directory", project.layout.buildDirectory.get().asFile.absolutePath + "/allure-results"
     )
