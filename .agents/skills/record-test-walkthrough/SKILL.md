@@ -49,7 +49,7 @@ To watch a test directly on a Wayland desktop instead (no recording), run it fro
 `DISPLAY` and `WAYLAND_DISPLAY` are both set:
 
 ```bash
-FLUTTER_SDK=~/develop/flutter ./gradlew --no-daemon integration --tests io.flutter.integrationTest.ColorGutterPreviewUITest
+FLUTTER_SDK=~/develop/flutter ./gradlew --no-daemon integration --tests io.flutter.integrationTest.NewProjectUITest
 ```
 
 The IDE then runs on XWayland, which only accepts synthetic input through the xdg-desktop-portal RemoteDesktop
@@ -65,15 +65,15 @@ From the repository root:
 ```bash
 # A Gradle test (default task: integration)
 .agents/skills/record-test-walkthrough/scripts/record_walkthrough.sh \
-  --test io.flutter.integrationTest.NewProjectIU262UITest
+  --test io.flutter.integrationTest.NewProjectUITest
 
 # Save into a folder the user chose instead of ~/walkthroughs
 .agents/skills/record-test-walkthrough/scripts/record_walkthrough.sh --dest ~/Documents/flutter-walkthroughs \
-  --test io.flutter.integrationTest.NewProjectIU262UITest
+  --test io.flutter.integrationTest.NewProjectUITest
 
 # Watch it live
 .agents/skills/record-test-walkthrough/scripts/record_walkthrough.sh --mode visible \
-  --test io.flutter.integrationTest.NewProjectIU262UITest
+  --test io.flutter.integrationTest.NewProjectUITest
 
 # Any other command that opens UI on $DISPLAY
 .agents/skills/record-test-walkthrough/scripts/record_walkthrough.sh --title "My flow" -- ./gradlew --no-daemon integration --tests 'io.flutter.integrationTest.SomeTest'
@@ -276,9 +276,9 @@ Prefer checks on the IDE's real state over "something appeared on screen":
   `x("//div[contains(@visible_text, 'test passed')]")`, or `window.x("//div[contains(@javaclass, 'com.teamdev.jxbrowser')]")`
   inside `toolWindow("Flutter Inspector")`. `getAllTexts()` returns the text a component shows, including HTML labels.
 - **IDE objects through `@Remote` interfaces:** declare an interface for the IDE class you need (methods with the same
-  names and parameter counts) and get it with `driver.service(...)`, `driver.utility(...)`, or `driver.cast(ref, ...)`.
-  `GutterColors.kt` reads `EditorEx.getGutterComponentEx().getGutterRenderers(line)` and each icon's `ColorIcon` color;
-  `BrowserEngine.kt` changes a setting through `PropertiesComponent.updateValue(...)`. Make the interfaces `internal`,
+  names and parameter counts) and get it with `driver.service(...)`, `driver.utility(...)`, or `driver.cast(ref, ...)`
+  (for example reading `EditorEx.getGutterComponentEx().getGutterRenderers(line)` or updating a setting through
+  `PropertiesComponent.updateValue(...)`). Make the interfaces `internal`,
   not `private`, and run editor and UI reads in `driver.withContext(OnDispatcher.EDT) { ... }`. Look up exact method
   signatures in the downloaded IDE (`javap -cp build/out/ide-tests/cache/builds/<IDE>/lib/<jar> <class>`).
 - **The IDE log:** read `ideLogFile` at the end of the test, for example to fail on exceptions from `io.flutter`.
@@ -293,7 +293,7 @@ Prefer checks on the IDE's real state over "something appeared on screen":
 | Some shortcuts don't reach the action (Ctrl+Alt+W for Extract Widget) | `driver.invokeAction("<action id>", component = editor.component)`; action IDs are in `plugin.xml` |
 | Clicking a tool window's button hides it if it's already open | Check `stripeButton(id).isToolWindowVisible()` first; buttons are on `ToolWindowRightToolbar` / `ToolWindowLeftToolbar` |
 | Typing in the editor opens completion popups | Press Escape before the next action; don't press Enter while a popup may be open |
-| Local plugin builds have no JxBrowser license key, so Inspector/DevTools windows show "The JxBrowser license could not be found." | Use `BrowserEngine`; with a license, put it in the gitignored `resources/jxbrowser/jxbrowser.properties` before building |
+| Local plugin builds have no JxBrowser license key, so Inspector/DevTools windows show "The JxBrowser license could not be found." | Put a license in the gitignored `resources/jxbrowser/jxbrowser.properties` before building, or switch the DevTools browser setting in `PropertiesComponent` |
 | JCEF mode fails with `NoClassDefFoundError: com/intellij/ui/jcef/JBCefBrowser` | Known plugin bug: no dependency on `com.intellij.modules.jcef` |
 | `final c = Colors.blue;` gets no gutter color preview (`Colors.x.shadeN`, `Color(...)` do) | Known plugin issue in `FlutterColorProvider`; use colors in lists or widget arguments |
 | "Input methods disabler" and "Flutter supports hot reload!" notifications, the Trial tab, and the emulator's "nested virtualization" dialog show up in screenshots | Harmless; they don't block input |
@@ -321,9 +321,10 @@ write `.git`. So:
 
 ## Example: New Flutter project test
 
-`NewProjectIU262UITest` opens IntelliJ IDEA 2026.2.3 with the locally built plugin, clicks **New Project
-→ Flutter → Next**, types a project name, clicks **Create**, waits for indexing, and deletes the project
-afterwards (`KEEP_TEST_PROJECT=true` keeps it). A recording normally shows:
+A new-project UI test (`NewProjectUITest` or a test using `Setup.setupTestContextIU262` and `newProjectWelcomeScreen`)
+opens IntelliJ IDEA with the locally built plugin, clicks **New Project → Flutter → Next**, types a project name,
+clicks **Create**, waits for indexing, and deletes the project afterwards (`KEEP_TEST_PROJECT=true` keeps it).
+A recording normally shows:
 
 1. Splash screen.
 2. Welcome screen.
@@ -335,8 +336,8 @@ afterwards (`KEEP_TEST_PROJECT=true` keeps it). A recording normally shows:
 8. Project tree populated, with the `main.dart` run configuration in the toolbar.
 9. IDE trial tab (IntelliJ IDEA starts a 30-day trial automatically).
 
-To create a similar test for another flow or IDE build, copy it and its `Setup.setupTestContextIU262`
-context. The Dart plugin version must support the IDE build; check with
+To create a similar test for another flow or IDE build, use `Setup.setupTestContextIU262`.
+The Dart plugin version in `gradle.properties` must support the IDE build; check with
 `curl -s 'https://plugins.jetbrains.com/api/plugins/6351/updates?size=8'`. List IDE builds with
 `./gradlew printProductsReleases`.
 
@@ -349,7 +350,7 @@ context. The Dart plugin version must support the IDE build; check with
 | IDE Starter test loads Dart but not Flutter | The `integration` task installed an empty `flutter-intellij.zip`. It must resolve `buildPlugin.archiveFile` lazily so that the `Flutter.zip` name applies. |
 | `Plugin 'Dart' ... requires IDE build 261.* or older` | The Dart plugin version doesn't support the IDE build. |
 | `Thread leaked: WLKeyboard.KeyRepeatManager` | The test JVM started the Wayland AWT toolkit. The `integration` task passes `-Djava.awt.headless=true`. |
-| `DriverIllegalStateException: No such session` | IDEA rebuilt frame components; `NewProjectIU262UITest` retries its final wait. Rerun if it persists. |
+| `DriverIllegalStateException: No such session` | IDEA rebuilt frame components; retry waiting for the frame (`waitForProjectReady` in `ExistingProjectUITest` does this automatically). Rerun if it persists. |
 | Timeout waiting for the welcome screen | A license or trial dialog is blocking startup. Check `frames/`. |
 | Xephyr window is larger than the screen | Pass a smaller `--size`, for example `1600x900`. |
 | `WaitForException: Timeout` in a tool window check | The failure message includes the window's last text (for example "Installing DevTools..."); then check `idea.log` for the exception behind it. |

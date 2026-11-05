@@ -191,28 +191,45 @@ abstract class ExistingProjectUITest(private val packageName: String) {
     require(names.isNotEmpty()) { "At least one device name must be provided" }
     fun String.matches() = names.any { startsWith(it, ignoreCase = true) }
     val selector = x(
+      "//div[contains(@javaclass, 'DeviceSelectorAction')]//div[@class='JBLabel' and @text!=''] | " +
       "//div[@class='JBLabel' and (contains(@text, '(desktop)') or contains(@text, '(web)') or " +
-      "contains(@text, '(mobile)') or contains(@text, 'device') or contains(@text, 'Device'))]"
+      "contains(@text, '(mobile)') or @text='No Devices' or @text='No Device Selected' or @text='Loading Devices...')]"
     )
     var attempt = 0
     waitUntil("device ${names.toList()} to be selected", timeout = 3.minutes) {
-      if (selector.getAllTexts().any { it.text.matches() }) return@waitUntil true
+      val currentTexts = selector.getAllTexts().map { it.text }
+      if (currentTexts.any { it.matches() }) return@waitUntil true
+      if (currentTexts.isEmpty() || currentTexts.any { it == "Loading Devices..." }) return@waitUntil false
       val name = names[attempt++ % names.size]
       selector.click()
-      Thread.sleep(1_000)
+      runCatching {
+        waitFor("device popup to open", 5.seconds, 200.milliseconds) {
+          driver.ui.xx("//div[@class='MyList' or @class='JBList']").list().isNotEmpty()
+        }
+      }
       // Use the popup's speed search. If nothing matches (the device daemon may not have listed the device yet, or
       // the name differs), close the popup so the typed text can't land in the editor, and try the next name.
       keyboard { typeText(name, 50) }
-      Thread.sleep(1_000)
-      if (x("//div[contains(@visible_text, 'Nothing to show')]").present() ||
-          driver.ui.xx("//div[contains(@visible_text, 'Nothing to show')]").list().isNotEmpty()) {
+      val nothingToShow = runCatching {
+        waitFor("speed search result", 1.seconds, 200.milliseconds) {
+          x("//div[contains(@visible_text, 'Nothing to show')]").present() ||
+          driver.ui.xx("//div[contains(@visible_text, 'Nothing to show')]").list().isNotEmpty()
+        }
+        true
+      }.getOrDefault(false)
+      if (nothingToShow) {
         keyboard { escape() }
+        false
       }
       else {
         keyboard { enter() }
+        runCatching {
+          waitFor("device '$name' to be selected", 5.seconds, 200.milliseconds) {
+            selector.getAllTexts().any { it.text.matches() }
+          }
+          true
+        }.getOrDefault(false)
       }
-      Thread.sleep(2_000)
-      selector.getAllTexts().any { it.text.matches() }
     }
     println("Selected device: ${selector.getAllTexts().joinToString("") { it.text }}")
   }
