@@ -73,7 +73,7 @@ class Setup {
       )
     }
 
-    fun setupTestContextUE(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
+    fun setupTestContextIU(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
       return setupTestContext(
         "", IdeProductProvider.IU.copy(
           // TODO(team) should the version be fetched from some setting, i.e. System.getProperty("uiPlatformBuildVersion")
