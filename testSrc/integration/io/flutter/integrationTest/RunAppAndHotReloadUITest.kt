@@ -87,7 +87,7 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
       }
       println("VM service: $vmServiceUri")
 
-      val app = vmServiceUri!!
+      val app = requireNotNull(vmServiceUri) { "The app did not print a VM service URI" }
       // Baseline: the running app shows the original title. This proves the check below can see the title.
       waitForAppTitle(app, shows = OLD_TITLE, notShows = NEW_TITLE)
 

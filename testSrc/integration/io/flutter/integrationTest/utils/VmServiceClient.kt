@@ -24,9 +24,14 @@ import java.util.concurrent.atomic.AtomicInteger
  * see [vmServiceUriFromConsole]). Works for apps on a device or emulator and for web apps (through DWDS).
  */
 class VmServiceClient(wsUri: String) : AutoCloseable {
+  private companion object {
+    /** Shared, because tests create a client on every poll and each HttpClient starts its own threads. */
+    val httpClient: HttpClient = HttpClient.newHttpClient()
+  }
+
   private val nextId = AtomicInteger()
   private val pending = ConcurrentHashMap<String, CompletableFuture<JsonObject>>()
-  private val webSocket: WebSocket = HttpClient.newHttpClient().newWebSocketBuilder()
+  private val webSocket: WebSocket = httpClient.newWebSocketBuilder()
     .buildAsync(URI(wsUri), Listener())
     .get(30, TimeUnit.SECONDS)
 
@@ -82,6 +87,18 @@ class VmServiceClient(wsUri: String) : AutoCloseable {
       }
       webSocket.request(1)
       return null
+    }
+
+    // Fail pending calls right away instead of letting them wait out their timeout.
+    override fun onError(webSocket: WebSocket, error: Throwable) = failPending(error)
+
+    override fun onClose(webSocket: WebSocket, statusCode: Int, reason: String): CompletionStage<*>? {
+      failPending(IllegalStateException("VM service connection closed: $statusCode $reason"))
+      return null
+    }
+
+    private fun failPending(error: Throwable) {
+      pending.keys.toList().forEach { pending.remove(it)?.completeExceptionally(error) }
     }
   }
 }

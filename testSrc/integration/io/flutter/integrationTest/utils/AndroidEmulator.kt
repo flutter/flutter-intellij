@@ -38,10 +38,10 @@ class AndroidEmulator(
       "-crash-report-mode", "disabled", "-no-metrics",
     ).redirectErrorStream(true).redirectOutput(File(logDir, "emulator-$avdName.log")).start()
 
-    exec(adb, "wait-for-device").waitFor(5, TimeUnit.MINUTES)
+    run(5, TimeUnit.MINUTES, adb, "wait-for-device") ?: error("Emulator $avdName did not appear in adb")
     val deadline = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5)
     while (System.currentTimeMillis() < deadline) {
-      val booted = exec(adb, "shell", "getprop", "sys.boot_completed").inputStream.bufferedReader().readText().trim()
+      val booted = run(10, TimeUnit.SECONDS, adb, "shell", "getprop", "sys.boot_completed")?.trim()
       if (booted == "1") {
         println("Emulator booted")
         return
@@ -54,11 +54,23 @@ class AndroidEmulator(
   /** Stops the emulator cleanly with `adb emu kill`, so its next boot doesn't wait on a crash-report dialog. */
   fun stop() {
     process?.let {
-      runCatching { exec(adb, "emu", "kill").waitFor(30, TimeUnit.SECONDS) }
+      runCatching { run(30, TimeUnit.SECONDS, adb, "emu", "kill") }
       it.destroy()
     }
     process = null
   }
 
-  private fun exec(vararg command: String): Process = ProcessBuilder(*command).redirectErrorStream(true).start()
+  /**
+   * Runs [command] and returns its output, or null if it doesn't finish within [timeout], in which case it is killed.
+   * Output is read after the process exits, so a hung command can't block the read; the commands used here print only
+   * a few bytes, well under the pipe buffer.
+   */
+  private fun run(timeout: Long, unit: TimeUnit, vararg command: String): String? {
+    val process = ProcessBuilder(*command).redirectErrorStream(true).start()
+    if (!process.waitFor(timeout, unit)) {
+      process.destroyForcibly()
+      return null
+    }
+    return process.inputStream.bufferedReader().use { it.readText() }
+  }
 }
