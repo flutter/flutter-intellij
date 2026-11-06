@@ -2,6 +2,7 @@
 
 source ./tool/kokoro/setup.sh
 setup
+setup_flutter
 
 run_pub_get_with_retry testData/sample_tests
 
