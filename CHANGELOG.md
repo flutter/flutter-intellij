@@ -5,6 +5,7 @@
 ### Changed
 - Centralizing file path logging into `PluginLogger`. (#8707)
 - Redacting the Flutter SDK path when logging the command line in `FlutterApp`. (#9203)
+- Migrated `FlutterCompletionContributor` (color and icon completion previews) to IntelliJ `CompletionContributor` for LSP completion support. (#9186)
 
 ### Removed
 - Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)
