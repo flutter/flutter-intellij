@@ -358,6 +358,7 @@ public class FlutterModuleUtils {
   }
 
   public static void enableDartSDK(final @NotNull Module module) {
+    if (module.isDisposed()) return;
     if (FlutterSdk.getFlutterSdk(module.getProject()) != null) {
       return;
     }
