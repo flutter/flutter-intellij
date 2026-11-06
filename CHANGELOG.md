@@ -10,6 +10,7 @@
 - Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)
 
 ### Fixed
+- `AlreadyDisposedException` when a project is closed while Flutter module setup is still queued. (#9222)
 
 ## 98.0.0
 
