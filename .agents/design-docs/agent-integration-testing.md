@@ -119,16 +119,34 @@ these fixed sections:
   2025.3, JetBrains no longer ships a separate Community Edition
   ([announcement](https://blog.jetbrains.com/idea/2025/07/intellij-idea-unified-distribution-plan/)),
   so `IC` only applies to builds before 2025.3. This matches
-  `setupTestContextIU262` in #9209. The same
+  `setupTestContextIU262` in #9209 and the property-driven helper
+  `setupTestContextFromProperties` that follows it. The same
   tests must also run on Android Studio. The IDE is chosen at run time instead
   of being hard-coded in `Setup.kt`:
   - `ide.product`: `IU` (default), `AI` (Android Studio), or `IC` (only for
     builds before 2025.3).
   - `ide.version`: `latest` (default; the newest stable release of that
-    product) or a specific build number or version the user provides.
+    product), a version (`2026.2.3`), or a build number (`262.10968.63`). For
+    Android Studio it's the Android Studio version (`2026.1.2.8`, the same
+    format as `androidStudioVersion` in `gradle.properties`).
   - Both are passed as Gradle properties (for example
     `./gradlew integration -Pide.product=AI -Pide.version=2026.1.2.8`) and
-    forwarded to the test JVM as system properties.
+    forwarded to the test JVM as system properties. They're separate from the
+    existing `-Pide` / `-PideV`, which choose the platform the plugin is built
+    against.
+  - **How `latest` resolves:** for `IU`, IDE Starter downloads the newest
+    release when no version is given. For `AI`, Starter requires an explicit
+    version, and its own helper (`fetchLatestMajorReleaseVersion`) maps
+    "2026.2.2 Patch 1" to `2026.2.2.1`, which is actually 2026.2.2 Canary 1.
+    So the harness resolves it from the first stable entry of the Android
+    Studio release list. `IC` with `latest` fails fast.
+  - **`latest` floats.** It changes whenever a new IDE ships, so every run
+    logs the resolved build, and red/green runs (4.7) pin `ide.version` to
+    that build so all N runs and the repro/validate pair use the same IDE.
+- **First-run prompts differ by product.** The harness dismisses them while it
+  waits for the project to load: IntelliJ IDEA's Trial tab and feedback survey,
+  and Android Studio's "Sign in to Android Studio" dialog, which otherwise
+  blocks background tasks until the wait times out.
 - Tests must not assume a product. Product-specific behavior (for example
   Android Studio's own device selector) is guarded with an explicit
   `assumeProduct(...)` and noted in the spec's **Fixture** section.
@@ -184,8 +202,8 @@ reason". For freeze bugs, the test captures a thread dump on timeout, and the
 oracle names the blocking frame (for example the EDT parked in
 `FlutterModuleUtils.setFlutterModuleWithoutReload`).
 
-Every run records logs, screenshots, the failure reason, and wall-clock time in
-the report.
+Every run records logs, screenshots, the failure reason, the resolved IDE
+build, and wall-clock time in the report.
 
 ### 4.8 Diagnosis and repair policy
 
