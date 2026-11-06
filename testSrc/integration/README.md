@@ -24,6 +24,9 @@ All files are under `io/flutter/integrationTest/`:
 - [`utils/NewProject.kt`](io/flutter/integrationTest/utils/NewProject.kt): Helpers for creating new projects in UI tests.
 - [`utils/Platform.kt`](io/flutter/integrationTest/utils/Platform.kt): Cross-platform paths, display modes, SDK executables, and retry-based project cleanup for Linux, macOS, and Windows.
 - [`utils/WalkthroughSteps.kt`](io/flutter/integrationTest/utils/WalkthroughSteps.kt): Step markers for test walkthrough recordings.
+- [`utils/AndroidEmulator.kt`](io/flutter/integrationTest/utils/AndroidEmulator.kt): Starts and cleanly shuts down an Android emulator for device UI tests.
+- [`utils/BrowserEngine.kt`](io/flutter/integrationTest/utils/BrowserEngine.kt): Selects JxBrowser or JCEF for embedded DevTools UI tests.
+- [`utils/VmServiceClient.kt`](io/flutter/integrationTest/utils/VmServiceClient.kt): Minimal Dart VM service WebSocket client for inspecting the running app's widget tree.
 
 ## Guidance & Strategy
 
@@ -113,6 +116,8 @@ open on a Flutter app created with `flutter create`.
 | `RunWidgetTestUITest` | Running `test/widget_test.dart` from the editor and seeing it pass in the test runner |
 | `ExtractWidgetUITest` | The **Extract Flutter Widget...** refactoring |
 | `StatelessWidgetLiveTemplateUITest` | Expanding the `stless` live template |
+| `RunAppAndHotReloadUITest` | Running the app on a device and hot reloading a change |
+| `DevToolsInspectorUITest` | Debugging an app and opening the **Flutter Inspector** and **Flutter DevTools** tool windows |
 
 Each test's class comment explains what it shows, step by step.
 
@@ -124,6 +129,9 @@ Each test's class comment explains what it shows, step by step.
 | `DART_PLUGIN_ZIP` | Optional path to a locally built `Dart.zip` to install instead of the Marketplace Dart plugin |
 | `KEEP_TEST_PROJECT=true` | Keep the test's Flutter project instead of deleting it afterwards |
 | `KEEP_IDE_OPEN_MINUTES=<n>` | Leave the IDE running for `n` minutes after the test, for inspection |
+| `FLUTTER_TEST_DEVICE=chrome\|emulator` | Device for `RunAppAndHotReloadUITest` and `DevToolsInspectorUITest` |
+| `FLUTTER_TEST_AVD=<name>` | Android emulator for `FLUTTER_TEST_DEVICE=emulator` (default `Medium_Phone`) |
+| `FLUTTER_TEST_BROWSER=auto\|jxbrowser\|jcef` | Embedded browser engine for `DevToolsInspectorUITest` (default `auto`) |
 
 ### If something goes wrong
 
@@ -133,3 +141,5 @@ Each test's class comment explains what it shows, step by step.
 - **The test can't find the Flutter SDK.** Check that `FLUTTER_SDK` is exported in the same shell, and use `--no-daemon`.
 - **Nothing happens in the IDE window.** You're probably running against a display that blocks synthetic input;
   `unset DISPLAY WAYLAND_DISPLAY` on Linux to run under Xvfb.
+- **The emulator variant can't find the device.** If an emulator was killed uncleanly, it may be stuck behind a crash
+  dialog. Shut it down with `adb emu kill` and try again.
