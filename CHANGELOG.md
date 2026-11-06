@@ -12,6 +12,7 @@
 
 ### Fixed
 - Unresolved `JaroWinkler` class error when matching custom icon font files in Android Studio 2026.2. (#9204)
+- `AlreadyDisposedException` when a project is closed while Flutter module setup is still queued. (#9222)
 
 ## 98.0.0
 
