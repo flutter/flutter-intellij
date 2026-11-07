@@ -15,6 +15,8 @@
 
 package org.dartlang.vm.service.consumer;
 
+// Originally generated from the Dart VM Service protocol; now maintained in this repository. See [readme.txt](../../readme.txt).
+
 import org.dartlang.vm.service.element.InstanceSet;
 
 @SuppressWarnings({"WeakerAccess", "unused"})

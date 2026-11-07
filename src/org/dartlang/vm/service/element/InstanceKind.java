@@ -13,6 +13,8 @@
  */
 package org.dartlang.vm.service.element;
 
+// Originally generated from the Dart VM Service protocol; now maintained in this repository. See [readme.txt](../../readme.txt).
+
 /**
  * Adding new values to {@link InstanceKind} is considered a backwards compatible change. Clients
  * should treat unrecognized instance kinds as {@link PlainInstance}.

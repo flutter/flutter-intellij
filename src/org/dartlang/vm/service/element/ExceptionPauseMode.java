@@ -13,6 +13,8 @@
  */
 package org.dartlang.vm.service.element;
 
+// Originally generated from the Dart VM Service protocol; now maintained in this repository. See [readme.txt](../../readme.txt).
+
 /**
  * An {@link ExceptionPauseMode} indicates how the isolate pauses when an exception is thrown.
  */

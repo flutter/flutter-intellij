@@ -13,6 +13,8 @@
  */
 package org.dartlang.vm.service.element;
 
+// Originally generated from the Dart VM Service protocol; now maintained in this repository. See [readme.txt](../../readme.txt).
+
 /**
  * A {@link FrameKind} is used to distinguish different kinds of {@link Frame} objects.
  */
