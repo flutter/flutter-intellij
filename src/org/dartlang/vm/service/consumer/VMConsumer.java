@@ -11,6 +11,8 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+// Originally generated from the Dart VM Service protocol; now maintained in this repository. See [readme.txt](../../readme.txt).
+
 package org.dartlang.vm.service.consumer;
 
 import org.dartlang.vm.service.element.VM;
