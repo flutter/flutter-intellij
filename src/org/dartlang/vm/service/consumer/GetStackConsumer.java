@@ -13,7 +13,7 @@
  */
 package org.dartlang.vm.service.consumer;
 
-// Originally generated from the Dart VM Service protocol; now maintained in this repository. See [readme.txt](../../readme.txt).
+// Originally generated from the Dart VM Service protocol; now maintained in this repository.
 
 import org.dartlang.vm.service.element.Sentinel;
 import org.dartlang.vm.service.element.Stack;
