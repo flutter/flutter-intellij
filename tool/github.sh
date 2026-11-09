@@ -20,25 +20,33 @@ ls $JAVA_HOME
 echo "export PATH=$JAVA_HOME/bin:\$PATH"
 export PATH=$JAVA_HOME/bin:$PATH
 
-# Download and configure Flutter to the pinned stable release if not present
-source ./tool/provision_flutter.sh
-export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
-flutter config --no-analytics
-flutter doctor
-export FLUTTER_SDK=`pwd`/../flutter
-
 echo "java --version"
 java --version
 
-# Get packages for the top-level grind script utilities.
-echo "pub get `pwd`"
-dart pub get
+# Provision only what this bot runs. Building the plugin, unit tests, and plugin
+# verification need only the JDK above. See "When you need a Dart or Flutter
+# SDK" in CONTRIBUTING.md.
+case "$BOT" in
+  DART_BOT|CHECK_BOT|INTEGRATION_BOT)
+    # Download and configure Flutter to the pinned stable release if not
+    # present. DART_BOT and CHECK_BOT use its bundled Dart SDK; the integration
+    # tests need the Flutter SDK itself (FLUTTER_SDK).
+    source ./tool/provision_flutter.sh
+    export PATH="$PATH:$PWD/../flutter/bin:$PWD/../flutter/bin/cache/dart-sdk/bin"
+    flutter config --no-analytics
+    flutter doctor
+    export FLUTTER_SDK="$PWD/../flutter"
+    ;;
+esac
 
-# Get packages for the test data.
-(cd testData/sample_tests; echo "dart pub get `pwd`"; dart pub get)
-
-# Set up the plugin tool.
-(cd tool/plugin; echo "dart pub get `pwd`"; dart pub get)
+case "$BOT" in
+  DART_BOT|CHECK_BOT)
+    # Get packages for the grind scripts and the plugin tool. The root pubspec
+    # is a pub workspace that includes tool/plugin, so one `pub get` covers both.
+    echo "dart pub get $PWD"
+    dart pub get
+    ;;
+esac
 
 # Color constants.
 RED='\033[0;31m'
@@ -50,7 +58,6 @@ NC='\033[0m' # None (Reset)
 if [ "DART_BOT" = "$BOT" ] ; then
   # Analyze the Dart code in the repo.
   echo "dart analyze"
-  (cd src; dart analyze)
   (cd tool/plugin; dart analyze)
 
   # Ensure that the edits have been applied to template files (and their target

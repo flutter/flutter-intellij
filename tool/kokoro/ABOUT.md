@@ -13,7 +13,7 @@ Continuous integration and deployment scripts for Kokoro environments.
   - `run_gradle_with_retry [--max-retries N] [--delay-secs N] <args>` (defaults: 2 retries, 15 s delay; exit codes >=128 are not retried).
   - `run_pub_get_with_retry [--max-retries N] [--timeout-secs N] [--delay-secs N] <dir>` runs `dart pub get --no-precompile` in `<dir>`, adding `--verbose` on retries (defaults: 1 retry, 300 s per attempt, 15 s delay; a timeout is retried, other exit codes >=128 are not).
   - `run_with_timeout <secs> <command...>` is a portable `timeout`, since macOS lacks coreutils. It kills the command's process tree and returns 124 on timeout.
-- [`test.sh`](test.sh): Runs `setup` and `setup_flutter`, then `run_pub_get_with_retry testData/sample_tests` and `run_gradle_with_retry --max-retries 0 test`.
+- [`test.sh`](test.sh): Runs `setup` and `setup_flutter`, then `run_gradle_with_retry --max-retries 0 test`.
 
 ## Invariants
 - Scripts must be run from the repository root.

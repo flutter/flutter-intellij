@@ -281,11 +281,11 @@ with Flutter. The root `pubspec.yaml` is a pub workspace that includes
   Flutter SDK (`FLUTTER_VERSION`) to `../flutter` if it is missing.
   [`update_flutter.yaml`](.github/workflows/update_flutter.yaml) bumps the pin,
   and `CIIntegrityTest` checks that the script and pin exist.
-- **GitHub presubmit:** [`tool/github.sh`](tool/github.sh) provisions Flutter
-  for every bot and uses its bundled Dart for `dart pub get` at the root, in
-  `testData/sample_tests`, and in `tool/plugin`. Only `DART_BOT` and `CHECK_BOT`
-  run Dart code. `UNIT_TEST_BOT`, `VERIFY_BOT`, and the `presubmit` build need
-  only the JDK.
+- **GitHub presubmit:** [`tool/github.sh`](tool/github.sh) provisions only what
+  each bot runs. `DART_BOT` and `CHECK_BOT` get Flutter (for its bundled Dart)
+  and one `dart pub get` at the repository root. `INTEGRATION_BOT` gets Flutter
+  and `FLUTTER_SDK`. `UNIT_TEST_BOT`, `VERIFY_BOT`, and the `presubmit` build
+  get only the JDK.
 - **GitHub Dart-only jobs:** `check-ai-config` in
   [`presubmit.yaml`](.github/workflows/presubmit.yaml) and
   [`check_urls.yaml`](.github/workflows/check_urls.yaml) install only the Dart
