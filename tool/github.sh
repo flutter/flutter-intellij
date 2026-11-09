@@ -32,7 +32,8 @@ case "$BOT" in
     # present. DART_BOT and CHECK_BOT use its bundled Dart SDK; the integration
     # tests need the Flutter SDK itself (FLUTTER_SDK).
     source ./tool/provision_flutter.sh
-    export PATH="$PATH:$PWD/../flutter/bin:$PWD/../flutter/bin/cache/dart-sdk/bin"
+    # Prepend so the pinned SDK wins over any Dart or Flutter already on PATH.
+    export PATH="$PWD/../flutter/bin:$PWD/../flutter/bin/cache/dart-sdk/bin:$PATH"
     flutter config --no-analytics
     flutter doctor
     export FLUTTER_SDK="$PWD/../flutter"
