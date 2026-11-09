@@ -26,6 +26,7 @@ All files are under `io/flutter/integrationTest/`:
 - [`utils/WalkthroughSteps.kt`](io/flutter/integrationTest/utils/WalkthroughSteps.kt): Step markers for test walkthrough recordings.
 - [`utils/AndroidEmulator.kt`](io/flutter/integrationTest/utils/AndroidEmulator.kt): Starts and cleanly shuts down an Android emulator for device UI tests.
 - [`utils/BrowserEngine.kt`](io/flutter/integrationTest/utils/BrowserEngine.kt): Selects JxBrowser or JCEF for embedded DevTools UI tests.
+- [`utils/DeviceWindowLayout.kt`](io/flutter/integrationTest/utils/DeviceWindowLayout.kt): Tiles IntelliJ IDEA and the running Chrome or Android emulator window side by side for walkthrough recordings.
 - [`utils/VmServiceClient.kt`](io/flutter/integrationTest/utils/VmServiceClient.kt): Minimal Dart VM service WebSocket client for inspecting the running app's widget tree.
 
 ## Guidance & Strategy

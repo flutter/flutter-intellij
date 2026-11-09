@@ -31,12 +31,17 @@ class AndroidEmulator(
   fun start(logDir: File) {
     println("Starting emulator $avdName (display: ${Platform.displayMode.description})")
     WalkthroughSteps.step("Boot the Android emulator", "The Android emulator window for `$avdName` opens and boots to the Android home screen.")
-    process = ProcessBuilder(
+    val pb = ProcessBuilder(
       Platform.androidEmulator, "-avd", avdName,
       "-no-snapshot-save", "-no-boot-anim", "-no-audio", "-gpu", "swiftshader_indirect",
       // A previous unclean exit would otherwise show a crash-report dialog that blocks boot.
       "-crash-report-mode", "disabled", "-no-metrics",
-    ).redirectErrorStream(true).redirectOutput(File(logDir, "emulator-$avdName.log")).start()
+    ).redirectErrorStream(true).redirectOutput(File(logDir, "emulator-$avdName.log"))
+    if (Platform.displayMode == Platform.DisplayMode.LINUX_X11) {
+      pb.environment()["QT_QPA_PLATFORM"] = "xcb"
+      pb.environment()["XDG_SESSION_TYPE"] = "x11"
+    }
+    process = pb.start()
 
     run(5, TimeUnit.MINUTES, adb, "wait-for-device") ?: error("Emulator $avdName did not appear in adb")
     val deadline = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5)

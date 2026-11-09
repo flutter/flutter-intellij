@@ -74,6 +74,9 @@ abstract class ExistingProjectUITest(private val packageName: String) {
   /** Hook for subclasses to adjust the project on disk before the IDE opens it. */
   protected open fun prepareProject() {}
 
+  /** Hook for subclasses to customize [context] (such as IDE environment variables) before the IDE starts. */
+  protected open fun configureContext(context: IDETestContext) {}
+
   @AfterEach
   fun closeIde() {
     WalkthroughSteps.finish()
@@ -109,6 +112,7 @@ abstract class ExistingProjectUITest(private val packageName: String) {
       "The Project view shows its files and the status bar shows indexing until it finishes."
     )
     context = Setup.setupTestContextIU262(javaClass.simpleName, LocalProjectInfo(projectDir))
+    configureContext(context)
     run = context.runIdeWithDriver()
     waitForProjectReady()
     // The Trial tab usually opens while the project loads, but can arrive shortly after; poll briefly here and again

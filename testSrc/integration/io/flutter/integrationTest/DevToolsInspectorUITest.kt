@@ -11,8 +11,10 @@ import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.common.toolwindows.StripeButtonUi
 import com.intellij.driver.sdk.ui.components.common.toolwindows.ToolWindowRightToolbarUi
 import com.intellij.driver.sdk.ui.components.common.toolWindow
+import com.intellij.ide.starter.ide.IDETestContext
 import io.flutter.integrationTest.utils.AndroidEmulator
 import io.flutter.integrationTest.utils.BrowserEngine
+import io.flutter.integrationTest.utils.DeviceWindowLayout
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
@@ -22,8 +24,8 @@ import kotlin.time.Duration.Companion.minutes
 //    "license could not be found" fallback (passes).
 //  - JCEF (the `auto` default without a license) fails on IntelliJ 2026.2 with
 //    `NoClassDefFoundError: com/intellij/ui/jcef/JBCefBrowser`: the plugin doesn't depend on `com.intellij.modules.jcef`.
-//  - Walkthrough: the emulator window is mostly hidden behind the IDE, and the emulator's "nested virtualization"
-//    dialog plus IDE notifications ("Input methods disabler", "Flutter supports hot reload!") stay on screen.
+//  - Walkthrough: the emulator's "nested virtualization" dialog and IDE notifications ("Input methods disabler",
+//    "Flutter supports hot reload!") may stay on screen.
 /**
  * **Shows:** debugging a Flutter app and opening the Flutter Inspector and Flutter DevTools tool windows, which embed
  * DevTools in a browser inside the IDE.
@@ -54,17 +56,27 @@ class DevToolsInspectorUITest : ExistingProjectUITest("devtools_inspector") {
 
   private val deviceKind = System.getenv("FLUTTER_TEST_DEVICE") ?: "emulator"
   private val emulator = AndroidEmulator()
+  private val windowLayout = DeviceWindowLayout()
 
   override fun prepareProject() {
+    windowLayout.start(projectDir.parent.toFile())
     if (deviceKind == "emulator") emulator.start(projectDir.parent.toFile())
   }
 
+  override fun configureContext(context: IDETestContext) {
+    windowLayout.configureIde(context)
+  }
+
   @AfterAll
-  fun stopEmulator() = emulator.stop()
+  fun stopDeviceAndLayout() {
+    windowLayout.close()
+    emulator.stop()
+  }
 
   @Test
   fun openInspectorAndDevTools() {
     startIdeOnProject()
+    inFrame { windowLayout.tileIdeFrame(this) }
     val engine = BrowserEngine.fromEnvironment()
     engine.applyTo(driver)
     val expectLicenseFallback = engine == BrowserEngine.JXBROWSER && !BrowserEngine.pluginHasJxBrowserLicense()

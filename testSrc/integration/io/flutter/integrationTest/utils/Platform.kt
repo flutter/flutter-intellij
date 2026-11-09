@@ -74,6 +74,32 @@ object Platform {
     get() = androidSdk.resolve("emulator").resolve(executableName("emulator")).toString()
 
   /**
+   * Finds the Google Chrome or Chromium executable used by `flutter run -d chrome`, checking `CHROME_EXECUTABLE` first,
+   * then standard install locations and `PATH`. Returns `null` if none is found.
+   */
+  fun findChromeExecutable(): String? {
+    System.getenv("CHROME_EXECUTABLE")?.takeIf { it.isNotBlank() && File(it).canExecute() }?.let { return it }
+    val candidates = when {
+      SystemInfo.isMac -> listOf(
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/Applications/Chromium.app/Contents/MacOS/Chromium",
+      )
+      SystemInfo.isWindows -> listOfNotNull(
+        System.getenv("ProgramFiles"),
+        System.getenv("ProgramFiles(x86)"),
+        System.getenv("LOCALAPPDATA"),
+      ).map { Paths.get(it, "Google", "Chrome", "Application", "chrome.exe").toString() }
+      else -> {
+        val names = listOf("google-chrome", "google-chrome-stable", "chromium", "chromium-browser")
+        val pathDirs = (System.getenv("PATH") ?: "").split(File.pathSeparator).filter { it.isNotEmpty() } +
+                       listOf("/usr/bin", "/opt/google/chrome")
+        pathDirs.flatMap { dir -> names.map { Paths.get(dir, it).toString() } }
+      }
+    }
+    return candidates.firstOrNull { File(it).canExecute() }
+  }
+
+  /**
    * Parent folder for the Flutter projects that tests create.
    *
    * On Windows this is a short path (`%USERPROFILE%\ft`), because the temp folder is deep enough that Android and

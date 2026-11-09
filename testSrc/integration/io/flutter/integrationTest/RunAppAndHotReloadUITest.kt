@@ -8,7 +8,9 @@ package io.flutter.integrationTest
 
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
+import com.intellij.ide.starter.ide.IDETestContext
 import io.flutter.integrationTest.utils.AndroidEmulator
+import io.flutter.integrationTest.utils.DeviceWindowLayout
 import io.flutter.integrationTest.utils.VmServiceClient
 import io.flutter.integrationTest.utils.vmServiceUriFromConsole
 import org.junit.jupiter.api.AfterAll
@@ -47,17 +49,27 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
 
   private val deviceKind = System.getenv("FLUTTER_TEST_DEVICE") ?: "chrome"
   private val emulator = AndroidEmulator()
+  private val windowLayout = DeviceWindowLayout()
 
   override fun prepareProject() {
+    windowLayout.start(projectDir.parent.toFile())
     if (deviceKind == "emulator") emulator.start(projectDir.parent.toFile())
   }
 
+  override fun configureContext(context: IDETestContext) {
+    windowLayout.configureIde(context)
+  }
+
   @AfterAll
-  fun stopEmulator() = emulator.stop()
+  fun stopDeviceAndLayout() {
+    windowLayout.close()
+    emulator.stop()
+  }
 
   @Test
   fun runEditAndHotReload() {
     startIdeOnProject()
+    inFrame { windowLayout.tileIdeFrame(this) }
     step("Open lib/main.dart", "The editor shows the counter app's `lib/main.dart`; the toolbar has the Flutter device selector and the `main.dart` run configuration.")
     openProjectFile("lib/main.dart")
 
@@ -76,7 +88,7 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
 
       step(
         "Run the app",
-        "The Run tool window opens a `main.dart` tab and shows `flutter run` output (\"Launching lib/main.dart ...\") until the app is up and a \"Debug service listening\" or VM Service line appears."
+        "The Run tool window opens a `main.dart` tab and shows `flutter run` output (\"Launching lib/main.dart ...\") until the app is up alongside the IDE showing \"$OLD_TITLE\" in its app bar."
       )
       driver.invokeAction("Run")
       // The plugin prints this once the app is up on any device, with the VM service URI.
@@ -90,9 +102,11 @@ class RunAppAndHotReloadUITest : ExistingProjectUITest("run_app_test") {
       val app = requireNotNull(vmServiceUri) { "The app did not print a VM service URI" }
       // Baseline: the running app shows the original title. This proves the check below can see the title.
       waitForAppTitle(app, shows = OLD_TITLE, notShows = NEW_TITLE)
+      // On Xvfb (CPU-only CanvasKit rendering), the first web frame finishes painting shortly after the widget tree is ready.
+      Thread.sleep(4_000)
 
       val editor = editorFor("main.dart")
-      step("Change the title", "In `lib/main.dart`, the home page title changes from \"$OLD_TITLE\" to \"$NEW_TITLE\". The app on the device still shows the old title.")
+      step("Change the title", "In `lib/main.dart`, the home page title changes from \"$OLD_TITLE\" to \"$NEW_TITLE\". The app on the right still shows \"$OLD_TITLE\".")
       editor.text = editor.text.replace(OLD_TITLE, NEW_TITLE)
       editor.moveCaretToText(NEW_TITLE)
       editor.scrollToCaret()
