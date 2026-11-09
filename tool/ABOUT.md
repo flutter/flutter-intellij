@@ -1,4 +1,4 @@
-<!--* freshness: { reviewed: '2026-10-25' } *-->
+<!--* freshness: { reviewed: '2026-11-09' } *-->
 # tool
 
 ## Overview
@@ -11,7 +11,7 @@ Root tooling directory for flutter-intellij. Contains grind tasks and other shel
 - [`github.bat`](github.bat): Windows CI script that installs Dart and runs `dart pub get` in `tool/plugin`.
 - [`github.sh`](github.sh): GitHub Actions presubmit driver. The `BOT` env var selects the job (`DART_BOT`, `CHECK_BOT`, `UNIT_TEST_BOT`, `VERIFY_BOT`, `INTEGRATION_BOT`).
 - [`grind.dart`](grind.dart): Defines the `main` entrypoint and two grinder tasks: `checkUrls` (`check-urls`) and `lintSkills` (`lint-skills`, runs `skills_lint` with `skills_lint.yaml`).
-- [`provision_flutter.sh`](provision_flutter.sh): Downloads the pinned Flutter SDK to `../flutter` if it is missing. `FLUTTER_VERSION` is bumped by `.github/workflows/update_flutter.yaml`.
+- [`provision_flutter.sh`](provision_flutter.sh): Downloads the pinned Flutter SDK to `../flutter` if it is missing. `FLUTTER_VERSION` is bumped by `.github/workflows/update_flutter.yaml`. Callers: `github.sh` (every GitHub presubmit bot) and `setup_flutter` in [`kokoro/setup.sh`](kokoro/setup.sh) (Kokoro `test.sh` only). Building the plugin does not need it; see [When you need a Dart or Flutter SDK](../CONTRIBUTING.md#when-you-need-a-dart-or-flutter-sdk).
 - [`skills_lint.yaml`](skills_lint.yaml): `skills_lint` config. Paths resolve relative to this file, so `../.agents/skills` needs `skills_lint` >=0.5.2.
 - [`update_baselines.sh`](update_baselines.sh): Runs the plugin verifier and refreshes `baseline/` through `check_verifier_baselines.sh update`.
 - [`validate_skills.sh`](validate_skills.sh): Runs `dart pub get` and then `skills_lint` from the repo root (presubmit).
@@ -24,6 +24,7 @@ Root tooling directory for flutter-intellij. Contains grind tasks and other shel
 ## Invariants
 - Scripts and grind tasks in this directory are executed from either the repository root or the tool directory.
 - Tool packages use standalone Dart CLI packages (such as `args` and `grinder`) rather than Flutter framework dependencies.
+- `grind.dart`, `validate_skills.sh`, and the `plugin` tool need a Dart SDK. Only Flutter-dependent tasks (integration tests, manual testing) need a Flutter SDK; `./gradlew buildPlugin`, `test`, and `verifyPlugin` need neither.
 
 ## Side Effects
 - Makes network requests (e.g., `checkUrls` makes HTTP GET requests)
