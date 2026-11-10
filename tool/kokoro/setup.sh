@@ -267,7 +267,8 @@ setup() {
 setup_flutter() {
   # Download and configure Flutter to the pinned stable release if not present
   source ./tool/provision_flutter.sh
-  export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
+  # Prepend so the pinned SDK wins over any Dart or Flutter already on PATH.
+  export PATH="$PWD/../flutter/bin:$PWD/../flutter/bin/cache/dart-sdk/bin:$PATH"
 
   # These steps are informational and can hang indefinitely when the VM can't
   # reach github.com (the Flutter tool runs `git fetch`), which previously
