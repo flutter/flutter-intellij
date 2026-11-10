@@ -11,6 +11,7 @@
 - Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)
 
 ### Fixed
+- Unresolved `JaroWinkler` class error when matching custom icon font files in Android Studio 2026.2. (#9204)
 
 ## 98.0.0
 
