@@ -1,9 +1,9 @@
-<!--* freshness: { reviewed: '2026-10-30' } *-->
+<!--* freshness: { reviewed: '2026-11-10' } *-->
 # Flutter Refactoring
 
 ## Overview
 Integrates with the Dart Analysis Server to provide Flutter-specific refactorings. Currently the package supports the Extract Widget refactoring via two mechanisms:
-1. Modern LSP code actions routed via [FlutterLspRefactoringHelper](FlutterLspRefactoringHelper.kt) when `DartConfigurable.isLspCodeActionsEnabled(project)` is true.
+1. Modern LSP code actions routed via [FlutterLspRefactoringHelper](FlutterLspRefactoringHelper.kt) when `FlutterLspRefactoringHelper.isLspCodeActionsEnabled(project)` is true.
 2. Legacy Analysis Server LTK protocol routed via [ExtractWidgetRefactoring](ExtractWidgetRefactoring.java) (deprecated) when LSP code actions are disabled.
 
 Both mechanisms are invoked by [ExtractWidgetAction](../actions/ExtractWidgetAction.java), registered as `Flutter.ExtractWidget` in [plugin.xml](../../../../resources/META-INF/plugin.xml).
@@ -11,6 +11,7 @@ Both mechanisms are invoked by [ExtractWidgetAction](../actions/ExtractWidgetAct
 ## Interface
 ### LSP Refactoring (Preferred)
 - `FlutterLspRefactoringHelper`
+- `FlutterLspRefactoringHelper.isLspCodeActionsEnabled(Project)`
 - `FlutterLspRefactoringHelper.performExtractWidget(Project, Editor, PsiFile, int, int, LspServer)`
 - `FlutterLspRefactoringHelper.performRefactoring(...)`
 

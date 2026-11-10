@@ -22,6 +22,7 @@ import com.intellij.refactoring.RefactoringBundle
 import com.intellij.refactoring.util.CommonRefactoringUtil
 import com.jetbrains.lang.dart.DartBundle
 import com.jetbrains.lang.dart.lsp.DartLspServerSupportProvider
+import com.jetbrains.lang.dart.sdk.DartConfigurable
 import com.jetbrains.lang.dart.sdk.DartSdk
 import io.flutter.FlutterBundle
 import org.eclipse.lsp4j.CodeActionContext
@@ -42,6 +43,15 @@ object FlutterLspRefactoringHelper {
     val matchingIntention: LspIntentionAction?,
     val disabledReason: String? = null,
   )
+
+  @JvmStatic
+  fun isLspCodeActionsEnabled(project: Project): Boolean {
+    return try {
+      DartConfigurable.isLspCodeActionsEnabled(project)
+    } catch (_: LinkageError) {
+      false
+    }
+  }
 
   @JvmStatic
   @JvmOverloads

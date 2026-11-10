@@ -12,10 +12,8 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import io.flutter.ide.FlutterCodeInsightFixtureTestCase;
 import io.flutter.refactoring.FlutterLspRefactoringHelper;
-import org.jetbrains.annotations.NotNull;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -95,9 +93,8 @@ public class ExtractWidgetActionTest extends FlutterCodeInsightFixtureTestCase {
 
     final AnActionEvent event = AnActionEvent.createFromAnAction(action, null, ActionPlaces.UNKNOWN, dataContext);
 
-    try (MockedStatic<DartConfigurable> mockedConfigurable = Mockito.mockStatic(DartConfigurable.class, Mockito.CALLS_REAL_METHODS);
-         MockedStatic<FlutterLspRefactoringHelper> mockedHelper = Mockito.mockStatic(FlutterLspRefactoringHelper.class)) {
-      mockedConfigurable.when(() -> DartConfigurable.isLspCodeActionsEnabled(getProject())).thenReturn(true);
+    try (MockedStatic<FlutterLspRefactoringHelper> mockedHelper = Mockito.mockStatic(FlutterLspRefactoringHelper.class)) {
+      mockedHelper.when(() -> FlutterLspRefactoringHelper.isLspCodeActionsEnabled(getProject())).thenReturn(true);
 
       action.actionPerformed(event);
 

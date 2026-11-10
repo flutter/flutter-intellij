@@ -68,6 +68,24 @@ class FlutterLspRefactoringHelperTest : FlutterCodeInsightFixtureTestCase() {
     }
   }
 
+  fun testIsLspCodeActionsEnabledDelegatesToDartConfigurable() {
+    Mockito.mockStatic(DartConfigurable::class.java).use { mockedConfigurable ->
+      mockedConfigurable.`when`<Boolean> { DartConfigurable.isLspCodeActionsEnabled(project) }.thenReturn(true)
+      assertTrue(FlutterLspRefactoringHelper.isLspCodeActionsEnabled(project))
+
+      mockedConfigurable.`when`<Boolean> { DartConfigurable.isLspCodeActionsEnabled(project) }.thenReturn(false)
+      assertFalse(FlutterLspRefactoringHelper.isLspCodeActionsEnabled(project))
+    }
+  }
+
+  fun testIsLspCodeActionsEnabledReturnsFalseOnLinkageError() {
+    Mockito.mockStatic(DartConfigurable::class.java).use { mockedConfigurable ->
+      mockedConfigurable.`when`<Boolean> { DartConfigurable.isLspCodeActionsEnabled(project) }
+        .thenThrow(NoSuchMethodError("com.jetbrains.lang.dart.sdk.DartConfigurable.isLspCodeActionsEnabled"))
+      assertFalse(FlutterLspRefactoringHelper.isLspCodeActionsEnabled(project))
+    }
+  }
+
   fun testPerformExtractWidgetExecutesMatchingCodeActionCommand() {
     val file = myFixture.configureByText(
       "test.dart",

@@ -24,7 +24,6 @@ import com.jetbrains.lang.dart.analytics.Analytics;
 import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import com.jetbrains.lang.dart.ide.refactoring.ServerRefactoringDialog;
 import com.jetbrains.lang.dart.ide.refactoring.status.RefactoringStatus;
-import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import io.flutter.FlutterUtils;
 import io.flutter.refactoring.ExtractWidgetRefactoring;
 import io.flutter.refactoring.FlutterLspRefactoringHelper;
@@ -59,7 +58,7 @@ public class ExtractWidgetAction extends DumbAwareAction {
       final int offset = caret.getSelectionStart();
       final int length = caret.getSelectionEnd() - offset;
 
-      if (DartConfigurable.isLspCodeActionsEnabled(project)) {
+      if (FlutterLspRefactoringHelper.isLspCodeActionsEnabled(project)) {
         final PsiFile psiFile = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
         FlutterLspRefactoringHelper.performExtractWidget(project, editor, psiFile, offset, length);
         return;
