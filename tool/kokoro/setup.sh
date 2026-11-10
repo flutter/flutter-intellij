@@ -250,9 +250,25 @@ setup() {
 
   export JAVA_OPTS=" -Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true"
 
+  export FLUTTER_KEYSTORE_ID=74840
+  export FLUTTER_KEYSTORE_NAME=jetbrains-plugin-upload-auth-token
+  export FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME=flutter-intellij-plugin-jxbrowser-license-key
+  export NO_FS_ROOTS_ACCESS_CHECK=true
+
+  run_gradle_with_retry --version
+}
+
+# Provision the pinned Flutter SDK and fetch Dart dependencies for the tool.
+# Building the plugin (`buildPlugin`) needs only Java and Gradle, so `setup`
+# skips this. Call it after `setup` only in scripts that run Flutter or Dart,
+# such as test.sh. Skipping it in builds also avoids the mac VMs' degraded IPv4
+# path: pub downloads stall over IPv4, while the JVM prefers IPv6. See
+# https://github.com/flutter/flutter-intellij/issues/9216.
+setup_flutter() {
   # Download and configure Flutter to the pinned stable release if not present
   source ./tool/provision_flutter.sh
-  export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
+  # Prepend so the pinned SDK wins over any Dart or Flutter already on PATH.
+  export PATH="$PWD/../flutter/bin:$PWD/../flutter/bin/cache/dart-sdk/bin:$PATH"
 
   # These steps are informational and can hang indefinitely when the VM can't
   # reach github.com (the Flutter tool runs `git fetch`), which previously
@@ -263,11 +279,6 @@ setup() {
     || echo "WARNING: 'flutter doctor' failed or timed out; continuing." >&2
 
   export FLUTTER_SDK=`pwd`/../flutter
-  export FLUTTER_KEYSTORE_ID=74840
-  export FLUTTER_KEYSTORE_NAME=jetbrains-plugin-upload-auth-token
-  export FLUTTER_KEYSTORE_JXBROWSER_KEY_NAME=flutter-intellij-plugin-jxbrowser-license-key
-  export NO_FS_ROOTS_ACCESS_CHECK=true
 
   run_pub_get_with_retry tool/plugin
-  run_gradle_with_retry --version
 }
