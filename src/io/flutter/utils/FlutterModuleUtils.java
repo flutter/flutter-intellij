@@ -344,15 +344,21 @@ public class FlutterModuleUtils {
   public static void setFlutterModuleWithoutReload(@NotNull Module module, @NotNull Project project) {
     if (project.isDisposed()) return;
     ApplicationManager.getApplication().invokeLater(() -> {
+      // The project or module may have been closed while this callback was queued.
+      if (project.isDisposed() || module.isDisposed()) return;
       ApplicationManager.getApplication().runWriteAction(() -> setFlutterModuleType(module));
       enableDartSDK(module);
-      project.save();
 
+      // Do not call project.save() here. On the EDT it enters a nested modal pump while the
+      // document save it dispatches invokes back into the EDT, which deadlocks project open.
+      // The platform persists the module type on its own schedule.
+      // See https://github.com/flutter/flutter-intellij/issues/9093
       EditorNotifications.getInstance(project).updateAllNotifications();
     });
   }
 
   public static void enableDartSDK(final @NotNull Module module) {
+    if (module.isDisposed()) return;
     if (FlutterSdk.getFlutterSdk(module.getProject()) != null) {
       return;
     }
@@ -391,9 +397,12 @@ public class FlutterModuleUtils {
       // See https://github.com/flutter/flutter-intellij/issues/8480
       final Application application = ApplicationManager.getApplication();
       if (application != null) {
+        final Project project = module.getProject();
         application.invokeLater(() -> {
+          // The project or module may have been closed while this callback was queued.
+          if (project.isDisposed() || module.isDisposed()) return;
           application.runWriteAction(() -> {
-            DartPlugin.ensureDartSdkConfigured(module.getProject(), dartSdkPath);
+            DartPlugin.ensureDartSdkConfigured(project, dartSdkPath);
             DartPlugin.enableDartSdk(module);
           });
         });

@@ -1,4 +1,4 @@
-<!--* freshness: { reviewed: '2026-10-25' } *-->
+<!--* freshness: { reviewed: '2026-11-03' } *-->
 # Flutter Utils
 
 ## Overview
@@ -19,6 +19,7 @@ Static helper classes:
 - [`JsonUtils`](JsonUtils.java)
 - [`JxBrowserUtils`](JxBrowserUtils.java)
 - [`OpenApiUtils`](OpenApiUtils.java)
+- [`StringUtils`](StringUtils.java)
 - [`SystemUtils`](SystemUtils.java)
 - [`UIUtils`](UIUtils.java)
 - [`UrlUtils`](UrlUtils.java)

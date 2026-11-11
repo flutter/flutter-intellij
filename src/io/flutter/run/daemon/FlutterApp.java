@@ -39,6 +39,7 @@ import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.common.RunMode;
+import io.flutter.sdk.FlutterCommand;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import io.flutter.utils.ProcessAdapter;
@@ -225,7 +226,7 @@ public class FlutterApp implements Disposable {
                                  @Nullable String analyticsStop)
     throws ExecutionException {
     LOG.info(analyticsStart + " " + project.getName() + " (" + mode.mode() + ")");
-    LOG.info(command.toString());
+    LOG.info(FlutterCommand.safeCommandLog(command));
 
     Consumer<String> onTextAvailable = null;
     final ProcessHandler process = new MostlySilentColoredProcessHandler(command, onTextAvailable);

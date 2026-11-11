@@ -1,4 +1,4 @@
-<!--* freshness: { reviewed: '2026-10-25' } *-->
+<!--* freshness: { reviewed: '2026-11-09' } *-->
 # flutter-intellij Blueprint
 
 ## System Overview
@@ -43,3 +43,4 @@ A local `releases/` directory may appear as untracked build output. It is not pa
 - Run: `./gradlew buildPlugin` to verify compilation.
 - Run: `./gradlew verifyPlugin` to run the IntelliJ Plugin Verifier (uses `third_party/lib/verifier-cli-1.398-all.jar`).
 - Run: `./gradlew integration` to run the experimental integration tests (not run in CI).
+- SDK requirements: `buildPlugin`, `test`, and `verifyPlugin` need only a JDK. `integration` needs a Flutter SDK (`FLUTTER_SDK`). `bin/plugin` and `tool/grind.dart` need a Dart SDK. Do not add Flutter or Dart provisioning to build-only paths. See [When you need a Dart or Flutter SDK](CONTRIBUTING.md#when-you-need-a-dart-or-flutter-sdk).

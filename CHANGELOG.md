@@ -4,11 +4,15 @@
 
 ### Changed
 - Centralizing file path logging into `PluginLogger`. (#8707)
+- Redacting the Flutter SDK path when logging the command line in `FlutterApp`. (#9203)
+- Migrated `FlutterCompletionContributor` (color and icon completion previews) to IntelliJ `CompletionContributor` for LSP completion support. (#9186)
 
 ### Removed
 - Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)
 
 ### Fixed
+- Unresolved `JaroWinkler` class error when matching custom icon font files in Android Studio 2026.2. (#9204)
+- `AlreadyDisposedException` when a project is closed while Flutter module setup is still queued. (#9222)
 
 ## 98.0.0
 
@@ -26,6 +30,7 @@
 ### Fixed
 - Empty Flutter SDK dropdown in the New Project wizard when switching to Flutter after starting the wizard on another language. (#9110)
 - Process handlers of terminated apps are no longer kept until the project closes. (#9175)
+- IDE deadlock on project open when the Flutter SDK path is invalid. (#9093)
 
 ## 97.0.0
 
