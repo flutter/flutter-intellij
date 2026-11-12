@@ -60,4 +60,6 @@ Registers standard IDE UI actions (buttons, context menus) that trigger Flutter 
 - Launches native external programs, including Xcode, AppCode, and mobile device emulators/simulators. (The Android Studio launch path is currently unregistered.)
 - Mutates the IDE presentation state by dynamically toggling toolbar components, icons, labels, popup menus, and enabled properties.
 - Reports anonymous telemetry by calling the Dart plugin's `com.jetbrains.lang.dart.analytics.Analytics.report` directly and synchronously. Calls don't go through the fail-safe wrapper in [`analytics`](../analytics/ABOUT.md).
+  - Per-app actions (`ReloadFlutterApp`, `RestartFlutterApp`, ...) aren't registered with the `ActionManager`, so they report with their `ID` constant rather than `AnalyticsData.forAction(this, e)`, which would have a null id and be dropped. Reload and Restart report only after they've asked the reload manager to act.
+  - `FlutterRetargetAppAction` reports nothing itself. The target action sends the single event, and its `place` tells toolbar and menu invocations apart from console ones.
 - Displays modal windows and UI dialogs directly to the user.

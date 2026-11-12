@@ -36,7 +36,7 @@ import static com.intellij.openapi.fileChooser.impl.FileChooserUtil.setLastOpene
  */
 public class OpenAndroidModule extends OpenInAndroidStudioAction implements DumbAware {
 
-  public static final String ID = "fluter.open.android.module";
+  public static final String ID = "flutter.open.android.module";
 
   @Override
   public void actionPerformed(@NotNull AnActionEvent e) {
