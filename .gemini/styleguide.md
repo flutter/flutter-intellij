@@ -26,6 +26,9 @@ enforce standard modern Java/Kotlin coding conventions, but strictly police the 
     - Wrap data access in `ReadAction.run()` or `ReadAction.compute()`.
     - Wrap modifications in `WriteAction.run()`.
     - In `AnAction`, ensure `getActionUpdateThread()` is implemented for 2022.3+ compatibility.
+    - Not every action `ID` constant is a `plugin.xml` registration. Actions created at runtime (per-app `FlutterAppAction`
+      subclasses such as `ReloadFlutterApp`, and `OpenEmulatorAction`) use `ID` only as an analytics id or a
+      `ProjectActions` key. Only flag an `ID` change as a registration mismatch if the old id appears in `plugin.xml`.
 - **Performance:**
     - In loops over PSI elements or Virtual Files, always call `ProgressManager.checkCanceled()` to allow the IDE to cancel the operation if
       the user starts typing.
