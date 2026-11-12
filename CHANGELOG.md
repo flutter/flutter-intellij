@@ -3,6 +3,7 @@
 ### Added
 
 ### Changed
+- Routing Extract Flutter Widget refactoring to LSP code actions when experimental LSP features are enabled. (#9202)
 - Centralizing file path logging into `PluginLogger`. (#8707)
 - Redacting the Flutter SDK path when logging the command line in `FlutterApp`. (#9203)
 - Migrated `FlutterCompletionContributor` (color and icon completion previews) to IntelliJ `CompletionContributor` for LSP completion support. (#9186)
