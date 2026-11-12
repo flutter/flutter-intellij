@@ -25,7 +25,7 @@ enforce standard modern Java/Kotlin coding conventions, but strictly police the 
 - **Threading Model:** - NEVER perform heavy operations (I/O, complex PSI searches) on the **Event Dispatch Thread (EDT)**.
     - Wrap data access in `ReadAction.run()` or `ReadAction.compute()`.
     - Wrap modifications in `WriteAction.run()`.
-    - In `AnAction`, ensure `getActionUpdateThread()` is implemented for 2022.3+ compatibility.
+    - In `AnAction`, ensure `getActionUpdateThread()` is implemented explicitly.
 - **Performance:**
     - In loops over PSI elements or Virtual Files, always call `ProgressManager.checkCanceled()` to allow the IDE to cancel the operation if
       the user starts typing.
