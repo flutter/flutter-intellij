@@ -17,6 +17,8 @@ import io.flutter.FlutterConstants;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 public class RestartFlutterApp extends FlutterAppAction {
   public static final String ID = "Flutter.RestartFlutterApp"; //NON-NLS
@@ -46,7 +48,16 @@ public class RestartFlutterApp extends FlutterAppAction {
       reloadManager.saveAllAndRestart(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
     }
 
-    var analyticsData = AnalyticsData.forAction(this, e);
-    Analytics.report(analyticsData);
+    Analytics.report(createAnalyticsData(e.getPlace(), project));
+  }
+
+  /**
+   * Builds the restart event. It uses {@link #ID} explicitly: this action is created per app and isn't
+   * registered with the {@link ActionManager}, so {@code AnalyticsData.forAction(this, e)} would have a
+   * null id and the event would be dropped.
+   */
+  @VisibleForTesting
+  static @NotNull AnalyticsData createAnalyticsData(@NotNull String place, @Nullable Project project) {
+    return AnalyticsData.forAction(ID, place, project);
   }
 }

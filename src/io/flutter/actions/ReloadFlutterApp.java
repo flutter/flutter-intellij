@@ -18,6 +18,8 @@ import io.flutter.analytics.AnalyticsConstants;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.awt.event.InputEvent;
 
@@ -45,12 +47,10 @@ public class ReloadFlutterApp extends FlutterAppAction {
       return;
     }
 
-    var analyticsData = AnalyticsData.forAction(this, e);
-
     // If the shift key is held down, perform a restart. We check to see if we're being invoked from the
     // 'GoToAction' dialog. If so, the modifiers are for the command that opened the go-to action dialog.
     final boolean shouldRestart = (e.getModifiers() & InputEvent.SHIFT_MASK) != 0 && !"GoToAction".equals(e.getPlace());
-    analyticsData.add(AnalyticsConstants.REQUIRES_RESTART, shouldRestart);
+    final AnalyticsData analyticsData = createAnalyticsData(e.getPlace(), project, shouldRestart);
 
     var reloadManager = FlutterReloadManager.getInstance(project);
     if (reloadManager == null) return;
@@ -64,6 +64,18 @@ public class ReloadFlutterApp extends FlutterAppAction {
     }
 
     Analytics.report(analyticsData);
+  }
+
+  /**
+   * Builds the reload event. It uses {@link #ID} explicitly: this action is created per app and isn't
+   * registered with the {@link ActionManager}, so {@code AnalyticsData.forAction(this, e)} would have a
+   * null id and the event would be dropped.
+   */
+  @VisibleForTesting
+  static @NotNull AnalyticsData createAnalyticsData(@NotNull String place, @Nullable Project project, boolean requiresRestart) {
+    final AnalyticsData analyticsData = AnalyticsData.forAction(ID, place, project);
+    analyticsData.add(AnalyticsConstants.REQUIRES_RESTART, requiresRestart);
+    return analyticsData;
   }
 
   // Override to disable the hot reload action when running flutter web apps.
