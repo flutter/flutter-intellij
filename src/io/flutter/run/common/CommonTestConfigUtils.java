@@ -101,7 +101,14 @@ public abstract class CommonTestConfigUtils {
     final DartStringLiteralExpression lit = DartSyntax.getArgument(call, 0, DartStringLiteralExpression.class);
     if (lit == null) return null;
 
-    return DartSyntax.unquote(lit);
+    final String name = DartSyntax.unquote(lit);
+    if (name == null) return null;
+
+    // In PR #7787, StringEscapeUtils.unescapeJava was erroneously replaced with StringUtil.escapeProperty
+    // which caused test descriptions with certain characters like `:` to be incorrectly escaped and failing to match.
+    // That escapeProperty bug was fixed in PR #8838 by removing the method call, but we still need to unescape
+    // things like escaped quotes (\'), so we use StringUtil.unescapeStringCharacters instead.
+    return StringUtil.unescapeStringCharacters(name);
   }
 
   /**
