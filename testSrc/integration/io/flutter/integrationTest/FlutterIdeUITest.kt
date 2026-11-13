@@ -125,8 +125,8 @@ abstract class FlutterIdeUITest {
     val zip = System.getProperty("flutter.plugin.zip")?.takeIf { it.isNotBlank() } ?: System.getProperty("path.to.build.plugin")
     if (zip != null) {
       result.pluginZip = zip
-      result.pluginZipSha256 = runCatching { sha256(java.io.File(zip)) }.getOrNull()
-      val expected = runCatching { pluginVersionInZip(java.io.File(zip)) }.getOrNull()
+      result.pluginZipSha256 = runCatching { sha256(File(zip)) }.getOrNull()
+      val expected = runCatching { pluginVersionInZip(File(zip)) }.getOrNull()
       if (expected != null && expected != result.pluginVersion) {
         result.fail(Phase.SETUP, "plugin-identity", "IDE loaded Flutter ${result.pluginVersion}, but $zip carries $expected")
         error("Build identity mismatch: the IDE loaded Flutter ${result.pluginVersion}, but the zip to install ($zip) carries $expected. " +
