@@ -144,7 +144,7 @@ class RunResult(val testName: String) {
     field("freeze", freeze?.let {
       linkedMapOf("confirmed" to it.confirmed, "thread" to it.thread, "frame" to it.frame, "dumps" to it.dumps)
     })
-    field("wallClockSeconds", String.format(java.util.Locale.ROOT, "%.1f", wall).toDouble(), last = true)
+    field("wallClockSeconds", String.format(Locale.ROOT, "%.1f", wall).toDouble(), last = true)
     return sb.append("}\n").toString()
   }
 
