@@ -392,6 +392,14 @@ intellijPlatformTesting.testIde.register("integration") {
       listOf("-Dpath.to.build.plugin=${pluginArchive.get().asFile.absolutePath}")
     }
     systemProperty("dart.plugin.version", dartPluginVersion.trim())
+    systemProperty("lsp4ij.plugin.version", libs.versions.lsp4ij.get())
+    // Agent-driven integration testing (see .agents/design-docs/agent-integration-testing.md):
+    //   -Pflutter.plugin.zip=<zip>  run the tests against this plugin build instead of the one buildPlugin made
+    //   -Pide.version=<build>       pin the IDE build (for example 262.10968.63) so red and green runs match
+    //   -Pide.product=<IU|AI|IC>    reserved; only IU is wired up today
+    listOf("flutter.plugin.zip", "ide.version", "ide.product").forEach { name ->
+      providers.gradleProperty(name).orNull?.let { systemProperty(name, it) }
+    }
     systemProperty(
       "allure.results.directory", project.layout.buildDirectory.get().asFile.absolutePath + "/allure-results"
     )

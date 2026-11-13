@@ -109,6 +109,15 @@ Run the recorder with `--help` for all options. For full details, see
 | `DART_PLUGIN_ZIP` | Optional path to a locally built `Dart.zip` to install instead of the Marketplace Dart plugin |
 | `KEEP_TEST_PROJECT=true` | Keep the test's Flutter project instead of deleting it afterwards |
 | `KEEP_IDE_OPEN_MINUTES=<n>` | Leave the IDE running for `n` minutes after the test, for inspection |
+| `FLUTTER_UI_TEST_WITHOUT_PLUGIN=true` | Install no Flutter plugin: the control run in which every UI test must fail on its own checks |
+| `AGENT_TESTING_MODE=red` | Record `idea.log` errors and leaked processes instead of failing on them (used when certifying against a deliberately broken build) |
+| `DART_PLUGIN_ZIP=<zip>` | Install a locally built Dart plugin instead of the Marketplace version |
+
+Gradle properties: `-Pflutter.plugin.zip=<zip>` runs the tests against that plugin build instead of the one
+`buildPlugin` just made; `-Pide.version=<build>` pins the IDE build (for example `262.10968.63`). Each run writes
+`build/agent-testing/run-result.json` with the outcome of every `step` and `assertOracle` block; see
+`.agents/skills/ui-test-reference/SKILL.md` for the harness and
+`.agents/design-docs/agent-integration-testing.md` for how tests are certified.
 
 ### If something goes wrong
 

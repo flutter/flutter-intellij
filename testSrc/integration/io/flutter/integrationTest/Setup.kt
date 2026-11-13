@@ -88,15 +88,35 @@ class Setup {
      * `integration` Gradle task), falling back to `gradle.properties` when running tests directly from the IDE.
      */
     private val dartPluginVersion: String by lazy {
-      System.getProperty("dart.plugin.version")?.trim()?.takeIf { it.isNotEmpty() }
+      // DART_PLUGIN_VERSION overrides the version for the IDE under test only (the plugin is still built against
+      // gradle.properties' dartPluginVersion). Needed when certifying on an older IDE build: Dart 510+ requires 253.
+      System.getenv("DART_PLUGIN_VERSION")?.trim()?.takeIf { it.isNotEmpty() }
+        ?: System.getProperty("dart.plugin.version")?.trim()?.takeIf { it.isNotEmpty() }
         ?: Properties().apply {
           Files.newBufferedReader(Git.getRepoRoot().resolve("gradle.properties")).use(::load)
         }.getProperty("dartPluginVersion")?.trim()?.takeIf { it.isNotEmpty() }
         ?: error("dartPluginVersion is not configured in gradle.properties")
     }
 
+    /** The IntelliJ IDEA build the UI tests use unless `ide.version` says otherwise. */
+    const val DEFAULT_IU_BUILD = "262.10968.63"
+
     /**
-     * IntelliJ IDEA 2026.2.3 (unified distribution).
+     * The IDE build number to test on: the `ide.version` system property (forwarded from `-Pide.version` by the
+     * `integration` Gradle task) when it is a build number such as `262.10968.63`, otherwise [DEFAULT_IU_BUILD].
+     * The runner pins this for every run of a certification so red and green use the same IDE.
+     */
+    val ideBuildNumber: String by lazy {
+      val requested = System.getProperty("ide.version")?.trim().orEmpty()
+      when {
+        requested.isEmpty() || requested.equals("latest", ignoreCase = true) -> DEFAULT_IU_BUILD
+        Regex("""\d{3}\.\d+\.\d+""").matches(requested) -> requested
+        else -> error("ide.version must be a build number like 262.10968.63 (got '$requested'); version-to-build resolution is not implemented yet")
+      }
+    }
+
+    /**
+     * IntelliJ IDEA 2026.2 (unified distribution), build [ideBuildNumber].
      */
     fun setupTestContextIU262(
       hyphenateWithClass: String,
@@ -104,7 +124,7 @@ class Setup {
     ): IDETestContext {
       return setupTestContext(
         hyphenateWithClass, IdeProductProvider.IU.copy(
-          buildNumber = "262.10968.63",
+          buildNumber = ideBuildNumber,
           buildType = BuildType.RELEASE.type
         ), projectInfoSpec
       )
@@ -143,17 +163,40 @@ class Setup {
       val testCase = TestCase(ideInfo, projectInfoSpec)
 
       return Starter.newContext(testName = hyphenateWithClass, testCase = testCase).apply {
-        // Install the plugin that was built by the buildPlugin task
-        val pluginPath = System.getProperty("path.to.build.plugin")
+        // Install the Flutter plugin: `flutter.plugin.zip` (from `-Pflutter.plugin.zip`, used by the certification
+        // runner to load a deliberately broken build) wins over the zip that `buildPlugin` just made. With
+        // FLUTTER_UI_TEST_WITHOUT_PLUGIN=true no Flutter plugin is installed at all: the control run in which every
+        // UI test must fail on its own checks.
+        val withoutPlugin = System.getenv("FLUTTER_UI_TEST_WITHOUT_PLUGIN").toBoolean()
+        val pluginPath = System.getProperty("flutter.plugin.zip")?.takeIf { it.isNotBlank() }
+                         ?: System.getProperty("path.to.build.plugin")
+                         ?: error("Neither flutter.plugin.zip nor path.to.build.plugin is set")
         // DART_PLUGIN_ZIP installs a locally built Dart plugin (for example from a dart-intellij-third-party pull
         // request) instead of the Marketplace version.
         val localDartPlugin = System.getenv("DART_PLUGIN_ZIP")?.takeIf { it.isNotBlank() }
-        val plugins = PluginConfigurator(this).installPluginFromPath(Paths.get(pluginPath))
+        val plugins = PluginConfigurator(this)
+        if (withoutPlugin) {
+          println("FLUTTER_UI_TEST_WITHOUT_PLUGIN is set: NOT installing the Flutter plugin")
+        }
+        else {
+          println("Installing the Flutter plugin from $pluginPath")
+          plugins.installPluginFromPath(Paths.get(pluginPath))
+        }
+        // Dart depends on LSP4IJ (the Dart plugin's LSP client); it isn't bundled with the IDE, so install it from
+        // the Marketplace at the version the plugin builds against (lsp4ij in libs.versions.toml, forwarded as
+        // lsp4ij.plugin.version), unless LSP4IJ_PLUGIN_VERSION overrides it.
+        val lsp4ijVersion = System.getenv("LSP4IJ_PLUGIN_VERSION")?.trim()?.takeIf { it.isNotEmpty() }
+                            ?: System.getProperty("lsp4ij.plugin.version")?.trim()?.takeIf { it.isNotEmpty() }
+        if (lsp4ijVersion != null) {
+          println("Installing LSP4IJ $lsp4ijVersion")
+          plugins.installPluginFromPluginManager("com.redhat.devtools.lsp4ij", lsp4ijVersion)
+        }
         if (localDartPlugin != null) {
           println("Installing the Dart plugin from $localDartPlugin")
           plugins.installPluginFromPath(Paths.get(localDartPlugin))
         }
         else {
+          println("Installing the Dart plugin $dartPluginVersion from the Marketplace")
           plugins.installPluginFromPluginManager("Dart", dartPluginVersion)
         }
         withBuildTool<GradleBuildTool>()
@@ -207,6 +250,12 @@ class Setup {
           SystemInfo.isLinux -> {
             // Linux specific settings
             addSystemProperty("ide.browser.jcef.enabled", true)
+            // Keep JCEF in-process. IU 2025.2 defaults to out-of-process JCEF (registry
+            // ide.browser.jcef.out-of-process.enabled=true); under Xvfb the cef_server handshake that the Markdown
+            // preview of an auto-opened README.md triggers blocked the EDT for minutes (T4 green #1, 2026-11-13), so
+            // nothing rendered and the device selector never appeared. On a desktop the same IDE came up in-process.
+            // See testSrc/integration/specs/FINDINGS.md.
+            addSystemProperty("jcef.remote.enabled", false)
             addSystemProperty("ide.native.launcher", false) // Avoid launcher issues on Linux
 
             // Force X11 (XWayland on Wayland sessions): the Driver's java.awt.Robot input does not work with JBR's native WLToolkit.
