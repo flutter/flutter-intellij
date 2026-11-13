@@ -13,8 +13,6 @@
  */
 package org.dartlang.vm.service.element;
 
-// Originally generated from the Dart VM Service protocol; now maintained in this repository.
-
 /**
  * A {@link SentinelKind} is used to distinguish different kinds of {@link Sentinel} objects.
  */

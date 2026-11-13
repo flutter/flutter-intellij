@@ -13,8 +13,6 @@
  */
 package org.dartlang.vm.service.consumer;
 
-// Originally generated from the Dart VM Service protocol; now maintained in this repository.
-
 import org.dartlang.vm.service.element.ClientAgentType;
 
 @SuppressWarnings({"WeakerAccess", "unused"})

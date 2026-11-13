@@ -13,8 +13,6 @@
  */
 package org.dartlang.vm.service.element;
 
-// Originally generated from the Dart VM Service protocol; now maintained in this repository.
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 

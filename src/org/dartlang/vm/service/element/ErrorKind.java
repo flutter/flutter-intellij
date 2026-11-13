@@ -13,8 +13,6 @@
  */
 package org.dartlang.vm.service.element;
 
-// Originally generated from the Dart VM Service protocol; now maintained in this repository.
-
 @SuppressWarnings({"WeakerAccess", "unused"})
 public enum ErrorKind {
 

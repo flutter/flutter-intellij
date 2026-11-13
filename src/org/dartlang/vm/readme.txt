@@ -4,9 +4,11 @@ This code was forked from https://github.com/dart-lang/vm_service_drivers and is
 now maintained in this repository.
 
 The Java protocol model, consumer interfaces, and VmService API were originally
-generated from the Dart VM Service protocol. That generation workflow is no
-longer used for this Java client. The sources are maintained and reviewed as
-regular repository code, so they may be edited directly.
+generated from the Dart VM Service protocol. Generation of the Java client in
+the Dart SDK was stopped (see https://github.com/dart-lang/sdk/issues/63939#issuecomment-5197484871).
+The sources are now maintained and reviewed as regular repository code, so
+they may be edited directly. This history is documented here rather than in
+comments on individual source files.
 
 VM Service protocol updates may be made in either repository, or in both in
 parallel. The Dart plugin repository is
