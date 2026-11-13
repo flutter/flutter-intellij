@@ -138,12 +138,12 @@ abstract class FlutterIdeUITest {
   }
 
   /** The `<version>` in META-INF/plugin.xml of the plugin's main jar inside [zip]; what the IDE should report. */
-  private fun pluginVersionInZip(zip: java.io.File): String? {
-    java.util.zip.ZipFile(zip).use { outer ->
+  private fun pluginVersionInZip(zip: File): String? {
+    ZipFile(zip).use { outer ->
       val jarEntry = outer.entries().asSequence().firstOrNull {
         Regex("""^[^/]+/lib/flutter-intellij[^/]*\.jar$""").matches(it.name) && !it.name.contains("searchableOptions")
       } ?: return null
-      java.util.zip.ZipInputStream(outer.getInputStream(jarEntry)).use { jar ->
+      ZipInputStream(outer.getInputStream(jarEntry)).use { jar ->
         generateSequence { jar.nextEntry }.forEach { e ->
           if (e.name == "META-INF/plugin.xml") {
             val xml = jar.readBytes().toString(Charsets.UTF_8)
@@ -155,8 +155,8 @@ abstract class FlutterIdeUITest {
     return null
   }
 
-  private fun sha256(file: java.io.File): String {
-    val md = java.security.MessageDigest.getInstance("SHA-256")
+  private fun sha256(file: File): String {
+    val md = MessageDigest.getInstance("SHA-256")
     file.inputStream().use { input ->
       val buf = ByteArray(1 shl 16)
       while (true) {
