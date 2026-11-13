@@ -24,7 +24,7 @@ import static java.util.stream.Collectors.toList;
 
 public class OpenEmulatorAction extends AnAction {
 
-  public static final String ID = "fluter.open.emulator";
+  public static final String ID = "flutter.open.emulator";
 
   /**
    * Retrieve a list of {@link OpenEmulatorAction}s.

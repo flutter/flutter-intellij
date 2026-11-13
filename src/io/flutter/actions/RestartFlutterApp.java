@@ -42,11 +42,12 @@ public class RestartFlutterApp extends FlutterAppAction {
       return;
     }
     var reloadManager = FlutterReloadManager.getInstance(project);
-    if (reloadManager != null) {
-      reloadManager.saveAllAndRestart(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
-    }
+    if (reloadManager == null) return;
 
-    var analyticsData = AnalyticsData.forAction(this, e);
-    Analytics.report(analyticsData);
+    reloadManager.saveAllAndRestart(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
+
+    // Report with ID: this per-app action isn't registered with the ActionManager, so
+    // AnalyticsData.forAction(this, e) would have a null id and the event would be dropped.
+    Analytics.report(AnalyticsData.forAction(ID, e.getPlace(), project));
   }
 }

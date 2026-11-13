@@ -45,12 +45,9 @@ public class ReloadFlutterApp extends FlutterAppAction {
       return;
     }
 
-    var analyticsData = AnalyticsData.forAction(this, e);
-
     // If the shift key is held down, perform a restart. We check to see if we're being invoked from the
     // 'GoToAction' dialog. If so, the modifiers are for the command that opened the go-to action dialog.
     final boolean shouldRestart = (e.getModifiers() & InputEvent.SHIFT_MASK) != 0 && !"GoToAction".equals(e.getPlace());
-    analyticsData.add(AnalyticsConstants.REQUIRES_RESTART, shouldRestart);
 
     var reloadManager = FlutterReloadManager.getInstance(project);
     if (reloadManager == null) return;
@@ -63,6 +60,10 @@ public class ReloadFlutterApp extends FlutterAppAction {
       reloadManager.saveAllAndReload(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
     }
 
+    // Report with ID: this per-app action isn't registered with the ActionManager, so
+    // AnalyticsData.forAction(this, e) would have a null id and the event would be dropped.
+    final AnalyticsData analyticsData = AnalyticsData.forAction(ID, e.getPlace(), project);
+    analyticsData.add(AnalyticsConstants.REQUIRES_RESTART, shouldRestart);
     Analytics.report(analyticsData);
   }
 

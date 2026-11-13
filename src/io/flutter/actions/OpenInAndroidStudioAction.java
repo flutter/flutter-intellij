@@ -47,7 +47,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class OpenInAndroidStudioAction extends AnAction {
 
-  public static final String ID = "fluter.open.android.studio";
+  public static final String ID = "flutter.open.android.studio";
 
   private static final String LABEL_FILE = FlutterBundle.message("flutter.androidstudio.open.file.text");
   private static final String DESCR_FILE = FlutterBundle.message("flutter.androidstudio.open.file.description");
