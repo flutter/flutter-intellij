@@ -158,14 +158,21 @@ abstract class ExistingProjectUITest(private val packageName: String) : FlutterI
     tree.waitFound(30.seconds)
     // The fixture handle goes stale when the tree model changes (DriverIllegalStateException on valueAt), so it is
     // re-fetched for every call.
-    val segments = listOf("/") + dir.toAbsolutePath().normalize().map { it.toString() }
+    // Resolve symlinks so the segments match what the tree shows (macOS: /var -> /private/var), and take the root
+    // from the path instead of assuming "/": on Windows it is a drive, "C:\".
+    val target = dir.toRealPath()
+    val rootLabel = target.root?.toString()?.let { if (it == "/") it else it.removeSuffix("\\") }
+                    ?: error("$dir has no root component")
+    val segments = listOf(rootLabel) + target.map { it.toString() }
     println("Open dialog: navigating ${segments.joinToString(" > ")}")
 
-    fun rowOf(text: String, after: Int): Int? {
+    fun rowOf(text: String, after: Int, isRoot: Boolean): Int? {
       var row = after + 1
       while (row < 5_000) {
         val value = runCatching { tree.fixture.valueAt(row) }.getOrNull() ?: return null
-        if (value == text) return row
+        // The root row's label depends on the platform ("/", "C:\", "Local Disk (C:)"): match it loosely. Every other
+        // segment must match exactly so a sibling with a longer name is never picked.
+        if (value == text || (isRoot && value.contains(text))) return row
         row++
       }
       return null
@@ -176,7 +183,7 @@ abstract class ExistingProjectUITest(private val packageName: String) : FlutterI
       var row = -1
       try {
         waitFor("'$segment' to appear in the folder tree", 30.seconds, 500.milliseconds) {
-          row = rowOf(segment, previous) ?: -1
+          row = rowOf(segment, previous, isRoot = i == 0) ?: -1
           row >= 0
         }
       }
