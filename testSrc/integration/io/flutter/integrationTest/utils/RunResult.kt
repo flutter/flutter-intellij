@@ -10,6 +10,7 @@ import com.intellij.ide.starter.utils.Git
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
+import java.util.Locale
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.readBytes
