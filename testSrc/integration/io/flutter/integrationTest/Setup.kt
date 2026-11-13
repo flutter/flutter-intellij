@@ -20,9 +20,12 @@ import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.ide.starter.utils.Git
 import com.intellij.openapi.util.SystemInfo
+import io.flutter.integrationTest.utils.Platform
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
+import java.nio.file.Files
 import java.nio.file.Paths
+import java.util.Properties
 
 /**
  * Setup class for configuring IntelliJ IDE UI tests using the IntelliJ IDE Starter framework.
@@ -54,6 +57,12 @@ class Setup {
       }
     }
 
+    /**
+     * True when the IDE will be shown on the user's Wayland desktop (through XWayland), rather than on Xvfb, Xephyr,
+     * or IDE Starter's own `xvfb-run` (used when `DISPLAY` is unset).
+     */
+    fun isWaylandDesktop(): Boolean = Platform.displayMode == Platform.DisplayMode.LINUX_WAYLAND_DESKTOP
+
     fun setupTestContextIC(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
       return setupTestContext(
         "", IdeProductProvider.IC.copy(
@@ -64,11 +73,38 @@ class Setup {
       )
     }
 
-    fun setupTestContextUE(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
+    fun setupTestContextIU(hyphenateWithClass: String, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
       return setupTestContext(
         "", IdeProductProvider.IU.copy(
           // TODO(team) should the version be fetched from some setting, i.e. System.getProperty("uiPlatformBuildVersion")
           buildNumber = "252.23892.409",
+          buildType = BuildType.RELEASE.type
+        ), projectInfoSpec
+      )
+    }
+
+    /**
+     * Reads the Dart plugin version from the `dart.plugin.version` system property (set from `gradle.properties` by the
+     * `integration` Gradle task), falling back to `gradle.properties` when running tests directly from the IDE.
+     */
+    private val dartPluginVersion: String by lazy {
+      System.getProperty("dart.plugin.version")?.trim()?.takeIf { it.isNotEmpty() }
+        ?: Properties().apply {
+          Files.newBufferedReader(Git.getRepoRoot().resolve("gradle.properties")).use(::load)
+        }.getProperty("dartPluginVersion")?.trim()?.takeIf { it.isNotEmpty() }
+        ?: error("dartPluginVersion is not configured in gradle.properties")
+    }
+
+    /**
+     * IntelliJ IDEA 2026.2.3 (unified distribution).
+     */
+    fun setupTestContextIU262(
+      hyphenateWithClass: String,
+      projectInfoSpec: ProjectInfoSpec = NoProject,
+    ): IDETestContext {
+      return setupTestContext(
+        hyphenateWithClass, IdeProductProvider.IU.copy(
+          buildNumber = "262.10968.63",
           buildType = BuildType.RELEASE.type
         ), projectInfoSpec
       )
@@ -98,16 +134,28 @@ class Setup {
      *
      * @throws IllegalStateException if required system properties are not set
      */
-    fun setupTestContext(hyphenateWithClass: String, ideInfo: IdeInfo, projectInfoSpec: ProjectInfoSpec = NoProject): IDETestContext {
+    fun setupTestContext(
+      hyphenateWithClass: String,
+      ideInfo: IdeInfo,
+      projectInfoSpec: ProjectInfoSpec = NoProject,
+    ): IDETestContext {
 
       val testCase = TestCase(ideInfo, projectInfoSpec)
 
       return Starter.newContext(testName = hyphenateWithClass, testCase = testCase).apply {
         // Install the plugin that was built by the buildPlugin task
         val pluginPath = System.getProperty("path.to.build.plugin")
-        PluginConfigurator(this)
-          .installPluginFromPath(Paths.get(pluginPath))
-          .installPluginFromPluginManager("Dart", "252.24322.5")
+        // DART_PLUGIN_ZIP installs a locally built Dart plugin (for example from a dart-intellij-third-party pull
+        // request) instead of the Marketplace version.
+        val localDartPlugin = System.getenv("DART_PLUGIN_ZIP")?.takeIf { it.isNotBlank() }
+        val plugins = PluginConfigurator(this).installPluginFromPath(Paths.get(pluginPath))
+        if (localDartPlugin != null) {
+          println("Installing the Dart plugin from $localDartPlugin")
+          plugins.installPluginFromPath(Paths.get(localDartPlugin))
+        }
+        else {
+          plugins.installPluginFromPluginManager("Dart", dartPluginVersion)
+        }
         withBuildTool<GradleBuildTool>()
       }.applyVMOptionsPatch {
 
@@ -122,6 +170,12 @@ class Setup {
         addSystemProperty("jb.consents.confirmation.enabled", false) // Disable consent dialogs
         addSystemProperty("jb.privacy.policy.text", "<!--999.999-->") // Skip privacy policy
         addSystemProperty("ide.show.tips.on.startup.default.value", false) // No tips on startup
+
+        // No JetBrains feedback surveys ("Tell us about your experience" and similar). These are registry keys of the
+        // platform's feedback module; registry keys can be set as system properties.
+        addSystemProperty("platform.feedback", false)
+        addSystemProperty("csat.survey.enabled", false)
+        addSystemProperty("editor.ux.survey.enabled", false)
 
         // Test framework configuration
         addSystemProperty("junit.jupiter.extensions.autodetection.enabled", true)
@@ -154,6 +208,17 @@ class Setup {
             // Linux specific settings
             addSystemProperty("ide.browser.jcef.enabled", true)
             addSystemProperty("ide.native.launcher", false) // Avoid launcher issues on Linux
+
+            // Force X11 (XWayland on Wayland sessions): the Driver's java.awt.Robot input does not work with JBR's native WLToolkit.
+            addSystemProperty("awt.toolkit.name", "XToolkit")
+
+            // On a Wayland desktop the IDE runs on XWayland, which only accepts synthetic input (XTest) through the
+            // xdg-desktop-portal RemoteDesktop interface. Have java.awt.Robot use that portal directly: GNOME asks once
+            // to allow remote interaction, and the JDK keeps a restore token (~/.java/robot/) for later runs.
+            // On Xvfb or Xephyr (no WAYLAND_DISPLAY), plain XTest works and nothing changes.
+            if (isWaylandDesktop()) {
+              addSystemProperty("awt.robot.screenshotMethod", "dbusRemoteDesktop")
+            }
 
             // X11/Wayland compatibility
             addSystemProperty("sun.java2d.uiScale.enabled", false)

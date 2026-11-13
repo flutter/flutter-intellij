@@ -384,7 +384,14 @@ intellijPlatformTesting.testIde.register("integration") {
     minHeapSize = "1g"
     maxHeapSize = "4g"
 
-    systemProperty("path.to.build.plugin", project.tasks.buildPlugin.get().archiveFile.get().asFile.absolutePath)
+    // Resolve the plugin archive lazily via CommandLineArgumentProvider so that the `archiveFileName` override on
+    // `buildPlugin` (configured later in this file) applies; `Test.systemProperty(String, Any)` does not unwrap
+    // `Provider` values and instead calls `Provider.toString()`.
+    val pluginArchive = project.tasks.buildPlugin.flatMap { it.archiveFile }
+    jvmArgumentProviders += CommandLineArgumentProvider {
+      listOf("-Dpath.to.build.plugin=${pluginArchive.get().asFile.absolutePath}")
+    }
+    systemProperty("dart.plugin.version", dartPluginVersion.trim())
     systemProperty(
       "allure.results.directory", project.layout.buildDirectory.get().asFile.absolutePath + "/allure-results"
     )
@@ -396,7 +403,10 @@ intellijPlatformTesting.testIde.register("integration") {
     jvmArgumentProviders += CommandLineArgumentProvider {
       mutableListOf(
         "--add-opens=java.base/java.lang=ALL-UNNAMED",
-        "--add-opens=java.desktop/javax.swing=ALL-UNNAMED"
+        "--add-opens=java.desktop/javax.swing=ALL-UNNAMED",
+        // The test JVM only drives the IDE remotely; keep AWT headless so JBR does not start Wayland toolkit threads
+        // (e.g. WLKeyboard.KeyRepeatManager) that Starter's ThreadLeakTracker reports as leaks.
+        "-Djava.awt.headless=true"
       )
     }
 
