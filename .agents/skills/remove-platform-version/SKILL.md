@@ -21,6 +21,7 @@ Systematically update compatibility ranges, clean up CI verification loops and b
 ### 2. Update Compatibility Lower Bound (`gradle.properties`)
 - Open `gradle.properties`.
 - Update `sinceBuild=<version>` to the new lower bound build number (e.g., change `sinceBuild=251` to `sinceBuild=252`).
+- Update the "Supported Platform Versions" note in `.gemini/styleguide.md` to the new lower bound, so the review bot knows the supported range.
 
 ### 3. Update CI Verification Script (`tool/github.sh`)
 - Open `tool/github.sh`.

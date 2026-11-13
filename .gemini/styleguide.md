@@ -25,7 +25,7 @@ enforce standard modern Java/Kotlin coding conventions, but strictly police the 
 - **Threading Model:** - NEVER perform heavy operations (I/O, complex PSI searches) on the **Event Dispatch Thread (EDT)**.
     - Wrap data access in `ReadAction.run()` or `ReadAction.compute()`.
     - Wrap modifications in `WriteAction.run()`.
-    - In `AnAction`, ensure `getActionUpdateThread()` is implemented for 2022.3+ compatibility.
+    - In `AnAction`, ensure `getActionUpdateThread()` is implemented explicitly.
 - **Performance:**
     - In loops over PSI elements or Virtual Files, always call `ProgressManager.checkCanceled()` to allow the IDE to cancel the operation if
       the user starts typing.
@@ -34,6 +34,9 @@ enforce standard modern Java/Kotlin coding conventions, but strictly police the 
       background processes that are created but not properly registered with a parent `Disposable` via `Disposer.register()`.
     - Flag the use of deprecated `ProjectComponent` or `ApplicationComponent`. Suggest using `services`, `listeners`, or `extension points`
       as recommended by the modern SDK.
+- **Supported Platform Versions:** The plugin supports IntelliJ Platform build 252 (2025.2) and newer (`sinceBuild` in
+  `gradle.properties`). Don't flag an API as unavailable on older IDEs unless it was introduced after build 252, and
+  never suggest a `@Deprecated` API as a "more compatible" replacement.
 - **Backward Compatibility:** Avoid using `@ApiStatus.Internal` or `@ApiStatus.ScheduledForRemoval` APIs unless strictly necessary.
 - **Logging:**
     - Reject any use of `System.out.println` or `System.err.println` for logging in `src/` code (integration tests may use them for
