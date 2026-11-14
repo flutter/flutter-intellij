@@ -9,6 +9,7 @@ package io.flutter.integrationTest.utils
 import com.intellij.driver.sdk.ui.Finder
 import com.intellij.driver.sdk.ui.components.ComponentData
 import com.intellij.driver.sdk.ui.components.UiComponent
+import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.welcomeScreen
 import com.intellij.driver.sdk.wait
 import com.intellij.ide.starter.driver.engine.BackgroundRun
@@ -65,10 +66,12 @@ open class NewProjectDialogUI(data: ComponentData) : UiComponent(data) {
  */
 fun newProjectWelcomeScreen(run: BackgroundRun, testProjectName: String) {
   run.driver.withContext {
-    // Assert that the welcome screen is visible before interacting with it.
+    // Wait for the welcome screen to be visible before interacting with it; a one-shot
+    // present() check races with IDE startup.
     welcomeScreen {
-      assert(present())
+      waitFound()
       println("Creating the new project from Welcome Screen")
+      WalkthroughSteps.step("Click New Project", "The IntelliJ IDEA welcome screen is showing; clicking New Project opens the New Project dialog (it starts on Java).")
       createNewProjectButton.click()
 
       // The test expects the `FlutterGeneratorPeer` to automatically populate the
@@ -84,6 +87,7 @@ fun newProjectWelcomeScreen(run: BackgroundRun, testProjectName: String) {
         wait(1.seconds)
 
         // Select project type - adjust based on your needs
+        WalkthroughSteps.step("Select Flutter", "Flutter is selected under Generators; the right side shows the Flutter SDK path, filled in automatically.")
         chooseProjectType("Flutter")
         wait(1.seconds)
 
@@ -91,9 +95,11 @@ fun newProjectWelcomeScreen(run: BackgroundRun, testProjectName: String) {
         if (!nextButton.isEnabled()) {
           fail { "The FLUTTER_SDK environment variable was not set." }
         }
+        WalkthroughSteps.step("Click Next", "The Flutter project settings page appears: project name, location, description, project type, organization, Android language, and platforms.")
         nextButton.click()
         wait(1.seconds)
 
+        WalkthroughSteps.step("Name the project and click Create", "The project name and location update as the name is typed; clicking Create shows a \"Creating Flutter project\" progress dialog while `flutter create` runs.")
         keyboard {
           typeText(testProjectName, delayBetweenCharsInMs = 60)
         }
@@ -115,19 +121,16 @@ fun createFlutterProjectWithCli(
   projectName: String = "test_project",
   directory: String = System.getProperty("java.io.tmpdir")
 ) {
-  val flutterSdk = System.getenv("FLUTTER_SDK")
-    ?: throw IllegalStateException("FLUTTER_SDK environment variable not set")
-  val flutterExe = Paths.get(flutterSdk, "bin", "flutter").toString()
-
   println("Creating project $testProjectName in $directory")
-  val process = ProcessBuilder(flutterExe, "create", "--project-name", projectName, testProjectName)
+  val process = ProcessBuilder(Platform.flutterExecutable, "create", "--project-name", projectName, testProjectName)
     .directory(java.io.File(directory))
     .redirectErrorStream(true)
     .start()
 
+  // Read the output before waiting, so a full pipe buffer can't block the process.
+  val output = process.inputStream.bufferedReader().readText()
   val exitCode = process.waitFor()
   if (exitCode != 0) {
-    val output = process.inputStream.bufferedReader().readText()
     throw IllegalStateException("flutter create failed: $output")
   }
 }
@@ -146,8 +149,9 @@ fun deleteFlutterProject(
     val projectPath = Paths.get(directory, testProjectName)
     val projectFile = projectPath.toFile()
     if (projectFile.exists()) {
-      projectFile.deleteRecursively()
-      println("Successfully deleted test folder: $projectPath")
+      if (Platform.deleteRecursively(projectFile)) {
+        println("Successfully deleted test folder: $projectPath")
+      }
     } else {
       println("Test folder does not exist, skipping cleanup: $projectPath")
     }
