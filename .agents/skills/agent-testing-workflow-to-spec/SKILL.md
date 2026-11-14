@@ -10,7 +10,7 @@ Turn a user workflow into a **workflow spec**: a one-page markdown contract that
 `agent-testing-run-integration-test` proves red and green. You produce the spec
 only. You don't write test code, and you don't run the IDE.
 
-The design is in [`agent-integration-testing.md`](../../design-docs/agent-integration-testing.md)
+The design is in `.agents/design-docs/agent-integration-testing.md`
 (sections 5.2 and 5.3). The spec format is [`TEMPLATE.md`](../../../testSrc/integration/specs/TEMPLATE.md).
 Existing specs are listed in the catalog, [`specs/README.md`](../../../testSrc/integration/specs/README.md).
 

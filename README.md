@@ -97,6 +97,9 @@ This repository comes with custom configuration and automation skills for AI cod
 These skills are located in the [.agents/skills/](.agents/skills/) directory. They are automatically discovered and loaded by agentic workflows when they analyze the workspace.
 
 ### Available Workspace Skills:
+* **[Agent Testing: Workflow to Spec](.agents/skills/agent-testing-workflow-to-spec/SKILL.md):** Turn a prose description of an IDE workflow, or a coverage gap, into a checked-in workflow spec for the Flutter and Dart plugins, after checking that the workflow is worth an integration test and which test level can prove it.
+* **[Agent Testing: Bug to Spec](.agents/skills/agent-testing-bug-to-spec/SKILL.md):** Turn a GitHub issue against the Flutter or Dart plugins into a workflow spec whose oracle encodes the correct behavior, pinned to the IDE build the report names, so a test written from it fails on the bug and passes on the fix.
+* **[Agent Testing: Change to Spec](.agents/skills/agent-testing-change-to-spec/SKILL.md):** Turn a local diff, branch, or pull request into workflow specs for the changed user-visible behavior, with a strategy for building the "before" plugin so the resulting tests are proven to fail without the change.
 * **[Add Missing Unit Test](.agents/skills/add-missing-unit-test/SKILL.md):** Add a new unit test for a class that currently lacks one or add a new test case to an existing test file, verifying improvement with Kover.
 * **[Accessibility (A11y) Audit](.agents/skills/audit-accessibility/SKILL.md):** Ensure the plugin's custom UI components are accessible to users with screen readers and other assistive technologies.
 * **[Dependency & Library Audit](.agents/skills/audit-dependencies/SKILL.md):** Optimize plugin size and security by removing unused dependencies and updating outdated libraries.
