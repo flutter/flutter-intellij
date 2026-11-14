@@ -10,7 +10,6 @@ import com.intellij.coverage.CoverageRunner;
 import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.coverage.CoverageEnabledConfiguration;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ModalityUiUtil;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.test.TestConfig;
@@ -31,12 +30,14 @@ public class FlutterCoverageEnabledConfiguration extends CoverageEnabledConfigur
   @Override
   protected String createCoverageFile() {
     if (myCoverageFilePath == null) {
-      if (!(getConfiguration() instanceof TestConfig)) {
+      if (!(FlutterCoverageEngine.unwrapRunProfile(getConfiguration()) instanceof TestConfig testConfig)) {
         return "";
       }
-      VirtualFile file = ((TestConfig)getConfiguration()).getFields().getFileOrDir();
-      final VirtualFile root = PubRoot.forFile(file).getRoot();
-      myCoverageFilePath = root.getPath() + "/coverage/lcov.info";
+      final PubRoot pubRoot = testConfig.getFields().getPubRoot(testConfig.getProject());
+      if (pubRoot == null) {
+        return "";
+      }
+      myCoverageFilePath = pubRoot.getRoot().getPath() + "/coverage/lcov.info";
     }
     return myCoverageFilePath;
   }
