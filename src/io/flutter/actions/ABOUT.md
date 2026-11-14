@@ -1,4 +1,4 @@
-<!--* freshness: { reviewed: '2026-10-25' } *-->
+<!--* freshness: { reviewed: '2026-11-13' } *-->
 # Flutter Actions
 
 ## Overview
@@ -17,7 +17,7 @@ Registers standard IDE UI actions (buttons, context menus) that trigger Flutter 
 - [`FlutterGettingStartedAction`](FlutterGettingStartedAction.java)
 - [`FlutterNewProjectAction`](FlutterNewProjectAction.kt) (Kotlin): registered only in `studio-contribs.xml` (Android Studio only).
 - [`FlutterPackagesAddAction`](FlutterPackagesAddAction.java)
-- [`FlutterPackagesExplorerActionGroup`](FlutterPackagesExplorerActionGroup.java)
+- [`FlutterPackagesExplorerActionGroup`](FlutterPackagesExplorerActionGroup.java): Project View popup submenu on Flutter `pubspec.yaml` files, anchored before `ProjectViewPopupMenuModifyGroup` in `ProjectViewPopupMenu`.
 - [`FlutterPackagesGetAction`](FlutterPackagesGetAction.java)
 - [`FlutterPackagesUpgradeAction`](FlutterPackagesUpgradeAction.java)
 - [`FlutterRetargetAppAction`](FlutterRetargetAppAction.java)

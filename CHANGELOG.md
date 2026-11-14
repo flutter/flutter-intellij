@@ -12,6 +12,7 @@
 - Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)
 
 ### Fixed
+- Anchoring of the Flutter action group in the Project View context menu. (#9249)
 - Unresolved `JaroWinkler` class error when matching custom icon font files in Android Studio 2026.2. (#9204)
 - `AlreadyDisposedException` when a project is closed while Flutter module setup is still queued. (#9222)
 - Failure running a single Flutter test whose name contains escaped characters (such as `\'` or `\$`). (#9205)
