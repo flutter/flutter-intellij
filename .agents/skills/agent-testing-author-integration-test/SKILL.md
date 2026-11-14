@@ -9,7 +9,7 @@ Turn a **workflow spec** into a test. The spec is the contract: the test
 performs its Steps, checks its Oracle parts O1–O4, and nothing else. You write
 code under `testSrc/` and `testData/` only.
 
-Design: [`agent-integration-testing.md`](../../design-docs/agent-integration-testing.md)
+Design: `.agents/design-docs/agent-integration-testing.md`
 sections 5.3–5.5. How Starter, Driver, and our harness work, with every helper
 and the known pitfalls: [`ui-test-reference`](../ui-test-reference/SKILL.md).
 Read it before writing a `ui` test. Recording a run as a walkthrough:

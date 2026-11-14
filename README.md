@@ -97,6 +97,8 @@ This repository comes with custom configuration and automation skills for AI cod
 These skills are located in the [.agents/skills/](.agents/skills/) directory. They are automatically discovered and loaded by agentic workflows when they analyze the workspace.
 
 ### Available Workspace Skills:
+* **[Agent Testing: Author Integration Test](.agents/skills/agent-testing-author-integration-test/SKILL.md):** Turn a workflow spec into a test class at the level the spec names, with one `assertOracle` block per oracle part and at most one probe run to discover locators.
+* **[Agent Testing: Run Integration Test](.agents/skills/agent-testing-run-integration-test/SKILL.md):** Certify a test by proving it fails on a deliberately broken plugin build and passes on the real one; classify failures, repair test defects within a budget, and write the evidence report. Modes certify, repro, check, and witness.
 * **[Agent Testing: Workflow to Spec](.agents/skills/agent-testing-workflow-to-spec/SKILL.md):** Turn a prose description of an IDE workflow, or a coverage gap, into a checked-in workflow spec for the Flutter and Dart plugins, after checking that the workflow is worth an integration test and which test level can prove it.
 * **[Agent Testing: Bug to Spec](.agents/skills/agent-testing-bug-to-spec/SKILL.md):** Turn a GitHub issue against the Flutter or Dart plugins into a workflow spec whose oracle encodes the correct behavior, pinned to the IDE build the report names, so a test written from it fails on the bug and passes on the fix.
 * **[Agent Testing: Change to Spec](.agents/skills/agent-testing-change-to-spec/SKILL.md):** Turn a local diff, branch, or pull request into workflow specs for the changed user-visible behavior, with a strategy for building the "before" plugin so the resulting tests are proven to fail without the change.
@@ -114,6 +116,7 @@ These skills are located in the [.agents/skills/](.agents/skills/) directory. Th
 * **[Release Plugin](.agents/skills/release-plugin/SKILL.md):** Prepare and execute a new release for the flutter-intellij plugin, including updating dependencies, compatibility bounds, changelogs, and verification.
 * **[Resolve Verification Issues](.agents/skills/resolve-verification-issues/SKILL.md):** Eliminate plugin verification warnings and errors identified by `./gradlew verifyPlugin`.
 * **[Verify EAP Compatibility](.agents/skills/verify-eap-compatibility/SKILL.md):** Ensure the plugin remains compatible with the latest IntelliJ Platform releases and EAP (Early Access Program) builds.
+* **[UI Test Reference](.agents/skills/ui-test-reference/SKILL.md):** How IDE Starter, Driver, and the Flutter UI test harness work, platform differences, and the pitfalls already hit; the manual for writing or repairing any test under `testSrc/integration`.
 
 ### How to use:
 Tell your AI assistant to run the desired skill (e.g. by typing `/code-review` or asking *"Run the code-review skill on my changes"*). The agent will automatically find, load, and follow the instructions in the corresponding `SKILL.md` file.

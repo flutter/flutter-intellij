@@ -11,8 +11,8 @@ times in a row, on the real build. You run the builds and the tests, classify
 what happened from `run-result.json`, repair test defects inside a budget, and
 write the evidence report. You never change what the test checks.
 
-Design: [`agent-integration-testing.md`](../../design-docs/agent-integration-testing.md)
-sections 5.6–5.9. Scripts: [`scripts/`](scripts/). Harness and platform
+Design: `.agents/design-docs/agent-integration-testing.md`
+sections 5.6–5.9. Scripts: [`parse_run_result.py`](scripts/parse_run_result.py), [`lint_spec.py`](scripts/lint_spec.py). Harness and platform
 details: [`ui-test-reference`](../ui-test-reference/SKILL.md).
 
 All modes run on Linux, macOS, and Windows. A workflow that applies to one

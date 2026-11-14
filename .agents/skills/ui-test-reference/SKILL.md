@@ -13,7 +13,7 @@ layers are involved, and most mistakes come from confusing them:
 |---|---|---|
 | **IDE Starter** | JetBrains' framework that downloads an IDE build and plugins, prepares a project, launches the IDE, and collects logs | [`Setup.kt`](../../../testSrc/integration/io/flutter/integrationTest/Setup.kt) |
 | **Driver** | JetBrains' remote-call API from the test JVM into the running IDE: services via `@Remote` interfaces, UI via XPath-like locators | used throughout the tests |
-| **Our harness** | Base classes and helpers that encode Flutter-plugin workflows and the certification contract | [`FlutterIdeUITest.kt`](../../../testSrc/integration/io/flutter/integrationTest/FlutterIdeUITest.kt), [`ExistingProjectUITest.kt`](../../../testSrc/integration/io/flutter/integrationTest/ExistingProjectUITest.kt), [`utils/`](../../../testSrc/integration/io/flutter/integrationTest/utils/) |
+| **Our harness** | Base classes and helpers that encode Flutter-plugin workflows and the certification contract | [`FlutterIdeUITest.kt`](../../../testSrc/integration/io/flutter/integrationTest/FlutterIdeUITest.kt), [`ExistingProjectUITest.kt`](../../../testSrc/integration/io/flutter/integrationTest/ExistingProjectUITest.kt), [`utils/RunResult.kt`](../../../testSrc/integration/io/flutter/integrationTest/utils/RunResult.kt), [`utils/IdeLog.kt`](../../../testSrc/integration/io/flutter/integrationTest/utils/IdeLog.kt) |
 
 Running: `FLUTTER_SDK=<sdk> ./gradlew --no-daemon integration --tests <fqcn>`.
 One run is about 1.5 minutes for a test that only opens a project, 3–4 minutes
