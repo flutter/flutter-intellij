@@ -200,6 +200,25 @@ class Setup {
           plugins.installPluginFromPluginManager("Dart", dartPluginVersion)
         }
         withBuildTool<GradleBuildTool>()
+
+        // Don't let the platform auto-open README.md when a project is opened for the first time. The Markdown
+        // preview it brings up is a JCEF browser, and under Xvfb that browser has frozen the EDT for minutes on IU
+        // 2025.2 (both out-of-process and in-process JCEF), which looks exactly like a plugin failure: nothing
+        // renders, no toolbar actions appear. The setting is the user-visible advanced setting "Open README.md
+        // file on project startup"; nothing under test depends on it. See testSrc/integration/specs/FINDINGS.md.
+        val advancedSettings = paths.configDir.resolve("options").resolve("advancedSettings.xml")
+        Files.createDirectories(advancedSettings.parent)
+        Files.writeString(advancedSettings, """
+          <application>
+            <component name="AdvancedSettings">
+              <option name="settings">
+                <map>
+                  <entry key="ide.open.readme.md.on.startup" value="false" />
+                </map>
+              </option>
+            </component>
+          </application>
+        """.trimIndent())
       }.applyVMOptionsPatch {
 
         // === Common system properties for all operating systems ===
