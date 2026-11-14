@@ -1,11 +1,11 @@
-<!--* freshness: { reviewed: '2026-10-25' } *-->
+<!--* freshness: { reviewed: '2026-11-07' } *-->
 # org.dartlang.vm
 
 ## Overview
-Groups packages related to the Dart Virtual Machine. The code was forked from [dart-lang/vm_service_drivers](https://github.com/dart-lang/vm_service_drivers) and is now maintained in this repo (see [readme.txt](readme.txt)).
+Groups packages related to the Dart Virtual Machine. The VM Service client was forked from [dart-lang/vm_service_drivers](https://github.com/dart-lang/vm_service_drivers) and is now maintained in this repository. See [readme.txt](readme.txt) for its generation history and the current cross-repository maintenance process.
 
 ## Files
-- [readme.txt](readme.txt) - Provenance note for the fork.
+- [readme.txt](readme.txt) - Provenance, generation history, and current maintenance process for the VM Service client.
 - [LICENSE](LICENSE) - BSD-style license from the Dart project authors.
 
 ## Licensing
