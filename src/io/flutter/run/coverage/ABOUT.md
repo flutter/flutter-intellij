@@ -17,7 +17,7 @@ Configures test coverage execution and parsing (LCOV) for Flutter applications.
 - FlutterCoverageAnnotator does not collect coverage inside library directories, and limits coverage roots to the content roots of modules with Flutter contents.
 - FlutterCoverageEnabledConfiguration expects coverage file at 'coverage/lcov.info' relative to the pub root resolved via `TestFields.getPubRoot`, or returns an empty string when no pub root is found.
 - FlutterCoverageEngine applies only to [`TestConfig`](../test/TestConfig.java) runs (a `WrappingRunConfiguration` is unwrapped to its peer before the check).
-- FlutterCoverageEngine only creates suites from a FlutterCoverageEnabledConfiguration; the legacy `createCoverageSuite(..., filters, timestamps, ...)` overload always returns null.
+- FlutterCoverageEngine only creates suites from a `FlutterCoverageEnabledConfiguration`; the 5-argument `createCoverageSuite(String, Project, CoverageRunner, CoverageFileProvider, long)` overload without a configuration always returns null.
 - FlutterCoverageEngine editor highlighting applies only to Dart files in 'lib' subdirectory.
 - FlutterCoverageEngine canHavePerTestCoverage is always true.
 - FlutterCoverageProgramRunner ID is 'FlutterCoverageProgramRunner'.

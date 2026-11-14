@@ -14,14 +14,13 @@ import com.intellij.util.ModalityUiUtil;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.test.TestConfig;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 public class FlutterCoverageEnabledConfiguration extends CoverageEnabledConfiguration {
 
   public FlutterCoverageEnabledConfiguration(@NotNull RunConfigurationBase<?> configuration) {
-    super(configuration);
-    super.setCoverageRunner(CoverageRunner.getInstance(FlutterCoverageRunner.class));
-    createCoverageFile();
+    super(configuration, Objects.requireNonNull(CoverageRunner.getInstance(FlutterCoverageRunner.class)));
     ModalityUiUtil.invokeLaterIfNeeded(
       ModalityState.any(),
       () -> setCurrentCoverageSuite(CoverageDataManager.getInstance(configuration.getProject()).addCoverageSuite(this)));
@@ -29,31 +28,13 @@ public class FlutterCoverageEnabledConfiguration extends CoverageEnabledConfigur
 
   @Override
   protected String createCoverageFile() {
-    if (myCoverageFilePath == null) {
-      if (!(FlutterCoverageEngine.unwrapRunProfile(getConfiguration()) instanceof TestConfig testConfig)) {
-        return "";
-      }
-      final PubRoot pubRoot = testConfig.getFields().getPubRoot(testConfig.getProject());
-      if (pubRoot == null) {
-        return "";
-      }
-      myCoverageFilePath = pubRoot.getRoot().getPath() + "/coverage/lcov.info";
+    if (!(FlutterCoverageEngine.unwrapRunProfile(getConfiguration()) instanceof TestConfig testConfig)) {
+      return "";
     }
-    return myCoverageFilePath;
-  }
-
-  @Override
-  public void setCoverageRunner(@Nullable final CoverageRunner coverageRunner) {
-    // Save and restore myCoverageFilePath because the super method clears it.
-    final String path = myCoverageFilePath;
-    super.setCoverageRunner(coverageRunner);
-    myCoverageFilePath = path;
-  }
-
-  @Override
-  public void coverageRunnerExtensionRemoved(@NotNull CoverageRunner runner) {
-    final String path = myCoverageFilePath;
-    super.coverageRunnerExtensionRemoved(runner);
-    myCoverageFilePath = path;
+    final PubRoot pubRoot = testConfig.getFields().getPubRoot(testConfig.getProject());
+    if (pubRoot == null) {
+      return "";
+    }
+    return pubRoot.getRoot().getPath() + "/coverage/lcov.info";
   }
 }

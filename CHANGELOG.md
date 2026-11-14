@@ -3,6 +3,7 @@
 ### Added
 
 ### Changed
+- Migrated test line marker and code coverage configurations away from deprecated and internal IntelliJ Platform APIs. (#9253)
 - Routing Extract Flutter Widget refactoring to LSP code actions when experimental LSP features are enabled. (#9202)
 - Centralizing file path logging into `PluginLogger`. (#8707)
 - Redacting the Flutter SDK path when logging the command line in `FlutterApp`. (#9203)
