@@ -18,12 +18,12 @@ Format: **title** · date · where it bit · what it is · what we did · status
 - **What we did:** allowlisted the signature in `IdeLog` with justification (approved by Cory) so it can't mask Flutter-plugin errors; drafted an issue for the Dart repo.
 - **Status:** issue to be filed (draft with Cory). Agents: do not widen the allowlist beyond this regex.
 
-## IU 252 out-of-process JCEF blocks the EDT under Xvfb
+## The auto-opened README.md's JCEF Markdown preview freezes the EDT under Xvfb on IU 252
 
-- **Date:** 2026-11-13 · **Where:** T4 green #1 (attempt 1) on IU 252.28238.7.
-- **What:** 2025.2 defaults `ide.browser.jcef.out-of-process.enabled=true`. Headless, the `cef_server` thrift handshake triggered by the Markdown preview of the auto-opened `README.md` blocked the EDT for 2+ minutes: Project tree stuck at "loading…", no toolbar actions rendered, Driver screenshots timed out. A desktop IDE came up in-process and was fine. Not a plugin bug; it would have been misclassified as one without the witness run.
-- **What we did:** `Setup.kt` passes `jcef.remote.enabled=false` on Linux (verified green on 252 and, via `HarnessSelfCheckUITest` + T1, on 262).
-- **Status:** fixed in the harness. If a future spec needs out-of-process JCEF, say so in its Fixture.
+- **Date:** 2026-11-13 · **Where:** T4 green runs on IU 252.28238.7 (attempt 1, and again after the first fix).
+- **What:** the platform opens `README.md` on a project's first open; its Markdown preview is a JCEF browser. Under Xvfb that browser blocked the EDT for 2+ minutes: first the out-of-process `cef_server` handshake (2025.2's default, `ide.browser.jcef.out-of-process.enabled=true`), then, with JCEF in-process, a native `CefClientHandler.N_removeMessageRouter` call while the preview was torn down. Symptoms: Project tree stuck at "loading…", no toolbar actions, Driver screenshots timing out — indistinguishable from a plugin failure without the thread dumps (`monitoring-thread-dumps-ide/`). A desktop IDE was fine. Not a plugin bug.
+- **What we did:** `Setup.kt` turns off the advanced setting "Open README.md file on project startup" (`ide.open.readme.md.on.startup`) in the test config, so no Markdown preview and no JCEF is created at project open; it also keeps JCEF in-process on Linux (`jcef.remote.enabled=false`). T4 on 252 went 2/2 green and ~40% faster. Nothing under test depends on the README auto-open.
+- **Status:** fixed in the harness. A spec that needs the README preview or out-of-process JCEF must say so in its Fixture.
 
 ## #8845 reproduces only on the reported IDE build
 
