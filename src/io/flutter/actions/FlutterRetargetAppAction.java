@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import io.flutter.utils.FlutterModuleUtils;
@@ -49,7 +50,7 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
     if (action != null) {
       // The target action reports its own analytics event (with this event's place), so report nothing
       // here; reporting both would count each toolbar or menu invocation twice.
-      action.actionPerformed(e);
+      ActionUtil.performAction(action, e);
     }
   }
 
@@ -74,7 +75,7 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
       if (text != null) {
         presentation.setText(text, true);
       }
-      action.update(e);
+      ActionUtil.updateAction(action, e);
     }
   }
 

@@ -12,6 +12,8 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.project.Project;
@@ -102,13 +104,15 @@ public class NativeEditorNotificationProvider implements EditorNotificationProvi
       text("Flutter commands");
 
       // Ensure this project is a Flutter project by updating the menu action. It will only be visible for Flutter projects.
-      myAction.update(
-        AnActionEvent.createEvent(makeContext(), myAction.getTemplatePresentation(), ActionPlaces.EDITOR_TOOLBAR, ActionUiKind.NONE, null));
+      final Presentation presentation = myAction.getTemplatePresentation().clone();
+      final AnActionEvent updateEvent =
+        AnActionEvent.createEvent(makeContext(), presentation, ActionPlaces.EDITOR_TOOLBAR, ActionUiKind.NONE, null);
+      ActionUtil.updateAction(myAction, updateEvent);
 
-      isVisible = myAction.getTemplatePresentation().isVisible();
+      isVisible = presentation.isVisible();
       //noinspection DialogTitleCapitalization
-      createActionLabel(myAction.getTemplatePresentation().getText(), this::performAction)
-        .setToolTipText(myAction.getTemplatePresentation().getDescription());
+      createActionLabel(presentation.getText(), this::performAction)
+        .setToolTipText(presentation.getDescription());
       createActionLabel(FlutterBundle.message("flutter.androidstudio.open.hide.notification.text"), () -> {
         showNotification = false;
         EditorNotifications.getInstance(project).updateAllNotifications();
@@ -123,10 +127,11 @@ public class NativeEditorNotificationProvider implements EditorNotificationProvi
       return false;
     }
 
-    private void performAction() {
+    void performAction() {
       // Open Xcode or Android Studio. If already running AS then just open a new window.
-      myAction.actionPerformed(
-        AnActionEvent.createEvent(makeContext(), myAction.getTemplatePresentation(), ActionPlaces.EDITOR_TOOLBAR, ActionUiKind.NONE, null));
+      final AnActionEvent event =
+        AnActionEvent.createEvent(makeContext(), myAction.getTemplatePresentation().clone(), ActionPlaces.EDITOR_TOOLBAR, ActionUiKind.NONE, null);
+      ActionUtil.performAction(myAction, event);
     }
 
     private DataContext makeContext() {

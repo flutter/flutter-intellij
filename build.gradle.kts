@@ -325,7 +325,7 @@ intellijPlatform {
 //      VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
       VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
 //      VerifyPluginTask.FailureLevel.INTERNAL_API_USAGES,
-//      VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
+      VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
       VerifyPluginTask.FailureLevel.NON_EXTENDABLE_API_USAGES,
       VerifyPluginTask.FailureLevel.PLUGIN_STRUCTURE_WARNINGS,
       VerifyPluginTask.FailureLevel.MISSING_DEPENDENCIES,
