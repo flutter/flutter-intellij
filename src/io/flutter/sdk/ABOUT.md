@@ -1,4 +1,4 @@
-<!--* freshness: { reviewed: '2026-11-02' } *-->
+<!--* freshness: { reviewed: '2026-11-13' } *-->
 # Flutter SDK
 
 ## Overview

@@ -93,7 +93,7 @@ public class FlutterSdkUtil {
       props.unsetValue(propertyKey);
     }
     else {
-      props.setValues(propertyKey, ArrayUtil.toStringArray(allPaths));
+      props.setList(propertyKey, allPaths);
     }
   }
 

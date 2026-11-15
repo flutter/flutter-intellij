@@ -33,7 +33,7 @@ public class ToolWindowBadgeUpdater {
       if (runToolWindow != null) {
         manager.invokeLater(() -> {
           Icon baseIcon = AllIcons.Toolwindows.ToolWindowRun;
-          Icon iconWithBadge = new LayeredIcon(baseIcon, AllIcons.Nodes.RunnableMark);
+          Icon iconWithBadge = LayeredIcon.layeredIcon(new Icon[]{baseIcon, AllIcons.Nodes.RunnableMark});
           runToolWindow.setIcon(iconWithBadge);
         });
       }
@@ -43,7 +43,7 @@ public class ToolWindowBadgeUpdater {
         // https://github.com/flutter/flutter-intellij/issues/8391
         if (debugToolWindow != null) {
           Icon baseIcon = AllIcons.Toolwindows.ToolWindowDebugger;
-          Icon iconWithBadge = new LayeredIcon(baseIcon, AllIcons.Nodes.RunnableMark);
+          Icon iconWithBadge = LayeredIcon.layeredIcon(new Icon[]{baseIcon, AllIcons.Nodes.RunnableMark});
           debugToolWindow.setIcon(iconWithBadge);
         }
       });

@@ -5,13 +5,22 @@
  */
 package io.flutter.sdk;
 
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.util.SystemInfo;
+import io.flutter.testing.CodeInsightProjectFixture;
+import io.flutter.testing.Testing;
+import org.junit.Rule;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 public class FlutterSdkUtilsTest {
+  @Rule
+  public final CodeInsightProjectFixture fixture = Testing.makeCodeInsightModule();
+
   @Test
   public void parseFlutterSdkPath() {
     final String content = """
@@ -89,5 +98,33 @@ public class FlutterSdkUtilsTest {
     FlutterSdkUtil.addKnownSDKPathsToCombo(combo);
 
     assertEquals("/path/to/custom/sdk", combo.getEditor().getItem());
+  }
+
+  @Test
+  public void updateKnownSdkPaths_persistsAndOrdersMostRecentlyUsedFirst() {
+    final String key = "FLUTTER_SDK_KNOWN_PATHS";
+    final PropertiesComponent props = PropertiesComponent.getInstance();
+    final List<String> original = props.getList(key);
+    try {
+      props.unsetValue(key);
+
+      FlutterSdkUtil.updateKnownSdkPaths("/sdk/one");
+      assertEquals(List.of("/sdk/one"), props.getList(key));
+
+      FlutterSdkUtil.updateKnownSdkPaths("/sdk/two");
+      assertEquals(List.of("/sdk/two", "/sdk/one"), props.getList(key));
+
+      // Re-adding /sdk/one moves it to the front without duplicating it.
+      FlutterSdkUtil.updateKnownSdkPaths("/sdk/one");
+      assertEquals(List.of("/sdk/one", "/sdk/two"), props.getList(key));
+    }
+    finally {
+      if (original == null) {
+        props.unsetValue(key);
+      }
+      else {
+        props.setList(key, original);
+      }
+    }
   }
 }

@@ -5,6 +5,7 @@
  */
 package io.flutter.android;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ColoredProcessHandler;
@@ -16,7 +17,6 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.util.ReflectionUtil;
 import io.flutter.FlutterMessages;
 import io.flutter.utils.MostlySilentColoredProcessHandler;
 import io.flutter.utils.OpenApiUtils;
@@ -155,13 +155,21 @@ public class AndroidEmulator {
         return false;
       }
     }
-    Method method = ReflectionUtil.getDeclaredMethod(aClass, "getInstance");
+    return getLaunchInToolWindow(aClass);
+  }
+
+  @VisibleForTesting
+  static boolean getLaunchInToolWindow(@NotNull Class<?> settingsClass) {
     try {
-      Object instance = method.invoke(null);
-      Method option = ReflectionUtil.getDeclaredMethod(aClass, "getLaunchInToolWindow");
-      return (boolean)option.invoke(instance);
+      final Method method = settingsClass.getMethod("getInstance");
+      final Object instance = method.invoke(null);
+      if (instance == null) {
+        return false;
+      }
+      final Method option = settingsClass.getMethod("getLaunchInToolWindow");
+      return Boolean.TRUE.equals(option.invoke(instance));
     }
-    catch (IllegalAccessException | InvocationTargetException e) {
+    catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
       return false;
     }
   }
