@@ -34,8 +34,8 @@ enforce standard modern Java/Kotlin coding conventions, but strictly police the 
       background processes that are created but not properly registered with a parent `Disposable` via `Disposer.register()`.
     - Flag the use of deprecated `ProjectComponent` or `ApplicationComponent`. Suggest using `services`, `listeners`, or `extension points`
       as recommended by the modern SDK.
-- **Supported Platform Versions:** The plugin supports IntelliJ Platform build 252 (2025.2) and newer (`sinceBuild` in
-  `gradle.properties`). Don't flag an API as unavailable on older IDEs unless it was introduced after build 252, and
+- **Supported Platform Versions:** The plugin supports IntelliJ Platform build 253 (2025.3) and newer (`sinceBuild` in
+  `gradle.properties`). Don't flag an API as unavailable on older IDEs unless it was introduced after build 253, and
   never suggest a `@Deprecated` API as a "more compatible" replacement.
 - **Backward Compatibility:** Avoid using `@ApiStatus.Internal` or `@ApiStatus.ScheduledForRemoval` APIs unless strictly necessary.
 - **Logging:**

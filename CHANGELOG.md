@@ -9,6 +9,7 @@
 - Migrated `FlutterCompletionContributor` (color and icon completion previews) to IntelliJ `CompletionContributor` for LSP completion support. (#9186)
 
 ### Removed
+- Support for platform version 2025.2. (#9255)
 - Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)
 
 ### Fixed
