@@ -8,6 +8,7 @@ package io.flutter.run;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.ConfigurationFromContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
+import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -32,7 +33,12 @@ import java.util.stream.Stream;
 public class FlutterRunConfigurationProducer extends RunConfigurationProducer<SdkRunConfig> {
 
   public FlutterRunConfigurationProducer() {
-    super(FlutterRunConfigurationType.getInstance());
+    super(true);
+  }
+
+  @Override
+  public @NotNull ConfigurationFactory getConfigurationFactory() {
+    return FlutterRunConfigurationType.getInstance().getFactory();
   }
 
   /**
