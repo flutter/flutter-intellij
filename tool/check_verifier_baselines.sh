@@ -51,14 +51,11 @@ SUMMARY="${GITHUB_STEP_SUMMARY:-/dev/null}"
 
 # Normalize host-JDK bytecode differences before comparing (never when writing
 # baselines, so committed files remain faithful records of the raw report):
-# 1. Local JDKs emit parameter names in DartTemplateContextType.<init>(...) while
-#    CI's JDK 21 emits only types.
-# 2. javac numbers synthetic lambda$<method>$<N>(...) methods differently across
-#    JDK versions (e.g., JDK 21 vs JDK 25), causing false-positive diffs when no
-#    actual issue changed.
+# javac numbers synthetic lambda$<method>$<N>(...) methods differently across
+# JDK versions (e.g., JDK 21 vs JDK 25), causing false-positive diffs when no
+# actual issue changed.
 comparable() {
   sed -E \
-    -e 's/DartTemplateContextType\.<init>\([^)]+\)/DartTemplateContextType.<init>(args)/g' \
     -e 's/(\.lambda\$[A-Za-z0-9_$]+\$)[0-9]+\(/\1*(/g' \
     | LC_ALL=C sort -u
 }

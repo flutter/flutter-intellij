@@ -301,8 +301,8 @@
     <programRunner implementation="io.flutter.run.test.FlutterTestRunner"/>
     <runLineMarkerContributor language="Dart" implementationClass="io.flutter.run.test.FlutterTestLineMarkerContributor"/>
 
-    <defaultLiveTemplatesProvider implementation="io.flutter.template.FlutterLiveTemplatesProvider"/>
-    <liveTemplateContext contextId="DART_TOPLEVEL" implementation="io.flutter.template.DartToplevelTemplateContextType"/>
+    <defaultLiveTemplates file="liveTemplates/flutter_miscellaneous.xml"/>
+    <liveTemplateContext contextId="DART_TOPLEVEL" baseContextId="DART" implementation="io.flutter.template.DartToplevelTemplateContextType"/>
 
     <!-- IDEA only -->
     <moduleBuilder builderClass="io.flutter.module.FlutterModuleBuilder"/>
