@@ -17,7 +17,7 @@
           <text resource-bundle="io/flutter/FlutterBundle" key="flutter.sdk.path.label"/>
         </properties>
       </component>
-      <component id="b09db" class="com.intellij.ui.ComboboxWithBrowseButton" binding="mySdkPathComboWithBrowse" custom-create="true">
+      <component id="b09db" class="com.intellij.openapi.ui.ComboBox" binding="mySdkPathComboWithBrowse" custom-create="true">
         <constraints>
           <grid row="0" column="2" row-span="1" col-span="10" vsize-policy="0" hsize-policy="7" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
