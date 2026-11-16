@@ -1,4 +1,4 @@
-<!--* freshness: { reviewed: '2026-10-25' } *-->
+<!--* freshness: { reviewed: '2026-11-16' } *-->
 # Flutter Module Creation
 
 ## Overview
@@ -6,7 +6,7 @@ Manages the IDE integration for creating new Flutter modules and projects, bridg
 
 Key files:
 - [FlutterModuleBuilder.java](FlutterModuleBuilder.java): the `ModuleBuilder` that validates settings, runs `flutter create`, and commits the new module.
-- [FlutterGeneratorPeer.java](FlutterGeneratorPeer.java) and [FlutterGeneratorPeer.form](FlutterGeneratorPeer.form): the wizard panel holding the SDK path combo box and the additional settings fields.
+- [FlutterGeneratorPeer.java](FlutterGeneratorPeer.java) and [FlutterGeneratorPeer.form](FlutterGeneratorPeer.form): the wizard panel holding the SDK path `ComboBox` (with an inline `ExtendableTextField` browse extension) and the additional settings fields.
 - [FlutterProjectType.java](FlutterProjectType.java): the project kinds `APP`, `PLUGIN`, `PACKAGE`, `MODULE`, `SKELETON`, `PLUGIN_FFI`, `EMPTY_PROJECT` and `IMPORT`. Each has a title, a `flutter create` argument, and a `requiresPlatform` flag.
 
 ## Interface

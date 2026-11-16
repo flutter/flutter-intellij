@@ -16,13 +16,20 @@ import com.intellij.openapi.roots.libraries.PersistentLibraryKind;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileContentsChangedAdapter;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.VirtualFileSystem;
+import com.intellij.openapi.vfs.newvfs.BulkFileListener;
+import com.intellij.openapi.vfs.newvfs.events.VFileCopyEvent;
+import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
+import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent;
 import com.intellij.util.concurrency.AppExecutorUtil;
+import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.FlutterProjectDisposable;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.HashSet;
 import java.util.List;
@@ -46,18 +53,16 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
 
   public void startWatching() {
     var project = getProject();
-    VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileContentsChangedAdapter() {
+    final MessageBusConnection connection =
+      project.getMessageBus().connect(FlutterProjectDisposable.getInstance(project));
+    connection.subscribe(VirtualFileManager.VFS_CHANGES, new BulkFileListener() {
       @Override
-      protected void onFileChange(@NotNull VirtualFile file) {
-        fileChanged(getProject(), file);
+      public void after(@NotNull List<? extends @NotNull VFileEvent> events) {
+        onVfsChanges(events);
       }
+    });
 
-      @Override
-      protected void onBeforeFileChange(@NotNull VirtualFile file) {
-      }
-    }, FlutterProjectDisposable.getInstance(project));
-
-    project.getMessageBus().connect().subscribe(ModuleRootListener.TOPIC, new ModuleRootListener() {
+    connection.subscribe(ModuleRootListener.TOPIC, new ModuleRootListener() {
       @Override
       public void rootsChanged(@NotNull ModuleRootEvent event) {
         scheduleUpdate();
@@ -78,14 +83,35 @@ public class FlutterPluginsLibraryManager extends AbstractLibraryManager<Flutter
   protected PersistentLibraryKind<FlutterPluginLibraryProperties> getLibraryKind() {
     return FlutterPluginLibraryType.LIBRARY_KIND;
   }
-  
-  private void fileChanged(@NotNull final Project project, @NotNull final VirtualFile file) {
-    if (LocalFileSystem.getInstance() != file.getFileSystem() && !ApplicationManager.getApplication().isUnitTestMode()) return;
 
-    scheduleUpdate();
+  @VisibleForTesting
+  void onVfsChanges(@NotNull List<? extends @NotNull VFileEvent> events) {
+    final var application = ApplicationManager.getApplication();
+    final boolean unitTestMode = application != null && application.isUnitTestMode();
+    final LocalFileSystem localFileSystem = application == null ? null : LocalFileSystem.getInstance();
+    onVfsChanges(events, localFileSystem, unitTestMode);
   }
 
-  private void scheduleUpdate() {
+  @VisibleForTesting
+  void onVfsChanges(@NotNull List<? extends @NotNull VFileEvent> events,
+                    @Nullable VirtualFileSystem localFileSystem,
+                    boolean unitTestMode) {
+    for (VFileEvent event : events) {
+      if (event instanceof VFilePropertyChangeEvent) {
+        continue;
+      }
+      final VirtualFile file = event instanceof VFileCopyEvent copyEvent
+                               ? copyEvent.findCreatedFile()
+                               : event.getFile();
+      if (file != null && (unitTestMode || localFileSystem == file.getFileSystem())) {
+        scheduleUpdate();
+        break;
+      }
+    }
+  }
+
+  @VisibleForTesting
+  void scheduleUpdate() {
     if (isUpdating.get()) {
       return;
     }

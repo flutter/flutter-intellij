@@ -1,4 +1,4 @@
-<!--* freshness: { reviewed: '2026-11-02' } *-->
+<!--* freshness: { reviewed: '2026-11-16' } *-->
 # Flutter SDK
 
 ## Overview
@@ -13,7 +13,7 @@ Manages the configuration, discovery, and path resolution for the Flutter SDK an
 - [`FlutterCreateAdditionalSettings`](FlutterCreateAdditionalSettings.java)
 - [`FlutterPluginLibraryProperties`](FlutterPluginLibraryProperties.java)
 - [`FlutterPluginLibraryType`](FlutterPluginLibraryType.java)
-- [`FlutterPluginsLibraryManager`](FlutterPluginsLibraryManager.java)
+- [`FlutterPluginsLibraryManager`](FlutterPluginsLibraryManager.java): subscribes to `VirtualFileManager.VFS_CHANGES` and `ModuleRootListener.TOPIC` via `FlutterProjectDisposable` to refresh the "Flutter Plugins" library.
 - [`FlutterProjectActivity`](FlutterProjectActivity.kt): Kotlin `ProjectActivity` that only calls `FlutterSdkManager.checkForFlutterSdkChange()` on project startup.
 - [`FlutterSdk`](FlutterSdk.java)
 - [`FlutterSdkManager`](FlutterSdkManager.java)
