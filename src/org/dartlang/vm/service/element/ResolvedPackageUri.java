@@ -13,8 +13,6 @@
  */
 package org.dartlang.vm.service.element;
 
-// This is a generated file.
-
 import com.google.gson.JsonObject;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
