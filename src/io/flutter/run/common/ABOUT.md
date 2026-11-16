@@ -1,4 +1,4 @@
-<!--* freshness: { reviewed: '2026-10-25' } *-->
+<!--* freshness: { reviewed: '2026-11-13' } *-->
 # Flutter Run Common
 
 ## Overview
@@ -19,7 +19,7 @@ Shared utilities and configurations for Flutter test, coverage, and run executio
 - ConsoleProps always registers the framework name `"FlutterTestRunner"`; the `testFrameworkName` constructor argument (passed by `forPub` from `pubFrameworkName`) is currently ignored.
 - ConsoleProps uses `FlutterTestLocationProvider.INSTANCE` as the test locator and [`FlutterTestEventsConverter`](../test/FlutterTestEventsConverter.java) to parse events. "Rerun failed tests" is not implemented (`createRerunFailedTestsAction` returns null).
 - Test line markers are attached to leaf nodes of the PSI tree matching a Dart unit test.
-- Test line markers visually reflect the state magnitude (Passed, Failed, Ignored) by deriving test states from TestStateStorage.
+- Test line markers visually reflect the state magnitude (Passed, Failed, Ignored) by deriving test states from `TestStateStorage` and delegating icon resolution to `RunLineMarkerContributor.getTestStateIcon` (with `Yellow2` for ignored tests).
 - TestType.MAIN does not detect main methods on its own, it defers to CommonTestConfigUtils.
 
 ## Side Effects

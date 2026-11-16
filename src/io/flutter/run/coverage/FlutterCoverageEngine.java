@@ -5,12 +5,16 @@
  */
 package io.flutter.run.coverage;
 
-import com.intellij.coverage.*;
+import com.intellij.coverage.CoverageAnnotator;
+import com.intellij.coverage.CoverageEngine;
+import com.intellij.coverage.CoverageFileProvider;
+import com.intellij.coverage.CoverageRunner;
+import com.intellij.coverage.CoverageSuite;
+import com.intellij.coverage.CoverageSuitesBundle;
 import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.WrappingRunConfiguration;
 import com.intellij.execution.configurations.coverage.CoverageEnabledConfiguration;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
@@ -23,7 +27,6 @@ import io.flutter.run.test.TestConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -49,27 +52,23 @@ public class FlutterCoverageEngine extends CoverageEngine {
   }
 
   @Override
-  public @Nullable CoverageSuite createCoverageSuite(@NotNull CoverageRunner covRunner,
-                                                     @NotNull String name,
+  public @Nullable CoverageSuite createCoverageSuite(@NotNull String name,
+                                                     @NotNull Project project,
+                                                     @NotNull CoverageRunner covRunner,
                                                      @NotNull CoverageFileProvider coverageDataFileProvider,
-                                                     @Nullable String[] filters,
-                                                     long lastCoverageTimeStamp,
-                                                     @Nullable String suiteToMerge,
-                                                     boolean coverageByTestEnabled,
-                                                     boolean tracingEnabled,
-                                                     boolean trackTestFolders,
-                                                     Project project) {
+                                                     long timestamp) {
     return null;
   }
 
   @Override
-  public @Nullable CoverageSuite createCoverageSuite(@NotNull CoverageRunner covRunner,
-                                                     @NotNull String name,
+  public @Nullable CoverageSuite createCoverageSuite(@NotNull String name,
+                                                     @NotNull Project project,
+                                                     @NotNull CoverageRunner covRunner,
                                                      @NotNull CoverageFileProvider coverageDataFileProvider,
+                                                     long timestamp,
                                                      @NotNull CoverageEnabledConfiguration config) {
     if (config instanceof FlutterCoverageEnabledConfiguration) {
-      return new FlutterCoverageSuite(covRunner, name, coverageDataFileProvider,
-                                      config.getConfiguration().getProject(), this);
+      return new FlutterCoverageSuite(covRunner, name, coverageDataFileProvider, timestamp, project, this);
     }
     return null;
   }
@@ -103,19 +102,6 @@ public class FlutterCoverageEngine extends CoverageEngine {
   @Override
   public boolean acceptedByFilters(@NotNull PsiFile psiFile, @NotNull CoverageSuitesBundle suite) {
     return psiFile instanceof DartFile;
-  }
-
-  @Override
-  public boolean recompileProjectAndRerunAction(@NotNull Module module,
-                                                @NotNull CoverageSuitesBundle suite,
-                                                @NotNull Runnable chooseSuiteAction) {
-    return false;
-  }
-
-  @Override
-  public String getQualifiedName(@NotNull final File outputFile,
-                                 @NotNull final PsiFile sourceFile) {
-    return getQName(sourceFile);
   }
 
   @Override

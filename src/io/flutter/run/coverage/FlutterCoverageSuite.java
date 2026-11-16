@@ -26,8 +26,17 @@ public class FlutterCoverageSuite extends BaseCoverageSuite {
                               Project project,
                               @NotNull FlutterCoverageEngine coverageEngine
   ) {
-    super(name, coverageDataFileProvider, System.currentTimeMillis(), false, false,
-          false, runner, project);
+    this(runner, name, coverageDataFileProvider, System.currentTimeMillis(), project, coverageEngine);
+  }
+
+  public FlutterCoverageSuite(CoverageRunner runner,
+                              String name,
+                              CoverageFileProvider coverageDataFileProvider,
+                              long timestamp,
+                              Project project,
+                              @NotNull FlutterCoverageEngine coverageEngine
+  ) {
+    super(name, project, runner, coverageDataFileProvider, timestamp);
     this.coverageEngine = coverageEngine;
   }
 

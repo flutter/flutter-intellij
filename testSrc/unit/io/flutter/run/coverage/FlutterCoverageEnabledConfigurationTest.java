@@ -125,4 +125,22 @@ public class FlutterCoverageEnabledConfigurationTest extends BasePlatformTestCas
     coverageConfig.coverageRunnerExtensionRemoved(runner);
     assertEquals(expectedPath, coverageConfig.getCoverageFilePath());
   }
+
+  public void testCreateCoverageSuite() throws Exception {
+    final VirtualFile pubRootDir = createTempPubRoot();
+    final VirtualFile testFile = pubRootDir.findFileByRelativePath("test/widget_test.dart");
+    assertNotNull(testFile);
+
+    final TestConfig testConfig = createTestConfig();
+    testConfig.setFields(TestFields.forFile(testFile.getPath()));
+    final FlutterCoverageEnabledConfiguration coverageConfig = new FlutterCoverageEnabledConfiguration(testConfig);
+
+    final FlutterCoverageEngine engine = FlutterCoverageEngine.getInstance();
+    assertNull(engine.createCoverageSuite(
+      "suite", getProject(), coverageConfig.getCoverageRunner(), coverageConfig.createFileProvider(), 123L));
+
+    final var suite = engine.createCoverageSuite(coverageConfig);
+    assertInstanceOf(suite, FlutterCoverageSuite.class);
+    assertSame(engine, suite.getCoverageEngine());
+  }
 }

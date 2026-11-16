@@ -5,11 +5,10 @@
  */
 package io.flutter.run.common;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.execution.TestStateStorage;
 import com.intellij.execution.lineMarker.ExecutorAction;
 import com.intellij.execution.lineMarker.RunLineMarkerContributor;
-import com.intellij.execution.testframework.TestIconMapper;
-import com.intellij.execution.testframework.sm.runner.states.TestStateInfo;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
@@ -35,6 +34,9 @@ import java.util.Map;
  */
 public abstract class TestLineMarkerContributor extends RunLineMarkerContributor {
   private static final int SCANNED_TEST_RESULT_LIMIT = 1024;
+  // Persistent integer value for ignored tests stored in TestStateStorage.Record.magnitude
+  // (corresponds to TestStateInfo.Magnitude.IGNORED_INDEX.getValue()).
+  private static final int IGNORED_TEST_MAGNITUDE = 5;
 
   @NotNull
   private final CommonTestConfigUtils testConfigUtils;
@@ -106,20 +108,9 @@ public abstract class TestLineMarkerContributor extends RunLineMarkerContributor
           // TODO(pq): investigate performance implications.
           for (Map.Entry<String, TestStateStorage.Record> entry : tests.entrySet()) {
             if (entry.getKey().startsWith(testLocationPrefix)) {
-              final TestStateStorage.Record state = entry.getValue();
-              final TestStateInfo.Magnitude magnitude = TestIconMapper.getMagnitude(state.magnitude);
-              if (magnitude != null) {
-                switch (magnitude) {
-                  case IGNORED_INDEX:
-                    return AllIcons.RunConfigurations.TestState.Yellow2;
-                  case ERROR_INDEX:
-                  case FAILED_INDEX:
-                    return AllIcons.RunConfigurations.TestState.Red2;
-                  case PASSED_INDEX:
-                  case COMPLETE_INDEX:
-                    return AllIcons.RunConfigurations.TestState.Green2;
-                  default:
-                }
+              final Icon stateIcon = getTestStateIcon(entry.getValue());
+              if (stateIcon != null) {
+                return stateIcon;
               }
             }
           }
@@ -128,6 +119,16 @@ public abstract class TestLineMarkerContributor extends RunLineMarkerContributor
     }
 
     return defaultIcon;
+  }
+
+  @VisibleForTesting
+  @Nullable
+  static Icon getTestStateIcon(@NotNull TestStateStorage.Record state) {
+    if (state.magnitude == IGNORED_TEST_MAGNITUDE) {
+      return AllIcons.RunConfigurations.TestState.Yellow2;
+    }
+    final Icon stateIcon = getTestStateIcon(state, false);
+    return stateIcon != AllIcons.RunConfigurations.TestState.Run ? stateIcon : null;
   }
 
   private static Date getSinceDate() {
