@@ -25,7 +25,7 @@ Handles reporting usage metrics and analytics events for the Flutter plugin via 
 ## Invariants
 - `Analytics.report` fails silently by catching all Throwables to avoid crashing the IDE or debug/run sessions. This only protects callers of this wrapper; most plugin code (e.g., [`actions`](../actions/ABOUT.md), `run/daemon`, `sdk/FlutterCommand`) calls the Dart plugin's `Analytics.report` directly without this guard.
 - The reload-on-save event carries the daemon's numeric error code, never its message, which can contain user code.
-- At most one reload-on-save event per path per save: `skipped_syntax_error_any_editor` is reported at most once a minute. An explicit Save All runs both save paths, and the second one stays silent because the app is already reloading. Known gap: Cmd/Ctrl+S on a file with a syntax error can report both `skipped_syntax_error_current_file` (Save All path) and `skipped_syntax_error_any_editor` (document-save path).
+- At most one reload-on-save event per path per save: `skipped_syntax_error_any_editor` is reported at most once a minute. An explicit Save All runs both save paths, and the second one stays silent because the app is already reloading. When the Save All path reported an event, the document-save path it queued doesn't also report `skipped_syntax_error_any_editor` for the same save.
 - Session type is set to `DEBUG_SESSION_TYPE` if `executor.id` matches `DefaultDebugExecutor.EXECUTOR_ID`, else `RUN_SESSION_TYPE`.
 
 ## Side Effects
