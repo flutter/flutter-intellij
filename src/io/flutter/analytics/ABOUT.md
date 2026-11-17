@@ -14,31 +14,18 @@ Handles reporting usage metrics and analytics events for the Flutter plugin via 
 - `const val AnalyticsConstants.MECHANISM_FLUTTER_TESTS`
 - `const val AnalyticsConstants.DEBUG_SESSION_TYPE`
 - `const val AnalyticsConstants.RUN_SESSION_TYPE`
-- `const val AnalyticsConstants.HOT_RELOAD_TYPE`, `RELOAD_ON_SAVE_ID`: type and id of the reload-on-save event.
-- `val AnalyticsConstants.TRIGGER`, `OUTCOME` (`StringValue`) and `ERROR_CODE` (`IntValue`): its fields. The duration uses the Dart plugin's shared `duration_ms` key (`com.jetbrains.lang.dart.analytics.AnalyticsConstants.DURATION_MS`).
-- `const val AnalyticsConstants.TRIGGER_SAVE_ACTION`, `TRIGGER_DOCUMENT_SAVE`: trigger values.
-  - `save_action`: an explicit Save All.
-  - `document_save`: every other save-all, such as autosave and saves made by other IDE features.
-- `const val AnalyticsConstants.OUTCOME_*`:
-  - `success`: flutter_tools reported success.
-  - `error`: flutter_tools returned a failed result; `errorCode` is its code, which is 1 for almost every failure. Use flutter_tools' `hotRunnerInfo` labels for failure reasons.
-  - `exception`: no result arrived, because the daemon answered with an error response or the reload couldn't be sent.
-  - `skipped_not_connected`: the app started shutting down before the reload was sent.
-  - `skipped_syntax_error_current_file`: the saved file has a parse error (the user sees "Reload not performed").
-  - `skipped_syntax_error_any_editor`: some open editor has a parse error; skipped silently, reported at most once a minute.
-- `class ReloadOnSaveData`: the reload-on-save event. Clamps the duration to `Int`, because the Dart reporter drops `Long` values.
+- Reload-on-save event (`type=hot_reload`, `id=reload_on_save`) constants: fields `TRIGGER`, `OUTCOME`, `ERROR_CODE` (the duration uses the Dart plugin's shared `duration_ms` key), and their values:
+  - `TRIGGER_SAVE_ACTION` (`save_action`, an explicit Save All) and `TRIGGER_DOCUMENT_SAVE` (`document_save`, autosave and other IDE saves).
+  - `OUTCOME_SUCCESS`, `OUTCOME_ERROR` (with the daemon's `errorCode`), `OUTCOME_EXCEPTION` (no result, e.g. a daemon error response), `OUTCOME_SKIPPED_NOT_CONNECTED`, `OUTCOME_SKIPPED_SYNTAX_ERROR_CURRENT_FILE`, and `OUTCOME_SKIPPED_SYNTAX_ERROR_ANY_EDITOR`.
 - `object Analytics`
 - `fun Analytics.report(data: AnalyticsData)`
-- `fun Analytics.reportReloadOnSave(project: Project?, trigger: String, outcome: String, durationMs: Long? = null, errorCode: Int? = null)`: called from [`FlutterReloadManager`](../run/FlutterReloadManager.java).
+- `fun Analytics.reportReloadOnSave(project: Project?, trigger: String, outcome: String, durationMs: Int?, errorCode: Int?)`: called from [`FlutterReloadManager`](../run/FlutterReloadManager.java).
 - `fun Analytics.recordRunOrDebugSession(mechanism: String, executor: Executor, project: Project?)`: reports a private `SessionData` (an `AnalyticsData` subclass). Called from [`SdkRunConfig`](../run/SdkRunConfig.java), [`SdkAttachConfig`](../run/SdkAttachConfig.java), and [`TestConfig`](../run/test/TestConfig.java).
 
 ## Invariants
 - `Analytics.report` fails silently by catching all Throwables to avoid crashing the IDE or debug/run sessions. This only protects callers of this wrapper; most plugin code (e.g., [`actions`](../actions/ABOUT.md), `run/daemon`, `sdk/FlutterCommand`) calls the Dart plugin's `Analytics.report` directly without this guard.
-- The reload-on-save event never includes the daemon's error message, only its numeric code, because the message can contain user code.
-- There is at most one reload-on-save event per attempt that gets past the cheap guards (unsupported app, app not started, or a reload already in progress): exactly one, except that `skipped_syntax_error_any_editor` is rate-limited.
-- Outcomes depend on the trigger: `skipped_syntax_error_any_editor` only occurs with `document_save`, and `skipped_syntax_error_current_file` almost only with `save_action`. Segment dashboards by `trigger`.
-- Register `trigger`, `outcome`, and `errorCode` as GA4 custom dimensions (`errorCode` as a dimension, not a metric).
-- `flutter_tools` reports its own `hotRunnerInfo` events (with `reason=save`) for the reloads that reach it. The reload-on-save event is the IDE's view of the attempt: don't sum the two.
+- The reload-on-save event carries the daemon's numeric error code, never its message, which can contain user code.
+- At most one reload-on-save event per path per save: `skipped_syntax_error_any_editor` is reported at most once a minute. An explicit Save All runs both save paths, and the second one stays silent because the app is already reloading. Known gap: Cmd/Ctrl+S on a file with a syntax error can report both `skipped_syntax_error_current_file` (Save All path) and `skipped_syntax_error_any_editor` (document-save path).
 - Session type is set to `DEBUG_SESSION_TYPE` if `executor.id` matches `DefaultDebugExecutor.EXECUTOR_ID`, else `RUN_SESSION_TYPE`.
 
 ## Side Effects
