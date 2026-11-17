@@ -81,10 +81,10 @@ class NewProjectUITest {
 
   @Test
   @Disabled("Need license configuration to test")
-  fun newProjectUE() {
+  fun newProjectIU() {
     println("Initializing IDE test context")
     println("Test project will be created as: $testProjectName")
-    run = Setup.setupTestContextUE(javaClass.simpleName).runIdeWithDriver()
+    run = Setup.setupTestContextIU(javaClass.simpleName).runIdeWithDriver()
 
     newProjectWelcomeScreen(run, testProjectName)
     run.driver.withContext {
