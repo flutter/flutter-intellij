@@ -167,13 +167,12 @@ public class FlutterReloadManager implements Disposable {
         // The save itself, and so beforeAllDocumentsSaving, has already happened.
         saveActionInProgress = false;
 
-        // If this save all action is not for the current project, return.
-        if (myProject != eventProject) {
-          return;
-        }
-
         try {
-          handleSaveAllNotification(eventEditor, AnalyticsConstants.TRIGGER_SAVE_ACTION, false);
+          // Only handle a save all action for the current project. Checked inside the try so the finally below always
+          // clears the saved references, even for another project's save.
+          if (myProject == eventProject) {
+            handleSaveAllNotification(eventEditor, AnalyticsConstants.TRIGGER_SAVE_ACTION, false);
+          }
         }
         catch (Throwable t) {
           FlutterUtils.warn(LOG, "Exception from hot reload on save", t, true);
