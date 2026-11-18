@@ -13,6 +13,7 @@
 - Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)
 
 ### Fixed
+- Another project's editor being kept in memory after a Save All, until the next Save All.
 - `NullPointerException` in `FlutterCoverageEnabledConfiguration` when resolving the coverage file path for a test run configuration. (#9247)
 - Unresolved `JaroWinkler` class error when matching custom icon font files in Android Studio 2026.2. (#9204)
 - `AlreadyDisposedException` when a project is closed while Flutter module setup is still queued. (#9222)
