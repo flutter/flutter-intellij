@@ -109,6 +109,13 @@ public class FlutterReloadManager implements Disposable {
   private final AtomicLong lastSyntaxSkipReportNanos = new AtomicLong(System.nanoTime() - SYNTAX_SKIP_REPORT_INTERVAL_NANOS);
 
   /**
+   * Whether an explicit Save All is running, and whether its own path reported a {@code reload_on_save} event. Lets the
+   * document-save path that the same Save All queues avoid reporting the save a second time. EDT only.
+   */
+  private boolean saveActionInProgress;
+  private boolean saveActionReported;
+
+  /**
    * Initialize the reload manager for the given project.
    */
   public static void init(@NotNull Project project) {
@@ -136,6 +143,9 @@ public class FlutterReloadManager implements Disposable {
           return;
         }
 
+        saveActionInProgress = true;
+        saveActionReported = false;
+
         // Save the current project value here. If we access later (in afterActionPerformed), we can get
         // exceptions if another event occurs before afterActionPerformed is called.
         try {
@@ -153,6 +163,9 @@ public class FlutterReloadManager implements Disposable {
         if (!(action instanceof SaveAllAction)) {
           return;
         }
+
+        // The save itself, and so beforeAllDocumentsSaving, has already happened.
+        saveActionInProgress = false;
 
         // If this save all action is not for the current project, return.
         if (myProject != eventProject) {
@@ -175,6 +188,7 @@ public class FlutterReloadManager implements Disposable {
     connection.subscribe(FileDocumentManagerListener.TOPIC, new FileDocumentManagerListener() {
       @Override
       public void beforeAllDocumentsSaving() {
+        final boolean fromSaveAction = saveActionInProgress;
         if (!FlutterSettings.getInstance().isReloadOnSave()) return;
         if (myProject.isDisposed()) return;
         if (!FlutterModuleUtils.hasFlutterModule(myProject)) return;
@@ -218,6 +232,11 @@ public class FlutterReloadManager implements Disposable {
             }
             return someEditor;
           });
+          if (syntaxError[0] && fromSaveAction && saveActionReported) {
+            // The Save All path already reported this save (for example, as a syntax error in the current file). With a
+            // syntax error this path only reports a skip, so returning here changes nothing else.
+            return;
+          }
           handleSaveAllNotification(anEditor, AnalyticsConstants.TRIGGER_DOCUMENT_SAVE, syntaxError[0]);
         }, ModalityState.any());
       }
@@ -270,6 +289,10 @@ public class FlutterReloadManager implements Disposable {
       // Skip silently, as before; the editor already shows the error.
       reportSyntaxErrorSkip(trigger);
       return;
+    }
+
+    if (AnalyticsConstants.TRIGGER_SAVE_ACTION.equals(trigger)) {
+      saveActionReported = true; // Every path from here reports one event.
     }
 
     // Transition the app to an about-to-reload state.
