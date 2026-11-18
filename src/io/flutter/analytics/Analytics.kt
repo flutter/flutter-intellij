@@ -68,6 +68,23 @@ object AnalyticsConstants {
   const val OUTCOME_SKIPPED_NOT_CONNECTED = "skipped_not_connected"
   const val OUTCOME_SKIPPED_SYNTAX_ERROR_CURRENT_FILE = "skipped_syntax_error_current_file"
   const val OUTCOME_SKIPPED_SYNTAX_ERROR_ANY_EDITOR = "skipped_syntax_error_any_editor"
+
+  /** Widget Preview start event type and ids. */
+  const val WIDGET_PREVIEW_TYPE = "widget_preview"
+  const val WIDGET_PREVIEW_STARTED = "started"
+  const val WIDGET_PREVIEW_FAILED = "failed"
+
+  /** Why Widget Preview failed to start; one of the `REASON_*` values. */
+  val REASON = StringValue("reason")
+
+  /** Widget Preview failure reasons. */
+  const val REASON_NO_SDK = "no_sdk"
+  const val REASON_SDK_UNKNOWN_VERSION = "sdk_unknown_version"
+  const val REASON_SDK_TOO_OLD = "sdk_too_old"
+  const val REASON_NO_PUB_ROOT = "no_pub_root"
+  const val REASON_PROCESS_ERROR = "process_error"
+  const val REASON_NO_URL = "no_url"
+  const val REASON_EXEC_FAILED = "exec_failed"
 }
 
 private class SessionData(type: String, mechanism: String, project: Project?) :
@@ -81,6 +98,14 @@ private class ReloadOnSaveData(project: Project?, trigger: String, outcome: Stri
     durationMs?.let { add(DartAnalyticsConstants.DURATION_MS, it) }
     // Never the daemon's message, which can contain user code.
     errorCode?.let { add(AnalyticsConstants.ERROR_CODE, it) }
+  }
+}
+
+private class WidgetPreviewData(project: Project?, id: String, reason: String?) :
+  AnalyticsData(AnalyticsConstants.WIDGET_PREVIEW_TYPE, id, project) {
+  init {
+    // Only the reason, never an exception message (it can contain VM service tokens or local paths).
+    reason?.let { add(AnalyticsConstants.REASON, it) }
   }
 }
 
@@ -107,5 +132,10 @@ object Analytics {
   @JvmStatic
   fun reportReloadOnSave(project: Project?, trigger: String, outcome: String, durationMs: Int?, errorCode: Int?) {
     report(ReloadOnSaveData(project, trigger, outcome, durationMs, errorCode))
+  }
+
+  @JvmStatic
+  fun reportWidgetPreview(project: Project?, id: String, reason: String?) {
+    report(WidgetPreviewData(project, id, reason))
   }
 }
