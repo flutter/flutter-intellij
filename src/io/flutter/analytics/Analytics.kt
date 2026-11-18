@@ -10,8 +10,11 @@ import com.intellij.execution.Executor
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.openapi.project.Project
 import com.jetbrains.lang.dart.analytics.Analytics as DartAnalytics
+import com.jetbrains.lang.dart.analytics.AnalyticsConstants as DartAnalyticsConstants
 import com.jetbrains.lang.dart.analytics.AnalyticsData
 import com.jetbrains.lang.dart.analytics.BooleanValue
+import com.jetbrains.lang.dart.analytics.IntValue
+import com.jetbrains.lang.dart.analytics.StringValue
 
 /**
  * Defines standard keys for analytics data properties.
@@ -44,10 +47,42 @@ object AnalyticsConstants {
 
   const val DEBUG_SESSION_TYPE = "debug_session"
   const val RUN_SESSION_TYPE = "run_session"
+
+  /** Event type and id for one reload-on-save attempt. */
+  const val HOT_RELOAD_TYPE = "hot_reload"
+  const val RELOAD_ON_SAVE_ID = "reload_on_save"
+
+  /** Reload-on-save event fields. */
+  val TRIGGER = StringValue("trigger")
+  val OUTCOME = StringValue("outcome")
+  val ERROR_CODE = IntValue("errorCode")
+
+  /** Reload-on-save triggers. */
+  const val TRIGGER_SAVE_ACTION = "save_action"
+  const val TRIGGER_DOCUMENT_SAVE = "document_save"
+
+  /** Reload-on-save outcomes. */
+  const val OUTCOME_SUCCESS = "success"
+  const val OUTCOME_ERROR = "error"
+  const val OUTCOME_EXCEPTION = "exception"
+  const val OUTCOME_SKIPPED_NOT_CONNECTED = "skipped_not_connected"
+  const val OUTCOME_SKIPPED_SYNTAX_ERROR_CURRENT_FILE = "skipped_syntax_error_current_file"
+  const val OUTCOME_SKIPPED_SYNTAX_ERROR_ANY_EDITOR = "skipped_syntax_error_any_editor"
 }
 
 private class SessionData(type: String, mechanism: String, project: Project?) :
   AnalyticsData(type, mechanism, project)
+
+private class ReloadOnSaveData(project: Project?, trigger: String, outcome: String, durationMs: Int?, errorCode: Int?) :
+  AnalyticsData(AnalyticsConstants.HOT_RELOAD_TYPE, AnalyticsConstants.RELOAD_ON_SAVE_ID, project) {
+  init {
+    add(AnalyticsConstants.TRIGGER, trigger)
+    add(AnalyticsConstants.OUTCOME, outcome)
+    durationMs?.let { add(DartAnalyticsConstants.DURATION_MS, it) }
+    // Never the daemon's message, which can contain user code.
+    errorCode?.let { add(AnalyticsConstants.ERROR_CODE, it) }
+  }
+}
 
 object Analytics {
   @JvmStatic
@@ -67,5 +102,10 @@ object Analytics {
       AnalyticsConstants.RUN_SESSION_TYPE
     }
     report(SessionData(type, mechanism, project))
+  }
+
+  @JvmStatic
+  fun reportReloadOnSave(project: Project?, trigger: String, outcome: String, durationMs: Int?, errorCode: Int?) {
+    report(ReloadOnSaveData(project, trigger, outcome, durationMs, errorCode))
   }
 }
