@@ -22,6 +22,8 @@ import com.jetbrains.lang.dart.ide.toolingDaemon.DartToolingDaemonService;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
+import io.flutter.analytics.Analytics;
+import io.flutter.analytics.AnalyticsConstants;
 import io.flutter.dart.DtdUtils;
 import io.flutter.devtools.DevToolsUrl;
 import io.flutter.devtools.DevToolsUtils;
@@ -67,6 +69,8 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
 
   private BrowserUrlProvider urlProvider;
 
+  private volatile boolean disposed;
+
   public WidgetPreviewPanel(@NotNull Project project, @NotNull ToolWindow toolWindow) {
     super(true, true); // vertical, with border
     this.project = project;
@@ -89,6 +93,7 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         if (sdk == null) {
           showInfoMessage(FlutterBundle.message("flutter.sdk.not.found"));
           LOG.info("Flutter SDK was not found");
+          reportFailed(AnalyticsConstants.REASON_NO_SDK);
           return;
         }
 
@@ -99,12 +104,14 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
                                                       "is in an incomplete state. To fix, shut down the IDE,",
                                                       "run `flutter doctor` or `flutter --version`",
                                                       "and then restart the IDE."));
+          reportFailed(AnalyticsConstants.REASON_SDK_UNKNOWN_VERSION);
           return;
         }
 
         if (!sdk.getVersion().canUseWidgetPreview()) {
           LOG.info("Flutter SDK version is too old for widget preview: " + sdk.getVersion().fullVersion());
           showInfoMessage(FlutterBundle.message("widget.preview.sdk.too.old"));
+          reportFailed(AnalyticsConstants.REASON_SDK_TOO_OLD);
           return;
         }
 
@@ -117,6 +124,10 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
             final String message = ex.getMessage();
             LOG.warn("Widget preview process error: " + message);
             showInfoMessage(FlutterBundle.message("widget.preview.error", message != null ? message : ""));
+            // dispose() kills the process; that's a teardown, not a failure.
+            if (!disposed) {
+              reportFailed(AnalyticsConstants.REASON_PROCESS_ERROR);
+            }
             return;
           }
 
@@ -125,9 +136,11 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
               final String message = "No URL found";
               LOG.warn("Widget preview process error: " + message);
               showInfoMessage(FlutterBundle.message("widget.preview.error", message));
+              reportFailed(AnalyticsConstants.REASON_NO_URL);
               return;
             }
 
+            Analytics.reportWidgetPreview(project, AnalyticsConstants.WIDGET_PREVIEW_STARTED, null);
             setUrlAndLoad(url);
           });
         });
@@ -136,6 +149,7 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
         if (root == null) {
           LOG.warn("Pub root not found for project: " + project.getName());
           showRetryMessage(FlutterBundle.message("widget.preview.pubroot.not.found"), file);
+          reportFailed(AnalyticsConstants.REASON_NO_PUB_ROOT);
           return;
         }
 
@@ -152,9 +166,14 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
       }
       catch (ExecutionException e) {
         LOG.error("Failed to execute widget preview command", e);
+        reportFailed(AnalyticsConstants.REASON_EXEC_FAILED);
         throw new RuntimeException(e);
       }
     });
+  }
+
+  private void reportFailed(@NotNull String reason) {
+    Analytics.reportWidgetPreview(project, AnalyticsConstants.WIDGET_PREVIEW_FAILED, reason);
   }
 
   private @Nullable PubRoot getPubRoot(@Nullable VirtualFile file) {
@@ -299,6 +318,8 @@ public class WidgetPreviewPanel extends SimpleToolWindowPanel implements Disposa
 
   @Override
   public void dispose() {
+    disposed = true;
+
     // Terminate the Flutter process when the tool window is closed
     final ProcessHandler process = flutterProcessRef.getAndSet(null);
     if (process != null && !process.isProcessTerminated()) {
