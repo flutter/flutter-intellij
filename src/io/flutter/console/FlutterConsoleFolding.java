@@ -42,7 +42,7 @@ public class FlutterConsoleFolding extends ConsoleFolding {
 
   /**
    * Returns true for text that begins with an absolute path: a Unix path ('/...'), a UNC path ('\\server\share'),
-   * a Windows drive path ('C:\...' or 'C:/...'), or a quoted version of one of these. Android logcat lines such as
+   * or a Windows drive path ('C:\...' or 'C:/...'). Android logcat lines such as
    * 'I/flutter (12345): message' do not begin with an absolute path.
    */
   private static boolean isAbsolutePath(@NotNull String line) {
