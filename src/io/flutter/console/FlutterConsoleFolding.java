@@ -40,8 +40,16 @@ public class FlutterConsoleFolding extends ConsoleFolding {
     return Math.min(index, windowsIndex);
   }
 
+  /**
+   * Android logcat lines look like 'I/flutter (12345): message'. They contain '/flutter ' but are not commands.
+   */
+  private static final Pattern ANDROID_LOG_PREFIX = Pattern.compile("^[VDIWEF]/");
+
   @Override
   public boolean shouldFoldLine(@NotNull Project project, @NotNull String line) {
+    if (ANDROID_LOG_PREFIX.matcher(line).find()) {
+      return false;
+    }
     final int index = indexOfMarker(line);
     return index != -1 && line.indexOf(' ') > index;
   }

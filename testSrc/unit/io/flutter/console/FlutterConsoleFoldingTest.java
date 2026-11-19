@@ -76,4 +76,22 @@ public class FlutterConsoleFoldingTest extends FlutterCodeInsightFixtureTestCase
       "flutter run --device-id=windows lib\\main.dart",
       folding.getPlaceholderText(getProject(), List.of(line)));
   }
+
+  public void testDoesNotFoldAndroidFlutterLogLine() {
+  assertFalse(folding.shouldFoldLine(getProject(), "I/flutter (12345): first message"));
+}
+
+  public void testDoesNotFoldAndroidFlutterLogLineWithPaddedPid() {
+    assertFalse(folding.shouldFoldLine(getProject(), "I/flutter ( 1234): first message"));
+  }
+
+  public void testDoesNotFoldOtherAndroidLogLevels() {
+    for (String level : List.of("V", "D", "W", "E", "F")) {
+      assertFalse(folding.shouldFoldLine(getProject(), level + "/flutter (12345): message"));
+    }
+  }
+
+  public void testDoesNotFoldNativeAndroidLogLine() {
+    assertFalse(folding.shouldFoldLine(getProject(), "D/Example(12345): native message"));
+  }
 }
