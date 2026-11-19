@@ -9,6 +9,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.jcef.JBCefBrowser;
+import io.flutter.analytics.AnalyticsConstants;
 import io.flutter.jxbrowser.JxBrowserManager;
 import io.flutter.logging.PluginLogger;
 import org.jetbrains.annotations.NotNull;
@@ -61,6 +62,11 @@ public class EmbeddedJcefBrowser extends EmbeddedBrowser {
 
   public @NotNull Logger logger() {
     return LOG;
+  }
+
+  @Override
+  protected @NotNull String analyticsEngine() {
+    return AnalyticsConstants.ENGINE_JCEF;
   }
 
   @Override
