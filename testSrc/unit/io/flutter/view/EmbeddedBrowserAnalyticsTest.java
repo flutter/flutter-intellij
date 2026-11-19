@@ -48,14 +48,14 @@ public class EmbeddedBrowserAnalyticsTest extends BasePlatformTestCase {
     });
 
     final AnalyticsData event = assertOneElement(record(() -> open(browser, toolWindow())));
-    assertEvent(event, AnalyticsConstants.EMBEDDED_BROWSER_UNAVAILABLE, true, AnalyticsConstants.REASON_TAB_CREATE_FAILED);
+    assertEvent(event, AnalyticsConstants.EMBEDDED_BROWSER_FAILED, true, AnalyticsConstants.REASON_TAB_CREATE_FAILED);
   }
 
   public void testEngineNotReadyWhenNoEmbeddedTab() {
     final TestBrowser browser = new TestBrowser(() -> null);
 
     final AnalyticsData event = assertOneElement(record(() -> open(browser, toolWindow())));
-    assertEvent(event, AnalyticsConstants.EMBEDDED_BROWSER_UNAVAILABLE, true, AnalyticsConstants.REASON_ENGINE_NOT_READY);
+    assertEvent(event, AnalyticsConstants.EMBEDDED_BROWSER_FAILED, true, AnalyticsConstants.REASON_ENGINE_NOT_READY);
   }
 
   public void testLoadFailed() {
@@ -64,7 +64,7 @@ public class EmbeddedBrowserAnalyticsTest extends BasePlatformTestCase {
     final TestBrowser browser = new TestBrowser(() -> embeddedTab);
 
     final AnalyticsData event = assertOneElement(record(() -> open(browser, toolWindow())));
-    assertEvent(event, AnalyticsConstants.EMBEDDED_BROWSER_UNAVAILABLE, true, AnalyticsConstants.REASON_LOAD_FAILED);
+    assertEvent(event, AnalyticsConstants.EMBEDDED_BROWSER_FAILED, true, AnalyticsConstants.REASON_LOAD_FAILED);
   }
 
   private void assertEvent(@NotNull AnalyticsData event, @NotNull String id, boolean newTab, @Nullable String reason) {

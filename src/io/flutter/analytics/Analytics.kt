@@ -74,7 +74,7 @@ object AnalyticsConstants {
   const val WIDGET_PREVIEW_STARTED = "started"
   const val WIDGET_PREVIEW_FAILED = "failed"
 
-  /** Why Widget Preview failed to start, or why an embedded browser panel is unavailable; a `REASON_*` value. */
+  /** Why Widget Preview failed to start, or why an embedded browser panel failed to open; a `REASON_*` value. */
   val REASON = StringValue("reason")
 
   /** Widget Preview failure reasons. */
@@ -89,7 +89,7 @@ object AnalyticsConstants {
   /** Embedded browser panel event type and ids: one per `EmbeddedBrowser.openPanel` call. */
   const val EMBEDDED_BROWSER_TYPE = "embedded_browser"
   const val EMBEDDED_BROWSER_OPENED = "opened"
-  const val EMBEDDED_BROWSER_UNAVAILABLE = "unavailable"
+  const val EMBEDDED_BROWSER_FAILED = "failed"
 
   /** Embedded browser fields: the engine, the tool window id, and whether the call created the tab. */
   val ENGINE = StringValue("engine")
@@ -100,7 +100,7 @@ object AnalyticsConstants {
   const val ENGINE_JCEF = "jcef"
   const val ENGINE_JXBROWSER = "jxbrowser"
 
-  /** Why an embedded browser panel is unavailable. */
+  /** Why an embedded browser panel failed to open. */
   const val REASON_TAB_CREATE_FAILED = "tab_create_failed"
   const val REASON_ENGINE_NOT_READY = "engine_not_ready"
   const val REASON_LOAD_FAILED = "load_failed"

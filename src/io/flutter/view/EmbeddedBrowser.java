@@ -199,12 +199,12 @@ public abstract class EmbeddedBrowser {
     });
   }
 
-  /** Reports {@code opened} when {@code reason} is null, else {@code unavailable} with that reason. */
+  /** Reports {@code opened} when {@code reason} is null, else {@code failed} with that reason. */
   private void reportOpenPanel(@NotNull ToolWindow toolWindow, boolean newTab, @Nullable String reason) {
     Analytics.reportEmbeddedBrowser(project,
                                     reason == null
                                     ? AnalyticsConstants.EMBEDDED_BROWSER_OPENED
-                                    : AnalyticsConstants.EMBEDDED_BROWSER_UNAVAILABLE,
+                                    : AnalyticsConstants.EMBEDDED_BROWSER_FAILED,
                                     analyticsEngine(), toolWindow.getId(), newTab, reason);
   }
 
