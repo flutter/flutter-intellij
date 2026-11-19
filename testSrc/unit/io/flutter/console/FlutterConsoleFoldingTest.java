@@ -94,4 +94,15 @@ public class FlutterConsoleFoldingTest extends FlutterCodeInsightFixtureTestCase
   public void testDoesNotFoldFlutterPathNotAtLineStart() {
     assertFalse(folding.shouldFoldLine(getProject(), "prefix/flutter pub get"));
   }
+
+  public void testDoesNotFoldFullAndroidFlutterLogSequence() {
+    final List<String> lines = List.of(
+      "I/flutter (12345): first message",
+      "I/flutter (12345): second message",
+      "D/Example(12345): native message",
+      "I/flutter (12345): third message");
+    for (final String line : lines) {
+      assertFalse(folding.shouldFoldLine(getProject(), line));
+    }
+  }
 }
