@@ -49,17 +49,16 @@ public class FlutterConsoleFolding extends ConsoleFolding {
     if (line.isEmpty()) {
       return false;
     }
-    final int start = line.charAt(0) == '"' ? 1 : 0;
-    if (line.startsWith("/", start) || line.startsWith("\\\\", start)) {
+    if (line.startsWith("/") || line.startsWith("\\\\")) {
       return true;
     }
-    if (line.length() - start < 3) {
+    if (line.length() < 3) {
       return false;
     }
-    final char drive = line.charAt(start);
+    final char drive = line.charAt(0);
     return ((drive >= 'a' && drive <= 'z') || (drive >= 'A' && drive <= 'Z'))
-      && line.charAt(start + 1) == ':'
-      && (line.charAt(start + 2) == '\\' || line.charAt(start + 2) == '/');
+      && line.charAt(1) == ':'
+      && (line.charAt(2) == '\\' || line.charAt(2) == '/');
   }
 
   /**
