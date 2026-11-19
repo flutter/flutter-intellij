@@ -145,7 +145,7 @@
         <reference ref="flutter.doctor"/>
       </group>
       <separator/>
-      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="AddToFavorites" anchor="before"/>
+      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuModifyGroup" anchor="before"/>
     </group>
 <!--    See comment at the top of FlutterExternalIdeActionGroup.-->
 <!--    <group id="FlutterExternalIdeActionGroup" class="io.flutter.actions.FlutterExternalIdeActionGroup">-->
@@ -156,7 +156,7 @@
 <!--        <reference ref="flutter.appcode.open"/>-->
 <!--      </group>-->
 <!--      <separator/>-->
-<!--      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="AddToFavorites" anchor="before"/>-->
+<!--      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuModifyGroup" anchor="before"/>-->
 <!--    </group>-->
     <group id="FlutterBuildActionGroup" class="io.flutter.actions.FlutterBuildActionGroup">
       <separator/>

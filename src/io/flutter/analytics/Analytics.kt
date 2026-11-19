@@ -74,7 +74,7 @@ object AnalyticsConstants {
   const val WIDGET_PREVIEW_STARTED = "started"
   const val WIDGET_PREVIEW_FAILED = "failed"
 
-  /** Why Widget Preview failed to start; one of the `REASON_*` values. */
+  /** Why Widget Preview failed to start, or why an embedded browser panel failed to open; a `REASON_*` value. */
   val REASON = StringValue("reason")
 
   /** Widget Preview failure reasons. */
@@ -85,6 +85,25 @@ object AnalyticsConstants {
   const val REASON_PROCESS_ERROR = "process_error"
   const val REASON_NO_URL = "no_url"
   const val REASON_EXEC_FAILED = "exec_failed"
+
+  /** Embedded browser panel event type and ids: one per `EmbeddedBrowser.openPanel` call. */
+  const val EMBEDDED_BROWSER_TYPE = "embedded_browser"
+  const val EMBEDDED_BROWSER_OPENED = "opened"
+  const val EMBEDDED_BROWSER_FAILED = "failed"
+
+  /** Embedded browser fields: the engine, the tool window id, and whether the call created the tab. */
+  val ENGINE = StringValue("engine")
+  val FEATURE = StringValue("feature")
+  val NEW_TAB = BooleanValue("newTab")
+
+  /** Embedded browser engines. */
+  const val ENGINE_JCEF = "jcef"
+  const val ENGINE_JXBROWSER = "jxbrowser"
+
+  /** Why an embedded browser panel failed to open. */
+  const val REASON_TAB_CREATE_FAILED = "tab_create_failed"
+  const val REASON_ENGINE_NOT_READY = "engine_not_ready"
+  const val REASON_LOAD_FAILED = "load_failed"
 }
 
 private class SessionData(type: String, mechanism: String, project: Project?) :
@@ -104,6 +123,17 @@ private class ReloadOnSaveData(project: Project?, trigger: String, outcome: Stri
 private class WidgetPreviewData(project: Project?, id: String, reason: String?) :
   AnalyticsData(AnalyticsConstants.WIDGET_PREVIEW_TYPE, id, project) {
   init {
+    // Only the reason, never an exception message (it can contain VM service tokens or local paths).
+    reason?.let { add(AnalyticsConstants.REASON, it) }
+  }
+}
+
+private class EmbeddedBrowserData(project: Project?, id: String, engine: String, feature: String, newTab: Boolean, reason: String?) :
+  AnalyticsData(AnalyticsConstants.EMBEDDED_BROWSER_TYPE, id, project) {
+  init {
+    add(AnalyticsConstants.ENGINE, engine)
+    add(AnalyticsConstants.FEATURE, feature)
+    add(AnalyticsConstants.NEW_TAB, newTab)
     // Only the reason, never an exception message (it can contain VM service tokens or local paths).
     reason?.let { add(AnalyticsConstants.REASON, it) }
   }
@@ -137,5 +167,10 @@ object Analytics {
   @JvmStatic
   fun reportWidgetPreview(project: Project?, id: String, reason: String?) {
     report(WidgetPreviewData(project, id, reason))
+  }
+
+  @JvmStatic
+  fun reportEmbeddedBrowser(project: Project?, id: String, engine: String, feature: String, newTab: Boolean, reason: String?) {
+    report(EmbeddedBrowserData(project, id, engine, feature, newTab, reason))
   }
 }

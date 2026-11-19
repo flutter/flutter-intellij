@@ -28,6 +28,7 @@ import com.teamdev.jxbrowser.view.swing.callback.DefaultAlertCallback;
 import com.teamdev.jxbrowser.view.swing.callback.DefaultConfirmCallback;
 import com.teamdev.jxbrowser.zoom.Zoom;
 import com.teamdev.jxbrowser.zoom.ZoomLevel;
+import io.flutter.analytics.AnalyticsConstants;
 import io.flutter.logging.PluginLogger;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
@@ -195,6 +196,11 @@ public class EmbeddedJxBrowser extends EmbeddedBrowser {
   @Override
   public @NotNull Logger logger() {
     return LOG;
+  }
+
+  @Override
+  protected @NotNull String analyticsEngine() {
+    return AnalyticsConstants.ENGINE_JXBROWSER;
   }
 
   @Override

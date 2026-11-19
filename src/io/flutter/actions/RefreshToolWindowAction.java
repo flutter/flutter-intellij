@@ -19,6 +19,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 
 public class RefreshToolWindowAction extends DumbAwareAction {
+  /** The plugin.xml id. Tool windows create their own unregistered instances, so report with this id explicitly. */
+  public static final String ID = "io.flutter.RefreshToolWindow";
+
   private String toolWindowId;
 
   public RefreshToolWindowAction() {
@@ -42,7 +45,7 @@ public class RefreshToolWindowAction extends DumbAwareAction {
       return;
     }
 
-    Analytics.report(AnalyticsData.forAction(this, event));
+    Analytics.report(AnalyticsData.forAction(ID, event));
 
     Optional.ofNullable(
         FlutterUtils.embeddedBrowser(project))
