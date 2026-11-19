@@ -13,6 +13,7 @@
 - Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)
 
 ### Fixed
+- Android `I/flutter` log lines in the Run console being folded as Flutter command lines (#9221).
 - Another project's editor being kept in memory after a Save All, until the next Save All. (#9257)
 - `NullPointerException` in `FlutterCoverageEnabledConfiguration` when resolving the coverage file path for a test run configuration. (#9247)
 - Unresolved `JaroWinkler` class error when matching custom icon font files in Android Studio 2026.2. (#9204)
