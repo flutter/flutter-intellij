@@ -46,14 +46,20 @@ public class FlutterConsoleFolding extends ConsoleFolding {
    * 'I/flutter (12345): message' do not begin with an absolute path.
    */
   private static boolean isAbsolutePath(@NotNull String line) {
-    final String path = line.startsWith("\"") ? line.substring(1) : line;
-    if (path.startsWith("/") || path.startsWith("\\\\")) {
+    if (line.isEmpty()) {
+      return false;
+    }
+    final int start = line.charAt(0) == '"' ? 1 : 0;
+    if (line.startsWith("/", start) || line.startsWith("\\\\", start)) {
       return true;
     }
-    return path.length() >= 3
-      && Character.isLetter(path.charAt(0))
-      && path.charAt(1) == ':'
-      && (path.charAt(2) == '\\' || path.charAt(2) == '/');
+    if (line.length() - start < 3) {
+      return false;
+    }
+    final char drive = line.charAt(start);
+    return ((drive >= 'a' && drive <= 'z') || (drive >= 'A' && drive <= 'Z'))
+      && line.charAt(start + 1) == ':'
+      && (line.charAt(start + 2) == '\\' || line.charAt(start + 2) == '/');
   }
 
   /**
