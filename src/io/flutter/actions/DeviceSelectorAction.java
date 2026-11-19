@@ -7,6 +7,7 @@ package io.flutter.actions;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -304,6 +305,9 @@ public class DeviceSelectorAction extends AnAction implements CustomComponentAct
       final DataContext dataContext = dataManager.getDataContext(button);
       final Project project = dataKey.getData(dataContext);
       if (isSelectorVisible(project)) {
+        // The toolbar button opens the popup itself, without actionPerformed, so report here too.
+        Analytics.report(AnalyticsData.forAction(ActionManager.getInstance().getId(this), place, project));
+
         final DefaultActionGroup group = new DefaultActionGroup();
         group.addAll(actions);
 
