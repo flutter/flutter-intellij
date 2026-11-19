@@ -41,17 +41,30 @@ public class FlutterConsoleFolding extends ConsoleFolding {
   }
 
   /**
-   * Android logcat lines look like 'I/flutter (12345): message'. They contain '/flutter ' but are not commands.
+   * Returns true for text that begins with an absolute path: a Unix path ('/...'), a UNC path ('\\server\share'),
+   * a Windows drive path ('C:\...' or 'C:/...'), or a quoted version of one of these. Android logcat lines such as
+   * 'I/flutter (12345): message' do not begin with an absolute path.
    */
-  private static final Pattern ANDROID_LOG_PREFIX = Pattern.compile("^[VDIWEF]/");
+  private static boolean isAbsolutePath(@NotNull String line) {
+    final String path = line.startsWith("\"") ? line.substring(1) : line;
+    if (path.startsWith("/") || path.startsWith("\\\\")) {
+      return true;
+    }
+    return path.length() >= 3
+      && Character.isLetter(path.charAt(0))
+      && path.charAt(1) == ':'
+      && (path.charAt(2) == '\\' || path.charAt(2) == '/');
+  }
 
+  /**
+   * Folds lines that invoke the Flutter executable, such as '/Users/.../flutter run' (or the Windows equivalent).
+   * Android log lines such as 'I/flutter (12345): message' contain '/flutter ' but do not begin with an absolute
+   * path, so they are not folded.
+   */
   @Override
   public boolean shouldFoldLine(@NotNull Project project, @NotNull String line) {
-    if (ANDROID_LOG_PREFIX.matcher(line).find()) {
-      return false;
-    }
     final int index = indexOfMarker(line);
-    return index != -1 && line.indexOf(' ') > index;
+    return index != -1 && isAbsolutePath(line) && line.indexOf(' ') > index;
   }
 
   @Override

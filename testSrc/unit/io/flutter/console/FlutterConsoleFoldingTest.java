@@ -37,7 +37,7 @@ public class FlutterConsoleFoldingTest extends FlutterCodeInsightFixtureTestCase
       folding.getPlaceholderText(getProject(), List.of(line)));
   }
 
-    public void testFoldsLineThatStillHasNoColor() {
+  public void testFoldsLineThatStillHasNoColor() {
     assertTrue(folding.shouldFoldLine(getProject(), FLUTTER_PATH + " --no-color pub get"));
   }
 
@@ -78,20 +78,20 @@ public class FlutterConsoleFoldingTest extends FlutterCodeInsightFixtureTestCase
   }
 
   public void testDoesNotFoldAndroidFlutterLogLine() {
-  assertFalse(folding.shouldFoldLine(getProject(), "I/flutter (12345): first message"));
-}
+    assertFalse(folding.shouldFoldLine(getProject(), "I/flutter (12345): first message"));
+  }
 
   public void testDoesNotFoldAndroidFlutterLogLineWithPaddedPid() {
     assertFalse(folding.shouldFoldLine(getProject(), "I/flutter ( 1234): first message"));
   }
 
   public void testDoesNotFoldOtherAndroidLogLevels() {
-    for (String level : List.of("V", "D", "W", "E", "F")) {
+    for (String level : List.of("V", "D", "I", "W", "E", "F", "A", "S")) {
       assertFalse(folding.shouldFoldLine(getProject(), level + "/flutter (12345): message"));
     }
   }
 
-  public void testDoesNotFoldNativeAndroidLogLine() {
-    assertFalse(folding.shouldFoldLine(getProject(), "D/Example(12345): native message"));
+  public void testDoesNotFoldFlutterPathNotAtLineStart() {
+    assertFalse(folding.shouldFoldLine(getProject(), "prefix/flutter pub get"));
   }
 }
