@@ -14,7 +14,7 @@ Manages the IDE console view for Flutter tasks, providing formatted output, exce
 - `FlutterConsoleFilter.FlutterConsoleFilter`
 - `FlutterConsoleFilter.fileAtPath`
 - `FlutterConsoleFilter.applyFilter`
-- [`FlutterConsoleFolding`](FlutterConsoleFolding.java): folds long `.../flutter --no-color ...` command lines into a short `flutter ...` placeholder.
+- [`FlutterConsoleFolding`](FlutterConsoleFolding.java): folds long `.../flutter ...` command lines into a short `flutter ...` placeholder. Only lines starting with the Flutter executable are folded; Android logcat lines such as `I/flutter ...` are not.
 - `FlutterConsoleFolding.shouldFoldLine`
 - `FlutterConsoleFolding.shouldBeAttachedToThePreviousLine`
 - `FlutterConsoleFolding.getPlaceholderText`
