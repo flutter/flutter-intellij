@@ -5,5 +5,8 @@ This directory contains workspace customizations, rules, skills, and design docu
 ## Rules
 - [`sdk-functionality.md`](rules/sdk-functionality.md): Guidelines and intentions for Flutter SDK management.
 
+## Skills
+- [`pr-intake-gate`](skills/pr-intake-gate/SKILL.md): Enforces pre-flight quality and readiness gates before PR review.
+
 ## Design Documents
 - [`sdk-functionality.md`](design-docs/sdk-functionality.md): Full architectural design document for SDK handling in IntelliJ plugins.

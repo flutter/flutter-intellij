@@ -107,6 +107,7 @@ These skills are located in the [.agents/skills/](.agents/skills/) directory. Th
 * **[Load Repository Context](.agents/skills/load-repo-context/SKILL.md):** Primes understanding of repository architecture by navigating hierarchical ABOUT.md manifests.
 * **[Migrate IntelliJ Util](.agents/skills/migrate-intellij-util/SKILL.md):** Optimize memory usage, consistency, and performance by migrating standard Java/Kotlin classes to IntelliJ's specialized `com.intellij.util` implementations.
 * **[Remove Platform Version](.agents/skills/remove-platform-version/SKILL.md):** Remove support for an older IntelliJ Platform / Android Studio version from the project and clean up obsolete code, baselines, and CI configurations.
+* **[PR Intake Gate](.agents/skills/pr-intake-gate/SKILL.md):** Enforce pre-flight intake gates (CHANGELOG updates, copyright headers, plugin verifier, PR size limits, test integrity, and bot review triage) before requesting review.
 * **[Release Plugin](.agents/skills/release-plugin/SKILL.md):** Prepare and execute a new release for the flutter-intellij plugin, including updating dependencies, compatibility bounds, changelogs, and verification.
 * **[Resolve Verification Issues](.agents/skills/resolve-verification-issues/SKILL.md):** Eliminate plugin verification warnings and errors identified by `./gradlew verifyPlugin`.
 * **[Verify EAP Compatibility](.agents/skills/verify-eap-compatibility/SKILL.md):** Ensure the plugin remains compatible with the latest IntelliJ Platform releases and EAP (Early Access Program) builds.
