@@ -97,6 +97,9 @@ This repository comes with custom configuration and automation skills for AI cod
 These skills are located in the [.agents/skills/](.agents/skills/) directory. They are automatically discovered and loaded by agentic workflows when they analyze the workspace.
 
 ### Available Workspace Skills:
+* **[Agent Testing: Workflow to Spec](.agents/skills/agent-testing-workflow-to-spec/SKILL.md):** Turn a prose description of an IDE workflow, or a coverage gap, into a checked-in workflow spec for the Flutter and Dart plugins, after checking that the workflow is worth an integration test and which test level can prove it.
+* **[Agent Testing: Bug to Spec](.agents/skills/agent-testing-bug-to-spec/SKILL.md):** Turn a GitHub issue against the Flutter or Dart plugins into a workflow spec whose oracle encodes the correct behavior, pinned to the IDE build the report names, so a test written from it fails on the bug and passes on the fix.
+* **[Agent Testing: Change to Spec](.agents/skills/agent-testing-change-to-spec/SKILL.md):** Turn a local diff, branch, or pull request into workflow specs for the changed user-visible behavior, with a strategy for building the "before" plugin so the resulting tests are proven to fail without the change.
 * **[Add Missing Unit Test](.agents/skills/add-missing-unit-test/SKILL.md):** Add a new unit test for a class that currently lacks one or add a new test case to an existing test file, verifying improvement with Kover.
 * **[Accessibility (A11y) Audit](.agents/skills/audit-accessibility/SKILL.md):** Ensure the plugin's custom UI components are accessible to users with screen readers and other assistive technologies.
 * **[Dependency & Library Audit](.agents/skills/audit-dependencies/SKILL.md):** Optimize plugin size and security by removing unused dependencies and updating outdated libraries.
@@ -106,6 +109,7 @@ These skills are located in the [.agents/skills/](.agents/skills/) directory. Th
 * **[Code Review](.agents/skills/code-review/SKILL.md):** Performs a pedantic, multi-perspective code review (covering logic, correctness, resource safety, design, and styleguide compliance) on your uncommitted changes.
 * **[Load Repository Context](.agents/skills/load-repo-context/SKILL.md):** Primes understanding of repository architecture by navigating hierarchical ABOUT.md manifests.
 * **[Migrate IntelliJ Util](.agents/skills/migrate-intellij-util/SKILL.md):** Optimize memory usage, consistency, and performance by migrating standard Java/Kotlin classes to IntelliJ's specialized `com.intellij.util` implementations.
+* **[Record Test Walkthrough (EXPERIMENTAL)](.agents/skills/record-test-walkthrough/SKILL.md):** Write IntelliJ IDE Starter UI tests for the Flutter plugin and record any automated UI test as a step-by-step screenshot walkthrough. **NOTE:** This is a skill that is currently in development.
 * **[Remove Platform Version](.agents/skills/remove-platform-version/SKILL.md):** Remove support for an older IntelliJ Platform / Android Studio version from the project and clean up obsolete code, baselines, and CI configurations.
 * **[Release Plugin](.agents/skills/release-plugin/SKILL.md):** Prepare and execute a new release for the flutter-intellij plugin, including updating dependencies, compatibility bounds, changelogs, and verification.
 * **[Resolve Verification Issues](.agents/skills/resolve-verification-issues/SKILL.md):** Eliminate plugin verification warnings and errors identified by `./gradlew verifyPlugin`.
