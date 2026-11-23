@@ -204,8 +204,14 @@ abstract class ExistingProjectUITest(private val packageName: String) : FlutterI
       }
       previous = row
     }
-    waitFor("the Open dialog to select ${dir.fileName}", 10.seconds, 500.milliseconds) {
-      tree.collectSelectedPaths().any { it.path.lastOrNull() == dir.fileName.toString() }
+    // A single selectRow can be lost: on macOS the temp folder holds hundreds of entries that keep loading after the
+    // target row appears, and the 2025.2 dialog's path field can move the selection back to the parent. Select the
+    // target again (found anywhere in the tree; its name is unique) until the selection holds.
+    waitFor("the Open dialog to select ${dir.fileName}", 30.seconds, 1.seconds) {
+      tree.collectSelectedPaths().any { it.path.lastOrNull() == dir.fileName.toString() } || run {
+        rowOf(segments.last(), -1, isRoot = false)?.let { tree.fixture.selectRow(it) }
+        false
+      }
     }
     println("Open dialog: selected ${dir.fileName}")
   }
