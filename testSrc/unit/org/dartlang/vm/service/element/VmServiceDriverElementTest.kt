@@ -116,6 +116,39 @@ class VmServiceDriverElementTest : TestCase() {
     assertFalse(Func(emptyJson).isSetter)
   }
 
+  fun `test TypeParameters are objects`() {
+    val json = JsonObject().apply {
+      addProperty("type", "TypeParameters")
+      addProperty("id", "objects/type-parameters")
+      addProperty("fixedId", true)
+      addProperty("size", 48)
+      add("names", JsonObject().apply {
+        addProperty("type", "@Instance")
+        addProperty("id", "objects/names")
+        addProperty("kind", "List")
+      })
+    }
+
+    val typeParameters = TypeParameters(json)
+    assertEquals("objects/type-parameters", typeParameters.id)
+    assertTrue(typeParameters.fixedId)
+    assertEquals(48, typeParameters.size)
+    assertEquals("objects/names", typeParameters.names.id)
+    assertEquals(InstanceKind.List, typeParameters.names.kind)
+  }
+
+  fun `test TypeParameters reference is an object reference`() {
+    val json = JsonObject().apply {
+      addProperty("type", "@TypeParameters")
+      addProperty("id", "objects/type-parameters")
+      addProperty("fixedId", true)
+    }
+
+    val typeParametersRef = TypeParametersRef(json)
+    assertEquals("objects/type-parameters", typeParametersRef.id)
+    assertTrue(typeParametersRef.fixedId)
+  }
+
   fun `test PerfettoTimeline`() {
     val json = JsonObject().apply {
       addProperty("trace", "AA==")

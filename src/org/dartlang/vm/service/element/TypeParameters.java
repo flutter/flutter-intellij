@@ -14,14 +14,13 @@
 package org.dartlang.vm.service.element;
 
 import com.google.gson.JsonObject;
-import java.util.List;
 
 /**
  * A {@link TypeParameters} object represents the type argument vector for some uninstantiated
  * generic type.
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class TypeParameters extends Element {
+public class TypeParameters extends Obj {
 
   public TypeParameters(JsonObject json) {
     super(json);
@@ -44,7 +43,7 @@ public class TypeParameters extends Element {
   /**
    * The names of the type parameters.
    */
-  public List<String> getNames() {
-    return getListString("names");
+  public InstanceRef getNames() {
+    return new InstanceRef((JsonObject) json.get("names"));
   }
 }

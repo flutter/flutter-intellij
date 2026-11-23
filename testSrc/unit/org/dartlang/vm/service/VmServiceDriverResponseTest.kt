@@ -9,13 +9,16 @@ package org.dartlang.vm.service
 import com.google.gson.JsonObject
 import junit.framework.TestCase
 import org.dartlang.vm.service.consumer.GetIsolatePauseEventConsumer
+import org.dartlang.vm.service.consumer.GetObjectConsumer
 import org.dartlang.vm.service.consumer.GetPerfettoCpuSamplesConsumer
 import org.dartlang.vm.service.element.Event
 import org.dartlang.vm.service.element.EventKind
+import org.dartlang.vm.service.element.Obj
 import org.dartlang.vm.service.element.PerfettoCpuSamples
 import org.dartlang.vm.service.element.RPCError
 import org.dartlang.vm.service.element.Sentinel
 import org.dartlang.vm.service.element.SentinelKind
+import org.dartlang.vm.service.element.TypeParameters
 
 class VmServiceDriverResponseTest : TestCase() {
 
@@ -84,6 +87,38 @@ class VmServiceDriverResponseTest : TestCase() {
     assertEquals(SentinelKind.Collected, consumer.sentinel?.kind)
     assertNull(consumer.response)
     assertNull(consumer.error)
+  }
+
+  fun `test TypeParameters response dispatch`() {
+    val consumer = RecordingGetObjectConsumer()
+    val json = JsonObject().apply {
+      addProperty("type", "TypeParameters")
+      addProperty("id", "objects/type-parameters")
+    }
+
+    VmService().forwardResponse(consumer, "TypeParameters", json)
+
+    assertTrue(consumer.response is TypeParameters)
+    assertNull(consumer.sentinel)
+    assertNull(consumer.error)
+  }
+
+  private class RecordingGetObjectConsumer : GetObjectConsumer {
+    var response: Any? = null
+    var sentinel: Sentinel? = null
+    var error: RPCError? = null
+
+    override fun received(response: Obj) {
+      this.response = response
+    }
+
+    override fun received(response: Sentinel) {
+      sentinel = response
+    }
+
+    override fun onError(error: RPCError) {
+      this.error = error
+    }
   }
 
   private class RecordingPerfettoCpuSamplesConsumer : GetPerfettoCpuSamplesConsumer {
