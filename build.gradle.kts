@@ -400,6 +400,9 @@ intellijPlatformTesting.testIde.register("integration") {
     listOf("flutter.plugin.zip", "ide.version", "ide.product").forEach { name ->
       providers.gradleProperty(name).orNull?.let { systemProperty(name, it) }
     }
+    // Read FLUTTER_SDK through `providers` so it is a configuration cache input: otherwise a cached entry keeps the
+    // environment of the build that stored it, and changing FLUTTER_SDK has no effect on the tests.
+    providers.environmentVariable("FLUTTER_SDK").orNull?.let { environment("FLUTTER_SDK", it) }
     systemProperty(
       "allure.results.directory", project.layout.buildDirectory.get().asFile.absolutePath + "/allure-results"
     )

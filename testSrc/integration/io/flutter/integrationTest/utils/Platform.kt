@@ -47,7 +47,13 @@ object Platform {
 
   /** The `flutter` command: `bin/flutter`, or `bin\flutter.bat` on Windows. */
   val flutterExecutable: String
-    get() = flutterSdk.resolve("bin").resolve(if (SystemInfo.isWindows) "flutter.bat" else "flutter").toString()
+    get() {
+      val executable = flutterSdk.resolve("bin").resolve(if (SystemInfo.isWindows) "flutter.bat" else "flutter")
+      check(Files.isRegularFile(executable)) {
+        "FLUTTER_SDK is $flutterSdk, but $executable does not exist; set FLUTTER_SDK to the SDK root, not its bin folder"
+      }
+      return executable.toString()
+    }
 
   /**
    * The Android SDK: `ANDROID_HOME`, then `ANDROID_SDK_ROOT`, then the default location of Android Studio's SDK
