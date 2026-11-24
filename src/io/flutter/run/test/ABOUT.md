@@ -28,7 +28,8 @@ Configures, produces, and executes Flutter test run configurations within Intell
 
 ## Side Effects
 - Spawns background Flutter test execution and debugging processes.
-- `TestConfig.getState` records analytics (`MECHANISM_FLUTTER_TESTS`).
+- `TestConfig.getState` records analytics (`Analytics.recordTestSession`: `MECHANISM_FLUTTER_TESTS`, with the test scope and whether the tests are integration tests).
+- `TestFields.isIntegrationTest(project)`: whether the tests are in or under the pub root's `integration_test` directory. `TestFields` uses the same check to pass the selected device (`-d`) to integration tests, and analytics reports it.
 - Intercepts test runner output and converts JSON test events into IntelliJ test framework service messages.
 - Modifies UI elements to render test execution results, status trees, and gutter line markers.
 

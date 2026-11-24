@@ -21,6 +21,7 @@ import io.flutter.run.FlutterDevice
 import io.flutter.run.FlutterLaunchMode
 import io.flutter.run.LaunchState
 import io.flutter.run.common.RunMode
+import io.flutter.run.test.TestFields
 
 /**
  * Defines standard keys for analytics data properties.
@@ -100,6 +101,18 @@ object AnalyticsConstants {
   const val DEVICE_CATEGORY_DESKTOP = "desktop"
   const val DEVICE_CATEGORY_OTHER = "other"
 
+  /** Test session fields: which tests a session runs, and whether they're integration tests. */
+  val TEST_SCOPE = StringValue("testScope")
+  val IS_INTEGRATION_TEST = BooleanValue("isIntegrationTest")
+
+  /**
+   * Test session scopes: tests in one file filtered by name (from the gutter, usually a single test or group), a whole
+   * file, or a directory.
+   */
+  const val TEST_SCOPE_NAME = "name"
+  const val TEST_SCOPE_FILE = "file"
+  const val TEST_SCOPE_DIRECTORY = "directory"
+
   /** Event type and id for one reload-on-save attempt. */
   const val HOT_RELOAD_TYPE = "hot_reload"
   const val RELOAD_ON_SAVE_ID = "reload_on_save"
@@ -158,28 +171,36 @@ object AnalyticsConstants {
   const val REASON_LOAD_FAILED = "load_failed"
 }
 
+/** An app or attach run/debug session. */
 private class SessionData(
-  type: String,
+  executorId: String?,
   mechanism: String,
   project: Project?,
-  executor: String,
-  buildMode: String?,
-  device: FlutterDevice?,
+  buildMode: String,
+  device: FlutterDevice,
   hasFlavor: Boolean?,
-) : AnalyticsData(type, mechanism, project) {
+) : AnalyticsData(Analytics.sessionTypeFor(executorId), mechanism, project) {
   init {
-    add(AnalyticsConstants.EXECUTOR, executor)
-    buildMode?.let { add(AnalyticsConstants.BUILD_MODE, it) }
-    device?.let {
-      val platformType = Analytics.platformTypeFor(it)
-      add(AnalyticsConstants.PLATFORM_TYPE, platformType)
-      add(AnalyticsConstants.DEVICE_CATEGORY, Analytics.deviceCategoryFor(it))
-      // flutter_tools only detects emulators on Android and iOS; it reports false for every other device.
-      if (platformType == AnalyticsConstants.PLATFORM_TYPE_ANDROID || platformType == AnalyticsConstants.PLATFORM_TYPE_IOS) {
-        add(AnalyticsConstants.IS_EMULATOR, it.emulator())
-      }
+    add(AnalyticsConstants.EXECUTOR, Analytics.executorFor(executorId))
+    add(AnalyticsConstants.BUILD_MODE, buildMode)
+    val platformType = Analytics.platformTypeFor(device)
+    add(AnalyticsConstants.PLATFORM_TYPE, platformType)
+    add(AnalyticsConstants.DEVICE_CATEGORY, Analytics.deviceCategoryFor(device))
+    // flutter_tools only detects emulators on Android and iOS; it reports false for every other device.
+    if (platformType == AnalyticsConstants.PLATFORM_TYPE_ANDROID || platformType == AnalyticsConstants.PLATFORM_TYPE_IOS) {
+      add(AnalyticsConstants.IS_EMULATOR, device.emulator())
     }
     hasFlavor?.let { add(AnalyticsConstants.HAS_FLAVOR, it) }
+  }
+}
+
+/** A test session: which tests it runs (never the test name or path), and whether they're integration tests. */
+private class TestSessionData(executorId: String?, project: Project?, scope: TestFields.Scope, isIntegrationTest: Boolean) :
+  AnalyticsData(Analytics.sessionTypeFor(executorId), AnalyticsConstants.MECHANISM_FLUTTER_TESTS, project) {
+  init {
+    add(AnalyticsConstants.EXECUTOR, Analytics.executorFor(executorId))
+    add(AnalyticsConstants.TEST_SCOPE, Analytics.testScopeFor(scope))
+    add(AnalyticsConstants.IS_INTEGRATION_TEST, isIntegrationTest)
   }
 }
 
@@ -241,11 +262,11 @@ object Analytics {
   }
 
   /**
-   * Reports a run, debug or test session.
+   * Reports an app or attach run/debug session. (Test sessions use [recordTestSession].)
    *
-   * @param buildMode a `BUILD_MODE_*` value (see [buildModeFor]), or `null` when there's no build mode (tests).
-   * @param device the device an app or attach session runs on, once selected; `null` for tests.
-   * @param hasFlavor whether an app session builds a flavor; `null` for attach (`flutter attach` has no flavor) and tests.
+   * @param buildMode a `BUILD_MODE_*` value (see [buildModeFor]).
+   * @param device the device the session runs on.
+   * @param hasFlavor whether an app session builds a flavor; `null` for attach (`flutter attach` has no flavor).
    */
   @JvmStatic
   @JvmOverloads
@@ -253,22 +274,39 @@ object Analytics {
     mechanism: String,
     executor: Executor,
     project: Project?,
-    buildMode: String? = null,
-    device: FlutterDevice? = null,
+    buildMode: String,
+    device: FlutterDevice,
     hasFlavor: Boolean? = null,
   ) {
     // Fail-safe, like report: this runs during a launch, and analytics should never fail one.
     try {
-      val executorId: String? = executor.id
-      val type = if (executorId == DefaultDebugExecutor.EXECUTOR_ID) {
-        AnalyticsConstants.DEBUG_SESSION_TYPE
-      } else {
-        AnalyticsConstants.RUN_SESSION_TYPE
-      }
-      report(SessionData(type, mechanism, project, executorFor(executorId), buildMode, device, hasFlavor))
+      report(SessionData(executor.id, mechanism, project, buildMode, device, hasFlavor))
     } catch (t: Throwable) {
       // Ignored.
     }
+  }
+
+  /** Reports a test session ([AnalyticsConstants.MECHANISM_FLUTTER_TESTS]): which tests it runs. */
+  @JvmStatic
+  fun recordTestSession(executor: Executor, project: Project, fields: TestFields) {
+    // Fail-safe, like report: this runs during a launch, and analytics should never fail one.
+    try {
+      report(TestSessionData(executor.id, project, fields.scope, fields.isIntegrationTest(project)))
+    } catch (t: Throwable) {
+      // Ignored.
+    }
+  }
+
+  internal fun sessionTypeFor(executorId: String?): String =
+    if (executorId == DefaultDebugExecutor.EXECUTOR_ID) AnalyticsConstants.DEBUG_SESSION_TYPE else AnalyticsConstants.RUN_SESSION_TYPE
+
+  /** A test scope's `TEST_SCOPE_*` value (explicit, so renaming the enum doesn't change the reported values). */
+  @VisibleForTesting
+  @JvmStatic
+  fun testScopeFor(scope: TestFields.Scope): String = when (scope) {
+    TestFields.Scope.NAME -> AnalyticsConstants.TEST_SCOPE_NAME
+    TestFields.Scope.FILE -> AnalyticsConstants.TEST_SCOPE_FILE
+    TestFields.Scope.DIRECTORY -> AnalyticsConstants.TEST_SCOPE_DIRECTORY
   }
 
   /**
