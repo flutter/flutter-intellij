@@ -14,6 +14,7 @@ Handles reporting usage metrics and analytics events for the Flutter plugin via 
 - `const val AnalyticsConstants.MECHANISM_FLUTTER_TESTS`
 - `const val AnalyticsConstants.DEBUG_SESSION_TYPE`
 - `const val AnalyticsConstants.RUN_SESSION_TYPE`
+- Run/debug session fields `EXECUTOR` (`EXECUTOR_RUN`, `EXECUTOR_DEBUG`, `EXECUTOR_COVERAGE`, `EXECUTOR_PROFILER`, `EXECUTOR_OTHER`) and `BUILD_MODE` (`BUILD_MODE_DEBUG`, `BUILD_MODE_PROFILE`, `BUILD_MODE_RELEASE`).
 - Reload-on-save event (`type=hot_reload`, `id=reload_on_save`) constants: fields `TRIGGER`, `OUTCOME`, `ERROR_CODE` (the duration uses the Dart plugin's shared `duration_ms` key), and their values:
   - `TRIGGER_SAVE_ACTION` (`save_action`, an explicit Save All) and `TRIGGER_DOCUMENT_SAVE` (`document_save`, autosave and other IDE saves).
   - `OUTCOME_SUCCESS`, `OUTCOME_ERROR` (with the daemon's `errorCode`), `OUTCOME_EXCEPTION` (no result, e.g. a daemon error response), `OUTCOME_SKIPPED_NOT_CONNECTED`, `OUTCOME_SKIPPED_SYNTAX_ERROR_CURRENT_FILE`, and `OUTCOME_SKIPPED_SYNTAX_ERROR_ANY_EDITOR`.
@@ -24,7 +25,8 @@ Handles reporting usage metrics and analytics events for the Flutter plugin via 
 - `fun Analytics.reportReloadOnSave(project: Project?, trigger: String, outcome: String, durationMs: Int?, errorCode: Int?)`: called from [`FlutterReloadManager`](../run/FlutterReloadManager.java).
 - `fun Analytics.reportWidgetPreview(project: Project?, id: String, reason: String?)`: called from [`WidgetPreviewPanel`](../widgetpreview/WidgetPreviewPanel.java). Pass `reason` only with `failed`.
 - `fun Analytics.reportEmbeddedBrowser(project: Project?, id: String, engine: String, feature: String, newTab: Boolean, reason: String?)`: called from [`EmbeddedBrowser.openPanel`](../view/EmbeddedBrowser.java). Pass `reason` only with `failed`.
-- `fun Analytics.recordRunOrDebugSession(mechanism: String, executor: Executor, project: Project?)`: reports a private `SessionData` (an `AnalyticsData` subclass). Called from [`SdkRunConfig`](../run/SdkRunConfig.java), [`SdkAttachConfig`](../run/SdkAttachConfig.java), and [`TestConfig`](../run/test/TestConfig.java).
+- `fun Analytics.recordRunOrDebugSession(mechanism: String, executor: Executor, project: Project?, buildMode: String? = null)`: reports a private `SessionData` (an `AnalyticsData` subclass). Called from [`SdkRunConfig`](../run/SdkRunConfig.java) and [`SdkAttachConfig`](../run/SdkAttachConfig.java) with a build mode, and from [`TestConfig`](../run/test/TestConfig.java) without one.
+- `fun Analytics.buildModeFor(envMode: FlutterLaunchMode, executorId: String?, extraArgs: Array<String>): String`: a session's `BUILD_MODE_*` value. (`executorFor`, which maps an executor id to an `EXECUTOR_*` value, is `@VisibleForTesting`.)
 
 ## Invariants
 - `Analytics.report` fails silently by catching all Throwables to avoid crashing the IDE or debug/run sessions. This only protects callers of this wrapper; most plugin code (e.g., [`actions`](../actions/ABOUT.md), `run/daemon`, `sdk/FlutterCommand`) calls the Dart plugin's `Analytics.report` directly without this guard.
@@ -38,6 +40,9 @@ Handles reporting usage metrics and analytics events for the Flutter plugin via 
   - Known gap: with JxBrowser, the Inspector checks the install status before calling `openPanel`, so its not-ready cases aren't reported here.
 - At most one reload-on-save event per path per save: `skipped_syntax_error_any_editor` is reported at most once a minute. An explicit Save All runs both save paths, and the second one stays silent because the app is already reloading. When the Save All path reported an event, the document-save path it queued doesn't also report `skipped_syntax_error_any_editor` for the same save.
 - Session type is set to `DEBUG_SESSION_TYPE` if `executor.id` matches `DefaultDebugExecutor.EXECUTOR_ID`, else `RUN_SESSION_TYPE`.
+- Session events carry `executor`, mapped to a fixed value, never the raw executor id. `executor=debug` (like `type=debug_session`) means a debugger is attached; `buildMode=debug` means a debug (JIT) build.
+- App and attach sessions also carry `buildMode`: `release`/`profile` for exactly `--release`/`--profile` in the configuration's extra args (additional args for run, attach args for attach), `profile` for the Android Profiler executor, and otherwise the environment's `FlutterLaunchMode`. The args are never sent. Test sessions have no build mode.
+- `recordRunOrDebugSession` runs in `getState`, before a device is selected, and catches all Throwables so it can't fail a launch.
 
 ## Side Effects
 - Sends analytics data to JetBrains Dart plugin analytics subsystem via `com.jetbrains.lang.dart.analytics.Analytics.report`.

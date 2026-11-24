@@ -6,8 +6,10 @@
 
 package io.flutter.analytics
 
+import com.google.common.annotations.VisibleForTesting
 import com.intellij.execution.Executor
 import com.intellij.execution.executors.DefaultDebugExecutor
+import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.openapi.project.Project
 import com.jetbrains.lang.dart.analytics.Analytics as DartAnalytics
 import com.jetbrains.lang.dart.analytics.AnalyticsConstants as DartAnalyticsConstants
@@ -15,6 +17,9 @@ import com.jetbrains.lang.dart.analytics.AnalyticsData
 import com.jetbrains.lang.dart.analytics.BooleanValue
 import com.jetbrains.lang.dart.analytics.IntValue
 import com.jetbrains.lang.dart.analytics.StringValue
+import io.flutter.run.FlutterLaunchMode
+import io.flutter.run.LaunchState
+import io.flutter.run.common.RunMode
 
 /**
  * Defines standard keys for analytics data properties.
@@ -47,6 +52,25 @@ object AnalyticsConstants {
 
   const val DEBUG_SESSION_TYPE = "debug_session"
   const val RUN_SESSION_TYPE = "run_session"
+
+  /**
+   * Run/debug session fields: the IntelliJ executor and the Flutter build mode. Note that `executor=debug` (and
+   * `type=debug_session`) means a debugger is attached, while `buildMode=debug` means a debug (JIT) build.
+   */
+  val EXECUTOR = StringValue("executor")
+  val BUILD_MODE = StringValue("buildMode")
+
+  /** Session executors (never the raw executor id). */
+  const val EXECUTOR_RUN = "run"
+  const val EXECUTOR_DEBUG = "debug"
+  const val EXECUTOR_COVERAGE = "coverage"
+  const val EXECUTOR_PROFILER = "profiler"
+  const val EXECUTOR_OTHER = "other"
+
+  /** Session build modes (Flutter build modes). */
+  const val BUILD_MODE_DEBUG = "debug"
+  const val BUILD_MODE_PROFILE = "profile"
+  const val BUILD_MODE_RELEASE = "release"
 
   /** Event type and id for one reload-on-save attempt. */
   const val HOT_RELOAD_TYPE = "hot_reload"
@@ -106,8 +130,13 @@ object AnalyticsConstants {
   const val REASON_LOAD_FAILED = "load_failed"
 }
 
-private class SessionData(type: String, mechanism: String, project: Project?) :
-  AnalyticsData(type, mechanism, project)
+private class SessionData(type: String, mechanism: String, project: Project?, executor: String, buildMode: String?) :
+  AnalyticsData(type, mechanism, project) {
+  init {
+    add(AnalyticsConstants.EXECUTOR, executor)
+    buildMode?.let { add(AnalyticsConstants.BUILD_MODE, it) }
+  }
+}
 
 private class ReloadOnSaveData(project: Project?, trigger: String, outcome: String, durationMs: Int?, errorCode: Int?) :
   AnalyticsData(AnalyticsConstants.HOT_RELOAD_TYPE, AnalyticsConstants.RELOAD_ON_SAVE_ID, project) {
@@ -149,14 +178,61 @@ object Analytics {
     }
   }
 
+  /**
+   * Reports a run, debug or test session.
+   *
+   * @param buildMode a `BUILD_MODE_*` value (see [buildModeFor]), or `null` when there's no build mode (tests).
+   */
   @JvmStatic
-  fun recordRunOrDebugSession(mechanism: String, executor: Executor, project: Project?) {
-    val type = if (executor.id == DefaultDebugExecutor.EXECUTOR_ID) {
-      AnalyticsConstants.DEBUG_SESSION_TYPE
-    } else {
-      AnalyticsConstants.RUN_SESSION_TYPE
+  @JvmOverloads
+  fun recordRunOrDebugSession(mechanism: String, executor: Executor, project: Project?, buildMode: String? = null) {
+    // Fail-safe, like report: this runs in getState, and analytics should never fail a launch.
+    try {
+      val executorId: String? = executor.id
+      val type = if (executorId == DefaultDebugExecutor.EXECUTOR_ID) {
+        AnalyticsConstants.DEBUG_SESSION_TYPE
+      } else {
+        AnalyticsConstants.RUN_SESSION_TYPE
+      }
+      report(SessionData(type, mechanism, project, executorFor(executorId), buildMode))
+    } catch (t: Throwable) {
+      // Ignored.
     }
-    report(SessionData(type, mechanism, project))
+  }
+
+  /**
+   * Maps an IntelliJ executor id to an `EXECUTOR_*` value. Flutter configurations only run with these executors (see
+   * `LaunchState.Runner.canRun`, `FlutterTestRunner`, `FlutterCoverageProgramRunner` and `RunMode.fromEnv`); keep them
+   * in sync.
+   */
+  @VisibleForTesting
+  @JvmStatic
+  fun executorFor(executorId: String?): String = when (executorId) {
+    DefaultRunExecutor.EXECUTOR_ID -> AnalyticsConstants.EXECUTOR_RUN
+    DefaultDebugExecutor.EXECUTOR_ID -> AnalyticsConstants.EXECUTOR_DEBUG
+    RunMode.COVERAGE.mode() -> AnalyticsConstants.EXECUTOR_COVERAGE
+    LaunchState.ANDROID_PROFILER_EXECUTOR_ID -> AnalyticsConstants.EXECUTOR_PROFILER
+    else -> AnalyticsConstants.EXECUTOR_OTHER
+  }
+
+  /**
+   * The Flutter build mode a session runs in, as a `BUILD_MODE_*` value.
+   *
+   * At `getState` time the environment's [FlutterLaunchMode] isn't final: the Android Profiler executor switches it to
+   * profile later, in `LaunchState.launch`, and `--profile`/`--release` in the run configuration's extra args
+   * (additional args for `flutter run`, attach args for `flutter attach`) are passed straight to the command. Only those
+   * exact flags are checked (the hidden `--jit-release` reports `debug`); the args themselves are never sent.
+   */
+  @JvmStatic
+  fun buildModeFor(envMode: FlutterLaunchMode, executorId: String?, extraArgs: Array<String>): String = when {
+    "--release" in extraArgs -> AnalyticsConstants.BUILD_MODE_RELEASE
+    "--profile" in extraArgs -> AnalyticsConstants.BUILD_MODE_PROFILE
+    executorId == LaunchState.ANDROID_PROFILER_EXECUTOR_ID -> AnalyticsConstants.BUILD_MODE_PROFILE
+    else -> when (envMode) {
+      FlutterLaunchMode.DEBUG -> AnalyticsConstants.BUILD_MODE_DEBUG
+      FlutterLaunchMode.PROFILE -> AnalyticsConstants.BUILD_MODE_PROFILE
+      FlutterLaunchMode.RELEASE -> AnalyticsConstants.BUILD_MODE_RELEASE
+    }
   }
 
   @JvmStatic
