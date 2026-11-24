@@ -41,6 +41,6 @@ Configures, launches, and manages Flutter application execution processes (Run, 
 ## Side Effects
 - FlutterReloadManager listens for IDE save events, triggers document saves, and issues hot reload/restart commands to running instances.
 - SdkRunConfig recursively deletes build directory files matching `*.{fingerprint,dill}` via `RecursiveDeleter` prior to launch if launch parameters mismatch previous cached parameters, writing a last_build_run.json file to disk.
-- SdkRunConfig (`MECHANISM_FLUTTER_APP`) and SdkAttachConfig (`MECHANISM_FLUTTER_ATTACH`) record analytics for run or debug sessions.
+- SdkRunConfig (`MECHANISM_FLUTTER_APP`) and SdkAttachConfig (`MECHANISM_FLUTTER_ATTACH`) set a session analytics reporter on their `LaunchState` (`setSessionReporter`). `LaunchState.launch` and `AttachState.launch` run it once a device is selected and an app is created, so launches without a device and re-runs that become a hot restart aren't reported. See [`../analytics/ABOUT.md`](../analytics/ABOUT.md).
 - LaunchState saves all documents, sets up a console view and updates the execution environment.
 - LaunchState.launch calls `FlutterDevice.bringToFront()` on every launch. For iOS emulators only, it delegates to [`XcodeUtils.openSimulator`](../sdk/XcodeUtils.java) to bring the simulator to the foreground on macOS.

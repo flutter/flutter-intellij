@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Launches a flutter app, showing it in the console.
@@ -86,6 +87,12 @@ public class LaunchState extends CommandLineState {
   private final @NotNull RunConfig runConfig;
   private final @NotNull CreateAppCallback myCreateAppCallback;
 
+  /**
+   * Reports the session analytics event once a launch has a device and an app, so that launches aborted for lack of a
+   * device, and re-runs that become a hot restart (see {@link Runner#doExecute}), aren't counted.
+   */
+  private @Nullable Consumer<FlutterDevice> mySessionReporter;
+
   public LaunchState(@NotNull ExecutionEnvironment env,
                      @NotNull VirtualFile workDir,
                      @NotNull VirtualFile sourceLocation,
@@ -104,6 +111,22 @@ public class LaunchState extends CommandLineState {
     return myCreateAppCallback;
   }
 
+  /** Sets the reporter for this launch's session analytics event; see {@link #reportSession}. */
+  public void setSessionReporter(@Nullable Consumer<FlutterDevice> sessionReporter) {
+    mySessionReporter = sessionReporter;
+  }
+
+  /**
+   * Reports the session analytics event for a launch on {@code device} that created {@code app}, at most once, if a
+   * reporter is set. Nothing is reported if no app was created.
+   */
+  protected void reportSession(@NotNull FlutterDevice device, @Nullable FlutterApp app) {
+    final Consumer<FlutterDevice> reporter = mySessionReporter;
+    if (reporter == null || app == null) return;
+    mySessionReporter = null;
+    reporter.accept(device);
+  }
+
   protected RunContentDescriptor launch(@NotNull ExecutionEnvironment env) throws ExecutionException {
     FileDocumentManager.getInstance().saveAllDocuments();
 
@@ -120,6 +143,7 @@ public class LaunchState extends CommandLineState {
     }
 
     final FlutterApp app = myCreateAppCallback.createApp(device);
+    reportSession(device, app);
 
     // Cache for use in console configuration.
     FlutterApp.addToEnvironment(env, app);

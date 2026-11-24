@@ -204,9 +204,11 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
 
     final LaunchState launcher = new LaunchState(env, mainFile.getAppDir(), mainFile.getFile(), this, createAppCallback);
     addConsoleFilters(launcher, env, mainFile, null /* look up the module in an async read context */);
-    Analytics.recordRunOrDebugSession(AnalyticsConstants.MECHANISM_FLUTTER_APP, executor, getProject(),
-                                      Analytics.buildModeFor(FlutterLaunchMode.fromEnv(env), executor.getId(),
-                                                             launchFields.getAdditionalArgsParsed()));
+    final String[] additionalArgs = launchFields.getAdditionalArgsParsed();
+    final String buildMode = Analytics.buildModeFor(FlutterLaunchMode.fromEnv(env), executor.getId(), additionalArgs);
+    final boolean hasFlavor = Analytics.hasFlavor(launchFields.getBuildFlavor(), additionalArgs);
+    launcher.setSessionReporter(device -> Analytics.recordRunOrDebugSession(
+      AnalyticsConstants.MECHANISM_FLUTTER_APP, executor, getProject(), buildMode, device, hasFlavor));
     return launcher;
   }
 

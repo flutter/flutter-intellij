@@ -17,6 +17,7 @@ import com.jetbrains.lang.dart.analytics.AnalyticsData
 import com.jetbrains.lang.dart.analytics.BooleanValue
 import com.jetbrains.lang.dart.analytics.IntValue
 import com.jetbrains.lang.dart.analytics.StringValue
+import io.flutter.run.FlutterDevice
 import io.flutter.run.FlutterLaunchMode
 import io.flutter.run.LaunchState
 import io.flutter.run.common.RunMode
@@ -71,6 +72,33 @@ object AnalyticsConstants {
   const val BUILD_MODE_DEBUG = "debug"
   const val BUILD_MODE_PROFILE = "profile"
   const val BUILD_MODE_RELEASE = "release"
+
+  /**
+   * App and attach session device fields: never the device id or name. (Not `targetPlatform`: flutter_tools' own
+   * analytics use that name for target platforms like `android-arm64`.) `isEmulator` is only sent for Android and iOS,
+   * and `hasFlavor` only for app sessions.
+   */
+  val PLATFORM_TYPE = StringValue("platformType")
+  val DEVICE_CATEGORY = StringValue("deviceCategory")
+  val IS_EMULATOR = BooleanValue("isEmulator")
+  val HAS_FLAVOR = BooleanValue("hasFlavor")
+
+  /** Session platform types: the Flutter daemon's device `platformType` values, or `other`. */
+  const val PLATFORM_TYPE_ANDROID = "android"
+  const val PLATFORM_TYPE_IOS = "ios"
+  const val PLATFORM_TYPE_WEB = "web"
+  const val PLATFORM_TYPE_MACOS = "macos"
+  const val PLATFORM_TYPE_LINUX = "linux"
+  const val PLATFORM_TYPE_WINDOWS = "windows"
+  const val PLATFORM_TYPE_FUCHSIA = "fuchsia"
+  const val PLATFORM_TYPE_CUSTOM = "custom"
+  const val PLATFORM_TYPE_OTHER = "other"
+
+  /** Session device categories: the Flutter daemon's device `category` values, or `other`. */
+  const val DEVICE_CATEGORY_MOBILE = "mobile"
+  const val DEVICE_CATEGORY_WEB = "web"
+  const val DEVICE_CATEGORY_DESKTOP = "desktop"
+  const val DEVICE_CATEGORY_OTHER = "other"
 
   /** Event type and id for one reload-on-save attempt. */
   const val HOT_RELOAD_TYPE = "hot_reload"
@@ -130,11 +158,28 @@ object AnalyticsConstants {
   const val REASON_LOAD_FAILED = "load_failed"
 }
 
-private class SessionData(type: String, mechanism: String, project: Project?, executor: String, buildMode: String?) :
-  AnalyticsData(type, mechanism, project) {
+private class SessionData(
+  type: String,
+  mechanism: String,
+  project: Project?,
+  executor: String,
+  buildMode: String?,
+  device: FlutterDevice?,
+  hasFlavor: Boolean?,
+) : AnalyticsData(type, mechanism, project) {
   init {
     add(AnalyticsConstants.EXECUTOR, executor)
     buildMode?.let { add(AnalyticsConstants.BUILD_MODE, it) }
+    device?.let {
+      val platformType = Analytics.platformTypeFor(it)
+      add(AnalyticsConstants.PLATFORM_TYPE, platformType)
+      add(AnalyticsConstants.DEVICE_CATEGORY, Analytics.deviceCategoryFor(it))
+      // flutter_tools only detects emulators on Android and iOS; it reports false for every other device.
+      if (platformType == AnalyticsConstants.PLATFORM_TYPE_ANDROID || platformType == AnalyticsConstants.PLATFORM_TYPE_IOS) {
+        add(AnalyticsConstants.IS_EMULATOR, it.emulator())
+      }
+    }
+    hasFlavor?.let { add(AnalyticsConstants.HAS_FLAVOR, it) }
   }
 }
 
@@ -169,6 +214,23 @@ private class EmbeddedBrowserData(project: Project?, id: String, engine: String,
 }
 
 object Analytics {
+  private val PLATFORM_TYPES = setOf(
+    AnalyticsConstants.PLATFORM_TYPE_ANDROID,
+    AnalyticsConstants.PLATFORM_TYPE_IOS,
+    AnalyticsConstants.PLATFORM_TYPE_WEB,
+    AnalyticsConstants.PLATFORM_TYPE_MACOS,
+    AnalyticsConstants.PLATFORM_TYPE_LINUX,
+    AnalyticsConstants.PLATFORM_TYPE_WINDOWS,
+    AnalyticsConstants.PLATFORM_TYPE_FUCHSIA,
+    AnalyticsConstants.PLATFORM_TYPE_CUSTOM,
+  )
+
+  private val DEVICE_CATEGORIES = setOf(
+    AnalyticsConstants.DEVICE_CATEGORY_MOBILE,
+    AnalyticsConstants.DEVICE_CATEGORY_WEB,
+    AnalyticsConstants.DEVICE_CATEGORY_DESKTOP,
+  )
+
   @JvmStatic
   fun report(data: AnalyticsData) {
     try {
@@ -182,11 +244,20 @@ object Analytics {
    * Reports a run, debug or test session.
    *
    * @param buildMode a `BUILD_MODE_*` value (see [buildModeFor]), or `null` when there's no build mode (tests).
+   * @param device the device an app or attach session runs on, once selected; `null` for tests.
+   * @param hasFlavor whether an app session builds a flavor; `null` for attach (`flutter attach` has no flavor) and tests.
    */
   @JvmStatic
   @JvmOverloads
-  fun recordRunOrDebugSession(mechanism: String, executor: Executor, project: Project?, buildMode: String? = null) {
-    // Fail-safe, like report: this runs in getState, and analytics should never fail a launch.
+  fun recordRunOrDebugSession(
+    mechanism: String,
+    executor: Executor,
+    project: Project?,
+    buildMode: String? = null,
+    device: FlutterDevice? = null,
+    hasFlavor: Boolean? = null,
+  ) {
+    // Fail-safe, like report: this runs during a launch, and analytics should never fail one.
     try {
       val executorId: String? = executor.id
       val type = if (executorId == DefaultDebugExecutor.EXECUTOR_ID) {
@@ -194,7 +265,7 @@ object Analytics {
       } else {
         AnalyticsConstants.RUN_SESSION_TYPE
       }
-      report(SessionData(type, mechanism, project, executorFor(executorId), buildMode))
+      report(SessionData(type, mechanism, project, executorFor(executorId), buildMode, device, hasFlavor))
     } catch (t: Throwable) {
       // Ignored.
     }
@@ -234,6 +305,26 @@ object Analytics {
       FlutterLaunchMode.RELEASE -> AnalyticsConstants.BUILD_MODE_RELEASE
     }
   }
+
+  /** A device's `PLATFORM_TYPE_*` value: its daemon `platformType`, or `other`. */
+  @VisibleForTesting
+  @JvmStatic
+  fun platformTypeFor(device: FlutterDevice): String =
+    device.platformType()?.takeIf { it in PLATFORM_TYPES } ?: AnalyticsConstants.PLATFORM_TYPE_OTHER
+
+  /** A device's `DEVICE_CATEGORY_*` value. */
+  @VisibleForTesting
+  @JvmStatic
+  fun deviceCategoryFor(device: FlutterDevice): String =
+    device.category()?.takeIf { it in DEVICE_CATEGORIES } ?: AnalyticsConstants.DEVICE_CATEGORY_OTHER
+
+  /**
+   * Whether an app session builds a flavor: a flavor set in the run configuration, or `--flavor` in its additional args.
+   * (A pubspec `default-flavor` isn't detected.)
+   */
+  @JvmStatic
+  fun hasFlavor(buildFlavor: String?, extraArgs: Array<String>): Boolean =
+    !buildFlavor.isNullOrBlank() || extraArgs.any { it == "--flavor" || it.startsWith("--flavor=") }
 
   @JvmStatic
   fun reportReloadOnSave(project: Project?, trigger: String, outcome: String, durationMs: Int?, errorCode: Int?) {
