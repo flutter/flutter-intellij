@@ -1,4 +1,4 @@
-<!--* freshness: { reviewed: '2026-11-05' } *-->
+<!--* freshness: { reviewed: '2026-11-24' } *-->
 # Flutter Editor Features
 
 ## Overview
@@ -24,7 +24,7 @@ Provides editor-level enhancements: color and icon decorations on Dart completio
 ## Invariants
 - Color and icon utilities map constant names to AWT colors and icons using resource properties files: [`material.properties`](../../../../resources/flutter/colors/material.properties) and [`cupertino.properties`](../../../../resources/flutter/colors/cupertino.properties) for colors, [`material.properties`](../../../../resources/flutter/icons/material.properties) and [`cupertino.properties`](../../../../resources/flutter/icons/cupertino.properties) for icons.
 - The `ColorPickerProvider` implementations are registered on the `colorPickerProvider` extension point, but nothing in `src/` currently reads that extension point.
-- FlutterSaveActionsManager acts only when format-on-save is enabled, on writable Dart files without PSI errors, in initialized projects with the Dart SDK enabled, and when the analysis server is ready. Organize imports runs only if organize-imports-on-save is also enabled.
+- FlutterSaveActionsManager acts only when format-on-save is enabled, on writable Dart files without PSI errors, and in initialized projects with the Dart SDK enabled. Organize imports runs only if organize-imports-on-save is also enabled.
 - FlutterReaderModeMatcher returns no opinion for `READ_ONLY` mode. Otherwise it disables reader mode (returns false) only for files under a `PubRoot` in projects with Flutter modules.
 - FlutterIconLineMarkerProvider checks icon classes against `KnownPaths`, a static map seeded with the Flutter SDK library directories for `Icons`, `IconData`, and `CupertinoIcons`. Previews are rendered with `io.flutter.utils.IconPreviewGenerator` from `.ttf` font files found via PSI resolution and directory scans. `fontPackage` specifications are not supported.
 - FlutterPubspecNotificationProvider only shows for local pubspec files that declare Flutter, and only when a Flutter SDK is configured.
