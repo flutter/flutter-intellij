@@ -157,7 +157,6 @@ public class FlutterSaveActionsManager {
         mySavingDocuments.remove(document);
       }
     };
-    processor.setPostRunnable(postRunnable);
     runProcessor(processor, postRunnable);
   }
 
@@ -178,6 +177,7 @@ public class FlutterSaveActionsManager {
 
   @VisibleForTesting
   void runProcessor(@NotNull AbstractLayoutCodeProcessor processor, @NotNull Runnable postRunnable) {
+    processor.setPostRunnable(postRunnable);
     processor.run();
   }
 
