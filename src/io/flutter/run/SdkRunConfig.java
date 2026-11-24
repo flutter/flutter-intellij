@@ -204,7 +204,9 @@ public class SdkRunConfig extends LocatableConfigurationBase<LaunchState>
 
     final LaunchState launcher = new LaunchState(env, mainFile.getAppDir(), mainFile.getFile(), this, createAppCallback);
     addConsoleFilters(launcher, env, mainFile, null /* look up the module in an async read context */);
-    Analytics.recordRunOrDebugSession(AnalyticsConstants.MECHANISM_FLUTTER_APP, executor, getProject());
+    Analytics.recordRunOrDebugSession(AnalyticsConstants.MECHANISM_FLUTTER_APP, executor, getProject(),
+                                      Analytics.buildModeFor(FlutterLaunchMode.fromEnv(env), executor.getId(),
+                                                             launchFields.getAdditionalArgsParsed()));
     return launcher;
   }
 

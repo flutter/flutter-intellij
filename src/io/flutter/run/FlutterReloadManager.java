@@ -50,6 +50,8 @@ import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterAppAction;
 import io.flutter.actions.ProjectActions;
 import io.flutter.actions.ReloadFlutterApp;
+import io.flutter.analytics.Analytics;
+import io.flutter.analytics.AnalyticsConstants;
 import io.flutter.logging.PluginLogger;
 import io.flutter.run.common.RunMode;
 import io.flutter.run.daemon.FlutterApp;
@@ -63,6 +65,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Handle the mechanics of performing a hot reload on file save.
@@ -100,6 +103,18 @@ public class FlutterReloadManager implements Disposable {
 
   private Notification lastNotification;
 
+  /** Minimum gap between two reported {@code skipped_syntax_error_any_editor} events: idle autosave can repeat it. */
+  private static final long SYNTAX_SKIP_REPORT_INTERVAL_NANOS = TimeUnit.MINUTES.toNanos(1);
+
+  private final AtomicLong lastSyntaxSkipReportNanos = new AtomicLong(System.nanoTime() - SYNTAX_SKIP_REPORT_INTERVAL_NANOS);
+
+  /**
+   * Whether an explicit Save All is running, and whether its own path reported a {@code reload_on_save} event. Lets the
+   * document-save path that the same Save All queues avoid reporting the save a second time. EDT only.
+   */
+  private boolean saveActionInProgress;
+  private boolean saveActionReported;
+
   /**
    * Initialize the reload manager for the given project.
    */
@@ -128,6 +143,9 @@ public class FlutterReloadManager implements Disposable {
           return;
         }
 
+        saveActionInProgress = true;
+        saveActionReported = false;
+
         // Save the current project value here. If we access later (in afterActionPerformed), we can get
         // exceptions if another event occurs before afterActionPerformed is called.
         try {
@@ -146,13 +164,15 @@ public class FlutterReloadManager implements Disposable {
           return;
         }
 
-        // If this save all action is not for the current project, return.
-        if (myProject != eventProject) {
-          return;
-        }
+        // The save itself, and so beforeAllDocumentsSaving, has already happened.
+        saveActionInProgress = false;
 
         try {
-          handleSaveAllNotification(eventEditor);
+          // Only handle a save all action for the current project. Checked inside the try so the finally below always
+          // clears the saved references, even for another project's save.
+          if (myProject == eventProject) {
+            handleSaveAllNotification(eventEditor, AnalyticsConstants.TRIGGER_SAVE_ACTION, false);
+          }
         }
         catch (Throwable t) {
           FlutterUtils.warn(LOG, "Exception from hot reload on save", t, true);
@@ -167,6 +187,7 @@ public class FlutterReloadManager implements Disposable {
     connection.subscribe(FileDocumentManagerListener.TOPIC, new FileDocumentManagerListener() {
       @Override
       public void beforeAllDocumentsSaving() {
+        final boolean fromSaveAction = saveActionInProgress;
         if (!FlutterSettings.getInstance().isReloadOnSave()) return;
         if (myProject.isDisposed()) return;
         if (!FlutterModuleUtils.hasFlutterModule(myProject)) return;
@@ -184,7 +205,8 @@ public class FlutterReloadManager implements Disposable {
         }
 
         OpenApiUtils.safeInvokeLater(() -> {
-          // Find a Dart editor to trigger the reload.
+          // Find a Dart editor to trigger the reload, and note whether an open editor has a syntax error.
+          final boolean[] syntaxError = {false};
           final Editor anEditor = OpenApiUtils.safeRunReadAction(() -> {
             Editor someEditor = null;
             final EditorFactory editorFactory = EditorFactory.getInstance();
@@ -200,21 +222,32 @@ public class FlutterReloadManager implements Disposable {
                 if (null != PsiTreeUtil.findChildOfType(psiFile, PsiErrorElement.class, false)) {
                   // The Dart plugin may create empty files that it then claims have a syntax error. Ignore them.
                   if (editor.getDocument().getTextLength() != 0) {
-                    // If there are analysis errors we want to silently exit, without showing a notification.
-                    return null;
+                    // If there are analysis errors we skip the reload silently, without showing a notification.
+                    syntaxError[0] = true;
+                    return someEditor;
                   }
                 }
               }
             }
             return someEditor;
           });
-          handleSaveAllNotification(anEditor);
+          if (syntaxError[0] && fromSaveAction && saveActionReported) {
+            // The Save All path already reported this save (for example, as a syntax error in the current file). With a
+            // syntax error this path only reports a skip, so returning here changes nothing else.
+            return;
+          }
+          handleSaveAllNotification(anEditor, AnalyticsConstants.TRIGGER_DOCUMENT_SAVE, syntaxError[0]);
         }, ModalityState.any());
       }
     });
   }
 
-  private void handleSaveAllNotification(@Nullable Editor editor) {
+  /**
+   * Reloads the app after a save, if reload-on-save applies. Each attempt that gets past the guards up to and including
+   * the "already reloading" check reports one {@code reload_on_save} event (the syntax-error-in-any-editor skip at most
+   * once a minute).
+   */
+  private void handleSaveAllNotification(@Nullable Editor editor, @NotNull String trigger, boolean syntaxErrorInAnyEditor) {
     if (!FlutterSettings.getInstance().isReloadOnSave() || editor == null) {
       return;
     }
@@ -251,6 +284,16 @@ public class FlutterReloadManager implements Disposable {
       return;
     }
 
+    if (syntaxErrorInAnyEditor) {
+      // Skip silently, as before; the editor already shows the error.
+      reportSyntaxErrorSkip(trigger);
+      return;
+    }
+
+    if (AnalyticsConstants.TRIGGER_SAVE_ACTION.equals(trigger)) {
+      saveActionReported = true; // Every path from here reports one event.
+    }
+
     // Transition the app to an about-to-reload state.
     final FlutterApp.State previousAppState = app.transitionStartingHotReload();
 
@@ -258,6 +301,7 @@ public class FlutterReloadManager implements Disposable {
       clearLastNotification();
 
       if (!app.isConnected()) {
+        Analytics.reportReloadOnSave(myProject, trigger, AnalyticsConstants.OUTCOME_SKIPPED_NOT_CONNECTED, null, null);
         return;
       }
 
@@ -265,6 +309,7 @@ public class FlutterReloadManager implements Disposable {
       if (hasErrorsInFile(editor.getDocument())) {
         app.cancelHotReloadState(previousAppState);
         showAnalysisNotification("Reload not performed", "Analysis issues found", true);
+        Analytics.reportReloadOnSave(myProject, trigger, AnalyticsConstants.OUTCOME_SKIPPED_SYNTAX_ERROR_CURRENT_FILE, null, null);
 
         return;
       }
@@ -272,7 +317,24 @@ public class FlutterReloadManager implements Disposable {
       final Notification notification = showRunNotification(app, null, "Reloading…", false);
       final long startTime = System.currentTimeMillis();
 
-      app.performHotReload(true, FlutterConstants.RELOAD_REASON_SAVE).thenAccept(result -> {
+      final var reload = app.performHotReload(true, FlutterConstants.RELOAD_REASON_SAVE);
+
+      // Report every completion, including exceptional ones (for example, a daemon error response) that the
+      // thenAccept below never sees.
+      reload.whenComplete((result, throwable) -> {
+        final int durationMs = (int)Math.max(0, Math.min(Integer.MAX_VALUE, System.currentTimeMillis() - startTime));
+        if (throwable != null || result == null) {
+          Analytics.reportReloadOnSave(myProject, trigger, AnalyticsConstants.OUTCOME_EXCEPTION, durationMs, null);
+        }
+        else if (!result.ok()) {
+          Analytics.reportReloadOnSave(myProject, trigger, AnalyticsConstants.OUTCOME_ERROR, durationMs, result.getCode());
+        }
+        else {
+          Analytics.reportReloadOnSave(myProject, trigger, AnalyticsConstants.OUTCOME_SUCCESS, durationMs, null);
+        }
+      });
+
+      reload.thenAccept(result -> {
         if (!result.ok()) {
           if (notification != null) {
             notification.expire();
@@ -296,6 +358,15 @@ public class FlutterReloadManager implements Disposable {
         }
       });
     }, 0, TimeUnit.MILLISECONDS);
+  }
+
+  /** Reports {@code skipped_syntax_error_any_editor} at most once per {@link #SYNTAX_SKIP_REPORT_INTERVAL_NANOS}. */
+  private void reportSyntaxErrorSkip(@NotNull String trigger) {
+    final long now = System.nanoTime();
+    final long last = lastSyntaxSkipReportNanos.get();
+    if (now - last >= SYNTAX_SKIP_REPORT_INTERVAL_NANOS && lastSyntaxSkipReportNanos.compareAndSet(last, now)) {
+      Analytics.reportReloadOnSave(myProject, trigger, AnalyticsConstants.OUTCOME_SKIPPED_SYNTAX_ERROR_ANY_EDITOR, null, null);
+    }
   }
 
   private void reloadApp(@NotNull FlutterApp app, @NotNull String reason) {

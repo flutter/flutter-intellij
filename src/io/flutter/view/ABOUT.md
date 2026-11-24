@@ -30,6 +30,7 @@ The other `EmbeddedBrowser` implementation is [`EmbeddedJxBrowser`](../jxbrowser
 
 ## Side Effects
 - Registers ProjectManagerListeners to handle IDE lifecycle events like project closing (EmbeddedBrowser).
+- Each `EmbeddedBrowser.openPanel` call reports one `embedded_browser` analytics event: `opened` once the URL is loaded into a tab, or `failed` with a reason at each early exit. A later `openPanel` for an existing tab (e.g. a Widget Preview theme reload) reports `newTab=false`; `refresh()` and the URL updates don't call `openPanel`. See [analytics](../analytics/ABOUT.md) for how to read these events.
 - Modifies tool window contents dynamically, adding, removing, or replacing panels, UI components, and browser tabs (EmbeddedBrowser, InspectorView, ViewUtils). InspectorView also sets a `RefreshToolWindowAction` title action.
 - `FlutterViewMessages.sendDebugActive` creates a `VMServiceManager`, registers it with `Disposer` under the `VmServiceWrapper`, calls `app.setVmServices`, and publishes a synchronous `FlutterDebugEvent` on the IDE's MessageBus.
 - InspectorView calls `DevToolsUtils.registerDevToolsVmServiceListener` for the app.

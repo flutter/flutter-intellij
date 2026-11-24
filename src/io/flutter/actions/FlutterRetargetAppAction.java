@@ -11,8 +11,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
-import com.jetbrains.lang.dart.analytics.Analytics;
-import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -49,8 +47,9 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
   public void actionPerformed(@NotNull AnActionEvent e) {
     final AnAction action = getAction(e.getProject());
     if (action != null) {
+      // The target action reports its own analytics event (with this event's place), so report nothing
+      // here; reporting both would count each toolbar or menu invocation twice.
       action.actionPerformed(e);
-      Analytics.report(AnalyticsData.forAction(this, e));
     }
   }
 

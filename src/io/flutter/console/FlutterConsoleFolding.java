@@ -40,10 +40,36 @@ public class FlutterConsoleFolding extends ConsoleFolding {
     return Math.min(index, windowsIndex);
   }
 
+  /**
+   * Returns true for text that begins with an absolute path: a Unix path ('/...'), a UNC path ('\\server\share'),
+   * or a Windows drive path ('C:\...' or 'C:/...'). Android logcat lines such as
+   * 'I/flutter (12345): message' do not begin with an absolute path.
+   */
+  private static boolean isAbsolutePath(@NotNull String line) {
+    if (line.isEmpty()) {
+      return false;
+    }
+    if (line.startsWith("/") || line.startsWith("\\\\")) {
+      return true;
+    }
+    if (line.length() < 3) {
+      return false;
+    }
+    final char drive = line.charAt(0);
+    return ((drive >= 'a' && drive <= 'z') || (drive >= 'A' && drive <= 'Z'))
+      && line.charAt(1) == ':'
+      && (line.charAt(2) == '\\' || line.charAt(2) == '/');
+  }
+
+  /**
+   * Folds lines that invoke the Flutter executable, such as '/Users/.../flutter run' (or the Windows equivalent).
+   * Android log lines such as 'I/flutter (12345): message' contain '/flutter ' but do not begin with an absolute
+   * path, so they are not folded.
+   */
   @Override
   public boolean shouldFoldLine(@NotNull Project project, @NotNull String line) {
     final int index = indexOfMarker(line);
-    return index != -1 && line.indexOf(' ') > index;
+    return index != -1 && isAbsolutePath(line) && line.indexOf(' ') > index;
   }
 
   @Override

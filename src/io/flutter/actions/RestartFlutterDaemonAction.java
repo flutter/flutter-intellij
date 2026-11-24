@@ -20,6 +20,8 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.Icon;
 
 public class RestartFlutterDaemonAction extends AnAction {
+  /** The plugin.xml id. The device selector creates its own unregistered instance, so report with this id explicitly. */
+  public static final String ID = "io.flutter.RestartDaemon";
 
   /**
    * Create a `RestartFlutterDaemonAction` for presentation in the device selector.
@@ -55,7 +57,7 @@ public class RestartFlutterDaemonAction extends AnAction {
 
     DeviceService.getInstance(project).restart();
 
-    Analytics.report(AnalyticsData.forAction(this, event));
+    Analytics.report(AnalyticsData.forAction(ID, event));
   }
 
   @Override
