@@ -84,9 +84,11 @@ public class SdkAttachConfig extends SdkRunConfig {
 
     final LaunchState launcher = new AttachState(env, mainFile.getAppDir(), mainFile.getFile(), this, createAppCallback);
     addConsoleFilters(launcher, env, mainFile, module);
-    Analytics.recordRunOrDebugSession(AnalyticsConstants.MECHANISM_FLUTTER_ATTACH, executor, getProject(),
-                                      Analytics.buildModeFor(FlutterLaunchMode.fromEnv(env), executor.getId(),
-                                                             launchFields.getAttachArgsParsed()));
+    final String buildMode =
+      Analytics.buildModeFor(FlutterLaunchMode.fromEnv(env), executor.getId(), launchFields.getAttachArgsParsed());
+    // No hasFlavor: `flutter attach` doesn't build, and has no --flavor option.
+    launcher.setSessionReporter(device -> Analytics.recordRunOrDebugSession(
+      AnalyticsConstants.MECHANISM_FLUTTER_ATTACH, executor, getProject(), buildMode, device));
     return launcher;
   }
 

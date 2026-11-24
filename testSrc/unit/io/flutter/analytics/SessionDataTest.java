@@ -9,6 +9,7 @@ import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import com.jetbrains.lang.dart.analytics.AnalyticsData;
+import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.LaunchState;
 
@@ -89,6 +90,81 @@ public class SessionDataTest extends BasePlatformTestCase {
     assertEquals(AnalyticsConstants.BUILD_MODE_DEBUG,
                  Analytics.buildModeFor(FlutterLaunchMode.DEBUG, DefaultRunExecutor.EXECUTOR_ID,
                                          new String[]{"--dart-define=MODE=--release"}));
+  }
+
+  public void testAppSessionWithDevice() {
+    final FlutterDevice device = new FlutterDevice("emulator-5554", "sdk gphone64", "android-arm64", true, "mobile", "android", true);
+    final AnalyticsData event = assertOneElement(record(() -> Analytics.recordRunOrDebugSession(
+      AnalyticsConstants.MECHANISM_FLUTTER_APP, DefaultDebugExecutor.getDebugExecutorInstance(), getProject(),
+      AnalyticsConstants.BUILD_MODE_DEBUG, device, true)));
+
+    assertSame(getProject(), event.getProject());
+    assertEquals(AnalyticsConstants.PLATFORM_TYPE_ANDROID, event.getData().get("platformType"));
+    assertEquals(AnalyticsConstants.DEVICE_CATEGORY_MOBILE, event.getData().get("deviceCategory"));
+    assertEquals(Boolean.TRUE, event.getData().get("isEmulator"));
+    assertEquals(Boolean.TRUE, event.getData().get("hasFlavor"));
+    // Not flutter_tools' targetPlatform, and never the device id or name.
+    assertFalse(event.getData().containsKey("targetPlatform"));
+    assertFalse(event.getData().containsValue("emulator-5554"));
+    assertFalse(event.getData().containsValue("sdk gphone64"));
+  }
+
+  public void testAttachSessionOmitsHasFlavor() {
+    final AnalyticsData event = assertOneElement(record(() -> Analytics.recordRunOrDebugSession(
+      AnalyticsConstants.MECHANISM_FLUTTER_ATTACH, DefaultDebugExecutor.getDebugExecutorInstance(), getProject(),
+      AnalyticsConstants.BUILD_MODE_DEBUG, device("ios", "ios", "mobile"))));
+
+    assertEquals(AnalyticsConstants.PLATFORM_TYPE_IOS, event.getData().get("platformType"));
+    assertEquals(Boolean.FALSE, event.getData().get("isEmulator"));
+    assertFalse(event.getData().containsKey("hasFlavor"));
+  }
+
+  public void testIsEmulatorOnlyForAndroidAndIos() {
+    for (FlutterDevice device : new FlutterDevice[]{
+      device("web-javascript", "web", "web"), device("linux-x64", "linux", "desktop"), device("pi", "custom", "mobile")}) {
+      final AnalyticsData event = assertOneElement(record(() -> Analytics.recordRunOrDebugSession(
+        AnalyticsConstants.MECHANISM_FLUTTER_APP, DefaultRunExecutor.getRunExecutorInstance(), getProject(),
+        AnalyticsConstants.BUILD_MODE_DEBUG, device, false)));
+      assertFalse(device.platformType(), event.getData().containsKey("isEmulator"));
+    }
+  }
+
+  public void testTestSessionOmitsDeviceFields() {
+    final AnalyticsData event = assertOneElement(record(() -> Analytics.recordRunOrDebugSession(
+      AnalyticsConstants.MECHANISM_FLUTTER_TESTS, DefaultRunExecutor.getRunExecutorInstance(), getProject())));
+
+    for (String key : new String[]{"platformType", "deviceCategory", "isEmulator", "hasFlavor"}) {
+      assertFalse(key, event.getData().containsKey(key));
+    }
+  }
+
+  public void testPlatformTypeFor() {
+    assertEquals(AnalyticsConstants.PLATFORM_TYPE_IOS, Analytics.platformTypeFor(device("ios", "ios", "mobile")));
+    assertEquals(AnalyticsConstants.PLATFORM_TYPE_WEB, Analytics.platformTypeFor(device("web-javascript", "web", "web")));
+    assertEquals(AnalyticsConstants.PLATFORM_TYPE_MACOS, Analytics.platformTypeFor(device("darwin", "macos", "desktop")));
+    assertEquals(AnalyticsConstants.PLATFORM_TYPE_CUSTOM, Analytics.platformTypeFor(device("pi", "custom", "mobile")));
+    // Unknown or missing values become "other", never the raw value.
+    assertEquals(AnalyticsConstants.PLATFORM_TYPE_OTHER, Analytics.platformTypeFor(device("x", "something-new", null)));
+    assertEquals(AnalyticsConstants.PLATFORM_TYPE_OTHER, Analytics.platformTypeFor(device("android-arm64", null, null)));
+  }
+
+  public void testDeviceCategoryFor() {
+    assertEquals(AnalyticsConstants.DEVICE_CATEGORY_DESKTOP, Analytics.deviceCategoryFor(device("linux-x64", "linux", "desktop")));
+    assertEquals(AnalyticsConstants.DEVICE_CATEGORY_WEB, Analytics.deviceCategoryFor(device("web-javascript", "web", "web")));
+    assertEquals(AnalyticsConstants.DEVICE_CATEGORY_OTHER, Analytics.deviceCategoryFor(device("android-arm64", "android", null)));
+    assertEquals(AnalyticsConstants.DEVICE_CATEGORY_OTHER, Analytics.deviceCategoryFor(device("x", "x", "watch")));
+  }
+
+  public void testHasFlavor() {
+    assertTrue(Analytics.hasFlavor("staging", NO_ARGS));
+    assertTrue(Analytics.hasFlavor(null, new String[]{"--flavor=staging"}));
+    assertTrue(Analytics.hasFlavor(null, new String[]{"--flavor", "staging"}));
+    assertFalse(Analytics.hasFlavor(null, NO_ARGS));
+    assertFalse(Analytics.hasFlavor(" ", new String[]{"--dart-define=flavor=x"}));
+  }
+
+  private static FlutterDevice device(String platform, String platformType, String category) {
+    return new FlutterDevice("id", "name", platform, false, category, platformType, null);
   }
 
   private static List<AnalyticsData> record(Runnable action) {
