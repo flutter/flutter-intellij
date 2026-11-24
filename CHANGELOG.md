@@ -7,10 +7,12 @@
 - Centralizing file path logging into `PluginLogger`. (#8707)
 - Redacting the Flutter SDK path when logging the command line in `FlutterApp`. (#9203)
 - Migrated `FlutterCompletionContributor` (color and icon completion previews) to IntelliJ `CompletionContributor` for LSP completion support. (#9186)
+- Migrating Flutter live templates and `DART_TOPLEVEL` context registration to declarative XML extensions to support dynamic plugin loading without IDE restarts. (#9207)
 
 ### Removed
 - Support for platform version 2025.2. (#9255)
 - Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)
+- Legacy `FlutterLiveTemplatesProvider` implementation in favor of declarative `<defaultLiveTemplates>`. (#9207)
 
 ### Fixed
 - Android `I/flutter` log lines in the Run console being folded as Flutter command lines (#9265).
