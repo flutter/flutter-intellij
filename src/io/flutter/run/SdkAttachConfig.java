@@ -84,7 +84,9 @@ public class SdkAttachConfig extends SdkRunConfig {
 
     final LaunchState launcher = new AttachState(env, mainFile.getAppDir(), mainFile.getFile(), this, createAppCallback);
     addConsoleFilters(launcher, env, mainFile, module);
-    Analytics.recordRunOrDebugSession(AnalyticsConstants.MECHANISM_FLUTTER_ATTACH, executor, getProject());
+    Analytics.recordRunOrDebugSession(AnalyticsConstants.MECHANISM_FLUTTER_ATTACH, executor, getProject(),
+                                      Analytics.buildModeFor(FlutterLaunchMode.fromEnv(env), executor.getId(),
+                                                             launchFields.getAttachArgsParsed()));
     return launcher;
   }
 

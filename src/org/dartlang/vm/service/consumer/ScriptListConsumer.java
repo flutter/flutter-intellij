@@ -13,8 +13,6 @@
  */
 package org.dartlang.vm.service.consumer;
 
-// This is a generated file.
-
 import org.dartlang.vm.service.element.ScriptList;
 
 @SuppressWarnings({"WeakerAccess", "unused"})

@@ -85,10 +85,12 @@ public class FlutterCoverageProgramRunner extends GenericProgramRunner<RunnerSet
   private void processCoverage(ExecutionEnvironment env) {
     if (!(env.getRunProfile() instanceof TestConfig runConfig)) return;
     final CoverageEnabledConfiguration configuration = CoverageEnabledConfiguration.getOrCreate(runConfig);
-    if (configuration.getCoverageFilePath() == null) return;
+    final String coverageFilePath = configuration.getCoverageFilePath();
+    if (coverageFilePath == null || coverageFilePath.isEmpty()) return;
 
-    final Path path = Paths.get(configuration.getCoverageFilePath());
+    final Path path = Paths.get(coverageFilePath);
     final Path cov = path.getParent();
+    if (cov == null || cov.getParent() == null) return;
     VfsUtil.markDirtyAndRefresh(false, false, true, LocalFileSystem.getInstance().findFileByPath(cov.getParent().toString()));
     VfsUtil.markDirtyAndRefresh(false, true, true, LocalFileSystem.getInstance().findFileByPath(cov.toString()));
     if (Files.exists(path)) {

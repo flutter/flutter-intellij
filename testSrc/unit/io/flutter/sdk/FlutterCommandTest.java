@@ -9,7 +9,11 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.ide.FlutterCodeInsightFixtureTestCase;
+import io.flutter.pub.PubRoot;
+import io.flutter.run.common.RunMode;
+import io.flutter.run.test.TestFields;
 import io.flutter.settings.FlutterSettings;
 
 import java.io.File;
@@ -147,5 +151,25 @@ public class FlutterCommandTest extends FlutterCodeInsightFixtureTestCase {
       new FlutterCommand(sdk, null, FlutterCommand.Type.RUN, "lib/main.dart");
 
     assertEquals("flutter run lib/main.dart", command.getSanitizedDisplayCommand());
+  }
+
+  public void testTestCommandAddsPlainName() throws Exception {
+    final FlutterSdk sdk = createFlutterSdk();
+    final VirtualFile pubRootFile = sdk.getHome().findFileByRelativePath("packages/flutter");
+
+    final FlutterCommand command = sdk.flutterTest(
+      PubRoot.forDirectory(pubRootFile),
+      pubRootFile,
+      "my test name:",
+      RunMode.RUN,
+      null,
+      TestFields.Scope.NAME,
+      false
+    );
+    final GeneralCommandLine line = command.createGeneralCommandLine(getProject());
+    final List<String> params = line.getParametersList().getList();
+
+    assertTrue(params.contains("--plain-name"));
+    assertTrue(params.contains("my test name:"));
   }
 }

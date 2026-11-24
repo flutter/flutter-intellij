@@ -10,12 +10,18 @@
 - Migrating Flutter live templates and `DART_TOPLEVEL` context registration to declarative XML extensions to support dynamic plugin loading without IDE restarts. (#9207)
 
 ### Removed
+- Support for platform version 2025.2. (#9255)
 - Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)
 - Legacy `FlutterLiveTemplatesProvider` implementation in favor of declarative `<defaultLiveTemplates>`. (#9207)
 
 ### Fixed
+- Android `I/flutter` log lines in the Run console being folded as Flutter command lines (#9265).
+- Anchoring of the Flutter action group in the Project View context menu. (#9249)
+- Another project's editor being kept in memory after a Save All, until the next Save All. (#9257)
+- `NullPointerException` in `FlutterCoverageEnabledConfiguration` when resolving the coverage file path for a test run configuration. (#9247)
 - Unresolved `JaroWinkler` class error when matching custom icon font files in Android Studio 2026.2. (#9204)
 - `AlreadyDisposedException` when a project is closed while Flutter module setup is still queued. (#9222)
+- Failure running a single Flutter test whose name contains escaped characters (such as `\'` or `\$`). (#9205)
 
 ## 98.0.0
 

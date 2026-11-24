@@ -15,6 +15,7 @@ Provides a real-time widget preview UI tool window powered by the `flutter widge
 - `startWidgetPreview` runs on a pooled thread. Content swaps go through `ViewUtils.replacePanelLabel`/`invokeLater` on the EDT, but some Swing components (e.g. via `viewUtils.presentLabels`) are built on the pooled thread.
 
 ## Side Effects
+- Each start attempt reports at most one `widget_preview` analytics event: `started` when the preview URL arrives, or `failed` with a reason at each handled early exit; see [analytics](../analytics/ABOUT.md). Nothing is reported for unchecked exceptions, a process that never prints a URL or exits, or a process killed by `dispose()`.
 - Spawns and manages the lifecycle of the external `flutter widget-preview` background process. Before starting it, the pooled thread waits up to 30s each for DTD (`DtdUtils.readyDtdService`) and DevTools (`DevToolsService`) and passes both URIs to `sdk.widgetPreview(...)`.
 - Modifies IntelliJ tool window contents dynamically based on initialization state, errors, or browser availability.
 - Opens the preview in an embedded browser tab. If no embedded browser is available, it shows an "Open in external browser" link that launches an external browser only when clicked. `openPanel` errors are printed to `System.out` and not shown in the UI.

@@ -39,6 +39,49 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
+  @Test
+  public void extractTestNameShouldUnescapeQuotes() throws Exception {
+    run(() -> {
+      final PsiElement testKeyword = setUpDartElement(
+        "main() { test('doesn\\'t escape', () {}); }", "test", LeafPsiElement.class);
+      final DartCallExpression call =
+        DartSyntax.findEnclosingFunctionCall(testKeyword, "test");
+      assertNotNull(call);
+
+      final String name = testConfigUtils.extractTestName(call);
+      assertEquals("doesn't escape", name);
+    });
+  }
+
+  @Test
+  public void extractTestNameShouldUnescapeDollarAndBackslash() throws Exception {
+    run(() -> {
+      final PsiElement testKeyword = setUpDartElement(
+        "main() { test('costs \\$5 in C:\\\\temp', () {}); }", "test", LeafPsiElement.class);
+      final DartCallExpression call =
+        DartSyntax.findEnclosingFunctionCall(testKeyword, "test");
+      assertNotNull(call);
+
+      assertEquals("costs $5 in C:\\temp", testConfigUtils.extractTestName(call));
+    });
+  }
+
+  @Test
+  public void extractTestNameShouldNotEscapeSpecialCharacters() throws Exception {
+    run(() -> {
+      // These characters were previously escaped by StringUtil.escapeProperty
+      // which caused issue #8575.
+      final PsiElement testKeyword = setUpDartElement(
+        "main() { test('foo: = ! #', () {}); }", "test", LeafPsiElement.class);
+      final DartCallExpression call =
+        DartSyntax.findEnclosingFunctionCall(testKeyword, "test");
+      assertNotNull(call);
+
+      final String name = testConfigUtils.extractTestName(call);
+      assertEquals("foo: = ! #", name);
+    });
+  }
+
   @NotNull
   private DartCallExpression findCallWithArg(@NotNull String fileContents, @NotNull String stringLiteralText) {
     final PsiElement arg = setUpDartElement(fileContents, stringLiteralText, PsiElement.class);
