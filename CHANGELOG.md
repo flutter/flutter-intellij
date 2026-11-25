@@ -3,25 +3,37 @@
 ### Added
 
 ### Changed
+
+### Removed
+
+### Fixed
+
+## 99.0.0
+
+### Added
+
+### Changed
 - Routing Extract Flutter Widget refactoring to LSP code actions when experimental LSP features are enabled. (#9202)
-- Centralizing file path logging into `PluginLogger`. (#8707)
+- Centralizing file path logging into `PluginLogger`. (#9192)
 - Redacting the Flutter SDK path when logging the command line in `FlutterApp`. (#9203)
-- Migrated `FlutterCompletionContributor` (color and icon completion previews) to IntelliJ `CompletionContributor` for LSP completion support. (#9186)
+- Migrating `FlutterCompletionContributor` (color and icon completion previews) to IntelliJ `CompletionContributor` for LSP completion support. (#9186)
 - Migrating Flutter live templates and `DART_TOPLEVEL` context registration to declarative XML extensions to support dynamic plugin loading without IDE restarts. (#9207)
+- Specifying background action update thread (`ActionUpdateThread.BGT`) across Flutter actions for modern IntelliJ Platform compliance. (#9188)
 
 ### Removed
 - Support for platform version 2025.2. (#9255)
-- Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9177)
+- Eager legacy Dart Analysis Server startup when enabling Dart support for Gradle modules. (#9187)
 - Legacy `FlutterLiveTemplatesProvider` implementation in favor of declarative `<defaultLiveTemplates>`. (#9207)
 
 ### Fixed
-- Android `I/flutter` log lines in the Run console being folded as Flutter command lines (#9265).
+- Android `I/flutter` log lines in the Run console being folded as Flutter command lines. (#9265)
 - Anchoring of the Flutter action group in the Project View context menu. (#9249)
 - Another project's editor being kept in memory after a Save All, until the next Save All. (#9257)
 - `NullPointerException` in `FlutterCoverageEnabledConfiguration` when resolving the coverage file path for a test run configuration. (#9247)
 - Unresolved `JaroWinkler` class error when matching custom icon font files in Android Studio 2026.2. (#9204)
-- `AlreadyDisposedException` when a project is closed while Flutter module setup is still queued. (#9222)
+- `AlreadyDisposedException` when a project is closed while Flutter module setup is still queued. (#9223)
 - Failure running a single Flutter test whose name contains escaped characters (such as `\'` or `\$`). (#9205)
+- IDE deadlock on project open when the Flutter SDK path is invalid. (#9102)
 
 ## 98.0.0
 
@@ -30,7 +42,6 @@
 ### Changed
 - Migrated test detection from `FlutterOutline` to Dart PSI. (#9159)
 - Avoiding `--no-color` on Flutter commands run from the plugin, and keeping their console command lines folded. (#9161)
-- Specifying background action update thread (`ActionUpdateThread.BGT`) across Flutter actions for modern IntelliJ Platform compliance. (#9188)
 
 ### Removed
 - Legacy Dart Analysis Server URI mapping during debugging. (#9149)
@@ -39,7 +50,6 @@
 ### Fixed
 - Empty Flutter SDK dropdown in the New Project wizard when switching to Flutter after starting the wizard on another language. (#9110)
 - Process handlers of terminated apps are no longer kept until the project closes. (#9175)
-- IDE deadlock on project open when the Flutter SDK path is invalid. (#9093)
 
 ## 97.0.0
 
