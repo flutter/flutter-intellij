@@ -16,7 +16,7 @@
 - Routing Extract Flutter Widget refactoring to LSP code actions when experimental LSP features are enabled. (#9202)
 - Centralizing file path logging into `PluginLogger`. (#9192)
 - Redacting the Flutter SDK path when logging the command line in `FlutterApp`. (#9203)
-- Migrated `FlutterCompletionContributor` (color and icon completion previews) to IntelliJ `CompletionContributor` for LSP completion support. (#9186)
+- Migrating `FlutterCompletionContributor` (color and icon completion previews) to IntelliJ `CompletionContributor` for LSP completion support. (#9186)
 - Migrating Flutter live templates and `DART_TOPLEVEL` context registration to declarative XML extensions to support dynamic plugin loading without IDE restarts. (#9207)
 - Specifying background action update thread (`ActionUpdateThread.BGT`) across Flutter actions for modern IntelliJ Platform compliance. (#9188)
 
