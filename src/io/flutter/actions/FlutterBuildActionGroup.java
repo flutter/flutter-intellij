@@ -17,9 +17,10 @@ import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.jetbrains.lang.dart.analytics.Analytics;
+import com.intellij.util.concurrency.annotations.RequiresEdt;
 import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import io.flutter.FlutterMessages;
+import io.flutter.analytics.Analytics;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
@@ -30,8 +31,11 @@ import io.flutter.utils.ProgressHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.concurrent.TimeUnit;
+
 public class FlutterBuildActionGroup extends DefaultActionGroup {
 
+  @RequiresEdt
   public static void build(@NotNull Project project,
                            @NotNull PubRoot pubRoot,
                            @NotNull FlutterSdk sdk,
@@ -39,11 +43,14 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
                            @Nullable String desc) {
     final ProgressHelper progressHelper = new ProgressHelper(project);
     progressHelper.start(desc == null ? "building" : desc);
+    final long startNanos = System.nanoTime();
     ProcessAdapter processAdapter = new ProcessAdapter() {
       @Override
       public void processTerminated(@NotNull ProcessEvent event) {
         progressHelper.done();
         final int exitCode = event.getExitCode();
+        final int durationMs = Math.clamp(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos), 0, Integer.MAX_VALUE);
+        Analytics.reportBuild(project, buildType.type, exitCode, durationMs);
         if (exitCode != 0) {
           FlutterMessages.showError("Error while building " + buildType, "`flutter build` returned: " + exitCode, project);
         }
@@ -51,12 +58,17 @@ public class FlutterBuildActionGroup extends DefaultActionGroup {
     };
     final Module module = pubRoot.getModule(project);
     if (module != null) {
-      sdk.flutterBuild(pubRoot, buildType.type).startInModuleConsole(module, pubRoot::refresh, processAdapter);
+      final Process process = sdk.flutterBuild(pubRoot, buildType.type).startInModuleConsole(module, pubRoot::refresh, processAdapter);
+      if (process == null) {
+        // TODO(pq): also call progressHelper.done() here, as the non-module branch does (https://github.com/flutter/flutter-intellij/issues/9273).
+        Analytics.reportBuildNotStarted(project, buildType.type);
+      }
     }
     else {
       final ColoredProcessHandler processHandler = sdk.flutterBuild(pubRoot, buildType.type).startInConsole(project);
       if (processHandler == null) {
         progressHelper.done();
+        Analytics.reportBuildNotStarted(project, buildType.type);
       }
       else {
         processHandler.addProcessListener(processAdapter);

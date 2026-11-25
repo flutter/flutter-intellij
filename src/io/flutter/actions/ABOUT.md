@@ -10,7 +10,7 @@ Registers standard IDE UI actions (buttons, context menus) that trigger Flutter 
 - [`DeviceSelectorRefresherAction`](DeviceSelectorRefresherAction.java)
 - [`ExtractWidgetAction`](ExtractWidgetAction.java)
 - [`FlutterAppAction`](FlutterAppAction.java): base class for actions bound to a running `FlutterApp`.
-- [`FlutterBuildActionGroup`](FlutterBuildActionGroup.java): build menu; inner actions `AAR`, `APK`, `AppBundle`, `Bundle`, `Ios`, `Linux`, `Macos`, `Web`, `Windows` are registered individually in `plugin.xml`.
+- [`FlutterBuildActionGroup`](FlutterBuildActionGroup.java): build menu; inner actions `AAR`, `APK`, `AppBundle`, `Bundle`, `Ios`, `Linux`, `Macos`, `Web`, `Windows` are registered individually in `plugin.xml`. Each build reports a `flutter_build` analytics event when its process ends or couldn't be launched (`Analytics.reportBuild`, `Analytics.reportBuildNotStarted`), besides the action click.
 - [`FlutterCleanAction`](FlutterCleanAction.java)
 - [`FlutterDoctorAction`](FlutterDoctorAction.java)
 - [`FlutterExternalIdeActionGroup`](FlutterExternalIdeActionGroup.java): not registered (commented out in `plugin.xml`, see issue #7103).
@@ -59,7 +59,7 @@ Registers standard IDE UI actions (buttons, context menus) that trigger Flutter 
 - Triggers FileDocumentManager.getInstance().saveAllDocuments() to persist unsaved IDE edits to disk before initiating Flutter commands.
 - Launches native external programs, including Xcode, AppCode, and mobile device emulators/simulators. (The Android Studio launch path is currently unregistered.)
 - Mutates the IDE presentation state by dynamically toggling toolbar components, icons, labels, popup menus, and enabled properties.
-- Reports anonymous telemetry by calling the Dart plugin's `com.jetbrains.lang.dart.analytics.Analytics.report` directly and synchronously. Calls don't go through the fail-safe wrapper in [`analytics`](../analytics/ABOUT.md).
+- Reports anonymous telemetry by calling the Dart plugin's `com.jetbrains.lang.dart.analytics.Analytics.report` directly and synchronously. Calls don't go through the fail-safe wrapper in [`analytics`](../analytics/ABOUT.md), except in `FlutterBuildActionGroup`, which uses the wrapper for both its click and build events.
   - Per-app actions (`ReloadFlutterApp`, `RestartFlutterApp`, ...) aren't registered with the `ActionManager`, so they report with their `ID` constant rather than `AnalyticsData.forAction(this, e)`, which would have a null id and be dropped. Reload and Restart report only after they've asked the reload manager to act.
   - `FlutterRetargetAppAction` reports nothing itself. The target action sends the single event, and its `place` tells toolbar and menu invocations apart from console ones.
 - Displays modal windows and UI dialogs directly to the user.

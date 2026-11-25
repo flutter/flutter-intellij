@@ -104,18 +104,22 @@ object AnalyticsConstants {
   const val HOT_RELOAD_TYPE = "hot_reload"
   const val RELOAD_ON_SAVE_ID = "reload_on_save"
 
-  /** Reload-on-save event fields. */
-  val TRIGGER = StringValue("trigger")
+  /** How an operation ended (reload-on-save and build events); an `OUTCOME_*` value. */
   val OUTCOME = StringValue("outcome")
+
+  /** Outcomes shared by reload-on-save and build events. */
+  const val OUTCOME_SUCCESS = "success"
+  const val OUTCOME_ERROR = "error"
+
+  /** Reload-on-save event fields, besides [OUTCOME]. */
+  val TRIGGER = StringValue("trigger")
   val ERROR_CODE = IntValue("errorCode")
 
   /** Reload-on-save triggers. */
   const val TRIGGER_SAVE_ACTION = "save_action"
   const val TRIGGER_DOCUMENT_SAVE = "document_save"
 
-  /** Reload-on-save outcomes. */
-  const val OUTCOME_SUCCESS = "success"
-  const val OUTCOME_ERROR = "error"
+  /** Reload-on-save outcomes, besides [OUTCOME_SUCCESS] and [OUTCOME_ERROR]. */
   const val OUTCOME_EXCEPTION = "exception"
   const val OUTCOME_SKIPPED_NOT_CONNECTED = "skipped_not_connected"
   const val OUTCOME_SKIPPED_SYNTAX_ERROR_CURRENT_FILE = "skipped_syntax_error_current_file"
@@ -156,6 +160,17 @@ object AnalyticsConstants {
   const val REASON_TAB_CREATE_FAILED = "tab_create_failed"
   const val REASON_ENGINE_NOT_READY = "engine_not_ready"
   const val REASON_LOAD_FAILED = "load_failed"
+
+  /** Build event type and id: one per `flutter build` started from the Build menu, reported when it ends. */
+  const val BUILD_TYPE = "flutter_build"
+  const val BUILD_MENU = "build_menu"
+
+  /** Build fields, besides [OUTCOME]: the target (a `FlutterBuildActionGroup.BuildType` value, e.g. `apk`) and the process exit code. */
+  val BUILD_TARGET = StringValue("buildTarget")
+  val EXIT_CODE = IntValue("exitCode")
+
+  /** Build outcomes, besides [OUTCOME_SUCCESS] (exit code 0) and [OUTCOME_ERROR] (any other exit code). */
+  const val OUTCOME_NOT_STARTED = "not_started"
 }
 
 private class SessionData(
@@ -191,6 +206,16 @@ private class ReloadOnSaveData(project: Project?, trigger: String, outcome: Stri
     durationMs?.let { add(DartAnalyticsConstants.DURATION_MS, it) }
     // Never the daemon's message, which can contain user code.
     errorCode?.let { add(AnalyticsConstants.ERROR_CODE, it) }
+  }
+}
+
+private class BuildData(project: Project?, buildTarget: String, outcome: String, exitCode: Int?, durationMs: Int?) :
+  AnalyticsData(AnalyticsConstants.BUILD_TYPE, AnalyticsConstants.BUILD_MENU, project) {
+  init {
+    add(AnalyticsConstants.BUILD_TARGET, buildTarget)
+    add(AnalyticsConstants.OUTCOME, outcome)
+    exitCode?.let { add(AnalyticsConstants.EXIT_CODE, it) }
+    durationMs?.let { add(DartAnalyticsConstants.DURATION_MS, it) }
   }
 }
 
@@ -329,6 +354,23 @@ object Analytics {
   @JvmStatic
   fun reportReloadOnSave(project: Project?, trigger: String, outcome: String, durationMs: Int?, errorCode: Int?) {
     report(ReloadOnSaveData(project, trigger, outcome, durationMs, errorCode))
+  }
+
+  /**
+   * Reports a `flutter build` process that ended; the outcome is derived from [exitCode].
+   *
+   * @param buildTarget the `FlutterBuildActionGroup.BuildType` value, e.g. `apk`.
+   */
+  @JvmStatic
+  fun reportBuild(project: Project?, buildTarget: String, exitCode: Int, durationMs: Int) {
+    val outcome = if (exitCode == 0) AnalyticsConstants.OUTCOME_SUCCESS else AnalyticsConstants.OUTCOME_ERROR
+    report(BuildData(project, buildTarget, outcome, exitCode, durationMs))
+  }
+
+  /** Reports a `flutter build` whose process couldn't be launched. */
+  @JvmStatic
+  fun reportBuildNotStarted(project: Project?, buildTarget: String) {
+    report(BuildData(project, buildTarget, AnalyticsConstants.OUTCOME_NOT_STARTED, null, null))
   }
 
   @JvmStatic
