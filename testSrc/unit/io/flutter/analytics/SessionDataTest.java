@@ -12,6 +12,7 @@ import com.jetbrains.lang.dart.analytics.AnalyticsData;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.LaunchState;
+import io.flutter.run.test.TestFields;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ public class SessionDataTest extends BasePlatformTestCase {
   public void testRunSessionShape() {
     final AnalyticsData event = assertOneElement(record(() -> Analytics.recordRunOrDebugSession(
       AnalyticsConstants.MECHANISM_FLUTTER_APP, DefaultRunExecutor.getRunExecutorInstance(), getProject(),
-      AnalyticsConstants.BUILD_MODE_RELEASE)));
+      AnalyticsConstants.BUILD_MODE_RELEASE, device("linux-x64", "linux", "desktop"))));
 
     // Events without a project are dropped downstream, after the observer sees them.
     assertSame(getProject(), event.getProject());
@@ -35,7 +36,7 @@ public class SessionDataTest extends BasePlatformTestCase {
   public void testDebugSessionShape() {
     final AnalyticsData event = assertOneElement(record(() -> Analytics.recordRunOrDebugSession(
       AnalyticsConstants.MECHANISM_FLUTTER_ATTACH, DefaultDebugExecutor.getDebugExecutorInstance(), getProject(),
-      AnalyticsConstants.BUILD_MODE_DEBUG)));
+      AnalyticsConstants.BUILD_MODE_DEBUG, device("linux-x64", "linux", "desktop"))));
 
     assertSame(getProject(), event.getProject());
     assertEquals(AnalyticsConstants.MECHANISM_FLUTTER_ATTACH, event.getId());
@@ -44,15 +45,20 @@ public class SessionDataTest extends BasePlatformTestCase {
     assertEquals(AnalyticsConstants.BUILD_MODE_DEBUG, event.getData().get("buildMode"));
   }
 
-  public void testTestSessionOmitsBuildMode() {
-    final AnalyticsData event = assertOneElement(record(() -> Analytics.recordRunOrDebugSession(
-      AnalyticsConstants.MECHANISM_FLUTTER_TESTS, DefaultRunExecutor.getRunExecutorInstance(), getProject())));
+  public void testTestSessionShape() {
+    final AnalyticsData event = assertOneElement(record(() -> Analytics.recordTestSession(
+      DefaultDebugExecutor.getDebugExecutorInstance(), getProject(),
+      TestFields.forTestName("counter increments", "/work/app/test/widget_test.dart"))));
 
     assertSame(getProject(), event.getProject());
     assertEquals(AnalyticsConstants.MECHANISM_FLUTTER_TESTS, event.getId());
-    assertEquals(AnalyticsConstants.RUN_SESSION_TYPE, event.getData().get("type"));
-    assertEquals(AnalyticsConstants.EXECUTOR_RUN, event.getData().get("executor"));
-    assertFalse(event.getData().containsKey("buildMode"));
+    assertEquals(AnalyticsConstants.DEBUG_SESSION_TYPE, event.getData().get("type"));
+    assertEquals(AnalyticsConstants.EXECUTOR_DEBUG, event.getData().get("executor"));
+    assertEquals(AnalyticsConstants.TEST_SCOPE_NAME, event.getData().get("testScope"));
+    assertEquals(Boolean.FALSE, event.getData().get("isIntegrationTest"));
+    // Never the test name or path.
+    assertFalse(event.getData().containsValue("counter increments"));
+    assertFalse(event.getData().containsValue("/work/app/test/widget_test.dart"));
   }
 
   public void testExecutorFor() {
@@ -129,13 +135,20 @@ public class SessionDataTest extends BasePlatformTestCase {
     }
   }
 
-  public void testTestSessionOmitsDeviceFields() {
-    final AnalyticsData event = assertOneElement(record(() -> Analytics.recordRunOrDebugSession(
-      AnalyticsConstants.MECHANISM_FLUTTER_TESTS, DefaultRunExecutor.getRunExecutorInstance(), getProject())));
+  public void testTestSessionOmitsAppFields() {
+    final AnalyticsData event = assertOneElement(record(() -> Analytics.recordTestSession(
+      DefaultRunExecutor.getRunExecutorInstance(), getProject(), TestFields.forFile("/work/app/test/a_test.dart"))));
 
-    for (String key : new String[]{"platformType", "deviceCategory", "isEmulator", "hasFlavor"}) {
+    assertEquals(AnalyticsConstants.TEST_SCOPE_FILE, event.getData().get("testScope"));
+    for (String key : new String[]{"buildMode", "platformType", "deviceCategory", "isEmulator", "hasFlavor"}) {
       assertFalse(key, event.getData().containsKey(key));
     }
+  }
+
+  public void testTestScopeFor() {
+    assertEquals(AnalyticsConstants.TEST_SCOPE_NAME, Analytics.testScopeFor(TestFields.Scope.NAME));
+    assertEquals(AnalyticsConstants.TEST_SCOPE_FILE, Analytics.testScopeFor(TestFields.Scope.FILE));
+    assertEquals(AnalyticsConstants.TEST_SCOPE_DIRECTORY, Analytics.testScopeFor(TestFields.Scope.DIRECTORY));
   }
 
   public void testPlatformTypeFor() {

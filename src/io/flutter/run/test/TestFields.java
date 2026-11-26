@@ -281,10 +281,24 @@ public class TestFields {
     return sdk.flutterTest(root, fileOrDir, testName, mode, args, getScope(), useRegexp).startProcess(project);
   }
 
+  /**
+   * Whether these are integration tests: in or under the pub root's {@code integration_test} directory, as flutter_tools
+   * decides too. Integration tests run on the selected device (see {@link #adjustArgs}).
+   */
+  public boolean isIntegrationTest(@NotNull Project project) {
+    final VirtualFile fileOrDir = getFileOrDir();
+    final PubRoot root = getPubRoot(project);
+    return fileOrDir != null && root != null && isInIntegrationTestDir(root, fileOrDir);
+  }
+
+  private static boolean isInIntegrationTestDir(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir) {
+    final VirtualFile testDir = root.getIntegrationTestDir();
+    return testDir != null && VfsUtilCore.isAncestor(testDir, fileOrDir, false);
+  }
+
   @Nullable
   private String adjustArgs(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir, @NotNull Project project) {
-    final VirtualFile testDir = root.getIntegrationTestDir();
-    if (testDir == null || !VfsUtilCore.isAncestor(testDir, fileOrDir, false)) {
+    if (!isInIntegrationTestDir(root, fileOrDir)) {
       return additionalArgs;
     }
 

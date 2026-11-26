@@ -20,7 +20,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import io.flutter.analytics.Analytics;
-import io.flutter.analytics.AnalyticsConstants;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -89,7 +88,7 @@ public class TestConfig extends LocatableConfigurationBase<CommandLineState> imp
   @NotNull
   @Override
   public CommandLineState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) throws ExecutionException {
-    Analytics.recordRunOrDebugSession(AnalyticsConstants.MECHANISM_FLUTTER_TESTS, executor, getProject());
+    Analytics.recordTestSession(executor, getProject(), fields);
     return TestLaunchState.create(env, this);
   }
 
