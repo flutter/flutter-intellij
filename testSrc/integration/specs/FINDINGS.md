@@ -11,6 +11,20 @@ Format: **title** · date · where it bit · what it is · what we did · status
 
 ---
 
+## IDE Starter's process scans cost ~7 minutes per test on Windows
+
+- **Date:** 2026-11-26 · **Where:** `HarnessSelfCheckUITest` on Windows 11, IU 262.10968.63.
+- **What:** a passing self-check took 9 minutes, of which the test itself needed about 1.5. The new `[timing]` output showed three Starter steps, each finding nothing: the `KillOutdatedProcesses` JUnit extension's "Killing process containing '/ide-tests/'" before the class (2m 11s) and after it (2m 25s), and `MavenBuildTool`'s "Killing process containing 'MavenServerIndexerMain'" after the IDE closed (2m 47s, reported as `close IDE and wait`). Each reads every process's command line through OSHI (`processUtils.kt getProcessList`), which is that slow on this machine. The IDE itself shut down in 3 s. `MavenBuildTool` was only alive because `Setup.kt` called `withBuildTool<GradleBuildTool>()` (unused bootstrap leftover), and resolving one build tool instantiates every build tool in Starter's DI set.
+- **What we did:** `FlutterIdeUITest` calls Starter's public `CommonScope.perSuiteScopeForIdeActivities()`, which disables the extension's scans, and runs its own `killLeftoverTestIdes()` (`ProcessHandle`, kills executables under `ide-tests`; 0.1 s). Removed `withBuildTool<GradleBuildTool>()`. Self-check: 9 m → 1 m 12 s end to end (test 223 s → 55 s). Trade-off: Starter now binds IDE processes to the suite scope rather than the class scope; every test closes its IDE in `tearDownIde` regardless.
+- **Status:** fixed in the harness. `NewProjectUITest` doesn't extend `FlutterIdeUITest` and still pays for the scans.
+
+## A stale `DART_PLUGIN_VERSION` silently disabled Flutter in every run
+
+- **Date:** 2026-11-23 → 2026-11-26 · **Where:** T4 and `HarnessSelfCheckUITest` runs on IU 262 from a developer shell.
+- **What:** `DART_PLUGIN_VERSION=506.1.0`, correct for a 252 run (see the Dart 510 entry below), stayed in effect. On 262 the platform rejected Dart (`requires IDE build 261.* or older`), then Flutter (`has dependency on 'Dart' which is not installed`). The old plugin gate polled for 2 minutes and failed with only `Timeout(2m): plugins to initialize`; the same commands passed for anyone without the variable, so it looked like flakiness. Unsetting the variable in the shell did **not** help: the test JVM inherits the environment of the Gradle daemon, which keeps the environment it was started with, so a daemon started while the variable was set kept passing it to every later run (reproduced 2026-11-26: a run with the variable unset still installed 506.1.0).
+- **What we did:** `build.gradle.kts` now passes the harness's environment variables (`DART_PLUGIN_VERSION`, `DART_PLUGIN_ZIP`, `FLUTTER_SDK`, `AGENT_TESTING_MODE`, …) from the shell that ran Gradle via `providers.environmentVariable`, and removes them from the test JVM when that shell doesn't set them; this also makes them configuration cache inputs (same fix as `a522aa651` for `FLUTTER_SDK` alone). `utils/DartPluginSelection.kt` picks the Dart plugin before the IDE starts and checks it against the IDE build using the plugin's own `<idea-version since-build until-build>`. Explicit choices (`DART_PLUGIN_ZIP`, `DART_PLUGIN_VERSION=<v>` or `latest`) are installed exactly or fail in `PREFLIGHT` within seconds, naming the source; the default (`dartPluginVersion` from `gradle.properties`) falls back to the Marketplace's newest compatible version when the IDE build can't load it, and says so. `run-result.json` records `dartPluginVersion`, `dartPluginSource` and `dartPluginBuilds`. The plugin gate no longer polls (the plugin set is fixed at startup) and quotes the IDE's "Problems found loading plugins" lines.
+- **Status:** fixed in the harness. Don't export `DART_PLUGIN_VERSION`; for a 25x run pin the IDE with `-Pide.version` and let the harness pick Dart.
+
 ## Dart 506.1.0 on IDE 251/252 throws fatal `Debug metadata version mismatch` coroutine errors
 
 - **Date:** 2026-11-13 · **Where:** T4 green runs on IU 252.28238.7; also a hand-run IDE.
@@ -43,5 +57,5 @@ Format: **title** · date · where it bit · what it is · what we did · status
 
 - **Date:** 2026-11-12 · **Where:** first T4 run on IU 252.
 - **What:** `dartPluginVersion` in `gradle.properties` (510.0.0) is `since 253`; on a 25x IDE the plugin is rejected. Dart 506.1.0 is the last 25x-compatible release and depends on LSP4IJ, which the IDE doesn't bundle.
-- **What we did:** `DART_PLUGIN_VERSION` env override; `Setup.kt` installs LSP4IJ at `libs.versions.lsp4ij`; the run skill's preflight says to check Dart compatibility whenever `ide.version` is pinned away from the default.
+- **What we did:** `DART_PLUGIN_VERSION` env override; `Setup.kt` installs LSP4IJ at `libs.versions.lsp4ij`; the run skill's preflight says to check Dart compatibility whenever `ide.version` is pinned away from the default. Superseded 2026-11-26: the harness now picks a compatible Dart itself when `ide.version` is pinned (see "A stale `DART_PLUGIN_VERSION`…" above).
 - **Status:** handled by the harness.

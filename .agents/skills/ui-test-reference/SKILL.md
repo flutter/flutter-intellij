@@ -35,7 +35,7 @@ unified IntelliJ IDEA distribution is product code `IU`.
 |---|---|---|
 | The Flutter plugin | `path.to.build.plugin` (the zip `buildPlugin` just made), overridden by `-Pflutter.plugin.zip=<zip>` | certification red builds come in through the override |
 | No Flutter plugin | `FLUTTER_UI_TEST_WITHOUT_PLUGIN=true` | the control run: every UI test must fail on its own checks |
-| The Dart plugin | Marketplace version from `dartPluginVersion` in `gradle.properties`, overridden by `DART_PLUGIN_ZIP=<zip>` | Dart-seam red builds, and testing a Dart plugin PR |
+| The Dart plugin | `dartPluginVersion` from `gradle.properties`; if the IDE build can't load it, the Marketplace's newest compatible version (logged). `DART_PLUGIN_VERSION=<version>` or `latest`, or `DART_PLUGIN_ZIP=<zip>`, installs exactly that, and the run fails before the IDE starts if the IDE build can't load it | Dart-seam red builds, and testing a Dart plugin PR |
 
 **VM options.** `Setup.setupTestContext` sets the properties that keep the IDE
 quiet and drivable: trust all projects, no consent/tips/surveys,
@@ -124,10 +124,19 @@ Pick the base from the spec's **Fixture**:
 
 All of them extend `FlutterIdeUITest`, which gives every test:
 
-- `startIde(context) { it.runIdeWithDriver() }` — starts the IDE and runs the
-  **plugin-loaded gate**: `io.flutter` and `Dart` must be loaded and enabled,
-  or the test fails in `SETUP`.
-- `step`, `assertOracle`, `probe` (below).
+- `startIde(context) { it.runIdeWithDriver() }` — kills leftover test IDEs
+  (`killLeftoverTestIdes`), starts the IDE and runs the **plugin-loaded gate**:
+  `io.flutter` and `Dart` must be loaded and enabled, or the test fails in
+  `SETUP` within seconds, quoting the IDE's "Problems found loading plugins"
+  lines (the plugin set is fixed at startup, so the gate doesn't poll).
+- `step`, `assertOracle`, `probe` (below), and `timed(label) { }` for harness
+  work that isn't a spec step: it prints `[timing] label: 1.2s` and records the
+  phase in `run-result.json` (`timings`). The base classes already time project
+  creation, IDE launch, the gate, the frame and indexing waits, and shutdown; a
+  summary of every phase, step and oracle is printed when the test ends.
+- Starter's own leftover-process scans (`KillOutdatedProcesses`, and
+  `MavenBuildTool`'s, which is why `Setup` must not call `withBuildTool`) are
+  disabled: on Windows each took minutes. See `specs/FINDINGS.md`.
 - Teardown: closes the IDE, then the **`idea.log` gate** (`IdeLog.severeEntries`:
   `SEVERE`/`ERROR` entries mentioning `io.flutter` or `com.jetbrains.lang.dart`,
   minus a short justified allowlist) and the **leaked-process check**
@@ -252,5 +261,7 @@ calling a failure a product finding, and append to it when you find one.
 | `tryToExecute` through a raw `@Remote` threw `InvocationTargetException` | it must run on the EDT | use `driver.invokeAction(...)` (the SDK does the EDT hop and the rejection check); `invokeFlutterAction` wraps it |
 | A hand-launched IDE "with the fix" still showed the bug; both manual sandboxes had empty `log/` dirs | Starter leaves `<ide-home>.vmoptions` next to the cached IDE with `-Didea.{config,system,plugins,log}.path` pointing at the **last test's** sandbox; `-D` beats `idea.properties`/`IDEA_PROPERTIES`, so the IDE silently ran the test's (broken) plugin | launch by hand only through `tool/agent-testing/launch-ide.sh`, which passes its own vmoptions via `IDEA_VM_OPTIONS` and verifies paths, version, and jar sha256 from the IDE's log |
 | A red run looked valid but nobody could say which plugin bytes the IDE had loaded | the broken and real builds were both `SNAPSHOT` | `build-broken-plugin.sh` stamps `-broken-<stamp>` into the version; the harness records `pluginVersion`/`pluginZipSha256`; the parser rejects an unstamped red or a stamped green |
-| `#8845` did not reproduce on IU 262 but did on IU 252, the build in the issue | the platform changed how `File > Open` picks an open processor | pin `ide.version` from the issue in the spec's Fixture; on 25x use `DART_PLUGIN_VERSION=506.1.0` (needs LSP4IJ, which `Setup` installs) |
+| `#8845` did not reproduce on IU 262 but did on IU 252, the build in the issue | the platform changed how `File > Open` picks an open processor | pin `ide.version` from the issue in the spec's Fixture; the harness then picks a Dart plugin that 25x can load (506.x, which needs LSP4IJ, which `Setup` installs) |
+| A passing self-check took 9 minutes on Windows; `close IDE and wait` alone took ~3 | three Starter process scans (OSHI reads every process's command line), one of them from a `MavenBuildTool` that `withBuildTool<GradleBuildTool>()` had instantiated | read the `[timing]` summary first; Starter's scans are disabled and replaced by `killLeftoverTestIdes`; never call `withBuildTool` in `Setup` |
+| Every run failed the plugin-loaded gate: `Dart 506.1.0 requires IDE build 261.* or older` on IU 262 | `DART_PLUGIN_VERSION=506.1.0`, set for a 252 run, was still set in the shell | `DartPluginSelection` checks the Dart plugin's build range before the IDE starts and names the override; don't export `DART_PLUGIN_VERSION`, pin the IDE with `-Pide.version` instead |
 | On IU 252 the project opened but nothing rendered for 2+ minutes: Project tree "loading…", no toolbar actions, Driver screenshots timing out | 2025.2 defaults to out-of-process JCEF; under Xvfb the `cef_server` handshake for the auto-opened `README.md` Markdown preview blocked the EDT (thread dumps: `MarkdownJCEFHtmlPanel` → `CefServer`) | `Setup.kt` sets `jcef.remote.enabled=false` on Linux; a frozen EDT looks like a plugin failure, so check `monitoring-thread-dumps-ide/` before blaming the plugin |

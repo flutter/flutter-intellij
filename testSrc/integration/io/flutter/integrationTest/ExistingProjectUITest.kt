@@ -55,8 +55,8 @@ abstract class ExistingProjectUITest(private val packageName: String) : FlutterI
 
   @BeforeAll
   fun createProject() {
-    createFlutterProjectWithCli(projectFolder, projectName = packageName, directory = parentDir)
-    prepareProject()
+    timed("flutter create") { createFlutterProjectWithCli(projectFolder, projectName = packageName, directory = parentDir) }
+    timed("prepareProject (fixture overlay)") { prepareProject() }
   }
 
   /** Hook for subclasses to adjust the project on disk before the IDE opens it, for example to apply an overlay. */
@@ -68,7 +68,7 @@ abstract class ExistingProjectUITest(private val packageName: String) : FlutterI
       println("Keeping test project: $projectDir")
     }
     else {
-      deleteFlutterProject(projectFolder, directory = parentDir)
+      timed("delete test project") { deleteFlutterProject(projectFolder, directory = parentDir) }
     }
   }
 
@@ -97,14 +97,16 @@ abstract class ExistingProjectUITest(private val packageName: String) : FlutterI
     repeat(attempts) { attempt ->
       try {
         inFrame {
-          waitFound(frameTimeout)
-          driver.waitForIndicators(5.minutes)
+          timed("project frame appears (attempt ${attempt + 1})") { waitFound(frameTimeout) }
+          timed("background tasks finish: indexing etc. (attempt ${attempt + 1})") { driver.waitForIndicators(5.minutes) }
         }
         println("Project is open and indexed.")
         // The Trial tab usually opens while the project loads, but can arrive shortly after; poll briefly here and
         // again when opening files or polling conditions in [dismissInterruptions].
-        val deadline = System.currentTimeMillis() + 3_000
-        while (!closeTrialTab() && System.currentTimeMillis() < deadline) Thread.sleep(500)
+        timed("close Trial tab (up to 3s)") {
+          val deadline = System.currentTimeMillis() + 3_000
+          while (!closeTrialTab() && System.currentTimeMillis() < deadline) Thread.sleep(500)
+        }
         return
       }
       catch (e: Exception) {
@@ -128,7 +130,7 @@ abstract class ExistingProjectUITest(private val packageName: String) : FlutterI
     println("Starting the IDE on the welcome screen (project to open later: $projectDir)")
     startIde(Setup.setupTestContextIU262(javaClass.simpleName, NoProject)) { it.runIdeWithDriver() }
     result.currentPhase = Phase.SETUP
-    driver.ui.welcomeScreen { waitFound(2.minutes) }
+    timed("welcome screen appears") { driver.ui.welcomeScreen { waitFound(2.minutes) } }
     println("Welcome screen is showing")
   }
 

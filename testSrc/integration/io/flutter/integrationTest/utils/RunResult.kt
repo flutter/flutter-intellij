@@ -47,6 +47,9 @@ class RunResult(val testName: String) {
 
   data class Freeze(val confirmed: Boolean, val thread: String, val frame: String, val dumps: Int)
 
+  /** How long one harness phase (project creation, IDE launch, plugin gate, indexing wait, shutdown) took. */
+  data class Timing(val label: String, val millis: Long, val ok: Boolean)
+
   var ide: String? = null
   var platform: String = System.getProperty("os.name") ?: "unknown"
   var bundleSha256: String? = null
@@ -54,6 +57,10 @@ class RunResult(val testName: String) {
   var pluginVersion: String? = null
   var pluginZip: String? = null
   var pluginZipSha256: String? = null
+  /** The Dart plugin chosen for the IDE under test, where the choice came from, and the IDE builds it supports. */
+  var dartPluginVersion: String? = null
+  var dartPluginSource: String? = null
+  var dartPluginBuilds: String? = null
   var testsAborted: Int = 0
   var failurePhase: Phase = Phase.NONE
   var failedId: String? = null
@@ -65,6 +72,7 @@ class RunResult(val testName: String) {
   val steps = mutableListOf<Entry>()
   val oracles = mutableListOf<Entry>()
   val probes = mutableListOf<String>()
+  val timings = mutableListOf<Timing>()
 
   /** The phase the test is in right now; `fail` uses it when a block doesn't report its own phase. */
   @Volatile
@@ -106,10 +114,32 @@ class RunResult(val testName: String) {
     }
   }
 
+  /**
+   * Runs [block] as harness phase [label] and records how long it took, whether or not it succeeded. Prints a
+   * `[timing]` line as soon as the phase ends, so a slow or hanging run shows where the time went in the test output.
+   */
+  fun <T> timed(label: String, block: () -> T): T {
+    val started = System.nanoTime()
+    var ok = false
+    try {
+      return block().also { ok = true }
+    }
+    finally {
+      val millis = (System.nanoTime() - started) / 1_000_000
+      timings += Timing(label, millis, ok)
+      println("[timing] $label: ${seconds(millis)}${if (ok) "" else " (failed)"}")
+    }
+  }
+
   /** Writes the JSON file. Safe to call more than once; only the first call writes. */
   fun write(path: Path = defaultPath()) {
     if (written) return
     written = true
+    if (timings.isNotEmpty()) {
+      println("[timing] summary for $testName:")
+      timings.forEach { println("[timing]   %-45s %8s%s".format(it.label, seconds(it.millis), if (it.ok) "" else "  (failed)")) }
+      (steps + oracles).forEach { println("[timing]   %-45s %8s".format("${it.id} ${it.title}".take(45), seconds(it.millis))) }
+    }
     Files.createDirectories(path.parent)
     Files.writeString(path, toJson())
     println("run-result.json written to $path (phase=$failurePhase id=$failedId)")
@@ -129,12 +159,16 @@ class RunResult(val testName: String) {
     field("pluginVersion", pluginVersion)
     field("pluginZip", pluginZip)
     field("pluginZipSha256", pluginZipSha256)
+    field("dartPluginVersion", dartPluginVersion)
+    field("dartPluginSource", dartPluginSource)
+    field("dartPluginBuilds", dartPluginBuilds)
     field("testsStarted", 1)
     field("testsSucceeded", if (failurePhase == Phase.NONE) 1 else 0)
     field("testsAborted", testsAborted)
     field("steps", steps.map(::entryJson))
     field("oracles", oracles.map(::entryJson))
     field("probes", probes)
+    field("timings", timings.map { linkedMapOf("label" to it.label, "millis" to it.millis, "ok" to it.ok) })
     field("failurePhase", failurePhase.name)
     field("failedId", failedId)
     field("failedKind", failedKind)
@@ -187,6 +221,8 @@ class RunResult(val testName: String) {
       val chosen = assertion ?: t
       return chosen.message?.let(::firstLine)?.ifEmpty { null } ?: chosen.javaClass.simpleName
     }
+
+    private fun seconds(millis: Long): String = String.format(Locale.ROOT, "%.1fs", millis / 1000.0)
 
     fun defaultPath(): Path = Git.getRepoRoot().resolve("build").resolve("agent-testing").resolve("run-result.json")
 

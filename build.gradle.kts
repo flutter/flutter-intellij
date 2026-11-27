@@ -400,9 +400,19 @@ intellijPlatformTesting.testIde.register("integration") {
     listOf("flutter.plugin.zip", "ide.version", "ide.product").forEach { name ->
       providers.gradleProperty(name).orNull?.let { systemProperty(name, it) }
     }
-    // Read FLUTTER_SDK through `providers` so it is a configuration cache input: otherwise a cached entry keeps the
-    // environment of the build that stored it, and changing FLUTTER_SDK has no effect on the tests.
-    providers.environmentVariable("FLUTTER_SDK").orNull?.let { environment("FLUTTER_SDK", it) }
+    // Pass the harness's environment variables from the shell that ran Gradle, and remove them when that shell doesn't
+    // set them. The test JVM otherwise inherits the environment of the Gradle daemon (fixed when the daemon started)
+    // or of a cached configuration entry, so a variable unset in the shell stayed in effect: a daemon started with
+    // DART_PLUGIN_VERSION=506.1.0 kept installing a Dart plugin IU 262 can't load. Reading them through `providers`
+    // also makes them configuration cache inputs, so changing one invalidates the cache.
+    listOf(
+      "FLUTTER_SDK", "DART_PLUGIN_VERSION", "DART_PLUGIN_ZIP", "LSP4IJ_PLUGIN_VERSION", "FLUTTER_UI_TEST_WITHOUT_PLUGIN",
+      "AGENT_TESTING_MODE", "AGENT_TESTING_PROBE", "KEEP_TEST_PROJECT", "KEEP_IDE_OPEN_MINUTES",
+      "WALKTHROUGH_STEP_PAUSE_MS", "WALKTHROUGH_STEPS_FILE",
+    ).forEach { name ->
+      val value = providers.environmentVariable(name).orNull
+      if (value != null) environment(name, value) else environment.remove(name)
+    }
     systemProperty(
       "allure.results.directory", project.layout.buildDirectory.get().asFile.absolutePath + "/allure-results"
     )

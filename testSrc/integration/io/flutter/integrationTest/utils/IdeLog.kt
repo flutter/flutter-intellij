@@ -41,6 +41,25 @@ object IdeLog {
     Regex("Debug metadata version mismatch\\. Expected: 1, got 2"),
   )
 
+  /**
+   * The platform's "Problems found loading plugins" lines from [log] that concern our plugins or the plugins they
+   * depend on, for example `Plugin 'Dart' (Dart, version=506.1.0) requires IDE build 261.* or older, but the current
+   * build is IU-262.10968.63`. They are logged at startup, so the whole file is read.
+   */
+  fun pluginLoadProblems(log: Path, ids: List<String> = listOf("Dart", "io.flutter", "Flutter", "lsp4ij", "LSP4IJ")): List<String> {
+    if (!log.exists()) return emptyList()
+    val problems = mutableListOf<String>()
+    var inBlock = false
+    Files.readAllLines(log).forEach { line ->
+      when {
+        line.contains("Problems found loading plugins:") -> inBlock = true
+        inBlock && line.startsWith("  ") -> if (ids.any { line.contains("'$it'") || line.contains("($it") }) problems += line.trim()
+        inBlock -> inBlock = false
+      }
+    }
+    return problems.distinct()
+  }
+
   /** Size of [log] now, to pass as `sinceByte` later so only this test's lines are read. */
   fun offset(log: Path): Long = if (log.exists()) Files.size(log) else 0L
 
