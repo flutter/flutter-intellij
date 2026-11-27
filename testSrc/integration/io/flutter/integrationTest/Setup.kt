@@ -260,10 +260,10 @@ class Setup {
             addSystemProperty("jbScreenMenuBar.enabled", false) // Disable native menu bar
             addSystemProperty("ide.native.launcher", true) // Use native launcher
           }
-
           SystemInfo.isWindows -> {
-            // Windows specific settings
-
+            // Use the IDE's own file chooser, not the native Win32 dialog: Driver can only see Swing components, and
+            // the welcome-screen Open path (ExistingProjectUITest.selectFolder) drives the chooser's tree.
+            addSystemProperty("ide.win.file.chooser.native", false)
           }
 
           SystemInfo.isLinux -> {
